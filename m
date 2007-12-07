@@ -1,21 +1,12 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4A6B2DDD0A
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 16:10:26 +1100 (EST)
-Received: from ash.ozlabs.ibm.com (bh02i525f01.au.ibm.com [202.81.18.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 153DC368007
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 16:10:26 +1100 (EST)
-Date: Fri, 7 Dec 2007 16:10:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] [POWERPC] iSeries: merge vpdinfo.c intp pci.c
-Message-Id: <20071207161022.fda39b4a.sfr@canb.auug.org.au>
-In-Reply-To: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
-References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
+Date: Fri, 7 Dec 2007 17:09:27 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [RFC][POWERPC] Provide a way to protect 4k subpages when
+	using 64k pages
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,566 +16,534 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There was only one global function in vpdinfo.c and it was only called
-from pci.c, so merge them and make the function static.
+Using 64k pages on 64-bit PowerPC systems makes life difficult for
+emulators that are trying to emulate an ISA, such as x86, which use a
+smaller page size, since the emulator can no longer use the MMU and
+the normal system calls for controlling page protections.  Of course,
+the emulator can emulate the MMU by checking and possibly remapping
+the address for each memory access in software, but that is pretty
+slow.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+This patch provides a facility for such programs to control the access
+permissions on individual 4k sub-pages of a 64k page.  The idea is
+that the emulator supplies an array of protection masks to apply to a
+specified range of virtual addresses.  These masks are applied at the
+level where hardware PTEs are inserted into the hardware page table
+based on the Linux PTEs, so the Linux PTEs are not affected.  Note
+that this new mechanism does not allow any access that would otherwise
+be prohibited; it can only prohibit accesses that would otherwise be
+allowed.  This new facility is only available on 64-bit PowerPC and
+only when the kernel is configured for 64k pages.
+
+The masks are supplied using a new subpage_prot system call, which
+takes a starting virtual address and length, and a pointer to an array
+of protection masks in memory.  The array has a 32-bit word per 64k
+page to be protected; each 32-bit word consists of 16 2-bit fields,
+for which 0 allows any access (that is otherwise allowed), 1 prevents
+write accesses, and 2 or 3 prevent any access.
+
+Implicit in this is that the regions of the address space that are
+protected are switched to use 4k hardware pages rather than 64k
+hardware pages (on machines with hardware 64k page support).  In fact
+the whole process is switched to use 4k hardware pages when the
+subpage_prot system call is used, but this could be improved in future
+to switch only the affected segments.
+
+I have re-purposed the ioperm system call for this.  The old ioperm
+system call never did anything (except return an ENOSYS error) and in
+fact never could have actually been useful for anything on the PowerPC
+architecture, so nothing ever used it.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/platforms/iseries/Makefile  |    2 +-
- arch/powerpc/platforms/iseries/pci.c     |  218 ++++++++++++++++++++++++++
- arch/powerpc/platforms/iseries/pci.h     |    6 -
- arch/powerpc/platforms/iseries/vpdinfo.c |  252 ------------------------------
- 4 files changed, 219 insertions(+), 259 deletions(-)
- delete mode 100644 arch/powerpc/platforms/iseries/vpdinfo.c
 
-diff --git a/arch/powerpc/platforms/iseries/Makefile b/arch/powerpc/platforms/iseries/Makefile
-index a65f1b4..cc7161f 100644
---- a/arch/powerpc/platforms/iseries/Makefile
-+++ b/arch/powerpc/platforms/iseries/Makefile
-@@ -5,7 +5,7 @@ extra-y += dt.o
- obj-y += exception.o
- obj-y += hvlog.o hvlpconfig.o lpardata.o setup.o dt_mod.o mf.o lpevents.o \
- 	hvcall.o proc.o htab.o iommu.o misc.o irq.o
--obj-$(CONFIG_PCI) += pci.o vpdinfo.o
-+obj-$(CONFIG_PCI) += pci.o
- obj-$(CONFIG_SMP) += smp.o
- obj-$(CONFIG_VIOPATH) += viopath.o vio.o
- obj-$(CONFIG_MODULES) += ksyms.o
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 5466975..68f248b 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -1,5 +1,6 @@
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 232c298..0f5b968 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -340,6 +340,14 @@ config PPC_64K_PAGES
+ 	  while on hardware with such support, it will be used to map
+ 	  normal application pages.
+ 
++config PPC_SUBPAGE_PROT
++	bool "Support setting protections for 4k subpages"
++	depends on PPC_64K_PAGES
++	help
++	  This option adds support for a system call to allow user programs
++	  to set access permissions (read/write, readonly, or no access)
++	  on the 4k subpages of each 64k page.
++
+ config SCHED_SMT
+ 	bool "SMT (Hyperthreading) scheduler support"
+ 	depends on PPC64 && SMP
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index c349868..11b4f6d 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -903,6 +903,7 @@ handle_page_fault:
+  * the PTE insertion
+  */
+ 12:	bl	.save_nvgprs
++	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r4,_DAR(r1)
+ 	bl	.low_hash_fault
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index 3b1d5dd..5aabf48 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -36,12 +36,14 @@
+ #include <linux/file.h>
+ #include <linux/init.h>
+ #include <linux/personality.h>
++#include <linux/hugetlb.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/semaphore.h>
+ #include <asm/syscalls.h>
+ #include <asm/time.h>
+ #include <asm/unistd.h>
++#include <asm/tlbflush.h>
+ 
  /*
-  * Copyright (C) 2001 Allan Trautman, IBM Corporation
-+ * Copyright (C) 2005,2007  Stephen Rothwell, IBM Corp
-  *
-  * iSeries specific routines for PCI.
-  *
-@@ -26,6 +27,7 @@
- #include <linux/module.h>
- #include <linux/pci.h>
- 
-+#include <asm/types.h>
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/prom.h>
-@@ -35,6 +37,7 @@
- #include <asm/abs_addr.h>
- #include <asm/firmware.h>
- 
-+#include <asm/iseries/hv_types.h>
- #include <asm/iseries/hv_call_xm.h>
- #include <asm/iseries/mf.h>
- #include <asm/iseries/iommu.h>
-@@ -80,6 +83,221 @@ static inline u64 iseries_ds_addr(struct device_node *node)
+  * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+@@ -328,3 +330,174 @@ void do_show_syscall_exit(unsigned long r3)
+ {
+ 	printk(" -> %lx, current=%p cpu=%d\n", r3, current, smp_processor_id());
  }
- 
- /*
-+ * Size of Bus VPD data
-+ */
-+#define BUS_VPDSIZE      1024
 +
++#ifdef CONFIG_PPC_SUBPAGE_PROT
 +/*
-+ * Bus Vpd Tags
++ * Clear the subpage protection map for an address range, allowing
++ * all accesses that are allowed by the pte permissions.
 + */
-+#define VPD_END_OF_AREA		0x79
-+#define VPD_ID_STRING		0x82
-+#define VPD_VENDOR_AREA		0x84
-+
-+/*
-+ * Mfg Area Tags
-+ */
-+#define VPD_FRU_FRAME_ID	0x4649	/* "FI" */
-+#define VPD_SLOT_MAP_FORMAT	0x4D46	/* "MF" */
-+#define VPD_SLOT_MAP		0x534D	/* "SM" */
-+
-+/*
-+ * Structures of the areas
-+ */
-+struct mfg_vpd_area {
-+	u16	tag;
-+	u8	length;
-+	u8	data1;
-+	u8	data2;
-+};
-+#define MFG_ENTRY_SIZE   3
-+
-+struct slot_map {
-+	u8	agent;
-+	u8	secondary_agent;
-+	u8	phb;
-+	char	card_location[3];
-+	char	parms[8];
-+	char	reserved[2];
-+};
-+#define SLOT_ENTRY_SIZE   16
-+
-+/*
-+ * Parse the Slot Area
-+ */
-+static void __init iseries_parse_slot_area(struct slot_map *map, int len,
-+		HvAgentId agent, u8 *phb, char card[4])
++static void subpage_prot_clear(unsigned long addr, unsigned long len)
 +{
-+	/*
-+	 * Parse Slot label until we find the one requested
-+	 */
-+	while (len > 0) {
-+		if (map->agent == agent) {
-+			/*
-+			 * If Phb wasn't found, grab the entry first one found.
-+			 */
-+			if (*phb == 0xff)
-+				*phb = map->phb;
-+			/* Found it, extract the data. */
-+			if (map->phb == *phb) {
-+				memcpy(card, &map->card_location, 3);
-+				card[3]  = 0;
-+				break;
++	struct mm_struct *mm = current->mm;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd, *spm;
++	pte_t *pte;
++	u32 *spp;
++	spinlock_t *ptl;
++	int i, nw;
++	unsigned long next, limit;
++
++	down_write(&mm->mmap_sem);
++	for (limit = addr + len; addr < limit; addr = next) {
++		next = pmd_addr_end(addr, limit);
++		pgd = pgd_offset(mm, addr);
++		if (pgd_none(*pgd))
++			continue;	/* can't happen with 3-level tables */
++		pud = pud_offset(pgd, addr);
++		if (pud_none(*pud))
++			continue;
++		pmd = pmd_offset(pud, addr);
++		if (!pmd)
++			continue;
++		for (; addr < next; ++pmd) {
++			spm = pmd + PTRS_PER_PMD;
++			spp = (u32 *) pmd_val(*spm);
++			i = (addr >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
++			nw = PTRS_PER_PTE - i;
++			if (addr + (nw << PAGE_SHIFT) > next)
++				nw = (next - addr) >> PAGE_SHIFT;
++			if (!spp) {
++				addr += nw * PAGE_SIZE;
++				continue;
 +			}
++
++			/* See if we can dispose of the whole array here */
++			if (nw == PTRS_PER_PTE) {
++				spin_lock(&mm->page_table_lock);
++				pmd_val(*spm) = 0;
++				spin_unlock(&mm->page_table_lock);
++				kfree(spp);
++			} else
++				memset(spp + i, 0, nw * sizeof(u32));
++
++			/* now flush any existing HPTEs for the range */
++			pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
++			arch_enter_lazy_mmu_mode();
++			for (; nw > 0; --nw) {
++				pte_update(mm, addr, pte, 0, 0);
++				addr += PAGE_SIZE;
++				++pte;
++			}
++			arch_leave_lazy_mmu_mode();
++			pte_unmap_unlock(pte - 1, ptl);
 +		}
-+		/* Point to the next Slot */
-+		map = (struct slot_map *)((char *)map + SLOT_ENTRY_SIZE);
-+		len -= SLOT_ENTRY_SIZE;
 +	}
++	up_write(&mm->mmap_sem);
 +}
 +
 +/*
-+ * Parse the Mfg Area
++ * Copy in a subpage protection map for an address range.
++ * The map has 2 bits per 4k subpage, so 32 bits per 64k page.
++ * Each 2-bit field is 0 to allow any access, 1 to prevent writes,
++ * 2 or 3 to prevent all accesses.
++ * Note that the normal page protections also apply; the subpage
++ * protection mechanism is an additional constraint, so putting 0
++ * in a 2-bit field won't allow writes to a page that is otherwise
++ * write-protected.
 + */
-+static void __init iseries_parse_mfg_area(struct mfg_vpd_area *area, int len,
-+		HvAgentId agent, u8 *phb, u8 *frame, char card[4])
++long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
 +{
-+	u16 slot_map_fmt = 0;
++	struct mm_struct *mm = current->mm;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd, *spm;
++	pte_t *pte;
++	u32 *spp;
++	spinlock_t *ptl;
++	int i, nw;
++	unsigned long next, limit;
++	int err;
 +
-+	/* Parse Mfg Data */
-+	while (len > 0) {
-+		int mfg_tag_len = area->length;
-+		/* Frame ID         (FI 4649020310 ) */
-+		if (area->tag == VPD_FRU_FRAME_ID)
-+			*frame = area->data1;
-+		/* Slot Map Format  (MF 4D46020004 ) */
-+		else if (area->tag == VPD_SLOT_MAP_FORMAT)
-+			slot_map_fmt = (area->data1 * 256)
-+				+ area->data2;
-+		/* Slot Map         (SM 534D90 */
-+		else if (area->tag == VPD_SLOT_MAP) {
-+			struct slot_map *slot_map;
++	/* Check parameters */
++	if ((addr & ~PAGE_MASK) || (len & ~PAGE_MASK) ||
++	    addr >= TASK_SIZE || len >= TASK_SIZE || addr + len > TASK_SIZE)
++		return -EINVAL;
 +
-+			if (slot_map_fmt == 0x1004)
-+				slot_map = (struct slot_map *)((char *)area
-+						+ MFG_ENTRY_SIZE + 1);
-+			else
-+				slot_map = (struct slot_map *)((char *)area
-+						+ MFG_ENTRY_SIZE);
-+			iseries_parse_slot_area(slot_map, mfg_tag_len,
-+					agent, phb, card);
-+		}
-+		/*
-+		 * Point to the next Mfg Area
-+		 * Use defined size, sizeof give wrong answer
-+		 */
-+		area = (struct mfg_vpd_area *)((char *)area + mfg_tag_len
-+				+ MFG_ENTRY_SIZE);
-+		len -= (mfg_tag_len + MFG_ENTRY_SIZE);
-+	}
-+}
++	if (is_hugepage_only_range(mm, addr, len))
++		return -EINVAL;
 +
-+/*
-+ * Look for "BUS".. Data is not Null terminated.
-+ * PHBID of 0xFF indicates PHB was not found in VPD Data.
-+ */
-+static u8 __init iseries_parse_phbid(u8 *area, int len)
-+{
-+	while (len > 0) {
-+		if ((*area == 'B') && (*(area + 1) == 'U')
-+				&& (*(area + 2) == 'S')) {
-+			area += 3;
-+			while (*area == ' ')
-+				area++;
-+			return *area & 0x0F;
-+		}
-+		area++;
-+		len--;
-+	}
-+	return 0xff;
-+}
-+
-+/*
-+ * Parse out the VPD Areas
-+ */
-+static void __init iseries_parse_vpd(u8 *data, int data_len,
-+		HvAgentId agent, u8 *frame, char card[4])
-+{
-+	u8 phb = 0xff;
-+
-+	while (data_len > 0) {
-+		int len;
-+		u8 tag = *data;
-+
-+		if (tag == VPD_END_OF_AREA)
-+			break;
-+		len = *(data + 1) + (*(data + 2) * 256);
-+		data += 3;
-+		data_len -= 3;
-+		if (tag == VPD_ID_STRING)
-+			phb = iseries_parse_phbid(data, len);
-+		else if (tag == VPD_VENDOR_AREA)
-+			iseries_parse_mfg_area((struct mfg_vpd_area *)data, len,
-+					agent, &phb, frame, card);
-+		/* Point to next Area. */
-+		data += len;
-+		data_len -= len;
-+	}
-+}
-+
-+static int __init iseries_get_location_code(u16 bus, HvAgentId agent,
-+		u8 *frame, char card[4])
-+{
-+	int status = 0;
-+	int bus_vpd_len = 0;
-+	u8 *bus_vpd = kmalloc(BUS_VPDSIZE, GFP_KERNEL);
-+
-+	if (bus_vpd == NULL) {
-+		printk("PCI: Bus VPD Buffer allocation failure.\n");
++	if (!map) {
++		/* Clear out the protection map for the address range */
++		subpage_prot_clear(addr, len);
 +		return 0;
 +	}
-+	bus_vpd_len = HvCallPci_getBusVpd(bus, iseries_hv_addr(bus_vpd),
-+					BUS_VPDSIZE);
-+	if (bus_vpd_len == 0) {
-+		printk("PCI: Bus VPD Buffer zero length.\n");
-+		goto out_free;
++
++	if (!access_ok(VERIFY_READ, map, (len >> PAGE_SHIFT) * sizeof(u32)))
++		return -EFAULT;
++
++	down_write(&mm->mmap_sem);
++	for (limit = addr + len; addr < limit; ) {
++		pgd = pgd_offset(mm, addr);
++		pud = pud_alloc(mm, pgd, addr);
++		err = -ENOMEM;
++		if (!pud)
++			goto out;	/* can't happen with 3-level tables */
++		pmd = pmd_alloc(mm, pud, addr);
++		if (!pmd)
++			goto out;
++		next = pmd_addr_end(addr, limit);
++		while (addr < next) {
++			local_irq_disable();
++			demote_segment_4k(mm, addr);
++			slb_flush_and_rebolt();
++			local_irq_enable();
++
++			spm = pmd + PTRS_PER_PMD;
++			spp = (u32 *) pmd_val(*spm);
++			if (!spp) {
++				spp = kzalloc(PTRS_PER_PTE * sizeof(u32),
++					      GFP_KERNEL);
++				err = -ENOMEM;
++				if (!spp)
++					goto out;
++				spin_lock(&mm->page_table_lock);
++				if (!pmd_val(*spm))
++					pmd_val(*spm) = (unsigned long) spp;
++				else {
++					kfree(spp);
++					spp = (u32 *) pmd_val(*spm);
++				}
++				spin_unlock(&mm->page_table_lock);
++			}
++			i = (addr >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
++			spp += i;
++			nw = PTRS_PER_PTE - i;
++			if (addr + (nw << PAGE_SHIFT) > next)
++				nw = (next - addr) >> PAGE_SHIFT;
++			err = -EFAULT;
++			if (__copy_from_user(spp, map, nw * sizeof(u32)))
++				goto out;
++			map += nw;
++
++			/* now flush any existing HPTEs for the range */
++			pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
++			arch_enter_lazy_mmu_mode();
++			for (; nw > 0; --nw) {
++				pte_update(mm, addr, pte, 0, 0);
++				addr += PAGE_SIZE;
++				++pte;
++			}
++			arch_leave_lazy_mmu_mode();
++			pte_unmap_unlock(pte - 1, ptl);
++			++pmd;
++		}
 +	}
-+	/* printk("PCI: bus_vpd: %p, %d\n",bus_vpd, bus_vpd_len); */
-+	/* Make sure this is what I think it is */
-+	if (*bus_vpd != VPD_ID_STRING) {
-+		printk("PCI: Bus VPD Buffer missing starting tag.\n");
-+		goto out_free;
-+	}
-+	iseries_parse_vpd(bus_vpd, bus_vpd_len, agent, frame, card);
-+	status = 1;
-+out_free:
-+	kfree(bus_vpd);
-+	return status;
++	err = 0;
++ out:
++	up_write(&mm->mmap_sem);
++	return err;
 +}
-+
-+/*
-+ * Prints the device information.
-+ * - Pass in pci_dev* pointer to the device.
-+ * - Pass in the device count
-+ *
-+ * Format:
-+ * PCI: Bus  0, Device 26, Vendor 0x12AE  Frame  1, Card  C10  Ethernet
-+ * controller
-+ */
-+static void __init iseries_device_information(struct pci_dev *pdev, int count,
-+		u16 bus, HvSubBusNumber subbus)
-+{
-+	u8 frame = 0;
-+	char card[4];
-+	HvAgentId agent;
-+
-+	agent = ISERIES_PCI_AGENTID(ISERIES_GET_DEVICE_FROM_SUBBUS(subbus),
-+			ISERIES_GET_FUNCTION_FROM_SUBBUS(subbus));
-+
-+	if (iseries_get_location_code(bus, agent, &frame, card)) {
-+		printk("%d. PCI: Bus%3d, Device%3d, Vendor %04X Frame%3d, "
-+			"Card %4s  0x%04X\n", count, bus,
-+			PCI_SLOT(pdev->devfn), pdev->vendor, frame,
-+			card, (int)(pdev->class >> 8));
-+	}
-+}
-+
-+/*
-  * iomm_table_allocate_entry
-  *
-  * Adds pci_dev entry in address translation table
-diff --git a/arch/powerpc/platforms/iseries/pci.h b/arch/powerpc/platforms/iseries/pci.h
-index 5f517cf..180aa74 100644
---- a/arch/powerpc/platforms/iseries/pci.h
-+++ b/arch/powerpc/platforms/iseries/pci.h
-@@ -30,10 +30,6 @@
-  * End Change Activity
++#else
++cond_syscall(subpage_prot);
++#endif
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index e935edd..21d2484 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -331,7 +331,8 @@ htab_pte_insert_failure:
+  *****************************************************************************/
+ 
+ /* _hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+- *		 pte_t *ptep, unsigned long trap, int local, int ssize)
++ *		 pte_t *ptep, unsigned long trap, int local, int ssize,
++ *		 int subpg_prot)
   */
  
--#include <asm/iseries/hv_types.h>
--
--struct pci_dev;				/* For Forward Reference */
--
  /*
-  * Decodes Linux DevFn to iSeries DevFn, bridge device, or function.
-  * For Linux, see PCI_SLOT and PCI_FUNC in include/linux/pci.h
-@@ -47,8 +43,6 @@ struct pci_dev;				/* For Forward Reference */
- #define ISERIES_GET_DEVICE_FROM_SUBBUS(subbus)		((subbus >> 5) & 0x7)
- #define ISERIES_GET_FUNCTION_FROM_SUBBUS(subbus)	((subbus >> 2) & 0x7)
+@@ -429,12 +430,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_1T_SEGMENT)
+ 	xor	r28,r28,r0		/* hash */
  
--extern void	iseries_device_information(struct pci_dev *pdev, int count,
--			u16 bus, HvSubBusNumber subbus);
- #ifdef CONFIG_PCI
- extern void	iSeries_pcibios_init(void);
- extern void	iSeries_pci_final_fixup(void);
-diff --git a/arch/powerpc/platforms/iseries/vpdinfo.c b/arch/powerpc/platforms/iseries/vpdinfo.c
-deleted file mode 100644
-index aec82e3..0000000
---- a/arch/powerpc/platforms/iseries/vpdinfo.c
-+++ /dev/null
-@@ -1,252 +0,0 @@
--/*
-- * This code gets the card location of the hardware
-- * Copyright (C) 2001  <Allan H Trautman> <IBM Corp>
-- * Copyright (C) 2005  Stephen Rothwel, IBM Corp
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the:
-- * Free Software Foundation, Inc.,
-- * 59 Temple Place, Suite 330,
-- * Boston, MA  02111-1307  USA
-- *
-- * Change Activity:
-- *   Created, Feb 2, 2001
-- *   Ported to ppc64, August 20, 2001
-- * End Change Activity
-- */
--#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/pci.h>
+ 	/* Convert linux PTE bits into HW equivalents */
+-4:	andi.	r3,r30,0x1fe		/* Get basic set of flags */
+-	xori	r3,r3,HPTE_R_N		/* _PAGE_EXEC -> NOEXEC */
++4:
++#ifdef CONFIG_PPC_SUBPAGE_PROT
++	andc	r10,r30,r10
++	andi.	r3,r10,0x1fe		/* Get basic set of flags */
++	rlwinm	r0,r10,32-9+1,30,30	/* _PAGE_RW -> _PAGE_USER (r0) */
++#else
++	andi.	r3,r30,0x1fe		/* Get basic set of flags */
+ 	rlwinm	r0,r30,32-9+1,30,30	/* _PAGE_RW -> _PAGE_USER (r0) */
++#endif
++	xori	r3,r3,HPTE_R_N		/* _PAGE_EXEC -> NOEXEC */
+ 	rlwinm	r4,r30,32-7+1,30,30	/* _PAGE_DIRTY -> _PAGE_USER (r4) */
+ 	and	r0,r0,r4		/* _PAGE_RW & _PAGE_DIRTY ->r0 bit 30*/
+-	andc	r0,r30,r0		/* r0 = pte & ~r0 */
++	andc	r0,r3,r0		/* r0 = pte & ~r0 */
+ 	rlwimi	r3,r0,32-1,31,31	/* Insert result into PP lsb */
+ 	ori	r3,r3,HPTE_R_C		/* Always add "C" bit for perf. */
+ 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index f09730b..7b62359 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -643,7 +643,7 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+  * For now this makes the whole process use 4k pages.
+  */
+ #ifdef CONFIG_PPC_64K_PAGES
+-static void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
++void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ {
+ 	if (mm->context.user_psize == MMU_PAGE_4K)
+ 		return;
+@@ -654,10 +654,59 @@ static void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ }
+ #endif /* CONFIG_PPC_64K_PAGES */
+ 
++#ifdef CONFIG_PPC_SUBPAGE_PROT
++/*
++ * This looks up a 2-bit protection code for a 4k subpage of a 64k page.
++ * Userspace sets the subpage permissions using the subpage_prot system call.
++ *
++ * Result is 0: full permissions, _PAGE_RW: read-only,
++ * _PAGE_USER or _PAGE_USER|_PAGE_RW: no access.
++ */
++static int subpage_protection(pgd_t *pgdir, unsigned long ea)
++{
++	u32 spp = 0;
++	pgd_t *pg;
++	pud_t *pu;
++	pmd_t *pm;
++	u32 *p;
++
++	if (is_kernel_addr(ea))
++		return 0;
++	pg = pgdir + pgd_index(ea);
++	if (pgd_none(*pg))
++		return 0;	/* can't happen with 3-level tables */
++	pu = pud_offset(pg, ea);
++	if (pud_none(*pu))
++		return 0;
++	pm = pmd_offset(pu, ea);
++	pm += PTRS_PER_PMD;
++	if (!pmd_val(*pm))
++		return 0;
++
++	/* pick up 32 bits of permissions for this 64k page */
++	p = ((u32 *)pmd_val(*pm)) + ((ea >> PAGE_SHIFT) & (PTRS_PER_PTE - 1));
++	spp = *p;
++
++	/* extract 2-bit bitfield for this 4k subpage */
++	spp >>= 30 - 2 * ((ea >> 12) & 0xf);
++
++	/* turn 0,1,2,3 into combination of _PAGE_USER and _PAGE_RW */
++	spp = ((spp & 2) ? _PAGE_USER : 0) | ((spp & 1) ? _PAGE_RW : 0);
++	return spp;
++}
++
++#else /* CONFIG_PPC_SUBPAGE_PROT */
++static inline int subpage_protection(pgd_t *pgdir, unsigned long ea)
++{
++	return 0;
++}
++#endif
++
+ /* Result code is:
+  *  0 - handled
+  *  1 - normal page fault
+  * -1 - critical hash insertion error
++ * -2 - access not permitted by subpage protection mechanism
+  */
+ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ {
+@@ -808,7 +857,14 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 		rc = __hash_page_64K(ea, access, vsid, ptep, trap, local, ssize);
+ 	else
+ #endif /* CONFIG_PPC_HAS_HASH_64K */
+-		rc = __hash_page_4K(ea, access, vsid, ptep, trap, local, ssize);
++	{
++		int spp = subpage_protection(pgdir, ea);
++		if (access & spp)
++			rc = -2;
++		else
++			rc = __hash_page_4K(ea, access, vsid, ptep, trap,
++					    local, ssize, spp);
++	}
+ 
+ #ifndef CONFIG_PPC_64K_PAGES
+ 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
+@@ -880,7 +936,8 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 		__hash_page_64K(ea, access, vsid, ptep, trap, local, ssize);
+ 	else
+ #endif /* CONFIG_PPC_HAS_HASH_64K */
+-		__hash_page_4K(ea, access, vsid, ptep, trap, local, ssize);
++		__hash_page_4K(ea, access, vsid, ptep, trap, local, ssize,
++			       subpage_protection(pgdir, ea));
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -925,19 +982,17 @@ void flush_hash_range(unsigned long number, int local)
+  * low_hash_fault is called when we the low level hash code failed
+  * to instert a PTE due to an hypervisor error
+  */
+-void low_hash_fault(struct pt_regs *regs, unsigned long address)
++void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
+ {
+ 	if (user_mode(regs)) {
+-		siginfo_t info;
 -
--#include <asm/types.h>
--#include <asm/resource.h>
--#include <asm/abs_addr.h>
--#include <asm/iseries/hv_types.h>
--
--#include "pci.h"
--#include "call_pci.h"
--
--/*
-- * Size of Bus VPD data
-- */
--#define BUS_VPDSIZE      1024
--
--/*
-- * Bus Vpd Tags
-- */
--#define VPD_END_OF_AREA		0x79
--#define VPD_ID_STRING		0x82
--#define VPD_VENDOR_AREA		0x84
--
--/*
-- * Mfg Area Tags
-- */
--#define VPD_FRU_FRAME_ID	0x4649	/* "FI" */
--#define VPD_SLOT_MAP_FORMAT	0x4D46	/* "MF" */
--#define VPD_SLOT_MAP		0x534D	/* "SM" */
--
--/*
-- * Structures of the areas
-- */
--struct mfg_vpd_area {
--	u16	tag;
--	u8	length;
--	u8	data1;
--	u8	data2;
--};
--#define MFG_ENTRY_SIZE   3
--
--struct slot_map {
--	u8	agent;
--	u8	secondary_agent;
--	u8	phb;
--	char	card_location[3];
--	char	parms[8];
--	char	reserved[2];
--};
--#define SLOT_ENTRY_SIZE   16
--
--/*
-- * Parse the Slot Area
-- */
--static void __init iseries_parse_slot_area(struct slot_map *map, int len,
--		HvAgentId agent, u8 *phb, char card[4])
--{
--	/*
--	 * Parse Slot label until we find the one requested
--	 */
--	while (len > 0) {
--		if (map->agent == agent) {
--			/*
--			 * If Phb wasn't found, grab the entry first one found.
--			 */
--			if (*phb == 0xff)
--				*phb = map->phb;
--			/* Found it, extract the data. */
--			if (map->phb == *phb) {
--				memcpy(card, &map->card_location, 3);
--				card[3]  = 0;
--				break;
--			}
--		}
--		/* Point to the next Slot */
--		map = (struct slot_map *)((char *)map + SLOT_ENTRY_SIZE);
--		len -= SLOT_ENTRY_SIZE;
+-		info.si_signo = SIGBUS;
+-		info.si_errno = 0;
+-		info.si_code = BUS_ADRERR;
+-		info.si_addr = (void __user *)address;
+-		force_sig_info(SIGBUS, &info, current);
+-		return;
 -	}
--}
--
--/*
-- * Parse the Mfg Area
-- */
--static void __init iseries_parse_mfg_area(struct mfg_vpd_area *area, int len,
--		HvAgentId agent, u8 *phb, u8 *frame, char card[4])
--{
--	u16 slot_map_fmt = 0;
--
--	/* Parse Mfg Data */
--	while (len > 0) {
--		int mfg_tag_len = area->length;
--		/* Frame ID         (FI 4649020310 ) */
--		if (area->tag == VPD_FRU_FRAME_ID)
--			*frame = area->data1;
--		/* Slot Map Format  (MF 4D46020004 ) */
--		else if (area->tag == VPD_SLOT_MAP_FORMAT)
--			slot_map_fmt = (area->data1 * 256)
--				+ area->data2;
--		/* Slot Map         (SM 534D90 */
--		else if (area->tag == VPD_SLOT_MAP) {
--			struct slot_map *slot_map;
--
--			if (slot_map_fmt == 0x1004)
--				slot_map = (struct slot_map *)((char *)area
--						+ MFG_ENTRY_SIZE + 1);
--			else
--				slot_map = (struct slot_map *)((char *)area
--						+ MFG_ENTRY_SIZE);
--			iseries_parse_slot_area(slot_map, mfg_tag_len,
--					agent, phb, card);
--		}
--		/*
--		 * Point to the next Mfg Area
--		 * Use defined size, sizeof give wrong answer
--		 */
--		area = (struct mfg_vpd_area *)((char *)area + mfg_tag_len
--				+ MFG_ENTRY_SIZE);
--		len -= (mfg_tag_len + MFG_ENTRY_SIZE);
--	}
--}
--
--/*
-- * Look for "BUS".. Data is not Null terminated.
-- * PHBID of 0xFF indicates PHB was not found in VPD Data.
-- */
--static u8 __init iseries_parse_phbid(u8 *area, int len)
--{
--	while (len > 0) {
--		if ((*area == 'B') && (*(area + 1) == 'U')
--				&& (*(area + 2) == 'S')) {
--			area += 3;
--			while (*area == ' ')
--				area++;
--			return *area & 0x0F;
--		}
--		area++;
--		len--;
--	}
--	return 0xff;
--}
--
--/*
-- * Parse out the VPD Areas
-- */
--static void __init iseries_parse_vpd(u8 *data, int data_len,
--		HvAgentId agent, u8 *frame, char card[4])
--{
--	u8 phb = 0xff;
--
--	while (data_len > 0) {
--		int len;
--		u8 tag = *data;
--
--		if (tag == VPD_END_OF_AREA)
--			break;
--		len = *(data + 1) + (*(data + 2) * 256);
--		data += 3;
--		data_len -= 3;
--		if (tag == VPD_ID_STRING)
--			phb = iseries_parse_phbid(data, len);
--		else if (tag == VPD_VENDOR_AREA)
--			iseries_parse_mfg_area((struct mfg_vpd_area *)data, len,
--					agent, &phb, frame, card);
--		/* Point to next Area. */
--		data += len;
--		data_len -= len;
--	}
--}
--
--static int __init iseries_get_location_code(u16 bus, HvAgentId agent,
--		u8 *frame, char card[4])
--{
--	int status = 0;
--	int bus_vpd_len = 0;
--	u8 *bus_vpd = kmalloc(BUS_VPDSIZE, GFP_KERNEL);
--
--	if (bus_vpd == NULL) {
--		printk("PCI: Bus VPD Buffer allocation failure.\n");
--		return 0;
--	}
--	bus_vpd_len = HvCallPci_getBusVpd(bus, iseries_hv_addr(bus_vpd),
--					BUS_VPDSIZE);
--	if (bus_vpd_len == 0) {
--		printk("PCI: Bus VPD Buffer zero length.\n");
--		goto out_free;
--	}
--	/* printk("PCI: bus_vpd: %p, %d\n",bus_vpd, bus_vpd_len); */
--	/* Make sure this is what I think it is */
--	if (*bus_vpd != VPD_ID_STRING) {
--		printk("PCI: Bus VPD Buffer missing starting tag.\n");
--		goto out_free;
--	}
--	iseries_parse_vpd(bus_vpd, bus_vpd_len, agent, frame, card);
--	status = 1;
--out_free:
--	kfree(bus_vpd);
--	return status;
--}
--
--/*
-- * Prints the device information.
-- * - Pass in pci_dev* pointer to the device.
-- * - Pass in the device count
-- *
-- * Format:
-- * PCI: Bus  0, Device 26, Vendor 0x12AE  Frame  1, Card  C10  Ethernet
-- * controller
-- */
--void __init iseries_device_information(struct pci_dev *pdev, int count,
--		u16 bus, HvSubBusNumber subbus)
--{
--	u8 frame = 0;
--	char card[4];
--	HvAgentId agent;
--
--	agent = ISERIES_PCI_AGENTID(ISERIES_GET_DEVICE_FROM_SUBBUS(subbus),
--			ISERIES_GET_FUNCTION_FROM_SUBBUS(subbus));
--
--	if (iseries_get_location_code(bus, agent, &frame, card)) {
--		printk("%d. PCI: Bus%3d, Device%3d, Vendor %04X Frame%3d, "
--			"Card %4s  0x%04X\n", count, bus,
--			PCI_SLOT(pdev->devfn), pdev->vendor, frame,
--			card, (int)(pdev->class >> 8));
--	}
--}
--- 
-1.5.3.7
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-	bad_page_fault(regs, address, SIGBUS);
++#ifdef CONFIG_PPC_SUBPAGE_PROT
++		if (rc == -2)
++			_exception(SIGSEGV, regs, SEGV_ACCERR, address);
++		else
++#endif
++			_exception(SIGBUS, regs, BUS_ADRERR, address);
++	} else
++		bad_page_fault(regs, address, SIGBUS);
+ }
+ 
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 3ef0ad2..88940a3 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -232,3 +232,14 @@ EXPORT_SYMBOL(__ioremap_at);
+ EXPORT_SYMBOL(iounmap);
+ EXPORT_SYMBOL(__iounmap);
+ EXPORT_SYMBOL(__iounmap_at);
++
++#ifdef CONFIG_PPC_SUBPAGE_PROT
++void pmd_clear(pmd_t *pmd)
++{
++	pmd_val(*pmd) = 0;
++	if (pmd_val(pmd[PTRS_PER_PMD])) {
++		kfree((void *)pmd_val(pmd[PTRS_PER_PMD]));
++		pmd_val(pmd[PTRS_PER_PMD]) = 0;
++	}
++}
++#endif /* CONFIG_PPC_SUBPAGE_PROT */
+diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
+index 82328de..351e6e8 100644
+--- a/include/asm-powerpc/mmu-hash64.h
++++ b/include/asm-powerpc/mmu-hash64.h
+@@ -264,7 +264,7 @@ static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
+ 
+ extern int __hash_page_4K(unsigned long ea, unsigned long access,
+ 			  unsigned long vsid, pte_t *ptep, unsigned long trap,
+-			  unsigned int local, int ssize);
++			  unsigned int local, int ssize, int subpage_prot);
+ extern int __hash_page_64K(unsigned long ea, unsigned long access,
+ 			   unsigned long vsid, pte_t *ptep, unsigned long trap,
+ 			   unsigned int local, int ssize);
+@@ -277,6 +277,7 @@ extern int hash_huge_page(struct mm_struct *mm, unsigned long access,
+ extern int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+ 			     unsigned long pstart, unsigned long mode,
+ 			     int psize, int ssize);
++extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
+ 
+ extern void htab_initialize(void);
+ extern void htab_initialize_secondary(void);
+diff --git a/include/asm-powerpc/pgtable-64k.h b/include/asm-powerpc/pgtable-64k.h
+index bd54b77..57430da 100644
+--- a/include/asm-powerpc/pgtable-64k.h
++++ b/include/asm-powerpc/pgtable-64k.h
+@@ -11,7 +11,11 @@
+ 
+ #ifndef __ASSEMBLY__
+ #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
+-#define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
++#ifndef CONFIG_PPC_SUBPAGE_PROT
++# define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
++#else
++# define PMD_TABLE_SIZE	((sizeof(pmd_t) << PMD_INDEX_SIZE) * 2)
++#endif
+ #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
+ #endif	/* __ASSEMBLY__ */
+ 
+diff --git a/include/asm-powerpc/pgtable-ppc64.h b/include/asm-powerpc/pgtable-ppc64.h
+index dd4c26d..a5546e8 100644
+--- a/include/asm-powerpc/pgtable-ppc64.h
++++ b/include/asm-powerpc/pgtable-ppc64.h
+@@ -192,7 +192,11 @@ static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
+ #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
+ 				 || (pmd_val(pmd) & PMD_BAD_BITS))
+ #define	pmd_present(pmd)	(pmd_val(pmd) != 0)
+-#define	pmd_clear(pmdp)		(pmd_val(*(pmdp)) = 0)
++#ifndef CONFIG_PPC_SUBPAGE_PROT
++# define pmd_clear(pmdp)	(pmd_val(*(pmdp)) = 0)
++#else
++extern void pmd_clear(pmd_t *pmdp);
++#endif
+ #define pmd_page_vaddr(pmd)	(pmd_val(pmd) & ~PMD_MASKED_BITS)
+ #define pmd_page(pmd)		virt_to_page(pmd_page_vaddr(pmd))
+ 
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 11d5383..73f9ab5 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -104,7 +104,7 @@ COMPAT_SYS_SPU(setpriority)
+ SYSCALL(ni_syscall)
+ COMPAT_SYS(statfs)
+ COMPAT_SYS(fstatfs)
+-SYSCALL(ni_syscall)
++SYSCALL(subpage_prot)
+ COMPAT_SYS_SPU(socketcall)
+ COMPAT_SYS_SPU(syslog)
+ COMPAT_SYS_SPU(setitimer)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 97d82b6..bc7eebc 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -111,7 +111,7 @@
+ #define __NR_profil		 98
+ #define __NR_statfs		 99
+ #define __NR_fstatfs		100
+-#define __NR_ioperm		101
++#define __NR_subpage_prot	101
+ #define __NR_socketcall		102
+ #define __NR_syslog		103
+ #define __NR_setitimer		104
