@@ -1,34 +1,35 @@
 Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2AFB4DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 09:03:16 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB7M3DCx030948
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 17:03:13 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB7M3DA2497070
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 17:03:13 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB7M3CEr008949
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 17:03:13 -0500
-Message-ID: <4759C31D.30003@linux.vnet.ibm.com>
-Date: Sat, 08 Dec 2007 03:33:09 +0530
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0CD34DDE29
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 09:12:31 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB7MCSLY030833
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 17:12:28 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB7MCR6R171140
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:12:27 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB7MCQ3F017372
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:12:27 -0700
+Message-ID: <4759C548.6030304@linux.vnet.ibm.com>
+Date: Sat, 08 Dec 2007 03:42:24 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
 References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
-	<4759BCBA.7060800@linux.vnet.ibm.com>
-	<4759BE88.3020702@linux.vnet.ibm.com>
-	<200712072258.19331.arnd@arndb.de>
-In-Reply-To: <200712072258.19331.arnd@arndb.de>
+	<20071207212817.GA391@lixom.net>
+	<4759BCA2.1020809@linux.vnet.ibm.com>
+	<975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
+In-Reply-To: <975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	LKML <linux-kernel@vger.kernel.org>
 Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -39,31 +40,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Friday 07 December 2007, Balbir Singh wrote:
->> Balbir Singh wrote:
->>> Geert Uytterhoeven wrote:
->>>> On Sat, 8 Dec 2007, Balbir Singh wrote:
->>>>> +   if (strstr(p, "fake="))
->>>>> +           cmdline = p + 5;        /* 5 is faster than strlen("fake=") */
->>>> Really? My gcc is smart enough to replace the `strlen("fake=")' by 5, even
->>>> without -O.
->>>>
->>> Thanks for pointing that out, but I am surprised that a compiler would
->>> interpret library routines like strlen.
+Kumar Gala wrote:
+> 
+> On Dec 7, 2007, at 3:35 PM, Balbir Singh wrote:
+> 
+>> Olof Johansson wrote:
+>>> Hi,
 >>>
->> I just tested it and it turns out that you are right. I'll go hunt to
->> see where gcc gets its magic powers from.
+>>> On Sat, Dec 08, 2007 at 02:44:25AM +0530, Balbir Singh wrote:
+>>>
+>>>> Comments are as always welcome!
+>>>
+>>> Care to explain what this is useful for? (Not saying it's a stupid idea,
+>>> just wondering what the reason for doing it is).
+>>>
 >>
+>> In my case, I use it to test parts of my memory controller patches on an
+>> emulated NUMA machine. I plan to use it to test out page migration
+>> across nodes.
 > 
-> Even if it wasn't: Why the heck would you want to optimize this? The function
-> is run _once_ at boot time and the object code gets thrown away afterwards!
+> Can you explain that further.  I'm still not clear on why this is useful.
 > 
-> 	Arnd <><
+> - k
 
-Cause, I see no downside of doing it. The strlen of fake= is fixed.
-But having said that, I am not a purist about the approach, I just want
-cmdline to point after "fake="
+Sure. In my case I need to emulate NUMA nodes to do some NUMA specific
+testing. The memory controller I've written has some interesting data
+structures like per node, per zone LRU lists. To be able to test those
+features on a non-numa box is a problem, since we get just the default node.
+
+To be able to test the memory controller under NUMA, I use fake NUMA
+nodes. x86-64 has a similar feature, the code I have here is the
+simplest I could come up with for PowerPC.
+
+I just thought of another very interesting use case, it can be used to
+split up the zone's lru lock which is highly contended.
 
 -- 
 	Warm Regards,
