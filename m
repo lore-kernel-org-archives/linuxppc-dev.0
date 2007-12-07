@@ -1,30 +1,11 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5FB1DDDE1F
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 15:18:33 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id lB74Hjwi032456
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:17:45 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB74HXBA3584050
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:17:33 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB74HEbo003687
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:17:15 +1100
-Date: Fri, 7 Dec 2007 15:16:59 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: dtc: Reinstate full old-style reference-to-path for v0 dts files
-Message-ID: <20071207041659.GE26412@localhost.localdomain>
-References: <20071207033826.GD26412@localhost.localdomain>
-	<20071206213928.1f6a2e1f@zod.rchland.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 7 Dec 2007 15:37:45 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make dtc-checfails.sh script catch deaths-by-signal
+Message-ID: <20071207043745.GF26412@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071206213928.1f6a2e1f@zod.rchland.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,20 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 06, 2007 at 09:39:28PM -0600, Josh Boyer wrote:
-> On Fri, 7 Dec 2007 14:38:26 +1100
-> David Gibson <david@gibson.dropbear.id.au> wrote:
-> 
-> > Commit 7c44c2f9cb1cc2df7aacd13decfc4e64b73d1730 broke backwards
-> > compatibility more badly than I realised.  Contrary to what I thought
-> > there are in-kernel, in-use dts files which relied on
-> > references-to-path with paths including a comma, which no longer
-> > compile after that commit.
-> 
-> There won't be shortly.  I'm reworking them anyway.
+Since commit 5ba0086bfd0fa6ab25f7ce1870417301a26c104f, the
+dtc-checkfails.sh script does not check the return code from dtc.
+That's reasonable, since depending on the checks we're testing, dtc
+could either complete succesfully or return an error.
 
-I know, but I'd prefer that there was a broken range of dtc versions
-than a broken range of kernel versions.
+However, it's never right for dtc to SEGV or otherwise be killed by a
+signal.  So the script should catch that, and fail the testcase if it
+happens.  This patch implements this behaviour.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/tests/dtc-checkfails.sh
+===================================================================
+--- dtc.orig/tests/dtc-checkfails.sh	2007-12-07 15:34:17.000000000 +1100
++++ dtc/tests/dtc-checkfails.sh	2007-12-07 15:35:22.000000000 +1100
+@@ -17,6 +17,10 @@ rm -f $TMPFILE $LOG
+ verbose_run_log "$LOG" "$DTC" -o /dev/null "$@"
+ ret="$?"
+ 
++if [ "$ret" -gt 127 ]; then
++    FAIL "dtc killed by signal (ret=$ret)"
++fi
++
+ for c in $CHECKS; do
+     if ! grep -E "^(ERROR)|(Warning) \($c\):" $LOG > /dev/null; then
+ 	FAIL "Failed to trigger check \"%c\""
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
