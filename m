@@ -1,11 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 7 Dec 2007 14:38:26 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Reinstate full old-style reference-to-path for v0 dts files
-Message-ID: <20071207033826.GD26412@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8EB57DDEF7
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 14:42:29 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB73gQLx011684
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 22:42:26 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB73gPvI127332
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 20:42:26 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB73gP5v018707
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 20:42:25 -0700
+Date: Thu, 6 Dec 2007 21:39:28 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Reinstate full old-style reference-to-path for v0 dts files
+Message-ID: <20071206213928.1f6a2e1f@zod.rchland.ibm.com>
+In-Reply-To: <20071207033826.GD26412@localhost.localdomain>
+References: <20071207033826.GD26412@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,46 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 7c44c2f9cb1cc2df7aacd13decfc4e64b73d1730 broke backwards
-compatibility more badly than I realised.  Contrary to what I thought
-there are in-kernel, in-use dts files which relied on
-references-to-path with paths including a comma, which no longer
-compile after that commit.
+On Fri, 7 Dec 2007 14:38:26 +1100
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-So, this patch reinstates full support for bare references-to-path in
-dts-v0 input.  This means there will be some rather surprising lexical
-corner cases when using path-expanded references in v0 files.  But,
-since path-expanded references are new, v0 files shouldn't typically
-be using them anyway.  If the corner cases cause a problem, you can
-always convert to dts-v1 which handles the lexical issues here more
-nicely.
+> Commit 7c44c2f9cb1cc2df7aacd13decfc4e64b73d1730 broke backwards
+> compatibility more badly than I realised.  Contrary to what I thought
+> there are in-kernel, in-use dts files which relied on
+> references-to-path with paths including a comma, which no longer
+> compile after that commit.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+There won't be shortly.  I'm reworking them anyway.
 
-Index: dtc/dtc-lexer.l
-===================================================================
---- dtc.orig/dtc-lexer.l	2007-12-07 14:22:19.000000000 +1100
-+++ dtc/dtc-lexer.l	2007-12-07 14:32:04.000000000 +1100
-@@ -27,7 +27,6 @@
- 
- PROPNODECHAR	[a-zA-Z0-9,._+*#?@-]
- PATHCHAR	({PROPNODECHAR}|[/])
--LEGACYPATHCHAR	[a-zA-Z0-9_@/]
- LABEL		[a-zA-Z_][a-zA-Z0-9_]*
- 
- %{
-@@ -158,7 +157,7 @@ static int dts_version; /* = 0 */
- 			return DT_REF;
- 		}
- 
--<INITIAL>"&/"{LEGACYPATHCHAR}+ {	/* old-style path reference */
-+<INITIAL>"&/"{PATHCHAR}+ {	/* old-style path reference */
- 			yylloc.filenum = srcpos_filenum;
- 			yylloc.first_line = yylineno;
- 			DPRINT("Ref: %s\n", yytext+1);
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+josh
