@@ -1,37 +1,32 @@
 Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1F449DDE1F
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 09:18:54 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB7MIpjB027903
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 17:18:51 -0500
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 58273DDE0C
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 09:22:59 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB7MMuRv024748
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 17:22:56 -0500
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB7MIpgw121218
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:18:51 -0700
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB7MMufE169222
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:22:56 -0700
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB7MIob1021699
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:18:50 -0700
-Message-ID: <4759C6C5.2000100@linux.vnet.ibm.com>
-Date: Sat, 08 Dec 2007 03:48:45 +0530
+	lB7MMtQT004124
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 15:22:56 -0700
+Message-ID: <4759C7BD.5060803@linux.vnet.ibm.com>
+Date: Sat, 08 Dec 2007 03:52:53 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
 References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
-	<20071207212817.GA391@lixom.net>
-	<4759BCA2.1020809@linux.vnet.ibm.com>
-	<975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
-	<4759C548.6030304@linux.vnet.ibm.com>
-	<9AEDD952-7F20-471C-9A82-B6F3254BC869@kernel.crashing.org>
-In-Reply-To: <9AEDD952-7F20-471C-9A82-B6F3254BC869@kernel.crashing.org>
+	<200712072301.38723.arnd@arndb.de>
+In-Reply-To: <200712072301.38723.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	LKML <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -42,60 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Dec 7, 2007, at 4:12 PM, Balbir Singh wrote:
-> 
->> Kumar Gala wrote:
->>>
->>> On Dec 7, 2007, at 3:35 PM, Balbir Singh wrote:
->>>
->>>> Olof Johansson wrote:
->>>>> Hi,
->>>>>
->>>>> On Sat, Dec 08, 2007 at 02:44:25AM +0530, Balbir Singh wrote:
->>>>>
->>>>>> Comments are as always welcome!
->>>>>
->>>>> Care to explain what this is useful for? (Not saying it's a stupid
->>>>> idea,
->>>>> just wondering what the reason for doing it is).
->>>>>
->>>>
->>>> In my case, I use it to test parts of my memory controller patches
->>>> on an
->>>> emulated NUMA machine. I plan to use it to test out page migration
->>>> across nodes.
->>>
->>> Can you explain that further.  I'm still not clear on why this is
->>> useful.
->>>
->>> - k
+Arnd Bergmann wrote:
+> On Friday 07 December 2007, Balbir Singh wrote:
+>> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+>> NUMA nodes can be specified using the following command line option
 >>
->> Sure. In my case I need to emulate NUMA nodes to do some NUMA specific
->> testing. The memory controller I've written has some interesting data
->> structures like per node, per zone LRU lists. To be able to test those
->> features on a non-numa box is a problem, since we get just the default
->> node.
-> 
-> Maybe I'm missing something, what do you mean by memory controller
-> you've written?  (I'm use to the term 'memory controller' meaning the
-> actual RAM control).
-> 
-
-Ah! that explains the disconnect. If you look at the latest -mm tree. We
-have a memory controller under control groups, we use it to control how
-much memory a group of process can access at a time.
-
->> To be able to test the memory controller under NUMA, I use fake NUMA
->> nodes. x86-64 has a similar feature, the code I have here is the
->> simplest I could come up with for PowerPC.
+>> numa=fake=<node range>
 >>
->> I just thought of another very interesting use case, it can be used to
->> split up the zone's lru lock which is highly contended.
+>> node range is of the format <range1>,<range2>,...<rangeN>
 > 
-> - k
+> Excellent idea! I'd love to have this in RHEL5u1, because that would make
+> that distro boot on certain machines that have more memory than is supported
+> without an iommu driver. The problem we have is that when you simply
+> say mem=1G but all of the first gigabyte is on the first node, you end
+> up with a memoryless node, which is not supported.
+> 
+> Unfortunately, it comes too late for me now, as all new distros already boot
+> on Cell machines that need an IOMMU.
 
+Very interesting use case! I am sure there are others were fake NUMA
+nodes can be applied. I just listed one other in another email, apart
+from using it for playing around with NUMA like machines.
 
 -- 
 	Warm Regards,
