@@ -1,27 +1,17 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 34C16DDDFB
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:14:31 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB7LESVk032414
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 16:14:28 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB7LESmf423592
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 16:14:28 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB7LESN0028876
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 16:14:28 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Date: Sat, 08 Dec 2007 02:44:25 +0530
-Message-Id: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
-Subject: [PATCH] Fake NUMA emulation for PowerPC
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 86C38DDE0C
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:23:48 +1100 (EST)
+Date: Fri, 7 Dec 2007 15:28:17 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
+Message-ID: <20071207212817.GA391@lixom.net>
+References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,166 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
+
+On Sat, Dec 08, 2007 at 02:44:25AM +0530, Balbir Singh wrote:
+
+> Comments are as always welcome!
+
+Care to explain what this is useful for? (Not saying it's a stupid idea,
+just wondering what the reason for doing it is).
+
+> diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
+> --- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
+> +++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 02:36:02.000000000 +0530
+> @@ -24,6 +24,8 @@
+>  
+>  static int numa_enabled = 1;
+>  
+> +char *cmdline __initdata;
+> +
+
+Looks like this should be static.
+
+> @@ -702,6 +744,9 @@ static int __init early_numa(char *p)
+>  	if (strstr(p, "debug"))
+>  		numa_debug = 1;
+>  
+> +	if (strstr(p, "fake="))
+> +		cmdline = p + 5;	/* 5 is faster than strlen("fake=") */
+
+This doesn't look right.
+
+You check if it contains fake=, not if it starts with it. So if someone
+did: "numa=foo,fake=bar", or even "numa=debug,fake=", things wouldn't
+work right.
 
 
-Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
-NUMA nodes can be specified using the following command line option
-
-numa=fake=<node range>
-
-node range is of the format <range1>,<range2>,...<rangeN>
-
-Each of the rangeX parameters is passed using memparse(). I find the patch
-useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
-on a non-numa box with the following arguments
-
-numa=fake=1G
-numa=fake=1G,2G
-name=fake=1G,512M,2G
-numa=fake=1500M,2800M mem=3500M
-numa=fake=1G mem=512M
-numa=fake=1G mem=1G
-
-This patch applies on top of 2.6.24-rc4.
-
-All though I've tried my best to handle some of the architecture specific
-details of PowerPC, I might have overlooked something obvious, like the usage
-of an API or some architecture tweaks. The patch depends on CONFIG_NUMA and
-I decided against creating a separate config option for fake NUMA to keep
-the code simple.
-
-Comments are as always welcome!
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- arch/powerpc/mm/numa.c |   55 ++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 50 insertions(+), 5 deletions(-)
-
-diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
---- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
-+++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 02:36:02.000000000 +0530
-@@ -24,6 +24,8 @@
- 
- static int numa_enabled = 1;
- 
-+char *cmdline __initdata;
-+
- static int numa_debug;
- #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
- 
-@@ -39,6 +41,40 @@ static bootmem_data_t __initdata plat_no
- static int min_common_depth;
- static int n_mem_addr_cells, n_mem_size_cells;
- 
-+static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
-+						unsigned int *nid)
-+{
-+	unsigned long long mem;
-+	char *p = cmdline;
-+	static unsigned int fake_nid = 0;
-+	static unsigned long long curr_boundary = 0;
-+
-+	*nid = fake_nid;
-+	mem = memparse(p, &p);
-+	if (!mem)
-+		return 0;
-+
-+	if (mem < curr_boundary)
-+		return 0;
-+
-+	curr_boundary = mem;
-+
-+	if ((end_pfn << PAGE_SHIFT) > mem) {
-+		/*
-+		 * Skip commas and spaces
-+		 */
-+		while (*p == ',' || *p == ' ' || *p == '\t')
-+			p++;
-+
-+		cmdline = p;
-+		fake_nid++;
-+		*nid = fake_nid;
-+		dbg("created new fake_node with id %d\n", fake_nid);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
- static void __cpuinit map_cpu_to_node(int cpu, int node)
- {
- 	numa_cpu_lookup_table[cpu] = node;
-@@ -344,12 +380,14 @@ static void __init parse_drconf_memory(s
- 			if (nid == 0xffff || nid >= MAX_NUMNODES)
- 				nid = default_nid;
- 		}
--		node_set_online(nid);
- 
- 		size = numa_enforce_memory_limit(start, lmb_size);
- 		if (!size)
- 			continue;
- 
-+		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-+		node_set_online(nid);
-+
- 		add_active_range(nid, start >> PAGE_SHIFT,
- 				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
- 	}
-@@ -429,7 +467,6 @@ new_range:
- 		nid = of_node_to_nid_single(memory);
- 		if (nid < 0)
- 			nid = default_nid;
--		node_set_online(nid);
- 
- 		if (!(size = numa_enforce_memory_limit(start, size))) {
- 			if (--ranges)
-@@ -438,6 +475,9 @@ new_range:
- 				continue;
- 		}
- 
-+		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-+		node_set_online(nid);
-+
- 		add_active_range(nid, start >> PAGE_SHIFT,
- 				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
- 
-@@ -461,7 +501,7 @@ static void __init setup_nonnuma(void)
- 	unsigned long top_of_ram = lmb_end_of_DRAM();
- 	unsigned long total_ram = lmb_phys_mem_size();
- 	unsigned long start_pfn, end_pfn;
--	unsigned int i;
-+	unsigned int i, nid = 0;
- 
- 	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
- 	       top_of_ram, total_ram);
-@@ -471,9 +511,11 @@ static void __init setup_nonnuma(void)
- 	for (i = 0; i < lmb.memory.cnt; ++i) {
- 		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
- 		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
--		add_active_range(0, start_pfn, end_pfn);
-+
-+		fake_numa_create_new_node(end_pfn, &nid);
-+		add_active_range(nid, start_pfn, end_pfn);
-+		node_set_online(nid);
- 	}
--	node_set_online(0);
- }
- 
- void __init dump_numa_cpu_topology(void)
-@@ -702,6 +744,9 @@ static int __init early_numa(char *p)
- 	if (strstr(p, "debug"))
- 		numa_debug = 1;
- 
-+	if (strstr(p, "fake="))
-+		cmdline = p + 5;	/* 5 is faster than strlen("fake=") */
-+
- 	return 0;
- }
- early_param("numa", early_numa);
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+-Olof
