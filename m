@@ -1,16 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 86C38DDE0C
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:23:48 +1100 (EST)
-Date: Fri, 7 Dec 2007 15:28:17 -0600
-From: Olof Johansson <olof@lixom.net>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 47531DDDDB
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:30:59 +1100 (EST)
+Date: Fri, 7 Dec 2007 22:30:53 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
 To: Balbir Singh <balbir@linux.vnet.ibm.com>
 Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-Message-ID: <20071207212817.GA391@lixom.net>
+In-Reply-To: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+Message-ID: <Pine.LNX.4.62.0712072229280.26862@pademelon.sonytel.be>
 References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1040896501-1197063053=:26862"
 Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,39 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Sat, Dec 08, 2007 at 02:44:25AM +0530, Balbir Singh wrote:
+---584337861-1040896501-1197063053=:26862
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> Comments are as always welcome!
-
-Care to explain what this is useful for? (Not saying it's a stupid idea,
-just wondering what the reason for doing it is).
-
-> diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
-> --- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
-> +++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 02:36:02.000000000 +0530
-> @@ -24,6 +24,8 @@
->  
->  static int numa_enabled = 1;
->  
-> +char *cmdline __initdata;
-> +
-
-Looks like this should be static.
-
-> @@ -702,6 +744,9 @@ static int __init early_numa(char *p)
->  	if (strstr(p, "debug"))
->  		numa_debug = 1;
->  
+On Sat, 8 Dec 2007, Balbir Singh wrote:
 > +	if (strstr(p, "fake="))
 > +		cmdline = p + 5;	/* 5 is faster than strlen("fake=") */
 
-This doesn't look right.
+Really? My gcc is smart enough to replace the `strlen("fake=")' by 5, even
+without -O.
 
-You check if it contains fake=, not if it starts with it. So if someone
-did: "numa=foo,fake=bar", or even "numa=debug,fake=", things wouldn't
-work right.
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-
--Olof
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1040896501-1197063053=:26862--
