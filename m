@@ -1,34 +1,22 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C55B5DDE1C
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:43:42 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB7Lhc0p007345
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 16:43:39 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB7Lhcul125614
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 14:43:38 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB7Lhcq4008880
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2007 14:43:38 -0700
-Message-ID: <4759BE88.3020702@linux.vnet.ibm.com>
-Date: Sat, 08 Dec 2007 03:13:36 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0B6A3DDE0E
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:56:18 +1100 (EST)
+Message-Id: <975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: balbir@linux.vnet.ibm.com
+In-Reply-To: <4759BCA2.1020809@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
 Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
+Date: Fri, 7 Dec 2007 15:55:20 -0600
 References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
-	<Pine.LNX.4.62.0712072229280.26862@pademelon.sonytel.be>
-	<4759BCBA.7060800@linux.vnet.ibm.com>
-In-Reply-To: <4759BCBA.7060800@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Reply-To: balbir@linux.vnet.ibm.com
+	<20071207212817.GA391@lixom.net>
+	<4759BCA2.1020809@linux.vnet.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,25 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Balbir Singh wrote:
-> Geert Uytterhoeven wrote:
->> On Sat, 8 Dec 2007, Balbir Singh wrote:
->>> +	if (strstr(p, "fake="))
->>> +		cmdline = p + 5;	/* 5 is faster than strlen("fake=") */
->> Really? My gcc is smart enough to replace the `strlen("fake=")' by 5, even
->> without -O.
->>
-> 
-> Thanks for pointing that out, but I am surprised that a compiler would
-> interpret library routines like strlen.
-> 
 
-I just tested it and it turns out that you are right. I'll go hunt to
-see where gcc gets its magic powers from.
+On Dec 7, 2007, at 3:35 PM, Balbir Singh wrote:
 
->> With kind regards,
+> Olof Johansson wrote:
+>> Hi,
 >>
->> Geert Uytterhoeven
->> Software Architect
-> 
-> 
+>> On Sat, Dec 08, 2007 at 02:44:25AM +0530, Balbir Singh wrote:
+>>
+>>> Comments are as always welcome!
+>>
+>> Care to explain what this is useful for? (Not saying it's a stupid  
+>> idea,
+>> just wondering what the reason for doing it is).
+>>
+>
+> In my case, I use it to test parts of my memory controller patches  
+> on an
+> emulated NUMA machine. I plan to use it to test out page migration
+> across nodes.
+
+Can you explain that further.  I'm still not clear on why this is  
+useful.
+
+- k
