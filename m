@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D537FDDDF4
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 05:30:09 +1100 (EST)
-Date: Fri, 7 Dec 2007 12:28:20 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: [DTC][PATCH] Fix cross-compile building
-Message-ID: <Pine.LNX.4.64.0712071227280.1788@blarg.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 46520DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 07:09:27 +1100 (EST)
+Message-ID: <4759A870.8030900@pobox.com>
+Date: Fri, 07 Dec 2007 15:09:20 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, stuarth@freescale.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/11] ibm_newemac: Add BCM5248 and Marvell 88E1111 PHY
+	support
+References: <20071205001534.D681ADDF2D@ozlabs.org>
+In-Reply-To: <20071205001534.D681ADDF2D@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stuart Hughes <stuarth@freescale.com>
+Benjamin Herrenschmidt wrote:
+> From: Stefan Roese <sr@denx.de>
+> 
+> This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
+> These PHY chips are used on PowerPC 440EPx boards.
+> The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+>  drivers/net/ibm_newemac/phy.c |   39 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 39 insertions(+)
 
-This patch allows you to build the DTC source without making the
-tests directory.  This is necessary when cross compiling as the
-dumptest (and other) files cannot be run/used on the host system.
-To use this use: 'make TESTS='
-
-Signed-off-by: Stuart Hughes <stuarth@freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- Makefile |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index bcb143f..9d926b5 100644
---- a/Makefile
-+++ b/Makefile
-@@ -46,7 +46,9 @@ else
- DEPTARGETS = $(filter-out $(NODEPTARGETS),$(MAKECMDGOALS))
- endif
-
--all: dtc ftdump libfdt tests
-+TESTS = tests
-+
-+all: dtc ftdump libfdt $(TESTS)
-
- install: all
- 	@$(VECHO) INSTALL
--- 
-1.5.3.4
+applied 1-11 #upstream-fixes
