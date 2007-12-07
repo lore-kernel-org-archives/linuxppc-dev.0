@@ -2,20 +2,23 @@ Return-Path: <rientjes@google.com>
 Received: from smtp-out.google.com (smtp-out.google.com [216.239.33.17])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6496EDDD01
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 10:07:12 +1100 (EST)
-Date: Fri, 7 Dec 2007 15:06:55 -0800 (PST)
+	by ozlabs.org (Postfix) with ESMTP id F3321DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 10:10:26 +1100 (EST)
+Date: Fri, 7 Dec 2007 15:10:07 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
-To: Olof Johansson <olof@lixom.net>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
 Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-In-Reply-To: <20071207212817.GA391@lixom.net>
-Message-ID: <alpine.DEB.0.9999.0712071505100.27689@chino.kir.corp.google.com>
+In-Reply-To: <4759C548.6030304@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.0.9999.0712071508460.27689@chino.kir.corp.google.com>
 References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
 	<20071207212817.GA391@lixom.net>
+	<4759BCA2.1020809@linux.vnet.ibm.com>
+	<975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
+	<4759C548.6030304@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 7 Dec 2007, Olof Johansson wrote:
+On Sat, 8 Dec 2007, Balbir Singh wrote:
 
-> > Comments are as always welcome!
-> 
-> Care to explain what this is useful for? (Not saying it's a stupid idea,
-> just wondering what the reason for doing it is).
+> To be able to test the memory controller under NUMA, I use fake NUMA
+> nodes. x86-64 has a similar feature, the code I have here is the
+> simplest I could come up with for PowerPC.
 > 
 
-Fake NUMA has always been useful for testing NUMA code without having to 
-have a wide range of hardware available to you.  It's a clever tool on 
-x86_64 intended for kernel developers that simply makes it easier to test 
-code and adds an increased level of robustness to the kernel.  I think 
-it's a valuable addition.
+Magnus Damm had patches from over a year ago that, I believe, made much of 
+the x86_64 fake NUMA code generic so that it could be extended for 
+architectures such as i386.  Perhaps he could resurrect those patches if 
+there is wider interest in such a tool.
