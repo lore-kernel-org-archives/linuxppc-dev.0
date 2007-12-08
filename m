@@ -1,18 +1,20 @@
-Return-Path: <stuarth@freescale.com>
-Received: from n082.sc1.he.tucows.com (smtpout0129.sc1.he.tucows.com
-	[64.97.136.129]) by ozlabs.org (Postfix) with ESMTP id 85D35DDE1C
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 00:16:06 +1100 (EST)
-Subject: Re: [DTC][PATCH] Fix cross-compile building
-From: Stuart Hughes <stuarth@freescale.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20071208003604.GH566@localhost.localdomain>
-References: <Pine.LNX.4.64.0712071227280.1788@blarg.am.freescale.net>
-	<20071208003604.GH566@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 08 Dec 2007 12:53:25 +0000
-Message-Id: <1197118405.3629.6.camel@m20>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53E23DDDEB
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 02:17:13 +1100 (EST)
+Message-Id: <CF849773-F9A6-45D1-A36E-9A350BE5FB6D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20071208130934.093d80f9@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: Please pull linux-2.6-8xx.git for-paulus branch
+Date: Sat, 8 Dec 2007 09:17:06 -0600
+References: <20071208130025.09021cb0@kernel.crashing.org>
+	<20071208130934.093d80f9@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-12-08 at 11:36 +1100, David Gibson wrote:
-> On Fri, Dec 07, 2007 at 12:28:20PM -0600, Kumar Gala wrote:
-> > From: Stuart Hughes <stuarth@freescale.com>
-> > 
-> > This patch allows you to build the DTC source without making the
-> > tests directory.  This is necessary when cross compiling as the
-> > dumptest (and other) files cannot be run/used on the host system.
-> > To use this use: 'make TESTS='
-> 
-> I think this is a silly way of doing this.  Instead create a new
-> target which builds everything but the tests.
-> 
-> Say,
-> 
-> 	all: cross tests
-> 
-> 	cross: dtc ftdump libfdt
-> 
 
-Works for me.
+On Dec 8, 2007, at 4:09 AM, Vitaly Bordug wrote:
 
-Regards, Stuart
+> On Sat, 8 Dec 2007 13:00:25 +0300
+> Vitaly Bordug wrote:
+>
+>> Paul,
+>>
+>> please do
+>> git-pull
+>> git://git.kernel.org/pub/scm/linux/kernel/git/vitb/linux-2.6-8xx.git
+>> for-paulus
+>>
+>> to receive the following updates:
+>>
+> Forgot to tell that this is .25 material...
+
+Vitaly, if you don't mind I'll pull these into my tree for Paul to  
+collect all the FSL stuff in one place.
+
+- k
