@@ -1,13 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 8 Dec 2007 10:22:42 +1100
+Date: Sat, 8 Dec 2007 11:36:04 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: dtc: Convert #address-cells and #size-cells related checks
-Message-ID: <20071207232242.GA2454@localhost.localdomain>
-References: <20071207030555.GB26412@localhost.localdomain>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [DTC][PATCH] Fix cross-compile building
+Message-ID: <20071208003604.GH566@localhost.localdomain>
+References: <Pine.LNX.4.64.0712071227280.1788@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071207030555.GB26412@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0712071227280.1788@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>, stuarth@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,25 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 07, 2007 at 02:05:55PM +1100, David Gibson wrote:
-> This patch converts checks related to #address-cells and #size-cells
-> to the new framework.  Specifically, it reimplements the check that
-> "reg" properties have a valid size based on the relevant
-> #address-cells and #size-cells values.  The new implementation uses
-> the correct default value, unlike the old-style check which assumed
-> the values were inherited by default.
+On Fri, Dec 07, 2007 at 12:28:20PM -0600, Kumar Gala wrote:
+> From: Stuart Hughes <stuarth@freescale.com>
 > 
-> It also implements a new, similar test for "ranges" properties.
-> 
-> Finally, since relying on the default values of these variables is
-> considered not-good-practice these days, it implements a "style" check
-> which will give a warning if the tree ever relies on the default
-> values (that is if any node with either "reg" or "ranges" appears
-> under a parent which has no #address-cells or #size-cells property).
+> This patch allows you to build the DTC source without making the
+> tests directory.  This is necessary when cross compiling as the
+> dumptest (and other) files cannot be run/used on the host system.
+> To use this use: 'make TESTS='
 
-Oops, that should, of course, be:
+I think this is a silly way of doing this.  Instead create a new
+target which builds everything but the tests.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Say,
+
+	all: cross tests
+
+	cross: dtc ftdump libfdt
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
