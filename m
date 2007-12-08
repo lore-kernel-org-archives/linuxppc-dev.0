@@ -1,12 +1,19 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 8 Dec 2007 12:19:18 +1100
+Date: Sat, 8 Dec 2007 12:33:09 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Remove header information dumping
-Message-ID: <20071208011918.GA8572@localhost.localdomain>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+Message-ID: <20071208013309.GB8662@localhost.localdomain>
+References: <20071129150726.GA13751@ru.mvista.com>
+	<20071129152836.GB13751@ru.mvista.com>
+	<20071203015018.GC26919@localhost.localdomain>
+	<20071204021026.GB18903@mag.az.mvista.com>
+	<20071204025032.GH32577@localhost.localdomain>
+	<20071206232756.GB4719@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20071206232756.GB4719@mag.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <dgibson@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,110 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, when used in -Idtb mode, dtc will dump information about
-the input blob's header fields to stderr.  This is kind of ugly, and
-can get in the way of dtc's real output.
+On Thu, Dec 06, 2007 at 04:27:56PM -0700, Mark A. Greer wrote:
+> David, et. al.,
+> 
+> This is a big blob patch of what I've changed for the prpmc2800.  It
+> includes the necessary changes in the kernel which you can probably
+> ignore but they're there for reference.  If you like the dts, then I'll
+> split the blob up into logical pieces and Andrei can make similar
+> changes for the Katana Qp.
+> 
+> Let me know what you think.
 
-This patch, therefore, removes this.  So that there's still a way of
-getting this information for debugging purposes, it places something
-similar to the removed code into ftdump, replacing the couple of
-header fields it currently prints with a complete header dump.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Index: dtc/flattree.c
-===================================================================
---- dtc.orig/flattree.c	2007-12-08 12:06:11.000000000 +1100
-+++ dtc/flattree.c	2007-12-08 12:13:15.000000000 +1100
-@@ -898,15 +898,6 @@
- 	off_mem_rsvmap = be32_to_cpu(fdt->off_mem_rsvmap);
- 	version = be32_to_cpu(fdt->version);
- 
--	fprintf(stderr, "\tmagic:\t\t\t0x%x\n", magic);
--	fprintf(stderr, "\ttotalsize:\t\t%d\n", totalsize);
--	fprintf(stderr, "\toff_dt_struct:\t\t0x%x\n", off_dt);
--	fprintf(stderr, "\toff_dt_strings:\t\t0x%x\n", off_str);
--	fprintf(stderr, "\toff_mem_rsvmap:\t\t0x%x\n", off_mem_rsvmap);
--	fprintf(stderr, "\tversion:\t\t0x%x\n", version );
--	fprintf(stderr, "\tlast_comp_version:\t0x%x\n",
--		be32_to_cpu(fdt->last_comp_version));
--
- 	if (off_mem_rsvmap >= totalsize)
- 		die("Mem Reserve structure offset exceeds total size\n");
- 
-@@ -916,21 +907,15 @@
- 	if (off_str > totalsize)
- 		die("String table offset exceeds total size\n");
- 
--	if (version >= 2)
--		fprintf(stderr, "\tboot_cpuid_phys:\t0x%x\n",
--			be32_to_cpu(fdt->boot_cpuid_phys));
--
- 	size_str = -1;
- 	if (version >= 3) {
- 		size_str = be32_to_cpu(fdt->size_dt_strings);
--		fprintf(stderr, "\tsize_dt_strings:\t%d\n", size_str);
- 		if (off_str+size_str > totalsize)
- 			die("String table extends past total size\n");
- 	}
- 
- 	if (version >= 17) {
- 		size_dt = be32_to_cpu(fdt->size_dt_struct);
--		fprintf(stderr, "\tsize_dt_struct:\t\t%d\n", size_dt);
- 		if (off_dt+size_dt > totalsize)
- 			die("Structure block extends past total size\n");
- 	}
-Index: dtc/ftdump.c
-===================================================================
---- dtc.orig/ftdump.c	2007-12-08 12:06:23.000000000 +1100
-+++ dtc/ftdump.c	2007-12-08 12:15:09.000000000 +1100
-@@ -81,11 +81,13 @@
- static void dump_blob(void *blob)
- {
- 	struct fdt_header *bph = blob;
-+	uint32_t off_mem_rsvmap = be32_to_cpu(bph->off_mem_rsvmap);
-+	uint32_t off_dt = be32_to_cpu(bph->off_dt_struct);
-+	uint32_t off_str = be32_to_cpu(bph->off_dt_strings);
- 	struct fdt_reserve_entry *p_rsvmap =
--		(struct fdt_reserve_entry *)(blob
--					     + be32_to_cpu(bph->off_mem_rsvmap));
--	char *p_struct = blob + be32_to_cpu(bph->off_dt_struct);
--	char *p_strings = blob + be32_to_cpu(bph->off_dt_strings);
-+		(struct fdt_reserve_entry *)(blob + off_mem_rsvmap);
-+	char *p_struct = blob + off_dt;
-+	char *p_strings = blob + off_str;
- 	uint32_t version = be32_to_cpu(bph->version);
- 	uint32_t totalsize = be32_to_cpu(bph->totalsize);
- 	uint32_t tag;
-@@ -98,8 +100,26 @@
- 	depth = 0;
- 	shift = 4;
- 
--	printf("// Version 0x%x tree\n", version);
--	printf("// Totalsize 0x%x(%d)\n", totalsize, totalsize);
-+	printf("// magic:\t\t0x%x\n", be32_to_cpu(bph->magic));
-+	printf("// totalsize:\t\t0x%x (%d)\n", totalsize, totalsize);
-+	printf("// off_dt_struct:\t0x%x\n", off_dt);
-+	printf("// off_dt_strings:\t0x%x\n", off_str);
-+	printf("// off_mem_rsvmap:\t0x%x\n", off_mem_rsvmap);
-+	printf("// version:\t\t%d\n", version);
-+	printf("// last_comp_version:\t%d\n",
-+	       be32_to_cpu(bph->last_comp_version));
-+	if (version >= 2)
-+		printf("// boot_cpuid_phys:\t0x%x\n",
-+		       be32_to_cpu(bph->boot_cpuid_phys));
-+
-+	if (version >= 3)
-+		printf("// size_dt_strings:\t0x%x\n",
-+		       be32_to_cpu(bph->size_dt_strings));
-+	if (version >= 17)
-+		printf("// size_dt_struct:\t0x%x\n",
-+		       be32_to_cpu(bph->size_dt_struct));
-+	printf("\n");
-+
- 	for (i = 0; ; i++) {
- 		addr = be64_to_cpu(p_rsvmap[i].address);
- 		size = be64_to_cpu(p_rsvmap[i].size);
+Looks pretty reasonable.  I would have preferred that labels be
+uppercase by convention, to make them easier to pick out by eyeball,
+but I think that's a lost cause at this stage.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
