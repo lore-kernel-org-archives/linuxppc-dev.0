@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 63C57DDDF9
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:29:58 +1100 (EST)
-Subject: Re: Powerpc PCI cleanups (mainly iSeries)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071206094448.4de7967a@zod.rchland.ibm.com>
-References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
-	<20071207020726.8c0ea12b.sfr@canb.auug.org.au>
-	<20071206094448.4de7967a@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sun, 09 Dec 2007 18:29:26 +1100
-Message-Id: <1197185366.6572.43.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTP id D4DEBDDDE7
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 19:54:09 +1100 (EST)
+Date: Sun, 9 Dec 2007 11:53:53 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull linux-2.6-8xx.git for-paulus branch
+Message-ID: <20071209115353.1ae09ee1@kernel.crashing.org>
+In-Reply-To: <CF849773-F9A6-45D1-A36E-9A350BE5FB6D@kernel.crashing.org>
+References: <20071208130025.09021cb0@kernel.crashing.org>
+	<20071208130934.093d80f9@kernel.crashing.org>
+	<CF849773-F9A6-45D1-A36E-9A350BE5FB6D@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 8 Dec 2007 09:17:06 -0600
+Kumar Gala wrote:
 
-On Thu, 2007-12-06 at 09:44 -0600, Josh Boyer wrote:
-> On Fri, 7 Dec 2007 02:07:26 +1100
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > 
-> > On Thu, 6 Dec 2007 18:00:45 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > >
-> > > I started out looking for ways to remove our dependencies on pci_dn and
-> > > got sidetracked into clening up the iSeries PCI code.  The intention of
-> > > the following set of patches is that there be no semantic changes
-> > > (mostly).
-> > 
-> > Some of these will clearly conflict with Benh's PCI work.  We will sot
-> > that out between us.  :-)
+> On Dec 8, 2007, at 4:09 AM, Vitaly Bordug wrote:
 > 
-> In the meantime...
+> > On Sat, 8 Dec 2007 13:00:25 +0300
+> > Vitaly Bordug wrote:
+> >
+> >> Paul,
+> >>
+> >> please do
+> >> git-pull
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/vitb/linux-2.6-8xx.git
+> >> for-paulus
+> >>
+> >> to receive the following updates:
+> >>
+> > Forgot to tell that this is .25 material...
 > 
-> My tree is going to carry BenH's patches since they're obviously
-> important to 4xx.  If these conflicts get sorted out soon, that would
-> be good :).  At some point I'm going to start sending stuff to Paul.
+> Vitaly, if you don't mind I'll pull these into my tree for Paul to  
+> collect all the FSL stuff in one place.
+> 
+I'm ok with either way.
 
-The PCI merge serie of my patches shoudn't go through your tree (it's a
-separate serie from my 4xx stuff and isn't quite ready just yet...).
-
-I'll sync with Stephen.
-
-Cheers,
-Ben.
+-- 
+Sincerely, Vitaly
