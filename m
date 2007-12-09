@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 53E23DDDEB
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 02:17:13 +1100 (EST)
-Message-Id: <CF849773-F9A6-45D1-A36E-9A350BE5FB6D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-In-Reply-To: <20071208130934.093d80f9@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Please pull linux-2.6-8xx.git for-paulus branch
-Date: Sat, 8 Dec 2007 09:17:06 -0600
-References: <20071208130025.09021cb0@kernel.crashing.org>
-	<20071208130934.093d80f9@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from QMTA05.westchester.pa.mail.comcast.net
+	(qmta05.westchester.pa.mail.comcast.net [76.96.62.48])
+	by ozlabs.org (Postfix) with ESMTP id EF48FDDE10
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 16:21:07 +1100 (EST)
+Message-ID: <475B7B41.4000505@gmail.com>
+Date: Sun, 09 Dec 2007 00:21:05 -0500
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Stupid git question: adding acked-by
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+OK git gurus, this is something I have not figured out: the best way to 
+add acked-by (or additional signed-off-by) lines to git patches.
 
-On Dec 8, 2007, at 4:09 AM, Vitaly Bordug wrote:
+What I'm talking about is when I've applied a patch to my repo and 
+published the change on the list and get an "acked-by" back.  By the 
+time I get the ack, the acked patch may be several patches deep.  My 
+current technique is to reset the repo, edit the patch(es) to add the 
+"acked-by" lines, and then re-apply the patches.  PITA and probably the 
+stupidest way.
 
-> On Sat, 8 Dec 2007 13:00:25 +0300
-> Vitaly Bordug wrote:
->
->> Paul,
->>
->> please do
->> git-pull
->> git://git.kernel.org/pub/scm/linux/kernel/git/vitb/linux-2.6-8xx.git
->> for-paulus
->>
->> to receive the following updates:
->>
-> Forgot to tell that this is .25 material...
+Stacked git should work (effectively does the same thing but more 
+gracefully), but I have not gone that route yet.
 
-Vitaly, if you don't mind I'll pull these into my tree for Paul to  
-collect all the FSL stuff in one place.
+There must be a better way, if only I could find the right (of 137) 
+git-* command...
 
-- k
+Hints, please?
+
+Thanks,
+gvb
