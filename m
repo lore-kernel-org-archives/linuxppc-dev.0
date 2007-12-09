@@ -1,16 +1,21 @@
-Return-Path: <rje@valleytech.com>
-Received: from theodore.atlantic.net (theodore.atlantic.net [209.208.106.130])
-	by ozlabs.org (Postfix) with SMTP id 550C1DDE19
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 79178DDE0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Dec 2007 13:55:03 +1100 (EST)
-Message-ID: <475B5680.30303@valleytech.com>
-Date: Sat, 08 Dec 2007 21:44:16 -0500
-From: "R. Ebersole (VTI - new)" <rje@valleytech.com>
+	Sun,  9 Dec 2007 15:04:24 +1100 (EST)
+Message-ID: <475B68AE.5000302@ovro.caltech.edu>
+Date: Sat, 08 Dec 2007 20:01:50 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: mmap + segfaults on MPC8349E
-Content-Type: multipart/alternative;
-	boundary="------------040501020707070505080300"
+To: "R. Ebersole (VTI - new)" <rje@valleytech.com>
+Subject: Re: mmap + segfaults on MPC8349E
+References: <475B5680.30303@valleytech.com>
+In-Reply-To: <475B5680.30303@valleytech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,122 +26,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040501020707070505080300
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
+You haven't really provided enough information.
 
-Hi.
+> We wrote some simple drivers/modules to mmap() FPGA registers to user space.
+> At the moment, for testing, we reserve the upper x-MB of RAM, and mmap() 
+> there, instead.
 
-We've run into an .... interesting (and frustrating) occurance recently 
-while testing
-out a new board (and BSP).   We were wondering if anybody has seen anything
-like this.
+1. The FPGA is located where? The local bus, or the PCI bus?
+    What frequency are you trying to operate at?
 
-A description follows:
+2. If its on the local bus, do you access it using GPCM or UPM?
+    Have you setup either correctly?
+    Have you confirmed the bus timing with a logic analyzer?
 
-We wrote some simple drivers/modules to mmap() FPGA registers to user space.
-At the moment, for testing, we reserve the upper x-MB of RAM, and mmap() 
-there, instead.
+3. Have you created a bus functional model of the processor bus
+    that you have then run with your FPGA bus in ModelSim to
+    confirm that your FPGA performs correctly.
 
-We open 4 such devices, and mmap() 64KB of space (memory, in this case) 
-for each.
-Accessing the first device opened & mmapped was fine.  But accesssing 
-the 2nd device
-yielded some odd behavior.  We could read and write the first and 3rd 4K 
-regions fine, but
-if we read from the 2nd one (at offset 0x1000) before we wrote to it, we 
-get a segmentation
-fault.  If, however, we wrote first (to the 2nd region), then things 
-were OK.
+4. Have you tried burst and non-burst access by either using
+    DMA, or treating the memory area as cacheable or non-cacheable?
+    Have you checked those cases with simulation and then
+    with a scope or logic analyzer?
 
-Addendum: With the real device, this same behavior happens at the 10th 
-4-KB region of the device.
- Without any of the others mmap()-ed.  If we mmap() just that 4-KB 
-region, things are fine.  We
-can access the region with ioremap() in the driver w/o issues.
+5. Did you try running stand-alone tests in U-Boot, to go for a
+    more bare-metal debug approach?
 
-We are running on an MPC8349-E.
+No point in debugging software if you have no idea whether the
+hardware behaves. So confirm that you have tested your hardware
+first.
 
-Any thoughts or ideas?
+My board design uses the MPC8349EA, I have an Altera Stratix II
+FPGA on the local bus. I use GPCM to access flash on the local
+bus via the FPGA, and UPM to access FPGA registers. I don't
+have boards yet, but I've got a pretty good handle on how the
+interface should work.
 
-
-vti
-
---
-
-This message contains confidential information and is intended only for the
-individual named.  If you are not the intended recipient you should not
-disseminate, distribute or copy this e-mail.  Please notify the sender
-immediately by e-mail if you have received this e-mail by mistake and delete
-this e-mail from your system.
-
-
-
---------------040501020707070505080300
-Content-Type: text/html; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
-  <title></title>
-</head>
-<body text="#000000" bgcolor="#ffffff">
-<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
-<title></title>
-<br>
-Hi.<br>
-<br>
-We've run into an .... interesting (and frustrating) occurance recently
-while testing<br>
-out a new board (and BSP).&nbsp;&nbsp; We were wondering if anybody has seen
-anything <br>
-like this.<br>
-<br>
-A description follows:<br>
-<br>
-We wrote some simple drivers/modules to mmap() FPGA registers to user
-space.<br>
-At the moment, for testing, we reserve the upper x-MB of RAM, and
-mmap() there, instead.<br>
-<br>
-We open 4 such devices, and mmap() 64KB of space (memory, in this case)
-for each.<br>
-Accessing the first device opened &amp; mmapped was fine.&nbsp; But
-accesssing the 2nd device<br>
-yielded some odd behavior.&nbsp; We could read and write the first and 3rd
-4K regions fine, but<br>
-if we <i>read</i> from the 2nd one (at offset 0x1000) before we wrote
-to it, we get a segmentation<br>
-fault.&nbsp; If, however, we wrote first (to the 2nd region), then things
-were OK.<br>
-<br>
-Addendum: With the real device, this same behavior happens at the 10th
-4-KB region of the device.<br>
-&nbsp;Without any of the others mmap()-ed.&nbsp; If we mmap() just that 4-KB
-region, things are fine.&nbsp; We<br>
-can access the region with ioremap() in the driver w/o issues.<br>
-<br>
-We are running on an MPC8349-E.<br>
-<br>
-Any thoughts or ideas?<br>
-<br>
-<br>
-vti<br>
-<br>
-<pre class="moz-signature" cols="132">--
-
-This message contains confidential information and is intended only for the
-individual named.  If you are not the intended recipient you should not
-disseminate, distribute or copy this e-mail.  Please notify the sender
-immediately by e-mail if you have received this e-mail by mistake and delete
-this e-mail from your system.
-
-</pre>
-</body>
-</html>
-
---------------040501020707070505080300--
+Cheers,
+Dave
