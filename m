@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5AC87DDE05
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:03:39 +1100 (EST)
-Subject: Re: [PATCH 19/25] powerpc: Wire up PCI on Bamboo board
+	by ozlabs.org (Postfix) with ESMTP id D157ADDDFF
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:05:03 +1100 (EST)
+Subject: Re: [PATCH 21/25] powerpc: Adds decoding of 440SPE memory size to
+	boot wrapper library
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071206211906.2e1c099f@zod.rchland.ibm.com>
+In-Reply-To: <20071206212235.4ff38139@zod.rchland.ibm.com>
 References: <1196927999.714593.205329520306.qpush@grosgo>
-	<20071206080130.2B29FDE0BA@ozlabs.org>
-	<20071206211906.2e1c099f@zod.rchland.ibm.com>
+	<20071206080132.0CCE9DE109@ozlabs.org>
+	<20071206212235.4ff38139@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Sun, 09 Dec 2007 18:03:25 +1100
-Message-Id: <1197183805.6572.11.camel@pasglop>
+Date: Sun, 09 Dec 2007 18:04:48 +1100
+Message-Id: <1197183888.6572.14.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -27,38 +28,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > +			/* Walnut has all 4 IRQ pins tied together per slot */
+On Thu, 2007-12-06 at 21:22 -0600, Josh Boyer wrote:
+> On Thu, 06 Dec 2007 19:00:20 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> Not a Walnut board.
-
-Right, though the IRQ routing is similar (the comment is correct)
-
-> > +			interrupt-map-mask = <f800 0 0 0>;
-> > +			interrupt-map = <
-> > +				/* IDSEL 1 */
-> > +				0800 0 0 0 &UIC0 1c 8
-> > +
-> > +				/* IDSEL 2 */
-> > +				1000 0 0 0 &UIC0 1b 8
-> > +
-> > +				/* IDSEL 3 */
-> > +				1800 0 0 0 &UIC0 1a 8
-> > +
-> > +				/* IDSEL 4 */
-> > +				2000 0 0 0 &UIC0 19 8
-> > +			>;
-> > +		};
-> >  	};
-> > 
-> >  	chosen {
-> >  		linux,stdout-path = "/plb/opb/serial@ef600300";
-> > -		bootargs = "console=ttyS0,115200";
+> > This adds a function to the bootwrapper 4xx library to decode memory
+> > size on 440SPE processors.
 > 
-> Did you remove that for a reason?
+> Why did you rename the fixup_memsize function?  Could you add that to
+> the changelog, and perhaps a bit about adding the SDRAM0_{READ,WRITE}
+> macros
 
-Yes, and I want to do a pass removing all the occurences of bootargs in
-the .dts file, it has absolutely nothing to do there (in theory nothing
-in /chosen though linux,stdout-path can probably be argued and happens
-to be handy but not bootargs).
+Because there's 3 fixup_*_memsize functions, felt it would be better
+that they all have distinctive names no ? I don't see the need of
+altering the changelog tho... If you don't know what those macros stand
+for you probably should stay clear from those registers anyway.
 
 Ben.
