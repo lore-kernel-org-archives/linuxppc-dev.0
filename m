@@ -1,21 +1,24 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D4DEBDDDE7
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 19:54:09 +1100 (EST)
-Date: Sun, 9 Dec 2007 11:53:53 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull linux-2.6-8xx.git for-paulus branch
-Message-ID: <20071209115353.1ae09ee1@kernel.crashing.org>
-In-Reply-To: <CF849773-F9A6-45D1-A36E-9A350BE5FB6D@kernel.crashing.org>
-References: <20071208130025.09021cb0@kernel.crashing.org>
-	<20071208130934.093d80f9@kernel.crashing.org>
-	<CF849773-F9A6-45D1-A36E-9A350BE5FB6D@kernel.crashing.org>
+Return-Path: <root@ucw.cz>
+Received: from spitz.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id A81E9DDDE6
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 00:16:48 +1100 (EST)
+Date: Sun, 9 Dec 2007 13:16:36 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
+Message-ID: <20071209131636.GF4381@ucw.cz>
+References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
+	<20071207212817.GA391@lixom.net>
+	<4759BCA2.1020809@linux.vnet.ibm.com>
+	<975B5B2B-C1F3-4021-9AE2-8873FFE1BDEC@kernel.crashing.org>
+	<4759C548.6030304@linux.vnet.ibm.com>
+	<alpine.DEB.0.9999.0712071508460.27689@chino.kir.corp.google.com>
+	<475A1BEE.2050109@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <475A1BEE.2050109@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	David Rientjes <rientjes@google.com>, Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 8 Dec 2007 09:17:06 -0600
-Kumar Gala wrote:
 
-> 
-> On Dec 8, 2007, at 4:09 AM, Vitaly Bordug wrote:
-> 
-> > On Sat, 8 Dec 2007 13:00:25 +0300
-> > Vitaly Bordug wrote:
-> >
-> >> Paul,
+On Sat 2007-12-08 09:52:06, Balbir Singh wrote:
+> David Rientjes wrote:
+> > On Sat, 8 Dec 2007, Balbir Singh wrote:
+> > 
+> >> To be able to test the memory controller under NUMA, I use fake NUMA
+> >> nodes. x86-64 has a similar feature, the code I have here is the
+> >> simplest I could come up with for PowerPC.
 > >>
-> >> please do
-> >> git-pull
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/vitb/linux-2.6-8xx.git
-> >> for-paulus
-> >>
-> >> to receive the following updates:
-> >>
-> > Forgot to tell that this is .25 material...
+> > 
+> > Magnus Damm had patches from over a year ago that, I believe, made much of 
+> > the x86_64 fake NUMA code generic so that it could be extended for 
+> > architectures such as i386.  Perhaps he could resurrect those patches if 
+> > there is wider interest in such a tool.
 > 
-> Vitaly, if you don't mind I'll pull these into my tree for Paul to  
-> collect all the FSL stuff in one place.
-> 
-I'm ok with either way.
+> That would be a very interesting patch, but what I have here is the
+> simplest patch and we could build on it incrementally. The interface is
+> non-standard but it does amazing things for 59 lines of code change.
+
+Well, maybe it is amazing, but having non-standard interface is also
+wrong...
 
 -- 
-Sincerely, Vitaly
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
