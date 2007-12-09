@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A460DDDF7
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:11:04 +1100 (EST)
-Subject: Re: [PATCH 23/25] powerpc: Rework 4xx clock probing in boot wrapper
+	by ozlabs.org (Postfix) with ESMTP id E01B2DDE02
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:16:51 +1100 (EST)
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071206212744.7257f1a2@zod.rchland.ibm.com>
-References: <1196927999.714593.205329520306.qpush@grosgo>
-	<20071206080133.D24A9DE136@ozlabs.org>
-	<20071206212744.7257f1a2@zod.rchland.ibm.com>
+To: Greg KH <greg@kroah.com>
+In-Reply-To: <20071207010001.GA23575@kroah.com>
+References: <20071205064116.D849BDE10A@ozlabs.org>
+	<1196911347.7033.15.camel@pasglop> <20071206063940.GA16474@kroah.com>
+	<1196927934.7033.39.camel@pasglop> <20071207010001.GA23575@kroah.com>
 Content-Type: text/plain
-Date: Sun, 09 Dec 2007 18:05:43 +1100
-Message-Id: <1197183943.6572.16.camel@pasglop>
+Date: Sun, 09 Dec 2007 18:16:34 +1100
+Message-Id: <1197184594.6572.31.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,32 +29,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2007-12-06 at 21:27 -0600, Josh Boyer wrote:
-> On Thu, 06 Dec 2007 19:00:22 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, 2007-12-06 at 17:00 -0800, Greg KH wrote:
+> But that is how we already handle this today, in numerous places in
+> the
+> kernel for this very type.
 > 
-> > Index: linux-work/arch/powerpc/boot/reg.h
-> > ===================================================================
-> > --- linux-work.orig/arch/powerpc/boot/reg.h	2007-12-03 14:26:09.000000000 +1100
-> > +++ linux-work/arch/powerpc/boot/reg.h	2007-12-03 14:26:09.000000000 +1100
-> > @@ -24,6 +24,14 @@ static inline u32 mfpvr(void)
-> >  				: "=r" (rval)); rval; })
-> >  #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : : "r" (v))
-> > 
-> > +#define __stringify_1(x)	#x
-> > +#define __stringify(x)		__stringify_1(x)
-> > +
-> > +#define mfspr(rn)	({unsigned long rval; \
-> > +			asm volatile("mfspr %0," __stringify(rn) \
-> > +				: "=r" (rval)); rval; })
-> > +#define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : : "r" (v))
-> > +
-> 
-> You felt like duplicating this?  It was added in the previous patch. :)
+> So, you can disagree that this is what we need to do, and if so, feel
+> free to fix up a whole lot of files in the tree :)
 
-Ah yes, it's a typical mistake when splitting patches, sometimes, it
-doesn't complain when the same hunk is applied multiple times. I'll fix
-that up.
+Heh, ok, allright, I'll respin with the casts.
 
+Cheers,
 Ben.
- 
