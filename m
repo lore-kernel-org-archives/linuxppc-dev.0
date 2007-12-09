@@ -1,21 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 79178DDE0D
+Return-Path: <jsamch@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 5DC57DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Dec 2007 15:04:24 +1100 (EST)
-Message-ID: <475B68AE.5000302@ovro.caltech.edu>
-Date: Sat, 08 Dec 2007 20:01:50 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sun,  9 Dec 2007 16:51:31 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2680316wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 08 Dec 2007 21:51:30 -0800 (PST)
+Message-ID: <169c03cb0712082151k74e504bvc6e21bb57534ef28@mail.gmail.com>
+Date: Sun, 9 Dec 2007 00:51:30 -0500
+From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
+Sender: jsamch@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: Xilinx ML310 Linux 2.6 PCI bridge
 MIME-Version: 1.0
-To: "R. Ebersole (VTI - new)" <rje@valleytech.com>
-Subject: Re: mmap + segfaults on MPC8349E
-References: <475B5680.30303@valleytech.com>
-In-Reply-To: <475B5680.30303@valleytech.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_14531_27785716.1197179490757"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +25,124 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_14531_27785716.1197179490757
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
 Hi,
 
-You haven't really provided enough information.
+Thanks to the valuable information provided by this discussion group and
+particularly by Grant Likely from Secret Lab Technologies, I was able to
+setup and run Linux 2.6 on my ML-310 development platform.
 
-> We wrote some simple drivers/modules to mmap() FPGA registers to user space.
-> At the moment, for testing, we reserve the upper x-MB of RAM, and mmap() 
-> there, instead.
+On the ML-310, if I want to use the Ethernet port and some other
+peripherals, I need to go through the PCI bus via the opb_pci core on the
+FPGA.
 
-1. The FPGA is located where? The local bus, or the PCI bus?
-    What frequency are you trying to operate at?
+However, when I enable PCI support in the kernel, I get the following error
+messages:
 
-2. If its on the local bus, do you access it using GPCM or UPM?
-    Have you setup either correctly?
-    Have you confirmed the bus timing with a logic analyzer?
+arch/ppc/syslib/ppc4xx_setup.c: In function `ppc4xx_map_io':
+arch/ppc/syslib/ppc4xx_setup.c:118: error: `PPC4xx_PCI_IO_VADDR' undeclared
+(first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:118: error: (Each undeclared identifier is
+reported only once
+arch/ppc/syslib/ppc4xx_setup.c:118: error: for each function it appears in.=
+)
+arch/ppc/syslib/ppc4xx_setup.c:119: error: `PPC4xx_PCI_IO_PADDR' undeclared
+(first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:119: error: `PPC4xx_PCI_IO_SIZE' undeclared
+(first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:120: error: `PPC4xx_PCI_CFG_VADDR' undeclare=
+d
+(first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:121: error: `PPC4xx_PCI_CFG_PADDR' undeclare=
+d
+(first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:121: error: `PPC4xx_PCI_CFG_SIZE' undeclared
+(first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:122: error: `PPC4xx_PCI_LCFG_VADDR'
+undeclared (first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:123: error: `PPC4xx_PCI_LCFG_PADDR'
+undeclared (first use in this function)
+arch/ppc/syslib/ppc4xx_setup.c:123: error: `PPC4xx_PCI_LCFG_SIZE' undeclare=
+d
+(first use in this function)
+make[1]: *** [arch/ppc/syslib/ppc4xx_setup.o] Error 1
 
-3. Have you created a bus functional model of the processor bus
-    that you have then run with your FPGA bus in ModelSim to
-    confirm that your FPGA performs correctly.
+My Xilinx Platform Studio has the proper PCI bridge component, but the
+exported constants in xparameters_ml300.h are not helping me figure out the
+mapping that I should give to those PPC4xx values (the parameters contain a
+lot of XPAR_PCI32_BRIDGE_* constants).  I'm guessing that the address
+mappings must be set from some of those for the PCI range to appear in the
+PowerPC address space.  Please correct me if I'm misunderstanding something
+here...
 
-4. Have you tried burst and non-burst access by either using
-    DMA, or treating the memory area as cacheable or non-cacheable?
-    Have you checked those cases with simulation and then
-    with a scope or logic analyzer?
+I only saw one mention of this error related to the ML-310 in a discussion
+dating in 2005 and the answer was that the 2.6 kernel was not supporting th=
+e
+Virtex-II Pro too well at the time.  Has this changed and does anyone have
+had success using the PCI bridge in Linux 2.6 on an ML-310 development
+platform ?
 
-5. Did you try running stand-alone tests in U-Boot, to go for a
-    more bare-metal debug approach?
+Thanks,
 
-No point in debugging software if you have no idea whether the
-hardware behaves. So confirm that you have tested your hardware
-first.
+Jean-Samuel
+--=20
+Integrated Microsystems Laboratory
+McGill University, Montr=E9al, QC, CANADA
+Web Page: http://chaos.ece.mcgill.ca
 
-My board design uses the MPC8349EA, I have an Altera Stratix II
-FPGA on the local bus. I use GPCM to access flash on the local
-bus via the FPGA, and UPM to access FPGA registers. I don't
-have boards yet, but I've got a pretty good handle on how the
-interface should work.
+------=_Part_14531_27785716.1197179490757
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Cheers,
-Dave
+Hi,<br><br>Thanks to the valuable information provided by this discussion g=
+roup and particularly by Grant Likely from Secret Lab Technologies, I was a=
+ble to setup and run Linux 2.6 on my ML-310 development platform.<br><br>
+On the ML-310, if I want to use the Ethernet port and some other peripheral=
+s, I need to go through the PCI bus via the opb_pci core on the FPGA.<br><b=
+r>However, when I enable PCI support in the kernel, I get the following err=
+or messages:
+<br><br>arch/ppc/syslib/ppc4xx_setup.c: In function `ppc4xx_map_io&#39;:<br=
+>arch/ppc/syslib/ppc4xx_setup.c:118: error: `PPC4xx_PCI_IO_VADDR&#39; undec=
+lared (first use in this function)<br>arch/ppc/syslib/ppc4xx_setup.c:118: e=
+rror: (Each undeclared identifier is reported only once
+<br>arch/ppc/syslib/ppc4xx_setup.c:118: error: for each function it appears=
+ in.)<br>arch/ppc/syslib/ppc4xx_setup.c:119: error: `PPC4xx_PCI_IO_PADDR&#3=
+9; undeclared (first use in this function)<br>arch/ppc/syslib/ppc4xx_setup.=
+c:119: error: `PPC4xx_PCI_IO_SIZE&#39; undeclared (first use in this functi=
+on)
+<br>arch/ppc/syslib/ppc4xx_setup.c:120: error: `PPC4xx_PCI_CFG_VADDR&#39; u=
+ndeclared (first use in this function)<br>arch/ppc/syslib/ppc4xx_setup.c:12=
+1: error: `PPC4xx_PCI_CFG_PADDR&#39; undeclared (first use in this function=
+)
+<br>arch/ppc/syslib/ppc4xx_setup.c:121: error: `PPC4xx_PCI_CFG_SIZE&#39; un=
+declared (first use in this function)<br>arch/ppc/syslib/ppc4xx_setup.c:122=
+: error: `PPC4xx_PCI_LCFG_VADDR&#39; undeclared (first use in this function=
+)
+<br>arch/ppc/syslib/ppc4xx_setup.c:123: error: `PPC4xx_PCI_LCFG_PADDR&#39; =
+undeclared (first use in this function)<br>arch/ppc/syslib/ppc4xx_setup.c:1=
+23: error: `PPC4xx_PCI_LCFG_SIZE&#39; undeclared (first use in this functio=
+n)
+<br>make[1]: *** [arch/ppc/syslib/ppc4xx_setup.o] Error 1<br><br>My Xilinx =
+Platform Studio has the proper PCI bridge component, but the exported const=
+ants in xparameters_ml300.h are not helping me figure out the mapping that =
+I should give to those PPC4xx values (the parameters contain a lot of XPAR_=
+PCI32_BRIDGE_* constants).&nbsp; I&#39;m guessing that the address mappings=
+ must be set from some of those for the PCI range to appear in the PowerPC =
+address space.&nbsp; Please correct me if I&#39;m misunderstanding somethin=
+g here...
+<br><br>I only saw one mention of this error related to the ML-310 in a dis=
+cussion dating in 2005 and the answer was that the 2.6 kernel was not suppo=
+rting the Virtex-II Pro too well at the time.&nbsp; Has this changed and do=
+es anyone have had success using the PCI bridge in Linux=20
+2.6 on an ML-310 development platform ?<br clear=3D"all"><br>Thanks,<br><br=
+>Jean-Samuel<br>-- <br>Integrated Microsystems Laboratory<br>McGill Univers=
+ity, Montr=E9al, QC, CANADA<br>Web Page: <a href=3D"http://chaos.ece.mcgill=
+.ca">
+http://chaos.ece.mcgill.ca</a>
+
+------=_Part_14531_27785716.1197179490757--
