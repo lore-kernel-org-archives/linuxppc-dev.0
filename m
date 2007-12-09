@@ -1,24 +1,23 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
-	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8CF9BDDDEE
+Return-Path: <jsamch@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id 64E69DDDFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Dec 2007 03:47:03 +1100 (EST)
-Received: from [206.223.20.150] (helo=hp-dhlii.dlasys.net)
-	by mx.dlasys.net with esmtp (Exim 4.67 #1 (Debian))
-	id 1J1P8H-0002a1-CV
-	for <linuxppc-embedded@ozlabs.org>; Sun, 09 Dec 2007 11:35:57 -0500
-Message-ID: <475C1AB9.5040005@dlasys.net>
-Date: Sun, 09 Dec 2007 11:41:29 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Mon, 10 Dec 2007 04:32:13 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2994826wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 09 Dec 2007 09:32:12 -0800 (PST)
+Message-ID: <169c03cb0712090932y52cb2744p245cdeb0cccc2ff2@mail.gmail.com>
+Date: Sun, 9 Dec 2007 12:32:12 -0500
+From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
+Sender: jsamch@gmail.com
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: Xilinx ML310 Linux 2.6 PCI bridge
+In-Reply-To: <fa686aa40712082218k7e520e45q1266ecb4692b7dbb@mail.gmail.com>
 MIME-Version: 1.0
-CC: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel symbol version history
-References: <4756CF15.2090805@dlasys.net>
-	<200712051807.36357.jcd@tribudubois.net>
-In-Reply-To: <200712051807.36357.jcd@tribudubois.net>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+References: <169c03cb0712082151k74e504bvc6e21bb57534ef28@mail.gmail.com>
+	<fa686aa40712082218k7e520e45q1266ecb4692b7dbb@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,68 +28,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Thank you.
+On Dec 9, 2007 1:18 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 12/8/07, Jean-Samuel Chenard <jsamch@macs.ece.mcgill.ca> wrote:
+> > Thanks to the valuable information provided by this discussion group an=
+d
+> > particularly by Grant Likely from Secret Lab Technologies, I was able t=
+o
+> > setup and run Linux 2.6 on my ML-310 development platform.
+>
+> Congratulations.  If you had to make any changes to get it to work
+> then please send me your patches.
 
-       I made use of one of the linux cross reference sites.
-       Though unless I don't know how to effectively use them trying to
-track the history of a function, typdef, define, ..
-       is not particularly easy using lxr.
+Thank you for the quick reply.
 
-       Grant's sugestion with git was closer to what I was looking for -
-except that in some instances 
-    needed to go back farther than it would take me..
+I will directly update Secret Lab's Wiki pages.  Those pages are the
+ones that got me going really quickly, so I will add a few of my
+observations directly on your pages so everyone can benefit.
 
+I ended up using Secret Lab's GIT tree as my source archive, so I'll
+let you know if I need to fix some code.
 
-Jean-Christophe Dubois wrote:
-> Hi David,
->
-> You could try the various "linux cross reference" web site out there. It is 
-> not necessarily complete (some linux version might be missing)  but it can be 
-> usefull to lookup if some symbols/define/typedef were available in a 
-> particular Linux version.
->
-> Have a look there.
->
-> http://free-electrons.com/community/kernel/lxr
->
-> Regards
->
-> JC
->
-> On Wednesday 05 December 2007 17:17:25 David H. Lynch Jr. wrote:
->   
->>     This might be slightly OT here, but would anyone know where there
->> might be a reference that indicates at precisely what version a given
->> symbol either appeared or disappeared within the  Linux kernel ?
->>
->>      As an example if a driver is supposed to work for 2.6 and 2.4 and
->> uses sysfs, or cdev, or alloc_chr_dev_region or ...
->>     How can one tell at what point that api or symbol appeared so that
->> the proper conditionals appear within the driver.
->>
->>     The last one that bit me was I made a collection of casting changes
->> to address 64bit vs. 32bit targets, and found that using the C99 fixed
->> size types - uint32_t, ... made life much more pleasant, after putting
->> them I nobody else could build because uintptr_t did not appear until
->> 2.6.24, and I still have not figured out exactly when uint32_t etc.
->> appeared.
->>
->>     I would think there ought to be some resource besides group memory
->> to look this up ?
->>     Is there a way to use git to look back through the history of a
->> symbol rather than a file.
->>     
->
->
->   
+> You'll have to go back into the mailing list archives to find a patch
+> for adding PCI support for a Virtex platform.  I don't have any of
+> that in my tree.  It probably only exists for the 2.4 kernel.  You'll
+> need to port forward to use it on 2.6 (I'm more than willing to help
+> you with this)
 
+Hmmm... I'm not really ready to invest that much time into the PCI for ML-3=
+10.
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+My real target is the control FPGA on a BEE2 box
+(http://bee2.eecs.berkeley.edu) and on that particular setup, the
+control FPGA is directly connected to an LXT971A Ethernet PHY, so I'll
+use the ethernet MAC from Xilinx.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+I use the ML-310 as a stepping stone for quickly prototyping some of
+my FPGA changes since the VirtexII-Pro in the ML-310 is much smaller
+and doesn't eat up all my workstation resources when re-compiling the
+FPGA.
+
+> However, word of warning.  The Xilinx PCI bridge is badly broken.
+> Xilinx is not supporting the PCI core and it is missing the ability to
+> do certain types of transfers.  Last I heard, Xilinx has no plans to
+> fix their PCI core either.
+
+Ok, its nice to know the status of that module.  Too bad Xilinx is
+dropping the support for it.
+
+In that case, it would probably be more beneficial for all to adapt an
+"open core" project such as this PCI bridge:
+http://www.opencores.org/projects.cgi/web/pci/home
+
+Along with the help of an OPB to Wishbone wrapper like that one:
+http://www.opencores.org/projects.cgi/web/opb_wb_wrapper/overview
+
+With some work (and ideally some PCI expertise) one could get an open
+implementation of a PCI bridge that can integrate in the Xilinx EDK
+flow and could be repaired or adapted as time goes...  I am a complete
+newbie to PCI, so I'll leave that to some willing "hacker".
+
+I'll continue on my quest to run Linux 2.6 on the BEE2 control FPGA.
+There is no PCI bus involved in that architecture.  Just raw buses and
+a sea of FPGA logic.
+
+Regards,
+
+Jean-Samuel
+--=20
+Integrated Microsystems Laboratory
+McGill University, Montr=E9al, QC, CANADA
+Web Page: http://chaos.ece.mcgill.ca
