@@ -1,24 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 33CBCDDEC6
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 08:48:19 +1100 (EST)
-Date: Sun, 9 Dec 2007 15:53:07 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [i2c] [PATCH 0/4] Series to add device tree naming to i2c
-Message-ID: <20071209215307.GC26651@lixom.net>
-References: <20071203212032.23543.3453.stgit@terra.home>
-	<9e4733910712091224mcb43f0ci69f578d221505ba7@mail.gmail.com>
-	<1197233208.6563.14.camel@pasglop>
-	<9e4733910712091257x4ba5e07aue55934fb6898aa2d@mail.gmail.com>
-	<1197234799.6563.19.camel@pasglop>
-	<9e4733910712091335g534d9248gcd920850f9f679a1@mail.gmail.com>
-	<1197236326.6563.22.camel@pasglop>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 1075DDDDFE
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 10:22:44 +1100 (EST)
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+References: <200712061607.20004.fenkes@de.ibm.com>
+	<200712061648.24806.arnd@arndb.de> <ada7ijrd6gy.fsf@cisco.com>
+	<200712071058.38416.arnd@arndb.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 09 Dec 2007 15:22:39 -0800
+In-Reply-To: <200712071058.38416.arnd@arndb.de> (Arnd Bergmann's message of
+	"Fri, 7 Dec 2007 10:58:37 +0100")
+Message-ID: <adaodcza1xc.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1197236326.6563.22.camel@pasglop>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	OF-EWG <ewg@lists.openfabrics.org>, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,43 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 10, 2007 at 08:38:46AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > +static struct i2c_device_id rs5c372_id[] = {
-> > +       {"rtc-rs5c372", rtc_rs5c372a},
-> > +       {"rs5c372a", rtc_rs5c372a},
-> > +       {"rs5c372b", rtc_rs5c372b},
-> > +       {"rv5c386", rtc_rv5c386},
-> > +       {"rv5c387a", rtc_rv5c387a},
-> > +       DT_NAME({"ricoh,rs5c372a", rtc_rs5c372a},)
-> > +       DT_NAME({"ricoh,rs5c372b", rtc_rs5c372b},)
-> > +       DT_NAME({"ricoh,rv5c386", rtc_rv5c386},)
-> > +       DT_NAME({"ricoh,rv5c387a", rtc_rv5c387a},)
-> > +       {},
-> > 
-> > But what's the point in making these names specific to device trees?
-> > They are perfectly valid names for the devices that could be used from
-> > any platform.
-> 
-> The more I think about it, the more I tend to agree that tagging isn't
-> necessary and you are right. We should just match the name against the
-> "compatible" property of the OF nodes (which mean we need to support
-> multiple matches though since "compatible" is a list of strings).
-> 
-> Now, I have a question about your example: Why do you have both
-> "rs5c372a" and "ricoh,rs5c372a" ?
-> 
-> I would argue that we should keep only the later...
+ > I think it needs some more inspection. The msleep in there is only called
+ > for hcalls that return H_IS_LONG_BUSY(). In theory, you can call
+ > ehca_plpar_hcall_norets() from inside an interrupt handler if the
+ > hcall in question never returns long busy.
 
-I think existing platforms register with the simpler name, so they would
-need to be changed. Having both shouldn't do harm though, we tend to
-sometimes do the same with of_platform drivers for legacy reasons.
+Fair enough... according to Documentation/infiniband/core_locking.txt,
+the only driver methods that cannot sleep are:
 
-Unless someone adds a ridicously simple match name (by mistake or
-whatever), it shouldn't be a problem. And if someone does it to some
-dts/firmware, then we'll just need to add device tree fixups to set the
-"vendor,product" string instead, yet again similar to how we have to do
-sometimes with other drivers/devices.
+    create_ah
+    modify_ah
+    query_ah
+    destroy_ah
+    bind_mw
+    post_send
+    post_recv
+    poll_cq
+    req_notify_cq
+    map_phys_fmr
 
+and I don't think ehca does an hcall from any of those.  Of course
+there might be other driver-internal code paths that I don't know
+about.  Maybe do a quick audit and then stick might_sleep() in the
+hcall functions to catch any mistakes?
 
--Olof
+ - R.
