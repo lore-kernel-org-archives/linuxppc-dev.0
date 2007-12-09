@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D157ADDDFF
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:05:03 +1100 (EST)
-Subject: Re: [PATCH 21/25] powerpc: Adds decoding of 440SPE memory size to
-	boot wrapper library
+	by ozlabs.org (Postfix) with ESMTP id 0BACBDDE05
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Dec 2007 18:07:24 +1100 (EST)
+Subject: Re: [PATCH 11/25] powerpc: 4xx PLB to PCI Express support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071206212235.4ff38139@zod.rchland.ibm.com>
-References: <1196927999.714593.205329520306.qpush@grosgo>
-	<20071206080132.0CCE9DE109@ozlabs.org>
-	<20071206212235.4ff38139@zod.rchland.ibm.com>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200712070802.01126.sr@denx.de>
+References: <20071206080120.B47DBDDF15@ozlabs.org>
+	<200712061026.57215.sr@denx.de> <1196979686.6599.1.camel@pasglop>
+	<200712070802.01126.sr@denx.de>
 Content-Type: text/plain
-Date: Sun, 09 Dec 2007 18:04:48 +1100
-Message-Id: <1197183888.6572.14.camel@pasglop>
+Date: Sun, 09 Dec 2007 18:07:08 +1100
+Message-Id: <1197184029.6572.19.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -28,20 +27,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2007-12-06 at 21:22 -0600, Josh Boyer wrote:
-> On Thu, 06 Dec 2007 19:00:20 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, 2007-12-07 at 08:02 +0100, Stefan Roese wrote:
 > 
-> > This adds a function to the bootwrapper 4xx library to decode memory
-> > size on 440SPE processors.
+> > Ah... crap ! Do you think we should put that in the boot wrapper and
+> > fixup the device-tree or should we put it in the PCIe code proper ?
 > 
-> Why did you rename the fixup_memsize function?  Could you add that to
-> the changelog, and perhaps a bit about adding the SDRAM0_{READ,WRITE}
-> macros
+> How about this: We change the compatible node to "plb-pciex-440spe" 
+> (without "A" and "B) and make a PVR runtime detection in the 4xx-pci
+> driver.
+> 
+> What do you think? Should I prepare a patch for this?
 
-Because there's 3 fixup_*_memsize functions, felt it would be better
-that they all have distinctive names no ? I don't see the need of
-altering the changelog tho... If you don't know what those macros stand
-for you probably should stay clear from those registers anyway.
+I suppose that's the best way though we should do the detection the
+other way around form the old code, that is detect rev A explicitely and
+consider everything else rev B (just in case some new rev ever
+appears..)
+
+Yes, I would appreciate a patch, thanks.
 
 Ben.
