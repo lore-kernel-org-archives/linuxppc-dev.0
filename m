@@ -1,19 +1,21 @@
 Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id CD219DDE44
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:19:54 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so90903uge.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 15:19:53 -0800 (PST)
-Date: Tue, 11 Dec 2007 02:10:52 +0300
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
+	by ozlabs.org (Postfix) with ESMTP id 51143DDEAB
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:25:42 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so1348214nfd
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 15:25:40 -0800 (PST)
+Date: Tue, 11 Dec 2007 02:16:38 +0300
 From: Anton Vorontsov <cbouatmailru@gmail.com>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
-Message-ID: <20071210231052.GB1141@zarina>
+Subject: Re: [PATCH RFC 7/7] [POWERPC] MPC8360E-RDK: add support for NAND
+	on UPM
+Message-ID: <20071210231638.GA1198@zarina>
 References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210230453.GB5495@localhost.localdomain>
+	<20071210204951.GG32278@localhost.localdomain>
+	<20071210230321.GA5495@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071210230453.GB5495@localhost.localdomain>
+In-Reply-To: <20071210230321.GA5495@localhost.localdomain>
 Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,64 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 11, 2007 at 10:04:53AM +1100, David Gibson wrote:
-> On Mon, Dec 10, 2007 at 11:47:05PM +0300, Anton Vorontsov wrote:
-> > Hi all,
+On Tue, Dec 11, 2007 at 10:03:21AM +1100, David Gibson wrote:
+> On Mon, Dec 10, 2007 at 11:49:51PM +0300, Anton Vorontsov wrote:
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  arch/powerpc/boot/dts/mpc836x_rdk.dts     |   24 +++++++++++++++++++++++-
+> >  arch/powerpc/platforms/83xx/Kconfig       |    2 ++
+> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c |    1 +
+> >  3 files changed, 26 insertions(+), 1 deletions(-)
 > > 
-> > Here are patches to support NAND on UPM. That driver is generic for
-> > all processors with FSL UPMs. And because of that, few more patches are
-> > needed -- GPIO API and generic FSL UPM functions.
-> > 
-> > This is early RFC, all patches are in single thread, so everyone could
-> > make up overall picture of what is going on. I'll split the thread by
-> > topics after that RFC.
-> > 
-> > Ok, the patches and what they are for:
-> > 
-> > 1,2,3,4. GPIO API:
-> > ------------------
-> > Usually NAND chips exports RNB (Ready-Not-Busy) pin, so drivers
-> > could read it and get a hint when chip is ready.
-> > 
-> > Often, WP (write protect) pin is also connected to GPIO. So, GPIO API
-> > is mandatory for generic drivers.
-> > 
-> > OF device tree GPIOs bindings are similar to IRQs:
-> > 
-> > node {
-> > 	gpios = <bank pin bank pin bank pin>;
-> > 	gpio-parent = <&par_io_controller>;
-> > };
-> > 
-> > "bank pin" scheme is controller specific, so controllers that want
-> > to implement flat mappings or any other could do so.
+> > diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+> > index a1b2da6..f57ba53 100644
+> > --- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
+> > +++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+> > @@ -115,7 +115,7 @@
+> >  			device_type = "ipic";
+> >  		};
+> >  
+> > -		par_io@1400 {
+> > +		qe_pio: par_io@1400 {
+> >  			reg = <0x1400 0x100>;
+> >  			num-ports = <7>;
+> >  		};
+> > @@ -229,4 +229,26 @@
+> >  			interrupt-parent = <&ipic>;
+> >  		};
+> >  	};
+> > +
+> > +	localbus@e0005000 {
+> > +		#address-cells = <2>;
+> > +		#size-cells = <1>;
+> > +		compatible = "fsl,mpc8360erdk-localbus",
+> > +			     "fsl,mpc8360e-localbus",
+> > +			     "fsl,pq2pro-localbus";
+> > +		reg = <0xe0005000 0xd8>;
+> > +		ranges = <1 0 0x60000000 1>;
 > 
-> It might be safest to do as is done for interrupts, and not define the
-> internal format at all.
+> The bridge translates a range one byte wide?  I don't think so...
 
-This is how it is done already. Take a look into second and third patches:
+Nope, 4KB min, IIRC.
 
-+static int par_io_xlate(struct device_node *np, int index)
-+{
-+       return __of_parse_gpio_bank_pin(np, index, 32, num_par_io_ports);
-+}
-+
-+static struct of_gpio_chip of_gpio_chip = {
-+       .xlate = par_io_xlate,
-+};
+> > +
+> > +		nand-flash@1,0 {
+> > +			compatible = "STMicro,NAND512W3A2BN6E", "fsl,upm-nand";
+> > +			reg = <1 0 1>;
+> 
+> The device has a register window *one byte* wide?  That seems
+> improbable...
 
-__of_parse_gpio_bank_pin() is helper function, I just factored
-it out, because both QE and CPM2 using same format.
+Here, actually yes. The device just 8 bits wide. Reading next 8 bits
+will return the same value, obviously. ;-)
 
-But generally, controllers are encouraged to do their own xlates.
+But points taken. I should not derivate chip width from the
+ranges/reg. This looks unusual indeed, will implement chip-width
+property.
 
-Or am I missing the point?
-
-> The gpio within the gpio controller would be
-> defined by a gpio-descriptor whose format is determined by the
-> controller.  You would need to add a #gpio-cells property in this
-> case, so you can at least determine the size of the descriptors
-> associated with a particular gpio controller.
+Thanks,
 
 -- 
 Anton Vorontsov
