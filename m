@@ -1,13 +1,35 @@
-Return-Path: <SRS0=6/a2=RB=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id EA6AFDDDE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 18:43:33 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 4xx: Add 440SPe revA runtime detection to PCIe
-	driver
-Date: Mon, 10 Dec 2007 08:37:34 +0100
-Message-Id: <1197272254-11691-1-git-send-email-sr@denx.de>
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate8.uk.ibm.com (mtagate8.uk.ibm.com [195.212.29.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate8.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7FBBDDDE6
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 22:21:54 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate8.uk.ibm.com (8.13.8/8.13.8) with ESMTP id lBABLV3Y472162
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 11:21:31 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id lBABLVWa5095594
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 11:21:31 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id lBABLEmm022780
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 11:21:15 GMT
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Return correct #SGEs for SRQ
+MIME-Version: 1.0
+Date: Mon, 10 Dec 2007 12:20:57 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712101220.57876.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,112 +39,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds runtime detection of the 440SPe revision A chips. These
-chips are equipped with a slighly different PCIe core and need special/
-different initialization. The compatible node is changed to
-"plb-pciex-440spe" ("A" and "B" dropped). This is needed for boards that
-can be equipped with both PPC revisions like the AMCC Yucca.
+Firmware would round up the number of SGEs to four, because the WQE
+structure holds four SGEs. For SRQ, only three are supported, so return a
+fixed value instead.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- arch/powerpc/boot/dts/katmai.dts |    6 +++---
- arch/powerpc/sysdev/ppc4xx_pci.c |   25 +++++++++++++++++--------
- 2 files changed, 20 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
-index 2bea84f..824cf4e 100644
---- a/arch/powerpc/boot/dts/katmai.dts
-+++ b/arch/powerpc/boot/dts/katmai.dts
-@@ -269,7 +269,7 @@
- 			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
-+			compatible = "ibm,plb-pciex-440spe", "ibm,plb-pciex";
- 			primary;
- 			port = <0>; /* port number */
- 			reg = <d 00000000 20000000	/* Config space access */
-@@ -310,7 +310,7 @@
- 			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
-+			compatible = "ibm,plb-pciex-440spe", "ibm,plb-pciex";
- 			primary;
- 			port = <1>; /* port number */
- 			reg = <d 20000000 20000000	/* Config space access */
-@@ -351,7 +351,7 @@
- 			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
-+			compatible = "ibm,plb-pciex-440spe", "ibm,plb-pciex";
- 			primary;
- 			port = <2>; /* port number */
- 			reg = <d 40000000 20000000	/* Config space access */
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index bd85a40..744b5ca 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -49,6 +49,15 @@ extern unsigned long total_memory;
- #define RES_TO_U32_HIGH(val)	(0)
- #endif
+The patch will apply cleanly on top of Roland's git. Please review and apply
+for 2.6.24 -- Thanks!
+
+ drivers/infiniband/hw/ehca/ehca_qp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index dd12668..eff5fb5 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -838,7 +838,7 @@ struct ib_srq *ehca_create_srq(struct ib_pd *pd,
  
-+static inline int ppc440spe_revA(void)
-+{
-+	/* Catch both 440SPe variants, with and without RAID6 support */
-+        if ((mfspr(SPRN_PVR) & 0xffefffff) == 0x53421890)
-+                return 1;
-+        else
-+                return 0;
-+}
-+
- static void fixup_ppc4xx_pci_bridge(struct pci_dev *dev)
- {
- 	struct pci_controller *hose;
-@@ -521,8 +530,7 @@ static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
-  *
-  * We support 3 parts currently based on the compatible property:
-  *
-- * ibm,plb-pciex-440speA
-- * ibm,plb-pciex-440speB
-+ * ibm,plb-pciex-440spe
-  * ibm,plb-pciex-405ex
-  *
-  * Anything else will be rejected for now as they are all subtly
-@@ -693,7 +701,7 @@ static int ppc440spe_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
+ 	/* copy back return values */
+ 	srq_init_attr->attr.max_wr = qp_init_attr.cap.max_recv_wr;
+-	srq_init_attr->attr.max_sge = qp_init_attr.cap.max_recv_sge;
++	srq_init_attr->attr.max_sge = 3;
  
- 	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET, val);
- 	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, 0x20222222);
--	if (of_device_is_compatible(port->node, "ibm,plb-pciex-440speA"))
-+	if (ppc440spe_revA())
- 		mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x11000000);
- 	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL0SET1, 0x35000000);
- 	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL1SET1, 0x35000000);
-@@ -772,7 +780,6 @@ static struct ppc4xx_pciex_hwops ppc440speB_pcie_hwops __initdata =
- 	.setup_utl	= ppc440speB_pciex_init_utl,
- };
+ 	/* drive SRQ into RTR state */
+ 	mqpcb = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
+@@ -1750,7 +1750,7 @@ int ehca_query_srq(struct ib_srq *srq, struct ib_srq_attr *srq_attr)
+ 	}
  
--
- #endif /* CONFIG_44x */
+ 	srq_attr->max_wr = qpcb->max_nr_outst_recv_wr - 1;
+-	srq_attr->max_sge = qpcb->actual_nr_sges_in_rq_wqe;
++	srq_attr->max_sge = 3;
+ 	srq_attr->srq_limit = EHCA_BMASK_GET(
+ 		MQPCB_CURR_SRQ_LIMIT, qpcb->curr_srq_limit);
  
- #ifdef CONFIG_40x
-@@ -888,10 +895,12 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
- 		return 0;
- 
- #ifdef CONFIG_44x
--	if (of_device_is_compatible(np, "ibm,plb-pciex-440speA"))
--		ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
--	else if (of_device_is_compatible(np, "ibm,plb-pciex-440speB"))
--		ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
-+	if (of_device_is_compatible(np, "ibm,plb-pciex-440spe")) {
-+		if (ppc440spe_revA())
-+			ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
-+		else
-+			ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
-+	}
- #endif /* CONFIG_44x    */
- #ifdef CONFIG_40x
- 	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
 -- 
-1.5.3.7.949.g2221a6
+1.5.2
