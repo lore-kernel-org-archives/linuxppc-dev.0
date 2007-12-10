@@ -1,18 +1,19 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id AA118DEAB2
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 07:45:49 +1100 (EST)
-Date: Mon, 10 Dec 2007 23:49:06 +0300
+	by ozlabs.org (Postfix) with ESMTP id 32CF7DECB4
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 07:46:08 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 541CE8817
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 01:46:07 +0400 (SAMT)
+Date: Mon, 10 Dec 2007 23:49:25 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH RFC 4/7] [GPIO] Let drivers link if they support GPIO API as
-	an addition
-Message-ID: <20071210204906.GD32278@localhost.localdomain>
+Subject: [PATCH RFC 5/7] [POWERPC] FSL UPM: routines to manage FSL UPMs
+Message-ID: <20071210204925.GE32278@localhost.localdomain>
 References: <20071210204705.GA31263@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
 In-Reply-To: <20071210204705.GA31263@localhost.localdomain>
-Cc: dbrownell@users.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,77 +23,237 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Here are few routines needed to manage FSL UPMs properly. FSL UPM
+infrastructure also supports lockless variant, to use when we're
+pretty sure that only one UPM is used on the board.
+
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
+ arch/powerpc/Kconfig          |    7 +++
+ arch/powerpc/sysdev/Makefile  |    1 +
+ arch/powerpc/sysdev/fsl_upm.c |   74 +++++++++++++++++++++++++++++
+ include/asm-powerpc/fsl_upm.h |  102 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 184 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_upm.c
+ create mode 100644 include/asm-powerpc/fsl_upm.h
 
-Hello David,
-
-I'm interested in your opinion about that patch. You're also Cc'ed
-to patch that using that feature.
-
-I know, currently that patch will conflict with GPIOLIB patches in -mm,
-so this is only RFC.
-
- include/asm-generic/gpio.h |   47 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 47 insertions(+), 0 deletions(-)
-
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 2d0aab1..cf76a69 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -1,6 +1,53 @@
- #ifndef _ASM_GENERIC_GPIO_H
- #define _ASM_GENERIC_GPIO_H
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 596982f..1d47a35 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -464,6 +464,13 @@ config FSL_PCI
+  	bool
+ 	select PPC_INDIRECT_PCI
  
-+#ifndef CONFIG_GENERIC_GPIO
++config FSL_UPM
++	bool
 +
++config FSL_UPM_LOCKLESS
++	depends on FSL_UPM
++	bool
++
+ # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+ config MCA
+ 	bool
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 99a77d7..98dbfdd 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
++obj-$(CONFIG_FSL_UPM)		+= fsl_upm.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ obj-$(CONFIG_PPC_BESTCOMM)	+= bestcomm/
+diff --git a/arch/powerpc/sysdev/fsl_upm.c b/arch/powerpc/sysdev/fsl_upm.c
+new file mode 100644
+index 0000000..98d079d
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_upm.c
+@@ -0,0 +1,74 @@
 +/*
-+ * Drivers could be gpio api aware, and at the same time, some
-+ * of them can live without it, or support call-backs approach
-+ * in addition. Let them link.
++ * Freescale UPM routines.
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + */
-+static inline int gpio_request(unsigned int gpio, const char *label)
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <asm/fsl_upm.h>
++
++int fsl_upm_get_for(struct device_node *node, const char *name,
++		    struct fsl_upm *upm)
 +{
-+	return -ENOSYS;
++	int ret;
++	struct device_node *lbus;
++	struct resource lbc_res;
++	ptrdiff_t mxmr_offs;
++
++	lbus = of_get_parent(node);
++	if (!lbus) {
++		pr_err("FSL UPM: can't get parent local bus node\n");
++		return -ENOENT;
++	}
++
++	ret = of_address_to_resource(lbus, 0, &lbc_res);
++	if (ret) {
++		pr_err("FSL UPM: can't get parent local bus base\n");
++		return -ENOMEM;
++	}
++
++	switch (name[0]) {
++	case 'A':
++		mxmr_offs = LBC_MAMR;
++		break;
++	case 'B':
++		mxmr_offs = LBC_MBMR;
++		break;
++	case 'C':
++		mxmr_offs = LBC_MCMR;
++		break;
++	default:
++		pr_err("FSL UPM: unknown UPM requested\n");
++		return -EINVAL;
++		break;
++	}
++
++	upm->lbc_base = ioremap_nocache(lbc_res.start,
++					lbc_res.end - lbc_res.start + 1);
++	if (!upm->lbc_base)
++		return -ENOMEM;
++
++	upm->mxmr = upm->lbc_base + mxmr_offs;
++	upm->mar = upm->lbc_base + LBC_MAR;
++
++	return 0;
 +}
 +
-+static inline void gpio_free(unsigned int gpio)
++#ifndef CONFIG_FSL_UPM_LOCKLESS
++spinlock_t upm_lock;
++unsigned long upm_lock_flags;
++
++static int __init fsl_upm_init(void)
 +{
++	spin_lock_init(&upm_lock);
++	return 0;
++}
++arch_initcall(fsl_upm_init);
++#endif
+diff --git a/include/asm-powerpc/fsl_upm.h b/include/asm-powerpc/fsl_upm.h
+new file mode 100644
+index 0000000..19f5f9d
+--- /dev/null
++++ b/include/asm-powerpc/fsl_upm.h
+@@ -0,0 +1,102 @@
++/*
++ * Freescale UPM routines.
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __ASM_POWERPC_FSL_UPM
++#define __ASM_POWERPC_FSL_UPM
++
++#include <linux/spinlock.h>
++#include <asm/io.h>
++
++#define LBC_MAR		0x68
++#define LBC_MAMR	0x70
++#define LBC_MBMR	0x74
++#define LBC_MCMR	0x78
++
++#define LBC_MXMR_RUNP	0x30000000
++
++struct fsl_upm {
++	void __iomem *lbc_base;
++	void __iomem *mxmr;
++	void __iomem *mar;
++};
++
++#ifndef CONFIG_FSL_UPM_LOCKLESS
++extern spinlock_t upm_lock;
++extern unsigned long upm_lock_flags;
++
++static inline void upm_do_lock(void)
++{
++	spin_lock_irqsave(&upm_lock, upm_lock_flags);
 +}
 +
-+static inline int gpio_direction_input(unsigned int gpio)
++static inline void upm_do_unlock(void)
 +{
-+	return -ENOSYS;
++	spin_unlock_irqrestore(&upm_lock, upm_lock_flags);
++}
++#else /* CONFIG_FSL_UPM_LOCKLESS */
++static inline void upm_do_lock(void) {}
++static inline void upm_do_unlock(void) {}
++#endif /* CONFIG_FSL_UPM_LOCKLESS */
++
++extern int fsl_upm_get_for(struct device_node *node, const char *name,
++			   struct fsl_upm *upm);
++
++static inline void fsl_upm_free(struct fsl_upm *upm)
++{
++	iounmap(upm->lbc_base);
 +}
 +
-+static inline int gpio_direction_output(unsigned int gpio, int value)
++static inline int fsl_upm_got(struct fsl_upm *upm)
 +{
-+	return -ENOSYS;
++	return !!upm->lbc_base;
 +}
 +
-+static inline int gpio_get_value(unsigned int gpio)
++static inline void fsl_upm_start_pattern(struct fsl_upm *upm, u32 pat_offset)
 +{
-+	return -ENOSYS;
++	upm_do_lock();
++	out_be32(upm->mxmr, LBC_MXMR_RUNP | pat_offset);
 +}
 +
-+static inline void gpio_set_value(unsigned int gpio, int value)
++static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
 +{
++	out_be32(upm->mxmr, 0x0);
++
++	while (in_be32(upm->mxmr) != 0x0)
++		cpu_relax();
++
++	upm_do_unlock();
 +}
 +
-+static inline int gpio_to_irq(unsigned int gpio)
++static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
++				      void __iomem *io_base,
++				      int width, u32 cmd)
 +{
-+	return -ENOSYS;
++	out_be32(upm->mar, cmd << (32 - width));
++	switch (width) {
++	case 8:
++		out_8(io_base, 0x0);
++		break;
++	case 16:
++		out_be16(io_base, 0x0);
++		break;
++	case 32:
++		out_be32(io_base, 0x0);
++		break;
++	default:
++		return -EINVAL;
++		break;
++	}
++
++	return 0;
 +}
 +
-+static inline int irq_to_gpio(unsigned int irq)
-+{
-+	return -ENOSYS;
-+}
-+
-+#endif /* CONFIG_GENERIC_GPIO */
-+
- /* platforms that don't directly support access to GPIOs through I2C, SPI,
-  * or other blocking infrastructure can use these wrappers.
-  */
++#endif /* __ASM_POWERPC_FSL_UPM */
 -- 
 1.5.2.2
