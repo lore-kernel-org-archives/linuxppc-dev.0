@@ -1,12 +1,13 @@
-Return-Path: <benh@ozlabs.org>
-To: Greg Kroah-Hartman <greg@kroah.com>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 10 Dec 2007 17:32:16 +1100
-Subject: [PATCH 2/2] pci: Fix warning in setup-res.c on 32-bit platforms with
-	64-bit resources
-Message-Id: <20071210063217.292B5DDE27@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org
+Return-Path: <SRS0=6/a2=RB=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id EA6AFDDDE7
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 18:43:33 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 4xx: Add 440SPe revA runtime detection to PCIe
+	driver
+Date: Mon, 10 Dec 2007 08:37:34 +0100
+Message-Id: <1197272254-11691-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,31 +17,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds appropriate casts to avoid a warning and print the correct
-values in pr_debug.
+This patch adds runtime detection of the 440SPe revision A chips. These
+chips are equipped with a slighly different PCIe core and need special/
+different initialization. The compatible node is changed to
+"plb-pciex-440spe" ("A" and "B" dropped). This is needed for boards that
+can be equipped with both PPC revisions like the AMCC Yucca.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Stefan Roese <sr@denx.de>
 ---
+ arch/powerpc/boot/dts/katmai.dts |    6 +++---
+ arch/powerpc/sysdev/ppc4xx_pci.c |   25 +++++++++++++++++--------
+ 2 files changed, 20 insertions(+), 11 deletions(-)
 
- drivers/pci/setup-res.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-work/drivers/pci/setup-res.c
-===================================================================
---- linux-work.orig/drivers/pci/setup-res.c	2007-12-10 17:17:32.000000000 +1100
-+++ linux-work/drivers/pci/setup-res.c	2007-12-10 17:17:54.000000000 +1100
-@@ -51,10 +51,12 @@ pci_update_resource(struct pci_dev *dev,
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index 2bea84f..824cf4e 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -269,7 +269,7 @@
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+-			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
++			compatible = "ibm,plb-pciex-440spe", "ibm,plb-pciex";
+ 			primary;
+ 			port = <0>; /* port number */
+ 			reg = <d 00000000 20000000	/* Config space access */
+@@ -310,7 +310,7 @@
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+-			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
++			compatible = "ibm,plb-pciex-440spe", "ibm,plb-pciex";
+ 			primary;
+ 			port = <1>; /* port number */
+ 			reg = <d 20000000 20000000	/* Config space access */
+@@ -351,7 +351,7 @@
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+-			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
++			compatible = "ibm,plb-pciex-440spe", "ibm,plb-pciex";
+ 			primary;
+ 			port = <2>; /* port number */
+ 			reg = <d 40000000 20000000	/* Config space access */
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index bd85a40..744b5ca 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -49,6 +49,15 @@ extern unsigned long total_memory;
+ #define RES_TO_U32_HIGH(val)	(0)
+ #endif
  
- 	pcibios_resource_to_bus(dev, &region, res);
++static inline int ppc440spe_revA(void)
++{
++	/* Catch both 440SPe variants, with and without RAID6 support */
++        if ((mfspr(SPRN_PVR) & 0xffefffff) == 0x53421890)
++                return 1;
++        else
++                return 0;
++}
++
+ static void fixup_ppc4xx_pci_bridge(struct pci_dev *dev)
+ {
+ 	struct pci_controller *hose;
+@@ -521,8 +530,7 @@ static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
+  *
+  * We support 3 parts currently based on the compatible property:
+  *
+- * ibm,plb-pciex-440speA
+- * ibm,plb-pciex-440speB
++ * ibm,plb-pciex-440spe
+  * ibm,plb-pciex-405ex
+  *
+  * Anything else will be rejected for now as they are all subtly
+@@ -693,7 +701,7 @@ static int ppc440spe_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
  
--	pr_debug("  got res [%llx:%llx] bus [%lx:%lx] flags %lx for "
-+	pr_debug("  got res [%llx:%llx] bus [%llx:%llx] flags %lx for "
- 		 "BAR %d of %s\n", (unsigned long long)res->start,
- 		 (unsigned long long)res->end,
--		 region.start, region.end, res->flags, resno, pci_name(dev));
-+		 (unsigned long long)region.start,
-+		 (unsigned long long)region.end,
-+		 (unsigned long)res->flags, resno, pci_name(dev));
+ 	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET, val);
+ 	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, 0x20222222);
+-	if (of_device_is_compatible(port->node, "ibm,plb-pciex-440speA"))
++	if (ppc440spe_revA())
+ 		mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x11000000);
+ 	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL0SET1, 0x35000000);
+ 	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL1SET1, 0x35000000);
+@@ -772,7 +780,6 @@ static struct ppc4xx_pciex_hwops ppc440speB_pcie_hwops __initdata =
+ 	.setup_utl	= ppc440speB_pciex_init_utl,
+ };
  
- 	new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
- 	if (res->flags & IORESOURCE_IO)
+-
+ #endif /* CONFIG_44x */
+ 
+ #ifdef CONFIG_40x
+@@ -888,10 +895,12 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+ 		return 0;
+ 
+ #ifdef CONFIG_44x
+-	if (of_device_is_compatible(np, "ibm,plb-pciex-440speA"))
+-		ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
+-	else if (of_device_is_compatible(np, "ibm,plb-pciex-440speB"))
+-		ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
++	if (of_device_is_compatible(np, "ibm,plb-pciex-440spe")) {
++		if (ppc440spe_revA())
++			ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
++		else
++			ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
++	}
+ #endif /* CONFIG_44x    */
+ #ifdef CONFIG_40x
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+-- 
+1.5.3.7.949.g2221a6
