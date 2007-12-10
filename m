@@ -1,17 +1,14 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9D454DDE32
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:02:07 +1100 (EST)
-Date: Mon, 10 Dec 2007 17:07:04 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-Message-ID: <20071210230704.GA2550@lixom.net>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 11 Dec 2007 10:04:53 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
+Message-ID: <20071210230453.GB5495@localhost.localdomain>
+References: <20071210204705.GA31263@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20071210204705.GA31263@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,12 +18,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 08, 2007 at 04:07:14AM +0530, Balbir Singh wrote:
+On Mon, Dec 10, 2007 at 11:47:05PM +0300, Anton Vorontsov wrote:
+> Hi all,
+> 
+> Here are patches to support NAND on UPM. That driver is generic for
+> all processors with FSL UPMs. And because of that, few more patches are
+> needed -- GPIO API and generic FSL UPM functions.
+> 
+> This is early RFC, all patches are in single thread, so everyone could
+> make up overall picture of what is going on. I'll split the thread by
+> topics after that RFC.
+> 
+> Ok, the patches and what they are for:
+> 
+> 1,2,3,4. GPIO API:
+> ------------------
+> Usually NAND chips exports RNB (Ready-Not-Busy) pin, so drivers
+> could read it and get a hint when chip is ready.
+> 
+> Often, WP (write protect) pin is also connected to GPIO. So, GPIO API
+> is mandatory for generic drivers.
+> 
+> OF device tree GPIOs bindings are similar to IRQs:
+> 
+> node {
+> 	gpios = <bank pin bank pin bank pin>;
+> 	gpio-parent = <&par_io_controller>;
+> };
+> 
+> "bank pin" scheme is controller specific, so controllers that want
+> to implement flat mappings or any other could do so.
 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+It might be safest to do as is done for interrupts, and not define the
+internal format at all.  The gpio within the gpio controller would be
+defined by a gpio-descriptor whose format is determined by the
+controller.  You would need to add a #gpio-cells property in this
+case, so you can at least determine the size of the descriptors
+associated with a particular gpio controller.
 
-Looks good to me. Sure, it could be fleshed out to something more
-generic and in common code, but this is small and simple and doesn't
-bloat the kernel much as it stands, and it has value for debugging.
-
-Acked-by: Olof Johansson <olof@lixom.net>
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
