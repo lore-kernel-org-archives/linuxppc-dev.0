@@ -1,31 +1,22 @@
-Return-Path: <B13201@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1E336DDE09
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 16:25:41 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	lBA5PaFr025233
-	for <linuxppc-dev@ozlabs.org>; Sun, 9 Dec 2007 22:25:36 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lBA5PY5l005038
-	for <linuxppc-dev@ozlabs.org>; Sun, 9 Dec 2007 23:25:35 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Fix rounding bug in emulation for double floatoperating
-Date: Mon, 10 Dec 2007 13:25:34 +0800
-Message-ID: <6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20071210045616.GC29611@localhost.localdomain>
-References: <11972628522442-git-send-email-b13201@freescale.com>
-	<20071210045616.GC29611@localhost.localdomain>
-From: "Liu Yu" <B13201@freescale.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 44A48DDE09
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 16:40:53 +1100 (EST)
+Subject: Re: [PATCH 19/25] powerpc: Wire up PCI on Bamboo board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071206211906.2e1c099f@zod.rchland.ibm.com>
+References: <1196927999.714593.205329520306.qpush@grosgo>
+	<20071206080130.2B29FDE0BA@ozlabs.org>
+	<20071206211906.2e1c099f@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Mon, 10 Dec 2007 16:40:22 +1100
+Message-Id: <1197265222.6563.54.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,46 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+powerpc: Wire up PCI on Bamboo board
 
+This adds the device-tree bits & call to ppc4xx_pci_find_bridges()
+to make PCI work on the Bamboo board
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-=20
-
-> -----Original Message-----
-> From: David Gibson [mailto:david@gibson.dropbear.id.au]=20
-> Sent: Monday, December 10, 2007 12:56 PM
-> To: Liu Yu
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] Fix rounding bug in emulation for double=20
-> floatoperating
->=20
->=20
-> On Mon, Dec 10, 2007 at 01:00:52PM +0800, Liu Yu wrote:
-> >=20
-> > This patch fixes rounding bug in emulation for double float=20
-> operating on PowerPC platform.
-> >=20
-> > When pack double float operand, it need to truncate the=20
-> tail due to the limited precision.
-> > If the truncated part is not zero, the last bit of work bit=20
-> (totally 3 bits) need to '|' 1.
-> >=20
-> > This patch is completed in _FP_FRAC_SRS_2(X,N,sz)=20
-> (arch/powerpc/math-emu/op-2.h).
-> > Originally the code leftwards rotates the operand to just keep the=20
-> > truncated part, then check whether it is zero. However, the=20
-> number it=20
-> > rotates is not correct when N is not smaller than=20
-> _FP_W_TYPE_SIZE, and it will cause the work bit '|' 1 in the=20
-> improper case.
-> >=20
-> > This patch fixes this issue.
-> >=20
-> > Signed-off-by: Liu Yu <b13201@freescale.com>
->=20
-> Wow someone deciphered the hideous macro hell of the math=20
-> emulation code enough to fix a bug.  I don't suppose you'd=20
-> care to fix the millions of warnings that the math-emu code=20
-> generates...?
-
-Oh, I don't like macro define either. But it's really a bug...
+Index: linux-work/arch/powerpc/boot/dts/bamboo.dts
+===================================================================
+--- linux-work.orig/arch/powerpc/boot/dts/bamboo.dts	2007-12-10 15:56:59.000000000 +1100
++++ linux-work/arch/powerpc/boot/dts/bamboo.dts	2007-12-10 16:39:51.000000000 +1100
+@@ -239,10 +239,48 @@
+ 				zmii-channel = <1>;
+ 			};
+ 		};
++
++		PCI0: pci@ec000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb440ep-pci", "ibm,plb-pci";
++			primary;
++			reg = <0 eec00000 8	/* Config space access */
++			       0 eed80000 4	/* IACK */
++			       0 eed80000 4	/* Special cycle */
++			       0 ef480000 40>;	/* Internal registers */
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed. Chip supports a second
++			 * IO range but we don't use it for now
++			 */
++			ranges = <02000000 0 a0000000 0 a0000000 0 20000000
++				  01000000 0 00000000 0 e8000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* Bamboo has all 4 IRQ pins tied together per slot */
++			interrupt-map-mask = <f800 0 0 0>;
++			interrupt-map = <
++				/* IDSEL 1 */
++				0800 0 0 0 &UIC0 1c 8
++
++				/* IDSEL 2 */
++				1000 0 0 0 &UIC0 1b 8
++
++				/* IDSEL 3 */
++				1800 0 0 0 &UIC0 1a 8
++
++				/* IDSEL 4 */
++				2000 0 0 0 &UIC0 19 8
++			>;
++		};
+ 	};
+ 
+ 	chosen {
+ 		linux,stdout-path = "/plb/opb/serial@ef600300";
+-		bootargs = "console=ttyS0,115200";
+ 	};
+ };
