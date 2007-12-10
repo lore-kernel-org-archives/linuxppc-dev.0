@@ -1,18 +1,19 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
-	by ozlabs.org (Postfix) with ESMTP id 08F85DE3AD
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 05:34:14 +1100 (EST)
+Received: from vms042pub.verizon.net (vms042pub.verizon.net [206.46.252.42])
+	by ozlabs.org (Postfix) with ESMTP id 545ABDE45C
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 05:34:19 +1100 (EST)
 Received: from terra.home ([96.233.72.204])
-	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
+	by vms042.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
 	(built Apr
-	3 2006)) with ESMTPA id <0JSU002QBJLNJFJ0@vms040.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Mon, 10 Dec 2007 12:34:35 -0600 (CST)
-Date: Mon, 10 Dec 2007 13:33:34 -0500
+	3 2006)) with ESMTPA id <0JSU004C1JKGZMP0@vms042.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Mon, 10 Dec 2007 12:33:52 -0600 (CST)
+Date: Mon, 10 Dec 2007 13:33:32 -0500
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 5/5] Convert pfc8563 i2c driver from old style to new style
+Subject: [PATCH 4/5] Convert PowerPC MPC i2c to of_platform_driver from
+	platform_driver
 In-reply-to: <20071210183323.12584.88127.stgit@terra.home>
 To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Message-id: <20071210183334.12584.83356.stgit@terra.home>
+Message-id: <20071210183332.12584.76341.stgit@terra.home>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20071210183323.12584.88127.stgit@terra.home>
@@ -25,168 +26,362 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert pfc8563 i2c driver from old style to new style. The
-driver is also modified to support device tree names via the
-i2c mod alias mechanism.
+Convert MPC i2c driver from being a platform_driver to an open firmware version. Error returns were improved. Routine names were changed from fsl_ to mpc_ to make them match the file name.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
 
- drivers/rtc/rtc-pcf8563.c |  110 ++++++++++++---------------------------------
- 1 files changed, 30 insertions(+), 80 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |   96 -------------------------
+ drivers/i2c/busses/i2c-mpc.c  |  158 +++++++++++++++++++++++++++++------------
+ 2 files changed, 110 insertions(+), 144 deletions(-)
 
 
-diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
-index 0242d80..7da2cd0 100644
---- a/drivers/rtc/rtc-pcf8563.c
-+++ b/drivers/rtc/rtc-pcf8563.c
-@@ -25,10 +25,6 @@
-  * located at 0x51 will pass the validation routine due to
-  * the way the registers are implemented.
-  */
--static unsigned short normal_i2c[] = { I2C_CLIENT_END };
--
--/* Module parameters */
--I2C_CLIENT_INSMOD;
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 268638a..d6ef264 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -318,102 +318,6 @@ err:
  
- #define PCF8563_REG_ST1		0x00 /* status */
- #define PCF8563_REG_ST2		0x01
-@@ -72,9 +68,6 @@ struct pcf8563 {
- 	int c_polarity;	/* 0: MO_C=1 means 19xx, otherwise MO_C=1 means 20xx */
- };
+ arch_initcall(gfar_of_init);
  
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind);
--static int pcf8563_detach(struct i2c_client *client);
+-#ifdef CONFIG_I2C_BOARDINFO
+-#include <linux/i2c.h>
 -
- /*
-  * In the routines that deal directly with the pcf8563 hardware, we use
-  * rtc_time -- month 0-11, hour 0-23, yr = calendar year-epoch.
-@@ -257,98 +250,55 @@ static const struct rtc_class_ops pcf8563_rtc_ops = {
- 	.set_time	= pcf8563_rtc_set_time,
- };
- 
--static int pcf8563_attach(struct i2c_adapter *adapter)
-+static int pcf8563_remove(struct i2c_client *client)
- {
--	return i2c_probe(adapter, &addr_data, pcf8563_probe);
-+	struct rtc_device *rtc = i2c_get_clientdata(client);
-+
-+	if (rtc)
-+		rtc_device_unregister(rtc);
-+
-+	return 0;
- }
- 
-+static struct i2c_device_id pcf8563_id[] = {
-+	{"rtc-pcf8563", 0},
-+	{"pcf8563", 0},
-+	{"philips,pcf8563", 0},
-+	{"rtc8564", 0},
-+	{"epson,rtc8564", 0},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, pcf8563_id);
-+
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id);
-+
- static struct i2c_driver pcf8563_driver = {
- 	.driver		= {
--		.name	= "pcf8563",
-+		.name	= "rtc-pcf8563",
- 	},
- 	.id		= I2C_DRIVERID_PCF8563,
--	.attach_adapter = &pcf8563_attach,
--	.detach_client	= &pcf8563_detach,
-+	.probe = &pcf8563_probe,
-+	.remove = &pcf8563_remove,
-+	.id_table	= pcf8563_id,
- };
- 
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind)
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id)
- {
--	struct pcf8563 *pcf8563;
--	struct i2c_client *client;
-+	int result;
- 	struct rtc_device *rtc;
- 
--	int err = 0;
+-static void __init of_register_i2c_devices(struct device_node *adap_node,
+-					   int bus_num)
+-{
+-	struct device_node *node = NULL;
+-	const char *compatible;
 -
--	dev_dbg(&adapter->dev, "%s\n", __FUNCTION__);
+-	while ((node = of_get_next_child(adap_node, node))) {
+-		struct i2c_board_info info = {};
+-		const u32 *addr;
+-		int len;
 -
--	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C)) {
--		err = -ENODEV;
--		goto exit;
--	}
--
--	if (!(pcf8563 = kzalloc(sizeof(struct pcf8563), GFP_KERNEL))) {
--		err = -ENOMEM;
--		goto exit;
--	}
--
--	client = &pcf8563->client;
--	client->addr = address;
--	client->driver = &pcf8563_driver;
--	client->adapter	= adapter;
--
--	strlcpy(client->name, pcf8563_driver.driver.name, I2C_NAME_SIZE);
--
--	/* Verify the chip is really an PCF8563 */
--	if (kind < 0) {
--		if (pcf8563_validate_client(client) < 0) {
--			err = -ENODEV;
--			goto exit_kfree;
+-		addr = of_get_property(node, "reg", &len);
+-		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+-			printk(KERN_WARNING "fsl_soc.c: invalid i2c device entry\n");
+-			continue;
 -		}
+-
+-		info.irq = irq_of_parse_and_map(node, 0);
+-		if (info.irq == NO_IRQ)
+-			info.irq = -1;
+-
+-		compatible = of_get_property(node, "compatible", &len);
+-		if (!compatible) {
+-			printk(KERN_WARNING "i2c-mpc.c: invalid entry, missing compatible attribute\n");
+-			continue;
+-		}
+-		strncpy(info.driver_name, compatible, sizeof(info.driver_name));
+-
+-		info.addr = *addr;
+-
+-		i2c_register_board_info(bus_num, &info, 1);
 -	}
--
--	/* Inform the i2c layer */
--	if ((err = i2c_attach_client(client)))
--		goto exit_kfree;
--
--	dev_info(&client->dev, "chip found, driver version " DRV_VERSION "\n");
-+	result = pcf8563_validate_client(client);
-+	if (result)
-+		return result;
- 
- 	rtc = rtc_device_register(pcf8563_driver.driver.name, &client->dev,
- 				&pcf8563_rtc_ops, THIS_MODULE);
--
--	if (IS_ERR(rtc)) {
--		err = PTR_ERR(rtc);
--		goto exit_detach;
--	}
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 
- 	i2c_set_clientdata(client, rtc);
- 
- 	return 0;
--
--exit_detach:
--	i2c_detach_client(client);
--
--exit_kfree:
--	kfree(pcf8563);
--
--exit:
--	return err;
 -}
 -
--static int pcf8563_detach(struct i2c_client *client)
+-static int __init fsl_i2c_of_init(void)
 -{
--	struct pcf8563 *pcf8563 = container_of(client, struct pcf8563, client);
--	int err;
--	struct rtc_device *rtc = i2c_get_clientdata(client);
+-	struct device_node *np;
+-	unsigned int i;
+-	struct platform_device *i2c_dev;
+-	int ret;
 -
--	if (rtc)
--		rtc_device_unregister(rtc);
+-	for (np = NULL, i = 0;
+-	     (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL;
+-	     i++) {
+-		struct resource r[2];
+-		struct fsl_i2c_platform_data i2c_data;
+-		const unsigned char *flags = NULL;
 -
--	if ((err = i2c_detach_client(client)))
--		return err;
+-		memset(&r, 0, sizeof(r));
+-		memset(&i2c_data, 0, sizeof(i2c_data));
 -
--	kfree(pcf8563);
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
+-		if (IS_ERR(i2c_dev)) {
+-			ret = PTR_ERR(i2c_dev);
+-			goto err;
+-		}
+-
+-		i2c_data.device_flags = 0;
+-		flags = of_get_property(np, "dfsrr", NULL);
+-		if (flags)
+-			i2c_data.device_flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+-
+-		flags = of_get_property(np, "fsl5200-clocking", NULL);
+-		if (flags)
+-			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
+-
+-		ret =
+-		    platform_device_add_data(i2c_dev, &i2c_data,
+-					     sizeof(struct
+-						    fsl_i2c_platform_data));
+-		if (ret)
+-			goto unreg;
+-
+-		of_register_i2c_devices(np, i);
+-	}
 -
 -	return 0;
+-
+-unreg:
+-	platform_device_unregister(i2c_dev);
+-err:
+-	return ret;
+-}
+-
+-arch_initcall(fsl_i2c_of_init);
+-#endif
+-
+ #ifdef CONFIG_PPC_83xx
+ static int __init mpc83xx_wdt_init(void)
+ {
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 7c35a8f..6f080d4 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -17,7 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/init.h>
+-#include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/io.h>
+ #include <linux/fsl_devices.h>
+@@ -25,13 +25,13 @@
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ 
+-#define MPC_I2C_ADDR  0x00
++#define DRV_NAME "mpc-i2c"
++
+ #define MPC_I2C_FDR 	0x04
+ #define MPC_I2C_CR	0x08
+ #define MPC_I2C_SR	0x0c
+ #define MPC_I2C_DR	0x10
+ #define MPC_I2C_DFSRR 0x14
+-#define MPC_I2C_REGION 0x20
+ 
+ #define CCR_MEN  0x80
+ #define CCR_MIEN 0x40
+@@ -316,105 +316,167 @@ static struct i2c_adapter mpc_ops = {
+ 	.retries = 1
+ };
+ 
+-static int fsl_i2c_probe(struct platform_device *pdev)
++struct i2c_driver_device {
++	char	*of_device;
++	char	*i2c_driver;
++	char	*i2c_type;
++};
++
++static void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node)
++{
++	struct device_node *node = NULL;
++
++	while ((node = of_get_next_child(adap_node, node))) {
++		struct i2c_board_info info;
++		const u32 *addr;
++		const char *compatible;
++		int len;
++
++		addr = of_get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
++			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing reg attribute\n");
++			continue;
++		}
++
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq == NO_IRQ)
++			info.irq = -1;
++
++		compatible = of_get_property(node, "compatible", &len);
++		if (!compatible) {
++			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing compatible attribute\n");
++			continue;
++		}
++		strncpy(info.driver_name, compatible, sizeof(info.driver_name));
++		info.type[0] = '\0';
++
++		info.platform_data = NULL;
++		info.addr = *addr;
++
++		if (!i2c_new_device(adap, &info)) {
++			printk(KERN_ERR "i2c-mpc.c: Failed to load driver for %s\n", info.driver_name);
++			continue;
++		}
++	}
++}
++
++static int mpc_i2c_probe(struct of_device *op, const struct of_device_id *match)
+ {
+ 	int result = 0;
+ 	struct mpc_i2c *i2c;
+-	struct fsl_i2c_platform_data *pdata;
+-	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-
+-	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+ 
+ 	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+ 	if (!i2c)
+ 		return -ENOMEM;
+ 
+-	i2c->irq = platform_get_irq(pdev, 0);
+-	if (i2c->irq < 0) {
+-		result = -ENXIO;
+-		goto fail_get_irq;
+-	}
+-	i2c->flags = pdata->device_flags;
+-	init_waitqueue_head(&i2c->queue);
++	if (of_get_property(op->node, "dfsrr", NULL))
++		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+ 
+-	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
++	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
++		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+ 
++	init_waitqueue_head(&i2c->queue);
++
++	i2c->base = of_iomap(op->node, 0);
+ 	if (!i2c->base) {
+ 		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+ 		result = -ENOMEM;
+ 		goto fail_map;
+ 	}
+ 
+-	if (i2c->irq != 0)
+-		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+-					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+-			printk(KERN_ERR
+-			       "i2c-mpc - failed to attach interrupt\n");
+-			goto fail_irq;
+-		}
++	i2c->irq = irq_of_parse_and_map(op->node, 0);
++	if (i2c->irq == NO_IRQ) {
++		result = -ENXIO;
++		goto fail_irq;
++	}
++
++	result = request_irq(i2c->irq, mpc_i2c_isr, IRQF_SHARED, "i2c-mpc", i2c));
++	if (result < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
++		goto fail_request;
++	}
+ 
+ 	mpc_i2c_setclock(i2c);
+-	platform_set_drvdata(pdev, i2c);
++
++	dev_set_drvdata(&op->dev, i2c);
+ 
+ 	i2c->adap = mpc_ops;
+-	i2c->adap.nr = pdev->id;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+-	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
++	i2c->adap.dev.parent = &op->dev;
++
++	result = i2c_add_adapter(&i2c->adap);
++	if (result < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
+ 
++	of_register_i2c_devices(&i2c->adap, op->node);
++
+ 	return result;
+ 
+-      fail_add:
+-	if (i2c->irq != 0)
+-		free_irq(i2c->irq, i2c);
+-      fail_irq:
++fail_add:
++	free_irq(i2c->irq, i2c);
++fail_request:
++	irq_dispose_mapping(i2c->irq);
++fail_irq:
+ 	iounmap(i2c->base);
+-      fail_map:
+-      fail_get_irq:
++fail_map:
+ 	kfree(i2c);
+ 	return result;
+ };
+ 
+-static int fsl_i2c_remove(struct platform_device *pdev)
++static int mpc_i2c_remove(struct of_device *op)
+ {
+-	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
++	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
+ 
+ 	i2c_del_adapter(&i2c->adap);
+-	platform_set_drvdata(pdev, NULL);
++	dev_set_drvdata(&op->dev, NULL);
+ 
+ 	if (i2c->irq != NO_IRQ)
+ 		free_irq(i2c->irq, i2c);
+ 
++	irq_dispose_mapping(i2c->irq);
+ 	iounmap(i2c->base);
+ 	kfree(i2c);
+ 	return 0;
+ };
+ 
++static struct of_device_id mpc_i2c_of_match[] = {
++	{
++		.compatible	= "fsl-i2c",
++	},
++};
++MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
++
++
+ /* Structure for a device driver */
+-static struct platform_driver fsl_i2c_driver = {
+-	.probe = fsl_i2c_probe,
+-	.remove = fsl_i2c_remove,
+-	.driver	= {
+-		.owner = THIS_MODULE,
+-		.name = "fsl-i2c",
++static struct of_platform_driver mpc_i2c_driver = {
++	.match_table	= mpc_i2c_of_match,
++	.probe		= mpc_i2c_probe,
++	.remove		= __devexit_p(mpc_i2c_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= DRV_NAME,
+ 	},
+ };
+ 
+-static int __init fsl_i2c_init(void)
++static int __init mpc_i2c_init(void)
+ {
+-	return platform_driver_register(&fsl_i2c_driver);
++	int rv;
++
++	rv = of_register_platform_driver(&mpc_i2c_driver);
++	if (rv)
++		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
++	return rv;
  }
  
- static int __init pcf8563_init(void)
+-static void __exit fsl_i2c_exit(void)
++static void __exit mpc_i2c_exit(void)
+ {
+-	platform_driver_unregister(&fsl_i2c_driver);
++	of_unregister_platform_driver(&mpc_i2c_driver);
+ }
+ 
+-module_init(fsl_i2c_init);
+-module_exit(fsl_i2c_exit);
++module_init(mpc_i2c_init);
++module_exit(mpc_i2c_exit);
+ 
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+ MODULE_DESCRIPTION
