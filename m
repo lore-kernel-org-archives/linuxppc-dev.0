@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 1/3] Merge libfdt upstream source
+Subject: [PATCH 2/3] Use embedded libfdt in the bootwrapper
 In-Reply-To: <20071210032343.GB29611@localhost.localdomain>
-Message-Id: <20071210032839.635A9DDDF9@ozlabs.org>
+Message-Id: <20071210032839.71412DDDFA@ozlabs.org>
 Date: Mon, 10 Dec 2007 14:28:39 +1100 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,2645 +15,469 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This large patch incorporates a copy of dtc libfdt into the kernel
-source, in arch/powerpc/boot/libfdt.  This patch only imports the
-upstream sources verbatim, later patches are needed to actually link
-it into the kernel Makefiles.
+This patch incorporates libfdt (from the source embedded in an earlier
+patch) into the wrapper.a library used by the bootwrapper.  This
+includes adding a libfdt_env.h file, which the libfdt sources need in
+order to integrate into the bootwrapper environment, and a
+libfdt-wrapper.c which provides glue to connect the bootwrapper's
+abstract device tree callbacks to the libfdt functions.
+
+In addition, this patch changes the various wrapper and platform files
+to use libfdt functions instead of the older flatdevtree.c library.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 ---
- arch/powerpc/boot/libfdt/Makefile.libfdt   |   14 
- 10 files changed, 2568 insertions(+)
+ arch/powerpc/boot/Makefile          |    6 -
+ arch/powerpc/boot/bamboo.c          |    2 
+ arch/powerpc/boot/cuboot-52xx.c     |    2 
+ arch/powerpc/boot/cuboot-83xx.c     |    2 
+ arch/powerpc/boot/cuboot-85xx.c     |    2 
+ arch/powerpc/boot/cuboot-8xx.c      |    2 
+ arch/powerpc/boot/cuboot-hpc2.c     |    2 
+ arch/powerpc/boot/cuboot-pq2.c      |    2 
+ arch/powerpc/boot/cuboot-sequoia.c  |    2 
+ arch/powerpc/boot/ebony.c           |    2 
+ arch/powerpc/boot/ep88xc.c          |    2 
+ arch/powerpc/boot/holly.c           |    2 
+ arch/powerpc/boot/libfdt-wrapper.c  |  182 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/libfdt_env.h      |   17 +++
+ arch/powerpc/boot/ops.h             |    1 
+ arch/powerpc/boot/prpmc2800.c       |    3 
+ arch/powerpc/boot/ps3.c             |    2 
+ arch/powerpc/boot/treeboot-walnut.c |    2 
+ 18 files changed, 219 insertions(+), 16 deletions(-)
 
----
- arch/powerpc/boot/libfdt/Makefile.libfdt   |   14 
- arch/powerpc/boot/libfdt/fdt.c             |  156 ++++++
- arch/powerpc/boot/libfdt/fdt.h             |   60 ++
- arch/powerpc/boot/libfdt/fdt_ro.c          |  583 +++++++++++++++++++++++
- arch/powerpc/boot/libfdt/fdt_rw.c          |  447 +++++++++++++++++
- arch/powerpc/boot/libfdt/fdt_strerror.c    |   96 +++
- arch/powerpc/boot/libfdt/fdt_sw.c          |  258 ++++++++++
- arch/powerpc/boot/libfdt/fdt_wip.c         |  144 +++++
- arch/powerpc/boot/libfdt/libfdt.h          |  721 +++++++++++++++++++++++++++++
- arch/powerpc/boot/libfdt/libfdt_internal.h |   89 +++
- 10 files changed, 2568 insertions(+)
-
-Index: working-2.6/arch/powerpc/boot/libfdt/Makefile.libfdt
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/Makefile	2007-12-10 12:01:56.000000000 +1100
+@@ -33,7 +33,7 @@ ifeq ($(call cc-option-yn, -fstack-prote
+ BOOTCFLAGS	+= -fno-stack-protector
+ endif
+ 
+-BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
++BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj) -I$(srctree)/$(src)/libfdt
+ 
+ $(obj)/4xx.o: BOOTCFLAGS += -mcpu=440
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
+@@ -46,7 +46,9 @@ zliblinuxheader := zlib.h zconf.h zutil.
+ $(addprefix $(obj)/,$(zlib) gunzip_util.o main.o): \
+ 	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
+ 
++src-libfdt := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
+ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
++		$(addprefix libfdt/,$(src-libfdt)) libfdt-wrapper.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+@@ -101,8 +103,10 @@ quiet_cmd_bootar = BOOTAR  $@
+       cmd_bootar = $(CROSS32AR) -cr $@.$$$$ $(filter-out FORCE,$^); mv $@.$$$$ $@
+ 
+ $(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c FORCE
++	$(Q)mkdir -p $(dir $@)
+ 	$(call if_changed_dep,bootcc)
+ $(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
++	$(Q)mkdir -p $(dir $@)
+ 	$(call if_changed_dep,bootas)
+ 
+ $(obj)/wrapper.a: $(obj-wlib) FORCE
+Index: working-2.6/arch/powerpc/boot/libfdt_env.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/Makefile.libfdt	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,14 @@
-+# Makefile.libfdt
-+#
-+# This is not a complete Makefile of itself.  Instead, it is designed to
-+# be easily embeddable into other systems of Makefiles.
-+#
-+LIBFDT_SRCS = fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
-+LIBFDT_INCLUDES = fdt.h libfdt.h
-+LIBFDT_EXTRA = libfdt_internal.h
-+LIBFDT_LIB = libfdt/libfdt.a
++++ working-2.6/arch/powerpc/boot/libfdt_env.h	2007-12-10 12:01:10.000000000 +1100
+@@ -0,0 +1,17 @@
++#ifndef _ARCH_POWERPC_BOOT_LIBFDT_ENV_H
++#define _ARCH_POWERPC_BOOT_LIBFDT_ENV_H
 +
-+LIBFDT_OBJS = $(LIBFDT_SRCS:%.c=%.o)
++#include <types.h>
++#include <string.h>
 +
-+$(LIBFDT_objdir)/$(LIBFDT_LIB): $(addprefix $(LIBFDT_objdir)/,$(LIBFDT_OBJS))
++typedef u32 uint32_t;
++typedef u64 uint64_t;
 +
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt.c
++#define fdt16_to_cpu(x)		(x)
++#define cpu_to_fdt16(x)		(x)
++#define fdt32_to_cpu(x)		(x)
++#define cpu_to_fdt32(x)		(x)
++#define fdt64_to_cpu(x)		(x)
++#define cpu_to_fdt64(x)		(x)
++
++#endif /* _ARCH_POWERPC_BOOT_LIBFDT_ENV_H */
+Index: working-2.6/arch/powerpc/boot/bamboo.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/bamboo.c	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/bamboo.c	2007-12-10 12:01:10.000000000 +1100
+@@ -42,6 +42,6 @@ void bamboo_init(void *mac0, void *mac1)
+ 	platform_ops.exit = ibm44x_dbcr_reset;
+ 	bamboo_mac0 = mac0;
+ 	bamboo_mac1 = mac1;
+-	ft_init(_dtb_start, 0, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-52xx.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-52xx.c	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-52xx.c	2007-12-10 12:01:10.000000000 +1100
+@@ -53,7 +53,7 @@ void platform_init(unsigned long r3, uns
+                    unsigned long r6, unsigned long r7)
+ {
+ 	CUBOOT_INIT();
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-83xx.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-83xx.c	2007-10-02 14:55:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-83xx.c	2007-12-10 12:01:10.000000000 +1100
+@@ -52,7 +52,7 @@ void platform_init(unsigned long r3, uns
+                    unsigned long r6, unsigned long r7)
+ {
+ 	CUBOOT_INIT();
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-85xx.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-85xx.c	2007-10-02 14:55:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-85xx.c	2007-12-10 12:01:10.000000000 +1100
+@@ -53,7 +53,7 @@ void platform_init(unsigned long r3, uns
+                    unsigned long r6, unsigned long r7)
+ {
+ 	CUBOOT_INIT();
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-8xx.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-8xx.c	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-8xx.c	2007-12-10 12:01:10.000000000 +1100
+@@ -41,7 +41,7 @@ void platform_init(unsigned long r3, uns
+                    unsigned long r6, unsigned long r7)
+ {
+ 	CUBOOT_INIT();
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-hpc2.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-hpc2.c	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-hpc2.c	2007-12-10 12:01:10.000000000 +1100
+@@ -42,7 +42,7 @@ void platform_init(unsigned long r3, uns
+ 		unsigned long r6, unsigned long r7)
+ {
+ 	CUBOOT_INIT();
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ 	platform_ops.fixups = platform_fixups;
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-pq2.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-pq2.c	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-pq2.c	2007-12-10 12:01:10.000000000 +1100
+@@ -255,7 +255,7 @@ void platform_init(unsigned long r3, uns
+                    unsigned long r6, unsigned long r7)
+ {
+ 	CUBOOT_INIT();
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ 	platform_ops.fixups = pq2_platform_fixups;
+ }
+Index: working-2.6/arch/powerpc/boot/cuboot-sequoia.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/cuboot-sequoia.c	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/cuboot-sequoia.c	2007-12-10 12:01:10.000000000 +1100
+@@ -51,6 +51,6 @@ void platform_init(unsigned long r3, uns
+ 	CUBOOT_INIT();
+ 	platform_ops.fixups = sequoia_fixups;
+ 	platform_ops.exit = ibm44x_dbcr_reset;
+-	ft_init(_dtb_start, 0, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ }
+Index: working-2.6/arch/powerpc/boot/ebony.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ebony.c	2007-10-02 14:55:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/ebony.c	2007-12-10 12:01:10.000000000 +1100
+@@ -146,6 +146,6 @@ void ebony_init(void *mac0, void *mac1)
+ 	platform_ops.exit = ibm44x_dbcr_reset;
+ 	ebony_mac0 = mac0;
+ 	ebony_mac1 = mac1;
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ }
+Index: working-2.6/arch/powerpc/boot/ep88xc.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ep88xc.c	2007-10-22 13:55:50.000000000 +1000
++++ working-2.6/arch/powerpc/boot/ep88xc.c	2007-12-10 12:01:10.000000000 +1100
+@@ -45,7 +45,7 @@ void platform_init(unsigned long r3, uns
+ 	mem_size *= 1024 * 1024;
+ 	simple_alloc_init(_end, mem_size - (unsigned long)_end, 32, 64);
+ 
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 
+ 	planetcore_set_stdout_path(table);
+ 
+Index: working-2.6/arch/powerpc/boot/holly.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/holly.c	2007-10-02 14:55:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/holly.c	2007-12-10 12:01:10.000000000 +1100
+@@ -28,6 +28,6 @@ void platform_init(unsigned long r3, uns
+ 	u32 heapsize = 0x8000000 - (u32)_end; /* 128M */
+ 
+ 	simple_alloc_init(_end, heapsize, 32, 64);
+-	ft_init(_dtb_start, 0, 4);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ }
+Index: working-2.6/arch/powerpc/boot/libfdt-wrapper.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt.c	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,156 @@
++++ working-2.6/arch/powerpc/boot/libfdt-wrapper.c	2007-12-10 12:01:10.000000000 +1100
+@@ -0,0 +1,182 @@
 +/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
++ * This file does the necessary interface mapping between the bootwrapper
++ * device tree operations and the interface provided by shared source
++ * files flatdevicetree.[ch].
 + *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
++ * Copyright 2007 David Gibson, IBM Corporation.
 + *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
 + *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
++ * This library is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
 + *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ * You should have received a copy of the GNU General Public License
++ * along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
 + */
-+#include "libfdt_env.h"
 +
-+#include <fdt.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <page.h>
 +#include <libfdt.h>
++#include "ops.h"
 +
-+#include "libfdt_internal.h"
++#define DEBUG	0
++#define BAD_ERROR(err)	(((err) < 0) \
++			 && ((err) != -FDT_ERR_NOTFOUND) \
++			 && ((err) != -FDT_ERR_EXISTS))
 +
-+int fdt_check_header(const void *fdt)
++#define check_err(err) \
++	({ \
++		if (BAD_ERROR(err) || ((err < 0) && DEBUG)) \
++			printf("%s():%d  %s\n\r", __FUNCTION__, __LINE__, \
++			       fdt_strerror(err)); \
++		if (BAD_ERROR(err)) \
++			exit(); \
++		(err < 0) ? -1 : 0; \
++	})
++
++#define offset_devp(off)	\
++	({ \
++		int offset = (off); \
++		check_err(offset) ? NULL : (void *)(offset+1); \
++	})
++
++#define devp_offset(devp)	(((int)(devp))-1)
++
++static void *fdt;
++static void *buf; /* = NULL */
++
++#define EXPAND_GRANULARITY	1024
++
++static void expand_buf(int minexpand)
 +{
-+	if (fdt_magic(fdt) == FDT_MAGIC) {
-+		/* Complete tree */
-+		if (fdt_version(fdt) < FDT_FIRST_SUPPORTED_VERSION)
-+			return -FDT_ERR_BADVERSION;
-+		if (fdt_last_comp_version(fdt) > FDT_LAST_SUPPORTED_VERSION)
-+			return -FDT_ERR_BADVERSION;
-+	} else if (fdt_magic(fdt) == SW_MAGIC) {
-+		/* Unfinished sequential-write blob */
-+		if (fdt_size_dt_struct(fdt) == 0)
-+			return -FDT_ERR_BADSTATE;
-+	} else {
-+		return -FDT_ERR_BADMAGIC;
-+	}
++	int size = fdt_totalsize(fdt);
++	int rc;
 +
-+	return 0;
++	size = _ALIGN(size + minexpand, EXPAND_GRANULARITY);
++	buf = platform_ops.realloc(buf, size);
++	if (!buf)
++		fatal("Couldn't find %d bytes to expand device tree\n\r", size);
++	rc = fdt_open_into(fdt, buf, size);
++	if (rc != 0)
++		fatal("Couldn't expand fdt into new buffer: %s\n\r",
++		      fdt_strerror(rc));
++
++	fdt = buf;
 +}
 +
-+const void *fdt_offset_ptr(const void *fdt, int offset, int len)
++static void *fdt_wrapper_finddevice(const char *path)
++{
++	return offset_devp(fdt_path_offset(fdt, path));
++}
++
++static int fdt_wrapper_getprop(const void *devp, const char *name,
++			       void *buf, const int buflen)
 +{
 +	const void *p;
-+
-+	if (fdt_version(fdt) >= 0x11)
-+		if (((offset + len) < offset)
-+		    || ((offset + len) > fdt_size_dt_struct(fdt)))
-+			return NULL;
-+
-+	p = _fdt_offset_ptr(fdt, offset);
-+
-+	if (p + len < p)
-+		return NULL;
-+	return p;
-+}
-+
-+uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset)
-+{
-+	const uint32_t *tagp, *lenp;
-+	uint32_t tag;
-+	const char *p;
-+
-+	if (offset % FDT_TAGSIZE)
-+		return -1;
-+
-+	tagp = fdt_offset_ptr(fdt, offset, FDT_TAGSIZE);
-+	if (! tagp)
-+		return FDT_END; /* premature end */
-+	tag = fdt32_to_cpu(*tagp);
-+	offset += FDT_TAGSIZE;
-+
-+	switch (tag) {
-+	case FDT_BEGIN_NODE:
-+		/* skip name */
-+		do {
-+			p = fdt_offset_ptr(fdt, offset++, 1);
-+		} while (p && (*p != '\0'));
-+		if (! p)
-+			return FDT_END;
-+		break;
-+	case FDT_PROP:
-+		lenp = fdt_offset_ptr(fdt, offset, sizeof(*lenp));
-+		if (! lenp)
-+			return FDT_END;
-+		/* skip name offset, length and value */
-+		offset += 2*FDT_TAGSIZE + fdt32_to_cpu(*lenp);
-+		break;
-+	}
-+
-+	if (nextoffset)
-+		*nextoffset = ALIGN(offset, FDT_TAGSIZE);
-+
-+	return tag;
-+}
-+
-+const char *_fdt_find_string(const char *strtab, int tabsize, const char *s)
-+{
-+	int len = strlen(s) + 1;
-+	const char *last = strtab + tabsize - len;
-+	const char *p;
-+
-+	for (p = strtab; p <= last; p++)
-+		if (memeq(p, s, len))
-+			return p;
-+	return NULL;
-+}
-+
-+int fdt_move(const void *fdt, void *buf, int bufsize)
-+{
-+	int err = fdt_check_header(fdt);
-+
-+	if (err)
-+		return err;
-+
-+	if (fdt_totalsize(fdt) > bufsize)
-+		return -FDT_ERR_NOSPACE;
-+
-+	memmove(buf, fdt, fdt_totalsize(fdt));
-+	return 0;
-+}
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt.h	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,60 @@
-+#ifndef _FDT_H
-+#define _FDT_H
-+
-+#ifndef __ASSEMBLY__
-+
-+struct fdt_header {
-+	uint32_t magic;			 /* magic word FDT_MAGIC */
-+	uint32_t totalsize;		 /* total size of DT block */
-+	uint32_t off_dt_struct;		 /* offset to structure */
-+	uint32_t off_dt_strings;	 /* offset to strings */
-+	uint32_t off_mem_rsvmap;	 /* offset to memory reserve map */
-+	uint32_t version;		 /* format version */
-+	uint32_t last_comp_version;	 /* last compatible version */
-+
-+	/* version 2 fields below */
-+	uint32_t boot_cpuid_phys;	 /* Which physical CPU id we're
-+					    booting on */
-+	/* version 3 fields below */
-+	uint32_t size_dt_strings;	 /* size of the strings block */
-+
-+	/* version 17 fields below */
-+	uint32_t size_dt_struct;	 /* size of the structure block */
-+};
-+
-+struct fdt_reserve_entry {
-+	uint64_t address;
-+	uint64_t size;
-+};
-+
-+struct fdt_node_header {
-+	uint32_t tag;
-+	char name[0];
-+};
-+
-+struct fdt_property {
-+	uint32_t tag;
-+	uint32_t len;
-+	uint32_t nameoff;
-+	char data[0];
-+};
-+
-+#endif /* !__ASSEMBLY */
-+
-+#define FDT_MAGIC	0xd00dfeed	/* 4: version, 4: total size */
-+#define FDT_TAGSIZE	sizeof(uint32_t)
-+
-+#define FDT_BEGIN_NODE	0x1		/* Start node: full name */
-+#define FDT_END_NODE	0x2		/* End node */
-+#define FDT_PROP	0x3		/* Property: name off,
-+					   size, content */
-+#define FDT_NOP		0x4		/* nop */
-+#define FDT_END		0x9
-+
-+#define FDT_V1_SIZE	(7*sizeof(uint32_t))
-+#define FDT_V2_SIZE	(FDT_V1_SIZE + sizeof(uint32_t))
-+#define FDT_V3_SIZE	(FDT_V2_SIZE + sizeof(uint32_t))
-+#define FDT_V16_SIZE	FDT_V3_SIZE
-+#define FDT_V17_SIZE	(FDT_V16_SIZE + sizeof(uint32_t))
-+
-+#endif /* _FDT_H */
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt_ro.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt_ro.c	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,583 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#include "libfdt_env.h"
-+
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "libfdt_internal.h"
-+
-+#define CHECK_HEADER(fdt) \
-+	{ \
-+		int err; \
-+		if ((err = fdt_check_header(fdt)) != 0) \
-+			return err; \
-+	}
-+
-+static int nodename_eq(const void *fdt, int offset,
-+		       const char *s, int len)
-+{
-+	const char *p = fdt_offset_ptr(fdt, offset, len+1);
-+
-+	if (! p)
-+		/* short match */
-+		return 0;
-+
-+	if (memcmp(p, s, len) != 0)
-+		return 0;
-+
-+	if (p[len] == '\0')
-+		return 1;
-+	else if (!memchr(s, '@', len) && (p[len] == '@'))
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+const char *fdt_string(const void *fdt, int stroffset)
-+{
-+	return (char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
-+}
-+
-+int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
-+{
-+	CHECK_HEADER(fdt);
-+	*address = fdt64_to_cpu(_fdt_mem_rsv(fdt, n)->address);
-+	*size = fdt64_to_cpu(_fdt_mem_rsv(fdt, n)->size);
-+	return 0;
-+}
-+
-+int fdt_num_mem_rsv(const void *fdt)
-+{
-+	int i = 0;
-+
-+	while (fdt64_to_cpu(_fdt_mem_rsv(fdt, i)->size) != 0)
-+		i++;
-+	return i;
-+}
-+
-+int fdt_subnode_offset_namelen(const void *fdt, int parentoffset,
-+			       const char *name, int namelen)
-+{
-+	int level = 0;
-+	uint32_t tag;
-+	int offset, nextoffset;
-+
-+	CHECK_HEADER(fdt);
-+
-+	tag = fdt_next_tag(fdt, parentoffset, &nextoffset);
-+	if (tag != FDT_BEGIN_NODE)
-+		return -FDT_ERR_BADOFFSET;
-+
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+
-+		switch (tag) {
-+		case FDT_END:
-+			return -FDT_ERR_TRUNCATED;
-+
-+		case FDT_BEGIN_NODE:
-+			level++;
-+			if (level != 1)
-+				continue;
-+			if (nodename_eq(fdt, offset+FDT_TAGSIZE, name, namelen))
-+				/* Found it! */
-+				return offset;
-+			break;
-+
-+		case FDT_END_NODE:
-+			level--;
-+			break;
-+
-+		case FDT_PROP:
-+		case FDT_NOP:
-+			break;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (level >= 0);
-+
-+	return -FDT_ERR_NOTFOUND;
-+}
-+
-+int fdt_subnode_offset(const void *fdt, int parentoffset,
-+		       const char *name)
-+{
-+	return fdt_subnode_offset_namelen(fdt, parentoffset, name, strlen(name));
-+}
-+
-+int fdt_path_offset(const void *fdt, const char *path)
-+{
-+	const char *end = path + strlen(path);
-+	const char *p = path;
-+	int offset = 0;
-+
-+	CHECK_HEADER(fdt);
-+
-+	if (*path != '/')
-+		return -FDT_ERR_BADPATH;
-+
-+	while (*p) {
-+		const char *q;
-+
-+		while (*p == '/')
-+			p++;
-+		if (! *p)
-+			return offset;
-+		q = strchr(p, '/');
-+		if (! q)
-+			q = end;
-+
-+		offset = fdt_subnode_offset_namelen(fdt, offset, p, q-p);
-+		if (offset < 0)
-+			return offset;
-+
-+		p = q;
-+	}
-+
-+	return offset;
-+}
-+
-+const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
-+{
-+	const struct fdt_node_header *nh;
-+	int err;
-+
-+	if ((err = fdt_check_header(fdt)) != 0)
-+		goto fail;
-+
-+	err = -FDT_ERR_BADOFFSET;
-+	nh = fdt_offset_ptr(fdt, nodeoffset, sizeof(*nh));
-+	if (!nh || (fdt32_to_cpu(nh->tag) != FDT_BEGIN_NODE))
-+		goto fail;
-+
-+	if (len)
-+		*len = strlen(nh->name);
-+
-+	return nh->name;
-+
-+ fail:
-+	if (len)
-+		*len = err;
-+	return NULL;
-+}
-+
-+const struct fdt_property *fdt_get_property(const void *fdt,
-+					    int nodeoffset,
-+					    const char *name, int *lenp)
-+{
-+	uint32_t tag;
-+	const struct fdt_property *prop;
-+	int namestroff;
-+	int offset, nextoffset;
-+	int err;
-+
-+	if ((err = fdt_check_header(fdt)) != 0)
-+		goto fail;
-+
-+	err = -FDT_ERR_BADOFFSET;
-+	if (nodeoffset % FDT_TAGSIZE)
-+		goto fail;
-+
-+	tag = fdt_next_tag(fdt, nodeoffset, &nextoffset);
-+	if (tag != FDT_BEGIN_NODE)
-+		goto fail;
-+
-+	do {
-+		offset = nextoffset;
-+
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+		switch (tag) {
-+		case FDT_END:
-+			err = -FDT_ERR_TRUNCATED;
-+			goto fail;
-+
-+		case FDT_BEGIN_NODE:
-+		case FDT_END_NODE:
-+		case FDT_NOP:
-+			break;
-+
-+		case FDT_PROP:
-+			err = -FDT_ERR_BADSTRUCTURE;
-+			prop = fdt_offset_ptr(fdt, offset, sizeof(*prop));
-+			if (! prop)
-+				goto fail;
-+			namestroff = fdt32_to_cpu(prop->nameoff);
-+			if (streq(fdt_string(fdt, namestroff), name)) {
-+				/* Found it! */
-+				int len = fdt32_to_cpu(prop->len);
-+				prop = fdt_offset_ptr(fdt, offset,
-+						      sizeof(*prop)+len);
-+				if (! prop)
-+					goto fail;
-+
-+				if (lenp)
-+					*lenp = len;
-+
-+				return prop;
-+			}
-+			break;
-+
-+		default:
-+			err = -FDT_ERR_BADSTRUCTURE;
-+			goto fail;
-+		}
-+	} while ((tag != FDT_BEGIN_NODE) && (tag != FDT_END_NODE));
-+
-+	err = -FDT_ERR_NOTFOUND;
-+ fail:
-+	if (lenp)
-+		*lenp = err;
-+	return NULL;
-+}
-+
-+const void *fdt_getprop(const void *fdt, int nodeoffset,
-+		  const char *name, int *lenp)
-+{
-+	const struct fdt_property *prop;
-+
-+	prop = fdt_get_property(fdt, nodeoffset, name, lenp);
-+	if (! prop)
-+		return NULL;
-+
-+	return prop->data;
-+}
-+
-+uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
-+{
-+	const uint32_t *php;
 +	int len;
 +
-+	php = fdt_getprop(fdt, nodeoffset, "linux,phandle", &len);
-+	if (!php || (len != sizeof(*php)))
-+		return 0;
-+
-+	return fdt32_to_cpu(*php);
++	p = fdt_getprop(fdt, devp_offset(devp), name, &len);
++	if (!p)
++		return check_err(len);
++	memcpy(buf, p, min(len, buflen));
++	return len;
 +}
 +
-+int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
++static int fdt_wrapper_setprop(const void *devp, const char *name,
++			       const void *buf, const int len)
 +{
-+	uint32_t tag;
-+	int p = 0, overflow = 0;
-+	int offset, nextoffset, namelen;
-+	const char *name;
++	int rc;
 +
-+	CHECK_HEADER(fdt);
-+
-+	tag = fdt_next_tag(fdt, 0, &nextoffset);
-+	if (tag != FDT_BEGIN_NODE)
-+		return -FDT_ERR_BADSTRUCTURE;
-+
-+	if (buflen < 2)
-+		return -FDT_ERR_NOSPACE;
-+	buf[0] = '/';
-+	p = 1;
-+
-+	while (nextoffset <= nodeoffset) {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+		switch (tag) {
-+		case FDT_END:
-+			return -FDT_ERR_BADOFFSET;
-+
-+		case FDT_BEGIN_NODE:
-+			name = fdt_get_name(fdt, offset, &namelen);
-+			if (!name)
-+				return namelen;
-+			if (overflow || ((p + namelen + 1) > buflen)) {
-+				overflow++;
-+				break;
-+			}
-+			memcpy(buf + p, name, namelen);
-+			p += namelen;
-+			buf[p++] = '/';
-+			break;
-+
-+		case FDT_END_NODE:
-+			if (overflow) {
-+				overflow--;
-+				break;
-+			}
-+			do {
-+				p--;
-+			} while  (buf[p-1] != '/');
-+			break;
-+
-+		case FDT_PROP:
-+		case FDT_NOP:
-+			break;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
++	rc = fdt_setprop(fdt, devp_offset(devp), name, buf, len);
++	if (rc == -FDT_ERR_NOSPACE) {
++		expand_buf(len + 16);
++		rc = fdt_setprop(fdt, devp_offset(devp), name, buf, len);
 +	}
 +
-+	if (overflow)
-+		return -FDT_ERR_NOSPACE;
-+
-+	if (p > 1) /* special case so that root path is "/", not "" */
-+		p--;
-+	buf[p] = '\0';
-+	return p;
++	return check_err(rc);
 +}
 +
-+int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
-+				 int supernodedepth, int *nodedepth)
++static void *fdt_wrapper_get_parent(const void *devp)
 +{
-+	int level = -1;
-+	uint32_t tag;
-+	int offset, nextoffset = 0;
-+	int supernodeoffset = -FDT_ERR_INTERNAL;
-+
-+	CHECK_HEADER(fdt);
-+
-+	if (supernodedepth < 0)
-+		return -FDT_ERR_NOTFOUND;
-+
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+		switch (tag) {
-+		case FDT_END:
-+			return -FDT_ERR_BADOFFSET;
-+
-+		case FDT_BEGIN_NODE:
-+			level++;
-+			if (level == supernodedepth)
-+				supernodeoffset = offset;
-+			break;
-+
-+		case FDT_END_NODE:
-+			level--;
-+			break;
-+
-+		case FDT_PROP:
-+		case FDT_NOP:
-+			break;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (offset < nodeoffset);
-+
-+	if (nodedepth)
-+		*nodedepth = level;
-+
-+	if (supernodedepth > level)
-+		return -FDT_ERR_NOTFOUND;
-+	return supernodeoffset;
++	return offset_devp(fdt_parent_offset(fdt, devp_offset(devp)));
 +}
 +
-+int fdt_node_depth(const void *fdt, int nodeoffset)
++static void *fdt_wrapper_create_node(const void *devp, const char *name)
 +{
-+	int nodedepth;
-+	int err;
-+
-+	err = fdt_supernode_atdepth_offset(fdt, nodeoffset, 0, &nodedepth);
-+	if (err)
-+		return (err < 0) ? err : -FDT_ERR_INTERNAL;
-+	return nodedepth;
-+}
-+
-+int fdt_parent_offset(const void *fdt, int nodeoffset)
-+{
-+	int nodedepth = fdt_node_depth(fdt, nodeoffset);
-+
-+	if (nodedepth < 0)
-+		return nodedepth;
-+	return fdt_supernode_atdepth_offset(fdt, nodeoffset,
-+					    nodedepth - 1, NULL);
-+}
-+
-+int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
-+				  const char *propname,
-+				  const void *propval, int proplen)
-+{
-+	uint32_t tag;
-+	int offset, nextoffset;
-+	const void *val;
-+	int len;
-+
-+	CHECK_HEADER(fdt);
-+
-+	if (startoffset >= 0) {
-+		tag = fdt_next_tag(fdt, startoffset, &nextoffset);
-+		if (tag != FDT_BEGIN_NODE)
-+			return -FDT_ERR_BADOFFSET;
-+	} else {
-+		nextoffset = 0;
-+	}
-+
-+	/* FIXME: The algorithm here is pretty horrible: we scan each
-+	 * property of a node in fdt_getprop(), then if that didn't
-+	 * find what we want, we scan over them again making our way
-+	 * to the next node.  Still it's the easiest to implement
-+	 * approach; performance can come later. */
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+
-+		switch (tag) {
-+		case FDT_BEGIN_NODE:
-+			val = fdt_getprop(fdt, offset, propname, &len);
-+			if (val
-+			    && (len == proplen)
-+			    && (memcmp(val, propval, len) == 0))
-+				return offset;
-+			break;
-+
-+		case FDT_PROP:
-+		case FDT_END:
-+		case FDT_END_NODE:
-+		case FDT_NOP:
-+			break;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (tag != FDT_END);
-+
-+	return -FDT_ERR_NOTFOUND;
-+}
-+
-+int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
-+{
-+	if ((phandle == 0) || (phandle == -1))
-+		return -FDT_ERR_BADPHANDLE;
-+	phandle = cpu_to_fdt32(phandle);
-+	return fdt_node_offset_by_prop_value(fdt, -1, "linux,phandle",
-+					     &phandle, sizeof(phandle));
-+}
-+
-+int _stringlist_contains(const void *strlist, int listlen, const char *str)
-+{
-+	int len = strlen(str);
-+	const void *p;
-+
-+	while (listlen >= len) {
-+		if (memcmp(str, strlist, len+1) == 0)
-+			return 1;
-+		p = memchr(strlist, '\0', listlen);
-+		if (!p)
-+			return 0; /* malformed strlist.. */
-+		listlen -= (p-strlist) + 1;
-+		strlist = p + 1;
-+	}
-+	return 0;
-+}
-+
-+int fdt_node_check_compatible(const void *fdt, int nodeoffset,
-+			      const char *compatible)
-+{
-+	const void *prop;
-+	int len;
-+
-+	prop = fdt_getprop(fdt, nodeoffset, "compatible", &len);
-+	if (!prop)
-+		return len;
-+	if (_stringlist_contains(prop, len, compatible))
-+		return 0;
-+	else
-+		return 1;
-+}
-+
-+int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
-+				  const char *compatible)
-+{
-+	uint32_t tag;
-+	int offset, nextoffset;
-+	int err;
-+
-+	CHECK_HEADER(fdt);
-+
-+	if (startoffset >= 0) {
-+		tag = fdt_next_tag(fdt, startoffset, &nextoffset);
-+		if (tag != FDT_BEGIN_NODE)
-+			return -FDT_ERR_BADOFFSET;
-+	} else {
-+		nextoffset = 0;
-+	}
-+
-+	/* FIXME: The algorithm here is pretty horrible: we scan each
-+	 * property of a node in fdt_node_check_compatible(), then if
-+	 * that didn't find what we want, we scan over them again
-+	 * making our way to the next node.  Still it's the easiest to
-+	 * implement approach; performance can come later. */
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+
-+		switch (tag) {
-+		case FDT_BEGIN_NODE:
-+			err = fdt_node_check_compatible(fdt, offset,
-+							compatible);
-+			if ((err < 0)
-+			    && (err != -FDT_ERR_NOTFOUND))
-+				return err;
-+			else if (err == 0)
-+				return offset;
-+			break;
-+
-+		case FDT_PROP:
-+		case FDT_END:
-+		case FDT_END_NODE:
-+		case FDT_NOP:
-+			break;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (tag != FDT_END);
-+
-+	return -FDT_ERR_NOTFOUND;
-+}
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt_rw.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt_rw.c	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,447 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#include "libfdt_env.h"
-+
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "libfdt_internal.h"
-+
-+static int _blocks_misordered(const void *fdt,
-+			      int mem_rsv_size, int struct_size)
-+{
-+	return (fdt_off_mem_rsvmap(fdt) < ALIGN(sizeof(struct fdt_header), 8))
-+		|| (fdt_off_dt_struct(fdt) <
-+		    (fdt_off_mem_rsvmap(fdt) + mem_rsv_size))
-+		|| (fdt_off_dt_strings(fdt) <
-+		    (fdt_off_dt_struct(fdt) + struct_size))
-+		|| (fdt_totalsize(fdt) <
-+		    (fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt)));
-+}
-+
-+static int rw_check_header(void *fdt)
-+{
-+	int err;
-+
-+	if ((err = fdt_check_header(fdt)))
-+		return err;
-+	if (fdt_version(fdt) < 17)
-+		return -FDT_ERR_BADVERSION;
-+	if (_blocks_misordered(fdt, sizeof(struct fdt_reserve_entry),
-+			       fdt_size_dt_struct(fdt)))
-+		return -FDT_ERR_BADLAYOUT;
-+	if (fdt_version(fdt) > 17)
-+		fdt_set_version(fdt, 17);
-+
-+	return 0;
-+}
-+
-+#define RW_CHECK_HEADER(fdt) \
-+	{ \
-+		int err; \
-+		if ((err = rw_check_header(fdt)) != 0) \
-+			return err; \
-+	}
-+
-+static inline int _blob_data_size(void *fdt)
-+{
-+	return fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt);
-+}
-+
-+static int _blob_splice(void *fdt, void *p, int oldlen, int newlen)
-+{
-+	void *end = fdt + _blob_data_size(fdt);
-+
-+	if (((p + oldlen) < p) || ((p + oldlen) > end))
-+		return -FDT_ERR_BADOFFSET;
-+	if ((end - oldlen + newlen) > (fdt + fdt_totalsize(fdt)))
-+		return -FDT_ERR_NOSPACE;
-+	memmove(p + newlen, p + oldlen, end - p - oldlen);
-+	return 0;
-+}
-+
-+static int _blob_splice_mem_rsv(void *fdt, struct fdt_reserve_entry *p,
-+				int oldn, int newn)
-+{
-+	int delta = (newn - oldn) * sizeof(*p);
-+	int err;
-+	err = _blob_splice(fdt, p, oldn * sizeof(*p), newn * sizeof(*p));
-+	if (err)
-+		return err;
-+	fdt_set_off_dt_struct(fdt, fdt_off_dt_struct(fdt) + delta);
-+	fdt_set_off_dt_strings(fdt, fdt_off_dt_strings(fdt) + delta);
-+	return 0;
-+}
-+
-+static int _blob_splice_struct(void *fdt, void *p,
-+			       int oldlen, int newlen)
-+{
-+	int delta = newlen - oldlen;
-+	int err;
-+
-+	if ((err = _blob_splice(fdt, p, oldlen, newlen)))
-+		return err;
-+
-+	fdt_set_size_dt_struct(fdt, fdt_size_dt_struct(fdt) + delta);
-+	fdt_set_off_dt_strings(fdt, fdt_off_dt_strings(fdt) + delta);
-+	return 0;
-+}
-+
-+static int _blob_splice_string(void *fdt, int newlen)
-+{
-+	void *p = fdt + fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt);
-+	int err;
-+
-+	if ((err = _blob_splice(fdt, p, 0, newlen)))
-+		return err;
-+
-+	fdt_set_size_dt_strings(fdt, fdt_size_dt_strings(fdt) + newlen);
-+	return 0;
-+}
-+
-+static int _find_add_string(void *fdt, const char *s)
-+{
-+	char *strtab = (char *)fdt + fdt_off_dt_strings(fdt);
-+	const char *p;
-+	char *new;
-+	int len = strlen(s) + 1;
-+	int err;
-+
-+	p = _fdt_find_string(strtab, fdt_size_dt_strings(fdt), s);
-+	if (p)
-+		/* found it */
-+		return (p - strtab);
-+
-+	new = strtab + fdt_size_dt_strings(fdt);
-+	err = _blob_splice_string(fdt, len);
-+	if (err)
-+		return err;
-+
-+	memcpy(new, s, len);
-+	return (new - strtab);
-+}
-+
-+int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size)
-+{
-+	struct fdt_reserve_entry *re;
-+	int err;
-+
-+	if ((err = rw_check_header(fdt)))
-+		return err;
-+
-+	re = _fdt_mem_rsv_w(fdt, fdt_num_mem_rsv(fdt));
-+	err = _blob_splice_mem_rsv(fdt, re, 0, 1);
-+	if (err)
-+		return err;
-+
-+	re->address = cpu_to_fdt64(address);
-+	re->size = cpu_to_fdt64(size);
-+	return 0;
-+}
-+
-+int fdt_del_mem_rsv(void *fdt, int n)
-+{
-+	struct fdt_reserve_entry *re = _fdt_mem_rsv_w(fdt, n);
-+	int err;
-+
-+	if ((err = rw_check_header(fdt)))
-+		return err;
-+	if (n >= fdt_num_mem_rsv(fdt))
-+		return -FDT_ERR_NOTFOUND;
-+
-+	err = _blob_splice_mem_rsv(fdt, re, 1, 0);
-+	if (err)
-+		return err;
-+	return 0;
-+}
-+
-+static int _resize_property(void *fdt, int nodeoffset, const char *name, int len,
-+			    struct fdt_property **prop)
-+{
-+	int oldlen;
-+	int err;
-+
-+	*prop = fdt_get_property_w(fdt, nodeoffset, name, &oldlen);
-+	if (! (*prop))
-+		return oldlen;
-+
-+	if ((err = _blob_splice_struct(fdt, (*prop)->data,
-+				       ALIGN(oldlen, FDT_TAGSIZE),
-+				       ALIGN(len, FDT_TAGSIZE))))
-+		return err;
-+
-+	(*prop)->len = cpu_to_fdt32(len);
-+	return 0;
-+}
-+
-+static int _add_property(void *fdt, int nodeoffset, const char *name, int len,
-+			 struct fdt_property **prop)
-+{
-+	uint32_t tag;
-+	int proplen;
-+	int nextoffset;
-+	int namestroff;
-+	int err;
-+
-+	tag = fdt_next_tag(fdt, nodeoffset, &nextoffset);
-+	if (tag != FDT_BEGIN_NODE)
-+		return -FDT_ERR_BADOFFSET;
-+
-+	namestroff = _find_add_string(fdt, name);
-+	if (namestroff < 0)
-+		return namestroff;
-+
-+	*prop = _fdt_offset_ptr_w(fdt, nextoffset);
-+	proplen = sizeof(**prop) + ALIGN(len, FDT_TAGSIZE);
-+
-+	err = _blob_splice_struct(fdt, *prop, 0, proplen);
-+	if (err)
-+		return err;
-+
-+	(*prop)->tag = cpu_to_fdt32(FDT_PROP);
-+	(*prop)->nameoff = cpu_to_fdt32(namestroff);
-+	(*prop)->len = cpu_to_fdt32(len);
-+	return 0;
-+}
-+
-+int fdt_setprop(void *fdt, int nodeoffset, const char *name,
-+		const void *val, int len)
-+{
-+	struct fdt_property *prop;
-+	int err;
-+
-+	if ((err = rw_check_header(fdt)))
-+		return err;
-+
-+	err = _resize_property(fdt, nodeoffset, name, len, &prop);
-+	if (err == -FDT_ERR_NOTFOUND)
-+		err = _add_property(fdt, nodeoffset, name, len, &prop);
-+	if (err)
-+		return err;
-+
-+	memcpy(prop->data, val, len);
-+	return 0;
-+}
-+
-+int fdt_delprop(void *fdt, int nodeoffset, const char *name)
-+{
-+	struct fdt_property *prop;
-+	int len, proplen;
-+
-+	RW_CHECK_HEADER(fdt);
-+
-+	prop = fdt_get_property_w(fdt, nodeoffset, name, &len);
-+	if (! prop)
-+		return len;
-+
-+	proplen = sizeof(*prop) + ALIGN(len, FDT_TAGSIZE);
-+	return _blob_splice_struct(fdt, prop, proplen, 0);
-+}
-+
-+int fdt_add_subnode_namelen(void *fdt, int parentoffset,
-+			    const char *name, int namelen)
-+{
-+	struct fdt_node_header *nh;
-+	int offset, nextoffset;
-+	int nodelen;
-+	int err;
-+	uint32_t tag;
-+	uint32_t *endtag;
-+
-+	RW_CHECK_HEADER(fdt);
-+
-+	offset = fdt_subnode_offset_namelen(fdt, parentoffset, name, namelen);
-+	if (offset >= 0)
-+		return -FDT_ERR_EXISTS;
-+	else if (offset != -FDT_ERR_NOTFOUND)
-+		return offset;
-+
-+	/* Try to place the new node after the parent's properties */
-+	fdt_next_tag(fdt, parentoffset, &nextoffset); /* skip the BEGIN_NODE */
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+	} while (tag == FDT_PROP);
-+
-+	nh = _fdt_offset_ptr_w(fdt, offset);
-+	nodelen = sizeof(*nh) + ALIGN(namelen+1, FDT_TAGSIZE) + FDT_TAGSIZE;
-+
-+	err = _blob_splice_struct(fdt, nh, 0, nodelen);
-+	if (err)
-+		return err;
-+
-+	nh->tag = cpu_to_fdt32(FDT_BEGIN_NODE);
-+	memset(nh->name, 0, ALIGN(namelen+1, FDT_TAGSIZE));
-+	memcpy(nh->name, name, namelen);
-+	endtag = (uint32_t *)((void *)nh + nodelen - FDT_TAGSIZE);
-+	*endtag = cpu_to_fdt32(FDT_END_NODE);
-+
-+	return offset;
-+}
-+
-+int fdt_add_subnode(void *fdt, int parentoffset, const char *name)
-+{
-+	return fdt_add_subnode_namelen(fdt, parentoffset, name, strlen(name));
-+}
-+
-+int fdt_del_node(void *fdt, int nodeoffset)
-+{
-+	int endoffset;
-+
-+	RW_CHECK_HEADER(fdt);
-+
-+	endoffset = _fdt_node_end_offset(fdt, nodeoffset);
-+	if (endoffset < 0)
-+		return endoffset;
-+
-+	return _blob_splice_struct(fdt, _fdt_offset_ptr_w(fdt, nodeoffset),
-+				   endoffset - nodeoffset, 0);
-+}
-+
-+static void _packblocks(const void *fdt, void *buf,
-+		       int mem_rsv_size, int struct_size)
-+{
-+	int mem_rsv_off, struct_off, strings_off;
-+
-+	mem_rsv_off = ALIGN(sizeof(struct fdt_header), 8);
-+	struct_off = mem_rsv_off + mem_rsv_size;
-+	strings_off = struct_off + struct_size;
-+
-+	memmove(buf + mem_rsv_off, fdt + fdt_off_mem_rsvmap(fdt), mem_rsv_size);
-+	fdt_set_off_mem_rsvmap(buf, mem_rsv_off);
-+
-+	memmove(buf + struct_off, fdt + fdt_off_dt_struct(fdt), struct_size);
-+	fdt_set_off_dt_struct(buf, struct_off);
-+	fdt_set_size_dt_struct(buf, struct_size);
-+
-+	memmove(buf + strings_off, fdt + fdt_off_dt_strings(fdt),
-+		fdt_size_dt_strings(fdt));
-+	fdt_set_off_dt_strings(buf, strings_off);
-+	fdt_set_size_dt_strings(buf, fdt_size_dt_strings(fdt));
-+}
-+
-+int fdt_open_into(const void *fdt, void *buf, int bufsize)
-+{
-+	int err;
-+	int mem_rsv_size, struct_size;
-+	int newsize;
-+	void *tmp;
-+
-+	err = fdt_check_header(fdt);
-+	if (err)
-+		return err;
-+
-+	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
-+		* sizeof(struct fdt_reserve_entry);
-+
-+	if (fdt_version(fdt) >= 17) {
-+		struct_size = fdt_size_dt_struct(fdt);
-+	} else {
-+		struct_size = 0;
-+		while (fdt_next_tag(fdt, struct_size, &struct_size) != FDT_END)
-+			;
-+	}
-+
-+	if (!_blocks_misordered(fdt, mem_rsv_size, struct_size)) {
-+		/* no further work necessary */
-+		err = fdt_move(fdt, buf, bufsize);
-+		if (err)
-+			return err;
-+		fdt_set_version(buf, 17);
-+		fdt_set_size_dt_struct(buf, struct_size);
-+		fdt_set_totalsize(buf, bufsize);
-+		return 0;
-+	}
-+
-+	/* Need to reorder */
-+	newsize = ALIGN(sizeof(struct fdt_header), 8) + mem_rsv_size
-+		+ struct_size + fdt_size_dt_strings(fdt);
-+
-+	if (bufsize < newsize)
-+		return -FDT_ERR_NOSPACE;
-+
-+	if (((buf + newsize) <= fdt)
-+	    || (buf >= (fdt + fdt_totalsize(fdt)))) {
-+		tmp = buf;
-+	} else {
-+		tmp = (void *)fdt + fdt_totalsize(fdt);
-+		if ((tmp + newsize) > (buf + bufsize))
-+			return -FDT_ERR_NOSPACE;
-+	}
-+
-+	_packblocks(fdt, tmp, mem_rsv_size, struct_size);
-+	memmove(buf, tmp, newsize);
-+
-+	fdt_set_magic(buf, FDT_MAGIC);
-+	fdt_set_totalsize(buf, bufsize);
-+	fdt_set_version(buf, 17);
-+	fdt_set_last_comp_version(buf, 16);
-+	fdt_set_boot_cpuid_phys(buf, fdt_boot_cpuid_phys(fdt));
-+
-+	return 0;
-+}
-+
-+int fdt_pack(void *fdt)
-+{
-+	int mem_rsv_size;
-+	int err;
-+
-+	err = rw_check_header(fdt);
-+	if (err)
-+		return err;
-+
-+	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
-+		* sizeof(struct fdt_reserve_entry);
-+	_packblocks(fdt, fdt, mem_rsv_size, fdt_size_dt_struct(fdt));
-+	fdt_set_totalsize(fdt, _blob_data_size(fdt));
-+
-+	return 0;
-+}
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt_strerror.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt_strerror.c	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,96 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#include "libfdt_env.h"
-+
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "libfdt_internal.h"
-+
-+struct errtabent {
-+	const char *str;
-+};
-+
-+#define ERRTABENT(val) \
-+	[(val)] = { .str = #val, }
-+
-+static struct errtabent errtable[] = {
-+	ERRTABENT(FDT_ERR_NOTFOUND),
-+	ERRTABENT(FDT_ERR_EXISTS),
-+	ERRTABENT(FDT_ERR_NOSPACE),
-+
-+	ERRTABENT(FDT_ERR_BADOFFSET),
-+	ERRTABENT(FDT_ERR_BADPATH),
-+	ERRTABENT(FDT_ERR_BADSTATE),
-+
-+	ERRTABENT(FDT_ERR_TRUNCATED),
-+	ERRTABENT(FDT_ERR_BADMAGIC),
-+	ERRTABENT(FDT_ERR_BADVERSION),
-+	ERRTABENT(FDT_ERR_BADSTRUCTURE),
-+	ERRTABENT(FDT_ERR_BADLAYOUT),
-+};
-+#define ERRTABSIZE	(sizeof(errtable) / sizeof(errtable[0]))
-+
-+const char *fdt_strerror(int errval)
-+{
-+	if (errval > 0)
-+		return "<valid offset/length>";
-+	else if (errval == 0)
-+		return "<no error>";
-+	else if (errval > -ERRTABSIZE) {
-+		const char *s = errtable[-errval].str;
-+
-+		if (s)
-+			return s;
-+	}
-+
-+	return "<unknown error>";
-+}
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt_sw.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt_sw.c	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,258 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#include "libfdt_env.h"
-+
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "libfdt_internal.h"
-+
-+static int check_header_sw(void *fdt)
-+{
-+	if (fdt_magic(fdt) != SW_MAGIC)
-+		return -FDT_ERR_BADMAGIC;
-+	return 0;
-+}
-+
-+static void *grab_space(void *fdt, int len)
-+{
-+	int offset = fdt_size_dt_struct(fdt);
-+	int spaceleft;
-+
-+	spaceleft = fdt_totalsize(fdt) - fdt_off_dt_struct(fdt)
-+		- fdt_size_dt_strings(fdt);
-+
-+	if ((offset + len < offset) || (offset + len > spaceleft))
-+		return NULL;
-+
-+	fdt_set_size_dt_struct(fdt, offset + len);
-+	return fdt_offset_ptr_w(fdt, offset, len);
-+}
-+
-+int fdt_create(void *buf, int bufsize)
-+{
-+	void *fdt = buf;
-+
-+	if (bufsize < sizeof(struct fdt_header))
-+		return -FDT_ERR_NOSPACE;
-+
-+	memset(buf, 0, bufsize);
-+
-+	fdt_set_magic(fdt, SW_MAGIC);
-+	fdt_set_version(fdt, FDT_LAST_SUPPORTED_VERSION);
-+	fdt_set_last_comp_version(fdt, FDT_FIRST_SUPPORTED_VERSION);
-+	fdt_set_totalsize(fdt,  bufsize);
-+
-+	fdt_set_off_mem_rsvmap(fdt, ALIGN(sizeof(struct fdt_header),
-+					  sizeof(struct fdt_reserve_entry)));
-+	fdt_set_off_dt_struct(fdt, fdt_off_mem_rsvmap(fdt));
-+	fdt_set_off_dt_strings(fdt, bufsize);
-+
-+	return 0;
-+}
-+
-+int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size)
-+{
-+	struct fdt_reserve_entry *re;
-+	int err = check_header_sw(fdt);
 +	int offset;
 +
-+	if (err)
-+		return err;
-+	if (fdt_size_dt_struct(fdt))
-+		return -FDT_ERR_BADSTATE;
-+
-+	offset = fdt_off_dt_struct(fdt);
-+	if ((offset + sizeof(*re)) > fdt_totalsize(fdt))
-+		return -FDT_ERR_NOSPACE;
-+
-+	re = (struct fdt_reserve_entry *)(fdt + offset);
-+	re->address = cpu_to_fdt64(addr);
-+	re->size = cpu_to_fdt64(size);
-+
-+	fdt_set_off_dt_struct(fdt, offset + sizeof(*re));
-+
-+	return 0;
-+}
-+
-+int fdt_finish_reservemap(void *fdt)
-+{
-+	return fdt_add_reservemap_entry(fdt, 0, 0);
-+}
-+
-+int fdt_begin_node(void *fdt, const char *name)
-+{
-+	struct fdt_node_header *nh;
-+	int err = check_header_sw(fdt);
-+	int namelen = strlen(name) + 1;
-+
-+	if (err)
-+		return err;
-+
-+	nh = grab_space(fdt, sizeof(*nh) + ALIGN(namelen, FDT_TAGSIZE));
-+	if (! nh)
-+		return -FDT_ERR_NOSPACE;
-+
-+	nh->tag = cpu_to_fdt32(FDT_BEGIN_NODE);
-+	memcpy(nh->name, name, namelen);
-+	return 0;
-+}
-+
-+int fdt_end_node(void *fdt)
-+{
-+	uint32_t *en;
-+	int err = check_header_sw(fdt);
-+
-+	if (err)
-+		return err;
-+
-+	en = grab_space(fdt, FDT_TAGSIZE);
-+	if (! en)
-+		return -FDT_ERR_NOSPACE;
-+
-+	*en = cpu_to_fdt32(FDT_END_NODE);
-+	return 0;
-+}
-+
-+static int find_add_string(void *fdt, const char *s)
-+{
-+	char *strtab = (char *)fdt + fdt_totalsize(fdt);
-+	const char *p;
-+	int strtabsize = fdt_size_dt_strings(fdt);
-+	int len = strlen(s) + 1;
-+	int struct_top, offset;
-+
-+	p = _fdt_find_string(strtab - strtabsize, strtabsize, s);
-+	if (p)
-+		return p - strtab;
-+
-+	/* Add it */
-+	offset = -strtabsize - len;
-+	struct_top = fdt_off_dt_struct(fdt) + fdt_size_dt_struct(fdt);
-+	if (fdt_totalsize(fdt) + offset < struct_top)
-+		return 0; /* no more room :( */
-+
-+	memcpy(strtab + offset, s, len);
-+	fdt_set_size_dt_strings(fdt, strtabsize + len);
-+	return offset;
-+}
-+
-+int fdt_property(void *fdt, const char *name, const void *val, int len)
-+{
-+	struct fdt_property *prop;
-+	int err = check_header_sw(fdt);
-+	int nameoff;
-+
-+	if (err)
-+		return err;
-+
-+	nameoff = find_add_string(fdt, name);
-+	if (nameoff == 0)
-+		return -FDT_ERR_NOSPACE;
-+
-+	prop = grab_space(fdt, sizeof(*prop) + ALIGN(len, FDT_TAGSIZE));
-+	if (! prop)
-+		return -FDT_ERR_NOSPACE;
-+
-+	prop->tag = cpu_to_fdt32(FDT_PROP);
-+	prop->nameoff = cpu_to_fdt32(nameoff);
-+	prop->len = cpu_to_fdt32(len);
-+	memcpy(prop->data, val, len);
-+	return 0;
-+}
-+
-+int fdt_finish(void *fdt)
-+{
-+	int err = check_header_sw(fdt);
-+	char *p = (char *)fdt;
-+	uint32_t *end;
-+	int oldstroffset, newstroffset;
-+	uint32_t tag;
-+	int offset, nextoffset;
-+
-+	if (err)
-+		return err;
-+
-+	/* Add terminator */
-+	end = grab_space(fdt, sizeof(*end));
-+	if (! end)
-+		return -FDT_ERR_NOSPACE;
-+	*end = cpu_to_fdt32(FDT_END);
-+
-+	/* Relocate the string table */
-+	oldstroffset = fdt_totalsize(fdt) - fdt_size_dt_strings(fdt);
-+	newstroffset = fdt_off_dt_struct(fdt) + fdt_size_dt_struct(fdt);
-+	memmove(p + newstroffset, p + oldstroffset, fdt_size_dt_strings(fdt));
-+	fdt_set_off_dt_strings(fdt, newstroffset);
-+
-+	/* Walk the structure, correcting string offsets */
-+	offset = 0;
-+	while ((tag = fdt_next_tag(fdt, offset, &nextoffset)) != FDT_END) {
-+		if (tag == FDT_PROP) {
-+			struct fdt_property *prop =
-+				fdt_offset_ptr_w(fdt, offset, sizeof(*prop));
-+			int nameoff;
-+
-+			if (! prop)
-+				return -FDT_ERR_BADSTRUCTURE;
-+
-+			nameoff = fdt32_to_cpu(prop->nameoff);
-+			nameoff += fdt_size_dt_strings(fdt);
-+			prop->nameoff = cpu_to_fdt32(nameoff);
-+		}
-+		offset = nextoffset;
++	offset = fdt_add_subnode(fdt, devp_offset(devp), name);
++	if (offset == -FDT_ERR_NOSPACE) {
++		expand_buf(strlen(name) + 16);
++		offset = fdt_add_subnode(fdt, devp_offset(devp), name);
 +	}
 +
-+	/* Finally, adjust the header */
-+	fdt_set_totalsize(fdt, newstroffset + fdt_size_dt_strings(fdt));
-+	fdt_set_magic(fdt, FDT_MAGIC);
-+	return 0;
++	return offset_devp(offset);
 +}
-Index: working-2.6/arch/powerpc/boot/libfdt/fdt_wip.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/fdt_wip.c	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,144 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#include "libfdt_env.h"
 +
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "libfdt_internal.h"
-+
-+int fdt_setprop_inplace(void *fdt, int nodeoffset, const char *name,
-+			const void *val, int len)
++static void *fdt_wrapper_find_node_by_prop_value(const void *prev,
++						 const char *name,
++						 const char *val,
++						 int len)
 +{
-+	void *propval;
-+	int proplen;
-+
-+	propval = fdt_getprop_w(fdt, nodeoffset, name, &proplen);
-+	if (! propval)
-+		return proplen;
-+
-+	if (proplen != len)
-+		return -FDT_ERR_NOSPACE;
-+
-+	memcpy(propval, val, len);
-+	return 0;
++	return offset_devp(fdt_node_offset_by_prop_value(fdt, devp_offset(prev),
++							 name, val, len));
 +}
 +
-+static void nop_region(void *start, int len)
++static char *fdt_wrapper_get_path(const void *devp, char *buf, int len)
 +{
-+	uint32_t *p;
++	int rc;
 +
-+	for (p = start; (void *)p < (start + len); p++)
-+		*p = cpu_to_fdt32(FDT_NOP);
++	rc = fdt_get_path(fdt, devp_offset(devp), buf, len);
++	if (check_err(rc))
++		return NULL;
++	return buf;
 +}
 +
-+int fdt_nop_property(void *fdt, int nodeoffset, const char *name)
++static unsigned long fdt_wrapper_finalize(void)
 +{
-+	struct fdt_property *prop;
-+	int len;
++	int rc;
 +
-+	prop = fdt_get_property_w(fdt, nodeoffset, name, &len);
-+	if (! prop)
-+		return len;
-+
-+	nop_region(prop, len + sizeof(*prop));
-+
-+	return 0;
++	rc = fdt_pack(fdt);
++	if (rc != 0)
++		fatal("Couldn't pack flat tree: %s\n\r",
++		      fdt_strerror(rc));
++	return (unsigned long)fdt;
 +}
 +
-+int _fdt_node_end_offset(void *fdt, int nodeoffset)
++void fdt_init(void *blob)
 +{
-+	int level = 0;
-+	uint32_t tag;
-+	int offset, nextoffset;
++	int err;
 +
-+	tag = fdt_next_tag(fdt, nodeoffset, &nextoffset);
-+	if (tag != FDT_BEGIN_NODE)
-+		return -FDT_ERR_BADOFFSET;
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
++	dt_ops.finddevice = fdt_wrapper_finddevice;
++	dt_ops.getprop = fdt_wrapper_getprop;
++	dt_ops.setprop = fdt_wrapper_setprop;
++	dt_ops.get_parent = fdt_wrapper_get_parent;
++	dt_ops.create_node = fdt_wrapper_create_node;
++	dt_ops.find_node_by_prop_value = fdt_wrapper_find_node_by_prop_value;
++	dt_ops.get_path = fdt_wrapper_get_path;
++	dt_ops.finalize = fdt_wrapper_finalize;
 +
-+		switch (tag) {
-+		case FDT_END:
-+			return offset;
-+
-+		case FDT_BEGIN_NODE:
-+			level++;
-+			break;
-+
-+		case FDT_END_NODE:
-+			level--;
-+			break;
-+
-+		case FDT_PROP:
-+		case FDT_NOP:
-+			break;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (level >= 0);
-+
-+	return nextoffset;
-+}
-+
-+int fdt_nop_node(void *fdt, int nodeoffset)
-+{
-+	int endoffset;
-+
-+	endoffset = _fdt_node_end_offset(fdt, nodeoffset);
-+	if (endoffset < 0)
-+		return endoffset;
-+
-+	nop_region(fdt_offset_ptr_w(fdt, nodeoffset, 0), endoffset - nodeoffset);
-+	return 0;
-+}
-Index: working-2.6/arch/powerpc/boot/libfdt/libfdt.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/libfdt.h	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,721 @@
-+#ifndef _LIBFDT_H
-+#define _LIBFDT_H
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include <libfdt_env.h>
-+#include <fdt.h>
-+
-+#define FDT_FIRST_SUPPORTED_VERSION	0x10
-+#define FDT_LAST_SUPPORTED_VERSION	0x11
-+
-+/* Error codes: informative error codes */
-+#define FDT_ERR_NOTFOUND	1
-+	/* FDT_ERR_NOTFOUND: The requested node or property does not exist */
-+#define FDT_ERR_EXISTS		2
-+	/* FDT_ERR_EXISTS: Attemped to create a node or property which
-+	 * already exists */
-+#define FDT_ERR_NOSPACE		3
-+	/* FDT_ERR_NOSPACE: Operation needed to expand the device
-+	 * tree, but its buffer did not have sufficient space to
-+	 * contain the expanded tree. Use fdt_open_into() to move the
-+	 * device tree to a buffer with more space. */
-+
-+/* Error codes: codes for bad parameters */
-+#define FDT_ERR_BADOFFSET	4
-+	/* FDT_ERR_BADOFFSET: Function was passed a structure block
-+	 * offset which is out-of-bounds, or which points to an
-+	 * unsuitable part of the structure for the operation. */
-+#define FDT_ERR_BADPATH		5
-+	/* FDT_ERR_BADPATH: Function was passed a badly formatted path
-+	 * (e.g. missing a leading / for a function which requires an
-+	 * absolute path) */
-+#define FDT_ERR_BADPHANDLE	6
-+	/* FDT_ERR_BADPHANDLE: Function was passed an invalid phandle
-+	 * value.  phandle values of 0 and -1 are not permitted. */
-+#define FDT_ERR_BADSTATE	7
-+	/* FDT_ERR_BADSTATE: Function was passed an incomplete device
-+	 * tree created by the sequential-write functions, which is
-+	 * not sufficiently complete for the requested operation. */
-+
-+/* Error codes: codes for bad device tree blobs */
-+#define FDT_ERR_TRUNCATED	8
-+	/* FDT_ERR_TRUNCATED: Structure block of the given device tree
-+	 * ends without an FDT_END tag. */
-+#define FDT_ERR_BADMAGIC	9
-+	/* FDT_ERR_BADMAGIC: Given "device tree" appears not to be a
-+	 * device tree at all - it is missing the flattened device
-+	 * tree magic number. */
-+#define FDT_ERR_BADVERSION	10
-+	/* FDT_ERR_BADVERSION: Given device tree has a version which
-+	 * can't be handled by the requested operation.  For
-+	 * read-write functions, this may mean that fdt_open_into() is
-+	 * required to convert the tree to the expected version. */
-+#define FDT_ERR_BADSTRUCTURE	11
-+	/* FDT_ERR_BADSTRUCTURE: Given device tree has a corrupt
-+	 * structure block or other serious error (e.g. misnested
-+	 * nodes, or subnodes preceding properties). */
-+#define FDT_ERR_BADLAYOUT	12
-+	/* FDT_ERR_BADLAYOUT: For read-write functions, the given
-+	 * device tree has it's sub-blocks in an order that the
-+	 * function can't handle (memory reserve map, then structure,
-+	 * then strings).  Use fdt_open_into() to reorganize the tree
-+	 * into a form suitable for the read-write operations. */
-+
-+/* "Can't happen" error indicating a bug in libfdt */
-+#define FDT_ERR_INTERNAL	13
-+	/* FDT_ERR_INTERNAL: libfdt has failed an internal assertion.
-+	 * Should never be returned, if it is, it indicates a bug in
-+	 * libfdt itself. */
-+
-+#define FDT_ERR_MAX		13
-+
-+/**********************************************************************/
-+/* Low-level functions (you probably don't need these)                */
-+/**********************************************************************/
-+
-+const void *fdt_offset_ptr(const void *fdt, int offset, int checklen);
-+static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
-+{
-+	return (void *)fdt_offset_ptr(fdt, offset, checklen);
-+}
-+
-+uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
-+
-+/**********************************************************************/
-+/* General functions                                                  */
-+/**********************************************************************/
-+
-+#define fdt_get_header(fdt, field) \
-+	(fdt32_to_cpu(((const struct fdt_header *)(fdt))->field))
-+#define fdt_magic(fdt) 			(fdt_get_header(fdt, magic))
-+#define fdt_totalsize(fdt)		(fdt_get_header(fdt, totalsize))
-+#define fdt_off_dt_struct(fdt)		(fdt_get_header(fdt, off_dt_struct))
-+#define fdt_off_dt_strings(fdt)		(fdt_get_header(fdt, off_dt_strings))
-+#define fdt_off_mem_rsvmap(fdt)		(fdt_get_header(fdt, off_mem_rsvmap))
-+#define fdt_version(fdt)		(fdt_get_header(fdt, version))
-+#define fdt_last_comp_version(fdt) 	(fdt_get_header(fdt, last_comp_version))
-+#define fdt_boot_cpuid_phys(fdt) 	(fdt_get_header(fdt, boot_cpuid_phys))
-+#define fdt_size_dt_strings(fdt) 	(fdt_get_header(fdt, size_dt_strings))
-+#define fdt_size_dt_struct(fdt)		(fdt_get_header(fdt, size_dt_struct))
-+
-+#define __fdt_set_hdr(name) \
-+	static inline void fdt_set_##name(void *fdt, uint32_t val) \
-+	{ \
-+		struct fdt_header *fdth = fdt; \
-+		fdth->name = cpu_to_fdt32(val); \
++	/* Make sure the dt blob is the right version and so forth */
++	fdt = blob;
++	err = fdt_open_into(fdt, fdt, fdt_totalsize(blob));
++	if (err == -FDT_ERR_NOSPACE) {
++		int bufsize = fdt_totalsize(fdt) + 4;
++		buf = malloc(bufsize);
++		err = fdt_open_into(fdt, buf, bufsize);
 +	}
-+__fdt_set_hdr(magic);
-+__fdt_set_hdr(totalsize);
-+__fdt_set_hdr(off_dt_struct);
-+__fdt_set_hdr(off_dt_strings);
-+__fdt_set_hdr(off_mem_rsvmap);
-+__fdt_set_hdr(version);
-+__fdt_set_hdr(last_comp_version);
-+__fdt_set_hdr(boot_cpuid_phys);
-+__fdt_set_hdr(size_dt_strings);
-+__fdt_set_hdr(size_dt_struct);
-+#undef __fdt_set_hdr
 +
-+/**
-+ * fdt_check_header - sanity check a device tree or possible device tree
-+ * @fdt: pointer to data which might be a flattened device tree
-+ *
-+ * fdt_check_header() checks that the given buffer contains what
-+ * appears to be a flattened device tree with sane information in its
-+ * header.
-+ *
-+ * returns:
-+ *     0, if the buffer appears to contain a valid device tree
-+ *     -FDT_ERR_BADMAGIC,
-+ *     -FDT_ERR_BADVERSION,
-+ *     -FDT_ERR_BADSTATE, standard meanings, as above
-+ */
-+int fdt_check_header(const void *fdt);
++	if (err != 0)
++		fatal("fdt_init(): %s\n\r", fdt_strerror(err));
 +
-+/**
-+ * fdt_move - move a device tree around in memory
-+ * @fdt: pointer to the device tree to move
-+ * @buf: pointer to memory where the device is to be moved
-+ * @bufsize: size of the memory space at buf
-+ *
-+ * fdt_move() relocates, if possible, the device tree blob located at
-+ * fdt to the buffer at buf of size bufsize.  The buffer may overlap
-+ * with the existing device tree blob at fdt.  Therefore,
-+ *     fdt_move(fdt, fdt, fdt_totalsize(fdt))
-+ * should always succeed.
-+ *
-+ * returns:
-+ *     0, on success
-+ *     -FDT_ERR_NOSPACE, bufsize is insufficient to contain the device tree
-+ *     -FDT_ERR_BADMAGIC,
-+ *     -FDT_ERR_BADVERSION,
-+ *     -FDT_ERR_BADSTATE, standard meanings
-+ */
-+int fdt_move(const void *fdt, void *buf, int bufsize);
-+
-+/**********************************************************************/
-+/* Read-only functions                                                */
-+/**********************************************************************/
-+
-+/**
-+ * fdt_string - retreive a string from the strings block of a device tree
-+ * @fdt: pointer to the device tree blob
-+ * @stroffset: offset of the string within the strings block (native endian)
-+ *
-+ * fdt_string() retrieves a pointer to a single string from the
-+ * strings block of the device tree blob at fdt.
-+ *
-+ * returns:
-+ *     a pointer to the string, on success
-+ *     NULL, if stroffset is out of bounds
-+ */
-+const char *fdt_string(const void *fdt, int stroffset);
-+
-+/**
-+ * fdt_num_mem_rsv - retreive the number of memory reserve map entries
-+ * @fdt: pointer to the device tree blob
-+ *
-+ * Returns the number of entries in the device tree blob's memory
-+ * reservation map.  This does not include the terminating 0,0 entry
-+ * or any other (0,0) entries reserved for expansion.
-+ *
-+ * returns:
-+ *     the number of entries
-+ */
-+int fdt_num_mem_rsv(const void *fdt);
-+
-+/**
-+ * fdt_get_mem_rsv - retreive one memory reserve map entry
-+ * @fdt: pointer to the device tree blob
-+ * @address, @size: pointers to 64-bit variables
-+ *
-+ * On success, *address and *size will contain the address and size of
-+ * the n-th reserve map entry from the device tree blob, in
-+ * native-endian format.
-+ *
-+ * returns:
-+ *     0, on success
-+ *     -FDT_ERR_BADMAGIC,
-+ *     -FDT_ERR_BADVERSION,
-+ *     -FDT_ERR_BADSTATE, standard meanings
-+ */
-+int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size);
-+
-+/**
-+ * fdt_subnode_offset_namelen - find a subnode based on substring
-+ * @fdt: pointer to the device tree blob
-+ * @parentoffset: structure block offset of a node
-+ * @name: name of the subnode to locate
-+ * @namelen: number of characters of name to consider
-+ *
-+ * Identical to fdt_subnode_offset(), but only examine the first
-+ * namelen characters of name for matching the subnode name.  This is
-+ * useful for finding subnodes based on a portion of a larger string,
-+ * such as a full path.
-+ */
-+int fdt_subnode_offset_namelen(const void *fdt, int parentoffset,
-+			       const char *name, int namelen);
-+/**
-+ * fdt_subnode_offset - find a subnode of a given node
-+ * @fdt: pointer to the device tree blob
-+ * @parentoffset: structure block offset of a node
-+ * @name: name of the subnode to locate
-+ *
-+ * fdt_subnode_offset() finds a subnode of the node at structure block
-+ * offset parentoffset with the given name.  name may include a unit
-+ * address, in which case fdt_subnode_offset() will find the subnode
-+ * with that unit address, or the unit address may be omitted, in
-+ * which case fdt_subnode_offset() will find an arbitrary subnode
-+ * whose name excluding unit address matches the given name.
-+ *
-+ * returns:
-+ *	structure block offset of the requested subnode (>=0), on success
-+ *	-FDT_ERR_NOTFOUND, if the requested subnode does not exist
-+ *	-FDT_ERR_BADOFFSET, if parentoffset did not point to an FDT_BEGIN_NODE tag
-+ *      -FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE,
-+ *	-FDT_ERR_TRUNCATED, standard meanings.
-+ */
-+int fdt_subnode_offset(const void *fdt, int parentoffset, const char *name);
-+
-+/**
-+ * fdt_path_offset - find a tree node by its full path
-+ * @fdt: pointer to the device tree blob
-+ * @path: full path of the node to locate
-+ *
-+ * fdt_path_offset() finds a node of a given path in the device tree.
-+ * Each path component may omit the unit address portion, but the
-+ * results of this are undefined if any such path component is
-+ * ambiguous (that is if there are multiple nodes at the relevant
-+ * level matching the given component, differentiated only by unit
-+ * address).
-+ *
-+ * returns:
-+ *	structure block offset of the node with the requested path (>=0), on success
-+ *	-FDT_ERR_BADPATH, given path does not begin with '/' or is invalid
-+ *	-FDT_ERR_NOTFOUND, if the requested node does not exist
-+ *      -FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE,
-+ *	-FDT_ERR_TRUNCATED, standard meanings.
-+ */
-+int fdt_path_offset(const void *fdt, const char *path);
-+
-+/**
-+ * fdt_get_name - retreive the name of a given node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: structure block offset of the starting node
-+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
-+ *
-+ * fdt_get_name() retrieves the name (including unit address) of the
-+ * device tree node at structure block offset nodeoffset.  If lenp is
-+ * non-NULL, the length of this name is also returned, in the integer
-+ * pointed to by lenp.
-+ *
-+ * returns:
-+ *	pointer to the node's name, on success
-+ *		If lenp is non-NULL, *lenp contains the length of that name (>=0)
-+ *	NULL, on error
-+ *		if lenp is non-NULL *lenp contains an error code (<0):
-+ *		-FDT_ERR_BADOFFSET, nodeoffset did not point to FDT_BEGIN_NODE tag
-+ *		-FDT_ERR_BADMAGIC,
-+ *		-FDT_ERR_BADVERSION,
-+ *		-FDT_ERR_BADSTATE, standard meanings
-+ */
-+const char *fdt_get_name(const void *fdt, int nodeoffset, int *lenp);
-+
-+/**
-+ * fdt_get_property - find a given property in a given node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose property to find
-+ * @name: name of the property to find
-+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
-+ *
-+ * fdt_get_property() retrieves a pointer to the fdt_property
-+ * structure within the device tree blob corresponding to the property
-+ * named 'name' of the node at offset nodeoffset.  If lenp is
-+ * non-NULL, the length of the property value also returned, in the
-+ * integer pointed to by lenp.
-+ *
-+ * returns:
-+ *	pointer to the structure representing the property
-+ *		if lenp is non-NULL, *lenp contains the length of the property
-+ *		value (>=0)
-+ *	NULL, on error
-+ *		if lenp is non-NULL, *lenp contains an error code (<0):
-+ *		-FDT_ERR_NOTFOUND, node does not have named property
-+ *		-FDT_ERR_BADOFFSET, nodeoffset did not point to FDT_BEGIN_NODE tag
-+ *		-FDT_ERR_BADMAGIC,
-+ *		-FDT_ERR_BADVERSION,
-+ *		-FDT_ERR_BADSTATE,
-+ *		-FDT_ERR_BADSTRUCTURE,
-+ *		-FDT_ERR_TRUNCATED, standard meanings
-+ */
-+const struct fdt_property *fdt_get_property(const void *fdt, int nodeoffset,
-+					    const char *name, int *lenp);
-+static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
-+						      const char *name,
-+						      int *lenp)
-+{
-+	return (struct fdt_property *)fdt_get_property(fdt, nodeoffset,
-+						       name, lenp);
++	if (buf)
++		fdt = buf;
 +}
-+
-+/**
-+ * fdt_getprop - retrieve the value of a given property
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose property to find
-+ * @name: name of the property to find
-+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
-+ *
-+ * fdt_getprop() retrieves a pointer to the value of the property
-+ * named 'name' of the node at offset nodeoffset (this will be a
-+ * pointer to within the device blob itself, not a copy of the value).
-+ * If lenp is non-NULL, the length of the property value also
-+ * returned, in the integer pointed to by lenp.
-+ *
-+ * returns:
-+ *	pointer to the property's value
-+ *		if lenp is non-NULL, *lenp contains the length of the property
-+ *		value (>=0)
-+ *	NULL, on error
-+ *		if lenp is non-NULL, *lenp contains an error code (<0):
-+ *		-FDT_ERR_NOTFOUND, node does not have named property
-+ *		-FDT_ERR_BADOFFSET, nodeoffset did not point to FDT_BEGIN_NODE tag
-+ *		-FDT_ERR_BADMAGIC,
-+ *		-FDT_ERR_BADVERSION,
-+ *		-FDT_ERR_BADSTATE,
-+ *		-FDT_ERR_BADSTRUCTURE,
-+ *		-FDT_ERR_TRUNCATED, standard meanings
-+ */
-+const void *fdt_getprop(const void *fdt, int nodeoffset,
-+			const char *name, int *lenp);
-+static inline void *fdt_getprop_w(void *fdt, int nodeoffset,
-+				  const char *name, int *lenp)
-+{
-+	return (void *)fdt_getprop(fdt, nodeoffset, name, lenp);
-+}
-+
-+/**
-+ * fdt_get_phandle - retreive the phandle of a given node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: structure block offset of the node
-+ *
-+ * fdt_get_phandle() retrieves the phandle of the device tree node at
-+ * structure block offset nodeoffset.
-+ *
-+ * returns:
-+ *	the phandle of the node at nodeoffset, on succes (!= 0, != -1)
-+ *	0, if the node has no phandle, or another error occurs
-+ */
-+uint32_t fdt_get_phandle(const void *fdt, int nodeoffset);
-+
-+/**
-+ * fdt_get_path - determine the full path of a node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose path to find
-+ * @buf: character buffer to contain the returned path (will be overwritten)
-+ * @buflen: size of the character buffer at buf
-+ *
-+ * fdt_get_path() computes the full path of the node at offset
-+ * nodeoffset, and records that path in the buffer at buf.
-+ *
-+ * NOTE: This function is expensive, as it must scan the device tree
-+ * structure from the start to nodeoffset.
-+ *
-+ * returns:
-+ *	0, on success
-+ *		buf contains the absolute path of the node at
-+ *		nodeoffset, as a NUL-terminated string.
-+ * 	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
-+ *	-FDT_ERR_NOSPACE, the path of the given node is longer than (bufsize-1)
-+ *		characters and will not fit in the given buffer.
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen);
-+
-+/**
-+ * fdt_supernode_atdepth_offset - find a specific ancestor of a node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose parent to find
-+ * @supernodedepth: depth of the ancestor to find
-+ * @nodedepth: pointer to an integer variable (will be overwritten) or NULL
-+ *
-+ * fdt_supernode_atdepth_offset() finds an ancestor of the given node
-+ * at a specific depth from the root (where the root itself has depth
-+ * 0, its immediate subnodes depth 1 and so forth).  So
-+ *	fdt_supernode_atdepth_offset(fdt, nodeoffset, 0, NULL);
-+ * will always return 0, the offset of the root node.  If the node at
-+ * nodeoffset has depth D, then:
-+ *	fdt_supernode_atdepth_offset(fdt, nodeoffset, D, NULL);
-+ * will return nodeoffset itself.
-+ *
-+ * NOTE: This function is expensive, as it must scan the device tree
-+ * structure from the start to nodeoffset.
-+ *
-+ * returns:
-+
-+ *	structure block offset of the node at node offset's ancestor
-+ *		of depth supernodedepth (>=0), on success
-+ * 	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
-+*	-FDT_ERR_NOTFOUND, supernodedepth was greater than the depth of nodeoffset
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
-+				 int supernodedepth, int *nodedepth);
-+
-+/**
-+ * fdt_node_depth - find the depth of a given node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose parent to find
-+ *
-+ * fdt_node_depth() finds the depth of a given node.  The root node
-+ * has depth 0, its immediate subnodes depth 1 and so forth.
-+ *
-+ * NOTE: This function is expensive, as it must scan the device tree
-+ * structure from the start to nodeoffset.
-+ *
-+ * returns:
-+ *	depth of the node at nodeoffset (>=0), on success
-+ * 	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_node_depth(const void *fdt, int nodeoffset);
-+
-+/**
-+ * fdt_parent_offset - find the parent of a given node
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of the node whose parent to find
-+ *
-+ * fdt_parent_offset() locates the parent node of a given node (that
-+ * is, it finds the offset of the node which contains the node at
-+ * nodeoffset as a subnode).
-+ *
-+ * NOTE: This function is expensive, as it must scan the device tree
-+ * structure from the start to nodeoffset, *twice*.
-+ *
-+ * returns:
-+ *	stucture block offset of the parent of the node at nodeoffset
-+ *		(>=0), on success
-+ * 	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_parent_offset(const void *fdt, int nodeoffset);
-+
-+/**
-+ * fdt_node_offset_by_prop_value - find nodes with a given property value
-+ * @fdt: pointer to the device tree blob
-+ * @startoffset: only find nodes after this offset
-+ * @propname: property name to check
-+ * @propval: property value to search for
-+ * @proplen: length of the value in propval
-+ *
-+ * fdt_node_offset_by_prop_value() returns the offset of the first
-+ * node after startoffset, which has a property named propname whose
-+ * value is of length proplen and has value equal to propval; or if
-+ * startoffset is -1, the very first such node in the tree.
-+ *
-+ * To iterate through all nodes matching the criterion, the following
-+ * idiom can be used:
-+ *	offset = fdt_node_offset_by_prop_value(fdt, -1, propname,
-+ *					       propval, proplen);
-+ *	while (offset != -FDT_ERR_NOTFOUND) {
-+ *		// other code here
-+ *		offset = fdt_node_offset_by_prop_value(fdt, offset, propname,
-+ *						       propval, proplen);
-+ *	}
-+ *
-+ * Note the -1 in the first call to the function, if 0 is used here
-+ * instead, the function will never locate the root node, even if it
-+ * matches the criterion.
-+ *
-+ * returns:
-+ *	structure block offset of the located node (>= 0, >startoffset),
-+ *		 on success
-+ *	-FDT_ERR_NOTFOUND, no node matching the criterion exists in the
-+ *		tree after startoffset
-+ * 	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
-+				  const char *propname,
-+				  const void *propval, int proplen);
-+
-+/**
-+ * fdt_node_offset_by_phandle - find the node with a given phandle
-+ * @fdt: pointer to the device tree blob
-+ * @phandle: phandle value
-+ *
-+ * fdt_node_offset_by_prop_value() returns the offset of the node
-+ * which has the given phandle value.  If there is more than one node
-+ * in the tree with the given phandle (an invalid tree), results are
-+ * undefined.
-+ *
-+ * returns:
-+ *	structure block offset of the located node (>= 0), on success
-+ *	-FDT_ERR_NOTFOUND, no node with that phandle exists
-+ *	-FDT_ERR_BADPHANDLE, given phandle value was invalid (0 or -1)
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle);
-+
-+/**
-+ * fdt_node_check_compatible: check a node's compatible property
-+ * @fdt: pointer to the device tree blob
-+ * @nodeoffset: offset of a tree node
-+ * @compatible: string to match against
-+ *
-+ *
-+ * fdt_node_check_compatible() returns 0 if the given node contains a
-+ * 'compatible' property with the given string as one of its elements,
-+ * it returns non-zero otherwise, or on error.
-+ *
-+ * returns:
-+ *	0, if the node has a 'compatible' property listing the given string
-+ *	1, if the node has a 'compatible' property, but it does not list
-+ *		the given string
-+ *	-FDT_ERR_NOTFOUND, if the given node has no 'compatible' property
-+ * 	-FDT_ERR_BADOFFSET, if nodeoffset does not refer to a BEGIN_NODE tag
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_node_check_compatible(const void *fdt, int nodeoffset,
-+			      const char *compatible);
-+
-+/**
-+ * fdt_node_offset_by_compatible - find nodes with a given 'compatible' value
-+ * @fdt: pointer to the device tree blob
-+ * @startoffset: only find nodes after this offset
-+ * @compatible: 'compatible' string to match against
-+ *
-+ * fdt_node_offset_by_compatible() returns the offset of the first
-+ * node after startoffset, which has a 'compatible' property which
-+ * lists the given compatible string; or if startoffset is -1, the
-+ * very first such node in the tree.
-+ *
-+ * To iterate through all nodes matching the criterion, the following
-+ * idiom can be used:
-+ *	offset = fdt_node_offset_by_compatible(fdt, -1, compatible);
-+ *	while (offset != -FDT_ERR_NOTFOUND) {
-+ *		// other code here
-+ *		offset = fdt_node_offset_by_compatible(fdt, offset, compatible);
-+ *	}
-+ *
-+ * Note the -1 in the first call to the function, if 0 is used here
-+ * instead, the function will never locate the root node, even if it
-+ * matches the criterion.
-+ *
-+ * returns:
-+ *	structure block offset of the located node (>= 0, >startoffset),
-+ *		 on success
-+ *	-FDT_ERR_NOTFOUND, no node matching the criterion exists in the
-+ *		tree after startoffset
-+ * 	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
-+ *	-FDT_ERR_BADMAGIC,
-+ *	-FDT_ERR_BADVERSION,
-+ *	-FDT_ERR_BADSTATE,
-+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
-+ */
-+int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
-+				  const char *compatible);
-+
-+/**********************************************************************/
-+/* Write-in-place functions                                           */
-+/**********************************************************************/
-+
-+int fdt_setprop_inplace(void *fdt, int nodeoffset, const char *name,
-+			const void *val, int len);
-+static inline int fdt_setprop_inplace_cell(void *fdt, int nodeoffset,
-+					   const char *name, uint32_t val)
-+{
-+	val = cpu_to_fdt32(val);
-+	return fdt_setprop_inplace(fdt, nodeoffset, name, &val, sizeof(val));
-+}
-+
-+int fdt_nop_property(void *fdt, int nodeoffset, const char *name);
-+int fdt_nop_node(void *fdt, int nodeoffset);
-+
-+/**********************************************************************/
-+/* Sequential write functions                                         */
-+/**********************************************************************/
-+
-+int fdt_create(void *buf, int bufsize);
-+int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size);
-+int fdt_finish_reservemap(void *fdt);
-+int fdt_begin_node(void *fdt, const char *name);
-+int fdt_property(void *fdt, const char *name, const void *val, int len);
-+static inline int fdt_property_cell(void *fdt, const char *name, uint32_t val)
-+{
-+	val = cpu_to_fdt32(val);
-+	return fdt_property(fdt, name, &val, sizeof(val));
-+}
-+#define fdt_property_string(fdt, name, str) \
-+	fdt_property(fdt, name, str, strlen(str)+1)
-+int fdt_end_node(void *fdt);
-+int fdt_finish(void *fdt);
-+
-+/**********************************************************************/
-+/* Read-write functions                                               */
-+/**********************************************************************/
-+
-+int fdt_open_into(const void *fdt, void *buf, int bufsize);
-+int fdt_pack(void *fdt);
-+
-+int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size);
-+int fdt_del_mem_rsv(void *fdt, int n);
-+
-+int fdt_setprop(void *fdt, int nodeoffset, const char *name,
-+		const void *val, int len);
-+static inline int fdt_setprop_cell(void *fdt, int nodeoffset, const char *name,
-+				   uint32_t val)
-+{
-+	val = cpu_to_fdt32(val);
-+	return fdt_setprop(fdt, nodeoffset, name, &val, sizeof(val));
-+}
-+#define fdt_setprop_string(fdt, nodeoffset, name, str) \
-+	fdt_setprop((fdt), (nodeoffset), (name), (str), strlen(str)+1)
-+int fdt_delprop(void *fdt, int nodeoffset, const char *name);
-+int fdt_add_subnode_namelen(void *fdt, int parentoffset,
-+			    const char *name, int namelen);
-+int fdt_add_subnode(void *fdt, int parentoffset, const char *name);
-+int fdt_del_node(void *fdt, int nodeoffset);
-+
-+/**********************************************************************/
-+/* Debugging / informational functions                                */
-+/**********************************************************************/
-+
-+const char *fdt_strerror(int errval);
-+
-+#endif /* _LIBFDT_H */
-Index: working-2.6/arch/powerpc/boot/libfdt/libfdt_internal.h
+Index: working-2.6/arch/powerpc/boot/ops.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/libfdt/libfdt_internal.h	2007-12-10 14:20:16.000000000 +1100
-@@ -0,0 +1,89 @@
-+#ifndef _LIBFDT_INTERNAL_H
-+#define _LIBFDT_INTERNAL_H
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * libfdt is dual licensed: you can use it either under the terms of
-+ * the GPL, or the BSD license, at your option.
-+ *
-+ *  a) This library is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This library is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ *     You should have received a copy of the GNU General Public
-+ *     License along with this library; if not, write to the Free
-+ *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-+ *     MA 02110-1301 USA
-+ *
-+ * Alternatively,
-+ *
-+ *  b) Redistribution and use in source and binary forms, with or
-+ *     without modification, are permitted provided that the following
-+ *     conditions are met:
-+ *
-+ *     1. Redistributions of source code must retain the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer.
-+ *     2. Redistributions in binary form must reproduce the above
-+ *        copyright notice, this list of conditions and the following
-+ *        disclaimer in the documentation and/or other materials
-+ *        provided with the distribution.
-+ *
-+ *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
-+ *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-+ *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-+ *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-+ *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-+ *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-+ *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#include <fdt.h>
-+
-+#define ALIGN(x, a)	(((x) + (a) - 1) & ~((a) - 1))
-+#define PALIGN(p, a)	((void *)ALIGN((unsigned long)(p), (a)))
-+
-+#define memeq(p, q, n)	(memcmp((p), (q), (n)) == 0)
-+#define streq(p, q)	(strcmp((p), (q)) == 0)
-+
-+uint32_t _fdt_next_tag(const void *fdt, int startoffset, int *nextoffset);
-+const char *_fdt_find_string(const char *strtab, int tabsize, const char *s);
-+int _fdt_node_end_offset(void *fdt, int nodeoffset);
-+
-+static inline const void *_fdt_offset_ptr(const void *fdt, int offset)
-+{
-+	return fdt + fdt_off_dt_struct(fdt) + offset;
-+}
-+
-+static inline void *_fdt_offset_ptr_w(void *fdt, int offset)
-+{
-+	return (void *)_fdt_offset_ptr(fdt, offset);
-+}
-+
-+static inline const struct fdt_reserve_entry *_fdt_mem_rsv(const void *fdt, int n)
-+{
-+	const struct fdt_reserve_entry *rsv_table =
-+		fdt + fdt_off_mem_rsvmap(fdt);
-+
-+	return rsv_table + n;
-+}
-+static inline struct fdt_reserve_entry *_fdt_mem_rsv_w(void *fdt, int n)
-+{
-+	return (void *)_fdt_mem_rsv(fdt, n);
-+}
-+
-+#define SW_MAGIC		(~FDT_MAGIC)
-+
-+#endif /* _LIBFDT_INTERNAL_H */
+--- working-2.6.orig/arch/powerpc/boot/ops.h	2007-10-22 13:55:50.000000000 +1000
++++ working-2.6/arch/powerpc/boot/ops.h	2007-12-10 12:01:10.000000000 +1100
+@@ -80,6 +80,7 @@ extern struct loader_info loader_info;
+ 
+ void start(void);
+ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
++void fdt_init(void *blob);
+ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+ int mpsc_console_init(void *devp, struct serial_console_data *scdp);
+Index: working-2.6/arch/powerpc/boot/prpmc2800.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/prpmc2800.c	2007-10-02 14:55:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/prpmc2800.c	2007-12-10 12:01:10.000000000 +1100
+@@ -547,8 +547,7 @@ void platform_init(unsigned long r3, uns
+ 	if (!dtb)
+ 		exit();
+ 	memmove(dtb, _dtb_start, dt_size);
+-	if (ft_init(dtb, dt_size, 16))
+-		exit();
++	fdt_init(dtb);
+ 
+ 	bridge_base = mv64x60_get_bridge_base();
+ 
+Index: working-2.6/arch/powerpc/boot/ps3.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ps3.c	2007-10-02 14:55:34.000000000 +1000
++++ working-2.6/arch/powerpc/boot/ps3.c	2007-12-10 12:01:10.000000000 +1100
+@@ -131,7 +131,7 @@ void platform_init(void)
+ 	printf("\n-- PS3 bootwrapper --\n");
+ 
+ 	simple_alloc_init(_end, heapsize, 32, 64);
+-	ft_init(_dtb_start, 0, 4);
++	fdt_init(_dtb_start);
+ 
+ 	chosen = finddevice("/chosen");
+ 
+Index: working-2.6/arch/powerpc/boot/treeboot-walnut.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/treeboot-walnut.c	2007-12-10 10:52:43.000000000 +1100
++++ working-2.6/arch/powerpc/boot/treeboot-walnut.c	2007-12-10 12:01:10.000000000 +1100
+@@ -128,6 +128,6 @@ void platform_init(void)
+ 	simple_alloc_init(_end, avail_ram, 32, 32);
+ 	platform_ops.fixups = walnut_fixups;
+ 	platform_ops.exit = ibm40x_dbcr_reset;
+-	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	fdt_init(_dtb_start);
+ 	serial_console_init();
+ }
