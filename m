@@ -1,15 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B0E69DDEF4
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 07:45:08 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id BDEDEDE361
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 07:45:22 +1100 (EST)
 Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id F116A8816
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 01:45:06 +0400 (SAMT)
-Date: Mon, 10 Dec 2007 23:48:25 +0300
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id D69318816
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 01:45:20 +0400 (SAMT)
+Date: Mon, 10 Dec 2007 23:48:39 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH RFC 1/7] [POWERPC] Implement GPIO API embryo
-Message-ID: <20071210204825.GA32278@localhost.localdomain>
+Subject: [PATCH RFC 2/7] [POWERPC] QE: implement GPIO API
+Message-ID: <20071210204839.GB32278@localhost.localdomain>
 References: <20071210204705.GA31263@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,190 +23,194 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch implements GPIO API as described in Documentation/gpio.txt.
-Two calls unimplemented though: irq_to_gpio and gpio_to_irq.
-
-I'm also providing OF helpers.
-
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Kconfig             |    4 +++
- arch/powerpc/kernel/prom_parse.c |   50 +++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/gpio.h       |   51 ++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/prom.h       |   23 +++++++++++++++++
- 4 files changed, 128 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-powerpc/gpio.h
+ arch/powerpc/platforms/Kconfig     |    1 +
+ arch/powerpc/sysdev/qe_lib/qe_io.c |   93 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 92 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 232c298..596982f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -73,6 +73,10 @@ config GENERIC_FIND_NEXT_BIT
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index ea22cad..3d9ff27 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -265,6 +265,7 @@ config TAU_AVERAGE
+ config QUICC_ENGINE
  	bool
- 	default y
+ 	select PPC_LIB_RHEAP
++	select GENERIC_GPIO
+ 	help
+ 	  The QUICC Engine (QE) is a new generation of communications
+ 	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
+index e53ea4d..3c9cf65 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_io.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
+@@ -23,6 +23,7 @@
  
-+config GENERIC_GPIO
-+	bool
-+	default n
-+
- config ARCH_NO_VIRT_TO_BUS
- 	def_bool PPC64
- 
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index b5c96af..5228fe6 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -7,6 +7,7 @@
- #include <linux/ioport.h>
- #include <linux/etherdevice.h>
+ #include <asm/io.h>
  #include <asm/prom.h>
 +#include <asm/gpio.h>
- #include <asm/pci-bridge.h>
+ #include <sysdev/fsl_soc.h>
  
- #ifdef DEBUG
-@@ -1067,3 +1068,52 @@ void __iomem *of_iomap(struct device_node *np, int index)
- 	return ioremap(res.start, 1 + res.end - res.start);
- }
- EXPORT_SYMBOL(of_iomap);
+ #undef DEBUG
+@@ -43,12 +44,23 @@ struct port_regs {
+ 
+ static struct port_regs *par_io = NULL;
+ static int num_par_io_ports = 0;
++static spinlock_t *qe_pio_locks;
 +
-+int __of_parse_gpio_bank_pin(struct device_node *np, int index,
-+			     int bank_width, int max_bank)
++static int par_io_xlate(struct device_node *np, int index)
 +{
-+	int bank;
-+	int pin;
-+	const u32 *gpios;
-+	int len;
-+
-+	gpios = of_get_property(np, "gpios", &len);
-+	len /= sizeof(u32);
-+
-+	if (len < 2 || len % 2 || index > len / 2 - 1)
-+		return -EINVAL;
-+
-+	bank = gpios[index * 2];
-+	pin = gpios[index * 2 + 1];
-+
-+	if (bank >= max_bank || pin >= bank_width)
-+		return -EINVAL;
-+
-+	return bank * bank_width + pin;
++	return __of_parse_gpio_bank_pin(np, index, 32, num_par_io_ports);
 +}
-+EXPORT_SYMBOL_GPL(__of_parse_gpio_bank_pin);
 +
-+int of_get_gpio(struct device_node *np, int index)
++static struct of_gpio_chip of_gpio_chip = {
++	.xlate = par_io_xlate,
++};
+ 
+ int par_io_init(struct device_node *np)
+ {
+ 	struct resource res;
+ 	int ret;
+ 	const u32 *num_ports;
++	int i;
+ 
+ 	/* Map Parallel I/O ports registers */
+ 	ret = of_address_to_resource(np, 0, &res);
+@@ -60,6 +72,18 @@ int par_io_init(struct device_node *np)
+ 	if (num_ports)
+ 		num_par_io_ports = *num_ports;
+ 
++	qe_pio_locks = kzalloc(sizeof(*qe_pio_locks) * num_par_io_ports,
++			       GFP_KERNEL);
++	if (!qe_pio_locks) {
++		iounmap(par_io);
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < num_par_io_ports; i++)
++		spin_lock_init(&qe_pio_locks[i]);
++
++	np->data = &of_gpio_chip;
++
+ 	return 0;
+ }
+ 
+@@ -67,9 +91,12 @@ int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
+ 		      int assignment, int has_irq)
+ {
+ 	u32 pin_mask1bit, pin_mask2bits, new_mask2bits, tmp_val;
++	unsigned long flags;
+ 
+-	if (!par_io)
+-		return -1;
++	if (!par_io || port > num_par_io_ports)
++		return -EINVAL;
++
++	spin_lock_irqsave(&qe_pio_locks[port], flags);
+ 
+ 	/* calculate pin location for single and 2 bits information */
+ 	pin_mask1bit = (u32) (1 << (NUM_OF_PINS - (pin + 1)));
+@@ -126,6 +153,8 @@ int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
+ 		out_be32(&par_io[port].cppar1, new_mask2bits | tmp_val);
+ 	}
+ 
++	spin_unlock_irqrestore(&qe_pio_locks[port], flags);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(par_io_config_pin);
+@@ -133,6 +162,7 @@ EXPORT_SYMBOL(par_io_config_pin);
+ int par_io_data_set(u8 port, u8 pin, u8 val)
+ {
+ 	u32 pin_mask, tmp_val;
++	unsigned long flags;
+ 
+ 	if (port >= num_par_io_ports)
+ 		return -EINVAL;
+@@ -141,6 +171,8 @@ int par_io_data_set(u8 port, u8 pin, u8 val)
+ 	/* calculate pin location */
+ 	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - pin));
+ 
++	spin_lock_irqsave(&qe_pio_locks[port], flags);
++
+ 	tmp_val = in_be32(&par_io[port].cpdata);
+ 
+ 	if (val == 0)		/* clear */
+@@ -148,10 +180,25 @@ int par_io_data_set(u8 port, u8 pin, u8 val)
+ 	else			/* set */
+ 		out_be32(&par_io[port].cpdata, pin_mask | tmp_val);
+ 
++	spin_unlock_irqrestore(&qe_pio_locks[port], flags);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(par_io_data_set);
+ 
++static inline int par_io_data_get(u8 port, u8 pin)
++{
++	u32 pin_mask;
++
++	if (port >= num_par_io_ports)
++		return -EINVAL;
++	if (pin >= NUM_OF_PINS)
++		return -EINVAL;
++	/* calculate pin location */
++	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - pin));
++
++	return !!(in_be32(&par_io[port].cpdata) & pin_mask);
++}
++
+ int par_io_of_config(struct device_node *np)
+ {
+ 	struct device_node *pio;
+@@ -195,6 +242,48 @@ int par_io_of_config(struct device_node *np)
+ }
+ EXPORT_SYMBOL(par_io_of_config);
+ 
++int gpio_request(unsigned int gpio, const char *label)
++{
++	if (!qe_pio_locks)
++		return -ENODEV;
++
++	if (gpio / 32 > num_par_io_ports)
++		return -EINVAL;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(gpio_request);
++
++int gpio_direction_input(unsigned int gpio)
++{
++	return par_io_config_pin(gpio / 32, gpio % 32, 2, 0, 0, 0);
++}
++EXPORT_SYMBOL_GPL(gpio_direction_input);
++
++int gpio_direction_output(unsigned int gpio, int value)
 +{
 +	int ret;
-+	const phandle *gc_ph;
-+	struct device_node *gc;
-+	struct of_gpio_chip *of_gpio_chip;
 +
-+	gc_ph = of_get_property(np, "gpio-parent", NULL);
-+	if (!gc_ph)
-+		return -EINVAL;
++	ret = par_io_config_pin(gpio / 32, gpio % 32, 1, 0, 0, 0);
++	if (ret)
++		return ret;
 +
-+	gc = of_find_node_by_phandle(*gc_ph);
-+	if (!gc || !gc->data)
-+		return -EINVAL;
-+
-+	of_gpio_chip = gc->data;
-+
-+	ret = of_gpio_chip->xlate(np, index);
-+	if (ret < 0)
-+		of_node_put(gc);
-+
-+	return ret;
++	return par_io_data_set(gpio / 32, gpio % 32, value);
 +}
-+EXPORT_SYMBOL(of_get_gpio);
-diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
-new file mode 100644
-index 0000000..f7513ff
---- /dev/null
-+++ b/include/asm-powerpc/gpio.h
-@@ -0,0 +1,51 @@
-+/*
-+ * Generic GPIO API implementation for PowerPC.
-+ *
-+ * Copyright (c) 2007  MontaVista Software, Inc.
-+ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
++EXPORT_SYMBOL_GPL(gpio_direction_output);
 +
-+#ifndef __ASM_POWERPC_GPIO_H
-+#define __ASM_POWERPC_GPIO_H
-+
-+#ifdef CONFIG_GENERIC_GPIO
-+
-+extern int gpio_request(unsigned int gpio, const char *label);
-+static inline void gpio_free(unsigned int gpio) {}
-+
-+extern int gpio_direction_input(unsigned int gpio);
-+extern int gpio_direction_output(unsigned int gpio, int value);
-+
-+extern int gpio_get_value(unsigned int gpio);
-+extern int gpio_set_value(unsigned int gpio, int value);
-+
-+/*
-+ * Not implemented, yet.
-+ */
-+static inline int gpio_to_irq(unsigned int gpio)
++int gpio_get_value(unsigned int gpio)
 +{
-+	return -ENOSYS;
++	return par_io_data_get(gpio / 32, gpio % 32);
 +}
++EXPORT_SYMBOL_GPL(gpio_get_value);
 +
-+static inline int irq_to_gpio(unsigned int irq)
++int gpio_set_value(unsigned int gpio, int value)
 +{
-+	return -ENOSYS;
++	return par_io_data_set(gpio / 32, gpio % 32, value);
 +}
++EXPORT_SYMBOL_GPL(gpio_set_value);
 +
-+/*
-+ * OF specific gpio_chip handler.
-+ */
-+struct of_gpio_chip {
-+	int (*xlate)(struct device_node *np, int index);
-+};
-+
-+#endif /* CONFIG_GENERIC_GPIO */
-+
-+#include <asm-generic/gpio.h>
-+
-+#endif /* __ASM_POWERPC_GPIO_H */
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 925e2d3..019af61 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -326,6 +326,29 @@ extern int of_irq_to_resource(struct device_node *dev, int index,
-  */
- extern void __iomem *of_iomap(struct device_node *device, int index);
- 
-+/**
-+ * __of_parse_gpio_bank_pin - Helper function to translate "bank pin" GPIOs
-+ * @np:		device node to get GPIO from
-+ * @index:	index of the GPIO
-+ * @bank_width:	pins per bank
-+ * @max_bank:	maximum value to represent a bank
-+ *
-+ * Returns GPIO number to use with Linux generic GPIO api, or
-+ * one of the errno value on the error condition.
-+ */
-+extern int __of_parse_gpio_bank_pin(struct device_node *np, int index,
-+				    int bank_width, int max_bank);
-+
-+/**
-+ * of_get_gpio - Translate GPIO number given in the device tree
-+ * @np:		device node to get GPIO from
-+ * @index:	index of the GPIO
-+ *
-+ * Returns GPIO number to use with Linux generic GPIO API, or
-+ * one of the errno value on the error condition.
-+ */
-+extern int of_get_gpio(struct device_node *np, int index);
-+
- /*
-  * NB:  This is here while we transition from using asm/prom.h
-  * to linux/of.h
+ #ifdef DEBUG
+ static void dump_par_io(void)
+ {
 -- 
 1.5.2.2
