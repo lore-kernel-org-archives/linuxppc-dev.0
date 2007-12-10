@@ -1,24 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 567B9DDE44
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:18:56 +1100 (EST)
-Message-ID: <475DC966.6070301@freescale.com>
-Date: Mon, 10 Dec 2007 17:19:02 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id CD219DDE44
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:19:54 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so90903uge.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 15:19:53 -0800 (PST)
+Date: Tue, 11 Dec 2007 02:10:52 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
+Message-ID: <20071210231052.GB1141@zarina>
+References: <20071210204705.GA31263@localhost.localdomain>
+	<20071210230453.GB5495@localhost.localdomain>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/3] Use embedded libfdt in the bootwrapper
-References: <20071210032343.GB29611@localhost.localdomain>
-	<20071210032839.71412DDDFA@ozlabs.org>
-	<20071210173217.GB4497@loki.buserror.net>
-	<20071210231056.GC5495@localhost.localdomain>
-In-Reply-To: <20071210231056.GC5495@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071210230453.GB5495@localhost.localdomain>
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,32 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Mon, Dec 10, 2007 at 11:32:17AM -0600, Scott Wood wrote:
->> How does using offsets as devps work if a devp was previously
->> acquired to a node that has to be moved due to a change later made
->> in an earlier part of the tree?
+On Tue, Dec 11, 2007 at 10:04:53AM +1100, David Gibson wrote:
+> On Mon, Dec 10, 2007 at 11:47:05PM +0300, Anton Vorontsov wrote:
+> > Hi all,
+> > 
+> > Here are patches to support NAND on UPM. That driver is generic for
+> > all processors with FSL UPMs. And because of that, few more patches are
+> > needed -- GPIO API and generic FSL UPM functions.
+> > 
+> > This is early RFC, all patches are in single thread, so everyone could
+> > make up overall picture of what is going on. I'll split the thread by
+> > topics after that RFC.
+> > 
+> > Ok, the patches and what they are for:
+> > 
+> > 1,2,3,4. GPIO API:
+> > ------------------
+> > Usually NAND chips exports RNB (Ready-Not-Busy) pin, so drivers
+> > could read it and get a hint when chip is ready.
+> > 
+> > Often, WP (write protect) pin is also connected to GPIO. So, GPIO API
+> > is mandatory for generic drivers.
+> > 
+> > OF device tree GPIOs bindings are similar to IRQs:
+> > 
+> > node {
+> > 	gpios = <bank pin bank pin bank pin>;
+> > 	gpio-parent = <&par_io_controller>;
+> > };
+> > 
+> > "bank pin" scheme is controller specific, so controllers that want
+> > to implement flat mappings or any other could do so.
 > 
-> It doesn't; don't do that.  I just don't think truly persistent 
-> phandles are worth the code complexity to implement them.
+> It might be safest to do as is done for interrupts, and not define the
+> internal format at all.
 
-We already have working code to implement them.  This is a regression 
-over flatdevicetree.c, and it (or something else in libfdt) seems to be 
-breaking the ep8248e wrapper (it didn't make it in to the last window 
-because of dependency on a netdev patch, but I'll probably send it out 
-tomorrow).
+This is how it is done already. Take a look into second and third patches:
 
-It breaks the extremely common and useful usage of:
++static int par_io_xlate(struct device_node *np, int index)
++{
++       return __of_parse_gpio_bank_pin(np, index, 32, num_par_io_ports);
++}
++
++static struct of_gpio_chip of_gpio_chip = {
++       .xlate = par_io_xlate,
++};
 
-devp = create node;
-setprop(devp, "foo", something);
-setprop(devp, "bar", something);
+__of_parse_gpio_bank_pin() is helper function, I just factored
+it out, because both QE and CPM2 using same format.
 
-> Especially since their use more-or-less completely precludes libfdt's
-> "stateless" approach, which has significant other advantages.
+But generally, controllers are encouraged to do their own xlates.
 
-It doesn't preclude stateless read-only -- what are the benefits to 
-stateless read-write that are worth invalidating all node references any 
-time something changes?
+Or am I missing the point?
 
--Scott
+> The gpio within the gpio controller would be
+> defined by a gpio-descriptor whose format is determined by the
+> controller.  You would need to add a #gpio-cells property in this
+> case, so you can at least determine the size of the descriptors
+> associated with a particular gpio controller.
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
