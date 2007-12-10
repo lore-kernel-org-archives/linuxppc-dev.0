@@ -1,33 +1,17 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0DBA1DDE02
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 06:36:33 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBAJaUdm001334
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 14:36:30 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBAJaUg2171150
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 12:36:30 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBAJaUrD018387
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 12:36:30 -0700
-Message-ID: <475D952D.9070207@linux.vnet.ibm.com>
-Date: Tue, 11 Dec 2007 01:06:13 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-MIME-Version: 1.0
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 88DF6DDE30
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 07:26:19 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 2B75C8816
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 01:26:16 +0400 (SAMT)
+Date: Mon, 10 Dec 2007 23:29:34 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
-Reply-To: balbir@linux.vnet.ibm.com
+Subject: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
+Message-ID: <20071210202934.GA32046@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,188 +21,438 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Balbir Singh wrote:
-> Changelog
-> 
-> 1. Get rid of the constant 5 (based on comments from
->                                 Geert.Uytterhoeven@sonycom.com)
-> 2. Implement suggestions from Olof Johannson
-> 3. Check if cmdline is NULL in fake_numa_create_new_node()
-> 
-> Tested with additional parameters from Olof
-> 
-> numa=debug,fake=
-> numa=foo,fake=bar
-> 
-> 
-> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
-> NUMA nodes can be specified using the following command line option
-> 
-> numa=fake=<node range>
-> 
-> node range is of the format <range1>,<range2>,...<rangeN>
-> 
-> Each of the rangeX parameters is passed using memparse(). I find the patch
-> useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
-> on a non-numa box with the following arguments
-> 
-> numa=fake=1G
-> numa=fake=1G,2G
-> name=fake=1G,512M,2G
-> numa=fake=1500M,2800M mem=3500M
-> numa=fake=1G mem=512M
-> numa=fake=1G mem=1G
-> 
-> This patch applies on top of 2.6.24-rc4.
-> 
-> All though I've tried my best to handle some of the architecture specific
-> details of PowerPC, I might have overlooked something obvious, like the usage
-> of an API or some architecture tweaks. The patch depends on CONFIG_NUMA and
-> I decided against creating a separate config option for fake NUMA to keep
-> the code simple.
-> 
-> Comments are as always welcome!
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  arch/powerpc/mm/numa.c |   59 ++++++++++++++++++++++++++++++++++++++++++++-----
->  1 file changed, 54 insertions(+), 5 deletions(-)
-> 
-> diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.c
-> --- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-12-07 21:25:55.000000000 +0530
-> +++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 03:19:46.000000000 +0530
-> @@ -24,6 +24,8 @@
-> 
->  static int numa_enabled = 1;
-> 
-> +static char *cmdline __initdata;
-> +
->  static int numa_debug;
->  #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
-> 
-> @@ -39,6 +41,43 @@ static bootmem_data_t __initdata plat_no
->  static int min_common_depth;
->  static int n_mem_addr_cells, n_mem_size_cells;
-> 
-> +static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
-> +						unsigned int *nid)
-> +{
-> +	unsigned long long mem;
-> +	char *p = cmdline;
-> +	static unsigned int fake_nid = 0;
-> +	static unsigned long long curr_boundary = 0;
-> +
-> +	*nid = fake_nid;
-> +	if (!p)
-> +		return 0;
-> +
-> +	mem = memparse(p, &p);
-> +	if (!mem)
-> +		return 0;
-> +
-> +	if (mem < curr_boundary)
-> +		return 0;
-> +
-> +	curr_boundary = mem;
-> +
-> +	if ((end_pfn << PAGE_SHIFT) > mem) {
-> +		/*
-> +		 * Skip commas and spaces
-> +		 */
-> +		while (*p == ',' || *p == ' ' || *p == '\t')
-> +			p++;
-> +
-> +		cmdline = p;
-> +		fake_nid++;
-> +		*nid = fake_nid;
-> +		dbg("created new fake_node with id %d\n", fake_nid);
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
->  static void __cpuinit map_cpu_to_node(int cpu, int node)
->  {
->  	numa_cpu_lookup_table[cpu] = node;
-> @@ -344,12 +383,14 @@ static void __init parse_drconf_memory(s
->  			if (nid == 0xffff || nid >= MAX_NUMNODES)
->  				nid = default_nid;
->  		}
-> -		node_set_online(nid);
-> 
->  		size = numa_enforce_memory_limit(start, lmb_size);
->  		if (!size)
->  			continue;
-> 
-> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> +		node_set_online(nid);
-> +
->  		add_active_range(nid, start >> PAGE_SHIFT,
->  				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
->  	}
-> @@ -429,7 +470,6 @@ new_range:
->  		nid = of_node_to_nid_single(memory);
->  		if (nid < 0)
->  			nid = default_nid;
-> -		node_set_online(nid);
-> 
->  		if (!(size = numa_enforce_memory_limit(start, size))) {
->  			if (--ranges)
-> @@ -438,6 +478,9 @@ new_range:
->  				continue;
->  		}
-> 
-> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> +		node_set_online(nid);
-> +
->  		add_active_range(nid, start >> PAGE_SHIFT,
->  				(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
-> 
-> @@ -461,7 +504,7 @@ static void __init setup_nonnuma(void)
->  	unsigned long top_of_ram = lmb_end_of_DRAM();
->  	unsigned long total_ram = lmb_phys_mem_size();
->  	unsigned long start_pfn, end_pfn;
-> -	unsigned int i;
-> +	unsigned int i, nid = 0;
-> 
->  	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
->  	       top_of_ram, total_ram);
-> @@ -471,9 +514,11 @@ static void __init setup_nonnuma(void)
->  	for (i = 0; i < lmb.memory.cnt; ++i) {
->  		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
->  		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
-> -		add_active_range(0, start_pfn, end_pfn);
-> +
-> +		fake_numa_create_new_node(end_pfn, &nid);
-> +		add_active_range(nid, start_pfn, end_pfn);
-> +		node_set_online(nid);
->  	}
-> -	node_set_online(0);
->  }
-> 
->  void __init dump_numa_cpu_topology(void)
-> @@ -702,6 +747,10 @@ static int __init early_numa(char *p)
->  	if (strstr(p, "debug"))
->  		numa_debug = 1;
-> 
-> +	p = strstr(p, "fake=");
-> +	if (p)
-> +		cmdline = p + strlen("fake=");
-> +
->  	return 0;
->  }
->  early_param("numa", early_numa);
-> _
-> 
+This is new board made by Freescale Semiconductor Inc. and
+Logic Product Development.
 
+Currently supported:
+1. UEC1,2 (UEC2 doesn't work, but I'm sure this is firmware issue)
+2. I2C
+3. SPI
+4. NS16550 serial
 
-If there are no other major objections, could we get this infrastructure
-into -mm?
+Not supported so far:
+1. StMICRO NAND512W3A2BN6E, 512 Mbit
+2. UEC3,4
+3. QE SCCs (slow UCCs)
+4. PCI
+5. ADC AD7843
+6. FHCI USB
+7. Graphics controller, Fujitsu MB86277
 
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
+Hi all,
+
+That patch is early RFC:
+
+I tend to submit patches just as they are mature enough, thus not bomb
+the list with long queues or huge patches. After I'll fix all upcoming
+issues with that basic support, it would be great if someone will
+merge it, thus I can start do incremental patches supporting this or
+that.
+
+Below is MPC8360E-RDK basic support. I'm following latest fashion,
+so dts is v1. ;-)
+
+Thanks,
+
+p.s. not sending defconfig yet.
+
+ arch/powerpc/boot/dts/mpc836x_rdk.dts     |  232 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/Kconfig       |   10 +-
+ arch/powerpc/platforms/83xx/Makefile      |    1 +
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c |  109 ++++++++++++++
+ 4 files changed, 351 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc836x_rdk.dts
+ create mode 100644 arch/powerpc/platforms/83xx/mpc836x_rdk.c
+
+diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+new file mode 100644
+index 0000000..a3b37e8
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+@@ -0,0 +1,232 @@
++/*
++ * MPC8360E RDK Device Tree Source
++ *
++ * Copyright 2006 Freescale Semiconductor Inc.
++ * Copyright 2007 MontaVista Software, Inc.
++ * 		  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "MPC8360RDK";
++	compatible = "MPC8360ERDK", "MPC836xRDK", "MPC83xxRDK";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8360@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <32768>;
++			i-cache-size = <32768>;
++			timebase-frequency = <0>; /* filled by u-boot */
++			bus-frequency = <0>; /* filled by u-boot */
++			clock-frequency = <0>; /* filled by u-boot */
++		};
++	};
++
++	soc8360@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <0 0xe0000000 0x00100000>;
++		reg = <0xe0000000 0x00000200>;
++		bus-frequency = <0>; /* filled by u-boot */
++
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <0x200 0x100>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <14 8>;
++			interrupt-parent = <&ipic>;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <16 8>;
++			interrupt-parent = <&ipic>;
++			dfsrr;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <9 8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <10 8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		crypto@30000 {
++			device_type = "crypto";
++			model = "SEC2";
++			compatible = "talitos";
++			reg = <0x30000 0x10000>;
++			interrupts = <11 8>;
++			interrupt-parent = <&ipic>;
++			num-channels = <4>;
++			channel-fifo-len = <24>;
++			exec-units-mask = <0x0000007e>;
++			/*
++			 * desc mask is for rev1.x, we need runtime fixup
++			 * for >=2.x
++			 */
++			descriptor-types-mask = <0x01010ebf>;
++		};
++
++		ipic: pic@700 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x700 0x100>;
++			device_type = "ipic";
++		};
++
++		par_io@1400 {
++			reg = <0x1400 0x100>;
++			num-ports = <7>;
++		};
++	};
++
++	qe@e0100000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "qe";
++		model = "QE";
++		ranges = <0 0xe0100000 0x00100000>;
++		reg = <0xe0100000 0x480>;
++		brg-frequency = <0>; /* filled by u-boot */
++		bus-frequency = <0>; /* filled by u-boot */
++
++		muram@10000 {
++			device_type = "muram";
++			ranges = <0 0x00010000 0x0000c000>;
++
++			data-only@0 {
++				reg = <0 0xc000>;
++			};
++		};
++
++		spi@4c0 {
++			device_type = "spi";
++			compatible = "fsl_spi";
++			reg = <0x4c0 0x40>;
++			interrupts = <2>;
++			interrupt-parent = <&qeic>;
++			mode = "cpu";
++		};
++
++		spi@500 {
++			device_type = "spi";
++			compatible = "fsl_spi";
++			reg = <0x500 0x40>;
++			interrupts = <1>;
++			interrupt-parent = <&qeic>;
++			mode = "cpu";
++		};
++
++		usb@6c0 {
++			device_type = "usb";
++			compatible = "qe_udc";
++			reg = <0x6c0 0x40 0x8b00 0x100>;
++			interrupts = <11>;
++			interrupt-parent = <&qeic>;
++			mode = "slave";
++		};
++
++		ucc@2000 {
++			device_type = "network";
++			compatible = "ucc_geth";
++			model = "UCC";
++			device-id = <1>;
++			reg = <0x2000 0x200>;
++			interrupts = <32>;
++			interrupt-parent = <&qeic>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			rx-clock = <0>;
++			tx-clock = <25>;
++			phy-handle = <&phy2>;
++			phy-connection-type = "rgmii-id";
++		};
++
++		ucc@3000 {
++			device_type = "network";
++			compatible = "ucc_geth";
++			model = "UCC";
++			device-id = <2>;
++			reg = <0x3000 0x200>;
++			interrupts = <33>;
++			interrupt-parent = <&qeic>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			rx-clock = <0>;
++			tx-clock = <20>;
++			phy-handle = <&phy4>;
++			phy-connection-type = "rgmii-id";
++		};
++
++		mdio@2120 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x2120 0x18>;
++			device_type = "mdio";
++			compatible = "ucc_geth_phy";
++
++			phy2: ethernet-phy@02 {
++				interrupt-parent = <&ipic>;
++				/*interrupts = <17 8>;*/
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++			phy4: ethernet-phy@04 {
++				interrupt-parent = <&ipic>;
++				/*interrupts = <18 8>;*/
++				reg = <4>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		qeic: qeic@80 {
++			interrupt-controller;
++			device_type = "qeic";
++			#address-cells = <0>;
++			#interrupt-cells = <1>;
++			reg = <0x80 0x80>;
++			big-endian;
++			interrupts = <32 8 33 8>;
++			interrupt-parent = <&ipic>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index ec305f1..98f6358 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -50,6 +50,14 @@ config MPC836x_MDS
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
+ 
++config MPC836x_RDK
++	bool "Freescale/Logic MPC836x RDK"
++	select DEFAULT_UIMAGE
++	select QUICC_ENGINE
++	help
++	  This option enables support for the MPC836x RDK Processor Board,
++	  also known as ZOOM PowerQUICC Kit.
++
+ endchoice
+ 
+ config PPC_MPC831x
+@@ -74,4 +82,4 @@ config PPC_MPC836x
+ 	bool
+ 	select PPC_UDBG_16550
+ 	select PPC_INDIRECT_PCI
+-	default y if MPC836x_MDS
++	default y if MPC836x_MDS || MPC836x_RDK
+diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
+index 5a98f88..24dcd75 100644
+--- a/arch/powerpc/platforms/83xx/Makefile
++++ b/arch/powerpc/platforms/83xx/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_MPC834x_MDS)	+= mpc834x_mds.o
+ obj-$(CONFIG_MPC834x_ITX)	+= mpc834x_itx.o
+ obj-$(CONFIG_MPC836x_MDS)	+= mpc836x_mds.o
+ obj-$(CONFIG_MPC832x_MDS)	+= mpc832x_mds.o
++obj-$(CONFIG_MPC836x_RDK)	+= mpc836x_rdk.o
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+new file mode 100644
+index 0000000..be9e2fd
+--- /dev/null
++++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+@@ -0,0 +1,109 @@
++/*
++ * MPC8360E-RDK board file.
++ *
++ * Copyright (c) 2006  Freescale Semicondutor, Inc.
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * 		       Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/of_platform.h>
++#include <asm/time.h>
++#include <asm/ipic.h>
++#include <asm/udbg.h>
++#include <asm/io.h>
++#include <asm/qe.h>
++#include <asm/qe_ic.h>
++#include <sysdev/fsl_soc.h>
++
++#include "mpc83xx.h"
++
++static struct of_device_id mpc836x_rdk_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{ .type = "qe", },
++	{},
++};
++
++static int __init mpc836x_rdk_declare_of_platform_devices(void)
++{
++	if (!machine_is(mpc836x_rdk))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc836x_rdk_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc836x_rdk_declare_of_platform_devices);
++
++static void __init mpc836x_rdk_setup_arch(void)
++{
++	struct device_node *np;
++
++	if (ppc_md.progress)
++		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
++
++#ifdef CONFIG_QUICC_ENGINE
++	qe_reset();
++
++	np = of_find_node_by_name(NULL, "par_io");
++	if (np)
++		par_io_init(np);
++	else
++		pr_warning("QE PIO not initialized!\n");
++#endif
++}
++
++static void __init mpc836x_rdk_init_IRQ(void)
++{
++	struct device_node *np;
++
++	np = of_find_node_by_type(NULL, "ipic");
++	if (!np)
++		return;
++
++	ipic_init(np, 0);
++
++	/*
++	 * Initialize the default interrupt mapping priorities,
++	 * in case the boot rom changed something on us.
++	 */
++	ipic_set_default_priority();
++	of_node_put(np);
++
++#ifdef CONFIG_QUICC_ENGINE
++	np = of_find_node_by_type(NULL, "qeic");
++	if (!np)
++		return;
++
++	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
++	of_node_put(np);
++#endif
++}
++
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init mpc836x_rdk_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "MPC836xRDK");
++}
++
++define_machine(mpc836x_rdk) {
++	.name		= "MPC836x RDK",
++	.probe		= mpc836x_rdk_probe,
++	.setup_arch	= mpc836x_rdk_setup_arch,
++	.init_IRQ	= mpc836x_rdk_init_IRQ,
++	.get_irq	= ipic_get_irq,
++	.restart	= mpc83xx_restart,
++	.time_init	= mpc83xx_time_init,
++	.calibrate_decr	= generic_calibrate_decr,
++	.progress	= udbg_progress,
++};
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+1.5.2.2
