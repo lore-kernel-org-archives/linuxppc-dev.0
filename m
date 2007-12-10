@@ -1,16 +1,18 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910712101454l39285585j55e4d72ae4329cf9@mail.gmail.com>
-Date: Mon, 10 Dec 2007 17:54:42 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Addition to the i2c series,
-	copy the ppc mpc-i2c driver before changing it on powerpc
-In-Reply-To: <fa686aa40712101444l448657c5jb6117e7a60715651@mail.gmail.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp124.sbc.mail.sp1.yahoo.com (smtp124.sbc.mail.sp1.yahoo.com
+	[69.147.64.97]) by ozlabs.org (Postfix) with SMTP id 89CFCDDF3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 09:55:28 +1100 (EST)
+Date: Mon, 10 Dec 2007 14:55:24 -0800
+From: David Brownell <david-b@pacbell.net>
+To: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com
+Subject: Re: [PATCH RFC 4/7] [GPIO] Let drivers link if they support GPIO API
+	as an addition
+References: <20071210204705.GA31263@localhost.localdomain>
+	<20071210204906.GD32278@localhost.localdomain>
+In-Reply-To: <20071210204906.GD32278@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910712101420o15b5e908jc7291a0086832467@mail.gmail.com>
-	<fa686aa40712101444l448657c5jb6117e7a60715651@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20071210225525.2F6C6266154@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/10/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 12/10/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > Copy mpc-i2c to preserve support for ARCH=ppc and allow changes on ARCH=powerpc
-> >
-> > Temporarily copy the mpc-i2c driver to continue support for the ppc
-> > architecture until it is removed in mid-2008. This file should be
-> > deleted as part of ppc's final removal.
-> >
-> > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> I'm interested in your opinion about that patch. You're also Cc'ed
+> to patch that using that feature.
 >
-> For the record; I'm not fond of this approach.  Supporting both bus
-> bindings in the single driver is simple and results in less code churn
-> when arch/ppc is removed, and encourages separation between the driver
-> proper and the bus bindings which is just a good idea for all drivers
-> in general.
+> I know, currently that patch will conflict with GPIOLIB patches in -mm,
+> so this is only RFC.
 
-But it also triggers a testing burden on a bunch of hardware that I
-don't own. By copying off the known working ppc driver the testing
-burden is avoided.
+The point of CONFIG_GENERIC_GPIO is to be *the* conditional used to
+tell whether that programming interface is available ... starting
+from "#include <asm/gpio.h>", and including all gpio_*() calls.
 
-A subject for later discussion is whether platform bus should even
-exist when of_platform_bus is in use. I have removed platform_bus for
-the mpc5200 in my local builds. Removing platform bus exposed a bunch
-of junk from other platofrms that had inadvertently accumulated into
-the mpc5200 build.
+So my first reaction is to not like this patch.  It changes semantics
+in an incompatible way.  And AFAICT, needlessly so.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+What other options did consider?  Like, why not #ifdef the GPIO parts
+of that NAND driver, or have the whole driver depend on GENERIC_GPIO?
+
+- Dave
