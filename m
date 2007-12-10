@@ -1,16 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 11 Dec 2007 10:03:21 +1100
+Date: Tue, 11 Dec 2007 10:10:56 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH RFC 7/7] [POWERPC] MPC8360E-RDK: add support for NAND
-	on UPM
-Message-ID: <20071210230321.GA5495@localhost.localdomain>
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204951.GG32278@localhost.localdomain>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] Use embedded libfdt in the bootwrapper
+Message-ID: <20071210231056.GC5495@localhost.localdomain>
+References: <20071210032343.GB29611@localhost.localdomain>
+	<20071210032839.71412DDDFA@ozlabs.org>
+	<20071210173217.GB4497@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071210204951.GG32278@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20071210173217.GB4497@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,50 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 10, 2007 at 11:49:51PM +0300, Anton Vorontsov wrote:
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  arch/powerpc/boot/dts/mpc836x_rdk.dts     |   24 +++++++++++++++++++++++-
->  arch/powerpc/platforms/83xx/Kconfig       |    2 ++
->  arch/powerpc/platforms/83xx/mpc836x_rdk.c |    1 +
->  3 files changed, 26 insertions(+), 1 deletions(-)
+On Mon, Dec 10, 2007 at 11:32:17AM -0600, Scott Wood wrote:
+> On Mon, Dec 10, 2007 at 02:28:39PM +1100, David Gibson wrote:
+> > +#define check_err(err) \
+> > +	({ \
+> > +		if (BAD_ERROR(err) || ((err < 0) && DEBUG)) \
+> > +			printf("%s():%d  %s\n\r", __FUNCTION__, __LINE__, \
+> > +			       fdt_strerror(err)); \
+> > +		if (BAD_ERROR(err)) \
+> > +			exit(); \
+> > +		(err < 0) ? -1 : 0; \
+> > +	})
+> > +
+> > +#define offset_devp(off)	\
+> > +	({ \
+> > +		int offset = (off); \
+> > +		check_err(offset) ? NULL : (void *)(offset+1); \
+> > +	})
+> > +
+> > +#define devp_offset(devp)	(((int)(devp))-1)
 > 
-> diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> index a1b2da6..f57ba53 100644
-> --- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> +++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> @@ -115,7 +115,7 @@
->  			device_type = "ipic";
->  		};
->  
-> -		par_io@1400 {
-> +		qe_pio: par_io@1400 {
->  			reg = <0x1400 0x100>;
->  			num-ports = <7>;
->  		};
-> @@ -229,4 +229,26 @@
->  			interrupt-parent = <&ipic>;
->  		};
->  	};
-> +
-> +	localbus@e0005000 {
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,mpc8360erdk-localbus",
-> +			     "fsl,mpc8360e-localbus",
-> +			     "fsl,pq2pro-localbus";
-> +		reg = <0xe0005000 0xd8>;
-> +		ranges = <1 0 0x60000000 1>;
+> How does using offsets as devps work if a devp was previously acquired to a
+> node that has to be moved due to a change later made in an earlier part of
+> the tree?
 
-The bridge translates a range one byte wide?  I don't think so...
+It doesn't; don't do that.  I just don't think truly persistent
+phandles are worth the code complexity to implement them.  Especially
+since their use more-or-less completely precludes libfdt's "stateless"
+approach, which has significant other advantages.
 
-> +
-> +		nand-flash@1,0 {
-> +			compatible = "STMicro,NAND512W3A2BN6E", "fsl,upm-nand";
-> +			reg = <1 0 1>;
-
-The device has a register window *one byte* wide?  That seems
-improbable...
+To reduce the confusion over this, the libfdt native interface always
+refers to the offsets explicitly as offsets.  For the bootwrapper
+abstraction layer, unfortunately I'm stuck with the "devp" terminology
+for the time being.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
