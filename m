@@ -1,22 +1,25 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
-	by ozlabs.org (Postfix) with ESMTP id 51143DDEAB
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:25:42 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so1348214nfd
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 15:25:40 -0800 (PST)
-Date: Tue, 11 Dec 2007 02:16:38 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC 7/7] [POWERPC] MPC8360E-RDK: add support for NAND
-	on UPM
-Message-ID: <20071210231638.GA1198@zarina>
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204951.GG32278@localhost.localdomain>
-	<20071210230321.GA5495@localhost.localdomain>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CA997DDE00
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:26:44 +1100 (EST)
+Message-ID: <475DCB45.3090306@freescale.com>
+Date: Mon, 10 Dec 2007 17:27:01 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071210230321.GA5495@localhost.localdomain>
-Reply-To: cbouatmailru@gmail.com
+To: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/3] Use embedded libfdt in the bootwrapper
+References: <20071210032343.GB29611@localhost.localdomain>
+	<20071210032839.71412DDDFA@ozlabs.org>
+	<20071210173217.GB4497@loki.buserror.net>
+	<20071210231056.GC5495@localhost.localdomain>
+	<475DC966.6070301@freescale.com>
+In-Reply-To: <475DC966.6070301@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,65 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 11, 2007 at 10:03:21AM +1100, David Gibson wrote:
-> On Mon, Dec 10, 2007 at 11:49:51PM +0300, Anton Vorontsov wrote:
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> >  arch/powerpc/boot/dts/mpc836x_rdk.dts     |   24 +++++++++++++++++++++++-
-> >  arch/powerpc/platforms/83xx/Kconfig       |    2 ++
-> >  arch/powerpc/platforms/83xx/mpc836x_rdk.c |    1 +
-> >  3 files changed, 26 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> > index a1b2da6..f57ba53 100644
-> > --- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> > +++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> > @@ -115,7 +115,7 @@
-> >  			device_type = "ipic";
-> >  		};
-> >  
-> > -		par_io@1400 {
-> > +		qe_pio: par_io@1400 {
-> >  			reg = <0x1400 0x100>;
-> >  			num-ports = <7>;
-> >  		};
-> > @@ -229,4 +229,26 @@
-> >  			interrupt-parent = <&ipic>;
-> >  		};
-> >  	};
-> > +
-> > +	localbus@e0005000 {
-> > +		#address-cells = <2>;
-> > +		#size-cells = <1>;
-> > +		compatible = "fsl,mpc8360erdk-localbus",
-> > +			     "fsl,mpc8360e-localbus",
-> > +			     "fsl,pq2pro-localbus";
-> > +		reg = <0xe0005000 0xd8>;
-> > +		ranges = <1 0 0x60000000 1>;
+Scott Wood wrote:
+> David Gibson wrote:
+>> On Mon, Dec 10, 2007 at 11:32:17AM -0600, Scott Wood wrote:
+>>> How does using offsets as devps work if a devp was previously
+>>> acquired to a node that has to be moved due to a change later made
+>>> in an earlier part of the tree?
+>>
+>> It doesn't; don't do that.  I just don't think truly persistent 
+>> phandles are worth the code complexity to implement them.
+[snip]
+> It breaks the extremely common and useful usage of:
 > 
-> The bridge translates a range one byte wide?  I don't think so...
+> devp = create node;
+> setprop(devp, "foo", something);
+> setprop(devp, "bar", something);
 
-Nope, 4KB min, IIRC.
+BTW, there's code in devtree.c with your name on it that does exactly 
+this. :-)
 
-> > +
-> > +		nand-flash@1,0 {
-> > +			compatible = "STMicro,NAND512W3A2BN6E", "fsl,upm-nand";
-> > +			reg = <1 0 1>;
-> 
-> The device has a register window *one byte* wide?  That seems
-> improbable...
-
-Here, actually yes. The device just 8 bits wide. Reading next 8 bits
-will return the same value, obviously. ;-)
-
-But points taken. I should not derivate chip width from the
-ranges/reg. This looks unusual indeed, will implement chip-width
-property.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+-Scott
