@@ -1,18 +1,17 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp124.sbc.mail.sp1.yahoo.com (smtp124.sbc.mail.sp1.yahoo.com
-	[69.147.64.97]) by ozlabs.org (Postfix) with SMTP id 89CFCDDF3A
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 09:55:28 +1100 (EST)
-Date: Mon, 10 Dec 2007 14:55:24 -0800
-From: David Brownell <david-b@pacbell.net>
-To: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com
-Subject: Re: [PATCH RFC 4/7] [GPIO] Let drivers link if they support GPIO API
-	as an addition
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204906.GD32278@localhost.localdomain>
-In-Reply-To: <20071210204906.GD32278@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9D454DDE32
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 10:02:07 +1100 (EST)
+Date: Mon, 10 Dec 2007 17:07:04 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
+Message-ID: <20071210230704.GA2550@lixom.net>
+References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20071210225525.2F6C6266154@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +21,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm interested in your opinion about that patch. You're also Cc'ed
-> to patch that using that feature.
->
-> I know, currently that patch will conflict with GPIOLIB patches in -mm,
-> so this is only RFC.
+On Sat, Dec 08, 2007 at 04:07:14AM +0530, Balbir Singh wrote:
 
-The point of CONFIG_GENERIC_GPIO is to be *the* conditional used to
-tell whether that programming interface is available ... starting
-from "#include <asm/gpio.h>", and including all gpio_*() calls.
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-So my first reaction is to not like this patch.  It changes semantics
-in an incompatible way.  And AFAICT, needlessly so.
+Looks good to me. Sure, it could be fleshed out to something more
+generic and in common code, but this is small and simple and doesn't
+bloat the kernel much as it stands, and it has value for debugging.
 
-What other options did consider?  Like, why not #ifdef the GPIO parts
-of that NAND driver, or have the whole driver depend on GENERIC_GPIO?
-
-- Dave
+Acked-by: Olof Johansson <olof@lixom.net>
