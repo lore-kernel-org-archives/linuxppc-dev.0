@@ -1,31 +1,16 @@
-Return-Path: <Poonam.Aggrwal@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B8E1DDDE1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 23:13:49 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	lBACDia5008984
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 05:13:45 -0700 (MST)
-Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
-	[10.232.192.20])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lBACDgMN015162
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 06:13:43 -0600 (CST)
-Date: Mon, 10 Dec 2007 17:43:39 +0530 (IST)
-From: Poonam_Aggrwal-b10812 <b10812@freescale.com>
-To: rubini@vision.unipv.it, kumar.gala@freescale.com,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] Modified Documentation to explain dts entries for UCC
-	TDM driver.
-Message-ID: <Pine.LNX.4.64.0712101739260.29623@linux121>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: michael.barkowski@freescale.com, rich.cutler@freescale.com,
-	ashish.kalra@freescale.com
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <AD0028E8-E305-443F-8872-C935D4E18F80@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Liu Yu <B13201@freescale.com>
+In-Reply-To: <6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] Fix rounding bug in emulation for double floatoperating
+Date: Mon, 10 Dec 2007 09:00:31 -0600
+References: <11972628522442-git-send-email-b13201@freescale.com>
+	<20071210045616.GC29611@localhost.localdomain>
+	<6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,141 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Poonam Aggrwal <b10812@freescale.com>
 
-Modified Documentation to explain new properties introduced for UCC TDM 
-driver. Also two new nodes have been added "brg" and "clocks" to configure 
-a BRG from device tree.
+On Dec 9, 2007, at 11:25 PM, Liu Yu wrote:
 
-Signed-off-by: Poonam Aggrwal <b10812@freescale.com>
-Signed-off-by: Ashish Kalra <ashish.kalra@freescale.com>
-Signed-off-by: Kim Phillips <Kim.Phillips@freescale.com>
-Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
----
- Documentation/powerpc/booting-without-of.txt |   96 +++++++++++++++++++++++++-
- 1 files changed, 94 insertions(+), 2 deletions(-)
+>
+>
+>
+>
+>
+>> -----Original Message-----
+>> From: David Gibson [mailto:david@gibson.dropbear.id.au]
+>> Sent: Monday, December 10, 2007 12:56 PM
+>> To: Liu Yu
+>> Cc: linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH] Fix rounding bug in emulation for double
+>> floatoperating
+>>
+>>
+>> On Mon, Dec 10, 2007 at 01:00:52PM +0800, Liu Yu wrote:
+>>>
+>>> This patch fixes rounding bug in emulation for double float
+>> operating on PowerPC platform.
+>>>
+>>> When pack double float operand, it need to truncate the
+>> tail due to the limited precision.
+>>> If the truncated part is not zero, the last bit of work bit
+>> (totally 3 bits) need to '|' 1.
+>>>
+>>> This patch is completed in _FP_FRAC_SRS_2(X,N,sz)
+>> (arch/powerpc/math-emu/op-2.h).
+>>> Originally the code leftwards rotates the operand to just keep the
+>>> truncated part, then check whether it is zero. However, the
+>> number it
+>>> rotates is not correct when N is not smaller than
+>> _FP_W_TYPE_SIZE, and it will cause the work bit '|' 1 in the
+>> improper case.
+>>>
+>>> This patch fixes this issue.
+>>>
+>>> Signed-off-by: Liu Yu <b13201@freescale.com>
+>>
+>> Wow someone deciphered the hideous macro hell of the math
+>> emulation code enough to fix a bug.  I don't suppose you'd
+>> care to fix the millions of warnings that the math-emu code
+>> generates...?
+>
+> Oh, I don't like macro define either. But it's really a bug...
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index e9a3cb1..94a6b4b 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1613,8 +1613,8 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    Required properties:
-    - device_type : should be "network", "hldc", "uart", "transparent"
--    "bisync" or "atm".
--   - compatible : could be "ucc_geth" or "fsl_atm" and so on.
-+    "bisync", "atm" or "tdm".
-+   - compatible : could be "ucc_geth", "fsl_atm" or "fsl,ucc_tdm" and so on.
-    - model : should be "UCC".
-    - device-id : the ucc number(1-8), corresponding to UCCx in UM.
-    - reg : Offset and length of the register set for the device
-@@ -1666,7 +1666,44 @@ platforms are moved over to use the flattened-device-tree model.
- 		pio-handle = <140001>;
- 	};
- 
-+   Required properties for tdm device_type:
-+   - instead of tx-clock and rx-clock following clock properties are
-+     required:
-+       - fsl,tdm-tx-clk : This property selects the TX clock source for TDM
-+	from a bank of clocks.
-+       - fsl,tdm-rx-clk : This property selects the RX clock source for TDM
-+	from a bank of clocks.
-+       - fsl,tdm-tx-sync : This property selects the TX Frame sync source
-+	for TDM from a bank of clocks.
-+       - fsl,tdm-rx-sync : This property selects the TX Frame sync source
-+	for TDM from a bank of clocks.
-+
-+       All the above mentioned properties are string type with possible
-+       values
-+       "CLK1", "CLK2", "CLK3"..."CLK24" and so on
-+       "BRG1", "BRG2", "BRG3"..."BRG16" and so on
-+
-+  - fsl,tdm-num : TDM to be used (1,2,3 or 4 for TDMA TDMB TDMC TDMD)
-+  - fsl,si-num :  Serial Interface to be used.
- 
-+   Example:
-+	ucc@2000 {
-+		device_type = "tdm";
-+		compatible = "fsl,ucc-tdm";
-+		model = "UCC";
-+		device-id = <1>;
-+		fsl,tdm-num = <1>;
-+		fsl,si-num = <1>;
-+		fsl,tdm-tx-clk = "CLK1";
-+		fsl,tdm-rx-clk = "CLK1";
-+		fsl,tdm-tx-sync = "BRG9";
-+		fsl,tdm-rx-sync = "BRG9";
-+		reg = <2000 200>;
-+		interrupts = <20>;
-+		interrupt-parent = <&qeic>;
-+		pio-handle = <&ucc1pio>;
-+	};
-+
-    v) Parallel I/O Ports
- 
-    This node configures Parallel I/O ports for CPUs with QE support.
-@@ -1772,6 +1809,61 @@ platforms are moved over to use the flattened-device-tree model.
- 		};
- 	};
- 
-+  viii) Clocks (clocks)
-+	This node specifies the frequency values for all the external clocks
-+	viz CLK1 to CLK24 in Hz.
-+
-+  Required Properties:
-+  - compatible : should be "fsl,cpm-clocks".
-+  - #clock-cells : It specifies the number of cells occupied by clock-frequency
-+    property. Currently #clock-cells = 1 is only supported and implemented.
-+    This property is kept for future in case we need frequencies higher than
-+    4 GHz.
-+  - clock-frequency : It is a list of u32 values to represent the frequency
-+    of each external clock(CLK1 to CLK24) in Hz.Each entry occupies
-+    number of cells specified by #clock-cells property(1 for now).
-+
-+  Example:
-+
-+		clocks {
-+			compatible = "fsl,cpm-clocks";
-+			#clock-cells = <1>;
-+			/* clock freqs in Hz(for CLK1~CLK24).
-+			 * CLK11 is 1024KHz,
-+			 * all other clocks unused
-+			 */
-+			clock-frequency = <0 0 0 0 0 0
-+					   0 0 0 0 0 d#1024000 0
-+					   0 0 0 0 0 0
-+					   0 0 0 0 0 0>;
-+		};
-+
-+  ix) Baud Rate Generator (BRG)
-+
-+  Required properties:
-+  - compatible : shpuld be "fsl,cpm-brg"
-+  - fsl,brg-sources : define the input clock for all 16 BRGs. The input
-+    clock source could be 1 to 24 for CLK1 to CLK24. Zero means that the
-+    particular BRG will be driven by QE clock(BRGCLK).
-+  - reg : This property defines the address and size of the memory-mapped
-+    registers of the BRG.
-+
-+  Example:
-+
-+		brg@640 {
-+			compatible = "fsl,qe-brg";
-+			/* input clock sources for all the 16 BRGs.
-+			 * 1-24 for CLK1 to CLK24.
-+			 * BRG9 uses CLK11 others use
-+			 * the QE clock.
-+			 */
-+			fsl,brg-sources = <0 0 0 0 0 0 0 0
-+					   b 0 0 0 0 0 0 0>;
-+			reg = <640 7f>;
-+		};
-+
-+    In the above entry, for BRG9 the input clock is 0xb(decimal 11) ie QE_CLK11.
-+
-    j) CFI or JEDEC memory-mapped NOR flash
- 
-     Flash chips (Memory Technology Devices) are often used for solid state
--- 
-1.5.2.4
+
+how did you find this?
+
+- k
