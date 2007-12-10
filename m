@@ -1,24 +1,15 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 011AEDDE39
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 08:47:40 +1100 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
-References: <200712061607.20004.fenkes@de.ibm.com>
-	<200712071058.38416.arnd@arndb.de> <adaodcza1xc.fsf@cisco.com>
-	<200712101841.30010.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 10 Dec 2007 13:47:37 -0800
-In-Reply-To: <200712101841.30010.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Mon, 10 Dec 2007 18:41:29 +0100")
-Message-ID: <adahciq9q86.fsf@cisco.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910712101354i31020c2w72d74bf33ba3e90b@mail.gmail.com>
+Date: Mon, 10 Dec 2007 16:54:32 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: ppc vs powerpc
+In-Reply-To: <fa686aa40712101259h22be4b89ke4f36564a7c1866c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
-	OF-EWG <ewg@lists.openfabrics.org>, linuxppc-dev@ozlabs.org,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910712101254r1bf8925o20ee6eacd3af6a18@mail.gmail.com>
+	<fa686aa40712101259h22be4b89ke4f36564a7c1866c@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > >     map_phys_fmr
- > 
- > In fact, we do use hCalls there. Our hardware doesn't actually support FMRs,
- > so we translate a "map FMR" into a "reallocate PMR", which doesn't work
- > without hCalls. What's more, the hCalls involved (e.g. H_FREE_RESOURCE)
- > might well return H_LONG_BUSY, so the whole operation might sleep; no way
- > around it.
+On 12/10/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 12/10/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> > Is the plan for ppc to be completely merged with powerpc and then be
+> > eliminated? If so, how close is this to completion?
+> >
+> > What should we do with ppc users of mpc-i2c? If the plan is to
+> > eliminate ppc I would say to just copy the existing driver and then
+> > delete the old version when the rest of ppc gets deleted.
+>
+> arch/ppc is scheduled to be removed middle of 2008.  Don't break
+> arch/ppc users before then.  Ideally there should be overlap between
+> the addition of support in arch/powerpc and the removal of support
+> from arch/ppc.
 
-It's a big problem.  If you cannot implement FMRs in such a way that
-you can handling having map_phys_fmr being called in a context that
-can't sleep, then I think the only option is to remove your FMR
-support.  It's an optional device feature, so this should be OK
-(although the iSER driver currently seems to depend on a device
-supporting FMRs, which is probably going to be a problem with iWARP
-support in the future anyway).
+How can I tell a build for ARCH=ppc vs ARCH=powerpc in Kconfig?
 
-The fact that consumers can map FMRs from interrupt context, while
-holding locks, etc, is pretty fundamental to the use of FMRs so I
-don't see any way around the requirement that map_phys_fmr never
-sleep.
+> Personally, I structure the driver to support both platform bus and
+> of_platform bus.  It's not hard to do and it keeps things
+> understandable.  Take a look at drivers/block/xsysace for an example.
+>
+> Cheers,
+> g.
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+>
 
- - R.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
