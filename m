@@ -1,30 +1,26 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6AB29DE0EF
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 05:44:44 +1100 (EST)
-Message-ID: <475D8756.2000906@freescale.com>
-Date: Mon, 10 Dec 2007 12:37:10 -0600
-From: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id BF9DDDE156
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 05:48:06 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	lBAIm1el013032
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Dec 2007 11:48:02 -0700 (MST)
+Message-ID: <475D89E1.4040107@freescale.com>
+Date: Mon, 10 Dec 2007 12:48:01 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [i2c] [PATCH 0/4] Series to add device tree naming to i2c
-References: <20071203212032.23543.3453.stgit@terra.home>	
-	<9e4733910712091224mcb43f0ci69f578d221505ba7@mail.gmail.com>	
-	<1197233208.6563.14.camel@pasglop>	
-	<9e4733910712091257x4ba5e07aue55934fb6898aa2d@mail.gmail.com>	
-	<1197234799.6563.19.camel@pasglop>	
-	<9e4733910712091335g534d9248gcd920850f9f679a1@mail.gmail.com>	
-	<1197236326.6563.22.camel@pasglop>	
-	<20071210164255.GA4497@loki.buserror.net>
-	<9e4733910712101006s37829df4w676eea54a98b282d@mail.gmail.com>
-In-Reply-To: <9e4733910712101006s37829df4w676eea54a98b282d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-	linuxppc-dev@ozlabs.org
+To: Poonam_Aggrwal-b10812 <b10812@freescale.com>
+Subject: Re: [PATCH 2/3] arch/ : Platform changes for UCC TDM driver
+	for	MPC8323ERDB.Also includes related QE changes.
+References: <Pine.LNX.4.64.0712101734490.29623@linux121>
+In-Reply-To: <Pine.LNX.4.64.0712101734490.29623@linux121>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,25 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
-> I can't see an easy way to do this. The basic problem is that the i2c
->  drivers are assumed to be cross platform.
+Poonam_Aggrwal-b10812 wrote:
 
-It'd be a small binding-specific portion, similar to an of_platform stub
-on a generic driver.  It could probably wait until an actual need
-arises, though.
+> +			qe = of_find_node_by_type(NULL, "qe");
+> +			if (qe) {
+> +				unsigned int size;
+> +				prop = of_get_property
+> +						(qe, "brg-frequency", &size);
+> +				of_node_put(qe);
+> +				of_node_put(brg);
+> +				return *prop;
+> +			}
 
-> I would need to add a path through the i2c core for getting a void
-> pointer from the bus to the device But then when the device code gets
-> this pointer it has no way of knowing what it was.
+Only very recent versions of U-Boot set the brg-frequency property, so you need 
+to check for situations where "*prop" is 0.  If it is, then you need to take the 
+QE's bus-frequency property and divide it by two.  See my ucc_uart driver for an 
+example.
 
-It'd need to know which binding/name combination it matched against
-(similar to how of_platform does it).
+And PowerPC-specific patches should not be cross-posted to linux-kernel.
 
-> Another way that would work cross platform would be for the module to
->  have module parameters for the extra attributes.
-
-Ick.  Module parameters are a PITA, and have to be duplicated with 
-command line parameters if you want to support non-modular builds.
-
--Scott
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
