@@ -1,18 +1,19 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from vms048pub.verizon.net (vms048pub.verizon.net [206.46.252.48])
-	by ozlabs.org (Postfix) with ESMTP id 7B0D9DDFFC
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 05:33:51 +1100 (EST)
+Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
+	by ozlabs.org (Postfix) with ESMTP id 46782DE38D
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 05:34:14 +1100 (EST)
 Received: from terra.home ([96.233.72.204])
-	by vms048.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
+	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
 	(built Apr
-	3 2006)) with ESMTPA id <0JSU00ILKJKEIDF7@vms048.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Mon, 10 Dec 2007 12:33:50 -0600 (CST)
-Date: Mon, 10 Dec 2007 13:33:30 -0500
+	3 2006)) with ESMTPA id <0JSU00JYQJLE7K1T@vms040.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Mon, 10 Dec 2007 12:34:27 -0600 (CST)
+Date: Mon, 10 Dec 2007 13:33:25 -0500
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 3/5] Clean up error returns
+Subject: [PATCH 1/5] Implement module aliasing for i2c to translate from	device
+	tree names
 In-reply-to: <20071210183323.12584.88127.stgit@terra.home>
 To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Message-id: <20071210183330.12584.47822.stgit@terra.home>
+Message-id: <20071210183325.12584.66181.stgit@terra.home>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20071210183323.12584.88127.stgit@terra.home>
@@ -25,101 +26,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Return errors that were being ignored in the mpc-i2c driver
+This patch allows new style i2c chip drivers to have alias names using
+the official kernel aliasing system and MODULE_DEVICE_TABLE(). I've
+tested it on PowerPC and x86. This change is required for PowerPC
+device tree support.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
 
- drivers/i2c/busses/i2c-mpc.c |   30 +++++++++++++++++-------------
- 1 files changed, 17 insertions(+), 13 deletions(-)
+ drivers/i2c/i2c-core.c          |   34 +++++++++++++++++++++++++++-------
+ include/linux/i2c.h             |    5 ++---
+ include/linux/mod_devicetable.h |    9 +++++++++
+ 3 files changed, 38 insertions(+), 10 deletions(-)
 
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index d8de4ac..7c35a8f 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -180,7 +180,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
- static int mpc_write(struct mpc_i2c *i2c, int target,
- 		     const u8 * data, int length, int restart)
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index b5e13e4..6fa6bab 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -47,10 +47,26 @@ static DEFINE_IDR(i2c_adapter_idr);
+ 
+ /* ------------------------------------------------------------------------- */
+ 
+-static int i2c_device_match(struct device *dev, struct device_driver *drv)
++static const struct i2c_device_id *i2c_device_match(const struct i2c_device_id *id, struct i2c_client *client)
++{
++	/* new style drivers use the same kind of driver matching policy
++	 * as platform devices or SPI:  compare device and driver IDs.
++	 */
++	if (id) {
++		while (id->name[0]) {
++			if (strcmp(client->driver_name, id->name) == 0)
++				return id;
++			id++;
++		}
++	}
++	return NULL;
++}
++
++static int i2c_bus_match(struct device *dev, struct device_driver *drv)
  {
--	int i;
-+	int i, result;
- 	unsigned timeout = i2c->adap.timeout;
- 	u32 flags = restart ? CCR_RSTA : 0;
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(drv);
++	const struct i2c_device_id *found_id;
  
-@@ -192,15 +192,17 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
- 	/* Write target byte */
- 	writeb((target << 1), i2c->base + MPC_I2C_DR);
+ 	/* make legacy i2c drivers bypass driver model probing entirely;
+ 	 * such drivers scan each i2c adapter/bus themselves.
+@@ -58,10 +74,11 @@ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ 	if (!is_newstyle_driver(driver))
+ 		return 0;
  
--	if (i2c_wait(i2c, timeout, 1) < 0)
--		return -1;
-+	result = i2c_wait(i2c, timeout, 1);
-+	if (result < 0)
-+		return result;
+-	/* new style drivers use the same kind of driver matching policy
+-	 * as platform devices or SPI:  compare device and driver IDs.
+-	 */
+-	return strcmp(client->driver_name, drv->name) == 0;
++	found_id = i2c_device_match(driver->id_table, client);
++	if (found_id)
++		return 1;
++
++    return 0;
+ }
  
- 	for (i = 0; i < length; i++) {
- 		/* Write data byte */
- 		writeb(data[i], i2c->base + MPC_I2C_DR);
- 
--		if (i2c_wait(i2c, timeout, 1) < 0)
--			return -1;
-+		result = i2c_wait(i2c, timeout, 1);
-+		if (result < 0)
-+			return result;
- 	}
- 
- 	return 0;
-@@ -210,7 +212,7 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
- 		    u8 * data, int length, int restart)
+ #ifdef	CONFIG_HOTPLUG
+@@ -89,12 +106,15 @@ static int i2c_device_probe(struct device *dev)
  {
- 	unsigned timeout = i2c->adap.timeout;
--	int i;
-+	int i, result;
- 	u32 flags = restart ? CCR_RSTA : 0;
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(dev->driver);
++	const struct i2c_device_id *id;
  
- 	/* Start with MEN */
-@@ -221,8 +223,9 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
- 	/* Write target address byte - this time with the read flag set */
- 	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
+ 	if (!driver->probe)
+ 		return -ENODEV;
+ 	client->driver = driver;
+ 	dev_dbg(dev, "probe\n");
+-	return driver->probe(client);
++
++    id = i2c_device_match(driver->id_table, client);
++	return driver->probe(client, id);
+ }
  
--	if (i2c_wait(i2c, timeout, 1) < 0)
--		return -1;
-+	result = i2c_wait(i2c, timeout, 1);
-+	if (result < 0)
-+		return result;
+ static int i2c_device_remove(struct device *dev)
+@@ -189,7 +209,7 @@ static struct device_attribute i2c_dev_attrs[] = {
+ static struct bus_type i2c_bus_type = {
+ 	.name		= "i2c",
+ 	.dev_attrs	= i2c_dev_attrs,
+-	.match		= i2c_device_match,
++	.match		= i2c_bus_match,
+ 	.uevent		= i2c_device_uevent,
+ 	.probe		= i2c_device_probe,
+ 	.remove		= i2c_device_remove,
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index a100c9f..0ca1a59 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -126,7 +126,7 @@ struct i2c_driver {
+ 	 * With the driver model, device enumeration is NEVER done by drivers;
+ 	 * it's done by infrastructure.  (NEW STYLE DRIVERS ONLY)
+ 	 */
+-	int (*probe)(struct i2c_client *);
++	int (*probe)(struct i2c_client *, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *);
  
- 	if (length) {
- 		if (length == 1)
-@@ -234,8 +237,9 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
- 	}
+ 	/* driver model interfaces that don't relate to enumeration  */
+@@ -141,11 +141,10 @@ struct i2c_driver {
  
- 	for (i = 0; i < length; i++) {
--		if (i2c_wait(i2c, timeout, 0) < 0)
--			return -1;
-+		result = i2c_wait(i2c, timeout, 0);
-+		if (result < 0)
-+			return result;
+ 	struct device_driver driver;
+ 	struct list_head list;
++	struct i2c_device_id *id_table;
+ };
+ #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
  
- 		/* Generate txack on next to last byte */
- 		if (i == length - 2)
-@@ -321,9 +325,9 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+-#define I2C_NAME_SIZE	20
+-
+ /**
+  * struct i2c_client - represent an I2C slave device
+  * @flags: I2C_CLIENT_TEN indicates the device uses a ten bit chip address;
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index e9fddb4..688fad6 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -367,4 +367,13 @@ struct virtio_device_id {
+ };
+ #define VIRTIO_DEV_ANY_ID	0xffffffff
  
- 	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
- 
--	if (!(i2c = kzalloc(sizeof(*i2c), GFP_KERNEL))) {
-+	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
-+	if (!i2c)
- 		return -ENOMEM;
--	}
- 
- 	i2c->irq = platform_get_irq(pdev, 0);
- 	if (i2c->irq < 0) {
-@@ -381,7 +385,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
- 	i2c_del_adapter(&i2c->adap);
- 	platform_set_drvdata(pdev, NULL);
- 
--	if (i2c->irq != 0)
-+	if (i2c->irq != NO_IRQ)
- 		free_irq(i2c->irq, i2c);
- 
- 	iounmap(i2c->base);
++/* i2c */
++
++#define I2C_NAME_SIZE	40
++struct i2c_device_id {
++	char name[I2C_NAME_SIZE];
++	kernel_ulong_t driver_data;	/* Data private to the driver */
++};
++
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
