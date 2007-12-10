@@ -1,14 +1,15 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910712101354i31020c2w72d74bf33ba3e90b@mail.gmail.com>
-Date: Mon, 10 Dec 2007 16:54:32 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Tue, 11 Dec 2007 09:01:51 +1100
+To: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: ppc vs powerpc
-In-Reply-To: <fa686aa40712101259h22be4b89ke4f36564a7c1866c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20071210220151.GC24243@bakeyournoodle.com>
 References: <9e4733910712101254r1bf8925o20ee6eacd3af6a18@mail.gmail.com>
 	<fa686aa40712101259h22be4b89ke4f36564a7c1866c@mail.gmail.com>
+	<9e4733910712101354i31020c2w72d74bf33ba3e90b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <9e4733910712101354i31020c2w72d74bf33ba3e90b@mail.gmail.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
 Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,38 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/10/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 12/10/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > Is the plan for ppc to be completely merged with powerpc and then be
-> > eliminated? If so, how close is this to completion?
-> >
-> > What should we do with ppc users of mpc-i2c? If the plan is to
-> > eliminate ppc I would say to just copy the existing driver and then
-> > delete the old version when the rest of ppc gets deleted.
->
-> arch/ppc is scheduled to be removed middle of 2008.  Don't break
-> arch/ppc users before then.  Ideally there should be overlap between
-> the addition of support in arch/powerpc and the removal of support
-> from arch/ppc.
+On Mon, Dec 10, 2007 at 04:54:32PM -0500, Jon Smirl wrote:
+ 
+> How can I tell a build for ARCH=ppc vs ARCH=powerpc in Kconfig?
 
-How can I tell a build for ARCH=ppc vs ARCH=powerpc in Kconfig?
+IIRC ARCH=powerpc will have CONFIG_PPC_MERGE set, arch=ppc will not.
 
-> Personally, I structure the driver to support both platform bus and
-> of_platform bus.  It's not hard to do and it keeps things
-> understandable.  Take a look at drivers/block/xsysace for an example.
->
-> Cheers,
-> g.
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
->
+Yours Tony
 
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
