@@ -1,19 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1770FDDECF
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 04:16:25 +1100 (EST)
-Date: Tue, 11 Dec 2007 20:19:35 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
-Message-ID: <20071211171935.GA18003@localhost.localdomain>
-References: <20071210202934.GA32046@localhost.localdomain>
-	<20071211113027.bee17bc0.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071211113027.bee17bc0.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id F4212DDEEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 04:44:36 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: Patches added to for-2.6.25 and master branches of powerpc.git
+Date: Tue, 11 Dec 2007 18:44:12 +0100
+References: <18270.8249.393061.840667@cargo.ozlabs.ibm.com>
+	<E1J26IB-0004sq-Pt@jdl.com>
+In-Reply-To: <E1J26IB-0004sq-Pt@jdl.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712111844.14770.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 11, 2007 at 11:30:27AM +1100, Stephen Rothwell wrote:
-> On Mon, 10 Dec 2007 23:29:34 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> >
-> > +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> > +
-> > +static void __init mpc836x_rdk_setup_arch(void)
-> > +{
-> > +	struct device_node *np;
-> > +
-> > +	if (ppc_md.progress)
-> > +		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
-> > +
-> > +#ifdef CONFIG_QUICC_ENGINE
-> > +	qe_reset();
-> > +
-> > +	np = of_find_node_by_name(NULL, "par_io");
-> > +	if (np)
-> > +		par_io_init(np);
-> > +	else
-> > +		pr_warning("QE PIO not initialized!\n");
-> 
-> of_node_put(np); ?
-> 
-> > +static int __init mpc836x_rdk_probe(void)
-> > +{
-> > +	unsigned long root = of_get_flat_dt_root();
-> > +
-> > +	return of_flat_dt_is_compatible(root, "MPC836xRDK");
-> 
-> You need to include asm/prom.h to use the flattened device tree accessors.
+On Tuesday 11 December 2007, Jon Loeliger wrote:
+> So, like, the other day Paul Mackerras mumbled:
+> >=20
+> > Jon Loeliger (2):
+> > =A0 =A0 =A0 [POWERPC] Clean out asm/of_{platform, device}.h
+> > =A0 =A0 =A0 [POWERPC] Clean out asm/of_{platform, device}.h from sysdev/
+>=20
+> Excellent, thanks!
+>=20
+> That leaves just this following patch from my janitor series.
+>=20
+> =A0 =A0 http://patchwork.ozlabs.org/linuxppc/patch?id=3D14712
+>=20
+> I suspect Arnd might need to pick it up or ACK it now?
+>=20
 
-Will fix. Much thanks for looking into this.
+Thanks for reminding me. Incidentally, I picked it up today anyway,
+but I guess it would be good if Paul took it directly now that
+we're on the topic. Otherwise, I'll submit it along with the
+others I found in the archives within the next days.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Acked-by: Arnd Bergmann <arnd@arndb.de>
