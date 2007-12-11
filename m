@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Mon, 10 Dec 2007 17:39:13 -0700
+Date: Mon, 10 Dec 2007 17:39:29 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH 6/8] powerpc: mv64x60 - Update i2c DTS properties
-Message-ID: <20071211003912.GG4995@mag.az.mvista.com>
+Subject: [PATCH 7/8] powerpc: mv64x60 - Remove timeout property for WDT
+Message-ID: <20071211003929.GH4995@mag.az.mvista.com>
 References: <20071211003108.GA4995@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -19,45 +19,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Mark A. Greer <mgreer@mvista.com>
 
-DTS files should not specify the default timeout value for the
-mv64360 i2c controller.  Also, remove deprecated 'retries' property.
+Remove support for the DTS timeout property that's currently there for
+the watchdog timer on mv64x60 hostbridges.  The platform_data remains
+and can be modified by platform-specific code when necessary.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
-FYI, the 'retries' property use and related platform_data will be
-removed in a patch that is working its way through the i2c community.
-
- arch/powerpc/boot/dts/prpmc2800.dts |    2 --
- arch/powerpc/sysdev/mv64x60_dev.c   |    6 +-----
- 2 files changed, 1 insertion(+), 7 deletions(-)
+ arch/powerpc/boot/dts/prpmc2800.dts |    1 -
+ arch/powerpc/sysdev/mv64x60_dev.c   |    5 +----
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/prpmc2800.dts b/arch/powerpc/boot/dts/prpmc2800.dts
-index e670e3f..b608e6c 100644
+index b608e6c..054f028 100644
 --- a/arch/powerpc/boot/dts/prpmc2800.dts
 +++ b/arch/powerpc/boot/dts/prpmc2800.dts
-@@ -236,8 +236,6 @@
- 			virtual-reg = <0xf100c000>;
- 			freq_m = <8>;
- 			freq_n = <3>;
--			timeout = <1000>;		/* 1000 = 1 second */
--			retries = <1>;
- 			interrupts = <37>;
- 			interrupt-parent = <&PIC>;
+@@ -226,7 +226,6 @@
+ 		wdt@b410 {			/* watchdog timer */
+ 			compatible = "marvell,mv64360-wdt";
+ 			reg = <0xb410 0x8>;
+-			timeout = <10>;		/* wdt timeout in seconds */
  		};
+ 
+ 		i2c@c000 {
 diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 587c40f..e0244d8 100644
+index e0244d8..f998330 100644
 --- a/arch/powerpc/sysdev/mv64x60_dev.c
 +++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -355,11 +355,7 @@ static int __init mv64x60_i2c_device_setup(struct device_node *np, int id)
- 		return -ENODEV;
- 	pdata.freq_n = *prop;
+@@ -403,10 +403,7 @@ static int __init mv64x60_wdt_device_setup(struct device_node *np, int id)
+ 
+ 	memset(&pdata, 0, sizeof(pdata));
  
 -	prop = of_get_property(np, "timeout", NULL);
--	if (prop)
--		pdata.timeout = *prop;
--	else
--		pdata.timeout = 1000;	/* 1 second */
-+	pdata.timeout = 1000;	/* 1 second */
+-	if (!prop)
+-		return -ENODEV;
+-	pdata.timeout = *prop;
++	pdata.timeout = 10;	/* Default: 10 seconds */
  
- 	prop = of_get_property(np, "retries", NULL);
- 	if (prop)
+ 	np = of_get_parent(np);
+ 	if (!np)
