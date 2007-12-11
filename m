@@ -1,35 +1,11 @@
-Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 51165DDE42
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 19:37:35 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id lBB8bT0S356014
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 08:37:29 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id lBB8bTpL2814080
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 09:37:29 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id lBB8bSvo009220
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 09:37:29 +0100
-In-Reply-To: <adahciq9q86.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com>
-Date: Tue, 11 Dec 2007 09:38:58 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Arnd Bergmann <arnd@arndb.de>, OF-EWG <ewg@lists.openfabrics.org>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18270.8249.393061.840667@cargo.ozlabs.ibm.com>
+Date: Tue, 11 Dec 2007 16:29:29 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches added to for-2.6.25 and master branches of powerpc.git
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,31 +15,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roland Dreier <rdreier@cisco.com> wrote on 10.12.2007 22:47:37:
+Benjamin Herrenschmidt (7):
+      [POWERPC] Make isa_mem_base common to 32 and 64 bits
+      [POWERPC] Merge pci_process_bridge_OF_ranges()
+      [POWERPC] Fix powerpc 32-bit resource fixup for 64-bit resources
+      [POWERPC] Change 32-bit PCI message about resource allocation
+      [POWERPC] Remove useless volatiles in udbg_16550.c
+      [POWERPC] Add of_translate_dma_address
+      [POWERPC] Early debug forces console log level to max
 
-> It's a big problem.  If you cannot implement FMRs in such a way that
-> you can handling having map_phys_fmr being called in a context that
-> can't sleep, then I think the only option is to remove your FMR
-> support.
+Cyrill Gorcunov (1):
+      [POWERPC] CELLEB: Fix possible NULL pointer dereference
 
-That's kind of what I feared you would say =)
+David Gibson (3):
+      [POWERPC] Merge libfdt upstream source
+      [POWERPC] Use embedded libfdt in the bootwrapper
+      [POWERPC] Kill flatdevtree.c
 
-> It's an optional device feature, so this should be OK
-> (although the iSER driver currently seems to depend on a device
-> supporting FMRs, which is probably going to be a problem with iWARP
-> support in the future anyway).
+David Woodhouse (4):
+      [POWERPC] Create otheros.bld next to specified output file, not in $object directory
+      [POWERPC] Find device-tree source file in default directory
+      [POWERPC] Allow for bootwrapper utilities being in different directory to objects
+      [POWERPC] Implement 'make bootwrapper_install'
 
-I don't feel very well with removing code from the driver that iSER seems 
-to depend on. Are there plans to fix this in iSER?
+Ishizaki Kou (3):
+      [POWERPC] cell: Fix undefined reference to mmio_nvram_init
+      [POWERPC] celleb: Add support for native CBE
+      [POWERPC] Update celleb_defconfig to add support for native CBE
 
-In reality, PHYP rarely ever returns H_LONG_BUSY, and we haven't had any 
-problems with iSER in the field yet. I admit that our FMR code is 
-dangerous, but I prefer "dangerous but working for the customer" over "not 
-working for the customer at all".
- 
-Maybe we can agree on keeping the status quo until no more ULPs depend on 
-FMR, then remove FMR from ehca? If so, we'd also let the _irqsave 
-spinlocks around hCalls stay in place.
+Jon Loeliger (2):
+      [POWERPC] Clean out asm/of_{platform, device}.h
+      [POWERPC] Clean out asm/of_{platform, device}.h from sysdev/
 
-Regards,
-  Joachim
+Michael Ellerman (1):
+      [POWERPC] Add for_each_child_of_node() helper for iterating over child nodes
+
+Michael Hanselmann (1):
+      [POWERPC] Update smu command definitions
+
+Michael Neuling (1):
+      [POWERPC] Use SLB size from the device tree
+
+Nathan Lynch (1):
+      [POWERPC] lparcfg: Remove useless buffer allocation
+
+Olof Johansson (5):
+      [POWERPC] pasemi: clean up mdio_gpio a bit
+      [POWERPC] pasemi: Broaden specific references to 1682M
+      [POWERPC] pasemi: Don't enter powersaving states from elevated astates
+      [POWERPC] pasemi: Move cpus to hold loop before restart
+      [POWERPC] pasemi: Fix module information for gpio-mdio
+
+Stephen Neuendorffer (1):
+      [POWERPC] Improved documentation of device tree 'ranges'
+
+Stephen Rothwell (27):
+      [POWERPC] Use of_register_driver to implement of_register_platform_driver
+      [POWERPC] kernel_execve is identical in 32 and 64 bit
+      [POWERPC] iommu_free_table doesn't need the device_node
+      [POWERPC] pSeries: Remove dependency on pci_dn bussubno
+      [POWERPC] Clean up pci-bridge.h
+      [POWERPC] Consolidate pci_controller
+      [POWERPC] iSeries: Move find_Device_Node to avoid a forward declaration
+      [POWERPC] iSeries: Cleanup PCI retry code a little
+      [POWERPC] iSeries: DeCamelCase pci.c
+      [POWERPC] iSeries: Remove some dead code from pci.c
+      [POWERPC] iSeries: Unindent and clean iSeries_pci_final_fixup
+      [POWERPC] iSeries: Consoldiate PCI IO error check
+      [POWERPC] iSeries: Remove one layer of IO routines
+      [POWERPC] iSeries: Remove pci_dn dependency from iSeries_Device_Information
+      [POWERPC] iSeries: iseries_ds_addr is only used in pci.c
+      [POWERPC] iSeries: Reduce dependence on pci_dn bussubno
+      [POWERPC] iSeries: Make pcibios_final_fixup not depend on pci_dn
+      [POWERPC] Inline pci_setup_pci_controller as it has become trivial
+      [POWERPC] iSeries: Call iSeries_pcibios_init from setup_arch
+      [POWERPC] iSeries: hose->buid is always zero for iSeries
+      [POWERPC] Remove some iSeries platform checks from the PCI code
+      [POWERPC] Don't special case pci_domain_nr() for iSeries
+      [POWERPC] pci_controller->arch_data really is a struct device_node *
+      [POWERPC] iSeries: DeCamelCase vpdinfo.c
+      [POWERPC] iSeries: Clean up and simplify vdpinfo.c
+      [POWERPC] iSeries: Merge vpdinfo.c into pci.c
+      [POWERPC] EEH: Avoid a possible NULL pointer dereference
+
+will schmidt (1):
+      [POWERPC] Update xmon slb code
