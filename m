@@ -1,22 +1,21 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound7-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 94926DDE0A
+Return-Path: <p2@grep.be>
+Received: from samba.grep.be (samba.grep.be [195.144.77.39])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BCAD1DDE07
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Dec 2007 04:56:30 +1100 (EST)
+	Wed, 12 Dec 2007 06:46:25 +1100 (EST)
+Received: from p2 by samba.grep.be with local (Exim 4.63) id 1J2AcJ-0004jr-Bh
+	for linuxppc-embedded@ozlabs.org
+	message size 4329; Tue, 11 Dec 2007 20:18:07 +0100
+Date: Tue, 11 Dec 2007 20:18:07 +0100
+From: Peter 'p2' De Schrijver <p2@debian.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: CFP: fosdem 2008 embedded track
+Message-ID: <20071211191807.GS1369@samba>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Linux 2.6 from git.xilinx and XUPV2P
-Date: Tue, 11 Dec 2007 09:54:03 -0800
-In-Reply-To: <14274035.post@talk.nabble.com>
-References: <14274035.post@talk.nabble.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "greenlean" <jmgomez@atc.ugr.es>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20071211175405.B2EACEE0046@mail203-blu.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+Sender: "Peter de Schrijver,,," <p2@grep.be>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,101 +26,95 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+For those that are interested:
 
-Hi!
+CALL FOR PAPERS for the 6th EMBEDDED track at FOSDEM 2008
+=========================================================
 
-Unfortunately, at this point, git.xilinx.com is not 'beginner friendly'.
-There is a rather complicated set of things that has to be coordinated
-between EDK and the linux kernel.  Also, many EDK designs will simply
-not work with the Linux drivers.  Today, it is primarily a place for us
-to collaborate with the open source community on new development, hence
-it also is perhaps less stable than a beginner really wants.
+sat 23 - sun 24 February 2008, Brussels
 
-That said:
-git.xilinx.com includes all the common EDK drivers.  The only thing you
-should need to add is the xparameters file.  Today, this requires
-generating the Board Support Package from a recent version of EDK, using
-the linux_2_6 OS support and copied into
-arch/ppc/platforms/4xx/xparameters/.  Then whenever you run make use
-ARCH=3Dppc.
+Call for papers
+----------------
 
-This appnote shows how to use the linux_2.6 BSP:
-http://www.xilinx.com/support/documentation/application_notes/xapp969.pd
-f
+The 2008 edition of FOSDEM (Free and Open Source Developers' European
+Meeting; http://www.fosdem.org) will take place in Brussels, Belgium 
+on 23 and 24 February 2008. For the sixth time, a track on Embedded 
+Systems and Operating Systems will be organized. The fourth edition 
+was quite succesful and attracted up to 150 attendants for certain
+topics.
 
-There are also several websites with more information about 'rolling
-your own' Linux kernel and root file system (google some combination of
-'xilinx' 'virtex' 'ml310' 'ml300' and 'linux'):
+For last year's program see:
+http://archive.fosdem.org/2007/schedule/tracks/embedded
 
-http://www.crhc.uiuc.edu/IMPACT/gsrc/hardwarelab/docs/kernel-HOWTO.html
-http://www.klingauf.com/v2p/index.phtml
-http://www.soe.ucsc.edu/~rios/ml310/ml310_linux.htm
-http://www.cs.washington.edu/research/lis/empart/xup_ppc_linux.shtml
-http://splish.ee.byu.edu/projects/LinuxFPGA/index.htm
+The use of Free Software in the infrastructure of Embedded Systems 
+is booming, e.g. by the use of Linux, uClinux, eCos, RedBoot, RTEMS 
+and many other Free Software components. More companies are supporting
+Embedded Free Software every day because of the reliability and cheap
+licensing. This can be confirmed from looking at some high profile
+releases of embedded GNU/Linux systems. Some examples are the Nokia 770 & N800,
+some models of Motorola's smartphones and Archos media players. Not to 
+forget the popular TomTom navigation system, the numerous SOHO routers 
+and NAS devices based on linux.
 
-Personally, EDK4.1 works fine for me.  It may be that you are
-configuring lots of features in the kernel.  A good start would be the
-ml300_defconfig.
+Operating System development has always been a very important topic in
+Free Software.
+As embedded and real-time systems typically have special OS
+requirements, we organise this Free Embedded and OS development track at
+FOSDEM to give people the opportunity to present their (or their teams)
+achievements.
 
-Steve
+This track at FOSDEM provides a remarkable opportunity to present and
+discuss the ongoing work in these areas, and we invite developers to 
+present their current projects. Technical topics of the conference 
+include but are not limited to :
 
-> -----Original Message-----
-> From:=20
-> linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-> =20
-> [mailto:linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@oz
-> labs.org] On Behalf Of greenlean
-> Sent: Tuesday, December 11, 2007 5:32 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: Linux 2.6 from git.xilinx and XUPV2P
->=20
->=20
-> Hi all,
->=20
->  I'm a beginner in Xilinx & Linux world and I'm getting a bit=20
-> loose. I'm
-> trying to run linux kernel 2.6 that I downloaded from the=20
-> xilinx git server
-> on the PPC405 of the Xilinx university program Virtex II Pro=20
-> (XUPV2P for the
-> search engine)  board, and I'm using the compiler ELDK 4.1=20
-> (I' ve just read
-> this compiler may cause some error so I'll change it, and try the 4.0
-> version) and I'm getting a lot of compilation error  and warning.=20
->=20
-> I think this is what I should use, Does anybody if I have to=20
-> patch this
-> kernel or if it is still prepatched??
->=20
-> My compiler can find some definitions like TASK_SIZE or=20
-> CONFIG_KERNEL_START,
-> now I'm solving it writting  the values manually , I google=20
-> for the error
-> and make the definition where it's needed, but I don't think=20
-> this is a good
-> idea ;). I think this definitions should be defined in the=20
-> .config file,
-> because I found the values I wrote on a posted message in this list.
->=20
-> Maybe somebody could guide me a bit through this kernel=20
-> compilation, or send
-> me .config file running. I don't know if a revision in the=20
-> project is a good
-> way, to put things in situation for beginers.=20
->=20
-> Thanks, any info would be interesting.=20
->=20
->=20
->=20
-> --=20
-> View this message in context:=20
-> http://www.nabble.com/Linux-2.6-from-git.xilinx-and-XUPV2P-tp1
-> 4274035p14274035.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
->=20
+* OS Development : kernel architecture and implementation, libraries, power 
+   management, TIPC, boot time and memory usage optimizations
+  (e.g. Linux, BSD, uClinux, uClibc, newlib, slob allocator,...)
+
+* Practical experiences in implementing Free Software in embedded
+systems  (e.g. reverse engineering, porting  to (and adapting of)
+commercial devices like the Ipaq, linksys WRT54G, nlsu2 .... )
+
+* Toolchain, performance testing and build environment 
+  (e.g. crosstool, emdebian, openembedded, PTX dist, packaging,
+scratchbox, Eclipse, Valgrind,...)
+
+* GUIs for embedded systems
+  (Gtk, Qt-(embedded), GPE, Qtopia, UI design with touchscreen, 
+   Hildon GUI extensions, OpenMoko, OpenGL ES, ...)
+
+* Multimedia applications for embedded systems
+  (e.g. integer only decoders, Opieplayer, gstreamer... )
+
+* Real-time extensions, nanokernels and hardware virtualization software
+  (e.g. RTAI, Adeos, KURT, L4, Qemu, User Mode Linux, VirtualLogix,
+   high resolution timers, ...)
+ 
+* Hard real-time OS's
+  (eCos, RTEMS, Real Time Linux,...)
+
+* Open hardware, DSP, softcores and general hardware management
+  (e.g opencores.org, OpenRISC, leonSparc, FPGA's, specific design
+restrictions for free systems, DSP, Power management...)
+
+* Safety and security certifications applied to Free software
+   (e.g. security measures in Embedded systems, TPM, SELinux
+    for embedded, TrustZone, ...)
+
+* Tools and techniques for programming multicore systems
+
+* Free software licenses and embedded systems
+
+Authors that wish to present a topic are requested to submit their
+abstracts online to embedded@fosdem.org before 23/01/2008. Notification
+of receipt will be sent within 48 hours. Authors wishing to submit a
+full paper (between 6 and 12 A4 pages), can do so in PS or PDF format.
+
+The Program Committee will evaluate the abstracts and consists of:
+
+* Geert Uytterhoeven, Sony NSCE, Belgium
+* Peter De Schrijver (p2), Nokia (OSSO), Finland
+* Philippe De Swert, Nokia (OSSO), Finland
+* Klaas van Gend, MontaVista Software, The Netherlands
+* Michael Opdenacker, Free Electrons, France
