@@ -1,20 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8BE4ADDF07
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:07:40 +1100 (EST)
-Date: Wed, 12 Dec 2007 20:10:43 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH RFC 1/7] [POWERPC] Implement GPIO API embryo
-Message-ID: <20071212171043.GA32725@localhost.localdomain>
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204825.GA32278@localhost.localdomain>
-	<20071212164847.GC4329@loki.buserror.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EEE03DE0DA
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:12:05 +1100 (EST)
+Subject: cpu frequency governor regression (?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-BCd81Bk+7cjcOhQgKH//"
+Date: Tue, 11 Dec 2007 19:52:45 +0100
+Message-Id: <1197399165.2214.15.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071212164847.GC4329@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Cc: davej <davej@codemonkey.org.uk>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-pm <linux-pm@lists.linux-foundation.org>,
+	cpufreq <cpufreq@lists.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,66 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 12, 2007 at 10:48:47AM -0600, Scott Wood wrote:
-> On Mon, Dec 10, 2007 at 11:48:25PM +0300, Anton Vorontsov wrote:
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 232c298..596982f 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -73,6 +73,10 @@ config GENERIC_FIND_NEXT_BIT
-> >  	bool
-> >  	default y
-> >  
-> > +config GENERIC_GPIO
-> > +	bool
-> > +	default n
-> > +
-> 
-> default n is the default.  No need to explicitly state it.
 
-Thanks, fill fix.
+--=-BCd81Bk+7cjcOhQgKH//
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > +
-> > +int __of_parse_gpio_bank_pin(struct device_node *np, int index,
-> > +			     int bank_width, int max_bank)
-> 
-> Why the leading underscores?
+Hi,
 
-This is low-level helper/library function, used by gpio controllers to
-parse "bank pin" gpio = <> scheme. To denote that this isn't some kind
-of API leading underscores are used.
+No idea who to bother with this and maybe it's just a
+misconfiguration... Apologies if my guesses are totally wrong.
 
-> > diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
-> > new file mode 100644
-> > index 0000000..f7513ff
-> > --- /dev/null
-> > +++ b/include/asm-powerpc/gpio.h
-> > @@ -0,0 +1,51 @@
-> > +/*
-> > + * Generic GPIO API implementation for PowerPC.
-> 
-> Is there anything really powerpc specific here, or should it go under
-> drivers/of?
+I'm currently on 2.6.24-rc3 (+wireless-2.6#everything) but couldn't find
+any patches between that and 2.6.24-rc5 that seemed relevant.
 
-Because <asm/gpio.h> should be used by all architectures to match
-generic GPIO API. asm-sh/gpio.h asm-arm/gpio.h asm-avr32/gpio.h
-and so on.
+On my quad powermac, I'm seeing the cpufreq governor changed by a
+hibernation cycle. My default governor is "userspace", which is driven
+by powernowd (because the latency is too high "ondemand" doesn't like my
+machine) but after a hibernation cycle I'm having the governor set to
+"performance".
 
-The only thing I can place into of.h is
-- - - -
-/*
- * OF specific gpio_chip handler.
- */
-struct of_gpio_chip {
-        int (*xlate)(struct device_node *np, int index);
-};
-- - - -
+I have no idea what code is resetting this and why this would happen,
+maybe the fact that the CPUs are taken offline/online again is
+responsible? It's well possible that there's a bug in our cpufreq driver
+though I thought I fixed the multi-cpu issues it had. Any help would be
+appreciated.
 
-But frankly speaking, of_gpio_chip could be architecture-specific
-too.
+johannes
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--=-BCd81Bk+7cjcOhQgKH//
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR17ce6Vg1VMiehFYAQJfNBAAj8s1WeArBwqznWdIxjo8G76JSbppxtD0
+e1X/l+Vo40DHIraQoLXY1KE65ppmbwl6KxTB6gYPPdDDD20SK5aCNpE1iOEnEpgH
+gW5YZ3XJih7kwE9iFDkwzLRk1m/nhbULxRQF+eMBZQ+mS8yb+zcuhz/t0jkSPYge
+LjvyI9Dx92f2waEdS+KXxTCMkNgNYGP1xHCA4k4hrh3dGZRtnRs4m7Mndf4SGHzi
+CTFMRa5VLoW+vtEdV+mDSWmnZHUeYdhMMPaTN/C2tCrqs0NfpmtiOLAhixLowKMi
+ngjawVrL97XPIPNs+j3N4tQU5pXSvCtaFUsmB1HMA4VsNl2Q/8NDqYPCOSIH1/gU
+PkVEQYswNPVmigQiqlJrE9L17ISHnBLPI3OTOhhtXHBMX1a2k5rxfZgEIfVcbLlX
+AaFuhAwTMXy52kej4cVqcoogN1+JVcMzN+ChnuH04PrHU5EO3aIuQ5P46HZWQRda
+8APV6Pnvwnk0DCIwBJqj6dD49EdnP9ekPAqEIWqfgYEtMdvcrb5dpxrQ0tXGLFiw
+gRihKrcfl0iStEF+hE607Kr9XZoDB3vf0A17zIqCmF5IvNO67Jss6gRbbwoKlgW7
+7wljYO0OoK1vuuMwdkKA8KG1O7p/z7XPJSmRSUAIq0tc4oov0H6wVVwUIbbUGGnS
+fdmFv0FD6wU=
+=kK0t
+-----END PGP SIGNATURE-----
+
+--=-BCd81Bk+7cjcOhQgKH//--
