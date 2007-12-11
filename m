@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 34FAADDEC3
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 11:30:12 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Update smu command definitions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20071211001849.38E70DDECF@ozlabs.org>
-References: <20071211001849.38E70DDECF@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 11 Dec 2007 11:30:00 +1100
-Message-Id: <1197333000.9071.21.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 51DFCDDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 11:31:04 +1100 (EST)
+Date: Tue, 11 Dec 2007 11:30:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
+Message-Id: <20071211113027.bee17bc0.sfr@canb.auug.org.au>
+In-Reply-To: <20071210202934.GA32046@localhost.localdomain>
+References: <20071210202934.GA32046@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__11_Dec_2007_11_30_27_+1100_I=aB5PE5giAb/VUR"
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__11_Dec_2007_11_30_27_+1100_I=aB5PE5giAb/VUR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2007-12-11 at 11:18 +1100, Benjamin Herrenschmidt wrote:
-> From: Michael Hanselmann <linux-kernel@hansmi.ch>
-> 
-> This patch updates smu.h with several new commands and parameter
-> descriptions for existing ones.
-> 
-> Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> ---
+On Mon, 10 Dec 2007 23:29:34 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
+m> wrote:
+>
+> +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+> +
+> +static void __init mpc836x_rdk_setup_arch(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	if (ppc_md.progress)
+> +		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
+> +
+> +#ifdef CONFIG_QUICC_ENGINE
+> +	qe_reset();
+> +
+> +	np =3D of_find_node_by_name(NULL, "par_io");
+> +	if (np)
+> +		par_io_init(np);
+> +	else
+> +		pr_warning("QE PIO not initialized!\n");
 
-Note that this patch has been around for a looooong time. For some
-reason, it fell through the cracks but since it's really only
-documentation (well, adding #defines for new commands and additional
-comments, there is no actual code change), I think it's safe to go
-in .24.
+of_node_put(np); ?
 
+> +static int __init mpc836x_rdk_probe(void)
+> +{
+> +	unsigned long root =3D of_get_flat_dt_root();
+> +
+> +	return of_flat_dt_is_compatible(root, "MPC836xRDK");
+
+You need to include asm/prom.h to use the flattened device tree accessors.
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__11_Dec_2007_11_30_27_+1100_I=aB5PE5giAb/VUR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHXdooTgG2atn1QN8RAjvgAKCEJWjvy398579TUXWqNasM4CJSSgCaA6O3
+E5456y+amQ7rqALPXw9jY00=
+=yqaC
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__11_Dec_2007_11_30_27_+1100_I=aB5PE5giAb/VUR--
