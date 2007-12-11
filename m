@@ -1,16 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id C78ABDE0A0
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 08:37:58 +1100 (EST)
+Date: Tue, 11 Dec 2007 22:37:52 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 0/5] Series to add device tree naming to i2c
+In-Reply-To: <20071210183323.12584.88127.stgit@terra.home>
+Message-ID: <Pine.LNX.4.62.0712112236480.21672@pademelon.sonytel.be>
+References: <20071210183323.12584.88127.stgit@terra.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18271.804.101490.729913@cargo.ozlabs.ibm.com>
-Date: Wed, 12 Dec 2007 08:37:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [RFC][POWERPC] Provide a way to protect 4k subpages when using
-	64k pages
-In-Reply-To: <20071211155305.GA28055@lst.de>
-References: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
-	<20071211155305.GA28055@lst.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-533052005-1197409072=:21672"
+Cc: Jean Delvare <khali@linux-fr.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,59 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> As Arnd said reusing an old system call slot seems rather dangerous,
-> I'd rather avoid it.
+---584337861-533052005-1197409072=:21672
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Sure.  I don't mind allocating a new syscall for this.
+On Mon, 10 Dec 2007, Jon Smirl wrote:
+> Respin to split error return fixups out of mpc-i2c to of_platform change
+> 
+> The following series implements standard linux module aliasing for i2c modules
+> It then converts the mpc i2c driver from being a platform driver to an open
+> firmware one. I2C device names are picked up from the device tree. Module
+> aliasing is used to translate from device tree names into to linux kernel
+> names. Several i2c drivers are updated to use the new aliasing. 
 
-> But I wonder whether we really need a new
-> syscall.  Using 4k pages should basically be a pre-process flag
-> (which it already is as an implementation detail in your patch), and
+Is there any relationship of these patches with commit
+cee37ae4071740cb190d1ac4ddb7aa77484aa7b3?
 
-Hmmm.  Ultimately I want to make it (the page size) be per-slice,
-which shouldn't actually be particularly difficult.
+Author: Jean Delvare <khali@linux-fr.org>
+Date:   Sat Oct 13 23:56:29 2007 +0200
 
-> thus the proper way to mark it should be a personality flag.  This
-> also means it could be implied by certain personalities, e.g. powerpc
-> 32bit for full compatiblity.  
+    i2c: Kill struct i2c_device_id
+    
+    I2C devices do not have any form of ID as PCI or USB devices have.
+    No driver uses "MODULE_DEVICE_TABLE(i2c, ...)" because it doesn't
+    make sense. So we can get rid of struct i2c_device_id and the
+    associated support code.
+    
+    Signed-off-by: Jean Delvare <khali@linux-fr.org>
+    Cc: Greg KH <greg@kroah.com>
 
-The 32-bit PowerPC ABI explicitly says that the kernel can use any
-power-of-2 page size between 4kB and 64kB, so I don't see any need to
-do 4k emulation for 32-bit processes.
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-> All these process would use plain mmap/
-> mprotect to deal with the subpage protections.
-
-It would be lovely if the generic VM code could handle multiple page
-sizes, but it can't at the moment.  So I assume that you are talking
-about intercepting mmap, mprotect, etc. in the powerpc arch code and
-emulating 4k-granularity mmap/mprotect/mremap/munmap etc. using 64k
-anonymous pages plus some sort of internal subpage protection map.
-
-The difference between that and my scheme is that that puts more of
-the logic into the kernel rather than the emulator.  Since it is only
-specialized programs (such as x86 emulators) that need to emulate
-4k-granularity mappings, I'd rather put most of that logic in
-userspace rather than the kernel, and just have the part that only the
-kernel can do (the subpage protections) implemented in the kernel.
-If there was a more general need for 4k-granularity mappings then I
-would agree with you, but I don't see that need at present.
-
-> In fact the x86 emulation on ia64 already has some hacks for that in
-> arch/ia64/ia32/sys_ia32.c, and it would be really useful if we could
-> make both the interface and eventually the code implementing it generic.
-> At least ia64 and mips have multiple pages sizes already and I suspect
-> more architectures will grow support for it.
-
-I don't see anything in arch/ia64/ia32/sys_ia32.c that can't be done
-in userspace by an emulator.  As far as I can see, with that code, you
-end up with the permissions on each ia64 page being the union of the
-permissions on the 4k subpages, meaning that the program can access
-subpages that it shouldn't really be able to access.  So I don't see
-that sys_ia32.c addresses the problem that my patch is designed to
-solve, namely, ensuring that an emulated program gets a SIGSEGV if it
-tries to access subpages that it shouldn't be able to access.
-
-Paul.
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-533052005-1197409072=:21672--
