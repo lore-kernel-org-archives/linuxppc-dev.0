@@ -1,19 +1,16 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 8D9ECDDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 22:58:02 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so4256355wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 03:58:01 -0800 (PST)
-Message-ID: <661de9470712110358v5f2da38p7c88c84a80ca3447@mail.gmail.com>
-Date: Tue, 11 Dec 2007 17:28:01 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Sender: bsingharora@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: Patches added to for-2.6.25 and master branches of powerpc.git
-In-Reply-To: <18270.8249.393061.840667@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <18270.8249.393061.840667@cargo.ozlabs.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ADF0CDDE41
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 01:26:07 +1100 (EST)
+Message-Id: <20071211142405.777374000@sipsolutions.net>
+References: <20071211142122.966506000@sipsolutions.net>
+Date: Tue, 11 Dec 2007 15:21:23 +0100
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2.6.25 1/5] PMU: dont lock_kernel()
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,15 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Dec 11, 2007 10:59 AM, Paul Mackerras <paulus@samba.org> wrote:
-[snip]
+I see nothing that this lock_kernel() actually protects against
+so remove it.
 
-Hi, Paul,
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/macintosh/via-pmu.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
-Any chance we could get in "Fake NUMA nodes patch" at
-http://lkml.org/lkml/2007/12/7/294?
-Should I get it into -mm first? It was acked by Olof at
-http://lkml.org/lkml/2007/12/10/247.
+--- everything.orig/drivers/macintosh/via-pmu.c	2007-12-04 19:51:41.356950738 +0100
++++ everything/drivers/macintosh/via-pmu.c	2007-12-04 19:54:37.936951768 +0100
+@@ -33,7 +33,6 @@
+ #include <linux/adb.h>
+ #include <linux/pmu.h>
+ #include <linux/cuda.h>
+-#include <linux/smp_lock.h>
+ #include <linux/module.h>
+ #include <linux/spinlock.h>
+ #include <linux/pm.h>
+@@ -2547,7 +2546,6 @@ pmu_release(struct inode *inode, struct 
+ 	struct pmu_private *pp = file->private_data;
+ 	unsigned long flags;
+ 
+-	lock_kernel();
+ 	if (pp != 0) {
+ 		file->private_data = NULL;
+ 		spin_lock_irqsave(&all_pvt_lock, flags);
+@@ -2561,7 +2559,6 @@ pmu_release(struct inode *inode, struct 
+ 
+ 		kfree(pp);
+ 	}
+-	unlock_kernel();
+ 	return 0;
+ }
+ 
 
-Thanks,
-Balbir Singh
+-- 
