@@ -1,21 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.189])
-	by ozlabs.org (Postfix) with ESMTP id 84D69DDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 09:44:52 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so2048273rvf
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2007 14:44:51 -0800 (PST)
-Message-ID: <9e4733910712111444v7d6852e7wbf2ff6b0198bcb83@mail.gmail.com>
-Date: Tue, 11 Dec 2007 17:44:51 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 0/5] Series to add device tree naming to i2c
-In-Reply-To: <Pine.LNX.4.62.0712112236480.21672@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071210183323.12584.88127.stgit@terra.home>
-	<Pine.LNX.4.62.0712112236480.21672@pademelon.sonytel.be>
-Cc: Jean Delvare <khali@linux-fr.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E71D0DDE30
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 10:38:29 +1100 (EST)
+Subject: Re: [RFC][POWERPC] Provide a way to protect 4k subpages when using
+	64k pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20071211155305.GA28055@lst.de>
+References: <18264.58263.818005.757831@cargo.ozlabs.ibm.com>
+	<20071211155305.GA28055@lst.de>
+Content-Type: text/plain
+Date: Wed, 12 Dec 2007 10:38:08 +1100
+Message-Id: <1197416288.8385.21.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,66 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/11/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> On Mon, 10 Dec 2007, Jon Smirl wrote:
-> > Respin to split error return fixups out of mpc-i2c to of_platform chang=
-e
-> >
-> > The following series implements standard linux module aliasing for i2c =
-modules
-> > It then converts the mpc i2c driver from being a platform driver to an =
-open
-> > firmware one. I2C device names are picked up from the device tree. Modu=
-le
-> > aliasing is used to translate from device tree names into to linux kern=
-el
-> > names. Several i2c drivers are updated to use the new aliasing.
->
-> Is there any relationship of these patches with commit
-> cee37ae4071740cb190d1ac4ddb7aa77484aa7b3?
 
-That commit appears to be removing an entry for i2c in
-mod_devicetable.h. But there was never any code in place to use that
-struct which is why it was removed.
+On Tue, 2007-12-11 at 16:53 +0100, Christoph Hellwig wrote:
+> All these process would use plain mmap/
+> mprotect to deal with the subpage protections.
 
-I have added the struct back with a name field instead of an id. My
-patches also include the code necessary to make it all work.
+That seems very hard to do ... all of the generic code here only knows
+about the base page size, so except if we're going to fully re-implement
+the mmap/mprotect logic from scratch, it's going to hurt, or am I
+missing something ?
 
->
-> Author: Jean Delvare <khali@linux-fr.org>
-> Date:   Sat Oct 13 23:56:29 2007 +0200
->
->     i2c: Kill struct i2c_device_id
->
->     I2C devices do not have any form of ID as PCI or USB devices have.
->     No driver uses "MODULE_DEVICE_TABLE(i2c, ...)" because it doesn't
->     make sense. So we can get rid of struct i2c_device_id and the
->     associated support code.
->
->     Signed-off-by: Jean Delvare <khali@linux-fr.org>
->     Cc: Greg KH <greg@kroah.com>
->
-> With kind regards,
->
-> Geert Uytterhoeven
-> Software Architect
->
-> Sony Network and Software Technology Center Europe
-> The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Belgi=
-um
->
-> Phone:    +32 (0)2 700 8453
-> Fax:      +32 (0)2 700 8622
-> E-mail:   Geert.Uytterhoeven@sonycom.com
-> Internet: http://www.sony-europe.com/
->
-> Sony Network and Software Technology Center Europe
-> A division of Sony Service Centre (Europe) N.V.
-> Registered office: Technologielaan 7 =B7 B-1840 Londerzeel =B7 Belgium
-> VAT BE 0413.825.160 =B7 RPR Brussels
-> Fortis Bank Zaventem =B7 Swift GEBABEBB08A =B7 IBAN BE39001382358619
+I suppose we could add wrappers to those syscalls that always set the
+protection map to "no access" over the target area (from within
+get_unmapped_area for mmap as we don't know the area yet), and then,
+update it after the successful call.
 
+But mprotect seems a clumsy way to control the per-sub-page permission
+in that case as we don't want to change the underlying real 64k page
+permission.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Ben.
+ 
