@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <4F84D2D2-BBBB-4CD6-B970-CBCF41D08FB9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1197448223.29372.12.camel@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] Fix rounding bug in emulation for double floatoperating
-Date: Wed, 12 Dec 2007 07:36:04 -0600
-References: <11972628522442-git-send-email-b13201@freescale.com>
-	<20071210045616.GC29611@localhost.localdomain>
-	<6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
-	<AD0028E8-E305-443F-8872-C935D4E18F80@kernel.crashing.org>
-	<1197343143.13519.2.camel@localhost.localdomain>
-	<A069B515-C07A-4471-9473-7A7E29F12685@kernel.crashing.org>
-	<1197448223.29372.12.camel@localhost.localdomain>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Liu Yu <B13201@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3F901DDF0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 02:18:05 +1100 (EST)
+Message-ID: <475FFBA3.9080607@freescale.com>
+Date: Wed, 12 Dec 2007 09:17:55 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: galak@kernel.crashing.org
+Subject: Re: [PATCH v5] qe: add ability to upload QE firmware
+References: <11970422334145-git-send-email-timur@freescale.com>
+In-Reply-To: <11970422334145-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> When I run this on a G5 (w/HW FP) I get:
->>
->> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
->> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
->> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
->>
->> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
->>
->> and on the 85xx w/FP emu:
->>
->> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
->> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
->> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
->>
->> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
->>
->> Maybe I'm missing where the error is.
-> I am missing ...
-> It is supposed to run based on previous IEEE 754 patch.
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031351.html
+Timur Tabi wrote:
+> Define the layout of a binary blob that contains a QE firmware and instructions
+> on how to upload it.  Add function qe_upload_firmware() to parse the blob
+> and perform the actual upload.  Fully define 'struct rsp' in immap_qe.h to
+> include the actual RISC Special Registers.  Added description of a new
+> QE firmware node to booting-without-of.txt.
 
-Ok, but the test case should care if we are doing full "classic"  
-emulation or fixup of e500 FP.
+If there are no objections, I'd like this patch to be pulled into for-2.6.25. 
+Thanks.
 
-- k
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
