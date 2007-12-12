@@ -1,28 +1,18 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 51148DDECF
+Return-Path: <kari.davidsson@marel.is>
+Received: from mail.marel.com (mail.marel.com [213.167.134.96])
+	by ozlabs.org (Postfix) with ESMTP id C19E1DDF64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Dec 2007 18:49:03 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id BDF3D29EC5
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Dec 2007 08:26:50 +0100 (CET)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 14391-10 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Dec 2007 08:26:40 +0100 (CET)
-Received: from archvile.prtnl (archvile.prtnl [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id AD67B29EBB
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Dec 2007 08:26:39 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Subject: MPC5121e Freescale BSP...
-Date: Wed, 12 Dec 2007 08:30:30 +0100
+	Wed, 12 Dec 2007 21:36:20 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200712120830.30767.david.jander@protonic.nl>
+	charset="iso-8859-1"
+Subject: RE: LPC burst accesses
+Date: Wed, 12 Dec 2007 10:36:56 -0000
+Message-ID: <DD39B5C3F4963040ADC9768BE7E430CB027FEE75@is-hdq-exchange.marel.net>
+In-Reply-To: <14274105.post@talk.nabble.com>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kari.davidsson@marel.is>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: WITTROCK <jwittrock@maginst.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,33 +23,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Thanks,
 
-Hi everyone,
+Using this configuration of the SCLPC I was able to get burst accesses.
 
-I have an ADS5121 evaluation module from Freescale, and wonder if there's any 
-Freescale engineer on this list working on the linux BSP for this 
-processor/SoC/platform?
+Getting bursts with the SDMA general purpose task (without the SCLPC =
+fifo) is
+still a mistery to me. I somehow have the feeling that with the CPU one =
+can only
+get bursts if we are capable of executing code out of the bank, which =
+implies=20
+multiplexed mode of the bank. Multiplexed mode I am not able to do, at =
+least
+not at this time.
 
-I have downloaded the latest alpha release of the BSP and found it to be 
-completely unusable. I took some time to fix the framebuffer driver, and make 
-console-fb work, I even sent patches to our Freescale contact, while I 
-already suspected it to be completely useless, since the BSP is already 
-lacking behind several months from actual Freescale code, and all those 
-issues are most probably fixed already. Only problem: I can't seem to get the 
-latest versions of it. I heared rumors they'll release a new version next 
-week or so, but I fear it will also lack behind development, and fixing bugs 
-myself or contributing code will be a useless waste of time!
+rg
+kd=20
 
-Is there any Freescale engineer on this list that can help out, or at least 
-clarify the reasons behind closed-doors open-source software development??
 
-On the other hand, I also whish to contact other furtunate owners of 
-PPC5121e-based hardware to join forces on linux-kernel driver development. If 
-Freescale won't collaborate, I'd even consider forking their code, if 
-necessary.
+--=20
+K=E1ri Dav=ED=F0sson                   | kari.davidsson@marel.is
+Hugb=FAna=F0arger=F0                   | www.marel.com
+Tel: +354 563 8156 Fax: +354 563 8001
+Iceland
 
-Greetings,
+-----Original Message-----
+From: linuxppc-embedded-bounces+karidav=3Dmarel.is@ozlabs.org =
+[mailto:linuxppc-embedded-bounces+karidav=3Dmarel.is@ozlabs.org] On =
+Behalf Of WITTROCK
+Sent: 11. desember 2007 13:43
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: LPC burst accesses
 
--- 
-David Jander
-Protonic Holland.
+
+I remember doing something like this a while back.  I ended up not =
+implementing it in my project for other reasons, but here is some =
+correspondence I had with Freescale:
+
+
+The question
+---------------------------------------------------------------------
+I am using the LocalPlus bus and BestComm on a MPC5200B to communicate =
+with an external FPGA.
+
+I am currently using CS2 as the chip select for the FPGA.  If I =
+configure the chip select 2 configuration register for a 16bit address =
+width and 2 byte bus width then all works well (MBAR + 0x0308 =3D =
+0x00003500).
+
+I am now trying to configure CS2 to operate in LargeFlash mode with 2 =
+byte bus width and 26bit address (MBAR + 0x0308 =3D 0x00003D00) in order =
+to support a burst read.  I have configured the Chip Select Burst =
+Control Register (BRE2=3D1), and ensured that PCI is disabled, however I =
+do not see a burst read performed on the bus.
+
+Before I investigate any further, should it be possible to use the LP in =
+LargeFlash mode together with its assosciated FIFO and BestComm to =
+perform a burst read?
+
+
+The Reply
+Local Plus controller performs burst read from LargeFlash or MostGraphic =
+memory only if an XLB master (CPU) or SCLPC interface initiates burst =
+access.
+
+In the case of CPU, you should enable cache for Local Plus memory.
+In the case of SCLPC, you should define BPT=3D8 in the SCLPC Control =
+Register (MBAR + 0x3C08).
+
+Other configurations doesn't force bursting.
+
+Thank you for your interest in Freescale Semiconductor products and for =
+the opportunity to serve you.
+Should you need to contact us with regard to this message, please see =
+the notes below.
+
+I hope its of some use.
+
+-WITTROCK
+
+
+
+--
+View this message in context: =
+http://www.nabble.com/LPC-burst-accesses-tp14270986p14274105.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
