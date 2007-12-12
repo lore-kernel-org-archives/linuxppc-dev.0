@@ -1,22 +1,20 @@
-Return-Path: <davej@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 63AE7DDF52
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:04:51 +1100 (EST)
-Date: Wed, 12 Dec 2007 12:04:40 -0500
-From: Dave Jones <davej@redhat.com>
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [RFC] ehea: kdump support using new shutdown hook
-Message-ID: <20071212170440.GD2359@redhat.com>
-References: <200712121753.43543.osstklei@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200712121753.43543.osstklei@de.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Marcus Eder <meder@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8BE4ADDF07
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:07:40 +1100 (EST)
+Date: Wed, 12 Dec 2007 20:10:43 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH RFC 1/7] [POWERPC] Implement GPIO API embryo
+Message-ID: <20071212171043.GA32725@localhost.localdomain>
+References: <20071210204705.GA31263@localhost.localdomain>
+	<20071210204825.GA32278@localhost.localdomain>
+	<20071212164847.GC4329@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071212164847.GC4329@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 12, 2007 at 05:53:43PM +0100, Thomas Klein wrote:
+On Wed, Dec 12, 2007 at 10:48:47AM -0600, Scott Wood wrote:
+> On Mon, Dec 10, 2007 at 11:48:25PM +0300, Anton Vorontsov wrote:
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index 232c298..596982f 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -73,6 +73,10 @@ config GENERIC_FIND_NEXT_BIT
+> >  	bool
+> >  	default y
+> >  
+> > +config GENERIC_GPIO
+> > +	bool
+> > +	default n
+> > +
+> 
+> default n is the default.  No need to explicitly state it.
 
- > +static void ehea_update_adapter_handles(struct ehea_adapter *adapter)
- > +{
- > +	int i, k;
- > +	int j = 0;
- > +
- > +	memset(adapter->res_handles, sizeof(adapter->res_handles), 0);
+Thanks, fill fix.
 
-arguments wrong way around.
- 
-	Dave
- 
+> > +
+> > +int __of_parse_gpio_bank_pin(struct device_node *np, int index,
+> > +			     int bank_width, int max_bank)
+> 
+> Why the leading underscores?
+
+This is low-level helper/library function, used by gpio controllers to
+parse "bank pin" gpio = <> scheme. To denote that this isn't some kind
+of API leading underscores are used.
+
+> > diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+> > new file mode 100644
+> > index 0000000..f7513ff
+> > --- /dev/null
+> > +++ b/include/asm-powerpc/gpio.h
+> > @@ -0,0 +1,51 @@
+> > +/*
+> > + * Generic GPIO API implementation for PowerPC.
+> 
+> Is there anything really powerpc specific here, or should it go under
+> drivers/of?
+
+Because <asm/gpio.h> should be used by all architectures to match
+generic GPIO API. asm-sh/gpio.h asm-arm/gpio.h asm-avr32/gpio.h
+and so on.
+
+The only thing I can place into of.h is
+- - - -
+/*
+ * OF specific gpio_chip handler.
+ */
+struct of_gpio_chip {
+        int (*xlate)(struct device_node *np, int index);
+};
+- - - -
+
+But frankly speaking, of_gpio_chip could be architecture-specific
+too.
+
 -- 
-http://www.codemonkey.org.uk
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
