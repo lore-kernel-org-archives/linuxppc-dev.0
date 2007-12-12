@@ -1,17 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] [POWERPC] pasemi: Implement MSI support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071212064446.GB786@lixom.net>
-References: <20071212063406.GA786@lixom.net> <20071212064446.GB786@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-EuWI5Gc+uY+3jM1VKk6i"
-Date: Wed, 12 Dec 2007 17:49:39 +1100
-Message-Id: <1197442179.24356.3.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 15913DDEF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 17:56:41 +1100 (EST)
+Date: Wed, 12 Dec 2007 01:01:51 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 2/2] kdump shutdown hook support
+Message-ID: <20071212070150.GC786@lixom.net>
+References: <20071212054512.A02B062C153@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071212054512.A02B062C153@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, THEMANN@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,225 +22,174 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---=-EuWI5Gc+uY+3jM1VKk6i
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+A couple of comments below.
 
-On Wed, 2007-12-12 at 00:44 -0600, Olof Johansson wrote:
-> [POWERPC] pasemi: Implement MSI support
->=20
-> Implement MSI support for PA Semi PWRficient platforms. MSI is done
-> through a special range of sources on the openpic controller, and they're
-> unfortunately breaking the usual concepts of how sources are programmed:
->=20
-> * The source is calculated as 512 + the value written into the MSI
->   register
-> * The vector for this source is added to the source and reported
->   through IACK
->=20
-> This means that for simplicity, it makes much more sense to just set the
-> vector to 0 for the source, since that's really the vector we expect to
-> see from IACK.
->=20
-> Also, the affinity/priority registers will affect 16 sources at a
-> time. To avoid most (simple) users from being limited by this, allocate
-> 16 sources per device but use only one. This means that there's a total
-> of 32 sources.
->=20
-> If we get usage scenarions that need more sources, the allocator should
-> probably be revised to take an alignment argument and size, not just do
-> natural alignment.
->=20
-> Finally, since I'm already touching the MPIC names on pasemi, rename
-> the base one from the somewhat odd " PAS-OPIC  " to "PASEMI-OPIC".
->=20
->=20
-> Signed-off-by: Olof Johansson <olof@lixom.net>
->=20
-> ---
->=20
-> Oops, fixed the CONFIG_PCI_MSI=3Dn prototype to be static inline instead
-> of extern.
->=20
->  arch/powerpc/platforms/pasemi/setup.c |    2=20
->  arch/powerpc/sysdev/Makefile          |    2=20
->  arch/powerpc/sysdev/mpic.c            |   20 +++
->  arch/powerpc/sysdev/mpic.h            |    7 +
->  arch/powerpc/sysdev/mpic_pasemi_msi.c |  172 +++++++++++++++++++++++++++=
-+++++++
->  5 files changed, 201 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platfor=
-ms/pasemi/setup.c
-> index 6d7d068..b5dfd42 100644
-> --- a/arch/powerpc/platforms/pasemi/setup.c
-> +++ b/arch/powerpc/platforms/pasemi/setup.c
-> @@ -223,7 +223,7 @@ static __init void pas_init_IRQ(void)
-> =20
->  	mpic =3D mpic_alloc(mpic_node, openpic_addr,
->  			  MPIC_PRIMARY|MPIC_LARGE_VECTORS,
-> -			  0, 0, " PAS-OPIC  ");
-> +			  0, 0, "PASEMI-OPIC");
->  	BUG_ON(!mpic);
-> =20
->  	mpic_assign_isu(mpic, 0, openpic_addr + 0x10000);
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> index 99a77d7..85cf8c6 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -2,7 +2,7 @@ ifeq ($(CONFIG_PPC64),y)
->  EXTRA_CFLAGS			+=3D -mno-minimal-toc
->  endif
-> =20
-> -mpic-msi-obj-$(CONFIG_PCI_MSI)	+=3D mpic_msi.o mpic_u3msi.o
-> +mpic-msi-obj-$(CONFIG_PCI_MSI)	+=3D mpic_msi.o mpic_u3msi.o mpic_pasemi_=
-msi.o
->  obj-$(CONFIG_MPIC)		+=3D mpic.o $(mpic-msi-obj-y)
-> =20
->  obj-$(CONFIG_PPC_MPC106)	+=3D grackle.o
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index e479388..aebf025 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -842,6 +842,24 @@ int mpic_set_irq_type(unsigned int virq, unsigned in=
-t flow_type)
->  	return 0;
+
+-Olof
+
+On Wed, Dec 12, 2007 at 04:45:12PM +1100, Michael Neuling wrote:
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/crash.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
+> @@ -32,6 +32,8 @@
+>  #include <asm/lmb.h>
+>  #include <asm/firmware.h>
+>  #include <asm/smp.h>
+> +#include <asm/system.h>
+> +#include <asm/setjmp.h>
+>  
+>  #ifdef DEBUG
+>  #include <asm/udbg.h>
+> @@ -45,6 +47,11 @@ int crashing_cpu = -1;
+>  static cpumask_t cpus_in_crash = CPU_MASK_NONE;
+>  cpumask_t cpus_in_sr = CPU_MASK_NONE;
+>  
+> +#define CRASH_SHUTDOWN_HANDLES_NUM 1
+> +/* NULL terminated list of shutdown handles */
+> +static crash_shutdown_t crash_shutdown_handles[CRASH_SHUTDOWN_HANDLES_NUM+1];
+> +static DEFINE_SPINLOCK(crash_handles_lock);
+
+Not 'handlers'?
+
+> +
+>  #ifdef CONFIG_SMP
+>  static atomic_t enter_on_soft_reset = ATOMIC_INIT(0);
+>  
+> @@ -285,9 +292,69 @@ static inline void crash_kexec_stop_spus
 >  }
-> =20
-> +void mpic_set_vector(unsigned int virq, unsigned int vector)
+>  #endif /* CONFIG_SPU_BASE */
+>  
+> +/* 
+> + * Register a function to be called on shutdown.  Only use this if you
+> + * can't reset your device in the second kernel.
+> + */
+> +int crash_shutdown_register(crash_shutdown_t handler)
 > +{
-> +	struct mpic *mpic =3D mpic_from_irq(virq);
-> +	unsigned int src =3D mpic_irq_to_hw(virq);
-> +	unsigned int vecpri;
+> +	unsigned int i;
 > +
-> +	DBG("mpic: set_vector(mpic:@%p,virq:%d,src:%d,vector:0x%x)\n",
-> +	    mpic, virq, src, vector);
+> +	spin_lock(&crash_handles_lock);
+> +	for(i = 0 ; i <= CRASH_SHUTDOWN_HANDLES_NUM; i++)
+
+Missing space after for. There's a handful more of these through the
+patch.
+
+> +		if (!crash_shutdown_handles[i])
+> +			break;
 > +
-> +	if (src >=3D mpic->irq_count)
-> +		return;
+> +	if (i == CRASH_SHUTDOWN_HANDLES_NUM){
+> +		printk(KERN_ERR "Crash shutdown handles full, "
+> +		       "not registered.\n");
+> +		spin_unlock(&crash_handles_lock);
+> +		return 1;
+> +	}
 > +
-> +	vecpri =3D mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI));
-> +	vecpri =3D vecpri & ~MPIC_INFO(VECPRI_VECTOR_MASK);
-> +	vecpri |=3D vector;
-> +	mpic_irq_write(src, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
+> +	/* Insert handle at end */
+> +	crash_shutdown_handles[i] = handler;
+> +	spin_unlock(&crash_handles_lock);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(crash_shutdown_register);
+> +
+> +int crash_shutdown_unregister(crash_shutdown_t handler)
+> +{
+> +	unsigned int i;
+> +
+> +	spin_lock(&crash_handles_lock);
+> +	for(i = 0 ; i <= CRASH_SHUTDOWN_HANDLES_NUM; i++)
+> +		if (crash_shutdown_handles[i] == handler)
+> +			break;
+> +
+> +	if (i == CRASH_SHUTDOWN_HANDLES_NUM){
+> +		printk(KERN_ERR "Crash shutdown handle not found\n");
+> +		spin_unlock(&crash_handles_lock);
+> +		return 1;
+> +	}
+> +
+> +	/* Shift handles down */
+> +	while(crash_shutdown_handles[i]) {
+> +		crash_shutdown_handles[i] = crash_shutdown_handles[i+1];
+> +		i++;
+> +	}
+> +	spin_unlock(&crash_handles_lock);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(crash_shutdown_unregister);
+> +
+> +static long crash_shutdown_buf[SETJMP_BUF_LEN];
+> +
+> +static int handle_fault(struct pt_regs *regs)
+> +{
+> +	longjmp(crash_shutdown_buf, 1);
+> +	return 0;
 > +}
 > +
->  static struct irq_chip mpic_irq_chip =3D {
->  	.mask		=3D mpic_mask_irq,
->  	.unmask		=3D mpic_unmask_irq,
-> @@ -1230,6 +1248,8 @@ void __init mpic_init(struct mpic *mpic)
->  		mpic_u3msi_init(mpic);
->  	}
-> =20
-> +	mpic_pasemi_msi_init(mpic);
-> +
->  	for (i =3D 0; i < mpic->num_sources; i++) {
->  		/* start with vector =3D source number, and masked */
->  		u32 vecpri =3D MPIC_VECPRI_MASK | i |
-> diff --git a/arch/powerpc/sysdev/mpic.h b/arch/powerpc/sysdev/mpic.h
-> index 1cb6bd8..4783c6e 100644
-> --- a/arch/powerpc/sysdev/mpic.h
-> +++ b/arch/powerpc/sysdev/mpic.h
-> @@ -17,6 +17,7 @@ extern int mpic_msi_init_allocator(struct mpic *mpic);
->  extern irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num)=
-;
->  extern void mpic_msi_free_hwirqs(struct mpic *mpic, int offset, int num)=
-;
->  extern int mpic_u3msi_init(struct mpic *mpic);
-> +extern int mpic_pasemi_msi_init(struct mpic *mpic);
->  #else
->  static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
->  					  irq_hw_number_t hwirq)
-> @@ -28,9 +29,15 @@ static inline int mpic_u3msi_init(struct mpic *mpic)
+>  void default_machine_crash_shutdown(struct pt_regs *regs)
 >  {
->  	return -1;
->  }
+> -	unsigned int irq;
+> +	unsigned int i;
+>  
+>  	/*
+>  	 * This function is only called after the system
+> @@ -301,14 +368,27 @@ void default_machine_crash_shutdown(stru
+>  	 */
+>  	hard_irq_disable();
+>  
+> -	for_each_irq(irq) {
+> -		struct irq_desc *desc = irq_desc + irq;
+> +	for_each_irq(i) {
+> +		struct irq_desc *desc = irq_desc + i;
+>  
+>  		if (desc->status & IRQ_INPROGRESS)
+> -			desc->chip->eoi(irq);
+> +			desc->chip->eoi(i);
+>  
+>  		if (!(desc->status & IRQ_DISABLED))
+> -			desc->chip->disable(irq);
+> +			desc->chip->disable(i);
+> +	}
 > +
-> +static inline int mpic_pasemi_msi_init(struct mpic *mpic)
-> +{
-> +	return -1;
-> +}
->  #endif
-> =20
->  extern int mpic_set_irq_type(unsigned int virq, unsigned int flow_type);
-> +extern void mpic_set_vector(unsigned int virq, unsigned int vector);
->  extern void mpic_end_irq(unsigned int irq);
->  extern void mpic_mask_irq(unsigned int irq);
->  extern void mpic_unmask_irq(unsigned int irq);
-> diff --git a/arch/powerpc/sysdev/mpic_pasemi_msi.c b/arch/powerpc/sysdev/=
-mpic_pasemi_msi.c
-> new file mode 100644
-> index 0000000..d6bfda3
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/mpic_pasemi_msi.c
-> @@ -0,0 +1,172 @@
-> +/*
-> + * Copyright 2007, Olof Johansson, PA Semi
-> + *
-> + * Based on arch/powerpc/sysdev/mpic_u3msi.c:
-> + *
-> + * Copyright 2006, Segher Boessenkool, IBM Corporation.
-> + * Copyright 2006-2007, Michael Ellerman, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; version 2 of the
-> + * License.
-> + *
-> + */
-> +
-> +#undef DEBUG
-> +
-> +#include <linux/irq.h>
-> +#include <linux/bootmem.h>
-> +#include <linux/msi.h>
-> +#include <asm/mpic.h>
-> +#include <asm/prom.h>
-> +#include <asm/hw_irq.h>
-> +#include <asm/ppc-pci.h>
-> +
-> +#include "mpic.h"
-> +
-> +/* Allocate 16 interrupts per device, to give an alignment of 16,
-> + * since that's the size of the grouping w.r.t. affinity. If someone
-> + * needs more than 32 MSI's down the road we'll have to rethink this,
-> + * but it should be OK for now.
-> + */
-> +#define ALLOC_CHUNK 16
-> +
-> +#define PASEMI_MSI_ADDR 0xfc080000
-> +
-> +/* A bit ugly, can we get this from the pci_dev somehow? */
-> +static struct mpic *msi_mpic;
+> +	/* Call registered shutdown routines */
+> +	__debugger_fault_handler = handle_fault;
+> +	i = 0;
+> +	while(crash_shutdown_handles[i]){
 
+This could do nicely as a for loop instead:
 
-Before the ugliness spreads .. I'm pretty sure we can get this from the
-chip_data of the virq - I haven't fixed it though because I wasn't sure
-if using chip_data was kosher or not.
+for (i = 0; crash_shutdown_handles[i]; i++) {
 
-cheers
+> +		if (setjmp(crash_shutdown_buf) == 0) {
+> +			asm volatile("sync; isync");
+> +			crash_shutdown_handles[i]();
+> +			asm volatile("sync; isync");
+> +			__delay(200);
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+This looks a bit random. Why the handcoded barriers, and why the delay?
+At least comment why the delay is needed (and why just 200 is
+sufficient). I don't see a need for the barriers at all here?
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-EuWI5Gc+uY+3jM1VKk6i
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHX4SDdSjSd0sB4dIRAppLAJ9AMVkhu1u2pEnCe6o/efVXL4MaWQCgk6bP
-h+1DnHAZR+Pb7uvXpacYBwY=
-=P71N
------END PGP SIGNATURE-----
-
---=-EuWI5Gc+uY+3jM1VKk6i--
+> +		}
+> +		i++;
+>  	}
+>  
+>  	/*
+> Index: linux-2.6-ozlabs/include/asm-powerpc/kexec.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/include/asm-powerpc/kexec.h
+> +++ linux-2.6-ozlabs/include/asm-powerpc/kexec.h
+> @@ -123,6 +123,9 @@ struct pt_regs;
+>  extern void default_machine_kexec(struct kimage *image);
+>  extern int default_machine_kexec_prepare(struct kimage *image);
+>  extern void default_machine_crash_shutdown(struct pt_regs *regs);
+> +typedef void (*crash_shutdown_t)(void);
+> +extern int crash_shutdown_register(crash_shutdown_t handler);
+> +extern int crash_shutdown_unregister(crash_shutdown_t handler);
+>  
+>  extern void machine_kexec_simple(struct kimage *image);
+>  extern void crash_kexec_secondary(struct pt_regs *regs);
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
