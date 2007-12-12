@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3530BDE0B5
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:48:53 +1100 (EST)
-Date: Wed, 12 Dec 2007 10:48:47 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH RFC 1/7] [POWERPC] Implement GPIO API embryo
-Message-ID: <20071212164847.GC4329@loki.buserror.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 2DF0BDE073
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:52:10 +1100 (EST)
+Date: Wed, 12 Dec 2007 19:55:14 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
+Message-ID: <20071212165513.GA30981@localhost.localdomain>
 References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204825.GA32278@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071210204825.GA32278@localhost.localdomain>
+	<20071212164035.GB4329@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071212164035.GB4329@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 10, 2007 at 11:48:25PM +0300, Anton Vorontsov wrote:
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 232c298..596982f 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -73,6 +73,10 @@ config GENERIC_FIND_NEXT_BIT
->  	bool
->  	default y
->  
-> +config GENERIC_GPIO
-> +	bool
-> +	default n
-> +
+On Wed, Dec 12, 2007 at 10:40:35AM -0600, Scott Wood wrote:
+> On Mon, Dec 10, 2007 at 11:47:05PM +0300, Anton Vorontsov wrote:
+> > 5 - FSL UPM infrastructure:
+> > ---------------------------
+> > UPM address register is shared among UPMs, so we have to do
+> > proper locking. On the other hand, if we know that specific
+> > board using only one UPM we could bypass locking, and gain some
+> > performance win.
+> 
+> Not enough to be worth the complexity compared to the overhead of NAND
+> access -- especially in the likely case of a non-SMP build.
 
-default n is the default.  No need to explicitly state it.
+I'm allowing UPM access from the IRQ handlers (because nothing prevents
+this, so why deny?). Thus locks are needed even on non-SMP build, on
+UP they aren't thrown away. Lockless variant occupy less than 30 lines of
+code, so I'd rather keep it.
 
-> +
-> +int __of_parse_gpio_bank_pin(struct device_node *np, int index,
-> +			     int bank_width, int max_bank)
-
-Why the leading underscores?
-
-> diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
-> new file mode 100644
-> index 0000000..f7513ff
-> --- /dev/null
-> +++ b/include/asm-powerpc/gpio.h
-> @@ -0,0 +1,51 @@
-> +/*
-> + * Generic GPIO API implementation for PowerPC.
-
-Is there anything really powerpc specific here, or should it go under
-drivers/of?
-
--Scott
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
