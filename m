@@ -1,35 +1,23 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 77007DDF35
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 19:28:55 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	lBC8SmM6028066
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 01:28:49 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id lBC8SkBe006322
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 02:28:47 -0600 (CST)
-Subject: Re: [PATCH] Fix rounding bug in emulation for double floatoperating
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <A069B515-C07A-4471-9473-7A7E29F12685@kernel.crashing.org>
-References: <11972628522442-git-send-email-b13201@freescale.com>
-	<20071210045616.GC29611@localhost.localdomain>
-	<6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
-	<AD0028E8-E305-443F-8872-C935D4E18F80@kernel.crashing.org>
-	<1197343143.13519.2.camel@localhost.localdomain>
-	<A069B515-C07A-4471-9473-7A7E29F12685@kernel.crashing.org>
-Content-Type: text/plain
-Message-Id: <1197448223.29372.12.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 54E5DDDE45
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 20:37:35 +1100 (EST)
+Date: Wed, 12 Dec 2007 20:37:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] Make setjmp/longjmp code generic
+Message-Id: <20071212203727.f3719e4a.sfr@canb.auug.org.au>
+In-Reply-To: <1197446814.8385.104.camel@pasglop>
+References: <20071212054512.882AC62C070@localhost.localdomain>
+	<B07AAF57-E87C-40CF-A550-7F868497A2CB@kernel.crashing.org>
+	<1197446814.8385.104.camel@pasglop>
 Mime-Version: 1.0
-Date: 12 Dec 2007 16:30:24 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Liu Yu <B13201@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__12_Dec_2007_20_37_27_+1100_RTcwWnioDbr+J_38"
+Cc: Neuling <mikey@neuling.org>, THEMANN@de.ibm.com, Michael,
+	linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,103 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-12-11 at 23:26, Kumar Gala wrote:
-> >>
-> >> how did you find this?
-> >>
-> > It supposed to run the following test case on a powerpc platform.
-> > Yu's patch fixes the issue.
-> > Could you help to merge this patch in your tree?
-> > ---
-> > #include <stdio.h>
-> > #include <math.h>
-> > #include <bits/nan.h>
-> > #ifdef __SPE__
-> > #include <spe.h>
-> > int
-> > getSPEFSCR()
-> > {
-> >    return __builtin_spe_mfspefscr();
-> > }
-> >
-> > void
-> > setSPEFSCR(int i)
-> > {
-> >    __builtin_spe_mtspefscr(i);
-> > }
-> > #else
-> > int
-> > getSPEFSCR()
-> > {
-> >    return 0;
-> > }
-> >
-> > void
-> > setSPEFSCR(int i)
-> > {
-> > }
-> > #endif
-> >
-> > void
-> > dmul(double d, double d1, double expected)
-> > {
-> >    double d2;
-> >    int before, after;
-> >
-> >    before = getSPEFSCR();
-> >    d2 = d * d1;
-> >    after = getSPEFSCR();
-> >
-> >    printf("dmul %llx * %llx = %llx expected %llx %s [0x%x 0x%x]\n", 
-> > d, d1, d2, expected,
-> >           (d2 == expected) ? "(PASS)" : "(FAIL)", before, after);
-> > }
-> >
-> > void
-> > ddiv(double d, double d1, double expected)
-> > {
-> >    register double d2;
-> >    int before, after;
-> >
-> >    before = getSPEFSCR();
-> >    d2 = d / d1;
-> >    after = getSPEFSCR();
-> >
-> >    printf("ddiv %llx / %llx = %llx expected %llx %s [0x%x 0x%x]\n", 
-> > d, d1, d2, expected,
-> >           (d2 == expected) ? "(PASS)" : "(FAIL)", before, after);
-> > }
-> >
-> > main()
-> > {
-> >    const double min_double = 4.9406564584124654e-324L;
-> >
-> >    printf("\n");
-> >    dmul(0.5L, min_double, 0.0L);
-> >    dmul(-0.5L, min_double, 0.0L);
-> >    dmul(-min_double, -0.5L, 0.0L);
-> >    printf("\n");
-> >    ddiv(min_double, 2.0L, 0.0L);
-> > }
-> 
-> When I run this on a G5 (w/HW FP) I get:
-> 
-> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
-> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
-> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
-> 
-> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
-> 
-> and on the 85xx w/FP emu:
-> 
-> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
-> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
-> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
-> 
-> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
-> 
-> Maybe I'm missing where the error is.
-I am missing ...
-It is supposed to run based on previous IEEE 754 patch.
-http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031351.html
-Roy
+--Signature=_Wed__12_Dec_2007_20_37_27_+1100_RTcwWnioDbr+J_38
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 12 Dec 2007 19:06:54 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> Time to introduce a merged misc.S ? :-)
+
+We already have one ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__12_Dec_2007_20_37_27_+1100_RTcwWnioDbr+J_38
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHX6vcTgG2atn1QN8RAhWJAJ9Gg0iRydOP0vVVxyJP8db64sQkxACfaH4L
+0aENfwP5HFf5WwqoDrF4Nos=
+=FsoL
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__12_Dec_2007_20_37_27_+1100_RTcwWnioDbr+J_38--
