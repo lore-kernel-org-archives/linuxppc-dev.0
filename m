@@ -1,14 +1,16 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id ED71FDDED2
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 17:28:59 +1100 (EST)
-Date: Wed, 12 Dec 2007 00:34:07 -0600
+	by ozlabs.org (Postfix) with ESMTP id 11959DDED5
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 17:39:38 +1100 (EST)
+Date: Wed, 12 Dec 2007 00:44:46 -0600
 From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] pasemi: Implement MSI support
-Message-ID: <20071212063406.GA786@lixom.net>
+Subject: [PATCH v2] [POWERPC] pasemi: Implement MSI support
+Message-ID: <20071212064446.GB786@lixom.net>
+References: <20071212063406.GA786@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071212063406.GA786@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -50,18 +52,21 @@ Signed-off-by: Olof Johansson <olof@lixom.net>
 
 ---
 
+Oops, fixed the CONFIG_PCI_MSI=n prototype to be static inline instead
+of extern.
+
  arch/powerpc/platforms/pasemi/setup.c |    2 
  arch/powerpc/sysdev/Makefile          |    2 
  arch/powerpc/sysdev/mpic.c            |   20 +++
- arch/powerpc/sysdev/mpic.h            |    6 +
+ arch/powerpc/sysdev/mpic.h            |    7 +
  arch/powerpc/sysdev/mpic_pasemi_msi.c |  172 ++++++++++++++++++++++++++++++++++
- 5 files changed, 200 insertions(+), 2 deletions(-)
+ 5 files changed, 201 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 3d62060..8549901 100644
+index 6d7d068..b5dfd42 100644
 --- a/arch/powerpc/platforms/pasemi/setup.c
 +++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -215,7 +215,7 @@ static __init void pas_init_IRQ(void)
+@@ -223,7 +223,7 @@ static __init void pas_init_IRQ(void)
  
  	mpic = mpic_alloc(mpic_node, openpic_addr,
  			  MPIC_PRIMARY|MPIC_LARGE_VECTORS,
@@ -122,7 +127,7 @@ index e479388..aebf025 100644
  		/* start with vector = source number, and masked */
  		u32 vecpri = MPIC_VECPRI_MASK | i |
 diff --git a/arch/powerpc/sysdev/mpic.h b/arch/powerpc/sysdev/mpic.h
-index 1cb6bd8..3937c2b 100644
+index 1cb6bd8..4783c6e 100644
 --- a/arch/powerpc/sysdev/mpic.h
 +++ b/arch/powerpc/sysdev/mpic.h
 @@ -17,6 +17,7 @@ extern int mpic_msi_init_allocator(struct mpic *mpic);
@@ -133,11 +138,12 @@ index 1cb6bd8..3937c2b 100644
  #else
  static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
  					  irq_hw_number_t hwirq)
-@@ -28,9 +29,14 @@ static inline int mpic_u3msi_init(struct mpic *mpic)
+@@ -28,9 +29,15 @@ static inline int mpic_u3msi_init(struct mpic *mpic)
  {
  	return -1;
  }
-+extern int mpic_pasemi_msi_init(struct mpic *mpic)
++
++static inline int mpic_pasemi_msi_init(struct mpic *mpic)
 +{
 +	return -1;
 +}
@@ -183,7 +189,7 @@ index 0000000..d6bfda3
 +
 +/* Allocate 16 interrupts per device, to give an alignment of 16,
 + * since that's the size of the grouping w.r.t. affinity. If someone
-+ * needs more than 32 MSIs down the road we'll have to rethink this,
++ * needs more than 32 MSI's down the road we'll have to rethink this,
 + * but it should be OK for now.
 + */
 +#define ALLOC_CHUNK 16
