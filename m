@@ -1,16 +1,28 @@
-Return-Path: <nace.reader@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 9958CDDEC7
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 51148DDECF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Dec 2007 07:35:59 +1100 (EST)
+	Wed, 12 Dec 2007 18:49:03 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id BDF3D29EC5
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Dec 2007 08:26:50 +0100 (CET)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 14391-10 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Dec 2007 08:26:40 +0100 (CET)
+Received: from archvile.prtnl (archvile.prtnl [192.168.1.153])
+	by protonic.prtnl (Postfix) with ESMTP id AD67B29EBB
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Dec 2007 08:26:39 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: MPC5121e Freescale BSP...
+Date: Wed, 12 Dec 2007 08:30:30 +0100
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C83C33.DD1D8537"
-Subject: i2o 82XX
-Date: Tue, 11 Dec 2007 12:24:43 -0800
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE487107EFB4B6@VCAEXCH01.hq.corp.viasat.com>
-From: "Reader, Nace" <nace.reader@viasat.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200712120830.30767.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,47 +33,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C83C33.DD1D8537
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi everyone,
 
-Howdy,
-I am running an MPC 82XX in agent mode and I am trying to use the i2o =
-functionality without much luck. PC reads/writes to the IFQPR do indeed =
-update the IFTPR and IPHPR, but no data gets written or read from those =
-addresses? Anybody, every try to use the i2o stuff?
-Thanks,
-Nace
+I have an ADS5121 evaluation module from Freescale, and wonder if there's any 
+Freescale engineer on this list working on the linux BSP for this 
+processor/SoC/platform?
 
-------_=_NextPart_001_01C83C33.DD1D8537
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+I have downloaded the latest alpha release of the BSP and found it to be 
+completely unusable. I took some time to fix the framebuffer driver, and make 
+console-fb work, I even sent patches to our Freescale contact, while I 
+already suspected it to be completely useless, since the BSP is already 
+lacking behind several months from actual Freescale code, and all those 
+issues are most probably fixed already. Only problem: I can't seem to get the 
+latest versions of it. I heared rumors they'll release a new version next 
+week or so, but I fear it will also lack behind development, and fixing bugs 
+myself or contributing code will be a useless waste of time!
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7651.59">
-<TITLE>i2o 82XX</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+Is there any Freescale engineer on this list that can help out, or at least 
+clarify the reasons behind closed-doors open-source software development??
 
-<P><FONT SIZE=3D2>Howdy,<BR>
-I am running an MPC 82XX in agent mode and I am trying to use the i2o =
-functionality without much luck. PC reads/writes to the IFQPR do indeed =
-update the IFTPR and IPHPR, but no data gets written or read from those =
-addresses? Anybody, every try to use the i2o stuff?<BR>
-Thanks,<BR>
-Nace</FONT>
-</P>
+On the other hand, I also whish to contact other furtunate owners of 
+PPC5121e-based hardware to join forces on linux-kernel driver development. If 
+Freescale won't collaborate, I'd even consider forking their code, if 
+necessary.
 
-</BODY>
-</HTML>
-------_=_NextPart_001_01C83C33.DD1D8537--
+Greetings,
+
+-- 
+David Jander
+Protonic Holland.
