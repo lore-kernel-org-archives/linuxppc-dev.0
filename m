@@ -1,18 +1,17 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 9474ADDF51
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 09:06:02 +1100 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 6D62BDDF44
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 09:16:45 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5] qe: add ability to upload QE firmware
-Date: Wed, 12 Dec 2007 23:05:41 +0100
-References: <11970422334145-git-send-email-timur@freescale.com>
-In-Reply-To: <11970422334145-git-send-email-timur@freescale.com>
+Subject: Re: [PATCH/RFC] CPM1: implement GPIO API
+Date: Wed, 12 Dec 2007 23:16:33 +0100
+References: <47600F5E.8060907@scram.de>
+In-Reply-To: <47600F5E.8060907@scram.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200712122305.42860.arnd@arndb.de>
-Cc: Timur Tabi <timur@freescale.com>
+Message-Id: <200712122316.34354.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 07 December 2007, Timur Tabi wrote:
-> Define the layout of a binary blob that contains a QE firmware and instru=
-ctions
-> on how to upload it. =A0Add function qe_upload_firmware() to parse the bl=
-ob
-> and perform the actual upload. =A0Fully define 'struct rsp' in immap_qe.h=
- to
-> include the actual RISC Special Registers. =A0Added description of a new
-> QE firmware node to booting-without-of.txt.
+On Wednesday 12 December 2007, Jochen Friedrich wrote:
 
-All the comments I had were addressed, mostly by convincing me that the
-code was correct to start with, so
+> +static spinlock_t *cpm1_port_locks;
+> +static int cpm1_num_ports;
 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+Having an array of spinlocks is rather unusual and normally not necessary.
+Did you measure a significant performance impact by using a global lock
+for all ports?
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+If not, I would recommend simplifying this.
+
+> +EXPORT_SYMBOL_GPL(gpio_request);
+> +EXPORT_SYMBOL_GPL(gpio_direction_input);
+> +EXPORT_SYMBOL_GPL(gpio_direction_output);
+> +EXPORT_SYMBOL_GPL(gpio_get_value);
+> +EXPORT_SYMBOL_GPL(gpio_set_value);
+
+All these function names are rather generic identifiers, but you export them
+from a platform specific file. I'd say they should either have a more specific
+name space (e.g. cpm1_gpio_request), or should be implemented in a more
+generic way.
+
+	Arnd <><
