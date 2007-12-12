@@ -1,16 +1,16 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 814AEDDFC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:39:21 +1100 (EST)
-Date: Wed, 12 Dec 2007 10:39:08 -0600
+	by ozlabs.org (Postfix) with ESMTP id 8E3A5DDF7B
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:40:46 +1100 (EST)
+Date: Wed, 12 Dec 2007 10:40:35 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
 Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
-Message-ID: <20071212163908.GA4329@loki.buserror.net>
+Message-ID: <20071212164035.GB4329@loki.buserror.net>
 References: <20071210204705.GA31263@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,14 +26,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Mon, Dec 10, 2007 at 11:47:05PM +0300, Anton Vorontsov wrote:
-> 6. FSL UPM NAND driver:
-> -----------------------
-> It's using FSL UPM functions and GPIO API. It does not implement
-> device tree partitions parsing. That issue is completely other
-> matter, that is, I have to factor out parsing functions from
-> physmap_of.c. This desires separate patch on top of the whole
-> series. If anyone currently working on this, let me know.
+> 5 - FSL UPM infrastructure:
+> ---------------------------
+> UPM address register is shared among UPMs, so we have to do
+> proper locking. On the other hand, if we know that specific
+> board using only one UPM we could bypass locking, and gain some
+> performance win.
 
-I've got a patch coming for that.
+Not enough to be worth the complexity compared to the overhead of NAND
+access -- especially in the likely case of a non-SMP build.
 
 -Scott
