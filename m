@@ -1,18 +1,22 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C2D1ADDFB3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:45:46 +1100 (EST)
-Message-ID: <47601027.2080104@scram.de>
-Date: Wed, 12 Dec 2007 17:45:27 +0100
-From: Jochen Friedrich <jochen@scram.de>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3530BDE0B5
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:48:53 +1100 (EST)
+Date: Wed, 12 Dec 2007 10:48:47 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH RFC 1/7] [POWERPC] Implement GPIO API embryo
+Message-ID: <20071212164847.GC4329@loki.buserror.net>
+References: <20071210204705.GA31263@localhost.localdomain>
+	<20071210204825.GA32278@localhost.localdomain>
 MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH/RFC] [POWERPC] Add fixed-phy support for fs_enet
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071210204825.GA32278@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support to use the fixed-link property
-of an ethernet node to fs_enet for the
-CONFIG_PPC_CPM_NEW_BINDING case.
+On Mon, Dec 10, 2007 at 11:48:25PM +0300, Anton Vorontsov wrote:
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 232c298..596982f 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -73,6 +73,10 @@ config GENERIC_FIND_NEXT_BIT
+>  	bool
+>  	default y
+>  
+> +config GENERIC_GPIO
+> +	bool
+> +	default n
+> +
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/net/fs_enet/fs_enet-main.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+default n is the default.  No need to explicitly state it.
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index f2a4d39..8220c70 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -1174,8 +1174,15 @@ static int __devinit find_phy(struct device_node *np,
- 	struct device_node *phynode, *mdionode;
- 	struct resource res;
- 	int ret = 0, len;
-+	const u32 *data;
-+
-+	data  = of_get_property(np, "fixed-link", NULL);
-+	if (data) {
-+		snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data);
-+		return 0;
-+	}
+> +
+> +int __of_parse_gpio_bank_pin(struct device_node *np, int index,
+> +			     int bank_width, int max_bank)
 
--	const u32 *data = of_get_property(np, "phy-handle", &len);
-+	data = of_get_property(np, "phy-handle", &len);
- 	if (!data || len != 4)
- 		return -EINVAL;
+Why the leading underscores?
 
--- 
-1.5.3.7
+> diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+> new file mode 100644
+> index 0000000..f7513ff
+> --- /dev/null
+> +++ b/include/asm-powerpc/gpio.h
+> @@ -0,0 +1,51 @@
+> +/*
+> + * Generic GPIO API implementation for PowerPC.
+
+Is there anything really powerpc specific here, or should it go under
+drivers/of?
+
+-Scott
