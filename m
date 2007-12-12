@@ -1,15 +1,23 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
-Subject: Re: Lnux 2.6.24-rc5
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <alpine.LFD.0.9999.0712102130370.28293@woody.linux-foundation.org>
-References: <alpine.LFD.0.9999.0712102130370.28293@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 12 Dec 2007 15:25:01 +0530
-Message-Id: <1197453301.4710.71.camel@subratamodak.linux.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B0C33DDE38
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 23:44:28 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id C507E8815
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 17:44:25 +0400 (SAMT)
+Date: Wed, 12 Dec 2007 15:47:32 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
+Message-ID: <20071212124732.GA3904@localhost.localdomain>
+References: <20071210204705.GA31263@localhost.localdomain>
+	<20071210230453.GB5495@localhost.localdomain>
+	<20071210231052.GB1141@zarina>
+	<20071211003647.GB12363@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org
-Reply-To: subrata@linux.vnet.ibm.com
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071211003647.GB12363@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,50 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-12-10 at 21:40 -0800, Linus Torvalds wrote:
-> It's been a week, and I promised to be a good boy and try to follow my 
-> release rules, so here is the next -rc.
+On Tue, Dec 11, 2007 at 11:36:47AM +1100, David Gibson wrote:
+[...]
+> > > > OF device tree GPIOs bindings are similar to IRQs:
+> > > > 
+> > > > node {
+> > > > 	gpios = <bank pin bank pin bank pin>;
+> > > > 	gpio-parent = <&par_io_controller>;
+> > > > };
+> > > > 
+> > > > "bank pin" scheme is controller specific, so controllers that want
+> > > > to implement flat mappings or any other could do so.
+> > > 
+> > > It might be safest to do as is done for interrupts, and not define the
+> > > internal format at all.
+> > 
+> > This is how it is done already. Take a look into second and third patches:
+> > 
+> > +static int par_io_xlate(struct device_node *np, int index)
+> > +{
+> > +       return __of_parse_gpio_bank_pin(np, index, 32, num_par_io_ports);
+> > +}
+> > +
+> > +static struct of_gpio_chip of_gpio_chip = {
+> > +       .xlate = par_io_xlate,
+> > +};
+> > 
+> > __of_parse_gpio_bank_pin() is helper function, I just factored
+> > it out, because both QE and CPM2 using same format.
+> > 
+> > But generally, controllers are encouraged to do their own xlates.
+> > 
+> > Or am I missing the point?
 > 
-> Things _have_ slowed down, although I'd obviously be lying if I said we've 
-> got all the regressions handled and under control. They are being worked 
-> on, and the list is shrinking, but at a guess, we're definitely not going 
-> to have a final 2.6.24 out before xmas unless santa puts some more elves 
-> to work on those regressions..
-> 
-> So any elves out there - please keep working.
-> 
-> I'm including the shortlog since it's small enough, and quite frankly, 
-> gives about as readable explanation of the changes as can be imagined. 
-> Nothing hugely exciting here.
-> 
-> I'd post the diffstat too, but it's not really all that interesting, and 
-> it only highlights a textually big PA-RISC revert, and the powerpc 
-> defconfig updates. And the Blackfin SPI driver. The rest is largely random 
-> noise in various subsystems (drivers/net, xfs filesystem, and arch updates 
-> are some of the areas that show more changes).
-> 
-> 		Linus
-> 
-> ---
-> 
-> Benjamin Herrenschmidt (6):
->       ibm_newemac: Fix ZMII refcounting bug
->       ibm_newemac: Workaround reset timeout when no link
->       ibm_newemac: Cleanup/Fix RGMII MDIO support detection
->       ibm_newemac: Cleanup/fix support for STACR register variants
->       ibm_newemac: Update file headers copyright notices
->       powerpc: Fix IDE legacy vs. native fixups
-> 
+> Right, but you are assuming a fixed size (2 cells?)
 
-Dear Benjamin,
+Nope, of_get_gpio() doesn't assume that, but per-controller's .xlate()
+is free to assume (and check) that, right.
 
-Since you are working on Device drivers, do you want to see whether your
-Device drivers testcases can fit in here in LTP:
-http://ltp.cvs.sourceforge.net/ltp/ltp/testcases/kernel/device-drivers/,
+> for the bank/pin
+> information, arent' you - I didn't see any #gpio-cells or similar
+> looking property.
 
-I am eager to know whether we can work together to get these device
-drivers testcases inside LTP.
+Well, per-controller .xlate() is checking for correct cell count
+(just reminding -- __of_parse_gpio_bank_pin is helper function,
+controllers are free to implement their own):
 
-Regards--
-Subrata
-(LTP Mainatiner)
+int __of_parse_gpio_bank_pin(struct device_node *np, int index,
+                             int bank_width, int max_bank)
+{
+...
+        gpios = of_get_property(np, "gpios", &len);
+        len /= sizeof(u32);
+
+        if (len < 2 || len % 2 || index > len / 2 - 1)
+                return -EINVAL;
+...
+}
+
+On the other hand, I might indeed introduce #gpio-cells, and move
+that check into generic of_get_gpio(), which will use #gpio-cells.
+I think this is good idea anyway, so I'll just do it. ;-)
+
+> I'm wondering if some gpio controllers might want
+> less (only one bank) or more (bank, pin, polarity/flags perhaps).
+
+Yup, they might. With #gpio-cells or without. The matter of where
+to place sanity checks.
+
+
+Much thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
