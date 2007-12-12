@@ -1,16 +1,16 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3E15FDE2C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:36:06 +1100 (EST)
-Date: Wed, 12 Dec 2007 11:36:01 -0600
+	by ozlabs.org (Postfix) with ESMTP id 1F8C4DE444
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:36:09 +1100 (EST)
+Date: Wed, 12 Dec 2007 11:36:04 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 4/8] fsl_soc: Factor fsl_get_sys_freq() out of the wdt init.
-Message-ID: <20071212173601.GC5596@loki.buserror.net>
+Subject: [PATCH 6/8] mpc83xx: timer driver for PM wakeup
+Message-ID: <20071212173604.GE5596@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071212173519.GA5577@loki.buserror.net>
@@ -24,109 +24,350 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a driver for the mpc83xx's GTM4 timer.  It's functionality
+is limited to providing a wakeup source for suspend-to-RAM.
+
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c |   44 ++++++++++++++++++++++------------------
- arch/powerpc/sysdev/fsl_soc.h |    1 +
- 2 files changed, 25 insertions(+), 20 deletions(-)
+ arch/powerpc/platforms/83xx/Kconfig  |    9 +
+ arch/powerpc/platforms/83xx/Makefile |    1 +
+ arch/powerpc/platforms/83xx/timer.c  |  299 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 309 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/83xx/timer.c
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 3ace747..e1ba33c 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -66,6 +66,27 @@ phys_addr_t get_immrbase(void)
- 
- EXPORT_SYMBOL(get_immrbase);
- 
-+u32 fsl_get_sys_freq(void)
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 901dbaf..800f547 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -80,3 +80,12 @@ config PPC_83xx_SUSPEND
+ 	bool
+ 	default y
+ 	depends on PPC_83xx && SUSPEND
++
++config MPC83xx_GTM
++	tristate "83xx General-Purpose Timers for PM wakeup"
++	help
++	  This enables a driver for the GTM4 timer, to be used
++	  as a wakeup source for suspend-to-RAM.  To arm the
++	  timer, write the number of seconds until expiration
++	  to the "timeout" file in the device's sysfs directory.
++	  To disarm, write 0 to the "timeout" file.
+diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
+index 944369e..bcc1003 100644
+--- a/arch/powerpc/platforms/83xx/Makefile
++++ b/arch/powerpc/platforms/83xx/Makefile
+@@ -4,6 +4,7 @@
+ obj-y				:= misc.o usb.o
+ obj-$(CONFIG_PCI)		+= pci.o
+ obj-$(CONFIG_SUSPEND)		+= suspend.o suspend-asm.o
++obj-$(CONFIG_MPC83xx_GTM)	+= timer.o
+ obj-$(CONFIG_MPC8313_RDB)	+= mpc8313_rdb.o
+ obj-$(CONFIG_MPC832x_RDB)	+= mpc832x_rdb.o
+ obj-$(CONFIG_MPC834x_MDS)	+= mpc834x_mds.o
+diff --git a/arch/powerpc/platforms/83xx/timer.c b/arch/powerpc/platforms/83xx/timer.c
+new file mode 100644
+index 0000000..7fc6048
+--- /dev/null
++++ b/arch/powerpc/platforms/83xx/timer.c
+@@ -0,0 +1,299 @@
++/*
++ * MPC83xx Global Timer4 support
++ *
++ * This driver is currently specific to timer 4 in 16-bit mode,
++ * as that is all that can be used as a wakeup source for deep sleep
++ * on the MPC8313.
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/errno.h>
++#include <linux/module.h>
++#include <linux/mm.h>
++#include <linux/delay.h>
++#include <linux/fs.h>
++#include <linux/string.h>
++#include <linux/interrupt.h>
++#include <linux/sysfs.h>
++#include <linux/of_platform.h>
++
++#include <asm/io.h>
++#include <asm/irq.h>
++
++#include <sysdev/fsl_soc.h>
++
++#define MDR_ICLK_DIV16	0x0004
++
++struct gtm_regs {
++	u8    cfr1; /* Timer1/2 Configuration  */
++	#define CFR1_PCAS 0x80 /* Pair Cascade mode  */
++	#define CFR1_BCM  0x40  /* Backward compatible mode  */
++	#define CFR1_STP2 0x20 /* Stop timer  */
++	#define CFR1_RST2 0x10 /* Reset timer  */
++	#define CFR1_GM2  0x08 /* Gate mode for pin 2  */
++	#define CFR1_GM1  0x04 /* Gate mode for pin 1  */
++	#define CFR1_STP1 0x02 /* Stop timer  */
++	#define CFR1_RST1 0x01 /* Reset timer  */
++	#define CFR1_RES ~(CFR1_PCAS | CFR1_STP2 | CFR1_RST2 | CFR1_GM2 |\
++		CFR1_GM1 | CFR1_STP1 | CFR1_RST1)
++
++	u8    res0[3];
++	u8    cfr2; /* Timer3/4 Configuration  */
++	#define CFR2_PCAS 0x80 /* Pair Cascade mode  */
++	#define CFR2_SCAS 0x40 /* Super Cascade mode  */
++	#define CFR2_STP4 0x20 /* Stop timer  */
++	#define CFR2_RST4 0x10 /* Reset timer  */
++	#define CFR2_GM4  0x08 /* Gate mode for pin 4  */
++	#define CFR2_GM3  0x04 /* Gate mode for pin 3  */
++	#define CFR2_STP3 0x02 /* Stop timer  */
++	#define CFR2_RST3 0x01 /* Reset timer  */
++
++	u8    res1[11];
++	u16   mdr1; /* Timer1 Mode Register  */
++	#define MDR_SPS  0xff00 /* Secondary Prescaler value (256) */
++	#define MDR_CE   0x00c0 /* Capture edge and enable interrupt  */
++	#define MDR_OM   0x0020 /* Output mode  */
++	#define MDR_ORI  0x0010 /* Output reference interrupt enable  */
++	#define MDR_FRR  0x0008 /* Free run/restart  */
++	#define MDR_ICLK 0x0006 /* Input clock source for the timer */
++	#define MDR_GE   0x0001 /* Gate enable  */
++
++	u16   mdr2; /* Timer2 Mode Register  */
++	u16   rfr1; /* Timer1 Reference Register  */
++	u16   rfr2; /* Timer2 Reference Register  */
++	u16   cpr1; /* Timer1 Capture Register  */
++	u16   cpr2; /* Timer2 Capture Register  */
++	u16   cnr1; /* Timer1 Counter Register  */
++	u16   cnr2; /* Timer2 Counter Register  */
++	u16   mdr3; /* Timer3 Mode Register  */
++	u16   mdr4; /* Timer4 Mode Register  */
++	u16   rfr3; /* Timer3 Reference Register  */
++	u16   rfr4; /* Timer4 Reference Register  */
++	u16   cpr3; /* Timer3 Capture Register  */
++	u16   cpr4; /* Timer4 Capture Register  */
++	u16   cnr3; /* Timer3 Counter Register  */
++	u16   cnr4; /* Timer4 Counter Register  */
++	u16   evr1; /* Timer1 Event Register  */
++	u16   evr2; /* Timer2 Event Register  */
++	u16   evr3; /* Timer3 Event Register  */
++	u16   evr4; /* Timer4 Event Register  */
++	#define GTEVR_REF 0x0002 /* Output reference event  */
++	#define GTEVR_CAP 0x0001 /* Counter Capture event   */
++	#define GTEVR_RES ~(EVR_CAP|EVR_REF)
++
++	u16   psr1; /* Timer1 Prescaler Register  */
++	u16   psr2; /* Timer2 Prescaler Register  */
++	u16   psr3; /* Timer3 Prescaler Register  */
++	u16   psr4; /* Timer4 Prescaler Register  */
++	#define GTPSR_PPS  0x00FF /* Primary Prescaler Bits (256). */
++	#define GTPSR_RES  ~(GTPSR_PPS)
++};
++
++struct gtm_priv {
++	struct gtm_regs __iomem *regs;
++	int irq;
++	int ticks_per_sec;
++	spinlock_t lock;
++};
++
++static irqreturn_t fsl_gtm_isr(int irq, void *dev_id)
 +{
-+	struct device_node *soc = of_find_node_by_type(NULL, "soc");
-+	const u32 *freq;
-+	u32 ret = 0;
++	struct gtm_priv *priv = dev_id;
++	unsigned long flags;
++	u16 event;
 +
-+	if (!soc)
-+		goto err;
++	spin_lock_irqsave(&priv->lock, flags);
 +
-+	freq = of_get_property(soc, "bus-frequency", NULL);
-+	if (!freq)
-+		goto err;
++	event = in_be16(&priv->regs->evr4);
++	out_be16(&priv->regs->evr4, event);
 +
-+	ret = *freq;
++	if (event & GTEVR_REF)
++		out_8(&priv->regs->cfr2, CFR2_STP4);
 +
-+err:
-+	of_node_put(soc);
++	spin_unlock_irqrestore(&priv->lock, flags);
++	return event ? IRQ_HANDLED : IRQ_NONE;
++}
++
++static ssize_t gtm_timeout_store(struct device *dev,
++                                 struct device_attribute *attr,
++                                 const char *buf, size_t count)
++{
++	struct gtm_priv *priv = dev_get_drvdata(dev);
++	unsigned long interval = simple_strtoul(buf, NULL, 0);
++
++	if (interval > 0xffff) {
++		dev_dbg(dev, "gtm: interval %lu (in ns) too long\n", interval);
++		return -EINVAL;
++	}
++
++	interval *= priv->ticks_per_sec;
++
++	if (interval > 0xffff) {
++		dev_dbg(dev, "gtm: interval %lu (in ticks) too long\n",
++		        interval);
++		return -EINVAL;
++	}
++
++	spin_lock_irq(&priv->lock);
++
++	/* reset timer 4 */
++	out_8(&priv->regs->cfr2, CFR2_STP3 | CFR2_STP4);
++
++	if (interval != 0) {
++		out_8(&priv->regs->cfr2, CFR2_GM4 | CFR2_RST4 | CFR2_STP4);
++		/* clear events */
++		out_be16(&priv->regs->evr4, GTEVR_REF | GTEVR_CAP);
++		/* maximum primary prescale (256) */
++		out_be16(&priv->regs->psr4, GTPSR_PPS);
++		/* clear current counter */
++		out_be16(&priv->regs->cnr4, 0x0);
++		/* set count limit */
++		out_be16(&priv->regs->rfr4, interval);
++		out_be16(&priv->regs->mdr4, MDR_SPS | MDR_ORI | MDR_FRR |
++		                            MDR_ICLK_DIV16);
++		/* start timer */
++		out_8(&priv->regs->cfr2, CFR2_GM4 | CFR2_STP3 | CFR2_RST4);
++	}
++
++	spin_unlock_irq(&priv->lock);
++	return count;
++}
++
++static ssize_t gtm_timeout_show(struct device *dev,
++                                struct device_attribute *attr,
++                                char *buf)
++{
++	struct gtm_priv *priv = dev_get_drvdata(dev);
++	int timeout = 0;
++
++	spin_lock_irq(&priv->lock);
++
++	if (!(in_8(&priv->regs->cfr2) & CFR2_STP4)) {
++		timeout = in_be16(&priv->regs->rfr4) -
++		          in_be16(&priv->regs->cnr4);
++		timeout += priv->ticks_per_sec - 1;
++		timeout /= priv->ticks_per_sec;
++	}
++
++	spin_unlock_irq(&priv->lock);
++	return sprintf(buf, "%u\n", timeout);
++}
++
++static DEVICE_ATTR(timeout, 0660, gtm_timeout_show, gtm_timeout_store);
++
++static int __devinit gtm_probe(struct of_device *dev,
++                               const struct of_device_id *match)
++{
++	struct device_node *np = dev->node;
++	struct resource res;
++	int ret = 0;
++	u32 busfreq = fsl_get_sys_freq();
++	struct gtm_priv *priv;
++
++	if (busfreq == 0) {
++		dev_err(&dev->dev, "gtm: No bus frequency in device tree.\n");
++		return -ENODEV;
++	}
++
++	priv = kmalloc(sizeof(struct gtm_priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	spin_lock_init(&priv->lock);
++	dev_set_drvdata(&dev->dev, priv);
++
++	ret = of_address_to_resource(np, 0, &res);
++	if (ret)
++		goto out;
++
++	priv->irq = irq_of_parse_and_map(np, 0);
++	if (priv->irq == NO_IRQ) {
++		dev_err(&dev->dev, "mpc83xx-gtm exists in device tree "
++		                   "without an IRQ.\n");
++		ret = -ENODEV;
++		goto out;
++	}
++
++	ret = request_irq(priv->irq, fsl_gtm_isr, 0, "gtm timer", priv);
++	if (ret)
++		goto out;
++
++	priv->regs = ioremap(res.start, sizeof(struct gtm_regs));
++	if (!priv->regs) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	/* Disable the unused clocks to save power. */
++	out_8(&priv->regs->cfr1, CFR1_STP1 | CFR1_STP2);
++	out_8(&priv->regs->cfr2, CFR2_STP3 | CFR2_STP4);
++
++	/*
++	 * Maximum prescaling is used (input clock/16, 256 primary prescaler,
++	 * 256 secondary prescaler) to maximize the timer's range.  With a
++	 * bus clock of 133MHz, this yields a maximum interval of 516
++	 * seconds while retaining subsecond precision.  Since only
++	 * timer 4 is supported for wakeup on the 8313, and timer 4
++	 * is the LSB when chained, we can't use chaining to increase
++	 * the range.
++	 */
++	priv->ticks_per_sec = busfreq / (16*256*256);
++
++	ret = device_create_file(&dev->dev, &dev_attr_timeout);
++	if (ret)
++		goto out;
++
++	return 0;
++
++out:
++	kfree(priv);
 +	return ret;
 +}
-+EXPORT_SYMBOL(fsl_get_sys_freq);
 +
- #if defined(CONFIG_CPM2) || defined(CONFIG_8xx)
- 
- static u32 brgfreq = -1;
-@@ -450,9 +471,9 @@ arch_initcall(fsl_i2c_of_init);
- static int __init mpc83xx_wdt_init(void)
- {
- 	struct resource r;
--	struct device_node *soc, *np;
-+	struct device_node *np;
- 	struct platform_device *dev;
--	const unsigned int *freq;
-+	u32 freq = fsl_get_sys_freq();
- 	int ret;
- 
- 	np = of_find_compatible_node(NULL, "watchdog", "mpc83xx_wdt");
-@@ -462,19 +483,6 @@ static int __init mpc83xx_wdt_init(void)
- 		goto nodev;
- 	}
- 
--	soc = of_find_node_by_type(NULL, "soc");
--
--	if (!soc) {
--		ret = -ENODEV;
--		goto nosoc;
--	}
--
--	freq = of_get_property(soc, "bus-frequency", NULL);
--	if (!freq) {
--		ret = -ENODEV;
--		goto err;
--	}
--
- 	memset(&r, 0, sizeof(r));
- 
- 	ret = of_address_to_resource(np, 0, &r);
-@@ -487,20 +495,16 @@ static int __init mpc83xx_wdt_init(void)
- 		goto err;
- 	}
- 
--	ret = platform_device_add_data(dev, freq, sizeof(int));
-+	ret = platform_device_add_data(dev, &freq, sizeof(int));
- 	if (ret)
- 		goto unreg;
- 
--	of_node_put(soc);
- 	of_node_put(np);
--
- 	return 0;
- 
- unreg:
- 	platform_device_unregister(dev);
- err:
--	of_node_put(soc);
--nosoc:
- 	of_node_put(np);
- nodev:
- 	return ret;
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 63e7db3..74c4a96 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -7,6 +7,7 @@
- extern phys_addr_t get_immrbase(void);
- extern u32 get_brgfreq(void);
- extern u32 get_baudrate(void);
-+extern u32 fsl_get_sys_freq(void);
- 
- struct spi_board_info;
- 
++static int __devexit gtm_remove(struct of_device *dev)
++{
++	struct gtm_priv *priv = dev_get_drvdata(&dev->dev);
++
++	device_remove_file(&dev->dev, &dev_attr_timeout);
++	free_irq(priv->irq, priv);
++	iounmap(priv->regs);
++
++	dev_set_drvdata(&dev->dev, NULL);
++	kfree(priv);
++	return 0;
++}
++
++static struct of_device_id gtm_match[] = {
++	{
++		.compatible = "fsl,mpc8313-gtm",
++	},
++	{},
++};
++
++static struct of_platform_driver gtm_driver = {
++	.name = "mpc83xx-gtm",
++	.match_table = gtm_match,
++	.probe = gtm_probe,
++	.remove = __devexit_p(gtm_remove)
++};
++
++static int __init gtm_init(void)
++{
++	return of_register_platform_driver(&gtm_driver);
++}
++
++static void __exit gtm_exit(void)
++{
++	of_unregister_platform_driver(&gtm_driver);
++}
++
++module_init(gtm_init);
++module_exit(gtm_exit);
 -- 
 1.5.3.7
