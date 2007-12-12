@@ -1,20 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8CD93DDF64
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 11:15:07 +1100 (EST)
-Date: Thu, 13 Dec 2007 11:14:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 6/8] mpc83xx: timer driver for PM wakeup
-Message-Id: <20071213111439.eebba83b.sfr@canb.auug.org.au>
-In-Reply-To: <20071212173604.GE5596@loki.buserror.net>
-References: <20071212173519.GA5577@loki.buserror.net>
-	<20071212173604.GE5596@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dwalker@mvista.com>
+Received: from dwalker1.mvista.com (gateway-1237.mvista.com [63.81.120.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B4B2EDDF3B
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 11:51:36 +1100 (EST)
+Message-Id: <20071213003028.676998182@mvista.com>
+Date: Wed, 12 Dec 2007 00:00:01 -0800
+Subject: [PATCH 1/3] ps3: vuart: fix error path locking
+Message-Id: <20071213003023.117964080@mvista.com>
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org, linux@bohmer.net,
+	linuxppc-dev@ozlabs.org, mingo@elte.hu, kjwinchester@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This stray down would cause a permanent sleep which doesn't seem correct. 
+The other uses of this semaphore appear fairly mutex like it's even initialized
+with init_MUTEX() ..  So here a patch for removing this one down().
 
-Hi Scott,
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-On Wed, 12 Dec 2007 11:36:04 -0600 Scott Wood <scottwood@freescale.com> wro=
-te:
->
-> +static int __devinit gtm_probe(struct of_device *dev,
-> +                               const struct of_device_id *match)
-> +{
-	.
-	.
-	.
-> +out:
+---
+ drivers/ps3/ps3-vuart.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Just for consistency, you probably want
-	dev_set_drvdata(&dev->dev, NULL);
-here
+Index: linux-2.6.23/drivers/ps3/ps3-vuart.c
+===================================================================
+--- linux-2.6.23.orig/drivers/ps3/ps3-vuart.c
++++ linux-2.6.23/drivers/ps3/ps3-vuart.c
+@@ -1072,7 +1072,6 @@ static int ps3_vuart_probe(struct ps3_sy
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: drv->probe failed\n",
+ 			__func__, __LINE__);
+-		down(&vuart_bus_priv.probe_mutex);
+ 		goto fail_probe;
+ 	}
+ 
 
-> +	kfree(priv);
-> +	return ret;
-> +}
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHYHlzTgG2atn1QN8RAmg9AKCWmgRVu6KHOJNivmNMznIccQdXIACdFHaL
-8o6vrnVE5UwlJw5x9iR7RyQ=
-=KrB4
------END PGP SIGNATURE-----
-
---Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy--
+-- 
