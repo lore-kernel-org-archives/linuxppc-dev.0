@@ -1,22 +1,21 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
-	by ozlabs.org (Postfix) with ESMTP id CB308DDFDD
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 07:29:15 +1100 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls if necessary
-References: <200712101859.11218.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 12 Dec 2007 12:29:09 -0800
-In-Reply-To: <200712101859.11218.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Mon, 10 Dec 2007 18:59:10 +0100")
-Message-ID: <ada3au78xnu.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
-	OF-EWG <ewg@lists.openfabrics.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AAEC2DDF86
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 07:55:37 +1100 (EST)
+Date: Wed, 12 Dec 2007 23:58:38 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
+Message-ID: <20071212205838.GA16425@localhost.localdomain>
+References: <20071210204705.GA31263@localhost.localdomain>
+	<20071212164035.GB4329@loki.buserror.net>
+	<20071212165513.GA30981@localhost.localdomain>
+	<47601245.2090907@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47601245.2090907@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied.
+On Wed, Dec 12, 2007 at 10:54:29AM -0600, Scott Wood wrote:
+> Anton Vorontsov wrote:
+> >On Wed, Dec 12, 2007 at 10:40:35AM -0600, Scott Wood wrote:
+> >>Not enough to be worth the complexity compared to the overhead of NAND
+> >>access -- especially in the likely case of a non-SMP build.
+> >
+> >I'm allowing UPM access from the IRQ handlers (because nothing prevents
+> >this, so why deny?). Thus locks are needed even on non-SMP build,
+> 
+> No, it just needs to disable interrupts.
+> Which is what locks do on non-SMP.
+> The overhead of this is not worth 30 lines of code to avoid.
 
-With your next batch of patches for 2.6.25, could you clean up:
+Well, speaking of overhead. There could be a lot of fsl_upm_run_pattern
+calls between _start and _end. In NAND case it's maximum 3, plus
+they're indirect (i.e. NAND layer calls them via pointers to cmdfunc,
+and cmdfunc calls run_patterns). Each out_X is another sync, and all
+that time we're holding a lock with local IRQs disabled.
 
- > --- a/drivers/infiniband/hw/ehca/hcp_if.c
- > +++ b/drivers/infiniband/hw/ehca/hcp_if.c
- > @@ -89,6 +89,7 @@
- >  #define HCALL9_REGS_FORMAT HCALL7_REGS_FORMAT " r11=%lx r12=%lx"
- >  
- >  static DEFINE_SPINLOCK(hcall_lock);
- > +extern int ehca_lock_hcalls;
+fsl upm infrastructure isn't only for NAND though, so I might imagine
+use cases when there might be more run_patterns between start and end.
 
-and move that extern declaration into an appropriate header file?
+As the compromise I might suggest this: forbid pattern_start/pattern_end
+from the ISRs (by marking them as might_sleep()), and replace _irqsave
+spinlock with simple spinlock.
 
-Thanks...
+That way on UP we don't lose anything, but on SMP we still have an
+overhead in case of single used UPM. :-/
+
+Given that, personally I'd want to lockless variant to stay.
+
+So, you still want to get rid of it?
+
+
+Much thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
