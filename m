@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2E8D7DE256
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:00:00 +1100 (EST)
-Date: Wed, 12 Dec 2007 10:59:54 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH RFC 7/7] [POWERPC] MPC8360E-RDK: add support for NAND
-	on UPM
-Message-ID: <20071212165954.GE4329@loki.buserror.net>
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204951.GG32278@localhost.localdomain>
+Return-Path: <davej@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 63AE7DDF52
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:04:51 +1100 (EST)
+Date: Wed, 12 Dec 2007 12:04:40 -0500
+From: Dave Jones <davej@redhat.com>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [RFC] ehea: kdump support using new shutdown hook
+Message-ID: <20071212170440.GD2359@redhat.com>
+References: <200712121753.43543.osstklei@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071210204951.GG32278@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200712121753.43543.osstklei@de.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Marcus Eder <meder@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 10, 2007 at 11:49:51PM +0300, Anton Vorontsov wrote:
-> +	localbus@e0005000 {
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,mpc8360erdk-localbus",
-> +			     "fsl,mpc8360e-localbus",
-> +			     "fsl,pq2pro-localbus";
+On Wed, Dec 12, 2007 at 05:53:43PM +0100, Thomas Klein wrote:
 
-The board name shouldn't be in there.
+ > +static void ehea_update_adapter_handles(struct ehea_adapter *adapter)
+ > +{
+ > +	int i, k;
+ > +	int j = 0;
+ > +
+ > +	memset(adapter->res_handles, sizeof(adapter->res_handles), 0);
 
-> +		reg = <0xe0005000 0xd8>;
-> +		ranges = <1 0 0x60000000 1>;
-> +
-> +		nand-flash@1,0 {
-> +			compatible = "STMicro,NAND512W3A2BN6E", "fsl,upm-nand";
-
-Technically, if the vendor part begins with a capital letter it's supposed
-to be either a stock symbol or an OUI.
-
--Scott
+arguments wrong way around.
+ 
+	Dave
+ 
+-- 
+http://www.codemonkey.org.uk
