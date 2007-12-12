@@ -1,20 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 724AFDDF47
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:00:34 +1100 (EST)
-Date: Wed, 12 Dec 2007 19:03:36 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH RFC 3/7] [POWERPC] CPM2: implement GPIO API
-Message-ID: <20071212160336.GA26814@localhost.localdomain>
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210204845.GC32278@localhost.localdomain>
-	<4760031A.6020005@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4760031A.6020005@scram.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1F67CDDF63
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 03:01:41 +1100 (EST)
+Message-Id: <49C1603C-F3A4-4AE6-8658-96C9231C460C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <475FFBA3.9080607@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH v5] qe: add ability to upload QE firmware
+Date: Wed, 12 Dec 2007 10:01:22 -0600
+References: <11970422334145-git-send-email-timur@freescale.com>
+	<475FFBA3.9080607@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 12, 2007 at 04:49:46PM +0100, Jochen Friedrich wrote:
-> Hi Anton,
-> 
-> > +int gpio_direction_input(unsigned int gpio)
-> > +{
-> > +	unsigned long flags;
-> > +	int port = gpio / 32;
-> > +	int pin = gpio % 32;
-> > +
-> > +	spin_lock_irqsave(&cpm2_port_locks[port], flags);
-> > +
-> > +	cpm2_set_pin(port, pin, CPM_PIN_INPUT | CPM_PIN_GPIO);
-> 
-> > +int gpio_direction_output(unsigned int gpio, int value)
-> > +{
-> > +	struct cpm2_ioports __iomem *iop =
-> > +		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
-> > +	int port = gpio / 32;
-> > +	int pin = gpio % 32;
-> > +	unsigned long flags;
-> > +
-> > +	pin = 1 << (31 - pin);
-> > +
-> > +	spin_lock_irqsave(&cpm2_port_locks[port], flags);
-> > +
-> > +	cpm2_set_pin(port, pin, CPM_PIN_OUTPUT | CPM_PIN_GPIO);
-> 
-> You seem to do the pin -> bitmask conversation twice in gpio_direction_output().
-> 
-> cpm2_set_pin() must be executed before pin = 1 << (31 - pin);
 
-Yup, found this just after posting. ;-) I've tried to move as much as
-possible out of spinlocked section, but done it obviously wrong.
-Will fix.
+On Dec 12, 2007, at 9:17 AM, Timur Tabi wrote:
 
-Anyhow, much thanks for looking into this.
+> Timur Tabi wrote:
+>> Define the layout of a binary blob that contains a QE firmware and  
+>> instructions
+>> on how to upload it.  Add function qe_upload_firmware() to parse  
+>> the blob
+>> and perform the actual upload.  Fully define 'struct rsp' in  
+>> immap_qe.h to
+>> include the actual RISC Special Registers.  Added description of a  
+>> new
+>> QE firmware node to booting-without-of.txt.
+>
+> If there are no objections, I'd like this patch to be pulled into  
+> for-2.6.25. Thanks.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+I'm just waiting for you to hit v99 :)
+
+- k
