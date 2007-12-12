@@ -1,19 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH v2] [POWERPC] pasemi: Implement MSI support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <1197499871.7695.9.camel@concordia>
-References: <20071212063406.GA786@lixom.net>
-	<20071212064446.GB786@lixom.net> <1197442179.24356.3.camel@concordia>
-	<20071212072310.GA3173@lixom.net> <1197499871.7695.9.camel@concordia>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-VA6mV00SoHOfmEqpt/Ob"
-Date: Thu, 13 Dec 2007 10:18:49 +1100
-Message-Id: <1197501529.7695.22.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 1/2] Make setjmp/longjmp code generic 
+In-reply-to: <1197500215.7695.11.camel@concordia> 
+References: <20071212054512.882AC62C070@localhost.localdomain>
+	<1197500215.7695.11.camel@concordia>
+Date: Thu, 13 Dec 2007 10:40:44 +1100
+Message-ID: <29085.1197502844@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, THEMANN@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> >  arch/powerpc/xmon/setjmp.S    |  135 ------------------------------------------
 
---=-VA6mV00SoHOfmEqpt/Ob
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+<snip> 
+ 
+> > +#ifdef CONFIG_XMON
+> > +/*
+> > + * Grab the register values as they are now.
+> > + * This won't do a particularily good job because we really
+> > + * want our caller's caller's registers, and our caller has
+> > + * already executed its prologue.
+> > + * ToDo: We could reach back into the caller's save area to do
+> > + * a better job of representing the caller's state (note that
+> > + * that will be different for 32-bit and 64-bit, because of the
+> > + * different ABIs, though).
+> > + */
+> > +_GLOBAL(xmon_save_regs)
+> > +	PPC_STL	r0,0*SZL(r3)
+> > +	PPC_STL	r2,2*SZL(r3)
+> > +	PPC_STL	r3,3*SZL(r3)
+> > +	PPC_STL	r4,4*SZL(r3)
+> 
+> Does xmon_save_regs belong here?
 
-On Thu, 2007-12-13 at 09:51 +1100, Michael Ellerman wrote:
-> On Wed, 2007-12-12 at 01:23 -0600, Olof Johansson wrote:
->=20
-> Patch looks good otherwise.
+This was the only function left in xmon/setjmp.S.  So rather than rename
+the whole file to reflect it no longer has anything to do with setjmp, I
+moved it out to misc.S
 
-By which I mean:
+I'm not fussed what we end up doing.
 
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-
-This patch is double-plus-good!
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-VA6mV00SoHOfmEqpt/Ob
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHYGxZdSjSd0sB4dIRAmWoAKCvPfpb9Tw6At5Gyb4CZ2rqKvxz9wCePiBH
-f5G/5j2lbzMonkF9a/cjeL8=
-=tebN
------END PGP SIGNATURE-----
-
---=-VA6mV00SoHOfmEqpt/Ob--
+Mikey
