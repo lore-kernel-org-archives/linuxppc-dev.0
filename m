@@ -1,26 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2E2B2DDEC8
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 13:36:37 +1100 (EST)
-Date: Wed, 12 Dec 2007 13:36:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@ORACLE.COM>
-Subject: Re: [PATCH] Introduce driver_create/remove_dir
-Message-Id: <20071212133630.7bf1686f.sfr@canb.auug.org.au>
-In-Reply-To: <20071211164039.013f4393.randy.dunlap@oracle.com>
-References: <20071205093054.GA23229@kroah.com>
-	<1196853031.6759.7.camel@concordia>
-	<20071205214103.GA7074@kroah.com>
-	<1196912898.14754.13.camel@concordia>
-	<20071212105633.725496cb.sfr@canb.auug.org.au>
-	<20071211164039.013f4393.randy.dunlap@oracle.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A7DAFDDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 13:45:50 +1100 (EST)
+Subject: apm_emulation regression
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Content-Type: text/plain
+Date: Wed, 12 Dec 2007 13:45:30 +1100
+Message-Id: <1197427530.8385.59.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__12_Dec_2007_13_36_30_+1100_+.M/mc4RyaeGdNF9"
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	"Kyle A. Lucke" <klucke@us.ibm.com>, paulus@samba.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, ralf <ralf@linux-mips.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__12_Dec_2007_13_36_30_+1100_+.M/mc4RyaeGdNF9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I only just noticed a huge regression that was introduced when we moved
+PowerPC to the generic APM emulation code instead of our own. I'm in
+large part to blame since I acked the patch...
 
-On Tue, 11 Dec 2007 16:40:39 -0800 Randy Dunlap <randy.dunlap@ORACLE.COM> w=
-rote:
->
-> On Wed, 12 Dec 2007 10:56:33 +1100 Stephen Rothwell wrote:
->=20
-> > +/**
-> > + *	driver_remove_dir - remove a subdirectory for a driver.
-> > + *	@drv:	driver.
-> > + *	@attr:	driver attribute descriptor.
->=20
-> Second arg below is @kobj.
+Basically, what we lost is the mechanism for notifying user applications
+and waiting for their ACK before proceeding to system suspend. The new
+generic code will still do that ... only when the actual suspend request
+initiates from an APM suspend ioctl.
 
-Thanks, will fix (cut and paste error).
+For any other suspend (via our private PMU ioctl or via the sysfs
+interface), userspace will -not- be notified.
 
---=20
+That basically means X will break. That's why X broke on the latest
+ubuntu until I whacked some new scripts in them to force console
+switching, among other things. Possibly other apps that relied
+on /dev/apm_bios to be notified of system suspend/resume broke as well.
+
+Now the question is that is it still work trying to fix it ? That would
+probably require APM emulation hooking at a fairly high level into the
+generic PM code to trigger the signaling & waiting of processes before
+freeze & device suspend among others...
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__12_Dec_2007_13_36_30_+1100_+.M/mc4RyaeGdNF9
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHX0kzTgG2atn1QN8RAvFWAKCRDJok+1WJSlgatPbCUoIMjhAWHQCbBPgU
-RQ5YyESvYZbSvO1UPqPpoO0=
-=fi6Y
------END PGP SIGNATURE-----
-
---Signature=_Wed__12_Dec_2007_13_36_30_+1100_+.M/mc4RyaeGdNF9--
+Ben.
