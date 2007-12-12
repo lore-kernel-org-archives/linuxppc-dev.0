@@ -1,23 +1,23 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E0A4FDDFCD
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 05:03:15 +1100 (EST)
-Subject: Re: apm_emulation regression
-From: Johannes Berg <johannes@sipsolutions.net>
-To: benh@kernel.crashing.org
-In-Reply-To: <1197427530.8385.59.camel@pasglop>
-References: <1197427530.8385.59.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-SlHN4jmI+M9LGbW4DOrO"
-Date: Wed, 12 Dec 2007 19:03:07 +0100
-Message-Id: <1197482587.6558.145.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	by ozlabs.org (Postfix) with ESMTP id 791F4DDE03
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 06:19:38 +1100 (EST)
+To: Or Gerlitz <ogerlitz@voltaire.com>
+Subject: Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+References: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com>
+	<475FD0A1.3090304@voltaire.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 12 Dec 2007 11:09:27 -0800
+In-Reply-To: <475FD0A1.3090304@voltaire.com> (Or Gerlitz's message of "Wed,
+	12 Dec 2007 14:14:25 +0200")
+Message-ID: <adabq8v91co.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Arnd Bergmann <arnd@arndb.de>, Joachim Fenkes <FENKES@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,66 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ > What is the fix you suggest, to add a device query that tells you for 
+ > which verbs the documentation does not apply? or enhance the code of the 
+ >   map_phys_fmr verb within the ehca driver to return error if called 
+ > from non-sleepable context?
 
---=-SlHN4jmI+M9LGbW4DOrO
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-On Wed, 2007-12-12 at 13:45 +1100, Benjamin Herrenschmidt wrote:
-> I only just noticed a huge regression that was introduced when we moved
-> PowerPC to the generic APM emulation code instead of our own. I'm in
-> large part to blame since I acked the patch...
->=20
-> Basically, what we lost is the mechanism for notifying user applications
-> and waiting for their ACK before proceeding to system suspend. The new
-> generic code will still do that ... only when the actual suspend request
-> initiates from an APM suspend ioctl.
-
-Indeed.
-
-> For any other suspend (via our private PMU ioctl or via the sysfs
-> interface), userspace will -not- be notified.
-
-Right.
-
-> That basically means X will break. That's why X broke on the latest
-> ubuntu until I whacked some new scripts in them to force console
-> switching, among other things. Possibly other apps that relied
-> on /dev/apm_bios to be notified of system suspend/resume broke as well.
-
-Ah. I guess I never noticed because I had the scripts to do console
-switching all along.
-
-> Now the question is that is it still work trying to fix it ? That would
-> probably require APM emulation hooking at a fairly high level into the
-> generic PM code to trigger the signaling & waiting of processes before
-> freeze & device suspend among others...
-
-Yeah, bit icky... but doable. Rafael, any ideas?
-
-johannes
-
---=-SlHN4jmI+M9LGbW4DOrO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR2AiWaVg1VMiehFYAQLTkBAAsOIzqkCf4GXPRnMOWXyW28PqUqTVfU4D
-PclFsePxu+Fj750ZbxodWmXvIurhiWPIyH5Eqy4BbrP/T9aj5Gb/1L4v+kIJ/IV3
-Jye/Fk/Uk1XW3bFSjjOHM4BLTnb90ZkvkFjBTrNUDb32i9TghjKVAQGkM4w8V1dE
-tFfIxXEVHiCOBH9D0W5vEIqN8m6Zy0dcU6KyZBmHFuT+becXNq5HjOmPdnsz9DcM
-Ol4223/PozVPGIEd5htPyJjCnPiKmkd+3MLSjwk/4GirGP/t3MCGaCAYw0eq3Leg
-uGFgXOkepkQG7yhPCPI2HHJOUeJr8JUfpxhTeEmhRpdcCLxvUvPacHevdwHrM2Ae
-1UMQrhYr0IwC7RxapOPaYfYhb17cfWTl5mhCxNOMeb9ELSb9zDJxnss4WNryD3j5
-GjyJzZPJek2n+z79/8AQZnjSUQlmYsE/2aO0GPa75knPPNbJATJDiI8z673s1pGz
-o8IkTjqhZ62yeWzwjJGlEZMdxzgycK/qqBKbbYJ1gBuUbau/npUogqfhxVU1/FuA
-XmHCKiDYMBxaqUToBYz8eaMtjdM+KuPMavjXyLn6hgy8ofeN3RLe9WQ41ZaZ2kyX
-lbS9Hz4gk/pGfRC2x+Io6T5uQnuZgtc4CJNA5VHxo+2Hbho3T2c8ug5ivCGM1TjQ
-xjzlvKzMHv8=
-=YwC8
------END PGP SIGNATURE-----
-
---=-SlHN4jmI+M9LGbW4DOrO--
+I think the right fix for iSER would be to make iSER work even for
+devices that don't support FMRs.  For example cxgb3 doesn't implement
+FMRs so if anyone ever updates iSER to work on iWARP and not just IB,
+then this is something that has to be tackled anyway.  Then ehca could
+just get rid of the FMR support it has.
