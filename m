@@ -1,15 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6F361DDECE
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 15:01:00 +1100 (EST)
-Date: Wed, 12 Dec 2007 15:00:56 +1100
+	by ozlabs.org (Postfix) with ESMTP id B47DEDDEC9
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 15:31:54 +1100 (EST)
+Date: Wed, 12 Dec 2007 15:31:48 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] iSeries: fix unregistering HV event handlers.
-Message-Id: <20071212150056.9a21c8a4.sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] 8xx: Analogue & Micro Adder875 board support.
+Message-Id: <20071212153148.cbd79b46.sfr@canb.auug.org.au>
+In-Reply-To: <20071211212245.GA3620@loki.buserror.net>
+References: <20071211212245.GA3620@loki.buserror.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "Paul E. McKenney" <paulmck@us.ibm.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__12_Dec_2007_15_31_48_+1100_pbNU03sUtrRn+0Xh"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit fbd568a3e61a7decb8a754ad952aaa5b5c82e9e5 ("Change
-synchronize_kernel to _rcu and _sched") changed the deprecated
-synchronize_kernel() in HvLpEvent_unregisterHandler() to
-synchronize_rcu().  It turns out that it should have been
-synchronize_sched().
+--Signature=_Wed__12_Dec_2007_15_31_48_+1100_pbNU03sUtrRn+0Xh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/iseries/lpevents.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi Scott,
 
-diff --git a/arch/powerpc/platforms/iseries/lpevents.c b/arch/powerpc/platforms/iseries/lpevents.c
-index 34bdbbe..02c1422 100644
---- a/arch/powerpc/platforms/iseries/lpevents.c
-+++ b/arch/powerpc/platforms/iseries/lpevents.c
-@@ -226,7 +226,7 @@ int HvLpEvent_unregisterHandler(HvLpEvent_Type eventType)
- 			 * other CPUs, and that the deleted handler isn't
- 			 * still running on another CPU when we return.
- 			 */
--			synchronize_rcu();
-+			synchronize_sched();
- 			return 0;
- 		}
- 	}
--- 
-1.5.3.7
+On Tue, 11 Dec 2007 15:22:45 -0600 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> +++ b/arch/powerpc/platforms/8xx/adder875.c
+> +
+> +static int __init adder875_probe(void)
+> +{
+> +	unsigned long root =3D of_get_flat_dt_root();
+> +	return of_flat_dt_is_compatible(root, "analogue-and-micro,adder875");
 
--- 
+You should include asm/prom.h to use the flattened device tree accessors.
+
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__12_Dec_2007_15_31_48_+1100_pbNU03sUtrRn+0Xh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHX2Q4TgG2atn1QN8RAj/JAJ90TtXtECRaNbnT76HKAVzHlxrC3wCcDdAD
+ZhO+zhAa5H1UkO8pm/n6zug=
+=Q87e
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__12_Dec_2007_15_31_48_+1100_pbNU03sUtrRn+0Xh--
