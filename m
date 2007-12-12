@@ -1,20 +1,18 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 08CB3DDF95
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 08:25:56 +1100 (EST)
-Message-ID: <47604E5D.5010907@am.sony.com>
-Date: Wed, 12 Dec 2007 13:10:53 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 9474ADDF51
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 09:06:02 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v5] qe: add ability to upload QE firmware
+Date: Wed, 12 Dec 2007 23:05:41 +0100
+References: <11970422334145-git-send-email-timur@freescale.com>
+In-Reply-To: <11970422334145-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Patches added to for-2.6.25 and master branches of powerpc.git
-References: <18270.8249.393061.840667@cargo.ozlabs.ibm.com>
-In-Reply-To: <18270.8249.393061.840667@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712122305.42860.arnd@arndb.de>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+On Friday 07 December 2007, Timur Tabi wrote:
+> Define the layout of a binary blob that contains a QE firmware and instru=
+ctions
+> on how to upload it. =A0Add function qe_upload_firmware() to parse the bl=
+ob
+> and perform the actual upload. =A0Fully define 'struct rsp' in immap_qe.h=
+ to
+> include the actual RISC Special Registers. =A0Added description of a new
+> QE firmware node to booting-without-of.txt.
 
-This one seems to have got skipped:
+All the comments I had were addressed, mostly by convincing me that the
+code was correct to start with, so
 
-  http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046765.html
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
--Geoff
+Acked-by: Arnd Bergmann <arnd@arndb.de>
