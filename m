@@ -1,18 +1,23 @@
 Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DB2E3DE116
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 10:43:41 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C240BDE049
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 10:43:42 +1100 (EST)
 From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 To: grant.likely@secretlab.ca, simekm2@fel.cvut.cz,
 	jwilliams@itee.uq.edu.au, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/7] [POWERPC] Xilinx: clear data caches.
-Date: Thu, 13 Dec 2007 15:43:28 -0800
-In-Reply-To: <1197589413-5965-1-git-send-email-stephen.neuendorffer@xilinx.com>
+Subject: [PATCH 6/7] [POWERPC] Xilinx: Add correct compatible list for device
+	tree bus bindings.
+Date: Thu, 13 Dec 2007 15:43:32 -0800
+In-Reply-To: <1197589413-5965-5-git-send-email-stephen.neuendorffer@xilinx.com>
 References: <1197589413-5965-1-git-send-email-stephen.neuendorffer@xilinx.com>
-Message-Id: <20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
+	<1197589413-5965-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1197589413-5965-3-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1197589413-5965-4-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1197589413-5965-5-git-send-email-stephen.neuendorffer@xilinx.com>
+Message-Id: <20071213234159.60D7A83804E@mail51-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This code is needed to boot without a boot loader.
-
-Grant:  I'm not sure where the right place to put this is.  I'm assuming we'll actually need some boot code that is not generic?  Also, note that there is a V4FX errata workaround in arch/ppc/boot/head.S, which probably also needs to get pulled to powerpc.
+Includes both flavors of plb, opb, dcr, and a pseudo 'compound' bus
+for representing compound peripherals containing more than one logical
+device.
 
 Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 ---
- arch/powerpc/boot/raw-platform.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/40x/virtex.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/raw-platform.c b/arch/powerpc/boot/raw-platform.c
-index b9caeee..2a5e493 100644
---- a/arch/powerpc/boot/raw-platform.c
-+++ b/arch/powerpc/boot/raw-platform.c
-@@ -24,6 +24,28 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-                    unsigned long r6, unsigned long r7)
- {
- 	u64 memsize64 = memsize[0];
-+	static const unsigned long line_size = 32;
-+	static const unsigned long congruence_classes = 256;
-+	unsigned long addr;
-+	unsigned long dccr;
-+
-+	/*
-+	 * Invalidate the data cache if the data cache is turned off.
-+	 * - The 405 core does not invalidate the data cache on power-up
-+	 *   or reset but does turn off the data cache. We cannot assume
-+	 *   that the cache contents are valid.
-+	 * - If the data cache is turned on this must have been done by
-+	 *   a bootloader and we assume that the cache contents are
-+	 *   valid.
-+	 */
-+	__asm__("mfdccr %0": "=r" (dccr));
-+	if (dccr == 0) {
-+		for (addr = 0;
-+		     addr < (congruence_classes * line_size);
-+		     addr += line_size) {
-+			__asm__("dccci 0,%0": :"b"(addr));
-+		}
-+	}
+diff --git a/arch/powerpc/platforms/40x/virtex.c b/arch/powerpc/platforms/40x/virtex.c
+index 859ba1d..7590fa5 100644
+--- a/arch/powerpc/platforms/40x/virtex.c
++++ b/arch/powerpc/platforms/40x/virtex.c
+@@ -15,12 +15,22 @@
+ #include <asm/time.h>
+ #include <asm/xilinx_intc.h>
  
- 	if (mem_size_cells == 2) {
- 		memsize64 <<= 32;
++static struct of_device_id xilinx_of_bus_ids[] = {
++	{ .compatible = "xlnx,plb-v46-1.00.a", },
++	{ .compatible = "xlnx,plb-v34-1.01.a", },
++	{ .compatible = "xlnx,plb-v34-1.02.a", },
++	{ .compatible = "xlnx,opb-v20-1.10.c", },
++	{ .compatible = "xlnx,dcr-v29-1.00.a", },
++	{ .compatible = "xlnx,compound", },
++	{},
++};
++
+ static int __init virtex_device_probe(void)
+ {
+ 	if (!machine_is(virtex))
+ 		return 0;
+ 
+-	of_platform_bus_probe(NULL, NULL, NULL);
++	of_platform_bus_probe(NULL, xilinx_of_bus_ids, NULL);
+ 
+ 	return 0;
+ }
 -- 
 1.5.3.4
