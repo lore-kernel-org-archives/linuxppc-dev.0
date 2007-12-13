@@ -1,11 +1,17 @@
-Return-Path: <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 13 Dec 2007 20:59:17 +1100
-Subject: [PATCH 2/2] kdump shutdown hook support
-In-Reply-To: <1197539957.623622.326790809699.qpush@coopers>
-Message-Id: <20071213095918.432D27038C@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com, THEMANN@de.ibm.com
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 697CEDDFB5
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 21:13:29 +1100 (EST)
+Date: Thu, 13 Dec 2007 19:13:14 +0900 (JST)
+Message-Id: <20071213.191314.-1350525689.kouish@swc.toshiba.co.jp>
+To: paulus@samba.org
+Subject: [PATCH 2/2] celleb: split machine definition
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,177 +21,302 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds hooks into the default_machine_crash_shutdown so drivers can
-register a function to be run in the first kernel before we hand off
-to the second kernel.  This should only be used in exceptional
-circumstances, like where the device can't be reset in the second
-kernel alone (as is the case with eHEA).  To emphasize this, the
-number of handles allowed to be registered is currently #def to 1.
+This patch splits machine definition for celleb into two definitoins,
+one is for celleb_beat, and another is for celleb_native. Though this
+patch looks complex because of sorting some functions, there are no
+more semantic changes than that for the splitting.
 
-This uses the setjmp/longjmp code to call out to the registered hooks,
-so any bogus exceptions we encounter will hopefully be recoverable.  
-
-Tested with bogus data and instruction exceptions.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
 ---
 
- arch/powerpc/kernel/crash.c |  102 +++++++++++++++++++++++++++++++++++++++++---
- include/asm-powerpc/kexec.h |    3 +
- 2 files changed, 100 insertions(+), 5 deletions(-)
+Here is the previous discussion:
+ http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047436.html
 
-Index: clone3/arch/powerpc/kernel/crash.c
+
+Index: linux-powerpc-git/arch/powerpc/platforms/cell/iommu.c
 ===================================================================
---- clone3.orig/arch/powerpc/kernel/crash.c
-+++ clone3/arch/powerpc/kernel/crash.c
-@@ -32,6 +32,8 @@
- #include <asm/lmb.h>
- #include <asm/firmware.h>
- #include <asm/smp.h>
-+#include <asm/system.h>
-+#include <asm/setjmp.h>
+--- linux-powerpc-git.orig/arch/powerpc/platforms/cell/iommu.c
++++ linux-powerpc-git/arch/powerpc/platforms/cell/iommu.c
+@@ -700,8 +700,8 @@ static int __init cell_iommu_init(void)
+ {
+ 	struct device_node *np;
  
- #ifdef DEBUG
- #include <asm/udbg.h>
-@@ -45,6 +47,11 @@ int crashing_cpu = -1;
- static cpumask_t cpus_in_crash = CPU_MASK_NONE;
- cpumask_t cpus_in_sr = CPU_MASK_NONE;
+-	if ((!machine_is(cell) && !machine_is(celleb)) ||
+-	    firmware_has_feature(FW_FEATURE_LPAR))
++	if (!machine_is(cell) &&
++	    !machine_is(celleb_native))
+ 		return -ENODEV;
  
-+#define CRASH_HANDLER_MAX 1
-+/* NULL terminated list of shutdown handles */
-+static crash_shutdown_t crash_shutdown_handles[CRASH_HANDLER_MAX+1];
-+static DEFINE_SPINLOCK(crash_handlers_lock);
-+
- #ifdef CONFIG_SMP
- static atomic_t enter_on_soft_reset = ATOMIC_INIT(0);
+ 	/* If IOMMU is disabled or we have little enough RAM to not need
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/scc_uhc.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c
+@@ -47,7 +47,8 @@ static void enable_scc_uhc(struct pci_de
+ 	u32 val = 0;
+ 	int i;
  
-@@ -285,9 +292,72 @@ static inline void crash_kexec_stop_spus
+-	if (!machine_is(celleb))
++	if (!machine_is(celleb_beat) &&
++	    !machine_is(celleb_native))
+ 		return;
+ 
+ 	uhc_base = ioremap(pci_resource_start(dev, 0),
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/setup.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+@@ -93,30 +93,43 @@ static void celleb_progress(char *s, uns
+ 	printk("*** %04x : %s\n", hex, s ? s : "");
  }
- #endif /* CONFIG_SPU_BASE */
  
-+/*
-+ * Register a function to be called on shutdown.  Only use this if you
-+ * can't reset your device in the second kernel.
-+ */
-+int crash_shutdown_register(crash_shutdown_t handler)
-+{
-+	unsigned int i, rc;
+-static void __init celleb_init_IRQ_native(void)
++static void __init celleb_setup_arch_common(void)
+ {
+-	iic_init_IRQ();
+-	spider_init_IRQ();
++	/* init to some ~sane value until calibrate_delay() runs */
++	loops_per_jiffy = 50000000;
 +
-+	spin_lock(&crash_handlers_lock);
-+	for (i = 0 ; i < CRASH_HANDLER_MAX; i++)
-+		if (!crash_shutdown_handles[i]) {
-+			/* Insert handle at first empty entry */
-+			crash_shutdown_handles[i] = handler;
-+			rc = 0;
-+			break;
-+		}
++#ifdef CONFIG_DUMMY_CONSOLE
++	conswitchp = &dummy_con;
++#endif
+ }
+ 
+-static void __init celleb_setup_arch_beat(void)
++static struct of_device_id celleb_bus_ids[] __initdata = {
++	{ .type = "scc", },
++	{ .type = "ioif", },	/* old style */
++	{},
++};
 +
-+	if (i == CRASH_HANDLER_MAX) {
-+		printk(KERN_ERR "Crash shutdown handles full, "
-+		       "not registered.\n");
-+		rc = 1;
-+	}
++static int __init celleb_publish_devices(void)
+ {
+-	ppc_md.restart		= beat_restart;
+-	ppc_md.power_off	= beat_power_off;
+-	ppc_md.halt		= beat_halt;
+-	ppc_md.get_rtc_time	= beat_get_rtc_time;
+-	ppc_md.set_rtc_time	= beat_set_rtc_time;
+-	ppc_md.power_save	= beat_power_save;
+-	ppc_md.nvram_size	= beat_nvram_get_size;
+-	ppc_md.nvram_read	= beat_nvram_read;
+-	ppc_md.nvram_write	= beat_nvram_write;
+-	ppc_md.set_dabr		= beat_set_xdabr;
+-	ppc_md.init_IRQ		= beatic_init_IRQ;
+-	ppc_md.get_irq		= beatic_get_irq;
+-#ifdef CONFIG_KEXEC
+-	ppc_md.kexec_cpu_down	= beat_kexec_cpu_down;
+-#endif
++	if (!machine_is(celleb_beat) &&
++	    !machine_is(celleb_native))
++		return -ENODEV;
 +
-+	spin_unlock(&crash_handlers_lock);
-+	return rc;
-+}
-+EXPORT_SYMBOL(crash_shutdown_register);
++	/* Publish OF platform devices for southbridge IOs */
++	of_platform_bus_probe(NULL, celleb_bus_ids, NULL);
+ 
++	celleb_pci_workaround_init();
 +
-+int crash_shutdown_unregister(crash_shutdown_t handler)
-+{
-+	unsigned int i, rc;
-+
-+	spin_lock(&crash_handlers_lock);
-+	for (i = 0 ; i < CRASH_HANDLER_MAX; i++)
-+		if (crash_shutdown_handles[i] == handler)
-+			break;
-+
-+	if (i == CRASH_HANDLER_MAX) {
-+		printk(KERN_ERR "Crash shutdown handle not found\n");
-+		rc = 1;
-+	} else {
-+		/* Shift handles down */
-+		for (; crash_shutdown_handles[i]; i++)
-+			crash_shutdown_handles[i] =
-+				crash_shutdown_handles[i+1];
-+		rc = 0;
-+	}
-+
-+	spin_unlock(&crash_handlers_lock);
-+	return rc;
-+}
-+EXPORT_SYMBOL(crash_shutdown_unregister);
-+
-+static unsigned long crash_shutdown_buf[SETJMP_BUF_LEN];
-+
-+static int handle_fault(struct pt_regs *regs)
-+{
-+	longjmp(crash_shutdown_buf, 1);
 +	return 0;
 +}
++device_initcall(celleb_publish_devices);
 +
- void default_machine_crash_shutdown(struct pt_regs *regs)
++
++/*
++ * functions for Celleb-Beat
++ */
++static void __init celleb_setup_arch_beat(void)
++{
+ #ifdef CONFIG_SPU_BASE
+ 	spu_priv1_ops		= &spu_priv1_beat_ops;
+ 	spu_management_ops	= &spu_management_of_ops;
+@@ -125,18 +138,36 @@ static void __init celleb_setup_arch_bea
+ #ifdef CONFIG_SMP
+ 	smp_init_celleb();
+ #endif
++
++	celleb_setup_arch_common();
+ }
+ 
+-static void __init celleb_setup_arch_native(void)
++static int __init celleb_probe_beat(void)
  {
--	unsigned int irq;
-+	unsigned int i;
-+	int (*old_handler)(struct pt_regs *regs);
+-	ppc_md.restart		= rtas_restart;
+-	ppc_md.power_off	= rtas_power_off;
+-	ppc_md.halt		= rtas_halt;
+-	ppc_md.get_boot_time	= rtas_get_boot_time;
+-	ppc_md.get_rtc_time	= rtas_get_rtc_time;
+-	ppc_md.set_rtc_time	= rtas_set_rtc_time;
+-	ppc_md.init_IRQ		= celleb_init_IRQ_native;
++	unsigned long root = of_get_flat_dt_root();
 +
- 
- 	/*
- 	 * This function is only called after the system
-@@ -301,15 +371,37 @@ void default_machine_crash_shutdown(stru
- 	 */
- 	hard_irq_disable();
- 
--	for_each_irq(irq) {
--		struct irq_desc *desc = irq_desc + irq;
-+	for_each_irq(i) {
-+		struct irq_desc *desc = irq_desc + i;
- 
- 		if (desc->status & IRQ_INPROGRESS)
--			desc->chip->eoi(irq);
-+			desc->chip->eoi(i);
- 
- 		if (!(desc->status & IRQ_DISABLED))
--			desc->chip->disable(irq);
-+			desc->chip->disable(i);
-+	}
++	if (!of_flat_dt_is_compatible(root, "Beat"))
++		return 0;
 +
-+	/*
-+	 * Call registered shutdown routines savely.  Swap out
-+	 * __debugger_fault_handler, and replace on exit.
-+	 */
-+	old_handler = __debugger_fault_handler;
-+	__debugger_fault_handler = handle_fault;
-+	for (i = 0; crash_shutdown_handles[i]; i++) {
-+		if (setjmp(crash_shutdown_buf) == 0) {
-+			/*
-+			 * Insert syncs and delay to ensure
-+			 * instructions in the dangerous region don't
-+			 * leak away from this protected region.
-+			 */
-+			asm volatile("sync; isync");
-+			/* dangerous region */
-+			crash_shutdown_handles[i]();
-+			asm volatile("sync; isync");
-+			__delay(SETJMP_MACHINE_CHECK_DELAY);
-+		}
- 	}
-+	__debugger_fault_handler = old_handler;
++	powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS
++		| FW_FEATURE_BEAT | FW_FEATURE_LPAR;
++	hpte_init_beat_v3();
++
++	return 1;
++}
  
- 	/*
- 	 * Make a note of crashing cpu. Will be used in machine_kexec
-Index: clone3/include/asm-powerpc/kexec.h
++
++/*
++ * functions for Celleb-native
++ */
++static void __init celleb_init_IRQ_native(void)
++{
++	iic_init_IRQ();
++	spider_init_IRQ();
++}
++
++static void __init celleb_setup_arch_native(void)
++{
+ #ifdef CONFIG_SPU_BASE
+ 	spu_priv1_ops		= &spu_priv1_mmio_ops;
+ 	spu_management_ops	= &spu_management_of_ops;
+@@ -153,71 +184,75 @@ static void __init celleb_setup_arch_nat
+ #endif
+ 
+ 	cbe_pervasive_init();
+-}
+ 
+-static void __init celleb_setup_arch(void)
+-{
+-	if (firmware_has_feature(FW_FEATURE_BEAT))
+-		celleb_setup_arch_beat();
+-	else
+-		celleb_setup_arch_native();
++	/* XXX: nvram initialization should be added */
+ 
+-	/* init to some ~sane value until calibrate_delay() runs */
+-	loops_per_jiffy = 50000000;
+-
+-#ifdef CONFIG_DUMMY_CONSOLE
+-	conswitchp = &dummy_con;
+-#endif
++	celleb_setup_arch_common();
+ }
+ 
+-static int __init celleb_probe(void)
++static int __init celleb_probe_native(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "Beat")) {
+-		powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS
+-			| FW_FEATURE_BEAT | FW_FEATURE_LPAR;
+-		hpte_init_beat_v3();
+-		return 1;
+-	}
+-	if (of_flat_dt_is_compatible(root, "TOSHIBA,Celleb")) {
+-		powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS;
+-		hpte_init_native();
+-		return 1;
+-	}
+-
+-	return 0;
+-}
+-
+-static struct of_device_id celleb_bus_ids[] __initdata = {
+-	{ .type = "scc", },
+-	{ .type = "ioif", },	/* old style */
+-	{},
+-};
+-
+-static int __init celleb_publish_devices(void)
+-{
+-	if (!machine_is(celleb))
++	if (of_flat_dt_is_compatible(root, "Beat") ||
++	    !of_flat_dt_is_compatible(root, "TOSHIBA,Celleb"))
+ 		return 0;
+ 
+-	/* Publish OF platform devices for southbridge IOs */
+-	of_platform_bus_probe(NULL, celleb_bus_ids, NULL);
+-
+-	celleb_pci_workaround_init();
++	powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS;
++	hpte_init_native();
+ 
+-	return 0;
++	return 1;
+ }
+-device_initcall(celleb_publish_devices);
+ 
+-define_machine(celleb) {
+-	.name			= "Cell Reference Set",
+-	.probe			= celleb_probe,
+-	.setup_arch		= celleb_setup_arch,
++
++/*
++ * machine definitions
++ */
++define_machine(celleb_beat) {
++	.name			= "Cell Reference Set (Beat)",
++	.probe			= celleb_probe_beat,
++	.setup_arch		= celleb_setup_arch_beat,
++	.show_cpuinfo		= celleb_show_cpuinfo,
++	.restart		= beat_restart,
++	.power_off		= beat_power_off,
++	.halt			= beat_halt,
++	.get_rtc_time		= beat_get_rtc_time,
++	.set_rtc_time		= beat_set_rtc_time,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= celleb_progress,
++	.power_save		= beat_power_save,
++	.nvram_size		= beat_nvram_get_size,
++	.nvram_read		= beat_nvram_read,
++	.nvram_write		= beat_nvram_write,
++	.set_dabr		= beat_set_xdabr,
++	.init_IRQ		= beatic_init_IRQ,
++	.get_irq		= beatic_get_irq,
++	.pci_probe_mode 	= celleb_pci_probe_mode,
++	.pci_setup_phb		= celleb_setup_phb,
++#ifdef CONFIG_KEXEC
++	.kexec_cpu_down		= beat_kexec_cpu_down,
++	.machine_kexec		= default_machine_kexec,
++	.machine_kexec_prepare	= default_machine_kexec_prepare,
++	.machine_crash_shutdown	= default_machine_crash_shutdown,
++#endif
++};
++
++define_machine(celleb_native) {
++	.name			= "Cell Reference Set (native)",
++	.probe			= celleb_probe_native,
++	.setup_arch		= celleb_setup_arch_native,
+ 	.show_cpuinfo		= celleb_show_cpuinfo,
++	.restart		= rtas_restart,
++	.power_off		= rtas_power_off,
++	.halt			= rtas_halt,
++	.get_boot_time		= rtas_get_boot_time,
++	.get_rtc_time		= rtas_get_rtc_time,
++	.set_rtc_time		= rtas_set_rtc_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= celleb_progress,
+ 	.pci_probe_mode 	= celleb_pci_probe_mode,
+ 	.pci_setup_phb		= celleb_setup_phb,
++	.init_IRQ		= celleb_init_IRQ_native,
+ #ifdef CONFIG_KEXEC
+ 	.machine_kexec		= default_machine_kexec,
+ 	.machine_kexec_prepare	= default_machine_kexec_prepare,
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
 ===================================================================
---- clone3.orig/include/asm-powerpc/kexec.h
-+++ clone3/include/asm-powerpc/kexec.h
-@@ -123,6 +123,9 @@ struct pt_regs;
- extern void default_machine_kexec(struct kimage *image);
- extern int default_machine_kexec_prepare(struct kimage *image);
- extern void default_machine_crash_shutdown(struct pt_regs *regs);
-+typedef void (*crash_shutdown_t)(void);
-+extern int crash_shutdown_register(crash_shutdown_t handler);
-+extern int crash_shutdown_unregister(crash_shutdown_t handler);
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/iommu.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
+@@ -24,7 +24,7 @@
+ #include <linux/pci.h>
  
- extern void machine_kexec_simple(struct kimage *image);
- extern void crash_kexec_secondary(struct pt_regs *regs);
+ #include <asm/of_platform.h>
+-#include <asm/firmware.h>
++#include <asm/machdep.h>
+ 
+ #include "beat_wrapper.h"
+ 
+@@ -92,7 +92,7 @@ static struct notifier_block celleb_of_b
+ 
+ static int __init celleb_init_iommu(void)
+ {
+-	if (!firmware_has_feature(FW_FEATURE_BEAT))
++	if (!machine_is(celleb_beat))
+ 		return -ENODEV;
+ 
+ 	celleb_init_direct_mapping();
