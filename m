@@ -1,28 +1,21 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EC89BDDFE2
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 27092DDE0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Dec 2007 04:36:09 +1100 (EST)
+	Fri, 14 Dec 2007 11:12:37 +1100 (EST)
+Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.57])
+	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
+	lBDNSeGK010574
+	for <linuxppc-embedded@ozlabs.org>; Thu, 13 Dec 2007 15:28:40 -0800
+To: linuxppc-embedded@ozlabs.org
+Subject: How is a device tree used to specifiy flash?
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Xilinx devicetrees
-Date: Thu, 13 Dec 2007 09:36:04 -0800
-In-Reply-To: <EDAE140DF1B2FC42B5867C22CA0B333F0A590F@XMBIL132.northgrum.com>
-References: <47480CF0.7090105@dlasys.net>	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	<47493D4F.4070605@dlasys.net><fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com><4749FD5E.7000408@dlasys.net>
-	<20071125235855.95B9999804D@mail138-cpk.bigfish.com>
-	<EDAE140DF1B2FC42B5867C22CA0B333F0A58E4@XMBIL132.northgrum.com>
-	<20071213045215.DA8BAFB8060@mail11-blu.bigfish.com>
-	<EDAE140DF1B2FC42B5867C22CA0B333F0A590F@XMBIL132.northgrum.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>,
-	"David H. Lynch Jr." <dhlii@dlasys.net>,
-	"Grant Likely" <grant.likely@secretlab.ca>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Message-Id: <20071213173458.5A11E1B1005E@mail192-sin.bigfish.com>
+Message-ID: <OFE841AC61.3D44C925-ON882573B0.007FA29F-882573B0.0080F67D@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Thu, 13 Dec 2007 15:28:37 -0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,60 +26,164 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+Okay I just don't get it, but that's not a surprise.  I'm booting a 2.6.23 
+kernel on an MPC8347 using u-boot 1.3.0.  I'm trying to use the device 
+tree to spec my single Spansion/AMD NOR flash part and I can't get the 
+kernel to recognize the part.  Or maybe I just don't know how to tell if 
+the kernel is recognizing the part.  It's possible that everything is fine 
+and I'm just to dumb to know it.
 
-> -----Original Message-----
-> From: Koss, Mike (Mission Systems) [mailto:mike.koss@ngc.com]=20
-> Sent: Thursday, December 13, 2007 5:49 AM
-> To: Stephen Neuendorffer; David H. Lynch Jr.; Grant Likely;=20
-> linuxppc-embedded
-> Subject: RE: Xilinx devicetrees
->=20
-> SN> Interesting idea..  I've been trying to figure out how to=20
-> architect this=20
-> SN> better, but it requires some information passing within=20
-> EDK that isnot=20
-> SN> today supported.  I don't see at all how to synchronize this with=20
-> SN> patches to the kernel, tho.  My approach is to describe=20
-> the hardware=20
-> SN> as completely and faithfully as we can (given the=20
-> information in EDK),=20
-> SN> and let the drivers do whatever with it that they want to.
->=20
-> You'll have to correct if I'm wrong here, but from what I've=20
-> been reading up about EDK and its built-in Tcl interface, one=20
-> can load their system.xmp with corresponding mhs and then use=20
-> Tcl to traverse the device information to create the same=20
-> information as found using the generated BSP. This would=20
-> allow for a Tcl system that could be setup such that a main=20
-> (unchanging, or slowly changing) Tcl script that would start=20
-> the EDK definition traversal and upon finding a new device it=20
-> would use a registered 'handler' Tcl function. These handlers=20
-> could be stored as seperate script/files and would be=20
-> registered at the start of the main script either via a=20
-> config file or by searching a directory and looking for tags=20
-> stored at the top of the Tcl files in comments. These driver=20
-> handlers would be passed the handle to the system definition=20
-> and then know how to gather the information they need to=20
-> create their entry in the device tree. This approach gets=20
-> around the issue of losing defaults found in the mhs file.
+So I've got a Spansion S29GL128N flash part and the following entry in my 
+device tree:
 
-This seems like alot of work, for relatively little benefit.  :)
-Instead, I think it is safer to just describe the IP as completely as we
-can up front.  Everything else should be done by the Linux driver.  Now
-today there is a problem, which is that there isn't a standard way of
-having a device describe itself, in the format of a device tree.  This
-is something that we'll likely have to add hooks for in the future.
+flash@ff000000 {
+                compatible = "amd,s29g128n", "cfi-flash";
+                reg = <ff000000 01000000>;
+                bank-width = <2>;
+                device-width = <1>;
+                #address-cells = <1>;
+                #size-cells = <1>;
+                bit@200000 {
+                        label = "bit";
+                        reg = <200000 a0000>;
+                };
+                kernel@400000 {
+                        label = "kernel";
+                        reg = <400000 140000>;
+                };
+                blob@600000 {
+                        label = "blob";
+                        reg = <600000 20000>;
+                };
+                uboot@f00000 {
+                        label = "uboot";
+                        reg = <f00000 60000>;
+                        read-only;
+                };
+        };
 
-> I originally looked at trying to perform the same thing using=20
-> just device drivers in EDK, but I think I found some pitfall.=20
->  Oh, I think it was that I would have to choose the OS for=20
-> the processor and EDK wants to build the library, but there=20
-> isn't anything to compile for Linux (or I wasn't compiling=20
-> anything for the linux BSP) and that was adding extra time to=20
-> the download.bit generation and that is already a long build process.
+I've got the following in my .config for the kernel (I think this is all 
+that's relavent but I'm not sure);
 
-I can't imagine that generating this file is the bottleneck in getting
-to a bitstream (or at least, I really hope it isn't!)=20
 
-Steve
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+# CONFIG_FW_LOADER is not set
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+CONFIG_MTD=y
+CONFIG_MTD_DEBUG=y
+CONFIG_MTD_DEBUG_VERBOSE=3
+# CONFIG_MTD_CONCAT is not set
+CONFIG_MTD_PARTITIONS=y
+# CONFIG_MTD_REDBOOT_PARTS is not set
+CONFIG_MTD_CMDLINE_PARTS=y
+
+#
+# User Modules And Translation Layers
+#
+CONFIG_MTD_CHAR=y
+# CONFIG_MTD_BLKDEVS is not set
+# CONFIG_MTD_BLOCK is not set
+# CONFIG_MTD_BLOCK_RO is not set
+# CONFIG_FTL is not set
+# CONFIG_NFTL is not set
+# CONFIG_INFTL is not set
+# CONFIG_RFD_FTL is not set
+# CONFIG_SSFDC is not set
+
+#
+# RAM/ROM/Flash chip drivers
+#
+CONFIG_MTD_CFI=y
+# CONFIG_MTD_JEDECPROBE is not set
+CONFIG_MTD_GEN_PROBE=y
+# CONFIG_MTD_CFI_ADV_OPTIONS is not set
+CONFIG_MTD_MAP_BANK_WIDTH_1=y
+CONFIG_MTD_MAP_BANK_WIDTH_2=y
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
+CONFIG_MTD_CFI_I1=y
+CONFIG_MTD_CFI_I2=y
+# CONFIG_MTD_CFI_I4 is not set
+# CONFIG_MTD_CFI_I8 is not set
+# CONFIG_MTD_CFI_INTELEXT is not set
+CONFIG_MTD_CFI_AMDSTD=y
+# CONFIG_MTD_CFI_STAA is not set
+CONFIG_MTD_CFI_UTIL=y
+# CONFIG_MTD_RAM is not set
+# CONFIG_MTD_ROM is not set
+# CONFIG_MTD_ABSENT is not set
+
+#
+# Mapping drivers for chip access
+#
+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
+# CONFIG_MTD_PHYSMAP is not set
+CONFIG_MTD_PHYSMAP_OF=y
+# CONFIG_MTD_PLATRAM is not set
+
+#
+# Self-contained MTD device drivers
+#
+# CONFIG_MTD_PMC551 is not set
+# CONFIG_MTD_SLRAM is not set
+# CONFIG_MTD_PHRAM is not set
+# CONFIG_MTD_MTDRAM is not set
+# CONFIG_MTD_BLOCK2MTD is not set
+
+#
+# Disk-On-Chip Device Drivers
+#
+# CONFIG_MTD_DOC2000 is not set
+# CONFIG_MTD_DOC2001 is not set
+# CONFIG_MTD_DOC2001PLUS is not set
+# CONFIG_MTD_NAND is not set
+# CONFIG_MTD_ONENAND is not set
+
+#
+# UBI - Unsorted block images
+#
+# CONFIG_MTD_UBI is not set
+CONFIG_OF_DEVICE=y
+# CONFIG_PARPORT is not set
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+# CONFIG_BLK_DEV_LOOP is not set
+CONFIG_BLK_DEV_NBD=y
+# CONFIG_BLK_DEV_SX8 is not set
+# CONFIG_BLK_DEV_UB is not set
+# CONFIG_BLK_DEV_RAM is not set
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+# CONFIG_MISC_DEVICES is not set
+# CONFIG_IDE is not set
+
+With this device tree and this .config the kernel never probes the flash 
+part and 'cat /dev/mtd1' says the device doesn't exist.  If I then use 
+Kconfig to specify the start of flash, the size of flash, and the bank 
+width, dmesg shows that the part has been probed and 'cat /dev/mtd' spews 
+out all sorts of stuff.
+
+What black magic is there that doesn't showup in booting-without-of.txt 
+that I'm missing?
+
+Thanks for any feedback.
+
+Bruce
