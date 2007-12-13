@@ -1,14 +1,20 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 2/2] kdump shutdown hook support 
-In-reply-to: <1197500839.7695.19.camel@concordia> 
-References: <20071212054512.A02B062C153@localhost.localdomain>
-	<1197500839.7695.19.camel@concordia>
-Date: Thu, 13 Dec 2007 11:04:02 +1100
-Message-ID: <31645.1197504242@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
-	Paul Mackerras <paulus@samba.org>, THEMANN@de.ibm.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8CD93DDF64
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 11:15:07 +1100 (EST)
+Date: Thu, 13 Dec 2007 11:14:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 6/8] mpc83xx: timer driver for PM wakeup
+Message-Id: <20071213111439.eebba83b.sfr@canb.auug.org.au>
+In-Reply-To: <20071212173604.GE5596@loki.buserror.net>
+References: <20071212173519.GA5577@loki.buserror.net>
+	<20071212173604.GE5596@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,188 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Scott,
 
-In message <1197500839.7695.19.camel@concordia> you wrote:
-> 
-> --=-Kza0KCx0MG8nsjfq7kOz
-> Content-Type: text/plain
-> Content-Transfer-Encoding: quoted-printable
-> 
-> On Wed, 2007-12-12 at 16:45 +1100, Michael Neuling wrote:
-> > This adds hooks into the default_machine_crash_shutdown so drivers can
-> > register a function to be run in the first kernel before we hand off
-> > to the second kernel.  This should only be used in exceptional
-> > circumstances, like where the device can't be reset in the second
-> > kernel alone (as is the case with eHEA).  To emphasize this, the
-> > number of handles allowed to be registered is currently #def to 1.
-> >=20
-> > This uses the setjmp/longjmp code to call out to the registered hooks,
-> > so any bogus exceptions we encounter will hopefully be recoverable. =20
-> >=20
-> > I've tested with bogus data and instruction exceptions.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> >=20
-> >  arch/powerpc/kernel/crash.c |   90 +++++++++++++++++++++++++++++++++++++=
-> ++++---
-> >  include/asm-powerpc/kexec.h |    3 +
-> >  2 files changed, 88 insertions(+), 5 deletions(-)
-> >=20
-> > Index: linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/crash.c
-> > +++ linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
-> > @@ -32,6 +32,8 @@
-> >  #include <asm/lmb.h>
-> >  #include <asm/firmware.h>
-> >  #include <asm/smp.h>
-> > +#include <asm/system.h>
-> > +#include <asm/setjmp.h>
-> > =20
-> >  #ifdef DEBUG
-> >  #include <asm/udbg.h>
-> > @@ -45,6 +47,11 @@ int crashing_cpu =3D -1;
-> >  static cpumask_t cpus_in_crash =3D CPU_MASK_NONE;
-> >  cpumask_t cpus_in_sr =3D CPU_MASK_NONE;
-> > =20
-> > +#define CRASH_SHUTDOWN_HANDLES_NUM 1
-> 
-> CRASH_HANDLER_MAX ?
+On Wed, 12 Dec 2007 11:36:04 -0600 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> +static int __devinit gtm_probe(struct of_device *dev,
+> +                               const struct of_device_id *match)
+> +{
+	.
+	.
+	.
+> +out:
 
-yep, MAX is probably a more representative name
+Just for consistency, you probably want
+	dev_set_drvdata(&dev->dev, NULL);
+here
 
-> 
-> > +/* NULL terminated list of shutdown handles */
-> > +static crash_shutdown_t crash_shutdown_handles[CRASH_SHUTDOWN_HANDLES_NU=
-> M+1];
-> > +static DEFINE_SPINLOCK(crash_handles_lock);
-> > +
-> >  #ifdef CONFIG_SMP
-> >  static atomic_t enter_on_soft_reset =3D ATOMIC_INIT(0);
-> > =20
-> > @@ -285,9 +292,69 @@ static inline void crash_kexec_stop_spus
-> >  }
-> >  #endif /* CONFIG_SPU_BASE */
-> > =20
-> > +/*=20
-> > + * Register a function to be called on shutdown.  Only use this if you
-> > + * can't reset your device in the second kernel.
-> > + */
-> > +int crash_shutdown_register(crash_shutdown_t handler)
-> > +{
-> > +	unsigned int i, rc;
-> > +
-> > +	spin_lock(&crash_handles_lock);
-> 
-> > +	for(i =3D 0 ; i <=3D CRASH_SHUTDOWN_HANDLES_NUM; i++) {
-> > +		if (!crash_shutdown_handles[i]) {
-> > +			/* Insert handle at end */
-> > +			crash_shutdown_handles[i] =3D handler;
-> > +			rc =3D 0;
-> > +			break;
-> > +		}
-> > +	}
-> >=20
-> > +	if (i =3D=3D CRASH_SHUTDOWN_HANDLES_NUM){
-> > +		printk(KERN_ERR "Crash shutdown handles full, "
-> > +		       "not registered.\n");
-> > +		rc =3D 1;
-> > +	}
-> > +
-> > +	spin_unlock(&crash_handles_lock);
-> 
-> Perhaps?
+> +	kfree(priv);
+> +	return ret;
+> +}
 
-Yep, looks nicer.  I'll fix the one below too.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> 
-> > +	return rc;
-> > +}
-> > +EXPORT_SYMBOL(crash_shutdown_register);
-> > +
-> > +int crash_shutdown_unregister(crash_shutdown_t handler)
-> > +{
-> > +	unsigned int i;
-> > +
-> > +	spin_lock(&crash_handles_lock);
-> > +	for(i =3D 0 ; i <=3D CRASH_SHUTDOWN_HANDLES_NUM; i++)
-> > +		if (crash_shutdown_handles[i] =3D=3D handler)
-> > +			break;
-> > +
-> > +	if (i =3D=3D CRASH_SHUTDOWN_HANDLES_NUM){
-> > +		printk(KERN_ERR "Crash shutdown handle not found\n");
-> > +		spin_unlock(&crash_handles_lock);
-> > +		return 1;
-> > +	}
-> > +
-> > +	/* Shift handles down */
-> > +	while(crash_shutdown_handles[i]) {
-> > +		crash_shutdown_handles[i] =3D crash_shutdown_handles[i+1];
-> > +		i++;
-> > +	}
-> > +	spin_unlock(&crash_handles_lock);
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL(crash_shutdown_unregister);
-> > +
-> > +static long crash_shutdown_buf[SETJMP_BUF_LEN];
-> 
-> unsigned long?
+--Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy
+Content-Type: application/pgp-signature
 
-yep
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> 
-> > +
-> > +static int handle_fault(struct pt_regs *regs)
-> > +{
-> > +	longjmp(crash_shutdown_buf, 1);
-> > +	return 0;
-> > +}
-> > +
-> >  void default_machine_crash_shutdown(struct pt_regs *regs)
-> >  {
-> > -	unsigned int irq;
-> > +	unsigned int i;
-> > =20
-> >  	/*
-> >  	 * This function is only called after the system
-> > @@ -301,14 +368,27 @@ void default_machine_crash_shutdown(stru
-> >  	 */
-> >  	hard_irq_disable();
-> > =20
-> > -	for_each_irq(irq) {
-> > -		struct irq_desc *desc =3D irq_desc + irq;
-> > +	for_each_irq(i) {
-> > +		struct irq_desc *desc =3D irq_desc + i;
-> > =20
-> >  		if (desc->status & IRQ_INPROGRESS)
-> > -			desc->chip->eoi(irq);
-> > +			desc->chip->eoi(i);
-> > =20
-> >  		if (!(desc->status & IRQ_DISABLED))
-> > -			desc->chip->disable(irq);
-> > +			desc->chip->disable(i);
-> > +	}
-> > +
-> > +	/* Call registered shutdown routines */
-> > +	__debugger_fault_handler =3D handle_fault;
-> > +	i =3D 0;
-> > +	while(crash_shutdown_handles[i]){
-> > +		if (setjmp(crash_shutdown_buf) =3D=3D 0) {
-> > +			asm volatile("sync; isync");
-> > +			crash_shutdown_handles[i]();
-> > +			asm volatile("sync; isync");
-> > +			__delay(200);
-> > +		}
-> > +		i++;
-> >  	}
-> 
-> You should probably reset __debugger_fault_handler, just to be safe.
+iD8DBQFHYHlzTgG2atn1QN8RAmg9AKCWmgRVu6KHOJNivmNMznIccQdXIACdFHaL
+8o6vrnVE5UwlJw5x9iR7RyQ=
+=KrB4
+-----END PGP SIGNATURE-----
 
-Agreed.
-
-Mikey
+--Signature=_Thu__13_Dec_2007_11_14_39_+1100_V=+/Gm_EMGNPdapy--
