@@ -1,22 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9F66DE16E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 04:51:12 +1100 (EST)
-Date: Thu, 13 Dec 2007 10:48:40 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCH/RFC] CPM1: implement GPIO API
-Message-ID: <20071213164840.GA4347@loki.buserror.net>
-References: <47600F5E.8060907@scram.de> <200712122316.34354.arnd@arndb.de>
-	<20071213005345.GA1577@zarina>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071213005345.GA1577@zarina>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DBDB7DE078
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 06:01:58 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBDJ1sAc013924
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:01:54 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBDJ1lRB124510
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 12:01:48 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lBDJ1gdi030836
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 12:01:43 -0700
+Date: Thu, 13 Dec 2007 13:01:13 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
+	reassign all PCI resources
+Message-ID: <20071213130113.59342c40@weaponx>
+In-Reply-To: <20071213073851.C321FDDFC9@ozlabs.org>
+References: <20071213073851.C321FDDFC9@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 13, 2007 at 03:53:45AM +0300, Anton Vorontsov wrote:
-> No. This is how gpio api is working currently. With gpiolib[1], most of
-> these functions will be controller-specific. IIRC, gpiolib is still in
-> early development stage, so, for now, we have to limit us to one gpio
-> chip controller.
+On Thu, 13 Dec 2007 18:38:46 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> This makes 4xx embedded platforms re-assign all PCI resources as we
+> pretty much never care about what the various firmwares have done on
+> these, it's generally not compatible with the way the kernel will map
+> the bridges.
 > 
-> This works great for us: CPM, CPM2 and QE shouldn't appear on the single
-> crystal.
+> We still need to also enable bus renumbering on some of them, but I
+> will do that from a separate patch after I've fixed 4xx PCIe to handle
+> all bus numbers.
 
-But at least the latter two should be able to co-exist in a single kernel
-image...  Oh well, all we can do is hope the saner API makes it in soon. :-)
+This one is slightly broken in my opinion.  You've added
+the ppc_pci_flags to all of these platforms, which is fine for your
+intended goal.  But now all of these platforms _have_ to compile with
+PCI enabled or they'll break with:
 
--Scott
+arch/powerpc/platforms/built-in.o: In function `walnut_probe':
+walnut.c:(.init.text+0x9a): undefined reference to `ppc_pci_flags'
+walnut.c:(.init.text+0xa6): undefined reference to `ppc_pci_flags'
+make[1]: *** [.tmp_vmlinux1] Error 1
+
+So to do it correctly we need to either select CONFIG_PCI for all of
+them, wrap the ppc_pci_flags assignment in #ifdef CONFIG_PCI, or move
+the ppc_pci_flags variable declaration into something that always gets
+compiled.
+
+josh
