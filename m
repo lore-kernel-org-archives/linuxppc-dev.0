@@ -1,21 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BA624DDF62
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 11:56:09 +1100 (EST)
-Date: Thu, 13 Dec 2007 11:55:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
-Message-Id: <20071213115553.8c0d2980.sfr@canb.auug.org.au>
-In-Reply-To: <47606538.2090605@freescale.com>
-References: <20071211212247.GB3620@loki.buserror.net>
-	<20071212154306.dee76c80.sfr@canb.auug.org.au>
-	<47606538.2090605@freescale.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei"
+Return-Path: <cbouatmailru@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id 64961DDF52
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 12:03:12 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so437769nfd.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Dec 2007 17:03:11 -0800 (PST)
+Date: Thu, 13 Dec 2007 03:53:45 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH/RFC] CPM1: implement GPIO API
+Message-ID: <20071213005345.GA1577@zarina>
+References: <47600F5E.8060907@scram.de> <200712122316.34354.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <200712122316.34354.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,43 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Dec 12, 2007 at 11:16:33PM +0100, Arnd Bergmann wrote:
+> On Wednesday 12 December 2007, Jochen Friedrich wrote:
+> 
+> > +static spinlock_t *cpm1_port_locks;
+> > +static int cpm1_num_ports;
+> 
+> Having an array of spinlocks is rather unusual and normally not necessary.
+> Did you measure a significant performance impact by using a global lock
+> for all ports?
+> If not, I would recommend simplifying this.
 
-On Wed, 12 Dec 2007 16:48:24 -0600 Scott Wood <scottwood@freescale.com> wro=
-te:
->
-> Stephen Rothwell wrote:
-> >> +	ep8248e_bcsr =3D of_iomap(ep8248e_bcsr_node, 0);
-> >=20
-> > of_node_put(ep8248e_bcsr_node;
->=20
-> No, because we hold on to the node for later use in ep8248e_mdio_probe().
+I disagree. Why should we force bank A to stomp on bank B, if we can
+prevent this in few lines of trivial code? It doesn't need any measuring
+or simplifying IMO, what's so complexing in array of spinlocks guarding
+array of banks?
 
-Sorry, you are right, I didn't notice that it was global ...
+But, you can repeat that you really want to get rid of this array --
+and I'll silently remove it. Not because I gave up, but mostly because
+with gpiolib we'll able to embed spinlock into per-bank gpio_chip
+structure, thus eventually they will come back. :-))
 
-> BTW, is there any actual node removal done that justifies dealing with=20
-> refcounts everywhere?
+> > +EXPORT_SYMBOL_GPL(gpio_request);
+> > +EXPORT_SYMBOL_GPL(gpio_direction_input);
+> > +EXPORT_SYMBOL_GPL(gpio_direction_output);
+> > +EXPORT_SYMBOL_GPL(gpio_get_value);
+> > +EXPORT_SYMBOL_GPL(gpio_set_value);
+> 
+> All these function names are rather generic identifiers, but you export them
+> from a platform specific file. I'd say they should either have a more specific
+> name space (e.g. cpm1_gpio_request), or should be implemented in a more
+> generic way.
 
-In the hotplug code.  So I guess it is not very relevant to you, but it
-is a pain to retrofit this stuff if it does become important more widely.
+No. This is how gpio api is working currently. With gpiolib[1], most of
+these functions will be controller-specific. IIRC, gpiolib is still in
+early development stage, so, for now, we have to limit us to one gpio
+chip controller.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This works great for us: CPM, CPM2 and QE shouldn't appear on the single
+crystal.
 
---Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei
-Content-Type: application/pgp-signature
+I'm not sure if gpiolib will hit 2.6.25, really. Maybe not. So I'd rather
+stick with limited gpio api, and later convert it to gpiolib -- it will be
+really trivial. Just rename functions and wrap them around gpio_chip
+structure.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+The bright side of smooth transition is that API itself isn't changing,
+GPIO API/GPIOLIB API is fully interchangeable, their differences are
+in implementation details.
 
-iD8DBQFHYIMdTgG2atn1QN8RAnFlAKCECX9gsfWeF5JDFLuE2GE6VMM8hACgiGLN
-woppBlSxUCGBrec3roajtIg=
-=DQG6
------END PGP SIGNATURE-----
+[1] http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/generic-gpio-gpio_chip-support.patch
 
---Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei--
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
