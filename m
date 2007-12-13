@@ -1,16 +1,18 @@
-Return-Path: <sprasad@bivio.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: initrd - console
-Date: Wed, 12 Dec 2007 18:06:50 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A808A@corpexc01.corp.networkrobots.com>
-In-Reply-To: <1197336860.7378.29.camel@concordia>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A7AFE@corpexc01.corp.networkrobots.com>
-	<1197336860.7378.29.camel@concordia>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <CFester@iphase.com>
+Received: from exmail.interphase.iphase.com (h88.iphase.com [157.175.3.88])
+	by ozlabs.org (Postfix) with ESMTP id 06ED3DDDEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:02:15 +1100 (EST)
+Subject: Re: [PATCH RFC 0/7] "NAND on UPM" and related patches
+From: Chris Fester <cfester@iphase.com>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20071210204705.GA31263@localhost.localdomain>
+References: <20071210204705.GA31263@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 12 Dec 2007 21:01:29 -0600
+Message-Id: <1197514889.12803.140.camel@kaboom.lisle.iphase.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cfester@iphase.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,111 +22,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2007-12-10 at 23:47 +0300, Anton Vorontsov wrote:
+> Hi all,
+> 
+> Here are patches to support NAND on UPM. That driver is generic for
+> all processors with FSL UPMs. And because of that, few more patches are
+> needed -- GPIO API and generic FSL UPM functions.
+> I would appreciate any comments and suggestions, thanks!
 
-Thanks for the response Michael.
+Hi Anton,
 
-Yes!... I do have /dev/console
-I also have the following line in /etc/inittab (::respawn:/sbin/getty -L
-ttyS0 115200 VT100)
+Apologies for not getting back sooner to comment...
 
-Still  it does not print any thing from the user land. All the kernel
-printk's are working fine.
+We've been using a home-brewed UPM driver for our NAND for a while now.
+There's several issues we've hit that I figured I would share.  The
+issues involve deficiencies of both the UPM and the NAND part itself.
 
-I tried to print the arguments and environment variables for getty and
-echo /dev/console. Below is the info.
+We modeled our driver loosely after the suggestions in this white paper:
+http://www.freescale.com/files/32bit/doc/white_paper/NANDFLASHWP.pdf?fpsp=1&WT_TYPE=WhitePapers&WT_VENDOR=FREESCALE&WT_FILE_FORMAT=pdf&WT_ASSET=Documentation
+We also connected the NAND according to the suggestions in the above
+document.  
 
-sys_execve - filename=3D/sbin/getty.
-copy_strings: kaddr =3D /sbin/getty.
-copy_strings: kaddr =3D USER=3Droot.
-copy_strings: kaddr =3D SHELL=3D/bin/sh.
-copy_strings: kaddr =3D PATH=3D/usr/bin:/bin:/usr/sbin:/sbin.
-copy_strings: kaddr =3D TERM=3Dvt102.
-copy_strings: kaddr =3D HOME=3D/.
-copy_strings: kaddr =3D VT100.
-copy_strings: kaddr =3D 115200.
-copy_strings: kaddr =3D ttyS0.
-copy_strings: kaddr =3D -L.
-copy_strings: kaddr =3D /sbin/getty.
+Something that you should be made aware of right away about the UPM -
+you do not have control of the logic lines all of the time.  You only
+can control them during a transaction (in our case, a byte transaction).
+In other words, the time that is between reading/writing bytes, or
+putting the address on the bus, or asserting commands you are not able
+to hold the lines to a certain state.  Most of the control lines coming
+from the UPM default to a logic 1 when unused (I believe only one
+defaults to a logic 0).
 
-sys_execve - filename=3D/bin/echo.
-copy_strings: kaddr =3D /bin/echo.
-copy_strings: kaddr =3D GATEWAY0=3D172.27.255.254.
-copy_strings: kaddr =3D NETMASK0=3D255.255.0.0.
-copy_strings: kaddr =3D PWD=3D/.
-copy_strings: kaddr =3D SMBD_ARGS=3D.
-copy_strings: kaddr =3D NAMESERVER0=3D172.27.0.1.
-copy_strings: kaddr =3D NTP_SERVER=3D.
-copy_strings: kaddr =3D SHELL=3D/bin/sh.
-copy_strings: kaddr =3D INETD_ARGS=3D.
-copy_strings: kaddr =3D BOA_ARGS=3D.
-copy_strings: kaddr =3D NMBD_ARGS=3D.
-copy_strings: kaddr =3D TMPFS=3Dtmpfs.
-copy_strings: kaddr =3D PATH=3D/usr/bin:/bin:/usr/sbin:/sbin.
-copy_strings: kaddr =3D READONLY_FS=3D.
-copy_strings: kaddr =3D TERM=3Dvt102.
-copy_strings: kaddr =3D MODLIST=3D.
-copy_strings: kaddr =3D SYSCFG_IFACE0=3Dy.
-copy_strings: kaddr =3D IPADDR0=3D172.27.180.41.
-copy_strings: kaddr =3D DEPLOYMENT_STYLE=3DRAMDISK.
-copy_strings: kaddr =3D SYSCFG_DHCPC_CMD=3Dudhcpc -b -i .
-copy_strings: kaddr =3D DHCP_ARG=3D.
-copy_strings: kaddr =3D RAMDIRS=3D.
-copy_strings: kaddr =3D BROADCAST0=3D172.27.255.255.
-copy_strings: kaddr =3D HOME=3D/.
-copy_strings: kaddr =3D HOSTNAME=3Dmpc8641hpcn.
-copy_strings: kaddr =3D USER=3Droot.
-copy_strings: kaddr =3D INTERFACE0=3Deth0.
-copy_strings: kaddr =3D /dev/console.
-copy_strings: kaddr =3D echo.
+The first issue is timings between versions of processors.  We've got
+one board using an MPC8349 running a 1Gb ST micro part (NAND01G-B).
+Another board is an MPC8347 using the same 1Gb ST micro part.  After
+much time analyzing logic analyzer captures we found that write pulses
+with the 8349 had to be shifted to the left a half clock in order to
+properly latch the data on the bus.  This was unexpected given the two
+boards are very similar and the processors are in the same family.  I
+suppose the fix was easy enough, we just had to make a new version of
+the microcode.  What's interesting is that Freescale said that there's
+nothing different between the two processors' UPMs.  Yet there is a
+distinct difference between local bus behavior on the 2 cpus, our LA
+captures prove it.
 
-Thanks
-Siva
+The second issue was with interrupts during reads.  We noticed that some
+of our boards experienced ECC errors while reading the NAND.  Logic
+analyzer captures and debugging revealed that when an interrupt happened
+while the driver's read code was executing, the UPM went into an idle
+state, and the chip select of the part went high.  This may not be a
+problem for other NAND parts, but for our ST Micro parts, the spec says
+that if CS is held high for more than 100us, the part will exit page
+read mode.  The default state of the UPM pins are high, so when the UPM
+is idle all the signals are at logic 1.  
 
+Anyways, when the interrupt had completed, or driver wasn't aware that
+an interrupt had occurred, so it continued to do it's read loop.  The ST
+Micro part was now in an undefined state.  The page read appeared to
+continue just fine, but we almost always had one or more bits corrupted
+for the very first resuming data byte.  
 
------Original Message-----
-From: Michael Ellerman [mailto:michael@ellerman.id.au]=20
-Sent: Monday, December 10, 2007 5:34 PM
-To: Siva Prasad
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: initrd - console
+The fix that we ultimately did was to move the chip select control from
+the UPM to a GPIO from the processor.  This forced the chip to never
+"sleep" during an interrupt, because we could keep the chip select low
+for the entire page read transaction.  This brought up other minor
+issues.  You must make sure that your boot loader (U-Boot in our case)
+sets the GPIO data BEFORE it sets the GPIO direction.  Otherwise the
+NAND will automatically enter a start up read condition that will drive
+the local bus, causing anything else on the local bus (such as a NOR
+flash) to be useless...
 
-On Mon, 2007-12-10 at 17:26 -0800, Siva Prasad wrote:
-> Hi,
->=20
-> I am trying to boot kernel with initrd. However, it hangs in
-> run_init_process("/sbin/init"). I went into the system calls to see
-what
-> it is doing.=20
->=20
-> As part of debugging, I ended up adding a printk statement in
-> arch/powerpc/kernel/process.c:sys_execve() routine. Noticed that all
-the
-> calls are coming here, however nothing is printed on the screen. I
-think
-> initrd is executing fine (unless one of you says otherwise). See the
-> capture below for boot log.
->=20
-> Question 1: how come nothing is printed from ramdisk (userland
-programs)
-> to the serial console, while all the kernel printk's are working
-> perfectly?
+The latest version of the app note online (link above) does not mention
+the problem you may experience with interrupts.  I requested from our
+Freescale support contact that Freescale document this fact and make it
+available to others such that they won't bump into the same problems we
+did!
 
-Do you have a /dev/console etc. in your initrd?
+The THIRD issue we had (actually, are having) is very related to our
+second issue.  Our customer now wants a 2Gb NAND on our board.  We
+swapped the chip out.  We included one more address byte transaction
+that is needed with the larger part in the driver.  And it doesn't work.
+The part is considered to be the "bigger brother" to the 1Gb part, but
+apparently enough of it's state machine has changed that it doesn't
+tolerate the AL and CL lines going high while chip select is low.
+Incidentally, when debugging our second issue we were told by ST Micro
+support that the only time AL and CL were sampled by the NAND was when
+W# and R# were driven low.  Had we known that the 2Gb part wouldn't have
+worked, we would have done much more major reworking to the NAND
+subsystem when we respun our board.
 
-> Question 2: How important is to have interrupts working for just
-> printing. I know that interrupts are must to enter input.
+This mail isn't meant to be a rant.  Everyone knows that this kind of
+low-level hardware/software work is difficult.  This mail is meant to
+caution you against using the NAND with the UPM.  Freescale may say that
+it works, and present you a pretty looking white paper, but it's really
+kludgy and you are pretty guaranteed to have problems.  Please encourage
+your board designers to hook the NAND to some sort of CPLD device rather
+than the UPM.  At least with a CPLD you have some real control over the
+state of the control lines.
 
-Depends on what your console is, but if it's something simple then you
-should be able to write to it without taking interrupts.
+If you for whatever reason are stuck with the UPM...
+1.)  Get your hardware people to stick inverters on the AL and CL lines.
+Adjust your UPM microcode accordingly.
+2.)  Put your CS under control of a GPIO pin.
+3.)  Buy a nice logic analyzer, because you're going to need it!!!
 
-cheers
+I hope this helps someone out there... I've been spending a lot of time
+on-and-off on this.  Every time we think we have it right one little
+seemingly benign change throws the whole thing out the window...
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Okie, happy coding,
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Chris Fester
