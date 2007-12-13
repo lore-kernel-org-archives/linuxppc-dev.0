@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 91BCEDE677
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 07:45:57 +1100 (EST)
-Subject: Re: [PATCH 1/20] [POWERPC] Reworking machine check handling and
-	Fix 440/440A
+	by ozlabs.org (Postfix) with ESMTP id F2F94DE007
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 07:53:17 +1100 (EST)
+Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
+	reassign all PCI resources
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071213135317.0cffbfb8@weaponx>
-References: <20071213073836.A25EDDDF80@ozlabs.org>
-	<20071213135317.0cffbfb8@weaponx>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 14 Dec 2007 07:38:56 +1100
-Message-Id: <1197578336.15741.154.camel@pasglop>
+In-Reply-To: <20071213144056.1a46b7a3@weaponx>
+References: <20071213073851.C321FDDFC9@ozlabs.org>
+	<20071213130113.59342c40@weaponx> <1197578243.15741.150.camel@pasglop>
+	<20071213144056.1a46b7a3@weaponx>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 07:52:57 +1100
+Message-Id: <1197579177.15741.169.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -27,25 +28,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> This breaks non-44x based arch/ppc platforms.  For example ep405 in
-> arch/ppc fails with:
+On Thu, 2007-12-13 at 14:40 -0600, Josh Boyer wrote:
 > 
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c: In function ‘machine_check_440A’:
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:260: error: ‘MCSR_IB’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:260: error: (Each undeclared identifier is reported only once
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:260: error: for each function it appears in.)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:262: error: ‘MCSR_DRB’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:264: error: ‘MCSR_DWB’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:266: error: ‘MCSR_TLBP’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:268: error: ‘MCSR_ICP’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:272: error: ‘MCSR_DCSP’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:274: error: ‘MCSR_DCFP’ undeclared (first use in this function)
-> /home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:276: error: ‘MCSR_IMPE’ undeclared (first use in this function)
-> make[2]: *** [arch/ppc/kernel/traps.o] Error 1
+> > > This one is slightly broken in my opinion.  You've added
+> > > the ppc_pci_flags to all of these platforms, which is fine for
+> your
+> > > intended goal.  But now all of these platforms _have_ to compile
+> with
+> > > PCI enabled or they'll break with:
+> > > 
+> > > arch/powerpc/platforms/built-in.o: In function `walnut_probe':
+> > > walnut.c:(.init.text+0x9a): undefined reference to `ppc_pci_flags'
+> > > walnut.c:(.init.text+0xa6): undefined reference to `ppc_pci_flags'
+> > > make[1]: *** [.tmp_vmlinux1] Error 1
+> > > 
+> > > So to do it correctly we need to either select CONFIG_PCI for all
+> of
+> > > them, wrap the ppc_pci_flags assignment in #ifdef CONFIG_PCI, or
+> move
+> > > the ppc_pci_flags variable declaration into something that always
+> gets
+> > > compiled.
+> > 
+> > Hrm... PCI is user selectable ? Forgot about that ...
+> > 
+> > All those platforms have PCI slots, so we may as well select it in
+> > Kconfig... I'd rather avoid #ifdef's
 > 
-> The same is true for other platforms as well.  Getting closer...
+> What about people that don't have PCI on their boards, or don't really
+> care about it?
 
-True, I intended to use 4xx not 44x for the ifdef... very easy typo to
-make.
+Then those boards wouldn't be a walnut, ep405, ... right ?
+
+That's why I put the flags in the BSP. If your board has no PCI, don't
+muck around with the PCI flags. 
 
 Ben.
