@@ -1,22 +1,18 @@
-Return-Path: <ogerlitz@voltaire.com>
-Received: from exil.voltaire.com (fwil.voltaire.com [193.47.165.2])
-	by ozlabs.org (Postfix) with ESMTP id 89B47DDFD9
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 19:31:00 +1100 (EST)
-Message-ID: <4760EDC0.5020703@voltaire.com>
-Date: Thu, 13 Dec 2007 10:30:56 +0200
-From: Or Gerlitz <ogerlitz@voltaire.com>
+Return-Path: <SRS0=/YIh=RE=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id A4C09DE089
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 20:42:54 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
+	reassign all PCI resources
+Date: Thu, 13 Dec 2007 10:42:47 +0100
+References: <20071213073851.C321FDDFC9@ozlabs.org>
+In-Reply-To: <20071213073851.C321FDDFC9@ozlabs.org>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
-References: <OFD9564F75.44193623-ONC12573AE.002EA542-C12573AE.002F5FBC@de.ibm.com><475FD0A1.3090304@voltaire.com>
-	<adabq8v91co.fsf@cisco.com>
-In-Reply-To: <adabq8v91co.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, Joachim Fenkes <FENKES@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712131042.48354.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roland Dreier wrote:
-> I think the right fix for iSER would be to make iSER work even for
-> devices that don't support FMRs.  For example cxgb3 doesn't implement
-> FMRs so if anyone ever updates iSER to work on iWARP and not just IB,
-> then this is something that has to be tackled anyway.  Then ehca could
-> just get rid of the FMR support it has.
+On Thursday 13 December 2007, Benjamin Herrenschmidt wrote:
+> This makes 4xx embedded platforms re-assign all PCI resources as we
+> pretty much never care about what the various firmwares have done on
+> these, it's generally not compatible with the way the kernel will map
+> the bridges.
+>
+> We still need to also enable bus renumbering on some of them, but I
+> will do that from a separate patch after I've fixed 4xx PCIe to handle
+> all bus numbers.
 
-OK, The iSER design took into account the case of many initiators 
-running on strong/modern machines talking to possibly lightweight 
-embedded target for which the processing cost per I/O at the target side 
-should be minimized, that is at most --one-- RDMA operation should be 
-issued by the target to serve an I/O request.
+I just applied this series on top of Paulus's for-2.6.25 branch and I
+get the following error:
 
-For that end, iSER works with one descriptor (called stag in iWARP and 
-rkey in IB) per I/O direction sent from the initiator to the target and 
-hence can't work without some sort of FMR implementation.
+/home/stefan/git/linux-2.6/paulus-powerpc/arch/powerpc/platforms/40x/kilauea.c: In function 'kilauea_probe':
+/home/stefan/git/linux-2.6/paulus-powerpc/arch/powerpc/platforms/40x/kilauea.c:49: error: 'ppc_pci_flags' undeclared (first use in this function)
+/home/stefan/git/linux-2.6/paulus-powerpc/arch/powerpc/platforms/40x/kilauea.c:49: error: (Each undeclared identifier is reported only once
+/home/stefan/git/linux-2.6/paulus-powerpc/arch/powerpc/platforms/40x/kilauea.c:49: error: for each function it appears in.)
+/home/stefan/git/linux-2.6/paulus-powerpc/arch/powerpc/platforms/40x/kilauea.c:49: error: 'PPC_PCI_REASSIGN_ALL_RSRC' undeclared (first use in this function)
+make[3]: *** [arch/powerpc/platforms/40x/kilauea.o] Error 1
 
-The current implementation of the open iscsi initiator makes sure to 
-issue commands in thread (sleepable) context, see iscsi_xmitworker and 
-references to it in drivers/scsi/libiscsi.c , so this keeps ehca users 
-safe for the time being.
+Seems like the patch:
 
-Or.
+    powerpc: pci32: Add flags modifying the PCI code behaviour
+    
+    This adds to the 32 bits PCI code some flags, replacing the old
+    pci_assign_all_busses global, that allow to control various
+    aspects of the PCI probing, such as whether to re-assign all
+    resources or not, or to not try to assign anything at all.
+    
+    This also adds the flag x86 already has to avoid ISA alignment
+    on bridges that don't have ISA forwarding enabled (no legacy
+    devices on the top level bus) and sets it for PowerMacs.
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+is missing.
+
+Thanks.
+
+Ciao,
+Stefan
