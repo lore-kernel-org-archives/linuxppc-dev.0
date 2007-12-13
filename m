@@ -1,37 +1,24 @@
-Return-Path: <subrata@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C63CCDE0CB
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 22:37:10 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBDBb0Wm004943
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 06:37:00 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBDBb0ie163314
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:37:00 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBDBaxud018470
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 04:37:00 -0700
-Subject: Re: [RFC] ehea: kdump support using new shutdown hook
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Thomas Klein <osstklei@de.ibm.com>
-In-Reply-To: <200712121753.43543.osstklei@de.ibm.com>
-References: <200712121753.43543.osstklei@de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 13 Dec 2007 17:06:55 +0530
-Message-Id: <1197545815.4755.31.camel@subratamodak.linux.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 31D00DDED9
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 22:40:45 +1100 (EST)
+Subject: Re: apm_emulation regression
+From: Johannes Berg <johannes@sipsolutions.net>
+To: benh@kernel.crashing.org
+In-Reply-To: <1197482587.6558.145.camel@johannes.berg>
+References: <1197427530.8385.59.camel@pasglop>
+	<1197482587.6558.145.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-BjBf60fkoRVO6/FBFkz8"
+Date: Thu, 13 Dec 2007 12:40:19 +0100
+Message-Id: <1197546020.6558.247.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: ltp-list <ltp-list@lists.sourceforge.net>,
-	Michael Neuling <mikey@neuling.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Marcus Eder <meder@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,227 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Do you think we can improve upon our own LTP-KDUMP test cases housed
-here:
-http://ltp.cvs.sourceforge.net/ltp/ltp/testcases/kdump/,
 
-because of your changes below:
+--=-BjBf60fkoRVO6/FBFkz8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
---Subrata
 
-On Wed, 2007-12-12 at 17:53 +0100, Thomas Klein wrote:
-> This patch adds kdump support using the new PPC crash shutdown hook to the
-> ehea driver. The driver now keeps a list of firmware handles which have to
-> be freed in case of a crash. The crash handler does the minimum required: it
-> frees the firmware resource handles plus broadcast/multicast registrations.
-> 
-> Please comment.
-> 
-> Shutdown hook patches:
->   http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048058.html
->   http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048059.html
-> 
-> 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> 
-> ---
-> diff -Nurp -X dontdiff linux-2.6.24-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
-> --- linux-2.6.24-rc5/drivers/net/ehea/ehea.h	2007-12-11 04:48:43.000000000 +0100
-> +++ patched_kernel/drivers/net/ehea/ehea.h	2007-12-12 17:30:53.000000000 +0100
-> @@ -40,7 +40,7 @@
->  #include <asm/io.h>
-> 
->  #define DRV_NAME	"ehea"
-> -#define DRV_VERSION	"EHEA_0083"
-> +#define DRV_VERSION	"EHEA_0084"
-> 
->  /* eHEA capability flags */
->  #define DLPAR_PORT_ADD_REM 1
-> @@ -386,6 +386,7 @@ struct ehea_port_res {
-> 
-> 
->  #define EHEA_MAX_PORTS 16
-> +#define EHEA_MAX_RES_HANDLES (100 * EHEA_MAX_PORTS + 10)
->  struct ehea_adapter {
->  	u64 handle;
->  	struct of_device *ofdev;
-> @@ -397,6 +398,7 @@ struct ehea_adapter {
->  	u64 max_mc_mac;            /* max number of multicast mac addresses */
->  	int active_ports;
->  	struct list_head list;
-> +	u64 res_handles[EHEA_MAX_RES_HANDLES];
->  };
-> 
-> 
-> diff -Nurp -X dontdiff linux-2.6.24-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
-> --- linux-2.6.24-rc5/drivers/net/ehea/ehea_main.c	2007-12-11 04:48:43.000000000 +0100
-> +++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-12-12 17:30:53.000000000 +0100
-> @@ -35,6 +35,7 @@
->  #include <linux/if_ether.h>
->  #include <linux/notifier.h>
->  #include <linux/reboot.h>
-> +#include <asm-powerpc/kexec.h>
-> 
->  #include <net/ip.h>
-> 
-> @@ -2256,6 +2257,33 @@ static int ehea_clean_all_portres(struct
->  	return ret;
->  }
-> 
-> +static void ehea_update_adapter_handles(struct ehea_adapter *adapter)
-> +{
-> +	int i, k;
-> +	int j = 0;
-> +
-> +	memset(adapter->res_handles, sizeof(adapter->res_handles), 0);
-> +
-> +	for (k = 0; k < EHEA_MAX_PORTS; k++) {
-> +		struct ehea_port *port = adapter->port[k];
-> +
-> +		if (!port || (port->state != EHEA_PORT_UP))
-> +			continue;
-> +
-> +		for(i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
-> +			struct ehea_port_res *pr = &port->port_res[i];
-> +
-> +			adapter->res_handles[j++] = pr->qp->fw_handle;
-> +			adapter->res_handles[j++] = pr->send_cq->fw_handle;
-> +			adapter->res_handles[j++] = pr->recv_cq->fw_handle;
-> +			adapter->res_handles[j++] = pr->eq->fw_handle;
-> +			adapter->res_handles[j++] = pr->send_mr.handle;
-> +			adapter->res_handles[j++] = pr->recv_mr.handle;
-> +		}
-> +		adapter->res_handles[j++] = port->qp_eq->fw_handle;
-> +	}
-> +}
-> +
->  static void ehea_remove_adapter_mr(struct ehea_adapter *adapter)
->  {
->  	if (adapter->active_ports)
-> @@ -2318,6 +2346,7 @@ static int ehea_up(struct net_device *de
-> 
->  	ret = 0;
->  	port->state = EHEA_PORT_UP;
-> +	ehea_update_adapter_handles(port->adapter);
->  	goto out;
-> 
->  out_free_irqs:
-> @@ -2387,6 +2416,8 @@ static int ehea_down(struct net_device *
->  		ehea_info("Failed freeing resources for %s. ret=%i",
->  			  dev->name, ret);
-> 
-> +	ehea_update_adapter_handles(port->adapter);
-> +
->  	return ret;
->  }
-> 
-> @@ -3302,6 +3333,71 @@ static int __devexit ehea_remove(struct 
->  	return 0;
->  }
-> 
-> +void ehea_crash_deregister(void)
-> +{
-> +	struct ehea_adapter *adapter;
-> +	int i;
-> +	u64 hret;
-> +	u8 reg_type;
-> +
-> +	list_for_each_entry(adapter, &adapter_list, list) {
-> +		for (i = 0; i < EHEA_MAX_PORTS; i++) {
-> +			struct ehea_port *port = adapter->port[i];
-> +			if (port->state == EHEA_PORT_UP) {
-> +				struct ehea_mc_list *mc_entry = port->mc_list;
-> +				struct list_head *pos;
-> +				struct list_head *temp;
-> +
-> +				/* Undo multicast registrations */
-> +				list_for_each_safe(pos, temp,
-> +						   &(port->mc_list->list)) {
-> +					mc_entry = list_entry(pos,
-> +							    struct ehea_mc_list,
-> +							    list);
-> +					ehea_multicast_reg_helper(port,
-> +							      mc_entry->macaddr,
-> +							      H_DEREG_BCMC);
-> +				}
-> +
-> +				/* Undo broad registration */
-> +				reg_type = EHEA_BCMC_BROADCAST |
-> +					   EHEA_BCMC_UNTAGGED;
-> +				ehea_h_reg_dereg_bcmc(port->adapter->handle,
-> +						      port->logical_port_id,
-> +						      reg_type, port->mac_addr,
-> +						      0, H_DEREG_BCMC);
-> +
-> +				reg_type = EHEA_BCMC_BROADCAST |
-> +					   EHEA_BCMC_VLANID_ALL;
-> +				ehea_h_reg_dereg_bcmc(port->adapter->handle,
-> +						      port->logical_port_id,
-> +						      reg_type, port->mac_addr,
-> +						      0, H_DEREG_BCMC);
-> +			}
-> +		}
-> +		for (i = 0; i < EHEA_MAX_RES_HANDLES; i++) {
-> +			u64 handle = adapter->res_handles[i];
-> +			if (handle) {
-> +				hret = ehea_h_free_resource(adapter->handle,
-> +							    handle,
-> +							    FORCE_FREE);
-> +			}
-> +		}
-> +
-> +		if (adapter->neq) {
-> +			hret = ehea_h_free_resource(adapter->handle,
-> +						    adapter->neq->fw_handle,
-> +						    FORCE_FREE);
-> +		}
-> +
-> +		if (adapter->mr.handle) {
-> +			hret = ehea_h_free_resource(adapter->handle,
-> +						    adapter->mr.handle,
-> +						    FORCE_FREE);
-> +		}
-> +	}
-> +}
-> +
->  static int ehea_reboot_notifier(struct notifier_block *nb,
->  				unsigned long action, void *unused)
->  {
-> @@ -3373,6 +3469,9 @@ int __init ehea_module_init(void)
->  		goto out;
-> 
->  	register_reboot_notifier(&ehea_reboot_nb);
-> +	ret = crash_shutdown_register(&ehea_crash_deregister);
-> +	if (ret)
-> +		ehea_info("failed registering crash handler");
-> 
->  	ret = ibmebus_register_driver(&ehea_driver);
->  	if (ret) {
-> @@ -3386,6 +3485,7 @@ int __init ehea_module_init(void)
->  		ehea_error("failed to register capabilities attribute, ret=%d",
->  			   ret);
->  		unregister_reboot_notifier(&ehea_reboot_nb);
-> +		crash_shutdown_unregister(&ehea_crash_deregister);
->  		ibmebus_unregister_driver(&ehea_driver);
->  		goto out;
->  	}
-> @@ -3396,10 +3496,15 @@ out:
-> 
->  static void __exit ehea_module_exit(void)
->  {
-> +	int ret;
-> +
->  	flush_scheduled_work();
->  	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
->  	ibmebus_unregister_driver(&ehea_driver);
->  	unregister_reboot_notifier(&ehea_reboot_nb);
-> +	ret = crash_shutdown_unregister(&ehea_crash_deregister);
-> +	if (ret)
-> +		ehea_info("failed unregistering crash handler");
->  	ehea_destroy_busmap();
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > That basically means X will break. That's why X broke on the latest
+> > ubuntu until I whacked some new scripts in them to force console
+> > switching, among other things. Possibly other apps that relied
+> > on /dev/apm_bios to be notified of system suspend/resume broke as well.
+>=20
+> Ah. I guess I never noticed because I had the scripts to do console
+> switching all along.
+
+Actually, it just occurred to me that the *kernel* does a console switch
+when we use /sys/power/state, so maybe that is why I never had a problem
+rather than userspace doing a console switch (which it only started
+doing very recently)
+
+johannes
+
+--=-BjBf60fkoRVO6/FBFkz8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR2EaIqVg1VMiehFYAQLp5g/8CpRxNqjq5SD+qp/mcHC5nbga/hIRQGRa
+AmX84groIYTlh4PyGqg1FyTWHhpjw/ZAMyqQdJkWjrnb6WxiH2uoPFSo6tmx53J7
+1npbhtzSBXImO6nkDpTYGzdf2EjfbNYsZUXtWffT79ab5bQh+u/JMcrYERO14ohS
+b7QSd3NKphVEZMyVqO01tVYhweC9c4Em1/xdhedCOdWBEh4Kk1+1EZYyu9v16EhE
+qIuwAYbIvpjU2WAhjDGsKvE+OhPPoQ4td42eSfl3Z4R0F6Ix30NaCqD9r1NgIm2z
+VZ9XdSbTGvxD7WNyIAhcsputzjgzY7VI1ExJ3GK/k2KClwn/OYm/XUhkTYx65O40
+WfpRMrVgn/Bxte3iOXOpc+1trdGLgYqE46bGldPKpQzWwPjHKwO3ThgXzt53plNw
+aNbxI2S4YksYG2WaDlxWnkODPi+7hfsaLq869hj2KlLp/C3DMkeJuK31MIoUNj+q
+Nwp/Rr0ARBAauBTRQ+YfYfYiy2IG97LNSifOxqaGyqBIoH2HXDHWRnTBHN0U7KPp
+3WQXxgXde8wSdmpEeJy8Sc420Ws3llBd/XH7coeOIxevYeNwqREeCKWqp04QQmqT
+VYahvX6Tt0IbsF9/2aug6uMtnqWZfXT3iQ6k9oZwFAUKD+f2Yh6dx53AiZWA/8cs
+CFLfF48WphE=
+=dhmp
+-----END PGP SIGNATURE-----
+
+--=-BjBf60fkoRVO6/FBFkz8--
