@@ -1,36 +1,24 @@
-Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 86DCFDE055
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 08:35:58 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id lBDLZtL3493732
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 21:35:55 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id lBDLZtCn2924772
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 22:35:55 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id lBDLZsVm016514
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 22:35:55 +0100
-In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD7702B14004@nekter>
-To: "Caitlin Bestler" <Caitlin.Bestler@neterion.com>
-MIME-Version: 1.0
-Subject: RE: [ofa-general] Re: [ewg] Re: [PATCH] IB/ehca: Serialize HCA-related
-	hCalls on POWER5
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFD36374CC.9307FC29-ONC12573B0.00763BCF-C12573B0.0076A3D3@de.ibm.com>
-Date: Thu, 13 Dec 2007 22:35:52 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Arnd Bergmann <arnd@arndb.de>, Roland Dreier <rdreier@cisco.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Or Gerlitz <ogerlitz@voltaire.com>, linuxppc-dev@ozlabs.org,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3B124DDFBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 08:37:44 +1100 (EST)
+Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
+	reassign all PCI resources
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071213151138.02db0cd8@weaponx>
+References: <20071213073851.C321FDDFC9@ozlabs.org>
+	<20071213130113.59342c40@weaponx> <1197578243.15741.150.camel@pasglop>
+	<20071213144056.1a46b7a3@weaponx> <1197579177.15741.169.camel@pasglop>
+	<20071213151138.02db0cd8@weaponx>
+Content-Type: text/plain
+Date: Fri, 14 Dec 2007 08:37:26 +1100
+Message-Id: <1197581846.15741.183.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,14 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-"Caitlin Bestler" <Caitlin.Bestler@neterion.com> wrote on 13.12.2007 
-22:08:34:
 
-> To clarify, an FMR Work Request is simply posted to the SendQ like
-> any other Work Request (of course the QP has to be privileged, or
-> it will complete in error). An SQ Post should never block.
+On Thu, 2007-12-13 at 15:11 -0600, Josh Boyer wrote:
+> Well, there is physical PCI hardware on the boards, yes.  But what if
+> people have no intention of using it?  E.g. they have no devices, etc.
+> Now we're requiring PCI support to be built into the kernel.
+> 
+> I'm just being pedantic about keeping embedded tiny.
 
-This would require hardware support, wouldn't it? eHCA2 doesn't have this 
-kind of support, so FMR WRs are not an option here.
+Keeping your embedded design tiny (and thus your own BSP) is one thing,
+but adding ifdef's all over the place so that somebody can tinify an
+eval board, I'm less sure about this... but if you want, you can fixup
+my patches.
 
-J.
+Ben.
