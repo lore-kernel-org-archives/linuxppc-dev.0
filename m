@@ -1,30 +1,31 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9DE4DDF9E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 06:06:02 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBDJ5tei024230
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:05:55 -0500
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E28D3DE2E0
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 06:53:24 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBDJrKor028802
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:53:20 -0500
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBDJ5oK3827586
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:05:51 -0500
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBDJrKoe141522
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 12:53:20 -0700
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBDJ5nJO020490
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 12:05:50 -0700
-Date: Thu, 13 Dec 2007 13:05:47 -0600
+	lBDJrJ0D032012
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 12:53:19 -0700
+Date: Thu, 13 Dec 2007 13:53:17 -0600
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
-	reassign all PCI resources
-Message-ID: <20071213130547.728d873d@weaponx>
-In-Reply-To: <20071213073851.C321FDDFC9@ozlabs.org>
-References: <20071213073851.C321FDDFC9@ozlabs.org>
+Subject: Re: [PATCH 1/20] [POWERPC] Reworking machine check handling and Fix
+	440/440A
+Message-ID: <20071213135317.0cffbfb8@weaponx>
+In-Reply-To: <20071213073836.A25EDDDF80@ozlabs.org>
+References: <20071213073836.A25EDDDF80@ozlabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,35 +36,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 13 Dec 2007 18:38:46 +1100
+On Thu, 13 Dec 2007 18:38:31 +1100
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> This makes 4xx embedded platforms re-assign all PCI resources as we
-> pretty much never care about what the various firmwares have done on
-> these, it's generally not compatible with the way the kernel will map
-> the bridges.
-> 
-> We still need to also enable bus renumbering on some of them, but I
-> will do that from a separate patch after I've fixed 4xx PCIe to handle
-> all bus numbers.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> This adds a cputable function pointer for the CPU-side machine
+> check handling. The semantic is still the same as the old one,
+> the one in ppc_md. overrides the one in cputable, though
+> ultimately we'll want to change that so the CPU gets first.
+>=20
+> This removes CONFIG_440A which was a problem for multiplatform
+> kernels and instead fixes up the IVOR at runtime from a setup_cpu
+> function. The "A" version of the machine check also tweaks the
+> regs->trap value to differenciate the 2 versions at the C level.
 
 [snip]
 
-> Index: linux-work/arch/powerpc/platforms/44x/sequoia.c
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/platforms/44x/sequoia.c	2007-12-10 16:51:42.000000000 +1100
-> +++ linux-work/arch/powerpc/platforms/44x/sequoia.c	2007-12-10 16:55:06.000000000 +1100
-> @@ -21,7 +21,8 @@
->  #include <asm/udbg.h>
->  #include <asm/time.h>
->  #include <asm/uic.h>
-> -#include "44x.h"
-> +#include <asm/pci-bridge.h>
-> +
+> Index: linux-merge/include/asm-ppc/reg_booke.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-merge.orig/include/asm-ppc/reg_booke.h	2007-12-11 16:21:38.0000=
+00000 +1100
+> +++ linux-merge/include/asm-ppc/reg_booke.h	2007-12-11 16:23:21.000000000=
+ +1100
+> @@ -207,7 +207,7 @@
+>  #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
+>=20
+>  /* Bit definitions for the MCSR. */
+> -#ifdef CONFIG_440A
+> +#ifdef CONFIG_44x
+>  #define MCSR_MCS	0x80000000 /* Machine Check Summary */
+>  #define MCSR_IB		0x40000000 /* Instruction PLB Error */
+>  #define MCSR_DRB	0x20000000 /* Data Read PLB Error */
 
-Oh, and you also broke the Sequoia build with this change because you
-removed the 44x.h include :).
+This breaks non-44x based arch/ppc platforms.  For example ep405 in
+arch/ppc fails with:
+
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c: In function =E2=80=98m=
+achine_check_440A=E2=80=99:
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:260: error: =E2=80=98MC=
+SR_IB=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:260: error: (Each undec=
+lared identifier is reported only once
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:260: error: for each fu=
+nction it appears in.)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:262: error: =E2=80=98MC=
+SR_DRB=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:264: error: =E2=80=98MC=
+SR_DWB=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:266: error: =E2=80=98MC=
+SR_TLBP=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:268: error: =E2=80=98MC=
+SR_ICP=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:272: error: =E2=80=98MC=
+SR_DCSP=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:274: error: =E2=80=98MC=
+SR_DCFP=E2=80=99 undeclared (first use in this function)
+/home/jwboyer/src/linux-2.6/arch/ppc/kernel/traps.c:276: error: =E2=80=98MC=
+SR_IMPE=E2=80=99 undeclared (first use in this function)
+make[2]: *** [arch/ppc/kernel/traps.o] Error 1
+
+The same is true for other platforms as well.  Getting closer...
 
 josh
