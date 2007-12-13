@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 254C7DDF8F
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 07:37:47 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 7F206DE0A7
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 07:38:45 +1100 (EST)
 Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
 	reassign all PCI resources
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071213130113.59342c40@weaponx>
+In-Reply-To: <20071213130547.728d873d@weaponx>
 References: <20071213073851.C321FDDFC9@ozlabs.org>
-	<20071213130113.59342c40@weaponx>
+	<20071213130547.728d873d@weaponx>
 Content-Type: text/plain
-Date: Fri, 14 Dec 2007 07:37:23 +1100
-Message-Id: <1197578243.15741.150.camel@pasglop>
+Date: Fri, 14 Dec 2007 07:37:40 +1100
+Message-Id: <1197578260.15741.152.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -27,24 +27,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> This one is slightly broken in my opinion.  You've added
-> the ppc_pci_flags to all of these platforms, which is fine for your
-> intended goal.  But now all of these platforms _have_ to compile with
-> PCI enabled or they'll break with:
+On Thu, 2007-12-13 at 13:05 -0600, Josh Boyer wrote:
+> On Thu, 13 Dec 2007 18:38:46 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> arch/powerpc/platforms/built-in.o: In function `walnut_probe':
-> walnut.c:(.init.text+0x9a): undefined reference to `ppc_pci_flags'
-> walnut.c:(.init.text+0xa6): undefined reference to `ppc_pci_flags'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+> > This makes 4xx embedded platforms re-assign all PCI resources as we
+> > pretty much never care about what the various firmwares have done on
+> > these, it's generally not compatible with the way the kernel will map
+> > the bridges.
+> > 
+> > We still need to also enable bus renumbering on some of them, but I
+> > will do that from a separate patch after I've fixed 4xx PCIe to handle
+> > all bus numbers.
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> So to do it correctly we need to either select CONFIG_PCI for all of
-> them, wrap the ppc_pci_flags assignment in #ifdef CONFIG_PCI, or move
-> the ppc_pci_flags variable declaration into something that always gets
-> compiled.
+> [snip]
+> 
+> > Index: linux-work/arch/powerpc/platforms/44x/sequoia.c
+> > ===================================================================
+> > --- linux-work.orig/arch/powerpc/platforms/44x/sequoia.c	2007-12-10 16:51:42.000000000 +1100
+> > +++ linux-work/arch/powerpc/platforms/44x/sequoia.c	2007-12-10 16:55:06.000000000 +1100
+> > @@ -21,7 +21,8 @@
+> >  #include <asm/udbg.h>
+> >  #include <asm/time.h>
+> >  #include <asm/uic.h>
+> > -#include "44x.h"
+> > +#include <asm/pci-bridge.h>
+> > +
+> 
+> Oh, and you also broke the Sequoia build with this change because you
+> removed the 44x.h include :).
 
-Hrm... PCI is user selectable ? Forgot about that ...
-
-All those platforms have PCI slots, so we may as well select it in
-Kconfig... I'd rather avoid #ifdef's
+Ok.
 
 Ben.
