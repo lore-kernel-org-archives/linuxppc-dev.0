@@ -1,17 +1,14 @@
-Return-Path: <dwalker@mvista.com>
-Received: from dwalker1.mvista.com (gateway-1237.mvista.com [63.81.120.158])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B4B2EDDF3B
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 11:51:36 +1100 (EST)
-Message-Id: <20071213003028.676998182@mvista.com>
-Date: Wed, 12 Dec 2007 00:00:01 -0800
-Subject: [PATCH 1/3] ps3: vuart: fix error path locking
-Message-Id: <20071213003023.117964080@mvista.com>
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: matthias.kaehlcke@gmail.com, linux-kernel@vger.kernel.org, linux@bohmer.net,
-	linuxppc-dev@ozlabs.org, mingo@elte.hu, kjwinchester@gmail.com
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 2/2] kdump shutdown hook support 
+In-reply-to: <20071212070150.GC786@lixom.net> 
+References: <20071212054512.A02B062C153@localhost.localdomain>
+	<20071212070150.GC786@lixom.net>
+Date: Thu, 13 Dec 2007 11:53:55 +1100
+Message-ID: <5018.1197507235@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, THEMANN@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This stray down would cause a permanent sleep which doesn't seem correct. 
-The other uses of this semaphore appear fairly mutex like it's even initialized
-with init_MUTEX() ..  So here a patch for removing this one down().
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> 
+> > +		if (setjmp(crash_shutdown_buf) == 0) {
+> > +			asm volatile("sync; isync");
+> > +			crash_shutdown_handles[i]();
+> > +			asm volatile("sync; isync");
+> > +			__delay(200);
+> 
+> This looks a bit random. Why the handcoded barriers, and why the delay?
+> I don't see a need for the barriers at all here?
 
----
- drivers/ps3/ps3-vuart.c |    1 -
- 1 file changed, 1 deletion(-)
+I was following the bouncing ball here from the xmon code.  We don't
+want the hardware executing any of potentially dangerous hooks before
+we've setup the setjmp save buffer.  Similar, any code past the
+dangerous hooks shouldn't be executed before we take a machine check.
 
-Index: linux-2.6.23/drivers/ps3/ps3-vuart.c
-===================================================================
---- linux-2.6.23.orig/drivers/ps3/ps3-vuart.c
-+++ linux-2.6.23/drivers/ps3/ps3-vuart.c
-@@ -1072,7 +1072,6 @@ static int ps3_vuart_probe(struct ps3_sy
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: drv->probe failed\n",
- 			__func__, __LINE__);
--		down(&vuart_bus_priv.probe_mutex);
- 		goto fail_probe;
- 	}
- 
+It's definitely not a fast path so.... :-)
 
--- 
+> At least comment why the delay is needed (and why just 200 is
+> sufficient). 
+
+xmon.c says: 
+   /* wait a little while to see if we get a machine check */
+
+I'll update the "200" with a #define SETJMP_MACHINE_CHECK_DELAY and push
+the same change into the xmon code.  This delay in the machine check is
+apparently required on 601 machines.
+
+All you other comments I agree with.
+
+Mikey
