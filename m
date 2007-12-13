@@ -1,14 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 2/2] kdump shutdown hook support 
-In-reply-to: <20071212070150.GC786@lixom.net> 
-References: <20071212054512.A02B062C153@localhost.localdomain>
-	<20071212070150.GC786@lixom.net>
-Date: Thu, 13 Dec 2007 11:53:55 +1100
-Message-ID: <5018.1197507235@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
-	Paul Mackerras <paulus@samba.org>, THEMANN@de.ibm.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id BA624DDF62
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 11:56:09 +1100 (EST)
+Date: Thu, 13 Dec 2007 11:55:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
+Message-Id: <20071213115553.8c0d2980.sfr@canb.auug.org.au>
+In-Reply-To: <47606538.2090605@freescale.com>
+References: <20071211212247.GB3620@loki.buserror.net>
+	<20071212154306.dee76c80.sfr@canb.auug.org.au>
+	<47606538.2090605@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,34 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > +		if (setjmp(crash_shutdown_buf) == 0) {
-> > +			asm volatile("sync; isync");
-> > +			crash_shutdown_handles[i]();
-> > +			asm volatile("sync; isync");
-> > +			__delay(200);
-> 
-> This looks a bit random. Why the handcoded barriers, and why the delay?
-> I don't see a need for the barriers at all here?
+On Wed, 12 Dec 2007 16:48:24 -0600 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> Stephen Rothwell wrote:
+> >> +	ep8248e_bcsr =3D of_iomap(ep8248e_bcsr_node, 0);
+> >=20
+> > of_node_put(ep8248e_bcsr_node;
+>=20
+> No, because we hold on to the node for later use in ep8248e_mdio_probe().
 
-I was following the bouncing ball here from the xmon code.  We don't
-want the hardware executing any of potentially dangerous hooks before
-we've setup the setjmp save buffer.  Similar, any code past the
-dangerous hooks shouldn't be executed before we take a machine check.
+Sorry, you are right, I didn't notice that it was global ...
 
-It's definitely not a fast path so.... :-)
+> BTW, is there any actual node removal done that justifies dealing with=20
+> refcounts everywhere?
 
-> At least comment why the delay is needed (and why just 200 is
-> sufficient). 
+In the hotplug code.  So I guess it is not very relevant to you, but it
+is a pain to retrofit this stuff if it does become important more widely.
 
-xmon.c says: 
-   /* wait a little while to see if we get a machine check */
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'll update the "200" with a #define SETJMP_MACHINE_CHECK_DELAY and push
-the same change into the xmon code.  This delay in the machine check is
-apparently required on 601 machines.
+--Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei
+Content-Type: application/pgp-signature
 
-All you other comments I agree with.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Mikey
+iD8DBQFHYIMdTgG2atn1QN8RAnFlAKCECX9gsfWeF5JDFLuE2GE6VMM8hACgiGLN
+woppBlSxUCGBrec3roajtIg=
+=DQG6
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Dec_2007_11_55_53_+1100_X2S_87kV2Ag2C9Ei--
