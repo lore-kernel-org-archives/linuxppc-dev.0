@@ -1,17 +1,15 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31DBFDE111
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 21:16:46 +1100 (EST)
-Date: Thu, 13 Dec 2007 19:11:36 +0900 (JST)
-Message-Id: <20071213.191136.-1300517100.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: [PATCH 1/2] cleanup calling mmio_nvram_init
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
+Return-Path: <mokuno@sm.sony.co.jp>
+Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
+	by ozlabs.org (Postfix) with ESMTP id D6126DE05E
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 21:39:50 +1100 (EST)
+Date: Thu, 13 Dec 2007 19:38:28 +0900
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+To: netdev@vger.kernel.org
+Subject: [PATCH 0/6] PS3: gelic: gelic updates for 2.6.25
+Message-Id: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds conditional initialization for mmio_nvram_init().
+	Hi,
 
-Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
----
+Here is a set of updates for PS3 gelic network driver.
+This patch set requires other patches which were already submitted by
+Geert (http://marc.info/?l=linux-kernel&m=119626095605487).
 
-Here is the previous discussion:
- http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047435.html
+	[1] PS3: gelic: Fix the wrong dev_id passed
+	[2] PS3: gelic: Add endianness macros
+	[3] PS3: gelic: Code cleanup
+	[4] PS3: gelic: Remove duplicated ethtool handers
+	[5] PS3: gelic: Add support for port link status
+	[6] PS3: gelic: Add support for dual network interface
 
+This is also a set of prerequisite for new wireless driver for PS3, which
+I'll submit later. 
 
-Index: linux-powerpc-git/arch/powerpc/platforms/cell/setup.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/cell/setup.c
-+++ linux-powerpc-git/arch/powerpc/platforms/cell/setup.c
-@@ -179,9 +179,7 @@ static void __init cell_setup_arch(void)
- 	conswitchp = &dummy_con;
- #endif
- 
--#ifdef CONFIG_MMIO_NVRAM
- 	mmio_nvram_init();
--#endif
- }
- 
- static int __init cell_probe(void)
-Index: linux-powerpc-git/include/asm-powerpc/nvram.h
-===================================================================
---- linux-powerpc-git.orig/include/asm-powerpc/nvram.h
-+++ linux-powerpc-git/include/asm-powerpc/nvram.h
-@@ -10,6 +10,8 @@
- #ifndef _ASM_POWERPC_NVRAM_H
- #define _ASM_POWERPC_NVRAM_H
- 
-+#include <linux/errno.h>
-+
- #define NVRW_CNT 0x20
- #define NVRAM_HEADER_LEN 16 /* sizeof(struct nvram_header) */
- #define NVRAM_BLOCK_LEN 16
-@@ -71,7 +73,16 @@ extern int nvram_clear_error_log(void);
- extern struct nvram_partition *nvram_find_partition(int sig, const char *name);
- 
- extern int pSeries_nvram_init(void);
-+
-+#ifdef CONFIG_MMIO_NVRAM
- extern int mmio_nvram_init(void);
-+#else
-+static inline int mmio_nvram_init(void)
-+{
-+	return -ENODEV;
-+}
-+#endif
-+
- #endif /* __KERNEL__ */
- 
- /* PowerMac specific nvram stuffs */
+Thanks for reviewing!
+
+-- 
+Masakazu MOKUNO
