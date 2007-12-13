@@ -4,18 +4,17 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2140DDE2D
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 03:55:42 +1100 (EST)
-Date: Thu, 13 Dec 2007 10:55:30 -0600
+	by ozlabs.org (Postfix) with ESMTP id 8D552DDF28
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 04:16:10 +1100 (EST)
+Date: Thu, 13 Dec 2007 11:15:28 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFC] CPM1: implement GPIO API
-Message-ID: <20071213165530.GB4347@loki.buserror.net>
-References: <47600F5E.8060907@scram.de>
+To: dwmw2@infradead.org
+Subject: [PATCH 1/4] nand base: Don't panic if a controller driver does ecc
+	its own way.
+Message-ID: <20071213171528.GA4440@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47600F5E.8060907@scram.de>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 12, 2007 at 05:42:06PM +0100, Jochen Friedrich wrote:
-> +int cpm_init_par_io(void)
-> +{
-> +	int ret;
-> +	struct device_node *np;
-> +	const u32 *num_ports;
-> +	int i;
-> +
-> +	np = of_find_node_by_name(NULL, "par_io");
-> +	if (!np) {
-> +		ret = -ENOENT;
-> +		goto err0;
-> +	}
+Some hardware, such as the enhanced local bus controller used on some
+mpc83xx chips, does ecc transparently when reading and writing data, rather
+than providing a generic calculate/correct mechanism that can be exported to
+the nand subsystem.
 
-Shouldn't this lookup be by compatible (something like fsl,cpm1-gpio would
-be good)?
+The subsystem should not BUG() when calculate, correct, or hwctl are
+missing, if the methods that call them have been overridden.
 
-> +int gpio_request(unsigned int gpio, const char *label)
-> +{
-> +	if (!cpm1_port_locks)
-> +		return -ENODEV;
-> +
-> +	if (gpio / 32 > cpm1_num_ports)
-> +		return -EINVAL;
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ drivers/mtd/nand/nand_base.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-Shouldn't this be ">="?
-
-> +	return 0;
-
-No already-requested check?
-
-> +}
-> +EXPORT_SYMBOL_GPL(gpio_request);
-
-This is an API, not internals; can we stick with plain EXPORT_SYMBOL()?
-
--Scott
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index e29c1da..85a7283 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -2469,8 +2469,12 @@ int nand_scan_tail(struct mtd_info *mtd)
+ 			chip->ecc.write_oob = nand_write_oob_std;
+ 
+ 	case NAND_ECC_HW_SYNDROME:
+-		if (!chip->ecc.calculate || !chip->ecc.correct ||
+-		    !chip->ecc.hwctl) {
++		if ((!chip->ecc.calculate || !chip->ecc.correct ||
++		     !chip->ecc.hwctl) &&
++		    (!chip->ecc.read_page ||
++		     chip->ecc.read_page == nand_read_page_hwecc) ||
++		     !chip->ecc.write_page ||
++		     chip->ecc.write_page == nand_write_page_hwecc) {
+ 			printk(KERN_WARNING "No ECC functions supplied, "
+ 			       "Hardware ECC not possible\n");
+ 			BUG();
+-- 
+1.5.3.7
