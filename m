@@ -1,11 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18272.49134.707719.50599@cargo.ozlabs.ibm.com>
-Date: Thu, 13 Dec 2007 16:15:26 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Do ioremap and allocation for sleep on 3400 once at boot
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC] ehea: kdump support using new shutdown hook
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Dave Jones <davej@redhat.com>
+In-Reply-To: <20071212170440.GD2359@redhat.com>
+References: <200712121753.43543.osstklei@de.ibm.com>
+	<20071212170440.GD2359@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-tGfd8eIMJyAvH2YKdVzf"
+Date: Thu, 13 Dec 2007 17:30:24 +1100
+Message-Id: <1197527424.7695.43.camel@concordia>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,92 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently the sleep code on the old powerbook 3400 does an ioremap and
-a kmalloc on each sleep/wakeup cycle.  This moves the ioremap and
-kmalloc to boot-time code (via_pmu_start) so that they only need to be
-done once.  This will be more convenient when we change to using the
-generic suspend code, since it will avoid the need to do the
-ioremap/kmalloc after devices have been suspended.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 35e1f22..0e84cb8 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -203,6 +203,12 @@ static int proc_read_options(char *page, char **start, off_t off,
- static int proc_write_options(struct file *file, const char __user *buffer,
- 			unsigned long count, void *data);
- 
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
-+static void powerbook_sleep_init_3400(void);
-+#else
-+#define powerbook_sleep_init_3400()	do { } while (0)
-+#endif
-+
- #ifdef CONFIG_ADB
- struct adb_driver via_pmu_driver = {
- 	"PMU",
-@@ -450,6 +456,10 @@ static int __init via_pmu_start(void)
- 		pmu_poll();
- 	} while (pmu_state != idle);
- 
-+	/* Do allocations and ioremaps that will be needed for sleep */
-+	if (pmu_kind == PMU_OHARE_BASED)
-+		powerbook_sleep_init_3400();
-+
- 	return 0;
- }
- 
-@@ -2271,26 +2281,30 @@ powerbook_sleep_Core99(void)
- #define PB3400_MEM_CTRL		0xf8000000
- #define PB3400_MEM_CTRL_SLEEP	0x70
- 
--static int
--powerbook_sleep_3400(void)
-+static void __iomem *pb3400_mem_ctrl;
-+
-+static void powerbook_sleep_init_3400(void)
-+{
-+	/* map in the memory controller registers */
-+	pb3400_mem_ctrl = ioremap(PB3400_MEM_CTRL, 0x100);
-+	if (pb3400_mem_ctrl == NULL)
-+		printk(KERN_WARNING "ioremap failed: sleep won't be possible");
-+
-+	/* Allocate room for PCI save */
-+	pbook_alloc_pci_save();
-+}
-+
-+static int powerbook_sleep_3400(void)
- {
- 	int ret, i, x;
- 	unsigned int hid0;
- 	unsigned long p;
- 	struct adb_request sleep_req;
--	void __iomem *mem_ctrl;
- 	unsigned int __iomem *mem_ctrl_sleep;
- 
--	/* first map in the memory controller registers */
--	mem_ctrl = ioremap(PB3400_MEM_CTRL, 0x100);
--	if (mem_ctrl == NULL) {
--		printk("powerbook_sleep_3400: ioremap failed\n");
-+	if (pb3400_mem_ctrl == NULL)
- 		return -ENOMEM;
--	}
--	mem_ctrl_sleep = mem_ctrl + PB3400_MEM_CTRL_SLEEP;
--
--	/* Allocate room for PCI save */
--	pbook_alloc_pci_save();
-+	mem_ctrl_sleep = pb3400_mem_ctrl + PB3400_MEM_CTRL_SLEEP;
- 
- 	ret = pmac_suspend_devices();
- 	if (ret) {
-@@ -2343,8 +2357,6 @@ powerbook_sleep_3400(void)
- 		mb();
- 
- 	pmac_wakeup_devices();
--	pbook_free_pci_save();
--	iounmap(mem_ctrl);
- 
- 	return 0;
- }
+--=-tGfd8eIMJyAvH2YKdVzf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2007-12-12 at 12:04 -0500, Dave Jones wrote:
+> On Wed, Dec 12, 2007 at 05:53:43PM +0100, Thomas Klein wrote:
+>=20
+>  > +static void ehea_update_adapter_handles(struct ehea_adapter *adapter)
+>  > +{
+>  > +	int i, k;
+>  > +	int j =3D 0;
+>  > +
+>  > +	memset(adapter->res_handles, sizeof(adapter->res_handles), 0);
+>=20
+> arguments wrong way around.
+
+Remind me why bzero is deprecated again? :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-tGfd8eIMJyAvH2YKdVzf
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHYNGAdSjSd0sB4dIRAoFEAJ9QM6YR0cPfq81FGpxCjKh30Q7reACcCJ7i
+/EUszDgbpmAvWyZO1o1oXHg=
+=jX6N
+-----END PGP SIGNATURE-----
+
+--=-tGfd8eIMJyAvH2YKdVzf--
