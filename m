@@ -1,36 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 47551DE07E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 08:11:54 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBDLBpoR019071
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 16:11:51 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBDLBe1u084078
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:11:40 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBDLBeYv031418
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2007 14:11:40 -0700
-Date: Thu, 13 Dec 2007 15:11:38 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 19/20] [POWERPC] pci32: 4xx embedded platforms want to
-	reassign all PCI resources
-Message-ID: <20071213151138.02db0cd8@weaponx>
-In-Reply-To: <1197579177.15741.169.camel@pasglop>
-References: <20071213073851.C321FDDFC9@ozlabs.org>
-	<20071213130113.59342c40@weaponx>
-	<1197578243.15741.150.camel@pasglop>
-	<20071213144056.1a46b7a3@weaponx>
-	<1197579177.15741.169.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Caitlin.Bestler@neterion.com>
+Received: from owa.neterion.com (mx.neterion.com [72.1.205.142])
+	by ozlabs.org (Postfix) with ESMTP id 41763DE07D
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 08:21:17 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [ofa-general] Re: [ewg] Re: [PATCH] IB/ehca: Serialize
+	HCA-related hCalls on POWER5
+Date: Thu, 13 Dec 2007 16:08:34 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD7702B14004@nekter>
+In-Reply-To: <OFD5B7D5E6.3538DC2A-ONC12573B0.0072D42A-C12573B0.00735730@de.ibm.com>
+References: <469958e00712131122s661dd970ud359389e1c6637d4@mail.gmail.com>
+	<OFD5B7D5E6.3538DC2A-ONC12573B0.0072D42A-C12573B0.00735730@de.ibm.com>
+From: "Caitlin Bestler" <Caitlin.Bestler@neterion.com>
+To: "Joachim Fenkes" <FENKES@de.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Roland Dreier <rdreier@cisco.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Or Gerlitz <ogerlitz@voltaire.com>, linuxppc-dev@ozlabs.org,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,49 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 14 Dec 2007 07:52:57 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> 
-> On Thu, 2007-12-13 at 14:40 -0600, Josh Boyer wrote:
-> > 
-> > > > This one is slightly broken in my opinion.  You've added
-> > > > the ppc_pci_flags to all of these platforms, which is fine for
-> > your
-> > > > intended goal.  But now all of these platforms _have_ to compile
-> > with
-> > > > PCI enabled or they'll break with:
-> > > > 
-> > > > arch/powerpc/platforms/built-in.o: In function `walnut_probe':
-> > > > walnut.c:(.init.text+0x9a): undefined reference to `ppc_pci_flags'
-> > > > walnut.c:(.init.text+0xa6): undefined reference to `ppc_pci_flags'
-> > > > make[1]: *** [.tmp_vmlinux1] Error 1
-> > > > 
-> > > > So to do it correctly we need to either select CONFIG_PCI for all
-> > of
-> > > > them, wrap the ppc_pci_flags assignment in #ifdef CONFIG_PCI, or
-> > move
-> > > > the ppc_pci_flags variable declaration into something that always
-> > gets
-> > > > compiled.
-> > > 
-> > > Hrm... PCI is user selectable ? Forgot about that ...
-> > > 
-> > > All those platforms have PCI slots, so we may as well select it in
-> > > Kconfig... I'd rather avoid #ifdef's
-> > 
-> > What about people that don't have PCI on their boards, or don't really
-> > care about it?
-> 
-> Then those boards wouldn't be a walnut, ep405, ... right ?
-> 
-> That's why I put the flags in the BSP. If your board has no PCI, don't
-> muck around with the PCI flags. 
 
-Well, there is physical PCI hardware on the boards, yes.  But what if
-people have no intention of using it?  E.g. they have no devices, etc.
-Now we're requiring PCI support to be built into the kernel.
+> -----Original Message-----
+> From: Joachim Fenkes [mailto:FENKES@de.ibm.com]
+> Sent: Thursday, December 13, 2007 1:00 PM
+> To: Caitlin Bestler
+> Cc: Arnd Bergmann; caitlin.bestler@gmail.com; OF-General; LKML;
+> linuxppc-dev@ozlabs.org; Or Gerlitz; Roland Dreier; Stefan Roscher
+> Subject: Re: [ofa-general] Re: [ewg] Re: [PATCH] IB/ehca: Serialize
+> HCA-related hCalls on POWER5
+>=20
+> caitlin.bestler@gmail.com wrote on 13.12.2007 20:22:49:
+>=20
+> > On Dec 13, 2007 12:30 AM, Or Gerlitz <ogerlitz@voltaire.com> wrote:
+> > > The current implementation of the open iscsi initiator makes sure
+> to
+> > > issue commands in thread (sleepable) context, see iscsi_xmitworker
+> and
+> > > references to it in drivers/scsi/libiscsi.c , so this keeps ehca
+> users
+> > > safe for the time being.
+>=20
+> > I agree, *some* form of FMR support is important for iSER (and
+> probably
+> > for NFS over RDMA as well). Rather than adding a crippled NO FMR
+> > mode it would make more sense to add support for FMR Work Requests.
+> > I'm not certain what, if any, impact that would have on the Power5
+> problem,
+> > but that's certainly a cleaner path for iWARP.
+>=20
+> Well, FMR WRs wouldn't change the eHCA issue -- the driver would have
+> to
+> make an hCall in any case, and the architecture says that the hCalls
+> used
+> in this scenario might return H_LONG_BUSY, causing the driver to
+sleep.
+> No
+> way around that. Because of this, eHCA's FMRs are actually standard
+MRs
+> with a different API.
+>=20
+> If, as Or said, the iSCSI initiator issues commands in sleepable
+> context
+> anyway, nothing would be lost by using standard MRs as a fallback
+> solution
+> if FMRs aren't available, would it?
+>=20
 
-I'm just being pedantic about keeping embedded tiny.
+To clarify, an FMR Work Request is simply posted to the SendQ like
+any other Work Request (of course the QP has to be privileged, or
+it will complete in error). An SQ Post should never block.
 
-josh
+But yes, if the current iSCSI initiator always does all call-based
+FMRs in a sleepable context then I would agree then any changes can
+wait for the first vendor that wants to support FMR Work Requests.
+
+FMR Work Requests can be pipelined, so anyone with hardware that
+supported them would have strong motivation to enable the open
+iSCSI initiator to take advantage of this.
