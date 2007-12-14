@@ -1,19 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 43646DE0D0
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 06:21:59 +1100 (EST)
-Date: Fri, 14 Dec 2007 22:24:46 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E7041DE0CD
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 06:34:05 +1100 (EST)
+Message-ID: <4762DA95.90000@freescale.com>
+Date: Fri, 14 Dec 2007 13:33:41 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
 Subject: Re: [PATCH v2 4/4] Freescale enhanced Local Bus Controller FCM NAND
 	support.
-Message-ID: <20071214192446.GA3355@localhost.localdomain>
 References: <20071214185624.GA10584@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071214185624.GA10584@loki.buserror.net>
+	<20071214192446.GA3355@localhost.localdomain>
+In-Reply-To: <20071214192446.GA3355@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,250 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 14, 2007 at 12:56:24PM -0600, Scott Wood wrote:
-> Signed-off-by: Nick Spence <nick.spence@freescale.com>
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> Respun according to feedback; also, fixed a couple direct accesses
-> of iomem.
+Anton Vorontsov wrote:
+> On Fri, Dec 14, 2007 at 12:56:24PM -0600, Scott Wood wrote:
+>> +#if 0
+>> +#define ELBC_NAND_DEBUG_LVL 6
+>> +#endif
+>> +
+>> +#ifdef ELBC_NAND_DEBUG_LVL
+>> +static int fcm_debug_level = ELBC_NAND_DEBUG_LVL;
+>> +#define FCM_DEBUG(n, args...)		\
+>> +	do {					\
+>> +		if (n <= fcm_debug_level)	\
+>> +			pr_dbg(args);	\
+>> +	} while(0)
+>> +#else
+>> +#define FCM_DEBUG(n, dev, args...) do { } while(0)
+>> +#endif
 > 
->  drivers/mtd/nand/Kconfig         |    9 +
->  drivers/mtd/nand/Makefile        |    1 +
->  drivers/mtd/nand/fsl_elbc_nand.c | 1217 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 1227 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/mtd/nand/fsl_elbc_nand.c
-> 
-[...]
-> +#if 0
-> +#define ELBC_NAND_DEBUG_LVL 6
-> +#endif
-> +
-> +#ifdef ELBC_NAND_DEBUG_LVL
-> +static int fcm_debug_level = ELBC_NAND_DEBUG_LVL;
-> +#define FCM_DEBUG(n, args...)		\
-> +	do {					\
-> +		if (n <= fcm_debug_level)	\
-> +			pr_dbg(args);	\
-> +	} while(0)
-> +#else
-> +#define FCM_DEBUG(n, dev, args...) do { } while(0)
-> +#endif
+> Only 1, 2 and 5 debug levels are used. Maybe better use dev_dbg
+> and dev_vdbg instead?
 
-Only 1, 2 and 5 debug levels are used. Maybe better use dev_dbg
-and dev_vdbg instead?
+Yeah, probably...
 
-Btw, checkpatch result:
-total: 69 errors, 14 warnings, 1236 lines checked
+> Btw, checkpatch result:
+> total: 69 errors, 14 warnings, 1236 lines checked
 
-This isn't very friendly to the people going to look into.
+Most of those are errors in checkpatch, wherein it fails to understand 
+the difference between aligning with spaces (good) and indenting with 
+spaces (bad).  Checkpatch spits out so many of those that other things 
+get lost in the noise, so I don't usually bother to run it.
 
-> +#define MAX_BANKS 8
-> +#define ERR_BYTE 0xFF /* Value returned for read bytes when read failed */
-> +#define FCM_TIMEOUT_MSECS 500 /* Maximum number of mSecs to wait for FCM */
-> +
-> +struct elbc_bank {
-> +	__be32 br;             /**< Base Register  */
-> +#define BR_BA           0xFFFF8000
-> +#define BR_BA_SHIFT             15
-> +#define BR_PS           0x00001800
-> +#define BR_PS_SHIFT             11
-> +#define BR_PS_8         0x00000800  /* Port Size 8 bit */
-> +#define BR_PS_16        0x00001000  /* Port Size 16 bit */
-> +#define BR_PS_32        0x00001800  /* Port Size 32 bit */
-> +#define BR_DECC         0x00000600
-> +#define BR_DECC_SHIFT            9
-> +#define BR_DECC_OFF     0x00000000  /* HW ECC checking and generation off */
-> +#define BR_DECC_CHK     0x00000200  /* HW ECC checking on, generation off */
-> +#define BR_DECC_CHK_GEN 0x00000400  /* HW ECC checking and generation on */
-> +#define BR_WP           0x00000100
-> +#define BR_WP_SHIFT              8
-> +#define BR_MSEL         0x000000E0
-> +#define BR_MSEL_SHIFT            5
-> +#define BR_MS_GPCM      0x00000000  /* GPCM */
-> +#define BR_MS_FCM       0x00000020  /* FCM */
-> +#define BR_MS_SDRAM     0x00000060  /* SDRAM */
-> +#define BR_MS_UPMA      0x00000080  /* UPMA */
-> +#define BR_MS_UPMB      0x000000A0  /* UPMB */
-> +#define BR_MS_UPMC      0x000000C0  /* UPMC */
-> +#define BR_V            0x00000001
-> +#define BR_V_SHIFT               0
-> +#define BR_RES          ~(BR_BA|BR_PS|BR_DECC|BR_WP|BR_MSEL|BR_V)
-> +
-> +	__be32 or;             /**< Base Register  */
-> +#define OR0 0x5004
-> +#define OR1 0x500C
-> +#define OR2 0x5014
-> +#define OR3 0x501C
-> +#define OR4 0x5024
-> +#define OR5 0x502C
-> +#define OR6 0x5034
-> +#define OR7 0x503C
-> +
-> +#define OR_FCM_AM               0xFFFF8000
-> +#define OR_FCM_AM_SHIFT                 15
-> +#define OR_FCM_BCTLD            0x00001000
-> +#define OR_FCM_BCTLD_SHIFT              12
-> +#define OR_FCM_PGS              0x00000400
-> +#define OR_FCM_PGS_SHIFT                10
-> +#define OR_FCM_CSCT             0x00000200
-> +#define OR_FCM_CSCT_SHIFT                9
-> +#define OR_FCM_CST              0x00000100
-> +#define OR_FCM_CST_SHIFT                 8
-> +#define OR_FCM_CHT              0x00000080
-> +#define OR_FCM_CHT_SHIFT                 7
-> +#define OR_FCM_SCY              0x00000070
-> +#define OR_FCM_SCY_SHIFT                 4
-> +#define OR_FCM_SCY_1            0x00000010
-> +#define OR_FCM_SCY_2            0x00000020
-> +#define OR_FCM_SCY_3            0x00000030
-> +#define OR_FCM_SCY_4            0x00000040
-> +#define OR_FCM_SCY_5            0x00000050
-> +#define OR_FCM_SCY_6            0x00000060
-> +#define OR_FCM_SCY_7            0x00000070
-> +#define OR_FCM_RST              0x00000008
-> +#define OR_FCM_RST_SHIFT                 3
-> +#define OR_FCM_TRLX             0x00000004
-> +#define OR_FCM_TRLX_SHIFT                2
-> +#define OR_FCM_EHTR             0x00000002
-> +#define OR_FCM_EHTR_SHIFT                1
-> +};
-> +
-> +struct elbc_regs {
-> +	struct elbc_bank bank[8];
-> +	u8 res0[0x28];
-> +	__be32 mar;             /**< UPM Address Register */
-> +	u8 res1[0x4];
-> +	__be32 mamr;            /**< UPMA Mode Register */
-> +	__be32 mbmr;            /**< UPMB Mode Register */
-> +	__be32 mcmr;            /**< UPMC Mode Register */
-> +	u8 res2[0x8];
-> +	__be32 mrtpr;           /**< Memory Refresh Timer Prescaler Register */
-> +	__be32 mdr;             /**< UPM Data Register */
-> +	u8 res3[0x4];
-> +	__be32 lsor;            /**< Special Operation Initiation Register */
-> +	__be32 lsdmr;           /**< SDRAM Mode Register */
-> +	u8 res4[0x8];
-> +	__be32 lurt;            /**< UPM Refresh Timer */
-> +	__be32 lsrt;            /**< SDRAM Refresh Timer */
-> +	u8 res5[0x8];
-> +	__be32 ltesr;           /**< Transfer Error Status Register */
-> +#define LTESR_BM   0x80000000
-> +#define LTESR_FCT  0x40000000
-> +#define LTESR_PAR  0x20000000
-> +#define LTESR_WP   0x04000000
-> +#define LTESR_ATMW 0x00800000
-> +#define LTESR_ATMR 0x00400000
-> +#define LTESR_CS   0x00080000
-> +#define LTESR_CC   0x00000001
-> +#define LTESR_NAND_MASK (LTESR_FCT | LTESR_PAR | LTESR_CC)
-> +	__be32 ltedr;           /**< Transfer Error Disable Register */
-> +	__be32 lteir;           /**< Transfer Error Interrupt Register */
-> +	__be32 lteatr;          /**< Transfer Error Attributes Register */
-> +	__be32 ltear;           /**< Transfer Error Address Register */
-> +	u8 res6[0xC];
-> +	__be32 lbcr;            /**< Configuration Register */
-> +#define LBCR_LDIS  0x80000000
-> +#define LBCR_LDIS_SHIFT    31
-> +#define LBCR_BCTLC 0x00C00000
-> +#define LBCR_BCTLC_SHIFT   22
-> +#define LBCR_AHD   0x00200000
-> +#define LBCR_LPBSE 0x00020000
-> +#define LBCR_LPBSE_SHIFT   17
-> +#define LBCR_EPAR  0x00010000
-> +#define LBCR_EPAR_SHIFT    16
-> +#define LBCR_BMT   0x0000FF00
-> +#define LBCR_BMT_SHIFT      8
-> +#define LBCR_INIT  0x00040000
-> +	__be32 lcrr;            /**< Clock Ratio Register */
-> +#define LCRR_DBYP    0x80000000
-> +#define LCRR_DBYP_SHIFT      31
-> +#define LCRR_BUFCMDC 0x30000000
-> +#define LCRR_BUFCMDC_SHIFT   28
-> +#define LCRR_ECL     0x03000000
-> +#define LCRR_ECL_SHIFT       24
-> +#define LCRR_EADC    0x00030000
-> +#define LCRR_EADC_SHIFT      16
-> +#define LCRR_CLKDIV  0x0000000F
-> +#define LCRR_CLKDIV_SHIFT     0
-> +	u8 res7[0x8];
-> +	__be32 fmr;             /**< Flash Mode Register */
-> +#define FMR_CWTO     0x0000F000
-> +#define FMR_CWTO_SHIFT       12
-> +#define FMR_BOOT     0x00000800
-> +#define FMR_ECCM     0x00000100
-> +#define FMR_AL       0x00000030
-> +#define FMR_AL_SHIFT          4
-> +#define FMR_OP       0x00000003
-> +#define FMR_OP_SHIFT          0
-> +	__be32 fir;             /**< Flash Instruction Register */
-> +#define FIR_OP0      0xF0000000
-> +#define FIR_OP0_SHIFT        28
-> +#define FIR_OP1      0x0F000000
-> +#define FIR_OP1_SHIFT        24
-> +#define FIR_OP2      0x00F00000
-> +#define FIR_OP2_SHIFT        20
-> +#define FIR_OP3      0x000F0000
-> +#define FIR_OP3_SHIFT        16
-> +#define FIR_OP4      0x0000F000
-> +#define FIR_OP4_SHIFT        12
-> +#define FIR_OP5      0x00000F00
-> +#define FIR_OP5_SHIFT         8
-> +#define FIR_OP6      0x000000F0
-> +#define FIR_OP6_SHIFT         4
-> +#define FIR_OP7      0x0000000F
-> +#define FIR_OP7_SHIFT         0
-> +#define FIR_OP_NOP   0x0	/* No operation and end of sequence */
-> +#define FIR_OP_CA    0x1        /* Issue current column address */
-> +#define FIR_OP_PA    0x2        /* Issue current block+page address */
-> +#define FIR_OP_UA    0x3        /* Issue user defined address */
-> +#define FIR_OP_CM0   0x4        /* Issue command from FCR[CMD0] */
-> +#define FIR_OP_CM1   0x5        /* Issue command from FCR[CMD1] */
-> +#define FIR_OP_CM2   0x6        /* Issue command from FCR[CMD2] */
-> +#define FIR_OP_CM3   0x7        /* Issue command from FCR[CMD3] */
-> +#define FIR_OP_WB    0x8        /* Write FBCR bytes from FCM buffer */
-> +#define FIR_OP_WS    0x9        /* Write 1 or 2 bytes from MDR[AS] */
-> +#define FIR_OP_RB    0xA        /* Read FBCR bytes to FCM buffer */
-> +#define FIR_OP_RS    0xB        /* Read 1 or 2 bytes to MDR[AS] */
-> +#define FIR_OP_CW0   0xC        /* Wait then issue FCR[CMD0] */
-> +#define FIR_OP_CW1   0xD        /* Wait then issue FCR[CMD1] */
-> +#define FIR_OP_RBW   0xE        /* Wait then read FBCR bytes */
-> +#define FIR_OP_RSW   0xE        /* Wait then read 1 or 2 bytes */
-> +	__be32 fcr;             /**< Flash Command Register */
-> +#define FCR_CMD0     0xFF000000
-> +#define FCR_CMD0_SHIFT       24
-> +#define FCR_CMD1     0x00FF0000
-> +#define FCR_CMD1_SHIFT       16
-> +#define FCR_CMD2     0x0000FF00
-> +#define FCR_CMD2_SHIFT        8
-> +#define FCR_CMD3     0x000000FF
-> +#define FCR_CMD3_SHIFT        0
-> +	__be32 fbar;            /**< Flash Block Address Register */
-> +#define FBAR_BLK     0x00FFFFFF
-> +	__be32 fpar;            /**< Flash Page Address Register */
-> +#define FPAR_SP_PI   0x00007C00
-> +#define FPAR_SP_PI_SHIFT     10
-> +#define FPAR_SP_MS   0x00000200
-> +#define FPAR_SP_CI   0x000001FF
-> +#define FPAR_SP_CI_SHIFT      0
-> +#define FPAR_LP_PI   0x0003F000
-> +#define FPAR_LP_PI_SHIFT     12
-> +#define FPAR_LP_MS   0x00000800
-> +#define FPAR_LP_CI   0x000007FF
-> +#define FPAR_LP_CI_SHIFT      0
-> +	__be32 fbcr;            /**< Flash Byte Count Register */
-> +#define FBCR_BC      0x00000FFF
-> +	u8 res11[0x8];
-> +	u8 res8[0xF00];
-> +};
-> +
+I also do not understand the allergy to C99 comments in the Linux 
+community, though I'll change the few that slipped in by accident.
 
-Maybe this desires its own header?
+I'll fix the few legitimate ones.
 
+> This isn't very friendly to the people going to look into.
 
-Thanks!
+You should have seen what it looked like before I touched it. :-P
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+> Maybe this desires its own header?
+
+It can be factored out if anything else ever uses it.
+
+-Scott
