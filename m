@@ -1,26 +1,33 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id EB3FFDDFA6
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 19:17:46 +1100 (EST)
-Date: Fri, 14 Dec 2007 02:23:13 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 2/4] [libata] pata_of_platform: OF-Platform PATA
-	device driver
-Message-ID: <20071214082313.GA28118@lixom.net>
-References: <20071204170442.GA10460@localhost.localdomain>
-	<20071204170719.GB15599@localhost.localdomain>
-	<20071204184826.GA5758@lixom.net>
-	<20071204194921.GB1253@localhost.localdomain>
-	<20071204200121.GA6782@lixom.net>
-	<20071205004841.GA25905@linux-sh.org>
-	<20071205183912.GA4516@loki.buserror.net>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C07EDDFE4
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 19:33:55 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	lBE8XEog005898
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 01:33:14 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lBE8X2Zu025791
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 02:33:03 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071205183912.GA4516@loki.buserror.net>
-Cc: linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] add MPC837x MDS board default device tree
+Date: Fri, 14 Dec 2007 16:33:00 +0800
+Message-ID: <989B956029373F45A0B8AF029708189001B4DBA0@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4A496992-9B46-427D-8F40-447E92F8CA3D@kernel.crashing.org>
+References: <1196851073-11801-1-git-send-email-leoli@freescale.com>
+	<20071207020130.GA26412@localhost.localdomain>
+	<4A496992-9B46-427D-8F40-447E92F8CA3D@kernel.crashing.org>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"David Gibson" <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,24 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 05, 2007 at 12:39:12PM -0600, Scott Wood wrote:
-> On Wed, Dec 05, 2007 at 09:48:41AM +0900, Paul Mundt wrote:
-> > On Tue, Dec 04, 2007 at 02:01:21PM -0600, Olof Johansson wrote:
-> > > On Tue, Dec 04, 2007 at 10:49:21PM +0300, Anton Vorontsov wrote:
-> > > >  	tristate "Generic platform device PATA support"
-> > > > -	depends on EMBEDDED || ARCH_RPC
-> > > > +	depends on EMBEDDED || ARCH_PPC
-> > > 
-> > > It needs to be || PPC, not || ARCH_PPC.
-> > > 
-> > Wrong. It needs to be EMBEDDED || ARCH_RPC || PPC.
-> 
-> Why is it dependent on anything other than platform bus support and ATA?
 
-There's no way to specify dependency on platform bus as a config option,
-that's likely what EMBEDDED was meant to do. Some platforms have platform
-bus in spite of being !EMBEDDED, arch/arm/configs/rpc_defconfig seems
-to be among those. PPC too.
+> >> +			device_type =3D "serial";
+> >> +			compatible =3D "ns16550";
+> >> +			reg =3D <4600 100>;
+> >> +			clock-frequency =3D <0>;
+> >> +			interrupts =3D <a 8>;
+> >> +			interrupt-parent =3D < &ipic >;
+> >> +		};
+> >> +
+> >> +		crypto@30000 {
+> >> +			model =3D "SEC3";
+> >> +			compatible =3D "talitos";
+> >
+> > This driver, also, needs fixing to recognize a better formatted=20
+> > compatible property.
+>=20
+> Can you respin with David's changes as well as mirror my=20
+> cleanup of the other 83xx/85xx .dts
 
+Sure, but I'm taking one week off.  Will send you the updated one after
+Christmas though.
 
--Olof
+- Leo
