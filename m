@@ -1,19 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DFA90DDF35
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 19:38:15 +1100 (EST)
-Date: Fri, 14 Dec 2007 02:43:43 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/15] [POWERPC] pci32: Add flags modifying the PCI code
-	behaviour
-Message-ID: <20071214084343.GC28118@lixom.net>
-References: <1197608163.200976.87755569596.qpush@grosgo>
-	<20071214045612.3A7E6DE2E2@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071214045612.3A7E6DE2E2@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id ADCD5DE055
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 19:46:30 +1100 (EST)
+In-Reply-To: <20071213234221.B0BC27D0054@mail142-sin.bigfish.com>
+References: <20071213234221.B0BC27D0054@mail142-sin.bigfish.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f7eb0ae3da29213720e6b0049deca335@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 1/7] bootwrapper: Add a firmware-independent "raw" target.
+Date: Fri, 14 Dec 2007 02:05:56 -0600
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri Dec 14 10:43:27 EST 2007,  Stephen Neuendorffer wrote:
 
-Minor nitpicks:
-
-On Fri, Dec 14, 2007 at 03:56:05PM +1100, Benjamin Herrenschmidt wrote:
-
-> --- linux-merge.orig/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:28.000000000 +1100
-> +++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:29.000000000 +1100
-> @@ -48,7 +51,7 @@ static u8* pci_to_OF_bus_map;
->  /* By default, we don't re-assign bus numbers. We do this only on
->   * some pmacs
->   */
-> -int pci_assign_all_buses;
-> +static int pci_assign_all_buses;
->  
-
-Why not remove it alltogether, there's still the function to test the
-flag that's just as cheap (load + test + branch).
-
-> Index: linux-merge/include/asm-powerpc/pci-bridge.h
-> ===================================================================
-> --- linux-merge.orig/include/asm-powerpc/pci-bridge.h	2007-12-14 15:49:01.000000000 +1100
-> +++ linux-merge/include/asm-powerpc/pci-bridge.h	2007-12-14 15:49:29.000000000 +1100
-> @@ -13,6 +13,26 @@
->  
->  struct device_node;
->  
-> +extern unsigned int ppc_pci_flags;
-
-Should the below be a named enum and the type for the above be the same
-for nicer decode in gdb?
-
-> +enum {
-> +	/* Force re-assigning all resources (ignore firmware
-> +	 * setup completely)
-> +	 */
-> +	PPC_PCI_REASSIGN_ALL_RSRC	= 0x00000001,
-
-This should be ..._RSRCS (resources, not resource)
-
-> +	/* Re-assign all bus numbers */
-> +	PPC_PCI_REASSIGN_ALL_BUS	= 0x00000002,
-
-And this should be ..._BUSSES
-
-> +	/* Do not try to assign, just use existing setup */
-> +	PPC_PCI_PROBE_ONLY		= 0x00000004,
-
-My first reaction was "what's the difference between setting this and
-keeping the two other cleared". Looks like the difference is the
-assignment of unassigned resources. Not sure how to better represent
-that so it's obvious from the naming (without doing something as
-excessive as PPC_PCI_REASSIGN_UNASSIGNED_RSRCS :)
-
-> +
-> +	/* Don't bother with ISA alignment unless the bridge has
-> +	 * ISA forwarding enabled
-> +	 */
-> +	PPC_PCI_CAN_SKIP_ISA_ALIGN	= 0x00000008,
-> +};
+> From: Grant Likely <grant.likely at secretlab.ca>
+>
+> This target produces a flat binary rather than an ELF file,
+> fixes the entry point at the beginning of the image, and takes
+> a complete device tree with no fixups needed.
+>
+> The device tree must have labels on /#address-cells, the timebase
+> frequency, and the memory size.
+>
+> Signed-off-by: Grant Likely <grant.likely at secretlab.ca>
+> ---
 
 
--Olof
+You indicated in the intro in 0/ that this was not ready, and you 
+didn't include your own s-o-b, but you did not put any statements to 
+that effect in the header.  The intro is not copied into patchwork, 
+which maintainers often use when deciding what to push.
+
+Now on to why this should not be merged:
+
+In addition to the above, it changes the build rules.  It tries to 
+change wrapper to assemble the .dtb into a .o from a .S file, but 
+doesn't set any flags to force the assembler into the right mode.  In 
+contrast the linker is controlled by the .lds linker script.
+
+In addition, the requirement for assembly labels can easily be 
+eliminated.  As mentioned above, they are used for 3 properties.  With 
+the existing library (in 2.6.24 and earlier), call simple_malloc_init 
+with a small bss array (like BSS_STACK does to allocate stack), and 
+then read the properties out of the device tree.  At that point, call 
+simple_malloc_init a second time using the found memory size.   As I 
+said the last time this was posted, my patches to boot from kexec 
+implemented this strategy.
+
+However, with the new libfdt, which is already in for-2.6.25, we should 
+no longer need malloc() to simple read the tree.   At least that is 
+what was advertised.
+
+> +$(obj)/zImage.raw: vmlinux $(dts) $(wrapperbits)
+> +       $(call if_changed,wrap,raw,$(dts))
+>
+
+This should be handled by the standard zImage% rule.
+
+> +void platform_init(unsigned long r3, unsigned long r4, unsigned long 
+> r5,
+> +                   unsigned long r6, unsigned long r7)
+>
+
+The calling convention of platform_init is controlled by head, and 
+doesn't have a global prototype.  Since you use none of these 
+arguments, this implementation should take void.
+
+In general, serial_console_init is not safe to call, as the wrapper has 
+no access mode change for its io access macros and instead requires 
+firmware to setup a mapping.  That and the fact the wrapper uses the 
+same properties to choose the console as the kernel means even 
+kexec-tools can't add or delete a property to kill that call.  (This 
+statement is made from the viewpoint that this raw image should be 
+suitable for kexec in addition to being loaded by a dumb firmware).
+
+
+I'm not sure exactly what platform you are using this on.  Apparently 
+it is a legacy firmware that loads the image and jumps to it leaving 
+interrupts on and not invalidating the cache.
+
+I was going to suggest this platform_init be turned into a helper like 
+simple_platform_init or so.  However, that brings up a philosophy 
+question on what the directory should look like (I was going for a 
+modular library with lots of small routines loaded on demand, but 
+others are going for fewer files that tend to drag sometimes used 
+routines.  They later resist features with "thats a lot of code").  And 
+with the read_only libfdt pending, the remaining code maybe considered 
+too trivial not to replicate in the platforms that need it.
+
+milton
