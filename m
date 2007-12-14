@@ -1,23 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <22D9D05D-03E6-4A9E-BF2A-6C607AF620B3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1197612373.10259.9.camel@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] Fix rounding bug in emulation for double floatoperating
-Date: Fri, 14 Dec 2007 00:14:30 -0600
-References: <11972628522442-git-send-email-b13201@freescale.com>
-	<20071210045616.GC29611@localhost.localdomain>
-	<6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
-	<AD0028E8-E305-443F-8872-C935D4E18F80@kernel.crashing.org>
-	<1197343143.13519.2.camel@localhost.localdomain>
-	<A069B515-C07A-4471-9473-7A7E29F12685@kernel.crashing.org>
-	<1197448223.29372.12.camel@localhost.localdomain>
-	<BB2AC24A-6336-4270-9124-734BCC09F7DA@kernel.crashing.org>
-	<1197612373.10259.9.camel@localhost.localdomain>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Liu Yu <B13201@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DFA4FDDFE9
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 17:45:39 +1100 (EST)
+Message-ID: <4762268C.1020305@garzik.org>
+Date: Fri, 14 Dec 2007 01:45:32 -0500
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] ucc_geth: use rx-clock-name and tx-clock-name device
+	tree properties
+References: <11967166791607-git-send-email-timur@freescale.com>
+	<1196716680381-git-send-email-timur@freescale.com>
+	<1196716685975-git-send-email-timur@freescale.com>
+	<4373ED4B-5EDD-4725-9D99-BE39B0656E19@kernel.crashing.org>
+In-Reply-To: <4373ED4B-5EDD-4725-9D99-BE39B0656E19@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Dec 14, 2007, at 12:06 AM, Zang Roy-r61911 wrote:
-
-> On Fri, 2007-12-14 at 13:46, Kumar Gala wrote:
->>>> When I run this on a G5 (w/HW FP) I get:
->>>>
->>>> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
->>>> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
->>>> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
->>>>
->>>> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
->>>>
->>>> and on the 85xx w/FP emu:
->>>>
->>>> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
->>>> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
->>>> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
->>>>
->>>> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
->>>>
->>>> Maybe I'm missing where the error is.
->>> I am missing ...
->>> It is supposed to run based on previous IEEE 754 patch.
->>> http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031351.html
+Kumar Gala wrote:
+> 
+> On Dec 3, 2007, at 3:17 PM, Timur Tabi wrote:
+> 
+>> Updates the ucc_geth device driver to check the new rx-clock-name and
+>> tx-clock-name properties first.  If present, it uses the new function
+>> qe_clock_source() to obtain the clock source.  Otherwise, it checks the
+>> deprecated rx-clock and tx-clock properties.
 >>
->> I'd really like to see to see a testcase show the issue with "classic
->> FP emu" on a 85xx system.
-> I can understand.
-> You know, For a 85xx system without the previous patch or other
-> 'classic' powerpc, it is hard to trigger this issue. Although I  
-> believe
-> it is a problem fixed up.
-> Do you have any idea?
+>> Update the device trees for 832x, 836x, and 8568 to contain the new 
+>> property
+>> names only.
+>>
+>> Signed-off-by: Timur Tabi <timur@freescale.com>
+>> ---
+>>
+>> This patch applies to Kumar's for-2.6.25 branch.  ucc_geth will 
+>> compile but not
+>> run if my other patch, "qe: add function qe_clock_source" has not also 
+>> been
+>> applied.
+> 
+> Jeff, I'll take this patch via powerpc.git if you don't have any issue 
+> since its just touching probe/setup bits.
 
-maybe I'm missing it, but can we not do the same operation w/classic  
-FP that you are doing w/SPE fp?
-
-is this in standard rounding mode, etc?
-
-- k
+ACK
