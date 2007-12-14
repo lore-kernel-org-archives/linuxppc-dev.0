@@ -1,24 +1,19 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound4-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B1D2FDDFF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 11:37:46 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 2/7] [POWERPC] Xilinx: clear data caches.
-Date: Thu, 13 Dec 2007 16:36:46 -0800
-In-Reply-To: <1197590981.15741.201.camel@pasglop>
-References: <1197589413-5965-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
-	<1197590848.15741.199.camel@pasglop>
-	<1197590981.15741.201.camel@pasglop>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: <benh@kernel.crashing.org>
-Message-Id: <20071214003648.68E5EC68059@mail177-blu.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, simekm2@fel.cvut.cz
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CF255DDFFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 15:29:27 +1100 (EST)
+Message-Id: <1E4C9AA0-C7BC-4F62-9219-C98DFF106659@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <1196766100-7411-1-git-send-email-leoli@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] ipic: ack only for edge interrupts
+Date: Thu, 13 Dec 2007 22:29:13 -0600
+References: <1196766100-7411-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,49 +24,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Unfortunately, I think your right... The asm code seems so clean at the
-moment, I don't really want be the one to start tarnishing it with a
-bunch of little fixups.. :)
+On Dec 4, 2007, at 5:01 AM, Li Yang wrote:
 
-Steve
+> Only external interrupts in edge detect mode support ack operation.
+> Therefore, in most cases ack is not needed.  The patch makes ipic
+> ack only when it's needed.  This could boost over all system  
+> performance.
+>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> Update to use different irq_chip for level and edge interrupts as Ben
+> suggested.
+> Supercedes [PATCH] ipic: change ack operation that register is  
+> accessed
+> only when needed
+>
+> arch/powerpc/sysdev/ipic.c |  113 ++++++++++++++++ 
+> +---------------------------
+> arch/powerpc/sysdev/ipic.h |    6 +--
+> 2 files changed, 45 insertions(+), 74 deletions(-)
 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
-> Sent: Thursday, December 13, 2007 4:10 PM
-> To: Stephen Neuendorffer
-> Cc: grant.likely@secretlab.ca; simekm2@fel.cvut.cz;=20
-> jwilliams@itee.uq.edu.au; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH 2/7] [POWERPC] Xilinx: clear data caches.
->=20
->=20
-> On Fri, 2007-12-14 at 11:07 +1100, Benjamin Herrenschmidt wrote:
-> > On Thu, 2007-12-13 at 15:43 -0800, Stephen Neuendorffer wrote:
-> > > This code is needed to boot without a boot loader.
-> > >=20
-> > > Grant:  I'm not sure where the right place to put this=20
-> is.  I'm assuming we'll actually need some boot code that is=20
-> not generic?  Also, note that there is a V4FX errata=20
-> workaround in arch/ppc/boot/head.S, which probably also needs=20
-> to get pulled to powerpc.
-> > >=20
-> > > Signed-off-by: Stephen Neuendorffer=20
-> <stephen.neuendorffer@xilinx.com>
-> > > ---
-> > >  arch/powerpc/boot/raw-platform.c |   22 ++++++++++++++++++++++
-> > >  1 files changed, 22 insertions(+), 0 deletions(-)
-> >=20
-> > This raw-platform.c file doesn't seem like a good place for=20
-> code that is
-> > totally platform specific ...
->=20
-> Maybe best is to do that in asm ? The problem when you are in=20
-> C code is
-> that you may already have hit stale cache entries. "raw" platforms
-> probably need to perform various CPU-specific initializations anyway,
-> prior to entering C code, in a custom crt0.S, so that's probably the
-> best place to do the cache clearing.
->=20
-> Ben.
->=20
->=20
->=20
+applied.
+
+- k
