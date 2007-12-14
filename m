@@ -1,19 +1,22 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 97605DE180
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 07:24:38 +1100 (EST)
-Message-ID: <4762E67D.30600@pobox.com>
-Date: Fri, 14 Dec 2007 15:24:29 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 84DEEDE0A6
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 08:41:17 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ avorontsov@ru.mvista.com
+Subject: Re: [PATCH v2 4/4] Freescale enhanced Local Bus Controller FCM NAND
+	support.
+Date: Fri, 14 Dec 2007 22:40:48 +0100
+References: <20071214185624.GA10584@loki.buserror.net>
+	<4762DA95.90000@freescale.com>
+	<20071214195917.GA18616@localhost.localdomain>
+In-Reply-To: <20071214195917.GA18616@localhost.localdomain>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 8/8] gianfar: Magic Packet and suspend/resume support.
-References: <20071212173607.GG5596@loki.buserror.net>
-In-Reply-To: <20071212173607.GG5596@loki.buserror.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, netdev@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712142240.50379.arnd@arndb.de>
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> Jeff, can you ack this to go through Paul's tree
-> (assuming nothing wrong with it)?
+On Friday 14 December 2007, Anton Vorontsov wrote:
+> > >Maybe this desires its own header?
+> > 
+> > It can be factored out if anything else ever uses it.
 > 
->  drivers/net/gianfar.c         |  137 ++++++++++++++++++++++++++++++++++++++++-
->  drivers/net/gianfar.h         |   13 +++-
->  drivers/net/gianfar_ethtool.c |   41 ++++++++++++-
->  3 files changed, 185 insertions(+), 6 deletions(-)
+> It's just confusing to parse lbc-specific and nand-specific code
+> placed in the same file.
 
-ACK
+In that case, you could argue for splitting the implementation into
+two C files. I don't see any reason to move stuff into a header
+when it's not an interface between two parts of the code, but
+only describes a hardware interface used by a single driver.
+
+	Arnd <><
