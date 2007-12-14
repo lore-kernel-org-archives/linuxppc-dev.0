@@ -1,20 +1,9 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5876CDE054
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 15:55:19 +1100 (EST)
-Message-Id: <A208E7D2-B1FD-4F72-BA38-3F969E671E2F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20071213171905.GA4630@loki.buserror.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] mpc834x_mds: Fix whitespace and call
-	of_platform_bus_probe().
-Date: Thu, 13 Dec 2007 22:54:51 -0600
-References: <20071213171905.GA4630@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 14 Dec 2007 15:56:03 +1100
+Subject: [PATCH 0/15] [POWERPC] PCI updates & merges
+Message-Id: <1197608163.200976.87755569596.qpush@grosgo>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +13,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+(THIS SERIES STILL NEEDS MORE TESTING)
 
-On Dec 13, 2007, at 11:19 AM, Scott Wood wrote:
+(This version is rebased on top of current for-2.6.25, my remaining
+ 4xx patches will apply on top of this)
 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> arch/powerpc/platforms/83xx/mpc834x_mds.c |   21 +++++++++++++++++++--
-> 1 files changed, 19 insertions(+), 2 deletions(-)
+This serie of patches converts the 32 bits PCI code to use the generic
+pci_assign_unassigned_resources() instead of its own assignment code
+which was unable to deal with unassigned PCI<->PCI bridges among
+other issues.
 
-applied.
+It then merges the resource fixup and allocation code between 32 and
+64 bits (mostly making 64 bits use the 32 bits code with a few fixups),
+hopefully fixing the longstanding issue that not setting pci_probe_only
+on ppc64 would generally not work.
 
-- k
+We also add flags to control the behaviour of the PCI code, such as
+letting some platforms force a full re-assignment (similar to what
+pci-auto used to provide in arch/ppc) and remove a whole bunch of
+hackish code that is made obsolete by that change.
+
+32 bits platforms with 64 bits resources support will also need my
+separate patch to fix the generic setup-bus.c for that situation.
+
+Finally, I also merge the implementations of pcibios_enable_device()
+and fixup the PowerMac code that used hooks in that area in ways
+that don't work anymore.
