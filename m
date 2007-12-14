@@ -2,22 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DEE3DDF2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:07:59 +1100 (EST)
-Message-Id: <4373ED4B-5EDD-4725-9D99-BE39B0656E19@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 56DE5DDED6
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:14:59 +1100 (EST)
+Message-Id: <276D6E1B-9E66-49C9-AD82-F5F9A7F9E146@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <1196716685975-git-send-email-timur@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20071213171554.GC4459@loki.buserror.net>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/2] ucc_geth: use rx-clock-name and tx-clock-name device
-	tree properties
-Date: Thu, 13 Dec 2007 23:07:43 -0600
-References: <11967166791607-git-send-email-timur@freescale.com>
-	<1196716680381-git-send-email-timur@freescale.com>
-	<1196716685975-git-send-email-timur@freescale.com>
-Cc: netdev@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 4/4] MPC8313 enhanced Local Bus Controller NAND support.
+Date: Thu, 13 Dec 2007 23:14:25 -0600
+References: <20071213171554.GC4459@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,223 +23,367 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Patch title should really be someting like FSL enhanced local bus (not  
+mpc8313).
 
-On Dec 3, 2007, at 3:17 PM, Timur Tabi wrote:
+On Dec 13, 2007, at 11:15 AM, Scott Wood wrote:
 
-> Updates the ucc_geth device driver to check the new rx-clock-name and
-> tx-clock-name properties first.  If present, it uses the new function
-> qe_clock_source() to obtain the clock source.  Otherwise, it checks  
-> the
-> deprecated rx-clock and tx-clock properties.
->
-> Update the device trees for 832x, 836x, and 8568 to contain the new  
-> property
-> names only.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+> Signed-off-by: Nick Spence <nick.spence@freescale.com>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 > ---
+> drivers/mtd/nand/Kconfig         |    9 +
+> drivers/mtd/nand/Makefile        |    1 +
+> drivers/mtd/nand/fsl_elbc_nand.c | 1281 +++++++++++++++++++++++++++++ 
+> +++++++++
+> 3 files changed, 1291 insertions(+), 0 deletions(-)
+> create mode 100644 drivers/mtd/nand/fsl_elbc_nand.c
 >
-> This patch applies to Kumar's for-2.6.25 branch.  ucc_geth will  
-> compile but not
-> run if my other patch, "qe: add function qe_clock_source" has not  
-> also been
-> applied.
+> diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+> index 246d451..05d976c 100644
+> --- a/drivers/mtd/nand/Kconfig
+> +++ b/drivers/mtd/nand/Kconfig
+> @@ -306,4 +306,13 @@ config MTD_ALAUDA
+> 	  These two (and possibly other) Alauda-based cardreaders for
+> 	  SmartMedia and xD allow raw flash access.
+>
+> +config MTD_NAND_FSL_ELBC
+> +	tristate "NAND support for Freescale eLBC controllers"
+> +	depends on MTD_NAND && PPC_OF
+> +	help
+> +	  Various Freescale chips, including the 8313, include a NAND Flash
+> +	  Controller Module with built-in hardware ECC capabilities.
+> +	  Enabling this option will enable you to use this to control
+> +	  external NAND devices.
+> +
+> endif # MTD_NAND
+> diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+> index 3ad6c01..d0d4de2 100644
+> --- a/drivers/mtd/nand/Makefile
+> +++ b/drivers/mtd/nand/Makefile
+> @@ -29,5 +29,6 @@ obj-$(CONFIG_MTD_NAND_CM_X270)		+= cmx270_nand.o
+> obj-$(CONFIG_MTD_NAND_BASLER_EXCITE)	+= excite_nandflash.o
+> obj-$(CONFIG_MTD_NAND_PLATFORM)		+= plat_nand.o
+> obj-$(CONFIG_MTD_ALAUDA)		+= alauda.o
+> +obj-$(CONFIG_MTD_NAND_FSL_ELBC)		+= fsl_elbc_nand.o
+>
+> nand-objs := nand_base.o nand_bbt.o
+> diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/ 
+> fsl_elbc_nand.c
+> new file mode 100644
+> index 0000000..ce8b0bf
+> --- /dev/null
+> +++ b/drivers/mtd/nand/fsl_elbc_nand.c
+> @@ -0,0 +1,1281 @@
+> +/* Freescale Enhanced Local Bus Controller NAND driver
+> + *
+> + * Copyright (c) 2006-2007 Freescale Semiconductor
+> + *
+> + * Authors: Nick Spence <nick.spence@freescale.com>,
+> + *          Scott Wood <scottwood@freescale.com>
+> + *
+> + * This program is free software; you can redistribute it and/or  
+> modify
+> + * it under the terms of the GNU General Public License as  
+> published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA   
+> 02111-1307  USA
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/types.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/string.h>
+> +#include <linux/ioport.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/slab.h>
+> +#include <linux/interrupt.h>
+> +
+> +#include <linux/mtd/mtd.h>
+> +#include <linux/mtd/nand.h>
+> +#include <linux/mtd/nand_ecc.h>
+> +#include <linux/mtd/partitions.h>
+> +
+> +#include <asm/io.h>
+> +
+> +
+> +//#define ELBC_NAND_DEBUG_LVL 6
 
-Jeff, I'll take this patch via powerpc.git if you don't have any issue  
-since its just touching probe/setup bits.
+undef or something, not C++ comment.
+
+>
+> +
+> +#ifdef ELBC_NAND_DEBUG_LVL
+> +static int fcm_debug_level = ELBC_NAND_DEBUG_LVL;
+> +#define FCM_DEBUG(n, args...)		\
+> +	do {					\
+> +		if (n <= fcm_debug_level)	\
+> +			pr_dbg(args);	\
+> +	} while(0)
+> +#else
+> +#define FCM_DEBUG(n, dev, args...) do { } while(0)
+> +#endif
+> +
+> +#define MAX_BANKS 8
+> +#define ERR_BYTE 0xFF /* Value returned for read bytes when read  
+> failed */
+> +#define FCM_TIMEOUT_MSECS 500 /* Maximum number of mSecs to wait  
+> for FCM */
+> +
+> +struct elbc_bank {
+> +	u32 br;             /**< Base Register  */
+> +#define BR_BA           0xFFFF8000
+> +#define BR_BA_SHIFT             15
+> +#define BR_PS           0x00001800
+> +#define BR_PS_SHIFT             11
+> +#define BR_PS_8         0x00000800  /* Port Size 8 bit */
+> +#define BR_PS_16        0x00001000  /* Port Size 16 bit */
+> +#define BR_PS_32        0x00001800  /* Port Size 32 bit */
+> +#define BR_DECC         0x00000600
+> +#define BR_DECC_SHIFT            9
+> +#define BR_DECC_OFF     0x00000000  /* HW ECC checking and  
+> generation off */
+> +#define BR_DECC_CHK     0x00000200  /* HW ECC checking on,  
+> generation off */
+> +#define BR_DECC_CHK_GEN 0x00000400  /* HW ECC checking and  
+> generation on */
+> +#define BR_WP           0x00000100
+> +#define BR_WP_SHIFT              8
+> +#define BR_MSEL         0x000000E0
+> +#define BR_MSEL_SHIFT            5
+> +#define BR_MS_GPCM      0x00000000  /* GPCM */
+> +#define BR_MS_FCM       0x00000020  /* FCM */
+> +#define BR_MS_SDRAM     0x00000060  /* SDRAM */
+> +#define BR_MS_UPMA      0x00000080  /* UPMA */
+> +#define BR_MS_UPMB      0x000000A0  /* UPMB */
+> +#define BR_MS_UPMC      0x000000C0  /* UPMC */
+> +#define BR_V            0x00000001
+> +#define BR_V_SHIFT               0
+> +#define BR_RES          ~(BR_BA|BR_PS|BR_DECC|BR_WP|BR_MSEL|BR_V)
+> +
+> +	u32 or;             /**< Base Register  */
+> +#define OR0 0x5004
+> +#define OR1 0x500C
+> +#define OR2 0x5014
+> +#define OR3 0x501C
+> +#define OR4 0x5024
+> +#define OR5 0x502C
+> +#define OR6 0x5034
+> +#define OR7 0x503C
+> +
+> +#define OR_GPCM_AM              0xFFFF8000
+> +#define OR_GPCM_AM_SHIFT                15
+> +#define OR_GPCM_BCTLD           0x00001000
+> +#define OR_GPCM_BCTLD_SHIFT             12
+> +#define OR_GPCM_CSNT            0x00000800
+> +#define OR_GPCM_CSNT_SHIFT              11
+> +#define OR_GPCM_ACS             0x00000600
+> +#define OR_GPCM_ACS_SHIFT                9
+> +#define OR_GPCM_ACS_0b10        0x00000400
+> +#define OR_GPCM_ACS_0b11        0x00000600
+> +#define OR_GPCM_XACS            0x00000100
+> +#define OR_GPCM_XACS_SHIFT               8
+> +#define OR_GPCM_SCY             0x000000F0
+> +#define OR_GPCM_SCY_SHIFT                4
+> +#define OR_GPCM_SCY_1           0x00000010
+> +#define OR_GPCM_SCY_2           0x00000020
+> +#define OR_GPCM_SCY_3           0x00000030
+> +#define OR_GPCM_SCY_4           0x00000040
+> +#define OR_GPCM_SCY_5           0x00000050
+> +#define OR_GPCM_SCY_6           0x00000060
+> +#define OR_GPCM_SCY_7           0x00000070
+> +#define OR_GPCM_SCY_8           0x00000080
+> +#define OR_GPCM_SCY_9           0x00000090
+> +#define OR_GPCM_SCY_10          0x000000a0
+> +#define OR_GPCM_SCY_11          0x000000b0
+> +#define OR_GPCM_SCY_12          0x000000c0
+> +#define OR_GPCM_SCY_13          0x000000d0
+> +#define OR_GPCM_SCY_14          0x000000e0
+> +#define OR_GPCM_SCY_15          0x000000f0
+> +#define OR_GPCM_SETA            0x00000008
+> +#define OR_GPCM_SETA_SHIFT               3
+> +#define OR_GPCM_TRLX            0x00000004
+> +#define OR_GPCM_TRLX_SHIFT               2
+> +#define OR_GPCM_EHTR            0x00000002
+> +#define OR_GPCM_EHTR_SHIFT               1
+> +#define OR_GPCM_EAD             0x00000001
+> +#define OR_GPCM_EAD_SHIFT                0
+> +
+> +#define OR_UPM_AM    0xFFFF8000
+> +#define OR_UPM_AM_SHIFT      15
+> +#define OR_UPM_XAM   0x00006000
+> +#define OR_UPM_XAM_SHIFT     13
+> +#define OR_UPM_BCTLD 0x00001000
+> +#define OR_UPM_BCTLD_SHIFT   12
+> +#define OR_UPM_BI    0x00000100
+> +#define OR_UPM_BI_SHIFT       8
+> +#define OR_UPM_TRLX  0x00000004
+> +#define OR_UPM_TRLX_SHIFT     2
+> +#define OR_UPM_EHTR  0x00000002
+> +#define OR_UPM_EHTR_SHIFT     1
+> +#define OR_UPM_EAD   0x00000001
+> +#define OR_UPM_EAD_SHIFT      0
+> +
+> +#define OR_SDRAM_AM    0xFFFF8000
+> +#define OR_SDRAM_AM_SHIFT      15
+> +#define OR_SDRAM_XAM   0x00006000
+> +#define OR_SDRAM_XAM_SHIFT     13
+> +#define OR_SDRAM_COLS  0x00001C00
+> +#define OR_SDRAM_COLS_SHIFT    10
+> +#define OR_SDRAM_ROWS  0x000001C0
+> +#define OR_SDRAM_ROWS_SHIFT     6
+> +#define OR_SDRAM_PMSEL 0x00000020
+> +#define OR_SDRAM_PMSEL_SHIFT    5
+> +#define OR_SDRAM_EAD   0x00000001
+> +#define OR_SDRAM_EAD_SHIFT      0
+
+remove all OR_GPCM_*, OR_UPM_*, OR_SDRAM_* not used anywhere
+
+[snip]
+
+>
+> +struct elbc_regs {
+> +	struct elbc_bank bank[8];
+> +	u8 res0[0x28];
+> +	u32 mar;                /**< UPM Address Register */
+> +	u8 res1[0x4];
+> +	u32 mamr;               /**< UPMA Mode Register */
+> +	u32 mbmr;               /**< UPMB Mode Register */
+> +	u32 mcmr;               /**< UPMC Mode Register */
+> +	u8 res2[0x8];
+> +	u32 mrtpr;              /**< Memory Refresh Timer Prescaler  
+> Register */
+> +	u32 mdr;                /**< UPM Data Register */
+> +	u8 res3[0x4];
+> +	u32 lsor;               /**< Special Operation Initiation Register  
+> */
+> +	u32 lsdmr;              /**< SDRAM Mode Register */
+> +	u8 res4[0x8];
+> +	u32 lurt;               /**< UPM Refresh Timer */
+> +	u32 lsrt;               /**< SDRAM Refresh Timer */
+> +	u8 res5[0x8];
+> +	u32 ltesr;              /**< Transfer Error Status Register */
+> +#define LTESR_BM   0x80000000
+> +#define LTESR_FCT  0x40000000
+> +#define LTESR_PAR  0x20000000
+> +#define LTESR_WP   0x04000000
+> +#define LTESR_ATMW 0x00800000
+> +#define LTESR_ATMR 0x00400000
+> +#define LTESR_CS   0x00080000
+> +#define LTESR_CC   0x00000001
+> +#define LTESR_NAND_MASK (LTESR_FCT | LTESR_PAR | LTESR_CC)
+> +	u32 ltedr;              /**< Transfer Error Disable Register */
+> +	u32 lteir;              /**< Transfer Error Interrupt Register */
+> +	u32 lteatr;             /**< Transfer Error Attributes Register */
+> +	u32 ltear;              /**< Transfer Error Address Register */
+> +	u8 res6[0xC];
+> +	u32 lbcr;               /**< Configuration Register */
+> +#define LBCR_LDIS  0x80000000
+> +#define LBCR_LDIS_SHIFT    31
+> +#define LBCR_BCTLC 0x00C00000
+> +#define LBCR_BCTLC_SHIFT   22
+> +#define LBCR_AHD   0x00200000
+> +#define LBCR_LPBSE 0x00020000
+> +#define LBCR_LPBSE_SHIFT   17
+> +#define LBCR_EPAR  0x00010000
+> +#define LBCR_EPAR_SHIFT    16
+> +#define LBCR_BMT   0x0000FF00
+> +#define LBCR_BMT_SHIFT      8
+> +#define LBCR_INIT  0x00040000
+> +	u32 lcrr;               /**< Clock Ratio Register */
+> +#define LCRR_DBYP    0x80000000
+> +#define LCRR_DBYP_SHIFT      31
+> +#define LCRR_BUFCMDC 0x30000000
+> +#define LCRR_BUFCMDC_SHIFT   28
+> +#define LCRR_ECL     0x03000000
+> +#define LCRR_ECL_SHIFT       24
+> +#define LCRR_EADC    0x00030000
+> +#define LCRR_EADC_SHIFT      16
+> +#define LCRR_CLKDIV  0x0000000F
+> +#define LCRR_CLKDIV_SHIFT     0
+> +	u8 res7[0x8];
+> +	u32 fmr;               /**< Flash Mode Register */
+> +#define FMR_CWTO     0x0000F000
+> +#define FMR_CWTO_SHIFT       12
+> +#define FMR_BOOT     0x00000800
+> +#define FMR_ECCM     0x00000100
+> +#define FMR_AL       0x00000030
+> +#define FMR_AL_SHIFT          4
+> +#define FMR_OP       0x00000003
+> +#define FMR_OP_SHIFT          0
+> +	u32 fir;               /**< Flash Instruction Register */
+> +#define FIR_OP0      0xF0000000
+> +#define FIR_OP0_SHIFT        28
+> +#define FIR_OP1      0x0F000000
+> +#define FIR_OP1_SHIFT        24
+> +#define FIR_OP2      0x00F00000
+> +#define FIR_OP2_SHIFT        20
+> +#define FIR_OP3      0x000F0000
+> +#define FIR_OP3_SHIFT        16
+> +#define FIR_OP4      0x0000F000
+> +#define FIR_OP4_SHIFT        12
+> +#define FIR_OP5      0x00000F00
+> +#define FIR_OP5_SHIFT         8
+> +#define FIR_OP6      0x000000F0
+> +#define FIR_OP6_SHIFT         4
+> +#define FIR_OP7      0x0000000F
+> +#define FIR_OP7_SHIFT         0
+> +#define FIR_OP_NOP   0x0	/* No operation and end of sequence */
+> +#define FIR_OP_CA    0x1        /* Issue current column address */
+> +#define FIR_OP_PA    0x2        /* Issue current block+page address  
+> */
+> +#define FIR_OP_UA    0x3        /* Issue user defined address */
+> +#define FIR_OP_CM0   0x4        /* Issue command from FCR[CMD0] */
+> +#define FIR_OP_CM1   0x5        /* Issue command from FCR[CMD1] */
+> +#define FIR_OP_CM2   0x6        /* Issue command from FCR[CMD2] */
+> +#define FIR_OP_CM3   0x7        /* Issue command from FCR[CMD3] */
+> +#define FIR_OP_WB    0x8        /* Write FBCR bytes from FCM buffer  
+> */
+> +#define FIR_OP_WS    0x9        /* Write 1 or 2 bytes from MDR[AS] */
+> +#define FIR_OP_RB    0xA        /* Read FBCR bytes to FCM buffer */
+> +#define FIR_OP_RS    0xB        /* Read 1 or 2 bytes to MDR[AS] */
+> +#define FIR_OP_CW0   0xC        /* Wait then issue FCR[CMD0] */
+> +#define FIR_OP_CW1   0xD        /* Wait then issue FCR[CMD1] */
+> +#define FIR_OP_RBW   0xE        /* Wait then read FBCR bytes */
+> +#define FIR_OP_RSW   0xE        /* Wait then read 1 or 2 bytes */
+> +	u32 fcr;               /**< Flash Command Register */
+> +#define FCR_CMD0     0xFF000000
+> +#define FCR_CMD0_SHIFT       24
+> +#define FCR_CMD1     0x00FF0000
+> +#define FCR_CMD1_SHIFT       16
+> +#define FCR_CMD2     0x0000FF00
+> +#define FCR_CMD2_SHIFT        8
+> +#define FCR_CMD3     0x000000FF
+> +#define FCR_CMD3_SHIFT        0
+> +	u32 fbar;              /**< Flash Block Address Register */
+> +#define FBAR_BLK     0x00FFFFFF
+> +	u32 fpar;              /**< Flash Page Address Register */
+> +#define FPAR_SP_PI   0x00007C00
+> +#define FPAR_SP_PI_SHIFT     10
+> +#define FPAR_SP_MS   0x00000200
+> +#define FPAR_SP_CI   0x000001FF
+> +#define FPAR_SP_CI_SHIFT      0
+> +#define FPAR_LP_PI   0x0003F000
+> +#define FPAR_LP_PI_SHIFT     12
+> +#define FPAR_LP_MS   0x00000800
+> +#define FPAR_LP_CI   0x000007FF
+> +#define FPAR_LP_CI_SHIFT      0
+> +	u32 fbcr;              /**< Flash Byte Count Register */
+> +#define FBCR_BC      0x00000FFF
+> +	u8 res11[0x8];
+> +	u8 res8[0xF00];
+
+we really should use __be32
+
 
 - k
-
-> arch/powerpc/boot/dts/mpc832x_mds.dts |    8 ++--
-> arch/powerpc/boot/dts/mpc832x_rdb.dts |    8 ++--
-> arch/powerpc/boot/dts/mpc836x_mds.dts |    8 ++--
-> arch/powerpc/boot/dts/mpc8568mds.dts  |    8 ++--
-> drivers/net/ucc_geth.c                |   55 ++++++++++++++++++++++++ 
-> ++++++--
-> 5 files changed, 67 insertions(+), 20 deletions(-)
->
-> diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/ 
-> boot/dts/mpc832x_mds.dts
-> index c64f303..fe54489 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-> @@ -223,8 +223,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <19>;
-> -			tx-clock = <1a>;
-> +			rx-clock-name = "clk9";
-> +			tx-clock-name = "clk10";
-> 			phy-handle = < &phy3 >;
-> 			pio-handle = < &pio3 >;
-> 		};
-> @@ -244,8 +244,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <17>;
-> -			tx-clock = <18>;
-> +			rx-clock-name = "clk7";
-> +			tx-clock-name = "clk8";
-> 			phy-handle = < &phy4 >;
-> 			pio-handle = < &pio4 >;
-> 		};
-> diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/ 
-> boot/dts/mpc832x_rdb.dts
-> index 388c8a7..e68a08b 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> @@ -202,8 +202,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <20>;
-> -			tx-clock = <13>;
-> +			rx-clock-name = "clk16";
-> +			tx-clock-name = "clk3";
-> 			phy-handle = <&phy00>;
-> 			pio-handle = <&ucc2pio>;
-> 		};
-> @@ -223,8 +223,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <19>;
-> -			tx-clock = <1a>;
-> +			rx-clock-name = "clk9";
-> +			tx-clock-name = "clk10";
-> 			phy-handle = <&phy04>;
-> 			pio-handle = <&ucc3pio>;
-> 		};
-> diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/ 
-> boot/dts/mpc836x_mds.dts
-> index 0b2d2b5..bfd48d0 100644
-> --- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-> @@ -254,8 +254,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <0>;
-> -			tx-clock = <19>;
-> +			rx-clock-name = "none";
-> +			tx-clock-name = "clk9";
-> 			phy-handle = < &phy0 >;
-> 			phy-connection-type = "rgmii-id";
-> 			pio-handle = < &pio1 >;
-> @@ -276,8 +276,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <0>;
-> -			tx-clock = <14>;
-> +			rx-clock-name = "none";
-> +			tx-clock-name = "clk4";
-> 			phy-handle = < &phy1 >;
-> 			phy-connection-type = "rgmii-id";
-> 			pio-handle = < &pio2 >;
-> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/ 
-> boot/dts/mpc8568mds.dts
-> index 5439437..cf45aab 100644
-> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-> @@ -333,8 +333,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <0>;
-> -			tx-clock = <20>;
-> +			rx-clock-name = "none";
-> +			tx-clock-name = "clk16";
-> 			pio-handle = <&pio1>;
-> 			phy-handle = <&phy0>;
-> 			phy-connection-type = "rgmii-id";
-> @@ -355,8 +355,8 @@
-> 			 */
-> 			mac-address = [ 00 00 00 00 00 00 ];
-> 			local-mac-address = [ 00 00 00 00 00 00 ];
-> -			rx-clock = <0>;
-> -			tx-clock = <20>;
-> +			rx-clock-name = "none";
-> +			tx-clock-name = "clk16";
-> 			pio-handle = <&pio2>;
-> 			phy-handle = <&phy1>;
-> 			phy-connection-type = "rgmii-id";
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index a3ff270..a93342e 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -3814,6 +3814,7 @@ static int ucc_geth_probe(struct of_device*  
-> ofdev, const struct of_device_id *ma
-> 	int err, ucc_num, max_speed = 0;
-> 	const phandle *ph;
-> 	const unsigned int *prop;
-> +	const char *sprop;
-> 	const void *mac_addr;
-> 	phy_interface_t phy_interface;
-> 	static const int enet_to_speed[] = {
-> @@ -3846,10 +3847,56 @@ static int ucc_geth_probe(struct of_device*  
-> ofdev, const struct of_device_id *ma
->
-> 	ug_info->uf_info.ucc_num = ucc_num;
->
-> -	prop = of_get_property(np, "rx-clock", NULL);
-> -	ug_info->uf_info.rx_clock = *prop;
-> -	prop = of_get_property(np, "tx-clock", NULL);
-> -	ug_info->uf_info.tx_clock = *prop;
-> +	sprop = of_get_property(np, "rx-clock-name", NULL);
-> +	if (sprop) {
-> +		ug_info->uf_info.rx_clock = qe_clock_source(sprop);
-> +		if ((ug_info->uf_info.rx_clock < QE_CLK_NONE) ||
-> +		    (ug_info->uf_info.rx_clock > QE_CLK24)) {
-> +			printk(KERN_ERR
-> +				"ucc_geth: invalid rx-clock-name property\n");
-> +			return -EINVAL;
-> +		}
-> +	} else {
-> +		prop = of_get_property(np, "rx-clock", NULL);
-> +		if (!prop) {
-> +			/* If both rx-clock-name and rx-clock are missing,
-> +			   we want to tell people to use rx-clock-name. */
-> +			printk(KERN_ERR
-> +				"ucc_geth: missing rx-clock-name property\n");
-> +			return -EINVAL;
-> +		}
-> +		if ((*prop < QE_CLK_NONE) || (*prop > QE_CLK24)) {
-> +			printk(KERN_ERR
-> +				"ucc_geth: invalid rx-clock propperty\n");
-> +			return -EINVAL;
-> +		}
-> +		ug_info->uf_info.rx_clock = *prop;
-> +	}
-> +
-> +	sprop = of_get_property(np, "tx-clock-name", NULL);
-> +	if (sprop) {
-> +		ug_info->uf_info.tx_clock = qe_clock_source(sprop);
-> +		if ((ug_info->uf_info.tx_clock < QE_CLK_NONE) ||
-> +		    (ug_info->uf_info.tx_clock > QE_CLK24)) {
-> +			printk(KERN_ERR
-> +				"ucc_geth: invalid tx-clock-name property\n");
-> +			return -EINVAL;
-> +		}
-> +	} else {
-> +		prop = of_get_property(np, "rx-clock", NULL);
-> +		if (!prop) {
-> +			printk(KERN_ERR
-> +				"ucc_geth: mising tx-clock-name property\n");
-> +			return -EINVAL;
-> +		}
-> +		if ((*prop < QE_CLK_NONE) || (*prop > QE_CLK24)) {
-> +			printk(KERN_ERR
-> +				"ucc_geth: invalid tx-clock property\n");
-> +			return -EINVAL;
-> +		}
-> +		ug_info->uf_info.tx_clock = *prop;
-> +	}
-> +
-> 	err = of_address_to_resource(np, 0, &res);
-> 	if (err)
-> 		return -EINVAL;
-> -- 
-> 1.5.2.4
