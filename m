@@ -1,18 +1,22 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 9183BDE130
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 04:23:18 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 14 Dec 2007 10:23:15 -0700
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 05/10] powerpc: Add crash kernel support for 85xx
-Message-ID: <20071214172315.GA26448@xyzzy.farnsworth.org>
-References: <20071122154619.GA26471@xyzzy.farnsworth.org>
-	<7AF0D992-6B4E-475C-949B-FAE4DDE03D3A@kernel.crashing.org>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8E94CDE1FA
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 04:31:36 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7AF0D992-6B4E-475C-949B-FAE4DDE03D3A@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 1/7] bootwrapper: Add a firmware-independent "raw" target.
+Date: Fri, 14 Dec 2007 09:31:31 -0800
+In-Reply-To: <f7eb0ae3da29213720e6b0049deca335@bga.com>
+References: <20071213234221.B0BC27D0054@mail142-sin.bigfish.com>
+	<f7eb0ae3da29213720e6b0049deca335@bga.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Milton Miller" <miltonm@bga.com>
+Message-Id: <20071214172953.BC577F90059@mail151-sin.bigfish.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 14, 2007 at 10:48:58AM -0600, Kumar Gala wrote:
-> On Nov 22, 2007, at 9:46 AM, Dale Farnsworth wrote:
-> 
-> > Add the ability to build a ppc_85xx kernel to run at a physical
-> > address of 32MB.
+=20
+
+> -----Original Message-----
+> From: Milton Miller [mailto:miltonm@bga.com]=20
+> Sent: Friday, December 14, 2007 12:06 AM
+> To: Stephen Neuendorffer
+> Cc: ppcdev; Grant Likely
+> Subject: Re: [PATCH 1/7] bootwrapper: Add a=20
+> firmware-independent "raw" target.
+>=20
+> On Fri Dec 14 10:43:27 EST 2007,  Stephen Neuendorffer wrote:
+>=20
+> > From: Grant Likely <grant.likely at secretlab.ca>
 > >
-> > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> > This target produces a flat binary rather than an ELF file,
+> > fixes the entry point at the beginning of the image, and takes
+> > a complete device tree with no fixups needed.
+> >
+> > The device tree must have labels on /#address-cells, the timebase
+> > frequency, and the memory size.
+> >
+> > Signed-off-by: Grant Likely <grant.likely at secretlab.ca>
 > > ---
-> > arch/powerpc/Kconfig                 |    2 +-
-> > arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++++++++++++++-----
-> > arch/powerpc/mm/fsl_booke_mmu.c      |    6 +++---
-> > 3 files changed, 22 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 805b4d1..d405298 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -253,7 +253,7 @@ config KEXEC
-> >
-> > config CRASH_DUMP
-> > 	bool "Build a kdump crash kernel (EXPERIMENTAL)"
-> > -	depends on PPC_MULTIPLATFORM && EXPERIMENTAL
-> > +	depends on (PPC_MULTIPLATFORM || PPC_85xx) && EXPERIMENTAL
-> > 	help
-> > 	  Build a kernel suitable for use as a kdump capture kernel.
-> > 	  The kernel will be linked at a different address than normal, and
-> > diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/ 
-> > kernel/head_fsl_booke.S
-> > index 4b98227..1c9685f 100644
-> > --- a/arch/powerpc/kernel/head_fsl_booke.S
-> > +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> > @@ -41,6 +41,12 @@
-> > #include <asm/asm-offsets.h>
-> > #include "head_booke.h"
-> >
-> > +#ifdef CONFIG_CRASH_DUMP
-> > +#define INITIAL_BOOKE_PAGESZ (BOOKE_PAGESZ_64M)
-> > +#else
-> > +#define INITIAL_BOOKE_PAGESZ (BOOKE_PAGESZ_16M)
-> > +#endif
-> 
-> I'm ok with bumping the first page to 64M in all cases.
+>=20
+>=20
+> You indicated in the intro in 0/ that this was not ready, and you=20
+> didn't include your own s-o-b, but you did not put any statements to=20
+> that effect in the header.  The intro is not copied into patchwork,=20
+> which maintainers often use when deciding what to push.
 
-OK, I'll make that change in the next rev.  Thanks.
+Sorry... Still trying to figure out the process.
 
-<snip>
+> Now on to why this should not be merged:
+>=20
+> In addition to the above, it changes the build rules.  It tries to=20
+> change wrapper to assemble the .dtb into a .o from a .S file, but=20
+> doesn't set any flags to force the assembler into the right mode.  In=20
+> contrast the linker is controlled by the .lds linker script.
+>=20
+> In addition, the requirement for assembly labels can easily be=20
+> eliminated.  As mentioned above, they are used for 3=20
+> properties.  With=20
+> the existing library (in 2.6.24 and earlier), call simple_malloc_init=20
+> with a small bss array (like BSS_STACK does to allocate stack), and=20
+> then read the properties out of the device tree.  At that point, call=20
+> simple_malloc_init a second time using the found memory size.   As I=20
+> said the last time this was posted, my patches to boot from kexec=20
+> implemented this strategy.
+>=20
+> However, with the new libfdt, which is already in for-2.6.25,=20
+> we should=20
+> no longer need malloc() to simple read the tree.   At least that is=20
+> what was advertised.
 
-> The rest looks good.  Does this mean we can boot a e500 kernel at a
-> non-zero physical address?  (can we run or is the non-zero phy just
-> for a short period of init time).
+Yes, I agree, I just haven't had a chance to go back and write that code
+yet...
 
-Yes, with this series of patches, we can boot and run with a classic ppc
-or e500 kernel at 32MB physical (0xc2000000 virtual).  Note that on
-classic, we still need memory at phys 0 for the exception vectors.
-On e500 IIRC, we don't use the vectors at phys 0, but we still write
-the trampoline vectors there.  I just didn't bother making that conditional.
-
-I'll post an updated series soon, with hopes of getting it into 2.6.25
-
--Dale
+Thanks for the comments,
+Steve
