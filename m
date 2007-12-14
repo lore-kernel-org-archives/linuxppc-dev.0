@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 90FDEDE12E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 20:01:03 +1100 (EST)
-Subject: Re: [PATCH 4/15] [POWERPC] pci32: Add flags modifying the PCI code
-	behaviour
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071214084343.GC28118@lixom.net>
-References: <1197608163.200976.87755569596.qpush@grosgo>
-	<20071214045612.3A7E6DE2E2@ozlabs.org>
-	<20071214084343.GC28118@lixom.net>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 20:00:43 +1100
-Message-Id: <1197622843.6818.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id C9342DDFF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 20:03:47 +1100 (EST)
+Date: Fri, 14 Dec 2007 03:09:15 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] Fix build break caused by "ide: remove ideprobe_init()"
+Message-ID: <20071214090915.GA28681@lixom.net>
+References: <200711182325.09262.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200711182325.09262.bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, akpm@linux-foundation.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,70 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Fix build break of powerpc holly_defconfig:
 
-> On Fri, Dec 14, 2007 at 03:56:05PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > --- linux-merge.orig/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:28.000000000 +1100
-> > +++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:29.000000000 +1100
-> > @@ -48,7 +51,7 @@ static u8* pci_to_OF_bus_map;
-> >  /* By default, we don't re-assign bus numbers. We do this only on
-> >   * some pmacs
-> >   */
-> > -int pci_assign_all_buses;
-> > +static int pci_assign_all_buses;
-> >  
-> 
-> Why not remove it alltogether, there's still the function to test the
-> flag that's just as cheap (load + test + branch).
+In file included from arch/powerpc/platforms/embedded6xx/holly.c:24:
+include/linux/ide.h:1206: error: 'CONFIG_IDE_MAX_HWIFS' undeclared here (not in a function)
 
-I don't remember... felt like I had a good reason back then but I don't
-remember it :-) I'll have another look.
+There's no need to have a sized array in the prototype, might as well
+turn it into a pointer.
 
-> > Index: linux-merge/include/asm-powerpc/pci-bridge.h
-> > ===================================================================
-> > --- linux-merge.orig/include/asm-powerpc/pci-bridge.h	2007-12-14 15:49:01.000000000 +1100
-> > +++ linux-merge/include/asm-powerpc/pci-bridge.h	2007-12-14 15:49:29.000000000 +1100
-> > @@ -13,6 +13,26 @@
-> >  
-> >  struct device_node;
-> >  
-> > +extern unsigned int ppc_pci_flags;
-> 
-> Should the below be a named enum and the type for the above be the same
-> for nicer decode in gdb?
-> 
-> > +enum {
-> > +	/* Force re-assigning all resources (ignore firmware
-> > +	 * setup completely)
-> > +	 */
-> > +	PPC_PCI_REASSIGN_ALL_RSRC	= 0x00000001,
-> 
-> This should be ..._RSRCS (resources, not resource)
-> 
-> > +	/* Re-assign all bus numbers */
-> > +	PPC_PCI_REASSIGN_ALL_BUS	= 0x00000002,
-> 
-> And this should be ..._BUSSES
-> 
-> > +	/* Do not try to assign, just use existing setup */
-> > +	PPC_PCI_PROBE_ONLY		= 0x00000004,
-> 
-> My first reaction was "what's the difference between setting this and
-> keeping the two other cleared". Looks like the difference is the
-> assignment of unassigned resources. Not sure how to better represent
-> that so it's obvious from the naming (without doing something as
-> excessive as PPC_PCI_REASSIGN_UNASSIGNED_RSRCS :)
+It could probably be argued that large parts of the include file can be
+covered under #ifdef CONFIG_IDE, but that's a larger undertaking.
 
-Well... hence "RE" in "REASSIGN" ...
 
-By default, we assign only unassigned resources... (or the ones that
-collide). I could add a comment to that effect.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-> > +
-> > +	/* Don't bother with ISA alignment unless the bridge has
-> > +	 * ISA forwarding enabled
-> > +	 */
-> > +	PPC_PCI_CAN_SKIP_ISA_ALIGN	= 0x00000008,
-> > +};
+---
 
-Ben.
+On Sun, Nov 18, 2007 at 11:25:09PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> 
+> * Rename ide_device_add() to ide_device_add_all() and make it accept
+>   'u8 idx[MAX_HWIFS]' instead of 'u8 idx[4]' as an argument.
+> 
+> * Add ide_device_add() wrapper for ide_device_add_all().
+> 
+> * Convert ide_generic_init() to use ide_device_add_all().
+> 
+> * Remove no longer needed ideprobe_init().
+> 
+> There should be no functionality changes caused by this patch.
+
+This patch broke builds of powerpc holly_defconfig in -mm. It has
+CONFIG_EMBEDDED=y, CONFIG_IDE=n but includes linux/ide.h:
+
+
+Index: mm/drivers/ide/ide-probe.c
+===================================================================
+--- mm.orig/drivers/ide/ide-probe.c
++++ mm/drivers/ide/ide-probe.c
+@@ -1335,7 +1335,7 @@ static void hwif_register_devices(ide_hw
+ 	}
+ }
+ 
+-int ide_device_add_all(u8 idx[MAX_HWIFS])
++int ide_device_add_all(u8 *idx)
+ {
+ 	ide_hwif_t *hwif;
+ 	int i, rc = 0;
+Index: mm/include/linux/ide.h
+===================================================================
+--- mm.orig/include/linux/ide.h
++++ mm/include/linux/ide.h
+@@ -1203,7 +1203,7 @@ void ide_unregister_region(struct gendis
+ 
+ void ide_undecoded_slave(ide_drive_t *);
+ 
+-int ide_device_add_all(u8 idx[MAX_HWIFS]);
++int ide_device_add_all(u8 *idx);
+ int ide_device_add(u8 idx[4]);
+ 
+ static inline void *ide_get_hwifdata (ide_hwif_t * hwif)
