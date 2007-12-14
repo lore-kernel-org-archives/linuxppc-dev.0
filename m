@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 03678DDED5
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 11:09:52 +1100 (EST)
-Subject: Re: [PATCH 2/7] [POWERPC] Xilinx: clear data caches.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-In-Reply-To: <20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
-References: <1197589413-5965-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
-Content-Type: text/plain
-Date: Fri, 14 Dec 2007 11:07:28 +1100
-Message-Id: <1197590848.15741.199.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, simekm2@fel.cvut.cz
-Reply-To: benh@kernel.crashing.org
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id 7D292DE153
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 11:10:12 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: apm_emulation regression
+Date: Fri, 14 Dec 2007 01:10:43 +0100
+References: <1197427530.8385.59.camel@pasglop>
+	<1197482587.6558.145.camel@johannes.berg>
+In-Reply-To: <1197482587.6558.145.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712140110.44406.rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Thu, 2007-12-13 at 15:43 -0800, Stephen Neuendorffer wrote:
-> This code is needed to boot without a boot loader.
+On Wednesday, 12 of December 2007, Johannes Berg wrote:
 > 
-> Grant:  I'm not sure where the right place to put this is.  I'm assuming we'll actually need some boot code that is not generic?  Also, note that there is a V4FX errata workaround in arch/ppc/boot/head.S, which probably also needs to get pulled to powerpc.
+> On Wed, 2007-12-12 at 13:45 +1100, Benjamin Herrenschmidt wrote:
+> > I only just noticed a huge regression that was introduced when we moved
+> > PowerPC to the generic APM emulation code instead of our own. I'm in
+> > large part to blame since I acked the patch...
+> > 
+> > Basically, what we lost is the mechanism for notifying user applications
+> > and waiting for their ACK before proceeding to system suspend. The new
+> > generic code will still do that ... only when the actual suspend request
+> > initiates from an APM suspend ioctl.
 > 
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> ---
->  arch/powerpc/boot/raw-platform.c |   22 ++++++++++++++++++++++
->  1 files changed, 22 insertions(+), 0 deletions(-)
+> Indeed.
+> 
+> > For any other suspend (via our private PMU ioctl or via the sysfs
+> > interface), userspace will -not- be notified.
+> 
+> Right.
+> 
+> > That basically means X will break. That's why X broke on the latest
+> > ubuntu until I whacked some new scripts in them to force console
+> > switching, among other things. Possibly other apps that relied
+> > on /dev/apm_bios to be notified of system suspend/resume broke as well.
+> 
+> Ah. I guess I never noticed because I had the scripts to do console
+> switching all along.
+> 
+> > Now the question is that is it still work trying to fix it ? That would
+> > probably require APM emulation hooking at a fairly high level into the
+> > generic PM code to trigger the signaling & waiting of processes before
+> > freeze & device suspend among others...
+> 
+> Yeah, bit icky... but doable. Rafael, any ideas?
 
-This raw-platform.c file doesn't seem like a good place for code that is
-totally platform specific ...
+Hmm.
 
-Ben.
+I'm not that familiar with the APM emulation code, but the description of the
+problem above suggests that the APM emulation can install a suspend
+notifier for this purpose.
 
-> diff --git a/arch/powerpc/boot/raw-platform.c b/arch/powerpc/boot/raw-platform.c
-> index b9caeee..2a5e493 100644
-> --- a/arch/powerpc/boot/raw-platform.c
-> +++ b/arch/powerpc/boot/raw-platform.c
-> @@ -24,6 +24,28 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
->                     unsigned long r6, unsigned long r7)
->  {
->  	u64 memsize64 = memsize[0];
-> +	static const unsigned long line_size = 32;
-> +	static const unsigned long congruence_classes = 256;
-> +	unsigned long addr;
-> +	unsigned long dccr;
-> +
-> +	/*
-> +	 * Invalidate the data cache if the data cache is turned off.
-> +	 * - The 405 core does not invalidate the data cache on power-up
-> +	 *   or reset but does turn off the data cache. We cannot assume
-> +	 *   that the cache contents are valid.
-> +	 * - If the data cache is turned on this must have been done by
-> +	 *   a bootloader and we assume that the cache contents are
-> +	 *   valid.
-> +	 */
-> +	__asm__("mfdccr %0": "=r" (dccr));
-> +	if (dccr == 0) {
-> +		for (addr = 0;
-> +		     addr < (congruence_classes * line_size);
-> +		     addr += line_size) {
-> +			__asm__("dccci 0,%0": :"b"(addr));
-> +		}
-> +	}
->  
->  	if (mem_size_cells == 2) {
->  		memsize64 <<= 32;
+Greetings,
+Rafael
