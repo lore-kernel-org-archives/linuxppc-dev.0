@@ -1,10 +1,19 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 14 Dec 2007 15:56:15 +1100
-Subject: [PATCH 15/15] [POWERPC] Various fixes to pcibios_enable_device()
-In-Reply-To: <1197608163.200976.87755569596.qpush@grosgo>
-Message-Id: <20071214045621.DECAADE721@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A2B84DE084
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:01:45 +1100 (EST)
+Message-Id: <2E8B027E-CE92-48CC-8143-D23D8CD252C8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Liu Yu <B13201@freescale.com>
+In-Reply-To: <11972628522442-git-send-email-b13201@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] Fix rounding bug in emulation for double float operating
+Date: Thu, 13 Dec 2007 23:01:36 -0600
+References: <11972628522442-git-send-email-b13201@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,34 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Our implementation of pcibios_enable_device() has a couple of problems.
 
-One is that it should not check IORESOURCE_UNSET, as this might be
-left dangling after resource assignment (shouldn't but there are
-bugs), but instead, we make it check resource->parent which should
-be a reliable indication that the resource has been successfully
-claimed (it's in the resource tree).
+On Dec 9, 2007, at 11:00 PM, Liu Yu wrote:
 
-Then, we also need to skip ROM resources that haven't been enabled
-as x86 does.
+>
+> This patch fixes rounding bug in emulation for double float  
+> operating on PowerPC platform.
+>
+> When pack double float operand, it need to truncate the tail due to  
+> the limited precision.
+> If the truncated part is not zero, the last bit of work bit (totally  
+> 3 bits) need to '|' 1.
+>
+> This patch is completed in _FP_FRAC_SRS_2(X,N,sz) (arch/powerpc/math- 
+> emu/op-2.h).
+> Originally the code leftwards rotates the operand to just keep the  
+> truncated part,
+> then check whether it is zero. However, the number it rotates is not  
+> correct when
+> N is not smaller than _FP_W_TYPE_SIZE, and it will cause the work  
+> bit '|' 1 in the improper case.
+>
+> This patch fixes this issue.
+>
+> Signed-off-by: Liu Yu <b13201@freescale.com>
+>
+> ---
+> arch/powerpc/math-emu/op-2.h |    3 ++-
+> 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+applied.
 
- arch/powerpc/kernel/pci-common.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
---- linux-merge.orig/arch/powerpc/kernel/pci-common.c	2007-12-14 15:49:34.000000000 +1100
-+++ linux-merge/arch/powerpc/kernel/pci-common.c	2007-12-14 15:49:36.000000000 +1100
-@@ -1147,7 +1147,10 @@ int pcibios_enable_device(struct pci_dev
- 		r = &dev->resource[idx];
- 		if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
- 			continue;
--		if (r->flags & IORESOURCE_UNSET) {
-+		if ((idx == PCI_ROM_RESOURCE) &&
-+				(!(r->flags & IORESOURCE_ROM_ENABLE)))
-+			continue;
-+		if (r->parent == NULL) {
- 			printk(KERN_ERR "PCI: Device %s not available because"
- 			       " of resource collisions\n", pci_name(dev));
- 			return -EINVAL;
+- k
