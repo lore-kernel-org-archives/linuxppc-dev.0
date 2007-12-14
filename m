@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A2B84DE084
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:01:45 +1100 (EST)
-Message-Id: <2E8B027E-CE92-48CC-8143-D23D8CD252C8@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 67064DDF59
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:02:59 +1100 (EST)
+Message-Id: <F552B8FC-7B8F-4BF4-89B7-363E803A1D10@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Liu Yu <B13201@freescale.com>
-In-Reply-To: <11972628522442-git-send-email-b13201@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18274.3076.467791.719752@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] Fix rounding bug in emulation for double float operating
-Date: Thu, 13 Dec 2007 23:01:36 -0600
-References: <11972628522442-git-send-email-b13201@freescale.com>
+Subject: Re: any more patches for 2.6.24?
+Date: Thu, 13 Dec 2007 23:02:53 -0600
+References: <18274.3076.467791.719752@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,34 +24,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 9, 2007, at 11:00 PM, Liu Yu wrote:
+On Dec 13, 2007, at 10:52 PM, Paul Mackerras wrote:
 
+> Currently I have just this one bugfix queued up to go to Linus for
+> 2.6.24:
 >
-> This patch fixes rounding bug in emulation for double float  
-> operating on PowerPC platform.
+> Stephen Rothwell (1):
+>      [POWERPC] iSeries: don't printk with HV spinlock held
 >
-> When pack double float operand, it need to truncate the tail due to  
-> the limited precision.
-> If the truncated part is not zero, the last bit of work bit (totally  
-> 3 bits) need to '|' 1.
->
-> This patch is completed in _FP_FRAC_SRS_2(X,N,sz) (arch/powerpc/math- 
-> emu/op-2.h).
-> Originally the code leftwards rotates the operand to just keep the  
-> truncated part,
-> then check whether it is zero. However, the number it rotates is not  
-> correct when
-> N is not smaller than _FP_W_TYPE_SIZE, and it will cause the work  
-> bit '|' 1 in the improper case.
->
-> This patch fixes this issue.
->
-> Signed-off-by: Liu Yu <b13201@freescale.com>
->
-> ---
-> arch/powerpc/math-emu/op-2.h |    3 ++-
-> 1 files changed, 2 insertions(+), 1 deletions(-)
+> Does anyone else have bugfixes that need to go in 2.6.24?
 
-applied.
+I've got a pull request I'm about to send you.
 
 - k
