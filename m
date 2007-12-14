@@ -2,22 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E5F46DE097
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 11:06:54 +1100 (EST)
-Subject: Re: apm_emulation regression
+	by ozlabs.org (Postfix) with ESMTP id 03678DDED5
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 11:09:52 +1100 (EST)
+Subject: Re: [PATCH 2/7] [POWERPC] Xilinx: clear data caches.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200712140110.44406.rjw@sisk.pl>
-References: <1197427530.8385.59.camel@pasglop>
-	<1197482587.6558.145.camel@johannes.berg>
-	<200712140110.44406.rjw@sisk.pl>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+In-Reply-To: <20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
+References: <1197589413-5965-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
 Content-Type: text/plain
-Date: Fri, 14 Dec 2007 11:04:35 +1100
-Message-Id: <1197590675.15741.195.camel@pasglop>
+Date: Fri, 14 Dec 2007 11:07:28 +1100
+Message-Id: <1197590848.15741.199.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>
+Cc: linuxppc-dev@ozlabs.org, simekm2@fel.cvut.cz
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,18 +26,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2007-12-14 at 01:10 +0100, Rafael J. Wysocki wrote:
+On Thu, 2007-12-13 at 15:43 -0800, Stephen Neuendorffer wrote:
+> This code is needed to boot without a boot loader.
 > 
-> Hmm.
+> Grant:  I'm not sure where the right place to put this is.  I'm assuming we'll actually need some boot code that is not generic?  Also, note that there is a V4FX errata workaround in arch/ppc/boot/head.S, which probably also needs to get pulled to powerpc.
 > 
-> I'm not that familiar with the APM emulation code, but the description
-> of the
-> problem above suggests that the APM emulation can install a suspend
-> notifier for this purpose.
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> ---
+>  arch/powerpc/boot/raw-platform.c |   22 ++++++++++++++++++++++
+>  1 files changed, 22 insertions(+), 0 deletions(-)
 
-It can use the new notifier that happens before freezing yes. Johannes,
-I think that's pretty much what my old powermac implementation did
-(using my private notifier scheme I had there), might be worth reviving
-that bit and sticking it into the generic apm_emu ...
+This raw-platform.c file doesn't seem like a good place for code that is
+totally platform specific ...
 
 Ben.
+
+> diff --git a/arch/powerpc/boot/raw-platform.c b/arch/powerpc/boot/raw-platform.c
+> index b9caeee..2a5e493 100644
+> --- a/arch/powerpc/boot/raw-platform.c
+> +++ b/arch/powerpc/boot/raw-platform.c
+> @@ -24,6 +24,28 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+>                     unsigned long r6, unsigned long r7)
+>  {
+>  	u64 memsize64 = memsize[0];
+> +	static const unsigned long line_size = 32;
+> +	static const unsigned long congruence_classes = 256;
+> +	unsigned long addr;
+> +	unsigned long dccr;
+> +
+> +	/*
+> +	 * Invalidate the data cache if the data cache is turned off.
+> +	 * - The 405 core does not invalidate the data cache on power-up
+> +	 *   or reset but does turn off the data cache. We cannot assume
+> +	 *   that the cache contents are valid.
+> +	 * - If the data cache is turned on this must have been done by
+> +	 *   a bootloader and we assume that the cache contents are
+> +	 *   valid.
+> +	 */
+> +	__asm__("mfdccr %0": "=r" (dccr));
+> +	if (dccr == 0) {
+> +		for (addr = 0;
+> +		     addr < (congruence_classes * line_size);
+> +		     addr += line_size) {
+> +			__asm__("dccci 0,%0": :"b"(addr));
+> +		}
+> +	}
+>  
+>  	if (mem_size_cells == 2) {
+>  		memsize64 <<= 32;
