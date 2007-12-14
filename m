@@ -1,23 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 09C6ADDF33
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 05:23:30 +1100 (EST)
-Message-ID: <4762CA10.5040507@freescale.com>
-Date: Fri, 14 Dec 2007 12:23:12 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 464BDDE1E6
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 05:45:38 +1100 (EST)
+Date: Fri, 14 Dec 2007 21:48:26 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
-References: <20071211212247.GB3620@loki.buserror.net>
-	<EB293853-B27A-4B0E-AEEB-8D3F09E8F12D@kernel.crashing.org>
-	<20071214155341.GB16269@ld0162-tx32.am.freescale.net>
-	<5898D87A-231D-4CCB-9538-808562F08D57@kernel.crashing.org>
-In-Reply-To: <5898D87A-231D-4CCB-9538-808562F08D57@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: [PATCH] [POWERPC] booting-without-of: localbus should not include
+	board name
+Message-ID: <20071214184826.GA1654@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,41 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Dec 14, 2007, at 9:53 AM, Scott Wood wrote:
-> 
->> On Thu, Dec 13, 2007 at 11:19:33PM -0600, Kumar Gala wrote:
->>> Can we make this a /dts-v1/; since its new.
->>
->> It's not really new; it's just been collecting dust for a while. :-P
-> 
-> Its new to us on the list :P
+Fix documentation once and for ever, because I'm pretty tired of
+repeating that I am merely following it. ;-)
 
-I thought it got sent out at least once a long time ago...
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048096.html
 
-In any case, I thought that one of the main reasons for the version tag 
-is so that the whole world doesn't have to switch at once?
+http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046977.html
+http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046979.html
 
->> Are there any tools to autoconvert (preferably without losing comments)?
-> 
-> Not sure of jon had a perl script or something.
+http://ozlabs.org/pipermail/linuxppc-dev/2007-October/044411.html
+http://ozlabs.org/pipermail/linuxppc-dev/2007-October/044413.html
 
-Jon, anything?
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
->>>> +/ {
->>>> +    model = "EP8248E";
->>>> +    compatible = "fsl,ep8248e";
->>>> +    #address-cells = <1>;
->>>> +    #size-cells = <1>;
->>>
->>> Add a aliases { } and can we use that instead of linux,network-index
->>> and linux,planetcore-label.
->>
->> I don't see any support in the current bootwrapper for aliases.
-> 
-> Yeah, I was hoping you'd code something up :)
-
-I'll leave that to those who actually care about using aliases. :-)
-
--Scott
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index ee0209a..b3948fa 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2091,8 +2091,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 
+    Example:
+ 	localbus@f0010100 {
+-		compatible = "fsl,mpc8272ads-localbus",
+-		             "fsl,mpc8272-localbus",
++		compatible = "fsl,mpc8272-localbus",
+ 		             "fsl,pq2-localbus";
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+-- 
+1.5.2.2
