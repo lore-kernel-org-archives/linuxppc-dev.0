@@ -1,27 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C25BFDE0CC
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 19:12:02 +1100 (EST)
-Date: Fri, 14 Dec 2007 02:17:29 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
-Message-ID: <20071214081729.GD27284@lixom.net>
-References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
-	<20071120175416.GA4389@loki.buserror.net>
-	<B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
-	<Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0711271555520.5847@pademelon.sonytel.be>
-	<20071127152317.GA5230@lixom.net>
-	<Pine.LNX.4.62.0711281148020.27512@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0711291612290.24058@pademelon.sonytel.be>
-	<20071214081210.GB27284@lixom.net>
-	<77815911-B0FA-4FFD-AC50-5C9A8FED90C4@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <77815911-B0FA-4FFD-AC50-5C9A8FED90C4@kernel.crashing.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <4A496992-9B46-427D-8F40-447E92F8CA3D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20071207020130.GA26412@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] add MPC837x MDS board default device tree
+Date: Fri, 14 Dec 2007 02:12:39 -0600
+References: <1196851073-11801-1-git-send-email-leoli@freescale.com>
+	<20071207020130.GA26412@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,13 +19,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 14, 2007 at 02:08:14AM -0600, Kumar Gala wrote:
 
-> I'd say wait for Paul to pickup my 2.6.25 request.  Than the base will  
-> have the isel emulation as well.
+On Dec 6, 2007, at 8:01 PM, David Gibson wrote:
 
-It was spotting the isel patch in your queue that made me go back and
-look at the thread. :)
+> On Wed, Dec 05, 2007 at 06:37:53PM +0800, Li Yang wrote:
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> Update SATA nodes; remove serdes nodes; add aliases and labels.
+>>
+>> arch/powerpc/boot/dts/mpc8377_mds.dts |  270 +++++++++++++++++++++++ 
+>> ++++++++
+>> arch/powerpc/boot/dts/mpc8378_mds.dts |  256 +++++++++++++++++++++++ 
+>> ++++++
+>> arch/powerpc/boot/dts/mpc8379_mds.dts |  284 +++++++++++++++++++++++ 
+>> ++++++++++
+>> 3 files changed, 810 insertions(+), 0 deletions(-)
+>> create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
+>> create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
+>> create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
+>>
+>> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/ 
+>> boot/dts/mpc8377_mds.dts
+>> new file mode 100644
+>> index 0000000..919ffd0
+>> --- /dev/null
+>> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+> [snip]
+>> +	aliases {
+>> +		ethernet0 = "/soc@e0000000/ethernet@24000";
+>> +		ethernet1 = "/soc@e0000000/ethernet@25000";
+>> +		serial0 = "/soc@e0000000/serial@4500";
+>> +		serial1 = "/soc@e0000000/serial@4600";
+>> +		pci0 = "/pci@e0008500";
+>
+> You can use path references for these now.
+>
+>> +	};
+>> +
+>> +	cpus {
+>> +		#address-cells = <1>;
+>> +		#size-cells = <0>;
+>> +
+>> +		PowerPC,837x@0 {
+>
+> This should absolutely not have a "x" in it.  Either have an exact
+> model, or just use "cpu@9" (in which case you can put the model in
+> "compatible").
+>
+> [snip]
+>> +		i2c@3000 {
+>> +			device_type = "i2c";
+>
+> Drop the device_type.  No "i2c" device_type class is defined.
+>
+> [snip]
+>> +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+>> +		usb@23000 {
+>> +			device_type = "usb";
+>
+> Drop device_type here too.
+>
+>> +			compatible = "fsl-usb2-dr";
+>> +			reg = <23000 1000>;
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>> +			interrupt-parent = < &ipic >;
+>> +			interrupts = <26 8>;
+>> +			phy_type = "utmi_wide";
+>> +		};
+>> +
+>> +		mdio@24520 {
+>> +			device_type = "mdio";
+>> +			compatible = "gianfar";
+>
+> Grr... not your fault, but this crap in the gianfar driver where it
+> uses the same compatible property for the mdio and MAC has to be
+> fixed.
 
+I've fixed this now.  Look at my tree/patch.
 
--Olof
+> [snip]
+>
+>> +		serial1:serial@4600 {
+>
+> Standard style puts a space after the colon.
+>
+>> +			device_type = "serial";
+>> +			compatible = "ns16550";
+>> +			reg = <4600 100>;
+>> +			clock-frequency = <0>;
+>> +			interrupts = <a 8>;
+>> +			interrupt-parent = < &ipic >;
+>> +		};
+>> +
+>> +		crypto@30000 {
+>> +			model = "SEC3";
+>> +			compatible = "talitos";
+>
+> This driver, also, needs fixing to recognize a better formatted
+> compatible property.
+
+Can you respin with David's changes as well as mirror my cleanup of  
+the other 83xx/85xx .dts
+
+- k
