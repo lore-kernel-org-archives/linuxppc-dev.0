@@ -1,20 +1,21 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C77AFDDF5E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:45:10 +1100 (EST)
-Message-Id: <97EB3576-6952-4F36-A243-4EBF981A117F@kernel.crashing.org>
+Message-Id: <BB2AC24A-6336-4270-9124-734BCC09F7DA@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Li <r64360@freescale.com>
-In-Reply-To: <1196764760.2573.10.camel@Guyver>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <1197448223.29372.12.camel@localhost.localdomain>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/2] powerpc: Add IPIC MSI support
-Date: Thu, 13 Dec 2007 23:44:50 -0600
-References: <1196764760.2573.10.camel@Guyver>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	kim phillips <Kim.Phillips@freescale.com>
+Subject: Re: [PATCH] Fix rounding bug in emulation for double floatoperating
+Date: Thu, 13 Dec 2007 23:46:35 -0600
+References: <11972628522442-git-send-email-b13201@freescale.com>
+	<20071210045616.GC29611@localhost.localdomain>
+	<6EBEC19BF4A8F843BCD6B9155BBE2515C79D0D@zch01exm26.fsl.freescale.net>
+	<AD0028E8-E305-443F-8872-C935D4E18F80@kernel.crashing.org>
+	<1197343143.13519.2.camel@localhost.localdomain>
+	<A069B515-C07A-4471-9473-7A7E29F12685@kernel.crashing.org>
+	<1197448223.29372.12.camel@localhost.localdomain>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Liu Yu <B13201@freescale.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>> When I run this on a G5 (w/HW FP) I get:
+>>
+>> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
+>> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
+>> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
+>>
+>> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
+>>
+>> and on the 85xx w/FP emu:
+>>
+>> dmul 3fe0000000000000 * 1 = 0 expected 0 (PASS)
+>> dmul bfe0000000000000 * 1 = 8000000000000000 expected 0 (PASS)
+>> dmul 8000000000000001 * bfe0000000000000 = 0 expected 0 (PASS)
+>>
+>> ddiv 1 / 4000000000000000 = 0 expected 0 (PASS)
+>>
+>> Maybe I'm missing where the error is.
+> I am missing ...
+> It is supposed to run based on previous IEEE 754 patch.
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031351.html
 
-On Dec 4, 2007, at 4:39 AM, Li Li wrote:
+I'd really like to see to see a testcase show the issue with "classic  
+FP emu" on a 85xx system.
 
-> Modified based on discussion on list.
->
-> 1. Adopt virq_to_hw routine
-> 2. Correct a legacy bug
->
-> Implements the IPIC MSI as two level interrupt controller.
->
-> Signed-off-by: Tony Li <tony.li@freescale.com>
-
-Tony, have you looked at the 85xx/86xx PCIe MSI mechanism?  The 2nd  
-level PIC handling seems like its pretty similar between IPIC and  
-MPIC.  Would like to see if we could somehow make the code common for  
-to handle MSIs from both?
+(seems like it should be pretty straight forward).
 
 - k
