@@ -1,17 +1,15 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <476307BD.5010809@freescale.com>
-Date: Fri, 14 Dec 2007 16:46:21 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 15 Dec 2007 09:03:35 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/8] powerpc: prpmc2800 - Convert dts file to v1
+Message-ID: <20071214220335.GA21311@localhost.localdomain>
+References: <20071211003108.GA4995@mag.az.mvista.com>
+	<20071211003738.GB4995@mag.az.mvista.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Subject: Re: Fix Firmware class name collision
-References: <4755E6AC.9020808@freescale.com>
-	<4755E835.6070704@freescale.com>	<4755FEA0.1050005@freescale.com>
-	<20071214224051.GA29580@suse.de>
-In-Reply-To: <20071214224051.GA29580@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Markus Rechberger <markus.rechberger@amd.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071211003738.GB4995@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,14 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Greg KH wrote:
+On Mon, Dec 10, 2007 at 05:37:38PM -0700, Mark A. Greer wrote:
+> From: Mark A. Greer <mgreer@mvista.com>
+> 
+> Convert the prpmc2800.dts file to dts-v1.  Basically, this means
+> converting the numeric constants to be 'C'-like (e.g., hexadecimal
+> numbers start with '0x').
 
-> In the near future (2.6.26) there will not be a limit on the size of the
-> file name, so we should not have this problem anymore.
+[snip]
+>  				interrupt-parent = <&/mv64x60/pic>;
 
-In that case, I won't worry about it.  I would have preferred 2.6.25, since I 
-have code going into 2.6.25 that is affected by the current limit.
+If you're converting to dts-v1, you should also convert any path
+references like this to &{/mv64x60/pic} or else use a label.  Yes,
+some early dts-v1 supporting dtc versions supported these as is, but
+the idea is to try to forget that they existed and always require the
+{} quoting in dts-v1.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
