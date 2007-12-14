@@ -2,18 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67064DDF59
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:02:59 +1100 (EST)
-Message-Id: <F552B8FC-7B8F-4BF4-89B7-363E803A1D10@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 05B94DE27E
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Dec 2007 16:05:51 +1100 (EST)
+Date: Thu, 13 Dec 2007 23:04:06 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18274.3076.467791.719752@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: any more patches for 2.6.24?
-Date: Thu, 13 Dec 2007 23:02:53 -0600
-References: <18274.3076.467791.719752@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Please pull from 'for-2.6.24' branch
+Message-ID: <Pine.LNX.4.64.0712132304000.8439@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'for-2.6.24' branch of
 
-On Dec 13, 2007, at 10:52 PM, Paul Mackerras wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
 
-> Currently I have just this one bugfix queued up to go to Linus for
-> 2.6.24:
->
-> Stephen Rothwell (1):
->      [POWERPC] iSeries: don't printk with HV spinlock held
->
-> Does anyone else have bugfixes that need to go in 2.6.24?
+to receive the following updates:
 
-I've got a pull request I'm about to send you.
+ arch/powerpc/configs/mpc8272_ads_defconfig |    6 +++---
+ arch/powerpc/configs/pq2fads_defconfig     |    6 +++---
+ arch/powerpc/kernel/ppc_ksyms.c            |   12 ------------
+ arch/powerpc/math-emu/op-2.h               |    3 ++-
+ arch/powerpc/sysdev/cpm2_common.c          |    3 +--
+ drivers/net/fs_enet/mac-scc.c              |    2 +-
+ include/asm-powerpc/commproc.h             |    3 ---
+ 7 files changed, 10 insertions(+), 25 deletions(-)
 
-- k
+Jochen Friedrich (2):
+      [POWERPC] Fix typo #ifdef -> #ifndef
+      [POWERPC] Kill non-existent symbols from ksyms and commproc.h
+
+Liu Yu (1):
+      [POWERPC] Fix rounding bug in emulation for double float operating
+
+Scott Wood (2):
+      [POWRPC] CPM2: Eliminate section mismatch warning in cpm2_reset().
+      [POWERPC] 82xx: mpc8272ads, pq2fads: Update defconfig with CONFIG_FS_ENET_MDIO_FCC
