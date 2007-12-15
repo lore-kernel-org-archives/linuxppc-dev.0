@@ -1,22 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C9593DDDED
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 15:33:50 +1100 (EST)
-Date: Fri, 14 Dec 2007 21:50:01 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: dwmw2@infradead.org, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH v3 4/4] Freescale enhanced Local Bus Controller FCM NAND
-	support.
-Message-ID: <20071215035001.GB20533@ld0162-tx32.am.freescale.net>
-References: <20071214221736.GA21231@loki.buserror.net>
-	<20071215025851.GA8430@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Fix Firmware class name collision
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <gregkh@suse.de>
+In-Reply-To: <20071214224051.GA29580@suse.de>
+References: <4755E6AC.9020808@freescale.com>
+	<4755E835.6070704@freescale.com> <4755FEA0.1050005@freescale.com>
+	<20071214224051.GA29580@suse.de>
+Content-Type: text/plain
+Date: Sat, 15 Dec 2007 17:14:29 +1100
+Message-Id: <1197699269.6696.41.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071215025851.GA8430@localhost.localdomain>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Markus Rechberger <markus.rechberger@amd.com>,
+	Timur Tabi <timur@freescale.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 15, 2007 at 01:58:51PM +1100, David Gibson wrote:
-> On Fri, Dec 14, 2007 at 04:17:36PM -0600, Scott Wood wrote:
-> > Signed-off-by: Nick Spence <nick.spence@freescale.com>
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > ---
-> > Fixed some formatting issues, removed some leftover debugging cruft,
-> > and added a comment about potential conflicts in the interrupt
-> > handling.
+
+On Fri, 2007-12-14 at 14:40 -0800, Greg KH wrote:
+> On Tue, Dec 04, 2007 at 07:28:00PM -0600, Timur Tabi wrote:
+> > Scott Wood wrote:
+> >
+> >> The physical address certainly is useful when you have more than one 
+> >> device of the same name.
+> >
+> > What I meant was that the physical address isn't helpful by itself.
+> >
+> >> So then you'd get "firmware-ucc.e01024".  What if there's another ucc at  
+> >> e0102480?  For devices with longer names, you'd have even less precision 
+> >> in the address.
+> >
+> > Maybe we need to consider a more sophisticated algorithm, one that 
+> > guarantees that the device name in its entirety is preserved?  Either that, 
+> > or replace the physical address with something shorter, like the offset to 
+> > the root node only?  That way, ucc.e0102400 because just ucc.2400.
 > 
-> Why is the NAND MTD driver specific to the elbc bus?
+> You should do something :)
+> 
+> In the near future (2.6.26) there will not be a limit on the size of the
+> file name, so we should not have this problem anymore.
 
-Because the NAND flash controller is part of the elbc.
+Not even .25 ? damn ! Any way that fix can be fastracked ? This
+limitation has been a major PITA for some time now (this is just -one-
+example where it gets in the way).
 
-> And why does it bind to the elbc node, rather than the nand node under
-> it?
-
-The FCM registers are part of the eLBC register block; the chip select
-mapping is just a data buffer.
-
--Scott
+Ben.
