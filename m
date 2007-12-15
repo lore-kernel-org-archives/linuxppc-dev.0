@@ -1,16 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 15 Dec 2007 09:10:08 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
-Message-ID: <20071214221008.GB21311@localhost.localdomain>
-References: <20071211212247.GB3620@loki.buserror.net>
-	<EB293853-B27A-4B0E-AEEB-8D3F09E8F12D@kernel.crashing.org>
-	<20071214155341.GB16269@ld0162-tx32.am.freescale.net>
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id 7A0F2DDDEA
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 11:01:25 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: apm_emulation regression
+Date: Sat, 15 Dec 2007 01:20:34 +0100
+References: <1197427530.8385.59.camel@pasglop>
+	<1197590712.15741.197.camel@pasglop>
+	<1197634708.16079.46.camel@johannes.berg>
+In-Reply-To: <1197634708.16079.46.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071214155341.GB16269@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712150120.35623.rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.osdl.org>, ralf <ralf@linux-mips.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,22 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 14, 2007 at 09:53:41AM -0600, Scott Wood wrote:
-> On Thu, Dec 13, 2007 at 11:19:33PM -0600, Kumar Gala wrote:
-> > Can we make this a /dts-v1/; since its new.
+On Friday, 14 of December 2007, Johannes Berg wrote:
 > 
-> It's not really new; it's just been collecting dust for a while. :-P
+> > > It can use the new notifier that happens before freezing yes. Johannes,
+> > > I think that's pretty much what my old powermac implementation did
+> > > (using my private notifier scheme I had there), might be worth reviving
+> > > that bit and sticking it into the generic apm_emu ...
+> > 
+> > Note that you may want to improve on it with a timeout in case userspace
+> > doesn't ack...
 > 
-> Are there any tools to autoconvert (preferably without losing
-> comments)?
+> Yeah heh. I'll take a look, shouldn't be too hard. Except I'm not
+> exactly sure how to test it.
 
-dtc itself can convert, but it will lose comments, alas.  There's not
-really any reasonable way it can be changed to preserve comments.
+Create an artificially malicious application? ;-)
 
-	dtc -I dts -O dts foo.dts
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Rafael
