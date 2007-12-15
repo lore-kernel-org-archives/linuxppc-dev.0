@@ -1,12 +1,23 @@
-Return-Path: <SRS0=z9zg=RG=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 0EA3CDDD0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 19:16:03 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 4xx: Change Kilauea PCIe bus ranges in dts file
-Date: Sat, 15 Dec 2007 09:10:56 +0100
-Message-Id: <1197706256-18179-1-git-send-email-sr@denx.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 41254DDDDB
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Dec 2007 01:09:32 +1100 (EST)
+Date: Sun, 16 Dec 2007 01:09:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device
+	driver
+Message-Id: <20071216010922.13ef21d0.sfr@canb.auug.org.au>
+In-Reply-To: <20071214182438.GB1017@localhost.localdomain>
+References: <20071214182109.GA858@localhost.localdomain>
+	<20071214182438.GB1017@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__16_Dec_2007_01_09_22_+1100_WWFH_=wHbbmcA3im"
+Cc: Jeff Garzik <jeff@garzik.org>, Arnd Bergmann <arnd@arndb.de>,
+	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,41 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently we have some limitations in the 4xx PCIe driver and can't
-support all possible PCIe busses. But the current limits in the
-dts file are quite low (only 16 busses per RC). This patch increases
-the number to 64 per RC.
+--Signature=_Sun__16_Dec_2007_01_09_22_+1100_WWFH_=wHbbmcA3im
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/boot/dts/kilauea.dts |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+On Fri, 14 Dec 2007 21:24:38 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
+m> wrote:
+>
+> +	prop =3D (u32 *)of_get_property(dn, "reg-shift", NULL);
 
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-index 3814199..67c7ea1 100644
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ b/arch/powerpc/boot/dts/kilauea.dts
-@@ -284,8 +284,8 @@
- 			/* Inbound 2GB range starting at 0 */
- 			dma-ranges = <42000000 0 0 0 0 80000000>;
- 
--			/* This drives busses 0x00 to 0x0f */
--			bus-range = <00 0f>;
-+			/* This drives busses 0x00 to 0x3f */
-+			bus-range = <00 3f>;
- 
- 			/* Legacy interrupts (note the weird polarity, the bridge seems
- 			 * to invert PCIe legacy interrupts).
-@@ -325,8 +325,8 @@
- 			/* Inbound 2GB range starting at 0 */
- 			dma-ranges = <42000000 0 0 0 0 80000000>;
- 
--			/* This drives busses 0x10 to 0x1f */
--			bus-range = <10 1f>;
-+			/* This drives busses 0x40 to 0x7f */
-+			bus-range = <40 7f>;
- 
- 			/* Legacy interrupts (note the weird polarity, the bridge seems
- 			 * to invert PCIe legacy interrupts).
--- 
-1.5.3.7.949.g2221a6
+This cast is unnecessary.
+
+> +	if (prop)
+> +		reg_shift =3D *prop;
+> +
+> +	prop =3D (u32 *)of_get_property(dn, "pio-mode", NULL);
+
+So is this one.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__16_Dec_2007_01_09_22_+1100_WWFH_=wHbbmcA3im
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHY+AYTgG2atn1QN8RAp21AJ9zGiZQPsyFbyuofbsH57ogiqT92ACaAgKx
+N6dQf7DMBkJo7F3DFGm8gMY=
+=4aw3
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__16_Dec_2007_01_09_22_+1100_WWFH_=wHbbmcA3im--
