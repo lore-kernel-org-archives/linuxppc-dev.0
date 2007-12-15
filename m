@@ -1,19 +1,23 @@
-Return-Path: <rje@valleytech.com>
-Received: from smtp-1.hosting.atlantic.net (smtp-1.hosting.atlantic.net
-	[209.208.105.25]) by ozlabs.org (Postfix) with ESMTP id 78236DDD01
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DDAABDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Dec 2007 17:51:16 +1100 (EST)
-Message-ID: <476376DA.9010608@valleytech.com>
-Date: Sat, 15 Dec 2007 01:40:26 -0500
-From: "R. Ebersole (VTI - new)" <rje@valleytech.com>
+	Sun, 16 Dec 2007 06:56:09 +1100 (EST)
+Message-ID: <47643138.3040703@ovro.caltech.edu>
+Date: Sat, 15 Dec 2007 11:55:36 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: David Hawkins <dwh@ovro.caltech.edu>
+To: "R. Ebersole (VTI - new)" <rje@valleytech.com>
 Subject: Re: mmap + segfaults on MPC8349E
 References: <475B5680.30303@valleytech.com> <475B68AE.5000302@ovro.caltech.edu>
 	<475DED86.1040409@valleytech.com>
 	<475DF30A.1080202@ovro.caltech.edu>
-In-Reply-To: <475DF30A.1080202@ovro.caltech.edu>
-Content-Type: multipart/mixed; boundary="------------070806010306000103020208"
+	<476376DA.9010608@valleytech.com>
+In-Reply-To: <476376DA.9010608@valleytech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,186 +29,321 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070806010306000103020208
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
+
+> Attached is the driver code that was in use when we had the problem.
+> (FPGA_orig.7z)
+> 
+> We think that we *may* have resolved the issue.
+> We have not, yet, completed testing the resolution, however.
+> 
+> Attached is the updated version of the driver (FPGArw.7z).
+> So far, this version appears OK when using mmap() without
+> MAP_FIXED.  We open() the device O_RDWR | O_SYNC.
+> 
+> We were going to switch to using pread(), pwrite(), and ioctl() to
+> access the FPGA's registers, but we are going to hold off on that
+> for now.
+
+I had a look at a few of the user-space examples I have written
+for accessing via mmap() for my own drivers, and the standard
+/dev/mem driver. I've include a generic /dev/mem interface program
+that I've used on a TS-7300 board (ARM-based board from Technologic
+Systems). Its inline below. It should work fine on a PowerPC too.
+
+My example code has always used open with O_RDWR and in some
+cases (O_RDWR | O_SYNC) (as in the code below). The call to
+mmap() uses prot set to (PROT_READ|PROT_WRITE) to match the open
+mode, and for the flags MAP_SHARED, never MAP_FIXED.
+
+ From the man page for mmap()
+
+http://linux.die.net/man/2/mmap
+
+   MAP_FIXED
+     Do not select a different address than the one specified.
+     If the memory region specified by start and len overlaps pages
+     of any existing mapping(s), then the overlapped part of the
+     existing mapping(s) will be discarded. If the specified address
+     cannot be used, mmap() will fail. If MAP_FIXED is specified,
+     start must be a multiple of the page size. Use of this option
+     is discouraged.
+
+So I'm not sure why you would choose this option.
+
+I can't say what problems selecting this option would create, as I've
+never tried. It would take some walking through the kernel code to
+see where this flag is used.
+
+Did you really see a difference between the driver code versions, or
+was it changing MAP_FIXED to MAP_SHARED that did the trick?
+
+If you test with the /dev/mem driver below and have no problems,
+then I would recommend using the /dev/mem mmap() routine in your
+custom driver.
+
+To track down which code change causes the SEGFAULT would require
+finding out the source of the SEGFAULT. So if you can code up
+something that consistently causes the error, then you should be
+able to debug the kernel to see what is causing it. I haven't had
+to debug this sort of thing, so can't offer much advice. If its
+hard to trigger the error, then do something deliberate; generate
+a parity error (eg. by reading a specific FPGA register), generate
+a bus timeout, etc. If that has the same effect on your code, then
+perhaps the driver can be instrumented to give you a little more
+debug information.
+
+Cheers,
+Dave
 
 
-Dave,
 
-Attached is the driver code that was in use when we had the problem.
-(FPGA_orig.7z)
+/*
+  * mem_debug.c
+  *
+  * 5/10/07 D. W. Hawkins (dwh@ovro.caltech.edu)
+  *
+  * A debug console for read/write access to /dev/mem mapped
+  * areas.
+  */
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <signal.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-We think that we *may* have resolved the issue.
-We have not, yet, completed testing the resolution, however.
+void display_help();
+void change_mem(char *cmd);
+void display_mem(char *cmd);
+void process_command(char *cmd);
 
-Attached is the updated version of the driver (FPGArw.7z).
-So far, this version appears OK when using mmap() without
-MAP_FIXED.  We open() the device O_RDWR | O_SYNC.
+/* Mapped address and size */
+static char        *mem_addr  = NULL;
+static unsigned int mem_phys  = 0;
+static unsigned int mem_pages = 0;
+static unsigned int mem_size = 0;
 
-We were going to switch to using pread(), pwrite(), and ioctl() to
-access the FPGA's registers, but we are going to hold off on that
-for now.
+static void show_usage()
+{
+	printf("\nUsage: mem_debug -a <address> -n <pages>\n"\
+		 "  -h            Help (this message)\n"\
+		 "  -a <address>  Hex address to start the map\n"\
+		 "  -n <pages>    Number of pages to map\n\n");
+}
 
+int main(int argc, char *argv[])
+{
+	int opt;       /* getopt processing         */
+	int fd;        /* /dev/mem file descriptor  */
+	char buf[200]; /* command processing buffer */
+	int len = 200;
+	int page_size = getpagesize();
+	int status;
 
+	while ((opt = getopt(argc, argv, "a:hn:")) != -1) {
+		switch (opt) {
+			case 'a':
+				status = sscanf(optarg, "%X", &mem_phys);
+				if (status != 1) {
+					printf("Parse error for -a option\n");
+					show_usage();
+					return -1;
+				}
+				break;
+			case 'h':
+				show_usage();
+				return -1;
+			case 'n':
+				mem_pages = atoi(optarg);
+				break;
+			default:
+				show_usage();
+				return -1;
+		}
+	}
+	if (mem_phys != (mem_phys/page_size)*page_size) {
+		printf("Error: the address must be page-aligned (0x%X)\n",
+				page_size);
+		return -1;
+	}
+	if (mem_pages == 0) {
+		mem_pages = 1;
+	}
+	mem_size = mem_pages*page_size;
 
-David Hawkins wrote:
+	/* Startup */
+	printf("\n------------------------\n");
+	printf("/dev/mem debug interface\n");
+	printf("========================\n\n");
 
-> Hi,
->
-> Ok, so assuming you come back with the fact that the seg-fault
-> occurs without bursting. Lets take a look at your driver code.
->
-> Cheers,
-> Dave
->
->
->
+	/* Open /dev/mem and map it */
+	printf(" * open /dev/mem\n");
+	fd = open("/dev/mem", O_RDWR | O_SYNC);
+	if (fd < 0) {
+		printf("Open /dev/mem failed - %s\n",
+			strerror(errno));
+		return -1;
+	}
+	printf(" * map %d page(s) (%d-bytes) at address 0x%.8X\n",
+			mem_pages, mem_size, mem_phys);
+	mem_addr = (char *)mmap(
+		0,
+		mem_size,
+		PROT_READ|PROT_WRITE,
+		MAP_SHARED,
+		fd,
+		mem_phys);
+	if (mem_addr == (char *)MAP_FAILED) {
+		printf("Error: mmap failed\n");
+		close(fd);
+		return -1;
+	}
 
--- 
+	/* Display help */
+	display_help();
 
-Sometimes I feel like a red shirt in the Star Trek episode of life.
+	/* Process commands */
+	while (1) {
+		printf("CMD> ");
+		fflush(stdout);
+		fgets(buf,len,stdin);
+		process_command(buf);
+	}
 
---
+	/* Cleanup */
+	munmap((void *)mem_addr, mem_pages*page_size);
+	close(fd);
+	return 0;
+}
 
-This message contains confidential information and is intended only for the
-individual named.  If you are not the intended recipient you should not
-disseminate, distribute or copy this e-mail.  Please notify the sender
-immediately by e-mail if you have received this e-mail by mistake and delete
-this e-mail from your system.
+/*--------------------------------------------------------------------
+  * User interface
+  *--------------------------------------------------------------------
+  */
+void display_help()
+{
+	printf("\n  ?              Help\n");
+	printf("  dw addr len    Display len words starting from  addr\n");
+	printf("  db addr len    Display len bytes starting from addr\n");
+	printf("  cw addr val    Change word at addr to val\n");
+	printf("  cb addr val    Change byte at addr to val\n");
+	printf("  q              Quit\n");
+	printf("\n  Notes:\n");
+	printf("    * addr, len, and val are interpreted as hex values\n");
+	printf("    * addresses are always byte based\n");
+	printf("    * addresses are offsets relative to the base address\n\n");
+}
 
+void process_command(char *cmd)
+{
+	if (cmd[0] == '\0') {
+		return;
+	}
+	switch (cmd[0]) {
+		case '?':
+			display_help();
+			break;
+		case 'd':
+		case 'D':
+			display_mem(cmd);
+			break;
+		case 'c':
+		case 'C':
+			change_mem(cmd);
+			break;
+		case 'q':
+		case 'Q':
+			exit(0);
+		default:
+			break;
+	}
 
---------------070806010306000103020208
-Content-Type: application/octet-stream;
- name="FPGArw.7z"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="FPGArw.7z"
+	return;
+}
 
-N3q8ryccAAJgtYo0TQ4AAAAAAABSAAAAAAAAADi8mp0AF4p9S80rU1/nlrwcIc2dktwWpZhA
-b8m+t/GYrKEUWjskcWSVWPvANLKQBguaEBuBaKUiGcUfnkw8pyxBtVkTLNgi7m6hRyzHyhT/
-FA1r9q+ZjQr3t28PKt+k4dWjGOAyNWDLXsB+Gu1kkyKBtOtYuc4RLJvxK9Y0yQEhRVYC5xI1
-RJjGTEuUiTZrgEIkSZMW6XKQFx3s2+mXhQ3347+ubdoG4V+2eConZCjzI07YxRmhR6JZB1+G
-87aLd1CUNSepcOvxKhHqxfhSfWXx0qCohBHX5+OpJ9y18DOzr0kudBMee0NFwS4V3FHj1EbL
-WqZp6QThSpIdYZKvygDVTCAjwG1gfrLJVWJJxBegJD8GlFy+VnIfVlSaGgPGYMaGoAXbhkDq
-UymrDX+C4yZkMmqljfBPaA9yZlgD0uqmt6T7BgBKWffQgZnIgo+tSvOWJd9a1hnrZcAHpaQU
-0ra/eTNlKDlG86/fXYrzDgHyNTW05WtEzeGw12Mzk7tQZmHPQ1XZK0EeyXY1V3eW9LjDTIhN
-rqO8Iow/t89OqFWs/gX91Nuk6G0hW2xPw8T29sm4H5x6EpfT/WH/IOyOMB5jWNuxSKh48/kd
-5tykwvBI52jZpa4zCN7543YBNmBApBIFXOYyIbu1h58xQptbp/WvC3xhBgZb4GOYovHPpdUD
-tc0aeLLex67Ma7jgaISh5NtwurduMUXOV4lg8kIFhmqAUSdTstQEHQ4Pqr34JVSgNzKFenbL
-mpwbLx9DnLQ62ouwuo6fbGAmFyX29+RyxwOUznGTvy+tcce9vaMT4sl9m3J03E5bSf1o407o
-oNkD/xGsPcwz933HB7vYRvE+sKxVFqLwofkrYwUt/AD0zLLhAEi5L0h9J+3n/0rG4MvWi3t/
-Q7fgYSqNPSMmwKmQVL4/x5dbWX3r4Rw7PS/UE+sI5nRERbIh5g4P8zrTmw2qBoZRKOygp9U1
-h4L6u18k8+JQkC87GvihGn4rvq0CKnnwesQ3dvDiXt2R/AuPW6TN5Ll1Luf0xBrhnofdW4Oj
-7SlxG4g4wh6wyV4neBGEsWKPYCmYDC6xpObwLKsd1BwXYeQHHbytqeED1otCGckiBl3DAzcz
-JT7obEl+g3dkX41m5EGld5HNwCetSv9UxBTp7WOHWD4f8Skqrwh718qNNIQJWu6IpZ/c5LE1
-0F+//MGnVGGRtsyTd625yk3NsUD0Bv2ueGnk71YsweKpzp9eFm+bky558FYmZro8+YEnW0vi
-bBc/nMAzYWgzM/+FV8Q5iXlQVgZZQJ3Ufry0vDD7hEArGFhGxthKyAxNUYqLeoIqjnBKz3OG
-UUn8x/fRIW+v4cI6rk0t6Ygdb1oKJdMPvhP2G5mHuxWXtcgureREE7dZCIiYIkjyFr77ueLk
-CKI/gqxoW55whQ+H1YSJZcWQc8uhxORZz85+J+3rn1P/PfkQYffOERidgmoxkyzBNxteqtwG
-P/Rg9XI8HZ4JCAg3NE5cYSiWnD8W46Bm8AGOJ+9HORyHP+k61II4ajEevab6JrdO7yFeWRPV
-LfAORRgydtS9LXDJaXGKBdqNaKO6+LsaCTv7ldeieIsYY6yb2cucPCwnYZ7A41zUHQs4SJae
-pWg6E3+/AiPU56bllR1iPSxE8zfNo62HfPcO+yxsQa+rro53V0UEH31U3arM2ssy/z8jO9++
-UJ+pPjMqPgWEwHD391GSqW5NNh29BnAWLpL508Ue+F7SuBej0uM/oX2bHFL+ZiGw63i5TdXT
-CwLcp8WZGE4YZbV2aXAZ2qsmC12+PtUyimjy++1gd/r4dwYzNKP1d1jNi90F+wgvM08FSqnQ
-1qG5sC6bONH2Thaj5SRu1jwAgxW+rIYo7CGa+cL9aM4Lc/VQl5k2de/ck4J642s9/1cxMW9b
-o2Nqa8Zttxya3pmbunOcd7xMevTkW5K4n1A4yPPjJSF/OkPkSF7PGXa7IWZZXc3JaE/h5i35
-S09LFHO2KX62YG2bcoh6Hg+rX3jMh/WsQ/4Zj+DpqTlA02Z09Hn9xnrUS0swUfzpJksOcnA4
-K5l+D8RcoHtN+g6DmDnyYtXoDZfeZ8jpDI95cOnqtbWEPoj8KNm65mQRG0GdIP0mw/lIdXjh
-bKasUTgCsDZdy3Zb0K93EWNHKHyIk2/hrOwa5bMnLGIWkjDzKl0570S9oVcQEUwKcnIZC8CF
-MYq9IgbWapWKM+AWqhZg+V8Q6dAHpEnK7LUIqN7eiqDuEo3scECGBBKYhHy+kr+sBLiL8sIK
-MtawFZ8Hh/pBNTmoAzD7xAYE5Vn/ImXgTel/l7ygtqKlWJ2KrcH5RAL4g0gdSzIzeQwduioU
-KSFndPVtXv5cJNwtsRFEaw/FnPtomzTVS87GoKLVnB0EElNARK4R5D/M4aEScpgtal1uZuUC
-d/lJTVcW2cqyLaob5WpVePucjxP01aveW6VTjoxy+EF5wJhQ4R0l/oFRaWh6rFg1okXdl+tE
-7/uB1AK75H9veuXc+5PonmPdQsYjZKnWwTSAulo4LvEeHVj9suxnp2ileqU5NFfnppoxgQH0
-9ez9wbJcNbjCkSEwT6NsBi7WvnXNuOv/Z8mBJCOCgBNMD47rBLvn4asLjYTqLWScTW0o2NhL
-0C6zFOxJ8+IQJnd6AdcYhWjgrPcB18I6eFWCkN377b0vjlqZKdQByEEWOg0m1k1wDaV1AxUO
-x02EfMMf7KaaqLlz/hcLASJ3QGeUxLzsX2yUBmI6kw+yDV00afxEDONLyAPioVyTUtAHWizn
-MBbunQiUsXyZQvoCyEz/fpTAoDtDSHadVEXFzmNH1TvmdRWqM51WsMbLF4glk7v0ocYXWbv1
-Zyb+8F0dyiz/LUW0hk2Mj6GdzKEPgeIuuMjKJ/iCZJn8BRRbR8R8HTKrf8oAwOOGf7DkqPZX
-gWx8p1aQH8/vBR75IQ3QmckKPmNK4onzjJTb6/SrYaI7ELrcvw0nryGzLpj8UcvIjzp4emTC
-lkTNDkazQVS/zfyOMSFY3ykCzb8RxueJccTSM+/HjwRjxqLZ+E13Myb5//gyuGbbohUXNF8W
-lLqtIveKL4iPjz0tasOUziSTX1Tn3rGKrV5CYRI5F/noGtqIPtr+rhWzCvOplrEBjVH3o1dL
-tF+gFqdgqRvNS0DKyxjLcRscsEcrcjZpjRvIOJFCCsgoCpFOEDrV8Zgrm3atKRU/hWPmJosf
-ZmbKZVToTMjB/lqWKNMG5QCiqx6u5Vu5r8RONvuM5OhI0AS3tKnaY9RjAMNznhFxS1x2k482
-xkDgUvcWW7fwCeRdAe6/FrNnmGjPnhOTR4MG9LThRLuX8UuHWupjTV8Q5zCPKHfVEUr07JFB
-uVbJyOjdRArMJ3QukCQU0MEWNeWrZ/8fMLKZpCHkjJBX5I27v/IpoiEVhZV+zX9UAYDdWyX2
-XpUXZUd5Fy7mZYHaJ3w+n52b4ohUAeAVlCE7gp/zRQRx5Qeb8cWjD6FF3a7BYg6v3ecaYCpa
-bqW3J+47IOz5179Gb2Ja6v9Zj4LT2v1y6zkbiggATlIQVTRu7HvWKZ9MyGgUhO6Gezw6i/u9
-K0gX0mk1k6bTlVJ0l3MVVlZrao51mT2b31g3FaPJXUAhh5Ykn1wFT0LRFkID7Mx1F2xTT6b1
-F7QEl9cpWNKSvGWCwn5/GwnLCdggJM/Hc57xKXbroam9/GPAg6hvyYWQADI5GBQ2mSN42cVQ
-0sjxnYnBDCCzS8VBjaHLSWKB9UeNCMp+62G6w7S7ueKiw9o4yMkXrVm3gC33sqB0N+gN8/mw
-Whav1b4svWMaVNHnKLtdxIGkoN7s+m/t6nk3mNaWKS603n3l0Ufz61yEIH9Gl2U1Lt4G8va9
-1iZE7OZexqQytjn5SkpnkuKomMuxK8uIXJ+A3lDlJmiqFLE0F6jbh2QZX6l9HUhkK22w6/8T
-Ij2qlZb3Ze1DnZY/U/if6ppwMmQb12NYf2SuX/sn7NROwXO25ea9IULD0AzcyHhbJ3XDSE00
-BUZBW+iIItnNWxvTwL0XBG5s66abml8vV0CgSa6Cm2QtjtMqyA7ApNgcslCcj4U/rnzaJB8F
-KC7kEUsLAlNf3UHRni1mQo4Omolxz++PP3B5eRokKjihDLCtfmY1aCO7cSTEM3gsQflHpg+J
-ADCek1HRHh4FTbRXpGdPEE2b6+7okq/XrtelsnTBBMe725q7/THJO7+w4AlVD2Jhbd64S7iU
-HoZIgKs8/8erakghB3toMtAw2atyz6l7uXfARuXHFVXUr866q5c6CiTWiFMtTF2nZ1Ico35+
-SEEq5pRicWejCb6ZWTH4K0z6LgmY0kc6FvIthjnPSsHZA5ZzMfzxFUUqgWPGE75Uh+2GkM/X
-jUw11O/Yg/+HwZ8uUD0POFYAoYRnfY7WNFgf3Pl5X2ndBZMZvsxSSNcEf57logGRcd3XlXoR
-doot1Gm3cuZc78WBFM+mrdjs2iXBsdPAwGvvtTZRGbHBUZCEn8YHw9MxGzpkU9SAeUlZkk+B
-1iWYl783lYj/tFvz1haz9TcjzZTR4QkUhQVvDLtrOTevJKAglZ1XhrIPA6bWO2MTcLdV/l/X
-ZcmNxKgDjXdkBzljIMxmXaPTx0G7N1d4RZBudcgDlLzbYVLArqw5Sxcj2fux1tSDsvBKwcVA
-urVWjH5CNIWb6B4CpFObCoC3+AwkQPF8jeyETHWtDgVu8elFQFWnSfjKkpnUXnJ14R7ezdUA
-jB2CDsZjKUdycuXu1RiLauKPrrvabCyCJ1X2MkQ3Je3aCBxnh6ETfaolUxo0N39VoOdgsWwZ
-E9DmEc9am/UpvwfVe1wWeQtnHf+3QmvbRuc9ICeBeEmYbQ+e0wL6LJO5JERPFw8miOTYifG8
-OOf1LE27VcBcec+y3Gbv430RaxvCAQQGAAEJjk0ABwsBAAEjAwEBBV0AAAEADLpcAAgKAZqd
-drEAAAUBERMARgBQAEcAQQByAHcALgBjAAAAFAoBAIA6tHRHPcgBFQYBAIAAAAAAAA==
---------------070806010306000103020208
-Content-Type: application/octet-stream;
- name="FPGA_orig.7z"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="FPGA_orig.7z"
+void display_mem(char *cmd)
+{
+	char width = 0;
+	int addr = 0;
+	int len = 0;
+	int status;
+	int i, data;
 
-N3q8ryccAAJP8zzqeAkAAAAAAABYAAAAAAAAAG+20AUAF4p9S80rU1/nlrwcIc2dktwWpZhA
-b8m+t/GYrKEUWjskcWSVWPvANLKQBguaEBuBaKUiGcUfnkw8pyxBtVkTLNgi7m6hRyzHyhT/
-FA1r9q+ZjQr3t28PKt+k4dWjGOAyNWDLXsB+Gu1kkyKBtOtYuc4RLJvxK9Y0yQEhRVYC5xI1
-RJjGTEuUiTZrgEIkSZMW6XKQFx3s2+mXhQ3347+ubdoG4V+2eConZCjzI07YxRmhR6JZB1+G
-87aLd1CUNSepcOvxKhHqxfhSfWXx0qCohBHX5+OpJ9y18DOzr0kudBMee0NFwS4V3FHj1EbL
-WqZp6QThSpIdYZKvygDVTCAjwG1gfrLJVWJJxBegJD8GlFy+VnIfVlSaGgPGYMaGoAXbhkDq
-UymrDX+C4yZkMmqljfBPaA9yZlgD0uqmt6T7BgBKWffQgZnIgo+tSvOWJd9a1hnrZcAHpaQU
-0ra/eTNlKDlG86/fXYrzDgHyNTW05WtEzeGw12Mzk7tQZmHPQ1XZK0EeyXY1V3eW9LjDTIhN
-rqO8Iow/t89OqFWs/gX91Nuk6G0hW2xPw8T29sm4H5x6EpfT/WH/IOyOMB5jWNuxSKh48/kd
-5tykwvBK64GMPgZCUNMRLMoiKLHpdxrtAy072lhJk1N4ZTVHlhCV0HQhvt+6gWPwG8dhREaD
-uWQhZQnfeFCZrsYSW1Wca2k1JlHCN1CY93zBIAtgCPSdNWM0nai6jzyT+kns9FaPNWkGgXmo
-R3U5qpZSrg9+7+0K92RnFN1k5+MZlOcsN3xjLVU0bGFfzfG3aDSEsRCJDvBzzDSW9BIQMORD
-bKgcZ7KjGT41OaGGkkM5RDqTTIAITvnTjbEPWvjYHzs+BGdhw6yAeSYXFXIjdkhf+ZoNZAjV
-ixCLaxm6o/eb8wH8GFYdKecESDUNEsUP9pmX2D8t6bxxLyhhPXfxrIz/NUJyXg06LpEEhxOK
-Ym32pCr9gOPOAMEhBQFfJNMQcaITstJLX61PxMHFnL0dX2LNfzXGSfCMUhgxUxsITGEC2aF4
-sYP47oYQCp1vqodhm/KHCqc64AdKqe6Rp2KELkPl46JUTHk3nRGIeUnknQ5Nz//BfbtQ0hTF
-FkdejTRGGkL80J4aKuJ/xGJ05+bePwtRaMKWmtwHLUBnPnxG6rYdY5AAdXUt+7exZynW3fRU
-dGoV8HIrTXFpWbqBTwAEukqDA0f6cPpEhzt54qY1QD/ScRc0Hn0yIYe0sgH1AHsU6Y2fp2WU
-2NisUNuCF2gBPUmKOGzl/Mzpmp25tpR4jslgXy4wFD/sRvKyeYXIB/8jFYGfN2g0GdMJk1Tn
-IzgjjQFli08Xu9VC1DfGl00ivyx5jGI939/PWW63pOYyEYqJbhtzm3bPOUQJRWP3FKkitDiq
-Hv7btyiDSenNuPPH++6VMUw62rRrSIBHzQwfTpnUkXkTaOyFdO9N1/s9VVWFHEGuelU6RlCj
-j0D3jaYQl/vmarb0U1GZAlWsMNmdqBa2Zibv071JFg1vHxE9H+wVWZS1enBRUJHpsi0Y0bki
-x/M1Xf5YmmQp29iNyYWSxiRfhfRZP6GltN9Nr0u86I7v1jOkg+GaSco/3NCXiWWJUS7dZsJP
-FVBHOx+3L/Bep77j7l/4HheFr8avAd3tWSLWq+VF3pmHNhf/wtYJDNIgE5ziYcyBf/FOZbvQ
-pTjd7EAaAlbg0TZpUaA8PEG123J1et4/TOa7GwG9JMStgWc2bxjPR0zSRMS+YEFU6HuBaWYJ
-3gA0EI7cixtREqWP4aYUzcTLde4vOrjhv1mgRyw3SA+SK6tDkELUwDCHVJTKBCMKQSO2sAFq
-Z/vAMTiunJYBUGJfj2DSOM4kztB4V7T6PNfXIxKfc3DHlhiPUBZWEGtblr/kqnTW2o/7R9tv
-pTA8lq6q7wQWjSX512Nn/kL1Enpz62GSf3I9sZYpBVEP12Gt9ro4vSbzhCMZz3iNX5Z0Eaoe
-9q3PwUWCP+gZKDEznIul9hxmqFa5sNysr2E+wAzg1GwKiwro3OTbBD1PSxSZSE3KUanHtJQ5
-LVLr9Cz/1M6AWYRM/4Xpk3JDt0mnA9cAe9Z5oDvxfUyvmAYWm5qlmeQZhABbmVoITBQqHaiJ
-CcXp8U1ldH+vqaQdU6rXsKxPwc7cppU8oGtVr2QTXn0vWRAHslnUtLR+TgB3XmfqW/oDt4A+
-z2C3C/e1Fde2iAXsq7Y0ddv/0FS+xK2ps0vIZvJYuqa85lfI5J9ScnJ6xCrpANcrfo8a8K7V
-yrgM34pK8maOfJXQuBRCsPdwi/YdfcFzmLBmmPHituKgFOJLnelnFIlY9IFMU+lSVEg/MQ3Y
-nq1FKALDi9zu1jNAv59nSTWCCAtFd1jHmdKKSrdAAre6JATlchL68MlODZ6GTCmDJYIXB9vl
-GFDM0aDUXdcN/IU2+R+j8SeSpvf0hgOgaLSy/fBKe64fmOX4E+xcv+VaSxkle2+h1uFVq3Nd
-PY5NsVV1r7yEYLfpkwDptfmKbTGOrV4Gi0loK2BNw70Cq5LRrblhoRewAEFcOTYql+CICxlG
-j7ksEcCANymmMdPpGZlM6F9412dnNx9EAOEUHK+juE6gn85RS4mP4aUai0iY6CjbJVrNdg1S
-qSrCXNxXMv1k5vIqrdwUTUFMqfif4+XovsaZd6rXvetK2jqzOqygqf4VQ/wR4wkU7C973p9B
-f5X5JY0QVLuMkg7y+VggFSzol064+5iwC+zo3avuM6WgAq255yzWze+23fw2GKhfyD+f2iJS
-dwDKLYfq9GmdaJL1AYfFzSVBdXKfqjH+vbjKjaCet+Cp8R+YTFQcTDChTbByvw2G4qq2tOq9
-MxMcT9NP5+OhdwUlTE+6TjAK63pVkNezmkdgwIyFv4gXmUZEMGQHBZK/xJqBcX5SPDZRjMQt
-jVN5svg3ZnTrdmhkThC7eyCmEvwq3UHclcPmJxPufGHFXuUVSD7pgzQUGbxWAIqUm/JJnjAA
-UnbB4c/d9HpkKtrA2g1Vs94n5868gPYUuAFU+cEZOmdOlIAwZBVyEeSW25zlaxbskYaGBV68
-xEElValipuzZbjLiLhYMUB1E9duEl/1SyNingofK22WABVysYxWRUViTXjE0SauNI4xejEJX
-uMZXGHWeAXuu1omFkuNPdH5EkSulLgSpzNJx8Q48vQiBvwEHAAE8xI9/eXVTebRIVkq+/X40
-hoT3bFORsTAq/rnD6ARuKScLXVVYnqbZ2gABBAYAAQmJeAAHCwEAASMDAQEFXQAAAQAMnx4A
-CAoBZZNWcQAABQERGQBGAFAARwBBAF8AbwByAGkAZwAuAGMAAAAUCgEAAMFqPi89yAEVBgEA
-gAAAAAAA
---------------070806010306000103020208--
+	/* d, db, dw */
+	status = sscanf(cmd, "%*c%c %x %x", &width, &addr, &len);
+	if (status != 3) {
+		printf("syntax error (use ? for help)\n");
+		return;
+	}
+	if (len > mem_size) {
+		len = mem_size;
+	}
+	/* Convert to offset if required */
+	if (addr >= mem_phys) {
+		addr -= mem_phys;
+	}
+	if (addr >= mem_size) {
+		printf("Illegal address\n");
+		return;
+	}
+	switch (width) {
+		case 'b':
+			for (i = 0; i < len; i++) {
+				if ((i%16) == 0) {
+					printf("\n%.8X: ", mem_phys + addr + i);
+				}
+				data = (int)(mem_addr[addr+i]) & 0xFF;
+				printf("%.02X ", data);
+			}
+			printf("\n");
+			break;
+		default:
+			for (i = 0; i < len; i+=4) {
+				if ((i%16) == 0) {
+					printf("\n%.8X: ", mem_phys + addr + i);
+				}
+				data = *(int *)(mem_addr + addr + i);
+				printf("%.08X ", data);
+			}
+			printf("\n");
+			break;
+	}
+	printf("\n");
+	return;
+}
+
+void change_mem(char *cmd)
+{
+	char width = 0;
+	int addr = 0;
+	int data = 0;
+	int status;
+
+	/* c, cb, cw */
+	status = sscanf(cmd, "%*c%c %x %x", &width, &addr, &data);
+	if (status != 3) {
+		printf("syntax error (use ? for help)\n");
+		return;
+	}
+	/* Convert to offset if required */
+	if (addr >= mem_phys) {
+		addr -= mem_phys;
+	}
+	if (addr >= mem_size) {
+		printf("Illegal address\n");
+		return;
+	}
+	switch (width) {
+		case 'b':
+			mem_addr[addr] = data & 0xFF;
+			break;
+		default:
+			*(int *)(mem_addr + addr) = data;
+			break;
+	}
+	return;
+}
