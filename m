@@ -1,18 +1,19 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 9F36ADE01A
+Return-Path: <rje@valleytech.com>
+Received: from smtp-1.hosting.atlantic.net (smtp-1.hosting.atlantic.net
+	[209.208.105.25]) by ozlabs.org (Postfix) with ESMTP id 78236DDD01
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Dec 2007 13:48:09 +1100 (EST)
-In-Reply-To: <9e4733910712131828v532e6aaep316c72e14d92c921@mail.gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: How is a device tree used to specifiy flash?
+	Sat, 15 Dec 2007 17:51:16 +1100 (EST)
+Message-ID: <476376DA.9010608@valleytech.com>
+Date: Sat, 15 Dec 2007 01:40:26 -0500
+From: "R. Ebersole (VTI - new)" <rje@valleytech.com>
 MIME-Version: 1.0
-Message-ID: <OF24048468.087C44B1-ON882573B1.000F3814-882573B1.000F6220@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 13 Dec 2007 18:48:01 -0800
-Content-Type: text/plain; charset="US-ASCII"
+To: David Hawkins <dwh@ovro.caltech.edu>
+Subject: Re: mmap + segfaults on MPC8349E
+References: <475B5680.30303@valleytech.com> <475B68AE.5000302@ovro.caltech.edu>
+	<475DED86.1040409@valleytech.com>
+	<475DF30A.1080202@ovro.caltech.edu>
+In-Reply-To: <475DF30A.1080202@ovro.caltech.edu>
+Content-Type: multipart/mixed; boundary="------------070806010306000103020208"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,17 +25,186 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"Jon Smirl" <jonsmirl@gmail.com> wrote on 12/13/2007 06:28:28 PM:
+This is a multi-part message in MIME format.
+--------------070806010306000103020208
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> To get this working on the mpc5200 I had to add the localbus node
-> above the flash.
-> 
->    lpb@ff000000 {
->       compatible = "fsl,lpb";
->       ranges = <0 ff000000 01000000>;
-> 
 
-Thanks.  I'll give it a try.  Do you know if the "fsl,lpb" compaibility 
-extends to the 83xx code?
+Dave,
 
-Bruce
+Attached is the driver code that was in use when we had the problem.
+(FPGA_orig.7z)
+
+We think that we *may* have resolved the issue.
+We have not, yet, completed testing the resolution, however.
+
+Attached is the updated version of the driver (FPGArw.7z).
+So far, this version appears OK when using mmap() without
+MAP_FIXED.  We open() the device O_RDWR | O_SYNC.
+
+We were going to switch to using pread(), pwrite(), and ioctl() to
+access the FPGA's registers, but we are going to hold off on that
+for now.
+
+
+
+David Hawkins wrote:
+
+> Hi,
+>
+> Ok, so assuming you come back with the fact that the seg-fault
+> occurs without bursting. Lets take a look at your driver code.
+>
+> Cheers,
+> Dave
+>
+>
+>
+
+-- 
+
+Sometimes I feel like a red shirt in the Star Trek episode of life.
+
+--
+
+This message contains confidential information and is intended only for the
+individual named.  If you are not the intended recipient you should not
+disseminate, distribute or copy this e-mail.  Please notify the sender
+immediately by e-mail if you have received this e-mail by mistake and delete
+this e-mail from your system.
+
+
+--------------070806010306000103020208
+Content-Type: application/octet-stream;
+ name="FPGArw.7z"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="FPGArw.7z"
+
+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
+--------------070806010306000103020208
+Content-Type: application/octet-stream;
+ name="FPGA_orig.7z"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="FPGA_orig.7z"
+
+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
+gAAAAAAA
+--------------070806010306000103020208--
