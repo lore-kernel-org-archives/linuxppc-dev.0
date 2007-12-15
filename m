@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5CF2DDDEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 17:17:56 +1100 (EST)
-Subject: Re: [PATCH 07/10] powerpc: Implement kmap_atomic_pfn on powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20071122154638.GA26514@xyzzy.farnsworth.org>
-References: <20071122154638.GA26514@xyzzy.farnsworth.org>
-Content-Type: text/plain
-Date: Sat, 15 Dec 2007 17:17:41 +1100
-Message-Id: <1197699461.6696.45.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <gregkh@suse.de>
+Date: Fri, 14 Dec 2007 22:39:17 -0800
+From: Greg KH <gregkh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: Fix Firmware class name collision
+Message-ID: <20071215063917.GA14942@suse.de>
+References: <4755E6AC.9020808@freescale.com> <4755E835.6070704@freescale.com>
+	<4755FEA0.1050005@freescale.com> <20071214224051.GA29580@suse.de>
+	<1197699269.6696.41.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1197699269.6696.41.camel@pasglop>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Markus Rechberger <markus.rechberger@amd.com>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Thu, 2007-11-22 at 08:46 -0700, Dale Farnsworth wrote:
-> This is needed for the ppc32 /dev/oldmem driver of crash dump.
-
-Kumar's working (well, last I heard he was) on a fixmap mechanism
-so we can do that sort of thing without CONFIG_HIGHMEM, you may
-want to sync with him here, that would allow to shrink the crash
-kernel by not having highmem selected.
-
-Cheers,
-Ben.
- 
-> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> ---
->  include/asm-powerpc/highmem.h |   18 ++++++++++++++++++
->  1 files changed, 18 insertions(+), 0 deletions(-)
+On Sat, Dec 15, 2007 at 05:14:29PM +1100, Benjamin Herrenschmidt wrote:
 > 
-> diff --git a/include/asm-powerpc/highmem.h b/include/asm-powerpc/highmem.h
-> index f7b21ee..88d9e05 100644
-> --- a/include/asm-powerpc/highmem.h
-> +++ b/include/asm-powerpc/highmem.h
-> @@ -117,6 +117,24 @@ static inline void kunmap_atomic(void *kvaddr, enum km_type type)
->  	pagefault_enable();
->  }
->  
-> +/* This is the same as kmap_atomic() but can map memory that doesn't
-> + * have a struct page associated with it.
-> + */
-> +static inline void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
-> +{
-> +	unsigned int idx;
-> +	unsigned long vaddr;
-> +
-> +	pagefault_disable();
-> +
-> +	idx = type + KM_TYPE_NR * smp_processor_id();
-> +	vaddr = KMAP_FIX_BEGIN + idx * PAGE_SIZE;
-> +	set_pte_at(&init_mm, vaddr, kmap_pte+idx, pfn_pte(pfn, kmap_prot));
-> +	flush_tlb_page(NULL, vaddr);
-> +
-> +	return (void*) vaddr;
-> +}
-> +
->  static inline struct page *kmap_atomic_to_page(void *ptr)
->  {
->  	unsigned long idx, vaddr = (unsigned long) ptr;
+> On Fri, 2007-12-14 at 14:40 -0800, Greg KH wrote:
+> > On Tue, Dec 04, 2007 at 07:28:00PM -0600, Timur Tabi wrote:
+> > > Scott Wood wrote:
+> > >
+> > >> The physical address certainly is useful when you have more than one 
+> > >> device of the same name.
+> > >
+> > > What I meant was that the physical address isn't helpful by itself.
+> > >
+> > >> So then you'd get "firmware-ucc.e01024".  What if there's another ucc at  
+> > >> e0102480?  For devices with longer names, you'd have even less precision 
+> > >> in the address.
+> > >
+> > > Maybe we need to consider a more sophisticated algorithm, one that 
+> > > guarantees that the device name in its entirety is preserved?  Either that, 
+> > > or replace the physical address with something shorter, like the offset to 
+> > > the root node only?  That way, ucc.e0102400 because just ucc.2400.
+> > 
+> > You should do something :)
+> > 
+> > In the near future (2.6.26) there will not be a limit on the size of the
+> > file name, so we should not have this problem anymore.
+> 
+> Not even .25 ? damn ! Any way that fix can be fastracked ? This
+> limitation has been a major PITA for some time now (this is just -one-
+> example where it gets in the way).
+
+I'll let Kay answer that, last he said, it involves a _lot_ of changes
+throughout the kernel :(
+
+thanks,
+
+greg k-h
