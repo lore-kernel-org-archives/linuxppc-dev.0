@@ -1,18 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Fix Firmware class name collision
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AC69EDDDF5
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2007 17:16:40 +1100 (EST)
+Subject: Re: [PATCH 03/10] powerpc: Add kexec support for PPC_85xx platforms
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <gregkh@suse.de>
-In-Reply-To: <20071214224051.GA29580@suse.de>
-References: <4755E6AC.9020808@freescale.com>
-	<4755E835.6070704@freescale.com> <4755FEA0.1050005@freescale.com>
-	<20071214224051.GA29580@suse.de>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20071122154607.GA26447@xyzzy.farnsworth.org>
+References: <20071122154607.GA26447@xyzzy.farnsworth.org>
 Content-Type: text/plain
-Date: Sat, 15 Dec 2007 17:14:29 +1100
-Message-Id: <1197699269.6696.41.camel@pasglop>
+Date: Sat, 15 Dec 2007 17:16:25 +1100
+Message-Id: <1197699385.6696.43.camel@pasglop>
 Mime-Version: 1.0
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Markus Rechberger <markus.rechberger@amd.com>,
-	Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,31 +25,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2007-12-14 at 14:40 -0800, Greg KH wrote:
-> On Tue, Dec 04, 2007 at 07:28:00PM -0600, Timur Tabi wrote:
-> > Scott Wood wrote:
-> >
-> >> The physical address certainly is useful when you have more than one 
-> >> device of the same name.
-> >
-> > What I meant was that the physical address isn't helpful by itself.
-> >
-> >> So then you'd get "firmware-ucc.e01024".  What if there's another ucc at  
-> >> e0102480?  For devices with longer names, you'd have even less precision 
-> >> in the address.
-> >
-> > Maybe we need to consider a more sophisticated algorithm, one that 
-> > guarantees that the device name in its entirety is preserved?  Either that, 
-> > or replace the physical address with something shorter, like the offset to 
-> > the root node only?  That way, ucc.e0102400 because just ucc.2400.
-> 
-> You should do something :)
-> 
-> In the near future (2.6.26) there will not be a limit on the size of the
-> file name, so we should not have this problem anymore.
+> index 8b642ab..db0e749 100644
+> --- a/arch/powerpc/kernel/misc_32.S
+> +++ b/arch/powerpc/kernel/misc_32.S
+> @@ -816,6 +816,75 @@ relocate_new_kernel:
+>  	/* r4 = reboot_code_buffer */
+>  	/* r5 = start_address      */
+>  
+> +#ifdef CONFIG_E500
+> +	/*
+> +	 * Since we can't turn off the MMU, we must create an identity
+> +	 * map for kernel low memory.  We start by invalidating the
+> +	 * TLB entries we don't need.
+> +	 *
+> +	 * First, invalidate the TLB0 entries
+> +	 */
+> +	li	r6, 0x04
+> +	tlbivax	0, r6
+> +#ifdef CONFIG_SMP
+> +	tlbsync
+> +#endif
+> +	msync
+> +
 
-Not even .25 ? damn ! Any way that fix can be fastracked ? This
-limitation has been a major PITA for some time now (this is just -one-
-example where it gets in the way).
+This is really E500 specific or should it be CONFIG_FSL_BOOKE ?
 
 Ben.
