@@ -1,19 +1,14 @@
-Return-Path: <kay.sievers@vrfy.org>
-Subject: Re: Fix Firmware class name collision
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <gregkh@suse.de>
-In-Reply-To: <20071215063917.GA14942@suse.de>
-References: <4755E6AC.9020808@freescale.com>
-	<4755E835.6070704@freescale.com> <4755FEA0.1050005@freescale.com>
-	<20071214224051.GA29580@suse.de> <1197699269.6696.41.camel@pasglop>
-	<20071215063917.GA14942@suse.de>
-Content-Type: text/plain
-Date: Sat, 15 Dec 2007 16:46:55 +0100
-Message-Id: <1197733615.19869.30.camel@lov.site>
-Mime-Version: 1.0
-Cc: Markus Rechberger <markus.rechberger@amd.com>,
-	Timur Tabi <timur@freescale.com>,
-	PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sun, 16 Dec 2007 17:27:23 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] FSL: enet device tree cleanups
+Message-ID: <20071216062723.GF21311@localhost.localdomain>
+References: <Pine.LNX.4.64.0712120151590.25255@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0712120151590.25255@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-12-14 at 22:39 -0800, Greg KH wrote:
-> On Sat, Dec 15, 2007 at 05:14:29PM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > On Fri, 2007-12-14 at 14:40 -0800, Greg KH wrote:
-> > > On Tue, Dec 04, 2007 at 07:28:00PM -0600, Timur Tabi wrote:
-> > > > Scott Wood wrote:
-> > > >
-> > > >> The physical address certainly is useful when you have more than one 
-> > > >> device of the same name.
-> > > >
-> > > > What I meant was that the physical address isn't helpful by itself.
-> > > >
-> > > >> So then you'd get "firmware-ucc.e01024".  What if there's another ucc at  
-> > > >> e0102480?  For devices with longer names, you'd have even less precision 
-> > > >> in the address.
-> > > >
-> > > > Maybe we need to consider a more sophisticated algorithm, one that 
-> > > > guarantees that the device name in its entirety is preserved?  Either that, 
-> > > > or replace the physical address with something shorter, like the offset to 
-> > > > the root node only?  That way, ucc.e0102400 because just ucc.2400.
-> > > 
-> > > You should do something :)
-> > > 
-> > > In the near future (2.6.26) there will not be a limit on the size of the
-> > > file name, so we should not have this problem anymore.
-> > 
-> > Not even .25 ? damn ! Any way that fix can be fastracked ? This
-> > limitation has been a major PITA for some time now (this is just -one-
-> > example where it gets in the way).
-> 
-> I'll let Kay answer that, last he said, it involves a _lot_ of changes
-> throughout the kernel :(
+On Wed, Dec 12, 2007 at 01:52:05AM -0600, Kumar Gala wrote:
+> * Removed address fields in ethernet nodes
+> * Removed #address-cells, #size-cells from gianfar nodes
+> * Added cell-index to gianfar and ucc ethernet nodes
+> * Added enet[0..3] labels
+> * Renamed compatible node for gianfar mdio to "fsl,gianfar-mdio"
+> * Removed device_type = "mdio"
 
-The current patch gets rid of bus_id and uses the dynamic kobject_name
-directly all over the place. It's huge, because the current code expects
-a static array and uses strncpy/snprintf all over the place.
+Hurrah!  Finally.  
 
-I'm currently waiting for the new kobject api to finish, before I update
-the patch, not sure if we will make it in time for .25.
+> The matching for gianfar mdio still supports the old "mdio"/"gianfar" combo
+> but it is now considered deprecated.
 
-Kay
+That's fine.  It's acceptable to keep match list entries for broken
+trees around pretty much indefinitely.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
