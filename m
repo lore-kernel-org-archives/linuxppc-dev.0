@@ -1,23 +1,22 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from mx.gate01.com (pip10.gyao.ne.jp [61.122.117.248])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33D70DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Dec 2007 23:46:24 +1100 (EST)
-Date: Sun, 16 Dec 2007 21:46:04 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/3] [libata] pata_platform: make probe and remove
-	functions device type neutral
-Message-ID: <20071216124604.GA12769@linux-sh.org>
-References: <20071214182109.GA858@localhost.localdomain>
-	<20071214182429.GA1017@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071214182429.GA1017@localhost.localdomain>
-Cc: Jeff Garzik <jeff@garzik.org>, Arnd Bergmann <arnd@arndb.de>,
-	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Olof Johansson <olof@lixom.net>
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id A72A8DDDF2
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 00:38:29 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so5565931pyi.0
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Dec 2007 05:38:28 -0800 (PST)
+Date: Sun, 16 Dec 2007 07:38:18 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Device Tree updates for xilinx.
+Message-ID: <20071216073818.4cfa7787@vader.jdub.homelinux.org>
+In-Reply-To: <20071216070404.GK21311@localhost.localdomain>
+References: <20071204012811.AD70CEF004D@mail134-dub.bigfish.com>
+	<20071213233945.E8FFAA6007C@mail180-sin.bigfish.com>
+	<20071216070404.GK21311@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Michal Simek <simekm2@fel.cvut.cz>,
+	git <git@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 14, 2007 at 09:24:29PM +0300, Anton Vorontsov wrote:
-> Split pata_platform_{probe,remove} into two pieces:
-> 1. pata_platform_{probe,remove} -- platform_device-dependant bits;
-> 2. __ptata_platform_{probe,remove} -- device type neutral bits.
-> 
-> This is done to not duplicate code for the OF-platform driver.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Acked-by: Olof Johansson <olof@lixom.net>
+On Sun, 16 Dec 2007 18:04:04 +1100
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-Looks fine to me now, thanks for cleaning it up Anton.
+> > 	cpus {
+> > 		#address-cells = <1>;
+> > 		#cpus = <1>;
+> > 		#size-cells = <0>;
+> > 		PowerPC,405@0 {
+> 
+> I'm trying to encourage people to move to naming cpu nodes simply
+> "cpu@XX", with the type of core in "compatible" instead - in keeping
+> with the generic names convention used elsewhere.  I think this will
+> make your generator simpler, too.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+cpu@XX with the model property of the node set to "PowerPC,405" please.
+
+josh
