@@ -1,16 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Sun, 16 Dec 2007 17:40:56 +1100
+Date: Sun, 16 Dec 2007 17:30:20 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
-Message-ID: <20071216064056.GH21311@localhost.localdomain>
-References: <20071129150726.GA13751@ru.mvista.com>
-	<20071129152836.GB13751@ru.mvista.com>
-	<20071210211816.4657.qmail@farnsworth.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
+Message-ID: <20071216063020.GG21311@localhost.localdomain>
+References: <20071211212247.GB3620@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071210211816.4657.qmail@farnsworth.org>
-Cc: Linuxppc-dev@ozlabs.org
+In-Reply-To: <20071211212247.GB3620@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,91 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 10, 2007 at 02:18:16PM -0700, Dale Farnsworth wrote:
-> David Gibson wrote:
-> > On Thu, Nov 29, 2007 at 06:28:36PM +0300, Andrei Dolnikov wrote:
-> > > Device tree source file for the Emerson Katana Qp board
-> 
-> [snip]
-> 
-> > > +	mv64x60@f8100000 { /* Marvell Discovery */
-> > > +		#address-cells = <1>;
-> > > +		#size-cells = <1>;
-> > > +		model = "mv64460";			/* Default */
-> > > +		compatible = "marvell,mv64x60";
-> 
-> [snip]
-> 
-> > > +		mdio {
-> > 
-> > There must be some way of actuall accessing the mdio bus, so this node
-> > ought to have a 'reg' property and unit address.
-> 
-> There is no way for the cpu to directly access the mdio bus.  The
-> mdio bus is internally accessed by the ethernet MAC.  That being the
-> case, maybe it makes more sense to move the mdio node inside of the
-> multiethernet node, as follows, but I don't see how we can give it
-> a reg property or a unit address.
+On Tue, Dec 11, 2007 at 03:22:47PM -0600, Scott Wood wrote:
+[snip]
+> +		bcsr@1,0 {
+> +			#address-cells = <2>;
+> +			#size-cells = <1>;
+> +			reg = <1 0 10>;
+> +			compatible = "fsl,ep8248e-bcsr";
+> +			ranges;
+> +
+> +			mdio {
+> +				device_type = "mdio";
+> +				compatible = "fsl,ep8248e-mdio-bitbang";
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +				reg = <1 8 1>;
+> +
+> +				PHY0: ethernet-phy@0 {
+> +					interrupt-parent = <&PIC>;
+> +					reg = <0>;
+> +					device_type = "ethernet-phy";
+> +				};
+> +
+> +				PHY1: ethernet-phy@1 {
+> +					interrupt-parent = <&PIC>;
+> +					reg = <1>;
+> +					device_type = "ethernet-phy";
+> +				};
+> +			};
+> +		};
 
-Ah, I see.  If the mdio interface isn't distinct from the other
-pieces, then it probably shouldn't get a device node at all.  Having
-an explicit mdio bus with the phys hanging off it is convenient for
-hardware which actually works that way, but it doesn't have to be done
-like that.
-
-Of course, then the question is where to hang the phy nodes, which
-look like they have information you need.  Since you already have a
-local addressing scheme for the MACs under the multiethernet, what
-probably makes sense would be to hang the phys directly under the
-multiethernet, using an encoding scheme for the reg properties so that
-the MACs and PHYs aren't confused (say, MACs are 0x0, 0x1, 0x2, PHYs
-are 0x80000000, 0x80000001, 0x80000002).
-
-Incidentally, although I suggested it, I'm not all that fond of the
-"multiethernet" name, it was just the first thing that occurred to me.
-
-> 
-> 		multiethernet@2000 {
-> 			reg = <0x2000 0x2000>;
-> 			ethernet@0 {
-> 				device_type = "network";
-> 				compatible = "marvell,mv64360-eth";
-> 				reg = <0>;
-> 				interrupts = <32>;
-> 				interrupt-parent = <&PIC>;
-> 				phy = <&PHY0>;
-> 				local-mac-address = [ 00 00 00 00 00 00 ];
-> 			};
-> 			ethernet@1 {
-> 				device_type = "network";
-> 				compatible = "marvell,mv64360-eth";
-> 				reg = <1>;
-> 				interrupts = <33>;
-> 				interrupt-parent = <&PIC>;
-> 				phy = <&PHY1>;
-> 				local-mac-address = [ 00 00 00 00 00 00 ];
-> 			};
-> 			mdio {
-> 				#address-cells = <1>;
-> 				#size-cells = <0>;
-> 				device_type = "mdio";
-> 				compatible = "marvell,mv64360-mdio";
-> 				PHY0: ethernet-phy@1 {
-> 					device_type = "ethernet-phy";
-> 					compatible = "broadcom,bcm5421";
-> 					interrupts = <76>;	/* GPP 12 */
-> 					interrupt-parent = <&PIC>;
-> 					reg = <1>;
-> 				};
-> 				PHY1: ethernet-phy@3 {
-> 					device_type = "ethernet-phy";
-> 					compatible = "broadcom,bcm5421";
-> 					interrupts = <76>;	/* GPP 12 */
-> 					interrupt-parent = <&PIC>;
-> 					reg = <3>;
-> 				};
-> 			};
-> 		};
+This mdio-under-bcsr arrangement is a bit strange.  Can you explain
+what's going on here?
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
