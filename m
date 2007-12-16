@@ -1,20 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id AFC31DDDEB
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 01:59:09 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so5601488pyi.0
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Dec 2007 06:59:08 -0800 (PST)
-Date: Sun, 16 Dec 2007 08:58:58 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] [POWERPC] 4xx: Add aliases node to 4xx dts files
-Message-ID: <20071216085858.55ffddbe@vader.jdub.homelinux.org>
-In-Reply-To: <20071216061959.GD21311@localhost.localdomain>
-References: <1197705316-17618-1-git-send-email-sr@denx.de>
-	<20071216061959.GD21311@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2EA49DDD04
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 02:45:14 +1100 (EST)
+Date: Sun, 16 Dec 2007 16:44:58 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Arnon Kaufman <arnon.kaufman@gmail.com>
+Message-ID: <20071216154458.GZ3851@pengutronix.de>
+References: <47652712.60006@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <47652712.60006@gmail.com>
+Subject: Re: [MPC5200] problem running FEC and ATA
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 16 Dec 2007 17:19:59 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
+On Sun, Dec 16, 2007 at 03:24:34PM +0200, Arnon Kaufman wrote:
+> does any one succeed running a functional FEC and ATA (pata) running
+> together?
 
-> On Sat, Dec 15, 2007 at 08:55:16AM +0100, Stefan Roese wrote:
-> > Signed-off-by: Stefan Roese <sr@denx.de>
-> Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Yes, we do, on the phyCORE-MPC5200B-tiny; you can check our patches here:
+http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/
 
-Applied to my candidates tree.  Though I'd really like dtc to be merged
-so that we can figure out what the in-kernel version will support.
+We've recently made the -6 release which supports ATA; although I'm not
+sure if the tests were done with networking & ATA at the same time I
+assume yes (at least while doing nfsroot). We'll re-check your scenario.
 
-josh
+Note that there has been quite some activity wrt. MPC5200, bestcom and
+fec in the mainline recently. You should test the latest 2.6.24-rc
+kernel.
+
+Robert
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
