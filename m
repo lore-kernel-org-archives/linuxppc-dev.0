@@ -1,20 +1,22 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E19A3DDE06
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 04:46:40 +1100 (EST)
-Date: Sun, 16 Dec 2007 18:46:25 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Arnon Kaufman <arnon.kaufman@gmail.com>
-Message-ID: <20071216174625.GB3851@pengutronix.de>
-References: <47652712.60006@gmail.com> <20071216154458.GZ3851@pengutronix.de>
-	<47656048.7060809@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <47656048.7060809@gmail.com>
-Subject: Re: [MPC5200] problem running FEC and ATA
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 05262DDE02
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 05:10:21 +1100 (EST)
+In-Reply-To: <20071216085858.55ffddbe@vader.jdub.homelinux.org>
+References: <1197705316-17618-1-git-send-email-sr@denx.de>
+	<20071216061959.GD21311@localhost.localdomain>
+	<20071216085858.55ffddbe@vader.jdub.homelinux.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f3ddb435a7a71cea8362ed73eb154200@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 4xx: Add aliases node to 4xx dts files
+Date: Sun, 16 Dec 2007 19:10:02 +0100
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 16, 2007 at 07:28:40PM +0200, Arnon Kaufman wrote:
-> Robert Schwebel wrote:
-> >On Sun, Dec 16, 2007 at 03:24:34PM +0200, Arnon Kaufman wrote:
-> >>does any one succeed running a functional FEC and ATA (pata) running
-> >>together?
-> >
-> >Yes, we do, on the phyCORE-MPC5200B-tiny; you can check our patches here:
-> >http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-tiny/
->
-> thanks, my kernels are already patched and still observing that kind of
-> behavior. I'm using Domen's new FEC code and ATA from 2.6.24-rc2.
->
-> playing with the XLB Master's enable and priority lead to significant
-> changes (good ones) in the rate of corruption appearance. I'm afraid of
-> the "new" priority I've set, as that may lead to lockups on the XLB,
-> still investigating.
+> Applied to my candidates tree.  Though I'd really like dtc to be merged
+> so that we can figure out what the in-kernel version will support.
 
-Do you have a reproducable test scenario we can try on our hardware?
+Hopefully some version that stores path strings in the properties
+in /aliases, and not phandles.  Or does that current version of DTC
+do that correctly already, and just has an inconvenient source syntax?
 
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+
+Segher
