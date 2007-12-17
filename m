@@ -1,15 +1,21 @@
-Return-Path: <joe@perches.com>
-Received: from perches.com (DSL022.labridge.com [206.117.136.22])
-	by ozlabs.org (Postfix) with ESMTP id ABA06DDF99
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 06:32:36 +1100 (EST)
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] include/asm-ppc/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:30:15 -0800
-Message-Id: <1197919875-5288-16-git-send-email-joe@perches.com>
-Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918890.git.joe@perches.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <jengelh@computergmbh.de>
+Received: from sovereign.computergmbh.de (sovereign.computergmbh.de
+	[85.214.69.204])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3EF77DDEC7
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 06:34:08 +1100 (EST)
+Date: Mon, 17 Dec 2007 20:28:53 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Maxim Shchetynin <maxim@de.ibm.com>
+Subject: Re: 1st version of azfs
+In-Reply-To: <OFE16CCD4C.0757B0AF-ONC12573B4.00642BAC-C12573B4.0066FFDD@de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0712171958250.32270@fbirervta.pbzchgretzou.qr>
+References: <OFE16CCD4C.0757B0AF-ONC12573B4.00642BAC-C12573B4.0066FFDD@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
+	linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,51 +26,225 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- include/asm-ppc/8xx_immap.h |    2 +-
- include/asm-ppc/commproc.h  |    2 +-
- include/asm-ppc/reg_booke.h |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+>+config AZ_FS
+>+	tristate "AZFS filesystem support"
+>+	default m
 
-diff --git a/include/asm-ppc/8xx_immap.h b/include/asm-ppc/8xx_immap.h
-index 1311cef..4b0e152 100644
---- a/include/asm-ppc/8xx_immap.h
-+++ b/include/asm-ppc/8xx_immap.h
-@@ -123,7 +123,7 @@ typedef struct	mem_ctlr {
- #define OR_G5LA		0x00000400	/* Output #GPL5 on #GPL_A5		*/
- #define OR_G5LS		0x00000200	/* Drive #GPL high on falling edge of...*/
- #define OR_BI		0x00000100	/* Burst inhibit			*/
--#define OR_SCY_MSK	0x000000f0	/* Cycle Lenght in Clocks		*/
-+#define OR_SCY_MSK	0x000000f0	/* Cycle Length in Clocks		*/
- #define OR_SCY_0_CLK	0x00000000	/* 0 clock cycles wait states		*/
- #define OR_SCY_1_CLK	0x00000010	/* 1 clock cycles wait states		*/
- #define OR_SCY_2_CLK	0x00000020	/* 2 clock cycles wait states		*/
-diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
-index 3972487..462abb1 100644
---- a/include/asm-ppc/commproc.h
-+++ b/include/asm-ppc/commproc.h
-@@ -681,7 +681,7 @@ typedef struct risc_timer_pram {
- #define	CICR_SCC_SCC3		((uint)0x00200000)	/* SCC3 @ SCCc */
- #define	CICR_SCB_SCC2		((uint)0x00040000)	/* SCC2 @ SCCb */
- #define	CICR_SCA_SCC1		((uint)0x00000000)	/* SCC1 @ SCCa */
--#define CICR_IRL_MASK		((uint)0x0000e000)	/* Core interrrupt */
-+#define CICR_IRL_MASK		((uint)0x0000e000)	/* Core interrupt */
- #define CICR_HP_MASK		((uint)0x00001f00)	/* Hi-pri int. */
- #define CICR_IEN		((uint)0x00000080)	/* Int. enable */
- #define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
-diff --git a/include/asm-ppc/reg_booke.h b/include/asm-ppc/reg_booke.h
-index 82948ed..4cad45a 100644
---- a/include/asm-ppc/reg_booke.h
-+++ b/include/asm-ppc/reg_booke.h
-@@ -283,7 +283,7 @@
- #define ESR_IMCB	0x20000000	/* Instr. Machine Check - Bus error */
- #define ESR_IMCT	0x10000000	/* Instr. Machine Check - Timeout */
- #define ESR_PIL		0x08000000	/* Program Exception - Illegal */
--#define ESR_PPR		0x04000000	/* Program Exception - Priveleged */
-+#define ESR_PPR		0x04000000	/* Program Exception - Privileged */
- #define ESR_PTR		0x02000000	/* Program Exception - Trap */
- #define ESR_FP		0x01000000	/* Floating Point Operation */
- #define ESR_DST		0x00800000	/* Storage Exception - Data miss */
--- 
-1.5.3.7.949.g2221a6
+I do not think it should default to anything.
+
+>+#define AZFS_SUPERBLOCK_FLAGS		MS_NOEXEC | \
+>+					MS_SYNCHRONOUS | \
+>+					MS_DIRSYNC | \
+>+					MS_ACTIVE
+>
+>+#define AZFS_BDI_CAPABILITIES		BDI_CAP_NO_ACCT_DIRTY | \
+>+					BDI_CAP_NO_WRITEBACK | \
+>+					BDI_CAP_MAP_COPY | \
+>+					BDI_CAP_MAP_DIRECT | \
+>+					BDI_CAP_VMFLAGS
+>+
+>+#define AZFS_CACHE_FLAGS		SLAB_HWCACHE_ALIGN | \
+>+					SLAB_RECLAIM_ACCOUNT | \
+>+					SLAB_MEM_SPREAD
+>+
+
+Suggest () around the (MS_NOEXEC|...|...)
+
+>+enum azfs_direction {
+>+	AZFS_MMAP,
+>+	AZFS_READ,
+>+	AZFS_WRITE
+>+};
+>+
+>+struct azfs_super {
+>+	struct list_head		list;
+>+	unsigned long			media_size;
+>+	unsigned long			block_size;
+>+	unsigned short			block_shift;
+>+	unsigned long			sector_size;
+>+	unsigned short			sector_shift;
+>+	unsigned long			ph_addr;
+>+	unsigned long			io_addr;
+>+	struct block_device		*blkdev;
+>+	struct dentry			*root;
+>+	struct list_head		block_list;
+>+	rwlock_t			lock;
+>+};
+
+Some of these probably should be sometypedef_t or so, to ensure they
+have their minimum width on 32-bit. The struct also could have some
+reordering to avoid needless padding.
+
+>+struct azfs_block {
+>+	struct list_head		list;
+>+	unsigned long			id;
+>+	unsigned long			count;
+>+};
+>+
+
+Same. unsigned long <=> uint64_t might be needed/helpful/etc.
+
+>+static struct azfs_super_list		super_list;
+>+static struct kmem_cache		*azfs_znode_cache __read_mostly = NULL;
+>+static struct kmem_cache		*azfs_block_cache __read_mostly = NULL;
+
+NULL is implicit, drop it, save some bytes in the object file.
+
+>+static int
+>+azfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
+>+{
+>+	struct inode *inode;
+>+
+>+	inode = azfs_new_inode(dir->i_sb, dir, mode, dev);
+>+	if (!inode)
+>+		return -ENOSPC;
+>+
+>+	if (S_ISREG(mode))
+>+		I2Z(inode)->size = 0;
+>+
+>+	dget(dentry);
+>+	d_instantiate(dentry, inode);
+>+
+>+	return 0;
+>+}
+
+Either azfs_mknod(), azfs_new_inode() or init_special_inode() seems
+to be missing settings ->size to 0 in the !S_IFREG case and
+setting ->size to something good-looking for S_IFDIR.
+
+>+/**
+>+ * azfs_open - open() method for file_operations
+>+ * @inode, @file: see file_operations methods
+>+ */
+>+static int
+>+azfs_open(struct inode *inode, struct file *file)
+>+{
+>+	file->private_data = inode;
+>+
+>+	if (file->f_flags & O_TRUNC) {
+>+		i_size_write(inode, 0);
+>+		inode->i_op->truncate(inode);
+>+	}
+>+	if (file->f_flags & O_APPEND)
+>+		inode->i_fop->llseek(file, 0, SEEK_END);
+>+
+>+	return 0;
+>+}
+
+This looks like duplicate code. Usually the generic fs functions take
+care of that, including quota handling which seems to be missing
+here if this is continuing to exist.
+
+>+	page_prot = pgprot_val(vma->vm_page_prot);
+>+	page_prot |= (_PAGE_NO_CACHE | _PAGE_RW);
+
+redundant ().
+
+>+			for_each_block(ding, &super->block_list) {
+>+				if (!west && (ding->id + ding->count == id))
+>+					west = ding;
+>+				else if (!east && (id + count == ding->id))
+>+					east = ding;
+redundant().
+
+>+static struct inode*
+>+azfs_new_inode(struct super_block *sb, struct inode *dir, int mode, dev_t dev)
+>+{
+>+	struct inode *inode;
+>+
+>+	inode = new_inode(sb);
+>+	if (!inode)
+>+		return NULL;
+>+
+>+	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+>+
+>+	inode->i_mode = mode;
+>+	if (dir) {
+>+		dir->i_mtime = dir->i_ctime = inode->i_mtime;
+>+		inode->i_uid = current->fsuid;
+>+		if (dir->i_mode & S_ISGID) {
+>+			if (S_ISDIR(mode))
+>+				inode->i_mode |= S_ISGID;
+>+			inode->i_gid = dir->i_gid;
+>+		} else {
+>+			inode->i_gid = current->fsgid;
+>+		}
+>+	} else {
+>+		inode->i_uid = 0;
+>+		inode->i_gid = 0;
+>+	}
+
+Why not fsuid/fsgid in the else case?
+
+>+azfs_statfs(struct dentry *dentry, struct kstatfs *stat)
+>+{
+>[...]
+>+	mutex_lock(&sb->s_lock);
+>+	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>+		inodes++;
+>+		blocks += inode->i_blocks;
+>+	}
+>+	mutex_unlock(&sb->s_lock);
+
+Can this be improved somehow? If the list of inodes is long, doing
+statvfs() may keep the filesystem real busy.
+
+>+static struct super_operations azfs_ops = {
+>+	.alloc_inode	= azfs_alloc_inode,
+>+	.destroy_inode	= azfs_destroy_inode,
+>+	.drop_inode	= generic_delete_inode,
+>+	.delete_inode	= azfs_delete_inode,
+>+	.statfs		= azfs_statfs
+>+};
+
+Trailing comma preferred.
+
+>+azfs_fill_super(struct super_block *sb, void *data, int silent)
+>+{
+>+	if (!disk || !disk->queue) {
+>+		printk(KERN_ERR "%s needs a block device which has a gendisk "
+>+				"with a queue\n",
+>+				AZFS_FILESYSTEM_NAME);
+>+		return -ENOSYS;
+>+	}
+
+ENOSYS seems inappropriate.
+
+>+	if (!get_device(disk->driverfs_dev)) {
+>+		printk(KERN_ERR "%s cannot get reference to device driver\n",
+>+				AZFS_FILESYSTEM_NAME);
+>+		return -EFAULT;
+>+	}
+
+as does EFAULT.
+
+>+static struct file_system_type azfs_fs = {
+>+	.owner		= THIS_MODULE,
+>+	.name		= AZFS_FILESYSTEM_NAME,
+
+I see you have made plans to change the filesystem name :)
+
+>+	.get_sb		= azfs_get_sb,
+>+	.kill_sb	= azfs_kill_sb,
+>+	.fs_flags	= AZFS_FILESYSTEM_FLAGS
+
+or just replace these macros.
+
+>+static int __init
+>+azfs_init(void)
+>+{
+
+C'mon, that fits on one line.
+
+>+	if (!azfs_znode_cache) {
+>+		printk(KERN_ERR "Could not allocate inode cache for %s\n",
+>+				AZFS_FILESYSTEM_NAME);
+
+While we are at it,
+		printk(KERN_ERR "Could not blafasel for " AZFS_FILESYSTEM_NAME "\n");
+saves the extra argument.
+
+>+{
+>+	struct azfs_super *super, *PILZE;
+
+Process forests, superblock mushrooms, GNOME desktop, what next?
