@@ -1,52 +1,24 @@
-Return-Path: <stefano.brivio@polimi.it>
-Date: Mon, 17 Dec 2007 21:56:35 +0100
-From: Stefano Brivio <stefano.brivio@polimi.it>
-To: Joe Perches <joe@perches.com>
+Return-Path: <joe@perches.com>
+Received: from perches.com (DSL022.labridge.com [206.117.136.22])
+	by ozlabs.org (Postfix) with ESMTP id 3DB86DDDFE
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 08:49:44 +1100 (EST)
 Subject: Re: [PATCH] drivers/net/: Spelling fixes
-Message-ID: <20071217215635.16fe17af@morte>
-In-Reply-To: <1197920439-5455-2-git-send-email-joe@perches.com>
+From: Joe Perches <joe@perches.com>
+To: Stefano Brivio <stefano.brivio@polimi.it>
+In-Reply-To: <20071217215635.16fe17af@morte>
 References: <1197920439-5455-2-git-send-email-joe@perches.com>
+	<20071217215635.16fe17af@morte>
+Content-Type: text/plain
+Date: Mon, 17 Dec 2007 13:15:45 -0800
+Message-Id: <1197926145.27386.56.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Manish, Jay, David Gibson <hermes@gibson.dropbear.id.au>,
-	orinoco-devel@lists.sourceforge.net, Roskin <proski@gnu.org>,
-	Corey Thomas <corey@world.std.com>, linuxppc-dev@ozlabs.org,
-	Daniel, Paul Mackerras <paulus@samba.org>,
-	Peter De Shrijver <p2@ace.ulyssis.student.kuleuven.ac.be>, Pavel,
-	Rastapur Santosh <santosh.rastapur@neterion.com>, John,
-	bonding-devel@lists.sourceforge.net,
-	Andy Gospodarek <andy@greyhouse.net>, Eugene,
-	"Amit S. Kale" <amitkale@netxen.com>, ipw2100-devel@lists.sourceforge.net,
-	ipw3945-devel@lists.sourceforge.net,
-	libertas-dev@lists.infradead.org, Dan Williams <dcbw@redhat.com>,
-	Jesse Brandeburg <jesse.brandeburg@intel.com>,
-	Lachwani <mlachwani@mvista.com>, Jean Tourrilhes <jt@hpl.hp.com>,
-	Zhu <yi.zhu@intel.com>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-	Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-	Francois Romieu <romieu@fr.zoreil.com>, Drake <dsd@gentoo.org>,
-	Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>,
-	Jeb Cramer <cramerj@intel.com>,
-	Chad Tindel <ctindel@users.sourceforge.net>, Dale,
-	Jay Cliburn <jcliburn@gmail.com>, Samuel Ortiz <samuel@sortiz.org>,
-	Sivakumar Subramani <sivakumar.subramani@neterion.com>,
-	Jesse Huang <jesse@icplus.com.tw>, Mike Phillips <mikep@linuxtr.net>,
-	rt2400-devel@lists.sourceforge.net, Ulrich Kunitz <kune@deine-taler.de>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Chris Snook <csnook@redhat.com>, cbe-oss-dev@ozlabs.org,
-	Alexander Indenbaum <baum@tehutinetworks.net>,
-	Adam Fritzler <mid@auk.cx>, Auke Kok <auke-jan.h.kok@intel.com>,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	tulip-users@lists.sourceforge.net, linux-ppp@vger.kernel.org,
-	Ramkrishna Vepa <ram.vepa@neterion.com>,
-	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc: Sivakumar Subramani <sivakumar.subramani@neterion.com>,
+	netdev@vger.kernel.org, Ramkrishna Vepa <ram.vepa@neterion.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Sreenivasa Honnur <sreenivasa.honnur@neterion.com>,
-	e1000-devel@lists.sourceforge.net, Geoff, Ronciak <john.ronciak@intel.com>,
-	orinoco-users@lists.sourceforge.net, Yi, atl1-devel@lists.sourceforge.net,
-	Ron Mercer <linux-driver@qlogic.com>,
-	James Ketrenos <jketreno@linux.intel.com>,
+	Rastapur Santosh <santosh.rastapur@neterion.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Sorbica Shieh <sorbica@icplus.com.tw>, netdev@vger.kernel.org,
-	Larry Finger <Larry.Finger@lwfinger.net>
+	Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -56,20 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Dec 2007 11:40:08 -0800
-Joe Perches <joe@perches.com> wrote:
+On Mon, 2007-12-17 at 21:56 +0100, Stefano Brivio wrote:
+> On Mon, 17 Dec 2007 11:40:08 -0800
+> Joe Perches <joe@perches.com> wrote:
+> > diff --git a/drivers/net/ucc_geth_ethtool.c
+> b/drivers/net/ucc_geth_ethtool.c
+> > index 9a9622c..f8d319b 100644
+> > --- a/drivers/net/ucc_geth_ethtool.c
+> > +++ b/drivers/net/ucc_geth_ethtool.c
+> > @@ -7,7 +7,7 @@
+> >   *
+> >   * Limitation: 
+> >   * Can only get/set setttings of the first queue.
+>                          ^^^
 
-> diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
-> index 9a9622c..f8d319b 100644
-> --- a/drivers/net/ucc_geth_ethtool.c
-> +++ b/drivers/net/ucc_geth_ethtool.c
-> @@ -7,7 +7,7 @@
->   *
->   * Limitation: 
->   * Can only get/set setttings of the first queue.
-                         ^^^
+Good eyes...  Unrelated to what I changed too.
+cheers, Joe
 
-
--- 
-Ciao
-Stefano
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+index 121cb10..cdfb2b0 100644
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -6823,8 +6823,8 @@ static void do_s2io_card_down(struct s2io_nic * sp, int do_io)
+ 	while(do_io) {
+ 		/* As per the HW requirement we need to replenish the
+ 		 * receive buffer to avoid the ring bump. Since there is
+-		 * no intention of processing the Rx frame at this pointwe are
+-		 * just settting the ownership bit of rxd in Each Rx
++		 * no intention of processing the Rx frame at this point we are
++		 * just setting the ownership bit of rxd in each Rx
+ 		 * ring to HW and set the appropriate buffer size
+ 		 * based on the ring mode
+ 		 */
+diff --git a/drivers/net/ucc_geth_ethtool.c b/drivers/net/ucc_geth_ethtool.c
+index f8d319b..3e50df8 100644
+--- a/drivers/net/ucc_geth_ethtool.c
++++ b/drivers/net/ucc_geth_ethtool.c
+@@ -6,7 +6,7 @@
+  * Author: Li Yang <leoli@freescale.com>
+  *
+  * Limitation: 
+- * Can only get/set setttings of the first queue.
++ * Can only get/set settings of the first queue.
+  * Need to re-open the interface manually after changing some parameters.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
