@@ -1,16 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 17 Dec 2007 16:14:03 +1100
+Date: Mon, 17 Dec 2007 16:21:01 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
-Message-ID: <20071217051403.GB3477@localhost.localdomain>
-References: <20071210202934.GA32046@localhost.localdomain>
-	<10D5CABD-442B-44DF-83D7-7FED5CD150E3@kernel.crashing.org>
-	<20071215162331.GA24999@localhost.localdomain>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: Device Tree updates for xilinx.
+Message-ID: <20071217052101.GC3477@localhost.localdomain>
+References: <20071204012811.AD70CEF004D@mail134-dub.bigfish.com>
+	<20071213233945.E8FFAA6007C@mail180-sin.bigfish.com>
+	<20071216070404.GK21311@localhost.localdomain>
+	<20071217045726.DD1881298046@mail127-sin.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071215162331.GA24999@localhost.localdomain>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20071217045726.DD1881298046@mail127-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, Michal Simek <simekm2@fel.cvut.cz>,
+	git <git@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,144 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 15, 2007 at 07:23:31PM +0300, Anton Vorontsov wrote:
-> On Tue, Dec 11, 2007 at 12:42:18PM -0600, Kumar Gala wrote:
-[snip]
-> +	soc8360@e0000000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		device_type = "soc";
-> +		ranges = <0 0xe0000000 0x00100000>;
-> +		reg = <0xe0000000 0x00000200>;
-> +		/* filled by u-boot */
-> +		bus-frequency = <0>;
-> +
-> +		wdt@200 {
-> +			device_type = "watchdog";
+On Sun, Dec 16, 2007 at 08:58:18PM -0800, Stephen Neuendorffer wrote:
+> 
+> Since there don't seem to be any examples of this in the tree: do
+> you have a format preference?  For the rest of the compatible lists,
+> I'm using something like: xlnx,ipname-version.  So for the
+> microblaze, I'd prefer something like:
+> 
+> xlnx,microblaze-6.00.b
 
-Drop this device_type.
+Sounds reasonable.
 
-> +			compatible = "mpc83xx_wdt";
-> +			reg = <0x200 0x100>;
-> +		};
-> +
-> +		i2c@3000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			device_type = "i2c";
+> For the powerpc, either ibm,ppc405 or ibm.ppc-405 would seem to be
+> more in character than PowerPC,405.
 
-And this one.
+Well, we could list both forms, but PowerPC,405 should be included
+since it's an established name.  There's some history behind this:
+before the generic names convention, the node name was used to encode
+the most specific register interface for the device, and "compatible"
+was used to describe any other interfaces it was also compatible with.
 
-[snip]
-> +		crypto@30000 {
-> +			device_type = "crypto";
-> +			model = "SEC2";
-> +			compatible = "talitos";
+With the generic names convention, the name came to represent the
+general type of device, and "compatible" alone was used to describe
+the programming interface(s).  In Apple and IBM device trees, while
+most things reflect the generic names convention, it seems the cpu
+nodes were left using the old convention - which is why that approach
+was copied and is currently used in all the dts files.  So when
+converting nodes to the generic names convention, the old content of
+the node name should go into "compatible" verbatim as the first entry.
 
-This device_type/compatible/model stuff is also crap, although I
-suspect it needs to be fixed in the driver, as gianfar (finally) was.
-
-[snip]
-> +		ipic: pic@700 {
-> +			#address-cells = <0>;
-> +			#interrupt-cells = <2>;
-> +			interrupt-controller;
-> +			reg = <0x700 0x100>;
-> +			device_type = "ipic";
-
-And drop this device_type.
-
-[snip]
-> +	qe@e0100000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		device_type = "qe";
-
-And this one.
-
-This node needs a "compatible" too.
-
-> +		model = "QE";
-> +		ranges = <0 0xe0100000 0x00100000>;
-> +		reg = <0xe0100000 0x480>;
-> +		/* filled by u-boot */
-> +		brg-frequency = <0>;
-> +		bus-frequency = <0>;
-
-This should probably be clock-frequency, not bus-frequency.  After
-all, it's a bus node, what other sort of frequency would it be.
-
-> +		muram@10000 {
-> +			device_type = "muram";
-
-And this device_type needs to go, too.
-
-> +			ranges = <0 0x00010000 0x0000c000>;
-> +
-> +			data-only@0 {
-> +				reg = <0 0xc000>;
-> +			};
-> +		};
-> +
-> +		spi@4c0 {
-> +			device_type = "spi";
-
-And this one.
-
-[snip]
-
-> +		usb@6c0 {
-> +			device_type = "usb";
-
-And this one.
-
-> +			compatible = "qe_udc";
-> +			reg = <0x6c0 0x40 0x8b00 0x100>;
-> +			interrupts = <11>;
-> +			interrupt-parent = <&qeic>;
-> +			mode = "slave";
-> +		};
-
-[snip]
-> +		mdio@2120 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x2120 0x18>;
-> +			device_type = "mdio";
-
-And this one.
-
-> +			compatible = "ucc_geth_phy";
-> +
-> +			phy1: ethernet-phy@1 {
-> +				reg = <1>;
-> +				device_type = "ethernet-phy";
-> +			};
-
-These phy nodes have basically no information in them.  PHY nodes are
-optional - only include them if they actually have something useful to
-say (which would mean at least a compatible property).
-
-[snip]
-> +		qeic: qeic@80 {
-> +			#address-cells = <0>;
-> +			#interrupt-cells = <1>;
-> +			interrupt-controller;
-> +			device_type = "qeic";
-
-Drop this device_type, too.
-
-And this node, too, needs a "compatible" property.  Oh, and the node
-name should be "interrupt-controller@80" by the generic names
-convention.
-
-> +			reg = <0x80 0x80>;
-> +			big-endian;
-> +			interrupts = <32 8 33 8>;
-> +			interrupt-parent = <&ipic>;
-> +		};
-> +	};
-> +};
+In practice of course, I don't think anything looks at either the name
+or the compatible property for cpu nodes (nor do I think they should)
+- they'll just use the PVR.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
