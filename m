@@ -1,15 +1,16 @@
 Return-Path: <joe@perches.com>
 Received: from perches.com (DSL022.labridge.com [206.117.136.22])
-	by ozlabs.org (Postfix) with ESMTP id 6583BDDE21
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 06:32:22 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C59BDDDE3E
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 06:32:25 +1100 (EST)
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] arch/ppc/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:30:14 -0800
-Message-Id: <1197919875-5288-15-git-send-email-joe@perches.com>
+Subject: [PATCH] arch/powerpc/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:30:12 -0800
+Message-Id: <1197919875-5288-13-git-send-email-joe@perches.com>
 Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918890.git.joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Cc: paulus@au.ibm.com, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, anton@au.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +23,63 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/ppc/syslib/ppc8xx_pic.c |    2 +-
- arch/ppc/syslib/ppc_sys.c    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/4xx.c                 |    2 +-
+ arch/powerpc/kernel/legacy_serial.c     |    2 +-
+ arch/powerpc/sysdev/bestcomm/bestcomm.h |    2 +-
+ arch/powerpc/sysdev/mmio_nvram.c        |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/ppc/syslib/ppc8xx_pic.c b/arch/ppc/syslib/ppc8xx_pic.c
-index e8619c7..bce9a75 100644
---- a/arch/ppc/syslib/ppc8xx_pic.c
-+++ b/arch/ppc/syslib/ppc8xx_pic.c
-@@ -16,7 +16,7 @@ extern int cpm_get_irq(void);
-  * the only interrupt controller.  Some boards, like the MBX and
-  * Sandpoint have the 8259 as a secondary controller.  Depending
-  * upon the processor type, the internal controller can have as
-- * few as 16 interrups or as many as 64.  We could use  the
-+ * few as 16 interrupts or as many as 64.  We could use  the
-  * "clear_bit()" and "set_bit()" functions like other platforms,
-  * but they are overkill for us.
-  */
-diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
-index 2d48018..837183c 100644
---- a/arch/ppc/syslib/ppc_sys.c
-+++ b/arch/ppc/syslib/ppc_sys.c
-@@ -185,7 +185,7 @@ void platform_notify_map(const struct platform_notify_dev_map *map,
-  */
+diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+index ebf9e21..3d0e4f9 100644
+--- a/arch/powerpc/boot/4xx.c
++++ b/arch/powerpc/boot/4xx.c
+@@ -122,7 +122,7 @@ void ibm4xx_denali_fixup_memsize(void)
+ 	else
+ 		dpath = 4; /* 32 bits */
  
- /*
--   Here we'll replace .name pointers with fixed-lenght strings
-+   Here we'll replace .name pointers with fixed-length strings
-    Hereby, this should be called *before* any func stuff triggeded.
-  */
- void ppc_sys_device_initfunc(void)
+-	/* get adress pins (rows) */
++	/* get address pins (rows) */
+ 	val = mfdcr_sdram0(DDR0_42);
+ 
+ 	row = DDR_GET_VAL(val, DDR_APIN, DDR_APIN_SHIFT);
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 4ed5887..b9cae6b 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -474,7 +474,7 @@ static int __init serial_dev_init(void)
+ 
+ 	/*
+ 	 * Before we register the platfrom serial devices, we need
+-	 * to fixup their interrutps and their IO ports.
++	 * to fixup their interrupts and their IO ports.
+ 	 */
+ 	DBG("Fixing serial ports interrupts and IO ports ...\n");
+ 
+diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.h b/arch/powerpc/sysdev/bestcomm/bestcomm.h
+index e802cb4..c960a8b 100644
+--- a/arch/powerpc/sysdev/bestcomm/bestcomm.h
++++ b/arch/powerpc/sysdev/bestcomm/bestcomm.h
+@@ -20,7 +20,7 @@ struct bcom_bd; /* defined later on ... */
+ 
+ 
+ /* ======================================================================== */
+-/* Generic task managment                                                   */
++/* Generic task management                                                   */
+ /* ======================================================================== */
+ 
+ /**
+diff --git a/arch/powerpc/sysdev/mmio_nvram.c b/arch/powerpc/sysdev/mmio_nvram.c
+index e073e24..7b49633 100644
+--- a/arch/powerpc/sysdev/mmio_nvram.c
++++ b/arch/powerpc/sysdev/mmio_nvram.c
+@@ -99,7 +99,7 @@ int __init mmio_nvram_init(void)
+ 	nvram_addr = r.start;
+ 	mmio_nvram_len = r.end - r.start + 1;
+ 	if ( (!mmio_nvram_len) || (!nvram_addr) ) {
+-		printk(KERN_WARNING "nvram: address or lenght is 0\n");
++		printk(KERN_WARNING "nvram: address or length is 0\n");
+ 		ret = -EIO;
+ 		goto out;
+ 	}
 -- 
 1.5.3.7.949.g2221a6
