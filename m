@@ -1,20 +1,17 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 762C8DDEA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 08:04:13 +1100 (EST)
-Message-ID: <4766E43E.4050101@pobox.com>
-Date: Mon, 17 Dec 2007 16:03:58 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <SRS0=MP4y=RI=gmx.de=7eggert@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A4141DDE20
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 08:29:47 +1100 (EST)
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: 1st version of azfs
+To: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org, arnd@arndb.de
+Date: Mon, 17 Dec 2007 22:24:14 +0100
+References: <9Btcy-1LS-23@gated-at.bofh.it>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] [NET][POWERPC] ucc_geth: really fix section mismatch
-References: <20071217115435.GA29857@localhost.localdomain>
-In-Reply-To: <20071217115435.GA29857@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <E1J4NRf-0004mg-0G@be1.7eggert.dyndns.org>
+Reply-To: 7eggert@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> Commit ed7e63a51d46e835422d89c687b8a3e419a4212a has tried to fix
-> section mismatch:
-> 
-> WARNING: vmlinux.o(.init.text+0x17278): Section mismatch: reference to
-> .exit.text:uec_mdio_exit (between 'ucc_geth_init' and 'uec_mdio_init')
-> 
-> But that mismatch still happens.
-> 
-> This patch actually fixing section mismatch by removing __exit from
-> the header file.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/net/ucc_geth_mii.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/ucc_geth_mii.h b/drivers/net/ucc_geth_mii.h
-> index d834370..1e45b20 100644
-> --- a/drivers/net/ucc_geth_mii.h
-> +++ b/drivers/net/ucc_geth_mii.h
-> @@ -96,5 +96,5 @@ enum enet_tbi_mii_reg {
->  int uec_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
->  int uec_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
->  int __init uec_mdio_init(void);
-> -void __exit uec_mdio_exit(void);
+Maxim Shchetynin <maxim@de.ibm.com> wrote:
 
-applied #upstream-fixes
+> +config AZ_FS
+> +            tristate "AZFS filesystem support"
+> +            default m
+                       ^
+STRONG NACK, I hate digging in the menu tree and hunting for things I
+don't need.
+
+> +            help
+> +              Non-buffered filesystem for block devices with a gendisk and
+> +              with direct_access() method in gendisk->fops.
+> +              AZFS does not buffer outgoing traffic and is doing no read
+> ahead.
+> +              AZFS uses block-size and sector-size provided by block
+> device
+> +              and gendisk's queue. Though mmap() method is available only
+> if
+> +              block-size equals to or is greater than system page size.
+
+What is the benefit or intended use of this filesystem? Will your intended
+user say "gendisk->fops->direct_access? I wanted to use it all my life"?
+
+AZFZ seems to be an acronym. AirZound File System?
+http://globetrotter.de/de/shop/detail.php?mod_nr=ex_35001&GTID=7c553060901a873c5bd29a1846ff39a3a32
