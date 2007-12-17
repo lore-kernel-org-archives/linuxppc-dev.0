@@ -1,11 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 17 Dec 2007 11:40:24 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] wrapper: rename offset in offset_devp().
+Message-ID: <20071217004023.GB2394@localhost.localdomain>
+References: <20071211212303.GA3661@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18277.49950.354034.86146@cargo.ozlabs.ibm.com>
-Date: Mon, 17 Dec 2007 11:30:22 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix sleep on powerbook 3400
+In-Reply-To: <20071211212303.GA3661@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,79 +18,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sleep on the powerbook 3400 has been broken since the change that made
-powerbook_sleep_3400 call pmac_suspend_devices(), which disables
-interrupts.  There are a couple of loops in powerbook_sleep_3400 that
-depend on interrupts being enabled, and in fact it has to have
-interrupts enabled at the point of going to sleep since it is an
-interrupt from the PMU that wakes it up.
+On Tue, Dec 11, 2007 at 03:23:04PM -0600, Scott Wood wrote:
+> fdt_wrapper_create_node passes a variable called offset to offset_devp(),
+> which uses said parameter to initialize a local variable called offset.
+> 
+> Due to one of the odder aspects of the C language, the result is an
+> undefined variable, with no error or warning.
 
-This fixes it by using pmu_wait_complete() instead of a spinloop, and
-by explicitly enabling interrupts before putting the CPU into sleep
-mode (which is OK since all interrupts except the PMU interrupt have
-been disabled at the interrupt controller by this stage).
+Ouch, nasty!  Good catch.
 
-This also changes the logic to keep putting the CPU into sleep mode
-until the completion of the interrupt transaction from the PMU that
-signals the end of sleep.  Also, we now call pmu_unlock() before sleep
-so that the via_pmu_interrupt() code can process the interrupt event
-from the PMU properly.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 35e1f22..6f91723 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -2276,7 +2276,7 @@ powerbook_sleep_3400(void)
- {
- 	int ret, i, x;
- 	unsigned int hid0;
--	unsigned long p;
-+	unsigned long p, msr;
- 	struct adb_request sleep_req;
- 	void __iomem *mem_ctrl;
- 	unsigned int __iomem *mem_ctrl_sleep;
-@@ -2315,10 +2315,10 @@ powerbook_sleep_3400(void)
- 
- 	/* Ask the PMU to put us to sleep */
- 	pmu_request(&sleep_req, NULL, 5, PMU_SLEEP, 'M', 'A', 'T', 'T');
--	while (!sleep_req.complete)
--		mb();
-+	pmu_wait_complete(&sleep_req);
-+	pmu_unlock();
- 
--	pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,1);
-+	pmac_call_feature(PMAC_FTR_SLEEP_STATE, NULL, 0, 1);
- 
- 	/* displacement-flush the L2 cache - necessary? */
- 	for (p = KERNELBASE; p < KERNELBASE + 0x100000; p += 0x1000)
-@@ -2329,18 +2329,19 @@ powerbook_sleep_3400(void)
- 	hid0 = mfspr(SPRN_HID0);
- 	hid0 = (hid0 & ~(HID0_NAP | HID0_DOZE)) | HID0_SLEEP;
- 	mtspr(SPRN_HID0, hid0);
--	mtmsr(mfmsr() | MSR_POW | MSR_EE);
--	udelay(10);
-+	local_irq_enable();
-+	msr = mfmsr() | MSR_POW;
-+	while (asleep) {
-+		mb();
-+		mtmsr(msr);
-+		isync();
-+	}
-+	local_irq_disable();
- 
- 	/* OK, we're awake again, start restoring things */
- 	out_be32(mem_ctrl_sleep, 0x3f);
--	pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,0);
-+	pmac_call_feature(PMAC_FTR_SLEEP_STATE, NULL, 0, 0);
- 	pbook_pci_restore();
--	pmu_unlock();
--
--	/* wait for the PMU interrupt sequence to complete */
--	while (asleep)
--		mb();
- 
- 	pmac_wakeup_devices();
- 	pbook_free_pci_save();
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
