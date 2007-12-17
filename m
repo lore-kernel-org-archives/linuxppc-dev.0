@@ -1,16 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 17 Dec 2007 16:39:20 +1100
+Date: Mon, 17 Dec 2007 16:39:39 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [DTC][PATCH] Fix cross-compile building
-Message-ID: <20071217053920.GD3477@localhost.localdomain>
-References: <Pine.LNX.4.64.0712071227280.1788@blarg.am.freescale.net>
-	<20071208003604.GH566@localhost.localdomain>
-	<A388C2C2-2452-4E70-A5DA-F61B0E3A2B22@kernel.crashing.org>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Don't build tests as part of "all"
+Message-ID: <20071217053939.GE3477@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A388C2C2-2452-4E70-A5DA-F61B0E3A2B22@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>, stuarth@freescale.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 13, 2007 at 11:57:48PM -0600, Kumar Gala wrote:
-> 
-> On Dec 7, 2007, at 6:36 PM, David Gibson wrote:
-> 
-> > On Fri, Dec 07, 2007 at 12:28:20PM -0600, Kumar Gala wrote:
-> >> From: Stuart Hughes <stuarth@freescale.com>
-> >>
-> >> This patch allows you to build the DTC source without making the
-> >> tests directory.  This is necessary when cross compiling as the
-> >> dumptest (and other) files cannot be run/used on the host system.
-> >> To use this use: 'make TESTS='
-> >
-> > I think this is a silly way of doing this.  Instead create a new
-> > target which builds everything but the tests.
-> >
-> > Say,
-> >
-> > 	all: cross tests
-> >
-> > 	cross: dtc ftdump libfdt
-> 
-> shouldn't we do this the other way around, it seems odd to build the  
-> tests always or at least as part of the all target.
+Currently "make all" for dtc will build (but not run) the testcase
+binaries.  This is a problem for cross compiles, because building the
+tests will attempt to run the dumptrees utility on the host system,
+which won't work if it's cross-compiled of course.
 
-Hrm.  Yeah, I guess so.
+Although it would be possible to separately build host binaries,
+there's not a lot of value in doing so since we don't have a facility
+for cross-executing the testsuite anyway.
 
-The idea was to encourage the tests to be used as much as possible,
-but I guess there's not all that much value to building them without
-running them.
+Therefore, remove the tests from the "all" target.  It will still, of
+course, be build as a prerequisite to "make check" which will run the
+testsuite.
 
-Patch forthcoming.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/Makefile
+===================================================================
+--- dtc.orig/Makefile	2007-12-17 16:34:48.000000000 +1100
++++ dtc/Makefile	2007-12-17 16:34:57.000000000 +1100
+@@ -46,7 +46,7 @@ else
+ DEPTARGETS = $(filter-out $(NODEPTARGETS),$(MAKECMDGOALS))
+ endif
+ 
+-all: dtc ftdump libfdt tests
++all: dtc ftdump libfdt
+ 
+ install: all
+ 	@$(VECHO) INSTALL
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
