@@ -4,19 +4,23 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CE68DDDDF2
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 03:08:57 +1100 (EST)
-Message-ID: <47669285.8010707@freescale.com>
-Date: Mon, 17 Dec 2007 09:15:17 -0600
+	by ozlabs.org (Postfix) with ESMTP id D01C2DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 04:03:51 +1100 (EST)
+Date: Mon, 17 Dec 2007 11:03:04 -0600
 From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>,
+	Kumar Gala <galak@kernel.crashing.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+	Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
+Message-ID: <20071217170303.GA4303@loki.buserror.net>
+References: <20071210202934.GA32046@localhost.localdomain>
+	<10D5CABD-442B-44DF-83D7-7FED5CD150E3@kernel.crashing.org>
+	<20071215162331.GA24999@localhost.localdomain>
+	<20071217051403.GB3477@localhost.localdomain>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, galak@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 1/3] 8xx: Analogue & Micro Adder875 board support.
-References: <20071212225427.GA19027@loki.buserror.net>
-	<20071217035706.GA3262@localhost.localdomain>
-In-Reply-To: <20071217035706.GA3262@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071217051403.GB3477@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Dec 12, 2007 at 04:54:27PM -0600, Scott Wood wrote:
->> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> [snip]
->> diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts b/arch/powerpc/boot/dts/adder875-redboot.dts
->> new file mode 100644
->> index 0000000..4d28220
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/adder875-redboot.dts
-> [snip]
->> diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts b/arch/powerpc/boot/dts/adder875-uboot.dts
->> new file mode 100644
->> index 0000000..33d198c
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/adder875-uboot.dts
+On Mon, Dec 17, 2007 at 04:14:03PM +1100, David Gibson wrote:
+> > +		crypto@30000 {
+> > +			device_type = "crypto";
+> > +			model = "SEC2";
+> > +			compatible = "talitos";
 > 
-> Having two different device trees for the different firmwares is
-> pretty yucky, and could be a pain in the bum for synchronization of
-> fixes.
+> This device_type/compatible/model stuff is also crap, although I
+> suspect it needs to be fixed in the driver, as gianfar (finally) was.
 
-Yes, that's why we need some sort of macro/template facility in dtc. :-)
+The driver doesn't seem to be in-tree... Kim, what do(es) the external
+driver(s) look like?  Do they use OF at all yet?
 
-> Can't you have a common tree, and just poke the places that
-> are differently configured by the two firmwares from the bootwrapper.
+> > +		ranges = <0 0xe0100000 0x00100000>;
+> > +		reg = <0xe0100000 0x480>;
+> > +		/* filled by u-boot */
+> > +		brg-frequency = <0>;
+> > +		bus-frequency = <0>;
+> 
+> This should probably be clock-frequency, not bus-frequency.  After
+> all, it's a bus node, what other sort of frequency would it be.
 
-Enh.  That can get icky as well, and the bootwrapper isn't necessarily 
-even used for u-boot, and I'd rather not require it be used just for this.
+Actually, it should probably be dropped altogether.
+
+> > +		muram@10000 {
+> > +			device_type = "muram";
+> 
+> And this device_type needs to go, too.
+
+Yes, replace it with compatible = "fsl,cpm-muram".
+
+> > +			ranges = <0 0x00010000 0x0000c000>;
+> > +
+> > +			data-only@0 {
+> > +				reg = <0 0xc000>;
+
+compatible = "fsl,cpm-muram-data".
+
+> > +			phy1: ethernet-phy@1 {
+> > +				reg = <1>;
+> > +				device_type = "ethernet-phy";
+> > +			};
+> 
+> These phy nodes have basically no information in them.  PHY nodes are
+> optional -
+
+If they are truly optional, then several Linux drivers (including ucc_geth,
+which this board uses) are broken, as they'll error out if there's no
+phy-handle (gianfar is even worse -- it looks like the fsl_soc code will
+crash in that case).  But what do you propose they do in the absence of a
+phy-handle?  Hope that probing only finds one phy?
+
+> only include them if they actually have something useful to say (which
+> would mean at least a compatible property).
+
+They *do* have useful information -- reg and phandle.  The type of phy can
+be probed, but which phy corresponds to which ethernet can't.
 
 -Scott
