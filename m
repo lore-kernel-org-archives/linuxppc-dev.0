@@ -1,16 +1,15 @@
 Return-Path: <joe@perches.com>
 Received: from perches.com (DSL022.labridge.com [206.117.136.22])
-	by ozlabs.org (Postfix) with ESMTP id C59BDDDE3E
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 06:32:25 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id ABA06DDF99
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 06:32:36 +1100 (EST)
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] arch/powerpc/: Spelling fixes
-Date: Mon, 17 Dec 2007 11:30:12 -0800
-Message-Id: <1197919875-5288-13-git-send-email-joe@perches.com>
+Subject: [PATCH] include/asm-ppc/: Spelling fixes
+Date: Mon, 17 Dec 2007 11:30:15 -0800
+Message-Id: <1197919875-5288-16-git-send-email-joe@perches.com>
 Message-Id: <5703e57f925f31fc0eb38873bd7f10fc44f99cb4.1197918890.git.joe@perches.com>
-Cc: paulus@au.ibm.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>, anton@au.ibm.com
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +22,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/powerpc/boot/4xx.c                 |    2 +-
- arch/powerpc/kernel/legacy_serial.c     |    2 +-
- arch/powerpc/sysdev/bestcomm/bestcomm.h |    2 +-
- arch/powerpc/sysdev/mmio_nvram.c        |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ include/asm-ppc/8xx_immap.h |    2 +-
+ include/asm-ppc/commproc.h  |    2 +-
+ include/asm-ppc/reg_booke.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index ebf9e21..3d0e4f9 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -122,7 +122,7 @@ void ibm4xx_denali_fixup_memsize(void)
- 	else
- 		dpath = 4; /* 32 bits */
- 
--	/* get adress pins (rows) */
-+	/* get address pins (rows) */
- 	val = mfdcr_sdram0(DDR0_42);
- 
- 	row = DDR_GET_VAL(val, DDR_APIN, DDR_APIN_SHIFT);
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 4ed5887..b9cae6b 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -474,7 +474,7 @@ static int __init serial_dev_init(void)
- 
- 	/*
- 	 * Before we register the platfrom serial devices, we need
--	 * to fixup their interrutps and their IO ports.
-+	 * to fixup their interrupts and their IO ports.
- 	 */
- 	DBG("Fixing serial ports interrupts and IO ports ...\n");
- 
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.h b/arch/powerpc/sysdev/bestcomm/bestcomm.h
-index e802cb4..c960a8b 100644
---- a/arch/powerpc/sysdev/bestcomm/bestcomm.h
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.h
-@@ -20,7 +20,7 @@ struct bcom_bd; /* defined later on ... */
- 
- 
- /* ======================================================================== */
--/* Generic task managment                                                   */
-+/* Generic task management                                                   */
- /* ======================================================================== */
- 
- /**
-diff --git a/arch/powerpc/sysdev/mmio_nvram.c b/arch/powerpc/sysdev/mmio_nvram.c
-index e073e24..7b49633 100644
---- a/arch/powerpc/sysdev/mmio_nvram.c
-+++ b/arch/powerpc/sysdev/mmio_nvram.c
-@@ -99,7 +99,7 @@ int __init mmio_nvram_init(void)
- 	nvram_addr = r.start;
- 	mmio_nvram_len = r.end - r.start + 1;
- 	if ( (!mmio_nvram_len) || (!nvram_addr) ) {
--		printk(KERN_WARNING "nvram: address or lenght is 0\n");
-+		printk(KERN_WARNING "nvram: address or length is 0\n");
- 		ret = -EIO;
- 		goto out;
- 	}
+diff --git a/include/asm-ppc/8xx_immap.h b/include/asm-ppc/8xx_immap.h
+index 1311cef..4b0e152 100644
+--- a/include/asm-ppc/8xx_immap.h
++++ b/include/asm-ppc/8xx_immap.h
+@@ -123,7 +123,7 @@ typedef struct	mem_ctlr {
+ #define OR_G5LA		0x00000400	/* Output #GPL5 on #GPL_A5		*/
+ #define OR_G5LS		0x00000200	/* Drive #GPL high on falling edge of...*/
+ #define OR_BI		0x00000100	/* Burst inhibit			*/
+-#define OR_SCY_MSK	0x000000f0	/* Cycle Lenght in Clocks		*/
++#define OR_SCY_MSK	0x000000f0	/* Cycle Length in Clocks		*/
+ #define OR_SCY_0_CLK	0x00000000	/* 0 clock cycles wait states		*/
+ #define OR_SCY_1_CLK	0x00000010	/* 1 clock cycles wait states		*/
+ #define OR_SCY_2_CLK	0x00000020	/* 2 clock cycles wait states		*/
+diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
+index 3972487..462abb1 100644
+--- a/include/asm-ppc/commproc.h
++++ b/include/asm-ppc/commproc.h
+@@ -681,7 +681,7 @@ typedef struct risc_timer_pram {
+ #define	CICR_SCC_SCC3		((uint)0x00200000)	/* SCC3 @ SCCc */
+ #define	CICR_SCB_SCC2		((uint)0x00040000)	/* SCC2 @ SCCb */
+ #define	CICR_SCA_SCC1		((uint)0x00000000)	/* SCC1 @ SCCa */
+-#define CICR_IRL_MASK		((uint)0x0000e000)	/* Core interrrupt */
++#define CICR_IRL_MASK		((uint)0x0000e000)	/* Core interrupt */
+ #define CICR_HP_MASK		((uint)0x00001f00)	/* Hi-pri int. */
+ #define CICR_IEN		((uint)0x00000080)	/* Int. enable */
+ #define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
+diff --git a/include/asm-ppc/reg_booke.h b/include/asm-ppc/reg_booke.h
+index 82948ed..4cad45a 100644
+--- a/include/asm-ppc/reg_booke.h
++++ b/include/asm-ppc/reg_booke.h
+@@ -283,7 +283,7 @@
+ #define ESR_IMCB	0x20000000	/* Instr. Machine Check - Bus error */
+ #define ESR_IMCT	0x10000000	/* Instr. Machine Check - Timeout */
+ #define ESR_PIL		0x08000000	/* Program Exception - Illegal */
+-#define ESR_PPR		0x04000000	/* Program Exception - Priveleged */
++#define ESR_PPR		0x04000000	/* Program Exception - Privileged */
+ #define ESR_PTR		0x02000000	/* Program Exception - Trap */
+ #define ESR_FP		0x01000000	/* Floating Point Operation */
+ #define ESR_DST		0x00800000	/* Storage Exception - Data miss */
 -- 
 1.5.3.7.949.g2221a6
