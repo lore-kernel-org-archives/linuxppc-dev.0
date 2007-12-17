@@ -1,17 +1,17 @@
 Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] [POWERPC] 4xx: Add aliases node to 4xx dts files 
-In-Reply-To: Your message of "Mon, 17 Dec 2007 09:33:42 +1100."
-	<20071216223342.GD26307@localhost.localdomain>
-References: <1197705316-17618-1-git-send-email-sr@denx.de>
-	<20071216061959.GD21311@localhost.localdomain>
-	<20071216085858.55ffddbe@vader.jdub.homelinux.org>
-	<f3ddb435a7a71cea8362ed73eb154200@kernel.crashing.org>
-	<20071216223342.GD26307@localhost.localdomain>
-Date: Mon, 17 Dec 2007 07:46:48 -0600
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 73365DDE08
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 00:53:40 +1100 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1J4GPX-0007RE-To
+	for linuxppc-dev@ozlabs.org; Mon, 17 Dec 2007 07:53:37 -0600
+To: linuxppc-dev@ozlabs.org
+Subject: Various DTC Patches Applied
+Date: Mon, 17 Dec 2007 07:53:35 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1J4GIy-0006Xp-RT@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Message-Id: <E1J4GPX-0007RE-To@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> On Sun, Dec 16, 2007 at 07:10:02PM +0100, Segher Boessenkool wrote:
-> > 
-> > Hopefully some version that stores path strings in the properties
-> > in /aliases, and not phandles.
 
-Yes.
+Folks,
 
-> > Or does that current version of DTC
-> > do that correctly already, and just has an inconvenient source
-> > syntax?
+Tese patches have all been applied to the DTC repo and pushed out:
 
-Feh.  If there is an "inconvenient source syntax", or any other
-annoying irregularity, please, by all means, suggest improvements
-and offer patches!
+*  [master] dtc: Don't build tests as part of "all"
+*  [master^] libfdt: Add more documentation (patch the seventh)
+*  [master~2] libfdt: Add more documentation (patch the sixth)
+*  [master~3] dtc: Fix silly typo in dtc-checkfails.sh
+*  [master~4] dtc: Allow gcc format warnings for check_msg()
+*  [master~5] dtc: Make dtc-checfails.sh script catch deaths-by-signal
+*  [master~6] dtc: Reinstate full old-style reference-to-path for v0 dts files
+*  [master~7] dtc: Convert check for obsolete /chosen property
+*  [master~8] dtc: Convert #address-cells and #size-cells related checks
 
-> I don't think anyone's actually gone and generated phandles in
-> /aliases, although it was suggested early on.  The syntax is
-> 	foo = < &bar >;
-> to generate a phandle and
-> 	foo = &bar;
-> to generate a path.
-> 
-> I was a bit worried about confusion between these forms, but at least
-> Kumar and myself came up with this syntax independently, which
-> suggests it's not too surprising to most people, and no-one had any
-> other suggestions.
-
-To be a bit more complete, Kumar and I discussed this as well.
-
+Thanks,
 jdl
