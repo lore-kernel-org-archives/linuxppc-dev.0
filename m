@@ -1,23 +1,16 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 80E67DDE03
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 15:58:24 +1100 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 17 Dec 2007 16:14:03 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
+Message-ID: <20071217051403.GB3477@localhost.localdomain>
+References: <20071210202934.GA32046@localhost.localdomain>
+	<10D5CABD-442B-44DF-83D7-7FED5CD150E3@kernel.crashing.org>
+	<20071215162331.GA24999@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C84069.70B415EE"
-Subject: RE: Device Tree updates for xilinx.
-Date: Sun, 16 Dec 2007 20:58:18 -0800
-References: <20071204012811.AD70CEF004D@mail134-dub.bigfish.com>
-	<20071213233945.E8FFAA6007C@mail180-sin.bigfish.com>
-	<20071216070404.GK21311@localhost.localdomain>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>
-Message-Id: <20071217045726.DD1881298046@mail127-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, Michal Simek <simekm2@fel.cvut.cz>,
-	git <git@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071215162331.GA24999@localhost.localdomain>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,189 +20,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Sat, Dec 15, 2007 at 07:23:31PM +0300, Anton Vorontsov wrote:
+> On Tue, Dec 11, 2007 at 12:42:18PM -0600, Kumar Gala wrote:
+[snip]
+> +	soc8360@e0000000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
+> +		ranges = <0 0xe0000000 0x00100000>;
+> +		reg = <0xe0000000 0x00000200>;
+> +		/* filled by u-boot */
+> +		bus-frequency = <0>;
+> +
+> +		wdt@200 {
+> +			device_type = "watchdog";
 
-------_=_NextPart_001_01C84069.70B415EE
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Drop this device_type.
 
+> +			compatible = "mpc83xx_wdt";
+> +			reg = <0x200 0x100>;
+> +		};
+> +
+> +		i2c@3000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "i2c";
 
-Since there don't seem to be any examples of this in the tree: do you =
-have a format preference?  For the rest of the compatible lists, I'm =
-using something like: xlnx,ipname-version.  So for the microblaze, I'd =
-prefer something like:
+And this one.
 
-xlnx,microblaze-6.00.b
+[snip]
+> +		crypto@30000 {
+> +			device_type = "crypto";
+> +			model = "SEC2";
+> +			compatible = "talitos";
 
-For the powerpc, either ibm,ppc405 or ibm.ppc-405 would seem to be more =
-in character than PowerPC,405.
+This device_type/compatible/model stuff is also crap, although I
+suspect it needs to be fixed in the driver, as gianfar (finally) was.
 
-Steve
+[snip]
+> +		ipic: pic@700 {
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <2>;
+> +			interrupt-controller;
+> +			reg = <0x700 0x100>;
+> +			device_type = "ipic";
 
------Original Message-----
-From: David Gibson [mailto:david@gibson.dropbear.id.au]
-Sent: Sat 12/15/2007 11:04 PM
-To: Stephen Neuendorffer
-Cc: Grant Likely; Michal Simek; John Williams; linuxppc-dev@ozlabs.org; =
-git
-Subject: Re: Device Tree updates for xilinx.
-=20
-On Thu, Dec 13, 2007 at 03:41:16PM -0800, Stephen Neuendorffer wrote:
+And drop this device_type.
 
->=20
-> For reference, below is the device tree for a Virtex2Pro design.  =
-Except
-> for the changes noted above, this is entirely automatically generated.
->=20
-> Steve
->=20
-> / {
-> 	mem_size_cells: #address-cells =3D <1>;
-> 	#size-cells =3D <1>;
-> 	compatible =3D "xlnx,virtex";
-> 	model =3D "testing";
-> 	DDR_256MB_32MX64_rank1_row13_col10_cl2_5: memory@0 {
-> 		device_type =3D "memory";
-> 		reg =3D < 0 memsize:10000000 >;
-> 	} ;
-> 	chosen {
-> 		bootargs =3D "root=3D/dev/nfs
-> nfsroot=3D172.19.221.221:/exports/xup/ydl41 ip=3Ddhcp =
-console=3DttyUL0";
-> 	} ;
-> 	cpus {
-> 		#address-cells =3D <1>;
-> 		#cpus =3D <1>;
-> 		#size-cells =3D <0>;
-> 		PowerPC,405@0 {
+[snip]
+> +	qe@e0100000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "qe";
 
-I'm trying to encourage people to move to naming cpu nodes simply
-"cpu@XX", with the type of core in "compatible" instead - in keeping
-with the generic names convention used elsewhere.  I think this will
-make your generator simpler, too.
+And this one.
 
---=20
+This node needs a "compatible" too.
+
+> +		model = "QE";
+> +		ranges = <0 0xe0100000 0x00100000>;
+> +		reg = <0xe0100000 0x480>;
+> +		/* filled by u-boot */
+> +		brg-frequency = <0>;
+> +		bus-frequency = <0>;
+
+This should probably be clock-frequency, not bus-frequency.  After
+all, it's a bus node, what other sort of frequency would it be.
+
+> +		muram@10000 {
+> +			device_type = "muram";
+
+And this device_type needs to go, too.
+
+> +			ranges = <0 0x00010000 0x0000c000>;
+> +
+> +			data-only@0 {
+> +				reg = <0 0xc000>;
+> +			};
+> +		};
+> +
+> +		spi@4c0 {
+> +			device_type = "spi";
+
+And this one.
+
+[snip]
+
+> +		usb@6c0 {
+> +			device_type = "usb";
+
+And this one.
+
+> +			compatible = "qe_udc";
+> +			reg = <0x6c0 0x40 0x8b00 0x100>;
+> +			interrupts = <11>;
+> +			interrupt-parent = <&qeic>;
+> +			mode = "slave";
+> +		};
+
+[snip]
+> +		mdio@2120 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0x2120 0x18>;
+> +			device_type = "mdio";
+
+And this one.
+
+> +			compatible = "ucc_geth_phy";
+> +
+> +			phy1: ethernet-phy@1 {
+> +				reg = <1>;
+> +				device_type = "ethernet-phy";
+> +			};
+
+These phy nodes have basically no information in them.  PHY nodes are
+optional - only include them if they actually have something useful to
+say (which would mean at least a compatible property).
+
+[snip]
+> +		qeic: qeic@80 {
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <1>;
+> +			interrupt-controller;
+> +			device_type = "qeic";
+
+Drop this device_type, too.
+
+And this node, too, needs a "compatible" property.  Oh, and the node
+name should be "interrupt-controller@80" by the generic names
+convention.
+
+> +			reg = <0x80 0x80>;
+> +			big-endian;
+> +			interrupts = <32 8 33 8>;
+> +			interrupt-parent = <&ipic>;
+> +		};
+> +	};
+> +};
+
+-- 
 David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ =
-_other_
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
-
-
-
-------_=_NextPart_001_01C84069.70B415EE
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: Device Tree updates for xilinx.</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>Since there don't seem to be any examples of this in =
-the tree: do you have a format preference?&nbsp; For the rest of the =
-compatible lists, I'm using something like: xlnx,ipname-version.&nbsp; =
-So for the microblaze, I'd prefer something like:<BR>
-<BR>
-xlnx,microblaze-6.00.b<BR>
-<BR>
-For the powerpc, either ibm,ppc405 or ibm.ppc-405 would seem to be more =
-in character than PowerPC,405.<BR>
-<BR>
-Steve<BR>
-<BR>
------Original Message-----<BR>
-From: David Gibson [<A =
-HREF=3D"mailto:david@gibson.dropbear.id.au">mailto:david@gibson.dropbear.=
-id.au</A>]<BR>
-Sent: Sat 12/15/2007 11:04 PM<BR>
-To: Stephen Neuendorffer<BR>
-Cc: Grant Likely; Michal Simek; John Williams; linuxppc-dev@ozlabs.org; =
-git<BR>
-Subject: Re: Device Tree updates for xilinx.<BR>
-<BR>
-On Thu, Dec 13, 2007 at 03:41:16PM -0800, Stephen Neuendorffer =
-wrote:<BR>
-<BR>
-&gt;<BR>
-&gt; For reference, below is the device tree for a Virtex2Pro =
-design.&nbsp; Except<BR>
-&gt; for the changes noted above, this is entirely automatically =
-generated.<BR>
-&gt;<BR>
-&gt; Steve<BR>
-&gt;<BR>
-&gt; / {<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mem_size_cells: #address-cells =3D =
-&lt;1&gt;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells =3D &lt;1&gt;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;xlnx,virtex&quot;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; model =3D &quot;testing&quot;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-DDR_256MB_32MX64_rank1_row13_col10_cl2_5: memory@0 {<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device_type =3D =
-&quot;memory&quot;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt; 0 =
-memsize:10000000 &gt;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; chosen {<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bootargs =3D =
-&quot;root=3D/dev/nfs<BR>
-&gt; nfsroot=3D172.19.221.221:/exports/xup/ydl41 ip=3Ddhcp =
-console=3DttyUL0&quot;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cpus {<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =3D =
-&lt;1&gt;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #cpus =3D &lt;1&gt;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells =3D =
-&lt;0&gt;;<BR>
-&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PowerPC,405@0 {<BR>
-<BR>
-I'm trying to encourage people to move to naming cpu nodes simply<BR>
-&quot;cpu@XX&quot;, with the type of core in &quot;compatible&quot; =
-instead - in keeping<BR>
-with the generic names convention used elsewhere.&nbsp; I think this =
-will<BR>
-make your generator simpler, too.<BR>
-<BR>
---<BR>
-David Gibson&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | I'll have my music baroque, =
-and my code<BR>
-david AT gibson.dropbear.id.au&nbsp; | minimalist, thank you.&nbsp; NOT =
-_the_ _other_<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | _way_ _around_!<BR>
-<A =
-HREF=3D"http://www.ozlabs.org/~dgibson">http://www.ozlabs.org/~dgibson</A=
-><BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C84069.70B415EE--
