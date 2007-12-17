@@ -1,24 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 206A0DDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 04:10:23 +1100 (EST)
-Date: Mon, 17 Dec 2007 11:10:04 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 6706DDDE48
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 04:21:40 +1100 (EST)
+Message-ID: <4766AFEE.1040701@freescale.com>
+Date: Mon, 17 Dec 2007 11:20:46 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kim Phillips <kim.phillips@freescale.com>
 Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
-Message-Id: <20071217111004.506f3563.kim.phillips@freescale.com>
-In-Reply-To: <20071217170303.GA4303@loki.buserror.net>
-References: <20071210202934.GA32046@localhost.localdomain>
-	<10D5CABD-442B-44DF-83D7-7FED5CD150E3@kernel.crashing.org>
-	<20071215162331.GA24999@localhost.localdomain>
-	<20071217051403.GB3477@localhost.localdomain>
-	<20071217170303.GA4303@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20071210202934.GA32046@localhost.localdomain>	<10D5CABD-442B-44DF-83D7-7FED5CD150E3@kernel.crashing.org>	<20071215162331.GA24999@localhost.localdomain>	<20071217051403.GB3477@localhost.localdomain>	<20071217170303.GA4303@loki.buserror.net>
+	<20071217111004.506f3563.kim.phillips@freescale.com>
+In-Reply-To: <20071217111004.506f3563.kim.phillips@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,21 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Dec 2007 11:03:04 -0600
-Scott Wood <scottwood@freescale.com> wrote:
-
-> On Mon, Dec 17, 2007 at 04:14:03PM +1100, David Gibson wrote:
-> > > +		crypto@30000 {
-> > > +			device_type = "crypto";
-> > > +			model = "SEC2";
-> > > +			compatible = "talitos";
-> > 
-> > This device_type/compatible/model stuff is also crap, although I
-> > suspect it needs to be fixed in the driver, as gianfar (finally) was.
+Kim Phillips wrote:
+> On Mon, 17 Dec 2007 11:03:04 -0600
+> Scott Wood <scottwood@freescale.com> wrote:
+>> The driver doesn't seem to be in-tree... Kim, what do(es) the external
+>> driver(s) look like?  Do they use OF at all yet?
 > 
-> The driver doesn't seem to be in-tree... Kim, what do(es) the external
-> driver(s) look like?  Do they use OF at all yet?
+> yes, it uses OF ifdef CONFIG_PPC_MERGE.
 
-yes, it uses OF ifdef CONFIG_PPC_MERGE.
+Can we change it to look for something like a compatible of 
+"fsl,sec2-crypto", with a fallback match on talitos for old device trees?
 
-Kim
+-Scott
