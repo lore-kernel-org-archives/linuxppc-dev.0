@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BB51ADDEAB
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 06:51:00 +1100 (EST)
-Subject: Re: [POWERPC 07/18] Have cell use its own dma_direct_offset variable
+	by ozlabs.org (Postfix) with ESMTP id 3F462DDF53
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 06:51:05 +1100 (EST)
+Subject: Re: [POWERPC 08/18] Have celleb use its own dma_direct_offset variable
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: arnd@arndb.de
-In-Reply-To: <20071218175104.846274000@arndb.de>
+In-Reply-To: <20071218175105.049114000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-	<20071218175104.846274000@arndb.de>
+	<20071218175105.049114000@arndb.de>
 Content-Type: text/plain
-Date: Wed, 19 Dec 2007 06:50:42 +1100
-Message-Id: <1198007442.18908.6.camel@pasglop>
+Date: Wed, 19 Dec 2007 06:50:49 +1100
+Message-Id: <1198007449.18908.8.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
@@ -26,10 +26,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2007-12-18 at 18:48 +0100, arnd@arndb.de wrote:
+On Tue, 2007-12-18 at 18:49 +0100, arnd@arndb.de wrote:
 > plain text document attachment
-> (0017-Have-cell-use-its-own-dma_direct_offset-variable.patch)
-> Rather than using the global variable, have cell use its own variable to
+> (0018-Have-celleb-use-its-own-dma_direct_offset-variable.patch)
+> Rather than using the global variable, have celleb use its own variable to
 > store the direct DMA offset.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
@@ -38,51 +38,36 @@ On Tue, 2007-12-18 at 18:48 +0100, arnd@arndb.de wrote:
 
 Ack.
 
->  arch/powerpc/platforms/cell/iommu.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
+>  arch/powerpc/platforms/celleb/iommu.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
 > 
-> Index: linux-2.6-new/arch/powerpc/platforms/cell/iommu.c
+> Index: linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
 > ===================================================================
-> --- linux-2.6-new.orig/arch/powerpc/platforms/cell/iommu.c
-> +++ linux-2.6-new/arch/powerpc/platforms/cell/iommu.c
-> @@ -490,6 +490,8 @@ static struct cbe_iommu *cell_iommu_for_
->  	return NULL;
->  }
->  
-> +static unsigned long cell_dma_direct_offset;
-> +
->  static void cell_dma_dev_setup(struct device *dev)
->  {
->  	struct iommu_window *window;
-> @@ -497,7 +499,7 @@ static void cell_dma_dev_setup(struct de
->  	struct dev_archdata *archdata = &dev->archdata;
->  
->  	if (get_pci_dma_ops() == &dma_direct_ops) {
-> -		archdata->dma_data = &dma_direct_offset;
-> +		archdata->dma_data = &cell_dma_direct_offset;
->  		return;
->  	}
->  
-> @@ -655,7 +657,7 @@ static int __init cell_iommu_init_disabl
->  
->  	/* If we have no Axon, we set up the spider DMA magic offset */
->  	if (of_find_node_by_name(NULL, "axon") == NULL)
-> -		dma_direct_offset = SPIDER_DMA_OFFSET;
-> +		cell_dma_direct_offset = SPIDER_DMA_OFFSET;
->  
->  	/* Now we need to check to see where the memory is mapped
->  	 * in PCI space. We assume that all busses use the same dma
-> @@ -689,10 +691,10 @@ static int __init cell_iommu_init_disabl
->  		return -ENODEV;
->  	}
->  
-> -	dma_direct_offset += base;
-> +	cell_dma_direct_offset += base;
->  
->  	printk("iommu: disabled, direct DMA offset is 0x%lx\n",
-> -	       dma_direct_offset);
-> +	       cell_dma_direct_offset);
->  
+> --- linux-2.6-new.orig/arch/powerpc/platforms/celleb/iommu.c
+> +++ linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
+> @@ -52,6 +52,8 @@ static int __init find_dma_window(u64 *i
 >  	return 0;
 >  }
+>  
+> +static unsigned long celleb_dma_direct_offset;
+> +
+>  static void __init celleb_init_direct_mapping(void)
+>  {
+>  	u64 lpar_addr, io_addr;
+> @@ -69,13 +71,13 @@ static void __init celleb_init_direct_ma
+>  				     ioid, DMA_FLAGS);
+>  	}
+>  
+> -	dma_direct_offset = dma_base;
+> +	celleb_dma_direct_offset = dma_base;
+>  }
+>  
+>  static void celleb_dma_dev_setup(struct device *dev)
+>  {
+>  	dev->archdata.dma_ops = get_pci_dma_ops();
+> -	dev->archdata.dma_data = &dma_direct_offset;
+> +	dev->archdata.dma_data = &celleb_dma_direct_offset;
+>  }
+>  
+>  static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
 > 
