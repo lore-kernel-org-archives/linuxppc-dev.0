@@ -1,15 +1,11 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id D9CF1DDF5E
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:10 +1100 (EST)
-Message-Id: <20071218175104.219782000@arndb.de>
+Message-Id: <20071218175105.880633000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-Date: Tue, 18 Dec 2007 18:48:56 +0100
+Date: Tue, 18 Dec 2007 18:49:04 +0100
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [POWERPC 04/18] Set archdata.dma_data for direct DMA in
-	cell_dma_dev_setup()
-Cc: linuxppc-dev@ozlabs.org
+Subject: [POWERPC 12/18] cell: export force_sig_info()
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +15,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Store a pointer to the direct_dma_offset in each device's dma_data
-in the case where we're using the direct DMA ops.
+Export force_sig_info to allow signals to be sent from a modular spufs.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/iommu.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Index: linux-2.6-new/arch/powerpc/platforms/cell/iommu.c
+Index: linux-2.6-new/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- linux-2.6-new.orig/arch/powerpc/platforms/cell/iommu.c
-+++ linux-2.6-new/arch/powerpc/platforms/cell/iommu.c
-@@ -496,9 +496,10 @@ static void cell_dma_dev_setup(struct de
- 	struct cbe_iommu *iommu;
- 	struct dev_archdata *archdata = &dev->archdata;
+--- linux-2.6-new.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux-2.6-new/arch/powerpc/platforms/cell/spu_base.c
+@@ -47,6 +47,13 @@ struct cbe_spu_info cbe_spu_info[MAX_NUM
+ EXPORT_SYMBOL_GPL(cbe_spu_info);
  
--	/* If we run without iommu, no need to do anything */
--	if (get_pci_dma_ops() == &dma_direct_ops)
-+	if (get_pci_dma_ops() == &dma_direct_ops) {
-+		archdata->dma_data = &dma_direct_offset;
- 		return;
-+	}
- 
- 	/* Current implementation uses the first window available in that
- 	 * node's iommu. We -might- do something smarter later though it may
+ /*
++ * The spufs fault-handling code needs to call force_sig_info to raise signals
++ * on DMA errors. Export it here to avoid general kernel-wide access to this
++ * function
++ */
++EXPORT_SYMBOL_GPL(force_sig_info);
++
++/*
+  * Protects cbe_spu_info and spu->number.
+  */
+ static DEFINE_SPINLOCK(spu_lock);
 
 -- 
