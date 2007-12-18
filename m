@@ -1,14 +1,11 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 62103DDF14
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:10 +1100 (EST)
-Message-Id: <20071218175105.049114000@arndb.de>
+Message-Id: <20071218175106.596230000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-Date: Tue, 18 Dec 2007 18:49:00 +0100
+Date: Tue, 18 Dec 2007 18:49:07 +0100
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [POWERPC 08/18] Have celleb use its own dma_direct_offset variable
-Cc: linuxppc-dev@ozlabs.org
+Subject: [POWERPC 15/18] cell: use spu_load_slb for SLB setup
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,43 +15,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rather than using the global variable, have celleb use its own variable to
-store the direct DMA offset.
+Now that we have a helper function to setup a SPU SLB, use it for
+__spu_trap_data_seq.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/celleb/iommu.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c |   23 ++++++++++-------------
+ 1 files changed, 10 insertions(+), 13 deletions(-)
 
-Index: linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
+Index: linux-2.6-new/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- linux-2.6-new.orig/arch/powerpc/platforms/celleb/iommu.c
-+++ linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
-@@ -52,6 +52,8 @@ static int __init find_dma_window(u64 *i
- 	return 0;
- }
+--- linux-2.6-new.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux-2.6-new/arch/powerpc/platforms/cell/spu_base.c
+@@ -169,9 +169,8 @@ static inline void spu_load_slb(struct s
  
-+static unsigned long celleb_dma_direct_offset;
-+
- static void __init celleb_init_direct_mapping(void)
+ static int __spu_trap_data_seg(struct spu *spu, unsigned long ea)
  {
- 	u64 lpar_addr, io_addr;
-@@ -69,13 +71,13 @@ static void __init celleb_init_direct_ma
- 				     ioid, DMA_FLAGS);
+-	struct spu_priv2 __iomem *priv2 = spu->priv2;
+ 	struct mm_struct *mm = spu->mm;
+-	u64 esid, vsid, llp;
++	struct spu_slb slb;
+ 	int psize;
+ 
+ 	pr_debug("%s\n", __FUNCTION__);
+@@ -183,7 +182,7 @@ static int __spu_trap_data_seg(struct sp
+ 		printk("%s: invalid access during switch!\n", __func__);
+ 		return 1;
  	}
+-	esid = (ea & ESID_MASK) | SLB_ESID_V;
++	slb.esid = (ea & ESID_MASK) | SLB_ESID_V;
  
--	dma_direct_offset = dma_base;
-+	celleb_dma_direct_offset = dma_base;
- }
+ 	switch(REGION_ID(ea)) {
+ 	case USER_REGION_ID:
+@@ -192,21 +191,21 @@ static int __spu_trap_data_seg(struct sp
+ #else
+ 		psize = mm->context.user_psize;
+ #endif
+-		vsid = (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M) << SLB_VSID_SHIFT) |
+-				SLB_VSID_USER;
++		slb.vsid = (get_vsid(mm->context.id, ea, MMU_SEGSIZE_256M)
++				<< SLB_VSID_SHIFT) | SLB_VSID_USER;
+ 		break;
+ 	case VMALLOC_REGION_ID:
+ 		if (ea < VMALLOC_END)
+ 			psize = mmu_vmalloc_psize;
+ 		else
+ 			psize = mmu_io_psize;
+-		vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M) << SLB_VSID_SHIFT) |
+-			SLB_VSID_KERNEL;
++		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
++				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+ 		break;
+ 	case KERNEL_REGION_ID:
+ 		psize = mmu_linear_psize;
+-		vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M) << SLB_VSID_SHIFT) |
+-			SLB_VSID_KERNEL;
++		slb.vsid = (get_kernel_vsid(ea, MMU_SEGSIZE_256M)
++				<< SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+ 		break;
+ 	default:
+ 		/* Future: support kernel segments so that drivers
+@@ -215,11 +214,9 @@ static int __spu_trap_data_seg(struct sp
+ 		pr_debug("invalid region access at %016lx\n", ea);
+ 		return 1;
+ 	}
+-	llp = mmu_psize_defs[psize].sllp;
++	slb.vsid |= mmu_psize_defs[psize].sllp;
  
- static void celleb_dma_dev_setup(struct device *dev)
- {
- 	dev->archdata.dma_ops = get_pci_dma_ops();
--	dev->archdata.dma_data = &dma_direct_offset;
-+	dev->archdata.dma_data = &celleb_dma_direct_offset;
- }
+-	out_be64(&priv2->slb_index_W, spu->slb_replace);
+-	out_be64(&priv2->slb_vsid_RW, vsid | llp);
+-	out_be64(&priv2->slb_esid_RW, esid);
++	spu_load_slb(spu, spu->slb_replace, &slb);
  
- static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
+ 	spu->slb_replace++;
+ 	if (spu->slb_replace >= 8)
 
 -- 
