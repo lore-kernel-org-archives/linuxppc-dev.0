@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 58F05DDF3F
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 9CC43DDF59
 	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:09 +1100 (EST)
-Message-Id: <20071218175104.432538000@arndb.de>
+Message-Id: <20071218175105.263700000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-Date: Tue, 18 Dec 2007 18:48:57 +0100
+Date: Tue, 18 Dec 2007 18:49:01 +0100
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [POWERPC 05/18] Add celleb_dma_dev_setup()
+Subject: [POWERPC 09/18] Remove the global dma_direct_offset
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,55 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Celleb always uses dma_direct_ops, and sets dma_direct_offset, so it too
-should set dma_data to dma_direct_offset.
-
-Currently there's no pci_dma_dev_setup() routine for Celleb so add one.
+We no longer need the global dma_direct_offset, update the comment to
+reflect the new reality.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/celleb/iommu.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/dma_64.c      |    7 ++++---
+ include/asm-powerpc/dma-mapping.h |    2 --
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
+Index: linux-2.6-new/arch/powerpc/kernel/dma_64.c
 ===================================================================
---- linux-2.6-new.orig/arch/powerpc/platforms/celleb/iommu.c
-+++ linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
-@@ -72,6 +72,17 @@ static void __init celleb_init_direct_ma
- 	dma_direct_offset = dma_base;
- }
+--- linux-2.6-new.orig/arch/powerpc/kernel/dma_64.c
++++ linux-2.6-new/arch/powerpc/kernel/dma_64.c
+@@ -112,10 +112,11 @@ EXPORT_SYMBOL(dma_iommu_ops);
+ /*
+  * Generic direct DMA implementation
+  *
+- * This implementation supports a global offset that can be applied if
+- * the address at which memory is visible to devices is not 0.
++ * This implementation supports a per-device offset that can be applied if
++ * the address at which memory is visible to devices is not 0. Platform code
++ * can point archdata.dma_data at an unsigned long holding the offset. By
++ * default no offset is used.
+  */
+-unsigned long dma_direct_offset;
  
-+static void celleb_dma_dev_setup(struct device *dev)
-+{
-+	dev->archdata.dma_ops = get_pci_dma_ops();
-+	dev->archdata.dma_data = &dma_direct_offset;
-+}
-+
-+static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
-+{
-+	celleb_dma_dev_setup(&pdev->dev);
-+}
-+
- static int celleb_of_bus_notify(struct notifier_block *nb,
- 				unsigned long action, void *data)
+ static unsigned long get_dma_direct_offset(struct device *dev)
  {
-@@ -81,7 +92,7 @@ static int celleb_of_bus_notify(struct n
- 	if (action != BUS_NOTIFY_ADD_DEVICE)
- 		return 0;
+Index: linux-2.6-new/include/asm-powerpc/dma-mapping.h
+===================================================================
+--- linux-2.6-new.orig/include/asm-powerpc/dma-mapping.h
++++ linux-2.6-new/include/asm-powerpc/dma-mapping.h
+@@ -186,8 +186,6 @@ static inline void dma_unmap_sg(struct d
+ extern struct dma_mapping_ops dma_iommu_ops;
+ extern struct dma_mapping_ops dma_direct_ops;
  
--	dev->archdata.dma_ops = get_pci_dma_ops();
-+	celleb_dma_dev_setup(dev);
+-extern unsigned long dma_direct_offset;
+-
+ #else /* CONFIG_PPC64 */
  
- 	return 0;
- }
-@@ -97,6 +108,7 @@ static int __init celleb_init_iommu(void
- 
- 	celleb_init_direct_mapping();
- 	set_pci_dma_ops(&dma_direct_ops);
-+	ppc_md.pci_dma_dev_setup = celleb_pci_dma_dev_setup;
- 	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
- 
- 	return 0;
+ #define dma_supported(dev, mask)	(1)
 
 -- 
