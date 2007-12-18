@@ -1,16 +1,21 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 18 Dec 2007 09:38:04 -0700
-To: Dale Farnsworth <dale@farnsworth.org>, Linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
-Message-ID: <20071218163804.GC28931@xyzzy.farnsworth.org>
-References: <20071129150726.GA13751@ru.mvista.com>
-	<20071129152836.GB13751@ru.mvista.com>
-	<20071210211816.4657.qmail@farnsworth.org>
-	<20071216064056.GH21311@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071216064056.GH21311@localhost.localdomain>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B8E5DDF10
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:42:49 +1100 (EST)
+Message-Id: <67EFE423-4DA4-486B-A51A-CB73FD5297D2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20071218162032.GB28931@xyzzy.farnsworth.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 07/10] powerpc: Implement kmap_atomic_pfn on powerpc
+Date: Tue, 18 Dec 2007 10:42:36 -0600
+References: <20071122154638.GA26514@xyzzy.farnsworth.org>
+	<1197699461.6696.45.camel@pasglop>
+	<20071218162032.GB28931@xyzzy.farnsworth.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,102 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 16, 2007 at 05:40:56PM +1100, David Gibson wrote:
-> On Mon, Dec 10, 2007 at 02:18:16PM -0700, Dale Farnsworth wrote:
-> > David Gibson wrote:
-> > > On Thu, Nov 29, 2007 at 06:28:36PM +0300, Andrei Dolnikov wrote:
-> > > > Device tree source file for the Emerson Katana Qp board
-> > 
-> > [snip]
-> > 
-> > > > +	mv64x60@f8100000 { /* Marvell Discovery */
-> > > > +		#address-cells = <1>;
-> > > > +		#size-cells = <1>;
-> > > > +		model = "mv64460";			/* Default */
-> > > > +		compatible = "marvell,mv64x60";
-> > 
-> > [snip]
-> > 
-> > > > +		mdio {
-> > > 
-> > > There must be some way of actuall accessing the mdio bus, so this node
-> > > ought to have a 'reg' property and unit address.
-> > 
-> > There is no way for the cpu to directly access the mdio bus.  The
-> > mdio bus is internally accessed by the ethernet MAC.  That being the
-> > case, maybe it makes more sense to move the mdio node inside of the
-> > multiethernet node, as follows, but I don't see how we can give it
-> > a reg property or a unit address.
-> 
-> Ah, I see.  If the mdio interface isn't distinct from the other
-> pieces, then it probably shouldn't get a device node at all.  Having
-> an explicit mdio bus with the phys hanging off it is convenient for
-> hardware which actually works that way, but it doesn't have to be done
-> like that.
-> 
-> Of course, then the question is where to hang the phy nodes, which
-> look like they have information you need.  Since you already have a
-> local addressing scheme for the MACs under the multiethernet, what
-> probably makes sense would be to hang the phys directly under the
-> multiethernet, using an encoding scheme for the reg properties so that
-> the MACs and PHYs aren't confused (say, MACs are 0x0, 0x1, 0x2, PHYs
-> are 0x80000000, 0x80000001, 0x80000002).
 
-Ugh.  They really are two separate address spaces.  One is an
-intra-register index, and the other really is an mdio address,
-even though it's only indirectly addressable.  Combining them would
-obfuscate.  I'm proceding with an mdio node under the multiethernet
-node as I posted below.  Let me know if you feel strongly that that
-should be changed.
+On Dec 18, 2007, at 10:20 AM, Dale Farnsworth wrote:
 
-> Incidentally, although I suggested it, I'm not all that fond of the
-> "multiethernet" name, it was just the first thing that occurred to me.
+> On Sat, Dec 15, 2007 at 05:17:41PM +1100, Benjamin Herrenschmidt  
+> wrote:
+>>
+>> On Thu, 2007-11-22 at 08:46 -0700, Dale Farnsworth wrote:
+>>> This is needed for the ppc32 /dev/oldmem driver of crash dump.
+>>
+>> Kumar's working (well, last I heard he was) on a fixmap mechanism
+>> so we can do that sort of thing without CONFIG_HIGHMEM, you may
+>> want to sync with him here, that would allow to shrink the crash
+>> kernel by not having highmem selected.
+>>
+>> Cheers,
+>> Ben.
+>
+> Kumar, are you close to posting something that would make the
+> patch below unnecessary (or change it significantly)?  If so,
+> I'll hold off.
 
-I'm not fond of it either.  Sometimes, naming is hard. :)
-I'll see if we can come up with something better.
+My plan is to get the fixmap stuff posted this week.
 
-Thanks,
--Dale
-
-> > 
-> > 		multiethernet@2000 {
-> > 			reg = <0x2000 0x2000>;
-> > 			ethernet@0 {
-> > 				device_type = "network";
-> > 				compatible = "marvell,mv64360-eth";
-> > 				reg = <0>;
-> > 				interrupts = <32>;
-> > 				interrupt-parent = <&PIC>;
-> > 				phy = <&PHY0>;
-> > 				local-mac-address = [ 00 00 00 00 00 00 ];
-> > 			};
-> > 			ethernet@1 {
-> > 				device_type = "network";
-> > 				compatible = "marvell,mv64360-eth";
-> > 				reg = <1>;
-> > 				interrupts = <33>;
-> > 				interrupt-parent = <&PIC>;
-> > 				phy = <&PHY1>;
-> > 				local-mac-address = [ 00 00 00 00 00 00 ];
-> > 			};
-> > 			mdio {
-> > 				#address-cells = <1>;
-> > 				#size-cells = <0>;
-> > 				device_type = "mdio";
-> > 				compatible = "marvell,mv64360-mdio";
-> > 				PHY0: ethernet-phy@1 {
-> > 					device_type = "ethernet-phy";
-> > 					compatible = "broadcom,bcm5421";
-> > 					interrupts = <76>;	/* GPP 12 */
-> > 					interrupt-parent = <&PIC>;
-> > 					reg = <1>;
-> > 				};
-> > 				PHY1: ethernet-phy@3 {
-> > 					device_type = "ethernet-phy";
-> > 					compatible = "broadcom,bcm5421";
-> > 					interrupts = <76>;	/* GPP 12 */
-> > 					interrupt-parent = <&PIC>;
-> > 					reg = <3>;
-> > 				};
-> > 			};
-> > 		};
+- k
