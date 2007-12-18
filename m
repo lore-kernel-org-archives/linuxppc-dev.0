@@ -1,20 +1,23 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpout06.prod.mesa1.secureserver.net
-	(smtpout06-04.prod.mesa1.secureserver.net [64.202.165.227])
-	by ozlabs.org (Postfix) with SMTP id A9EA1DDE04
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 357AADDDF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Dec 2007 10:44:14 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.543.1198006353.17691.linuxppc-embedded@ozlabs.org>
-Subject: DTS files,  83xx, clock frequencies 
-Date: Tue, 18 Dec 2007 15:36:29 -0800
-Message-ID: <000001c841ce$d11fcdd0$6405a8c0@absolut>
+	Wed, 19 Dec 2007 10:59:27 +1100 (EST)
+Message-ID: <47685ED8.2060204@freescale.com>
+Date: Tue, 18 Dec 2007 17:59:20 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <mailman.543.1198006353.17691.linuxppc-embedded@ozlabs.org>
-Reply-To: rmcguire@videopresence.com
+To: rmcguire@videopresence.com
+Subject: Re: DTS files,  83xx, clock frequencies
+References: <mailman.543.1198006353.17691.linuxppc-embedded@ozlabs.org>
+	<000001c841ce$d11fcdd0$6405a8c0@absolut>
+In-Reply-To: <000001c841ce$d11fcdd0$6405a8c0@absolut>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +28,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-All,
+Russell McGuire wrote:
+> I note that in most of the 83xx dts config files that the different
+> frequency fields are being populated with non-zero numbers. i.e. bus-freq,
+> clock-freq, core-freq, etc...
+> 
+> Isn't default behavior that these fields are kept from the <BIOS> U-boot
+> during boot, if a zero is present?
 
-I note that in most of the 83xx dts config files that the different
-frequency fields are being populated with non-zero numbers. i.e. bus-freq,
-clock-freq, core-freq, etc...
+U-boot overwrites those values regardless of whether they were zero in 
+the dts.
 
-Isn't default behavior that these fields are kept from the <BIOS> U-boot
-during boot, if a zero is present? Is there any advantage to resetting them
-within the dts file during linux boot up? Or is it necessary to populate
-these values for correct operations, specifically with in the QUICC Engines?
+> Is there any advantage to resetting them
+> within the dts file during linux boot up?
 
-Over all my curiosity is that between versions of the board, i.e. different
-CPU's that may be clocked faster or slower, I see no reason to change the
-dts/blobs if I already have to change the BIOS to correctly boot up.
+No, and it doesn't.  If you're looking arch/powerpc/boot, then that's 
+for compatibility with non-device-tree-aware u-boots.
 
-
--Russ
+-Scott
