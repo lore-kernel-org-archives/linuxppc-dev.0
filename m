@@ -1,13 +1,21 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Remove remaining old-style checks 
-In-Reply-To: Your message of "Tue, 18 Dec 2007 14:54:38 +1100."
-	<20071218035438.GA10348@localhost.localdomain>
-References: <20071218035438.GA10348@localhost.localdomain> 
-Date: Tue, 18 Dec 2007 07:56:33 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1J4cvx-0007Rm-El@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AF83BDDE02
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 02:11:02 +1100 (EST)
+Date: Tue, 18 Dec 2007 18:10:07 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH/RFC] [POWERPC] Add fixed-phy support for fs_enet
+Message-ID: <20071218181007.5ac05511@kernel.crashing.org>
+In-Reply-To: <4767042E.2070903@garzik.org>
+References: <47601027.2080104@scram.de>
+	<4767042E.2070903@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,23 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> The remaining old-style tree checking code: check_root(), check_cpus()
-> and check_memory() really aren't that useful.  They mostly check for
-> the presence of particular nodes and properties.  That's inherently
-> prone to false-positives, because we could be dealing with an
-> artificial tree (like many of the testcases) or it could be expected
-> that the missing properties are filled in by a bootloader or other
-> agent.
-> 
-> If any of these checks really turns out to be useful, we can
-> reimplement them later in a better conceived way on top of the new
-> checking infrastructure.  For now, just get rid of them, removing the
-> last vestiges of the old-style checking code (hoorah).
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Mon, 17 Dec 2007 18:20:14 -0500
+Jeff Garzik wrote:
 
-Applied.
+> Jochen Friedrich wrote:
+> > This patch adds support to use the fixed-link property
+> > of an ethernet node to fs_enet for the
+> > CONFIG_PPC_CPM_NEW_BINDING case.
+> > 
+> > Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-Thanks,
-jdl
+Jochen,
+will you resend the patch with all acks to paulus? I'll do that if not.
+
+
+-- 
+Sincerely, Vitaly
