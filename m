@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79067DDE04
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:40:46 +1100 (EST)
-Subject: Re: [PATCH] Implement pci_set_dma_mask() in terms of the dma_ops
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20071217100248.GA8433@lst.de>
-References: <a3b033f72681dd15badb0218b505512ce1c3a9c8.1197873226.git.michael@ellerman.id.au>
-	<20071217100248.GA8433@lst.de>
-Content-Type: text/plain
-Date: Tue, 18 Dec 2007 11:40:22 +1100
-Message-Id: <1197938422.13400.28.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 18 Dec 2007 11:43:29 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 1/3] 8xx: Analogue & Micro Adder875 board support.
+Message-ID: <20071218004329.GB9489@localhost.localdomain>
+References: <20071212225427.GA19027@loki.buserror.net>
+	<20071217035706.GA3262@localhost.localdomain>
+	<47669285.8010707@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47669285.8010707@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Mon, 2007-12-17 at 11:02 +0100, Christoph Hellwig wrote:
-> On Mon, Dec 17, 2007 at 05:35:53PM +1100, Michael Ellerman wrote:
-> > To save adding a hook to the dma mapping ops, pci-set_consistent_dma_mask()
-> > simply calls the dma_set_mask() hook and then copies the new mask into
-> > dev.coherenet_dma_mask.
+On Mon, Dec 17, 2007 at 09:15:17AM -0600, Scott Wood wrote:
+> David Gibson wrote:
+> > On Wed, Dec 12, 2007 at 04:54:27PM -0600, Scott Wood wrote:
+> >> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > [snip]
+> >> diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts b/arch/powerpc/boot/dts/adder875-redboot.dts
+> >> new file mode 100644
+> >> index 0000000..4d28220
+> >> --- /dev/null
+> >> +++ b/arch/powerpc/boot/dts/adder875-redboot.dts
+> > [snip]
+> >> diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts b/arch/powerpc/boot/dts/adder875-uboot.dts
+> >> new file mode 100644
+> >> index 0000000..33d198c
+> >> --- /dev/null
+> >> +++ b/arch/powerpc/boot/dts/adder875-uboot.dts
+> > 
+> > Having two different device trees for the different firmwares is
+> > pretty yucky, and could be a pain in the bum for synchronization of
+> > fixes.
 > 
-> How is this supposed to work?  There are various devices around that
-> want different mask for coherent vs streaming dma mappings, and we need
-> to tell the iommu that we're setting it for either the former or the
-> latter.
+> Yes, that's why we need some sort of macro/template facility in dtc. :-)
+> 
+> > Can't you have a common tree, and just poke the places that
+> > are differently configured by the two firmwares from the bootwrapper.
+> 
+> Enh.  That can get icky as well, and the bootwrapper isn't necessarily 
+> even used for u-boot, and I'd rather not require it be used just for this.
 
-I don't think we ever supported that difference. Too broken HW for us.
+So make the template in the u-boot form, and poke it as necessary from
+the redboot wrapper.
 
-We don't use coherent_dma_mask for anything at the moment on powerpc.
-
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
