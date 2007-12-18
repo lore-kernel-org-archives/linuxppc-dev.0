@@ -1,24 +1,15 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id DDA7ADDF3D
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:49:17 +1100 (EST)
-Date: Tue, 18 Dec 2007 19:51:35 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [POWERPC][RFC] MPC8360E-RDK: Device tree and board file
-Message-ID: <20071218165135.GA32585@localhost.localdomain>
-References: <20071210202934.GA32046@localhost.localdomain>
-	<10D5CABD-442B-44DF-83D7-7FED5CD150E3@kernel.crashing.org>
-	<20071215162331.GA24999@localhost.localdomain>
-	<20071217051403.GB3477@localhost.localdomain>
-	<20071217170303.GA4303@loki.buserror.net>
-	<20071218035108.GA10212@localhost.localdomain>
-	<4767F271.4090703@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4767F271.4090703@freescale.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id D810DDDE04
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:04 +1100 (EST)
+Message-Id: <20071218175103.585043000@arndb.de>
+References: <20071218174852.112644000@arndb.de>
+Date: Tue, 18 Dec 2007 18:48:53 +0100
+From: arnd@arndb.de
+To: paulus@samba.org
+Subject: [POWERPC 01/18] perfmon2: make pm_interval register read/write
+Cc: linuxppc-dev@ozlabs.org, Kevin Corry <kevcorry@us.ibm.com>,
+	Carl Love <carll@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 18, 2007 at 10:16:49AM -0600, Scott Wood wrote:
-> David Gibson wrote:
-> >In this case the driver and binding have been developed together and
-> >for the time being it does require PHY nodes, obviously.  I'm saying
-> >that maybe that requirement ought to be changed.
-> 
-> I don't see why.
-> 
-> >Well, phandle is only used to find the phy node itself, so it doesn't
-> >count.  The only piece of information there is the reg - the PHY id.
-> >Following a phandle to another node is a fairly complex way of finding
-> >a single integer.  
-> >
-> >Eh, I guess it's ok, but just directly giving the PHY id or a probe
-> >mask in the MAC node would also be fine (we do this for 4xx EMAC).
-> 
-> It's not just a simple integer -- it also tells you which mdio bus it's on.
+The pm_interval register in the Cell PMU is read/write, but was implemented in
+the kernel as write-only. Previously, the written value was saved in a "shadow"
+copy so calls to cbe_read_pm() could return the value.
 
-Exactly. And at least one board (MPC8568E-MDS) using this feature:
-UECs are using PHYs placed on the TSEC's MDIO bus. This is hardware
-configurable, and could be contrariwise: TSECs can use PHYs that
-are under control of UEC MDIO bus controller.
+Perfmon2 needs to be able to read the current values of pm_interval, so change
+cbe_read_pm() to read the actual register instead of the "shadow" copy. There
+is currently no code in the kernel that tries to read the pm_interval register
+with cbe_read_pm() (expecting to receive the "shadow" value), so this should
+not break any existing code.
 
-That's why we're naming PHYs as bus:phyid.
+Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
+Signed-off-by: Carl Love <carll@us.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/cell/pmu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+Index: linux-2.6-new/arch/powerpc/platforms/cell/pmu.c
+===================================================================
+--- linux-2.6-new.orig/arch/powerpc/platforms/cell/pmu.c
++++ linux-2.6-new/arch/powerpc/platforms/cell/pmu.c
+@@ -213,7 +213,7 @@ u32 cbe_read_pm(u32 cpu, enum pm_reg_nam
+ 		break;
+ 
+ 	case pm_interval:
+-		READ_SHADOW_REG(val, pm_interval);
++		READ_MMIO_UPPER32(val, pm_interval);
+ 		break;
+ 
+ 	case pm_start_stop:
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
