@@ -1,18 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 020CBDDF21
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 07:24:28 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [POWERPC 00/18] cell patches for 2.6.25
-Date: Tue, 18 Dec 2007 21:24:18 +0100
-References: <20071218174852.112644000@arndb.de>
-In-Reply-To: <20071218174852.112644000@arndb.de>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound4-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0CB08DDE32
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 07:29:38 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712182124.19196.arnd@arndb.de>
-Cc: paulus@samba.org
+	charset="us-ascii"
+Subject: ppc405 in EDK9.2
+Date: Tue, 18 Dec 2007 12:29:33 -0800
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
+	<simekm2@fel.cvut.cz>
+Message-Id: <20071218202934.AED3DC1005A@mail134-blu.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 18 December 2007, arnd@arndb.de wrote:
 
-> Paul, if there are no objections to these patches, please pull them from
->=20
-> =A0 git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2=
-=2E6.25
+	=09
+The PPC405 in EDK9.2 and beyond has a slightly different set of bus
+interfaces than before.  I've updated the BSP generator to handle it,
+and added some test cases.  The updates are at
+git://git.xilinx.com/gen-mhs-devtree.git
 
-I just noticed that quilt ate the 'From' lines from the patches when sending
-them out, so make sure you don't apply them from mail. The git tree is
-fine, so I can send them out as patches again if necessary.
-
-	Arnd <><
+Steve
