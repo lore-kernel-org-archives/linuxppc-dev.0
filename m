@@ -1,21 +1,30 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 88B1FDDDFA
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 21:41:15 +1100 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: Arnon Kaufman <arnon.kaufman@gmail.com>
-Date: Tue, 18 Dec 2007 11:41:02 +0100
-References: <47652712.60006@gmail.com> <20071216154458.GZ3851@pengutronix.de>
-	<47656048.7060809@gmail.com>
-In-Reply-To: <47656048.7060809@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200712181141.03706.jbe@pengutronix.de>
-Subject: Re: [MPC5200] problem running FEC and ATA
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C160DDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 23:06:12 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBIC68HJ002371
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 07:06:08 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBIC68mN129708
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 07:06:08 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lBIC68hh001285
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 07:06:08 -0500
+Date: Tue, 18 Dec 2007 06:01:05 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Raising list size limit
+Message-ID: <20071218060105.368f0bd4@zod.rchland.ibm.com>
+In-Reply-To: <20071218143627.94f76142.sfr@canb.auug.org.au>
+References: <20071218143627.94f76142.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 16 December 2007 18:28, Arnon Kaufman wrote:
-> Robert Schwebel wrote:
->> On Sun, Dec 16, 2007 at 03:24:34PM +0200, Arnon Kaufman wrote:
->>> does any one succeed running a functional FEC and ATA (pata) running
->>> together?
->>
->> Yes, we do, on the phyCORE-MPC5200B-tiny; you can check our patches here:
->> http://www.pengutronix.de/oselas/bsp/phytec/download/phyCORE-MPC5200B-ti=
-ny/
->
-> thanks, my kernels are already patched and still observing that kind of
-> behavior. I'm using Domen's new FEC code and ATA from 2.6.24-rc2.
+On Tue, 18 Dec 2007 14:36:27 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-I tried our kernel (see link above) with an external harddisk and NFS. I=20
-copied various files from the harddisk to NFS root and vice versa. No data=
-=20
-corruption.
+> Hi,
+> 
+> I am considering raising the limit on the size of postings to 400k.  Does
+> anyone have a real problem with this?  Limiting message size was done to
+> limit the damage of larges spams (and we don;t get very many of those on
+> the list) and to ease the pain for people downloading emails over a slow
+> (like dialup) link (and are there many of those left?).
 
-Can you check our patch stack on your hardware?
+Fine by me!
 
-Juergen
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+josh
