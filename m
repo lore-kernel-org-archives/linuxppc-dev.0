@@ -1,24 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0FF90DDE9E
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:09:53 +1100 (EST)
-Message-ID: <4767F0AD.5090908@freescale.com>
-Date: Tue, 18 Dec 2007 10:09:17 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id DAD9ADDEF5
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:14:36 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 18 Dec 2007 09:14:33 -0700
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/10] powerpc: Add kexec support for PPC_85xx platforms
+Message-ID: <20071218161433.GA28931@xyzzy.farnsworth.org>
+References: <20071122154607.GA26447@xyzzy.farnsworth.org>
+	<1197699385.6696.43.camel@pasglop>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, galak@kernel.crashing.org,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 1/3] 8xx: Analogue & Micro Adder875 board support.
-References: <20071212225427.GA19027@loki.buserror.net>
-	<20071217035706.GA3262@localhost.localdomain>
-	<47669285.8010707@freescale.com>
-	<20071218004329.GB9489@localhost.localdomain>
-In-Reply-To: <20071218004329.GB9489@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1197699385.6696.43.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Mon, Dec 17, 2007 at 09:15:17AM -0600, Scott Wood wrote:
->> Enh.  That can get icky as well, and the bootwrapper isn't necessarily 
->> even used for u-boot, and I'd rather not require it be used just for this.
+On Sat, Dec 15, 2007 at 05:16:25PM +1100, Benjamin Herrenschmidt wrote:
+> > index 8b642ab..db0e749 100644
+> > --- a/arch/powerpc/kernel/misc_32.S
+> > +++ b/arch/powerpc/kernel/misc_32.S
+> > @@ -816,6 +816,75 @@ relocate_new_kernel:
+> >  	/* r4 = reboot_code_buffer */
+> >  	/* r5 = start_address      */
+> >  
+> > +#ifdef CONFIG_E500
+> > +	/*
+> > +	 * Since we can't turn off the MMU, we must create an identity
+> > +	 * map for kernel low memory.  We start by invalidating the
+> > +	 * TLB entries we don't need.
+> > +	 *
+> > +	 * First, invalidate the TLB0 entries
+> > +	 */
+> > +	li	r6, 0x04
+> > +	tlbivax	0, r6
+> > +#ifdef CONFIG_SMP
+> > +	tlbsync
+> > +#endif
+> > +	msync
+> > +
 > 
-> So make the template in the u-boot form, and poke it as necessary from
-> the redboot wrapper.
+> This is really E500 specific or should it be CONFIG_FSL_BOOKE ?
+> 
+> Ben.
 
-I'd rather not, given that I have limited access to a board with redboot 
-to test on, and that it's just a cosmetic change.  Separate device trees 
-are fine for now, and hopefully will motivate work on dtc templates.
+I agree that CONFIG_FSL_BOOKE is more appropriate.  I'll reflect that
+in the next respin.
 
--Scott
+Thanks,
+-Dale
