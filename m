@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 15856DDF32
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 58F05DDF3F
 	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:09 +1100 (EST)
-Message-Id: <20071218175104.846274000@arndb.de>
+Message-Id: <20071218175104.432538000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-Date: Tue, 18 Dec 2007 18:48:59 +0100
+Date: Tue, 18 Dec 2007 18:48:57 +0100
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [POWERPC 07/18] Have cell use its own dma_direct_offset variable
+Subject: [POWERPC 05/18] Add celleb_dma_dev_setup()
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,58 +18,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rather than using the global variable, have cell use its own variable to
-store the direct DMA offset.
+Celleb always uses dma_direct_ops, and sets dma_direct_offset, so it too
+should set dma_data to dma_direct_offset.
+
+Currently there's no pci_dma_dev_setup() routine for Celleb so add one.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/iommu.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/celleb/iommu.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-Index: linux-2.6-new/arch/powerpc/platforms/cell/iommu.c
+Index: linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
 ===================================================================
---- linux-2.6-new.orig/arch/powerpc/platforms/cell/iommu.c
-+++ linux-2.6-new/arch/powerpc/platforms/cell/iommu.c
-@@ -490,6 +490,8 @@ static struct cbe_iommu *cell_iommu_for_
- 	return NULL;
+--- linux-2.6-new.orig/arch/powerpc/platforms/celleb/iommu.c
++++ linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
+@@ -72,6 +72,17 @@ static void __init celleb_init_direct_ma
+ 	dma_direct_offset = dma_base;
  }
  
-+static unsigned long cell_dma_direct_offset;
++static void celleb_dma_dev_setup(struct device *dev)
++{
++	dev->archdata.dma_ops = get_pci_dma_ops();
++	dev->archdata.dma_data = &dma_direct_offset;
++}
 +
- static void cell_dma_dev_setup(struct device *dev)
++static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
++{
++	celleb_dma_dev_setup(&pdev->dev);
++}
++
+ static int celleb_of_bus_notify(struct notifier_block *nb,
+ 				unsigned long action, void *data)
  {
- 	struct iommu_window *window;
-@@ -497,7 +499,7 @@ static void cell_dma_dev_setup(struct de
- 	struct dev_archdata *archdata = &dev->archdata;
+@@ -81,7 +92,7 @@ static int celleb_of_bus_notify(struct n
+ 	if (action != BUS_NOTIFY_ADD_DEVICE)
+ 		return 0;
  
- 	if (get_pci_dma_ops() == &dma_direct_ops) {
--		archdata->dma_data = &dma_direct_offset;
-+		archdata->dma_data = &cell_dma_direct_offset;
- 		return;
- 	}
- 
-@@ -655,7 +657,7 @@ static int __init cell_iommu_init_disabl
- 
- 	/* If we have no Axon, we set up the spider DMA magic offset */
- 	if (of_find_node_by_name(NULL, "axon") == NULL)
--		dma_direct_offset = SPIDER_DMA_OFFSET;
-+		cell_dma_direct_offset = SPIDER_DMA_OFFSET;
- 
- 	/* Now we need to check to see where the memory is mapped
- 	 * in PCI space. We assume that all busses use the same dma
-@@ -689,10 +691,10 @@ static int __init cell_iommu_init_disabl
- 		return -ENODEV;
- 	}
- 
--	dma_direct_offset += base;
-+	cell_dma_direct_offset += base;
- 
- 	printk("iommu: disabled, direct DMA offset is 0x%lx\n",
--	       dma_direct_offset);
-+	       cell_dma_direct_offset);
+-	dev->archdata.dma_ops = get_pci_dma_ops();
++	celleb_dma_dev_setup(dev);
  
  	return 0;
  }
+@@ -97,6 +108,7 @@ static int __init celleb_init_iommu(void
+ 
+ 	celleb_init_direct_mapping();
+ 	set_pci_dma_ops(&dma_direct_ops);
++	ppc_md.pci_dma_dev_setup = celleb_pci_dma_dev_setup;
+ 	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
+ 
+ 	return 0;
 
 -- 
