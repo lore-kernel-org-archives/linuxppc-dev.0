@@ -1,11 +1,14 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20071218175105.880633000@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 62103DDF14
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:10 +1100 (EST)
+Message-Id: <20071218175105.049114000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-Date: Tue, 18 Dec 2007 18:49:04 +0100
+Date: Tue, 18 Dec 2007 18:49:00 +0100
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [POWERPC 12/18] cell: export force_sig_info()
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Subject: [POWERPC 08/18] Have celleb use its own dma_direct_offset variable
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,31 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Export force_sig_info to allow signals to be sent from a modular spufs.
+Rather than using the global variable, have celleb use its own variable to
+store the direct DMA offset.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/spu_base.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/celleb/iommu.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-new/arch/powerpc/platforms/cell/spu_base.c
+Index: linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
 ===================================================================
---- linux-2.6-new.orig/arch/powerpc/platforms/cell/spu_base.c
-+++ linux-2.6-new/arch/powerpc/platforms/cell/spu_base.c
-@@ -47,6 +47,13 @@ struct cbe_spu_info cbe_spu_info[MAX_NUM
- EXPORT_SYMBOL_GPL(cbe_spu_info);
+--- linux-2.6-new.orig/arch/powerpc/platforms/celleb/iommu.c
++++ linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
+@@ -52,6 +52,8 @@ static int __init find_dma_window(u64 *i
+ 	return 0;
+ }
  
- /*
-+ * The spufs fault-handling code needs to call force_sig_info to raise signals
-+ * on DMA errors. Export it here to avoid general kernel-wide access to this
-+ * function
-+ */
-+EXPORT_SYMBOL_GPL(force_sig_info);
++static unsigned long celleb_dma_direct_offset;
 +
-+/*
-  * Protects cbe_spu_info and spu->number.
-  */
- static DEFINE_SPINLOCK(spu_lock);
+ static void __init celleb_init_direct_mapping(void)
+ {
+ 	u64 lpar_addr, io_addr;
+@@ -69,13 +71,13 @@ static void __init celleb_init_direct_ma
+ 				     ioid, DMA_FLAGS);
+ 	}
+ 
+-	dma_direct_offset = dma_base;
++	celleb_dma_direct_offset = dma_base;
+ }
+ 
+ static void celleb_dma_dev_setup(struct device *dev)
+ {
+ 	dev->archdata.dma_ops = get_pci_dma_ops();
+-	dev->archdata.dma_data = &dma_direct_offset;
++	dev->archdata.dma_data = &celleb_dma_direct_offset;
+ }
+ 
+ static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
 
 -- 
