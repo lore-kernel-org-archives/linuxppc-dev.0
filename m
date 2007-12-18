@@ -1,19 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 19631DDE3C
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 13:43:27 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3831827wag.13
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2007 18:43:26 -0800 (PST)
-Message-ID: <9e4733910712171843u579c34efia53d0571a782dd19@mail.gmail.com>
-Date: Mon, 17 Dec 2007 21:43:26 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] Makefile
-In-Reply-To: <20071218023928.8530.25171.stgit@terra.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071218023913.8530.46661.stgit@terra.home>
-	<20071218023928.8530.25171.stgit@terra.home>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 918DDDDDD6
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 14:36:42 +1100 (EST)
+Received: from ash.ozlabs.ibm.com (bh02i525f01.au.ibm.com [202.81.18.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by smtps.tip.net.au (Postfix) with ESMTP id 77E01368004
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 14:36:42 +1100 (EST)
+Date: Tue, 18 Dec 2007 14:36:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Raising list size limit
+Message-Id: <20071218143627.94f76142.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__18_Dec_2007_14_36_27_+1100_3BW7qp2R8tKHkG8k"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ignore this patch, I forgot to remove it before mailing the series.
+--Signature=_Tue__18_Dec_2007_14_36_27_+1100_3BW7qp2R8tKHkG8k
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 12/17/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
->
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> ---
->
->  Makefile |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
->
-> diff --git a/Makefile b/Makefile
-> index c1825aa..15ada3f 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -35,6 +35,9 @@ MAKEFLAGS += -rR --no-print-directory
->  # To put more focus on warnings, be less verbose as default
->  # Use 'make V=1' to see the full commands
->
-> +ARCH=powerpc
-> +CROSS_COMPILE=powerpc-603e-linux-gnu-
-> +
->  ifdef V
->    ifeq ("$(origin V)", "command line")
->      KBUILD_VERBOSE = $(V)
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Hi,
 
+I am considering raising the limit on the size of postings to 400k.  Does
+anyone have a real problem with this?  Limiting message size was done to
+limit the damage of larges spams (and we don;t get very many of those on
+the list) and to ease the pain for people downloading emails over a slow
+(like dialup) link (and are there many of those left?).
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__18_Dec_2007_14_36_27_+1100_3BW7qp2R8tKHkG8k
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHZ0BFTgG2atn1QN8RAoo/AKCBDvZ+KHmPpHTbsmcbNOIrHtaNBQCgk3xF
+zUtBD40BlzAcivlQ8mImKa0=
+=shxb
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Dec_2007_14_36_27_+1100_3BW7qp2R8tKHkG8k--
