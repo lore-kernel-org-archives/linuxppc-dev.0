@@ -1,15 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Dec 2007 11:43:29 +1100
+Date: Tue, 18 Dec 2007 11:53:48 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/3] 8xx: Analogue & Micro Adder875 board support.
-Message-ID: <20071218004329.GB9489@localhost.localdomain>
-References: <20071212225427.GA19027@loki.buserror.net>
-	<20071217035706.GA3262@localhost.localdomain>
-	<47669285.8010707@freescale.com>
+Subject: Re: [PATCH v2 2/3] mpc82xx: Embedded Planet EP8248E support
+Message-ID: <20071218005348.GC9489@localhost.localdomain>
+References: <20071212225429.GB19027@loki.buserror.net>
+	<20071217035912.GB3262@localhost.localdomain>
+	<47669335.4050405@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47669285.8010707@freescale.com>
+In-Reply-To: <47669335.4050405@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,37 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 17, 2007 at 09:15:17AM -0600, Scott Wood wrote:
+On Mon, Dec 17, 2007 at 09:18:13AM -0600, Scott Wood wrote:
 > David Gibson wrote:
-> > On Wed, Dec 12, 2007 at 04:54:27PM -0600, Scott Wood wrote:
-> >> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > [snip]
-> >> diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts b/arch/powerpc/boot/dts/adder875-redboot.dts
-> >> new file mode 100644
-> >> index 0000000..4d28220
-> >> --- /dev/null
-> >> +++ b/arch/powerpc/boot/dts/adder875-redboot.dts
-> > [snip]
-> >> diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts b/arch/powerpc/boot/dts/adder875-uboot.dts
-> >> new file mode 100644
-> >> index 0000000..33d198c
-> >> --- /dev/null
-> >> +++ b/arch/powerpc/boot/dts/adder875-uboot.dts
-> > 
-> > Having two different device trees for the different firmwares is
-> > pretty yucky, and could be a pain in the bum for synchronization of
-> > fixes.
+> > As I think I said about another tree, this mdio-under-bcsr arrangement
+> > is pretty strange.  What's going on here.
 > 
-> Yes, that's why we need some sort of macro/template facility in dtc. :-)
-> 
-> > Can't you have a common tree, and just poke the places that
-> > are differently configured by the two firmwares from the bootwrapper.
-> 
-> Enh.  That can get icky as well, and the bootwrapper isn't necessarily 
-> even used for u-boot, and I'd rather not require it be used just for this.
+> As I answered then, it's just the way the hardware is.  I didn't design 
+> it. :-P
 
-So make the template in the u-boot form, and poke it as necessary from
-the redboot wrapper.
+I obviously missed when you answered this before, I was hoping for
+some more detail.
+
+I mean, obviously the MDIO bus is accessed via some of the
+board-control registers.  What I'm questioning is whether it makes
+sense to have a distinct node to represent the mdio bus, or whether
+the phys should just hang straight of the bcsr node.
+
+> >> +	soc@f0000000 {
+> >> +		#address-cells = <1>;
+> >> +		#size-cells = <1>;
+> >> +		device_type = "soc";
+> > 
+> > Ditch the device_type.
+> 
+> No, it's used by the bootwrapper.  I'll get rid of it if you want to 
+> write a find_node_by_compatible() function. :-)
+
+Well, now that libfdt is merged, there is one :-p.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
