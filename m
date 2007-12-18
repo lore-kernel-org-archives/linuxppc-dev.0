@@ -1,32 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 81E9ADDED5
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:35:46 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBIGZX3Q010457
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:35:33 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBIGZXNp126120
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:35:33 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBIGZW3U020825
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:35:33 -0500
-Date: Tue, 18 Dec 2007 10:30:27 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Raising list size limit
-Message-ID: <20071218103027.37c54bb0@zod.rchland.ibm.com>
-In-Reply-To: <2420E261-C9AB-49B8-8F99-C24C7A865044@kernel.crashing.org>
-References: <20071218143627.94f76142.sfr@canb.auug.org.au>
-	<20071218060105.368f0bd4@zod.rchland.ibm.com>
-	<2420E261-C9AB-49B8-8F99-C24C7A865044@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dale@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 18 Dec 2007 09:38:04 -0700
+To: Dale Farnsworth <dale@farnsworth.org>, Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+Message-ID: <20071218163804.GC28931@xyzzy.farnsworth.org>
+References: <20071129150726.GA13751@ru.mvista.com>
+	<20071129152836.GB13751@ru.mvista.com>
+	<20071210211816.4657.qmail@farnsworth.org>
+	<20071216064056.GH21311@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071216064056.GH21311@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,31 +20,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Dec 2007 09:54:15 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
+On Sun, Dec 16, 2007 at 05:40:56PM +1100, David Gibson wrote:
+> On Mon, Dec 10, 2007 at 02:18:16PM -0700, Dale Farnsworth wrote:
+> > David Gibson wrote:
+> > > On Thu, Nov 29, 2007 at 06:28:36PM +0300, Andrei Dolnikov wrote:
+> > > > Device tree source file for the Emerson Katana Qp board
+> > 
+> > [snip]
+> > 
+> > > > +	mv64x60@f8100000 { /* Marvell Discovery */
+> > > > +		#address-cells = <1>;
+> > > > +		#size-cells = <1>;
+> > > > +		model = "mv64460";			/* Default */
+> > > > +		compatible = "marvell,mv64x60";
+> > 
+> > [snip]
+> > 
+> > > > +		mdio {
+> > > 
+> > > There must be some way of actuall accessing the mdio bus, so this node
+> > > ought to have a 'reg' property and unit address.
+> > 
+> > There is no way for the cpu to directly access the mdio bus.  The
+> > mdio bus is internally accessed by the ethernet MAC.  That being the
+> > case, maybe it makes more sense to move the mdio node inside of the
+> > multiethernet node, as follows, but I don't see how we can give it
+> > a reg property or a unit address.
 > 
-> On Dec 18, 2007, at 6:01 AM, Josh Boyer wrote:
+> Ah, I see.  If the mdio interface isn't distinct from the other
+> pieces, then it probably shouldn't get a device node at all.  Having
+> an explicit mdio bus with the phys hanging off it is convenient for
+> hardware which actually works that way, but it doesn't have to be done
+> like that.
 > 
-> > On Tue, 18 Dec 2007 14:36:27 +1100
-> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> >> Hi,
-> >>
-> >> I am considering raising the limit on the size of postings to  
-> >> 400k.  Does
-> >> anyone have a real problem with this?  Limiting message size was  
-> >> done to
-> >> limit the damage of larges spams (and we don;t get very many of  
-> >> those on
-> >> the list) and to ease the pain for people downloading emails over a  
-> >> slow
-> >> (like dialup) link (and are there many of those left?).
-> >
-> > Fine by me!
-> 
-> Do you really have patches that are 400k?
+> Of course, then the question is where to hang the phy nodes, which
+> look like they have information you need.  Since you already have a
+> local addressing scheme for the MACs under the multiethernet, what
+> probably makes sense would be to hang the phys directly under the
+> multiethernet, using an encoding scheme for the reg properties so that
+> the MACs and PHYs aren't confused (say, MACs are 0x0, 0x1, 0x2, PHYs
+> are 0x80000000, 0x80000001, 0x80000002).
 
-Nope.  But I don't really care if I get them.
+Ugh.  They really are two separate address spaces.  One is an
+intra-register index, and the other really is an mdio address,
+even though it's only indirectly addressable.  Combining them would
+obfuscate.  I'm proceding with an mdio node under the multiethernet
+node as I posted below.  Let me know if you feel strongly that that
+should be changed.
 
-josh
+> Incidentally, although I suggested it, I'm not all that fond of the
+> "multiethernet" name, it was just the first thing that occurred to me.
+
+I'm not fond of it either.  Sometimes, naming is hard. :)
+I'll see if we can come up with something better.
+
+Thanks,
+-Dale
+
+> > 
+> > 		multiethernet@2000 {
+> > 			reg = <0x2000 0x2000>;
+> > 			ethernet@0 {
+> > 				device_type = "network";
+> > 				compatible = "marvell,mv64360-eth";
+> > 				reg = <0>;
+> > 				interrupts = <32>;
+> > 				interrupt-parent = <&PIC>;
+> > 				phy = <&PHY0>;
+> > 				local-mac-address = [ 00 00 00 00 00 00 ];
+> > 			};
+> > 			ethernet@1 {
+> > 				device_type = "network";
+> > 				compatible = "marvell,mv64360-eth";
+> > 				reg = <1>;
+> > 				interrupts = <33>;
+> > 				interrupt-parent = <&PIC>;
+> > 				phy = <&PHY1>;
+> > 				local-mac-address = [ 00 00 00 00 00 00 ];
+> > 			};
+> > 			mdio {
+> > 				#address-cells = <1>;
+> > 				#size-cells = <0>;
+> > 				device_type = "mdio";
+> > 				compatible = "marvell,mv64360-mdio";
+> > 				PHY0: ethernet-phy@1 {
+> > 					device_type = "ethernet-phy";
+> > 					compatible = "broadcom,bcm5421";
+> > 					interrupts = <76>;	/* GPP 12 */
+> > 					interrupt-parent = <&PIC>;
+> > 					reg = <1>;
+> > 				};
+> > 				PHY1: ethernet-phy@3 {
+> > 					device_type = "ethernet-phy";
+> > 					compatible = "broadcom,bcm5421";
+> > 					interrupts = <76>;	/* GPP 12 */
+> > 					interrupt-parent = <&PIC>;
+> > 					reg = <3>;
+> > 				};
+> > 			};
+> > 		};
