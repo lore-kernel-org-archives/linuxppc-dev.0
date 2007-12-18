@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 53B5ADE1C5
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 06:52:42 +1100 (EST)
-Subject: Re: [POWERPC 10/18] Remove bogus comment in
-	dma_direct_alloc_coherent()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: arnd@arndb.de
-In-Reply-To: <20071218175105.491157000@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 020CBDDF21
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 07:24:28 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [POWERPC 00/18] cell patches for 2.6.25
+Date: Tue, 18 Dec 2007 21:24:18 +0100
 References: <20071218174852.112644000@arndb.de>
-	<20071218175105.491157000@arndb.de>
-Content-Type: text/plain
-Date: Wed, 19 Dec 2007 06:52:26 +1100
-Message-Id: <1198007546.18908.12.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+In-Reply-To: <20071218174852.112644000@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712182124.19196.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 18 December 2007, arnd@arndb.de wrote:
 
-On Tue, 2007-12-18 at 18:49 +0100, arnd@arndb.de wrote:
-> plain text document attachment
-> (0020-Remove-bogus-comment-in-dma_direct_alloc_coherent.patch)
-> Since commit c80d9133e99de1af607314107910a2a1645efb17 (Make direct DMA use
-> node local allocations) went in this comment makes no sense.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
+> Paul, if there are no objections to these patches, please pull them from
+>=20
+> =A0 git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2=
+=2E6.25
 
-Ack.
+I just noticed that quilt ate the 'From' lines from the patches when sending
+them out, so make sure you don't apply them from mail. The git tree is
+fine, so I can send them out as patches again if necessary.
 
->  arch/powerpc/kernel/dma_64.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> Index: linux-2.6-new/arch/powerpc/kernel/dma_64.c
-> ===================================================================
-> --- linux-2.6-new.orig/arch/powerpc/kernel/dma_64.c
-> +++ linux-2.6-new/arch/powerpc/kernel/dma_64.c
-> @@ -137,7 +137,6 @@ static void *dma_direct_alloc_coherent(s
->  	void *ret;
->  	int node = dev->archdata.numa_node;
->  
-> -	/* TODO: Maybe use the numa node here too ? */
->  	page = alloc_pages_node(node, flag, get_order(size));
->  	if (page == NULL)
->  		return NULL;
-> 
+	Arnd <><
