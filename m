@@ -1,15 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Dec 2007 11:53:48 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 2/3] mpc82xx: Embedded Planet EP8248E support
-Message-ID: <20071218005348.GC9489@localhost.localdomain>
-References: <20071212225429.GB19027@loki.buserror.net>
-	<20071217035912.GB3262@localhost.localdomain>
-	<47669335.4050405@freescale.com>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 532A2DDDED
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 12:22:56 +1100 (EST)
+Message-ID: <476720EA.6050307@pobox.com>
+Date: Mon, 17 Dec 2007 20:22:50 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47669335.4050405@freescale.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [POWERPC] pasemi: export pasemi_dma_init()
+References: <20071214080655.GA27284@lixom.net>
+In-Reply-To: <20071214080655.GA27284@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,36 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 17, 2007 at 09:18:13AM -0600, Scott Wood wrote:
-> David Gibson wrote:
-> > As I think I said about another tree, this mdio-under-bcsr arrangement
-> > is pretty strange.  What's going on here.
+Olof Johansson wrote:
+> Forgot to export this one. Needed when pasemi_mac is compiled as a module.
 > 
-> As I answered then, it's just the way the hardware is.  I didn't design 
-> it. :-P
-
-I obviously missed when you answered this before, I was hoping for
-some more detail.
-
-I mean, obviously the MDIO bus is accessed via some of the
-board-control registers.  What I'm questioning is whether it makes
-sense to have a distinct node to represent the mdio bus, or whether
-the phys should just hang straight of the bcsr node.
-
-> >> +	soc@f0000000 {
-> >> +		#address-cells = <1>;
-> >> +		#size-cells = <1>;
-> >> +		device_type = "soc";
-> > 
-> > Ditch the device_type.
+> Signed-off-by: Olof Johansson <olof@lixom.net>
 > 
-> No, it's used by the bootwrapper.  I'll get rid of it if you want to 
-> write a find_node_by_compatible() function. :-)
+> ---
+> 
+> Jeff, since the dma_lib stuff went up through netdev-2.6, please apply and
+> feed this one up with the rest.
+> 
+> 
+> Thanks,
+> 
+> Olof
+> 
+> Index: 2.6.24/arch/powerpc/platforms/pasemi/dma_lib.c
+> ===================================================================
+> --- 2.6.24.orig/arch/powerpc/platforms/pasemi/dma_lib.c
+> +++ 2.6.24/arch/powerpc/platforms/pasemi/dma_lib.c
+> @@ -485,3 +485,4 @@ out:
+>  	spin_unlock(&init_lock);
+>  	return err;
+>  }
+> +EXPORT_SYMBOL(pasemi_dma_init);
 
-Well, now that libfdt is merged, there is one :-p.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+applied #upstream
