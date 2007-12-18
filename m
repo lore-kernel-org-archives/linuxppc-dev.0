@@ -1,18 +1,32 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id DA264DDE16
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:20:38 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 18 Dec 2007 09:20:32 -0700
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 07/10] powerpc: Implement kmap_atomic_pfn on powerpc
-Message-ID: <20071218162032.GB28931@xyzzy.farnsworth.org>
-References: <20071122154638.GA26514@xyzzy.farnsworth.org>
-	<1197699461.6696.45.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1197699461.6696.45.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 81E9ADDED5
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:35:46 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBIGZX3Q010457
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:35:33 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBIGZXNp126120
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:35:33 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lBIGZW3U020825
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Dec 2007 11:35:33 -0500
+Date: Tue, 18 Dec 2007 10:30:27 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Raising list size limit
+Message-ID: <20071218103027.37c54bb0@zod.rchland.ibm.com>
+In-Reply-To: <2420E261-C9AB-49B8-8F99-C24C7A865044@kernel.crashing.org>
+References: <20071218143627.94f76142.sfr@canb.auug.org.au>
+	<20071218060105.368f0bd4@zod.rchland.ibm.com>
+	<2420E261-C9AB-49B8-8F99-C24C7A865044@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 15, 2007 at 05:17:41PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> On Thu, 2007-11-22 at 08:46 -0700, Dale Farnsworth wrote:
-> > This is needed for the ppc32 /dev/oldmem driver of crash dump.
-> 
-> Kumar's working (well, last I heard he was) on a fixmap mechanism
-> so we can do that sort of thing without CONFIG_HIGHMEM, you may
-> want to sync with him here, that would allow to shrink the crash
-> kernel by not having highmem selected.
-> 
-> Cheers,
-> Ben.
+On Tue, 18 Dec 2007 09:54:15 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Kumar, are you close to posting something that would make the
-patch below unnecessary (or change it significantly)?  If so,
-I'll hold off.
+> 
+> On Dec 18, 2007, at 6:01 AM, Josh Boyer wrote:
+> 
+> > On Tue, 18 Dec 2007 14:36:27 +1100
+> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> >> Hi,
+> >>
+> >> I am considering raising the limit on the size of postings to  
+> >> 400k.  Does
+> >> anyone have a real problem with this?  Limiting message size was  
+> >> done to
+> >> limit the damage of larges spams (and we don;t get very many of  
+> >> those on
+> >> the list) and to ease the pain for people downloading emails over a  
+> >> slow
+> >> (like dialup) link (and are there many of those left?).
+> >
+> > Fine by me!
+> 
+> Do you really have patches that are 400k?
 
--Dale
+Nope.  But I don't really care if I get them.
 
-> > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> > ---
-> >  include/asm-powerpc/highmem.h |   18 ++++++++++++++++++
-> >  1 files changed, 18 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/asm-powerpc/highmem.h b/include/asm-powerpc/highmem.h
-> > index f7b21ee..88d9e05 100644
-> > --- a/include/asm-powerpc/highmem.h
-> > +++ b/include/asm-powerpc/highmem.h
-> > @@ -117,6 +117,24 @@ static inline void kunmap_atomic(void *kvaddr, enum km_type type)
-> >  	pagefault_enable();
-> >  }
-> >  
-> > +/* This is the same as kmap_atomic() but can map memory that doesn't
-> > + * have a struct page associated with it.
-> > + */
-> > +static inline void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
-> > +{
-> > +	unsigned int idx;
-> > +	unsigned long vaddr;
-> > +
-> > +	pagefault_disable();
-> > +
-> > +	idx = type + KM_TYPE_NR * smp_processor_id();
-> > +	vaddr = KMAP_FIX_BEGIN + idx * PAGE_SIZE;
-> > +	set_pte_at(&init_mm, vaddr, kmap_pte+idx, pfn_pte(pfn, kmap_prot));
-> > +	flush_tlb_page(NULL, vaddr);
-> > +
-> > +	return (void*) vaddr;
-> > +}
-> > +
-> >  static inline struct page *kmap_atomic_to_page(void *ptr)
-> >  {
-> >  	unsigned long idx, vaddr = (unsigned long) ptr;
+josh
