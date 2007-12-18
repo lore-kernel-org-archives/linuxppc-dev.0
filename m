@@ -1,14 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id BAD86DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 05:15:16 +1100 (EST)
-Message-Id: <20071218175104.009469000@arndb.de>
+Message-Id: <20071218175106.115180000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-Date: Tue, 18 Dec 2007 18:48:55 +0100
+Date: Tue, 18 Dec 2007 18:49:05 +0100
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [POWERPC 03/18] cell: add missing \n
-Cc: linuxppc-dev@ozlabs.org
+Subject: [POWERPC 13/18] cell: safer of_has_vicinity routine
+Cc: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>, Andre Detsch <adetsch@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,35 +16,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Two printk() calls were missing the terminating '\n'.
+This patch changes the way we check for the existence of
+vicinity property in spe device nodes.
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+The new implementation does not depend on having an initialized
+cbe_spu_info[0].spus, and checks for presence of vicinity in all
+nodes, not only in the first one.
+
+Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/spu_manage.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spu_manage.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
 Index: linux-2.6-new/arch/powerpc/platforms/cell/spu_manage.c
 ===================================================================
 --- linux-2.6-new.orig/arch/powerpc/platforms/cell/spu_manage.c
 +++ linux-2.6-new/arch/powerpc/platforms/cell/spu_manage.c
-@@ -345,7 +345,7 @@ static int __init of_create_spu(struct s
- 		}
- 		ret = spu_map_interrupts_old(spu, spe);
- 		if (ret) {
--			printk(KERN_ERR "%s: could not map interrupts",
-+			printk(KERN_ERR "%s: could not map interrupts\n",
- 				spu->name);
- 			goto out_unmap;
- 		}
-@@ -525,7 +525,7 @@ static int __init init_affinity(void)
- 		if (of_flat_dt_is_compatible(root, "IBM,CPBW-1.0"))
- 			init_affinity_qs20_harcoded();
- 		else
--			printk("No affinity configuration found");
-+			printk("No affinity configuration found\n");
- 	}
+@@ -422,10 +422,15 @@ static void init_affinity_qs20_harcoded(
  
- 	return 0;
+ static int of_has_vicinity(void)
+ {
+-	struct spu* spu;
++	struct device_node *dn;
+ 
+-	spu = list_first_entry(&cbe_spu_info[0].spus, struct spu, cbe_list);
+-	return of_find_property(spu_devnode(spu), "vicinity", NULL) != NULL;
++	for_each_node_by_type(dn, "spe") {
++		if (of_find_property(dn, "vicinity", NULL))  {
++			of_node_put(dn);
++			return 1;
++		}
++	}
++	return 0;
+ }
+ 
+ static struct spu *devnode_spu(int cbe, struct device_node *dn)
 
 -- 
