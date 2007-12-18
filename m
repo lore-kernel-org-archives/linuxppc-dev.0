@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3F462DDF53
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 06:51:05 +1100 (EST)
-Subject: Re: [POWERPC 08/18] Have celleb use its own dma_direct_offset variable
+	by ozlabs.org (Postfix) with ESMTP id 24045DDF6A
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 06:52:30 +1100 (EST)
+Subject: Re: [POWERPC 09/18] Remove the global dma_direct_offset
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: arnd@arndb.de
-In-Reply-To: <20071218175105.049114000@arndb.de>
+In-Reply-To: <20071218175105.263700000@arndb.de>
 References: <20071218174852.112644000@arndb.de>
-	<20071218175105.049114000@arndb.de>
+	<20071218175105.263700000@arndb.de>
 Content-Type: text/plain
-Date: Wed, 19 Dec 2007 06:50:49 +1100
-Message-Id: <1198007449.18908.8.camel@pasglop>
+Date: Wed, 19 Dec 2007 06:52:13 +1100
+Message-Id: <1198007533.18908.10.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
@@ -28,9 +28,9 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Tue, 2007-12-18 at 18:49 +0100, arnd@arndb.de wrote:
 > plain text document attachment
-> (0018-Have-celleb-use-its-own-dma_direct_offset-variable.patch)
-> Rather than using the global variable, have celleb use its own variable to
-> store the direct DMA offset.
+> (0019-Remove-the-global-dma_direct_offset.patch)
+> We no longer need the global dma_direct_offset, update the comment to
+> reflect the new reality.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
@@ -38,36 +38,40 @@ On Tue, 2007-12-18 at 18:49 +0100, arnd@arndb.de wrote:
 
 Ack.
 
->  arch/powerpc/platforms/celleb/iommu.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
+>  arch/powerpc/kernel/dma_64.c      |    7 ++++---
+>  include/asm-powerpc/dma-mapping.h |    2 --
+>  2 files changed, 4 insertions(+), 5 deletions(-)
 > 
-> Index: linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
+> Index: linux-2.6-new/arch/powerpc/kernel/dma_64.c
 > ===================================================================
-> --- linux-2.6-new.orig/arch/powerpc/platforms/celleb/iommu.c
-> +++ linux-2.6-new/arch/powerpc/platforms/celleb/iommu.c
-> @@ -52,6 +52,8 @@ static int __init find_dma_window(u64 *i
->  	return 0;
->  }
+> --- linux-2.6-new.orig/arch/powerpc/kernel/dma_64.c
+> +++ linux-2.6-new/arch/powerpc/kernel/dma_64.c
+> @@ -112,10 +112,11 @@ EXPORT_SYMBOL(dma_iommu_ops);
+>  /*
+>   * Generic direct DMA implementation
+>   *
+> - * This implementation supports a global offset that can be applied if
+> - * the address at which memory is visible to devices is not 0.
+> + * This implementation supports a per-device offset that can be applied if
+> + * the address at which memory is visible to devices is not 0. Platform code
+> + * can point archdata.dma_data at an unsigned long holding the offset. By
+> + * default no offset is used.
+>   */
+> -unsigned long dma_direct_offset;
 >  
-> +static unsigned long celleb_dma_direct_offset;
-> +
->  static void __init celleb_init_direct_mapping(void)
+>  static unsigned long get_dma_direct_offset(struct device *dev)
 >  {
->  	u64 lpar_addr, io_addr;
-> @@ -69,13 +71,13 @@ static void __init celleb_init_direct_ma
->  				     ioid, DMA_FLAGS);
->  	}
+> Index: linux-2.6-new/include/asm-powerpc/dma-mapping.h
+> ===================================================================
+> --- linux-2.6-new.orig/include/asm-powerpc/dma-mapping.h
+> +++ linux-2.6-new/include/asm-powerpc/dma-mapping.h
+> @@ -186,8 +186,6 @@ static inline void dma_unmap_sg(struct d
+>  extern struct dma_mapping_ops dma_iommu_ops;
+>  extern struct dma_mapping_ops dma_direct_ops;
 >  
-> -	dma_direct_offset = dma_base;
-> +	celleb_dma_direct_offset = dma_base;
->  }
+> -extern unsigned long dma_direct_offset;
+> -
+>  #else /* CONFIG_PPC64 */
 >  
->  static void celleb_dma_dev_setup(struct device *dev)
->  {
->  	dev->archdata.dma_ops = get_pci_dma_ops();
-> -	dev->archdata.dma_data = &dma_direct_offset;
-> +	dev->archdata.dma_data = &celleb_dma_direct_offset;
->  }
->  
->  static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
+>  #define dma_supported(dev, mask)	(1)
 > 
