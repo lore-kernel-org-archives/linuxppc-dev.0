@@ -1,17 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Dec 2007 09:33:59 +1100
+Date: Wed, 19 Dec 2007 09:38:31 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: Raising list size limit
-Message-ID: <20071218223359.GA12254@localhost.localdomain>
-References: <20071218143627.94f76142.sfr@canb.auug.org.au>
-	<20071218060105.368f0bd4@zod.rchland.ibm.com>
-	<2420E261-C9AB-49B8-8F99-C24C7A865044@kernel.crashing.org>
-	<20071218161208.GA7495@lixom.net>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/8] powerpc: prpmc2800 - Convert dts file to v1
+Message-ID: <20071218223831.GB12254@localhost.localdomain>
+References: <20071211003108.GA4995@mag.az.mvista.com>
+	<20071211003738.GB4995@mag.az.mvista.com>
+	<20071214220335.GA21311@localhost.localdomain>
+	<20071218213506.GB30388@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071218161208.GA7495@lixom.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20071218213506.GB30388@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 18, 2007 at 10:12:08AM -0600, Olof Johansson wrote:
-> On Tue, Dec 18, 2007 at 09:54:15AM -0600, Kumar Gala wrote:
+On Tue, Dec 18, 2007 at 02:35:06PM -0700, Mark A. Greer wrote:
+> On Sat, Dec 15, 2007 at 09:03:35AM +1100, David Gibson wrote:
+> > On Mon, Dec 10, 2007 at 05:37:38PM -0700, Mark A. Greer wrote:
+> > > From: Mark A. Greer <mgreer@mvista.com>
+> > > 
+> > > Convert the prpmc2800.dts file to dts-v1.  Basically, this means
+> > > converting the numeric constants to be 'C'-like (e.g., hexadecimal
+> > > numbers start with '0x').
 > > 
-> > On Dec 18, 2007, at 6:01 AM, Josh Boyer wrote:
+> > [snip]
+> > >  				interrupt-parent = <&/mv64x60/pic>;
 > > 
-> > > On Tue, 18 Dec 2007 14:36:27 +1100
-> > > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > >
-> > >> Hi,
-> > >>
-> > >> I am considering raising the limit on the size of postings to  
-> > >> 400k.  Does
-> > >> anyone have a real problem with this?  Limiting message size was  
-> > >> done to
-> > >> limit the damage of larges spams (and we don;t get very many of  
-> > >> those on
-> > >> the list) and to ease the pain for people downloading emails over a  
-> > >> slow
-> > >> (like dialup) link (and are there many of those left?).
-> > >
-> > > Fine by me!
-> > 
-> > Do you really have patches that are 400k?
+> > If you're converting to dts-v1, you should also convert any path
+> > references like this to &{/mv64x60/pic} or else use a label.  Yes,
+> > some early dts-v1 supporting dtc versions supported these as is, but
+> > the idea is to try to forget that they existed and always require the
+> > {} quoting in dts-v1.
 > 
-> I'm guessing stuff such as "dtc merge" could reach those sizes?
+> I did convert to use labels in a later patch but it uses <&label> as
+> well.  I can change them to &{label} that it appears you are suggesting
+> (I haven't tested to see that they work yet though).
 
-dtc merge was 224k, if it had stayed together with the libfdt merge it
-would have been a about 300k.
+&label is fine, it's just &/full/path that needs changing.
+
+I realised you removed all the &/full/path things in a later patch, so
+the series as a whole will work.  But this patch alleges to convert to
+dts-v1 of itself, but because it fails to requote the path references,
+it doesn't.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
