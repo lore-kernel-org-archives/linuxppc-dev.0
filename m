@@ -4,25 +4,25 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BD5FCDDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 20:03:02 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by ozlabs.org (Postfix) with ESMTP id 9B819DDE42
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 20:03:16 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	lBJ8x0id017148
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 02:02:59 -0700 (MST)
+	lBJ918NN020383
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 02:03:03 -0700 (MST)
 Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
 	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lBJ8wwel017984
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 02:58:59 -0600 (CST)
-Subject: [PATCH] powerpc: Add MPC837x PCIE RC mode support
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lBJ916uH021477
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 03:01:07 -0600 (CST)
+Subject: [patch] mpc83xx: Add MPC837x PCIE controller RC mode support
 From: Li Li <r64360@freescale.com>
 To: Kumar Gala <kumar.gala@freescale.com>,
 	kim phillips <Kim.Phillips@freescale.com>,
 	Wood Scott <scottwood@freescale.com>,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Wed, 19 Dec 2007 16:46:01 +0800
-Message-Id: <1198053961.6787.2.camel@Guyver>
+Date: Wed, 19 Dec 2007 16:48:13 +0800
+Message-Id: <1198054093.6787.5.camel@Guyver>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -33,725 +33,818 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The MPC837x PCIE controller hardware resources are initiated in u-boot.
+Initial the MPC837x PCIE controller.
+Note that configue address bit field is not compatible with PCIE spec 10a.
+Just map first 16M pci configure space which corresponding to a bus configure space at boot.
 
-Merge the MPC837x PCIE code into arch/powerpc/sysdev/fsl_pci.c
-
-The MPC837x PCIE controller`s configure address bit field is uniqe:
-	bus number:		bits 31-24
-	device number:		bits 23-19
-	function number:	bits 18-16
-	ext reg number:		bits 11-8
-	reg number:		bits 7-2
-This controller implements direct configure space access mode via outbound window.
-Only map first 16M configure space at boot time. Remap the outbound window target address when 
-want access another 16M configure space.
-
-Add MPC837x PCIE controller specific fixup.
-
-Add flag variant to mpc83xx_add_bridge function.
 
 Signed-off-by: Tony Li <tony.li@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8377_mds.dts     |   54 ++++++++--
- arch/powerpc/boot/dts/mpc8378_mds.dts     |   54 ++++++++--
- arch/powerpc/platforms/83xx/Kconfig       |    2 +
- arch/powerpc/platforms/83xx/mpc8313_rdb.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc832x_mds.c |   12 ++-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc834x_itx.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc834x_mds.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc836x_mds.c |   12 ++-
- arch/powerpc/platforms/83xx/mpc837x_mds.c |   39 +++++++-
- arch/powerpc/platforms/83xx/mpc83xx.h     |    6 +-
- arch/powerpc/platforms/83xx/pci.c         |   29 ++++--
- arch/powerpc/sysdev/fsl_pci.c             |  159 +++++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_pci.h             |    3 +
- include/asm-powerpc/pci-bridge.h          |    1 +
- include/linux/pci_ids.h                   |    4 +
- 16 files changed, 375 insertions(+), 40 deletions(-)
+ Makefile                                  |   17 ++-
+ board/freescale/mpc837xemds/Makefile      |    2 +-
+ board/freescale/mpc837xemds/mpc837xemds.c |    3 +
+ board/freescale/mpc837xemds/pci.c         |    3 +-
+ board/freescale/mpc837xemds/pcie.c        |   95 +++++++++
+ cpu/mpc83xx/Makefile                      |    2 +-
+ cpu/mpc83xx/pcie.c                        |  315 +++++++++++++++++++++++++++++
+ doc/README.mpc837xemds                    |    6 +
+ include/asm-ppc/immap_83xx.h              |  119 ++++++++++-
+ include/configs/MPC837XEMDS.h             |   23 ++-
+ include/mpc83xx.h                         |   42 ++++
+ include/pci.h                             |    4 +
+ 12 files changed, 619 insertions(+), 12 deletions(-)
+ create mode 100644 board/freescale/mpc837xemds/pcie.c
+ create mode 100644 cpu/mpc83xx/pcie.c
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index 4402e39..5b6177a 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -197,14 +197,6 @@
- 			clock = <d#100>;
- 		};
+diff --git a/Makefile b/Makefile
+index f8a038a..5934f77 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1831,13 +1831,26 @@ MPC8360EMDS_SLAVE_config:	unconfig
+ 	@$(MKCONFIG) -a MPC8360EMDS ppc mpc83xx mpc8360emds freescale
  
--		serdes2:serdes@e3100 {
--			compatible = "fsl,serdes";
--			reg = <e3100 100>;
--			vdd-1v;
--			protocol = "pcie";
--			clock = <d#100>;
--		};
--
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
-@@ -279,4 +271,50 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
+ MPC837XEMDS_config \
+-MPC837XEMDS_HOST_config:	unconfig
++MPC837XEMDS_HOST_config \
++MPC837XEMDS_PCIE_config \
++MPC837XEMDS_PCIE_X2_config:	unconfig
+ 	@mkdir -p $(obj)include
+ 	@echo "" >$(obj)include/config.h ; \
+ 	if [ "$(findstring _HOST_,$@)" ] ; then \
+ 		echo -n "... PCI HOST " ; \
+ 		echo "#define CONFIG_PCI" >>$(obj)include/config.h ; \
+-	fi ;
++		echo "#define CONFIG_PQ_MDS_PIB" >>$(obj)include/config.h ; \
++	fi ; \
++	if [ "$(findstring _PCIE_,$@)" ] ; then\
++		echo -n "... PCIE "; \
++		echo "#define CONFIG_PCI" >>$(obj)include/config.h ; \
++		echo "#define CONFIG_PCIE" >>$(obj)include/config.h ; \
++	fi; \
++	if [ "$(findstring _PCIE_X2_,$@)" ] ; then\
++		echo -n "_X2 "; \
++		echo "#define CONFIG_PCIE_X2" >>$(obj)include/config.h ; \
++	fi;
 +
-+	pcie@e0009000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 1 8
-+			0000 0 0 2 &ipic 1 8
-+			0000 0 0 3 &ipic 1 8
-+			0000 0 0 4 &ipic 1 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <1 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 A8000000 A8000000 0 10000000
-+		          01000000 0 00000000 B8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e0009000 00001000
-+		       b0000000 01000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
-+
-+	pcie@e000a000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 2 8
-+			0000 0 0 2 &ipic 2 8
-+			0000 0 0 3 &ipic 2 8
-+			0000 0 0 4 &ipic 2 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <2 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 C8000000 C8000000 0 10000000
-+			  01000000 0 00000000 D8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e000a000 00001000
-+		       d0000000 01000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index 54171f4..83ad974 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -179,14 +179,6 @@
- 			clock = <d#100>;
- 		};
+ 	@$(MKCONFIG) -a MPC837XEMDS ppc mpc83xx mpc837xemds freescale
  
--		serdes2:serdes@e3100 {
--			compatible = "fsl,serdes";
--			reg = <e3100 100>;
--			vdd-1v;
--			protocol = "pcie";
--			clock = <d#100>;
--		};
--
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
-@@ -261,4 +253,50 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
- 	};
-+
-+	pcie@e0009000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 1 8
-+			0000 0 0 2 &ipic 1 8
-+			0000 0 0 3 &ipic 1 8
-+			0000 0 0 4 &ipic 1 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <1 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 A8000000 A8000000 0 10000000
-+		          01000000 0 00000000 B8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e0009000 00001000
-+		       b0000000 01000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
-+
-+	pcie@e000a000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 2 8
-+			0000 0 0 2 &ipic 2 8
-+			0000 0 0 3 &ipic 2 8
-+			0000 0 0 4 &ipic 2 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <2 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 C8000000 C8000000 0 10000000
-+			  01000000 0 00000000 D8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e000a000 00001000
-+		       d0000000 01000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
- };
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 0c61e7a..0b4bfb5 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -86,4 +86,6 @@ config PPC_MPC837x
- 	select PPC_UDBG_16550
- 	select PPC_INDIRECT_PCI
- 	select FSL_SERDES
-+	select FSL_PCI if PCI
- 	default y if MPC837x_MDS
-+
-diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-index 33766b8..25d8df4 100644
---- a/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-@@ -37,14 +37,20 @@ static void __init mpc8313_rdb_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
+ sbc8349_config:		unconfig
+diff --git a/board/freescale/mpc837xemds/Makefile b/board/freescale/mpc837xemds/Makefile
+index 3cffcfb..319ebc2 100644
+--- a/board/freescale/mpc837xemds/Makefile
++++ b/board/freescale/mpc837xemds/Makefile
+@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
+ 
+ LIB	= $(obj)lib$(BOARD).a
+ 
+-COBJS	:= $(BOARD).o pci.o nand.o
++COBJS	:= $(BOARD).o pci.o pcie.o nand.o
+ 
+ SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
+ OBJS	:= $(addprefix $(obj),$(COBJS))
+diff --git a/board/freescale/mpc837xemds/mpc837xemds.c b/board/freescale/mpc837xemds/mpc837xemds.c
+index 330e0e8..ff6f14a 100644
+--- a/board/freescale/mpc837xemds/mpc837xemds.c
++++ b/board/freescale/mpc837xemds/mpc837xemds.c
+@@ -48,6 +48,9 @@ int board_early_init_r(void)
+ #ifdef CONFIG_PQ_MDS_PIB
+ 	pib_init();
  #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc8313_rdb_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 	mpc831x_usb_cfg();
- }
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 972fa85..ddb0b2e 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -58,6 +58,9 @@ static u8 *bcsr_regs = NULL;
- static void __init mpc832x_sys_setup_arch(void)
- {
- 	struct device_node *np;
-+#ifdef CONFIG_PCI
-+	int primary_pci_bus = 1;
++#ifdef CONFIG_PCIE
++	pcie_init_board();
 +#endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc832x_sys_setup_arch()", 0);
-@@ -73,8 +76,13 @@ static void __init mpc832x_sys_setup_arch(void)
- 	}
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index fbca336..aef35f5 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -87,14 +87,20 @@ static void __init mpc832x_rdb_setup_arch(void)
- {
- #if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc832x_rdb_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index aa76819..c428f62 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -46,14 +46,20 @@ static void __init mpc834x_itx_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc834x_itx_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- 	mpc834x_usb_cfg();
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-index 00aed7c..e86dce8 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-@@ -77,14 +77,20 @@ static void __init mpc834x_mds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc834x_mds_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- 	mpc834xemds_usb_cfg();
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 0f3855c..6e6670c 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -64,6 +64,9 @@ static u8 *bcsr_regs = NULL;
- static void __init mpc836x_mds_setup_arch(void)
- {
- 	struct device_node *np;
-+#ifdef CONFIG_PCI
-+	int primary_pci_bus = 1;
-+#endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc836x_mds_setup_arch()", 0);
-@@ -79,8 +82,13 @@ static void __init mpc836x_mds_setup_arch(void)
- 	}
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index 166c111..ec2fa9f 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -25,8 +25,27 @@
- #ifndef CONFIG_PCI
- unsigned long isa_io_base = 0;
- unsigned long isa_mem_base = 0;
-+
- #endif
- 
-+#ifdef CONFIG_PCI
-+static int mpc837x_exclude_device(struct pci_controller *hose,
-+					u_char bus, u_char devfn)
-+{
-+	struct pci_bus *pci_bus;
-+
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_MPC83XX_PCIE) {
-+		pci_bus = pci_find_bus(hose->global_number, bus);
-+		if ((bus == hose->first_busno) ||
-+			(pci_bus->primary == hose->first_busno)) {
-+			if (devfn & 0xf8)
-+				return PCIBIOS_DEVICE_NOT_FOUND;
-+		}
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+#endif
- /* ************************************************************************
-  *
-  * Setup the architecture
-@@ -36,14 +55,30 @@ static void __init mpc837x_mds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
-+
-+	for_each_compatible_node(np, "pci", "fsl,mpc8377-pcie") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCIE | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCIE);
-+	}
-+
-+	ppc_md.pci_exclude_device = mpc837x_exclude_device;
- #endif
- }
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index b778cb4..552e9bf 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -47,8 +47,10 @@
-  * Declaration for the various functions exported by the
-  * mpc83xx_* files. Mostly for use by mpc83xx_setup
-  */
--
--extern int mpc83xx_add_bridge(struct device_node *dev);
-+#define PPC_83XX_PCI_PRIMARY	0x1
-+#define PPC_83XX_PCI		0x2
-+#define PPC_83XX_PCIE		0x4
-+extern int mpc83xx_add_bridge(struct device_node *dev, int flags);
- extern void mpc83xx_restart(char *cmd);
- extern long mpc83xx_time_init(void);
- extern int mpc834x_usb_cfg(void);
-diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
-index 80425d7..7a3382a 100644
---- a/arch/powerpc/platforms/83xx/pci.c
-+++ b/arch/powerpc/platforms/83xx/pci.c
-@@ -24,6 +24,9 @@
- #include <asm/pci-bridge.h>
- #include <asm/prom.h>
- #include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#include "mpc83xx.h"
- 
- #undef DEBUG
- 
-@@ -33,13 +36,13 @@
- #define DBG(x...)
- #endif
- 
--int __init mpc83xx_add_bridge(struct device_node *dev)
-+int __init mpc83xx_add_bridge(struct device_node *dev, int flags)
- {
- 	int len;
- 	struct pci_controller *hose;
- 	struct resource rsrc;
- 	const int *bus_range;
--	int primary = 1, has_address = 0;
-+	int has_address = 0;
- 	phys_addr_t immr = get_immrbase();
- 
- 	DBG("Adding PCI host bridge %s\n", dev->full_name);
-@@ -63,16 +66,23 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
- 
- 	/* MPC83xx supports up to two host controllers one at 0x8500 from immrbar
--	 * the other at 0x8600, we consider the 0x8500 the primary controller
-+	 * the other at 0x8600.
- 	 */
- 	/* PCI 1 */
--	if ((rsrc.start & 0xfffff) == 0x8500) {
-+	if ((rsrc.start & 0xfffff) == 0x8500)
- 		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304, 0);
--	}
- 	/* PCI 2 */
--	if ((rsrc.start & 0xfffff) == 0x8600) {
-+	if ((rsrc.start & 0xfffff) == 0x8600)
- 		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384, 0);
--		primary = 0;
-+
-+	if (flags & PPC_83XX_PCIE) {
-+		struct resource cfg_space;
-+
-+		if (of_address_to_resource(dev, 1, &cfg_space)) {
-+			printk("PCIE RC losts configure space. Skip it\n");
-+			return 1;
-+		}
-+		mpc83xx_setup_pcie(hose, &rsrc, &cfg_space);
- 	}
- 
- 	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
-@@ -85,7 +95,10 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 
- 	/* Interpret the "ranges" property */
- 	/* This also maps the I/O region and sets isa_io/mem_base */
--	pci_process_bridge_OF_ranges(hose, dev, primary);
-+	if (flags & PPC_83XX_PCI_PRIMARY)
-+		pci_process_bridge_OF_ranges(hose, dev, 1);
-+	else
-+		pci_process_bridge_OF_ranges(hose, dev, 0);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 33df4c3..dfd9a40 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -240,6 +240,165 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
  	return 0;
  }
  
-+/* MPC83xx PCIE routines*/
-+/* PCIE Registers */
-+#define PEX_LTSSM_STAT          0x404
-+#define PEX_LTSSM_STAT_L0       0x16
-+#define PEX_GCLK_RATIO          0x440
+diff --git a/board/freescale/mpc837xemds/pci.c b/board/freescale/mpc837xemds/pci.c
+index ab90979..72e8dcc 100644
+--- a/board/freescale/mpc837xemds/pci.c
++++ b/board/freescale/mpc837xemds/pci.c
+@@ -59,7 +59,8 @@ void pci_init_board(void)
+ 	pci_law[1].ar = LBLAWAR_EN | LBLAWAR_1MB;
+ 
+ 	udelay(2000);
+-
++#if defined(CONFIG_PQ_MDS_PIB)
+ 	mpc83xx_pci_init(1, reg, 0);
++#endif
+ }
+ #endif /* CONFIG_PCI */
+diff --git a/board/freescale/mpc837xemds/pcie.c b/board/freescale/mpc837xemds/pcie.c
+new file mode 100644
+index 0000000..474f848
+--- /dev/null
++++ b/board/freescale/mpc837xemds/pcie.c
+@@ -0,0 +1,95 @@
++/*
++ * Copyright (C) 2007 Freescale Semiconductor, Inc.
++ * Tony Li <tony.li@freescale.com>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ */
 +
-+/* With the convention of u-boot, the PCIE outbound window 0 serves
-+ * as configuration transactions outbound */
-+#define PEX_OUTWIN0_TAL		0xCA8
-+#define PEX_OUTWIN0_TAH		0xCAC
++#include <asm/mmu.h>
++#include <asm/io.h>
++#include <common.h>
++#include <mpc83xx.h>
++#include <pci.h>
++#include <asm/fsl_serdes.h>
 +
-+void remap_cfg_outbound(void * __iomem reg_base, u32 tal, u32 tah)
-+{
-+	out_le32(reg_base + PEX_OUTWIN0_TAL, tal);
-+	out_le32(reg_base + PEX_OUTWIN0_TAH, tah);
-+}
-+
-+static int mpc83xx_read_config_pcie(struct pci_bus *bus,
-+			uint devfn, int offset, int len, u32 *val)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+	void __iomem *cfg_addr;
-+	static u32 orig_busno = 0;
-+	u32 bus_no;
-+
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	if (ppc_md.pci_exclude_device)
-+		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	switch (len) {
-+	case 2:
-+		if (offset & 1)
-+			return -EINVAL;
-+		break;
-+	case 4:
-+	if (offset & 3)
-+		return -EINVAL;
-+		break;
++#if defined(CONFIG_PCIE)
++static struct pci_region pci_regions_0[] = {
++	{
++		bus_start: CFG_PCIE1_MEM_BASE,
++		phys_start: CFG_PCIE1_MEM_PHYS,
++		size: CFG_PCIE1_MEM_SIZE,
++		flags: PCI_REGION_MEM
++	},
++	{
++		bus_start: CFG_PCIE1_IO_BASE,
++		phys_start: CFG_PCIE1_IO_PHYS,
++		size: CFG_PCIE1_IO_SIZE,
++		flags: PCI_REGION_IO
 +	}
-+
-+	if ((bus->number == hose->first_busno) &&
-+		(hose->indirect_type & PPC_INDIRECT_TYPE_MPC83XX_PCIE))
-+		cfg_addr = (void __iomem *)((ulong) hose->cfg_data + (offset & 0xfff));
-+	else {
-+		bus_no = bus->number - hose->first_busno;
-+		if (bus_no != orig_busno) {
-+			remap_cfg_outbound((void __iomem *)hose->cfg_data, bus_no, 0);
-+			orig_busno = bus_no;
-+		}
-+		cfg_addr = (void __iomem *)((ulong) hose->cfg_addr +
-+			((devfn << 16) | (offset & 0xfff)));
-+	}
-+
-+	switch (len) {
-+	case 1:
-+		*val = in_8(cfg_addr);
-+		break;
-+	case 2:
-+		*val = in_le16(cfg_addr);
-+		break;
-+	default:
-+		*val = in_le32(cfg_addr);
-+		break;
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
-+static int mpc83xx_write_config_pcie(struct pci_bus *bus,
-+			uint devfn, int offset, int len, u32 val)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+	void __iomem *cfg_addr;
-+	static u32 orig_busno = 0;
-+	u32 bus_no;
-+
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	if (ppc_md.pci_exclude_device)
-+		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	switch (len) {
-+	case 2:
-+		if (offset & 1)
-+			return -EINVAL;
-+		break;
-+	case 4:
-+		if (offset & 3)
-+			return -EINVAL;
-+		break;
-+	}
-+
-+
-+	if ((bus->number == hose->first_busno) &&
-+		(hose->indirect_type & PPC_INDIRECT_TYPE_MPC83XX_PCIE))
-+		cfg_addr = (void __iomem *)((ulong) hose->cfg_data + (offset & 0xfff));
-+	else {
-+		bus_no = bus->number - hose->first_busno;
-+		if (bus_no != orig_busno) {
-+			remap_cfg_outbound((void __iomem *)hose->cfg_data, bus_no, 0);
-+			orig_busno = bus_no;
-+		}
-+		cfg_addr = (void __iomem *)((ulong) hose->cfg_addr +
-+			((devfn << 16) | (offset & 0xfff)));
-+	}
-+
-+	switch (len) {
-+	case 1:
-+		out_8(cfg_addr, val);
-+		break;
-+	case 2:
-+		out_le16(cfg_addr, val);
-+		break;
-+	default:
-+		out_le32(cfg_addr, val);
-+		break;
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
-+static struct pci_ops mpc83xx_pcie_ops = {
-+	mpc83xx_read_config_pcie,
-+	mpc83xx_write_config_pcie
 +};
 +
-+void __init mpc83xx_setup_pcie(struct pci_controller *hose,
-+			struct resource *reg, struct resource *cfg_space)
++static struct pci_region pci_regions_1[] = {
++	{
++		bus_start: CFG_PCIE2_MEM_BASE,
++		phys_start: CFG_PCIE2_MEM_PHYS,
++		size: CFG_PCIE2_MEM_SIZE,
++		flags: PCI_REGION_MEM
++	},
++	{
++		bus_start: CFG_PCIE2_IO_BASE,
++		phys_start: CFG_PCIE2_IO_PHYS,
++		size: CFG_PCIE2_IO_SIZE,
++		flags: PCI_REGION_IO
++	}
++};
++
++void pcie_init_board(void)
 +{
-+	void __iomem *hose_cfg_header, *mbase;
-+	u32 val;
++	volatile immap_t *immr = (volatile immap_t *)CFG_IMMR;
++	volatile clk83xx_t *clk = (volatile clk83xx_t *)&immr->clk;
++	volatile sysconf83xx_t *sysconf = &immr->sysconf;
++	volatile serdes83xx_t *serdes = &immr->serdes[1];
++	volatile law83xx_t *pcie_law = sysconf->pcielaw;
++	struct pci_region *reg[] = { pci_regions_0, pci_regions_1 };
++	u8 val8 = 0;
++	u8 orig_i2c_bus = 0;
 +
-+	hose_cfg_header = ioremap(reg->start, reg->end - reg->start + 1);
++	disable_addr_trans();
 +
-+	val = in_le32(hose_cfg_header + PEX_LTSSM_STAT);
-+	if (val < PEX_LTSSM_STAT_L0)
-+		hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+	hose->indirect_type |= PPC_INDIRECT_TYPE_MPC83XX_PCIE;
++#if defined(CONFIG_PCIE_X2)
++	fsl_serdes_init(serdes, FSL_SERDES_MODE_PEX_X2);
++#else
++	fsl_serdes_init(serdes, FSL_SERDES_MODE_PEX);
++#endif
 +
-+	mbase = ioremap(cfg_space->start & PAGE_MASK, cfg_space->end - cfg_space->start + 1);
-+	hose->ops = &mpc83xx_pcie_ops;
-+	hose->cfg_addr = mbase + (cfg_space->start & ~PAGE_MASK);
++	/* Configure the clock for PCIE controller */
++	clk->sccr &= ~0x003C0000;
++	clk->sccr |= 0x00140000;
 +
-+	/* The MPC83xx PCIE implements direct access configure space
-+	 * routines instead of indirect ones. So, the cfg_data field is free.
-+	 * The MPC83xx PCIE RC configure header is memory-mapped,
-+	 * we use cfg_data as this header pointer */
-+	hose->cfg_data = hose_cfg_header;
++	/* Deassert the resets in the control register */
++	sysconf->pecr1 = 0xE0008000;
++#if !defined(CONFIG_PCIE_X2)
++	sysconf->pecr2 = 0xE0008000;
++#endif
++	udelay(2000);
++
++	/* Configure PCI Express Local Access Windows */
++	pcie_law[0].bar = CFG_PCIE1_BASE & LAWBAR_BAR;
++	pcie_law[0].ar = LBLAWAR_EN | LBLAWAR_512MB;
++
++	pcie_law[1].bar = CFG_PCIE2_BASE & LAWBAR_BAR;
++	pcie_law[1].ar = LBLAWAR_EN | LBLAWAR_512MB;
++
++#if defined(CONFIG_PCIE_X2)
++	mpc83xx_pcie_init(1, reg, 0);
++#else
++	mpc83xx_pcie_init(2, reg, 0);
++#endif
++}
++#endif /* CONFIG_PCIE */
+diff --git a/cpu/mpc83xx/Makefile b/cpu/mpc83xx/Makefile
+index 2329970..a6be7f0 100644
+--- a/cpu/mpc83xx/Makefile
++++ b/cpu/mpc83xx/Makefile
+@@ -29,7 +29,7 @@ LIB	= $(obj)lib$(CPU).a
+ 
+ START	= start.o
+ COBJS	= traps.o cpu.o cpu_init.o speed.o interrupts.o \
+-	  spd_sdram.o ecc.o qe_io.o pci.o
++	  spd_sdram.o ecc.o qe_io.o pci.o pcie.o
+ 
+ SRCS	:= $(START:.o=.S) $(SOBJS:.o=.S) $(COBJS:.o=.c)
+ OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
+diff --git a/cpu/mpc83xx/pcie.c b/cpu/mpc83xx/pcie.c
+new file mode 100644
+index 0000000..acaf008
+--- /dev/null
++++ b/cpu/mpc83xx/pcie.c
+@@ -0,0 +1,315 @@
++/*
++ * Copyright (C) 2007 Freescale Semiconductor, Inc.
++ *
++ * Author: Tony Li <tony.li@freescale.com>,
++ * Based on PCI initialization.
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <common.h>
++#include <pci.h>
++
++#include <asm/io.h>
++#include <mpc83xx.h>
++
++#ifdef CONFIG_83XX_GENERIC_PCIE
++#define PCIE_MAX_BUSES 2
++
++DECLARE_GLOBAL_DATA_PTR;
++
++static struct pci_controller pcie_hose[PCIE_MAX_BUSES];
++static int pcie_num_buses;
++
++#define cfg_read(val, addr, type, op)	*val = op((type)(addr))
++#define cfg_write(val, addr, type, op)	op((type *)(addr), (val))
++
++#define PCIE_OP(rw, size, type, op)						\
++static int									\
++pcie_##rw##_config_##size(struct pci_controller *hose,				\
++			pci_dev_t dev, int offset, type val)			\
++{										\
++	u32 b, d, f;								\
++	if (hose->indirect_type == INDIRECT_TYPE_NO_PCIE_LINK)			\
++		return -1;							\
++	b = PCI_BUS(dev); d = PCI_DEV(dev) & 0x1f; f = PCI_FUNC(dev) & 0x7;	\
++	b = b - hose->first_busno;						\
++	dev = (b << 24) | (((d << 3) | f) << 16) | (offset & 0xfff);		\
++	cfg_##rw(val, (u32)hose->cfg_addr + (u32)dev, type, op);		\
++	return 0;								\
 +}
 +
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8377E, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8377, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8378E, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8378, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8548E, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8548, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8543E, quirk_fsl_pcie_transparent);
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index 37b04ad..a70ee0f 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -84,5 +84,8 @@ struct ccsr_pci {
- extern int fsl_add_bridge(struct device_node *dev, int is_primary);
- extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
- 
-+extern void mpc83xx_setup_pcie(struct pci_controller *hose,
-+		struct resource *reg, struct resource *cfg_space);
++PCIE_OP(read, byte, u8 *, in_8)
++PCIE_OP(read, word, u16 *, in_le16)
++PCIE_OP(read, dword, u32 *, in_le32)
++PCIE_OP(write, byte, u8, out_8)
++PCIE_OP(write, word, u16, out_le16)
++PCIE_OP(write, dword, u32, out_le32)
 +
- #endif /* __POWERPC_FSL_PCI_H */
- #endif /* __KERNEL__ */
-diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index dc31845..372598b 100644
---- a/include/asm-powerpc/pci-bridge.h
-+++ b/include/asm-powerpc/pci-bridge.h
-@@ -56,6 +56,7 @@ struct pci_controller {
- #define PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS	(0x00000004)
- #define PPC_INDIRECT_TYPE_NO_PCIE_LINK		(0x00000008)
- #define PPC_INDIRECT_TYPE_BIG_ENDIAN		(0x00000010)
-+#define PPC_INDIRECT_TYPE_MPC83XX_PCIE		(0x00000020)
- 	u32 indirect_type;
++void pcie_setup_ops(struct pci_controller *hose, u32 cfg_addr)
++{
++	pci_set_ops(hose,
++			pcie_read_config_byte,
++			pcie_read_config_word,
++			pcie_read_config_dword,
++			pcie_write_config_byte,
++			pcie_write_config_word,
++			pcie_write_config_dword);
++
++	hose->cfg_addr = (unsigned long *)cfg_addr;
++}
++
++static void pcie_init_bus(int bus, struct pci_region *reg)
++{
++	volatile immap_t *immr = (volatile immap_t *)CFG_IMMR;
++	volatile pex83xx_t *pex = &immr->pciexp[bus];
++	volatile struct pex_outbound_window *out_win;
++	volatile struct pex_inbound_window *in_win;
++	struct pci_controller *hose = &pcie_hose[bus];
++	volatile void *hose_cfg_base;
++	static int max_bus = 0;
++	unsigned int ram_sz, barl, tar;
++	u16 reg16;
++	int i, j;
++
++	/* Enable pex csb bridge inbound & outbound transactions */
++	out_le32(&pex->bridge.pex_csb_ctrl,
++		in_le32(&pex->bridge.pex_csb_ctrl) | PEX_CSB_CTRL_OBPIOE |
++		PEX_CSB_CTRL_IBPIOE);
++	//	PEX_CSB_CTRL_IBPIOE | PEX_CSB_CTRL_WDMAE | PEX_CSB_CTRL_RDMAE);
++
++	/* Enable bridge outbound */
++	out_le32(&pex->bridge.pex_csb_obctrl, PEX_CSB_OBCTRL_PIOE |
++		PEX_CSB_OBCTRL_MEMWE | PEX_CSB_OBCTRL_IOWE |
++		PEX_CSB_OBCTRL_CFGWE);
++
++	out_win = &pex->bridge.pex_outbound_win[0];
++	if (bus) {
++		out_le32(&out_win->ar, PEX_OWAR_EN | PEX_OWAR_TYPE_CFG |
++			CFG_PCIE2_CFG_SIZE);
++		out_le32(&out_win->bar, CFG_PCIE2_CFG_BASE);
++	} else {
++		out_le32(&out_win->ar, PEX_OWAR_EN | PEX_OWAR_TYPE_CFG |
++			CFG_PCIE1_CFG_SIZE);
++		out_le32(&out_win->bar, CFG_PCIE1_CFG_BASE);
++	}
++	out_le32(&out_win->tarl, 0);
++	out_le32(&out_win->tarh, 0);
++
++	for (i = 0; i < 2; i++, reg++) {
++		u32 ar;
++		if (reg->size == 0)
++			break;
++
++		hose->regions[i] = *reg;
++		hose->region_count++;
++
++		out_win = &pex->bridge.pex_outbound_win[i + 1];
++		out_le32(&out_win->bar, reg->phys_start);
++		out_le32(&out_win->tarl, reg->bus_start);
++		out_le32(&out_win->tarh, 0);
++		ar = PEX_OWAR_EN | (reg->size & PEX_OWAR_SIZE);
++		if (reg->flags & PCI_REGION_IO)
++			ar |= PEX_OWAR_TYPE_IO;
++		else
++			ar |= PEX_OWAR_TYPE_MEM;
++		out_le32(&out_win->ar, ar);
++	}
++
++	out_le32(&pex->bridge.pex_csb_ibctrl, PEX_CSB_IBCTRL_PIOE);
++
++	ram_sz = gd->ram_size;
++	barl = 0;
++	tar = 0;
++	j = 0;
++	while (ram_sz > 0) {
++		in_win = &pex->bridge.pex_inbound_win[j];
++		out_le32(&in_win->barl, barl);
++		out_le32(&in_win->barh, 0x0);
++		out_le32(&in_win->tar, tar);
++		if (ram_sz >= 0x10000000) {
++			out_le32(&in_win->ar, PEX_IWAR_EN | PEX_IWAR_NSOV |
++				PEX_IWAR_TYPE_PF | 0x0FFFF000);
++			barl += 0x10000000;
++			tar += 0x10000000;
++			ram_sz -= 0x10000000;
++		}
++		else {
++			/* The UM  is not clear here.
++			 * So, round up to even Mb boundary */
++			unsigned int sz = 0;
++
++			ram_sz = ram_sz >> 20 +
++					((ram_sz & 0xFFFFF) ? 1 : 0);
++			if (!(ram_sz % 2))
++				ram_sz -= 1;
++			out_le32(&in_win->ar, PEX_IWAR_EN | PEX_IWAR_NSOV |
++				PEX_IWAR_TYPE_PF | (sz << 20) | 0xFF000);
++			ram_sz = 0;
++		}
++		j++;
++	}
++	i = hose->region_count++;
++	hose->regions[i].bus_start = 0;
++	hose->regions[i].phys_start = 0;
++	hose->regions[i].size = gd->ram_size;
++	hose->regions[i].flags = PCI_REGION_MEM | PCI_REGION_MEMORY;
++
++	in_win = &pex->bridge.pex_inbound_win[j];
++	out_le32(&in_win->barl, CFG_IMMR);
++	out_le32(&in_win->barh, 0);
++	out_le32(&in_win->tar, CFG_IMMR);
++	out_le32(&in_win->ar, PEX_IWAR_EN |
++		PEX_IWAR_TYPE_NO_PF | PEX_IWAR_SIZE_1M);
++
++	i = hose->region_count++;
++	hose->regions[i].bus_start = CFG_IMMR;
++	hose->regions[i].phys_start = CFG_IMMR;
++	hose->regions[i].size = 0x100000;
++	hose->regions[i].flags = PCI_REGION_MEM | PCI_REGION_MEMORY;
++
++	hose->first_busno = max_bus;
++	hose->last_busno = 0xff;
++
++	/* Enable the host virtual INTX interrupts */
++	out_le32(&pex->bridge.pex_int_axi_misc_enb,
++		in_le32(&pex->bridge.pex_int_axi_misc_enb) | 0x1E0);
++
++	pcie_setup_ops(hose, bus ? CFG_PCIE2_CFG_BASE : CFG_PCIE1_CFG_BASE);
++
++	pci_register_hose(hose);
++
++	/* Hose configure header is memory-mapped */
++	hose_cfg_base = (void *)pex;
++
++#if 1
++	get_clocks();
++	/* Configure the PCIE controller core clock ratio */
++	out_le32(hose_cfg_base + PEX_GCLK_RATIO,
++		(((bus ? gd->pciexp2_clk : gd->pciexp1_clk) / 1000000) * 16) / 333);
++	udelay(1000000);
++#endif
++
++	/* Enable the error reports */
++	reg16 = in_le16(hose_cfg_base + PCI_BRIDGE_CONTROL);
++	reg16 |= PCI_BRIDGE_CTL_SERR | PCI_BRIDGE_CTL_PARITY;
++	out_le16(hose_cfg_base + PCI_BRIDGE_CONTROL, reg16);
++
++#define PCIE_DEVICE_CONTROL	0x54
++#define PCIE_DEVICE_CTL_URR	0x8
++#define PCIE_DEVICE_CTL_FER	0x4
++#define PCIE_DEVICE_CTL_NFER	0x2
++#define PCIE_DEVICE_CTL_CER	0x1
++	reg16 = in_le16(hose_cfg_base + PCIE_DEVICE_CONTROL);
++	reg16 |= PCIE_DEVICE_CTL_URR | PCIE_DEVICE_CTL_FER |
++			PCIE_DEVICE_CTL_NFER | PCIE_DEVICE_CTL_CER; 
++	out_le16(hose_cfg_base + PCIE_DEVICE_CONTROL, reg16);
++
++#define PCIE_ADVANCED_ERR_CAP_CTL	0x118
++#define PCIE_ADVANCED_ERR_CAP_CTL_ECRCCE	0x100
++#define PCIE_ADVANCED_ERR_CAP_CTL_ECRCGE	0x40
++
++{
++	u32 reg32;
++	reg32 = in_le32(hose_cfg_base + PCIE_ADVANCED_ERR_CAP_CTL);
++	reg32 |= PCIE_ADVANCED_ERR_CAP_CTL_ECRCCE | PCIE_ADVANCED_ERR_CAP_CTL_ECRCGE;
++	out_le32(hose_cfg_base + PCIE_ADVANCED_ERR_CAP_CTL, reg32);
++
++#define PCIE_ROOT_ERROR_COMMAND	0x012c
++#define PCIE_ROOT_ERROR_COMMAND_FERE	0x4
++#define PCIE_ROOT_ERROR_COMMAND_NFERE	0x2
++#define PCIE_ROOT_ERROR_COMMAND_CERE	0x1
++	reg32 = in_le32(hose_cfg_base + PCIE_ROOT_ERROR_COMMAND);
++	reg32 |= PCIE_ROOT_ERROR_COMMAND_FERE | PCIE_ROOT_ERROR_COMMAND_NFERE |
++			PCIE_ROOT_ERROR_COMMAND_CERE;
++	out_le32(hose_cfg_base + PCIE_ROOT_ERROR_COMMAND, reg32);
++}
++
++#if 1	/* Do Type 1 bridge configuration */
++
++	out_8(hose_cfg_base + PCI_PRIMARY_BUS, 0);
++	out_8(hose_cfg_base + PCI_SECONDARY_BUS, 1);
++	out_8(hose_cfg_base + PCI_SUBORDINATE_BUS, 255);
++#endif
++
++	/*
++	 * Write to Command register
++	 */
++	reg16 = in_le16(hose_cfg_base + PCI_COMMAND);
++	reg16 |= PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY | PCI_COMMAND_IO |
++			PCI_COMMAND_SERR | PCI_COMMAND_PARITY;
++	out_le16(hose_cfg_base + PCI_COMMAND, reg16);
++
++	/*
++	 * Clear non-reserved bits in status register.
++	 */
++	out_le16(hose_cfg_base + PCI_STATUS, 0xffff);
++	out_8(hose_cfg_base + PCI_LATENCY_TIMER, 0x80);
++	out_8(hose_cfg_base + PCI_CACHE_LINE_SIZE, 0x08);
++
++	printf("PCIE%d: ", bus);
++
++	reg16 = in_le16(hose_cfg_base + PEX_LTSSM_STAT);
++	if (reg16 < 0x16) {
++		printf("No link\n", bus);
++		hose->indirect_type = INDIRECT_TYPE_NO_PCIE_LINK;
++	} else {
++		printf("link\n");
++	}
++
++#ifdef CONFIG_PCI_SCAN_SHOW
++	printf("PCI:   Bus Dev VenId DevId Class Int\n");
++#endif
++
++	/*
++	 * Hose scan.
++	 */
++	hose->last_busno = pci_hose_scan(hose);
++	max_bus = hose->last_busno + 1;
++}
++
++/*
++ * The caller must have already set SCCR, SERDES and the PCIE_LAW BARs
++ * must have been set to cover all of the requested regions.
++ */
++void mpc83xx_pcie_init(int num_buses, struct pci_region **reg, int warmboot)
++{
++	int i;
++
++	if (num_buses > PCIE_MAX_BUSES) {
++		printf("%d PCI buses requsted, %d supported\n",
++			num_buses, PCIE_MAX_BUSES);
++
++		num_buses = PCIE_MAX_BUSES;
++	}
++
++	pcie_num_buses = num_buses;
++
++	/*
++	 * Release PCI RST Output signal.
++	 * Power on to RST high must be at least 100 ms as per PCI spec.
++	 * On warm boots only 1 ms is required.
++	 */
++	udelay(warmboot ? 1000 : 100000);
++
++	for (i = 0; i < num_buses; i++)
++		pcie_init_bus(i, reg[i]);
++}
++
++#endif /* CONFIG_83XX_GENERIC_PCIE */
+diff --git a/doc/README.mpc837xemds b/doc/README.mpc837xemds
+index 3f0cdf7..5650782 100644
+--- a/doc/README.mpc837xemds
++++ b/doc/README.mpc837xemds
+@@ -45,6 +45,12 @@ Freescale MPC837xEMDS Board
+ 	0x8000_0000	0x8fff_ffff	PCI MEM prefetch	256M
+ 	0x9000_0000	0x9fff_ffff	PCI MEM non-prefetch	256M
+ 	0xc000_0000	0xdfff_ffff	Empty			512M
++	0xa000_0000	0xafff_ffff	PCI Express 1 Mem	256M
++	0xb000_0000	0xb0ff_ffff	PCI Express 1 Config	16M
++	0xb100_0000	0xb17f_ffff	PCI Express 1 IO	8M
++	0xc000_0000	0xcfff_ffff	PCI Express 2 Mem	256M
++	0xd000_0000	0xd0ff_ffff	PCI Express 2 Config	16M
++	0xd100_0000	0xd17f_ffff	PCI Express 2 IO	8M
+ 	0xe000_0000	0xe00f_ffff	Int Mem Reg Space	1M
+ 	0xe010_0000	0xe02f_ffff	Empty			2M
+ 	0xe030_0000	0xe03f_ffff	PCI IO			1M
+diff --git a/include/asm-ppc/immap_83xx.h b/include/asm-ppc/immap_83xx.h
+index f011e48..3e863ad 100644
+--- a/include/asm-ppc/immap_83xx.h
++++ b/include/asm-ppc/immap_83xx.h
+@@ -50,21 +50,26 @@ typedef struct sysconf83xx {
+ 	law83xx_t lblaw[4];	/* LBIU local access window */
+ 	u8 res2[0x20];
+ 	law83xx_t pcilaw[2];	/* PCI local access window */
+-	u8 res3[0x30];
++	u8 res3[0x10];
++	law83xx_t pcielaw[2];	/* PCI Express local access window */
++	u8 res4[0x10];
+ 	law83xx_t ddrlaw[2];	/* DDR local access window */
+-	u8 res4[0x50];
++	u8 res5[0x50];
+ 	u32 sgprl;		/* System General Purpose Register Low */
+ 	u32 sgprh;		/* System General Purpose Register High */
+ 	u32 spridr;		/* System Part and Revision ID Register */
+-	u8 res5[0x04];
++	u8 res6[0x04];
+ 	u32 spcr;		/* System Priority Configuration Register */
+ 	u32 sicrl;		/* System I/O Configuration Register Low */
+ 	u32 sicrh;		/* System I/O Configuration Register High */
+-	u8 res6[0x0C];
++	u8 res7[0x0C];
+ 	u32 ddrcdr;		/* DDR Control Driver Register */
+ 	u32 ddrdsr;		/* DDR Debug Status Register */
+ 	u32 obir;		/* Output Buffer Impedance Register */
+-	u8 res7[0xCC];
++	u8 res8[0xC];
++	u32 pecr1;		/* PCI Express control register 1 */
++	u32 pecr2;		/* PCI Express control register 2 */
++	u8 res9[0xB8];
+ } sysconf83xx_t;
  
- 	/* Currently, we limit ourselves to 1 IO range and 3 mem
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 1ee009e..f84caa7 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2111,6 +2111,10 @@
- #define PCI_DEVICE_ID_TDI_EHCI          0x0101
+ /*
+@@ -557,8 +562,110 @@ typedef struct security83xx {
+ /*
+  *  PCI Express
+  */
++struct pex_inbound_window {
++	u32 ar;
++	u32 tar;
++	u32 barl;
++	u32 barh;
++};
++
++struct pex_outbound_window {
++	u32 ar;
++	u32 bar;
++	u32 tarl;
++	u32 tarh;
++};
++
++struct pex_csb_bridge {
++	u32 pex_csb_ver;
++	u32 pex_csb_cab;
++	u32 pex_csb_ctrl;
++	u8 res0[8];
++	u32 pex_dms_dstmr;
++	u8 res1[4];
++	u32 pex_cbs_stat;
++	u8 res2[0x20];
++	u32 pex_csb_obctrl;
++	u32 pex_csb_obstat;
++	u8 res3[0x98];
++	u32 pex_csb_ibctrl;
++	u32 pex_csb_ibstat;
++	u8 res4[0xb8];
++	u32 pex_wdma_ctrl;
++	u32 pex_wdma_addr;
++	u32 pex_wdma_stat;
++	u8 res5[0x94];
++	u32 pex_rdma_ctrl;
++	u32 pex_rdma_addr;
++	u32 pex_rdma_stat;
++	u8 res6[0xd4];
++	u32 pex_ombcr;
++	u32 pex_ombdr;
++	u8 res7[0x38];
++	u32 pex_imbcr;
++	u32 pex_imbdr;
++	u8 res8[0x38];
++	u32 pex_int_enb;
++	u32 pex_int_stat;
++	u32 pex_int_apio_vec1;
++	u32 pex_int_apio_vec2;
++	u8 res9[0x10];
++	u32 pex_int_ppio_vec1;
++	u32 pex_int_ppio_vec2;
++	u32 pex_int_wdma_vec1;
++	u32 pex_int_wdma_vec2;
++	u32 pex_int_rdma_vec1;
++	u32 pex_int_rdma_vec2;
++	u32 pex_int_misc_vec;
++	u8 res10[4];
++	u32 pex_int_axi_pio_enb;
++	u32 pex_int_axi_wdma_enb;
++	u32 pex_int_axi_rdma_enb;
++	u32 pex_int_axi_misc_enb;
++	u32 pex_int_axi_pio_stat;
++	u32 pex_int_axi_wdma_stat;
++	u32 pex_int_axi_rdma_stat;
++	u32 pex_int_axi_misc_stat;
++	u8 res11[0xa0];
++	struct pex_outbound_window pex_outbound_win[4];
++	u8 res12[0x100];
++	u32 pex_epiwtar0;
++	u32 pex_epiwtar1;
++	u32 pex_epiwtar2;
++	u32 pex_epiwtar3;
++	u8 res13[0x70];
++	struct pex_inbound_window pex_inbound_win[4];
++};
++
+ typedef struct pex83xx {
+-	u8 fixme[0x1000];
++	u8 pex_cfg_header[0x404];
++	u32 pex_ltssm_stat;
++	u8 res0[0x30];
++	u32 pex_ack_replay_timeout;
++	u8 res1[4];
++	u32 pex_gclk_ratio;
++	u8 res2[0xc];
++	u32 pex_pm_timer;
++	u32 pex_pme_timeout;
++	u8 res3[4];
++	u32 pex_aspm_req_timer;
++	u8 res4[0x18];
++	u32 pex_ssvid_update;
++	u8 res5[0x34];
++	u32 pex_cfg_ready;
++	u8 res6[0x24];
++	u32 pex_bar_sizel;
++	u8 res7[4];
++	u32 pex_bar_sel;
++	u8 res8[0x20];
++	u32 pex_bar_pf;
++	u8 res9[0x88];
++	u32 pex_pme_to_ack_tor;
++	u8 res10[0xc];
++	u32 pex_ss_intr_mask;
++	u8 res11[0x25c];
++	struct pex_csb_bridge bridge;
++	u8 res12[0x160];
+ } pex83xx_t;
  
- #define PCI_VENDOR_ID_FREESCALE		0x1957
-+#define PCI_DEVICE_ID_MPC8378E		0x00c4
-+#define PCI_DEVICE_ID_MPC8378		0x00c5
-+#define PCI_DEVICE_ID_MPC8377E		0x00c6
-+#define PCI_DEVICE_ID_MPC8377		0x00c7
- #define PCI_DEVICE_ID_MPC8548E		0x0012
- #define PCI_DEVICE_ID_MPC8548		0x0013
- #define PCI_DEVICE_ID_MPC8543E		0x0014
+ /*
+diff --git a/include/configs/MPC837XEMDS.h b/include/configs/MPC837XEMDS.h
+index 219c9da..503db23 100644
+--- a/include/configs/MPC837XEMDS.h
++++ b/include/configs/MPC837XEMDS.h
+@@ -374,7 +374,7 @@
+ 
+ #ifdef CONFIG_PCI
+ #define CONFIG_83XX_GENERIC_PCI	1 /* Use generic PCI setup */
+-#define CONFIG_PQ_MDS_PIB	1 /* PQ MDS Platform IO Board */
++#define CONFIG_83XX_GENERIC_PCIE	1 /* Use generic PCIE setup*/
+ 
+ #define CONFIG_NET_MULTI
+ #define CONFIG_PCI_PNP		/* do pci plug-and-play */
+@@ -384,6 +384,27 @@
+ #define CFG_PCI_SUBSYS_VENDORID 0x1957	/* Freescale */
+ #endif /* CONFIG_PCI */
+ 
++/* PCIE address map */
++#define CFG_PCIE1_BASE		0xA0000000
++#define CFG_PCIE1_MEM_BASE	CFG_PCIE1_BASE
++#define CFG_PCIE1_MEM_PHYS	CFG_PCIE1_MEM_BASE
++#define CFG_PCIE1_MEM_SIZE	0x10000000
++#define CFG_PCIE1_CFG_BASE	(CFG_PCIE1_MEM_BASE + CFG_PCIE1_MEM_SIZE)
++#define CFG_PCIE1_CFG_SIZE	0x01000000
++#define CFG_PCIE1_IO_BASE	0x0
++#define CFG_PCIE1_IO_PHYS	(CFG_PCIE1_CFG_BASE + CFG_PCIE1_CFG_SIZE)
++#define CFG_PCIE1_IO_SIZE	0x00800000
++
++#define CFG_PCIE2_BASE		0xC0000000
++#define CFG_PCIE2_MEM_BASE	CFG_PCIE2_BASE
++#define CFG_PCIE2_MEM_PHYS	CFG_PCIE2_MEM_BASE
++#define CFG_PCIE2_MEM_SIZE	0x10000000
++#define CFG_PCIE2_CFG_BASE	(CFG_PCIE2_MEM_BASE + CFG_PCIE2_MEM_SIZE)
++#define CFG_PCIE2_CFG_SIZE	0x01000000
++#define CFG_PCIE2_IO_BASE	0x0
++#define CFG_PCIE2_IO_PHYS	(CFG_PCIE2_CFG_BASE + CFG_PCIE2_CFG_SIZE)
++#define CFG_PCIE2_IO_SIZE	0x00800000
++
+ #ifndef CONFIG_NET_MULTI
+ #define CONFIG_NET_MULTI	1
+ #endif
+diff --git a/include/mpc83xx.h b/include/mpc83xx.h
+index 306c970..bad60fe 100644
+--- a/include/mpc83xx.h
++++ b/include/mpc83xx.h
+@@ -1409,6 +1409,48 @@
+ #define DDRCDR_M_ODR		0x00000002
+ #define DDRCDR_Q_DRN		0x00000001
+ 
++/* PCIE Bridge Register
++ */
++#define PEX_CSB_CTRL_OBPIOE	0x00000001
++#define PEX_CSB_CTRL_IBPIOE	0x00000002
++#define PEX_CSB_CTRL_WDMAE	0x00000004
++#define PEX_CSB_CTRL_RDMAE	0x00000008
++
++#define PEX_CSB_OBCTRL_PIOE	0x00000001
++#define PEX_CSB_OBCTRL_MEMWE	0x00000002
++#define PEX_CSB_OBCTRL_IOWE	0x00000004
++#define PEX_CSB_OBCTRL_CFGWE	0x00000008
++
++#define PEX_CSB_IBCTRL_PIOE	0x00000001
++
++#define PEX_OWAR_EN		0x00000001
++#define PEX_OWAR_TYPE_CFG	0x00000000
++#define PEX_OWAR_TYPE_IO	0x00000002
++#define PEX_OWAR_TYPE_MEM	0x00000004
++#define PEX_OWAR_RLXO		0x00000008
++#define PEX_OWAR_NANP		0x00000010
++#define PEX_OWAR_SIZE		0xFFFFF000
++
++#define PEX_IWAR_EN		0x00000001
++#define PEX_IWAR_TYPE_INT	0x00000000
++#define PEX_IWAR_TYPE_PF	0x00000004
++#define PEX_IWAR_TYPE_NO_PF	0x00000006
++#define PEX_IWAR_NSOV		0x00000008
++#define PEX_IWAR_NSNP		0x00000010
++#define PEX_IWAR_SIZE		0xFFFFF000
++#define PEX_IWAR_SIZE_1M	0x000FF000
++#define PEX_IWAR_SIZE_2M	0x001FF000
++#define PEX_IWAR_SIZE_4M	0x003FF000
++#define PEX_IWAR_SIZE_8M	0x007FF000
++#define PEX_IWAR_SIZE_16M	0x00FFF000
++#define PEX_IWAR_SIZE_32M	0x01FFF000
++#define PEX_IWAR_SIZE_64M	0x03FFF000
++#define PEX_IWAR_SIZE_128M	0x07FFF000
++#define PEX_IWAR_SIZE_256M	0x0FFFF000
++
++#define PEX_LTSSM_STAT		0x404
++#define PEX_GCLK_RATIO		0x440
++
+ #ifndef __ASSEMBLY__
+ struct pci_region;
+ void mpc83xx_pci_init(int num_buses, struct pci_region **reg, int warmboot);
+diff --git a/include/pci.h b/include/pci.h
+index 8e5dacc..a0a84c9 100644
+--- a/include/pci.h
++++ b/include/pci.h
+@@ -374,6 +374,8 @@ extern void pci_cfgfunc_config_device(struct pci_controller* hose, pci_dev_t dev
+ 
+ #define MAX_PCI_REGIONS		7
+ 
++#define INDIRECT_TYPE_NO_PCIE_LINK	1
++
+ /*
+  * Structure of a PCI controller (host bridge)
+  */
+@@ -386,6 +388,8 @@ struct pci_controller {
+ 	volatile unsigned int *cfg_addr;
+ 	volatile unsigned char *cfg_data;
+ 
++	int indirect_type;
++
+ 	struct pci_region regions[MAX_PCI_REGIONS];
+ 	int region_count;
+ 
 -- 
 1.5.2
