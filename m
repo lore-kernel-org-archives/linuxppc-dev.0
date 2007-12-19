@@ -1,21 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7B0F8DDFE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:10:39 +1100 (EST)
-Date: Thu, 20 Dec 2007 00:12:50 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 31D62DDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:15:41 +1100 (EST)
+Message-ID: <476989ED.50603@freescale.com>
+Date: Wed, 19 Dec 2007 15:15:25 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
 Subject: Re: [PATCH 4/4] [POWERPC] fsl_spi_init and users: stop using
 	device_type = "spi"
-Message-ID: <20071219211250.GA21416@localhost.localdomain>
 References: <20071219203447.GA18285@localhost.localdomain>
 	<20071219203817.GD20861@localhost.localdomain>
 	<47698773.1010004@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <47698773.1010004@freescale.com>
+	<20071219211250.GA21416@localhost.localdomain>
+In-Reply-To: <20071219211250.GA21416@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 19, 2007 at 03:04:51PM -0600, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> >diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> >index 3cf84d0..91bac51 100644
-> >--- a/arch/powerpc/sysdev/fsl_soc.c
-> >+++ b/arch/powerpc/sysdev/fsl_soc.c
-> >@@ -1242,7 +1242,7 @@ int __init fsl_spi_init(struct spi_board_info 
-> >*board_infos,
-> > 	}
-> > 
-> > 	for (np = NULL, i = 1;
-> >-	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
-> >+	     (np = of_find_compatible_node(np, NULL, "fsl,spi")) != NULL;
-> 
-> Can you keep the original code around to look for older device trees that 
-> are wrong?  Backwards compatibility is important.  I don't want to have to 
-> update the device tree just because I update the kernel.
+Anton Vorontsov wrote:
 
-I though about it. Is your device tree source out of tree? Otherwise
-it should be trivial to upgrade the dtb, instead of producing cruft in
-the kernel. I vote for less legacy code, but lets see what others will
-say. So far count is 1:1. ;-)
+> I though about it. Is your device tree source out of tree? Otherwise
+> it should be trivial to upgrade the dtb, instead of producing cruft in
+> the kernel. I vote for less legacy code, but lets see what others will
+> say. So far count is 1:1. ;-)
 
-Thanks,
+I just want a transition period.  Whenever I write code that works with changes 
+in the device tree, I always maintain compatibility with the older versions, and 
+I was under the impression that this is policy.  If you update the device tree, 
+you should update the kernel.  The converse, however, should not be true.
+
+It would be really annoying if you had to swap out your device tree if you want 
+to work with different kernel versions.
+
+Maybe if the device tree compiler were part of the kernel, and every time you 
+built the kernel it also built the dtb, I could accept locking the device tree 
+and kernel versions.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Timur Tabi
+Linux kernel developer at Freescale
