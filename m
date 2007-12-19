@@ -1,22 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 845CCDDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 07:59:21 +1100 (EST)
-Message-ID: <4769860D.9040401@freescale.com>
-Date: Wed, 19 Dec 2007 14:58:53 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 3/4] [POWERPC][SPI] use brg-frequency for SPI in QE
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8DBEEDDE43
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:00:11 +1100 (EST)
+Date: Thu, 20 Dec 2007 00:02:22 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] [POWERPC] fsl_spi_init and users: stop using
+	device_type = "spi"
+Message-ID: <20071219210222.GA21147@localhost.localdomain>
 References: <20071219203447.GA18285@localhost.localdomain>
-	<20071219203805.GC20861@localhost.localdomain>
-In-Reply-To: <20071219203805.GC20861@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
+	<20071219203817.GD20861@localhost.localdomain>
+	<6B8F6F4B-1FD2-4A11-B4F6-A1A0ECD7342B@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <6B8F6F4B-1FD2-4A11-B4F6-A1A0ECD7342B@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index 044dd7f..3cf84d0 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -1227,15 +1227,19 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
->  
->  	/* SPI controller is either clocked from QE or SoC clock */
->  	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-> -	if (!np)
-> +	if (np) {
-> +		sysclk = of_get_property(np, "brg-frequency", NULL);
-> +		if (!sysclk)
-> +			return -ENODEV;
-> +	} else {
+On Wed, Dec 19, 2007 at 02:54:09PM -0600, Kumar Gala wrote:
+> 
+> On Dec 19, 2007, at 2:38 PM, Anton Vorontsov wrote:
+> 
+> >Also rename "fsl_spi" to "fsl,spi".
+> >
+> >Per http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048388.html
+> >
+> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >---
+> >arch/powerpc/boot/dts/mpc8313erdb.dts    |    3 +--
+> >arch/powerpc/boot/dts/mpc832x_mds.dts    |    6 ++----
+> >arch/powerpc/boot/dts/mpc832x_rdb.dts    |    6 ++----
+> >arch/powerpc/boot/dts/mpc8349emitx.dts   |    3 +--
+> >arch/powerpc/boot/dts/mpc8349emitxgp.dts |    3 +--
+> >arch/powerpc/boot/dts/mpc834x_mds.dts    |    3 +--
+> >arch/powerpc/boot/dts/mpc836x_mds.dts    |    6 ++----
+> >arch/powerpc/boot/dts/mpc8568mds.dts     |    6 ++----
+> >arch/powerpc/sysdev/fsl_soc.c            |    2 +-
+> >9 files changed, 13 insertions(+), 25 deletions(-)
+> 
+> 
+> can you add cell-index as well.
 
-You should use get_brgfreq() instead (and fix the legacy match to find 
-qe as well as soc nodes).
+Sure. Will do tomorrow since here is night already. ;-)
 
--Scott
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
