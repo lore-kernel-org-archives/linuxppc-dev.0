@@ -1,23 +1,12 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 80A36DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 10:20:49 +1100 (EST)
-Received: from ash.ozlabs.ibm.com (bh02i525f01.au.ibm.com [202.81.18.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 59611368004
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 10:20:49 +1100 (EST)
-Date: Wed, 19 Dec 2007 10:20:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: Raising list size limit
-Message-Id: <20071219102043.ea8214e1.sfr@canb.auug.org.au>
-In-Reply-To: <20071218143627.94f76142.sfr@canb.auug.org.au>
-References: <20071218143627.94f76142.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__19_Dec_2007_10_20_43_+1100_H6PRKHy5Orqo+jx."
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 19 Dec 2007 11:04:33 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Add missing copyright notice for dumptrees.c
+Message-ID: <20071219000433.GD12254@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__19_Dec_2007_10_20_43_+1100_H6PRKHy5Orqo+jx.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When I released libfdt, I forgot to add a copyright notice to
+dumptrees.c (probably because the program is so trivial).  Apparently
+the lack causes trouble for Debian, so this patch adds one.  I've gone
+through the git history and double checked that no-one has touched
+this file except me (and I barely have myself since its initial
+commit).
 
-On Tue, 18 Dec 2007 14:36:27 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> I am considering raising the limit on the size of postings to 400k.  Does
-> anyone have a real problem with this?  Limiting message size was done to
-> limit the damage of larges spams (and we don;t get very many of those on
-> the list) and to ease the pain for people downloading emails over a slow
-> (like dialup) link (and are there many of those left?).
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-OK, this is done now.  Do your worst :-)
+Index: dtc/tests/dumptrees.c
+===================================================================
+--- dtc.orig/tests/dumptrees.c	2007-12-19 10:58:28.000000000 +1100
++++ dtc/tests/dumptrees.c	2007-12-19 10:59:58.000000000 +1100
+@@ -1,3 +1,24 @@
++/*
++ * dumptrees - utility for libfdt testing
++ *
++ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2006.
++ *
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
++ *                                                                   USA
++ */
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__19_Dec_2007_10_20_43_+1100_H6PRKHy5Orqo+jx.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHaFXPTgG2atn1QN8RAr5vAJ40NYuPIJ8CBQ9H6GwuXLXBq72VwACfWqkn
-8Fa+Rq2QqxXZ32LIy8O+dGo=
-=IHIJ
------END PGP SIGNATURE-----
-
---Signature=_Wed__19_Dec_2007_10_20_43_+1100_H6PRKHy5Orqo+jx.--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
