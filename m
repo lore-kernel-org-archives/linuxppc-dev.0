@@ -1,25 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC78BDDE42
+Return-Path: <pjmaiya@signal-networks.com>
+Received: from smtp.net4india.com (smtp.net4india.com [202.71.129.73])
+	by ozlabs.org (Postfix) with ESMTP id E8D99DDE9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Dec 2007 02:18:33 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1J50go-0001P9-6N
-	for linuxppc-embedded@ozlabs.org; Wed, 19 Dec 2007 07:18:30 -0800
-Message-ID: <14418941.post@talk.nabble.com>
-Date: Wed, 19 Dec 2007 07:18:30 -0800 (PST)
-From: greenlean <jmgomez@atc.ugr.es>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: some questions about XUP and the generation of ace file
-In-Reply-To: <c46c91d0708100937h50fb37fcgff2f66db6207e025@mail.gmail.com>
+	Thu, 20 Dec 2007 05:13:15 +1100 (EST)
+Received: from [61.95.204.104] (helo=signal-networks.com)
+	by smtp.net4india.com with esmtp (Exim 4.54) id 1J4yZl-0004cB-0w
+	for linuxppc-embedded@ozlabs.org; Wed, 19 Dec 2007 18:33:05 +0530
+Received: from pjmaiya ([192.168.1.70])
+	by signal-networks.com (mail.signal-networks.com [192.168.1.1])
+	(MDaemon Standard v9.5.6) with ESMTP id md50000169777.msg
+	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Dec 2007 18:41:31 +0530
+Message-ID: <008701c84240$aae6c610$4601a8c0@signet>
+From: "pjmaiya" <pjmaiya@signal-networks.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: tiny login
+Date: Wed, 19 Dec 2007 18:41:29 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <c46c91d0708100613m61d8a6d9gc4ca8b379e59fca6@mail.gmail.com>
-	<fa686aa40708100714m469fb7bdm3757ccf35f6a97db@mail.gmail.com>
-	<c46c91d0708100937h50fb37fcgff2f66db6207e025@mail.gmail.com>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0084_01C8426E.C48BEF40"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,181 +28,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Hi windstorm,
+------=_NextPart_000_0084_01C8426E.C48BEF40
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Have you correct the error, you get when generating the ace file?? I'm
-trying to build the linux system for the XUPV2P board, and I have the same
-error:
+hi,
+I am using tiny login provided by montavista. Binaries already obtained =
+from tool provided from montavista.We are able to add only 10 users. But =
+I need to add more than 10 users.
+I have already downloaded free open source for tinylogin =
+(tinylogin-1.4). Can we modifiy this source code of this version and =
+support users more than 10??
+If yes, can somebody inform step to build tiny login and installation =
+method.
 
-Using GenACE option file : xupGenace.opt
-Error: Executable zImage.elf does not contain start address..
+thanx in advance
+pjmaiya
+------=_NextPart_000_0084_01C8426E.C48BEF40
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-As you and Xilinx said in the answer
-(http://www.xilinx.com/support/answers/23192.htm) my genace.tcl file is
-patched, and it uses de powerPC objdump.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1601" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>hi,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I am using tiny login provided by =
+montavista.=20
+Binaries already obtained from tool provided from montavista.We are able =
+to add=20
+only 10 users. But&nbsp;I need to add more than 10 users.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I have already&nbsp;downloaded free =
+open source for=20
+tinylogin (tinylogin-1.4). Can we modifiy this source code of this =
+version and=20
+support users more than 10??</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>If yes, can somebody inform step to =
+build tiny=20
+login and installation method.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>thanx in advance</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>pjmaiya</FONT></DIV></BODY></HTML>
 
-I have tryed to use the ppc_4xx-objdump cross tool of ELDK instead of the
-powerpc-eabi-objdump that is used in the genace.tcl file, and the result was
-an error:
-
-***********
-Executing xmd script : /opt/Xilinx91i/EDK91i/data/xmd/genace.tcl
-
-#######################################################################
-XMD GenACE utility. Generate SystemACE File from bit/elf/data Files
-#######################################################################
-Using GenACE option file : xupGenace.opt
-GenACE Options:
-        Board      : user
-        Jtag Devs  : xc2vp30
-        FPGA pos   : 1
-        JPROG      : true
-        HW File    : implementation/download.bit
-        ACE File   : system.ace
-        nCPUs      : 1
-
-        Processor ppc_hw_1 Information
-                Debug opt : -debugdevice devicenr 1 cpunr 1
-                ELF files : zImage.elf
-                Start PC Address : 0x00400000
-
-############################################################
-Converting Bitstream 'implementation/download.bit' to SVF file
-'implementation/download.svf'
-Executing 'impact -batch bit2svf.scr'
-
-Copying implementation/download.svf File to  system.svf File
-
-
-############################################################
-Converting ELF file 'zImage.elf' to SVF file 'zImage.svf'
-Error: E02 Failed to download ELF file
-
-ERROR(1053): UNABLE to Read Elf File. The Elf File Maybe Corrupted
-        : zImage.elf
-
-
-*********
-
-
-
-but the Error:executable zImage.elf does not contain start address.. didn't
-appear. And the compiler assign the address  0x00400000...
-
-This error is the same, that xmd told me if I try to download directly the
-linux kernel to the board, maybe there is any relation...
-
-I don't know what is happening...
-
-Any info or help???
-
-
-
-windstorm wrote:
-> 
-> 1 it's strange. the ns16550.c do exist in the arch/ppc/boot/
-> directory, not arch/ppc/boot/common. I just download the source
-> yesterday.
-> 
-> 2 Can you show me some reference about the "small bootloader"? Or any
-> web material about it?
-> 
-> 2007/8/10, Grant Likely <grant.likely@secretlab.ca>:
->> On 8/10/07, windstorm <likunarmstrong@gmail.com> wrote:
->> > Hello all:
->> >
->> > I am trying to transfer the Linux onto XUP board. The kernel source I
->> > used is from the git trees from andrei konovalov or grant likely. But
->> > I encounter two questions now.
->> >
->> > 1 Generally, I should correct the kernel source file
->> > arch/ppc/boot/common/ns16550.c, In that file, changing SERIAL_BAUD
->> > from 9600 to 38400  makes the bootloader talk at 38400. I always do it
->> > when I use standard kernel source. But this time I found out that the
->> > ns16550.c's path is arch/ppc/boot/, not arch/ppc/boot/common/, and
->> > there was no "SERIAL_BAUD" string any more. So, how can I control the
->> > baud rate?
->>
->> ???
->>
->> I don't know what you're referring to.  ns16550.c is in
->> arch/ppc/boot/common on my tree, and it still contains the SERIAL_BAUD
->> #define.
->>
->> >
->> > 2 I have compiled the kernel and obtained a Image.elf whose size is
->> > 1.7MB, and then it's time for creating a system.ace file which I can
->> > put onto a compact flash card.  I Changed the file xupGenace.opt like
->> > the follow:
->>
->> You can do this, but I don't think it's a particularly good idea.
->> Binding the kernel image into an ACE file results in a *very* large
->> ace file, and it's slow.  Consider the fact that doing it that way
->> means that you're transferring the entire 1.7MB image via JTAG.
->>
->> I've also seem problems where DDR isn't fully initialized before the
->> SystemACE tries to transfer the image which results in a non-booting
->> system.
->>
->> What I do, is I've got a small bootloader that lives in BRAM and is
->> just smart enough to load an elf file off of the CF card.  If I can
->> get permission to do so, I'll publish the source for my utility.
->>
->> >
->> > -jprog
->> > -board user
->> > -target ppc_hw
->> > -hw ./implementation/download.bit
->> > -elf zImage.elf
->> > -configdevice devicenr 1 idcode 0x1127e093 irlength 14 partname xc2vp30
->> > -debugdevice devicenr 1 cpunr 1
->> > -ace system.ace
->> >
->> > and executed the command: xmd -tcl genace.tcl -opt genace.opt
->> >
->> > and the result I saw is:  Using GenACE option file : genace.opt
->> > Error: Executable zImage.elf does not contain start address..
->> >
->> > I examine the information by google, some said that it's the bug of
->> > development tools without sp, but both my ISE and EDK was patched.
->> > Others said that it's because of the "mb-objdump", we should chage it
->> > into "powerpc-eaci-objdump", and actually I had done this correction.
->> > BUT, the error still here.
->> >
->> > Could anyone please to help me about this question? I will be very
->> grateful.
->>
->> Very odd.  I haven't seen this problem myself so I can't be much help.
->> sorry.
->>
->> >
->> > BTW, could any kind person send any basic config file, which had been
->> > proved that the kernel compiled based on it could work good on XUP
->> > board?
->>
->> I don't have that board, sorry
->>
->> g.
->>
->> --
->> Grant Likely, B.Sc., P.Eng.
->> Secret Lab Technologies Ltd.
->> grant.likely@secretlab.ca
->> (403) 399-0195
->>
-> 
-> 
-> -- 
-> web: http://www.forwind.cn
-> msn: likunarmstrong at hotmail.com
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/some-questions-about-XUP-and-the-generation-of-ace-file-tp12090990p14418941.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+------=_NextPart_000_0084_01C8426E.C48BEF40--
