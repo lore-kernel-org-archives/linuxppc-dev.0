@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D3F85DDFA2
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:07:54 +1100 (EST)
-Message-ID: <47698826.4040209@freescale.com>
-Date: Wed, 19 Dec 2007 15:07:50 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 0/4] device_type/compatible cleanups
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7B0F8DDFE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:10:39 +1100 (EST)
+Date: Thu, 20 Dec 2007 00:12:50 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 4/4] [POWERPC] fsl_spi_init and users: stop using
+	device_type = "spi"
+Message-ID: <20071219211250.GA21416@localhost.localdomain>
 References: <20071219203447.GA18285@localhost.localdomain>
-	<47698054.1060909@freescale.com>
-	<20071219204853.GA20972@localhost.localdomain>
-In-Reply-To: <20071219204853.GA20972@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	<20071219203817.GD20861@localhost.localdomain>
+	<47698773.1010004@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47698773.1010004@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Wed, Dec 19, 2007 at 02:34:28PM -0600, Scott Wood wrote:
->> Anton Vorontsov wrote:
->>> Scott, I didn't add "fsl,cpm-muram" stuff, it just doesn't make
->>> sense now: qe and cpm anyway using different code base.
->> That should change.
+On Wed, Dec 19, 2007 at 03:04:51PM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> Sure. When that will change, then it will be sane to change the users,
-> I think. ;-) Not the vice versa.
+> >diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> >index 3cf84d0..91bac51 100644
+> >--- a/arch/powerpc/sysdev/fsl_soc.c
+> >+++ b/arch/powerpc/sysdev/fsl_soc.c
+> >@@ -1242,7 +1242,7 @@ int __init fsl_spi_init(struct spi_board_info 
+> >*board_infos,
+> > 	}
+> > 
+> > 	for (np = NULL, i = 1;
+> >-	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
+> >+	     (np = of_find_compatible_node(np, NULL, "fsl,spi")) != NULL;
+> 
+> Can you keep the original code around to look for older device trees that 
+> are wrong?  Backwards compatibility is important.  I don't want to have to 
+> update the device tree just because I update the kernel.
 
-The device tree should describe the hardware, not the degree of 
-unnecessary code forking/duplication currently present in Linux.
+I though about it. Is your device tree source out of tree? Otherwise
+it should be trivial to upgrade the dtb, instead of producing cruft in
+the kernel. I vote for less legacy code, but lets see what others will
+say. So far count is 1:1. ;-)
 
--Scott
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
