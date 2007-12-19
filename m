@@ -1,21 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8DBEEDDE43
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:00:11 +1100 (EST)
-Date: Thu, 20 Dec 2007 00:02:22 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 57F96DDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:04:58 +1100 (EST)
+Message-ID: <47698773.1010004@freescale.com>
+Date: Wed, 19 Dec 2007 15:04:51 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
 Subject: Re: [PATCH 4/4] [POWERPC] fsl_spi_init and users: stop using
 	device_type = "spi"
-Message-ID: <20071219210222.GA21147@localhost.localdomain>
 References: <20071219203447.GA18285@localhost.localdomain>
 	<20071219203817.GD20861@localhost.localdomain>
-	<6B8F6F4B-1FD2-4A11-B4F6-A1A0ECD7342B@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <6B8F6F4B-1FD2-4A11-B4F6-A1A0ECD7342B@kernel.crashing.org>
+In-Reply-To: <20071219203817.GD20861@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 19, 2007 at 02:54:09PM -0600, Kumar Gala wrote:
-> 
-> On Dec 19, 2007, at 2:38 PM, Anton Vorontsov wrote:
-> 
-> >Also rename "fsl_spi" to "fsl,spi".
-> >
-> >Per http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048388.html
-> >
-> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> >---
-> >arch/powerpc/boot/dts/mpc8313erdb.dts    |    3 +--
-> >arch/powerpc/boot/dts/mpc832x_mds.dts    |    6 ++----
-> >arch/powerpc/boot/dts/mpc832x_rdb.dts    |    6 ++----
-> >arch/powerpc/boot/dts/mpc8349emitx.dts   |    3 +--
-> >arch/powerpc/boot/dts/mpc8349emitxgp.dts |    3 +--
-> >arch/powerpc/boot/dts/mpc834x_mds.dts    |    3 +--
-> >arch/powerpc/boot/dts/mpc836x_mds.dts    |    6 ++----
-> >arch/powerpc/boot/dts/mpc8568mds.dts     |    6 ++----
-> >arch/powerpc/sysdev/fsl_soc.c            |    2 +-
-> >9 files changed, 13 insertions(+), 25 deletions(-)
-> 
-> 
-> can you add cell-index as well.
+Anton Vorontsov wrote:
 
-Sure. Will do tomorrow since here is night already. ;-)
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index 3cf84d0..91bac51 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -1242,7 +1242,7 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
+>  	}
+>  
+>  	for (np = NULL, i = 1;
+> -	     (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
+> +	     (np = of_find_compatible_node(np, NULL, "fsl,spi")) != NULL;
 
-Thanks,
+Can you keep the original code around to look for older device trees that are 
+wrong?  Backwards compatibility is important.  I don't want to have to update 
+the device tree just because I update the kernel.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Timur Tabi
+Linux kernel developer at Freescale
