@@ -1,24 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id C4A66DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 08:38:25 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so856720anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 13:38:24 -0800 (PST)
-Message-ID: <fa686aa40712191338x8c054c2qe0d0ce7aea70cd49@mail.gmail.com>
-Date: Wed, 19 Dec 2007 14:38:23 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 4/4] [POWERPC] fsl_spi_init and users: stop using
-	device_type = "spi"
-In-Reply-To: <20071219211250.GA21416@localhost.localdomain>
+Return-Path: <perka@dtek.chalmers.se>
+Received: from anubis.medic.chalmers.se (anubis.medic.chalmers.se
+	[129.16.30.218]) by ozlabs.org (Postfix) with ESMTP id 26120DDE46
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 09:15:33 +1100 (EST)
+Message-ID: <33847.193.11.192.156.1198102530.squirrel@webmail.chalmers.se>
+In-Reply-To: <67A10FA1-8F9D-4A87-BB67-C04EC9FA5BEF@kernel.crashing.org>
+References: <5797.213.15.68.47.1198072613.squirrel@webmail.chalmers.se>
+	<67A10FA1-8F9D-4A87-BB67-C04EC9FA5BEF@kernel.crashing.org>
+Date: Wed, 19 Dec 2007 23:15:30 +0100 (CET)
+Subject: Re: Linux on Freescale e200
+From: "Per-Erik Johansson" <perka@dtek.chalmers.se>
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071219203447.GA18285@localhost.localdomain>
-	<20071219203817.GD20861@localhost.localdomain>
-	<47698773.1010004@freescale.com>
-	<20071219211250.GA21416@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain;charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,51 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/19/07, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> On Wed, Dec 19, 2007 at 03:04:51PM -0600, Timur Tabi wrote:
-> > Anton Vorontsov wrote:
-> >
-> > >diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> > >index 3cf84d0..91bac51 100644
-> > >--- a/arch/powerpc/sysdev/fsl_soc.c
-> > >+++ b/arch/powerpc/sysdev/fsl_soc.c
-> > >@@ -1242,7 +1242,7 @@ int __init fsl_spi_init(struct spi_board_info
-> > >*board_infos,
-> > >     }
-> > >
-> > >     for (np = NULL, i = 1;
-> > >-         (np = of_find_compatible_node(np, "spi", "fsl_spi")) != NULL;
-> > >+         (np = of_find_compatible_node(np, NULL, "fsl,spi")) != NULL;
-> >
-> > Can you keep the original code around to look for older device trees that
-> > are wrong?  Backwards compatibility is important.  I don't want to have to
-> > update the device tree just because I update the kernel.
+>> Hi
+>>
+>> I'm wondering if someone has ever tried to get Linux running on a
+>> Freescale e200 core?
+>> I found a patch to the Linux kernel from back in 2005:
+>> (http://linux.derkeiler.com/Mailing-Lists/Kernel/2005-06/5731.html)
+>> And it is listed as a processor type in Linux-2.6.23.11
+>> I know that there has been some confusion about e200 and e500 cores,
+>> old
+>> e200 renamed to e500, but from what I understand the e200 core now
+>> listed
+>> in the kernel is the one currently being used in MPC55xx
+>>
+>> I'm having a MPC5554, e200z6 core, that I'm supposed to get Linux
+>> running
+>> on (master thesis) and any pointers and tips are appreciated.
+>> Just finished porting/tweaking the Redboot boot loader, and I'm now
+>> moving
+>> on to the Linux (porting?) part.
 >
-> I though about it. Is your device tree source out of tree? Otherwise
-> it should be trivial to upgrade the dtb, instead of producing cruft in
-> the kernel. I vote for less legacy code, but lets see what others will
-> say. So far count is 1:1. ;-)
-
-I agree with Timur.  Please keep the test for the older names.  Some
-platforms have the dtb in the same sector as u-boot, making it more
-dangerous to reflash.
-
-g.
-
-> --
-> Anton Vorontsov
-> email: cbou@mail.ru
-> backup email: ya-cbou@yandex.ru
-> irc://irc.freenode.net/bd2
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> I'd suggest looking at getting u-boot running instead since that's we
+> use on the majority of freescale PPCs.
+>
+> We did a port a while back to the e200.. so most of the basic bits
+> should be there.  There might be some bit rot from its like of usage.
+>
+> What peripheral set are you looking to get working on the 5554?
+>
+> - k
 >
 
+Had a look into UBoot at first but didn't find any port for the
+MPC55xx/e200, so when we stumbled upon a "working" ecos/redboot port we
+went with that..
+Do you know where I could find the uboot port for the e200?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+We have phycore dev. kit
+(http://www.phytec.com/products/rdk/PowerPC/phyCORE-MPC5554.html)
+Just supposed to get it up and running, so peripherals will just be
+serial, ethernet and maybe CAN.
+
+/ Per-Erik
