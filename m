@@ -1,25 +1,18 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from mail.g-house.de (ns2.g-housing.de [81.169.133.75])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 16783DDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 09:45:34 +1100 (EST)
-Received: from [89.54.187.28] (helo=sheep.housecafe.de)
-	by mail.g-house.de with esmtpsa (TLS-1.0:RSA_AES_256_CBC_SHA1:32)
-	(Exim 4.63) (envelope-from <lists@nerdbynature.de>)
-	id 1J57Bf-0007Nd-Sa
-	for linuxppc-dev@ozlabs.org; Wed, 19 Dec 2007 23:14:48 +0100
-Received: from sheep.housecafe.de ([192.168.10.10])
-	by sheep.housecafe.de with esmtp (Exim 4.68)
-	(envelope-from <lists@nerdbynature.de>) id 1J57BX-0007Fe-SY
-	for linuxppc-dev@ozlabs.org; Wed, 19 Dec 2007 23:14:40 +0100
-Date: Wed, 19 Dec 2007 23:14:39 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Oops: Kernel access of bad area
-Message-ID: <alpine.DEB.0.99999.0712192301220.6696@sheep.housecafe.de>
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 8003ADDE16
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 09:59:39 +1100 (EST)
+Message-ID: <4769A0A5.70000@mvista.com>
+Date: Wed, 19 Dec 2007 15:52:21 -0700
+From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=UTF-8
+To: Zhang Wei <wei.zhang@freescale.com>
+Subject: Re: [0/3] Add RapidIO support to powerpc architecture with memory
+	mapping
+References: <11975326982876-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <11975326982876-git-send-email-wei.zhang@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,44 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Zhang Wei wrote:
+> Hi,
+> 
+> Those patches add RapidIO support to powerpc archiecture with
+> memory mapping as below:
+> 
+> [1/3] Copy the arch/ppc RapidIO support to arch/powerpc
+> [2/3] Make the arch/powerpc RapidIO support workable with of-device
+>       and add memory mapping support.
+Patch 2/3 seems to have gone missing. Was it sent?
 
-I started some x11 application (here: firefox) through an ssh connection 
-on a remote host and it crashed somehow. OK, no biggie, killed the 
-application and be done with it. However, I noticed that the load of the 
-machine is now constantly at 7. It's an iBook G4, has nothing to do, 
-disks, cpu, netwokr is idle and load is usually < 1. Now it's not
-slow to work or anyhow sluggish, but only the load is at 7 after the 
-application crashed. When I looked into dmesg I saw:
+Randy V.
 
-[84983.750977] Unable to handle kernel paging request for data at address 0x4815d000
-[84983.751046] Faulting instruction address: 0xc0012090
-[84983.751157] Oops: Kernel access of bad area, sig: 11 [#1]
-[84983.751178] PREEMPT PowerMac
-[84983.751214] Modules linked in: nls_iso8859_15 nls_cp850 vfat fat isofs nls_base zlib_inflate radeon drm snd_powermac snd_pcm snd_timer snd soundcore snd_page_alloc fuse firewire_ohci firewire_core crc_itu_t ide_cd cdrom ssb bcm43xx rng_core ieee80211softmac uninorth_agp ieee80211 ieee80211_crypt agpgart
-[84983.751750] NIP: c0012090 LR: c00165fc CTR: 00000080
-[84983.751786] REGS: cea65b30 TRAP: 0300   Not tainted  (2.6.24-rc5)
-[84983.751805] MSR: 00009032 <EE,ME,IR,DR>  CR: 24822282  XER: 00000000
-[84983.751946] DAR: 4815d000, DSISR: 40000000
-[84983.751965] TASK = ee372670[9138] 'firefox-bin' THREAD: cea64000
-[84983.751984] GPR00: e62b3a00 cea65be0 ee372670 4815d000 00000080 1bc0c181 4815d000 ffffffff
-[84983.752148] GPR08: 00010008 e62b3a00 00000000 c045f000 24822288 1002ea3c cea67690 ce954000
-[84983.752315] GPR16: c0420000 c03f6400 cea65cac cea65ca8 c0440000 ce974480 c07d7180 ceba2280
-[84983.752468] GPR24: e62b3a00 e62b3a50 4815d000 00000574 ceba2280 4815d000 1bc0c181 c07d7180
-[84983.752665] NIP [c0012090] __flush_dcache_icache+0x14/0x40
-[84983.752716] LR [c00165fc] update_mmu_cache+0x11c/0x120
-[...]
-
-This is the first time that this happened on this iBook, and it was not 
-reproducible so far (well, it happened just a few minutes ago). Is this 
-something to worry about? Or should I file this under "well, shit 
-happens"? Btw, this 2.6.24-rc5 is from Linus' -git tree (15.12.2007).
-
-Details and .config: http://nerdbynature.de/bits/2.6.24-rc5/
-
-Thanks,
-Christian.
--- 
-BOFH excuse #281:
-
-The co-locator cannot verify the frame-relay gateway to the ISDN server.
+> [3/3] Add the memory mapping support to rionet driver.
+> 
+> Best Regards,
+> Zhang Wei
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
