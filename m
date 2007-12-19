@@ -1,16 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 67A77DDE32
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 07:32:36 +1100 (EST)
-Date: Wed, 19 Dec 2007 23:34:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 0/4] device_type/compatible cleanups
-Message-ID: <20071219203447.GA18285@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2568DDDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 07:33:47 +1100 (EST)
+Subject: Re: [PATCH 11/20] [POWERPC] Wire up PCI on Bamboo board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <47691DE6.8050901@ru.mvista.com>
+References: <20071213073845.1D311DE053@ozlabs.org>
+	<47691DE6.8050901@ru.mvista.com>
+Content-Type: text/plain
+Date: Thu, 20 Dec 2007 07:26:07 +1100
+Message-Id: <1198095967.18908.33.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,20 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-Here are few cleanups purposed by David Gibson and Scott Wood:
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048388.html
+On Wed, 2007-12-19 at 16:34 +0300, Valentine Barshak wrote:
 
-Patches are well split and bisect-able.
+> > --- linux-work.orig/arch/powerpc/boot/dts/bamboo.dts	2007-12-10 15:56:59.000000000 +1100
+> > +++ linux-work/arch/powerpc/boot/dts/bamboo.dts	2007-12-10 16:39:51.000000000 +1100
+> > @@ -239,10 +239,48 @@
+> >  				zmii-channel = <1>;
+> >  			};
+> >  		};
+> > +
+> > +		PCI0: pci@ec000000 {
+> > +			device_type = "pci";
+> > +			#interrupt-cells = <1>;
+> > +			#size-cells = <2>;
+> > +			#address-cells = <3>;
+> > +			compatible = "ibm,plb440ep-pci", "ibm,plb-pci";
+> > +			primary;
+> > +			reg = <0 eec00000 8	/* Config space access */
+> > +			       0 eed80000 4	/* IACK */
+> > +			       0 eed80000 4	/* Special cycle */
+> > +			       0 ef480000 40>;	/* Internal registers */
+> 
+> Why ef480000 here? IIRC, the docs say it should be ef400000, while 
+> ef400040 - ef4fffff are reserved and can mirror local registers.
 
-Scott, I didn't add "fsl,cpm-muram" stuff, it just doesn't make
-sense now: qe and cpm anyway using different code base.
+Dunno... probably a typo, though it worked :-) I'll fix it up.
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Ben.
