@@ -1,12 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Dec 2007 11:04:33 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Add missing copyright notice for dumptrees.c
-Message-ID: <20071219000433.GD12254@localhost.localdomain>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 2BFD7DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 11:12:10 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [POWERPC 00/18] cell patches for 2.6.25
+Date: Wed, 19 Dec 2007 01:11:57 +0100
+References: <20071218174852.112644000@arndb.de>
+In-Reply-To: <20071218174852.112644000@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712190111.58105.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,47 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When I released libfdt, I forgot to add a copyright notice to
-dumptrees.c (probably because the program is so trivial).  Apparently
-the lack causes trouble for Debian, so this patch adds one.  I've gone
-through the git history and double checked that no-one has touched
-this file except me (and I barely have myself since its initial
-commit).
+On Tuesday 18 December 2007, arnd@arndb.de wrote:
+> Paul, if there are no objections to these patches, please pull them from
+>=20
+> =A0 git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2=
+=2E6.25
+>=20
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+As Michael just told me on IRC, he's still working on a newer version of
+patches 4-10. I consequently updated my git tree to only contain patches
+1-3 and 11-18 of this series.
 
-Index: dtc/tests/dumptrees.c
-===================================================================
---- dtc.orig/tests/dumptrees.c	2007-12-19 10:58:28.000000000 +1100
-+++ dtc/tests/dumptrees.c	2007-12-19 10:59:58.000000000 +1100
-@@ -1,3 +1,24 @@
-+/*
-+ * dumptrees - utility for libfdt testing
-+ *
-+ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2006.
-+ *
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of the
-+ * License, or (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-+ *                                                                   USA
-+ */
- #include <stdio.h>
- #include <stdlib.h>
- #include <unistd.h>
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+	Arnd <><
