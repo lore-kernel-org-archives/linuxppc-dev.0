@@ -1,13 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: More patches added to for-2.6.25 and master branches of
-	powerpc.git
-In-reply-to: <18282.19253.485799.233476@cargo.ozlabs.ibm.com> 
-References: <18282.19253.485799.233476@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Dec 2007 10:22:29 +1100
-Message-ID: <6232.1198192949@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 93054DDDF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:41:41 +1100 (EST)
+Subject: patch
+	pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources.patch
+	added to gregkh-2.6 tree
+To: benh@kernel.crashing.org, greg@kroah.com, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+From: <gregkh@suse.de>
+Date: Thu, 20 Dec 2007 15:37:16 -0800
+In-Reply-To: <20071210063216.89DBBDDE1E@ozlabs.org>
+Message-ID: <11981938363358@kroah.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,173 +22,230 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus,
 
-Can you take the crash shutdown hook patches as well?
+This is a note to let you know that I've just added the patch titled
 
-http://patchwork.ozlabs.org/linuxppc/patch?person=414&id=15546
-http://patchwork.ozlabs.org/linuxppc/patch?person=414&id=15547
+     Subject: PCI: Fix bus resource assignment on 32 bits with 64b resources
 
-Mikey
+to my gregkh-2.6 tree.  Its filename is
+
+     pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
-In message <18282.19253.485799.233476@cargo.ozlabs.ibm.com> you wrote:
-> Andre Detsch (1):
->       [POWERPC] cell: safer of_has_vicinity routine
-> 
-> Balbir Singh (1):
->       [POWERPC] Fake NUMA emulation for PowerPC
-> 
-> Benjamin Herrenschmidt (20):
->       [POWERPC] pci32: Remove bogus alignment message
->       [POWERPC] pci32: Use generic pci_assign_unassign_resources
->       [POWERPC] pci32: Remove PowerMac P2P bridge IO hack
->       [POWERPC] pci32: Add flags modifying the PCI code behaviour
->       [POWERPC] pci32: Remove obsolete PowerMac bus number hack
->       [POWERPC] pci32: Add platform option to enable /proc PCI domains
->       [POWERPC] Merge pcibios_resource_to_bus/bus_to_resource
->       [POWERPC] Merge PCI resource fixups
->       [POWERPC] Merge PCI resource allocation & assignment
->       [POWERPC] fix iSeries PCI resource management
->       [POWERPC] Updates/fixes to 32 bits pcibios_enable_device()
->       [POWERPC] Merge 32 and 64 bits pcibios_enable_device
->       [POWERPC] Fixup powermac enable device hook
->       [POWERPC] Clear pci_probe_only on 64 bits PowerMac
->       [POWERPC] Various fixes to pcibios_enable_device()
->       [POWERPC] Enable self-view of the HT host bridge on PowerMac G5
->       [POWERPC] Improve resource setup of PowerMac G5 HT bridge
->       [POWERPC] Fixup skipping of PowerMac PCI<->PCI bridge "closed" resource
-s
->       [POWERPC] Disable PCI IO/Mem on a device when resources can't be alloca
-ted
->       [POWERPC] Fix PCI IRQ fallback code to not map IRQ 0
-> 
-> Bob Nelson (1):
->       [POWERPC] OProfile: fix cbe pm signal routing problem
-> 
-> Cyrill Gorcunov (1):
->       [POWERPC] CHRP: Fix possible NULL pointer dereference
-> 
-> David Gibson (2):
->       [POWERPC] Merge dtc upstream source
->       [POWERPC] Use embedded dtc in kernel builds
-> 
-> Grant Likely (1):
->       [POWERPC] Add machine initcall macros
-> 
-> Ishizaki Kou (3):
->       [POWERPC] cell: add missing '\n'
->       [POWERPC] Cleanup calling mmio_nvram_init
->       [POWERPC] celleb: Split machine definition
-> 
-> Jeremy Kerr (6):
->       [POWERPC] cell: export force_sig_info()
->       [POWERPC] cell: handle kernel SLB setup in spu_base.c
->       [POWERPC] cell: use spu_load_slb for SLB setup
->       [POWERPC] cell: add spu_64k_pages_available() check
->       [POWERPC] cell: handle SPE kernel mappings that cross segment boundarie
-s
->       [POWERPC] cell: catch errors from sysfs_create_group()
-> 
-> Jochen Friedrich (2):
->       [POWERPC] Add support for PORTA and PORTB odr registers
->       [POWERPC] Move CPM command handling into the cpm drivers
-> 
-> Johannes Berg (3):
->       [POWERPC] adb: Replace sleep notifier with platform driver suspend/resu
-me hooks
->       [POWERPC] via-pmu: Kill sleep notifiers completely
->       [POWERPC] powermac: Use generic suspend code
-> 
-> Jon Loeliger (3):
->       [POWERPC] 8xxx: Convert #include of asm/of_{platform, device}.h into li
-nux/of_{platform, device}.h.
->       [POWERPC] 86xx: Add aliases node to 8641hpcn DTS file.
->       [POWERPC] cell: Convert #include of asm/of_{platform, device}.h into li
-nux/of_{platform, device}.h.
-> 
-> Julia Lawall (3):
->       [POWERPC] arch/ppc: Remove an unnecessary pci_dev_put
->       [POWERPC] arch/powerpc: Add missing of_node_put
->       [POWERPC] cell/cbe_regs.c: Add missing of_node_put
-> 
-> Kevin Corry (1):
->       [POWERPC] perfmon2: make pm_interval register read/write
-> 
-> Kumar Gala (5):
->       [POWERPC] Add SPRN for Embedded registers specified in PowerISA 2.04
->       [POWERPC] Emulate isel (Integer Select) instruction
->       [POWERPC] FSL: I2C device tree cleanups
->       [POWERPC] FSL: enet device tree cleanups
->       [POWERPC] FSL: Added aliases node to device trees
-> 
-> Li Yang (5):
->       [POWERPC] add e300c4 entry to cputable
->       [POWERPC] ipic: add new interrupts introduced by new chip
->       [POWERPC] 83xx: Add platform support for MPC837x MDS board
->       [POWERPC] 83xx: Add MPC837x MDS default kernel configuration
->       [POWERPC] ipic: ack only for edge interrupts
-> 
-> Li Zefan (1):
->       [POWERPC] Don't cast a struct pointer to list_head pointer
-> 
-> Lucas Woods (2):
->       [POWERPC] arch/powerpc: Remove duplicate includes
->       [POWERPC] arch/ppc: Remove duplicate includes
-> 
-> Michael Ellerman (1):
->       [POWERPC] Implement pci_set_dma_mask() in terms of the dma_ops
-> 
-> Milton Miller (6):
->       [POWERPC] Push down or eliminate smp_processor_id calls in xics code
->       [POWERPC] init_decrementer_clockevent can be static __init
->       [POWERPC] Use __get_cpu_var in time.c
->       [POWERPC] Timer interrupt: use a struct for two per_cpu varables
->       [POWERPC] Depend on ->initialized in calc_steal_time
->       [POWERPC] Optimize account_system_vtime
-> 
-> Olof Johansson (3):
->       [POWERPC] MPIC: Minor optimization of ipi handler
->       [POWERPC] pasemi: Implement MSI support
->       [POWERPC] holly.c: Remove unnecessary include of linux/ide.h
-> 
-> Paul Mackerras (5):
->       [POWERPC] Convert media-bay.c to use the kthread API
->       [POWERPC] Convert adb.c to use kthread API and not spin on ADB requests
->       [POWERPC] Convert therm_pm72.c to use the kthread API
->       [POWERPC] Convert therm_windtunnel.c to use the kthread API
->       [POWERPC] Fix sleep on powerbook 3400
-> 
-> Scott Wood (5):
->       [POWERPC] 8xx: Convert mpc866ads to the new device binding.
->       [POWERPC] 83xx: mpc834x_mds: Fix whitespace and call of_platform_bus_pr
-obe().
->       [POWERPC] 83xx: mpc8313erdb: Fix whitespace.
->       [POWERPC] wrapper: Rename offset in offset_devp()
->       [POWERPC] wrapper: Treat NULL as root node in devp_offset; add devp_off
-set_find()
-> 
-> Stephen Rothwell (2):
->       [POWERPC] iSeries: Fix unregistering HV event handlers
->       [POWERPC] Stop the TOC overflowing for large builds
-> 
-> Timur Tabi (4):
->       [POWERPC] 86xx: fix guts_set_dmacr() and add guts_set_pmuxcr_dma() to i
-mmap_86xx.h
->       [POWERPC] QE: change qe_setbrg() to take an enum qe_clock instead of an
- integer
->       [POWERPC] qe: add function qe_clock_source()
->       [POWERPC] ucc_geth: use rx-clock-name and tx-clock-name device tree pro
-perties
-> 
-> joe@perches.com (4):
->       [POWERPC] arch/powerpc/: Spelling fixes
->       [POWERPC] include/asm-powerpc/: Spelling fixes
->       [POWERPC] arch/ppc/: Spelling fixes
->       [POWERPC] include/asm-ppc/: Spelling fixes
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+>From benh@ozlabs.org Sun Dec  9 22:32:23 2007
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 10 Dec 2007 17:32:15 +1100
+Subject: PCI: Fix bus resource assignment on 32 bits with 64b resources
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
+Message-ID: <20071210063216.89DBBDDE1E@ozlabs.org>
+
+
+The current pci_assign_unassigned_resources() code doesn't work properly
+on 32 bits platforms with 64 bits resources. The main reason is the use
+of unsigned long in various places instead of resource_size_t.
+
+This fixes it, along with some tricks to avoid casting to 64 bits on
+platforms that don't need it in every printk around.
+
+This is a pre-requisite for making powerpc use the generic code instead of
+its own half-useful implementation.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/pci/setup-bus.c |   64 ++++++++++++++++++++++++++++++------------------
+ include/linux/pci.h     |    4 +--
+ 2 files changed, 42 insertions(+), 26 deletions(-)
+
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -89,8 +89,9 @@ void pci_setup_cardbus(struct pci_bus *b
+ 		 * The IO resource is allocated a range twice as large as it
+ 		 * would normally need.  This allows us to set both IO regs.
+ 		 */
+-		printk("  IO window: %08lx-%08lx\n",
+-			region.start, region.end);
++		printk(KERN_INFO "  IO window: 0x%08lx-0x%08lx\n",
++		       (unsigned long)region.start,
++		       (unsigned long)region.end);
+ 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_0,
+ 					region.start);
+ 		pci_write_config_dword(bridge, PCI_CB_IO_LIMIT_0,
+@@ -99,8 +100,9 @@ void pci_setup_cardbus(struct pci_bus *b
+ 
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[1]);
+ 	if (bus->resource[1]->flags & IORESOURCE_IO) {
+-		printk("  IO window: %08lx-%08lx\n",
+-			region.start, region.end);
++		printk(KERN_INFO "  IO window: 0x%08lx-0x%08lx\n",
++		       (unsigned long)region.start,
++		       (unsigned long)region.end);
+ 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_1,
+ 					region.start);
+ 		pci_write_config_dword(bridge, PCI_CB_IO_LIMIT_1,
+@@ -109,8 +111,9 @@ void pci_setup_cardbus(struct pci_bus *b
+ 
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
+ 	if (bus->resource[2]->flags & IORESOURCE_MEM) {
+-		printk("  PREFETCH window: %08lx-%08lx\n",
+-			region.start, region.end);
++		printk(KERN_INFO "  PREFETCH window: 0x%08lx-0x%08lx\n",
++		       (unsigned long)region.start,
++		       (unsigned long)region.end);
+ 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_0,
+ 					region.start);
+ 		pci_write_config_dword(bridge, PCI_CB_MEMORY_LIMIT_0,
+@@ -119,8 +122,9 @@ void pci_setup_cardbus(struct pci_bus *b
+ 
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[3]);
+ 	if (bus->resource[3]->flags & IORESOURCE_MEM) {
+-		printk("  MEM window: %08lx-%08lx\n",
+-			region.start, region.end);
++		printk(KERN_INFO "  MEM window: 0x%08lx-0x%08lx\n",
++		       (unsigned long)region.start,
++		       (unsigned long)region.end);
+ 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_1,
+ 					region.start);
+ 		pci_write_config_dword(bridge, PCI_CB_MEMORY_LIMIT_1,
+@@ -145,7 +149,7 @@ pci_setup_bridge(struct pci_bus *bus)
+ {
+ 	struct pci_dev *bridge = bus->self;
+ 	struct pci_bus_region region;
+-	u32 l, io_upper16;
++	u32 l, bu, lu, io_upper16;
+ 
+ 	DBG(KERN_INFO "PCI: Bridge: %s\n", pci_name(bridge));
+ 
+@@ -159,7 +163,8 @@ pci_setup_bridge(struct pci_bus *bus)
+ 		/* Set up upper 16 bits of I/O base/limit. */
+ 		io_upper16 = (region.end & 0xffff0000) | (region.start >> 16);
+ 		DBG(KERN_INFO "  IO window: %04lx-%04lx\n",
+-				region.start, region.end);
++		    (unsigned long)region.start,
++		    (unsigned long)region.end);
+ 	}
+ 	else {
+ 		/* Clear upper 16 bits of I/O base/limit. */
+@@ -180,8 +185,9 @@ pci_setup_bridge(struct pci_bus *bus)
+ 	if (bus->resource[1]->flags & IORESOURCE_MEM) {
+ 		l = (region.start >> 16) & 0xfff0;
+ 		l |= region.end & 0xfff00000;
+-		DBG(KERN_INFO "  MEM window: %08lx-%08lx\n",
+-				region.start, region.end);
++		DBG(KERN_INFO "  MEM window: 0x%08lx-0x%08lx\n",
++		    (unsigned long)region.start,
++		    (unsigned long)region.end);
+ 	}
+ 	else {
+ 		l = 0x0000fff0;
+@@ -195,12 +201,18 @@ pci_setup_bridge(struct pci_bus *bus)
+ 	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, 0);
+ 
+ 	/* Set up PREF base/limit. */
++	bu = lu = 0;
+ 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
+ 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
+ 		l = (region.start >> 16) & 0xfff0;
+ 		l |= region.end & 0xfff00000;
+-		DBG(KERN_INFO "  PREFETCH window: %08lx-%08lx\n",
+-				region.start, region.end);
++#ifdef CONFIG_RESOURCES_64BIT
++		bu = region.start >> 32;
++		lu = region.end >> 32;
++#endif
++		DBG(KERN_INFO "  PREFETCH window: 0x%016llx-0x%016llx\n",
++		    (unsigned long long)region.start,
++		    (unsigned long long)region.end);
+ 	}
+ 	else {
+ 		l = 0x0000fff0;
+@@ -208,8 +220,9 @@ pci_setup_bridge(struct pci_bus *bus)
+ 	}
+ 	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
+ 
+-	/* Clear out the upper 32 bits of PREF base. */
+-	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, 0);
++	/* Set the upper 32 bits of PREF base & limit. */
++	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
++	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+ 
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
+@@ -323,8 +336,8 @@ static void pbus_size_io(struct pci_bus 
+ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long type)
+ {
+ 	struct pci_dev *dev;
+-	unsigned long min_align, align, size;
+-	unsigned long aligns[12];	/* Alignments from 1Mb to 2Gb */
++	resource_size_t min_align, align, size;
++	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
+ 	int order, max_order;
+ 	struct resource *b_res = find_free_bus_resource(bus, type);
+ 
+@@ -340,7 +353,7 @@ static int pbus_size_mem(struct pci_bus 
+ 		
+ 		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+ 			struct resource *r = &dev->resource[i];
+-			unsigned long r_size;
++			resource_size_t r_size;
+ 
+ 			if (r->parent || (r->flags & mask) != type)
+ 				continue;
+@@ -350,10 +363,10 @@ static int pbus_size_mem(struct pci_bus 
+ 			order = __ffs(align) - 20;
+ 			if (order > 11) {
+ 				printk(KERN_WARNING "PCI: region %s/%d "
+-				       "too large: %llx-%llx\n",
++				       "too large: 0x%016llx-0x%016llx\n",
+ 					pci_name(dev), i,
+-					(unsigned long long)r->start,
+-					(unsigned long long)r->end);
++				       (unsigned long long)r->start,
++				       (unsigned long long)r->end);
+ 				r->flags = 0;
+ 				continue;
+ 			}
+@@ -372,8 +385,11 @@ static int pbus_size_mem(struct pci_bus 
+ 	align = 0;
+ 	min_align = 0;
+ 	for (order = 0; order <= max_order; order++) {
+-		unsigned long align1 = 1UL << (order + 20);
+-
++#ifdef CONFIG_RESOURCES_64BIT
++		resource_size_t align1 = 1ULL << (order + 20);
++#else
++		resource_size_t align1 = 1U << (order + 20);
++#endif
+ 		if (!align)
+ 			min_align = align1;
+ 		else if (ALIGN(align + min_align, min_align) < align1)
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -309,8 +309,8 @@ struct pci_raw_ops {
+ extern struct pci_raw_ops *raw_pci_ops;
+ 
+ struct pci_bus_region {
+-	unsigned long start;
+-	unsigned long end;
++	resource_size_t start;
++	resource_size_t end;
+ };
+ 
+ struct pci_dynids {
+
+
+Patches currently in gregkh-2.6 which might be from benh@kernel.crashing.org are
+
+bad/battery-class-driver.patch
+driver/adb-convert-from-class_device-to-device.patch
+driver/kobject-convert-hvc_console-to-use-kref-not-kobject.patch
+driver/kobject-convert-hvcs-to-use-kref-not-kobject.patch
+driver/kobject-convert-icom-to-use-kref-not-kobject.patch
+pci/pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources.patch
+pci/pci-fix-warning-in-setup-res.c-on-32-bit-platforms-with-64-bit-resources.patch
+usb/usb-remove-ohci-useless-masking-unmasking-of-wdh-interrupt.patch
