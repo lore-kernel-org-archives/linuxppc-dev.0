@@ -1,12 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 21 Dec 2007 13:21:30 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Enable RTC for Ebony and Walnut
-Message-ID: <20071221022130.GI2665@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 02162DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 13:22:03 +1100 (EST)
+Date: Thu, 20 Dec 2007 10:48:29 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: jdl@jdl.com
+Subject: [DTC PATCH 2/2] Add support for binary includes.
+Message-ID: <20071220164829.GB32193@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,210 +23,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch extends the Ebony and Walnut platform code to instantiate
-the existing ds1742 RTC class driver for the DS1743 RTC/NVRAM chip
-found on both those boards.  The patch uses a helper function to scan
-the device tree and instantiate the appropriate platform_device based
-on it, so it should be easy to extend for other boards which have mmio
-mapped RTC chips.
+A property's data can be populated with a file's contents
+as follows:
 
-Along with this, the device tree binding for the ds1743 chips is
-tweaked, based on the existing DS1385 OF binding found at:
-	http://playground.sun.com/1275/proposals/Closed/Remanded/Accepted/346-it.txt
-Although that document covers the NVRAM portion of the chip, whereas
-here we're interested in the RTC portion, so it's not entirely clear
-if that's a good model.
+node {
+	prop = /bin-include/ "path/to/data";
+};
 
-This implements only RTC class driver support - that is /dev/rtc0, not
-/dev/rtc, and the low-level get/set time callbacks remain
-unimplemented.  That means in order to get at the clock you will
-either need a modified version of hwclock which will look at
-/dev/rtc0, or you'll need to configure udev to symlink rtc0 to rtc.
+Search paths are not yet implemented; non-absolute lookups are relative to
+the directory from which dtc was invoked.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ dtc-lexer.l  |    6 ++++++
+ dtc-parser.y |   26 ++++++++++++++++++++++++++
+ dtc.h        |    1 +
+ 3 files changed, 33 insertions(+), 0 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/dts/ebony.dts	2007-10-22 13:55:49.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-12-21 13:11:34.000000000 +1100
-@@ -150,9 +150,10 @@
- 					};
- 				};
+diff --git a/dtc-lexer.l b/dtc-lexer.l
+index c811b22..1f3e6d6 100644
+--- a/dtc-lexer.l
++++ b/dtc-lexer.l
+@@ -190,6 +190,12 @@ static int dts_version; /* = 0 */
+ 			return DT_PROPNODENAME;
+ 		}
  
--				ds1743@1,0 {
-+				nvram@1,0 {
- 					/* NVRAM & RTC */
--					compatible = "ds1743";
-+					compatible = "ds1743-nvram";
-+					#bytes = <2000>;
- 					reg = <1 0 2000>;
- 				};
- 
-Index: working-2.6/arch/powerpc/platforms/44x/ebony.c
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/44x/ebony.c	2007-12-10 10:52:44.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/44x/ebony.c	2007-12-21 13:11:34.000000000 +1100
-@@ -18,6 +18,7 @@
- 
- #include <linux/init.h>
- #include <linux/of_platform.h>
-+#include <linux/rtc.h>
- 
- #include <asm/machdep.h>
- #include <asm/prom.h>
-@@ -40,6 +41,7 @@ static int __init ebony_device_probe(voi
- 		return 0;
- 
- 	of_platform_bus_probe(NULL, ebony_of_bus, NULL);
-+	of_instantiate_rtc();
- 
- 	return 0;
- }
-Index: working-2.6/arch/powerpc/platforms/Kconfig
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/Kconfig	2007-12-10 10:52:44.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/Kconfig	2007-12-21 13:11:34.000000000 +1100
-@@ -315,6 +315,9 @@ config FSL_ULI1575
- config CPM
- 	bool
- 
-+config OF_RTC
-+	bool
-+
- source "arch/powerpc/sysdev/bestcomm/Kconfig"
- 
- endmenu
-Index: working-2.6/arch/powerpc/sysdev/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/sysdev/Makefile	2007-12-21 13:11:32.000000000 +1100
-+++ working-2.6/arch/powerpc/sysdev/Makefile	2007-12-21 13:11:34.000000000 +1100
-@@ -27,6 +27,7 @@ obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_PPC_83xx)		+= ipic.o
- obj-$(CONFIG_4xx)		+= uic.o
- obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
-+obj-$(CONFIG_OF_RTC)		+= of_rtc.o
- endif
- 
- # Temporary hack until we have migrated to asm-powerpc
-Index: working-2.6/arch/powerpc/sysdev/of_rtc.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/sysdev/of_rtc.c	2007-12-21 13:11:34.000000000 +1100
-@@ -0,0 +1,59 @@
-+/*
-+ * Instantiate mmio-mapped RTC chips based on device tree information
-+ *
-+ * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/init.h>
-+#include <asm/of_platform.h>
-+
-+static struct {
-+	char *compatible;
-+	char *plat_name;
-+} of_rtc_table[] = {
-+	{ "ds1743-nvram", "rtc-ds1742" },
-+};
-+
-+void __init of_instantiate_rtc(void)
-+{
-+	struct device_node *node;
-+	int err;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(of_rtc_table); i++) {
-+		char *compatible = of_rtc_table[i].compatible;
-+		char *plat_name = of_rtc_table[i].plat_name;
-+
-+		for_each_compatible_node(node, NULL, compatible) {
-+			struct resource *res;
-+
-+			res = kmalloc(sizeof(*res), GFP_KERNEL);
-+			if (!res) {
-+				printk(KERN_ERR "OF RTC: Out of memory "
-+				       "allocating resource structure for %s\n",
-+				       node->full_name);
-+				continue;
-+			}
-+
-+			err = of_address_to_resource(node, 0, res);
-+			if (err) {
-+				printk(KERN_ERR "OF RTC: Error "
-+				       "translating resources for %s\n",
-+				       node->full_name);
-+				continue;
-+			}
-+
-+			printk(KERN_INFO "OF_RTC: %s is a %s @ 0x%llx-0x%llx\n",
-+			       node->full_name, plat_name,
-+			       (unsigned long long)res->start,
-+			       (unsigned long long)res->end);
-+			platform_device_register_simple(plat_name, -1, res, 1);
++"/bin-include/"	{
++			yylloc.filenum = srcpos_filenum;
++			yylloc.first_line = yylineno;
++			DPRINT("Binary Include\n");
++			return DT_BININCLUDE;
 +		}
-+	}
-+}
-Index: working-2.6/arch/powerpc/platforms/44x/Kconfig
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-12-10 10:52:44.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/44x/Kconfig	2007-12-21 13:11:34.000000000 +1100
-@@ -11,6 +11,7 @@ config EBONY
- 	depends on 44x
- 	default y
- 	select 440GP
-+	select OF_RTC
- 	help
- 	  This option enables support for the IBM PPC440GP evaluation board.
  
-Index: working-2.6/include/asm-powerpc/of_platform.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/of_platform.h	2007-12-21 13:11:32.000000000 +1100
-+++ working-2.6/include/asm-powerpc/of_platform.h	2007-12-21 13:11:34.000000000 +1100
-@@ -37,4 +37,6 @@ extern int of_platform_bus_probe(struct 
+ <*>[[:space:]]+	/* eat whitespace */
  
- extern struct of_device *of_find_device_by_phandle(phandle ph);
+diff --git a/dtc-parser.y b/dtc-parser.y
+index 4a0181d..c7ed715 100644
+--- a/dtc-parser.y
++++ b/dtc-parser.y
+@@ -21,6 +21,8 @@
+ %locations
  
-+extern void of_instantiate_rtc(void);
+ %{
++#include <sys/stat.h>
 +
- #endif	/* _ASM_POWERPC_OF_PLATFORM_H */
-Index: working-2.6/arch/powerpc/boot/dts/walnut.dts
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/dts/walnut.dts	2007-12-10 10:52:43.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/dts/walnut.dts	2007-12-21 13:11:34.000000000 +1100
-@@ -168,9 +168,10 @@
- 				};
- 			};
+ #include "dtc.h"
+ #include "srcpos.h"
  
--			ds1743@1,0 {
-+			nvram@1,0 {
- 				/* NVRAM and RTC */
--				compatible = "ds1743";
-+				compatible = "ds1743-nvram";
-+				#bytes = <2000>;
- 				reg = <1 0 2000>;
- 			};
+@@ -58,6 +60,7 @@ extern struct boot_info *the_boot_info;
+ %token <data> DT_STRING
+ %token <labelref> DT_LABEL
+ %token <labelref> DT_REF
++%token DT_BININCLUDE
  
-Index: working-2.6/arch/powerpc/platforms/40x/walnut.c
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/40x/walnut.c	2007-12-21 13:14:53.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/40x/walnut.c	2007-12-21 13:15:05.000000000 +1100
-@@ -39,6 +39,7 @@ static int __init walnut_device_probe(vo
+ %type <data> propdata
+ %type <data> propdataprefix
+@@ -196,6 +199,29 @@ propdata:
+ 		{
+ 			$$ = data_add_marker($1, REF_PATH, $2);
+ 		}
++	| propdataprefix DT_BININCLUDE DT_STRING
++		{
++			struct stat st;
++			FILE *f;
++			int fd;
++			
++			f = fopen($3.val, "rb");
++			if (!f) {
++				yyerrorf("Cannot open file \"%s\": %s",
++				         $3.val, strerror(errno));
++				YYERROR;
++			}
++
++			fd = fileno(f);
++			if (fstat(fd, &st) < 0) {
++				yyerrorf("Cannot stat file \"%s\": %s",
++				         $3.val, strerror(errno));
++				YYERROR;
++			}
++
++			$$ = data_merge($1, data_copy_file(f, st.st_size));
++			fclose(f);
++		}
+ 	| propdata DT_LABEL
+ 		{
+ 			$$ = data_add_marker($1, LABEL, $2);
+diff --git a/dtc.h b/dtc.h
+index 9b89689..87b5bb1 100644
+--- a/dtc.h
++++ b/dtc.h
+@@ -138,6 +138,7 @@ struct data data_grow_for(struct data d, int xlen);
+ struct data data_copy_mem(const char *mem, int len);
+ struct data data_copy_escape_string(const char *s, int len);
+ struct data data_copy_file(FILE *f, size_t len);
++struct data data_bin_include(const char *filename);
  
- 	/* FIXME: do bus probe here */
- 	of_platform_bus_probe(NULL, walnut_of_bus, NULL);
-+	of_instantiate_rtc();
- 
- 	return 0;
- }
-
+ struct data data_append_data(struct data d, const void *p, int len);
+ struct data data_insert_at_marker(struct data d, struct marker *m,
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.3
