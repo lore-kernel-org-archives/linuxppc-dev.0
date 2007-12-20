@@ -1,21 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 90B63DDE22
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 09:33:05 +1100 (EST)
-Message-ID: <476AED87.3090703@freescale.com>
-Date: Thu, 20 Dec 2007 16:32:39 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2D048DDF4B
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 09:33:16 +1100 (EST)
+Date: Thu, 20 Dec 2007 16:39:44 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20071220223943.GA24138@lixom.net>
 References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910712201429q5845e786yb2ecb3ce9c8b7871@mail.gmail.com>
-In-Reply-To: <9e4733910712201429q5845e786yb2ecb3ce9c8b7871@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<20071220040633.GA6732@lixom.net> <476A7B23.2040905@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <476A7B23.2040905@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,29 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+On Thu, Dec 20, 2007 at 08:24:35AM -0600, Timur Tabi wrote:
+> Olof Johansson wrote:
+> 
+> >> +static struct of_device_id mpc8610_ids[] = {
+> >> +	{ .type = "soc", },
+> >> +	{}
+> > 
+> > Please scan based on compatible instead of device_type.
+> 
+> I was just following the example from another board file.  However, the 'soc' 
+> node in the device tree does not have a compatible property, so I don't how to 
+> change this.
 
-> How is of_platform_bus_probe() supposed to be called? mpc5200/virtex
-> call it with three NULLs. Is it necessary to name all of the buses in
-> a of_device_id? If it's not necessary to list the buses the
-> of_platform_bus_probe() call could be moved to common code.
+Then add an appropriate compatible entry to it, please.
 
-I added the above code because it is the only way I could get my SSI nodes to be 
-probed.  If there's a better way to do it, I'm all ears.  I just copied that 
-code from the mpc836x_mds.c platform file.
+> > Do you ever anticipate having other dma users on the system, such as
+> > memcpy offload? You'll probably need allocation support for channels
+> > when that day comes (I ended up writing a simple library for dma channel
+> > management for that very reason on my platform).
+> 
+> Yes, I plan on updating this driver to work with the standard Freescale "Elo" 
+> device driver, but that will have to wait until that code is in the kernel and 
+> stabilized.  The SSI is limited in which DMA channels it can use, anyway.
 
-> Are these buses?
->         { .compatible = "ibm,plb4", },
->         { .compatible = "ibm,opb", },
->         { .compatible = "ibm,ebc", },
+Ok.
 
-I have no idea.
 
-> Could of_platform_bus_probe() be simplified? No one uses the first and
-> third parameters.
-
-Maybe, but that's not a discussion for this thread!
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Olof
