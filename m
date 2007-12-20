@@ -1,11 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 20 Dec 2007 14:54:49 +1100
-Subject: [PATCH 6/19] [POWERPC] pci32: Add platform option to enable /proc PCI
-	domains
+Date: Thu, 20 Dec 2007 14:54:50 +1100
+Subject: [PATCH 7/19] [POWERPC] Merge pcibios_resource_to_bus/bus_to_resource
 In-Reply-To: <1198122881.874131.56762399546.qpush@grosgo>
-Message-Id: <20071220035452.153BEDDE1F@ozlabs.org>
+Message-Id: <20071220035453.4820ADDE1F@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,108 +15,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds flags the platforms can use to enable domain numbers
-in /proc/bus/pci.
+This merges the PowerPC 32 and 64 bits version of pcibios_resource_to_bus
+and pcibios_bus_to_resource().
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/pci-common.c |   16 ++++++++++++++++
- arch/powerpc/kernel/pci_64.c     |    8 --------
- include/asm-powerpc/pci-bridge.h |    5 +++++
- include/asm-powerpc/pci.h        |   14 ++++----------
- 4 files changed, 25 insertions(+), 18 deletions(-)
+ arch/powerpc/kernel/pci-common.c |   36 +++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/pci_32.c     |   32 -----------------------------
+ arch/powerpc/kernel/pci_64.c     |   42 ---------------------------------------
+ 3 files changed, 36 insertions(+), 74 deletions(-)
 
---- linux-merge.orig/arch/powerpc/kernel/pci-common.c	2007-12-14 15:49:00.000000000 +1100
-+++ linux-merge/arch/powerpc/kernel/pci-common.c	2007-12-14 15:49:30.000000000 +1100
-@@ -639,3 +639,19 @@ void __devinit pci_process_bridge_OF_ran
- 		hose->mem_resources[memno-1] = tmp;
- 	}
+--- linux-merge.orig/arch/powerpc/kernel/pci-common.c	2007-12-14 15:49:30.000000000 +1100
++++ linux-merge/arch/powerpc/kernel/pci-common.c	2007-12-14 15:49:31.000000000 +1100
+@@ -655,3 +655,39 @@ int pci_proc_domain(struct pci_bus *bus)
+ #endif
  }
-+
-+/* Decide whether to display the domain number in /proc */
-+int pci_proc_domain(struct pci_bus *bus)
+ 
++void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
++			     struct resource *res)
 +{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+#ifdef CONFIG_PPC64
-+	return hose->buid != 0;
-+#else
-+	if (!(ppc_pci_flags & PPC_PCI_ENABLE_PROC_DOMAINS))
-+		return 0;
-+	if (ppc_pci_flags & PPC_PCI_COMPAT_DOMAIN_0)
-+		return hose->global_number != 0;
-+	return 1;
-+#endif
-+}
++	resource_size_t offset = 0, mask = (resource_size_t)-1;
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
 +
++	if (!hose)
++		return;
++	if (res->flags & IORESOURCE_IO) {
++		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++		mask = 0xffffffffu;
++	} else if (res->flags & IORESOURCE_MEM)
++		offset = hose->pci_mem_offset;
++
++	region->start = (res->start - offset) & mask;
++	region->end = (res->end - offset) & mask;
++}
++EXPORT_SYMBOL(pcibios_resource_to_bus);
++
++void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
++			     struct pci_bus_region *region)
++{
++	resource_size_t offset = 0, mask = (resource_size_t)-1;
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++
++	if (!hose)
++		return;
++	if (res->flags & IORESOURCE_IO) {
++		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
++		mask = 0xffffffffu;
++	} else if (res->flags & IORESOURCE_MEM)
++		offset = hose->pci_mem_offset;
++	res->start = (region->start + offset) & mask;
++	res->end = (region->end + offset) & mask;
++}
++EXPORT_SYMBOL(pcibios_bus_to_resource);
+Index: linux-merge/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-merge.orig/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:29.000000000 +1100
++++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:31.000000000 +1100
+@@ -145,38 +145,6 @@ pcibios_fixup_resources(struct pci_dev *
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID,		PCI_ANY_ID,			pcibios_fixup_resources);
+ 
+-void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
+-			struct resource *res)
+-{
+-	resource_size_t offset = 0, mask = (resource_size_t)-1;
+-	struct pci_controller *hose = dev->sysdata;
+-
+-	if (hose && res->flags & IORESOURCE_IO) {
+-		offset = (unsigned long)hose->io_base_virt - isa_io_base;
+-		mask = 0xffffffffu;
+-	} else if (hose && res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-	region->start = (res->start - offset) & mask;
+-	region->end = (res->end - offset) & mask;
+-}
+-EXPORT_SYMBOL(pcibios_resource_to_bus);
+-
+-void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+-			     struct pci_bus_region *region)
+-{
+-	resource_size_t offset = 0, mask = (resource_size_t)-1;
+-	struct pci_controller *hose = dev->sysdata;
+-
+-	if (hose && res->flags & IORESOURCE_IO) {
+-		offset = (unsigned long)hose->io_base_virt - isa_io_base;
+-		mask = 0xffffffffu;
+-	} else if (hose && res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-	res->start = (region->start + offset) & mask;
+-	res->end = (region->end + offset) & mask;
+-}
+-EXPORT_SYMBOL(pcibios_bus_to_resource);
+-
+ static int skip_isa_ioresource_align(struct pci_dev *dev)
+ {
+ 	if ((ppc_pci_flags & PPC_PCI_CAN_SKIP_ISA_ALIGN) &&
 Index: linux-merge/arch/powerpc/kernel/pci_64.c
 ===================================================================
---- linux-merge.orig/arch/powerpc/kernel/pci_64.c	2007-12-14 15:49:29.000000000 +1100
-+++ linux-merge/arch/powerpc/kernel/pci_64.c	2007-12-14 15:49:30.000000000 +1100
-@@ -570,14 +570,6 @@ int pcibios_enable_device(struct pci_dev
- 	return 0;
+--- linux-merge.orig/arch/powerpc/kernel/pci_64.c	2007-12-14 15:49:30.000000000 +1100
++++ linux-merge/arch/powerpc/kernel/pci_64.c	2007-12-14 15:49:31.000000000 +1100
+@@ -77,48 +77,6 @@ static void fixup_broken_pcnet32(struct 
  }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TRIDENT, PCI_ANY_ID, fixup_broken_pcnet32);
  
--/* Decide whether to display the domain number in /proc */
--int pci_proc_domain(struct pci_bus *bus)
+-void  pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
+-			      struct resource *res)
 -{
--	struct pci_controller *hose = pci_bus_to_host(bus);
--	return hose->buid != 0;
+-	unsigned long offset = 0;
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-
+-	if (!hose)
+-		return;
+-
+-	if (res->flags & IORESOURCE_IO)
+-	        offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-
+-	if (res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-
+-	region->start = res->start - offset;
+-	region->end = res->end - offset;
 -}
 -
--
- #ifdef CONFIG_HOTPLUG
- 
- int pcibios_unmap_io_space(struct pci_bus *bus)
-Index: linux-merge/include/asm-powerpc/pci-bridge.h
-===================================================================
---- linux-merge.orig/include/asm-powerpc/pci-bridge.h	2007-12-14 15:49:29.000000000 +1100
-+++ linux-merge/include/asm-powerpc/pci-bridge.h	2007-12-14 15:49:30.000000000 +1100
-@@ -30,6 +30,11 @@ enum {
- 	 * ISA forwarding enabled
- 	 */
- 	PPC_PCI_CAN_SKIP_ISA_ALIGN	= 0x00000008,
-+
-+	/* Enable domain numbers in /proc */
-+	PPC_PCI_ENABLE_PROC_DOMAINS	= 0x00000010,
-+	/* ... except for domain 0 */
-+	PPC_PCI_COMPAT_DOMAIN_0		= 0x00000020,
- };
- 
- 
-Index: linux-merge/include/asm-powerpc/pci.h
-===================================================================
---- linux-merge.orig/include/asm-powerpc/pci.h	2007-12-14 15:49:29.000000000 +1100
-+++ linux-merge/include/asm-powerpc/pci.h	2007-12-14 15:49:30.000000000 +1100
-@@ -98,9 +98,6 @@ static inline void pci_dma_burst_advice(
- #define get_pci_dma_ops()	NULL
- #endif
- 
--/* Decide whether to display the domain number in /proc */
--extern int pci_proc_domain(struct pci_bus *bus);
--
- #else /* 32-bit */
- 
- #ifdef CONFIG_PCI
-@@ -112,17 +109,14 @@ static inline void pci_dma_burst_advice(
- 	*strategy_parameter = ~0UL;
- }
- #endif
--
--/* Set the name of the bus as it appears in /proc/bus/pci */
--static inline int pci_proc_domain(struct pci_bus *bus)
+-void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+-			      struct pci_bus_region *region)
 -{
--	return 0;
+-	unsigned long offset = 0;
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-
+-	if (!hose)
+-		return;
+-
+-	if (res->flags & IORESOURCE_IO)
+-	        offset = (unsigned long)hose->io_base_virt - _IO_BASE;
+-
+-	if (res->flags & IORESOURCE_MEM)
+-		offset = hose->pci_mem_offset;
+-
+-	res->start = region->start + offset;
+-	res->end = region->end + offset;
 -}
 -
- #endif /* CONFIG_PPC64 */
+-#ifdef CONFIG_HOTPLUG
+-EXPORT_SYMBOL(pcibios_resource_to_bus);
+-EXPORT_SYMBOL(pcibios_bus_to_resource);
+-#endif
  
- extern int pci_domain_nr(struct pci_bus *bus);
- 
-+/* Decide whether to display the domain number in /proc */
-+extern int pci_proc_domain(struct pci_bus *bus);
-+
-+
- struct vm_area_struct;
- /* Map a range of PCI memory or I/O space for a device into user space */
- int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
+ /*
+  * We need to avoid collisions with `mirrored' VGA ports
