@@ -1,17 +1,10 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id AFD5DDE5CA
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:00:15 +1100 (EST)
-Date: Wed, 19 Dec 2007 22:06:34 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20071220040633.GA6732@lixom.net>
-References: <11981089894052-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11981089894052-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 20 Dec 2007 15:00:21 +1100
+Subject: [PATCH] [POWERPC] Fix for via-pmu based backlight control
+Message-Id: <20071220040025.0951BDE14A@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,178 +14,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This patch fixes a few issues with via-pmu based backlight control.
 
-This is a fairly substantial driver to get through, but here are some
-initial comments on some of the simpler stuff:
+First, it fixes a sign problem with the setup of the backlight
+curve since the values there -can- (and will) go negative.
 
+Then, it reworks the interaction between this and the via-pmu sleep
+code to properly restore backlight on wakeup from sleep.
 
-On Wed, Dec 19, 2007 at 06:03:09PM -0600, Timur Tabi wrote:
-> This patch adds ALSA SoC device drivers for the Freescale MPC8610 SoC
-> and the MPC8610-HPCD reference board.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-[...]
+ drivers/macintosh/via-pmu-backlight.c |   48 ++++++++++++++++++++--------------
+ drivers/macintosh/via-pmu.c           |   26 +++++++-----------
+ include/linux/pmu.h                   |    2 +
+ 3 files changed, 42 insertions(+), 34 deletions(-)
 
-> diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> index 6390895..6e1bde3 100644
-> --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> @@ -34,9 +34,27 @@
->  
->  #include <asm/mpic.h>
->  
-> +#include <asm/of_platform.h>
->  #include <sysdev/fsl_pci.h>
->  #include <sysdev/fsl_soc.h>
->  
-> +static struct of_device_id mpc8610_ids[] = {
-> +	{ .type = "soc", },
-> +	{}
-
-Please scan based on compatible instead of device_type.
-
-> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-> new file mode 100644
-> index 0000000..4a5bbd2
-> --- /dev/null
-> +++ b/sound/soc/fsl/Kconfig
-> @@ -0,0 +1,21 @@
-> +menu "ALSA SoC audio for Freescale SOCs"
-> +
-> +config SND_SOC_MPC8610
-> +	bool "ALSA SoC support for the MPC8610 SOC"
-> +	depends on SND_SOC #&& MPC8610_HPCD
-> +	default y #if MPC8610
-> +	help
-> +	  Say Y if you want to add support for codecs attached to the SSI
-> +          device on an MPC8610.
-
-Don't default configs to 'y'. Also, what's with the commented-out
-dependencies and if?
-
-> +config SND_SOC_MPC8610_HPCD
-> +	# ALSA SoC support for Freescale MPC8610HPCD
-> +	bool "ALSA SoC support for the Freescale MPC8610 HPCD board"
-> +	depends on SND_SOC_MPC8610
-> +	select SND_SOC_CS4270
-> +	select SND_SOC_CS4270_VD33_ERRATA
-> +	default y #if MPC8610_HPCD
-> +	help
-> +	  Say Y if you want to enable audio on the Freescale MPC8610 HPCD.
-
-Same here w.r.t. defaults and dependencies.
-
-> diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
-> new file mode 100644
-> index 0000000..6b86be0
-> --- /dev/null
-> +++ b/sound/soc/fsl/fsl_dma.c
-> @@ -0,0 +1,819 @@
-> +/*
-> + * Freescale DMA ALSA SoC PCM driver
-> + *
-> + * Author: Timur Tabi <timur@freescale.com>
-> + *
-> + * Copyright 2007 Freescale Semiconductor, Inc.  This file is licensed under
-> + * the terms of the GNU General Public License version 2.  This program
-> + * is licensed "as is" without any warranty of any kind, whether express
-> + * or implied.
-> + *
-> + * This driver implements ASoC support for the Elo DMA controller, which is
-> + * the DMA controller on Freescale 83xx, 85xx, and 86xx SOCs. In ALSA terms,
-> + * the PCM driver is what handles the DMA buffer.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/delay.h>
-> +
-> +#include <sound/driver.h>
-> +#include <sound/core.h>
-> +#include <sound/pcm.h>
-> +#include <sound/pcm_params.h>
-> +#include <sound/soc.h>
-> +
-> +#include <asm/io.h>
-> +
-> +#include "fsl_dma.h"
-> +
-> +/*
-> + * The formats that the DMA controller supports, which is anything
-> + * that is 8, 16, or 32 bits.
-> + */
-> +#define FSLDMA_PCM_FORMATS (SNDRV_PCM_FMTBIT_S8 	| \
-> +			    SNDRV_PCM_FMTBIT_U8 	| \
-> +			    SNDRV_PCM_FMTBIT_S16_LE     | \
-> +			    SNDRV_PCM_FMTBIT_S16_BE     | \
-> +			    SNDRV_PCM_FMTBIT_U16_LE     | \
-> +			    SNDRV_PCM_FMTBIT_U16_BE     | \
-> +			    SNDRV_PCM_FMTBIT_S24_LE     | \
-> +			    SNDRV_PCM_FMTBIT_S24_BE     | \
-> +			    SNDRV_PCM_FMTBIT_U24_LE     | \
-> +			    SNDRV_PCM_FMTBIT_U24_BE     | \
-> +			    SNDRV_PCM_FMTBIT_S32_LE     | \
-> +			    SNDRV_PCM_FMTBIT_S32_BE     | \
-> +			    SNDRV_PCM_FMTBIT_U32_LE     | \
-> +			    SNDRV_PCM_FMTBIT_U32_BE)
-> +
-> +#define FSLDMA_PCM_RATES (SNDRV_PCM_RATE_5512 | SNDRV_PCM_RATE_8000_192000 | \
-> +			  SNDRV_PCM_RATE_CONTINUOUS)
-> +
-> +/* DMA global data.  This structure is used by fsl_dma_open() to determine
-> + * which DMA channels to assign to a substream.  Unfortunately, ASoC V1 does
-> + * not allow the machine driver to provide this information to the PCM
-> + * driver in advance, and there's no way to differentiate between the two
-> + * DMA controllers.  So for now, this driver only supports one SSI device
-> + * using two DMA channels.  We cannot support multiple DMA devices.
-> + *
-> + * ssi_stx_phys: bus address of SSI STX register
-> + * ssi_srx_phys: bus address of SSI SRX register
-> + * dma_channel: pointer to the DMA channel's registers
-> + * irq: IRQ for this DMA channel
-> + * assigned: set to 1 if that DMA channel is assigned to a substream
-> + */
-
-This goes for the whole patch: You've got good documentation, but it's
-not in docbook format. Please reformat it since it should be a pretty
-simple thing to do.
-
-> +/*
-> + * Initialize this PCM driver.
-> + *
-> + * This function is called when the codec driver calls snd_soc_new_pcms(),
-> + * once for each .dai_link in the machine driver's snd_soc_machine
-> + * structure.
-> + */
-> +static int fsl_dma_new(struct snd_card *card, struct snd_soc_codec_dai *dai,
-> +	struct snd_pcm *pcm)
-> +{
-> +	static u64 fsl_dma_dmamask = 0xffffffff;
-> +	int ret;
-> +
-> +	if (!card->dev->dma_mask)
-> +		card->dev->dma_mask = &fsl_dma_dmamask;
-
-I haven't read how your channel allocation works, but providing a
-pointer to a local static variable is a bit fishy no matter what.
-
-> +	/* Find the DMA channels to use.  For now, we always use the first DMA
-> +	   controller. */
-> +	for_each_compatible_node(dma_np, NULL, "fsl,mpc8610-dma") {
-> +		iprop = of_get_property(dma_np, "cell-index", NULL);
-> +		if (iprop && (*iprop == 0)) {
-> +			of_node_put(dma_np);
-> +			break;
-> +		}
-> +	}
-
-Do you ever anticipate having other dma users on the system, such as
-memcpy offload? You'll probably need allocation support for channels
-when that day comes (I ended up writing a simple library for dma channel
-management for that very reason on my platform).
-
-
--Olof
+--- linux-merge.orig/drivers/macintosh/via-pmu-backlight.c	2007-12-20 11:54:57.000000000 +1100
++++ linux-merge/drivers/macintosh/via-pmu-backlight.c	2007-12-20 12:49:04.000000000 +1100
+@@ -22,7 +22,7 @@ static u8 bl_curve[FB_BACKLIGHT_LEVELS];
+ 
+ static void pmu_backlight_init_curve(u8 off, u8 min, u8 max)
+ {
+-	unsigned int i, flat, count, range = (max - min);
++	int i, flat, count, range = (max - min);
+ 
+ 	bl_curve[0] = off;
+ 
+@@ -68,17 +68,11 @@ static int pmu_backlight_get_level_brigh
+ 	return pmulevel;
+ }
+ 
+-static int pmu_backlight_update_status(struct backlight_device *bd)
++static int __pmu_backlight_update_status(struct backlight_device *bd)
+ {
+ 	struct adb_request req;
+-	unsigned long flags;
+ 	int level = bd->props.brightness;
+ 
+-	spin_lock_irqsave(&pmu_backlight_lock, flags);
+-
+-	/* Don't update brightness when sleeping */
+-	if (sleeping)
+-		goto out;
+ 
+ 	if (bd->props.power != FB_BLANK_UNBLANK ||
+ 	    bd->props.fb_blank != FB_BLANK_UNBLANK)
+@@ -99,12 +93,23 @@ static int pmu_backlight_update_status(s
+ 		pmu_wait_complete(&req);
+ 	}
+ 
+-out:
+-	spin_unlock_irqrestore(&pmu_backlight_lock, flags);
+-
+ 	return 0;
+ }
+ 
++static int pmu_backlight_update_status(struct backlight_device *bd)
++{
++	unsigned long flags;
++	int rc = 0;
++
++	spin_lock_irqsave(&pmu_backlight_lock, flags);
++	/* Don't update brightness when sleeping */
++	if (!sleeping)
++		rc = __pmu_backlight_update_status(bd);
++	spin_unlock_irqrestore(&pmu_backlight_lock, flags);
++	return rc;
++}
++
++
+ static int pmu_backlight_get_brightness(struct backlight_device *bd)
+ {
+ 	return bd->props.brightness;
+@@ -123,6 +128,16 @@ void pmu_backlight_set_sleep(int sleep)
+ 
+ 	spin_lock_irqsave(&pmu_backlight_lock, flags);
+ 	sleeping = sleep;
++	if (pmac_backlight) {
++		if (sleep) {
++			struct adb_request req;
++
++			pmu_request(&req, NULL, 2, PMU_POWER_CTRL,
++				    PMU_POW_BACKLIGHT | PMU_POW_OFF);
++			pmu_wait_complete(&req);
++		} else
++			__pmu_backlight_update_status(pmac_backlight);
++	}
+ 	spin_unlock_irqrestore(&pmu_backlight_lock, flags);
+ }
+ #endif /* CONFIG_PM */
+@@ -148,8 +163,8 @@ void __init pmu_backlight_init()
+ 
+ 	bd = backlight_device_register(name, NULL, NULL, &pmu_backlight_data);
+ 	if (IS_ERR(bd)) {
+-		printk("pmubl: Backlight registration failed\n");
+-		goto error;
++		printk(KERN_ERR "PMU Backlight registration failed\n");
++		return;
+ 	}
+ 	bd->props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
+ 	pmu_backlight_init_curve(0x7F, 0x46, 0x0E);
+@@ -171,10 +186,5 @@ void __init pmu_backlight_init()
+ 	bd->props.power = FB_BLANK_UNBLANK;
+ 	backlight_update_status(bd);
+ 
+-	printk("pmubl: Backlight initialized (%s)\n", name);
+-
+-	return;
+-
+-error:
+-	return;
++	printk(KERN_INFO "PMU Backlight initialized (%s)\n", name);
+ }
+Index: linux-merge/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-merge.orig/drivers/macintosh/via-pmu.c	2007-12-20 12:11:12.000000000 +1100
++++ linux-merge/drivers/macintosh/via-pmu.c	2007-12-20 12:12:46.000000000 +1100
+@@ -1758,8 +1758,6 @@ restore_via_state(void)
+ 	out_8(&via[IER], IER_SET | SR_INT | CB1_INT);
+ }
+ 
+-extern void pmu_backlight_set_sleep(int sleep);
+-
+ #define	GRACKLE_PM	(1<<7)
+ #define GRACKLE_DOZE	(1<<5)
+ #define	GRACKLE_NAP	(1<<4)
+@@ -2176,11 +2174,6 @@ pmu_release(struct inode *inode, struct 
+  */
+ void arch_suspend_disable_irqs(void)
+ {
+-#ifdef CONFIG_PMAC_BACKLIGHT
+-	/* Tell backlight code not to muck around with the chip anymore */
+-	pmu_backlight_set_sleep(1);
+-#endif
+-
+ 	/* Call platform functions marked "on sleep" */
+ 	pmac_pfunc_i2c_suspend();
+ 	pmac_pfunc_base_suspend();
+@@ -2236,11 +2229,6 @@ static int powerbook_sleep(suspend_state
+ 
+ 	mdelay(100);
+ 
+-#ifdef CONFIG_PMAC_BACKLIGHT
+-	/* Tell backlight code it can use the chip again */
+-	pmu_backlight_set_sleep(0);
+-#endif
+-
+ 	return 0;
+ }
+ 
+@@ -2493,10 +2481,15 @@ static int pmu_sys_suspend(struct sys_de
+ 	if (state.event != PM_EVENT_SUSPEND || pmu_sys_suspended)
+ 		return 0;
+ 
+-	/* Suspend PMU event interrupts */
++	/* Suspend PMU event interrupts */\
+ 	pmu_suspend();
+-
+ 	pmu_sys_suspended = 1;
++
++#ifdef CONFIG_PMAC_BACKLIGHT
++	/* Tell backlight code not to muck around with the chip anymore */
++	pmu_backlight_set_sleep(1);
++#endif
++
+ 	return 0;
+ }
+ 
+@@ -2511,9 +2504,12 @@ static int pmu_sys_resume(struct sys_dev
+ 	pmu_request(&req, NULL, 2, PMU_SYSTEM_READY, 2);
+ 	pmu_wait_complete(&req);
+ 
++#ifdef CONFIG_PMAC_BACKLIGHT
++	/* Tell backlight code it can use the chip again */
++	pmu_backlight_set_sleep(0);
++#endif
+ 	/* Resume PMU event interrupts */
+ 	pmu_resume();
+-
+ 	pmu_sys_suspended = 0;
+ 
+ 	return 0;
+Index: linux-merge/include/linux/pmu.h
+===================================================================
+--- linux-merge.orig/include/linux/pmu.h	2007-12-20 12:11:33.000000000 +1100
++++ linux-merge/include/linux/pmu.h	2007-12-20 12:11:36.000000000 +1100
+@@ -159,6 +159,8 @@ extern void pmu_unlock(void);
+ extern int pmu_present(void);
+ extern int pmu_get_model(void);
+ 
++extern void pmu_backlight_set_sleep(int sleep);
++
+ #define PMU_MAX_BATTERIES	2
+ 
+ /* values for pmu_power_flags */
