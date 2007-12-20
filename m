@@ -1,7 +1,7 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA06.emeryville.ca.mail.comcast.net
-	(qmta06.emeryville.ca.mail.comcast.net [76.96.30.56])
-	by ozlabs.org (Postfix) with ESMTP id 29B18DDE02
+Received: from QMTA03.emeryville.ca.mail.comcast.net
+	(qmta03.emeryville.ca.mail.comcast.net [76.96.30.32])
+	by ozlabs.org (Postfix) with ESMTP id 6912EDDE4A
 	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:02:40 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -12,9 +12,9 @@ In-Reply-To: Roland McGrath's message of  Thursday,
 	20 December 2007 03:52:00 -0800
 	<20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 18/43] powerpc compat_binfmt_elf
-Message-Id: <20071220115816.504CC26F98E@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:58:16 -0800 (PST)
+Subject: [PATCH -mm 25/43] powerpc ptrace32 user_regset
+Message-Id: <20071220115904.89A7F26F98D@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:59:04 -0800 (PST)
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,122 +26,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This switches the CONFIG_PPC64 support for 32-bit ELF to use the generic
-fs/compat_binfmt_elf.c implementation instead of our own binfmt_elf32.c.
-Since so much is the same between 32/64, there is only one macro we have to
-define to make the generic support work out of the box.
+This cleans up the 32-bit ptrace syscall support to use user_regset calls
+to get at the register data for PTRACE_*REGS* calls.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/Makefile       |    3 +-
- arch/powerpc/kernel/binfmt_elf32.c |   69 ------------------------------------
- include/asm-powerpc/elf.h          |    1 +
- 3 files changed, 3 insertions(+), 70 deletions(-)
+ arch/powerpc/kernel/ptrace32.c |   96 ++++++++++-----------------------------
+ 1 files changed, 25 insertions(+), 71 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 615ed96..2cbe58a 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -17,11 +17,12 @@ obj-y				:= semaphore.o cputable.o ptrace.o syscalls.o \
- 				   init_task.o process.o systbl.o idle.o \
- 				   signal.o
- obj-y				+= vdso32/
--obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
-+obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
- 				   paca.o cpu_setup_ppc970.o \
- 				   cpu_setup_pa6t.o \
- 				   firmware.o sysfs.o nvram_64.o
-+obj-$(CONFIG_PPC64)		+= ../../../fs/compat_binfmt_elf.o
- obj-$(CONFIG_PPC64)		+= vdso64/
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
- obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
-diff --git a/arch/powerpc/kernel/binfmt_elf32.c b/arch/powerpc/kernel/binfmt_elf32.c
-deleted file mode 100644
-index 1d45d77..0000000
---- a/arch/powerpc/kernel/binfmt_elf32.c
-+++ /dev/null
-@@ -1,69 +0,0 @@
--/*
-- * binfmt_elf32.c: Support 32-bit PPC ELF binaries on Power3 and followons.
-- * based on the SPARC64 version.
-- * Copyright (C) 1995, 1996, 1997, 1998 David S. Miller	(davem@redhat.com)
-- * Copyright (C) 1995, 1996, 1997, 1998 Jakub Jelinek	(jj@ultra.linux.cz)
-- *
-- * Copyright (C) 2000,2001 Ken Aaker (kdaaker@rchland.vnet.ibm.com), IBM Corp
-- * Copyright (C) 2001 Anton Blanchard (anton@au.ibm.com), IBM
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
+diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+index 0f6eea0..4c1de6a 100644
+--- a/arch/powerpc/kernel/ptrace32.c
++++ b/arch/powerpc/kernel/ptrace32.c
+@@ -24,6 +24,7 @@
+ #include <linux/smp_lock.h>
+ #include <linux/errno.h>
+ #include <linux/ptrace.h>
++#include <linux/regset.h>
+ #include <linux/user.h>
+ #include <linux/security.h>
+ #include <linux/signal.h>
+@@ -46,43 +47,21 @@
+ static long compat_ptrace_old(struct task_struct *child, long request,
+ 			      long addr, long data)
+ {
+-	int ret = -EPERM;
 -
--#include <asm/processor.h>
--#include <linux/module.h>
--#include <linux/compat.h>
--#include <linux/elfcore-compat.h>
+-	switch(request) {
+-	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
+-		int i;
+-		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+-		unsigned int __user *tmp = (unsigned int __user *)addr;
 -
--#undef	ELF_ARCH
--#undef	ELF_CLASS
--#define ELF_CLASS	ELFCLASS32
--#define ELF_ARCH	EM_PPC
+-		CHECK_FULL_REGS(child->thread.regs);
+-		for (i = 0; i < 32; i++) {
+-			ret = put_user(*reg, tmp);
+-			if (ret)
+-				break;
+-			reg++;
+-			tmp++;
+-		}
+-		break;
+-	}
 -
--#undef	elfhdr
--#undef	elf_phdr
--#undef	elf_note
--#undef	elf_addr_t
--#define elfhdr		elf32_hdr
--#define elf_phdr	elf32_phdr
--#define elf_note	elf32_note
--#define elf_addr_t	Elf32_Off
+-	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
+-		int i;
+-		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+-		unsigned int __user *tmp = (unsigned int __user *)addr;
 -
--#define elf_prstatus	compat_elf_prstatus
--#define elf_prpsinfo	compat_elf_prpsinfo
--
--#define elf_core_copy_regs compat_elf_core_copy_regs
--static inline void compat_elf_core_copy_regs(compat_elf_gregset_t *elf_regs,
--					     struct pt_regs *regs)
--{
--	PPC_ELF_CORE_COPY_REGS((*elf_regs), regs);
--}
--
--#define elf_core_copy_task_regs compat_elf_core_copy_task_regs
--static int compat_elf_core_copy_task_regs(struct task_struct *tsk,
--					  compat_elf_gregset_t *elf_regs)
--{
--	struct pt_regs *regs = tsk->thread.regs;
--	if (regs)
--		compat_elf_core_copy_regs(elf_regs, regs);
--	return 1;
--}
--
--#include <linux/time.h>
--
--#undef cputime_to_timeval
--#define cputime_to_timeval cputime_to_compat_timeval
--static __inline__ void
--cputime_to_compat_timeval(const cputime_t cputime, struct compat_timeval *value)
--{
--	unsigned long jiffies = cputime_to_jiffies(cputime);
--	value->tv_usec = (jiffies % HZ) * (1000000L / HZ);
--	value->tv_sec = jiffies / HZ;
--}
--
--#define init_elf_binfmt init_elf32_binfmt
--
--#include "../../../fs/binfmt_elf.c"
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index fd9bf8b..9080d85 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -165,6 +165,7 @@ typedef elf_vrreg_t elf_vrregset_t32[ELF_NVRREG32];
-  * This is used to ensure we don't load something for the wrong architecture.
-  */
- #define elf_check_arch(x) ((x)->e_machine == ELF_ARCH)
-+#define compat_elf_check_arch(x)	((x)->e_machine == EM_PPC)
+-		CHECK_FULL_REGS(child->thread.regs);
+-		for (i = 0; i < 32; i++) {
+-			ret = get_user(*reg, tmp);
+-			if (ret)
+-				break;
+-			reg++;
+-			tmp++;
+-		}
+-		break;
++	switch (request) {
++	case PPC_PTRACE_GETREGS:	/* Get GPRs 0 - 31. */
++		return copy_regset_to_user(child,
++					   task_user_regset_view(current), 0,
++					   0, 32 * sizeof(compat_long_t),
++					   compat_ptr(data));
++
++	case PPC_PTRACE_SETREGS:	/* Set GPRs 0 - 31. */
++		return copy_regset_from_user(child,
++					     task_user_regset_view(current), 0,
++					     0, 32 * sizeof(compat_long_t),
++					     compat_ptr(data));
+ 	}
  
- #define USE_ELF_CORE_DUMP
- #define CORE_DUMP_USE_REGSET
+-	}
+-	return ret;
++	return -EPERM;
+ }
+ 
+ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+@@ -291,42 +270,17 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+ 		break;
+ 	}
+ 
+-	case PTRACE_GETREGS: { /* Get all pt_regs from the child. */
+-		int ui;
+-	  	if (!access_ok(VERIFY_WRITE, (void __user *)data,
+-			       PT_REGS_COUNT * sizeof(int))) {
+-			ret = -EIO;
+-			break;
+-		}
+-		CHECK_FULL_REGS(child->thread.regs);
+-		ret = 0;
+-		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
+-			ret |= __put_user(ptrace_get_reg(child, ui),
+-					  (unsigned int __user *) data);
+-			data += sizeof(int);
+-		}
+-		break;
+-	}
+-
+-	case PTRACE_SETREGS: { /* Set all gp regs in the child. */
+-		unsigned long tmp;
+-		int ui;
+-	  	if (!access_ok(VERIFY_READ, (void __user *)data,
+-			       PT_REGS_COUNT * sizeof(int))) {
+-			ret = -EIO;
+-			break;
+-		}
+-		CHECK_FULL_REGS(child->thread.regs);
+-		ret = 0;
+-		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
+-			ret = __get_user(tmp, (unsigned int __user *) data);
+-			if (ret)
+-				break;
+-			ptrace_put_reg(child, ui, tmp);
+-			data += sizeof(int);
+-		}
+-		break;
+-	}
++	case PTRACE_GETREGS:	/* Get all pt_regs from the child. */
++		return copy_regset_to_user(
++			child, task_user_regset_view(current), 0,
++			0, PT_REGS_COUNT * sizeof(compat_long_t),
++			compat_ptr(data));
++
++	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
++		return copy_regset_from_user(
++			child, task_user_regset_view(current), 0,
++			0, PT_REGS_COUNT * sizeof(compat_long_t),
++			compat_ptr(data));
+ 
+ 	case PTRACE_GETFPREGS:
+ 	case PTRACE_SETFPREGS:
 -- 
 1.5.3.6
