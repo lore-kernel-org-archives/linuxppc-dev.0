@@ -1,24 +1,26 @@
-Return-Path: <Jonathan@elspec-ltd.com>
-Received: from mail.elspec-ltd.com (mail.elspec-ltd.com [212.143.246.202])
-	by ozlabs.org (Postfix) with ESMTP id 07CDEDDDF0
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 34B7EDDE08
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Dec 2007 18:11:03 +1100 (EST)
-Received: from mail.elspec-ltd.com (localhost [127.0.0.1])
-	by mail.elspec-ltd.com (Proxmox) with ESMTP id 318CD411F99
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Dec 2007 08:52:55 +0200 (IST)
-Received: from mailsrv.elspec.local (unknown [100.100.100.3])
-	by mail.elspec-ltd.com (Proxmox) with ESMTP id F2838411F97
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Dec 2007 08:52:54 +0200 (IST)
-From: Jonathan Journo <Jonathan@elspec-ltd.com>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 20 Dec 2007 08:53:07 +0200
-Subject: Re: MPC885 - USB HCI drivers.
-Message-ID: <8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5F@mailsrv.Elspec.local>
-Content-Type: multipart/alternative;
-	boundary="_000_8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5FmailsrvElspec_"
+	Thu, 20 Dec 2007 21:12:24 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1J5IO5-0000NH-Fe
+	for linuxppc-embedded@ozlabs.org; Thu, 20 Dec 2007 02:12:21 -0800
+Message-ID: <14433748.post@talk.nabble.com>
+Date: Thu, 20 Dec 2007 02:12:21 -0800 (PST)
+From: greenlean <jmgomez@atc.ugr.es>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: some questions about XUP and the generation of ace file
+In-Reply-To: <14418941.post@talk.nabble.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <c46c91d0708100613m61d8a6d9gc4ca8b379e59fca6@mail.gmail.com>
+	<fa686aa40708100714m469fb7bdm3757ccf35f6a97db@mail.gmail.com>
+	<c46c91d0708100937h50fb37fcgff2f66db6207e025@mail.gmail.com>
+	<14418941.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,128 +32,238 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---_000_8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5FmailsrvElspec_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Hi,=20
 
-Hello Pantelis ,
+I'm responding myself and windstorm. First of all, I'm Spanish and I suppos=
+e
+you too...
 
-I saw you used usb host driver on mpc8xx. I am trying to make one on MPC885=
- because vxworks drivers are not compatible with it.
+Xilinx has translate the compiler tools to spanish, and if you have a look
+to the line 430 of the file /opt/Xilinx91i/EDK91i/data/xmd/genace.tcl you
+can see
 
-To begin I tried to make the loopback mode (test) working but it doesn't wo=
-rk.
-Is there anything that is not mentioned on the datasheet in" USB host contr=
-oller initialization example" that I have to know to make it work.
+if { [catch {set saddr [exec powerpc-eabi-objdump -x $elffile | grep -w
+"start address"]} err] } {
 
-Thanks for any help.
-Jonathan
-Journo.
+this line pruduces the error. If we do an obj-dump of this file, one using
+the ELDK compiler and other one using the EDK cross compiler tool, we see:
 
---_000_8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5FmailsrvElspec_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+$ppc_4xx-objdump -x zImage.elf | less --> Compilador ELDK 4.1
+****************************************************************
+architecture: powerpc:common, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address0x00400000
 
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
-osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
-//www.w3.org/TR/REC-html40">
+Program Header:
+****************************************************************
 
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	text-align:right;
-	direction:rtl;
-	unicode-bidi:embed;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
+$powerpc-eabi-objdump -x zImage.elf  --> Xilinx PowerPC compiler
+****************************************************************
+arquitectura: powerpc:common, opciones 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+direcci=C3=B3n de inicio 0x00400000
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+Encabezado del Programa:
+****************************************************************
 
-<div class=3DSection1>
+That's the error, you must translate the start address tag in the opt file
+to your language.... In my case this is
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>Hello
-Pantelis ,<o:p></o:p></span></p>
+if { [catch {set saddr [exec powerpc-eabi-objdump -x $elffile | grep -w
+"direcci=C3=B3n de inicio"]} err] } {
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR><o:p>&nbsp;</o:p></span></p>
+By...
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>I
-saw you used usb host driver on mpc8xx. I am trying to make one on MPC885 b=
-ecause
-vxworks drivers are not compatible with it.<o:p></o:p></span></p>
+PD: I still have a problem with the zImage.elf file  generated by the
+compiler, xmd told me that the file is corrupted that this is not an valid
+elf file, I posted it some time ago, and I've  no response if someone knows
+why it's happening please contact me.
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR><o:p>&nbsp;</o:p></span></p>
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>To
-begin I tried to make the loopback mode (test) working but it doesn't work.=
-<o:p></o:p></span></p>
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>Is
-there anything that is not mentioned on the datasheet in&quot; USB host
-controller initialization example&quot; that I have to know to make it work=
-.<o:p></o:p></span></p>
+greenlean wrote:
+>=20
+> Hi windstorm,
+>=20
+> Have you correct the error, you get when generating the ace file?? I'm
+> trying to build the linux system for the XUPV2P board, and I have the sam=
+e
+> error:
+>=20
+> Using GenACE option file : xupGenace.opt
+> Error: Executable zImage.elf does not contain start address..
+>=20
+> As you and Xilinx said in the answer
+> (http://www.xilinx.com/support/answers/23192.htm) my genace.tcl file is
+> patched, and it uses de powerPC objdump.
+>=20
+> I have tryed to use the ppc_4xx-objdump cross tool of ELDK instead of the
+> powerpc-eabi-objdump that is used in the genace.tcl file, and the result
+> was an error:
+>=20
+> ***********
+> Executing xmd script : /opt/Xilinx91i/EDK91i/data/xmd/genace.tcl
+>=20
+> #######################################################################
+> XMD GenACE utility. Generate SystemACE File from bit/elf/data Files
+> #######################################################################
+> Using GenACE option file : xupGenace.opt
+> GenACE Options:
+>         Board      : user
+>         Jtag Devs  : xc2vp30
+>         FPGA pos   : 1
+>         JPROG      : true
+>         HW File    : implementation/download.bit
+>         ACE File   : system.ace
+>         nCPUs      : 1
+>=20
+>         Processor ppc_hw_1 Information
+>                 Debug opt : -debugdevice devicenr 1 cpunr 1
+>                 ELF files : zImage.elf
+>                 Start PC Address : 0x00400000
+>=20
+> ############################################################
+> Converting Bitstream 'implementation/download.bit' to SVF file
+> 'implementation/download.svf'
+> Executing 'impact -batch bit2svf.scr'
+>=20
+> Copying implementation/download.svf File to  system.svf File
+>=20
+>=20
+> ############################################################
+> Converting ELF file 'zImage.elf' to SVF file 'zImage.svf'
+> Error: E02 Failed to download ELF file
+>=20
+> ERROR(1053): UNABLE to Read Elf File. The Elf File Maybe Corrupted
+>         : zImage.elf
+>=20
+>=20
+> *********
+>=20
+>=20
+>=20
+> but the Error:executable zImage.elf does not contain start address..
+> didn't appear. And the compiler assign the address  0x00400000...
+>=20
+> This error is the same, that xmd told me if I try to download directly th=
+e
+> linux kernel to the board, maybe there is any relation...
+>=20
+> I don't know what is happening...
+>=20
+> Any info or help???
+>=20
+>=20
+>=20
+> windstorm wrote:
+>>=20
+>> 1 it's strange. the ns16550.c do exist in the arch/ppc/boot/
+>> directory, not arch/ppc/boot/common. I just download the source
+>> yesterday.
+>>=20
+>> 2 Can you show me some reference about the "small bootloader"? Or any
+>> web material about it?
+>>=20
+>> 2007/8/10, Grant Likely <grant.likely@secretlab.ca>:
+>>> On 8/10/07, windstorm <likunarmstrong@gmail.com> wrote:
+>>> > Hello all:
+>>> >
+>>> > I am trying to transfer the Linux onto XUP board. The kernel source I
+>>> > used is from the git trees from andrei konovalov or grant likely. But
+>>> > I encounter two questions now.
+>>> >
+>>> > 1 Generally, I should correct the kernel source file
+>>> > arch/ppc/boot/common/ns16550.c, In that file, changing SERIAL_BAUD
+>>> > from 9600 to 38400  makes the bootloader talk at 38400. I always do i=
+t
+>>> > when I use standard kernel source. But this time I found out that the
+>>> > ns16550.c's path is arch/ppc/boot/, not arch/ppc/boot/common/, and
+>>> > there was no "SERIAL_BAUD" string any more. So, how can I control the
+>>> > baud rate?
+>>>
+>>> ???
+>>>
+>>> I don't know what you're referring to.  ns16550.c is in
+>>> arch/ppc/boot/common on my tree, and it still contains the SERIAL_BAUD
+>>> #define.
+>>>
+>>> >
+>>> > 2 I have compiled the kernel and obtained a Image.elf whose size is
+>>> > 1.7MB, and then it's time for creating a system.ace file which I can
+>>> > put onto a compact flash card.  I Changed the file xupGenace.opt like
+>>> > the follow:
+>>>
+>>> You can do this, but I don't think it's a particularly good idea.
+>>> Binding the kernel image into an ACE file results in a *very* large
+>>> ace file, and it's slow.  Consider the fact that doing it that way
+>>> means that you're transferring the entire 1.7MB image via JTAG.
+>>>
+>>> I've also seem problems where DDR isn't fully initialized before the
+>>> SystemACE tries to transfer the image which results in a non-booting
+>>> system.
+>>>
+>>> What I do, is I've got a small bootloader that lives in BRAM and is
+>>> just smart enough to load an elf file off of the CF card.  If I can
+>>> get permission to do so, I'll publish the source for my utility.
+>>>
+>>> >
+>>> > -jprog
+>>> > -board user
+>>> > -target ppc_hw
+>>> > -hw ./implementation/download.bit
+>>> > -elf zImage.elf
+>>> > -configdevice devicenr 1 idcode 0x1127e093 irlength 14 partname
+>>> xc2vp30
+>>> > -debugdevice devicenr 1 cpunr 1
+>>> > -ace system.ace
+>>> >
+>>> > and executed the command: xmd -tcl genace.tcl -opt genace.opt
+>>> >
+>>> > and the result I saw is:  Using GenACE option file : genace.opt
+>>> > Error: Executable zImage.elf does not contain start address..
+>>> >
+>>> > I examine the information by google, some said that it's the bug of
+>>> > development tools without sp, but both my ISE and EDK was patched.
+>>> > Others said that it's because of the "mb-objdump", we should chage it
+>>> > into "powerpc-eaci-objdump", and actually I had done this correction.
+>>> > BUT, the error still here.
+>>> >
+>>> > Could anyone please to help me about this question? I will be very
+>>> grateful.
+>>>
+>>> Very odd.  I haven't seen this problem myself so I can't be much help.
+>>> sorry.
+>>>
+>>> >
+>>> > BTW, could any kind person send any basic config file, which had been
+>>> > proved that the kernel compiled based on it could work good on XUP
+>>> > board?
+>>>
+>>> I don't have that board, sorry
+>>>
+>>> g.
+>>>
+>>> --
+>>> Grant Likely, B.Sc., P.Eng.
+>>> Secret Lab Technologies Ltd.
+>>> grant.likely@secretlab.ca
+>>> (403) 399-0195
+>>>
+>>=20
+>>=20
+>> --=20
+>> web: http://www.forwind.cn
+>> msn: likunarmstrong at hotmail.com
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>=20
+>>=20
+>=20
+>=20
 
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>Thanks
-for any help.<o:p></o:p></span></p>
-
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>Jonathan<o:p></o:p></span></p>
-
-<p class=3DMsoNormal align=3Dright dir=3DRTL style=3D'text-align:left'><spa=
-n dir=3DLTR>Journo.<o:p></o:p></span></p>
-
-</div>
-
-</body>
-
-</html>
-
---_000_8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5FmailsrvElspec_--
+--=20
+View this message in context: http://www.nabble.com/some-questions-about-XU=
+P-and-the-generation-of-ace-file-tp12090990p14433748.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
