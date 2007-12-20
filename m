@@ -1,9 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 20 Dec 2007 14:54:41 +1100
-Subject: [PATCH 0/19] [POWERPC] PCI updates & merges
-Message-Id: <1198122881.874131.56762399546.qpush@grosgo>
+Date: Thu, 20 Dec 2007 14:54:42 +1100
+Subject: [PATCH 1/19] [POWERPC] pci32: remove bogus alignment message
+In-Reply-To: <1198122881.874131.56762399546.qpush@grosgo>
+Message-Id: <20071220035444.B68A8DDDFB@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,29 +15,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This serie of patches converts the 32 bits PCI code to use the generic
-pci_assign_unassigned_resources() instead of its own assignment code
-which was unable to deal with unassigned PCI<->PCI bridges among
-other issues.
+There's a stale & bogus piece of code in 32 bits PCI code that
+complains about ISA related alignment issues. Just remove it.
 
-It then merges the resource fixup and allocation code between 32 and
-64 bits (mostly making 64 bits use the 32 bits code with a few fixups),
-hopefully fixing the longstanding issue that not setting pci_probe_only
-on ppc64 would generally not work.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-We also add flags to control the behaviour of the PCI code, such as
-letting some platforms force a full re-assignment (similar to what
-pci-auto used to provide in arch/ppc) and remove a whole bunch of
-hackish code that is made obsolete by that change.
+ arch/powerpc/kernel/pci_32.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
-32 bits platforms with 64 bits resources support will also need my
-separate patch to fix the generic setup-bus.c for that situation.
-
-Finally, I also merge the implementations of pcibios_enable_device()
-and fixup the PowerMac code that used hooks in that area in ways
-that don't work anymore and cleans up a few PowerMac related bits
-and pieces.
-
-Note that this wasn't properly tested with hotplug on pSeries as I
-have been unable to get it working for other reasons. If there is
-a problem there, we'll attempt to fix it with additional patches.
+--- linux-merge.orig/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:01.000000000 +1100
++++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:27.000000000 +1100
+@@ -199,12 +199,6 @@ void pcibios_align_resource(void *data, 
+ 	if (res->flags & IORESOURCE_IO) {
+ 		resource_size_t start = res->start;
+ 
+-		if (size > 0x100) {
+-			printk(KERN_ERR "PCI: I/O Region %s/%d too large"
+-			       " (%lld bytes)\n", pci_name(dev),
+-			       dev->resource - res, (unsigned long long)size);
+-		}
+-
+ 		if (start & 0x300) {
+ 			start = (start + 0x3ff) & ~0x3ff;
+ 			res->start = start;
