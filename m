@@ -1,7 +1,7 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA07.westchester.pa.mail.comcast.net
-	(qmta07.westchester.pa.mail.comcast.net [76.96.62.64])
-	by ozlabs.org (Postfix) with ESMTP id 73717DDF12
+Received: from QMTA03.westchester.pa.mail.comcast.net
+	(qmta03.westchester.pa.mail.comcast.net [76.96.62.32])
+	by ozlabs.org (Postfix) with ESMTP id 735F5DDEE9
 	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:36:57 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -12,9 +12,9 @@ In-Reply-To: Roland McGrath's message of  Thursday,
 	20 December 2007 03:52:00 -0800
 	<20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 10/43] powerpc user_regset fpregs
-Message-Id: <20071220115734.37FA126F98A@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:57:34 -0800 (PST)
+Subject: [PATCH -mm 16/43] powerpc user_regset compat
+Message-Id: <20071220115808.015F626F98D@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:58:08 -0800 (PST)
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,80 +26,186 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This implements user_regset-style accessors for the powerpc FPU data,
-and rewrites the existing ptrace code in terms of those calls.
+This extends task_user_regset_view CONFIG_PPC64 with support for the 32-bit
+view of register state, compatible with what a CONFIG_PPC32 kernel provides.
+This will enable generic machine-independent code to access user-mode
+threads' registers for debugging and dumping.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/ptrace.c |   37 +++++++++++++++++++++++++++++++------
- 1 files changed, 31 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/ptrace.c |  158 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 158 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 8b056d2..f1ce646 100644
+index b32ac5f..e961e10 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -21,6 +21,7 @@
- #include <linux/smp.h>
- #include <linux/errno.h>
- #include <linux/ptrace.h>
-+#include <linux/regset.h>
- #include <linux/user.h>
- #include <linux/security.h>
- #include <linux/signal.h>
-@@ -103,24 +104,48 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
- }
+@@ -501,8 +501,166 @@ static const struct user_regset_view user_ppc_native_view = {
+ 	.regsets = native_regsets, .n = ARRAY_SIZE(native_regsets)
+ };
  
- 
-+static int fpr_get(struct task_struct *target, const struct user_regset *regset,
-+		   unsigned int pos, unsigned int count,
-+		   void *kbuf, void __user *ubuf)
++#ifdef CONFIG_PPC64
++#include <linux/compat.h>
++
++static int gpr32_get(struct task_struct *target,
++		     const struct user_regset *regset,
++		     unsigned int pos, unsigned int count,
++		     void *kbuf, void __user *ubuf)
 +{
-+	flush_fp_to_thread(target);
++	const unsigned long *regs = &target->thread.regs->gpr[0];
++	compat_ulong_t *k = kbuf;
++	compat_ulong_t __user *u = ubuf;
++	compat_ulong_t reg;
 +
-+	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
-+		     offsetof(struct thread_struct, fpr[32]));
++	if (target->thread.regs == NULL)
++		return -EIO;
 +
-+	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				   &target->thread.fpr, 0, -1);
++	CHECK_FULL_REGS(target->thread.regs);
++
++	pos /= sizeof(reg);
++	count /= sizeof(reg);
++
++	if (kbuf)
++		for (; count > 0 && pos < PT_MSR; --count)
++			*k++ = regs[pos++];
++	else
++		for (; count > 0 && pos < PT_MSR; --count)
++			if (__put_user((compat_ulong_t) regs[pos++], u++))
++				return -EFAULT;
++
++	if (count > 0 && pos == PT_MSR) {
++		reg = get_user_msr(target);
++		if (kbuf)
++			*k++ = reg;
++		else if (__put_user(reg, u++))
++			return -EFAULT;
++		++pos;
++		--count;
++	}
++
++	if (kbuf)
++		for (; count > 0 && pos < PT_REGS_COUNT; --count)
++			*k++ = regs[pos++];
++	else
++		for (; count > 0 && pos < PT_REGS_COUNT; --count)
++			if (__put_user((compat_ulong_t) regs[pos++], u++))
++				return -EFAULT;
++
++	pos *= sizeof(reg);
++	count *= sizeof(reg);
++	return user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
++					PT_REGS_COUNT * sizeof(reg), -1);
 +}
 +
-+static int fpr_set(struct task_struct *target, const struct user_regset *regset,
-+		   unsigned int pos, unsigned int count,
-+		   const void *kbuf, const void __user *ubuf)
++static int gpr32_set(struct task_struct *target,
++		     const struct user_regset *regset,
++		     unsigned int pos, unsigned int count,
++		     const void *kbuf, const void __user *ubuf)
 +{
-+	flush_fp_to_thread(target);
++	unsigned long *regs = &target->thread.regs->gpr[0];
++	const compat_ulong_t *k = kbuf;
++	const compat_ulong_t __user *u = ubuf;
++	compat_ulong_t reg;
 +
-+	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
-+		     offsetof(struct thread_struct, fpr[32]));
++	if (target->thread.regs == NULL)
++		return -EIO;
 +
-+	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.fpr, 0, -1);
++	CHECK_FULL_REGS(target->thread.regs);
++
++	pos /= sizeof(reg);
++	count /= sizeof(reg);
++
++	if (kbuf)
++		for (; count > 0 && pos < PT_MSR; --count)
++			regs[pos++] = *k++;
++	else
++		for (; count > 0 && pos < PT_MSR; --count) {
++			if (__get_user(reg, u++))
++				return -EFAULT;
++			regs[pos++] = reg;
++		}
++
++
++	if (count > 0 && pos == PT_MSR) {
++		if (kbuf)
++			reg = *k++;
++		else if (__get_user(reg, u++))
++			return -EFAULT;
++		set_user_msr(target, reg);
++		++pos;
++		--count;
++	}
++
++	if (kbuf)
++		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
++			regs[pos++] = *k++;
++	else
++		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
++			if (__get_user(reg, u++))
++				return -EFAULT;
++			regs[pos++] = reg;
++		}
++
++	if (count > 0 && pos == PT_TRAP) {
++		if (kbuf)
++			reg = *k++;
++		else if (__get_user(reg, u++))
++			return -EFAULT;
++		set_user_trap(target, reg);
++		++pos;
++		--count;
++	}
++
++	pos *= sizeof(reg);
++	count *= sizeof(reg);
++	return user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
++					 (PT_TRAP + 1) * sizeof(reg), -1);
 +}
 +
- static int get_fpregs(void __user *data, struct task_struct *task,
- 		      int has_fpscr)
++/*
++ * These are the regset flavors matching the CONFIG_PPC32 native set.
++ */
++static const struct user_regset compat_regsets[] = {
++	[REGSET_GPR] = {
++		.core_note_type = NT_PRSTATUS, .n = ELF_NGREG,
++		.size = sizeof(compat_long_t), .align = sizeof(compat_long_t),
++		.get = gpr32_get, .set = gpr32_set
++	},
++	[REGSET_FPR] = {
++		.core_note_type = NT_PRFPREG, .n = ELF_NFPREG,
++		.size = sizeof(double), .align = sizeof(double),
++		.get = fpr_get, .set = fpr_set
++	},
++#ifdef CONFIG_ALTIVEC
++	[REGSET_VMX] = {
++		.core_note_type = NT_PPC_VMX, .n = 34,
++		.size = sizeof(vector128), .align = sizeof(vector128),
++		.active = vr_active, .get = vr_get, .set = vr_set
++	},
++#endif
++#ifdef CONFIG_SPE
++	[REGSET_SPE] = {
++		.n = 35,
++		.size = sizeof(u32), .align = sizeof(u32),
++		.active = evr_active, .get = evr_get, .set = evr_set
++	},
++#endif
++};
++
++static const struct user_regset_view user_ppc_compat_view = {
++	.name = "ppc", .e_machine = EM_PPC, .ei_osabi = ELF_OSABI,
++	.regsets = compat_regsets, .n = ARRAY_SIZE(compat_regsets)
++};
++#endif	/* CONFIG_PPC64 */
++
+ const struct user_regset_view *task_user_regset_view(struct task_struct *task)
  {
- 	unsigned int count = has_fpscr ? 33 : 32;
--
--	if (copy_to_user(data, task->thread.fpr, count * sizeof(double)))
-+	if (!access_ok(VERIFY_WRITE, data, count * sizeof(double)))
- 		return -EFAULT;
--	return 0;
-+	return fpr_get(task, NULL, 0, count * sizeof(double), NULL, data);
++#ifdef CONFIG_PPC64
++	if (test_tsk_thread_flag(task, TIF_32BIT))
++		return &user_ppc_compat_view;
++#endif
+ 	return &user_ppc_native_view;
  }
- 
- static int set_fpregs(void __user *data, struct task_struct *task,
- 		      int has_fpscr)
- {
- 	unsigned int count = has_fpscr ? 33 : 32;
--
--	if (copy_from_user(task->thread.fpr, data, count * sizeof(double)))
-+	if (!access_ok(VERIFY_READ, data, count * sizeof(double)))
- 		return -EFAULT;
--	return 0;
-+	return fpr_set(task, NULL, 0, count * sizeof(double), NULL, data);
- }
- 
  
 -- 
 1.5.3.6
