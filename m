@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 433CDDDDFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 17:30:17 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so900218anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 22:30:16 -0800 (PST)
-Message-ID: <fa686aa40712192230p206cc716rd85e21cb8d2bdde4@mail.gmail.com>
-Date: Wed, 19 Dec 2007 23:30:16 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: axboe@kernel.dk, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sr@denx.de, monstr@monstr.eu, jwilliams@itee.uq.edu.au,
-	stephen.neuendorffer@xilinx.com
-Subject: Re: [PATCH] [RFC] Xilinx SystemACE: Add media hotplug support
-In-Reply-To: <20071220062348.16448.24575.stgit@trillian.secretlab.ca>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071220062348.16448.24575.stgit@trillian.secretlab.ca>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18281.59210.200603.12093@cargo.ozlabs.ibm.com>
+Date: Thu, 20 Dec 2007 14:53:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] pata_of_platform: Move electra-ide support over to new
+	framework
+In-Reply-To: <20071204210344.GE8099@lixom.net>
+References: <20071204170442.GA10460@localhost.localdomain>
+	<20071204204432.GD8099@lixom.net> <4755BD7B.6030208@garzik.org>
+	<20071204210344.GE8099@lixom.net>
+Cc: linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/19/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> Please review and comment.  This patch works in my setup, but I haven't
-> tested exhaustively yet.  I also need to fixup the documentation to
-> reflect new states before I request this patch to be merged.
->
-> Question for the block layer experts:  I'm using add_disk()/del_gendisk()
-> functions to inform the kernel of media insertion and removal events.  Is
-> this the best way to do this?  I looked at the .media_changed and
-> .revalidate_disk hooks, but it doesn't seem like they offer the driver
-> any way to notify the kernel of media removal (as opposed to the kernel
-> asking the driver)
+Olof Johansson writes:
 
-Heh, actually I *know* I'm doing the wrong thing; but I'm hoping I've
-got better chances of getting steered in the right direction if I
-start by throwing code out there.  Currently this patch handles
-insertion/removal just fine if nothing is mounted, but gets stuck if
-the disk is in use.  How do I get the kernel to cancel all pending
-requests when deregistering the device?
+> > FWIW I'm presuming this work will go via a powerpc tree not libata... 
+> > Generally that's not the case, but here it's largely an arch-specific work.
+> 
+> Ok, that works. I was thinking of letting this patch go through libata,
+> and do the removal through the powerpc merge path. But I can do both
+> through powerpc.
 
-Thanks,
-g.
+Are you going to send me a patch to do this addition plus the removal
+of the old stuff, or do you want me to merge this patch as is?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Paul.
