@@ -1,14 +1,11 @@
-Return-Path: <clemens.koller@anagramm.de>
-Message-ID: <476A47CA.50004@anagramm.de>
-Date: Thu, 20 Dec 2007 11:45:30 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: pjmaiya <pjmaiya@signal-networks.com>
-Subject: Re: tiny login
-References: <001401c842c0$69c0dba0$4601a8c0@signet>
-In-Reply-To: <001401c842c0$69c0dba0$4601a8c0@signet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18282.19253.485799.233476@cargo.ozlabs.ibm.com>
+Date: Thu, 20 Dec 2007 22:00:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: More patches added to for-2.6.25 and master branches of powerpc.git
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,57 +15,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pjmaiya schrieb:
-> hi,
+Andre Detsch (1):
+      [POWERPC] cell: safer of_has_vicinity routine
 
-- don't cross-post
-- don't post HTML to the lists
+Balbir Singh (1):
+      [POWERPC] Fake NUMA emulation for PowerPC
 
-> I am using tiny login provided by montavista. Binaries already obtained 
-> from tool provided from montavista. We are able to add only 10 users. 
-> But I need to add more than 10 users.
+Benjamin Herrenschmidt (20):
+      [POWERPC] pci32: Remove bogus alignment message
+      [POWERPC] pci32: Use generic pci_assign_unassign_resources
+      [POWERPC] pci32: Remove PowerMac P2P bridge IO hack
+      [POWERPC] pci32: Add flags modifying the PCI code behaviour
+      [POWERPC] pci32: Remove obsolete PowerMac bus number hack
+      [POWERPC] pci32: Add platform option to enable /proc PCI domains
+      [POWERPC] Merge pcibios_resource_to_bus/bus_to_resource
+      [POWERPC] Merge PCI resource fixups
+      [POWERPC] Merge PCI resource allocation & assignment
+      [POWERPC] fix iSeries PCI resource management
+      [POWERPC] Updates/fixes to 32 bits pcibios_enable_device()
+      [POWERPC] Merge 32 and 64 bits pcibios_enable_device
+      [POWERPC] Fixup powermac enable device hook
+      [POWERPC] Clear pci_probe_only on 64 bits PowerMac
+      [POWERPC] Various fixes to pcibios_enable_device()
+      [POWERPC] Enable self-view of the HT host bridge on PowerMac G5
+      [POWERPC] Improve resource setup of PowerMac G5 HT bridge
+      [POWERPC] Fixup skipping of PowerMac PCI<->PCI bridge "closed" resources
+      [POWERPC] Disable PCI IO/Mem on a device when resources can't be allocated
+      [POWERPC] Fix PCI IRQ fallback code to not map IRQ 0
 
-Tried to contact montavista for support? ;-)
+Bob Nelson (1):
+      [POWERPC] OProfile: fix cbe pm signal routing problem
 
-> I have already downloaded free open source for tinylogin 
-> (tinylogin-1.4). Can we modifiy this source code of this version and 
-> support users more than 10??
-> If yes, can somebody inform step to build tiny login and installation 
-> method.
+Cyrill Gorcunov (1):
+      [POWERPC] CHRP: Fix possible NULL pointer dereference
 
-Well, you propably want to understand the advantage of open source
-software first. You can (depending on the license) change the code
-according to your needs...
+David Gibson (2):
+      [POWERPC] Merge dtc upstream source
+      [POWERPC] Use embedded dtc in kernel builds
 
-Read: http://tldp.org/HOWTO/Software-Building-HOWTO.html
+Grant Likely (1):
+      [POWERPC] Add machine initcall macros
 
-If you have questions, please tell exactly, where you have a problem.
+Ishizaki Kou (3):
+      [POWERPC] cell: add missing '\n'
+      [POWERPC] Cleanup calling mmio_nvram_init
+      [POWERPC] celleb: Split machine definition
 
-$ wget http://tinylogin.busybox.net/downloads/tinylogin-1.4.tar.bz2
-$ tar xvf tinylogin-1.4.tar.bz2
-$ cd tinylogin-1.4
-$ make
+Jeremy Kerr (6):
+      [POWERPC] cell: export force_sig_info()
+      [POWERPC] cell: handle kernel SLB setup in spu_base.c
+      [POWERPC] cell: use spu_load_slb for SLB setup
+      [POWERPC] cell: add spu_64k_pages_available() check
+      [POWERPC] cell: handle SPE kernel mappings that cross segment boundaries
+      [POWERPC] cell: catch errors from sysfs_create_group()
 
-works like a charm.
+Jochen Friedrich (2):
+      [POWERPC] Add support for PORTA and PORTB odr registers
+      [POWERPC] Move CPM command handling into the cpm drivers
 
-A quick look into login.c says:
-// login defines
-#define TIMEOUT       60
-#define FAIL_DELAY    3
-#define EMPTY_USERNAME_COUNT    10
-                                ^^^^
-... which looks quite promising!
-Ask the busybox guys for details since this is off-topic here.
+Johannes Berg (3):
+      [POWERPC] adb: Replace sleep notifier with platform driver suspend/resume hooks
+      [POWERPC] via-pmu: Kill sleep notifiers completely
+      [POWERPC] powermac: Use generic suspend code
 
-Regards,
+Jon Loeliger (3):
+      [POWERPC] 8xxx: Convert #include of asm/of_{platform, device}.h into linux/of_{platform, device}.h.
+      [POWERPC] 86xx: Add aliases node to 8641hpcn DTS file.
+      [POWERPC] cell: Convert #include of asm/of_{platform, device}.h into linux/of_{platform, device}.h.
 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Julia Lawall (3):
+      [POWERPC] arch/ppc: Remove an unnecessary pci_dev_put
+      [POWERPC] arch/powerpc: Add missing of_node_put
+      [POWERPC] cell/cbe_regs.c: Add missing of_node_put
+
+Kevin Corry (1):
+      [POWERPC] perfmon2: make pm_interval register read/write
+
+Kumar Gala (5):
+      [POWERPC] Add SPRN for Embedded registers specified in PowerISA 2.04
+      [POWERPC] Emulate isel (Integer Select) instruction
+      [POWERPC] FSL: I2C device tree cleanups
+      [POWERPC] FSL: enet device tree cleanups
+      [POWERPC] FSL: Added aliases node to device trees
+
+Li Yang (5):
+      [POWERPC] add e300c4 entry to cputable
+      [POWERPC] ipic: add new interrupts introduced by new chip
+      [POWERPC] 83xx: Add platform support for MPC837x MDS board
+      [POWERPC] 83xx: Add MPC837x MDS default kernel configuration
+      [POWERPC] ipic: ack only for edge interrupts
+
+Li Zefan (1):
+      [POWERPC] Don't cast a struct pointer to list_head pointer
+
+Lucas Woods (2):
+      [POWERPC] arch/powerpc: Remove duplicate includes
+      [POWERPC] arch/ppc: Remove duplicate includes
+
+Michael Ellerman (1):
+      [POWERPC] Implement pci_set_dma_mask() in terms of the dma_ops
+
+Milton Miller (6):
+      [POWERPC] Push down or eliminate smp_processor_id calls in xics code
+      [POWERPC] init_decrementer_clockevent can be static __init
+      [POWERPC] Use __get_cpu_var in time.c
+      [POWERPC] Timer interrupt: use a struct for two per_cpu varables
+      [POWERPC] Depend on ->initialized in calc_steal_time
+      [POWERPC] Optimize account_system_vtime
+
+Olof Johansson (3):
+      [POWERPC] MPIC: Minor optimization of ipi handler
+      [POWERPC] pasemi: Implement MSI support
+      [POWERPC] holly.c: Remove unnecessary include of linux/ide.h
+
+Paul Mackerras (5):
+      [POWERPC] Convert media-bay.c to use the kthread API
+      [POWERPC] Convert adb.c to use kthread API and not spin on ADB requests
+      [POWERPC] Convert therm_pm72.c to use the kthread API
+      [POWERPC] Convert therm_windtunnel.c to use the kthread API
+      [POWERPC] Fix sleep on powerbook 3400
+
+Scott Wood (5):
+      [POWERPC] 8xx: Convert mpc866ads to the new device binding.
+      [POWERPC] 83xx: mpc834x_mds: Fix whitespace and call of_platform_bus_probe().
+      [POWERPC] 83xx: mpc8313erdb: Fix whitespace.
+      [POWERPC] wrapper: Rename offset in offset_devp()
+      [POWERPC] wrapper: Treat NULL as root node in devp_offset; add devp_offset_find()
+
+Stephen Rothwell (2):
+      [POWERPC] iSeries: Fix unregistering HV event handlers
+      [POWERPC] Stop the TOC overflowing for large builds
+
+Timur Tabi (4):
+      [POWERPC] 86xx: fix guts_set_dmacr() and add guts_set_pmuxcr_dma() to immap_86xx.h
+      [POWERPC] QE: change qe_setbrg() to take an enum qe_clock instead of an integer
+      [POWERPC] qe: add function qe_clock_source()
+      [POWERPC] ucc_geth: use rx-clock-name and tx-clock-name device tree properties
+
+joe@perches.com (4):
+      [POWERPC] arch/powerpc/: Spelling fixes
+      [POWERPC] include/asm-powerpc/: Spelling fixes
+      [POWERPC] arch/ppc/: Spelling fixes
+      [POWERPC] include/asm-ppc/: Spelling fixes
