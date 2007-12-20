@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD663DDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:49:53 +1100 (EST)
-Message-Id: <DAA17734-F900-42D2-9BA6-3522D7D59D2B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 0/4] arch/powerpc support for SBC8560 board
-Date: Thu, 20 Dec 2007 17:49:49 -0600
-References: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.185])
+	by ozlabs.org (Postfix) with ESMTP id 16800DDE29
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:51:06 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w8so139071mue.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:51:04 -0800 (PST)
+Date: Fri, 21 Dec 2007 02:40:53 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v2 3/4] [POWERPC][SPI] use brg-frequency for SPI in QE
+Message-ID: <20071220234053.GA1564@zarina>
+References: <20071220202714.GA18471@localhost.localdomain>
+	<20071220203322.GC19553@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071220203322.GC19553@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,6 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Can we get ride of sbc85xx in arch/ppc with these patches?
+On Thu, Dec 20, 2007 at 11:33:22PM +0300, Anton Vorontsov wrote:
+> In case of QE we can use brg-frequency (which is qeclk/2).
+> Thus no need to divide sysclk in the spi_mpc83xx.
+> 
+> This patch also adds code to use get_brgfreq() on QE chips.
 
-- k
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+[...]
+> @@ -91,6 +91,11 @@ u32 get_brgfreq(void)
+>  
+>  	/* Legacy device binding -- will go away when no users are left. */
+>  	node = of_find_node_by_type(NULL, "cpm");
+> +	if (!node)
+> +		node = of_find_compatible_node(NULL, NULL, "fsl,qe");
+> +	if (!node)
+> +		node = of_find_node_by_type(NULL, "qe");
+> +
+>  	if (node) {
+>  		prop = of_get_property(node, "brg-frequency", &size);
+
+I beg your pardon, truly. I just tested this on MPC8323E-RDB. No,
+older u-boots doesn't have brg-frequency. So, I must add
+of_get_property() for bus-frequency in case of failing
+brg-frequency. :-/
+
+I also found few glitches in `fsl_spi_init and users: stop using
+device_type = "spi"' patch, regarding of_node_put(). Heh,
+of_find_compatible_node() _puts_ `from' argument by itself, which
+is not obvious at all.
+
+I'll attach updated patches, with David's Acked-by on SPI driver
+part. Other patches seem to be fine though.
+
+Thanks,
+
+p.s. dropping spi-devel list, because only powerpc stuff
+affected.
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
