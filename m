@@ -1,25 +1,20 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id 2CEFADDEE9
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B9EC1DDEA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Dec 2007 00:21:27 +1100 (EST)
-Received: from sj-core-4.cisco.com (sj-core-4.cisco.com [171.68.223.138])
-	by sj-dkim-2.cisco.com (8.12.11/8.12.11) with ESMTP id lBKDBU1n030211
-	for <linuxppc-embedded@ozlabs.org>; Thu, 20 Dec 2007 05:11:30 -0800
-Received: from xbh-sjc-221.amer.cisco.com (xbh-sjc-221.cisco.com
-	[128.107.191.63])
-	by sj-core-4.cisco.com (8.12.10/8.12.6) with ESMTP id lBKDBG0Q015476
-	for <linuxppc-embedded@ozlabs.org>; Thu, 20 Dec 2007 13:11:30 GMT
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Differences between git tree
-Date: Thu, 20 Dec 2007 05:11:23 -0800
-Message-ID: <F795765B112E7344AF36AA911279641502D1A907@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <mailman.56.1171312373.21008.linuxppc-embedded@ozlabs.org>
-References: <mailman.56.1171312373.21008.linuxppc-embedded@ozlabs.org>
-From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Fri, 21 Dec 2007 05:42:03 +1100 (EST)
+Date: Thu, 20 Dec 2007 21:41:39 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Jonathan Journo <Jonathan@elspec-ltd.com>
+Subject: Re: MPC885 - USB HCI drivers.
+Message-ID: <20071220214139.18848604@kernel.crashing.org>
+In-Reply-To: <8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5F@mailsrv.Elspec.local>
+References: <8A79E59E6C48F2468E8A7C8CE1F4C7E801D636CC5F@mailsrv.Elspec.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,12 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-Could someone let me know what is the each of these git tree are?
+On Thu, 20 Dec 2007 08:53:07 +0200
+Jonathan Journo wrote:
 
-http://opensource.freescale.com/pub/scm/linux-2.6-jdl.git
-AND
-http://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+> Hello Pantelis ,
+> 
+> I saw you used usb host driver on mpc8xx. I am trying to make one on
+> MPC885 because vxworks drivers are not compatible with it.
+> 
+> To begin I tried to make the loopback mode (test) working but it
+> doesn't work. Is there anything that is not mentioned on the
+> datasheet in" USB host controller initialization example" that I have
+> to know to make it work.
 
-Many thanks in advance,
-Bizhan
+iirc, Panto was working with 8271, not 8xx hci. I made some investigations, basing on driver from Arabella SW.
+The whole thing needs microcode upload and is very flakey from what I recall. In fact I gave up b/c it was not
+doing things described in datasheet, so the same case.
+
+-- 
+Sincerely, Vitaly
