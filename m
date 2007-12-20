@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 65FDDDDDEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:56:31 +1100 (EST)
-Subject: Re: patch
-	pci-fix-bus-resource-assignment-on-32-bits-with-64b-resources.patch
-	added to gregkh-2.6 tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: gregkh@suse.de
-In-Reply-To: <11981938363358@kroah.org>
-References: <11981938363358@kroah.org>
-Content-Type: text/plain
-Date: Fri, 21 Dec 2007 10:56:13 +1100
-Message-Id: <1198194973.6779.35.camel@pasglop>
-Mime-Version: 1.0
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id 0DCD4DDE38
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:56:50 +1100 (EST)
+Message-Id: <AD8BE998-401D-4109-8DD0-F26760C0E980@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+In-Reply-To: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 0/4] arch/powerpc support for SBC8560 board
+Date: Thu, 20 Dec 2007 17:56:45 -0600
+References: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 3) Add device tree source for Wind River SBC8560 board
+>
+> This is probably the most interesting part of the group, given that  
+> the
+> board doesn't use the CPM2 to provide the serial console.  I've made a
+> duart dts entry that is kind of similar to what is done for the tsi108
+> on the mpc7448/hpc-ii board, and made sure that the serial had their
+> parent marked as "soc" (found out the hard way that UARTs were ignored
+> as possible consoles unless they were soc or tsi108 children...)
+>
+> b/arch/powerpc/boot/dts/sbc8560.dts |  203 ++++++++++++++++++++++++++ 
+> +++++++++-
 
-> The current pci_assign_unassigned_resources() code doesn't work properly
-> on 32 bits platforms with 64 bits resources. The main reason is the use
-> of unsigned long in various places instead of resource_size_t.
-> 
-> This fixes it, along with some tricks to avoid casting to 64 bits on
-> platforms that don't need it in every printk around.
+we need to figure out to fix this so we don't need the parent marked  
+as 'soc'.
 
-Can you still edit the changelog ? If yes, please remove that sentence
-since the latest version (which you put in your tree) doesn't actually
-have those tricks anymore as per discussion on the list...
+Out of interest how exactly are the duart's wired on the 8560.  Are  
+they off localbus?
 
-Sorry about that.
 
-Cheers,
-Ben.
+> I'd quickly spun together a u-boot 1.2.0 for testing this -- since  
+> that was
+> the quickest route to getting a powerpc capable version.  I'll see  
+> what
+> can be done for getting a u-boot 1.3.1 patchset out so the local-mac- 
+> address
+> vs address thing in the dtb isn't an issue.
+
+Probably should add a boot wrapper to work with old non-device tree  
+aware u-boots.
+
+- k
