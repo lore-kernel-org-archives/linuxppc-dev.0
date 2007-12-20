@@ -1,8 +1,8 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA03.westchester.pa.mail.comcast.net
-	(qmta03.westchester.pa.mail.comcast.net [76.96.62.32])
-	by ozlabs.org (Postfix) with ESMTP id 735F5DDEE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:36:57 +1100 (EST)
+Received: from QMTA04.emeryville.ca.mail.comcast.net
+	(qmta04.emeryville.ca.mail.comcast.net [76.96.30.40])
+	by ozlabs.org (Postfix) with ESMTP id 2FEA5DDF62
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 00:02:55 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
@@ -12,9 +12,9 @@ In-Reply-To: Roland McGrath's message of  Thursday,
 	20 December 2007 03:52:00 -0800
 	<20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 16/43] powerpc user_regset compat
-Message-Id: <20071220115808.015F626F98D@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:58:08 -0800 (PST)
+Subject: [PATCH -mm 11/43] powerpc user_regset altivec
+Message-Id: <20071220115739.4978126F98A@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:57:39 -0800 (PST)
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,186 +26,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This extends task_user_regset_view CONFIG_PPC64 with support for the 32-bit
-view of register state, compatible with what a CONFIG_PPC32 kernel provides.
-This will enable generic machine-independent code to access user-mode
-threads' registers for debugging and dumping.
+This implements user_regset-style accessors for the powerpc Altivec data,
+and rewrites the existing ptrace code in terms of those calls.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/ptrace.c |  158 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 158 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/ptrace.c |  112 +++++++++++++++++++++++++++++-------------
+ 1 files changed, 78 insertions(+), 34 deletions(-)
 
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index b32ac5f..e961e10 100644
+index f1ce646..7cdf35a 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -501,8 +501,166 @@ static const struct user_regset_view user_ppc_native_view = {
- 	.regsets = native_regsets, .n = ARRAY_SIZE(native_regsets)
- };
+@@ -22,6 +22,7 @@
+ #include <linux/errno.h>
+ #include <linux/ptrace.h>
+ #include <linux/regset.h>
++#include <linux/elf.h>
+ #include <linux/user.h>
+ #include <linux/security.h>
+ #include <linux/signal.h>
+@@ -163,30 +164,87 @@ static int set_fpregs(void __user *data, struct task_struct *task,
+  * (combined (32- and 64-bit) gdb.
+  */
  
-+#ifdef CONFIG_PPC64
-+#include <linux/compat.h>
-+
-+static int gpr32_get(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     void *kbuf, void __user *ubuf)
++static int vr_active(struct task_struct *target,
++		     const struct user_regset *regset)
 +{
-+	const unsigned long *regs = &target->thread.regs->gpr[0];
-+	compat_ulong_t *k = kbuf;
-+	compat_ulong_t __user *u = ubuf;
-+	compat_ulong_t reg;
-+
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	CHECK_FULL_REGS(target->thread.regs);
-+
-+	pos /= sizeof(reg);
-+	count /= sizeof(reg);
-+
-+	if (kbuf)
-+		for (; count > 0 && pos < PT_MSR; --count)
-+			*k++ = regs[pos++];
-+	else
-+		for (; count > 0 && pos < PT_MSR; --count)
-+			if (__put_user((compat_ulong_t) regs[pos++], u++))
-+				return -EFAULT;
-+
-+	if (count > 0 && pos == PT_MSR) {
-+		reg = get_user_msr(target);
-+		if (kbuf)
-+			*k++ = reg;
-+		else if (__put_user(reg, u++))
-+			return -EFAULT;
-+		++pos;
-+		--count;
-+	}
-+
-+	if (kbuf)
-+		for (; count > 0 && pos < PT_REGS_COUNT; --count)
-+			*k++ = regs[pos++];
-+	else
-+		for (; count > 0 && pos < PT_REGS_COUNT; --count)
-+			if (__put_user((compat_ulong_t) regs[pos++], u++))
-+				return -EFAULT;
-+
-+	pos *= sizeof(reg);
-+	count *= sizeof(reg);
-+	return user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
-+					PT_REGS_COUNT * sizeof(reg), -1);
++	flush_altivec_to_thread(target);
++	return target->thread.used_vr ? regset->n : 0;
 +}
 +
-+static int gpr32_set(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     const void *kbuf, const void __user *ubuf)
++static int vr_get(struct task_struct *target, const struct user_regset *regset,
++		  unsigned int pos, unsigned int count,
++		  void *kbuf, void __user *ubuf)
 +{
-+	unsigned long *regs = &target->thread.regs->gpr[0];
-+	const compat_ulong_t *k = kbuf;
-+	const compat_ulong_t __user *u = ubuf;
-+	compat_ulong_t reg;
++	int ret;
 +
-+	if (target->thread.regs == NULL)
-+		return -EIO;
++	flush_altivec_to_thread(target);
 +
-+	CHECK_FULL_REGS(target->thread.regs);
++	BUILD_BUG_ON(offsetof(struct thread_struct, vscr) !=
++		     offsetof(struct thread_struct, vr[32]));
 +
-+	pos /= sizeof(reg);
-+	count /= sizeof(reg);
-+
-+	if (kbuf)
-+		for (; count > 0 && pos < PT_MSR; --count)
-+			regs[pos++] = *k++;
-+	else
-+		for (; count > 0 && pos < PT_MSR; --count) {
-+			if (__get_user(reg, u++))
-+				return -EFAULT;
-+			regs[pos++] = reg;
-+		}
-+
-+
-+	if (count > 0 && pos == PT_MSR) {
-+		if (kbuf)
-+			reg = *k++;
-+		else if (__get_user(reg, u++))
-+			return -EFAULT;
-+		set_user_msr(target, reg);
-+		++pos;
-+		--count;
++	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				  &target->thread.vr, 0,
++				  33 * sizeof(vector128));
++	if (!ret) {
++		/*
++		 * Copy out only the low-order word of vrsave.
++		 */
++		union {
++			elf_vrreg_t reg;
++			u32 word;
++		} vrsave;
++		memset(&vrsave, 0, sizeof(vrsave));
++		vrsave.word = target->thread.vrsave;
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &vrsave,
++					  33 * sizeof(vector128), -1);
 +	}
 +
-+	if (kbuf)
-+		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
-+			regs[pos++] = *k++;
-+	else
-+		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
-+			if (__get_user(reg, u++))
-+				return -EFAULT;
-+			regs[pos++] = reg;
-+		}
-+
-+	if (count > 0 && pos == PT_TRAP) {
-+		if (kbuf)
-+			reg = *k++;
-+		else if (__get_user(reg, u++))
-+			return -EFAULT;
-+		set_user_trap(target, reg);
-+		++pos;
-+		--count;
-+	}
-+
-+	pos *= sizeof(reg);
-+	count *= sizeof(reg);
-+	return user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
-+					 (PT_TRAP + 1) * sizeof(reg), -1);
++	return ret;
 +}
 +
-+/*
-+ * These are the regset flavors matching the CONFIG_PPC32 native set.
-+ */
-+static const struct user_regset compat_regsets[] = {
-+	[REGSET_GPR] = {
-+		.core_note_type = NT_PRSTATUS, .n = ELF_NGREG,
-+		.size = sizeof(compat_long_t), .align = sizeof(compat_long_t),
-+		.get = gpr32_get, .set = gpr32_set
-+	},
-+	[REGSET_FPR] = {
-+		.core_note_type = NT_PRFPREG, .n = ELF_NFPREG,
-+		.size = sizeof(double), .align = sizeof(double),
-+		.get = fpr_get, .set = fpr_set
-+	},
-+#ifdef CONFIG_ALTIVEC
-+	[REGSET_VMX] = {
-+		.core_note_type = NT_PPC_VMX, .n = 34,
-+		.size = sizeof(vector128), .align = sizeof(vector128),
-+		.active = vr_active, .get = vr_get, .set = vr_set
-+	},
-+#endif
-+#ifdef CONFIG_SPE
-+	[REGSET_SPE] = {
-+		.n = 35,
-+		.size = sizeof(u32), .align = sizeof(u32),
-+		.active = evr_active, .get = evr_get, .set = evr_set
-+	},
-+#endif
-+};
++static int vr_set(struct task_struct *target, const struct user_regset *regset,
++		  unsigned int pos, unsigned int count,
++		  const void *kbuf, const void __user *ubuf)
++{
++	int ret;
 +
-+static const struct user_regset_view user_ppc_compat_view = {
-+	.name = "ppc", .e_machine = EM_PPC, .ei_osabi = ELF_OSABI,
-+	.regsets = compat_regsets, .n = ARRAY_SIZE(compat_regsets)
-+};
-+#endif	/* CONFIG_PPC64 */
++	flush_altivec_to_thread(target);
 +
- const struct user_regset_view *task_user_regset_view(struct task_struct *task)
++	BUILD_BUG_ON(offsetof(struct thread_struct, vscr) !=
++		     offsetof(struct thread_struct, vr[32]));
++
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				 &target->thread.vr, 0, 33 * sizeof(vector128));
++	if (!ret && count > 0) {
++		/*
++		 * We use only the first word of vrsave.
++		 */
++		union {
++			elf_vrreg_t reg;
++			u32 word;
++		} vrsave;
++		memset(&vrsave, 0, sizeof(vrsave));
++		vrsave.word = target->thread.vrsave;
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &vrsave,
++					 33 * sizeof(vector128), -1);
++		if (!ret)
++			target->thread.vrsave = vrsave.word;
++	}
++
++	return ret;
++}
++
+ /*
+  * Get contents of AltiVec register state in task TASK
+  */
+ static int get_vrregs(unsigned long __user *data, struct task_struct *task)
  {
-+#ifdef CONFIG_PPC64
-+	if (test_tsk_thread_flag(task, TIF_32BIT))
-+		return &user_ppc_compat_view;
-+#endif
- 	return &user_ppc_native_view;
+-	unsigned long regsize;
+-
+-	/* copy AltiVec registers VR[0] .. VR[31] */
+-	regsize = 32 * sizeof(vector128);
+-	if (copy_to_user(data, task->thread.vr, regsize))
+-		return -EFAULT;
+-	data += (regsize / sizeof(unsigned long));
+-
+-	/* copy VSCR */
+-	regsize = 1 * sizeof(vector128);
+-	if (copy_to_user(data, &task->thread.vscr, regsize))
++	if (!access_ok(VERIFY_WRITE, data,
++		       33 * sizeof(vector128) + sizeof(u32)))
+ 		return -EFAULT;
+-	data += (regsize / sizeof(unsigned long));
+ 
+-	/* copy VRSAVE */
+-	if (put_user(task->thread.vrsave, (u32 __user *)data))
+-		return -EFAULT;
+-
+-	return 0;
++	return vr_get(task, NULL, 0, 33 * sizeof(vector128) + sizeof(u32),
++		      NULL, data);
  }
+ 
+ /*
+@@ -194,25 +252,11 @@ static int get_vrregs(unsigned long __user *data, struct task_struct *task)
+  */
+ static int set_vrregs(struct task_struct *task, unsigned long __user *data)
+ {
+-	unsigned long regsize;
+-
+-	/* copy AltiVec registers VR[0] .. VR[31] */
+-	regsize = 32 * sizeof(vector128);
+-	if (copy_from_user(task->thread.vr, data, regsize))
+-		return -EFAULT;
+-	data += (regsize / sizeof(unsigned long));
+-
+-	/* copy VSCR */
+-	regsize = 1 * sizeof(vector128);
+-	if (copy_from_user(&task->thread.vscr, data, regsize))
+-		return -EFAULT;
+-	data += (regsize / sizeof(unsigned long));
+-
+-	/* copy VRSAVE */
+-	if (get_user(task->thread.vrsave, (u32 __user *)data))
++	if (!access_ok(VERIFY_READ, data, 33 * sizeof(vector128) + sizeof(u32)))
+ 		return -EFAULT;
+ 
+-	return 0;
++	return vr_set(task, NULL, 0, 33 * sizeof(vector128) + sizeof(u32),
++		      NULL, data);
+ }
+ #endif /* CONFIG_ALTIVEC */
  
 -- 
 1.5.3.6
