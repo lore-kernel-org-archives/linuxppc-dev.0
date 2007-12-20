@@ -1,16 +1,18 @@
-Return-Path: <estarkov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0AAD4DDE18
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 01:23:02 +1100 (EST)
-Message-ID: <476A790A.2060203@ru.mvista.com>
-Date: Thu, 20 Dec 2007 17:15:38 +0300
-From: Egor Starkov <estarkov@ru.mvista.com>
-MIME-Version: 1.0
-To: mingo@elte.hu
-Subject: PPC64 doesn't compile with CONFIG_SMP=n
-Content-Type: multipart/mixed; boundary="------------090808080300070509010501"
-Cc: linuxppc-dev@ozlabs.org, linux-rt-users@vger.kernel.org,
-	rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5AD19DDEF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 01:47:43 +1100 (EST)
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC 
+In-Reply-To: Your message of "Wed, 19 Dec 2007 18:03:09 CST."
+	<11981089894052-git-send-email-timur@freescale.com>
+References: <11981089894052-git-send-email-timur@freescale.com> 
+Date: Thu, 20 Dec 2007 08:47:36 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1J5MgT-0008HO-13@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,45 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090808080300070509010501
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+So, like, the other day Timur Tabi mumbled:
+> diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpc
+> d.c
+> index 6390895..6e1bde3 100644
+> --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> @@ -34,9 +34,27 @@
+>  
+>  #include <asm/mpic.h>
+>  
+> +#include <asm/of_platform.h>
+>  #include <sysdev/fsl_pci.h>
+>  #include <sysdev/fsl_soc.h>
 
-Hello Ingo
 
-I've found out that real-time tree doesn't compile for PPC64 with 
-CONFIG_SMP=n.
+Please dont' re-introduce these.  I just submitted patches to
+move all of the PowerPC instances to using <linux/of_platform.h>
 
-Think this is due to patch-2.6.21.4-rt10 patch. It has
-definitions of following symbols missing: __get_cpu_lock,
-__get_cpu_var_locked.
 
-I've attached the patch to fix the problem.
 
-Egor Starkov
+> diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+> new file mode 100644
+> index 0000000..5421a5c
+> --- /dev/null
+> +++ b/sound/soc/fsl/mpc8610_hpcd.c
+> @@ -0,0 +1,621 @@
+> +/**
+> + * Freescale MPC8610HPCD ALSA SoC Fabric driver
+> + *
+> + * Author: Timur Tabi <timur@freescale.com>
+> + *
+> + * Copyright 2007 Freescale Semiconductor, Inc.  This file is licensed under
+> + * the terms of the GNU General Public License version 2.  This program
+> + * is licensed "as is" without any warranty of any kind, whether express
+> + * or implied.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/version.h>
+> +#include <linux/kernel.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/platform_device.h>
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
 
---------------090808080300070509010501
-Content-Type: text/plain;
- name="powerpc_smp_bugfix"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="powerpc_smp_bugfix"
+Again, this should be moved up as <linux/of_platform.h>.
 
-Signed-off-by: Egor Starkov <estarkov@ru.mvista.com>
 
-Index: linux-2.6.21/include/asm-powerpc/percpu.h
-===================================================================
---- linux-2.6.21.orig/include/asm-powerpc/percpu.h
-+++ linux-2.6.21/include/asm-powerpc/percpu.h
-@@ -61,6 +61,8 @@ extern void setup_per_cpu_areas(void);
- 
- #define __get_cpu_var(var)			per_cpu__##var
- #define __raw_get_cpu_var(var)			per_cpu__##var
-+#define __get_cpu_lock(var, cpu)		per_cpu_lock__##var##_locked
-+#define __get_cpu_var_locked(var, cpu)		per_cpu__##var##_locked
- 
- #endif	/* SMP */
- 
-
---------------090808080300070509010501--
+Thanks,
+jdl
