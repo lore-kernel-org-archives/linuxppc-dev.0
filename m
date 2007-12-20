@@ -1,23 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 997BBDDED9
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 02:56:43 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5463754wag.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 07:56:42 -0800 (PST)
-Message-ID: <9e4733910712200756s40fd5d1ax8f2ca2b903befed3@mail.gmail.com>
-Date: Thu, 20 Dec 2007 10:56:42 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Olof Johansson" <olof@lixom.net>
-Subject: Re: [PATCH 4/5] Convert PowerPC MPC i2c to of_platform_driver from
-	platform_driver
-In-Reply-To: <20071220051618.GB29058@localhost.localdomain>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ED468DDE98
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 03:36:55 +1100 (EST)
+Date: Thu, 20 Dec 2007 10:36:43 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: More patches added to for-2.6.25 and master branches of
+	powerpc.git
+Message-ID: <20071220163643.GA4386@loki.buserror.net>
+References: <18282.19253.485799.233476@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071220044136.20091.70984.stgit@terra.home>
-	<20071220044144.20091.35917.stgit@terra.home>
-	<20071220051618.GB29058@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18282.19253.485799.233476@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/20/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Wed, Dec 19, 2007 at 11:41:44PM -0500, Jon Smirl wrote:
-> > Convert MPC i2c driver from being a platform_driver to an open
-> > firmware version. Error returns were improved. Routine names were
-> > changed from fsl_ to mpc_ to make them match the file name.
->
-> In discussions BenH and I have had, we've actually concluded that
-> moving this from platform drivers to of_platform drives is not
-> actually a good idea.
->
-> In fact we're planning to move away from of_platform devices and
-> drivers and instead develop a framework for instantiating platform
-> devices or i2c devices or whatever devices from the device tree nodes.
+On Thu, Dec 20, 2007 at 10:00:05PM +1100, Paul Mackerras wrote:
+> Scott Wood (5):
+>       [POWERPC] 8xx: Convert mpc866ads to the new device binding.
+>       [POWERPC] 83xx: mpc834x_mds: Fix whitespace and call of_platform_bus_probe().
+>       [POWERPC] 83xx: mpc8313erdb: Fix whitespace.
+>       [POWERPC] wrapper: Rename offset in offset_devp()
+>       [POWERPC] wrapper: Treat NULL as root node in devp_offset; add devp_offset_find()
 
-I have to work with what is in the kernel tree so this patch is based
-the current kernel. A lot of time and testing has going into all the
-revisions of this patch. It has been posted in various forms for the
-last month and a half.
+How about this power management patchset?
+http://patchwork.ozlabs.org/linuxppc/patch?id=15502
 
-As for platform vs of_platform, IMHO of_platform should have been
-derived from platform instead of being an unrelated structure. In the
-current scheme of unrelated structures it makes more sense to use one
-or the other and not mix them. I am in agreement with Olof that if and
-when a new scheme is adopted the drivers should be converted then.
-
-In my local builds I have disabled platform and use only of_platform.
-An of_platform only system works fine and is capable of instantiating
-everything from the device tree as this patch illustrates. Once this
-patch goes in I'll post another series that shows how I went
-of_platform only on mpc5200.
-
-Everyone seems to be focusing on a small piece of driver
-initialization code and ignoring the much more complicated part which
-implements dynamic i2c driver loading. It's the complicated part of
-the code that needs review.
-
-Ben, I know we talked about not putting the alias names into their own
-namespace. But the i2c people don't want to move onto the standard
-kernel aliasing scheme for other platforms and asked for #ifdef
-powerpc. In version 15 I removed the cross platform support and made
-everything powerpc specific. .
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+-Scott
