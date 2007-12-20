@@ -1,23 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id ADDBCDDF6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 02:26:54 +1100 (EST)
-Date: Thu, 20 Dec 2007 09:33:19 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] pata_of_platform: Move electra-ide support over to new
-	framework
-Message-ID: <20071220153319.GA17501@lixom.net>
-References: <20071204170442.GA10460@localhost.localdomain>
-	<20071204204432.GD8099@lixom.net> <4755BD7B.6030208@garzik.org>
-	<20071204210344.GE8099@lixom.net>
-	<18281.59210.200603.12093@cargo.ozlabs.ibm.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DFEBEDDE48
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 02:40:17 +1100 (EST)
+Message-ID: <476A7B23.2040905@freescale.com>
+Date: Thu, 20 Dec 2007 08:24:35 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18281.59210.200603.12093@cargo.ozlabs.ibm.com>
-Cc: linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<20071220040633.GA6732@lixom.net>
+In-Reply-To: <20071220040633.GA6732@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 20, 2007 at 02:53:46PM +1100, Paul Mackerras wrote:
-> Olof Johansson writes:
+Olof Johansson wrote:
+
+>> +static struct of_device_id mpc8610_ids[] = {
+>> +	{ .type = "soc", },
+>> +	{}
 > 
-> > > FWIW I'm presuming this work will go via a powerpc tree not libata... 
-> > > Generally that's not the case, but here it's largely an arch-specific work.
-> > 
-> > Ok, that works. I was thinking of letting this patch go through libata,
-> > and do the removal through the powerpc merge path. But I can do both
-> > through powerpc.
+> Please scan based on compatible instead of device_type.
+
+I was just following the example from another board file.  However, the 'soc' 
+node in the device tree does not have a compatible property, so I don't how to 
+change this.
+
+>> +config SND_SOC_MPC8610
+>> +	bool "ALSA SoC support for the MPC8610 SOC"
+>> +	depends on SND_SOC #&& MPC8610_HPCD
+>> +	default y #if MPC8610
+>> +	help
+>> +	  Say Y if you want to add support for codecs attached to the SSI
+>> +          device on an MPC8610.
 > 
-> Are you going to send me a patch to do this addition plus the removal
-> of the old stuff, or do you want me to merge this patch as is?
+> Don't default configs to 'y'. Also, what's with the commented-out
+> dependencies and if?
 
-Yes, I will once the series it depends on has been sorted out and is
-picked up somewhere, since it depends on it.
+Sorry, that was a development change that I forgot to put back.  The "y #" 
+should be deleted.
 
 
--Olof
+>> + * ssi_stx_phys: bus address of SSI STX register
+>> + * ssi_srx_phys: bus address of SSI SRX register
+>> + * dma_channel: pointer to the DMA channel's registers
+>> + * irq: IRQ for this DMA channel
+>> + * assigned: set to 1 if that DMA channel is assigned to a substream
+>> + */
+> 
+> This goes for the whole patch: You've got good documentation, but it's
+> not in docbook format. Please reformat it since it should be a pretty
+> simple thing to do.
+
+Ok.
+
+>> +static int fsl_dma_new(struct snd_card *card, struct snd_soc_codec_dai *dai,
+>> +	struct snd_pcm *pcm)
+>> +{
+>> +	static u64 fsl_dma_dmamask = 0xffffffff;
+>> +	int ret;
+>> +
+>> +	if (!card->dev->dma_mask)
+>> +		card->dev->dma_mask = &fsl_dma_dmamask;
+> 
+> I haven't read how your channel allocation works, but providing a
+> pointer to a local static variable is a bit fishy no matter what.
+
+I just copied this code from another module.  All the ALSA drivers do this, 
+but I'll look into it and see if it can't be done different.  I make no 
+promises, though!
+
+> Do you ever anticipate having other dma users on the system, such as
+> memcpy offload? You'll probably need allocation support for channels
+> when that day comes (I ended up writing a simple library for dma channel
+> management for that very reason on my platform).
+
+Yes, I plan on updating this driver to work with the standard Freescale "Elo" 
+device driver, but that will have to wait until that code is in the kernel and 
+stabilized.  The SSI is limited in which DMA channels it can use, anyway.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
