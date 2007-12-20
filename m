@@ -1,20 +1,19 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id B1EC0DDE3A
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 06:38:25 +1100 (EST)
-Received: from ALA-MAIL03.corp.ad.wrs.com (ala-mail03 [147.11.57.144])
-	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id lBKEsYnv025818
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 06:54:34 -0800 (PST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] sbc8560: add basic support for Wind River SBC8560 as
-	powerpc
-Date: Thu, 20 Dec 2007 09:54:29 -0500
-Message-Id: <11981624732110-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
-References: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
-Message-Id: <442fe9c9343f3c694932bcdc5f819c493c33c76b.1198107769.git.paul.gortmaker@windriver.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <b04825@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C05BDDE18
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 06:57:17 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] [POWERPC] Update MPC8610 HPCD to support audio drivers
+Date: Thu, 20 Dec 2007 13:56:03 -0600
+Message-Id: <11981805643113-git-send-email-timur@freescale.com>
+In-Reply-To: <11981805641007-git-send-email-timur@freescale.com>
+References: <11981805641007-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,365 +23,425 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the basic support for the Wind River SBC8560 board, implemented
-as powerpc.  It closely follows the implementation of the MPC8560ADS.
+Update the MPC8610 HPCD files to support the audio driver.  Update
+booting-without-of.txt with information on the SSI device.
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig   |   11 +-
- arch/powerpc/platforms/85xx/Makefile  |    1 +
- arch/powerpc/platforms/85xx/sbc8560.c |  302 +++++++++++++++++++++++++++++++++
- 3 files changed, 312 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 7748a3a..0eb497b 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -38,6 +38,13 @@ config MPC85xx_DS
- 	help
- 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
+This patch applies on top of
+git://git.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git.
+
+ Documentation/powerpc/booting-without-of.txt |   40 ++++++
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts       |  107 ++++++++++++++++
+ arch/powerpc/configs/mpc8610_hpcd_defconfig  |  171 +++++++++++++++++++++++++-
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |   19 +++
+ 4 files changed, 334 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index e9a3cb1..826af91 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -53,6 +53,7 @@ Table of Contents
+       j) CFI or JEDEC memory-mapped NOR flash
+       k) Global Utilities Block
+       l) Xilinx IP cores
++      p) Freescale Synchronous Serial Interface
  
-+config SBC8560
-+	bool "Wind River SBC8560"
-+	select DEFAULT_UIMAGE
-+	select PPC_CPM_NEW_BINDING
-+	help
-+	  This option enables support for the Wind River SBC8560 board
+   VII - Specifying interrupt information for devices
+     1) interrupts property
+@@ -2514,6 +2515,45 @@ platforms are moved over to use the flattened-device-tree model.
+       Requred properties:
+        - current-speed : Baud rate of uartlite
+ 
++    p) Freescale Synchronous Serial Interface
 +
- endchoice
- 
- config MPC8540
-@@ -49,7 +56,7 @@ config MPC8540
- config MPC8560
- 	bool
- 	select CPM2
--	default y if MPC8560_ADS
-+	default y if MPC8560_ADS || SBC8560
- 
- config MPC85xx
- 	bool
-@@ -59,4 +66,4 @@ config MPC85xx
- 	select FSL_PCI if PCI
- 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
- 	default y if MPC8540_ADS || MPC85xx_CDS || MPC8560_ADS \
--		|| MPC85xx_MDS || MPC85xx_DS
-+		|| MPC85xx_MDS || MPC85xx_DS || SBC8560
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 5eca920..c3f4d01 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
- obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o
- obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
-+obj-$(CONFIG_SBC8560) += sbc8560.o
-diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
-new file mode 100644
-index 0000000..6aef38b
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/sbc8560.c
-@@ -0,0 +1,302 @@
-+/*
-+ * Wind River SBC8560 setup and early boot code.
-+ *
-+ * Copyright 2007 Wind River Systems Inc.
-+ *
-+ * By Paul Gortmaker (see MAINTAINERS for contact information)
-+ *
-+ * Based largely on the MPC8560ADS support - Copyright 2005 Freescale Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++       The SSI is a serial device that communicates with audio codecs.  It can
++       be programmed in AC97, I2S, left-justified, or right-justified modes.
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
++       Required properties:
++       - compatible	  : compatible list, containing "fsl,ssi"
++       - cell-index	  : the SSI, <0> = SSI1, <1> = SSI2, and so on
++       - reg		  : offset and length of the register set for the device
++       - interrupts	  : <a b> where a is the interrupt number and b is a
++                            field that represents an encoding of the sense and
++			    level information for the interrupt.  This should be
++			    encoded based on the information in section 2)
++			    depending on the type of interrupt controller you
++			    have.
++       - interrupt-parent : the phandle for the interrupt controller that
++                            services interrupts for this device.
++       - fsl,mode	  : the operating mode for the SSI interface
++			    "i2s-slave" - I2S mode, SSI is clock slave
++			    "i2s-master" - I2S mode, SSI is clock master
++			    "lj-slave" - left-justified mode, SSI is clock slave
++			    "lj-master" - l.j. mode, SSI is clock master
++			    "rj-slave" - right-justified mode, SSI is clock slave
++			    "rj-master" - r.j., SSI is clock master
++			    "ac97-slave" - AC97 mode, SSI is clock slave
++			    "ac97-master" - AC97 mode, SSI is clock master
++
++       Optional properties:
++       - codec		  : child node that defines an audio codec connected
++		 	    to this SSI
++
++       Child 'codec' node required properties:
++       - compatible	  : compatible list, contains the name of the codec
++
++       Child 'codec' node optional properties:
++       - bus-frequency	  : The frequency of the input clock, which typically
++                            comes from an on-board dedicated oscillator.
++
++
+    More devices will be defined as this spec matures.
+ 
+ VII - Specifying interrupt information for devices
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 966edf1..974acc3 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -103,6 +103,113 @@
+ 			reg = <e0000 1000>;
+ 			fsl,has-rstcr;
+ 		};
++
++		ssi@16000 {
++			compatible = "fsl,ssi";
++			cell-index = <0>;
++			reg = <16000 100>;
++			interrupt-parent = <&mpic>;
++			interrupts = <3e 2>;
++			fsl,mode = "i2s-slave";
++			codec {
++				compatible = "cirrus,cs4270";
++				/* MCLK source is a stand-alone oscillator */
++				bus-frequency = <bb8000>;
++			};
++		};
++
++		ssi@16100 {
++			compatible = "fsl,ssi";
++			cell-index = <1>;
++			reg = <16100 100>;
++			interrupt-parent = <&mpic>;
++			interrupts = <3f 2>;
++		};
++
++                dma@21300 {
++                        #address-cells = <1>;
++                        #size-cells = <1>;
++                        compatible = "fsl,mpc8610-dma", "fsl,eloplus-dma";
++                        cell-index = <0>;
++                        reg = <21300 4>; /* DMA general status register */
++                        ranges = <0 21100 200>;
++
++                        dma-channel@0 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,eloplus-dma-channel";
++				cell-index = <0>;
++				reg = <0 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <14 2>;
++                        };
++                        dma-channel@1 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,eloplus-dma-channel";
++				cell-index = <1>;
++				reg = <80 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <15 2>;
++                        };
++                        dma-channel@2 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,eloplus-dma-channel";
++				cell-index = <2>;
++				reg = <100 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <16 2>;
++                        };
++                        dma-channel@3 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,eloplus-dma-channel";
++				cell-index = <3>;
++				reg = <180 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <17 2>;
++                        };
++                };
++
++                dma@c300 {
++                        #address-cells = <1>;
++                        #size-cells = <1>;
++                        compatible = "fsl,mpc8610-dma", "fsl,mpc8540-dma";
++                        cell-index = <1>;
++                        reg = <c300 4>; /* DMA general status register */
++                        ranges = <0 c100 200>;
++
++                        dma-channel@0 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,mpc8540-dma-channel";
++				cell-index = <0>;
++				reg = <0 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <3c 2>;
++                        };
++                        dma-channel@1 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,mpc8540-dma-channel";
++				cell-index = <1>;
++				reg = <80 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <3d 2>;
++                        };
++                        dma-channel@2 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,mpc8540-dma-channel";
++				cell-index = <2>;
++				reg = <100 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <3e 2>;
++                        };
++                        dma-channel@3 {
++				compatible = "fsl,mpc8610-dma-channel",
++					"fsl,mpc8540-dma-channel";
++				cell-index = <3>;
++				reg = <180 80>;
++				interrupt-parent = <&mpic>;
++				interrupts = <3f 2>;
++                        };
++                };
++
+ 	};
+ 
+ 	pci@e0008000 {
+diff --git a/arch/powerpc/configs/mpc8610_hpcd_defconfig b/arch/powerpc/configs/mpc8610_hpcd_defconfig
+index 0483211..fb68886 100644
+--- a/arch/powerpc/configs/mpc8610_hpcd_defconfig
++++ b/arch/powerpc/configs/mpc8610_hpcd_defconfig
+@@ -684,7 +684,7 @@ CONFIG_SERIAL_8250_RSA=y
+ CONFIG_SERIAL_CORE=y
+ CONFIG_SERIAL_CORE_CONSOLE=y
+ # CONFIG_SERIAL_JSM is not set
+-CONFIG_SERIAL_OF_PLATFORM=y
++# CONFIG_SERIAL_OF_PLATFORM is not set
+ CONFIG_UNIX98_PTYS=y
+ # CONFIG_LEGACY_PTYS is not set
+ # CONFIG_IPMI_HANDLER is not set
+@@ -699,7 +699,60 @@ CONFIG_UNIX98_PTYS=y
+ # CONFIG_RAW_DRIVER is not set
+ # CONFIG_TCG_TPM is not set
+ CONFIG_DEVPORT=y
+-# CONFIG_I2C is not set
++CONFIG_I2C=y
++CONFIG_I2C_BOARDINFO=y
++# CONFIG_I2C_CHARDEV is not set
++
++#
++# I2C Algorithms
++#
++# CONFIG_I2C_ALGOBIT is not set
++# CONFIG_I2C_ALGOPCF is not set
++# CONFIG_I2C_ALGOPCA is not set
++
++#
++# I2C Hardware Bus support
++#
++# CONFIG_I2C_ALI1535 is not set
++# CONFIG_I2C_ALI1563 is not set
++# CONFIG_I2C_ALI15X3 is not set
++# CONFIG_I2C_AMD756 is not set
++# CONFIG_I2C_AMD8111 is not set
++# CONFIG_I2C_I801 is not set
++# CONFIG_I2C_I810 is not set
++# CONFIG_I2C_PIIX4 is not set
++CONFIG_I2C_MPC=y
++# CONFIG_I2C_NFORCE2 is not set
++# CONFIG_I2C_OCORES is not set
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_PROSAVAGE is not set
++# CONFIG_I2C_SAVAGE4 is not set
++# CONFIG_I2C_SIMTEC is not set
++# CONFIG_I2C_SIS5595 is not set
++# CONFIG_I2C_SIS630 is not set
++# CONFIG_I2C_SIS96X is not set
++# CONFIG_I2C_TAOS_EVM is not set
++# CONFIG_I2C_VIA is not set
++# CONFIG_I2C_VIAPRO is not set
++# CONFIG_I2C_VOODOO3 is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_SENSORS_DS1337 is not set
++# CONFIG_SENSORS_DS1374 is not set
++# CONFIG_DS1682 is not set
++# CONFIG_SENSORS_EEPROM is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_SENSORS_PCA9539 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_M41T00 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_SENSORS_TSL2550 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
+ 
+ #
+ # SPI support
+@@ -746,7 +799,119 @@ CONFIG_DUMMY_CONSOLE=y
+ #
+ # Sound
+ #
+-# CONFIG_SOUND is not set
++CONFIG_SOUND=y
++
++#
++# Advanced Linux Sound Architecture
++#
++CONFIG_SND=y
++CONFIG_SND_TIMER=y
++CONFIG_SND_PCM=y
++# CONFIG_SND_SEQUENCER is not set
++CONFIG_SND_OSSEMUL=y
++CONFIG_SND_MIXER_OSS=y
++CONFIG_SND_PCM_OSS=y
++# CONFIG_SND_PCM_OSS_PLUGINS is not set
++# CONFIG_SND_DYNAMIC_MINORS is not set
++# CONFIG_SND_SUPPORT_OLD_API is not set
++CONFIG_SND_VERBOSE_PROCFS=y
++# CONFIG_SND_VERBOSE_PRINTK is not set
++# CONFIG_SND_DEBUG is not set
++
++#
++# Generic devices
++#
++# CONFIG_SND_DUMMY is not set
++# CONFIG_SND_MTPAV is not set
++# CONFIG_SND_SERIAL_U16550 is not set
++# CONFIG_SND_MPU401 is not set
++
++#
++# PCI devices
++#
++# CONFIG_SND_AD1889 is not set
++# CONFIG_SND_ALS300 is not set
++# CONFIG_SND_ALS4000 is not set
++# CONFIG_SND_ALI5451 is not set
++# CONFIG_SND_ATIIXP is not set
++# CONFIG_SND_ATIIXP_MODEM is not set
++# CONFIG_SND_AU8810 is not set
++# CONFIG_SND_AU8820 is not set
++# CONFIG_SND_AU8830 is not set
++# CONFIG_SND_AZT3328 is not set
++# CONFIG_SND_BT87X is not set
++# CONFIG_SND_CA0106 is not set
++# CONFIG_SND_CMIPCI is not set
++# CONFIG_SND_CS4281 is not set
++# CONFIG_SND_CS46XX is not set
++# CONFIG_SND_CS5530 is not set
++# CONFIG_SND_DARLA20 is not set
++# CONFIG_SND_GINA20 is not set
++# CONFIG_SND_LAYLA20 is not set
++# CONFIG_SND_DARLA24 is not set
++# CONFIG_SND_GINA24 is not set
++# CONFIG_SND_LAYLA24 is not set
++# CONFIG_SND_MONA is not set
++# CONFIG_SND_MIA is not set
++# CONFIG_SND_ECHO3G is not set
++# CONFIG_SND_INDIGO is not set
++# CONFIG_SND_INDIGOIO is not set
++# CONFIG_SND_INDIGODJ is not set
++# CONFIG_SND_EMU10K1 is not set
++# CONFIG_SND_EMU10K1X is not set
++# CONFIG_SND_ENS1370 is not set
++# CONFIG_SND_ENS1371 is not set
++# CONFIG_SND_ES1938 is not set
++# CONFIG_SND_ES1968 is not set
++# CONFIG_SND_FM801 is not set
++# CONFIG_SND_HDA_INTEL is not set
++# CONFIG_SND_HDSP is not set
++# CONFIG_SND_HDSPM is not set
++# CONFIG_SND_ICE1712 is not set
++# CONFIG_SND_ICE1724 is not set
++# CONFIG_SND_INTEL8X0 is not set
++# CONFIG_SND_INTEL8X0M is not set
++# CONFIG_SND_KORG1212 is not set
++# CONFIG_SND_MAESTRO3 is not set
++# CONFIG_SND_MIXART is not set
++# CONFIG_SND_NM256 is not set
++# CONFIG_SND_PCXHR is not set
++# CONFIG_SND_RIPTIDE is not set
++# CONFIG_SND_RME32 is not set
++# CONFIG_SND_RME96 is not set
++# CONFIG_SND_RME9652 is not set
++# CONFIG_SND_SONICVIBES is not set
++# CONFIG_SND_TRIDENT is not set
++# CONFIG_SND_VIA82XX is not set
++# CONFIG_SND_VIA82XX_MODEM is not set
++# CONFIG_SND_VX222 is not set
++# CONFIG_SND_YMFPCI is not set
++
++#
++# ALSA PowerMac devices
++#
++
++#
++# ALSA PowerPC devices
++#
++
++#
++# System on Chip audio support
++#
++CONFIG_SND_SOC=y
++
++#
++# SoC Audio support for SuperH
++#
++
++#
++# ALSA SoC audio for Freescale SOCs
++#
++CONFIG_SND_SOC_MPC8610=y
++CONFIG_SND_SOC_MPC8610_HPCD=y
++CONFIG_SND_SOC_CS4270=y
++CONFIG_SND_SOC_CS4270_VD33_ERRATA=y
++
+ CONFIG_HID_SUPPORT=y
+ CONFIG_HID=y
+ # CONFIG_HID_DEBUG is not set
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 6390895..a028e9f 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -34,9 +34,28 @@
+ 
+ #include <asm/mpic.h>
+ 
 +#include <linux/of_platform.h>
-+
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/mpic.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/udbg.h>
-+
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#ifdef CONFIG_CPM2
-+#include <asm/cpm2.h>
-+#include <sysdev/cpm2_pic.h>
-+#endif
-+
-+#ifdef CONFIG_PCI
-+static int sbc8560_exclude_device(struct pci_controller *hose,
-+				   u_char bus, u_char devfn)
-+{
-+	if (bus == 0 && PCI_SLOT(devfn) == 0)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+	else
-+		return PCIBIOS_SUCCESSFUL;
-+}
-+#endif /* CONFIG_PCI */
-+
-+#ifdef CONFIG_CPM2
-+
-+static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	int cascade_irq;
-+
-+	while ((cascade_irq = cpm2_get_irq()) >= 0) {
-+		generic_handle_irq(cascade_irq);
-+	}
-+	desc->chip->eoi(irq);
-+}
-+
-+#endif /* CONFIG_CPM2 */
-+
-+static void __init sbc8560_pic_init(void)
-+{
-+	struct mpic *mpic;
-+	struct resource r;
-+	struct device_node *np = NULL;
-+#ifdef CONFIG_CPM2
-+	int irq;
-+#endif
-+
-+	np = of_find_node_by_type(np, "open-pic");
-+
-+	if (np == NULL) {
-+		printk(KERN_ERR "Could not find open-pic node\n");
-+		return;
-+	}
-+
-+	if(of_address_to_resource(np, 0, &r)) {
-+		printk(KERN_ERR "Could not map mpic register space\n");
-+		of_node_put(np);
-+		return;
-+	}
-+
-+	mpic = mpic_alloc(np, r.start,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			0, 256, " OpenPIC  ");
-+	BUG_ON(mpic == NULL);
-+	of_node_put(np);
-+
-+	mpic_init(mpic);
-+
-+#ifdef CONFIG_CPM2
-+	/* Setup CPM2 PIC */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pic");
-+	if (np == NULL) {
-+		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
-+		return;
-+	}
-+	irq = irq_of_parse_and_map(np, 0);
-+
-+	cpm2_pic_init(np);
-+	set_irq_chained_handler(irq, cpm2_cascade);
-+#endif
-+}
-+
-+/*
-+ * Setup the architecture
-+ */
-+#ifdef CONFIG_CPM2
-+struct cpm_pin {
-+	int port, pin, flags;
-+};
-+
-+static struct cpm_pin sbc8560_pins[] = {
-+	/* SCC1 */
-+	{3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* SCC2 */
-+	{3, 26, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 27, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* FCC2 */
-+	{1, 18, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 19, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 20, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 21, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 22, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 23, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 24, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 25, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 26, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 27, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{1, 30, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{2, 18, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK14 */
-+	{2, 19, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK13 */
-+
-+	/* FCC3 */
-+	{1, 4, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 5, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 6, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 7, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 8, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 9, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 10, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 11, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 12, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 13, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 14, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 15, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{2, 16, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* CLK16 */
-+	{2, 17, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* CLK15 */
-+};
-+
-+static void __init init_ioports(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(sbc8560_pins); i++) {
-+		struct cpm_pin *pin = &sbc8560_pins[i];
-+		cpm2_set_pin(pin->port, pin->pin, pin->flags);
-+	}
-+
-+	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK13, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK14, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_FCC3, CPM_CLK15, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_FCC3, CPM_CLK16, CPM_CLK_TX);
-+}
-+#endif
-+
-+static void __init sbc8560_setup_arch(void)
-+{
-+#ifdef CONFIG_PCI
-+	struct device_node *np;
-+#endif
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("sbc8560_setup_arch()", 0);
-+
-+#ifdef CONFIG_CPM2
-+	cpm2_reset();
-+	init_ioports();
-+#endif
-+
-+#ifdef CONFIG_PCI
-+	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
-+		fsl_add_bridge(np, 1);
-+
-+	ppc_md.pci_exclude_device = sbc8560_exclude_device;
-+#endif
-+}
-+
-+static void sbc8560_show_cpuinfo(struct seq_file *m)
-+{
-+	uint pvid, svid, phid1;
-+	uint memsize = total_memory;
-+
-+	pvid = mfspr(SPRN_PVR);
-+	svid = mfspr(SPRN_SVR);
-+
-+	seq_printf(m, "Vendor\t\t: Wind River\n");
-+	seq_printf(m, "Machine\t\t: SBC8560\n");
-+	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
-+
-+	/* Display cpu Pll setting */
-+	phid1 = mfspr(SPRN_HID1);
-+	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
-+
-+	/* Display the amount of memory */
-+	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-+}
-+
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
+ 
++static struct of_device_id mpc8610_ids[] = {
 +	{ .type = "soc", },
-+	{ .name = "cpm", },
-+	{ .name = "localbus", },
-+	{},
++	{ .compatible = "soc", },
++	{}
 +};
 +
-+static int __init declare_of_platform_devices(void)
++static int __init mpc8610_declare_of_platform_devices(void)
 +{
-+	if (!machine_is(sbc8560))
++	if (!machine_is(mpc86xx_hpcd))
 +		return 0;
 +
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++	/* Without this call, the SSI device driver won't get probed. */
++	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
++
 +	return 0;
 +}
-+device_initcall(declare_of_platform_devices);
++device_initcall(mpc8610_declare_of_platform_devices);
 +
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init sbc8560_probe(void)
-+{
-+        unsigned long root = of_get_flat_dt_root();
-+
-+        return of_flat_dt_is_compatible(root, "SBC8560");
-+}
-+
-+#ifdef CONFIG_RTC_DRV_M48T59
-+static int __init sbc8560_rtc_init(void)
-+{
-+	struct device_node *np;
-+	struct resource res;
-+	struct platform_device *rtc_dev;
-+
-+	np = of_find_node_by_type(NULL, "rtc");
-+	if (np == NULL) {
-+		printk("No RTC in DTB. Has it been eaten by wild dogs?\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!of_device_is_compatible(np, "m48t59")) {
-+		printk("Ignoring non-m48t59 compatible RTC\n");
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	of_address_to_resource(np, 0, &res);
-+
-+	printk("Found RTC (m48t59) at i/o 0x%x\n", res.start);
-+
-+	rtc_dev = platform_device_register_simple("rtc-m48t59", 0, &res, 1);
-+
-+	if (IS_ERR(rtc_dev))
-+		return PTR_ERR(rtc_dev);
-+
-+	of_node_put(np);
-+	return 0;
-+}
-+
-+arch_initcall(sbc8560_rtc_init);
-+
-+#endif	/* M48T59 */
-+
-+define_machine(sbc8560) {
-+	.name			= "SBC8560",
-+	.probe			= sbc8560_probe,
-+	.setup_arch		= sbc8560_setup_arch,
-+	.init_IRQ		= sbc8560_pic_init,
-+	.show_cpuinfo		= sbc8560_show_cpuinfo,
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
+ void __init
+ mpc86xx_hpcd_init_irq(void)
+ {
 -- 
-1.5.0.rc1.gf4b6c
+1.5.2.4
