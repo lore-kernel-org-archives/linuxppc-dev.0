@@ -1,31 +1,20 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D386DDE38
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:35:17 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id lBK4Z87A018465
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:35:08 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBK4bYO2170214
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:37:35 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBK4XgGg002628
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:33:42 +1100
-Date: Thu, 20 Dec 2007 15:33:24 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc: add hugepagesz boot-time parameter
-Message-ID: <20071220043324.GA29058@localhost.localdomain>
-References: <47699CC3.1050909@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47699CC3.1050909@linux.vnet.ibm.com>
-Cc: mel@csn.ul.ie, linuxppc-dev <linuxppc-dev@ozlabs.org>, csnook@redhat.com,
-	Paul Mackerras <paulus@samba.org>, arnd@arndb.de
+Return-Path: <jonsmirl@gmail.com>
+Received: from vms173003pub.verizon.net (vms173003pub.verizon.net
+	[206.46.173.3]) by ozlabs.org (Postfix) with ESMTP id DDB47DDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:41:46 +1100 (EST)
+Received: from terra.home ([96.233.72.204]) by vms173003.mailsrvcs.net
+	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
+	with ESMTPA id <0JTB00I7SZMRNEC8@vms173003.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Wed, 19 Dec 2007 22:40:03 -0600 (CST)
+Date: Wed, 19 Dec 2007 23:41:42 -0500
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH 3/5] Clean up error returns
+In-reply-to: <20071220044136.20091.70984.stgit@terra.home>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-id: <20071220044142.20091.68330.stgit@terra.home>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20071220044136.20091.70984.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,128 +24,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 19, 2007 at 04:35:47PM -0600, Jon Tollefson wrote:
-> Paul, please include this in 2.6.25 if there are no objections.
-> 
-> This patch adds the hugepagesz boot-time parameter for ppc64.  It lets
-> one pick the size for huge pages. The choices available are 64K and 16M
-> when the base page size is 4k. It defaults to 16M (previously the only
-> only choice) if nothing or an invalid choice is specified.
-> 
-> Tested 64K huge pages successfully with the libhugetlbfs 1.2.
-> 
-> Changes from v1:
->     disallow 64K huge pages when base page size is 64K since we can't
-> distinguish between
->         base and huge pages when doing a hash_page()
->     collapsed pmd_offset and pmd_alloc to inline calls to simplify the
-> main code
->     removed printing of the huge page size in mm/hugetlb.c since this
-> information is already
->        available in /proc/meminfo and leaves the remaining changes all
-> powerpc specific
+Return errors that were being ignored in the mpc-i2c driver
 
-[snip]
-> @@ -82,11 +81,31 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
->  	return 0;
->  }
->  
-> +#ifndef CONFIG_PPC_64K_PAGES
-> +static inline
-> +pmd_t *hpmd_offset(pud_t *pud, unsigned long addr)
-> +{
-> +	if (HPAGE_SHIFT == HPAGE_SHIFT_64K)
-> +		return pmd_offset(pud, addr);
-> +	else
-> +		return (pmd_t *) pud;
-> +}
-> +static inline
-> +pmd_t *hpmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr)
-> +{
-> +	if (HPAGE_SHIFT == HPAGE_SHIFT_64K)
-> +		return pmd_alloc(mm, pud, addr);
-> +	else
-> +		return (pmd_t *) pud;
-> +}
-> +#endif
-> +
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
 
-I'm baffled by this section of code; I can't see how it can work
-properly with 64k base page size.  hpmd_offset() and hpmd_alloc() are
-only defined if the base page size is 4k, but they appear to be used
-unconditionally in huge_pte_offset() and huge_pte_alloc() (since you
-remove the #ifdef that was there).
+ drivers/i2c/busses/i2c-mpc.c |   30 +++++++++++++++++-------------
+ 1 files changed, 17 insertions(+), 13 deletions(-)
 
->  /* Modelled after find_linux_pte() */
->  pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
->  {
->  	pgd_t *pg;
->  	pud_t *pu;
-> +	pmd_t *pm;
->  
->  	BUG_ON(get_slice_psize(mm, addr) != mmu_huge_psize);
->  
-> @@ -96,14 +115,9 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
->  	if (!pgd_none(*pg)) {
->  		pu = pud_offset(pg, addr);
->  		if (!pud_none(*pu)) {
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -			pmd_t *pm;
-> -			pm = pmd_offset(pu, addr);
-> +			pm = hpmd_offset(pu, addr);
->  			if (!pmd_none(*pm))
->  				return hugepte_offset((hugepd_t *)pm, addr);
-> -#else
-> -			return hugepte_offset((hugepd_t *)pu, addr);
-> -#endif
->  		}
->  	}
->  
-> @@ -114,6 +128,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
->  {
->  	pgd_t *pg;
->  	pud_t *pu;
-> +	pmd_t *pm;
->  	hugepd_t *hpdp = NULL;
->  
->  	BUG_ON(get_slice_psize(mm, addr) != mmu_huge_psize);
-> @@ -124,14 +139,9 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
->  	pu = pud_alloc(mm, pg, addr);
->  
->  	if (pu) {
-> -#ifdef CONFIG_PPC_64K_PAGES
-> -		pmd_t *pm;
-> -		pm = pmd_alloc(mm, pu, addr);
-> +		pm = hpmd_alloc(mm, pu, addr);
->  		if (pm)
->  			hpdp = (hugepd_t *)pm;
-> -#else
-> -		hpdp = (hugepd_t *)pu;
-> -#endif
->  	}
->  
->  	if (! hpdp)
 
-[snip]
-> diff --git a/include/asm-powerpc/pgtable.h b/include/asm-powerpc/pgtable.h
-> index d18ffe7..66ff7e5 100644
-> --- a/include/asm-powerpc/pgtable.h
-> +++ b/include/asm-powerpc/pgtable.h
-> @@ -37,6 +37,12 @@ extern void paging_init(void);
->  #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
->  		remap_pfn_range(vma, vaddr, pfn, size, prot)
->  
-> +/* Base page size affects how we walk hugetlb page tables */
-> +#ifdef CONFIG_PPC_64K_PAGES
-> +#define hpmd_offset(pud, addr)		pmd_offset(pud, addr)
-> +#define hpmd_alloc(mm, pud, addr)	pmd_alloc(mm, pud, addr)
-> +#endif
-
-These functions are only used in hugetlbpage.c, I don't see any reason
-they should go in the header file.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index d8de4ac..7c35a8f 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -180,7 +180,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
+ static int mpc_write(struct mpc_i2c *i2c, int target,
+ 		     const u8 * data, int length, int restart)
+ {
+-	int i;
++	int i, result;
+ 	unsigned timeout = i2c->adap.timeout;
+ 	u32 flags = restart ? CCR_RSTA : 0;
+ 
+@@ -192,15 +192,17 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
+ 	/* Write target byte */
+ 	writeb((target << 1), i2c->base + MPC_I2C_DR);
+ 
+-	if (i2c_wait(i2c, timeout, 1) < 0)
+-		return -1;
++	result = i2c_wait(i2c, timeout, 1);
++	if (result < 0)
++		return result;
+ 
+ 	for (i = 0; i < length; i++) {
+ 		/* Write data byte */
+ 		writeb(data[i], i2c->base + MPC_I2C_DR);
+ 
+-		if (i2c_wait(i2c, timeout, 1) < 0)
+-			return -1;
++		result = i2c_wait(i2c, timeout, 1);
++		if (result < 0)
++			return result;
+ 	}
+ 
+ 	return 0;
+@@ -210,7 +212,7 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+ 		    u8 * data, int length, int restart)
+ {
+ 	unsigned timeout = i2c->adap.timeout;
+-	int i;
++	int i, result;
+ 	u32 flags = restart ? CCR_RSTA : 0;
+ 
+ 	/* Start with MEN */
+@@ -221,8 +223,9 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+ 	/* Write target address byte - this time with the read flag set */
+ 	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
+ 
+-	if (i2c_wait(i2c, timeout, 1) < 0)
+-		return -1;
++	result = i2c_wait(i2c, timeout, 1);
++	if (result < 0)
++		return result;
+ 
+ 	if (length) {
+ 		if (length == 1)
+@@ -234,8 +237,9 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+ 	}
+ 
+ 	for (i = 0; i < length; i++) {
+-		if (i2c_wait(i2c, timeout, 0) < 0)
+-			return -1;
++		result = i2c_wait(i2c, timeout, 0);
++		if (result < 0)
++			return result;
+ 
+ 		/* Generate txack on next to last byte */
+ 		if (i == length - 2)
+@@ -321,9 +325,9 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 
+ 	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+ 
+-	if (!(i2c = kzalloc(sizeof(*i2c), GFP_KERNEL))) {
++	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
++	if (!i2c)
+ 		return -ENOMEM;
+-	}
+ 
+ 	i2c->irq = platform_get_irq(pdev, 0);
+ 	if (i2c->irq < 0) {
+@@ -381,7 +385,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
+ 	i2c_del_adapter(&i2c->adap);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-	if (i2c->irq != 0)
++	if (i2c->irq != NO_IRQ)
+ 		free_irq(i2c->irq, i2c);
+ 
+ 	iounmap(i2c->base);
