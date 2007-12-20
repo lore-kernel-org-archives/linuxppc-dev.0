@@ -1,8 +1,8 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA03.westchester.pa.mail.comcast.net
-	(qmta03.westchester.pa.mail.comcast.net [76.96.62.32])
-	by ozlabs.org (Postfix) with ESMTP id 34014DDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:36:56 +1100 (EST)
+Received: from QMTA07.westchester.pa.mail.comcast.net
+	(qmta07.westchester.pa.mail.comcast.net [76.96.62.64])
+	by ozlabs.org (Postfix) with ESMTP id 73717DDF12
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:36:57 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
@@ -12,9 +12,9 @@ In-Reply-To: Roland McGrath's message of  Thursday,
 	20 December 2007 03:52:00 -0800
 	<20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 15/43] powerpc user_regset_view
-Message-Id: <20071220115800.C538426F98D@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:58:00 -0800 (PST)
+Subject: [PATCH -mm 10/43] powerpc user_regset fpregs
+Message-Id: <20071220115734.37FA126F98A@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:57:34 -0800 (PST)
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,92 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This provides the task_user_regset_view entry point and support for all the
-native-mode (64 on CONFIG_PPC64, 32 on CONFIG_PPC32) thread register state.
-This will enable generic machine-independent code to access user-mode
-threads' registers for debugging and dumping.
+This implements user_regset-style accessors for the powerpc FPU data,
+and rewrites the existing ptrace code in terms of those calls.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/Makefile |    2 +
- arch/powerpc/kernel/ptrace.c |   52 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/ptrace.c |   37 +++++++++++++++++++++++++++++++------
+ 1 files changed, 31 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ca51f0c..615ed96 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -2,6 +2,8 @@
- # Makefile for the linux kernel.
- #
- 
-+CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
-+
- ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS	+= -mno-minimal-toc
- endif
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index e493fc0..b32ac5f 100644
+index 8b056d2..f1ce646 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -455,6 +455,58 @@ static int set_evrregs(struct task_struct *task, unsigned long *data)
- #endif /* CONFIG_SPE */
+@@ -21,6 +21,7 @@
+ #include <linux/smp.h>
+ #include <linux/errno.h>
+ #include <linux/ptrace.h>
++#include <linux/regset.h>
+ #include <linux/user.h>
+ #include <linux/security.h>
+ #include <linux/signal.h>
+@@ -103,24 +104,48 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
+ }
  
  
-+/*
-+ * These are our native regset flavors.
-+ */
-+enum powerpc_regset {
-+	REGSET_GPR,
-+	REGSET_FPR,
-+#ifdef CONFIG_ALTIVEC
-+	REGSET_VMX,
-+#endif
-+#ifdef CONFIG_SPE
-+	REGSET_SPE,
-+#endif
-+};
-+
-+static const struct user_regset native_regsets[] = {
-+	[REGSET_GPR] = {
-+		.core_note_type = NT_PRSTATUS, .n = ELF_NGREG,
-+		.size = sizeof(long), .align = sizeof(long),
-+		.get = gpr_get, .set = gpr_set
-+	},
-+	[REGSET_FPR] = {
-+		.core_note_type = NT_PRFPREG, .n = ELF_NFPREG,
-+		.size = sizeof(double), .align = sizeof(double),
-+		.get = fpr_get, .set = fpr_set
-+	},
-+#ifdef CONFIG_ALTIVEC
-+	[REGSET_VMX] = {
-+		.core_note_type = NT_PPC_VMX, .n = 34,
-+		.size = sizeof(vector128), .align = sizeof(vector128),
-+		.active = vr_active, .get = vr_get, .set = vr_set
-+	},
-+#endif
-+#ifdef CONFIG_SPE
-+	[REGSET_SPE] = {
-+		.n = 35,
-+		.size = sizeof(u32), .align = sizeof(u32),
-+		.active = evr_active, .get = evr_get, .set = evr_set
-+	},
-+#endif
-+};
-+
-+static const struct user_regset_view user_ppc_native_view = {
-+	.name = UTS_MACHINE, .e_machine = ELF_ARCH, .ei_osabi = ELF_OSABI,
-+	.regsets = native_regsets, .n = ARRAY_SIZE(native_regsets)
-+};
-+
-+const struct user_regset_view *task_user_regset_view(struct task_struct *task)
++static int fpr_get(struct task_struct *target, const struct user_regset *regset,
++		   unsigned int pos, unsigned int count,
++		   void *kbuf, void __user *ubuf)
 +{
-+	return &user_ppc_native_view;
++	flush_fp_to_thread(target);
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
++		     offsetof(struct thread_struct, fpr[32]));
++
++	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++				   &target->thread.fpr, 0, -1);
 +}
 +
++static int fpr_set(struct task_struct *target, const struct user_regset *regset,
++		   unsigned int pos, unsigned int count,
++		   const void *kbuf, const void __user *ubuf)
++{
++	flush_fp_to_thread(target);
 +
- void user_enable_single_step(struct task_struct *task)
++	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
++		     offsetof(struct thread_struct, fpr[32]));
++
++	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++				  &target->thread.fpr, 0, -1);
++}
++
+ static int get_fpregs(void __user *data, struct task_struct *task,
+ 		      int has_fpscr)
  {
- 	struct pt_regs *regs = task->thread.regs;
+ 	unsigned int count = has_fpscr ? 33 : 32;
+-
+-	if (copy_to_user(data, task->thread.fpr, count * sizeof(double)))
++	if (!access_ok(VERIFY_WRITE, data, count * sizeof(double)))
+ 		return -EFAULT;
+-	return 0;
++	return fpr_get(task, NULL, 0, count * sizeof(double), NULL, data);
+ }
+ 
+ static int set_fpregs(void __user *data, struct task_struct *task,
+ 		      int has_fpscr)
+ {
+ 	unsigned int count = has_fpscr ? 33 : 32;
+-
+-	if (copy_from_user(task->thread.fpr, data, count * sizeof(double)))
++	if (!access_ok(VERIFY_READ, data, count * sizeof(double)))
+ 		return -EFAULT;
+-	return 0;
++	return fpr_set(task, NULL, 0, count * sizeof(double), NULL, data);
+ }
+ 
+ 
 -- 
 1.5.3.6
