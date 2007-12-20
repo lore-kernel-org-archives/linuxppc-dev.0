@@ -1,19 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0DCD4DDE38
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:56:50 +1100 (EST)
-Message-Id: <AD8BE998-401D-4109-8DD0-F26760C0E980@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 0/4] arch/powerpc support for SBC8560 board
-Date: Thu, 20 Dec 2007 17:56:45 -0600
-References: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id EC5FADDE2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 10:59:26 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so129422wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 15:59:25 -0800 (PST)
+Message-ID: <9e4733910712201559k459ab574m74f7a84a637c8f0c@mail.gmail.com>
+Date: Thu, 20 Dec 2007 18:59:25 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] Version 17, series to add device tree naming to i2c
+In-Reply-To: <20071220044136.20091.70984.stgit@terra.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071220044136.20091.70984.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 3) Add device tree source for Wind River SBC8560 board
+Are there any other objections to this patch? If not, can it be
+targeted for 2.6.25?
+
+On 12/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Since copying i2c-mpc.c to maintain support for the ppc architecture seems to be an issue; instead rework i2c-mpc.c to use CONFIG_PPC_MERGE #ifdefs to support both the ppc and powerpc architecture. When ppc is deleted in six months these #ifdefs will need to be removed.
 >
-> This is probably the most interesting part of the group, given that  
-> the
-> board doesn't use the CPM2 to provide the serial console.  I've made a
-> duart dts entry that is kind of similar to what is done for the tsi108
-> on the mpc7448/hpc-ii board, and made sure that the serial had their
-> parent marked as "soc" (found out the hard way that UARTs were ignored
-> as possible consoles unless they were soc or tsi108 children...)
+> Another rework of the i2c for powerpc device tree patch. This version implements standard alias naming only on the powerpc platform and only for the device tree names. The old naming mechanism of i2c_client.name,driver_name is left in place and not changed for non-powerpc platforms. This patch is fully capable of dynamically loading the i2c modules. You can modprobe in the i2c-mpc driver and the i2c modules described in the device tree will be automatically loaded. Modules also work if compiled in.
 >
-> b/arch/powerpc/boot/dts/sbc8560.dts |  203 ++++++++++++++++++++++++++ 
-> +++++++++-
+> The follow on patch to module-init-tools is also needed since the i2c subsystem has never implemented dynamic loading.
+>
+> The following series implements standard linux module aliasing for i2c modules on arch=powerpc. It then converts the mpc i2c driver from being a platform driver to an open firmware one. I2C device names are picked up from the device tree. Module aliasing is used to translate from device tree names into to linux kernel names. Several i2c drivers are updated to use the new aliasing.
+>
+> --
+> Jon Smirl
+> jonsmirl@gmail.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-we need to figure out to fix this so we don't need the parent marked  
-as 'soc'.
 
-Out of interest how exactly are the duart's wired on the 8560.  Are  
-they off localbus?
-
-
-> I'd quickly spun together a u-boot 1.2.0 for testing this -- since  
-> that was
-> the quickest route to getting a powerpc capable version.  I'll see  
-> what
-> can be done for getting a u-boot 1.3.1 patchset out so the local-mac- 
-> address
-> vs address thing in the dtb isn't an issue.
-
-Probably should add a boot wrapper to work with old non-device tree  
-aware u-boots.
-
-- k
+-- 
+Jon Smirl
+jonsmirl@gmail.com
