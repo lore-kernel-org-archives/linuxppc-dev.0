@@ -1,16 +1,32 @@
-Return-Path: <sprasad@bivio.net>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7941DDDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 14:25:18 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	lBK3P43q029587
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 20:25:09 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lBK3P2wq009025
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2007 21:25:03 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: hangs after "Freeing unused kernel memory"
-Date: Wed, 19 Dec 2007 16:19:27 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF58C@corpexc01.corp.networkrobots.com>
-In-Reply-To: <20071119175144.GD4670@austin.ibm.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73FC8@corpexc01.corp.networkrobots.com>
-	<20071119175144.GD4670@austin.ibm.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: "Linas Vepstas" <linas@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: RE: [0/3] Add RapidIO support to powerpc architecture with memory
+	mapping
+Date: Thu, 20 Dec 2007 11:25:02 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEA70416@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4769A0A5.70000@mvista.com>
+References: <11975326982876-git-send-email-wei.zhang@freescale.com>
+	<4769A0A5.70000@mvista.com>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Randy Vinson" <rvinson@mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,62 +36,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linas,
+I've sent it... Oops, it's be blocked by big size. =20
 
-I found it hard way. You are correct. I am just loosing the console, and
-all the programs are executing fine. I could put a printk in execve and
-see all the programs executing (printk's work fine).
+Thanks! I'll resend it.
 
-I am using a PowerPC based system with my own kernel and initrd (not
-RedHat system). Can you please elaborate on what exactly you are
-suggesting me to do. Are you trying to copy /dev/<files> from build
-machine to the ramdisk? I am confused.
+Cheers!
+Wei
 
-Further, I could not find /dev/hv* files in any of the systems. What are
-they for?
-
-You also mentioned about tweaking initrd and udev. Appreciate some help
-with this console loosing.=20
-
-Thanks in advance for your help.
-
-- Siva
-
-
------Original Message-----
-From: Linas Vepstas [mailto:linas@austin.ibm.com]=20
-Sent: Monday, November 19, 2007 9:52 AM
-To: Siva Prasad
-Cc: linuxppc-embedded@ozlabs.org; linuxppc-dev@ozlabs.org
-Subject: Re: hangs after "Freeing unused kernel memory"
-
-On Thu, Nov 15, 2007 at 04:00:09PM -0800, Siva Prasad wrote:
-> Hi,
+> -----Original Message-----
+> From: Randy Vinson [mailto:rvinson@mvista.com]=20
+> Sent: Thursday, December 20, 2007 6:52 AM
+> To: Zhang Wei
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [0/3] Add RapidIO support to powerpc=20
+> architecture with memory mapping
 >=20
-> This sounds like a familiar problem, but could not get answers in
-posts
-> that came up in google search.
+> Zhang Wei wrote:
+> > Hi,
+> >=20
+> > Those patches add RapidIO support to powerpc archiecture with
+> > memory mapping as below:
+> >=20
+> > [1/3] Copy the arch/ppc RapidIO support to arch/powerpc
+> > [2/3] Make the arch/powerpc RapidIO support workable with of-device
+> >       and add memory mapping support.
+> Patch 2/3 seems to have gone missing. Was it sent?
 >=20
-> My system hangs after printing the message "Freeing unused kernel
-> memory". It should execute init after that, but not sure what exactly
-is
-> happening. Appreciate if some one can throw few ideas to try out.
-
-It might not be a hang, it might be simply that you loose the console.
-If this is a redhat system, and you didn't tweak initrd and udev just=20
-right, this can happen.
-
-Try doing this:
-
-      mount --bind / /mnt
-      cp -a /dev/null /mnt/dev
-      cp -a /dev/console /mnt/dev
-      cp -a /dev/hv* /mnt/dev
-      umount /mnt
-
-> Seems it is actually hanging when it makes the call "
-> run_init_process(ramdisk_execute_command)" in init/main.c
-
-Then again, your initrd might be corrupted.
-
---linas
+> Randy V.
+>=20
+> > [3/3] Add the memory mapping support to rionet driver.
+> >=20
+> > Best Regards,
+> > Zhang Wei
+> >=20
+> >=20
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> >=20
+>=20
+>=20
