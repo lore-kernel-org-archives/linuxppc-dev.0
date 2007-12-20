@@ -1,11 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 20 Dec 2007 14:54:43 +1100
-Subject: [PATCH 2/19] [POWERPC] pci32: use generic
-	pci_assign_unassign_resources
+Date: Thu, 20 Dec 2007 14:54:44 +1100
+Subject: [PATCH 3/19] [POWERPC] pci32: Remove PowerMac P2P bridge IO hack
 In-Reply-To: <1198122881.874131.56762399546.qpush@grosgo>
-Message-Id: <20071220035445.96F7FDDE26@ozlabs.org>
+Message-Id: <20071220035447.93EFDDDEDD@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,272 +15,245 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes the 32 bits PowerPC PCI code use the generic code to assign
-resources to devices that had unassigned or conflicting resources.
-
-This allow to remove the local implementation that was incomplete and
-could not assign for example a PCI<->PCI bridge from scratch, which is
-needed on various embedded platforms.
+The 32 bits PowerPC PCI code has a hack for use by some PowerMacs
+to try to re-open PCI<->PCI bridge IO resources that were closed
+by the firmware. This is no longer necessary as the generic code
+will now do that for us.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/pci_32.c |  191 +++----------------------------------------
- 1 file changed, 17 insertions(+), 174 deletions(-)
+ arch/powerpc/kernel/pci_32.c |  215 -------------------------------------------
+ 1 file changed, 1 insertion(+), 214 deletions(-)
 
 --- linux-merge.orig/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:27.000000000 +1100
-+++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:27.000000000 +1100
-@@ -37,10 +37,6 @@ int pcibios_assign_bus_offset = 1;
- 
- void pcibios_make_OF_bus_map(void);
- 
--static int pci_relocate_bridge_resource(struct pci_bus *bus, int i);
--static int probe_resource(struct pci_bus *parent, struct resource *pr,
--			  struct resource *res, struct resource **conflict);
--static void update_bridge_base(struct pci_bus *bus, int i);
- static void pcibios_fixup_resources(struct pci_dev* dev);
- static void fixup_broken_pcnet32(struct pci_dev* dev);
- static int reparent_resources(struct resource *parent, struct resource *res);
-@@ -134,7 +130,7 @@ pcibios_fixup_resources(struct pci_dev *
- 		if (offset != 0) {
- 			res->start = (res->start + offset) & mask;
- 			res->end = (res->end + offset) & mask;
--			DBG("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
-+			DBG("PCI: Fixup res %d (0x%lx) of dev %s: %llx -> %llx\n",
- 			    i, res->flags, pci_name(dev),
- 			    (u64)res->start - offset, (u64)res->start);
- 		}
-@@ -267,9 +263,12 @@ pcibios_allocate_bus_resources(struct li
- 				}
- 			}
- 
--			DBG("PCI: bridge rsrc %llx..%llx (%lx), parent %p\n",
-+			DBG("PCI: dev %s (bus 0x%02x) bridge rsrc %d: %016llx..%016llx "
-+			    "(f:0x%08lx), parent %p\n",
-+			    bus->self ? pci_name(bus->self) : "PHB", bus->number, i,
- 			    (u64)res->start, (u64)res->end, res->flags, pr);
--			if (pr) {
-+
-+			if (pr && !(pr->flags & IORESOURCE_UNSET)) {
- 				if (request_resource(pr, res) == 0)
- 					continue;
- 				/*
-@@ -280,10 +279,11 @@ pcibios_allocate_bus_resources(struct li
- 				if (reparent_resources(pr, res) == 0)
- 					continue;
- 			}
--			printk(KERN_ERR "PCI: Cannot allocate resource region "
--			       "%d of PCI bridge %d\n", i, bus->number);
--			if (pci_relocate_bridge_resource(bus, i))
--				bus->resource[i] = NULL;
-+			printk(KERN_WARNING
-+			       "PCI: Cannot allocate resource region "
-+			       "%d of PCI bridge %d, will remap\n",
-+			       i, bus->number);
-+			res->flags |= IORESOURCE_UNSET;
- 		}
- 		pcibios_allocate_bus_resources(&bus->children);
- 	}
-@@ -324,112 +324,6 @@ reparent_resources(struct resource *pare
- 	return 0;
++++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-14 15:49:28.000000000 +1100
+@@ -711,217 +711,6 @@ void pcibios_make_OF_bus_map(void)
  }
+ #endif /* CONFIG_PPC_OF */
  
+-#ifdef CONFIG_PPC_PMAC
 -/*
-- * A bridge has been allocated a range which is outside the range
-- * of its parent bridge, so it needs to be moved.
+- * This set of routines checks for PCI<->PCI bridges that have closed
+- * IO resources and have child devices. It tries to re-open an IO
+- * window on them.
+- *
+- * This is a _temporary_ fix to workaround a problem with Apple's OF
+- * closing IO windows on P2P bridges when the OF drivers of cards
+- * below this bridge don't claim any IO range (typically ATI or
+- * Adaptec).
+- *
+- * A more complete fix would be to use drivers/pci/setup-bus.c, which
+- * involves a working pcibios_fixup_pbus_ranges(), some more care about
+- * ordering when creating the host bus resources, and maybe a few more
+- * minor tweaks
+- */
+-
+-/* Initialize bridges with base/limit values we have collected */
+-static void __init
+-do_update_p2p_io_resource(struct pci_bus *bus, int enable_vga)
+-{
+-	struct pci_dev *bridge = bus->self;
+-	struct pci_controller* hose = (struct pci_controller *)bridge->sysdata;
+-	u32 l;
+-	u16 w;
+-	struct resource res;
+-
+-	if (bus->resource[0] == NULL)
+-		return;
+- 	res = *(bus->resource[0]);
+-
+-	DBG("Remapping Bus %d, bridge: %s\n", bus->number, pci_name(bridge));
+-	res.start -= ((unsigned long) hose->io_base_virt - isa_io_base);
+-	res.end -= ((unsigned long) hose->io_base_virt - isa_io_base);
+-	DBG("  IO window: %016llx-%016llx\n", res.start, res.end);
+-
+-	/* Set up the top and bottom of the PCI I/O segment for this bus. */
+-	pci_read_config_dword(bridge, PCI_IO_BASE, &l);
+-	l &= 0xffff000f;
+-	l |= (res.start >> 8) & 0x00f0;
+-	l |= res.end & 0xf000;
+-	pci_write_config_dword(bridge, PCI_IO_BASE, l);
+-
+-	if ((l & PCI_IO_RANGE_TYPE_MASK) == PCI_IO_RANGE_TYPE_32) {
+-		l = (res.start >> 16) | (res.end & 0xffff0000);
+-		pci_write_config_dword(bridge, PCI_IO_BASE_UPPER16, l);
+-	}
+-
+-	pci_read_config_word(bridge, PCI_COMMAND, &w);
+-	w |= PCI_COMMAND_IO;
+-	pci_write_config_word(bridge, PCI_COMMAND, w);
+-
+-#if 0 /* Enabling this causes XFree 4.2.0 to hang during PCI probe */
+-	if (enable_vga) {
+-		pci_read_config_word(bridge, PCI_BRIDGE_CONTROL, &w);
+-		w |= PCI_BRIDGE_CTL_VGA;
+-		pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, w);
+-	}
+-#endif
+-}
+-
+-/* This function is pretty basic and actually quite broken for the
+- * general case, it's enough for us right now though. It's supposed
+- * to tell us if we need to open an IO range at all or not and what
+- * size.
 - */
 -static int __init
--pci_relocate_bridge_resource(struct pci_bus *bus, int i)
+-check_for_io_childs(struct pci_bus *bus, struct resource* res, int *found_vga)
 -{
--	struct resource *res, *pr, *conflict;
--	resource_size_t try, size;
--	struct pci_bus *parent = bus->parent;
--	int j;
--
--	if (parent == NULL) {
--		/* shouldn't ever happen */
--		printk(KERN_ERR "PCI: can't move host bridge resource\n");
--		return -1;
--	}
--	res = bus->resource[i];
--	if (res == NULL)
--		return -1;
--	pr = NULL;
--	for (j = 0; j < 4; j++) {
--		struct resource *r = parent->resource[j];
--		if (!r)
--			continue;
--		if ((res->flags ^ r->flags) & (IORESOURCE_IO | IORESOURCE_MEM))
--			continue;
--		if (!((res->flags ^ r->flags) & IORESOURCE_PREFETCH)) {
--			pr = r;
--			break;
--		}
--		if (res->flags & IORESOURCE_PREFETCH)
--			pr = r;
--	}
--	if (pr == NULL)
--		return -1;
--	size = res->end - res->start;
--	if (pr->start > pr->end || size > pr->end - pr->start)
--		return -1;
--	try = pr->end;
--	for (;;) {
--		res->start = try - size;
--		res->end = try;
--		if (probe_resource(bus->parent, pr, res, &conflict) == 0)
--			break;
--		if (conflict->start <= pr->start + size)
--			return -1;
--		try = conflict->start - 1;
--	}
--	if (request_resource(pr, res)) {
--		DBG(KERN_ERR "PCI: huh? couldn't move to %llx..%llx\n",
--		    (u64)res->start, (u64)res->end);
--		return -1;		/* "can't happen" */
--	}
--	update_bridge_base(bus, i);
--	printk(KERN_INFO "PCI: bridge %d resource %d moved to %llx..%llx\n",
--	       bus->number, i, (unsigned long long)res->start,
--	       (unsigned long long)res->end);
--	return 0;
--}
--
--static int __init
--probe_resource(struct pci_bus *parent, struct resource *pr,
--	       struct resource *res, struct resource **conflict)
--{
--	struct pci_bus *bus;
 -	struct pci_dev *dev;
--	struct resource *r;
--	int i;
+-	int	i;
+-	int	rc = 0;
 -
--	for (r = pr->child; r != NULL; r = r->sibling) {
--		if (r->end >= res->start && res->end >= r->start) {
--			*conflict = r;
--			return 1;
--		}
--	}
--	list_for_each_entry(bus, &parent->children, node) {
--		for (i = 0; i < 4; ++i) {
--			if ((r = bus->resource[i]) == NULL)
+-#define push_end(res, mask) do {		\
+-	BUG_ON((mask+1) & mask);		\
+-	res->end = (res->end + mask) | mask;	\
+-} while (0)
+-
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		u16 class = dev->class >> 8;
+-
+-		if (class == PCI_CLASS_DISPLAY_VGA ||
+-		    class == PCI_CLASS_NOT_DEFINED_VGA)
+-			*found_vga = 1;
+-		if (class >> 8 == PCI_BASE_CLASS_BRIDGE && dev->subordinate)
+-			rc |= check_for_io_childs(dev->subordinate, res, found_vga);
+-		if (class == PCI_CLASS_BRIDGE_CARDBUS)
+-			push_end(res, 0xfff);
+-
+-		for (i=0; i<PCI_NUM_RESOURCES; i++) {
+-			struct resource *r;
+-			unsigned long r_size;
+-
+-			if (dev->class >> 8 == PCI_CLASS_BRIDGE_PCI
+-			    && i >= PCI_BRIDGE_RESOURCES)
 -				continue;
--			if (!r->flags || r->start > r->end || r == res)
--				continue;
--			if (pci_find_parent_resource(bus->self, r) != pr)
--				continue;
--			if (r->end >= res->start && res->end >= r->start) {
--				*conflict = r;
--				return 1;
--			}
--		}
--	}
--	list_for_each_entry(dev, &parent->devices, bus_list) {
--		for (i = 0; i < 6; ++i) {
 -			r = &dev->resource[i];
--			if (!r->flags || (r->flags & IORESOURCE_UNSET))
--				continue;
--			if (pci_find_parent_resource(dev, r) != pr)
--				continue;
--			if (r->end >= res->start && res->end >= r->start) {
--				*conflict = r;
--				return 1;
+-			r_size = r->end - r->start;
+-			if (r_size < 0xfff)
+-				r_size = 0xfff;
+-			if (r->flags & IORESOURCE_IO && (r_size) != 0) {
+-				rc = 1;
+-				push_end(res, r_size);
 -			}
 -		}
 -	}
--	return 0;
+-
+-	return rc;
 -}
 -
- void __init
- update_bridge_resource(struct pci_dev *dev, struct resource *res)
- {
-@@ -486,24 +380,16 @@ update_bridge_resource(struct pci_dev *d
- 	pci_write_config_word(dev, PCI_COMMAND, cmd);
- }
- 
+-/* Here we scan all P2P bridges of a given level that have a closed
+- * IO window. Note that the test for the presence of a VGA card should
+- * be improved to take into account already configured P2P bridges,
+- * currently, we don't see them and might end up configuring 2 bridges
+- * with VGA pass through enabled
+- */
 -static void __init
--update_bridge_base(struct pci_bus *bus, int i)
+-do_fixup_p2p_level(struct pci_bus *bus)
 -{
--	struct resource *res = bus->resource[i];
--	struct pci_dev *dev = bus->self;
--	update_bridge_resource(dev, res);
--}
+-	struct pci_bus *b;
+-	int i, parent_io;
+-	int has_vga = 0;
 -
- static inline void alloc_resource(struct pci_dev *dev, int idx)
- {
- 	struct resource *pr, *r = &dev->resource[idx];
- 
--	DBG("PCI:%s: Resource %d: %016llx-%016llx (f=%lx)\n",
-+	DBG("PCI: Allocating %s: Resource %d: %016llx..%016llx (f=%lx)\n",
- 	    pci_name(dev), idx, (u64)r->start, (u64)r->end, r->flags);
- 	pr = pci_find_parent_resource(dev, r);
--	if (!pr || request_resource(pr, r) < 0) {
--		printk(KERN_WARNING "PCI: Remapping resource region %d"
--		       " of device %s\n", idx, pci_name(dev));
-+	if (!pr || (pr->flags & IORESOURCE_UNSET) ||  request_resource(pr, r) < 0) {
-+		printk(KERN_WARNING "PCI: Cannot allocate resource region %d"
-+		       " of device %s, will remap\n", idx, pci_name(dev));
- 		if (pr)
- 			DBG("PCI:  parent is %p: %016llx-%016llx (f=%lx)\n",
- 			    pr, (u64)pr->start, (u64)pr->end, pr->flags);
-@@ -552,50 +438,6 @@ pcibios_allocate_resources(int pass)
- 	}
- }
- 
--static void __init
--pcibios_assign_resources(void)
--{
--	struct pci_dev *dev = NULL;
--	int idx;
--	struct resource *r;
+-	for (parent_io=0; parent_io<4; parent_io++)
+-		if (bus->resource[parent_io]
+-		    && bus->resource[parent_io]->flags & IORESOURCE_IO)
+-			break;
+-	if (parent_io >= 4)
+-		return;
 -
--	for_each_pci_dev(dev) {
--		int class = dev->class >> 8;
+-	list_for_each_entry(b, &bus->children, node) {
+-		struct pci_dev *d = b->self;
+-		struct pci_controller* hose = (struct pci_controller *)d->sysdata;
+-		struct resource *res = b->resource[0];
+-		struct resource tmp_res;
+-		unsigned long max;
+-		int found_vga = 0;
 -
--		/* Don't touch classless devices and host bridges */
--		if (!class || class == PCI_CLASS_BRIDGE_HOST)
--			continue;
+-		memset(&tmp_res, 0, sizeof(tmp_res));
+-		tmp_res.start = bus->resource[parent_io]->start;
 -
--		for (idx = 0; idx < 6; idx++) {
--			r = &dev->resource[idx];
+-		/* We don't let low addresses go through that closed P2P bridge, well,
+-		 * that may not be necessary but I feel safer that way
+-		 */
+-		if (tmp_res.start == 0)
+-			tmp_res.start = 0x1000;
+-	
+-		if (!list_empty(&b->devices) && res && res->flags == 0 &&
+-		    res != bus->resource[parent_io] &&
+-		    (d->class >> 8) == PCI_CLASS_BRIDGE_PCI &&
+-		    check_for_io_childs(b, &tmp_res, &found_vga)) {
+-			u8 io_base_lo;
 -
--			/*
--			 * We shall assign a new address to this resource,
--			 * either because the BIOS (sic) forgot to do so
--			 * or because we have decided the old address was
--			 * unusable for some reason.
--			 */
--			if ((r->flags & IORESOURCE_UNSET) && r->end &&
--			    (!ppc_md.pcibios_enable_device_hook ||
--			     !ppc_md.pcibios_enable_device_hook(dev, 1))) {
--				int rc;
+-			printk(KERN_INFO "Fixing up IO bus %s\n", b->name);
 -
--				r->flags &= ~IORESOURCE_UNSET;
--				rc = pci_assign_resource(dev, idx);
--				BUG_ON(rc);
+-			if (found_vga) {
+-				if (has_vga) {
+-					printk(KERN_WARNING "Skipping VGA, already active"
+-					    " on bus segment\n");
+-					found_vga = 0;
+-				} else
+-					has_vga = 1;
+-			}
+-			pci_read_config_byte(d, PCI_IO_BASE, &io_base_lo);
+-
+-			if ((io_base_lo & PCI_IO_RANGE_TYPE_MASK) == PCI_IO_RANGE_TYPE_32)
+-				max = ((unsigned long) hose->io_base_virt
+-					- isa_io_base) + 0xffffffff;
+-			else
+-				max = ((unsigned long) hose->io_base_virt
+-					- isa_io_base) + 0xffff;
+-
+-			*res = tmp_res;
+-			res->flags = IORESOURCE_IO;
+-			res->name = b->name;
+-		
+-			/* Find a resource in the parent where we can allocate */
+-			for (i = 0 ; i < 4; i++) {
+-				struct resource *r = bus->resource[i];
+-				if (!r)
+-					continue;
+-				if ((r->flags & IORESOURCE_IO) == 0)
+-					continue;
+-				DBG("Trying to allocate from %016llx, size %016llx from parent"
+-				    " res %d: %016llx -> %016llx\n",
+-					res->start, res->end, i, r->start, r->end);
+-			
+-				if (allocate_resource(r, res, res->end + 1, res->start, max,
+-				    res->end + 1, NULL, NULL) < 0) {
+-					DBG("Failed !\n");
+-					continue;
+-				}
+-				do_update_p2p_io_resource(b, found_vga);
+-				break;
 -			}
 -		}
--
--#if 0 /* don't assign ROMs */
--		r = &dev->resource[PCI_ROM_RESOURCE];
--		r->end -= r->start;
--		r->start = 0;
--		if (r->end)
--			pci_assign_resource(dev, PCI_ROM_RESOURCE);
--#endif
+-		do_fixup_p2p_level(b);
 -	}
 -}
 -
- #ifdef CONFIG_PPC_OF
- /*
-  * Functions below are used on OpenFirmware machines.
-@@ -1122,7 +964,8 @@ pcibios_init(void)
- #ifdef CONFIG_PPC_PMAC
- 	pcibios_fixup_p2p_bridges();
- #endif /* CONFIG_PPC_PMAC */
--	pcibios_assign_resources();
-+	DBG("PCI: Assigning unassigned resouces...\n");
-+	pci_assign_unassigned_resources();
+-static void
+-pcibios_fixup_p2p_bridges(void)
+-{
+-	struct pci_bus *b;
+-
+-	list_for_each_entry(b, &pci_root_buses, node)
+-		do_fixup_p2p_level(b);
+-}
+-
+-#endif /* CONFIG_PPC_PMAC */
+-
+ static int __init
+ pcibios_init(void)
+ {
+@@ -961,9 +750,7 @@ pcibios_init(void)
+ 	pcibios_allocate_bus_resources(&pci_root_buses);
+ 	pcibios_allocate_resources(0);
+ 	pcibios_allocate_resources(1);
+-#ifdef CONFIG_PPC_PMAC
+-	pcibios_fixup_p2p_bridges();
+-#endif /* CONFIG_PPC_PMAC */
++
+ 	DBG("PCI: Assigning unassigned resouces...\n");
+ 	pci_assign_unassigned_resources();
  
- 	/* Call machine dependent post-init code */
- 	if (ppc_md.pcibios_after_init)
