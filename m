@@ -1,8 +1,8 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA04.emeryville.ca.mail.comcast.net
-	(qmta04.emeryville.ca.mail.comcast.net [76.96.30.40])
-	by ozlabs.org (Postfix) with ESMTP id 98C49DDE38
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:02:38 +1100 (EST)
+Received: from QMTA10.emeryville.ca.mail.comcast.net
+	(qmta10.emeryville.ca.mail.comcast.net [76.96.30.17])
+	by ozlabs.org (Postfix) with ESMTP id 693B8DDE1F
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:02:39 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
@@ -12,9 +12,9 @@ In-Reply-To: Roland McGrath's message of  Thursday,
 	20 December 2007 03:52:00 -0800
 	<20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 13/43] powerpc ptrace special regs
-Message-Id: <20071220115751.78CE726F98A@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:57:51 -0800 (PST)
+Subject: [PATCH -mm 17/43] powerpc CORE_DUMP_USE_REGSET
+Message-Id: <20071220115812.E7D5526F98D@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:58:12 -0800 (PST)
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,86 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This isolates the ptrace code for the special-case registers msr and trap
-from the ptrace-layout dispatch code.  This should inline away completely.
-It cleanly separates the low-level machine magic that has to be done for
-deep reasons, from the superficial details of the ptrace interface.
+This switches powerpc to using the user_regset-based code for ELF core
+dumps.  The core dumps come out exactly the same either way, except that
+the NT_PPC_VMX note is now omitted for any thread that never touched its
+Altivec registers (thread_struct.vr_used).
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/ptrace.c |   45 ++++++++++++++++++++++++++++--------------
- 1 files changed, 30 insertions(+), 15 deletions(-)
+ include/asm-powerpc/elf.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 8c25b00..4edc118 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -60,20 +60,38 @@
- #define PT_MAX_PUT_REG	PT_CCR
- #endif
+diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
+index 6bd07ef..fd9bf8b 100644
+--- a/include/asm-powerpc/elf.h
++++ b/include/asm-powerpc/elf.h
+@@ -167,6 +167,7 @@ typedef elf_vrreg_t elf_vrregset_t32[ELF_NVRREG32];
+ #define elf_check_arch(x) ((x)->e_machine == ELF_ARCH)
  
-+static unsigned long get_user_msr(struct task_struct *task)
-+{
-+	return task->thread.regs->msr | task->thread.fpexc_mode;
-+}
-+
-+static int set_user_msr(struct task_struct *task, unsigned long msr)
-+{
-+	task->thread.regs->msr &= ~MSR_DEBUGCHANGE;
-+	task->thread.regs->msr |= msr & MSR_DEBUGCHANGE;
-+	return 0;
-+}
-+
-+/*
-+ * We prevent mucking around with the reserved area of trap
-+ * which are used internally by the kernel.
-+ */
-+static int set_user_trap(struct task_struct *task, unsigned long trap)
-+{
-+	task->thread.regs->trap = trap & 0xfff0;
-+	return 0;
-+}
-+
- /*
-  * Get contents of register REGNO in task TASK.
-  */
- unsigned long ptrace_get_reg(struct task_struct *task, int regno)
- {
--	unsigned long tmp = 0;
--
- 	if (task->thread.regs == NULL)
- 		return -EIO;
+ #define USE_ELF_CORE_DUMP
++#define CORE_DUMP_USE_REGSET
+ #define ELF_EXEC_PAGESIZE	PAGE_SIZE
  
--	if (regno == PT_MSR) {
--		tmp = ((unsigned long *)task->thread.regs)[PT_MSR];
--		return tmp | task->thread.fpexc_mode;
--	}
-+	if (regno == PT_MSR)
-+		return get_user_msr(task);
- 
- 	if (regno < (sizeof(struct pt_regs) / sizeof(unsigned long)))
- 		return ((unsigned long *)task->thread.regs)[regno];
-@@ -89,15 +107,12 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
- 	if (task->thread.regs == NULL)
- 		return -EIO;
- 
--	if (regno <= PT_MAX_PUT_REG || regno == PT_TRAP) {
--		if (regno == PT_MSR)
--			data = (data & MSR_DEBUGCHANGE)
--				| (task->thread.regs->msr & ~MSR_DEBUGCHANGE);
--		/* We prevent mucking around with the reserved area of trap
--		 * which are used internally by the kernel
--		 */
--		if (regno == PT_TRAP)
--			data &= 0xfff0;
-+	if (regno == PT_MSR)
-+		return set_user_msr(task, data);
-+	if (regno == PT_TRAP)
-+		return set_user_trap(task, data);
-+
-+	if (regno <= PT_MAX_PUT_REG) {
- 		((unsigned long *)task->thread.regs)[regno] = data;
- 		return 0;
- 	}
+ /* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
 -- 
 1.5.3.6
