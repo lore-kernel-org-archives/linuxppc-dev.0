@@ -1,19 +1,17 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 14E17DDE3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 08:18:43 +1100 (EST)
-Date: Thu, 20 Dec 2007 13:52:59 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: jdl@jdl.com
-Subject: [RESEND DTC PATCH 2/2] Add support for binary includes.
-Message-ID: <20071220195259.GA1238@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id E1C1EDDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 08:53:21 +1100 (EST)
+Date: Thu, 20 Dec 2007 15:47:05 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: Oops: Kernel access of bad area
+Message-ID: <20071220214705.GA28696@localdomain>
+References: <alpine.DEB.0.99999.0712192301220.6696@sheep.housecafe.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
+In-Reply-To: <alpine.DEB.0.99999.0712192301220.6696@sheep.housecafe.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,105 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A property's data can be populated with a file's contents
-as follows:
+Christian Kujau wrote:
+> Hi,
+> 
+> I started some x11 application (here: firefox) through an ssh connection 
+> on a remote host and it crashed somehow. OK, no biggie, killed the 
+> application and be done with it. However, I noticed that the load of the 
+> machine is now constantly at 7. It's an iBook G4, has nothing to do, 
+> disks, cpu, netwokr is idle and load is usually < 1. Now it's not
+> slow to work or anyhow sluggish, but only the load is at 7 after the 
+> application crashed. When I looked into dmesg I saw:
+> 
+> [84983.750977] Unable to handle kernel paging request for data at address 0x4815d000
+> [84983.751046] Faulting instruction address: 0xc0012090
+> [84983.751157] Oops: Kernel access of bad area, sig: 11 [#1]
+> [84983.751178] PREEMPT PowerMac
+> [84983.751214] Modules linked in: nls_iso8859_15 nls_cp850 vfat fat isofs nls_base zlib_inflate radeon drm snd_powermac snd_pcm snd_timer snd soundcore snd_page_alloc fuse firewire_ohci firewire_core crc_itu_t ide_cd cdrom ssb bcm43xx rng_core ieee80211softmac uninorth_agp ieee80211 ieee80211_crypt agpgart
+> [84983.751750] NIP: c0012090 LR: c00165fc CTR: 00000080
+> [84983.751786] REGS: cea65b30 TRAP: 0300   Not tainted  (2.6.24-rc5)
+> [84983.751805] MSR: 00009032 <EE,ME,IR,DR>  CR: 24822282  XER: 00000000
+> [84983.751946] DAR: 4815d000, DSISR: 40000000
+> [84983.751965] TASK = ee372670[9138] 'firefox-bin' THREAD: cea64000
+> [84983.751984] GPR00: e62b3a00 cea65be0 ee372670 4815d000 00000080 1bc0c181 4815d000 ffffffff
+> [84983.752148] GPR08: 00010008 e62b3a00 00000000 c045f000 24822288 1002ea3c cea67690 ce954000
+> [84983.752315] GPR16: c0420000 c03f6400 cea65cac cea65ca8 c0440000 ce974480 c07d7180 ceba2280
+> [84983.752468] GPR24: e62b3a00 e62b3a50 4815d000 00000574 ceba2280 4815d000 1bc0c181 c07d7180
+> [84983.752665] NIP [c0012090] __flush_dcache_icache+0x14/0x40
+> [84983.752716] LR [c00165fc] update_mmu_cache+0x11c/0x120
 
-node {
-	prop = /bin-include/ "path/to/data";
-};
+Better to include the full stack trace in such reports, but here it
+is:
 
-Search paths are not yet implemented; non-absolute lookups are relative to
-the directory from which dtc was invoked.
+ NIP [c0012090] __flush_dcache_icache+0x14/0x40
+ LR [c00165fc] update_mmu_cache+0x11c/0x120
+ Call Trace:
+ [cea65be0] [ce8c1000] 0xce8c1000 (unreliable)
+ [cea65c00] [c0075868] handle_mm_fault+0x39c/0x7f8
+ [cea65c50] [c0075dec] get_user_pages+0x128/0x398
+ [cea65ca0] [c00c5e18] elf_core_dump+0xb64/0xc28
+ [cea65d40] [c0091e64] do_coredump+0x754/0x788
+ [cea65e50] [c003cb20] get_signal_to_deliver+0x2dc/0x3fc
+ [cea65e80] [c000a678] do_signal+0x48/0x28c
+ [cea65f40] [c0012cb4] do_user_signal+0x74/0xc4
+ --- Exception: c00 at 0xfd36ea4
+     LR = 0x10012018
+ Instruction dump:
+ 4d820020 7c8903a6 7c001bac 38630020 4200fff8 7c0004ac 4e800020 60000000
+ 54630026 38800080 7c8903a6 7c661b78 <7c00186c> 38630020 4200fff8 7c0004ac
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-Apologies if you get this twice, but AFAICT the original got eaten by our
-mail server.
+So it looks like the kernel oopsed while firefox was dumping core,
+yuck.
 
- dtc-lexer.l  |    6 ++++++
- dtc-parser.y |   26 ++++++++++++++++++++++++++
- dtc.h        |    1 +
- 3 files changed, 33 insertions(+), 0 deletions(-)
+> This is the first time that this happened on this iBook, and it was not 
+> reproducible so far (well, it happened just a few minutes ago). Is this 
+> something to worry about? Or should I file this under "well, shit 
+> happens"?
 
-diff --git a/dtc-lexer.l b/dtc-lexer.l
-index c811b22..1f3e6d6 100644
---- a/dtc-lexer.l
-+++ b/dtc-lexer.l
-@@ -190,6 +190,12 @@ static int dts_version; /* = 0 */
- 			return DT_PROPNODENAME;
- 		}
- 
-+"/bin-include/"	{
-+			yylloc.filenum = srcpos_filenum;
-+			yylloc.first_line = yylineno;
-+			DPRINT("Binary Include\n");
-+			return DT_BININCLUDE;
-+		}
- 
- <*>[[:space:]]+	/* eat whitespace */
- 
-diff --git a/dtc-parser.y b/dtc-parser.y
-index 4a0181d..c7ed715 100644
---- a/dtc-parser.y
-+++ b/dtc-parser.y
-@@ -21,6 +21,8 @@
- %locations
- 
- %{
-+#include <sys/stat.h>
-+
- #include "dtc.h"
- #include "srcpos.h"
- 
-@@ -58,6 +60,7 @@ extern struct boot_info *the_boot_info;
- %token <data> DT_STRING
- %token <labelref> DT_LABEL
- %token <labelref> DT_REF
-+%token DT_BININCLUDE
- 
- %type <data> propdata
- %type <data> propdataprefix
-@@ -196,6 +199,29 @@ propdata:
- 		{
- 			$$ = data_add_marker($1, REF_PATH, $2);
- 		}
-+	| propdataprefix DT_BININCLUDE DT_STRING
-+		{
-+			struct stat st;
-+			FILE *f;
-+			int fd;
-+			
-+			f = fopen($3.val, "rb");
-+			if (!f) {
-+				yyerrorf("Cannot open file \"%s\": %s",
-+				         $3.val, strerror(errno));
-+				YYERROR;
-+			}
-+
-+			fd = fileno(f);
-+			if (fstat(fd, &st) < 0) {
-+				yyerrorf("Cannot stat file \"%s\": %s",
-+				         $3.val, strerror(errno));
-+				YYERROR;
-+			}
-+
-+			$$ = data_merge($1, data_copy_file(f, st.st_size));
-+			fclose(f);
-+		}
- 	| propdata DT_LABEL
- 		{
- 			$$ = data_add_marker($1, LABEL, $2);
-diff --git a/dtc.h b/dtc.h
-index 9b89689..87b5bb1 100644
---- a/dtc.h
-+++ b/dtc.h
-@@ -138,6 +138,7 @@ struct data data_grow_for(struct data d, int xlen);
- struct data data_copy_mem(const char *mem, int len);
- struct data data_copy_escape_string(const char *s, int len);
- struct data data_copy_file(FILE *f, size_t len);
-+struct data data_bin_include(const char *filename);
- 
- struct data data_append_data(struct data d, const void *p, int len);
- struct data data_insert_at_marker(struct data d, struct marker *m,
--- 
-1.5.3
+It's a real bug.  Hopefully someone on the list can help...
