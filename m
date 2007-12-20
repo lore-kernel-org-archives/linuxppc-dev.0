@@ -1,18 +1,17 @@
-Return-Path: <vbarshak@ru.mvista.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 33CFEDDE3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 07:27:28 +1100 (EST)
-Message-ID: <476ACFD8.1000506@ru.mvista.com>
-Date: Thu, 20 Dec 2007 23:26:00 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 11/20] [POWERPC] Wire up PCI on Bamboo board
-References: <20071213073845.1D311DE053@ozlabs.org>	
-	<47691DE6.8050901@ru.mvista.com>
-	<1198095967.18908.33.camel@pasglop>
-In-Reply-To: <1198095967.18908.33.camel@pasglop>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+	by ozlabs.org (Postfix) with ESMTP id 1F495DDE27
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 07:30:43 +1100 (EST)
+Date: Thu, 20 Dec 2007 23:32:48 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH v2 1/4] [POWERPC] qe_lib and users: get rid of device_type and
+	model
+Message-ID: <20071220203248.GA19553@localhost.localdomain>
+References: <20071220202714.GA18471@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071220202714.GA18471@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,42 +22,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2007-12-19 at 16:34 +0300, Valentine Barshak wrote:
-> 
->>> --- linux-work.orig/arch/powerpc/boot/dts/bamboo.dts	2007-12-10 15:56:59.000000000 +1100
->>> +++ linux-work/arch/powerpc/boot/dts/bamboo.dts	2007-12-10 16:39:51.000000000 +1100
->>> @@ -239,10 +239,48 @@
->>>  				zmii-channel = <1>;
->>>  			};
->>>  		};
->>> +
->>> +		PCI0: pci@ec000000 {
->>> +			device_type = "pci";
->>> +			#interrupt-cells = <1>;
->>> +			#size-cells = <2>;
->>> +			#address-cells = <3>;
->>> +			compatible = "ibm,plb440ep-pci", "ibm,plb-pci";
->>> +			primary;
->>> +			reg = <0 eec00000 8	/* Config space access */
->>> +			       0 eed80000 4	/* IACK */
->>> +			       0 eed80000 4	/* Special cycle */
->>> +			       0 ef480000 40>;	/* Internal registers */
->> Why ef480000 here? IIRC, the docs say it should be ef400000, while 
->> ef400040 - ef4fffff are reserved and can mirror local registers.
-> 
-> Dunno... probably a typo, though it worked :-) I'll fix it up.
+Now we're searching for "fsl,qe", "fsl,qe-muram", "fsl,qe-muram-data".
 
-Just checked the ppc440ep user manual again.
-Special cycle/IACK registers are at 0xeed00000 instead of 0xeed80000.
-Looks like the same typo as in the internal registers.
-It works because all these registers are mirrored at 0x80000 offset 
-(though it's claimed to be a reserved region).
+Per http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048388.html
 
-Thanks,
-Valentine.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/mpc832x_mds.dts |    7 ++++---
+ arch/powerpc/boot/dts/mpc832x_rdb.dts |    7 ++++---
+ arch/powerpc/boot/dts/mpc836x_mds.dts |    7 ++++---
+ arch/powerpc/boot/dts/mpc8568mds.dts  |    7 ++++---
+ arch/powerpc/sysdev/fsl_soc.c         |    5 ++++-
+ arch/powerpc/sysdev/qe_lib/qe.c       |   16 +++++++++++++---
+ 6 files changed, 33 insertions(+), 16 deletions(-)
 
-> 
-> Ben.
-> 
-> 
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index 26ac467..588d658 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -175,18 +175,19 @@
+ 	qe@e0100000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <BCD3D80>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 00004000>;
+ 
+ 			data-only@0 {
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 4000>;
+ 			};
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index 10ff7aa..719f375 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -165,18 +165,19 @@
+ 	qe@e0100000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <BCD3D80>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 00004000>;
+ 
+ 			data-only@0 {
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 4000>;
+ 			};
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index fd841b2..8d7124e 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -206,18 +206,19 @@
+ 	qe@e0100000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <179A7B00>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			device_type = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 0000c000>;
+ 
+ 			data-only@0{
++				device_type = "fsl,qe-muram-data",
++					      "fsl,cpm-muram-data";
+ 				reg = <0 c000>;
+ 			};
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 5818a7c..89add8d 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -283,18 +283,19 @@
+ 	qe@e0080000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0080000 00040000>;
+ 		reg = <e0080000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <179A7B00>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 0000c000>;
+ 
+ 			data-only@0{
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 c000>;
+ 			};
+ 		};
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 4baad80..60d9c4e 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -1226,7 +1226,10 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
+ 	const u32 *sysclk;
+ 
+ 	/* SPI controller is either clocked from QE or SoC clock */
+-	np = of_find_node_by_type(NULL, "qe");
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np)
++		np = of_find_node_by_type(NULL, "qe");
++
+ 	if (!np)
+ 		np = of_find_node_by_type(NULL, "soc");
+ 
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 21e0106..cd6cee3 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -68,7 +68,10 @@ phys_addr_t get_qe_base(void)
+ 	if (qebase != -1)
+ 		return qebase;
+ 
+-	qe = of_find_node_by_type(NULL, "qe");
++	qe = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!qe)
++		qe = of_find_node_by_type(NULL, "qe");
++
+ 	if (qe) {
+ 		unsigned int size;
+ 		const void *prop = of_get_property(qe, "reg", &size);
+@@ -155,7 +158,10 @@ unsigned int get_brg_clk(void)
+ 	if (brg_clk)
+ 		return brg_clk;
+ 
+-	qe = of_find_node_by_type(NULL, "qe");
++	qe = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!qe)
++		qe = of_find_node_by_type(NULL, "qe");
++
+ 	if (qe) {
+ 		unsigned int size;
+ 		const u32 *prop = of_get_property(qe, "brg-frequency", &size);
+@@ -334,7 +340,11 @@ static void qe_muram_init(void)
+ 	/* XXX: This is a subset of the available muram. It
+ 	 * varies with the processor and the microcode patches activated.
+ 	 */
+-	if ((np = of_find_node_by_name(NULL, "data-only")) != NULL) {
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
++	if (!np)
++		np = of_find_node_by_name(NULL, "data-only");
++
++	if (np) {
+ 		address = *of_get_address(np, 0, &size, &flags);
+ 		of_node_put(np);
+ 		rh_attach_region(&qe_muram_info, address, (int) size);
+-- 
+1.5.2.2
