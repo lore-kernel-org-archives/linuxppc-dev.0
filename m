@@ -1,7 +1,7 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA07.emeryville.ca.mail.comcast.net
-	(qmta07.emeryville.ca.mail.comcast.net [76.96.30.64])
-	by ozlabs.org (Postfix) with ESMTP id 69F70DDE38
+Received: from QMTA05.emeryville.ca.mail.comcast.net
+	(qmta05.emeryville.ca.mail.comcast.net [76.96.30.48])
+	by ozlabs.org (Postfix) with ESMTP id 9DBE5DDE1D
 	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 23:02:39 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -12,9 +12,9 @@ In-Reply-To: Roland McGrath's message of  Thursday,
 	20 December 2007 03:52:00 -0800
 	<20071220115200.C767E26F98A@magilla.localdomain>
 References: <20071220115200.C767E26F98A@magilla.localdomain>
-Subject: [PATCH -mm 21/43] powerpc ptrace user_regset
-Message-Id: <20071220115836.CC3B626F98A@magilla.localdomain>
-Date: Thu, 20 Dec 2007 03:58:36 -0800 (PST)
+Subject: [PATCH -mm 24/43] powerpc compat_sys_ptrace
+Message-Id: <20071220115855.D937126F98D@magilla.localdomain>
+Date: Thu, 20 Dec 2007 03:58:55 -0800 (PST)
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,309 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This replaces all the code for powerpc PTRACE_*REGS* requests with
-simple calls to copy_regset_from_user and copy_regset_to_user.  All
-the ptrace formats are either the whole corresponding user_regset
-format (core dump format) or a leading subset of it, so we can get
-rid of all the remaining embedded knowledge of both those layouts
-and of the internal data structures they correspond to.  Only the
-user_reget accessors need to implement that.
+This replaces powerpc's compat_sys_ptrace with a compat_arch_ptrace and
+enables the new generic definition of compat_sys_ptrace instead.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/ptrace.c |  234 +++++++++++-------------------------------
- 1 files changed, 59 insertions(+), 175 deletions(-)
+ arch/powerpc/kernel/ptrace32.c |   33 +++++----------------------------
+ include/asm-powerpc/ptrace.h   |    2 ++
+ 2 files changed, 7 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 0231e7d..eb27bd9 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -237,24 +237,6 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- 				  &target->thread.fpr, 0, -1);
- }
- 
--static int get_fpregs(void __user *data, struct task_struct *task,
--		      int has_fpscr)
--{
--	unsigned int count = has_fpscr ? 33 : 32;
--	if (!access_ok(VERIFY_WRITE, data, count * sizeof(double)))
--		return -EFAULT;
--	return fpr_get(task, NULL, 0, count * sizeof(double), NULL, data);
--}
--
--static int set_fpregs(void __user *data, struct task_struct *task,
--		      int has_fpscr)
--{
--	unsigned int count = has_fpscr ? 33 : 32;
--	if (!access_ok(VERIFY_READ, data, count * sizeof(double)))
--		return -EFAULT;
--	return fpr_set(task, NULL, 0, count * sizeof(double), NULL, data);
--}
--
- 
- #ifdef CONFIG_ALTIVEC
- /*
-@@ -339,31 +321,6 @@ static int vr_set(struct task_struct *target, const struct user_regset *regset,
- 
+diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+index 6612304..0f6eea0 100644
+--- a/arch/powerpc/kernel/ptrace32.c
++++ b/arch/powerpc/kernel/ptrace32.c
+@@ -85,33 +85,13 @@ static long compat_ptrace_old(struct task_struct *child, long request,
  	return ret;
  }
--
--/*
-- * Get contents of AltiVec register state in task TASK
-- */
--static int get_vrregs(unsigned long __user *data, struct task_struct *task)
--{
--	if (!access_ok(VERIFY_WRITE, data,
--		       33 * sizeof(vector128) + sizeof(u32)))
--		return -EFAULT;
--
--	return vr_get(task, NULL, 0, 33 * sizeof(vector128) + sizeof(u32),
--		      NULL, data);
--}
--
--/*
-- * Write contents of AltiVec register state into task TASK.
-- */
--static int set_vrregs(struct task_struct *task, unsigned long __user *data)
--{
--	if (!access_ok(VERIFY_READ, data, 33 * sizeof(vector128) + sizeof(u32)))
--		return -EFAULT;
--
--	return vr_set(task, NULL, 0, 33 * sizeof(vector128) + sizeof(u32),
--		      NULL, data);
--}
- #endif /* CONFIG_ALTIVEC */
  
- #ifdef CONFIG_SPE
-@@ -430,28 +387,6 @@ static int evr_set(struct task_struct *target, const struct user_regset *regset,
- 
- 	return ret;
- }
--
--/*
-- * Get contents of SPE register state in task TASK.
-- */
--static int get_evrregs(unsigned long __user *data, struct task_struct *task)
--{
--	if (!access_ok(VERIFY_WRITE, data, 35 * sizeof(u32)))
--		return -EFAULT;
--
--	return evr_get(task, NULL, 0, 35 * sizeof(u32), NULL, data);
--}
--
--/*
-- * Write contents of SPE register state into task TASK.
-- */
--static int set_evrregs(struct task_struct *task, unsigned long *data)
--{
--	if (!access_ok(VERIFY_READ, data, 35 * sizeof(u32)))
--		return -EFAULT;
--
--	return evr_set(task, NULL, 0, 35 * sizeof(u32), NULL, data);
--}
- #endif /* CONFIG_SPE */
- 
- 
-@@ -732,55 +667,29 @@ void ptrace_disable(struct task_struct *child)
- static long arch_ptrace_old(struct task_struct *child, long request, long addr,
- 			    long data)
+-long compat_sys_ptrace(int request, int pid, unsigned long addr,
+-		       unsigned long data)
++long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
++			compat_ulong_t caddr, compat_ulong_t cdata)
  {
--	int ret = -EPERM;
--
--	switch(request) {
--	case PPC_PTRACE_GETREGS: { /* Get GPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
--		unsigned long __user *tmp = (unsigned long __user *)addr;
--
--		CHECK_FULL_REGS(child->thread.regs);
--		for (i = 0; i < 32; i++) {
--			ret = put_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
--		}
--		break;
+-	struct task_struct *child;
++	unsigned long addr = caddr;
++	unsigned long data = cdata;
+ 	int ret;
+ 
+-	lock_kernel();
+-	if (request == PTRACE_TRACEME) {
+-		ret = ptrace_traceme();
+-		goto out;
 -	}
 -
--	case PPC_PTRACE_SETREGS: { /* Set GPRs 0 - 31. */
--		int i;
--		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
--		unsigned long __user *tmp = (unsigned long __user *)addr;
--
--		CHECK_FULL_REGS(child->thread.regs);
--		for (i = 0; i < 32; i++) {
--			ret = get_user(*reg, tmp);
--			if (ret)
--				break;
--			reg++;
--			tmp++;
--		}
--		break;
+-	child = ptrace_get_task_struct(pid);
+-	if (IS_ERR(child)) {
+-		ret = PTR_ERR(child);
+-		goto out;
 -	}
 -
--	case PPC_PTRACE_GETFPREGS: { /* Get FPRs 0 - 31. */
--		flush_fp_to_thread(child);
--		ret = get_fpregs((void __user *)addr, child, 0);
--		break;
+-	if (request == PTRACE_ATTACH) {
+-		ret = ptrace_attach(child);
+-		goto out_tsk;
 -	}
 -
--	case PPC_PTRACE_SETFPREGS: { /* Get FPRs 0 - 31. */
--		flush_fp_to_thread(child);
--		ret = set_fpregs((void __user *)addr, child, 0);
--		break;
-+	switch (request) {
-+	case PPC_PTRACE_GETREGS:	/* Get GPRs 0 - 31. */
-+		return copy_regset_to_user(child, &user_ppc_native_view,
-+					   REGSET_GPR, 0, 32 * sizeof(long),
-+					   (void __user *) data);
-+
-+	case PPC_PTRACE_SETREGS:	/* Set GPRs 0 - 31. */
-+		return copy_regset_from_user(child, &user_ppc_native_view,
-+					     REGSET_GPR, 0, 32 * sizeof(long),
-+					     (const void __user *) data);
-+
-+	case PPC_PTRACE_GETFPREGS:	/* Get FPRs 0 - 31. */
-+		return copy_regset_to_user(child, &user_ppc_native_view,
-+					   REGSET_FPR, 0, 32 * sizeof(double),
-+					   (void __user *) data);
-+
-+	case PPC_PTRACE_SETFPREGS:	/* Set FPRs 0 - 31. */
-+		return copy_regset_from_user(child, &user_ppc_native_view,
-+					     REGSET_FPR, 0, 32 * sizeof(double),
-+					     (const void __user *) data);
+-	ret = ptrace_check_attach(child, request == PTRACE_KILL);
+-	if (ret < 0)
+-		goto out_tsk;
+-
+ 	switch (request) {
+ 	/*
+ 	 * Read 4 bytes of the other process' storage
+@@ -375,9 +355,6 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+ 		ret = compat_ptrace_request(child, request, addr, data);
+ 		break;
  	}
- 
--	}
--	return ret;
-+	return -EPERM;
+-out_tsk:
+-	put_task_struct(child);
+-out:
+-	unlock_kernel();
++
+ 	return ret;
  }
+diff --git a/include/asm-powerpc/ptrace.h b/include/asm-powerpc/ptrace.h
+index 3063363..a8cb00c 100644
+--- a/include/asm-powerpc/ptrace.h
++++ b/include/asm-powerpc/ptrace.h
+@@ -55,6 +55,8 @@ struct pt_regs {
  
- long arch_ptrace(struct task_struct *child, long request, long addr, long data)
-@@ -871,85 +780,60 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- #ifdef CONFIG_PPC64
- 	case PTRACE_GETREGS64:
- #endif
--	case PTRACE_GETREGS: { /* Get all pt_regs from the child. */
--		int ui;
--	  	if (!access_ok(VERIFY_WRITE, (void __user *)data,
--			       sizeof(struct pt_regs))) {
--			ret = -EIO;
--			break;
--		}
--		CHECK_FULL_REGS(child->thread.regs);
--		ret = 0;
--		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
--			ret |= __put_user(ptrace_get_reg(child, ui),
--					  (unsigned long __user *) data);
--			data += sizeof(long);
--		}
--		break;
--	}
-+	case PTRACE_GETREGS:	/* Get all pt_regs from the child. */
-+		return copy_regset_to_user(child, &user_ppc_native_view,
-+					   REGSET_GPR,
-+					   0, sizeof(struct pt_regs),
-+					   (void __user *) data);
+ #ifdef __powerpc64__
  
- #ifdef CONFIG_PPC64
- 	case PTRACE_SETREGS64:
- #endif
--	case PTRACE_SETREGS: { /* Set all gp regs in the child. */
--		unsigned long tmp;
--		int ui;
--	  	if (!access_ok(VERIFY_READ, (void __user *)data,
--			       sizeof(struct pt_regs))) {
--			ret = -EIO;
--			break;
--		}
--		CHECK_FULL_REGS(child->thread.regs);
--		ret = 0;
--		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
--			ret = __get_user(tmp, (unsigned long __user *) data);
--			if (ret)
--				break;
--			ptrace_put_reg(child, ui, tmp);
--			data += sizeof(long);
--		}
--		break;
--	}
--
--	case PTRACE_GETFPREGS: { /* Get the child FPU state (FPR0...31 + FPSCR) */
--		flush_fp_to_thread(child);
--		ret = get_fpregs((void __user *)data, child, 1);
--		break;
--	}
--
--	case PTRACE_SETFPREGS: { /* Set the child FPU state (FPR0...31 + FPSCR) */
--		flush_fp_to_thread(child);
--		ret = set_fpregs((void __user *)data, child, 1);
--		break;
--	}
-+	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
-+		return copy_regset_from_user(child, &user_ppc_native_view,
-+					     REGSET_GPR,
-+					     0, sizeof(struct pt_regs),
-+					     (const void __user *) data);
++#define __ARCH_WANT_COMPAT_SYS_PTRACE
 +
-+	case PTRACE_GETFPREGS: /* Get the child FPU state (FPR0...31 + FPSCR) */
-+		return copy_regset_to_user(child, &user_ppc_native_view,
-+					   REGSET_FPR,
-+					   0, sizeof(elf_fpregset_t),
-+					   (void __user *) data);
-+
-+	case PTRACE_SETFPREGS: /* Set the child FPU state (FPR0...31 + FPSCR) */
-+		return copy_regset_from_user(child, &user_ppc_native_view,
-+					     REGSET_FPR,
-+					     0, sizeof(elf_fpregset_t),
-+					     (const void __user *) data);
+ #define STACK_FRAME_OVERHEAD	112	/* size of minimum stack frame */
  
- #ifdef CONFIG_ALTIVEC
- 	case PTRACE_GETVRREGS:
--		/* Get the child altivec register state. */
--		flush_altivec_to_thread(child);
--		ret = get_vrregs((unsigned long __user *)data, child);
--		break;
-+		return copy_regset_to_user(child, &user_ppc_native_view,
-+					   REGSET_VMX,
-+					   0, (33 * sizeof(vector128) +
-+					       sizeof(u32)),
-+					   (void __user *) data);
- 
- 	case PTRACE_SETVRREGS:
--		/* Set the child altivec register state. */
--		flush_altivec_to_thread(child);
--		ret = set_vrregs(child, (unsigned long __user *)data);
--		break;
-+		return copy_regset_from_user(child, &user_ppc_native_view,
-+					     REGSET_VMX,
-+					     0, (33 * sizeof(vector128) +
-+						 sizeof(u32)),
-+					     (const void __user *) data);
- #endif
- #ifdef CONFIG_SPE
- 	case PTRACE_GETEVRREGS:
- 		/* Get the child spe register state. */
--		flush_spe_to_thread(child);
--		ret = get_evrregs((unsigned long __user *)data, child);
--		break;
-+		return copy_regset_to_user(child, &user_ppc_native_view,
-+					   REGSET_SPE, 0, 35 * sizeof(u32),
-+					   (void __user *) data);
- 
- 	case PTRACE_SETEVRREGS:
- 		/* Set the child spe register state. */
--		/* this is to clear the MSR_SPE bit to force a reload
--		 * of register state from memory */
--		flush_spe_to_thread(child);
--		ret = set_evrregs(child, (unsigned long __user *)data);
--		break;
-+		return copy_regset_from_user(child, &user_ppc_native_view,
-+					     REGSET_SPE, 0, 35 * sizeof(u32),
-+					     (const void __user *) data);
- #endif
- 
- 	/* Old reverse args ptrace callss */
+ /* Size of dummy stack frame allocated when calling signal handler. */
 -- 
 1.5.3.6
