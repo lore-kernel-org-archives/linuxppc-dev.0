@@ -1,19 +1,18 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 02162DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 13:22:03 +1100 (EST)
-Date: Thu, 20 Dec 2007 10:48:29 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: jdl@jdl.com
-Subject: [DTC PATCH 2/2] Add support for binary includes.
-Message-ID: <20071220164829.GB32193@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [209.5.119.169])
+	by ozlabs.org (Postfix) with ESMTP id 1A654DDDEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 14:44:54 +1100 (EST)
+Date: Thu, 20 Dec 2007 22:38:15 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] arch/powerpc support for SBC8560 board
+Message-ID: <20071221033815.GA13921@windriver.com>
+References: <11981624722785-git-send-email-paul.gortmaker@windriver.com>
+	<AD8BE998-401D-4109-8DD0-F26760C0E980@kernel.crashing.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
+In-Reply-To: <AD8BE998-401D-4109-8DD0-F26760C0E980@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,102 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A property's data can be populated with a file's contents
-as follows:
+In message: Re: [PATCH 0/4] arch/powerpc support for SBC8560 board
+on 20/12/2007 Kumar Gala wrote:
 
-node {
-	prop = /bin-include/ "path/to/data";
-};
+>> 3) Add device tree source for Wind River SBC8560 board
+>>
+>> This is probably the most interesting part of the group, given that the
+>> board doesn't use the CPM2 to provide the serial console.  I've made a
+>> duart dts entry that is kind of similar to what is done for the tsi108
+>> on the mpc7448/hpc-ii board, and made sure that the serial had their
+>> parent marked as "soc" (found out the hard way that UARTs were ignored
+>> as possible consoles unless they were soc or tsi108 children...)
+>>
+>> b/arch/powerpc/boot/dts/sbc8560.dts |  203 
+>> +++++++++++++++++++++++++++++++++++-
+>
+> we need to figure out to fix this so we don't need the parent marked as 
+> 'soc'.
 
-Search paths are not yet implemented; non-absolute lookups are relative to
-the directory from which dtc was invoked.
+Here is my interpretation of what is happening here -- we come in via
+find_legacy_serial_ports() to pick a console port.  It grabs "chosen"
+to get np stdout, and then checks the parent of the 16550 compat ports
+against the following, requiring at least one of them to match:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- dtc-lexer.l  |    6 ++++++
- dtc-parser.y |   26 ++++++++++++++++++++++++++
- dtc.h        |    1 +
- 3 files changed, 33 insertions(+), 0 deletions(-)
+	parent->type == "soc" ? add_legacy_soc_port()
 
-diff --git a/dtc-lexer.l b/dtc-lexer.l
-index c811b22..1f3e6d6 100644
---- a/dtc-lexer.l
-+++ b/dtc-lexer.l
-@@ -190,6 +190,12 @@ static int dts_version; /* = 0 */
- 			return DT_PROPNODENAME;
- 		}
- 
-+"/bin-include/"	{
-+			yylloc.filenum = srcpos_filenum;
-+			yylloc.first_line = yylineno;
-+			DPRINT("Binary Include\n");
-+			return DT_BININCLUDE;
-+		}
- 
- <*>[[:space:]]+	/* eat whitespace */
- 
-diff --git a/dtc-parser.y b/dtc-parser.y
-index 4a0181d..c7ed715 100644
---- a/dtc-parser.y
-+++ b/dtc-parser.y
-@@ -21,6 +21,8 @@
- %locations
- 
- %{
-+#include <sys/stat.h>
-+
- #include "dtc.h"
- #include "srcpos.h"
- 
-@@ -58,6 +60,7 @@ extern struct boot_info *the_boot_info;
- %token <data> DT_STRING
- %token <labelref> DT_LABEL
- %token <labelref> DT_REF
-+%token DT_BININCLUDE
- 
- %type <data> propdata
- %type <data> propdataprefix
-@@ -196,6 +199,29 @@ propdata:
- 		{
- 			$$ = data_add_marker($1, REF_PATH, $2);
- 		}
-+	| propdataprefix DT_BININCLUDE DT_STRING
-+		{
-+			struct stat st;
-+			FILE *f;
-+			int fd;
-+			
-+			f = fopen($3.val, "rb");
-+			if (!f) {
-+				yyerrorf("Cannot open file \"%s\": %s",
-+				         $3.val, strerror(errno));
-+				YYERROR;
-+			}
-+
-+			fd = fileno(f);
-+			if (fstat(fd, &st) < 0) {
-+				yyerrorf("Cannot stat file \"%s\": %s",
-+				         $3.val, strerror(errno));
-+				YYERROR;
-+			}
-+
-+			$$ = data_merge($1, data_copy_file(f, st.st_size));
-+			fclose(f);
-+		}
- 	| propdata DT_LABEL
- 		{
- 			$$ = data_add_marker($1, LABEL, $2);
-diff --git a/dtc.h b/dtc.h
-index 9b89689..87b5bb1 100644
---- a/dtc.h
-+++ b/dtc.h
-@@ -138,6 +138,7 @@ struct data data_grow_for(struct data d, int xlen);
- struct data data_copy_mem(const char *mem, int len);
- struct data data_copy_escape_string(const char *s, int len);
- struct data data_copy_file(FILE *f, size_t len);
-+struct data data_bin_include(const char *filename);
- 
- struct data data_append_data(struct data d, const void *p, int len);
- struct data data_insert_at_marker(struct data d, struct marker *m,
--- 
-1.5.3
+	parent->type == "isa" ? add_legacy_isa_port()
+
+	parent->type == "tsi-bridge" ? add_legacy_soc_port()
+
+	parent->type == "opb" ? add_legacy_soc_port()
+
+No match means no serial console, it seems.  I figured that parent == "soc"
+was the lesser lie to choose from, but I'm open to an alternate approach 
+that is less apt to make David go "ewww" (an understandable reaction...).
+
+>
+> Out of interest how exactly are the duart's wired on the 8560.  Are they 
+> off localbus?
+
+The board has a bunch of stuff hanging off of CS5 -- an RTC, a 7 segment
+display, an EEPROM, some BCSR-like registers, and of course the two
+UARTs which are supposed to be 16C2550.  According to TFM, an EPM7128
+PLD is responsible for mashing/sub-decoding this all onto/off of CS5.
+CS3 and CS4 are the LB-SDRAM.
+
+>
+>> I'd quickly spun together a u-boot 1.2.0 for testing this -- since that 
+>> was
+>> the quickest route to getting a powerpc capable version.  I'll see what
+>> can be done for getting a u-boot 1.3.1 patchset out so the 
+>> local-mac-address
+>> vs address thing in the dtb isn't an issue.
+>
+> Probably should add a boot wrapper to work with old non-device tree aware 
+> u-boots.
+
+Something to consider, sure -- but I figured working towards a more up
+to date u-boot is something people would see more of a future for and
+more of an interest in.
+
+Paul.
