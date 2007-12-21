@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1FC63DDF46
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:29:21 +1100 (EST)
-Date: Fri, 21 Dec 2007 23:31:19 +0300
+	by ozlabs.org (Postfix) with ESMTP id 159DBDE036
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:29:26 +1100 (EST)
+Date: Fri, 21 Dec 2007 23:31:23 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/4] [POWERPC] QE: implement GPIO API
-Message-ID: <20071221203119.GB4633@localhost.localdomain>
+Subject: [PATCH 3/4] [POWERPC] CPM2: implement GPIO API
+Message-ID: <20071221203123.GC4633@localhost.localdomain>
 References: <20071221202824.GA4607@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,175 +23,179 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/platforms/Kconfig     |    1 +
- arch/powerpc/sysdev/qe_lib/qe_io.c |   82 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 81 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/Kconfig    |    1 +
+ arch/powerpc/sysdev/cpm2_common.c |  121 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 122 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index ea22cad..3d9ff27 100644
+index 3d9ff27..cc2d54e 100644
 --- a/arch/powerpc/platforms/Kconfig
 +++ b/arch/powerpc/platforms/Kconfig
-@@ -265,6 +265,7 @@ config TAU_AVERAGE
- config QUICC_ENGINE
- 	bool
+@@ -277,6 +277,7 @@ config CPM2
+ 	default n
+ 	select CPM
  	select PPC_LIB_RHEAP
 +	select GENERIC_GPIO
  	help
- 	  The QUICC Engine (QE) is a new generation of communications
- 	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
-index e53ea4d..3c9e5fe 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_io.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
-@@ -23,6 +23,7 @@
+ 	  The CPM2 (Communications Processor Module) is a coprocessor on
+ 	  embedded CPUs made by Freescale.  Selecting this option means that
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index f7188e2..fe25978 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -31,12 +31,14 @@
+ #include <linux/param.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
++#include <linux/spinlock.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
  
  #include <asm/io.h>
- #include <asm/prom.h>
+ #include <asm/irq.h>
 +#include <asm/gpio.h>
- #include <sysdev/fsl_soc.h>
+ #include <asm/mpc8260.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+@@ -61,8 +63,43 @@ cpm2_map_t __iomem *cpm2_immr;
+ 					   of space for CPM as it is larger
+ 					   than on PQ2 */
  
- #undef DEBUG
-@@ -43,6 +44,16 @@ struct port_regs {
- 
- static struct port_regs *par_io = NULL;
- static int num_par_io_ports = 0;
-+static spinlock_t qe_pio_lock = __SPIN_LOCK_UNLOCKED(qe_pio_lock);
++static spinlock_t cpm2_port_lock = __SPIN_LOCK_UNLOCKED(cpm2_port_lock);
++static int cpm2_num_ports;
 +
 +static int par_io_xlate(struct device_node *np, int index)
 +{
-+	return __of_parse_gpio_bank_pin(np, index, 32, num_par_io_ports);
++	return __of_parse_gpio_bank_pin(np, index, 32, cpm2_num_ports);
 +}
 +
 +static struct of_gpio_chip of_gpio_chip = {
 +	.xlate = par_io_xlate,
 +};
- 
- int par_io_init(struct device_node *np)
- {
-@@ -60,6 +71,8 @@ int par_io_init(struct device_node *np)
- 	if (num_ports)
- 		num_par_io_ports = *num_ports;
- 
++
++int cpm2_init_par_io(void)
++{
++	struct device_node *np;
++	const u32 *num_ports;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pario");
++	if (!np)
++		return -ENOENT;
++
++	num_ports = of_get_property(np, "num-ports", NULL);
++	if (!num_ports) {
++		of_node_put(np);
++		return -ENOENT;
++	}
++	cpm2_num_ports = *num_ports;
++
 +	np->data = &of_gpio_chip;
 +
- 	return 0;
- }
- 
-@@ -67,9 +80,12 @@ int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
- 		      int assignment, int has_irq)
- {
- 	u32 pin_mask1bit, pin_mask2bits, new_mask2bits, tmp_val;
-+	unsigned long flags;
- 
--	if (!par_io)
--		return -1;
-+	if (!par_io || port >= num_par_io_ports)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&qe_pio_lock, flags);
- 
- 	/* calculate pin location for single and 2 bits information */
- 	pin_mask1bit = (u32) (1 << (NUM_OF_PINS - (pin + 1)));
-@@ -126,6 +142,8 @@ int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
- 		out_be32(&par_io[port].cppar1, new_mask2bits | tmp_val);
- 	}
- 
-+	spin_unlock_irqrestore(&qe_pio_lock, flags);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(par_io_config_pin);
-@@ -133,6 +151,7 @@ EXPORT_SYMBOL(par_io_config_pin);
- int par_io_data_set(u8 port, u8 pin, u8 val)
- {
- 	u32 pin_mask, tmp_val;
-+	unsigned long flags;
- 
- 	if (port >= num_par_io_ports)
- 		return -EINVAL;
-@@ -141,6 +160,8 @@ int par_io_data_set(u8 port, u8 pin, u8 val)
- 	/* calculate pin location */
- 	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - pin));
- 
-+	spin_lock_irqsave(&qe_pio_lock, flags);
-+
- 	tmp_val = in_be32(&par_io[port].cpdata);
- 
- 	if (val == 0)		/* clear */
-@@ -148,10 +169,25 @@ int par_io_data_set(u8 port, u8 pin, u8 val)
- 	else			/* set */
- 		out_be32(&par_io[port].cpdata, pin_mask | tmp_val);
- 
-+	spin_unlock_irqrestore(&qe_pio_lock, flags);
- 	return 0;
- }
- EXPORT_SYMBOL(par_io_data_set);
- 
-+static inline int par_io_data_get(u8 port, u8 pin)
-+{
-+	u32 pin_mask;
-+
-+	if (port >= num_par_io_ports)
-+		return -EINVAL;
-+	if (pin >= NUM_OF_PINS)
-+		return -EINVAL;
-+	/* calculate pin location */
-+	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - pin));
-+
-+	return !!(in_be32(&par_io[port].cpdata) & pin_mask);
++	return 0;
 +}
 +
- int par_io_of_config(struct device_node *np)
+ void __init cpm2_reset(void)
  {
- 	struct device_node *pio;
-@@ -195,6 +231,48 @@ int par_io_of_config(struct device_node *np)
++	int ret;
++
+ #ifdef CONFIG_PPC_85xx
+ 	cpm2_immr = ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
+ #else
+@@ -80,6 +117,10 @@ void __init cpm2_reset(void)
+ 	/* Tell everyone where the comm processor resides.
+ 	 */
+ 	cpmp = &cpm2_immr->im_cpm;
++
++	ret = cpm2_init_par_io();
++	if (ret)
++		pr_warning("CPM2 PIO not initialized!\n");
  }
- EXPORT_SYMBOL(par_io_of_config);
  
+ static DEFINE_SPINLOCK(cmd_lock);
+@@ -468,3 +509,83 @@ void cpm2_set_pin(int port, int pin, int flags)
+ 	else
+ 		clrbits32(&iop[port].odr, pin);
+ }
++
 +int gpio_request(unsigned int gpio, const char *label)
 +{
-+	if (!par_io)
-+		return -ENODEV;
-+
-+	if (gpio / 32 >= num_par_io_ports)
++	if (gpio / 32 >= cpm2_num_ports)
 +		return -EINVAL;
-+
 +	return 0;
 +}
 +EXPORT_SYMBOL_GPL(gpio_request);
 +
 +int gpio_direction_input(unsigned int gpio)
 +{
-+	return par_io_config_pin(gpio / 32, gpio % 32, 2, 0, 0, 0);
++	unsigned long flags;
++	int port = gpio / 32;
++	int pin = gpio % 32;
++
++	spin_lock_irqsave(&cpm2_port_lock, flags);
++
++	cpm2_set_pin(port, pin, CPM_PIN_INPUT | CPM_PIN_GPIO);
++
++	spin_unlock_irqrestore(&cpm2_port_lock, flags);
++	return 0;
 +}
 +EXPORT_SYMBOL_GPL(gpio_direction_input);
 +
 +int gpio_direction_output(unsigned int gpio, int value)
 +{
-+	int ret;
++	struct cpm2_ioports __iomem *iop =
++		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
++	int port = gpio / 32;
++	int pin = gpio % 32;
++	unsigned long flags;
 +
-+	ret = par_io_config_pin(gpio / 32, gpio % 32, 1, 0, 0, 0);
-+	if (ret)
-+		return ret;
++	spin_lock_irqsave(&cpm2_port_lock, flags);
 +
-+	return par_io_data_set(gpio / 32, gpio % 32, value);
++	cpm2_set_pin(port, pin, CPM_PIN_OUTPUT | CPM_PIN_GPIO);
++
++	pin = 1 << (31 - pin);
++	if (value)
++		setbits32(&iop[port].dat, pin);
++	else
++		clrbits32(&iop[port].dat, pin);
++
++	spin_unlock_irqrestore(&cpm2_port_lock, flags);
++	return 0;
 +}
 +EXPORT_SYMBOL_GPL(gpio_direction_output);
 +
 +int gpio_get_value(unsigned int gpio)
 +{
-+	return par_io_data_get(gpio / 32, gpio % 32);
++	struct cpm2_ioports __iomem *iop =
++		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
++	int port = gpio / 32;
++	int pin = gpio % 32;
++
++	pin = 1 << (31 - pin);
++
++	return !!(in_be32(&iop[port].dat) & pin);
 +}
 +EXPORT_SYMBOL_GPL(gpio_get_value);
 +
 +int gpio_set_value(unsigned int gpio, int value)
 +{
-+	return par_io_data_set(gpio / 32, gpio % 32, value);
++	struct cpm2_ioports __iomem *iop =
++		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
++	int port = gpio / 32;
++	int pin = gpio % 32;
++	unsigned long flags;
++
++	pin = 1 << (31 - pin);
++
++	spin_lock_irqsave(&cpm2_port_lock, flags);
++	if (value)
++		setbits32(&iop[port].dat, pin);
++	else
++		clrbits32(&iop[port].dat, pin);
++	spin_unlock_irqrestore(&cpm2_port_lock, flags);
++
++	return 0;
 +}
 +EXPORT_SYMBOL_GPL(gpio_set_value);
-+
- #ifdef DEBUG
- static void dump_par_io(void)
- {
 -- 
 1.5.2.2
