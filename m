@@ -1,32 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D471DDE0C
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 09:14:39 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBLMGKD0028465
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:16:20 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBLMEZrG478178
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:14:35 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBLMEYYm014987
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:14:35 -0500
-Date: Fri, 21 Dec 2007 16:08:45 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 18/21] [POWERPC] bamboo: remove bogus "ranges" property
-	in EBC node
-Message-ID: <20071221160845.331f35f6@zod.rchland.ibm.com>
-In-Reply-To: <1198271815.6737.4.camel@pasglop>
-References: <20071221043939.72A8BDDFCF@ozlabs.org>
-	<20071221060921.4ae5bc20@zod.rchland.ibm.com>
-	<1198271815.6737.4.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7D2DFDDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 10:24:30 +1100 (EST)
+Date: Sat, 22 Dec 2007 10:24:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 8/21] [POWERPC] EP405 boards support for arch/powerpc
+Message-Id: <20071222102424.bc96d03c.sfr@canb.auug.org.au>
+In-Reply-To: <20071221043931.1A5CCDDEC0@ozlabs.org>
+References: <20071221043931.1A5CCDDEC0@ozlabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,32 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 22 Dec 2007 08:16:55 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+--Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> On Fri, 2007-12-21 at 06:09 -0600, Josh Boyer wrote:
-> > On Fri, 21 Dec 2007 15:39:35 +1100
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > This removes a bogus empty "ranges" property in the EBC device node
-> > > of the Bamboo board device-tree.
-> > > 
-> > > The "ranges" property will be created by the boot wrapper, there is
-> > > no need to have an empty property there, and that causes recent
-> > > dtc to complain.
-> > 
-> > The wrapper doesn't do anything with EBC for bamboo because the EBC
-> > stuff is a nightmare on this board.  The patch can stand, but I'll
-> > fixup the comments in the changelog.
-> 
-> The wrapper could still create ranges for the chip select settings no ?
+Hi Ben,
 
-It could.  It doesn't though.  Perhaps our interpretation of "will be
-created" differed.
+Just a couple of trivial things.
 
-> In any case, empty "ranges" is bogus.
+On Fri, 21 Dec 2007 15:39:26 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> +++ linux-merge/arch/powerpc/boot/4xx.c	2007-12-21 14:19:46.000000000 +11=
+00
+> @@ -179,13 +179,16 @@ void ibm40x_dbcr_reset(void)
+>  #define EMAC_RESET 0x20000000
+>  void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
+>  {
+> -	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't do this for us=
+ */
+> +	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't
+> +	 * do this for us
+> +	 */
+>  	if (emac0)
+>  		*emac0 =3D EMAC_RESET;
+>  	if (emac1)
+>  		*emac1 =3D EMAC_RESET;
+> =20
+>  	mtdcr(DCRN_MAL0_CFG, MAL_RESET);
+> +	while (mfdcr(DCRN_MAL0_CFG) & MAL_RESET) {};
 
-Correct.  Which is why I said I'd just edit the changelog :).
+You need the {} or the ; but not both and please put them indented on the
+next line so that it is very clear that this is an empty loop.
 
-josh
+> +	if (cpc0_cr0 & 0x80) {
+> +		/* uart0 uses the external clock */
+> +		uart0 =3D ser_clk;
+> +	} else {
+> +		uart0 =3D cpu / udiv;
+> +	}
+
+The braces aren't really needed. (Yes, I noticed that you just moved the
+code here)
+
+> +	if (cpc0_cr0 & 0x40) {
+> +		/* uart1 uses the external clock */
+> +		uart1 =3D ser_clk;
+> +	} else {
+> +		uart1 =3D cpu / udiv;
+> +	}
+
+And again.
+
+> +++ linux-merge/arch/powerpc/platforms/40x/ep405.c	2007-12-21 14:19:46.00=
+0000000 +1100
+> +
+> +static struct of_device_id ep405_of_bus[] =3D {
+
+__initdata (preferably) or const
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHbEstTgG2atn1QN8RAnl2AJ9X6Iiipwd/vlcYaUc6+7EFgVl80gCfRhtj
+H/OTW7fRz6a0V6RJPlHfeqU=
+=Sm5h
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg--
