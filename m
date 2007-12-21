@@ -1,20 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 21 Dec 2007 11:00:53 +1100
+Date: Fri, 21 Dec 2007 11:04:39 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20071221000053.GB2665@localhost.localdomain>
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910712201429q5845e786yb2ecb3ce9c8b7871@mail.gmail.com>
-	<476AED87.3090703@freescale.com>
-	<9e4733910712201438u2165aa77t8eab91bccb4c5bda@mail.gmail.com>
-	<476AEF47.8040802@freescale.com> <476AF061.1030605@freescale.com>
-	<9e4733910712201513t329e2a49j420cb3b4ece5057@mail.gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [DTC PATCH 1/2] Add yyerrorf() for formatted error messages.
+Message-ID: <20071221000439.GC2665@localhost.localdomain>
+References: <20071220164823.GA32193@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910712201513t329e2a49j420cb3b4ece5057@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <20071220164823.GA32193@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com, u-boot-users@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 20, 2007 at 06:13:31PM -0500, Jon Smirl wrote:
-> On 12/20/07, Scott Wood <scottwood@freescale.com> wrote:
-> > Timur Tabi wrote:
-> > > Jon Smirl wrote:
-> > >
-> > >> mpc5200 does it like this:
-> > >> of_platform_bus_probe(NULL, NULL, NULL);
-> > >
-> > > I think that tells the OF base code to probe everything in the device tree,
-> > > which is probably overkill.  I think fsl_soc.c covers most of the device tree,
-> > > but the SSI is not defined in fsl_soc.c.
-> >
-> > Not quite; it tells it to use a built-in list of bus matches.  Most of
-> > which are device_type-based, FWIW.
-> 
-> Here's the default. Using NULL would work.
+On Thu, Dec 20, 2007 at 10:48:23AM -0600, Scott Wood wrote:
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-It might work, but using the default list is discouraged.  Pass an
-explicit list of match ids for the buses you need to scan instead (and
-use compatible to match them, not device_type).
+No need for a new function.  If yyerror() is defined as a varargs
+function it's still compatible with bison's built-in usage.
+
+Oh, and while you're at it, you can kill off the bogus prototype for
+yyerror() in treesource.c
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
