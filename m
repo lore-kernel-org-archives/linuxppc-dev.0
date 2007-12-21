@@ -1,26 +1,17 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 1196DDDEC9
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:26:46 +1100 (EST)
-Date: Fri, 21 Dec 2007 21:00:18 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: [PATCH -mm 18/43] powerpc compat_binfmt_elf
-Message-ID: <20071221200018.GA17164@uranus.ravnborg.org>
-References: <20071220115200.C767E26F98A@magilla.localdomain>
-	<20071220115816.504CC26F98E@magilla.localdomain>
-	<20071221071229.GC4345@infradead.org>
-	<20071221085609.4D53B26F98A@magilla.localdomain>
-	<20071221175106.GB17656@fattire.cabal.ca>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4555DDDEBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:29:17 +1100 (EST)
+Date: Fri, 21 Dec 2007 23:31:15 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 1/4] [POWERPC] Implement GPIO API embryo
+Message-ID: <20071221203115.GA4633@localhost.localdomain>
+References: <20071221202824.GA4607@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071221175106.GB17656@fattire.cabal.ca>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071221202824.GA4607@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,65 +21,199 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 21, 2007 at 12:51:06PM -0500, Kyle McMartin wrote:
-> On Fri, Dec 21, 2007 at 12:56:09AM -0800, Roland McGrath wrote:
-> > > On Thu, Dec 20, 2007 at 03:58:16AM -0800, Roland McGrath wrote:
-> > > > +obj-$(CONFIG_PPC64)		+= ../../../fs/compat_binfmt_elf.o
-> > > 
-> > > Building files from another directory is nasty.  Please add a
-> > > CONFIG_BINFMT_COMPAT_ELF so we can simply build it in fs/
-> > 
-> > If that's better, please post the precise Kconfig magic you have in mind to
-> > have it set when it should be.
-Kyle made a proposal but I like to get in to the party too...
+This patch implements GPIO API as described in Documentation/gpio.txt.
+Two calls unimplemented though: irq_to_gpio and gpio_to_irq.
 
-> > 
-> 
-> Just taking a stab that hch means,
-> 
-> config BINFMT_COMPAT_ELF
-> 	def_bool n
-> 	depends on 64BIT
-> 
-> and then in arch/powerpc/Kconfig
-> 
-> config COMPAT
-> 	bool
-> 	default y if PPC64
-> 	select BINFMT_COMPAT_ELF
-> 
-> or somesuch.
+This patch also provides OF helpers.
 
-We recently discussed a common prefix for the selctable symbols
-and consensus pointed out "HAVE_" so let us try to use it.
-I did not quite understand the "depends on 64BIT" in Kyles example.
-Does we really want to use compat_binfmt_elf for all archs that
-define 64BIT? Anyway I added this in the example below.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/Kconfig             |    3 ++
+ arch/powerpc/kernel/prom_parse.c |   64 ++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/gpio.h       |   47 ++++++++++++++++++++++++++++
+ include/asm-powerpc/prom.h       |   23 +++++++++++++
+ 4 files changed, 137 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-powerpc/gpio.h
 
-fs/Makefile:
-obj-$(COMPAT_BINFMT_ELF) += compat_binfmt_elf.o
-
-fs/Kconfig:
-config COMPAT_BINFMT_ELF
-	depends on HAVE_COMPAT_BINFMT_ELF || 64BIT
-
-# COMPAT_BINFMT_ELF must be selected when an
-# architecture supoorts ...
-config HAVE_COMPAT_BINFMT_ELF
-
-
-arch/powerpc/Kconfig:
-
-config COMPAT
-	bool
-	default PPC64
-	select HAVE_COMPAT_BINFMT_ELF
-
-
-In the example above the extra indirection:
-HAVE_COMPAT_BINFMT_ELF => COMPAT_BNFMT_ELF is not really needed
-but tomorrow when we add another "depends on" to COMPAT_INFMT_ELF
-it is needed to avoid the misbehaving select that just ignore the
-dependencies and select the symbol anyway.
-
-	Sam
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 232c298..a4fa173 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -73,6 +73,9 @@ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+ 
++config GENERIC_GPIO
++	bool
++
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool PPC64
+ 
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 90eb3a3..9875598 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -7,6 +7,7 @@
+ #include <linux/ioport.h>
+ #include <linux/etherdevice.h>
+ #include <asm/prom.h>
++#include <asm/gpio.h>
+ #include <asm/pci-bridge.h>
+ 
+ #ifdef DEBUG
+@@ -1079,3 +1080,66 @@ void __iomem *of_iomap(struct device_node *np, int index)
+ 	return ioremap(res.start, 1 + res.end - res.start);
+ }
+ EXPORT_SYMBOL(of_iomap);
++
++int __of_parse_gpio_bank_pin(struct device_node *np, int index,
++			     int bank_width, int max_bank)
++{
++	int bank;
++	int pin;
++	const u32 *gpios;
++
++	/*
++	 * We can get there only if of_get_gpio() succeeded, thus
++	 * no need checking for "gpios" existence.
++	 */
++	gpios = of_get_property(np, "gpios", NULL);
++	bank = gpios[index * 2];
++	pin = gpios[index * 2 + 1];
++
++	if (bank >= max_bank || pin >= bank_width)
++		return -EINVAL;
++
++	return bank * bank_width + pin;
++}
++EXPORT_SYMBOL_GPL(__of_parse_gpio_bank_pin);
++
++int of_get_gpio(struct device_node *np, int index)
++{
++	int ret = -EINVAL;
++	const phandle *gc_ph;
++	struct device_node *gc;
++	struct of_gpio_chip *of_gpio_chip;
++	int size;
++	const u32 *gpio_cells;
++	const u32 *gpios;
++	u32 nr_cells;
++
++	gc_ph = of_get_property(np, "gpio-parent", NULL);
++	if (!gc_ph)
++		return ret;
++
++	gc = of_find_node_by_phandle(*gc_ph);
++	if (!gc || !gc->data)
++		return ret;
++
++	gpio_cells = of_get_property(gc, "#gpio-cells", &size);
++	if (!gpio_cells || size != sizeof(*gpio_cells) || *gpio_cells == 0)
++		goto err;
++
++	gpios = of_get_property(np, "gpios", &size);
++	if (!gpios)
++		goto err;
++	nr_cells = size / sizeof(u32);
++
++	if (nr_cells < *gpio_cells || nr_cells % *gpio_cells ||
++			index > nr_cells / *gpio_cells - 1)
++		goto err;
++
++	of_gpio_chip = gc->data;
++
++	ret = of_gpio_chip->xlate(np, index);
++err:
++	of_node_put(gc);
++	return ret;
++}
++EXPORT_SYMBOL(of_get_gpio);
+diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+new file mode 100644
+index 0000000..e0a4f85
+--- /dev/null
++++ b/include/asm-powerpc/gpio.h
+@@ -0,0 +1,47 @@
++/*
++ * Generic GPIO API implementation for PowerPC.
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __ASM_POWERPC_GPIO_H
++#define __ASM_POWERPC_GPIO_H
++
++extern int gpio_request(unsigned int gpio, const char *label);
++static inline void gpio_free(unsigned int gpio) {}
++
++extern int gpio_direction_input(unsigned int gpio);
++extern int gpio_direction_output(unsigned int gpio, int value);
++
++extern int gpio_get_value(unsigned int gpio);
++extern int gpio_set_value(unsigned int gpio, int value);
++
++/*
++ * Not implemented, yet.
++ */
++static inline int gpio_to_irq(unsigned int gpio)
++{
++	return -ENOSYS;
++}
++
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -ENOSYS;
++}
++
++/*
++ * OF specific gpio_chip handler.
++ */
++struct of_gpio_chip {
++	int (*xlate)(struct device_node *np, int index);
++};
++
++#include <asm-generic/gpio.h>
++
++#endif /* __ASM_POWERPC_GPIO_H */
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index 78b7b0d..f882efc 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -330,6 +330,29 @@ extern int of_irq_to_resource(struct device_node *dev, int index,
+  */
+ extern void __iomem *of_iomap(struct device_node *device, int index);
+ 
++/**
++ * __of_parse_gpio_bank_pin - Helper function to translate "bank pin" GPIOs
++ * @np:		device node to get GPIO from
++ * @index:	index of the GPIO
++ * @bank_width:	pins per bank
++ * @max_bank:	maximum value to represent a bank
++ *
++ * Returns GPIO number to use with Linux generic GPIO api, or
++ * one of the errno value on the error condition.
++ */
++extern int __of_parse_gpio_bank_pin(struct device_node *np, int index,
++				    int bank_width, int max_bank);
++
++/**
++ * of_get_gpio - Translate GPIO number given in the device tree
++ * @np:		device node to get GPIO from
++ * @index:	index of the GPIO
++ *
++ * Returns GPIO number to use with Linux generic GPIO API, or
++ * one of the errno value on the error condition.
++ */
++extern int of_get_gpio(struct device_node *np, int index);
++
+ /*
+  * NB:  This is here while we transition from using asm/prom.h
+  * to linux/of.h
+-- 
+1.5.2.2
