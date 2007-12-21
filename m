@@ -1,20 +1,16 @@
-Return-Path: <SRS0=0yox=RM=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 8DB4BDDE35
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 06:56:45 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/4] PowerPC: update 440EP(x)/440GR(x) identical PVR issue
-	workaround
-Date: Fri, 21 Dec 2007 20:56:41 +0100
-References: <20071221160723.GA1430@ru.mvista.com>
-	<20071221104347.54cd2ad5@zod.rchland.ibm.com>
-	<476C1862.8080603@ru.mvista.com>
-In-Reply-To: <476C1862.8080603@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712212056.41798.sr@denx.de>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id CA2B0DDE0E
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:16:47 +1100 (EST)
+Date: Fri, 21 Dec 2007 23:18:44 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH v3 0/4] device_type/compatible cleanups
+Message-ID: <20071221201844.GA4278@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Valentine,
+Hi all,
 
-On Friday 21 December 2007, Valentine Barshak wrote:
-> > Good catch.  I'll have to look more closely to see if anything else
-> > would be broken by changing the cpu node name from "PowerPC,xxxx@0" to
-> > "cpu@0".
-> >
-> > josh
->
-> Looks like we need a u-boot update for 405Ex Kilauea board.
-> Mine (U-Boot 1.3.0-rc3-gccc2fe86-dirty (Oct 25 2007 - 12:18:41))
-> fails to boot with new cpu node changes:
->
->     Uncompressing Kernel Image ... OK
->     Booting using the fdt at 0x400000
-> le to update property /cpus/PowerPC,405EX@0:timebase-frequency,
-> err=FDT_ERR_NOTFOUND
-> Unable to update property /cpus/PowerPC,405EX@0:clock-frequency,
-> err=FDT_ERR_NOTFOUND
+Here is the third version (let's hope the last :-).
 
-Already done. :) Please take a look at the current implementation in the 
-for-1.3.2 branch of the u-boot-ppc4xx custodian repo:
+Changes since v2:
+- SPI conversion fixed and actually tested on MPC8323E-RDB to not
+  break anything;
+- Few more users of device_type = "qe" converted to
+  compatible = "fsl,qe";
+- Got Ack on SPI part from David.
 
-http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot/u-boot-ppc4xx.git;a=shortlog;h=for-1.3.2
+Changes since v1:
+- Device tree lookup changes should be backward compatible with
+  older dtbs;
+- Few of_put_node() cleanups;
+- cell-index property added to spi nodes;
+- cpm-muram{,-data} added as an addition to qe-muram{,-data}.
 
-This works for both cpu node names.
 
-Best regards,
-Stefan
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
