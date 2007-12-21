@@ -1,10 +1,15 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 21 Dec 2007 14:53:27 +1100
-Subject: [PATCH] [POWERPC] Fix possible NULL deref in ppc32 PCI
-Message-Id: <20071221035331.15AA3DDDF7@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3FD8DDDDEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 14:54:59 +1100 (EST)
+Date: Fri, 21 Dec 2007 14:54:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Add EHEA and EHCA as modules in the ppc64_defconfig
+Message-Id: <20071221145459.c9f85c77.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,28 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 32-bit PCI code tests if "bus" is non-NULL after calling
-pci_scan_bus_parented() in one place but not another before
-derefencing it.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ arch/powerpc/configs/ppc64_defconfig |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
- arch/powerpc/kernel/pci_32.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 5760b9f..7695a4c 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.24-rc4
+-# Thu Dec  6 16:49:07 2007
++# Fri Dec 21 14:47:29 2007
+ #
+ CONFIG_PPC64=y
+ 
+@@ -211,7 +211,7 @@ CONFIG_MMIO_NVRAM=y
+ CONFIG_MPIC_U3_HT_IRQS=y
+ CONFIG_MPIC_BROKEN_REGREAD=y
+ CONFIG_IBMVIO=y
+-# CONFIG_IBMEBUS is not set
++CONFIG_IBMEBUS=y
+ # CONFIG_PPC_MPC106 is not set
+ CONFIG_PPC_970_NAP=y
+ CONFIG_PPC_INDIRECT_IO=y
+@@ -375,7 +375,7 @@ CONFIG_INET_TUNNEL=y
+ CONFIG_INET_XFRM_MODE_TRANSPORT=y
+ CONFIG_INET_XFRM_MODE_TUNNEL=y
+ CONFIG_INET_XFRM_MODE_BEET=y
+-# CONFIG_INET_LRO is not set
++CONFIG_INET_LRO=m
+ CONFIG_INET_DIAG=y
+ CONFIG_INET_TCP_DIAG=y
+ # CONFIG_TCP_CONG_ADVANCED is not set
+@@ -929,6 +929,7 @@ CONFIG_SPIDER_NET=m
+ CONFIG_NETDEV_10000=y
+ # CONFIG_CHELSIO_T1 is not set
+ # CONFIG_CHELSIO_T3 is not set
++CONFIG_EHEA=m
+ # CONFIG_IXGBE is not set
+ CONFIG_IXGB=m
+ # CONFIG_IXGB_NAPI is not set
+@@ -1558,6 +1559,7 @@ CONFIG_INFINIBAND_ADDR_TRANS=y
+ CONFIG_INFINIBAND_MTHCA=m
+ CONFIG_INFINIBAND_MTHCA_DEBUG=y
+ # CONFIG_INFINIBAND_IPATH is not set
++CONFIG_INFINIBAND_EHCA=m
+ # CONFIG_INFINIBAND_AMSO1100 is not set
+ # CONFIG_MLX4_INFINIBAND is not set
+ CONFIG_INFINIBAND_IPOIB=m
+-- 
+1.5.3.7
 
---- linux-merge.orig/arch/powerpc/kernel/pci_32.c	2007-12-21 14:50:24.000000000 +1100
-+++ linux-merge/arch/powerpc/kernel/pci_32.c	2007-12-21 14:51:20.000000000 +1100
-@@ -442,9 +442,10 @@ static int __init pcibios_init(void)
- 		hose->last_busno = 0xff;
- 		bus = pci_scan_bus_parented(hose->parent, hose->first_busno,
- 					    hose->ops, hose);
--		if (bus)
-+		if (bus) {
- 			pci_bus_add_devices(bus);
--		hose->last_busno = bus->subordinate;
-+			hose->last_busno = bus->subordinate;
-+		}
- 		if (pci_assign_all_buses || next_busno <= hose->last_busno)
- 			next_busno = hose->last_busno + pcibios_assign_bus_offset;
- 	}
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
