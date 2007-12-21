@@ -1,19 +1,20 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CA290DDEE2
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 06:49:15 +1100 (EST)
-Message-ID: <476C1862.8080603@ru.mvista.com>
-Date: Fri, 21 Dec 2007 22:47:46 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <SRS0=0yox=RM=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 8DB4BDDE35
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 06:56:45 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH 2/4] PowerPC: update 440EP(x)/440GR(x) identical PVR issue
 	workaround
-References: <20071221160723.GA1430@ru.mvista.com>	<20071221162402.GA1673@ru.mvista.com>
+Date: Fri, 21 Dec 2007 20:56:41 +0100
+References: <20071221160723.GA1430@ru.mvista.com>
 	<20071221104347.54cd2ad5@zod.rchland.ibm.com>
-In-Reply-To: <20071221104347.54cd2ad5@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+	<476C1862.8080603@ru.mvista.com>
+In-Reply-To: <476C1862.8080603@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712212056.41798.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Fri, 21 Dec 2007 19:24:02 +0300
-> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
-> 
->> Commit 3ee133269861dc449ad5be761aa8570b1b05571f introduced
->> a CPU "model" property and thus broke PowerPC 440EP(x)/440GR(x)
->> identical PVR workaround. The patch updates it to use the new
->> model property for CPU identification.
-> 
-> Good catch.  I'll have to look more closely to see if anything else
-> would be broken by changing the cpu node name from "PowerPC,xxxx@0" to
-> "cpu@0".
-> 
-> josh
+Hi Valentine,
 
-Looks like we need a u-boot update for 405Ex Kilauea board.
-Mine (U-Boot 1.3.0-rc3-gccc2fe86-dirty (Oct 25 2007 - 12:18:41))
-fails to boot with new cpu node changes:
+On Friday 21 December 2007, Valentine Barshak wrote:
+> > Good catch.  I'll have to look more closely to see if anything else
+> > would be broken by changing the cpu node name from "PowerPC,xxxx@0" to
+> > "cpu@0".
+> >
+> > josh
+>
+> Looks like we need a u-boot update for 405Ex Kilauea board.
+> Mine (U-Boot 1.3.0-rc3-gccc2fe86-dirty (Oct 25 2007 - 12:18:41))
+> fails to boot with new cpu node changes:
+>
+>     Uncompressing Kernel Image ... OK
+>     Booting using the fdt at 0x400000
+> le to update property /cpus/PowerPC,405EX@0:timebase-frequency,
+> err=FDT_ERR_NOTFOUND
+> Unable to update property /cpus/PowerPC,405EX@0:clock-frequency,
+> err=FDT_ERR_NOTFOUND
 
-    Uncompressing Kernel Image ... OK
-    Booting using the fdt at 0x400000
-le to update property /cpus/PowerPC,405EX@0:timebase-frequency, 
-err=FDT_ERR_NOTFOUND
-Unable to update property /cpus/PowerPC,405EX@0:clock-frequency, 
-err=FDT_ERR_NOTFOUND
+Already done. :) Please take a look at the current implementation in the 
+for-1.3.2 branch of the u-boot-ppc4xx custodian repo:
 
-Thanks,
-Valentine.
+http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot/u-boot-ppc4xx.git;a=shortlog;h=for-1.3.2
+
+This works for both cpu node names.
+
+Best regards,
+Stefan
