@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 159DBDE036
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:29:26 +1100 (EST)
-Date: Fri, 21 Dec 2007 23:31:23 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9F2BFDDE43
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:32:34 +1100 (EST)
+Date: Fri, 21 Dec 2007 23:34:31 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/4] [POWERPC] CPM2: implement GPIO API
-Message-ID: <20071221203123.GC4633@localhost.localdomain>
+Subject: [PATCH 4/4] [POWERPC] CPM1: implement GPIO API
+Message-ID: <20071221203431.GD4633@localhost.localdomain>
 References: <20071221202824.GA4607@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -21,65 +21,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Jochen Friedrich <jochen@scram.de>
+
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/platforms/Kconfig    |    1 +
- arch/powerpc/sysdev/cpm2_common.c |  121 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 122 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 3d9ff27..cc2d54e 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -277,6 +277,7 @@ config CPM2
- 	default n
+Jochen, I kept your Signed-off-by, though this isn't your original
+patch. Hope you're okay with it. I also hope you'll test it. ;-)
+
+ arch/powerpc/platforms/8xx/Kconfig |    1 +
+ arch/powerpc/sysdev/commproc.c     |  178 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 178 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+index 91fbe42..6962914 100644
+--- a/arch/powerpc/platforms/8xx/Kconfig
++++ b/arch/powerpc/platforms/8xx/Kconfig
+@@ -4,6 +4,7 @@ config FADS
+ config CPM1
+ 	bool
  	select CPM
- 	select PPC_LIB_RHEAP
 +	select GENERIC_GPIO
- 	help
- 	  The CPM2 (Communications Processor Module) is a coprocessor on
- 	  embedded CPUs made by Freescale.  Selecting this option means that
-diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-index f7188e2..fe25978 100644
---- a/arch/powerpc/sysdev/cpm2_common.c
-+++ b/arch/powerpc/sysdev/cpm2_common.c
-@@ -31,12 +31,14 @@
+ 
+ choice
+ 	prompt "8xx Machine Type"
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index 621bc6c..8aea29c 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -27,6 +27,7 @@
  #include <linux/param.h>
  #include <linux/string.h>
  #include <linux/mm.h>
 +#include <linux/spinlock.h>
  #include <linux/interrupt.h>
+ #include <linux/irq.h>
  #include <linux/module.h>
- #include <linux/of.h>
- 
+@@ -36,6 +37,7 @@
+ #include <asm/8xx_immap.h>
+ #include <asm/commproc.h>
  #include <asm/io.h>
- #include <asm/irq.h>
 +#include <asm/gpio.h>
- #include <asm/mpc8260.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -61,8 +63,43 @@ cpm2_map_t __iomem *cpm2_immr;
- 					   of space for CPM as it is larger
- 					   than on PQ2 */
+ #include <asm/tlbflush.h>
+ #include <asm/rheap.h>
+ #include <asm/prom.h>
+@@ -56,6 +58,39 @@ static cpic8xx_t __iomem *cpic_reg;
  
-+static spinlock_t cpm2_port_lock = __SPIN_LOCK_UNLOCKED(cpm2_port_lock);
-+static int cpm2_num_ports;
+ static struct irq_host *cpm_pic_host;
+ 
++static spinlock_t cpm1_port_lock = __SPIN_LOCK_UNLOCKED(cpm1_port_lock);
++static int cpm1_num_ports;
 +
 +static int par_io_xlate(struct device_node *np, int index)
 +{
-+	return __of_parse_gpio_bank_pin(np, index, 32, cpm2_num_ports);
++	return __of_parse_gpio_bank_pin(np, index, 32, cpm1_num_ports);
 +}
 +
 +static struct of_gpio_chip of_gpio_chip = {
 +	.xlate = par_io_xlate,
 +};
 +
-+int cpm2_init_par_io(void)
++int cpm_init_par_io(void)
 +{
 +	struct device_node *np;
 +	const u32 *num_ports;
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pario");
++	np = of_find_node_by_name(NULL, "fsl,cpm1-pario");
 +	if (!np)
 +		return -ENOENT;
 +
@@ -88,39 +96,128 @@ index f7188e2..fe25978 100644
 +		of_node_put(np);
 +		return -ENOENT;
 +	}
-+	cpm2_num_ports = *num_ports;
++	cpm1_num_ports = *num_ports;
 +
 +	np->data = &of_gpio_chip;
 +
 +	return 0;
 +}
 +
- void __init cpm2_reset(void)
+ static void cpm_mask_irq(unsigned int irq)
  {
+ 	unsigned int cpm_vec = (unsigned int)irq_map[irq].hwirq;
+@@ -199,6 +234,7 @@ end:
+ void __init cpm_reset(void)
+ {
+ 	sysconf8xx_t __iomem *siu_conf;
 +	int ret;
+ 
+ 	mpc8xx_immr = ioremap(get_immrbase(), 0x4000);
+ 	if (!mpc8xx_immr) {
+@@ -238,6 +274,10 @@ void __init cpm_reset(void)
+ 	/* Reclaim the DP memory for our use. */
+ 	m8xx_cpm_dpinit();
+ #endif
 +
- #ifdef CONFIG_PPC_85xx
- 	cpm2_immr = ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
- #else
-@@ -80,6 +117,10 @@ void __init cpm2_reset(void)
- 	/* Tell everyone where the comm processor resides.
- 	 */
- 	cpmp = &cpm2_immr->im_cpm;
-+
-+	ret = cpm2_init_par_io();
++	ret = cpm_init_par_io();
 +	if (ret)
-+		pr_warning("CPM2 PIO not initialized!\n");
++		pr_warning("CPM PIO not initialized!\n");
  }
  
  static DEFINE_SPINLOCK(cmd_lock);
-@@ -468,3 +509,83 @@ void cpm2_set_pin(int port, int pin, int flags)
- 	else
- 		clrbits32(&iop[port].odr, pin);
+@@ -441,7 +481,7 @@ struct cpm_ioport16 {
+ };
+ 
+ struct cpm_ioport32 {
+-	__be32 dir, par, sor;
++	__be32 dir, par, sor, dat;
+ };
+ 
+ static void cpm1_set_pin32(int port, int pin, int flags)
+@@ -486,6 +526,39 @@ static void cpm1_set_pin32(int port, int pin, int flags)
+ 	}
+ }
+ 
++static void cpm1_set_value32(int port, int pin, int value)
++{
++	struct cpm_ioport32 __iomem *iop;
++	pin = 1 << (31 - pin);
++
++	if (port == CPM_PORTB)
++		iop = (struct cpm_ioport32 __iomem *)
++		      &mpc8xx_immr->im_cpm.cp_pbdir;
++	else
++		iop = (struct cpm_ioport32 __iomem *)
++		      &mpc8xx_immr->im_cpm.cp_pedir;
++
++	if (value)
++		setbits32(&iop->dat, pin);
++	else
++		clrbits32(&iop->dat, pin);
++}
++
++static int cpm1_get_value32(int port, int pin)
++{
++	struct cpm_ioport32 __iomem *iop;
++	pin = 1 << (31 - pin);
++
++	if (port == CPM_PORTB)
++		iop = (struct cpm_ioport32 __iomem *)
++		      &mpc8xx_immr->im_cpm.cp_pbdir;
++	else
++		iop = (struct cpm_ioport32 __iomem *)
++		      &mpc8xx_immr->im_cpm.cp_pedir;
++
++	return !!(in_be32(&iop->dat) & pin);
++}
++
+ static void cpm1_set_pin16(int port, int pin, int flags)
+ {
+ 	struct cpm_ioport16 __iomem *iop =
+@@ -520,6 +593,35 @@ static void cpm1_set_pin16(int port, int pin, int flags)
+ 	}
+ }
+ 
++static void cpm1_set_value16(int port, int pin, int value)
++{
++	struct cpm_ioport16 __iomem *iop =
++		(struct cpm_ioport16 __iomem *)&mpc8xx_immr->im_ioport;
++
++	pin = 1 << (15 - pin);
++
++	if (port != 0)
++		iop += port - 1;
++
++	if (value)
++		setbits16(&iop->dat, pin);
++	else
++		clrbits16(&iop->dat, pin);
++}
++
++static int cpm1_get_value16(int port, int pin)
++{
++	struct cpm_ioport16 __iomem *iop =
++		(struct cpm_ioport16 __iomem *)&mpc8xx_immr->im_ioport;
++
++	pin = 1 << (15 - pin);
++
++	if (port != 0)
++		iop += port - 1;
++
++	return !!(in_be16(&iop->dat) & pin);
++}
++
+ void cpm1_set_pin(enum cpm_port port, int pin, int flags)
+ {
+ 	if (port == CPM_PORTB || port == CPM_PORTE)
+@@ -648,3 +750,77 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
+ 
+ 	return 0;
  }
 +
 +int gpio_request(unsigned int gpio, const char *label)
 +{
-+	if (gpio / 32 >= cpm2_num_ports)
++	if (gpio / 32 >= cpm1_num_ports)
 +		return -EINVAL;
 +	return 0;
 +}
@@ -132,67 +229,61 @@ index f7188e2..fe25978 100644
 +	int port = gpio / 32;
 +	int pin = gpio % 32;
 +
-+	spin_lock_irqsave(&cpm2_port_lock, flags);
++	spin_lock_irqsave(&cpm1_port_lock, flags);
 +
-+	cpm2_set_pin(port, pin, CPM_PIN_INPUT | CPM_PIN_GPIO);
++	cpm1_set_pin(port, pin, CPM_PIN_INPUT | CPM_PIN_GPIO);
 +
-+	spin_unlock_irqrestore(&cpm2_port_lock, flags);
++	spin_unlock_irqrestore(&cpm1_port_lock, flags);
 +	return 0;
 +}
 +EXPORT_SYMBOL_GPL(gpio_direction_input);
 +
 +int gpio_direction_output(unsigned int gpio, int value)
 +{
-+	struct cpm2_ioports __iomem *iop =
-+		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
 +	int port = gpio / 32;
 +	int pin = gpio % 32;
 +	unsigned long flags;
 +
-+	spin_lock_irqsave(&cpm2_port_lock, flags);
++	spin_lock_irqsave(&cpm1_port_lock, flags);
 +
-+	cpm2_set_pin(port, pin, CPM_PIN_OUTPUT | CPM_PIN_GPIO);
++	cpm1_set_pin(port, pin, CPM_PIN_OUTPUT | CPM_PIN_GPIO);
 +
-+	pin = 1 << (31 - pin);
-+	if (value)
-+		setbits32(&iop[port].dat, pin);
++	if (port == CPM_PORTB || port == CPM_PORTE)
++		cpm1_set_value32(port, pin, value);
 +	else
-+		clrbits32(&iop[port].dat, pin);
++		cpm1_set_value16(port, pin, value);
 +
-+	spin_unlock_irqrestore(&cpm2_port_lock, flags);
++	spin_unlock_irqrestore(&cpm1_port_lock, flags);
 +	return 0;
 +}
 +EXPORT_SYMBOL_GPL(gpio_direction_output);
 +
 +int gpio_get_value(unsigned int gpio)
 +{
-+	struct cpm2_ioports __iomem *iop =
-+		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
 +	int port = gpio / 32;
 +	int pin = gpio % 32;
 +
-+	pin = 1 << (31 - pin);
-+
-+	return !!(in_be32(&iop[port].dat) & pin);
++	if (port == CPM_PORTB || port == CPM_PORTE)
++		return cpm1_get_value32(port, pin);
++	else
++		return cpm1_get_value16(port, pin);
 +}
 +EXPORT_SYMBOL_GPL(gpio_get_value);
 +
 +int gpio_set_value(unsigned int gpio, int value)
 +{
-+	struct cpm2_ioports __iomem *iop =
-+		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
 +	int port = gpio / 32;
 +	int pin = gpio % 32;
 +	unsigned long flags;
 +
-+	pin = 1 << (31 - pin);
++	spin_lock_irqsave(&cpm1_port_lock, flags);
 +
-+	spin_lock_irqsave(&cpm2_port_lock, flags);
-+	if (value)
-+		setbits32(&iop[port].dat, pin);
++	if (port == CPM_PORTB || port == CPM_PORTE)
++		cpm1_set_value32(port, pin, value);
 +	else
-+		clrbits32(&iop[port].dat, pin);
-+	spin_unlock_irqrestore(&cpm2_port_lock, flags);
++		cpm1_set_value16(port, pin, value);
++
++	spin_unlock_irqrestore(&cpm1_port_lock, flags);
 +
 +	return 0;
 +}
