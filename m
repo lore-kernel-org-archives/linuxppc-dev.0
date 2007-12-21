@@ -1,17 +1,17 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 52113DDEB7
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:37:28 +1100 (EST)
-Date: Fri, 21 Dec 2007 23:39:25 +0300
+	by ozlabs.org (Postfix) with ESMTP id A90C3DDEB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:39:34 +1100 (EST)
+Date: Fri, 21 Dec 2007 23:41:30 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/3] [POWERPC] FSL UPM: routines to manage FSL UPMs
-Message-ID: <20071221203925.GA4829@localhost.localdomain>
+Subject: [PATCH 2/3] [POWERPC][NAND] FSL UPM NAND driver
+Message-ID: <20071221204130.GB4829@localhost.localdomain>
 References: <20071221203552.GA4738@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
 In-Reply-To: <20071221203552.GA4738@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here are few routines needed to manage FSL UPMs. It doesn't include
-UPM programming, yet. So far u-boot manages to program everything.
+It's using FSL UPM infrastructure. So far only 8 bit accessors
+are implemented.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Kconfig          |    3 +
- arch/powerpc/sysdev/Makefile  |    1 +
- arch/powerpc/sysdev/fsl_upm.c |   65 +++++++++++++++++++++++++++++
- include/asm-powerpc/fsl_upm.h |   90 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 159 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/fsl_upm.c
- create mode 100644 include/asm-powerpc/fsl_upm.h
+ drivers/mtd/nand/Kconfig   |    7 +
+ drivers/mtd/nand/Makefile  |    1 +
+ drivers/mtd/nand/fsl_upm.c |  313 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 321 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mtd/nand/fsl_upm.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a4fa173..aab8106 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -463,6 +463,9 @@ config FSL_PCI
-  	bool
- 	select PPC_INDIRECT_PCI
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index 246d451..91b448f 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -306,4 +306,11 @@ config MTD_ALAUDA
+ 	  These two (and possibly other) Alauda-based cardreaders for
+ 	  SmartMedia and xD allow raw flash access.
  
-+config FSL_UPM
-+	bool
++config MTD_NAND_FSL_UPM
++	tristate "MTD driver for NAND on Freescale UPM"
++	depends on MTD_NAND && FSL_UPM && GENERIC_GPIO
++	help
++	  Enables support for NAND Flash wired to Freescale processors'
++	  localbus with pre-programmed User-Programmable Machine.
 +
- # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
- config MCA
- 	bool
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 99a77d7..98dbfdd 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
-+obj-$(CONFIG_FSL_UPM)		+= fsl_upm.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- obj-$(CONFIG_PPC_BESTCOMM)	+= bestcomm/
-diff --git a/arch/powerpc/sysdev/fsl_upm.c b/arch/powerpc/sysdev/fsl_upm.c
+ endif # MTD_NAND
+diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+index 3ad6c01..d553ea3 100644
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -29,5 +29,6 @@ obj-$(CONFIG_MTD_NAND_CM_X270)		+= cmx270_nand.o
+ obj-$(CONFIG_MTD_NAND_BASLER_EXCITE)	+= excite_nandflash.o
+ obj-$(CONFIG_MTD_NAND_PLATFORM)		+= plat_nand.o
+ obj-$(CONFIG_MTD_ALAUDA)		+= alauda.o
++obj-$(CONFIG_MTD_NAND_FSL_UPM)		+= fsl_upm.o
+ 
+ nand-objs := nand_base.o nand_bbt.o
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
 new file mode 100644
-index 0000000..6e35bf4
+index 0000000..ac26199
 --- /dev/null
-+++ b/arch/powerpc/sysdev/fsl_upm.c
-@@ -0,0 +1,65 @@
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -0,0 +1,313 @@
 +/*
-+ * Freescale UPM routines.
++ * Freescale UPM NAND driver.
 + *
 + * Copyright (c) 2007  MontaVista Software, Inc.
 + * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
@@ -79,153 +78,305 @@ index 0000000..6e35bf4
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/of.h>
++#include <linux/module.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/nand_ecc.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/mtd.h>
++#include <linux/of_platform.h>
++#include <linux/io.h>
++#include <asm/io.h>
++#include <asm/gpio.h>
 +#include <asm/fsl_upm.h>
 +
-+spinlock_t upm_lock = __SPIN_LOCK_UNLOCKED(upm_lock);
-+unsigned long upm_lock_flags;
++struct upm_data {
++	struct device *dev;
++	struct mtd_info mtd;
++	struct nand_chip chip;
++	int last_ctrl;
++#ifdef CONFIG_MTD_PARTITIONS
++	struct mtd_partition *parts;
++#endif
 +
-+int fsl_upm_get_for(struct device_node *node, const char *name,
-+		    struct fsl_upm *upm)
-+{
-+	int ret;
-+	struct device_node *lbus;
-+	struct resource lbc_res;
-+	ptrdiff_t mxmr_offs;
++	struct fsl_upm upm;
 +
-+	lbus = of_get_parent(node);
-+	if (!lbus) {
-+		pr_err("FSL UPM: can't get parent local bus node\n");
-+		return -ENOENT;
-+	}
-+
-+	ret = of_address_to_resource(lbus, 0, &lbc_res);
-+	if (ret) {
-+		pr_err("FSL UPM: can't get parent local bus base\n");
-+		return -ENOMEM;
-+	}
-+
-+	switch (name[0]) {
-+	case 'A':
-+		mxmr_offs = LBC_MAMR;
-+		break;
-+	case 'B':
-+		mxmr_offs = LBC_MBMR;
-+		break;
-+	case 'C':
-+		mxmr_offs = LBC_MCMR;
-+		break;
-+	default:
-+		pr_err("FSL UPM: unknown UPM requested\n");
-+		return -EINVAL;
-+		break;
-+	}
-+
-+	upm->lbc_base = ioremap_nocache(lbc_res.start,
-+					lbc_res.end - lbc_res.start + 1);
-+	if (!upm->lbc_base)
-+		return -ENOMEM;
-+
-+	upm->mxmr = upm->lbc_base + mxmr_offs;
-+	upm->mar = upm->lbc_base + LBC_MAR;
-+
-+	return 0;
-+}
-diff --git a/include/asm-powerpc/fsl_upm.h b/include/asm-powerpc/fsl_upm.h
-new file mode 100644
-index 0000000..fe5a5d9
---- /dev/null
-+++ b/include/asm-powerpc/fsl_upm.h
-@@ -0,0 +1,90 @@
-+/*
-+ * Freescale UPM routines.
-+ *
-+ * Copyright (c) 2007  MontaVista Software, Inc.
-+ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __ASM_POWERPC_FSL_UPM
-+#define __ASM_POWERPC_FSL_UPM
-+
-+#include <linux/spinlock.h>
-+#include <asm/io.h>
-+
-+#define LBC_MAR		0x68
-+#define LBC_MAMR	0x70
-+#define LBC_MBMR	0x74
-+#define LBC_MCMR	0x78
-+
-+#define LBC_MXMR_RUNP	0x30000000
-+
-+struct fsl_upm {
-+	void __iomem *lbc_base;
-+	void __iomem *mxmr;
-+	void __iomem *mar;
++	int width;
++	int upm_addr_offset;
++	int upm_cmd_offset;
++	void __iomem *io_base;
++	int rnb_gpio;
++	const u32 *wait_pattern;
++	const u32 *wait_write;
++	int chip_delay;
 +};
 +
-+extern spinlock_t upm_lock;
-+extern unsigned long upm_lock_flags;
++#define to_upm_data(mtd) container_of(mtd, struct upm_data, mtd)
 +
-+extern int fsl_upm_get_for(struct device_node *node, const char *name,
-+			   struct fsl_upm *upm);
-+
-+static inline void fsl_upm_free(struct fsl_upm *upm)
++static int upm_chip_ready(struct mtd_info *mtd)
 +{
-+	iounmap(upm->lbc_base);
-+	upm->lbc_base = NULL;
++	struct upm_data *ud = to_upm_data(mtd);
++
++	if (gpio_get_value(ud->rnb_gpio))
++		return 1;
++
++	dev_vdbg(ud->dev, "busy\n");
++	return 0;
 +}
 +
-+static inline int fsl_upm_got(struct fsl_upm *upm)
++static void upm_wait_rnb(struct upm_data *ud)
 +{
-+	return !!upm->lbc_base;
-+}
++	int cnt = 1000000;
 +
-+static inline void fsl_upm_start_pattern(struct fsl_upm *upm, u32 pat_offset)
-+{
-+	spin_lock_irqsave(&upm_lock, upm_lock_flags);
-+
-+	out_be32(upm->mxmr, LBC_MXMR_RUNP | pat_offset);
-+}
-+
-+static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
-+{
-+	out_be32(upm->mxmr, 0x0);
-+
-+	while (in_be32(upm->mxmr) != 0x0)
-+		cpu_relax();
-+
-+	spin_unlock_irqrestore(&upm_lock, upm_lock_flags);
-+}
-+
-+static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
-+				      void __iomem *io_base,
-+				      int width, u32 cmd)
-+{
-+	out_be32(upm->mar, cmd << (32 - width));
-+
-+	switch (width) {
-+	case 8:
-+		out_8(io_base, 0x0);
-+		break;
-+	case 16:
-+		out_be16(io_base, 0x0);
-+		break;
-+	case 32:
-+		out_be32(io_base, 0x0);
-+		break;
-+	default:
-+		return -EINVAL;
-+		break;
++	if (ud->rnb_gpio >= 0) {
++		while (--cnt && !upm_chip_ready(&ud->mtd))
++			cpu_relax();
 +	}
++
++	if (!cnt)
++		dev_err(ud->dev, "tired waiting for RNB\n");
++}
++
++static void upm_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
++{
++	struct upm_data *ud = to_upm_data(mtd);
++
++	if (!(ctrl & ud->last_ctrl)) {
++		fsl_upm_end_pattern(&ud->upm);
++
++		if (cmd == NAND_CMD_NONE)
++			return;
++
++		ud->last_ctrl = ctrl & (NAND_ALE | NAND_CLE);
++	}
++
++	if (ctrl & NAND_CTRL_CHANGE) {
++		if (ctrl & NAND_ALE)
++			fsl_upm_start_pattern(&ud->upm, ud->upm_addr_offset);
++		else if (ctrl & NAND_CLE)
++			fsl_upm_start_pattern(&ud->upm, ud->upm_cmd_offset);
++	}
++
++	fsl_upm_run_pattern(&ud->upm, ud->io_base, ud->width, cmd);
++
++	if (ud->wait_pattern)
++		upm_wait_rnb(ud);
++}
++
++static uint8_t upm_read_byte(struct mtd_info *mtd)
++{
++	struct upm_data *ud = to_upm_data(mtd);
++
++	return in_8(ud->chip.IO_ADDR_R);
++}
++
++static void upm_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
++{
++	struct upm_data *ud = to_upm_data(mtd);
++	int i;
++
++	for (i = 0; i < len; i++)
++		buf[i] = in_8(ud->chip.IO_ADDR_R);
++}
++
++static void upm_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
++{
++	struct upm_data *ud = to_upm_data(mtd);
++	int i;
++
++	for (i = 0; i < len; i++) {
++		out_8(ud->chip.IO_ADDR_W, buf[i]);
++		if (ud->wait_write)
++			upm_wait_rnb(ud);
++	}
++}
++
++static int __devinit upm_chip_init(struct upm_data *ud)
++{
++	int ret;
++#ifdef CONFIG_MTD_PARTITIONS
++	static const char *part_types[] = { "cmdlinepart", NULL, };
++#endif
++
++	ud->chip.IO_ADDR_R = ud->io_base;
++	ud->chip.IO_ADDR_W = ud->io_base;
++	ud->chip.cmd_ctrl = upm_cmd_ctrl;
++	ud->chip.chip_delay = ud->chip_delay;
++	ud->chip.read_byte = upm_read_byte;
++	ud->chip.read_buf = upm_read_buf;
++	ud->chip.write_buf = upm_write_buf;
++	ud->chip.ecc.mode = NAND_ECC_SOFT;
++
++	if (ud->rnb_gpio >= 0)
++		ud->chip.dev_ready = upm_chip_ready;
++
++	ud->mtd.priv = &ud->chip;
++	ud->mtd.owner = THIS_MODULE;
++
++	ret = nand_scan(&ud->mtd, 1);
++	if (ret)
++		return ret;
++
++	ud->mtd.name = ud->dev->bus_id;
++
++#ifdef CONFIG_MTD_PARTITIONS
++	ret = parse_mtd_partitions(&ud->mtd, part_types, &ud->parts, 0);
++	if (ret > 0)
++		return add_mtd_partitions(&ud->mtd, ud->parts, ret);
++#endif
++	return add_mtd_device(&ud->mtd);
++}
++
++static int __devinit upm_chip_probe(struct of_device *ofdev,
++				    const struct of_device_id *ofid)
++{
++	struct upm_data *ud;
++	struct resource io_res;
++	const u32 *prop;
++	int ret;
++	int size;
++
++	ud = kzalloc(sizeof(*ud), GFP_KERNEL);
++	if (!ud)
++		return -ENOMEM;
++
++	ret = of_address_to_resource(ofdev->node, 0, &io_res);
++	if (ret) {
++		dev_err(&ofdev->dev, "can't get IO base\n");
++		goto err;
++	}
++
++	prop = of_get_property(ofdev->node, "width", &size);
++	if (!prop || size != sizeof(u32)) {
++		dev_err(&ofdev->dev, "can't get chip width\n");
++		goto err;
++	}
++	ud->width = *prop * 8;
++
++	prop = of_get_property(ofdev->node, "upm", &size);
++	if (!prop || size < 1) {
++		dev_err(&ofdev->dev, "can't get UPM to use\n");
++		ret = -EINVAL;
++		goto err;
++	}
++
++	ret = fsl_upm_get_for(ofdev->node, (const char *)prop, &ud->upm);
++	if (ret) {
++		dev_err(&ofdev->dev, "can't get FSL UPM\n");
++		goto err;
++	}
++
++	prop = of_get_property(ofdev->node, "upm-addr-offset", &size);
++	if (!prop || size != sizeof(u32)) {
++		dev_err(&ofdev->dev, "can't get UPM address offset\n");
++		ret = -EINVAL;
++		goto err;
++	}
++	ud->upm_addr_offset = *prop;
++
++	prop = of_get_property(ofdev->node, "upm-cmd-offset", &size);
++	if (!prop || size != sizeof(u32)) {
++		dev_err(&ofdev->dev, "can't get UPM command offset\n");
++		ret = -EINVAL;
++		goto err;
++	}
++	ud->upm_cmd_offset = *prop;
++
++	ud->rnb_gpio = of_get_gpio(ofdev->node, 0);
++	if (ud->rnb_gpio >= 0) {
++		ret = gpio_request(ud->rnb_gpio, ofdev->dev.bus_id);
++		if (ret) {
++			dev_err(&ofdev->dev, "can't request RNB gpio\n");
++			goto err;
++		}
++		gpio_direction_input(ud->rnb_gpio);
++	} else if (ud->rnb_gpio == -EINVAL) {
++		dev_err(&ofdev->dev, "specified RNB gpio is invalid\n");
++		goto err;
++	}
++
++	ud->io_base = devm_ioremap_nocache(&ofdev->dev, io_res.start,
++					  io_res.end - io_res.start + 1);
++	if (!ud->io_base) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	ud->dev = &ofdev->dev;
++	ud->last_ctrl = NAND_CLE;
++	ud->wait_pattern = of_get_property(ofdev->node, "wait-pattern", NULL);
++	ud->wait_write = of_get_property(ofdev->node, "wait-write", NULL);
++
++	prop = of_get_property(ofdev->node, "chip-delay", NULL);
++	if (prop)
++		ud->chip_delay = *prop;
++	else
++		ud->chip_delay = 50;
++
++	ret = upm_chip_init(ud);
++	if (ret)
++		goto err;
++
++	dev_set_drvdata(&ofdev->dev, ud);
++
++	return 0;
++
++err:
++	if (fsl_upm_got(&ud->upm))
++		fsl_upm_free(&ud->upm);
++
++	if (ud->rnb_gpio >= 0)
++		gpio_free(ud->rnb_gpio);
++
++	kfree(ud);
++
++	return ret;
++}
++
++static int __devexit upm_chip_remove(struct of_device *ofdev)
++{
++	struct upm_data *ud = dev_get_drvdata(&ofdev->dev);
++
++	nand_release(&ud->mtd);
++
++	fsl_upm_free(&ud->upm);
++
++	if (ud->rnb_gpio >= 0)
++		gpio_free(ud->rnb_gpio);
++
++	kfree(ud);
 +
 +	return 0;
 +}
 +
-+#endif /* __ASM_POWERPC_FSL_UPM */
++static struct of_device_id of_upm_nand_match[] = {
++	{ .compatible = "fsl,upm-nand" },
++	{},
++};
++MODULE_DEVICE_TABLE(of, of_upm_nand_match);
++
++static struct of_platform_driver of_upm_chip_driver = {
++	.name		= "fsl_upm_nand",
++	.match_table	= of_upm_nand_match,
++	.probe		= upm_chip_probe,
++	.remove		= __devexit_p(upm_chip_remove),
++};
++
++static int __init upm_nand_init(void)
++{
++	return of_register_platform_driver(&of_upm_chip_driver);
++}
++
++static void __exit upm_nand_exit(void)
++{
++	of_unregister_platform_driver(&of_upm_chip_driver);
++}
++
++module_init(upm_nand_init);
++module_exit(upm_nand_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
++MODULE_DESCRIPTION("Driver for NAND chips working through Freescale "
++		   "LocalBus User-Programmable Machine");
 -- 
 1.5.2.2
