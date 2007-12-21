@@ -1,12 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EA246DDDEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:50:12 +1100 (EST)
-Date: Fri, 21 Dec 2007 15:48:18 +1100
+	by ozlabs.org (Postfix) with ESMTP id B377BDDDEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:50:13 +1100 (EST)
+Date: Fri, 21 Dec 2007 15:49:11 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 1/3] [POWERPC] the pci_dn class_code is only used by EEH
-Message-Id: <20071221154818.95b51c8a.sfr@canb.auug.org.au>
+Subject: [PATCH 2/3] [POWERPC] the pci_dn pcidev is only used by EEH
+Message-Id: <20071221154911.c437013e.sfr@canb.auug.org.au>
+In-Reply-To: <20071221154818.95b51c8a.sfr@canb.auug.org.au>
+References: <20071221154818.95b51c8a.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,29 +24,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/asm-powerpc/pci-bridge.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/iseries/pci.c |    1 -
+ include/asm-powerpc/pci-bridge.h     |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
+index 30e3d99..9319410 100644
+--- a/arch/powerpc/platforms/iseries/pci.c
++++ b/arch/powerpc/platforms/iseries/pci.c
+@@ -438,7 +438,6 @@ void __init iSeries_pcibios_fixup_resources(struct pci_dev *pdev)
+ 	}
+ 
+ 	pdev->sysdata = node;
+-	PCI_DN(node)->pcidev = pdev;
+ 	allocate_device_bars(pdev);
+ 	iseries_device_information(pdev, bus, *sub_bus);
+ 	iommu_devnode_init_iSeries(pdev, node);
 diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index 9b16d3b..07cdb5b 100644
+index 07cdb5b..2932404 100644
 --- a/include/asm-powerpc/pci-bridge.h
 +++ b/include/asm-powerpc/pci-bridge.h
-@@ -167,7 +167,6 @@ struct pci_dn {
- 	int	busno;			/* pci bus number */
- 	int	bussubno;		/* pci subordinate bus number */
- 	int	devfn;			/* pci device and function number */
--	int	class_code;		/* pci device class */
+@@ -170,12 +170,12 @@ struct pci_dn {
  
  	struct  pci_controller *phb;	/* for pci devices */
  	struct	iommu_table *iommu_table;	/* for phb's or bridges */
-@@ -177,6 +176,7 @@ struct pci_dn {
+-	struct	pci_dev *pcidev;	/* back-pointer to the pci device */
+ 	struct	device_node *node;	/* back-pointer to the device_node */
+ 
  	int	pci_ext_config_space;	/* for pci devices */
  
  #ifdef CONFIG_EEH
-+	int	class_code;		/* pci device class */
++	struct	pci_dev *pcidev;	/* back-pointer to the pci device */
+ 	int	class_code;		/* pci device class */
  	int	eeh_mode;		/* See eeh.h for possible EEH_MODEs */
  	int	eeh_config_addr;
- 	int	eeh_pe_config_addr; /* new-style partition endpoint address */
 -- 
 1.5.3.7
 
