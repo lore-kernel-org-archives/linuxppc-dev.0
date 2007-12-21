@@ -1,11 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18283.44454.618519.155696@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Dec 2007 23:12:22 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Yet more patches added to for-2.6.25/master branches
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 88D2ADDE32
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 23:15:09 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBLCF503017118
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 07:15:05 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBLCF5X2167454
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 05:15:05 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lBLCF4Ra028981
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 05:15:04 -0700
+Date: Fri, 21 Dec 2007 06:09:21 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 18/21] [POWERPC] bamboo: remove bogus "ranges" property
+	in EBC node
+Message-ID: <20071221060921.4ae5bc20@zod.rchland.ibm.com>
+In-Reply-To: <20071221043939.72A8BDDFCF@ozlabs.org>
+References: <20071221043939.72A8BDDFCF@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,52 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Aegis Lin (1):
-      [POWERPC] spufs: Use separate timer for /proc/spu_loadavg calculation
+On Fri, 21 Dec 2007 15:39:35 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Andre Detsch (1):
-      [POWERPC] spufs: DMA Restart after SIGSEGV
+> This removes a bogus empty "ranges" property in the EBC device node
+> of the Bamboo board device-tree.
+> 
+> The "ranges" property will be created by the boot wrapper, there is
+> no need to have an empty property there, and that causes recent
+> dtc to complain.
 
-Arnd Bergmann (1):
-      [POWERPC] spufs: block fault handlers in spu_acquire_runnable
+The wrapper doesn't do anything with EBC for bamboo because the EBC
+stuff is a nightmare on this board.  The patch can stand, but I'll
+fixup the comments in the changelog.
 
-Benjamin Herrenschmidt (2):
-      [POWERPC] Fix for via-pmu based backlight control
-      [POWERPC] Fix possible NULL deref in ppc32 PCI
-
-Christoph Hellwig (2):
-      [POWERPC] spufs: add enchanced simple attr macros
-      [POWERPC] spufs: make state_mutex interruptible
-
-Emil Medve (1):
-      [POWERPC] Optimize counting distinct entries in the relocation sections
-
-Jeremy Kerr (5):
-      [POWERPC] spufs: move fault, lscsa_alloc and switch code to spufs module
-      [POWERPC] spufs: fix incorrect interrupt status clearing in backing mbox stat poll
-      [POWERPC] spufs: use #defines for SPU class [012] exception status
-      [POWERPC] spufs: rework class 0 and 1 interrupt handling
-      [POWERPC] spufs: Don't leak kernel stack through an empty {i,m}box_info read
-
-Julio M. Merino Vidal (1):
-      [POWERPC] spufs: fix typos in sched.c comments
-
-Luke Browning (4):
-      [POWERPC] spufs: add backing ops for privcntl register
-      [POWERPC] spufs: reorganize spu_run_init
-      [POWERPC] spufs: spu_find_victim may choose wrong victim
-      [POWERPC] spufs: decouple spu scheduler from spufs_spu_run (asynchronous scheduling)
-
-Masato Noguchi (2):
-      [POWERPC] cell: wrap master run control bit
-      [POWERPC] spufs: don't set reserved bits in spu interrupt status
-
-Scott Wood (1):
-      [POWERPC] Implement arch disable/enable irq hooks.
-
-Stephen Rothwell (5):
-      [POWERPC] Add EHEA and EHCA as modules in the ppc64_defconfig
-      [POWERPC] The builtin matches for ibmebus.c can be __initdata
-      [POWERPC] Constify the of_device_id passed to of_platform_bus_probe
-      [POWERPC] Pointers marked as __iomem do not need to be volatile
-      [POWERPC] Make non-PCI build work again
+josh
