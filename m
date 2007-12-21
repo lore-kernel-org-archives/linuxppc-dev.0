@@ -1,17 +1,17 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2245EDDE42
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:17:54 +1100 (EST)
-Date: Fri, 21 Dec 2007 15:17:36 +0900 (JST)
-Message-Id: <20071221.151736.-1300524616.kouish@swc.toshiba.co.jp>
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 204A4DDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:43:55 +1100 (EST)
+Received: from localhost.localdomain (yow-pgortmak-d1.ottawa.windriver.com
+	[128.224.146.65])
+	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id lBL6hr75015208
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Dec 2007 22:43:53 -0800 (PST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: kernel stops at probing MTD CFI driver
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-mtd@lists.infradead.org
+Cc: 
+Subject: [PATCH 0/3] Powerpc support for SBC8548 board
+Date: Fri, 21 Dec 2007 01:43:50 -0500
+Message-Id: <11982194332672-git-send-email-paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,62 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When I build the MTD Common Flush Interface(CFI) driver as modules,
-the kernel stops at BUG() in symbol_put_addr() called by
-cfi_cmdset_unknown()[gen_probe.c] and shows the following message. 
 
-I found this problem on Toshiba Cell Reference Set. I think this
-problem relates with powerpc64 ABI.
+The following three patches add support for the Wind River SBC8548 board
+onto the powerpc branch.  The patches are as follows:
 
-kernel BUG at kernel/module.c:783!
-cpu 0x1: Vector: 700 (Program Check) at [c000000002723070]
-    pc: c00000000007faac: .symbol_put_addr+0x34/0x64
-    lr: c00000000007faa4: .symbol_put_addr+0x2c/0x64
-    sp: c0000000027232f0
-   msr: 9000000000029032
-  current = 0xc00000000271c000
-  paca    = 0xc00000000047c380
-    pid   = 762, comm = modprobe
-kernel BUG at kernel/module.c:783!
-enter ? for help
-[c000000002723370] d0000000001040f0 .check_cmd_set+0xf0/0x138 [gen_probe]
-[c000000002723430] d000000000104464 .mtd_do_chip_probe+0x32c/0x650 [gen_probe]
-[c000000002723550] d000000000100334 .cfi_probe+0x1c/0x34 [cfi_probe]
-[c0000000027235d0] d0000000000fd20c .do_map_probe+0x84/0xc0 [chipreg]
-[c000000002723670] d000000000171348 .of_physmap_probe+0x280/0x4f0 [physmap_of]
-[c000000002723780] c00000000001bd44 .of_platform_device_probe+0x78/0xb0
-[c000000002723810] c0000000001e1708 .driver_probe_device+0x140/0x208
-[c0000000027238a0] c0000000001e1a00 .__driver_attach+0xdc/0x164
-[c000000002723930] c0000000001e0550 .bus_for_each_dev+0x7c/0xd4
-[c0000000027239f0] c0000000001e1470 .driver_attach+0x28/0x40
-[c000000002723a70] c0000000001e0a6c .bus_add_driver+0x90/0x1fc
-[c000000002723b10] c0000000001e1e28 .driver_register+0x94/0xb0
-[c000000002723b90] c00000000001c150 .of_register_platform_driver+0x28/0x3c
-[c000000002723c00] d000000000171608 .of_physmap_init+0x1c/0x4e4 [physmap_of]
-[c000000002723c80] c00000000007f8b8 .sys_init_module+0x1608/0x17c8
-[c000000002723e30] c000000000008634 syscall_exit+0x0/0x40
---- Exception: c01 (System Call) at 000000000ff0f4b4
+1) Add basic support for Wind River SBC8548 as powerpc
 
-symbol_put_addr() tests the address by module_text_address(). Because
-the address is not in .text section on powerpc64 system,
-module_text_address() fails and symbol_put_addr() calls BUG().
+This adds in the basic platform support file -- closely matching that which
+exists for the MPC8548CDS board.  These are layered on top of the earlier
+SBC8560 patches (only is an issue for the usual Makefile/Kconfig patch
+collisions).
 
-Though we can avoid this problem by using __symbol_put() instead of
-symbol_put_addr(), I don't think this is proper way. Does anyone have
-better solutions for this problem?
-
-Best regards,
-Kou Ishizaki
+ powerpc/arch/powerpc/platforms/85xx/Kconfig   |   10 +
+ powerpc/arch/powerpc/platforms/85xx/Makefile  |    1 
+ powerpc/arch/powerpc/platforms/85xx/sbc8548.c |  182 ++++++++++++++++++++++++++
+ 3 files changed, 191 insertions(+), 2 deletions(-)
 
 
---- linux-2.6.24-rc5.org/drivers/mtd/chips/gen_probe.c  2007-12-19 19:05:56.000000000 +0900
-+++ linux-2.6.24-rc5/drivers/mtd/chips/gen_probe.c      2007-12-19 19:44:23.000000000 +0900
-@@ -222,7 +222,7 @@ static inline struct mtd_info *cfi_cmdse
+2) Add device tree source for Wind River SBC8548 board
 
- 		mtd = (*probe_function)(map, primary);
-		/* If it was happy, it'll have increased its own use count */
--		symbol_put_addr(probe_function);
-+		__symbol_put(probename);
- 		return mtd;
- 	}
- #endif
+This also closely matches what exists for the MPC8548CDS platform.  The big
+difference here is that this board doesn't have physical access to PCI#2
+and it doesn't have the CDS's bridges, i8259, peripherals, etc, so the dts
+is overall quite a bit smaller.  I've believe I've got all aliases and the
+associated gianfar updates etc. that I'd somehow missed in the sbc8560 dts.
+
+ powerpc/arch/powerpc/boot/dts/sbc8548.dts |  219 ++++++++++++++++++++++++++++++
+ 1 file changed, 219 insertions(+)
+
+
+3) Add default .config file for Wind River SBC8548
+
+This config gives basic serial console and ethernet support for doing an
+NFS root setup.  The SBC8548 has one PCI-X slot, and a short PCI-e slot,
+so I've enabled PCI.  
+
+ powerpc/arch/powerpc/configs/sbc8548_defconfig |  740 +++++++++++++++++++++++++
+ 1 file changed, 740 insertions(+)
+
+
+Like the 8560 board, I'd quickly spun together a u-boot 1.2.0 for testing
+this -- since that was the quickest route for me to get a powerpc capable
+version.  This too needs a proper u-boot 1.3.1 patchset so we get all the
+associated updates within that, like local-mac-address etc.  Soon...
+
+Paul.
