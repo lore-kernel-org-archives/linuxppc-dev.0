@@ -1,26 +1,15 @@
-Return-Path: <kyle@fattire.cabal.ca>
-Received: from fattire.cabal.ca (there.is.no.cabal.ca [134.117.69.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 996D7DDE3C
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 04:51:11 +1100 (EST)
-Date: Fri, 21 Dec 2007 12:51:06 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -mm 18/43] powerpc compat_binfmt_elf
-Message-ID: <20071221175106.GB17656@fattire.cabal.ca>
-References: <20071220115200.C767E26F98A@magilla.localdomain>
-	<20071220115816.504CC26F98E@magilla.localdomain>
-	<20071221071229.GC4345@infradead.org>
-	<20071221085609.4D53B26F98A@magilla.localdomain>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <476BF67C.2030405@am.sony.com>
+Date: Fri, 21 Dec 2007 09:23:08 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071221085609.4D53B26F98A@magilla.localdomain>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Time for cell code reshuffle?
+References: <200712211522.03841.arnd@arndb.de>
+In-Reply-To: <200712211522.03841.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 21, 2007 at 12:56:09AM -0800, Roland McGrath wrote:
-> > On Thu, Dec 20, 2007 at 03:58:16AM -0800, Roland McGrath wrote:
-> > > +obj-$(CONFIG_PPC64)		+= ../../../fs/compat_binfmt_elf.o
-> > 
-> > Building files from another directory is nasty.  Please add a
-> > CONFIG_BINFMT_COMPAT_ELF so we can simply build it in fs/
+Arnd Bergmann wrote:
+> We've been discussing in the past a few times where we should best put
+> the spufs code, and when to do it. Since Jeremy and I now have all the
+> current patches in powerpc.git, maybe we should do it now.
 > 
-> If that's better, please post the precise Kconfig magic you have in mind to
-> have it set when it should be.
+> To the question, where what it should go, I'd leave the decision to
+> Jeremy, but my current idea would be:
 > 
+> arch/powerpc/platforms/cell/spufs -> arch/powerpc/spufs
+> arch/powerpc/platforms/cell/spu_{callbacks,base,syscalls,fault,notify}.[co]
+>  -> arch/powerpc/spufs/{callbacks,base,syscalls,fault,notify}.[co]
 
-Just taking a stab that hch means,
 
-config BINFMT_COMPAT_ELF
-	def_bool n
-	depends on 64BIT
+I think we should consider support for SpursEngine.  At the moment I have no
+idea of what it needs, and if no one else does we need to find out.
 
-and then in arch/powerpc/Kconfig
 
-config COMPAT
-	bool
-	default y if PPC64
-	select BINFMT_COMPAT_ELF
+> If we do it in git now, that should result in a minimal breakage of patches.
+> 
+> A related question is what to do about the location of the other cell
+> related files. platforms/ps3 is already pretty self-contained once we have
+> spufs outside of platforms/cell, but there is still some code shared between
+> platforms/cell and platforms/celleb, and each of these directories also contains
+> code that is only relevant for a subset of the platforms.
 
-or somesuch.
 
-Regards, Kyle
+It seems platforms/cell should have the shared and/or generic code, and the other
+stuff moved into a new platform directory, but is it worth the effort? 
+
+-Geoff
