@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7D2DFDDE0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 10:24:30 +1100 (EST)
-Date: Sat, 22 Dec 2007 10:24:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 8/21] [POWERPC] EP405 boards support for arch/powerpc
-Message-Id: <20071222102424.bc96d03c.sfr@canb.auug.org.au>
-In-Reply-To: <20071221043931.1A5CCDDEC0@ozlabs.org>
-References: <20071221043931.1A5CCDDEC0@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <lists@nerdbynature.de>
+Received: from mail.g-house.de (ns2.g-housing.de [81.169.133.75])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E1B7FDDDED
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 10:34:45 +1100 (EST)
+Date: Sat, 22 Dec 2007 00:34:25 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Oops: Kernel access of bad area
+In-Reply-To: <20071220214705.GA28696@localdomain>
+Message-ID: <alpine.DEB.0.99999.0712220026200.6696@sheep.housecafe.de>
+References: <alpine.DEB.0.99999.0712192301220.6696@sheep.housecafe.de>
+	<20071220214705.GA28696@localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
+Cc: Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,80 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 20 Dec 2007, Nathan Lynch wrote:
+> Better to include the full stack trace in such reports,
 
-Hi Ben,
+Hm, I did not want to clutter the mail with all this stuff, but you're 
+right, in this case it would've made sense...
 
-Just a couple of trivial things.
+> So it looks like the kernel oopsed while firefox was dumping core,
+> yuck. It's a real bug.  Hopefully someone on the list can help...
 
-On Fri, 21 Dec 2007 15:39:26 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> +++ linux-merge/arch/powerpc/boot/4xx.c	2007-12-21 14:19:46.000000000 +11=
-00
-> @@ -179,13 +179,16 @@ void ibm40x_dbcr_reset(void)
->  #define EMAC_RESET 0x20000000
->  void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
->  {
-> -	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't do this for us=
- */
-> +	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't
-> +	 * do this for us
-> +	 */
->  	if (emac0)
->  		*emac0 =3D EMAC_RESET;
->  	if (emac1)
->  		*emac1 =3D EMAC_RESET;
-> =20
->  	mtdcr(DCRN_MAL0_CFG, MAL_RESET);
-> +	while (mfdcr(DCRN_MAL0_CFG) & MAL_RESET) {};
+As it's the first time this happened and I could not reproduce it so far 
+(the only thing I can reproduce is the ffox crash :)), I doubt it'll be 
+"fixable" somehow...
 
-You need the {} or the ; but not both and please put them indented on the
-next line so that it is very clear that this is an empty loop.
+Thanks,
+Christian.
+-- 
+BOFH excuse #247:
 
-> +	if (cpc0_cr0 & 0x80) {
-> +		/* uart0 uses the external clock */
-> +		uart0 =3D ser_clk;
-> +	} else {
-> +		uart0 =3D cpu / udiv;
-> +	}
-
-The braces aren't really needed. (Yes, I noticed that you just moved the
-code here)
-
-> +	if (cpc0_cr0 & 0x40) {
-> +		/* uart1 uses the external clock */
-> +		uart1 =3D ser_clk;
-> +	} else {
-> +		uart1 =3D cpu / udiv;
-> +	}
-
-And again.
-
-> +++ linux-merge/arch/powerpc/platforms/40x/ep405.c	2007-12-21 14:19:46.00=
-0000000 +1100
-> +
-> +static struct of_device_id ep405_of_bus[] =3D {
-
-__initdata (preferably) or const
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHbEstTgG2atn1QN8RAnl2AJ9X6Iiipwd/vlcYaUc6+7EFgVl80gCfRhtj
-H/OTW7fRz6a0V6RJPlHfeqU=
-=Sm5h
------END PGP SIGNATURE-----
-
---Signature=_Sat__22_Dec_2007_10_24_24_+1100_Io74PDJpFzs9rOPg--
+Due to Federal Budget problems we have been forced to cut back on the number of users able to access the system at one time. (namely none allowed....)
