@@ -2,9 +2,8 @@ Return-Path: <benh@ozlabs.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Fri, 21 Dec 2007 15:39:32 +1100
-Subject: [PATCH 14/21] [POWERPC] Add mfspr/mtspr inline macros to 4xx
-	bootwrapper
-Message-Id: <20071221043935.C27C1DDF73@ozlabs.org>
+Subject: [PATCH 15/21] [POWERPC] Adds 44x CPR0 accessors to boot wrapper
+Message-Id: <20071221043936.A6EBDDDF89@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,30 +14,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 4xx bootwrapper occasionally needs to access SPR registers,
-this adds mfspr/mtspr wrappers to it.
+This adds macros to the boot wrapper to access the CPR
+registers from the boot wrappers.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-===================================================================
- arch/powerpc/boot/reg.h |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/boot/dcr.h |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
---- linux-merge.orig/arch/powerpc/boot/reg.h	2007-12-14 15:48:54.000000000 +1100
-+++ linux-merge/arch/powerpc/boot/reg.h	2007-12-14 15:49:49.000000000 +1100
-@@ -16,6 +16,14 @@ static inline u32 mfpvr(void)
- 	return pvr;
- }
+--- linux-merge.orig/arch/powerpc/boot/dcr.h	2007-12-14 15:49:48.000000000 +1100
++++ linux-merge/arch/powerpc/boot/dcr.h	2007-12-14 15:49:49.000000000 +1100
+@@ -147,4 +147,31 @@ static const unsigned long sdram_bxcr[] 
+ #define DCRN_405_CPC0_CR0 0xb1
+ #define DCRN_405_CPC0_CR1 0xb2
  
-+#define __stringify_1(x)	#x
-+#define __stringify(x)		__stringify_1(x)
 +
-+#define mfspr(rn)	({unsigned long rval; \
-+			asm volatile("mfspr %0," __stringify(rn) \
-+				: "=r" (rval)); rval; })
-+#define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : : "r" (v))
++/* 440GX Clock control etc */
 +
- register void *__stack_pointer asm("r1");
- #define get_sp()	(__stack_pointer)
- 
++
++#define DCRN_CPR0_CLKUPD				0x020
++#define DCRN_CPR0_PLLC					0x040
++#define DCRN_CPR0_PLLD					0x060
++#define DCRN_CPR0_PRIMAD				0x080
++#define DCRN_CPR0_PRIMBD				0x0a0
++#define DCRN_CPR0_OPBD					0x0c0
++#define DCRN_CPR0_PERD					0x0e0
++#define DCRN_CPR0_MALD					0x100
++
++/* CPRs read/write helper macros - based off include/asm-ppc/ibm44x.h */
++
++#define DCRN_CPR0_CFGADDR				0xc
++#define DCRN_CPR0_CFGDATA				0xd
++
++#define CPR0_READ(offset) ({\
++	mtdcr(DCRN_CPR0_CFGADDR, offset); \
++	mfdcr(DCRN_CPR0_CFGDATA); })
++#define CPR0_WRITE(offset, data) ({\
++	mtdcr(DCRN_CPR0_CFGADDR, offset); \
++	mtdcr(DCRN_CPR0_CFGDATA, data); })
++
++
++
+ #endif	/* _PPC_BOOT_DCR_H_ */
