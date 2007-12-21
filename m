@@ -1,18 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 1AA2BDDFE4
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:16:51 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/4] [POWERPC] CPM2: implement GPIO API
-Date: Fri, 21 Dec 2007 22:16:32 +0100
-References: <20071221202824.GA4607@localhost.localdomain>
-	<20071221203123.GC4633@localhost.localdomain>
-In-Reply-To: <20071221203123.GC4633@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712212216.32922.arnd@arndb.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E6841DDE1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:17:15 +1100 (EST)
+Subject: Re: [PATCH 18/21] [POWERPC] bamboo: remove bogus "ranges" property
+	in EBC node
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071221060921.4ae5bc20@zod.rchland.ibm.com>
+References: <20071221043939.72A8BDDFCF@ozlabs.org>
+	<20071221060921.4ae5bc20@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 08:16:55 +1100
+Message-Id: <1198271815.6737.4.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 21 December 2007, Anton Vorontsov wrote:
->  
-> +static spinlock_t cpm2_port_lock = __SPIN_LOCK_UNLOCKED(cpm2_port_lock);
 
-This needs to be
+On Fri, 2007-12-21 at 06:09 -0600, Josh Boyer wrote:
+> On Fri, 21 Dec 2007 15:39:35 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > This removes a bogus empty "ranges" property in the EBC device node
+> > of the Bamboo board device-tree.
+> > 
+> > The "ranges" property will be created by the boot wrapper, there is
+> > no need to have an empty property there, and that causes recent
+> > dtc to complain.
+> 
+> The wrapper doesn't do anything with EBC for bamboo because the EBC
+> stuff is a nightmare on this board.  The patch can stand, but I'll
+> fixup the comments in the changelog.
 
-static DEFINE_SPINLOCK(cpm2_port_lock);
+The wrapper could still create ranges for the chip select settings no ?
 
-I think at least lockdep doesn't work the way you do it here.
+In any case, empty "ranges" is bogus.
 
-> +int cpm2_init_par_io(void)
-> +{
-> +	struct device_node *np;
-> +	const u32 *num_ports;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pario");
-> +	if (!np)
-> +		return -ENOENT;
-> +
-> +	num_ports = of_get_property(np, "num-ports", NULL);
-> +	if (!num_ports) {
-> +		of_node_put(np);
-> +		return -ENOENT;
-> +	}
-> +	cpm2_num_ports = *num_ports;
-> +
-> +	np->data = &of_gpio_chip;
-> +
-> +	return 0;
-> +}
-
-This function should also do the call to of_iomap, so you don't
-need to pull the address out of the cpm2_immr, which I believe
-we're trying to get rid of.
-
-	Arnd <><
+Ben.
