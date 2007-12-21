@@ -1,15 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DB346DDF1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:52:42 +1100 (EST)
-Date: Fri, 21 Dec 2007 15:52:43 +1100
+	by ozlabs.org (Postfix) with ESMTP id 7DD7CDDF20
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 16:16:14 +1100 (EST)
+Date: Fri, 21 Dec 2007 16:16:09 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] pci_32.c: use for_each_child_of_node
-Message-Id: <20071221155243.195ed327.sfr@canb.auug.org.au>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Enable RTC for Ebony and Walnut
+Message-Id: <20071221161609.b6061eb3.sfr@canb.auug.org.au>
+In-Reply-To: <20071221022130.GI2665@localhost.localdomain>
+References: <20071221022130.GI2665@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__21_Dec_2007_16_16_09_+1100_OeptH_rJ=uBzbC56"
+Cc: linuxppc-dev@ozlabs.org, Paul, Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,82 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__21_Dec_2007_16_16_09_+1100_OeptH_rJ=uBzbC56
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/pci_32.c |   20 +++++++++++++-------
- 1 files changed, 13 insertions(+), 7 deletions(-)
+On Fri, 21 Dec 2007 13:21:30 +1100 David Gibson <david@gibson.dropbear.id.a=
+u> wrote:
+>
+> +++ working-2.6/arch/powerpc/sysdev/of_rtc.c	2007-12-21 13:11:34.00000000=
+0 +1100
+> +#include <asm/of_platform.h>
 
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 37cb7b9..b5121b8 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -13,6 +13,7 @@
- #include <linux/bootmem.h>
- #include <linux/irq.h>
- #include <linux/list.h>
-+#include <linux/of.h>
- 
- #include <asm/processor.h>
- #include <asm/io.h>
-@@ -171,7 +172,7 @@ make_one_node_map(struct device_node* node, u8 pci_bus)
- 	} else
- 		pci_to_OF_bus_map[pci_bus] = bus_range[0];
- 
--	for (node=node->child; node != 0;node = node->sibling) {
-+	for_each_child_of_node(node, node) {
- 		struct pci_dev* dev;
- 		const unsigned int *class_code, *reg;
- 	
-@@ -240,15 +241,18 @@ pcibios_make_OF_bus_map(void)
- typedef int (*pci_OF_scan_iterator)(struct device_node* node, void* data);
- 
- static struct device_node*
--scan_OF_pci_childs(struct device_node* node, pci_OF_scan_iterator filter, void* data)
-+scan_OF_pci_childs(struct device_node *parent, pci_OF_scan_iterator filter, void* data)
- {
-+	struct device_node *node;
- 	struct device_node* sub_node;
- 
--	for (; node != 0;node = node->sibling) {
-+	for_each_child_of_node(parent, node) {
- 		const unsigned int *class_code;
- 	
--		if (filter(node, data))
-+		if (filter(node, data)) {
-+			of_node_put(node);
- 			return node;
-+		}
- 
- 		/* For PCI<->PCI bridges or CardBus bridges, we go down
- 		 * Note: some OFs create a parent node "multifunc-device" as
-@@ -260,9 +264,11 @@ scan_OF_pci_childs(struct device_node* node, pci_OF_scan_iterator filter, void*
- 			(*class_code >> 8) != PCI_CLASS_BRIDGE_CARDBUS)) &&
- 			strcmp(node->name, "multifunc-device"))
- 			continue;
--		sub_node = scan_OF_pci_childs(node->child, filter, data);
--		if (sub_node)
-+		sub_node = scan_OF_pci_childs(node, filter, data);
-+		if (sub_node) {
-+			of_node_put(node);
- 			return sub_node;
-+		}
- 	}
- 	return NULL;
- }
-@@ -366,7 +372,7 @@ pci_device_from_OF_node(struct device_node* node, u8* bus, u8* devfn)
- 	hose = pci_find_hose_for_OF_device(node);
- 	if (!hose || !hose->dn)
- 		return -ENODEV;
--	if (!scan_OF_pci_childs(hose->dn->child,
-+	if (!scan_OF_pci_childs(hose->dn,
- 			find_OF_pci_device_filter, (void *)node))
- 		return -ENODEV;
- 	reg = of_get_property(node, "reg", NULL);
--- 
-1.5.3.7
+Use linux/of_platform.h, please.
 
--- 
+> +
+> +static struct {
+
+const or __initdata
+
+> +	char *compatible;
+
+const
+
+> +	char *plat_name;
+
+const (ok, no, thanks to platform_device_register_simple()).
+
+> +} of_rtc_table[] =3D {
+> +	{ "ds1743-nvram", "rtc-ds1742" },
+> +};
+> +
+> +void __init of_instantiate_rtc(void)
+> +{
+> +	struct device_node *node;
+> +	int err;
+> +	int i;
+> +
+> +	for (i =3D 0; i < ARRAY_SIZE(of_rtc_table); i++) {
+> +		char *compatible =3D of_rtc_table[i].compatible;
+
+const (or maybe just use of_rtc_table[i].compatible directly in the one
+place it is used).
+
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__21_Dec_2007_16_16_09_+1100_OeptH_rJ=uBzbC56
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHa0wdTgG2atn1QN8RAgQgAJ9kkwGaf2dIly37DHzFqVOWunaDYACdHHao
+xIycKE18jQZyxdMUYPysuKM=
+=hMPC
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__21_Dec_2007_16_16_09_+1100_OeptH_rJ=uBzbC56--
