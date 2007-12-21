@@ -1,14 +1,17 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Time for cell code reshuffle?
-Date: Fri, 21 Dec 2007 15:22:03 +0100
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id ADA69DDEBF
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 01:43:11 +1100 (EST)
+Message-ID: <476BCA09.3070104@semihalf.com>
+Date: Fri, 21 Dec 2007 15:13:29 +0100
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712211522.03841.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Yet more patches added to for-2.6.25/master branches
+References: <18283.44454.618519.155696@cargo.ozlabs.ibm.com>
+In-Reply-To: <18283.44454.618519.155696@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,27 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We've been discussing in the past a few times where we should best put
-the spufs code, and when to do it. Since Jeremy and I now have all the
-current patches in powerpc.git, maybe we should do it now.
 
-To the question, where what it should go, I'd leave the decision to
-Jeremy, but my current idea would be:
+Any changes to add new 52xx targets:
 
-arch/powerpc/platforms/cell/spufs -> arch/powerpc/spufs
-arch/powerpc/platforms/cell/spu_{callbacks,base,syscalls,fault,notify}.[co]
- -> arch/powerpc/spufs/{callbacks,base,syscalls,fault,notify}.[co]
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14661
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14662
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14663
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14743
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14665
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14666
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14667
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14668
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14669
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14670
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14671
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14672
+http://patchwork.ozlabs.org/linuxppc/patch?person=988&id=14673
 
-If we do it in git now, that should result in a minimal breakage of patches.
+Those did not make it to 2.6.24, Grant Likely suggested to wait until
+2.6.25 window opens.
 
-A related question is what to do about the location of the other cell
-related files. platforms/ps3 is already pretty self-contained once we have
-spufs outside of platforms/cell, but there is still some code shared between
-platforms/cell and platforms/celleb, and each of these directories also contains
-code that is only relevant for a subset of the platforms.
-
-My position on these files is that while I find the current state a little
-bit confusing, I don't have an idea how to do it better either, and I think
-we should just leave the platform files where they are.
-
-	Arnd <><
+Thanks,
+Marian
