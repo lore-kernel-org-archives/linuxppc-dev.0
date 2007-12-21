@@ -1,20 +1,17 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpauth01.prod.mesa1.secureserver.net
-	(smtpauth01.prod.mesa1.secureserver.net [64.202.165.181])
-	by ozlabs.org (Postfix) with SMTP id 4F1B8DDDEA
+Return-Path: <michael.firth@bt.com>
+Received: from smtp2.smtp.bt.com (smtp2.smtp.bt.com [217.32.164.150])
+	by ozlabs.org (Postfix) with ESMTP id A220BDDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Dec 2007 19:03:57 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.715.1198212922.17691.linuxppc-embedded@ozlabs.org>
-Subject: MPC83xx - 2.6.23, UCC_GETH and NFS Boot
-Date: Fri, 21 Dec 2007 00:03:30 -0800
-Message-ID: <001801c843a7$fa2afda0$6405a8c0@absolut>
+	Sat, 22 Dec 2007 01:33:08 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <mailman.715.1198212922.17691.linuxppc-embedded@ozlabs.org>
-Reply-To: rmcguire@videopresence.com
+Subject: Changes to Freescale I2C driver makes it stop working for us moving
+	from 2.6.22 to 2.6.23.9
+Date: Fri, 21 Dec 2007 14:33:02 -0000
+Message-ID: <36D7B34A3A79F84F82FA0C154F299F25063D2948@E03MVX1-UKDY.domain1.systemhost.net>
+From: <michael.firth@bt.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,32 +22,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-All,
+We've recently updated the kernel on one of our Freescale MPC834x
+systems from 2.6.22 to 2.6.23.9.
 
-I am attempting to get a new board booted up using NFS root file system.
-HW: Board based lightly on the MPC8360E_MDS
+Everything seemed to be working fine, until we tried the I2C buses. This
+had been working find on 2.6.22, but on 2.6.23.9 it fails on trying to
+open the I2C devices.
 
-I have the kernel 2.6.23-dirty configured to use the Freescale QE driver.
-I am using U-boot 1.3.0 and am able to use the Ethernet there, so I know it
-is up.
+Looking in to the code, the 'fsl_i2c_probe' function has changed
+slightly between the releases. Changing this back to the way it was in
+2.6.22 make things work again.
 
-I am using the following bootargs from U-boot.
+Old code:
+	i2c->adap =3D mpc_ops;
+	i2c_set_adapdata(&i2c->adap, i2c);
+	i2c->adap.dev.parent =3D &pdev->dev;
+	if ((result =3D i2c_add_adapter(&i2c->adap)) < 0) {
+		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+		goto fail_add;
+	}
 
-bootargs=console=ttyS0,115200 root=/dev/nfs rw
-nfsroot=192.168.5.205:/usr/local/eldk/ppc_6xx
-ip=192.168.5.50:192.168.5.205:192.168.5.1::MIB305_50::off
+New code:
+	i2c->adap =3D mpc_ops;
+	i2c->adap.nr =3D pdev->id;
+	i2c_set_adapdata(&i2c->adap, i2c);
+	i2c->adap.dev.parent =3D &pdev->dev;
+	if ((result =3D i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+		goto fail_add;
+	}
 
-I can see during initial kernel load up that it loads:
-"ucc_geth: QE UCC Gigabit Ethernet Controller"
+Presumably the new code puts additional requirements on the
+'platform_device' registration - can anyone let me know what I'll need
+to add to get this working with the new driver code?
 
-However, later IP-Config claims there is no valid Ethernet device
-registered.
+Thanks in advance
 
-Is there something I have to do specify what type of PHY device I am using? 
-Perhaps a National DP8365 is not supported yet? Or perhaps the MDIO driver
-in linux is not looking at the correct MDIO address?
-
-In U-boot I am using PHY addr 0x01, could this present a problem?
-
-
--Russ
+Michael
