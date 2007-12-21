@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.226])
-	by ozlabs.org (Postfix) with ESMTP id 62D2EDDE44
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:17:58 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so264475wxd.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 13:17:57 -0800 (PST)
-Message-ID: <fa686aa40712211317o401be150n32196a25b5ab1481@mail.gmail.com>
-Date: Fri, 21 Dec 2007 14:17:57 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 0/4] PowerPC: implement GPIO API
-In-Reply-To: <20071221210445.GA5190@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2FE47DDEC0
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:19:17 +1100 (EST)
+Date: Fri, 21 Dec 2007 15:25:53 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/4] [POWERPC] qe_lib and users: get rid of device_type
+	and model
+Message-ID: <20071221212553.GA11910@lixom.net>
+References: <20071221201844.GA4278@localhost.localdomain>
+	<20071221202054.GA4502@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071221202824.GA4607@localhost.localdomain>
-	<fa686aa40712211250l2645d34dr45c5be2bf1c9006d@mail.gmail.com>
-	<20071221210445.GA5190@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071221202054.GA4502@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,32 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/21/07, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> As I've probably said once already: if there are plans to build single
-> kernel with QE+CPM1+CPM2 inside tomorrow -- then of course, I'd better
-> wait.
->
-> But if these plans are distant enough, I see no reason why we can't
-> enjoy of current API.
+Hi,
 
-Oh, I'm not saying don't enjoy it.  :-)  I'm just saying keep it out
-of mainline.  I've got a bunch of Virtex stuff that falls into that
-category.  Those who are interested can pick the non mainlined patches
-out of my git tree.
+On Fri, Dec 21, 2007 at 11:20:54PM +0300, Anton Vorontsov wrote:
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> index e6c63a5..a152bf8 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> @@ -94,7 +94,8 @@ static void __init mpc85xx_mds_setup_arch(void)
+>  #endif
+>  
+>  #ifdef CONFIG_QUICC_ENGINE
+> -	if ((np = of_find_node_by_name(NULL, "qe")) != NULL) {
+> +	np = of_find_node_by_name(NULL, "fsl,qe");
+> +	if (np) {
 
-I suggest doing the same with the GPIO support.  Either that or do our
-own simple ppc specific GPIO multiplexer until the common stuff has
-its act together.  :-)  We can always migrate over later.
-
-I don't want to see more barriers added to prevent all of 8xxx going
-multiplatform.
-
-Cheers,
-g.
+That won't work. Did you mean of_find_compatible_node()? If so, you
+still need to fall back to looking up by name for older device trees
+that don't have the compatible field.
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+-Olof
