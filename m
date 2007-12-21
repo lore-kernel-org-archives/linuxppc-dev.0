@@ -1,16 +1,19 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 621CFDDE18
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:43:55 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1387CDDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:43:56 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] sbc8548: Add basic support for Wind River SBC8548 as
-	powerpc
-Date: Fri, 21 Dec 2007 01:43:51 -0500
-Message-Id: <11982194344016-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <11982194332672-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 2/3] sbc8548: Add device tree source for Wind River SBC8548
+	board
+Date: Fri, 21 Dec 2007 01:43:52 -0500
+Message-Id: <1198219435310-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <11982194344016-git-send-email-paul.gortmaker@windriver.com>
 References: <11982194332672-git-send-email-paul.gortmaker@windriver.com>
-Message-Id: <567bfb934387ec732a4c52c26efd17856f5144fd.1198217984.git.paul.gortmaker@windriver.com>
+	<11982194344016-git-send-email-paul.gortmaker@windriver.com>
+Message-Id: <a9ccacef3dee433c1bc90cd73ef84ba26a2870bb.1198217984.git.paul.gortmaker@windriver.com>
+In-Reply-To: <567bfb934387ec732a4c52c26efd17856f5144fd.1198217984.git.paul.gortmaker@windriver.com>
+References: <567bfb934387ec732a4c52c26efd17856f5144fd.1198217984.git.paul.gortmaker@windriver.com>
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,73 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the basic support for the Wind River SBC8548 board, implemented
-as powerpc.  It closely follows the implementation of the MPC8548CDS.
+This adds the device tree source for the Wind River SBC8548 board.  The
+biggest difference between this and the MPC8548CDS reference platform
+is the absence of the CDS's Arcadia peripherals and physical access to PCI#2.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig   |   10 ++-
- arch/powerpc/platforms/85xx/Makefile  |    1 +
- arch/powerpc/platforms/85xx/sbc8548.c |  182 +++++++++++++++++++++++++++++++++
- 3 files changed, 191 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/sbc8548.dts |  242 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 242 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 33d3bea..8407f43 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -39,6 +39,12 @@ config MPC85xx_DS
- 	help
- 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
- 
-+config SBC8548
-+	bool "Wind River SBC8548"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the Wind River SBC8548 board
-+
- config SBC8560
- 	bool "Wind River SBC8560"
- 	select DEFAULT_UIMAGE
-@@ -52,7 +58,7 @@ config MPC8540
- 	bool
- 	select PPC_UDBG_16550
- 	select PPC_INDIRECT_PCI
--	default y if MPC8540_ADS || MPC85xx_CDS
-+	default y if MPC8540_ADS || MPC85xx_CDS || SBC8548
- 
- config MPC8560
- 	bool
-@@ -66,4 +72,4 @@ config MPC85xx
- 	select FSL_PCI if PCI
- 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
- 	default y if MPC8540_ADS || MPC85xx_CDS || MPC8560_ADS \
--		|| MPC85xx_MDS || MPC85xx_DS || SBC8560
-+		|| MPC85xx_MDS || MPC85xx_DS || SBC8560 || SBC8548
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index c3f4d01..3a47b7a 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -6,4 +6,5 @@ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
- obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o
- obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
-+obj-$(CONFIG_SBC8548) += sbc8548.o
- obj-$(CONFIG_SBC8560) += sbc8560.o
-diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
+diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sbc8548.dts
 new file mode 100644
-index 0000000..f3ab271
+index 0000000..e63ed20
 --- /dev/null
-+++ b/arch/powerpc/platforms/85xx/sbc8548.c
-@@ -0,0 +1,182 @@
++++ b/arch/powerpc/boot/dts/sbc8548.dts
+@@ -0,0 +1,242 @@
 +/*
-+ * Wind River SBC8548 setup and early boot code.
++ * SBC8548 Device Tree Source
 + *
 + * Copyright 2007 Wind River Systems Inc.
 + *
-+ * By Paul Gortmaker (see MAINTAINERS for contact information)
-+ *
-+ * Based largely on the MPC8548CDS support - Copyright 2005 Freescale Inc.
-+ *
++ * Paul Gortmaker (see MAINTAINERS for contact information)
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -95,171 +52,234 @@ index 0000000..f3ab271
 + * option) any later version.
 + */
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/major.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/initrd.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/fsl_devices.h>
-+#include <linux/of_platform.h>
 +
-+#include <asm/system.h>
-+#include <asm/pgtable.h>
-+#include <asm/page.h>
-+#include <asm/atomic.h>
-+#include <asm/time.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/irq.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
++/ {
++	model = "SBC8548";
++	compatible = "SBC8548";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++		/* pci1 doesn't have a corresponding physical connector */
++		pci2 = &pci2;
++	};
 +
-+#ifdef CONFIG_PCI
-+static int sbc8548_exclude_device(struct pci_controller *hose,
-+				  u_char bus, u_char devfn)
-+{
-+	if (bus == 0 && PCI_SLOT(devfn) == 0)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+	else
-+		return PCIBIOS_SUCCESSFUL;
-+}
-+#endif
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+static void __init sbc8548_pic_init(void)
-+{
-+	struct mpic *mpic;
-+	struct resource r;
-+	struct device_node *np = NULL;
++		PowerPC,8548@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	// From uboot
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++		};
++	};
 +
-+	np = of_find_node_by_type(np, "open-pic");
++	memory {
++		device_type = "memory";
++		reg = <00000000 10000000>;
++	};
 +
-+	if (np == NULL) {
-+		printk(KERN_ERR "Could not find open-pic node\n");
-+		return;
-+	}
++	soc8548@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <00000000 e0000000 00100000>;
++		reg = <e0000000 00001000>;	// CCSRBAR
++		bus-frequency = <0>;
 +
-+	if (of_address_to_resource(np, 0, &r)) {
-+		printk(KERN_ERR "Failed to map mpic register space\n");
-+		of_node_put(np);
-+		return;
-+	}
++		memory-controller@2000 {
++			compatible = "fsl,8548-memory-controller";
++			reg = <2000 1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <12 2>;
++		};
 +
-+	mpic = mpic_alloc(np, r.start,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			0, 256, " OpenPIC  ");
-+	BUG_ON(mpic == NULL);
++		l2-cache-controller@20000 {
++			compatible = "fsl,8548-l2-cache-controller";
++			reg = <20000 1000>;
++			cache-line-size = <20>;	// 32 bytes
++			cache-size = <80000>;	// L2, 512K
++			interrupt-parent = <&mpic>;
++			interrupts = <10 2>;
++		};
 +
-+	/* Return the mpic node */
-+	of_node_put(np);
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <2b 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
 +
-+	mpic_init(mpic);
-+}
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <3100 100>;
++			interrupts = <2b 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
 +
-+/*
-+ * Setup the architecture
-+ */
-+static void __init sbc8548_setup_arch(void)
-+{
-+#ifdef CONFIG_PCI
-+	struct device_node *np;
-+#endif
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,gianfar-mdio";
++			reg = <24520 20>;
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("sbc8548_setup_arch()", 0);
++			phy0: ethernet-phy@19 {
++				interrupt-parent = <&mpic>;
++				interrupts = <6 1>;
++				reg = <19>;
++				device_type = "ethernet-phy";
++			};
++			phy1: ethernet-phy@1a {
++				interrupt-parent = <&mpic>;
++				interrupts = <7 1>;
++				reg = <1a>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+#ifdef CONFIG_PCI
-+	for_each_node_by_type(np, "pci") {
-+		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
-+		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
-+			struct resource rsrc;
-+			of_address_to_resource(np, 0, &rsrc);
-+			if ((rsrc.start & 0xfffff) == 0x8000)
-+				fsl_add_bridge(np, 1);
-+			else
-+				fsl_add_bridge(np, 0);
-+		}
-+	}
++		enet0: ethernet@24000 {
++			cell-index = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <1d 2 1e 2 22 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy0>;
++		};
 +
-+	ppc_md.pci_exclude_device = sbc8548_exclude_device;
-+#endif
-+}
++		enet1: ethernet@25000 {
++			cell-index = <1>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <23 2 24 2 28 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy1>;
++		};
 +
-+static void sbc8548_show_cpuinfo(struct seq_file *m)
-+{
-+	uint pvid, svid, phid1;
-+	uint memsize = total_memory;
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;	// reg base, size
++			clock-frequency = <0>;	// should we fill in in uboot?
++			interrupts = <2a 2>;
++			interrupt-parent = <&mpic>;
++		};
 +
-+	pvid = mfspr(SPRN_PVR);
-+	svid = mfspr(SPRN_SVR);
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;	// reg base, size
++			clock-frequency = <0>;	// should we fill in in uboot?
++			interrupts = <2a 2>;
++			interrupt-parent = <&mpic>;
++		};
 +
-+	seq_printf(m, "Vendor\t\t: Wind River\n");
-+	seq_printf(m, "Machine\t\t: SBC8548\n");
-+	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
++		global-utilities@e0000 {	//global utilities reg
++			compatible = "fsl,mpc8548-guts";
++			reg = <e0000 1000>;
++			fsl,has-rstcr;
++		};
 +
-+	/* Display cpu Pll setting */
-+	phid1 = mfspr(SPRN_HID1);
-+	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
++		mpic: pic@40000 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++                        big-endian;
++		};
++	};
 +
-+	/* Display the amount of memory */
-+	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-+}
++	pci0: pci@e0008000 {
++		cell-index = <0>;
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x01 (PCI-X slot) */
++			00800 0 0 1 &mpic 0 1
++			00800 0 0 2 &mpic 1 1
++			00800 0 0 3 &mpic 2 1
++			00800 0 0 4 &mpic 3 1>;
 +
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{ .type = "soc", },
-+	{},
-+};
++		interrupt-parent = <&mpic>;
++		interrupts = <18 2>;
++		bus-range = <0 0>;
++		ranges = <02000000 0 80000000 80000000 0 10000000
++			  01000000 0 00000000 e2000000 0 00800000>;
++		clock-frequency = <3f940aa>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e0008000 1000>;
++		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
++		device_type = "pci";
++	};
 +
-+static int __init declare_of_platform_devices(void)
-+{
-+	if (!machine_is(sbc8548))
-+		return 0;
++	pci2: pcie@e000a000 {
++		cell-index = <2>;
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <
 +
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
-+	return 0;
-+}
-+device_initcall(declare_of_platform_devices);
++			/* IDSEL 0x0 (PEX) */
++			00000 0 0 1 &mpic 0 1
++			00000 0 0 2 &mpic 1 1
++			00000 0 0 3 &mpic 2 1
++			00000 0 0 4 &mpic 3 1>;
 +
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init sbc8548_probe(void)
-+{
-+        unsigned long root = of_get_flat_dt_root();
++		interrupt-parent = <&mpic>;
++		interrupts = <1a 2>;
++		bus-range = <0 ff>;
++		ranges = <02000000 0 a0000000 a0000000 0 20000000
++			  01000000 0 00000000 e3000000 0 08000000>;
++		clock-frequency = <1fca055>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e000a000 1000>;
++		compatible = "fsl,mpc8548-pcie";
++		device_type = "pci";
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <02000000 0 a0000000
++				  02000000 0 a0000000
++				  0 20000000
 +
-+        return of_flat_dt_is_compatible(root, "SBC8548");
-+}
-+
-+define_machine(sbc8548) {
-+	.name		= "SBC8548",
-+	.probe		= sbc8548_probe,
-+	.setup_arch	= sbc8548_setup_arch,
-+	.init_IRQ	= sbc8548_pic_init,
-+	.show_cpuinfo	= sbc8548_show_cpuinfo,
-+	.get_irq	= mpic_get_irq,
-+	.restart	= fsl_rstcr_restart,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.calibrate_decr = generic_calibrate_decr,
-+	.progress	= udbg_progress,
++				  01000000 0 00000000
++				  01000000 0 00000000
++				  0 08000000>;
++		};
++	};
 +};
 -- 
 1.5.0.rc1.gf4b6c
