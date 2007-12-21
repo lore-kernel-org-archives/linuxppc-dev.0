@@ -1,16 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18283.17563.790043.79740@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Dec 2007 15:44:11 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch v2] PS3: Fix printing of os-area magic numbers
-In-Reply-To: <4745FDDB.7090208@am.sony.com>
-References: <473F6A28.5000309@am.sony.com>
-	<4745FDDB.7090208@am.sony.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id EA246DDDEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:50:12 +1100 (EST)
+Date: Fri, 21 Dec 2007 15:48:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 1/3] [POWERPC] the pci_dn class_code is only used by EEH
+Message-Id: <20071221154818.95b51c8a.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand writes:
 
-> Fix a bug in the printing of the os-area magic numbers which assumed that
-> magic numbers were zero terminated strings.  The magic numbers are represented
-> in memory as integers.  If the os-area sections are not initialized correctly
-> they could contained random data that would be printed to the display.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/pci-bridge.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> +	u8 str[sizeof(h->magic_num) + 1];
-> +	u8 *s, *d;
-> +
-> +	for(s = h->magic_num, d = str; s < h->magic_num + sizeof(h->magic_num);
-> +		s++, d++) {
-> +		*d = isprint(*s) ? *s : '.';
-> +	}
-> +	d[sizeof(h->magic_num)] = 0;
+diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
+index 9b16d3b..07cdb5b 100644
+--- a/include/asm-powerpc/pci-bridge.h
++++ b/include/asm-powerpc/pci-bridge.h
+@@ -167,7 +167,6 @@ struct pci_dn {
+ 	int	busno;			/* pci bus number */
+ 	int	bussubno;		/* pci subordinate bus number */
+ 	int	devfn;			/* pci device and function number */
+-	int	class_code;		/* pci device class */
+ 
+ 	struct  pci_controller *phb;	/* for pci devices */
+ 	struct	iommu_table *iommu_table;	/* for phb's or bridges */
+@@ -177,6 +176,7 @@ struct pci_dn {
+ 	int	pci_ext_config_space;	/* for pci devices */
+ 
+ #ifdef CONFIG_EEH
++	int	class_code;		/* pci device class */
+ 	int	eeh_mode;		/* See eeh.h for possible EEH_MODEs */
+ 	int	eeh_config_addr;
+ 	int	eeh_pe_config_addr; /* new-style partition endpoint address */
+-- 
+1.5.3.7
 
-This last statement is wrong, because d has been incremented to point
-to the last byte of str already by this stage.
-
-It would be nicer if you pulled out the two instances of the for loop
-into a little helper function.
-
-> +	for(s = (u8*)&db->magic_num, d = str;
-
-Why do you need the (u8*) cast in this case but not the other?
-
-Paul.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
