@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D5B1DDDEB
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:02:19 +1100 (EST)
-Subject: Re: [PATCH 8/21] [POWERPC] EP405 boards support for arch/powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20071222102424.bc96d03c.sfr@canb.auug.org.au>
-References: <20071221043931.1A5CCDDEC0@ozlabs.org>
-	<20071222102424.bc96d03c.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sat, 22 Dec 2007 11:01:09 +1100
-Message-Id: <1198281669.6737.24.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <cbouatmailru@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.188])
+	by ozlabs.org (Postfix) with ESMTP id 30D2BDDDF4
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:08:28 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so860835fkz.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 16:08:26 -0800 (PST)
+Date: Sat, 22 Dec 2007 02:58:02 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 3/4] [POWERPC] CPM2: implement GPIO API
+Message-ID: <20071221235802.GA3651@zarina>
+References: <20071221202824.GA4607@localhost.localdomain>
+	<20071221203123.GC4633@localhost.localdomain>
+	<200712212216.32922.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <200712212216.32922.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sat, 2007-12-22 at 10:24 +1100, Stephen Rothwell wrote:
-
-> > +++ linux-merge/arch/powerpc/boot/4xx.c	2007-12-21 14:19:46.000000000 +1100
-> > @@ -179,13 +179,16 @@ void ibm40x_dbcr_reset(void)
-> >  #define EMAC_RESET 0x20000000
-> >  void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
-> >  {
-> > -	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't do this for us */
-> > +	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't
-> > +	 * do this for us
-> > +	 */
-> >  	if (emac0)
-> >  		*emac0 = EMAC_RESET;
-> >  	if (emac1)
-> >  		*emac1 = EMAC_RESET;
+On Fri, Dec 21, 2007 at 10:16:32PM +0100, Arnd Bergmann wrote:
+> On Friday 21 December 2007, Anton Vorontsov wrote:
 > >  
-> >  	mtdcr(DCRN_MAL0_CFG, MAL_RESET);
-> > +	while (mfdcr(DCRN_MAL0_CFG) & MAL_RESET) {};
+> > +static spinlock_t cpm2_port_lock = __SPIN_LOCK_UNLOCKED(cpm2_port_lock);
 > 
-> You need the {} or the ; but not both and please put them indented on the
-> next line so that it is very clear that this is an empty loop.
-
-Code was copy/pasted from somewhere else... we can always do a fixup
-later.
-
-> > +	if (cpc0_cr0 & 0x80) {
-> > +		/* uart0 uses the external clock */
-> > +		uart0 = ser_clk;
-> > +	} else {
-> > +		uart0 = cpu / udiv;
-> > +	}
+> This needs to be
 > 
-> The braces aren't really needed. (Yes, I noticed that you just moved the
-> code here)
+> static DEFINE_SPINLOCK(cpm2_port_lock);
 
-Yup :-)
+These are equivalents.
 
-> > +	if (cpc0_cr0 & 0x40) {
-> > +		/* uart1 uses the external clock */
-> > +		uart1 = ser_clk;
-> > +	} else {
-> > +		uart1 = cpu / udiv;
-> > +	}
-> 
-> And again.
+#define DEFINE_SPINLOCK(x)      spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
 
-I'd rather do cleanups separately. I won't send new patches until I'm
-back from vacation so Josh, if you want to fix those little nits up,
-feel free.
+> I think at least lockdep doesn't work the way you do it here.
 
-> > +++ linux-merge/arch/powerpc/platforms/40x/ep405.c	2007-12-21 14:19:46.000000000 +1100
+Is it anyhow special regarding what exact macro is used?..
+
+spinlocks.txt says:
+
+SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED defeat lockdep state tracking and
+are hence deprecated.
+
+Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
+__SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
+initialization.
+-
+
+..should be equivalent, though I prefer open-coded version, until
+it fits 80 column width. ;-)
+
+> > +int cpm2_init_par_io(void)
+> > +{
+> > +	struct device_node *np;
+> > +	const u32 *num_ports;
 > > +
-> > +static struct of_device_id ep405_of_bus[] = {
+> > +	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pario");
+> > +	if (!np)
+> > +		return -ENOENT;
+> > +
+> > +	num_ports = of_get_property(np, "num-ports", NULL);
+> > +	if (!num_ports) {
+> > +		of_node_put(np);
+> > +		return -ENOENT;
+> > +	}
+> > +	cpm2_num_ports = *num_ports;
+> > +
+> > +	np->data = &of_gpio_chip;
+> > +
+> > +	return 0;
+> > +}
 > 
-> __initdata (preferably) or const
+> This function should also do the call to of_iomap, so you don't
+> need to pull the address out of the cpm2_immr, which I believe
+> we're trying to get rid of.
 
-Ben.
+Yup, thanks!
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
