@@ -1,21 +1,33 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BBB0ADDF39
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:29:30 +1100 (EST)
-Date: Fri, 21 Dec 2007 15:28:56 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: jdl@jdl.com, linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
-Subject: Re: [DTC PATCH 1/2] Add yyerrorf() for formatted error messages.
-Message-ID: <20071221212856.GA8208@ld0162-tx32.am.freescale.net>
-References: <20071220164823.GA32193@ld0162-tx32.am.freescale.net>
-	<20071221000439.GC2665@localhost.localdomain>
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9D471DDE0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 09:14:39 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBLMGKD0028465
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:16:20 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBLMEZrG478178
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:14:35 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lBLMEYYm014987
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 17:14:35 -0500
+Date: Fri, 21 Dec 2007 16:08:45 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 18/21] [POWERPC] bamboo: remove bogus "ranges" property
+	in EBC node
+Message-ID: <20071221160845.331f35f6@zod.rchland.ibm.com>
+In-Reply-To: <1198271815.6737.4.camel@pasglop>
+References: <20071221043939.72A8BDDFCF@ozlabs.org>
+	<20071221060921.4ae5bc20@zod.rchland.ibm.com>
+	<1198271815.6737.4.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071221000439.GC2665@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 21, 2007 at 11:04:39AM +1100, David Gibson wrote:
-> On Thu, Dec 20, 2007 at 10:48:23AM -0600, Scott Wood wrote:
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+On Sat, 22 Dec 2007 08:16:55 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
 > 
-> No need for a new function.  If yyerror() is defined as a varargs
-> function it's still compatible with bison's built-in usage.
+> On Fri, 2007-12-21 at 06:09 -0600, Josh Boyer wrote:
+> > On Fri, 21 Dec 2007 15:39:35 +1100
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > This removes a bogus empty "ranges" property in the EBC device node
+> > > of the Bamboo board device-tree.
+> > > 
+> > > The "ranges" property will be created by the boot wrapper, there is
+> > > no need to have an empty property there, and that causes recent
+> > > dtc to complain.
+> > 
+> > The wrapper doesn't do anything with EBC for bamboo because the EBC
+> > stuff is a nightmare on this board.  The patch can stand, but I'll
+> > fixup the comments in the changelog.
+> 
+> The wrapper could still create ranges for the chip select settings no ?
 
-Not if yyerror() is called with a percent symbol in the string, which
-looks possible if a percent token is added and verbose syntax errors are
-enabled.
+It could.  It doesn't though.  Perhaps our interpretation of "will be
+created" differed.
 
--Scott
+> In any case, empty "ranges" is bogus.
+
+Correct.  Which is why I said I'd just edit the changelog :).
+
+josh
