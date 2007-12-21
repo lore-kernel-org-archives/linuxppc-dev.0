@@ -2,13 +2,13 @@ Return-Path: <vbarshak@ru.mvista.com>
 Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A06C2DDEEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 03:34:43 +1100 (EST)
-Date: Fri, 21 Dec 2007 19:26:01 +0300
+	by ozlabs.org (Postfix) with ESMTP id B6A2EDDED4
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 03:36:08 +1100 (EST)
+Date: Fri, 21 Dec 2007 19:27:08 +0300
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] PowerPC: Add PCI entry to 440EPx Sequoia DTS.
-Message-ID: <20071221162601.GA1700@ru.mvista.com>
+Subject: [PATCH 4/4] PowerPC: Add PCI node to 440GRx Rainier DTS.
+Message-ID: <20071221162708.GA1724@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071221160723.GA1430@ru.mvista.com>
@@ -21,16 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds PCI entry to PowerPC 440EPx Sequoia DTS.
+This adds PCI entry to PowerPC 440GRx Rainier DTS.
 
 Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/sequoia.dts |   27 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/rainier.dts |   27 +++++++++++++++++++++++++++
  1 files changed, 27 insertions(+)
 
---- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-12-21 17:14:17.000000000 +0300
-+++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-12-21 17:18:32.000000000 +0300
-@@ -324,6 +324,33 @@
+--- linux-2.6.orig/arch/powerpc/boot/dts/rainier.dts	2007-12-19 16:00:01.000000000 +0300
++++ linux-2.6/arch/powerpc/boot/dts/rainier.dts	2007-12-20 21:59:42.000000000 +0300
+@@ -317,6 +317,33 @@
  				has-new-stacr-staopc;
  			};
  		};
@@ -40,11 +40,11 @@ Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 +			#interrupt-cells = <1>;
 +			#size-cells = <2>;
 +			#address-cells = <3>;
-+			compatible = "ibm,plb440epx-pci", "ibm,plb-pci";
++			compatible = "ibm,plb440grx-pci", "ibm,plb-pci";
 +			primary;
 +			reg = <1 eec00000 8	/* Config space access */
-+			       1 eed00000 4	/* IACK */
-+			       1 eed00000 4	/* Special cycle */
++			       1 eed80000 4	/* IACK */
++			       1 eed80000 4	/* Special cycle */
 +			       1 ef400000 40>;	/* Internal registers */
 +
 +			/* Outbound ranges, one memory and one IO,
