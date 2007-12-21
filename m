@@ -1,15 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6AF47DDDED
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:50:14 +1100 (EST)
-Date: Fri, 21 Dec 2007 15:50:09 +1100
+	by ozlabs.org (Postfix) with ESMTP id C6135DDE05
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:52:06 +1100 (EST)
+Date: Fri, 21 Dec 2007 15:52:07 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 3/3] [POWERPC] iSeries: eliminate pci_dn bussubno
-Message-Id: <20071221155009.f6f22b0c.sfr@canb.auug.org.au>
-In-Reply-To: <20071221154911.c437013e.sfr@canb.auug.org.au>
-References: <20071221154818.95b51c8a.sfr@canb.auug.org.au>
-	<20071221154911.c437013e.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] eeh.c: use for_each_child_of_node
+Message-Id: <20071221155207.86a200d6.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,101 +19,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-xlate_iomm_address() really wants the ds_addr to pass to the HV, so store
-that value (instead of the BAR number) when we allocate the device bars.
-This is not a fast path, so we can look up the device_node property
-there instead of using the bussubno field of the pci_dn.
-
-The other user of iseries_ds_addr() was already scanning the device tree,
-so looking up a property will not slow it down any more.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/pci_dn.c         |    5 -----
- arch/powerpc/platforms/iseries/pci.c |   12 +++++++-----
- include/asm-powerpc/pci-bridge.h     |    1 -
- 3 files changed, 7 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c |   43 ++++++++++++++++-----------------
+ 1 files changed, 21 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 85d4d89..1c67de5 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -56,11 +56,6 @@ static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
- 		pdn->busno = (regs[0] >> 16) & 0xff;
- 		pdn->devfn = (regs[0] >> 8) & 0xff;
- 	}
--	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
--		const u32 *busp = of_get_property(dn, "linux,subbus", NULL);
--		if (busp)
--			pdn->bussubno = *busp;
--	}
- 
- 	pdn->pci_ext_config_space = (type && *type == 1);
- 	return NULL;
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 9319410..cc562e4 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -29,6 +29,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/pci.h>
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index aa14a85..9eb539e 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -29,6 +29,8 @@
+ #include <linux/rbtree.h>
+ #include <linux/seq_file.h>
+ #include <linux/spinlock.h>
 +#include <linux/of.h>
- 
- #include <asm/types.h>
- #include <asm/io.h>
-@@ -70,7 +71,7 @@ static long current_iomm_table_entry;
-  * Lookup Tables.
++
+ #include <asm/atomic.h>
+ #include <asm/eeh.h>
+ #include <asm/eeh_event.h>
+@@ -169,7 +171,6 @@ static void rtas_slot_error_detail(struct pci_dn *pdn, int severity,
   */
- static struct device_node *iomm_table[IOMM_TABLE_MAX_ENTRIES];
--static u8 iobar_table[IOMM_TABLE_MAX_ENTRIES];
-+static u64 ds_addr_table[IOMM_TABLE_MAX_ENTRIES];
- 
- static DEFINE_SPINLOCK(iomm_table_lock);
- 
-@@ -80,8 +81,9 @@ static DEFINE_SPINLOCK(iomm_table_lock);
- static inline u64 iseries_ds_addr(struct device_node *node)
+ static size_t gather_pci_data(struct pci_dn *pdn, char * buf, size_t len)
  {
- 	struct pci_dn *pdn = PCI_DN(node);
-+	const u32 *sbp = of_get_property(node, "linux,subbus", NULL);
+-	struct device_node *dn;
+ 	struct pci_dev *dev = pdn->pcidev;
+ 	u32 cfg;
+ 	int cap, i;
+@@ -243,12 +244,12 @@ static size_t gather_pci_data(struct pci_dn *pdn, char * buf, size_t len)
  
--	return ((u64)pdn->busno << 48) + ((u64)pdn->bussubno << 40)
-+	return ((u64)pdn->busno << 48) + ((u64)(sbp ? *sbp : 0) << 40)
- 			+ ((u64)0x10 << 32);
+ 	/* Gather status on devices under the bridge */
+ 	if (dev->class >> 16 == PCI_BASE_CLASS_BRIDGE) {
+-		dn = pdn->node->child;
+-		while (dn) {
++		struct device_node *dn;
++
++		for_each_child_of_node(pdn->node, dn) {
+ 			pdn = PCI_DN(dn);
+ 			if (pdn)
+ 				n += gather_pci_data(pdn, buf+n, len-n);
+-			dn = dn->sibling;
+ 		}
+ 	}
+ 
+@@ -372,7 +373,7 @@ struct device_node * find_device_pe(struct device_node *dn)
+ 	return dn;
  }
  
-@@ -333,7 +335,8 @@ static void __init iomm_table_allocate_entry(struct pci_dev *dev, int bar_num)
- 	 */
- 	while (bar_size > 0 ) {
- 		iomm_table[current_iomm_table_entry] = dev->sysdata;
--		iobar_table[current_iomm_table_entry] = bar_num;
-+		ds_addr_table[current_iomm_table_entry] =
-+			iseries_ds_addr(dev->sysdata) | (bar_num << 24);
- 		bar_size -= IOMM_TABLE_ENTRY_SIZE;
- 		++current_iomm_table_entry;
+-/** Mark all devices that are peers of this device as failed.
++/** Mark all devices that are children of this device as failed.
+  *  Mark the device driver too, so that it can see the failure
+  *  immediately; this is critical, since some drivers poll
+  *  status registers in interrupts ... If a driver is polling,
+@@ -380,9 +381,11 @@ struct device_node * find_device_pe(struct device_node *dn)
+  *  an interrupt context, which is bad.
+  */
+ 
+-static void __eeh_mark_slot (struct device_node *dn, int mode_flag)
++static void __eeh_mark_slot(struct device_node *parent, int mode_flag)
+ {
+-	while (dn) {
++	struct device_node *dn;
++
++	for_each_child_of_node(parent, dn) {
+ 		if (PCI_DN(dn)) {
+ 			/* Mark the pci device driver too */
+ 			struct pci_dev *dev = PCI_DN(dn)->pcidev;
+@@ -392,10 +395,8 @@ static void __eeh_mark_slot (struct device_node *dn, int mode_flag)
+ 			if (dev && dev->driver)
+ 				dev->error_state = pci_channel_io_frozen;
+ 
+-			if (dn->child)
+-				__eeh_mark_slot (dn->child, mode_flag);
++			__eeh_mark_slot(dn, mode_flag);
+ 		}
+-		dn = dn->sibling;
  	}
-@@ -598,8 +601,7 @@ static inline struct device_node *xlate_iomm_address(
- 	dn = iomm_table[ind];
+ }
  
- 	if (dn != NULL) {
--		int barnum = iobar_table[ind];
--		*dsaptr = iseries_ds_addr(dn) | (barnum << 24);
-+		*dsaptr = ds_addr_table[ind];
- 		*bar_offset = base_addr % IOMM_TABLE_ENTRY_SIZE;
- 	} else
- 		panic("PCI: Invalid PCI IO address detected!\n");
-diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index 2932404..a6ea49e 100644
---- a/include/asm-powerpc/pci-bridge.h
-+++ b/include/asm-powerpc/pci-bridge.h
-@@ -165,7 +165,6 @@ struct iommu_table;
+@@ -415,19 +416,19 @@ void eeh_mark_slot (struct device_node *dn, int mode_flag)
+ 	if (dev)
+ 		dev->error_state = pci_channel_io_frozen;
  
- struct pci_dn {
- 	int	busno;			/* pci bus number */
--	int	bussubno;		/* pci subordinate bus number */
- 	int	devfn;			/* pci device and function number */
+-	__eeh_mark_slot (dn->child, mode_flag);
++	__eeh_mark_slot(dn, mode_flag);
+ }
  
- 	struct  pci_controller *phb;	/* for pci devices */
+-static void __eeh_clear_slot (struct device_node *dn, int mode_flag)
++static void __eeh_clear_slot(struct device_node *parent, int mode_flag)
+ {
+-	while (dn) {
++	struct device_node *dn;
++
++	for_each_child_of_node(parent, dn) {
+ 		if (PCI_DN(dn)) {
+ 			PCI_DN(dn)->eeh_mode &= ~mode_flag;
+ 			PCI_DN(dn)->eeh_check_count = 0;
+-			if (dn->child)
+-				__eeh_clear_slot (dn->child, mode_flag);
++			__eeh_clear_slot(dn, mode_flag);
+ 		}
+-		dn = dn->sibling;
+ 	}
+ }
+ 
+@@ -444,7 +445,7 @@ void eeh_clear_slot (struct device_node *dn, int mode_flag)
+ 
+ 	PCI_DN(dn)->eeh_mode &= ~mode_flag;
+ 	PCI_DN(dn)->eeh_check_count = 0;
+-	__eeh_clear_slot (dn->child, mode_flag);
++	__eeh_clear_slot(dn, mode_flag);
+ 	spin_unlock_irqrestore(&confirm_error_lock, flags);
+ }
+ 
+@@ -849,11 +850,8 @@ void eeh_restore_bars(struct pci_dn *pdn)
+ 	if ((pdn->eeh_mode & EEH_MODE_SUPPORTED) && !IS_BRIDGE(pdn->class_code))
+ 		__restore_bars (pdn);
+ 
+-	dn = pdn->node->child;
+-	while (dn) {
++	for_each_child_of_node(pdn->node, dn)
+ 		eeh_restore_bars (PCI_DN(dn));
+-		dn = dn->sibling;
+-	}
+ }
+ 
+ /**
+@@ -1131,7 +1129,8 @@ static void eeh_add_device_early(struct device_node *dn)
+ void eeh_add_device_tree_early(struct device_node *dn)
+ {
+ 	struct device_node *sib;
+-	for (sib = dn->child; sib; sib = sib->sibling)
++
++	for_each_child_of_node(dn, sib)
+ 		eeh_add_device_tree_early(sib);
+ 	eeh_add_device_early(dn);
+ }
 -- 
 1.5.3.7
 
