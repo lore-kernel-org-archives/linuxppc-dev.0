@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BBD2EDE459
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:22:19 +1100 (EST)
-Subject: Re: [PATCH 4/4] PowerPC: Add PCI node to 440GRx Rainier DTS.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-In-Reply-To: <20071221162708.GA1724@ru.mvista.com>
-References: <20071221162708.GA1724@ru.mvista.com>
-Content-Type: text/plain
-Date: Sat, 22 Dec 2007 08:21:51 +1100
-Message-Id: <1198272111.6737.9.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 5EB3DDE4F9
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 08:22:46 +1100 (EST)
+Date: Fri, 21 Dec 2007 15:29:22 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: Re: Enable RTC for Ebony and Walnut
+Message-ID: <20071221212922.GC11910@lixom.net>
+References: <20071221022130.GI2665@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071221022130.GI2665@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Fri, 2007-12-21 at 19:27 +0300, Valentine Barshak wrote:
-> +                       /* All PCI interrupts are routed to IRQ 67 */
-> +                       interrupt-map-mask = <0000 0 0 0>;
-> +                       interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
-> +               };
+On Fri, Dec 21, 2007 at 01:21:30PM +1100, David Gibson wrote:
+> Index: working-2.6/arch/powerpc/platforms/Kconfig
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/platforms/Kconfig	2007-12-10 10:52:44.000000000 +1100
+> +++ working-2.6/arch/powerpc/platforms/Kconfig	2007-12-21 13:11:34.000000000 +1100
+> @@ -315,6 +315,9 @@ config FSL_ULI1575
+>  config CPM
+>  	bool
+>  
+> +config OF_RTC
+> +	bool
+> +
 
-Same question as for Sequoia...
+New config options should have descriptions, even if they're silent
+ones.
 
-Ben.
+
+Thanks,
+
+-Olof
