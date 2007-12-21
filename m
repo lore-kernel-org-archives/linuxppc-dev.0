@@ -1,15 +1,17 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <476BF67C.2030405@am.sony.com>
-Date: Fri, 21 Dec 2007 09:23:08 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Time for cell code reshuffle?
-References: <200712211522.03841.arnd@arndb.de>
-In-Reply-To: <200712211522.03841.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA6D7DDF45
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 04:59:39 +1100 (EST)
+Date: Fri, 21 Dec 2007 20:22:39 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 4/4] PowerPC: Add PCI entry to 440GRx Rainier DTS.
+Message-ID: <20071221172239.GA2317@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <476BF5B7.3030201@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> We've been discussing in the past a few times where we should best put
-> the spufs code, and when to do it. Since Jeremy and I now have all the
-> current patches in powerpc.git, maybe we should do it now.
-> 
-> To the question, where what it should go, I'd leave the decision to
-> Jeremy, but my current idea would be:
-> 
-> arch/powerpc/platforms/cell/spufs -> arch/powerpc/spufs
-> arch/powerpc/platforms/cell/spu_{callbacks,base,syscalls,fault,notify}.[co]
->  -> arch/powerpc/spufs/{callbacks,base,syscalls,fault,notify}.[co]
+This adds PCI entry to PowerPC 440GRx Rainier DTS.
 
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/rainier.dts |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+)
 
-I think we should consider support for SpursEngine.  At the moment I have no
-idea of what it needs, and if no one else does we need to find out.
-
-
-> If we do it in git now, that should result in a minimal breakage of patches.
-> 
-> A related question is what to do about the location of the other cell
-> related files. platforms/ps3 is already pretty self-contained once we have
-> spufs outside of platforms/cell, but there is still some code shared between
-> platforms/cell and platforms/celleb, and each of these directories also contains
-> code that is only relevant for a subset of the platforms.
-
-
-It seems platforms/cell should have the shared and/or generic code, and the other
-stuff moved into a new platform directory, but is it worth the effort? 
-
--Geoff
+--- linux-2.6.orig/arch/powerpc/boot/dts/rainier.dts	2007-12-19 16:00:01.000000000 +0300
++++ linux-2.6/arch/powerpc/boot/dts/rainier.dts	2007-12-20 21:59:42.000000000 +0300
+@@ -317,6 +317,33 @@
+ 				has-new-stacr-staopc;
+ 			};
+ 		};
++
++		PCI0: pci@1ec000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb440grx-pci", "ibm,plb-pci";
++			primary;
++			reg = <1 eec00000 8	/* Config space access */
++			       1 eed00000 4	/* IACK */
++			       1 eed00000 4	/* Special cycle */
++			       1 ef400000 40>;	/* Internal registers */
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed. Chip supports a second
++			 * IO range but we don't use it for now
++			 */
++			ranges = <02000000 0 80000000 1 80000000 0 10000000
++				01000000 0 00000000 1 e8000000 0 00100000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* All PCI interrupts are routed to IRQ 67 */
++			interrupt-map-mask = <0000 0 0 0>;
++			interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
++		};
+ 	};
+ 
+ 	chosen {
