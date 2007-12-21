@@ -1,17 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4E42ADF8F5
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:43:29 +1100 (EST)
-Date: Thu, 20 Dec 2007 22:49:58 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] Make non-PCI build work again
-Message-ID: <20071221044957.GA29801@lixom.net>
-References: <20071221153707.5195fc8f.sfr@canb.auug.org.au>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071221153707.5195fc8f.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Message-ID: <18283.17563.790043.79740@cargo.ozlabs.ibm.com>
+Date: Fri, 21 Dec 2007 15:44:11 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch v2] PS3: Fix printing of os-area magic numbers
+In-Reply-To: <4745FDDB.7090208@am.sony.com>
+References: <473F6A28.5000309@am.sony.com>
+	<4745FDDB.7090208@am.sony.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 21, 2007 at 03:37:07PM +1100, Stephen Rothwell wrote:
-> Maple and pasemi both require PCI as does CONFIG_OF_PLATFORM_PCI.
-> The default setting of CONFIG_ISA_DMA_API is set to match the protection
-> around the relevant routines in asm/dma.h.
-> 
-> I also had to remove the PMAC platform from the combined build.  The
-> precis is that to build a 64 bit kernel with no PCI, you can only include
-> pSeries and iSeries.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/Kconfig                  |    3 ++-
->  arch/powerpc/platforms/maple/Kconfig  |    1 +
->  arch/powerpc/platforms/pasemi/Kconfig |    1 +
+Geoff Levand writes:
 
-Acked-by: Olof Johansson <olof@lixom.net>
+> Fix a bug in the printing of the os-area magic numbers which assumed that
+> magic numbers were zero terminated strings.  The magic numbers are represented
+> in memory as integers.  If the os-area sections are not initialized correctly
+> they could contained random data that would be printed to the display.
 
+> +	u8 str[sizeof(h->magic_num) + 1];
+> +	u8 *s, *d;
+> +
+> +	for(s = h->magic_num, d = str; s < h->magic_num + sizeof(h->magic_num);
+> +		s++, d++) {
+> +		*d = isprint(*s) ? *s : '.';
+> +	}
+> +	d[sizeof(h->magic_num)] = 0;
 
--Olof
+This last statement is wrong, because d has been incremented to point
+to the last byte of str already by this stage.
+
+It would be nicer if you pulled out the two instances of the for loop
+into a little helper function.
+
+> +	for(s = (u8*)&db->magic_num, d = str;
+
+Why do you need the (u8*) cast in this case but not the other?
+
+Paul.
