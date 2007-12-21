@@ -1,13 +1,13 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 28671DDDEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:21:51 +1100 (EST)
-Date: Fri, 21 Dec 2007 15:21:51 +1100
+	by ozlabs.org (Postfix) with ESMTP id ED093DDE22
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 15:23:47 +1100 (EST)
+Date: Fri, 21 Dec 2007 15:23:48 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] constify the of_device_id passed to
-	of_platform_bus_probe
-Message-Id: <20071221152151.52ca72ff.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] pointers marked as __iomem do not need to be
+	volatile
+Message-Id: <20071221152348.4165099e.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -20,65 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This will allow us to declare const all the statically declared arrrays
-of these.
+Fixes this warning:
+
+arch/powerpc/platforms/powermac/pci.c: In function 'u3_ht_cfg_access':
+arch/powerpc/platforms/powermac/pci.c:354: warning: return discards qualifiers from pointer target type
+arch/powerpc/platforms/powermac/pci.c:358: warning: return discards qualifiers from pointer target type
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/of_platform.c |    8 ++++----
- include/asm-powerpc/of_platform.h |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ include/asm-powerpc/pci-bridge.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 79c04d1..de36e23 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -40,7 +40,7 @@
-  * a bus type in the list
-  */
+diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
+index f7ed2b6..a6ea49e 100644
+--- a/include/asm-powerpc/pci-bridge.h
++++ b/include/asm-powerpc/pci-bridge.h
+@@ -75,8 +75,8 @@ struct pci_controller {
+ #endif
  
--static struct of_device_id of_default_bus_ids[] = {
-+static const struct of_device_id of_default_bus_ids[] = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{ .type = "spider", },
-@@ -100,8 +100,8 @@ EXPORT_SYMBOL(of_platform_device_create);
-  * @matches: match table, NULL to use the default, OF_NO_DEEP_PROBE to
-  * disallow recursive creation of child busses
-  */
--static int of_platform_bus_create(struct device_node *bus,
--				  struct of_device_id *matches,
-+static int of_platform_bus_create(const struct device_node *bus,
-+				  const struct of_device_id *matches,
- 				  struct device *parent)
- {
- 	struct device_node *child;
-@@ -137,7 +137,7 @@ static int of_platform_bus_create(struct device_node *bus,
-  */
+ 	struct pci_ops *ops;
+-	volatile unsigned int __iomem *cfg_addr;
+-	volatile void __iomem *cfg_data;
++	unsigned int __iomem *cfg_addr;
++	void __iomem *cfg_data;
  
- int of_platform_bus_probe(struct device_node *root,
--			  struct of_device_id *matches,
-+			  const struct of_device_id *matches,
- 			  struct device *parent)
- {
- 	struct device_node *child;
-diff --git a/include/asm-powerpc/of_platform.h b/include/asm-powerpc/of_platform.h
-index d20a4cd..1bce5ef 100644
---- a/include/asm-powerpc/of_platform.h
-+++ b/include/asm-powerpc/of_platform.h
-@@ -32,7 +32,7 @@ extern struct of_device *of_platform_device_create(struct device_node *np,
- #define OF_NO_DEEP_PROBE ((struct of_device_id *)-1)
- 
- extern int of_platform_bus_probe(struct device_node *root,
--				 struct of_device_id *matches,
-+				 const struct of_device_id *matches,
- 				 struct device *parent);
- 
- extern struct of_device *of_find_device_by_phandle(phandle ph);
+ #ifndef CONFIG_PPC64
+ 	/*
 -- 
 1.5.3.7
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
