@@ -1,16 +1,26 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1E243DDEBC
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:26:27 +1100 (EST)
-Date: Fri, 21 Dec 2007 23:28:24 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 0/4] PowerPC: implement GPIO API
-Message-ID: <20071221202824.GA4607@localhost.localdomain>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 1196DDDEC9
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 07:26:46 +1100 (EST)
+Date: Fri, 21 Dec 2007 21:00:18 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: [PATCH -mm 18/43] powerpc compat_binfmt_elf
+Message-ID: <20071221200018.GA17164@uranus.ravnborg.org>
+References: <20071220115200.C767E26F98A@magilla.localdomain>
+	<20071220115816.504CC26F98E@magilla.localdomain>
+	<20071221071229.GC4345@infradead.org>
+	<20071221085609.4D53B26F98A@magilla.localdomain>
+	<20071221175106.GB17656@fattire.cabal.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071221175106.GB17656@fattire.cabal.ca>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,62 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Fri, Dec 21, 2007 at 12:51:06PM -0500, Kyle McMartin wrote:
+> On Fri, Dec 21, 2007 at 12:56:09AM -0800, Roland McGrath wrote:
+> > > On Thu, Dec 20, 2007 at 03:58:16AM -0800, Roland McGrath wrote:
+> > > > +obj-$(CONFIG_PPC64)		+= ../../../fs/compat_binfmt_elf.o
+> > > 
+> > > Building files from another directory is nasty.  Please add a
+> > > CONFIG_BINFMT_COMPAT_ELF so we can simply build it in fs/
+> > 
+> > If that's better, please post the precise Kconfig magic you have in mind to
+> > have it set when it should be.
+Kyle made a proposal but I like to get in to the party too...
 
-OF device tree GPIOs bindings are similar to IRQs:
+> > 
+> 
+> Just taking a stab that hch means,
+> 
+> config BINFMT_COMPAT_ELF
+> 	def_bool n
+> 	depends on 64BIT
+> 
+> and then in arch/powerpc/Kconfig
+> 
+> config COMPAT
+> 	bool
+> 	default y if PPC64
+> 	select BINFMT_COMPAT_ELF
+> 
+> or somesuch.
 
-pario0: gpio-controller@0 {
-	#gpio-cells = <2>;
-	num-ports = <7>;
-};
+We recently discussed a common prefix for the selctable symbols
+and consensus pointed out "HAVE_" so let us try to use it.
+I did not quite understand the "depends on 64BIT" in Kyles example.
+Does we really want to use compat_binfmt_elf for all archs that
+define 64BIT? Anyway I added this in the example below.
 
-device@0 {
-	gpios = <bank pin bank pin bank pin>;
-	gpio-parent = <&pario0>;
-};
+fs/Makefile:
+obj-$(COMPAT_BINFMT_ELF) += compat_binfmt_elf.o
 
-"bank pin" scheme is controller specific, so controllers that want
-to implement flat mappings or any other could do so.
+fs/Kconfig:
+config COMPAT_BINFMT_ELF
+	depends on HAVE_COMPAT_BINFMT_ELF || 64BIT
 
-So far I implemented GPIO API for QE and CPM2 chips. GPIO API for
-CPM1 implemented by Jochen Friedrich <jochen@scram.de>, included in
-this patchset.
+# COMPAT_BINFMT_ELF must be selected when an
+# architecture supoorts ...
+config HAVE_COMPAT_BINFMT_ELF
 
-- QE GPIO API tested to work with FSL UPM NAND driver and
-  MPC8360E-RDK (STMicro NAND512W3A2BN6E);
-- CPM2 GPIO API tested to work with MPC8555E+Samsung HY27UF081G6 (LP);
-- CPM1 GPIO API untested.
 
-GPIO API is described in Documentation/gpio.txt, and these
-patches are tend to support most of it.
+arch/powerpc/Kconfig:
 
-As an additional bonus, PowerPC now gets access to few pleasing
-drivers:
+config COMPAT
+	bool
+	default PPC64
+	select HAVE_COMPAT_BINFMT_ELF
 
-- drivers/leds/leds-gpio.c (we could use it to play with
-  on-board LEDs);
-- drivers/i2c/busses/i2c-gpio.c (generic I2C bit-banging driver);
-- drivers/input/keyboard/gpio_keys.c - gpio keys (requires
-  gpio_to_irq, so far not implemented);
-- Could be more (I named the ones I knew about).
 
-Also, in the upcoming kernels, there will be GPIOLIB[1] addition to
-the generic GPIO API, to support off-chip GPIO expanders (like MFDs
-on I2C/LBC). But so far we support on-chip GPIOs only, with single
-controller built-in.
+In the example above the extra indirection:
+HAVE_COMPAT_BINFMT_ELF => COMPAT_BNFMT_ELF is not really needed
+but tomorrow when we add another "depends on" to COMPAT_INFMT_ELF
+it is needed to avoid the misbehaving select that just ignore the
+dependencies and select the symbol anyway.
 
-Changes since RFC:
-- Implemented #gpio-cells handling;
-- Per-bank spinlocks removed;
-- Added a patch which implements GPIO API for CPM1;
-- Few minor fixes.
-
-Thanks,
-
-[1] http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc4/2.6.24-rc4-mm1/broken-out/generic-gpio-gpio_chip-support.patch
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+	Sam
