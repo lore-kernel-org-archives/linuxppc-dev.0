@@ -1,22 +1,19 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.188])
-	by ozlabs.org (Postfix) with ESMTP id 30D2BDDDF4
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:08:28 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so860835fkz.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 16:08:26 -0800 (PST)
-Date: Sat, 22 Dec 2007 02:58:02 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 3/4] [POWERPC] CPM2: implement GPIO API
-Message-ID: <20071221235802.GA3651@zarina>
-References: <20071221202824.GA4607@localhost.localdomain>
-	<20071221203123.GC4633@localhost.localdomain>
-	<200712212216.32922.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200712212216.32922.arnd@arndb.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4C7DDDDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:12:13 +1100 (EST)
+Date: Sat, 22 Dec 2007 11:12:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Hugh Blemings <hugh@blemings.org>
+Subject: Re: [PATCH 10/21] [POWERPC] Base support for 440GX Taishan eval board
+Message-Id: <20071222111204.70e342c2.sfr@canb.auug.org.au>
+In-Reply-To: <20071221043932.C2FA1DDEDD@ozlabs.org>
+References: <20071221043932.C2FA1DDEDD@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__22_Dec_2007_11_12_04_+1100_KvG4rV=l7F3+jk=0"
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,65 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 21, 2007 at 10:16:32PM +0100, Arnd Bergmann wrote:
-> On Friday 21 December 2007, Anton Vorontsov wrote:
-> >  
-> > +static spinlock_t cpm2_port_lock = __SPIN_LOCK_UNLOCKED(cpm2_port_lock);
-> 
-> This needs to be
-> 
-> static DEFINE_SPINLOCK(cpm2_port_lock);
+--Signature=_Sat__22_Dec_2007_11_12_04_+1100_KvG4rV=l7F3+jk=0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-These are equivalents.
+On Fri, 21 Dec 2007 15:39:28 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> +++ linux-merge/arch/powerpc/platforms/44x/taishan.c	2007-12-21 14:20:04.=
+000000000 +1100
+> +
+> +static struct of_device_id taishan_of_bus[] =3D {
 
-#define DEFINE_SPINLOCK(x)      spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
+__initdata (preferably) or const, please.
 
-> I think at least lockdep doesn't work the way you do it here.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Is it anyhow special regarding what exact macro is used?..
+--Signature=_Sat__22_Dec_2007_11_12_04_+1100_KvG4rV=l7F3+jk=0
+Content-Type: application/pgp-signature
 
-spinlocks.txt says:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED defeat lockdep state tracking and
-are hence deprecated.
+iD8DBQFHbFZcTgG2atn1QN8RAlsPAJ9kTdH7C14/xebQlh+WIkCgo07lJgCfZe4K
+4naRIwVUD67SXE+FeO3Eigc=
+=SjuQ
+-----END PGP SIGNATURE-----
 
-Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
-__SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
-initialization.
--
-
-..should be equivalent, though I prefer open-coded version, until
-it fits 80 column width. ;-)
-
-> > +int cpm2_init_par_io(void)
-> > +{
-> > +	struct device_node *np;
-> > +	const u32 *num_ports;
-> > +
-> > +	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pario");
-> > +	if (!np)
-> > +		return -ENOENT;
-> > +
-> > +	num_ports = of_get_property(np, "num-ports", NULL);
-> > +	if (!num_ports) {
-> > +		of_node_put(np);
-> > +		return -ENOENT;
-> > +	}
-> > +	cpm2_num_ports = *num_ports;
-> > +
-> > +	np->data = &of_gpio_chip;
-> > +
-> > +	return 0;
-> > +}
-> 
-> This function should also do the call to of_iomap, so you don't
-> need to pull the address out of the cpm2_immr, which I believe
-> we're trying to get rid of.
-
-Yup, thanks!
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--Signature=_Sat__22_Dec_2007_11_12_04_+1100_KvG4rV=l7F3+jk=0--
