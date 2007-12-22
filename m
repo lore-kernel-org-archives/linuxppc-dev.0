@@ -1,22 +1,20 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <SRS0+a79ace4f2fb1f6d606e4+1581+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BA8DEDDE0D
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 20:58:30 +1100 (EST)
-Message-ID: <476CDFEC.1070506@scram.de>
-Date: Sat, 22 Dec 2007 10:59:08 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale
-	CPM1/CPM2 controllers
-References: <476C15BC.3090807@scram.de>
-	<20071222001112.691b80c8@kernel.crashing.org>
-In-Reply-To: <20071222001112.691b80c8@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	khali@linux-fr.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 38ABADDE01
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 21:56:06 +1100 (EST)
+Subject: Re: Yet more patches added to for-2.6.25/master branches
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18283.44454.618519.155696@cargo.ozlabs.ibm.com>
+References: <18283.44454.618519.155696@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 10:56:00 +0000
+Message-Id: <1198320960.11901.9.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +24,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+http://patchwork.ozlabs.org/linuxppc/patch?id=15192 ?
 
-> I had an attempt a while ago to do this but haven't had enough time to get it completed, so
-> I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
-> addressed but  something not, please
-> check: http://lkml.org/lkml/2007/5/8/45
->
-> (for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail)
->   
-
-I'll resend a fixed patch.
-
-> Also, why this was directed to Scott? This is lm-sensors stuff and is
-> Jean Delvare <khali@linux-fr.org> material..
-
-Scott reviewed this driver last time and i hope to get some further 
-comments from him. But thanks for adding
-Jean as well.
-
-Thanks,
-Jochen
+-- 
+dwmw2
