@@ -1,19 +1,20 @@
-Return-Path: <SRS0=MfzD=RN=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 8F916DDDF7
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 17:00:30 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org,
- benh@kernel.crashing.org
-Subject: Re: [PATCH 4/4] PowerPC: Add PCI node to 440GRx Rainier DTS.
-Date: Sat, 22 Dec 2007 06:54:50 +0100
-References: <20071221162708.GA1724@ru.mvista.com>
-	<1198272111.6737.9.camel@pasglop>
-In-Reply-To: <1198272111.6737.9.camel@pasglop>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5EB6EDDDF7
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 20:53:47 +1100 (EST)
+Message-ID: <476CDECB.3010409@scram.de>
+Date: Sat, 22 Dec 2007 10:54:19 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712220654.51132.sr@denx.de>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 4/4] [POWERPC] CPM1: implement GPIO API
+References: <20071221202824.GA4607@localhost.localdomain>
+	<20071221203431.GD4633@localhost.localdomain>
+In-Reply-To: <20071221203431.GD4633@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 21 December 2007, Benjamin Herrenschmidt wrote:
-> On Fri, 2007-12-21 at 19:27 +0300, Valentine Barshak wrote:
-> > +                       /* All PCI interrupts are routed to IRQ 67 */
-> > +                       interrupt-map-mask = <0000 0 0 0>;
-> > +                       interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
-> > +               };
->
-> Same question as for Sequoia...
+Hi Anton,
 
-Correct here too. Rainier (440GRx) is basically a stripped of version of the 
-Sequioa (440EPx).
+> Jochen, I kept your Signed-off-by, though this isn't your original
+> patch. Hope you're okay with it. I also hope you'll test it. ;-)
+>   
 
-Berst regards,
-Stefan
+that's OK.
+
+Thanks,
+Jochen
