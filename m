@@ -1,20 +1,21 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from mail.g-house.de (ns2.g-housing.de [81.169.133.75])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1B7FDDDED
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 10:34:45 +1100 (EST)
-Date: Sat, 22 Dec 2007 00:34:25 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Oops: Kernel access of bad area
-In-Reply-To: <20071220214705.GA28696@localdomain>
-Message-ID: <alpine.DEB.0.99999.0712220026200.6696@sheep.housecafe.de>
-References: <alpine.DEB.0.99999.0712192301220.6696@sheep.housecafe.de>
-	<20071220214705.GA28696@localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
-Cc: Nathan Lynch <ntl@pobox.com>
+	by ozlabs.org (Postfix) with ESMTP id 2D5B1DDDEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:02:19 +1100 (EST)
+Subject: Re: [PATCH 8/21] [POWERPC] EP405 boards support for arch/powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20071222102424.bc96d03c.sfr@canb.auug.org.au>
+References: <20071221043931.1A5CCDDEC0@ozlabs.org>
+	<20071222102424.bc96d03c.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Sat, 22 Dec 2007 11:01:09 +1100
+Message-Id: <1198281669.6737.24.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 20 Dec 2007, Nathan Lynch wrote:
-> Better to include the full stack trace in such reports,
 
-Hm, I did not want to clutter the mail with all this stuff, but you're 
-right, in this case it would've made sense...
+On Sat, 2007-12-22 at 10:24 +1100, Stephen Rothwell wrote:
 
-> So it looks like the kernel oopsed while firefox was dumping core,
-> yuck. It's a real bug.  Hopefully someone on the list can help...
+> > +++ linux-merge/arch/powerpc/boot/4xx.c	2007-12-21 14:19:46.000000000 +1100
+> > @@ -179,13 +179,16 @@ void ibm40x_dbcr_reset(void)
+> >  #define EMAC_RESET 0x20000000
+> >  void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
+> >  {
+> > -	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't do this for us */
+> > +	/* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't
+> > +	 * do this for us
+> > +	 */
+> >  	if (emac0)
+> >  		*emac0 = EMAC_RESET;
+> >  	if (emac1)
+> >  		*emac1 = EMAC_RESET;
+> >  
+> >  	mtdcr(DCRN_MAL0_CFG, MAL_RESET);
+> > +	while (mfdcr(DCRN_MAL0_CFG) & MAL_RESET) {};
+> 
+> You need the {} or the ; but not both and please put them indented on the
+> next line so that it is very clear that this is an empty loop.
 
-As it's the first time this happened and I could not reproduce it so far 
-(the only thing I can reproduce is the ffox crash :)), I doubt it'll be 
-"fixable" somehow...
+Code was copy/pasted from somewhere else... we can always do a fixup
+later.
 
-Thanks,
-Christian.
--- 
-BOFH excuse #247:
+> > +	if (cpc0_cr0 & 0x80) {
+> > +		/* uart0 uses the external clock */
+> > +		uart0 = ser_clk;
+> > +	} else {
+> > +		uart0 = cpu / udiv;
+> > +	}
+> 
+> The braces aren't really needed. (Yes, I noticed that you just moved the
+> code here)
 
-Due to Federal Budget problems we have been forced to cut back on the number of users able to access the system at one time. (namely none allowed....)
+Yup :-)
+
+> > +	if (cpc0_cr0 & 0x40) {
+> > +		/* uart1 uses the external clock */
+> > +		uart1 = ser_clk;
+> > +	} else {
+> > +		uart1 = cpu / udiv;
+> > +	}
+> 
+> And again.
+
+I'd rather do cleanups separately. I won't send new patches until I'm
+back from vacation so Josh, if you want to fix those little nits up,
+feel free.
+
+> > +++ linux-merge/arch/powerpc/platforms/40x/ep405.c	2007-12-21 14:19:46.000000000 +1100
+> > +
+> > +static struct of_device_id ep405_of_bus[] = {
+> 
+> __initdata (preferably) or const
+
+Ben.
