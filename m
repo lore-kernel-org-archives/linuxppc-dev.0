@@ -1,21 +1,21 @@
 Return-Path: <cbouatmailru@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
-	by ozlabs.org (Postfix) with ESMTP id 52233DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:26:50 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so869059fkz.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 16:26:49 -0800 (PST)
-Date: Sat, 22 Dec 2007 03:16:26 +0300
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
+	by ozlabs.org (Postfix) with ESMTP id 5EBBEDDE19
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:34:06 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so141168nfd.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 16:34:04 -0800 (PST)
+Date: Sat, 22 Dec 2007 03:23:41 +0300
 From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 0/4] PowerPC: implement GPIO API
-Message-ID: <20071222001626.GA1130@zarina>
-References: <20071221202824.GA4607@localhost.localdomain>
-	<fa686aa40712211250l2645d34dr45c5be2bf1c9006d@mail.gmail.com>
-	<20071221210445.GA5190@localhost.localdomain>
-	<fa686aa40712211317o401be150n32196a25b5ab1481@mail.gmail.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 1/4] [POWERPC] qe_lib and users: get rid of device_type
+	and model
+Message-ID: <20071222002341.GA3753@zarina>
+References: <20071221201844.GA4278@localhost.localdomain>
+	<20071221202054.GA4502@localhost.localdomain>
+	<20071221212553.GA11910@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <fa686aa40712211317o401be150n32196a25b5ab1481@mail.gmail.com>
+In-Reply-To: <20071221212553.GA11910@lixom.net>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,35 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 21, 2007 at 02:17:57PM -0700, Grant Likely wrote:
-> On 12/21/07, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > As I've probably said once already: if there are plans to build single
-> > kernel with QE+CPM1+CPM2 inside tomorrow -- then of course, I'd better
-> > wait.
-> >
-> > But if these plans are distant enough, I see no reason why we can't
-> > enjoy of current API.
+On Fri, Dec 21, 2007 at 03:25:53PM -0600, Olof Johansson wrote:
+> Hi,
 > 
-> Oh, I'm not saying don't enjoy it.  :-)  I'm just saying keep it out
-> of mainline.  I've got a bunch of Virtex stuff that falls into that
-> category.  Those who are interested can pick the non mainlined patches
-> out of my git tree.
+> On Fri, Dec 21, 2007 at 11:20:54PM +0300, Anton Vorontsov wrote:
+> > diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > index e6c63a5..a152bf8 100644
+> > --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > @@ -94,7 +94,8 @@ static void __init mpc85xx_mds_setup_arch(void)
+> >  #endif
+> >  
+> >  #ifdef CONFIG_QUICC_ENGINE
+> > -	if ((np = of_find_node_by_name(NULL, "qe")) != NULL) {
+> > +	np = of_find_node_by_name(NULL, "fsl,qe");
+> > +	if (np) {
+> 
+> That won't work. Did you mean of_find_compatible_node()?
 
-Ok. I'm fine either way.
+Yes. :-(
 
-Here we go. For anyone interested in the GPIOs on PowerPC, you
-can keep an eye on this git tree:
+> If so, you
+> still need to fall back to looking up by name for older device trees
+> that don't have the compatible field.
 
-	git://git.infradead.org/users/cbou/powerpc-gpio.git
+Yup.
 
-As time will permit, I'll start gpiolib work in the "gpiolib"
-branch in that repo, which will include gpiolib -mm patches +
-powerpc bits.
+Okay.. I'm approaching lucky v7. ;-)
 
-Note: I'm quite often rebasing my work, be aware. ;-)
-
-
-Thanks!
+Much thanks for catching this,
 
 -- 
 Anton Vorontsov
