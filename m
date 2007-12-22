@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7679CDDDEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 16:59:15 +1100 (EST)
-Subject: Re: [PATCH 4/4] PowerPC: Add PCI node to 440GRx Rainier DTS.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200712220654.51132.sr@denx.de>
-References: <20071221162708.GA1724@ru.mvista.com>
-	<1198272111.6737.9.camel@pasglop>  <200712220654.51132.sr@denx.de>
-Content-Type: text/plain
-Date: Sat, 22 Dec 2007 16:58:57 +1100
-Message-Id: <1198303137.11782.0.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <SRS0=MfzD=RN=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 3B4EFDDE21
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 16:59:19 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org,
+ benh@kernel.crashing.org
+Subject: Re: [PATCH 3/4] PowerPC: Add PCI entry to 440EPx Sequoia DTS.
+Date: Sat, 22 Dec 2007 06:53:38 +0100
+References: <20071221162601.GA1700@ru.mvista.com>
+	<1198272085.6737.6.camel@pasglop>
+In-Reply-To: <1198272085.6737.6.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712220653.38922.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 21 December 2007, Benjamin Herrenschmidt wrote:
+> On Fri, 2007-12-21 at 19:26 +0300, Valentine Barshak wrote:
+> > +
+> > +                       /* All PCI interrupts are routed to IRQ 67 */
+> > +                       interrupt-map-mask = <0000 0 0 0>;
+> > +                       interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
+> > +               };
+> >         };
+>
+> Wow, all 4 lines of all slots ?
 
-On Sat, 2007-12-22 at 06:54 +0100, Stefan Roese wrote:
-> On Friday 21 December 2007, Benjamin Herrenschmidt wrote:
-> > On Fri, 2007-12-21 at 19:27 +0300, Valentine Barshak wrote:
-> > > +                       /* All PCI interrupts are routed to IRQ 67 */
-> > > +                       interrupt-map-mask = <0000 0 0 0>;
-> > > +                       interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
-> > > +               };
-> >
-> > Same question as for Sequoia...
-> 
-> Correct here too. Rainier (440GRx) is basically a stripped of version of the 
-> Sequioa (440EPx).
+Yes, that's unfortunately correct. :-(
 
-I hope they accompany it with a design note: "don't do that in your
-actual products" :-)
-
-Ben.
+Best regards,
+Stefan
