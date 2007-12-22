@@ -1,17 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.241])
+	by ozlabs.org (Postfix) with ESMTP id 73BABDDEC4
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 08:11:43 +1100 (EST)
+Received: by hs-out-2122.google.com with SMTP id x43so839031hsb.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 13:11:42 -0800 (PST)
+Date: Sat, 22 Dec 2007 15:11:36 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: benh@kernel.crashing.org
 Subject: Re: Time for cell code reshuffle?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200712212015.45088.arnd@arndb.de>
-References: <200712211522.03841.arnd@arndb.de>
-	<476BF67C.2030405@am.sony.com>  <200712212015.45088.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sun, 23 Dec 2007 08:00:14 +1100
-Message-Id: <1198357215.6686.8.camel@pasglop>
+Message-ID: <20071222151136.1198f96d@hansolo.jdub.homelinux.org>
+In-Reply-To: <1198357082.6686.5.camel@pasglop>
+References: <200712211522.03841.arnd@arndb.de> <476BF67C.2030405@am.sony.com>
+	<1198357082.6686.5.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 23 Dec 2007 07:58:02 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Fri, 2007-12-21 at 20:15 +0100, Arnd Bergmann wrote:
-> > It seems platforms/cell should have the shared and/or generic code,
-> and the other
-> > stuff moved into a new platform directory, but is it worth the
-> effort? 
 > 
-> There is very little code in platforms/cell that can not be generic,
-> so I think
-> it's not worth splitting it. The only IBM blade specific files are
-> cbe_cpufreq_pmi.c and parts of setup.c and pervasive.c. Everything
-> else could
-> be shared by about any generic implementation without a hypervisor.
+> On Fri, 2007-12-21 at 09:23 -0800, Geoff Levand wrote:
+> > 
+> > It seems platforms/cell should have the shared and/or generic code,
+> > and the other
+> > stuff moved into a new platform directory, but is it worth the
+> > effort? 
+> 
+> No, platforms/xxx isn't supposed to be shared code. That's was syslib is
+> for.
 
-Another option is to have:
+I think you mean sysdev?
 
-platforms/celleb -> platforms/beat
-
-and withing platforms/cell, rename blade specific files to
-something (can't find what, works on CAB too) and add celleb
-"bare metal" files.
-
-A platform directly doesn't have to deal with one platform. For example,
-platforms/44x contains a lot of board support.
-
-Now, one question is how far can we merge celleb support with the common
-blade/CAB code...
-
-Cheers,
-Ben.
+josh
