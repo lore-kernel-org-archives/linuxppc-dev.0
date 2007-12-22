@@ -1,20 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E5456DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:21:14 +1100 (EST)
-Date: Sat, 22 Dec 2007 11:21:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 17/21] [POWERPC] Base support for 440SPe "Katmai" eval
-	board
-Message-Id: <20071222112105.b24c85c5.sfr@canb.auug.org.au>
-In-Reply-To: <20071221043938.9C15EDDFBF@ozlabs.org>
-References: <20071221043938.9C15EDDFBF@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__22_Dec_2007_11_21_05_+1100_ViufK9_VcvxGfvKW"
+Return-Path: <cbouatmailru@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
+	by ozlabs.org (Postfix) with ESMTP id 52233DDDF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 11:26:50 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so869059fkz.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Dec 2007 16:26:49 -0800 (PST)
+Date: Sat, 22 Dec 2007 03:16:26 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 0/4] PowerPC: implement GPIO API
+Message-ID: <20071222001626.GA1130@zarina>
+References: <20071221202824.GA4607@localhost.localdomain>
+	<fa686aa40712211250l2645d34dr45c5be2bf1c9006d@mail.gmail.com>
+	<20071221210445.GA5190@localhost.localdomain>
+	<fa686aa40712211317o401be150n32196a25b5ab1481@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <fa686aa40712211317o401be150n32196a25b5ab1481@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__22_Dec_2007_11_21_05_+1100_ViufK9_VcvxGfvKW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Dec 21, 2007 at 02:17:57PM -0700, Grant Likely wrote:
+> On 12/21/07, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > As I've probably said once already: if there are plans to build single
+> > kernel with QE+CPM1+CPM2 inside tomorrow -- then of course, I'd better
+> > wait.
+> >
+> > But if these plans are distant enough, I see no reason why we can't
+> > enjoy of current API.
+> 
+> Oh, I'm not saying don't enjoy it.  :-)  I'm just saying keep it out
+> of mainline.  I've got a bunch of Virtex stuff that falls into that
+> category.  Those who are interested can pick the non mainlined patches
+> out of my git tree.
 
-On Fri, 21 Dec 2007 15:39:34 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> +++ linux-merge/arch/powerpc/platforms/44x/katmai.c	2007-12-21 14:34:33.0=
-00000000 +1100
-> +
-> +static struct of_device_id katmai_of_bus[] =3D {
+Ok. I'm fine either way.
 
-__initdata (preferably) or const, please.
+Here we go. For anyone interested in the GPIOs on PowerPC, you
+can keep an eye on this git tree:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	git://git.infradead.org/users/cbou/powerpc-gpio.git
 
---Signature=_Sat__22_Dec_2007_11_21_05_+1100_ViufK9_VcvxGfvKW
-Content-Type: application/pgp-signature
+As time will permit, I'll start gpiolib work in the "gpiolib"
+branch in that repo, which will include gpiolib -mm patches +
+powerpc bits.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Note: I'm quite often rebasing my work, be aware. ;-)
 
-iD8DBQFHbFh6TgG2atn1QN8RAhmXAJ9DSM0yBIV6k4HBrvvzAVujQmHfZwCfc/1C
-LkSzSh9S0RDnuTcoQVVcbAM=
-=aNjy
------END PGP SIGNATURE-----
 
---Signature=_Sat__22_Dec_2007_11_21_05_+1100_ViufK9_VcvxGfvKW--
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
