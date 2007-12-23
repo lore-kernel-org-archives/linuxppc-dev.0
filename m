@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 02CBDDDE06
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 13:33:40 +1100 (EST)
-Date: Sun, 23 Dec 2007 13:33:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 2/3] [POWERPC][NAND] FSL UPM NAND driver
-Message-Id: <20071223133329.9d2c44e4.sfr@canb.auug.org.au>
-In-Reply-To: <20071221204130.GB4829@localhost.localdomain>
-References: <20071221203552.GA4738@localhost.localdomain>
-	<20071221204130.GB4829@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__23_Dec_2007_13_33_29_+1100_HKx1yToy+JcTKbqi"
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 45D23DDDF8
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 13:47:59 +1100 (EST)
+In-Reply-To: <20071221202824.GA4607@localhost.localdomain>
+References: <20071221202824.GA4607@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <593200f4887c1fb73d9c9fb9b1db0b8c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] PowerPC: implement GPIO API
+Date: Sun, 23 Dec 2007 03:47:50 +0100
+To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__23_Dec_2007_13_33_29_+1100_HKx1yToy+JcTKbqi
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> OF device tree GPIOs bindings are similar to IRQs:
 
-On Fri, 21 Dec 2007 23:41:30 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
->
-> +static int __devinit upm_chip_probe(struct of_device *ofdev,
-> +				    const struct of_device_id *ofid)
-> +{
-> +	struct upm_data *ud;
-> +	struct resource io_res;
-> +	const u32 *prop;
-> +	int ret;
-> +	int size;
-> +
-> +	ud =3D kzalloc(sizeof(*ud), GFP_KERNEL);
-> +	if (!ud)
-> +		return -ENOMEM;
-> +
-> +	ret =3D of_address_to_resource(ofdev->node, 0, &io_res);
-> +	if (ret) {
-> +		dev_err(&ofdev->dev, "can't get IO base\n");
-> +		goto err;
-> +	}
-> +
-> +	prop =3D of_get_property(ofdev->node, "width", &size);
-> +	if (!prop || size !=3D sizeof(u32)) {
-> +		dev_err(&ofdev->dev, "can't get chip width\n");
-> +		goto err;
+But GPIOs are a very different thing.  Most importantly, the "number"
+of a GPIO is completely local to the GPIO controller.
 
-Here ret is 0, is that the correct return code?
+> pario0: gpio-controller@0 {
+> 	#gpio-cells = <2>;
 
-> +	ud->rnb_gpio =3D of_get_gpio(ofdev->node, 0);
-> +	if (ud->rnb_gpio >=3D 0) {
-> +		ret =3D gpio_request(ud->rnb_gpio, ofdev->dev.bus_id);
-> +		if (ret) {
-> +			dev_err(&ofdev->dev, "can't request RNB gpio\n");
-> +			goto err;
-> +		}
-> +		gpio_direction_input(ud->rnb_gpio);
-> +	} else if (ud->rnb_gpio =3D=3D -EINVAL) {
-> +		dev_err(&ofdev->dev, "specified RNB gpio is invalid\n");
-> +		goto err;
+Your Linux code doesn't actually use this.  Why is it needed, anyway?
+You should be able to encode a GPIO identifier in a single 32-bit word,
+for any possible GPIO controller.
 
-Again ret is 0 here.
+> 	num-ports = <7>;
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+What is this?  What is a "port"?  This doesn't belong in a generic GPIO
+binding.
 
---Signature=_Sun__23_Dec_2007_13_33_29_+1100_HKx1yToy+JcTKbqi
-Content-Type: application/pgp-signature
+> device@0 {
+> 	gpios = <bank pin bank pin bank pin>;
+> 	gpio-parent = <&pario0>;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Not every GPIO controller has banks.  Not every device uses GPIOs
+on a single GPIO controller.  It is inconvenient to force all bindings
+to use the same name ("gpios") for its property that shows the GPIOs
+(and for it to have only one such property).
 
-iD8DBQFHbckCTgG2atn1QN8RAoJ+AJ4t6m9jO1iXvFvQdEawum24hbp0WwCfRmAH
-3oo/ABZ4llN8dy3MUFzU1no=
-=Vf6x
------END PGP SIGNATURE-----
+So I recommend:
 
---Signature=_Sun__23_Dec_2007_13_33_29_+1100_HKx1yToy+JcTKbqi--
+-- Advise (in the generic GPIO binding) people to use
+	< phandle-of-gpio-controller gpio-id-on-that-controller >
+to refer to a GPIO from some device node;
+
+-- And either:
+	-- Define (in the generic GPIO binding) that a "gpio-id" is a single
+	   32-bit cell;
+    or
+	-- Define (in the generic GPIO binding) that a "gpio-id" is a number
+	   of 32-bit cells, and that that number of cells is encoded as a 
+32-bit
+	   integer in the "#gpio-cells" property in the device node of the
+	   respective GPIO controller.
+
+(I like the first option better, unless someone can think of some 
+reasonable
+situation where some specific GPIO controller binding needs more than 
+32 bits
+to encode GPIO #).
+
+
+Segher
