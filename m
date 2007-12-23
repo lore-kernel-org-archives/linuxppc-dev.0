@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 80F92DDDDB
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 19:18:28 +1100 (EST)
-Date: Sun, 23 Dec 2007 19:18:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFC] powerpc: DBox2 Board Support
-Message-Id: <20071223191819.cb4f8119.sfr@canb.auug.org.au>
-In-Reply-To: <476D61DB.2090201@scram.de>
-References: <476D61DB.2090201@scram.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ."
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 4F5E1DDDEA
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 20:51:20 +1100 (EST)
+Date: Sun, 23 Dec 2007 10:51:19 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch v3] PS3: Fix printing of os-area magic numbers
+In-Reply-To: <476DED97.8070709@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0712231049240.17187@chinchilla.sonytel.be>
+References: <473F6A28.5000309@am.sony.com> <476DED97.8070709@am.sony.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584336837-778138729-1198403479=:17187"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Sat, 22 Dec 2007 20:13:31 +0100 Jochen Friedrich <jochen@scram.de> wrote:
->
-> +++ b/arch/powerpc/platforms/8xx/dbox2.h
-> +
-> +#include <sysdev/fsl_soc.h>
+---584336837-778138729-1198403479=:17187
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Nothing in this header files uses anything in that one, so don't include
-it.
-
-> +++ b/arch/powerpc/platforms/8xx/dbox2_setup.c
-> +
-> +char *dbox2_manuf_name[3] =3D {
-
-static const.
-
-> +	"Nokia",
-> +	"Philips",
-> +	"Sagem",
-> +};
-> +
-> +static enum dbox2_mid dbox2_manuf_id;
-> +
-> +struct cpm_pin {
-> +	int port, pin, flags;
-> +};
-> +
-> +static struct cpm_pin dbox2_pins[] =3D {
-
-const?
-
-> +static int __init dbox2_probe(void)
+On Sat, 22 Dec 2007, Geoff Levand wrote:
+> +static void dump_field(char *s, const u8 *f, unsigned int size)
 > +{
-> +	unsigned long root =3D of_get_flat_dt_root();
-> +	return of_flat_dt_is_compatible(root, "betaresearch,dbox2");
+> +#if defined(DEBUG)
+> +	unsigned int i;
+> +
+> +	for (i = 0; i < size; i++)
+> +		s[i] = isprint(f[i]) ? f[i] : '.';
+> +	s[i] = 0;
+> +#endif
+> +}
 
-You should include asm/prom.h to use the flattened device tree function.
+Sorry for nitpicking again.
 
-> +static struct of_device_id __initdata of_bus_ids[] =3D {
+Usually the _length_ of a C-string is the number of characters, while the
+_size_ of a C-string includes the zero-terminator.
 
-__initdata
+In dump_field() it writes size+1 bytes to s.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
---Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHbhnQTgG2atn1QN8RAuY6AJ9bt0uHOMpEMqGtTynERjylswhtNwCePSrV
-ZAx58DyElhqHSrSH2Xe2+AQ=
-=iTj2
------END PGP SIGNATURE-----
-
---Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ.--
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584336837-778138729-1198403479=:17187--
