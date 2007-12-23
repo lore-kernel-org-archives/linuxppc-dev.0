@@ -1,18 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Sun, 23 Dec 2007 15:06:20 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [Cbe-oss-dev] Time for cell code reshuffle?
-In-Reply-To: <20071223123501.GA19823@lst.de>
-Message-ID: <Pine.LNX.4.62.0712231506050.17187@chinchilla.sonytel.be>
-References: <200712211522.03841.arnd@arndb.de>
-	<200712231247.44154.jk@ozlabs.org> <20071223123501.GA19823@lst.de>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 7250BDDD0A
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 02:19:22 +1100 (EST)
+Date: Sun, 23 Dec 2007 09:26:13 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] Add information on enabling sound on the MPC8641 HPCN
+Message-ID: <20071223152613.GA4817@lixom.net>
+References: <11983809443854-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584336837-362243690-1198418780=:17187"
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
-	Arnd Bergmann <arnd@arndb.de>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <11983809443854-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584336837-362243690-1198418780=:17187
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Sun, 23 Dec 2007, Christoph Hellwig wrote:
-> On Sun, Dec 23, 2007 at 12:47:42PM +0900, Jeremy Kerr wrote:
-> > > To the question, where what it should go, I'd leave the decision to
-> > > Jeremy, but my current idea would be:
-> > >
-> > > arch/powerpc/platforms/cell/spufs -> arch/powerpc/spufs
-> > 
-> > I'd suggest arch/powerpc/sysdev/spufs to keep arch/powerpc clean.
-> > 
-> > However, this may also depend on the (intended) structure of SPURSEngine 
-> > support, which may mean that fs/spufs might be a better place. It would 
-> > suck to have to move things twice, so maybe someone from Tosihba could 
-> > provide some input? Would the powerpc spufs code be suitable for 
-> > SPURSEngine?
+On Sat, Dec 22, 2007 at 09:35:44PM -0600, Timur Tabi wrote:
+> Add a comment to the DTS file for the MPC8641 HPCN describing a wiring change
+> needed to get sound working on this board.
 > 
-> Strong NACK for fs/spufs/  fs code is the smallest part of the spu
-> support, and all this nasty lowlevel code doesn't belong into fs/ at
-> all.
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> 
+> For a two-line comment, I thought the DTS would be the best place to put this
+> information.
 
-drivers/spu/?
+Sounds like a board rework document on your support site is the right
+place for this. We normally don't document board reworks required in
+the linux sources, do we?
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584336837-362243690-1198418780=:17187--
+-Olof
