@@ -1,15 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sun, 23 Dec 2007 14:40:46 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] [POWERPC] Implement GPIO API embryo
-Message-ID: <20071223034046.GC10699@localhost.localdomain>
-References: <20071221202824.GA4607@localhost.localdomain>
-	<20071221203115.GA4633@localhost.localdomain>
-	<b632798b4f5523653160b6a7156266e1@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b632798b4f5523653160b6a7156266e1@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4DB05DDE39
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 14:43:05 +1100 (EST)
+Date: Sun, 23 Dec 2007 14:42:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH 17/21] [POWERPC] Base support for 440SPe "Katmai" eval
+	board
+Message-Id: <20071223144254.72ef476f.sfr@canb.auug.org.au>
+In-Reply-To: <20071221194828.3a6e6299@vader.jdub.homelinux.org>
+References: <20071221043938.9C15EDDFBF@ozlabs.org>
+	<20071222112105.b24c85c5.sfr@canb.auug.org.au>
+	<20071221194828.3a6e6299@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__23_Dec_2007_14_42_54_+1100_VjMht/5dHDM_0=7U"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,36 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 23, 2007 at 03:49:30AM +0100, Segher Boessenkool wrote:
-> > +int __of_parse_gpio_bank_pin(struct device_node *np, int index,
-> > +			     int bank_width, int max_bank)
-> > +{
-> > +	int bank;
-> > +	int pin;
-> > +	const u32 *gpios;
-> > +
-> > +	/*
-> > +	 * We can get there only if of_get_gpio() succeeded, thus
-> > +	 * no need checking for "gpios" existence.
-> > +	 */
-> > +	gpios = of_get_property(np, "gpios", NULL);
-> > +	bank = gpios[index * 2];
-> > +	pin = gpios[index * 2 + 1];
-> 
-> If you stick with the #gpio-cells plan, here is where you should use it.
+--Signature=_Sun__23_Dec_2007_14_42_54_+1100_VjMht/5dHDM_0=7U
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think part of what's happening here is due to the patch's history.
-The "bank pin" information was always of a format local to the
-controller, but originally the size wasn't explicitly stated in the
-tree - it was just implicit in the type of gpio controller.  I
-suggested that #gpio-cells be added, which it has been, but it looks
-like the code hasn't been updated to use it everywhere.  Obviously a
-driver for a particular gpio controller would generally need to assert
-that the controller's #gpio-cells has the correct value for this
-controller type, after which code like the above would be acceptable.
+On Fri, 21 Dec 2007 19:48:28 -0600 Josh Boyer <jwboyer@gmail.com> wrote:
+>
+> On Sat, 22 Dec 2007 11:21:05 +1100
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > On Fri, 21 Dec 2007 15:39:34 +1100 Benjamin Herrenschmidt <benh@kernel.=
+crashing.org> wrote:
+> > >
+> > > +++ linux-merge/arch/powerpc/platforms/44x/katmai.c	2007-12-21 14:34:=
+33.000000000 +1100
+> > > +
+> > > +static struct of_device_id katmai_of_bus[] =3D {
+> >=20
+> > __initdata (preferably) or const, please.
+>=20
+> I'll fix this with a separate commit.  The same comment applies for all
+> the 4xx platforms already in the kernel.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Fine by me.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__23_Dec_2007_14_42_54_+1100_VjMht/5dHDM_0=7U
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHbdlITgG2atn1QN8RAoADAJ9yFwBFMM+XTpLnoypPqPYO58YjDQCfaVcR
+l9QqOeHkH7yNTbAGzL8xgLM=
+=vwI0
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__23_Dec_2007_14_42_54_+1100_VjMht/5dHDM_0=7U--
