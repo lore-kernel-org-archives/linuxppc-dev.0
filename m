@@ -1,21 +1,17 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 97599DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 05:24:38 +1100 (EST)
-Message-ID: <476E9DAD.5010809@am.sony.com>
-Date: Sun, 23 Dec 2007 09:41:01 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 93733DDDF2
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 05:40:11 +1100 (EST)
+Message-ID: <476EABB0.8040707@scram.de>
+Date: Sun, 23 Dec 2007 19:40:48 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch v4] PS3: Fix printing of os-area magic numbers
-References: <473F6A28.5000309@am.sony.com>
-In-Reply-To: <473F6A28.5000309@am.sony.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH/RFC] powerpc: Move definition of buffer descriptor to cpm.h
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,139 +21,292 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Subject: ps3: Fix printing of os-area magic numbers
+Buffer descriptors are used by both CPM1 and CPM2. Move the definitions
+from the cpm dependent include file to common cpm.h
 
-Fix a bug in the printing of the os-area magic numbers which assumed that
-magic numbers were zero terminated strings.  The magic numbers are represented
-in memory as integers.  If the os-area sections are not initialized correctly
-they could contained random data that would be printed to the display.
-Also unify the handling of header and db magic numbers and make both
-of type array of u8.
-
-CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
-v2: o handle unprintable chars.
+ include/asm-powerpc/commproc.h |   65 -----------------------------------
+ include/asm-powerpc/cpm.h      |   73 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/cpm2.h     |   64 -----------------------------------
+ 3 files changed, 73 insertions(+), 129 deletions(-)
 
-v3: o breakout string dump into helper dump_field()
-    o unify handling of header and db magic numbers
-
-v4: rename dump_field() args 
-
- arch/powerpc/platforms/ps3/os-area.c |   40 ++++++++++++++++++++++++++---------
- 1 file changed, 30 insertions(+), 10 deletions(-)
-
---- a/arch/powerpc/platforms/ps3/os-area.c
-+++ b/arch/powerpc/platforms/ps3/os-area.c
-@@ -23,6 +23,7 @@
- #include <linux/workqueue.h>
- #include <linux/fs.h>
- #include <linux/syscalls.h>
-+#include <linux/ctype.h>
+diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
+index 9e3b864..faba484 100644
+--- a/include/asm-powerpc/commproc.h
++++ b/include/asm-powerpc/commproc.h
+@@ -93,32 +93,6 @@ extern void m8xx_cpm_hostdump(void);
  
- #include <asm/lmb.h>
+ extern void cpm_load_patch(cpm8xx_t *cp);
  
-@@ -37,6 +38,8 @@ enum os_area_ldr_format {
- 	HEADER_LDR_FORMAT_GZIP = 1,
- };
+-/* Buffer descriptors used by many of the CPM protocols.
+-*/
+-typedef struct cpm_buf_desc {
+-	ushort	cbd_sc;		/* Status and Control */
+-	ushort	cbd_datlen;	/* Data length in buffer */
+-	uint	cbd_bufaddr;	/* Buffer address in host memory */
+-} cbd_t;
+-
+-#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
+-#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
+-#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
+-#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
+-#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
+-#define BD_SC_TC	((ushort)0x0400)	/* Transmit CRC */
+-#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
+-#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
+-#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
+-#define BD_SC_BR	((ushort)0x0020)	/* Break received */
+-#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
+-#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
+-#define BD_SC_NAK	((ushort)0x0004)	/* NAK - did not respond */
+-#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
+-#define BD_SC_UN	((ushort)0x0002)	/* Underrun */
+-#define BD_SC_CD	((ushort)0x0001)	/* ?? */
+-#define BD_SC_CL	((ushort)0x0001)	/* Collision */
+-
+ /* Parameter RAM offsets.
+ */
+ #define PROFF_SCC1	((uint)0x0000)
+@@ -448,41 +422,6 @@ typedef struct scc_enet {
+ #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
+ #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
  
-+#define OS_AREA_HEADER_MAGIC_NUM "cell_ext_os_area"
+-/* Buffer descriptor control/status used by Ethernet receive.
+-*/
+-#define BD_ENET_RX_EMPTY	((ushort)0x8000)
+-#define BD_ENET_RX_WRAP		((ushort)0x2000)
+-#define BD_ENET_RX_INTR		((ushort)0x1000)
+-#define BD_ENET_RX_LAST		((ushort)0x0800)
+-#define BD_ENET_RX_FIRST	((ushort)0x0400)
+-#define BD_ENET_RX_MISS		((ushort)0x0100)
+-#define BD_ENET_RX_LG		((ushort)0x0020)
+-#define BD_ENET_RX_NO		((ushort)0x0010)
+-#define BD_ENET_RX_SH		((ushort)0x0008)
+-#define BD_ENET_RX_CR		((ushort)0x0004)
+-#define BD_ENET_RX_OV		((ushort)0x0002)
+-#define BD_ENET_RX_CL		((ushort)0x0001)
+-#define BD_ENET_RX_BC		((ushort)0x0080)	/* DA is Broadcast */
+-#define BD_ENET_RX_MC		((ushort)0x0040)	/* DA is Multicast */
+-#define BD_ENET_RX_STATS	((ushort)0x013f)	/* All status bits */
+-
+-/* Buffer descriptor control/status used by Ethernet transmit.
+-*/
+-#define BD_ENET_TX_READY	((ushort)0x8000)
+-#define BD_ENET_TX_PAD		((ushort)0x4000)
+-#define BD_ENET_TX_WRAP		((ushort)0x2000)
+-#define BD_ENET_TX_INTR		((ushort)0x1000)
+-#define BD_ENET_TX_LAST		((ushort)0x0800)
+-#define BD_ENET_TX_TC		((ushort)0x0400)
+-#define BD_ENET_TX_DEF		((ushort)0x0200)
+-#define BD_ENET_TX_HB		((ushort)0x0100)
+-#define BD_ENET_TX_LC		((ushort)0x0080)
+-#define BD_ENET_TX_RL		((ushort)0x0040)
+-#define BD_ENET_TX_RCMASK	((ushort)0x003c)
+-#define BD_ENET_TX_UN		((ushort)0x0002)
+-#define BD_ENET_TX_CSL		((ushort)0x0001)
+-#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
+-
+ /* SCC as UART
+ */
+ typedef struct scc_uart {
+@@ -551,8 +490,6 @@ typedef struct scc_trans {
+ 	uint	st_cmask;	/* Constant mask for CRC */
+ } scc_trans_t;
+ 
+-#define BD_SCC_TX_LAST		((ushort)0x0800)
+-
+ /* IIC parameter RAM.
+ */
+ typedef struct iic {
+@@ -576,8 +513,6 @@ typedef struct iic {
+ 	char	res2[2];	/* Reserved */
+ } iic_t;
+ 
+-#define BD_IIC_START		((ushort)0x0400)
+-
+ /* SPI parameter RAM.
+ */
+ typedef struct spi {
+diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
+index fae83b1..77e39da 100644
+--- a/include/asm-powerpc/cpm.h
++++ b/include/asm-powerpc/cpm.h
+@@ -4,6 +4,79 @@
+ #include <linux/compiler.h>
+ #include <linux/types.h>
+ 
++/* Buffer descriptors used by many of the CPM protocols. */
++typedef struct cpm_buf_desc {
++	ushort	cbd_sc;		/* Status and Control */
++	ushort	cbd_datlen;	/* Data length in buffer */
++	uint	cbd_bufaddr;	/* Buffer address in host memory */
++} cbd_t;
 +
- /**
-  * struct os_area_header - os area header segment.
-  * @magic_num: Always 'cell_ext_os_area'.
-@@ -114,13 +117,11 @@ struct os_area_params {
- 	u8 _reserved_5[8];
- };
- 
--enum {
--	OS_AREA_DB_MAGIC_NUM = 0x2d64622dU,
--};
-+#define OS_AREA_DB_MAGIC_NUM "-db-"
- 
- /**
-  * struct os_area_db - Shared flash memory database.
-- * @magic_num: Always '-db-' = 0x2d64622d.
-+ * @magic_num: Always '-db-'.
-  * @version: os_area_db format version number.
-  * @index_64: byte offset of the database id index for 64 bit variables.
-  * @count_64: number of usable 64 bit index entries
-@@ -135,7 +136,7 @@ enum {
-  */
- 
- struct os_area_db {
--	u32 magic_num;
-+	u8 magic_num[4];
- 	u16 version;
- 	u16 _reserved_1;
- 	u16 index_64;
-@@ -265,12 +266,26 @@ static void __init os_area_get_property(
- 			prop->name);
- }
- 
-+static void dump_field(char *s, const u8 *field, int size_of_field)
-+{
-+#if defined(DEBUG)
-+	int i;
++/* Buffer descriptor control/status used by serial
++ */
 +
-+	for (i = 0; i < size_of_field; i++)
-+		s[i] = isprint(field[i]) ? field[i] : '.';
-+	s[i] = 0;
-+#endif
-+}
++#define BD_SC_EMPTY	(0x8000)	/* Receive is empty */
++#define BD_SC_READY	(0x8000)	/* Transmit is ready */
++#define BD_SC_WRAP	(0x2000)	/* Last buffer descriptor */
++#define BD_SC_INTRPT	(0x1000)	/* Interrupt on change */
++#define BD_SC_LAST	(0x0800)	/* Last buffer in frame */
++#define BD_SC_TC	(0x0400)	/* Transmit CRC */
++#define BD_SC_CM	(0x0200)	/* Continous mode */
++#define BD_SC_ID	(0x0100)	/* Rec'd too many idles */
++#define BD_SC_P		(0x0100)	/* xmt preamble */
++#define BD_SC_BR	(0x0020)	/* Break received */
++#define BD_SC_FR	(0x0010)	/* Framing error */
++#define BD_SC_PR	(0x0008)	/* Parity error */
++#define BD_SC_NAK	(0x0004)	/* NAK - did not respond */
++#define BD_SC_OV	(0x0002)	/* Overrun */
++#define BD_SC_UN	(0x0002)	/* Underrun */
++#define BD_SC_CD	(0x0001)	/* */
++#define BD_SC_CL	(0x0001)	/* Collision */
 +
- #define dump_header(_a) _dump_header(_a, __func__, __LINE__)
- static void _dump_header(const struct os_area_header *h, const char *func,
- 	int line)
- {
-+	char str[sizeof(h->magic_num) + 1];
++/* Buffer descriptor control/status used by Ethernet receive.
++ * Common to SCC and FCC.
++ */
++#define BD_ENET_RX_EMPTY	(0x8000)
++#define BD_ENET_RX_WRAP		(0x2000)
++#define BD_ENET_RX_INTR		(0x1000)
++#define BD_ENET_RX_LAST		(0x0800)
++#define BD_ENET_RX_FIRST	(0x0400)
++#define BD_ENET_RX_MISS		(0x0100)
++#define BD_ENET_RX_BC		(0x0080)	/* FCC Only */
++#define BD_ENET_RX_MC		(0x0040)	/* FCC Only */
++#define BD_ENET_RX_LG		(0x0020)
++#define BD_ENET_RX_NO		(0x0010)
++#define BD_ENET_RX_SH		(0x0008)
++#define BD_ENET_RX_CR		(0x0004)
++#define BD_ENET_RX_OV		(0x0002)
++#define BD_ENET_RX_CL		(0x0001)
++#define BD_ENET_RX_STATS	(0x01ff)	/* All status bits */
 +
-+	dump_field(str, h->magic_num, sizeof(h->magic_num));
- 	pr_debug("%s:%d: h.magic_num:       '%s'\n", func, line,
--		h->magic_num);
-+		str);
- 	pr_debug("%s:%d: h.hdr_version:     %u\n", func, line,
- 		h->hdr_version);
- 	pr_debug("%s:%d: h.db_area_offset:  %u\n", func, line,
-@@ -311,7 +326,8 @@ static void _dump_params(const struct os
- 
- static int verify_header(const struct os_area_header *header)
- {
--	if (memcmp(header->magic_num, "cell_ext_os_area", 16)) {
-+	if (memcmp(header->magic_num, OS_AREA_HEADER_MAGIC_NUM,
-+		sizeof(header->magic_num))) {
- 		pr_debug("%s:%d magic_num failed\n", __func__, __LINE__);
- 		return -1;
- 	}
-@@ -331,7 +347,8 @@ static int verify_header(const struct os
- 
- static int db_verify(const struct os_area_db *db)
- {
--	if (db->magic_num != OS_AREA_DB_MAGIC_NUM) {
-+	if (memcmp(db->magic_num, OS_AREA_DB_MAGIC_NUM,
-+		sizeof(db->magic_num))) {
- 		pr_debug("%s:%d magic_num failed\n", __func__, __LINE__);
- 		return -1;
- 	}
-@@ -484,8 +501,11 @@ static int db_get_rtc_diff(const struct 
- static void _dump_db(const struct os_area_db *db, const char *func,
- 	int line)
- {
-+	char str[sizeof(db->magic_num) + 1];
++/* Buffer descriptor control/status used by Ethernet transmit.
++ * Common to SCC and FCC.
++ */
++#define BD_ENET_TX_READY	(0x8000)
++#define BD_ENET_TX_PAD		(0x4000)
++#define BD_ENET_TX_WRAP		(0x2000)
++#define BD_ENET_TX_INTR		(0x1000)
++#define BD_ENET_TX_LAST		(0x0800)
++#define BD_ENET_TX_TC		(0x0400)
++#define BD_ENET_TX_DEF		(0x0200)
++#define BD_ENET_TX_HB		(0x0100)
++#define BD_ENET_TX_LC		(0x0080)
++#define BD_ENET_TX_RL		(0x0040)
++#define BD_ENET_TX_RCMASK	(0x003c)
++#define BD_ENET_TX_UN		(0x0002)
++#define BD_ENET_TX_CSL		(0x0001)
++#define BD_ENET_TX_STATS	(0x03ff)	/* All status bits */
 +
-+	dump_field(str, db->magic_num, sizeof(db->magic_num));
- 	pr_debug("%s:%d: db.magic_num:      '%s'\n", func, line,
--		(const char*)&db->magic_num);
-+		str);
- 	pr_debug("%s:%d: db.version:         %u\n", func, line,
- 		db->version);
- 	pr_debug("%s:%d: db.index_64:        %u\n", func, line,
-@@ -516,7 +536,7 @@ static void os_area_db_init(struct os_ar
++/* Buffer descriptor control/status used by Transparent mode SCC.
++ */
++#define BD_SCC_TX_LAST		(0x0800)
++
++/* Buffer descriptor control/status used by I2C.
++ */
++#define BD_I2C_START		(0x0400)
++
+ int cpm_muram_init(void);
+ unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
+ int cpm_muram_free(unsigned long offset);
+diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
+index f1112c1..b93a53e 100644
+--- a/include/asm-powerpc/cpm2.h
++++ b/include/asm-powerpc/cpm2.h
+@@ -132,29 +132,6 @@ extern void cpm_setbrg(uint brg, uint rate);
+ extern void cpm2_fastbrg(uint brg, uint rate, int div16);
+ extern void cpm2_reset(void);
  
- 	memset(db, 0, sizeof(struct os_area_db));
+-
+-/* Buffer descriptors used by many of the CPM protocols.
+-*/
+-typedef struct cpm_buf_desc {
+-	ushort	cbd_sc;		/* Status and Control */
+-	ushort	cbd_datlen;	/* Data length in buffer */
+-	uint	cbd_bufaddr;	/* Buffer address in host memory */
+-} cbd_t;
+-
+-#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
+-#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
+-#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
+-#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
+-#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
+-#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
+-#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
+-#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
+-#define BD_SC_BR	((ushort)0x0020)	/* Break received */
+-#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
+-#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
+-#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
+-#define BD_SC_CD	((ushort)0x0001)	/* ?? */
+-
+ /* Function code bits, usually generic to devices.
+ */
+ #define CPMFCR_GBL	((u_char)0x20)	/* Set memory snooping */
+@@ -456,43 +433,6 @@ typedef struct scc_enet {
+ #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
+ #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
  
--	db->magic_num = OS_AREA_DB_MAGIC_NUM;
-+	memcpy(db->magic_num, OS_AREA_DB_MAGIC_NUM, sizeof(db->magic_num));
- 	db->version = 1;
- 	db->index_64 = HEADER_SIZE;
- 	db->count_64 = VALUES_64_COUNT;
+-/* Buffer descriptor control/status used by Ethernet receive.
+- * Common to SCC and FCC.
+- */
+-#define BD_ENET_RX_EMPTY	((ushort)0x8000)
+-#define BD_ENET_RX_WRAP		((ushort)0x2000)
+-#define BD_ENET_RX_INTR		((ushort)0x1000)
+-#define BD_ENET_RX_LAST		((ushort)0x0800)
+-#define BD_ENET_RX_FIRST	((ushort)0x0400)
+-#define BD_ENET_RX_MISS		((ushort)0x0100)
+-#define BD_ENET_RX_BC		((ushort)0x0080)	/* FCC Only */
+-#define BD_ENET_RX_MC		((ushort)0x0040)	/* FCC Only */
+-#define BD_ENET_RX_LG		((ushort)0x0020)
+-#define BD_ENET_RX_NO		((ushort)0x0010)
+-#define BD_ENET_RX_SH		((ushort)0x0008)
+-#define BD_ENET_RX_CR		((ushort)0x0004)
+-#define BD_ENET_RX_OV		((ushort)0x0002)
+-#define BD_ENET_RX_CL		((ushort)0x0001)
+-#define BD_ENET_RX_STATS	((ushort)0x01ff)	/* All status bits */
+-
+-/* Buffer descriptor control/status used by Ethernet transmit.
+- * Common to SCC and FCC.
+- */
+-#define BD_ENET_TX_READY	((ushort)0x8000)
+-#define BD_ENET_TX_PAD		((ushort)0x4000)
+-#define BD_ENET_TX_WRAP		((ushort)0x2000)
+-#define BD_ENET_TX_INTR		((ushort)0x1000)
+-#define BD_ENET_TX_LAST		((ushort)0x0800)
+-#define BD_ENET_TX_TC		((ushort)0x0400)
+-#define BD_ENET_TX_DEF		((ushort)0x0200)
+-#define BD_ENET_TX_HB		((ushort)0x0100)
+-#define BD_ENET_TX_LC		((ushort)0x0080)
+-#define BD_ENET_TX_RL		((ushort)0x0040)
+-#define BD_ENET_TX_RCMASK	((ushort)0x003c)
+-#define BD_ENET_TX_UN		((ushort)0x0002)
+-#define BD_ENET_TX_CSL		((ushort)0x0001)
+-#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
+-
+ /* SCC as UART
+ */
+ typedef struct scc_uart {
+@@ -562,8 +502,6 @@ typedef struct scc_trans {
+ 	uint	st_cmask;	/* Constant mask for CRC */
+ } scc_trans_t;
+ 
+-#define BD_SCC_TX_LAST		((ushort)0x0800)
+-
+ /* How about some FCCs.....
+ */
+ #define FCC_GFMR_DIAG_NORM	((uint)0x00000000)
+@@ -769,8 +707,6 @@ typedef struct spi {
+ 
+ #define SPI_EB		((u_char)0x10)		/* big endian byte order */
+ 
+-#define BD_IIC_START		((ushort)0x0400)
+-
+ /* IDMA parameter RAM
+ */
+ typedef struct idma {
+-- 
+1.5.3.7
