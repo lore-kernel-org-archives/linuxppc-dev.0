@@ -1,20 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0F258DDE08
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 13:49:35 +1100 (EST)
-In-Reply-To: <20071221203115.GA4633@localhost.localdomain>
-References: <20071221202824.GA4607@localhost.localdomain>
-	<20071221203115.GA4633@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b632798b4f5523653160b6a7156266e1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] [POWERPC] Implement GPIO API embryo
-Date: Sun, 23 Dec 2007 03:49:30 +0100
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60AE2DDE26
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 13:58:47 +1100 (EST)
+Message-ID: <476DCECD.6040008@freescale.com>
+Date: Sat, 22 Dec 2007 20:58:21 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <11981089894052-git-send-email-timur@freescale.com>	<20071220040633.GA6732@lixom.net>
+	<476A7B23.2040905@freescale.com>	<20071220223943.GA24138@lixom.net>
+	<476AEEB3.2010403@freescale.com> <476AF015.5040600@freescale.com>
+In-Reply-To: <476AF015.5040600@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +int __of_parse_gpio_bank_pin(struct device_node *np, int index,
-> +			     int bank_width, int max_bank)
-> +{
-> +	int bank;
-> +	int pin;
-> +	const u32 *gpios;
-> +
-> +	/*
-> +	 * We can get there only if of_get_gpio() succeeded, thus
-> +	 * no need checking for "gpios" existence.
-> +	 */
-> +	gpios = of_get_property(np, "gpios", NULL);
-> +	bank = gpios[index * 2];
-> +	pin = gpios[index * 2 + 1];
+Scott Wood wrote:
 
-If you stick with the #gpio-cells plan, here is where you should use it.
+>> None of the SOC nodes in any DTS have a "compatible" entry.
+> 
+> Not quite true; ep88xc, mpc8272ads, and pq2fads have them.
 
+Ah ok.  So what should the compatible entry for 8641 be?
 
-Segher
+	compatible = "fsl,mpc8641"
+
+That looks a lot like what a compatible entry for the CPU should be. 
+How are we differentiating between the compatible cores and compatible SOCs?
