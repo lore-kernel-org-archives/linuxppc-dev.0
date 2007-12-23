@@ -1,21 +1,15 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5213CDDDF7
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 14:35:51 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	lBN3Zk3p003719
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 20:35:46 -0700 (MST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Add information on enabling sound on the MPC8641 HPCN
-Date: Sat, 22 Dec 2007 21:35:44 -0600
-Message-Id: <11983809443854-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sun, 23 Dec 2007 14:37:24 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] PowerPC: implement GPIO API
+Message-ID: <20071223033724.GB10699@localhost.localdomain>
+References: <20071221202824.GA4607@localhost.localdomain>
+	<593200f4887c1fb73d9c9fb9b1db0b8c@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <593200f4887c1fb73d9c9fb9b1db0b8c@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +19,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a comment to the DTS file for the MPC8641 HPCN describing a wiring change
-needed to get sound working on this board.
+On Sun, Dec 23, 2007 at 03:47:50AM +0100, Segher Boessenkool wrote:
+> > OF device tree GPIOs bindings are similar to IRQs:
+> 
+> But GPIOs are a very different thing.  Most importantly, the "number"
+> of a GPIO is completely local to the GPIO controller.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Yes... just as interrupt specifiers are local to their interrupt
+domain.
 
-For a two-line comment, I thought the DTS would be the best place to put this
-information.
+> > pario0: gpio-controller@0 {
+> > 	#gpio-cells = <2>;
+> 
+> Your Linux code doesn't actually use this.  Why is it needed, anyway?
+> You should be able to encode a GPIO identifier in a single 32-bit word,
+> for any possible GPIO controller.
+> 
+> > 	num-ports = <7>;
+> 
+> What is this?  What is a "port"?  This doesn't belong in a generic GPIO
+> binding.
+> 
+> > device@0 {
+> > 	gpios = <bank pin bank pin bank pin>;
+> > 	gpio-parent = <&pario0>;
+> 
+> Not every GPIO controller has banks.
 
- arch/powerpc/boot/dts/mpc8641_hpcn.dts |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+That's just bad terminology in the example.  "bank pin" means an
+arbitrary format gpio specifier.
 
-diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-index 86fc228..08f78a6 100644
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -7,6 +7,9 @@
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-  * option) any later version.
-+ *
-+ * On some revisions of this board, C29 of the Uli M1575 must be connected
-+ * to ground (e.g. ground of resistor R353) in order to enable sound.
-  */
- 
- 
+> Not every device uses GPIOs
+> on a single GPIO controller.  It is inconvenient to force all bindings
+> to use the same name ("gpios") for its property that shows the GPIOs
+> (and for it to have only one such property).
+> 
+> So I recommend:
+> 
+> -- Advise (in the generic GPIO binding) people to use
+> 	< phandle-of-gpio-controller gpio-id-on-that-controller >
+> to refer to a GPIO from some device node;
+
+Ah, yes, that's a good point.  Given the ugly workarounds we need to
+deal with devices which have interrupts from multiple domains, we
+don't want to copy that limitation to the GPIO scheme.
+
+> -- And either:
+> 	-- Define (in the generic GPIO binding) that a "gpio-id" is a single
+> 	   32-bit cell;
+>     or
+> 	-- Define (in the generic GPIO binding) that a "gpio-id" is a number
+> 	   of 32-bit cells, and that that number of cells is encoded as a 
+> 32-bit
+> 	   integer in the "#gpio-cells" property in the device node of the
+> 	   respective GPIO controller.
+
+This option was the idea; the "bank pin" information has a format
+local to the gpio controller.  I agree the terminology needs to change
+to "gpio specifier" by analogy with the interrupt tree, though.
+
+> (I like the first option better, unless someone can think of some 
+> reasonable
+> situation where some specific GPIO controller binding needs more than 
+> 32 bits
+> to encode GPIO #).
+
+I can't think of a situation where it would be strictly speaking
+necessary, but I can think of several where it would be more
+convenient.  GPIO controllers that do have a bank/pin arrangement is
+one.  GPIO controllers than have a pin number, plus some sort of
+direction or level information is another.
+
 -- 
-1.5.2.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
