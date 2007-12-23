@@ -1,21 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <b04825@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B8E3DDDE0C
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 14:28:32 +1100 (EST)
-Message-ID: <476DD5DF.5020806@freescale.com>
-Date: Sat, 22 Dec 2007 21:28:31 -0600
+	by ozlabs.org (Postfix) with ESMTP id 5213CDDDF7
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 14:35:51 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	lBN3Zk3p003719
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Dec 2007 20:35:46 -0700 (MST)
 From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
-References: <20071221202309.GA4557@localhost.localdomain>
-In-Reply-To: <20071221202309.GA4557@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add information on enabling sound on the MPC8641 HPCN
+Date: Sat, 22 Dec 2007 21:35:44 -0600
+Message-Id: <11983809443854-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+Add a comment to the DTS file for the MPC8641 HPCN describing a wiring change
+needed to get sound working on this board.
 
-> +	qe@e0100000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,qe";
-> +		ranges = <0 0xe0100000 0x00100000>;
-> +		reg = <0xe0100000 0x480>;
-> +		/* filled by u-boot */
-> +		brg-frequency = <0>;
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-You need "bus-frequency" here too
+For a two-line comment, I thought the DTS would be the best place to put this
+information.
+
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index 86fc228..08f78a6 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -7,6 +7,9 @@
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+  * option) any later version.
++ *
++ * On some revisions of this board, C29 of the Uli M1575 must be connected
++ * to ground (e.g. ground of resistor R353) in order to enable sound.
+  */
+ 
+ 
+-- 
+1.5.2.4
