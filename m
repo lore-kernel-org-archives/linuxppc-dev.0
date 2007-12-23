@@ -1,21 +1,22 @@
 Return-Path: <cbouatmailru@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.184])
-	by ozlabs.org (Postfix) with ESMTP id 0105CDDE06
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 23:13:19 +1100 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so1716213fkz.9
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 04:13:18 -0800 (PST)
-Date: Sun, 23 Dec 2007 15:02:14 +0300
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.185])
+	by ozlabs.org (Postfix) with ESMTP id 4845EDDE07
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 23:28:35 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so1722504fkz.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 04:28:34 -0800 (PST)
+Date: Sun, 23 Dec 2007 15:17:35 +0300
 From: Anton Vorontsov <cbouatmailru@gmail.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 2/3] [POWERPC][NAND] FSL UPM NAND driver
-Message-ID: <20071223120214.GC5643@zarina>
+Subject: Re: [PATCH 1/3] [POWERPC] FSL UPM: routines to manage FSL UPMs
+Message-ID: <20071223121735.GA5831@zarina>
 References: <20071221203552.GA4738@localhost.localdomain>
-	<20071221204130.GB4829@localhost.localdomain>
-	<20071223133329.9d2c44e4.sfr@canb.auug.org.au>
+	<20071221203925.GA4829@localhost.localdomain>
+	<20071223132457.a40e8100.sfr@canb.auug.org.au>
+	<20071223115935.GB5643@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071223133329.9d2c44e4.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+In-Reply-To: <20071223115935.GB5643@zarina>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,52 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 23, 2007 at 01:33:29PM +1100, Stephen Rothwell wrote:
-> On Fri, 21 Dec 2007 23:41:30 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> >
-> > +static int __devinit upm_chip_probe(struct of_device *ofdev,
-> > +				    const struct of_device_id *ofid)
-> > +{
-> > +	struct upm_data *ud;
-> > +	struct resource io_res;
-> > +	const u32 *prop;
-> > +	int ret;
-> > +	int size;
-> > +
-> > +	ud = kzalloc(sizeof(*ud), GFP_KERNEL);
-> > +	if (!ud)
-> > +		return -ENOMEM;
-> > +
-> > +	ret = of_address_to_resource(ofdev->node, 0, &io_res);
-> > +	if (ret) {
-> > +		dev_err(&ofdev->dev, "can't get IO base\n");
-> > +		goto err;
-> > +	}
-> > +
-> > +	prop = of_get_property(ofdev->node, "width", &size);
-> > +	if (!prop || size != sizeof(u32)) {
-> > +		dev_err(&ofdev->dev, "can't get chip width\n");
-> > +		goto err;
+On Sun, Dec 23, 2007 at 02:59:35PM +0300, Anton Vorontsov wrote:
+[..]
+> > > +static inline void fsl_upm_start_pattern(struct fsl_upm *upm, u32 pat_offset)
+> > > +{
+> > > +	spin_lock_irqsave(&upm_lock, upm_lock_flags);
+> > 
+> > I may be wrong, but don't we need the "flags" argument to
+> > spin_lock_irqsave to be on the stack?  And the save and restore to be in
+> > the same function?
 > 
-> Here ret is 0, is that the correct return code?
+> In general case, yes. Here, not exactly. We have to grab a lock at the
+> start(), do runs(), and release a lock at the end():
 
-Nope.
+Ugh, that's stupid of course. flags are indeed should be on the stack.
+So, what I can use here is a mutex, and thus forbid using these
+routines from the isrs. Another option would be disabling interrupts
+and getting plain lock, but that is ugly. So will use a mutex.
 
-> > +	ud->rnb_gpio = of_get_gpio(ofdev->node, 0);
-> > +	if (ud->rnb_gpio >= 0) {
-> > +		ret = gpio_request(ud->rnb_gpio, ofdev->dev.bus_id);
-> > +		if (ret) {
-> > +			dev_err(&ofdev->dev, "can't request RNB gpio\n");
-> > +			goto err;
-> > +		}
-> > +		gpio_direction_input(ud->rnb_gpio);
-> > +	} else if (ud->rnb_gpio == -EINVAL) {
-> > +		dev_err(&ofdev->dev, "specified RNB gpio is invalid\n");
-> > +		goto err;
-> 
-> Again ret is 0 here.
-
-Much thanks for catching that!
+Much thanks,
 
 -- 
 Anton Vorontsov
