@@ -1,12 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Yet more patches added to for-2.6.25/master branches 
-In-reply-to: <18283.44454.618519.155696@cargo.ozlabs.ibm.com> 
-References: <18283.44454.618519.155696@cargo.ozlabs.ibm.com>
-Date: Sun, 23 Dec 2007 18:23:18 +1100
-Message-ID: <18682.1198394598@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 80F92DDDDB
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Dec 2007 19:18:28 +1100 (EST)
+Date: Sun, 23 Dec 2007 19:18:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH/RFC] powerpc: DBox2 Board Support
+Message-Id: <20071223191819.cb4f8119.sfr@canb.auug.org.au>
+In-Reply-To: <476D61DB.2090201@scram.de>
+References: <476D61DB.2090201@scram.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ."
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,73 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus,
+--Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can you take the crash shutdown hook patches as well for 2.6.25?
+On Sat, 22 Dec 2007 20:13:31 +0100 Jochen Friedrich <jochen@scram.de> wrote:
+>
+> +++ b/arch/powerpc/platforms/8xx/dbox2.h
+> +
+> +#include <sysdev/fsl_soc.h>
 
-http://patchwork.ozlabs.org/linuxppc/patch?person=414&id=15546
-http://patchwork.ozlabs.org/linuxppc/patch?person=414&id=15547
+Nothing in this header files uses anything in that one, so don't include
+it.
 
-Mikey
+> +++ b/arch/powerpc/platforms/8xx/dbox2_setup.c
+> +
+> +char *dbox2_manuf_name[3] =3D {
 
+static const.
 
-In message <18283.44454.618519.155696@cargo.ozlabs.ibm.com> you wrote:
-> Aegis Lin (1):
->       [POWERPC] spufs: Use separate timer for /proc/spu_loadavg calculation
-> 
-> Andre Detsch (1):
->       [POWERPC] spufs: DMA Restart after SIGSEGV
-> 
-> Arnd Bergmann (1):
->       [POWERPC] spufs: block fault handlers in spu_acquire_runnable
-> 
-> Benjamin Herrenschmidt (2):
->       [POWERPC] Fix for via-pmu based backlight control
->       [POWERPC] Fix possible NULL deref in ppc32 PCI
-> 
-> Christoph Hellwig (2):
->       [POWERPC] spufs: add enchanced simple attr macros
->       [POWERPC] spufs: make state_mutex interruptible
-> 
-> Emil Medve (1):
->       [POWERPC] Optimize counting distinct entries in the relocation sections
-> 
-> Jeremy Kerr (5):
->       [POWERPC] spufs: move fault, lscsa_alloc and switch code to spufs modul
-e
->       [POWERPC] spufs: fix incorrect interrupt status clearing in backing mbo
-x stat poll
->       [POWERPC] spufs: use #defines for SPU class [012] exception status
->       [POWERPC] spufs: rework class 0 and 1 interrupt handling
->       [POWERPC] spufs: Don't leak kernel stack through an empty {i,m}box_info
- read
-> 
-> Julio M. Merino Vidal (1):
->       [POWERPC] spufs: fix typos in sched.c comments
-> 
-> Luke Browning (4):
->       [POWERPC] spufs: add backing ops for privcntl register
->       [POWERPC] spufs: reorganize spu_run_init
->       [POWERPC] spufs: spu_find_victim may choose wrong victim
->       [POWERPC] spufs: decouple spu scheduler from spufs_spu_run (asynchronou
-s scheduling)
-> 
-> Masato Noguchi (2):
->       [POWERPC] cell: wrap master run control bit
->       [POWERPC] spufs: don't set reserved bits in spu interrupt status
-> 
-> Scott Wood (1):
->       [POWERPC] Implement arch disable/enable irq hooks.
-> 
-> Stephen Rothwell (5):
->       [POWERPC] Add EHEA and EHCA as modules in the ppc64_defconfig
->       [POWERPC] The builtin matches for ibmebus.c can be __initdata
->       [POWERPC] Constify the of_device_id passed to of_platform_bus_probe
->       [POWERPC] Pointers marked as __iomem do not need to be volatile
->       [POWERPC] Make non-PCI build work again
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+> +	"Nokia",
+> +	"Philips",
+> +	"Sagem",
+> +};
+> +
+> +static enum dbox2_mid dbox2_manuf_id;
+> +
+> +struct cpm_pin {
+> +	int port, pin, flags;
+> +};
+> +
+> +static struct cpm_pin dbox2_pins[] =3D {
+
+const?
+
+> +static int __init dbox2_probe(void)
+> +{
+> +	unsigned long root =3D of_get_flat_dt_root();
+> +	return of_flat_dt_is_compatible(root, "betaresearch,dbox2");
+
+You should include asm/prom.h to use the flattened device tree function.
+
+> +static struct of_device_id __initdata of_bus_ids[] =3D {
+
+__initdata
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHbhnQTgG2atn1QN8RAuY6AJ9bt0uHOMpEMqGtTynERjylswhtNwCePSrV
+ZAx58DyElhqHSrSH2Xe2+AQ=
+=iTj2
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__23_Dec_2007_19_18_19_+1100_r5GqPDbWqmFSKbZ.--
