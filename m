@@ -1,20 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 74372DDDEE
+Return-Path: <jepmalinux@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 109E5DDDEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Dec 2007 06:30:58 +1100 (EST)
-Date: Mon, 24 Dec 2007 13:38:00 -0600
-From: Olof Johansson <olof@lixom.net>
-To: ramkumarj Ramkumar <ramkumarj2000@gmail.com>
-Subject: Re: Loop at starting pid 164, tty '': '/sbin/getty'
-Message-ID: <20071224193800.GA3382@lixom.net>
-References: <4f8c3030712220051if731af9g350af9d45a75c244@mail.gmail.com>
-	<20071224040915.GA20380@lixom.net>
-	<4f8c3030712240120m30d68b37g8b5f099294c6d769@mail.gmail.com>
+	Tue, 25 Dec 2007 08:27:09 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so3596055pyi.0
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 24 Dec 2007 13:27:08 -0800 (PST)
+Message-ID: <ef1737dc0712241327t3cc7c14kcb91e9a4e550df18@mail.gmail.com>
+Date: Mon, 24 Dec 2007 22:27:08 +0100
+From: "Josep Maria Batlle" <jepmalinux@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: i2c device for a linux 2.6 in XUPV2P
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4f8c3030712240120m30d68b37g8b5f099294c6d769@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_6005_17063389.1198531628049"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+------=_Part_6005_17063389.1198531628049
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Mon, Dec 24, 2007 at 05:20:10PM +0800, ramkumarj Ramkumar wrote:
+Hi all,
 
-> I would be very grateful if the following questions could be addressed,
-> 
-> 1. Does the inittab format changed for Linux 2.6. The old one was from
-> mkrootfs (which I think is pretty old). I could see some changes in the
-> "respawn" line.
+I have booted up linux 2.6 on Xilinx XUPV2P (using the base of ml300 config
+file).
+Now I am trying to use the i2c in the user-space. First of all: is it
+possible?
 
-Inittab isn't tied to the kernel, but to the init process. So no, it
-should not have changed between 2.4 and 2.6.
+My first attempts have not worked. I have made this:
+1) I enable "I2C Support" and "I2C device interface" in the kernel
+recompilation.
+2) I added the "i2c-0" device in /dev (# mknod i2c-0 c 89 0)
+3) then I run a simple program to open the device (provided by the
+"dev-interface" file of i2c kernel documentation) that returns this errno
+message: "No such device".
 
-> 2. Is it required to run the tty0 along with ttyS0. Is this is mandatory. I
-> assumed all these days console and ttyS0 should be sufficient.
+I have tried to use the device number 1, 2, 3, 4 but these have not worked.
+I have tried to use the device "i2cn" but not worked. I have tried to use
+all the BSP's from the EDK (7.1i) and then only the "xparameters_ml300.h" in
+the compilation. After all of this, now I am modifying the RFS for "mdev"...
+Somebody can tell me what I am doing wrong if this use is possible?
 
-tty0 is normally one of the vga consoles. It shouldn't be needed if all
-you have is serial.
+I use the kernel tree "virtex-for-2.6.24" from SecretLab and Busybox 1.7.2.
 
-> 3. A very basic question : What is the clear difference between ttyS0 ( UART
-> Driver ), console and tty0. To my understanding, ttyS0 is the first port
-> UART 's driver (for 16550/8250) which deals with the hardware as such by
-> writing and reading the registers. tty0 is virtual console, something to do
-> with telnet sessions. But I dont clearly understand why console and tty0 are
-> both required or not. Please correct me if my understanding is wrong.
+Thanks.
 
-ttyS<x> are normally 8250-compatible uarts, yes. pts/<x> is remote
-connections such as telnet or ssh-based ones. tty<x> are normally the
-local vga consoles.
+------=_Part_6005_17063389.1198531628049
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Hi all,<br><br>I have booted up linux 2.6 on Xilinx XUPV2P (using the base of ml300 config file).<br>Now I am trying to use the i2c in the user-space. First of all: is it possible?<br><br>My first attempts have not worked. I have made this:
+<br>1) I enable &quot;I2C Support&quot; and &quot;I2C device interface&quot; in the kernel recompilation.<br>2) I added the &quot;i2c-0&quot; device in /dev (# mknod i2c-0 c 89 0)<br>3) then I run a simple program to open the device (provided by the &quot;dev-interface&quot; file of i2c kernel documentation) that returns this errno message: &quot;No such device&quot;.
+<br><br>I have tried to use the device number 1, 2, 3, 4 but these have not worked. I have tried to use the device &quot;i2cn&quot; but not worked. I have tried to use all the BSP&#39;s from the EDK (7.1i) and then only the &quot;xparameters_ml300.h&quot; in the compilation. After all of this, now I am modifying the RFS for &quot;mdev&quot;...
+<br>Somebody can tell me what I am doing wrong if this use is possible?<br><br>I use the kernel tree &quot;virtex-for-2.6.24&quot; from SecretLab and Busybox 1.7.2.<br><br>Thanks.<br>
 
--Olof
+------=_Part_6005_17063389.1198531628049--
