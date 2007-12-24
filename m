@@ -1,21 +1,18 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 2CE8CDDDEC
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Dec 2007 06:20:27 +1100 (EST)
-Date: Mon, 24 Dec 2007 13:27:29 -0600
+	by ozlabs.org (Postfix) with ESMTP id 0BB78DDD04
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Dec 2007 10:03:40 +1100 (EST)
+Date: Mon, 24 Dec 2007 17:10:42 -0600
 From: Olof Johansson <olof@lixom.net>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: Build breakage on powerpc with 2.6.24-rc6-mm1
-Message-ID: <20071224192729.GA3122@lixom.net>
-References: <20071223224158.GA7975@linux.vnet.ibm.com>
-	<20071224134353.c00fc231.sfr@canb.auug.org.au>
-	<20071224044912.GA10690@suse.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] Add information on enabling sound on the MPC8641 HPCN
+Message-ID: <20071224231042.GA4588@lixom.net>
+References: <11983809443854-git-send-email-timur@freescale.com>
+	<20071223152613.GA4817@lixom.net> <476FEB43.8050507@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071224044912.GA10690@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm@linux-foundation.org,
-	balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <476FEB43.8050507@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 23, 2007 at 08:49:12PM -0800, Greg KH wrote:
-> > Hi Greg, do you even build with your patches applied?
+On Mon, Dec 24, 2007 at 11:24:19AM -0600, Timur Tabi wrote:
+> Olof Johansson wrote:
 > 
-> For the power architecture, no, I do not.  I used to, but my cross-build
-> box died and I haven't taken the time to set it all up again.
+> > Sounds like a board rework document on your support site is the right
+> > place for this. 
+> 
+> Except that no one would know to look there.
 
-Crosstool makes it really easy. It's demo-powerpc-970.sh will build a
-toolchain that can build both 32- and 64-bit powerpc kernels. It's got
-a demo-s390.sh as well, but I haven't tried that one myself.
+Why do you expect people to look at the device tree source file instead?
+It seems even more remote to me.
+
+> I don't even know who to contact to get that kind of information on
+> that site.
+
+That's a pretty lame excuse. :)
+
+> > We normally don't document board reworks required in
+> > the linux sources, do we?
+> 
+> I do, if I can find a discrete place for it.  The patch for my QE UART 
+> driver has a similar comment in the DTS for the 8323E MDS.
+
+Are freescale customers really used to going to the linux device tree
+sources to find out how to modify their boards to achieve certain
+functionality with their eval boards?! I guess you guys are taking the
+"device trees are used to describe the hardware" statement to it's
+fullest extent.
 
 
 -Olof
