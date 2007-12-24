@@ -1,19 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
+Return-Path: <vbarshak@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 2718ADDDFA
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 23:15:37 +1100 (EST)
-Date: Mon, 24 Dec 2007 15:17:15 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
-Message-ID: <20071224121715.GB7903@localhost.localdomain>
-References: <20071221202309.GA4557@localhost.localdomain>
-	<476DD5DF.5020806@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <476DD5DF.5020806@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id E29BDDDE1E
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 23:53:20 +1100 (EST)
+Message-ID: <476FAB64.4050101@ru.mvista.com>
+Date: Mon, 24 Dec 2007 15:51:48 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 2/4] PowerPC: update 440EP(x)/440GR(x) identical PVR issue
+	workaround
+References: <20071221160723.GA1430@ru.mvista.com>
+	<20071221104347.54cd2ad5@zod.rchland.ibm.com>
+	<476C1862.8080603@ru.mvista.com> <200712212056.41798.sr@denx.de>
+In-Reply-To: <200712212056.41798.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 22, 2007 at 09:28:31PM -0600, Timur Tabi wrote:
-> Anton Vorontsov wrote:
+Stefan Roese wrote:
+> Hi Valentine,
 > 
-> >+	qe@e0100000 {
-> >+		#address-cells = <1>;
-> >+		#size-cells = <1>;
-> >+		compatible = "fsl,qe";
-> >+		ranges = <0 0xe0100000 0x00100000>;
-> >+		reg = <0xe0100000 0x480>;
-> >+		/* filled by u-boot */
-> >+		brg-frequency = <0>;
+> On Friday 21 December 2007, Valentine Barshak wrote:
+>>> Good catch.  I'll have to look more closely to see if anything else
+>>> would be broken by changing the cpu node name from "PowerPC,xxxx@0" to
+>>> "cpu@0".
+>>>
+>>> josh
+>> Looks like we need a u-boot update for 405Ex Kilauea board.
+>> Mine (U-Boot 1.3.0-rc3-gccc2fe86-dirty (Oct 25 2007 - 12:18:41))
+>> fails to boot with new cpu node changes:
+>>
+>>     Uncompressing Kernel Image ... OK
+>>     Booting using the fdt at 0x400000
+>> le to update property /cpus/PowerPC,405EX@0:timebase-frequency,
+>> err=FDT_ERR_NOTFOUND
+>> Unable to update property /cpus/PowerPC,405EX@0:clock-frequency,
+>> err=FDT_ERR_NOTFOUND
 > 
-> You need "bus-frequency" here too
+> Already done. :) Please take a look at the current implementation in the 
+> for-1.3.2 branch of the u-boot-ppc4xx custodian repo:
+> 
+> http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot/u-boot-ppc4xx.git;a=shortlog;h=for-1.3.2
+> 
+> This works for both cpu node names.
 
-Hm.. 
+Great, thanks :)
+Valentine.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048388.html
-
-^^ David Gibson suggested to get rid of it.
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+> 
+> Best regards,
+> Stefan
