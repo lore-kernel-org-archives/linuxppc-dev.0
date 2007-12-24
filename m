@@ -1,21 +1,27 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <greg@kroah.com>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 69715DDDF7
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 16:00:46 +1100 (EST)
-Date: Sun, 23 Dec 2007 20:49:12 -0800
-From: Greg KH <gregkh@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6B8A7DDE34
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 16:01:03 +1100 (EST)
+Date: Sun, 23 Dec 2007 21:01:13 -0800
+From: Greg KH <greg@kroah.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Build breakage on powerpc with 2.6.24-rc6-mm1
-Message-ID: <20071224044912.GA10690@suse.de>
-References: <20071223224158.GA7975@linux.vnet.ibm.com>
-	<20071224134353.c00fc231.sfr@canb.auug.org.au>
+Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
+Message-ID: <20071224050113.GA10835@kroah.com>
+References: <20071205093054.GA23229@kroah.com>
+	<1196853031.6759.7.camel@concordia>
+	<20071205214103.GA7074@kroah.com>
+	<1196912898.14754.13.camel@concordia>
+	<20071213070829.GA13764@kroah.com>
+	<20071224135208.2a29ffc0.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20071224134353.c00fc231.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071224135208.2a29ffc0.sfr@canb.auug.org.au>
+Cc: linux-kernel@vger.kernel.org, David Gibson <dwg@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, "Kyle A. Lucke" <klucke@us.ibm.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 24, 2007 at 01:43:53PM +1100, Stephen Rothwell wrote:
-> Hi Balbir,
+On Mon, Dec 24, 2007 at 01:52:08PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
 > 
-> Thanks for the report.
-> 
-> On Mon, 24 Dec 2007 04:11:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> On Wed, 12 Dec 2007 23:08:29 -0800 Greg KH <greg@kroah.com> wrote:
 > >
-> > I see the following error with the iseries_veth driver in 2.6.24-rc6-mm1
+> > Hm, ok, it's odd as you are the only driver in the whole tree doing
+> > something like this, but it seems semi-resonable, so I can't complain :)
 > > 
-> > drivers/net/iseries_veth.c: In function ‘veth_init_connection’:
-> > drivers/net/iseries_veth.c:818: warning: unused variable ‘rc’
-> > drivers/net/iseries_veth.c: In function ‘veth_probe_one’:
-> > drivers/net/iseries_veth.c:1086: error: ‘veth_port_ktypeq’ undeclared
-> > (first use in this function)
-> > drivers/net/iseries_veth.c:1086: error: (Each undeclared identifier is
-> > reported only once
-> > drivers/net/iseries_veth.c:1086: error: for each function it appears
-> > in.)
-> > make[2]: *** [drivers/net/iseries_veth.o] Error 1
-> > make[1]: *** [drivers/net] Error 2
-> > make: *** [drivers] Error 2
-
-Thanks for the report, sorry for the typos, I'll fix up my patch.
-
-> Yeah, that would be
-> gregkh-driver-kobject-convert-drivers-net-iseries_vethc-to-use-kobject_init-add_ng.
+> > I'll fix the core up to allow you to do this, thanks for the
+> > explanation.
 > 
-> Hi Greg, do you even build with your patches applied?
+> So if this "seems semi-reasonable", why was the result
+> gregkh-driver-driver-add-driver_add_kobj-for-looney-iseries_veth-driver
+> containing "Hopefully no one uses this function in the future and the
+> iseries_veth driver authors come to their senses so I can remove this
+> hack..." as part of its comment.  If you expect respect, you need to
+> treat others the same way ...
 
-For the power architecture, no, I do not.  I used to, but my cross-build
-box died and I haven't taken the time to set it all up again.  For i386
-and x86-64 I do build everything, and as that's 99% of the users, it's
-usually fine :)
+Well, sarcasm doesn't come accross very easily in changelog comments it
+seems :)
 
-I did start to try to get a s390 cross-build working, but ran out of
-time a week or so ago...
+> If what the driver writers are doing is "looney" (in your opinion), then
+> please describe a better way of doing what they are trying to do.
+> Sometimes, if people have to abuse the infrastructure, it is possible that
+> the infrastructure is lacking?
 
-> > Here's a patch, compile tested to fix the compilation problem
-> 
-> Hopefully Greg will fix his original patch before it reaches Linus.
+In thinking about this some more, no, I think you all are abusing the
+infrastructure here.  This is the ONLY driver in the entire kernel tree
+that thinks it is acceptable to hang kobjects off of the driver
+structure.  For some reason, no one else does this either because they
+never would think of doing such a thing, or that they are not as unique
+as this driver.
 
-I will do that.
+So I take back the "semi-resonable" statement above.  Please prove to me
+that:
+	- it is ok to hang kobjects off of a driver when:
+		- no userspace tool will ever be notified that they have
+		  been created
+		- no known userspace library knows how to find such
+		  attributes (libsysfs can't do that last I looked, and
+		  it's no longer maintained.)
+		- there is no documentation in the Documentation/ABI/
+		  explaining this usage.
+	- this can not be just a easily expressed in debugfs, or some
+	  other representation (netlink for configuration, configfs,
+	  some other location in sysfs, a driver-specific filesystem,
+	  etc.)
+	- that there is a tool out there using this current interface.
+
+I don't like this usage of sysfs as it is very abnormal, and we are
+trying very hard to fix up the rough edges here, to:
+	- make it easier to program to and not get things incorrect
+	  within the kernel
+	- present a unified, semi-sane interface that is documented well
+	  to userspace so users don't get even madder then they
+	  currently are.
+
 
 thanks,
 
