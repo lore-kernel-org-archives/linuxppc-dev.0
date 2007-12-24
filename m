@@ -1,20 +1,25 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EC0C7DDDEA
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 13:44:01 +1100 (EST)
-Date: Mon, 24 Dec 2007 13:43:53 +1100
+	by ozlabs.org (Postfix) with ESMTP id 27F8EDDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 13:52:15 +1100 (EST)
+Date: Mon, 24 Dec 2007 13:52:08 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Build breakage on powerpc with 2.6.24-rc6-mm1
-Message-Id: <20071224134353.c00fc231.sfr@canb.auug.org.au>
-In-Reply-To: <20071223224158.GA7975@linux.vnet.ibm.com>
-References: <20071223224158.GA7975@linux.vnet.ibm.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
+Message-Id: <20071224135208.2a29ffc0.sfr@canb.auug.org.au>
+In-Reply-To: <20071213070829.GA13764@kroah.com>
+References: <20071205093054.GA23229@kroah.com>
+	<1196853031.6759.7.camel@concordia>
+	<20071205214103.GA7074@kroah.com>
+	<1196912898.14754.13.camel@concordia>
+	<20071213070829.GA13764@kroah.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+"
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, gregkh@suse.de,
-	linux-kernel@vger.kernel.org
+	boundary="Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK"
+Cc: linux-kernel@vger.kernel.org, David Gibson <dwg@au1.ibm.com>,
+	linuxppc-dev@ozlabs.org, "Kyle A. Lucke" <klucke@us.ibm.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,60 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+
-Content-Type: text/plain; charset=UTF-8
+--Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Balbir,
+Hi Greg,
 
-Thanks for the report.
-
-On Mon, 24 Dec 2007 04:11:58 +0530 Balbir Singh <balbir@linux.vnet.ibm.com>=
- wrote:
+On Wed, 12 Dec 2007 23:08:29 -0800 Greg KH <greg@kroah.com> wrote:
 >
-> I see the following error with the iseries_veth driver in 2.6.24-rc6-mm1
+> Hm, ok, it's odd as you are the only driver in the whole tree doing
+> something like this, but it seems semi-resonable, so I can't complain :)
 >=20
-> drivers/net/iseries_veth.c: In function =E2=80=98veth_init_connection=E2=
-=80=99:
-> drivers/net/iseries_veth.c:818: warning: unused variable =E2=80=98rc=E2=
-=80=99
-> drivers/net/iseries_veth.c: In function =E2=80=98veth_probe_one=E2=80=99:
-> drivers/net/iseries_veth.c:1086: error: =E2=80=98veth_port_ktypeq=E2=80=
-=99 undeclared
-> (first use in this function)
-> drivers/net/iseries_veth.c:1086: error: (Each undeclared identifier is
-> reported only once
-> drivers/net/iseries_veth.c:1086: error: for each function it appears
-> in.)
-> make[2]: *** [drivers/net/iseries_veth.o] Error 1
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
+> I'll fix the core up to allow you to do this, thanks for the
+> explanation.
 
-Yeah, that would be
-gregkh-driver-kobject-convert-drivers-net-iseries_vethc-to-use-kobject_init=
--add_ng.
+So if this "seems semi-reasonable", why was the result
+gregkh-driver-driver-add-driver_add_kobj-for-looney-iseries_veth-driver
+containing "Hopefully no one uses this function in the future and the
+iseries_veth driver authors come to their senses so I can remove this
+hack..." as part of its comment.  If you expect respect, you need to
+treat others the same way ...
 
-Hi Greg, do you even build with your patches applied?
-
-> Here's a patch, compile tested to fix the compilation problem
-
-Hopefully Greg will fix his original patch before it reaches Linus.
+If what the driver writers are doing is "looney" (in your opinion), then
+please describe a better way of doing what they are trying to do.
+Sometimes, if people have to abuse the infrastructure, it is possible that
+the infrastructure is lacking?
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+
+--Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHbxztTgG2atn1QN8RAiFeAJ0eoC9FEIZUKdcCZzLUx4IiO4gHbQCffn6T
-XYCe4KW5c/YRjg0iPPka1h4=
-=o0P7
+iD8DBQFHbx7dTgG2atn1QN8RAhWEAJ4ymGNuhmuHByAVk/VK3jh+K6UBYQCglLBB
+WQQ4PCkw2he5ftxow1xrR2s=
+=nkiS
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__24_Dec_2007_13_43_53_+1100_HJmzWKCz5Gt4yzl+--
+--Signature=_Mon__24_Dec_2007_13_52_08_+1100_.68Y0mCcCxgBrWHK--
