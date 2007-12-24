@@ -1,14 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 24 Dec 2007 10:03:42 +1100
+Date: Mon, 24 Dec 2007 11:16:23 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFC] powerpc: DBox2 Board Support
-Message-ID: <20071223230342.GA20636@localhost.localdomain>
-References: <476D61DB.2090201@scram.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RESEND DTC PATCH 2/2] Add support for binary includes.
+Message-ID: <20071224001623.GA21400@localhost.localdomain>
+References: <20071220195259.GA1238@ld0162-tx32.am.freescale.net>
+	<20071221002922.GF2665@localhost.localdomain>
+	<20071221170921.GA6977@ld0162-tx32.am.freescale.net>
+	<20071222025130.GC7891@localhost.localdomain>
+	<20071222135716.GA16187@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <476D61DB.2090201@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20071222135716.GA16187@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com, u-boot-users@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,158 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 22, 2007 at 08:13:31PM +0100, Jochen Friedrich wrote:
-> This patch adds device tree source, default config and setup code for
-> DBox2 devices.
+On Sat, Dec 22, 2007 at 07:57:17AM -0600, Scott Wood wrote:
+> On Sat, Dec 22, 2007 at 01:51:30PM +1100, David Gibson wrote:
+> > On Fri, Dec 21, 2007 at 11:09:21AM -0600, Scott Wood wrote:
+> > > OK.  I was being lazy. :-P
+> > 
+> > In general I'd approve, but having to invoke dtc in the right place
+> > for the dts file is a bit too big a usability problem, I think.
+> 
+> Yeah, I agree.  It looks like the existing /include/ has the same
+> problem, BTW.
 
-[snip]
-> diff --git a/arch/powerpc/boot/dts/dbox2.dts b/arch/powerpc/boot/dts/dbox2.dts
-> new file mode 100644
-> index 0000000..8d91510
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/dbox2.dts
-> @@ -0,0 +1,263 @@
-> +/*
-> + * DBOX2 Device Tree Source
-> + *
-> + * Copyright 2007 Jochen Friedrich <jochen@scram.de>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/ {
-> +	model = "Dbox2";
-> +	compatible = "betaresearch,dbox2";
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,823@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			d-cache-line-size = <d#16>;
-> +			i-cache-line-size = <d#16>;
-> +			d-cache-size = <d#1024>;
-> +			i-cache-size = <d#2048>;
-> +			timebase-frequency = <0>;
-> +			bus-frequency = <0>;
-> +			clock-frequency = <0>;
-> +			interrupts = <f 2>;	// decrementer interrupt
-> +			interrupt-parent = <&PIC>;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0 2000000>;
-> +	};
-> +
-> +	localbus@8000000 {
-> +		compatible = "betaresearch,dbox2-localbus";
+Uh, yes, I guess it would.  I suppose we'd better fix that too.  We'll
+see how bored I get at my parents' place over Christmas.
 
-Is this bus interface really board specific?  I would have thought the
-localbus bridge would have been part of the SoC in which case the
-compatible string should mention the 823 rather than the dbox.
+> > > Yeah, I wanted something that would cause dtc to return an error code,
+> > > and it doesn't seem that calling yyerror(f) will do that at present.  I
+> > > guess I should fix that rather than overload YYERROR.
+> > 
+> > No.  As per the yacc interface, yyerror() prints only, it doesn't
+> > terminate.
+> 
+> I don't mean terminate early, just set a flag indicating there were
+> errors, so it returns an error code once parsing is done.
 
-> +		#address-cells = <1>;
+Ok.  We don't have a really good mechanism for that at present - for
+any of the input forms.  I was thinking about trying to hook that into
+the checking framework - have a special sort of check that doesn't do
+anything when invoked as a check, but can be "pre-failed" by the input
+parsing code.
 
-It's also usual for these localbus things, to have #address-cells of
-2, with the chipselect explicitly present as the first cell.
+> > > > I'm also not sure that stat()ing the file is a good way to get the
+> > > > size.  This requires that the included file be a regular file with a
+> > > > sane st_size value, and I can imagine cases where it might be useful
+> > > > to incbin from a /dev node or other special file.  Obviosuly
+> > > > implementing that will require work to data_copy_file().
+> > > 
+> > > Hmm...  do you have a use case in mind?
+> > 
+> > Nothing really specific.  I'm thinking of a dts that maybe pulls in
+> > some blobs from a pre-existing firmware, by sucking in files from
+> > /proc/device-tree.
+> 
+> 'ls -l /proc/device-tree' seems to indicate that stat would work fine
+> there (and fstree.c uses it).
 
-> +		#size-cells = <1>;
-> +		reg = <8000000 18000000>;
-> +
-> +		ranges = <0 8000000 18000000>;
-> +
-> +		enx@0 {
-> +			compatible = "c-cube,enx";
+Uh, yeah.  That's just me being an old-timer and remembering the days
+when stat() didn't operate on /proc properly.
 
-What are these mysterious enx, gtx, etc. devices?  Some comments might
-be nice.
+> > Or maybe something to produce a dts for a guest under a hypervisor that
+> > takes an image of a real NVRAM or other device to embed in the tree as
+> > a virtual NVRAM for the guest.
+> 
+> OK.
+> 
+> > > > Actually, I think the way to go here would be to have two variants of
+> > > > the incbin directive:  one which takes just a filename and includes
+> > > > the whole file contents, another which takes a filename and a number
+> > > > and includes just the first N bytes of the file.
+> > > 
+> > > Maybe.  /incbinrange/ "path/name" start len?
+> > 
+> > I'd prefer to avoid two different keywords if possible.  I'll see if I
+> > can think of a reasonable syntax.
+> 
+> /incbin/("path")
+> /incbin/("path", start, len)
 
-[snip]
-> +		flash@8000000 {
-> +			// Flash also has info about model needed by setup
-> +			compatible = "cfi-flash",
-> +				     "betaresearch,dbox2-config";
-
-compatible strings should be listed with most specific first, most
-general last.  That would put "cfi-flash" after the dbox2 specific
-string, I believe.
-
-[snip]
-> +	soc@ff000000 {
-> +		compatible = "fsl,mpc823",
-> +			     "fsl,pq1-soc";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		device_type = "soc";
-> +		ranges = <0 ff000000 00004000>;
-> +		reg = <ff000000 00004000>;
-> +		bus-frequency = <0>;
-> +
-> +		PIC: pic@0 {
-> +			interrupt-controller;
-> +			#address-cells = <0>;
-> +			#interrupt-cells = <2>;
-> +			reg = <0 24>;
-> +			compatible = "fsl,mpc823-pic",
-> +				     "fsl,pq1-pic";
-> +		};
-> +
-> +		wdt@0 {
-> +			device_type = "watchdog";
-
-Drop this device_type.
-
-> +			compatible = "fsl,mpc823-wdt",
-> +				     "fsl,pq1-wdt";
-> +			reg = <0 10>;
-> +		};
-> +
-> +		cpm@9c0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges;
-> +			reg = <9c0 40>;
-> +			command-proc = <9c0>;
-> +			interrupts = <0 2>;	// cpm error interrupt
-> +			interrupt-parent = <&CPM_PIC>;
-> +			compatible = "fsl,mpc823-cpm",
-> +				     "fsl,cpm1";
-> +
-> +			muram@2000 {
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
-> +				ranges = <0 2000 2000>;
-> +
-> +				data@0 {
-> +					compatible = "fsl,cpm-muram-data";
-> +					reg = <0 1c00>;
-> +				};
-> +			};
-> +
-> +			// Port D is LCD exclusive. Don't export as GPIO
-> +			CPM1_PIO: pio@970 {
-> +				compatible = "fsl,cpm1-pario";
-> +				reg = <970 180>;
-> +				num-ports = <3>;
-> +				#gpio-cells = <2>;
-> +			};
-> +
-> +			lcd@970 {
-> +				reg = <970 10>;
-> +				compatible = "samsung,ks0713";
-
-Is this representing an LCD controller, or the display itself.  Either
-way I'm surprised there's something here in the SoC that has a
-compatible string that's not "fsl,something"
+Hrm.  Not all that fond of those, but we'll see.  I guess
+C-function-like syntax does make a certain amount of sense in the
+context of the expression syntax we intend to introduce.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
