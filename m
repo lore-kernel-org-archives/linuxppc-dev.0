@@ -1,22 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4CAB3DDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Dec 2007 07:44:34 +1100 (EST)
-Message-ID: <47716BBE.5090000@freescale.com>
-Date: Tue, 25 Dec 2007 14:44:46 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
-References: <20071221202309.GA4557@localhost.localdomain>	<476DD544.2050807@freescale.com>
-	<20071224121546.GA7903@localhost.localdomain>
-In-Reply-To: <20071224121546.GA7903@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C42BDDDED
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Dec 2007 08:25:54 +1100 (EST)
+Subject: Re: More patches added to for-2.6.25 and master branches of
+	powerpc.git
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18282.19253.485799.233476@cargo.ozlabs.ibm.com>
+References: <18282.19253.485799.233476@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 26 Dec 2007 08:25:31 +1100
+Message-Id: <1198617931.7209.8.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
 
-> Yup. I've seen it, thanks. I'm going to test it as well. ;-)
+>       [POWERPC] Disable PCI IO/Mem on a device when resources can't be allocated
 
-If they work for you, please let Kumar know.
+Can you revert that one ? I messed up the flags (mixed up IORESOURCE_*
+flags with command register bits).
 
-> MPC8360E, Rev: 21. Are you aware of any known issues on this chip
-> regarding UCC serials?
+I'll send a fixed up version when I'm back.
 
-Yep.  You need a microcode upload.  My patches describe everything.
+Cheers,
+Ben.
