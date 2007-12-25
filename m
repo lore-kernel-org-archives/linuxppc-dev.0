@@ -1,16 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 25 Dec 2007 12:04:12 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFC] powerpc: DBox2 Board Support
-Message-ID: <20071225010412.GL21311@localhost.localdomain>
-References: <476D61DB.2090201@scram.de>
-	<20071223230342.GA20636@localhost.localdomain>
-	<476F918F.4050909@scram.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <476F918F.4050909@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id B2E51DDDE9
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Dec 2007 12:53:46 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so3728777pyi.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Dec 2007 17:53:45 -0800 (PST)
+Date: Mon, 24 Dec 2007 19:53:40 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 4xx: for-2.6.25 branch created
+Message-ID: <20071224195340.49911088@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,81 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 24, 2007 at 12:01:35PM +0100, Jochen Friedrich wrote:
-> Hi David,
-> 
-> >> +	localbus@8000000 {
-> >> +		compatible = "betaresearch,dbox2-localbus";
-> > 
-> > Is this bus interface really board specific?  I would have thought the
-> > localbus bridge would have been part of the SoC in which case the
-> > compatible string should mention the 823 rather than the dbox.
-> > 
-> >> +		#address-cells = <1>;
-> > 
-> > It's also usual for these localbus things, to have #address-cells of
-> > 2, with the chipselect explicitly present as the first cell.
-> 
-> The setup of the localbus is already done in the boot loader. However, i'll
-> recode this to reflect the mapping of addresses to chipselects.
+Just in time for the holidays, I created my for-2.6.25 branch.  It
+contains the commits below.  I'll let it sit for a couple days given
+the timing of things, and ask Paul to pull a bit later.
 
-Sure, that's normal.  But to the greatest extent possible, the device
-tree should describe the hardware, not the configuration that's been
-set up by the firmware/bootloader.  It's usually not possible to get
-all the way there, but encoding the chipselect information this way
-gets you closer.  It means that if you later need to adapt the device
-tree to the same board with a firmware that does things differently,
-only the "ranges" property should need changing.  Or, if you later
-need a kernel port to a version with no-firmware or minimal firmware
-that doesn't configure the bus, the necessary information is in the
-tree to configure the bridge.
+If I've missed something, let me know.
 
-> >> +		#size-cells = <1>;
-> >> +		reg = <8000000 18000000>;
-> >> +
-> >> +		ranges = <0 8000000 18000000>;
-> >> +
-> >> +		enx@0 {
-> >> +			compatible = "c-cube,enx";
-> > 
-> > What are these mysterious enx, gtx, etc. devices?  Some comments might
-> > be nice.
-> 
-> Those are mostly devices for video processing (MPEG demux, on screen display, MPEG decoder, etc).
-> Drivers (for ARCH=ppc) are available on cvs.tuxbox.org with GPL license. A work in progress port
-> to ARCH=powerpc is at git://git.bocc.de/dbox2.git.
+josh
 
-Ok.  Again, some comments so a casual read of the tree tells you
-roughly what they are would be nice.
+Benjamin Herrenschmidt (19):
+      [POWERPC] Reworking machine check handling and Fix 440/440A
+      [POWERPC] 4xx: Improve support for 4xx indirect DCRs
+      [POWERPC] 4xx: PLB to PCI-X support
+      [POWERPC] 4xx: PLB to PCI 2.x support
+      [POWERPC] 4xx: PLB to PCI Express support
+      [POWERPC] 4xx: PCI support for Ebony board
+      [POWERPC] 4xx: Add early udbg support for 40x processors
+      [POWERPC] 4xx: EP405 boards support for arch/powerpc
+      [POWERPC] 4xx: Add PCI to Walnut platform
+      [POWERPC] 4xx: Wire up PCI on Bamboo board
+      [POWERPC] 4xx: Wire up 440EP USB controller support to Bamboo board
+      [POWERPC] 4xx: Adds decoding of 440SPE memory size to boot wrapper library
+      [POWERPC] 4xx: Add mfspr/mtspr inline macros to 4xx bootwrapper
+      [POWERPC] 4xx: Add CPR0 accessors to boot wrapper
+      [POWERPC] 4xx: Rework clock probing in boot wrapper
+      [POWERPC] 4xx: Base support for 440SPe "Katmai" eval board
+      [POWERPC] 4xx: remove bogus "ranges" property in Bamboo EBC node
+      [POWERPC] 4xx: PCI-E Link setup improvements
+      [POWERPC] pci32: 4xx embedded platforms want to reassign all PCI resources
 
-> >> +			// Port D is LCD exclusive. Don't export as GPIO
-> >> +			CPM1_PIO: pio@970 {
-> >> +				compatible = "fsl,cpm1-pario";
-> >> +				reg = <970 180>;
-> >> +				num-ports = <3>;
-> >> +				#gpio-cells = <2>;
-> >> +			};
-> >> +
-> >> +			lcd@970 {
-> >> +				reg = <970 10>;
-> >> +				compatible = "samsung,ks0713";
-> > 
-> > Is this representing an LCD controller, or the display itself.  Either
-> > way I'm surprised there's something here in the SoC that has a
-> > compatible string that's not "fsl,something"
-> 
-> It's a LCD controller wired to PortD. PortD is used for four 1bit lines
-> and one 8bit bus.
+Hugh Blemings (1):
+      [POWERPC] 4xx: Base support for 440GX Taishan eval board
 
-I'm still kind of confused here.  Does the pio@970 node above
-represent the PortD controller?  If the LCD controller is accessed
-solely through PortD, then it should be a child of the PortD node.
+Josh Boyer (11):
+      [POWERPC] 4xx: Fix 440grx setup function to call 440A fixup
+      [POWERPC] 4xx: Include missing header
+      [POWERPC] 4xx: libfdt and pci fixes for Rainier
+      [POWERPC] 4xx: Rename CPU nodes to avoid dtc incompatibility
+      [POWERPC] 4xx: Update Kilauea, Rainier, and Walnut defconfigs
+      [POWERPC] 4xx: Mark of_bus structures as __initdata
+      [POWERPC] Conditionally compile e200 and e500 platforms in cputable
+      [POWERPC] Remove unneeded variable declarations from mpc837x_mds
+      [POWERPC] 4xx: Use machine_device_initcall for bus probe
+      [POWERPC] 4xx: Minor coding style cleanups for 4xx bootwrapper
+      [POWERPC] 4xx: Update defconfigs
 
-At present, pio and lcd have overlapping reg resources which is
-certainly wrong.
+Stefan Roese (11):
+      [POWERPC] 4xx: Add 440SPe revA runtime detection to PCIe
+      [POWERPC] 4xx: Fix TLB 0 problem with CONFIG_SERIAL_TEXT_DEBUG
+      [POWERPC] 4xx: Add 405EX CPU type needed for EMAC support on Kilauea
+      [POWERPC] 4xx: Change Kilauea dts to support new EMAC device tree properti
+      [POWERPC] 4xx: Add Kilauea PCIe support to dts and Kconfig
+      [POWERPC] 4xx: Set ibpre for 405EX in 4xx PCIe driver
+      [POWERPC] 4xx: Add aliases node to 4xx dts files
+      [POWERPC] 4xx: Change Kilauea PCIe bus ranges in dts file
+      [POWERPC] 4xx: Add AMCC Makalu board support to platforms/40x
+      [POWERPC] 4xx: Makalu dts
+      [POWERPC] 4xx: Makalu defconfig
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Valentine Barshak (12):
+      [POWERPC] 4xx: 440EPx Sequoia USB OHCI DTS entry
+      [POWERPC] 4xx: 440GRx Rainier bootwrapper.
+      [POWERPC] 4xx: 440GRx Rainier DTS.
+      [POWERPC] 4xx: 440GRx Rainier board support.
+      [POWERPC] 4xx: 440GRx Rainier default config
+      [POWERPC] 4xx: make UIC use generic level irq handler
+      [POWERPC] 4xx: rework UIC cascade irq handling
+      [POWERPC] 4xx: Correct 440GRx machine_check callback
+      [POWERPC] 4xx: Add PCI entry to 440EPx Sequoia DTS.
+      [POWERPC] 44x: Sequoia and Rainier updates for 2.6.25
+      [POWERPC] 4xx: update 440EP(x)/440GR(x) identical PVR issue workaround
+      [POWERPC] 4xx: Add PCI entry to 440GRx Rainier DTS.
