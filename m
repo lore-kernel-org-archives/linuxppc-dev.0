@@ -1,17 +1,22 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCHv2] powerpc: DBox2 Board Support
-Date: Wed, 26 Dec 2007 20:53:53 +0100
-References: <476E9930.6000205@scram.de> <200712241318.02299.arnd@arndb.de>
-	<47726DB5.2030507@scram.de>
-In-Reply-To: <47726DB5.2030507@scram.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200712262053.55150.arnd@arndb.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 34BC1DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 07:36:47 +1100 (EST)
+Date: Wed, 26 Dec 2007 23:38:08 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
+Message-ID: <20071226203808.GA18128@localhost.localdomain>
+References: <20071221202309.GA4557@localhost.localdomain>
+	<476DD544.2050807@freescale.com>
+	<20071224121546.GA7903@localhost.localdomain>
+	<47716BBE.5090000@freescale.com>
+	<20071226162943.GB11230@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071226162943.GB11230@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,98 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 26 December 2007, Jochen Friedrich wrote:
-> >> +	memory {
-> >> +		device_type = "memory";
-> >> +		reg = <0 2000000>;
-> >> +	};
+On Wed, Dec 26, 2007 at 07:29:44PM +0300, Anton Vorontsov wrote:
+> On Tue, Dec 25, 2007 at 02:44:46PM -0600, Timur Tabi wrote:
+> > Anton Vorontsov wrote:
 > > 
-> > I thought there are both models with 32MB and 16MB available.
-> > If that's true, shouldn't this be filled out by the boot loader?
-> 
-> IIRC, the cuImage wrapper overwrites this with the boot loader
-> parameters.
-
-Then maybe set it to zero size in the dts file, and add a comment.
- 
-> OTOH, the memory is part of the localbus (CS1). Should it be a child
-> of localbus in this case?
-
-No, memory nodes are required to be at the root of the device tree
-for historic reasons.
-
-> I didn't check FB_OF. On Dbox2, the avia driver creates a 
-> framebuffer device.
-
-fb_of needs some properties in the device tree set up correctly,
-but is very simple otherwise. If it does all you need, it's
-probably a good idea to use that and get rid of the avia framebuffer
-driver
-
-> There are two mods available using the block layer, although currently i don't
-> support any of them:
-> 
-> 1. using the GPIO lines of the modem port, it's possible to connect a SD card.
->    It might be possible to use it using the GPIO SPI driver (but it would need
->    some glue code to create a platform device).
-> 
-> 2. using the memory expansion port and CS2, there is an IDE interface available
->    with a CPLD acting as localbus/IDE bridge. There is a device driver for
->    ARCH=ppc.
-> 
-> Unfortunately, i don't own any of these modifications.
-
-If neither of these is in the mainline kernel, it doesn't make sense to
-have support for the block layer in defconfig, so just try how much 
-memory you can free up with this.
-
-> >> +static void __init dbox2_setup_arch(void)
-> >> +{
-> >> +	struct device_node *np;
-> >> +	static u8 __iomem *config;
-> >> +
-> >> +	cpm_reset();
-> >> +	init_ioports();
-> >> +
-> >> +	/* Enable external IRQs for AVIA chips */
-> >> +	clrbits32(&mpc8xx_immr->im_siu_conf.sc_siumcr, 0x00000c00);
+> > >Yup. I've seen it, thanks. I'm going to test it as well. ;-)
 > > 
-> > This smells like a hack. What are AVIA chips, and shouldn't
-> > their driver enable the IRQs?
+> > If they work for you, please let Kumar know.
 > 
-> No. This just configures the Pin as IRQ input. Maybe, the new GPIO
-> functions could be used for this, instead. Then it could be done
-> in the driver (the driver should't directly mess with SIU internals).
-
-Maybe it should then be done in the boot wrapper. If the device
-tree lists this line as an interrupt, I'd say that is what it should
-be.
-
-> >> +static struct of_device_id __initdata of_bus_ids[] = {
-> >> +	{ .name = "soc", },
-> >> +	{ .name = "cpm", },
-> >> +	{ .name = "localbus", },
-> >> +	{},
-> >> +};
-> > 
-> > Shouldn't this check for 'compatible' properties instead of 'name'?
+> Unfortunately they don't.
 > 
-> I copied this from mpc885ads_setup.c.
-
-Right, I noticed before that we're rather inconsistent with this.
-It would really be good to have more common standards on this.
-
-> > I also once did a patch that let you have a default 'of_bus_ids'
-> > member in the ppc_md. I never got around to submitting that, but
-> > if there is interest, I can dig it out again.
+> root@mpc8360erdk:~# echo abc > /dev/ttyQE0
 > 
-> That would be nice :)
+> And hang. No interrupts.
 
-The reason I haven't submitted it yet is that I'm not sure whether
-there are cases where we actually _need_ to test for 'name' instead
-of 'compatible' because of existing device trees in firmware.
+I've just tried to set CD and CTS to GPIO functions (for loopbacking),
+as suggested in the ref manual.. and still it doesn't work. Hm..
 
-I might just do a patch and see if someone complains about the
-idea.
- 
-	Arnd <><
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
