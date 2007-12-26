@@ -1,18 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id EE6EADDEC4
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:56:54 +1100 (EST)
-Date: Wed, 26 Dec 2007 19:58:16 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v2] ucc_uart: add support for Freescale QUICCEngine UART
-Message-ID: <20071226165816.GB11449@localhost.localdomain>
-References: <11970458703666-git-send-email-timur@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <11970458703666-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCHv2] powerpc: DBox2 Board Support
+Date: Wed, 26 Dec 2007 20:53:53 +0100
+References: <476E9930.6000205@scram.de> <200712241318.02299.arnd@arndb.de>
+	<47726DB5.2030507@scram.de>
+In-Reply-To: <47726DB5.2030507@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Message-Id: <200712262053.55150.arnd@arndb.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,111 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 07, 2007 at 10:44:30AM -0600, Timur Tabi wrote:
-> Add support for UART serial ports using a Freescale QUICC Engine
-> (found on some MPC83xx and MPC85xx SOCs).
+On Wednesday 26 December 2007, Jochen Friedrich wrote:
+> >> +	memory {
+> >> +		device_type = "memory";
+> >> +		reg = <0 2000000>;
+> >> +	};
+> > 
+> > I thought there are both models with 32MB and 16MB available.
+> > If that's true, shouldn't this be filled out by the boot loader?
 > 
-> Updated booting-without-of.txt to define new properties for a QE UART node,
-> and a new node definition that describes uploaded QE firmware.
+> IIRC, the cuImage wrapper overwrites this with the boot loader
+> parameters.
+
+Then maybe set it to zero size in the dts file, and add a comment.
+ 
+> OTOH, the memory is part of the localbus (CS1). Should it be a child
+> of localbus in this case?
+
+No, memory nodes are required to be at the root of the device tree
+for historic reasons.
+
+> I didn't check FB_OF. On Dbox2, the avia driver creates a 
+> framebuffer device.
+
+fb_of needs some properties in the device tree set up correctly,
+but is very simple otherwise. If it does all you need, it's
+probably a good idea to use that and get rid of the avia framebuffer
+driver
+
+> There are two mods available using the block layer, although currently i don't
+> support any of them:
 > 
-> Because of a silicon bug in some QE-enabled SOCs (e.g. 8323 and 8360), a new
-> microcode is required. This microcode implements UART via a work-around,
-> hence it's called "Soft-UART".  This driver can use the QE firmware upload
-> feature to upload the correct microcode to the QE.
+> 1. using the GPIO lines of the modem port, it's possible to connect a SD card.
+>    It might be possible to use it using the GPIO SPI driver (but it would need
+>    some glue code to create a platform device).
 > 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
+> 2. using the memory expansion port and CS2, there is an IDE interface available
+>    with a CPLD acting as localbus/IDE bridge. There is a device driver for
+>    ARCH=ppc.
+> 
+> Unfortunately, i don't own any of these modifications.
 
-> @@ -250,6 +279,26 @@
->  			pio-handle = < &pio4 >;
->  		};
->  
-> +		ucc@2400 {
-> +			device_type = "serial";
-> +			compatible = "ucc_uart";
-> +			model = "UCC";
+If neither of these is in the mainline kernel, it doesn't make sense to
+have support for the block layer in defconfig, so just try how much 
+memory you can free up with this.
 
-model isn't used, is it needed at all?
+> >> +static void __init dbox2_setup_arch(void)
+> >> +{
+> >> +	struct device_node *np;
+> >> +	static u8 __iomem *config;
+> >> +
+> >> +	cpm_reset();
+> >> +	init_ioports();
+> >> +
+> >> +	/* Enable external IRQs for AVIA chips */
+> >> +	clrbits32(&mpc8xx_immr->im_siu_conf.sc_siumcr, 0x00000c00);
+> > 
+> > This smells like a hack. What are AVIA chips, and shouldn't
+> > their driver enable the IRQs?
+> 
+> No. This just configures the Pin as IRQ input. Maybe, the new GPIO
+> functions could be used for this, instead. Then it could be done
+> in the driver (the driver should't directly mess with SIU internals).
 
-> +			device-id = <5>;	/* The UCC number, 1-7*/
-> +			port-number = <0>;	/* Which ttyQEx device */
-> +			soft-uart;		/* We need Soft-UART */
-> +			reg = <2400 200>;
-> +			interrupts = <28>;	/* From Table 18-12 */
-> +			interrupt-parent = < &qeic >;
-> +			/*
-> +			 * For Soft-UART, we need to set TX to 1X, which
-> +			 * means specifying separate clock sources.
-> +			 */
-> +			rx-clock-name = "brg5";
-> +			tx-clock-name = "brg6";
-> +			pio-handle = < &pio5 >;
-[...]
-> +	if (soft_uart) {
-> +		struct qe_firmware_info *qe_fw_info;
-> +
-> +		qe_fw_info = qe_get_firmware_info();
-> +
-> +		/* Check if the firmware has been uploaded. */
-> +		if (strstr(qe_fw_info->id, "Soft-UART")) {
+Maybe it should then be done in the boot wrapper. If the device
+tree lists this line as an interrupt, I'd say that is what it should
+be.
 
-qe_fw_info used w/o NULL checking.
+> >> +static struct of_device_id __initdata of_bus_ids[] = {
+> >> +	{ .name = "soc", },
+> >> +	{ .name = "cpm", },
+> >> +	{ .name = "localbus", },
+> >> +	{},
+> >> +};
+> > 
+> > Shouldn't this check for 'compatible' properties instead of 'name'?
+> 
+> I copied this from mpc885ads_setup.c.
 
-> +			firmware_loaded = 1;
-> +		} else {
-> +			char filename[32];
-> +			unsigned int soc;
-> +			unsigned int rev_h;
-> +			unsigned int rev_l;
-> +
-> +			soc = soc_info(&rev_h, &rev_l);
-> +			if (!soc) {
-> +				dev_err(&ofdev->dev, "unknown CPU model\n");
-> +				return -ENXIO;
-> +			}
-> +			sprintf(filename, "fsl_qe_ucode_uart_%u_%u%u.bin",
-> +				soc, rev_h, rev_l);
-> +
-> +			dev_info(&ofdev->dev, "waiting for firmware %s\n",
-> +				filename);
-> +
-> +			/*
-> +			 * We call request_firmware_nowait instead of
-> +			 * request_firmware so that the driver can load and
-> +			 * initialize the ports without holding up the rest of
-> +			 * the kernel.  If hotplug support is enabled in the
-[...]
-> +
-> +	qe_port->port.irq = irq_of_parse_and_map(np, 0);
-> +	if (qe_port->port.irq == NO_IRQ) {
-> +		dev_err(&ofdev->dev, "could not map IRQ for UCC%u\n",
-> +		       qe_port->ucc_num + 1);
-> +		kfree(qe_port);
-> +		return -EINVAL;
-> +	}
-> +
-> +	np = of_find_node_by_type(NULL, "qe");
+Right, I noticed before that we're rather inconsistent with this.
+It would really be good to have more common standards on this.
 
-Please, add "fsl,qe" compatible matching.
+> > I also once did a patch that let you have a default 'of_bus_ids'
+> > member in the ppc_md. I never got around to submitting that, but
+> > if there is interest, I can dig it out again.
+> 
+> That would be nice :)
 
-> +	if (!np) {
-> +		dev_err(&ofdev->dev, "could not find parent 'qe' node\n");
-> +		kfree(qe_port);
-> +		return -EINVAL;
-> +	}
-> +
-[...]
-> +static struct of_platform_driver ucc_uart_of_driver = {
-> +	.owner  	= THIS_MODULE,
-> +	.name   	= "ucc_uart",
+The reason I haven't submitted it yet is that I'm not sure whether
+there are cases where we actually _need_ to test for 'name' instead
+of 'compatible' because of existing device trees in firmware.
 
-Maybe better fsl,ucc_uart?
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+I might just do a patch and see if someone complains about the
+idea.
+ 
+	Arnd <><
