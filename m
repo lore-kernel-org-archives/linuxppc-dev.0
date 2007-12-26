@@ -1,19 +1,16 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B1C96DE01F
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:28:25 +1100 (EST)
-Date: Wed, 26 Dec 2007 19:29:44 +0300
+	by ozlabs.org (Postfix) with ESMTP id 9593CDDE35
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:48:42 +1100 (EST)
+Date: Wed, 26 Dec 2007 19:50:04 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
-Message-ID: <20071226162943.GB11230@localhost.localdomain>
-References: <20071221202309.GA4557@localhost.localdomain>
-	<476DD544.2050807@freescale.com>
-	<20071224121546.GA7903@localhost.localdomain>
-	<47716BBE.5090000@freescale.com>
+Subject: Re: [PATCH v5] qe: add ability to upload QE firmware
+Message-ID: <20071226165004.GA11449@localhost.localdomain>
+References: <11970422334145-git-send-email-timur@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <47716BBE.5090000@freescale.com>
+In-Reply-To: <11970422334145-git-send-email-timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,75 +22,128 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 25, 2007 at 02:44:46PM -0600, Timur Tabi wrote:
-> Anton Vorontsov wrote:
+On Fri, Dec 07, 2007 at 09:43:53AM -0600, Timur Tabi wrote:
+> Define the layout of a binary blob that contains a QE firmware and instructions
+> on how to upload it.  Add function qe_upload_firmware() to parse the blob
+> and perform the actual upload.  Fully define 'struct rsp' in immap_qe.h to
+> include the actual RISC Special Registers.  Added description of a new
+> QE firmware node to booting-without-of.txt.
+
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
 > 
-> >Yup. I've seen it, thanks. I'm going to test it as well. ;-)
+> Argh, another booting-without-of.txt fix.  There are 8 virtual traps, not 16.
 > 
-> If they work for you, please let Kumar know.
-
-Unfortunately they don't.
-
-root@mpc8360erdk:~# echo abc > /dev/ttyQE0
-
-And hang. No interrupts.
-
-After ^C:
-ucc_uart e0102400.ucc: shutdown timeout
-
-The same for ttyQE1 (just for testing I set it up to not use
-Soft-UART).
-
-The same for loopback mode.
-
-I wonder what are the symptoms if microcode is at fault? According
-to errata description, hang isn't something I should get on the
-transmit attempt.
-
-> >MPC8360E, Rev: 21. Are you aware of any known issues on this chip
-> >regarding UCC serials?
+> This patch is for Kumar's for-2.6.25 branch.  This code is necessary for
+> my QE UART driver.
 > 
-> Yep.  You need a microcode upload.  My patches describe everything.
+>  Documentation/powerpc/00-INDEX               |    3 +
+>  Documentation/powerpc/booting-without-of.txt |   33 +++-
+>  Documentation/powerpc/qe_firmware.txt        |  295 ++++++++++++++++++++++++++
+>  arch/powerpc/platforms/Kconfig               |    1 +
+>  arch/powerpc/sysdev/qe_lib/qe.c              |  240 +++++++++++++++++++++
+>  include/asm-powerpc/immap_qe.h               |   34 +++-
+>  include/asm-powerpc/qe.h                     |   61 ++++++
+>  7 files changed, 663 insertions(+), 4 deletions(-)
+>  create mode 100644 Documentation/powerpc/qe_firmware.txt
+> 
 
-Well. All I've found is: QERAMPTCH.zip ("RAM Microcode Patches for
-PowerQUICC II Pro Family QE Errata"), which should fix QE_UART5 errata
-for MPC8323 Rev 1.1. Can I assume it works for MPC8360 too? I've tried
-it. No luck.
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index e9a3cb1..8b27711 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+...
+> +
+> +	 Example:
+> +
+> +		firmware {
+> +			id = "Soft-UART";
+> +			extended_modes = <0 0>;
+> +			virtual_traps = <0 0 0 0 0 0 0 0>;
 
-Here are dts entries I use:
+I believe using underscores for the property name is discouraged.
 
-		firmware {
-			id = "Soft-UART";
-			extended_modes = <0 0>;
-			virtual_traps = <0 0 0 0 0 0 0 0>;
-		};
+> +		}
+> +
+...
+> +VI - Sample Code for Creating Firmware Files
+> +============================================
+> +
+> +A Python program that creates firmware binaries from the header files normally
+> +distributed by Freescale can be found on http://opensource.freescale.com.
 
-		ucc@2400 {
-			device_type = "serial";
-			compatible = "ucc_uart";
-			reg = <0x2400 0x200>;
-			device-id = <5>;
-			port-number = <0>;
-			rx-clock-name = "brg7";
-			tx-clock-name = "brg8";
-			interrupts = <40>;
-			interrupt-parent = <&qeic>;
-			soft-uart;
-		};
+Hm... I didn't find it there. Could you provide more specific pointer?
 
-		ucc@3400 {
-			device_type = "serial";
-			compatible = "ucc_uart";
-			reg = <0x3400 0x200>;
-			device-id = <6>;
-			port-number = <1>;
-			rx-clock-name = "brg14";
-			tx-clock-name = "brg14";
-			interrupts = <41>;
-			interrupt-parent = <&qeic>;
-		};
+...
+> index 1df3b4a..497eb88 100644
+> --- a/arch/powerpc/sysdev/qe_lib/qe.c
+> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
+...
+> +struct qe_firmware_info *qe_get_firmware_info(void)
+> +{
+> +	static int initialized;
+> +
+> +	/*
+> +	 * If we haven't checked yet, and a driver hasn't uploaded a firmware
+> +	 * yet, then check the device tree for information.
+> +	 */
+> +	do {
+        ^^^^
+This is very unusual method of error handling. You could stick
+to gotos and lower the indentation level.
 
-Any ideas?
+> +		struct device_node *qe;
+> +		struct device_node *fw = NULL;
+> +		const char *sprop;
+> +		const u32 *iprop;
+> +
+> +		if (initialized || qe_firmware_uploaded)
+> +			break;
+> +
+> +		initialized = 1;
+> +
+> +		qe = of_find_node_by_type(NULL, "qe");
+
+Please, add compatible "fsl,qe" matching, so this code could
+work with new device trees.
+
+> +		if (!qe)
+> +			break;
+> +
+> +		/* Find the 'firmware' child node */
+> +		while ((fw = of_get_next_child(qe, fw)))
+> +			if (strcmp(fw->name, "firmware") == 0)
+> +				break;
+
+Hmm. Maybe of_find_node_by_name? Or better by compatible.
+
+> +
+> +		/* Did we find the 'firmware' node? */
+> +		if (!fw) {
+> +			of_node_put(qe);
+> +			break;
+> +		}
+> +
+> +		qe_firmware_uploaded = 1;
+> +
+> +		/* Copy the data into qe_firmware_info*/
+> +		sprop = of_get_property(fw, "id", NULL);
+> +		if (sprop)
+> +			strncpy(qe_firmware_info.id, sprop,
+> +				sizeof(qe_firmware_info.id) - 1);
+> +
+> +		iprop = of_get_property(fw, "extended_modes", NULL);
+
+Checking for size?
+
+> +		if (iprop)
+> +			qe_firmware_info.extended_modes =
+> +				(u64) iprop[0] << 32 | iprop[1];
+> +
+> +		iprop = of_get_property(fw, "virtual_traps", NULL);
+
+size?
+
 
 Thanks,
 
