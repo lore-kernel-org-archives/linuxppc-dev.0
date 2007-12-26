@@ -1,19 +1,14 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A2232DDDEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Dec 2007 13:11:13 +1100 (EST)
-Date: Tue, 25 Dec 2007 20:18:23 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] Add information on enabling sound on the MPC8641 HPCN
-Message-ID: <20071226021823.GA28651@lixom.net>
-References: <11983809443854-git-send-email-timur@freescale.com>
-	<20071223152613.GA4817@lixom.net> <476FEB43.8050507@freescale.com>
-	<20071224231042.GA4588@lixom.net> <47716B3A.9050008@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47716B3A.9050008@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Date: Wed, 26 Dec 2007 20:42:16 +0900 (JST)
+Message-Id: <20071226.204216.-1300525659.kouish@swc.toshiba.co.jp>
+To: benh@kernel.crashing.org
+Subject: Re: Time for cell code reshuffle?
+In-Reply-To: <1198357215.6686.8.camel@pasglop>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
+	arnd@arndb.de, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +18,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 25, 2007 at 02:42:34PM -0600, Timur Tabi wrote:
-> Olof Johansson wrote:
->
->> Are freescale customers really used to going to the linux device tree
->> sources to find out how to modify their boards to achieve certain
->> functionality with their eval boards?! I guess you guys are taking the
->> "device trees are used to describe the hardware" statement to it's
->> fullest extent.
->
-> Well, I've always been a rebel.
->
-> Honestly, I just thought it would be harmless and a lot easier (for me) 
-> than trying to convince some documentation dude to write it up and publish 
-> it.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Fri, 2007-12-21 at 20:15 +0100, Arnd Bergmann wrote:
+> > > It seems platforms/cell should have the shared and/or generic code,
+> > and the other
+> > > stuff moved into a new platform directory, but is it worth the
+> > effort? 
+> > 
+> > There is very little code in platforms/cell that can not be generic,
+> > so I think
+> > it's not worth splitting it. The only IBM blade specific files are
+> > cbe_cpufreq_pmi.c and parts of setup.c and pervasive.c. Everything
+> > else could
+> > be shared by about any generic implementation without a hypervisor.
+> 
+> Another option is to have:
+> 
+> platforms/celleb -> platforms/beat
+> 
+> and withing platforms/cell, rename blade specific files to
+> something (can't find what, works on CAB too) and add celleb
+> "bare metal" files.
+> 
+> A platform directly doesn't have to deal with one platform. For example,
+> platforms/44x contains a lot of board support.
+> 
+> Now, one question is how far can we merge celleb support with the common
+> blade/CAB code...
 
-Heh. Well, it's up to Kumar what to do about this one upstream, it
-just seemed like a weird choice to document board reworks in the device
-tree comments.
+Celleb-native needs own machine definition and setup code due to HW
+and FW deferences between CellBlade and Celleb. Of course, because
+Celleb-native and Celleb-Beat use some codes commonly, we need a place
+to put Celleb common codes.
 
-Having it somewhere that sticks to google's database is better than
-nothing at all, I suppose. :)
+But I don't know your idea is better or not.
 
-
--Olof
+Best regards,
+Kou Ishizaki
