@@ -1,21 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 230ACDDEB9
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:19:56 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH v2] powerpc: Do not fail build if mkimage is not available
-References: <200712261655.56432.mb@bu3sch.de> <jezlvx1m00.fsf@sykes.suse.de>
-	<200712261708.51432.mb@bu3sch.de>
-Date: Wed, 26 Dec 2007 17:19:48 +0100
-In-Reply-To: <200712261708.51432.mb@bu3sch.de> (Michael Buesch's message of
-	"Wed\, 26 Dec 2007 17\:08\:51 +0100")
-Message-ID: <jemyrx1l97.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, paulus@au.ibm.com, linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B1C96DE01F
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:28:25 +1100 (EST)
+Date: Wed, 26 Dec 2007 19:29:44 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
+Message-ID: <20071226162943.GB11230@localhost.localdomain>
+References: <20071221202309.GA4557@localhost.localdomain>
+	<476DD544.2050807@freescale.com>
+	<20071224121546.GA7903@localhost.localdomain>
+	<47716BBE.5090000@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47716BBE.5090000@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Buesch <mb@bu3sch.de> writes:
+On Tue, Dec 25, 2007 at 02:44:46PM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
+> 
+> >Yup. I've seen it, thanks. I'm going to test it as well. ;-)
+> 
+> If they work for you, please let Kumar know.
 
-> On Wednesday 26 December 2007 17:03:43 Andreas Schwab wrote:
->> Michael Buesch <mb@bu3sch.de> writes:
->> 
->> > +    set +e
->> >      mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
->> >  	$uboot_version -d "$vmz" "$ofile"
->> > +    [ $? -eq 0 ] || exit 0
->> > +    set -e
->> 
->> mkimage ... || exit 0
->
-> Could you PLEASE increase your verbosity?
-> Why is mkimage || exit 0 any better than my test?
+Unfortunately they don't.
 
-Many roads lead to Rome.  Take the one you like most.
+root@mpc8360erdk:~# echo abc > /dev/ttyQE0
 
-Andreas.
+And hang. No interrupts.
+
+After ^C:
+ucc_uart e0102400.ucc: shutdown timeout
+
+The same for ttyQE1 (just for testing I set it up to not use
+Soft-UART).
+
+The same for loopback mode.
+
+I wonder what are the symptoms if microcode is at fault? According
+to errata description, hang isn't something I should get on the
+transmit attempt.
+
+> >MPC8360E, Rev: 21. Are you aware of any known issues on this chip
+> >regarding UCC serials?
+> 
+> Yep.  You need a microcode upload.  My patches describe everything.
+
+Well. All I've found is: QERAMPTCH.zip ("RAM Microcode Patches for
+PowerQUICC II Pro Family QE Errata"), which should fix QE_UART5 errata
+for MPC8323 Rev 1.1. Can I assume it works for MPC8360 too? I've tried
+it. No luck.
+
+Here are dts entries I use:
+
+		firmware {
+			id = "Soft-UART";
+			extended_modes = <0 0>;
+			virtual_traps = <0 0 0 0 0 0 0 0>;
+		};
+
+		ucc@2400 {
+			device_type = "serial";
+			compatible = "ucc_uart";
+			reg = <0x2400 0x200>;
+			device-id = <5>;
+			port-number = <0>;
+			rx-clock-name = "brg7";
+			tx-clock-name = "brg8";
+			interrupts = <40>;
+			interrupt-parent = <&qeic>;
+			soft-uart;
+		};
+
+		ucc@3400 {
+			device_type = "serial";
+			compatible = "ucc_uart";
+			reg = <0x3400 0x200>;
+			device-id = <6>;
+			port-number = <1>;
+			rx-clock-name = "brg14";
+			tx-clock-name = "brg14";
+			interrupts = <41>;
+			interrupt-parent = <&qeic>;
+		};
+
+Any ideas?
+
+Thanks,
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
