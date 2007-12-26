@@ -1,22 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3F7CCDDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 02:57:06 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH] powerpc: Do not fail build if mkimage is not available
-References: <200712261453.41849.mb@bu3sch.de>
-	<200712261610.28489.mb@bu3sch.de> <je8x3h31y2.fsf@sykes.suse.de>
-	<200712261635.43188.mb@bu3sch.de>
-Date: Wed, 26 Dec 2007 16:56:57 +0100
-In-Reply-To: <200712261635.43188.mb@bu3sch.de> (Michael Buesch's message of
-	"Wed\, 26 Dec 2007 16\:35\:42 +0100")
-Message-ID: <je4pe530vq.fsf@sykes.suse.de>
+Return-Path: <mb@bu3sch.de>
+Received: from vs166246.vserver.de (vs166246.vserver.de [62.75.166.246])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A40EEDDE3A
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 02:57:28 +1100 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH v2] powerpc: Do not fail build if mkimage is not available
+Date: Wed, 26 Dec 2007 16:55:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@au.ibm.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200712261655.56432.mb@bu3sch.de>
+Cc: paulus@au.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Buesch <mb@bu3sch.de> writes:
+This fixes the boot image wrapper script to not fail the kernel
+build if mkimage is not available.
+As some distributions don't ship the mkimage program and some people are not
+interested in uboot images anyway, we don't want to fail the whole kernel
+build process because of this unneeded dependency.
 
-> On Wednesday 26 December 2007 16:33:57 Andreas Schwab wrote:
->> Michael Buesch <mb@bu3sch.de> writes:
->> 
->> > On Wednesday 26 December 2007 15:47:05 Andreas Schwab wrote:
->> >> Michael Buesch <mb@bu3sch.de> writes:
->> >> 
->> >> > +    if ! [ -x mkimage ]; then
->> >> 
->> >> What is this supposed to test?
->> >
->> > from man test:
->> 
->> You didn't answer my question.
->
-> I'm not sure how I can make the manual text any clearer
+Simply drop an error message, but don't fail the build.
 
-I know very well what it *does*, thank you.  But that does mean that is
-does what it is *supposed* to do.
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
->        -x FILE
->               FILE exists and execute (or search) permission is granted
-                ^^^^
-> It tests if the program exists and is executable.
-                  ^^^^^^^
-Observe the fine difference in the choice of words.
+---
 
-> That would help a lot not wasting my time.
+Josh Boyer is working on merging mkimage into the kernel tree.
+Until that happened, please merge the patch below into the mainline kernel
+to avoid build breakage for people without installed uboot tools.
 
-How about testing your changes first?
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Index: wireless-2.6/arch/powerpc/boot/wrapper
+===================================================================
+--- wireless-2.6.orig/arch/powerpc/boot/wrapper	2007-12-26 16:48:47.000000000 +0100
++++ wireless-2.6/arch/powerpc/boot/wrapper	2007-12-26 16:52:58.000000000 +0100
+@@ -197,8 +197,11 @@ fi
+ case "$platform" in
+ uboot)
+     rm -f "$ofile"
++    set +e
+     mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
+ 	$uboot_version -d "$vmz" "$ofile"
++    [ $? -eq 0 ] || exit 0
++    set -e
+     if [ -z "$cacheit" ]; then
+ 	rm -f "$vmz"
+     fi
+@@ -254,8 +257,11 @@ coff)
+     ;;
+ cuboot*)
+     gzip -f -9 "$ofile"
++    set +e
+     mkimage -A ppc -O linux -T kernel -C gzip -a "$base" -e "$entry" \
+             $uboot_version -d "$ofile".gz "$ofile"
++    [ $? -eq 0 ] || exit 0
++    set -e
+     ;;
+ treeboot*)
+     mv "$ofile" "$ofile.elf"
