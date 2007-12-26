@@ -1,14 +1,18 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Date: Wed, 26 Dec 2007 20:42:16 +0900 (JST)
-Message-Id: <20071226.204216.-1300525659.kouish@swc.toshiba.co.jp>
-To: benh@kernel.crashing.org
-Subject: Re: Time for cell code reshuffle?
-In-Reply-To: <1198357215.6686.8.camel@pasglop>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
-	arnd@arndb.de, jk@ozlabs.org
+Return-Path: <mb@bu3sch.de>
+Received: from vs166246.vserver.de (vs166246.vserver.de [62.75.166.246])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8AAD6DDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:55:30 +1100 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] powerpc: Do not fail build if mkimage is not available
+Date: Wed, 26 Dec 2007 14:53:41 +0100
+MIME-Version: 1.0
+Message-Id: <200712261453.41849.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+Cc: paulus@au.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,40 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Fri, 2007-12-21 at 20:15 +0100, Arnd Bergmann wrote:
-> > > It seems platforms/cell should have the shared and/or generic code,
-> > and the other
-> > > stuff moved into a new platform directory, but is it worth the
-> > effort? 
-> > 
-> > There is very little code in platforms/cell that can not be generic,
-> > so I think
-> > it's not worth splitting it. The only IBM blade specific files are
-> > cbe_cpufreq_pmi.c and parts of setup.c and pervasive.c. Everything
-> > else could
-> > be shared by about any generic implementation without a hypervisor.
-> 
-> Another option is to have:
-> 
-> platforms/celleb -> platforms/beat
-> 
-> and withing platforms/cell, rename blade specific files to
-> something (can't find what, works on CAB too) and add celleb
-> "bare metal" files.
-> 
-> A platform directly doesn't have to deal with one platform. For example,
-> platforms/44x contains a lot of board support.
-> 
-> Now, one question is how far can we merge celleb support with the common
-> blade/CAB code...
+This fixes the boot image wrapper script to not fail the kernel
+build if mkimage is not available.
+As some distributions don't ship the mkimage program and some people are not
+interested in uboot images anyway, we don't want to fail the whole kernel
+build process because of this unneeded dependency.
 
-Celleb-native needs own machine definition and setup code due to HW
-and FW deferences between CellBlade and Celleb. Of course, because
-Celleb-native and Celleb-Beat use some codes commonly, we need a place
-to put Celleb common codes.
+Simply drop an error message, but don't fail the build.
 
-But I don't know your idea is better or not.
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-Best regards,
-Kou Ishizaki
+---
+
+Josh Boyer is working on merging mkimage into the kernel tree.
+Until that happened, please merge the patch below into the mainline kernel
+to avoid build breakage for people without installed uboot tools.
+
+Index: wireless-2.6/arch/powerpc/boot/wrapper
+===================================================================
+--- wireless-2.6.orig/arch/powerpc/boot/wrapper	2007-12-23 20:10:07.000000000 +0100
++++ wireless-2.6/arch/powerpc/boot/wrapper	2007-12-23 20:22:41.000000000 +0100
+@@ -195,6 +195,14 @@ if [ -n "$version" ]; then
+ fi
+ 
+ case "$platform" in
++cuboot* | uboot)
++    if ! [ -x mkimage ]; then
++        echo "mkimage not available. Can not create $platform image."
++        exit 0
++    fi
++esac
++
++case "$platform" in
+ uboot)
+     rm -f "$ofile"
+     mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
