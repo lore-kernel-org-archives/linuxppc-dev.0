@@ -1,22 +1,21 @@
 Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4B5F7DDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:16:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 230ACDDEB9
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:19:56 +1100 (EST)
 From: Andreas Schwab <schwab@suse.de>
 To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH] powerpc: Do not fail build if mkimage is not available
-References: <200712261453.41849.mb@bu3sch.de>
-	<200712261701.33669.mb@bu3sch.de> <jeve6l1lrc.fsf@sykes.suse.de>
-	<200712261712.59237.mb@bu3sch.de>
-Date: Wed, 26 Dec 2007 17:16:41 +0100
-In-Reply-To: <200712261712.59237.mb@bu3sch.de> (Michael Buesch's message of
-	"Wed\, 26 Dec 2007 17\:12\:58 +0100")
-Message-ID: <jer6h91lee.fsf@sykes.suse.de>
+Subject: Re: [PATCH v2] powerpc: Do not fail build if mkimage is not available
+References: <200712261655.56432.mb@bu3sch.de> <jezlvx1m00.fsf@sykes.suse.de>
+	<200712261708.51432.mb@bu3sch.de>
+Date: Wed, 26 Dec 2007 17:19:48 +0100
+In-Reply-To: <200712261708.51432.mb@bu3sch.de> (Michael Buesch's message of
+	"Wed\, 26 Dec 2007 17\:08\:51 +0100")
+Message-ID: <jemyrx1l97.fsf@sykes.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@au.ibm.com
+Cc: Andrew Morton <akpm@osdl.org>, paulus@au.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +27,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Michael Buesch <mb@bu3sch.de> writes:
 
-> On Wednesday 26 December 2007 17:08:55 Andreas Schwab wrote:
->> > I even posted it for review on this list and nobody complained,
->> > including you.
+> On Wednesday 26 December 2007 17:03:43 Andreas Schwab wrote:
+>> Michael Buesch <mb@bu3sch.de> writes:
 >> 
->> ???  I did point out an error in your patch just now.
+>> > +    set +e
+>> >      mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
+>> >  	$uboot_version -d "$vmz" "$ofile"
+>> > +    [ $? -eq 0 ] || exit 0
+>> > +    set -e
+>> 
+>> mkimage ... || exit 0
 >
-> I posted it for review a few days ago and the only response
-> I got was "This is probably OK for now..." from Josh.
+> Could you PLEASE increase your verbosity?
+> Why is mkimage || exit 0 any better than my test?
 
-And what does this have to do with me?  I didn't see your mail at all.
+Many roads lead to Rome.  Take the one you like most.
 
 Andreas.
 
