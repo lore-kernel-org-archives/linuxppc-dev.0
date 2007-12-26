@@ -1,20 +1,21 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de (vs166246.vserver.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B9A33DDE24
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:14:16 +1100 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Andreas Schwab <schwab@suse.de>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4B5F7DDDF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:16:54 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Michael Buesch <mb@bu3sch.de>
 Subject: Re: [PATCH] powerpc: Do not fail build if mkimage is not available
-Date: Wed, 26 Dec 2007 17:12:58 +0100
-References: <200712261453.41849.mb@bu3sch.de> <200712261701.33669.mb@bu3sch.de>
-	<jeve6l1lrc.fsf@sykes.suse.de>
-In-Reply-To: <jeve6l1lrc.fsf@sykes.suse.de>
+References: <200712261453.41849.mb@bu3sch.de>
+	<200712261701.33669.mb@bu3sch.de> <jeve6l1lrc.fsf@sykes.suse.de>
+	<200712261712.59237.mb@bu3sch.de>
+Date: Wed, 26 Dec 2007 17:16:41 +0100
+In-Reply-To: <200712261712.59237.mb@bu3sch.de> (Michael Buesch's message of
+	"Wed\, 26 Dec 2007 17\:12\:58 +0100")
+Message-ID: <jer6h91lee.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712261712.59237.mb@bu3sch.de>
+Content-Type: text/plain; charset=iso-8859-1
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@au.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,14 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 26 December 2007 17:08:55 Andreas Schwab wrote:
-> > I even posted it for review on this list and nobody complained,
-> > including you.
-> 
-> ???  I did point out an error in your patch just now.
+Michael Buesch <mb@bu3sch.de> writes:
 
-I posted it for review a few days ago and the only response
-I got was "This is probably OK for now..." from Josh.
+> On Wednesday 26 December 2007 17:08:55 Andreas Schwab wrote:
+>> > I even posted it for review on this list and nobody complained,
+>> > including you.
+>> 
+>> ???  I did point out an error in your patch just now.
+>
+> I posted it for review a few days ago and the only response
+> I got was "This is probably OK for now..." from Josh.
+
+And what does this have to do with me?  I didn't see your mail at all.
+
+Andreas.
 
 -- 
-Greetings Michael.
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
