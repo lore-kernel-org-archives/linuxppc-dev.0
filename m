@@ -1,20 +1,22 @@
 Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
+Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 01470DDED9
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:03:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 35DD1DDEF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 03:09:14 +1100 (EST)
 From: Andreas Schwab <schwab@suse.de>
 To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH v2] powerpc: Do not fail build if mkimage is not available
-References: <200712261655.56432.mb@bu3sch.de>
-Date: Wed, 26 Dec 2007 17:03:43 +0100
-In-Reply-To: <200712261655.56432.mb@bu3sch.de> (Michael Buesch's message of
-	"Wed\, 26 Dec 2007 16\:55\:56 +0100")
-Message-ID: <jezlvx1m00.fsf@sykes.suse.de>
+Subject: Re: [PATCH] powerpc: Do not fail build if mkimage is not available
+References: <200712261453.41849.mb@bu3sch.de>
+	<200712261635.43188.mb@bu3sch.de> <je4pe530vq.fsf@sykes.suse.de>
+	<200712261701.33669.mb@bu3sch.de>
+Date: Wed, 26 Dec 2007 17:08:55 +0100
+In-Reply-To: <200712261701.33669.mb@bu3sch.de> (Michael Buesch's message of
+	"Wed\, 26 Dec 2007 17\:01\:33 +0100")
+Message-ID: <jeve6l1lrc.fsf@sykes.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, paulus@au.ibm.com, linuxppc-dev@ozlabs.org
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@au.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +28,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Michael Buesch <mb@bu3sch.de> writes:
 
-> +    set +e
->      mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
->  	$uboot_version -d "$vmz" "$ofile"
-> +    [ $? -eq 0 ] || exit 0
-> +    set -e
+> I tested this and it obviously works very well for me.
 
-mkimage ... || exit 0
+Obviously your tests were incomplete.
+
+> I even posted it for review on this list and nobody complained,
+> including you.
+
+???  I did point out an error in your patch just now.
 
 Andreas.
 
