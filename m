@@ -1,20 +1,25 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3C3C4DDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 21:17:49 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v2] powerpc: Do not fail build if mkimage is not available
-References: <20071227101404.2C05F2405E@gemini.denx.de>
-Date: Thu, 27 Dec 2007 11:17:42 +0100
-In-Reply-To: <20071227101404.2C05F2405E@gemini.denx.de> (Wolfgang Denk's
-	message of "Thu\, 27 Dec 2007 11\:14\:04 +0100")
-Message-ID: <jetzm4jvax.fsf@sykes.suse.de>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0584FDDDF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 02:38:31 +1100 (EST)
+Message-ID: <4773C6EF.1020106@freescale.com>
+Date: Thu, 27 Dec 2007 09:38:23 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, paulus@au.ibm.com
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: Device tree and board file
+References: <20071221202309.GA4557@localhost.localdomain>
+	<476DD544.2050807@freescale.com>
+	<20071224121546.GA7903@localhost.localdomain>
+	<47716BBE.5090000@freescale.com>
+	<20071226162943.GB11230@localhost.localdomain>
+In-Reply-To: <20071226162943.GB11230@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +29,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk <wd@denx.de> writes:
+Anton Vorontsov wrote:
 
-> In message <200712261708.51432.mb@bu3sch.de> you wrote:
->> On Wednesday 26 December 2007 17:03:43 Andreas Schwab wrote:
->> > Michael Buesch <mb@bu3sch.de> writes:
->> > 
->> > > +    set +e
->> > >      mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
->> > >  	$uboot_version -d "$vmz" "$ofile"
->> > > +    [ $? -eq 0 ] || exit 0
->> > > +    set -e
->> > 
->> > mkimage ... || exit 0
->> 
->> Could you PLEASE increase your verbosity?
->> Why is mkimage || exit 0 any better than my test?
->
-> Because it works, while your's doesn't.
->
-> Make runs each command in a new shell.
+> I wonder what are the symptoms if microcode is at fault? According
+> to errata description, hang isn't something I should get on the
+> transmit attempt.
 
-This is a shell script, not a makefile.
+Well, if the microcode fails, you'll never know.  I tried to explain the 
+need for a unified microcode validation mechanism to the QE microcode 
+developers, but I didn't get very far.
 
-Andreas.
+> Well. All I've found is: QERAMPTCH.zip ("RAM Microcode Patches for
+> PowerQUICC II Pro Family QE Errata"), which should fix QE_UART5 errata
+> for MPC8323 Rev 1.1. 
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I don't know what that is, but it doesn't apply.  I'm talking about the 
+QE and QE UART patches I've posted to this mailing list over the past 
+month.  Once Kumar applies them to them to his for-2.6.25 branch, it'll 
+make life easier for everyone.
+
+Can I assume it works for MPC8360 too?
+
+No.  Microcode is very sensitive to the processor and the revision.  A 
+microcode for 8360 2.1 won't work on 8360 2.0.
+
+I forgot to give you the actual microcode. :-)  I'll email it to you later.
+
+> Here are dts entries I use:
+> 
+> 		firmware {
+> 			id = "Soft-UART";
+> 			extended_modes = <0 0>;
+> 			virtual_traps = <0 0 0 0 0 0 0 0>;
+> 		};
+
+This entry is created by U-Boot only if it uploads the microcode.  This 
+should not be in the DTS.
+
+
+> 
+> 		ucc@2400 {
+> 			device_type = "serial";
+> 			compatible = "ucc_uart";
+> 			reg = <0x2400 0x200>;
+> 			device-id = <5>;
+> 			port-number = <0>;
+> 			rx-clock-name = "brg7";
+> 			tx-clock-name = "brg8";
+> 			interrupts = <40>;
+> 			interrupt-parent = <&qeic>;
+> 			soft-uart;
+> 		};
+> 
+> 		ucc@3400 {
+> 			device_type = "serial";
+> 			compatible = "ucc_uart";
+> 			reg = <0x3400 0x200>;
+> 			device-id = <6>;
+> 			port-number = <1>;
+> 			rx-clock-name = "brg14";
+> 			tx-clock-name = "brg14";
+> 			interrupts = <41>;
+> 			interrupt-parent = <&qeic>;
+> 		};
+
+You need to have separate BRGs for TX and RX when using soft-uart mode, 
+and you MUST use soft-uart mode on the 8360.
