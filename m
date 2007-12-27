@@ -1,15 +1,12 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Time for cell code reshuffle?
-Date: Wed, 26 Dec 2007 23:32:39 +0100
-References: <20071226.204216.-1300525659.kouish@swc.toshiba.co.jp>
-In-Reply-To: <20071226.204216.-1300525659.kouish@swc.toshiba.co.jp>
+Return-Path: <sprasad@bivio.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712262332.40141.arnd@arndb.de>
-Cc: jk@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C84828.3044D25E"
+Subject: Device node - How does kernel know about it
+Date: Wed, 26 Dec 2007 17:31:22 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-dev@ozlabs.org>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +16,167 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 26 December 2007, Ishizaki Kou wrote:
-> Celleb-native needs own machine definition and setup code due to HW
-> and FW deferences between CellBlade and Celleb. Of course, because
-> Celleb-native and Celleb-Beat use some codes commonly, we need a place
-> to put Celleb common codes.
-> 
-> But I don't know your idea is better or not.
+This is a multi-part message in MIME format.
 
-The two more sensible options I can see are
+------_=_NextPart_001_01C84828.3044D25E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-* leave everything where it is, live with the problem that the
-  separation between celleb-native, celleb-beat and ibm-native
-  is unclear.
-* put both celleb and the ibm blades into the cell subdirectory,
-  now with three different machine descriptions in there and only
-  make sure that platforms/cell doesn't share any code with ps3,
-  which is more clearly separated already (once we move spufs out).
+Hi,
 
-I'm fine either way, and will accept patches from Toshiba to merge
-the two directories if you prefer that, but I won't do it myself.
+I am really interested in finding out how kernel knows about device
+nodes and how the whole thing work. This is as part of my debugging
+effort on 8641D based PowerPC board.
 
-	Arnd <><
+* It all started with the problem of "not printing" any thing that comes
+from ramdisk (echo and printf statements), while kernel printk's work
+perfectly fine.
+* Ramdisk is also executing fine, just that prints are not coming out of
+serial. I can see the execution of various user programs with a printk
+in sys_execve() routine. Ramdisk has all the required files like
+/dev/console, /dev/ttyS0, etc.
+* Looking further into tty driver, I noticed that call to tty_write() or
+do_tty_write() is not happening at all. So, somewhere the interface
+between kernel and user program is lost.
+* Just to check it out, I tried to write a small kernel module and a
+test program.
+  - Attached memtest.c module (not really testing memory there. :-))
+  - Attached testmemtest.c user program, that just open's it and reads
+the information
+  - Created a device node using "mknod /dev/memtest c 168 0"
+  - When I do "insmod memtest.ko" inside the ramdisk bootup scripts, I
+could see all the printk's on the console
+  - When I execute "testmemtest" next in the same script, it does not
+display the printk inside of memtest.c module. This only indicates that
+read call did not really go to the kernel side.
+  - Just to check my program's validity, I checked on a similar machine
+and all the code works fine.=20
+  - "uname -r" also matches with what I built. So, chances of exiting
+from open call because of mismatch is remote. Since userland cannot
+print, I have no idea what exactly is happening there.
+
+Now going back to the original question...
+How does a kernel know about device nodes and how to link with it.
+Basically I believe interface between user programs and kernel is lost
+at device nodes.
+
+Appreciate any help in continuing my debugging efforts.
+
+Thanks
+Siva
+
+
+------_=_NextPart_001_01C84828.3044D25E
+Content-Type: application/octet-stream;
+	name="memtest.c"
+Content-Transfer-Encoding: base64
+Content-Description: memtest.c
+Content-Disposition: attachment;
+	filename="memtest.c"
+
+Ci8qIEFwcHJvcHJpYXRlIEtlcm5lbCBoZWFkZXIgZmlsZXMgKi8KI2luY2x1ZGUgPGxpbnV4L2lu
+aXQuaD4KI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgojaW5jbHVkZSA8bGludXgva2VybmVsLmg+
+CiNpbmNsdWRlIDxsaW51eC9zY2hlZC5oPgojaW5jbHVkZSA8bGludXgvcG9sbC5oPgojaW5jbHVk
+ZSA8bGludXgvZnMuaD4KI2luY2x1ZGUgPGxpbnV4L2NkZXYuaD4KI2luY2x1ZGUgPGxpbnV4L21t
+Lmg+CiNpbmNsdWRlIDxsaW51eC9kZWxheS5oPgojaW5jbHVkZSA8bGludXgvcmFuZG9tLmg+CiNp
+bmNsdWRlIDxhc20vaW8uaD4KCi8qIERlZmF1bHRzICovCiNkZWZpbmUgREVGQVVMVF9NQUpPUgkx
+NjgKI2RlZmluZSBERUZBVUxUX05BTUUJIm1lbXRlc3QiCgovKiBQYXJhbWV0ZXJzIHRoYXQgY2Fu
+IGJlIHNldCBieSBpbnNtb2QgKi8Kc3RhdGljIGludCBtYWpvciA9IAlERUZBVUxUX01BSk9SOwpz
+dGF0aWMgY2hhciogbmFtZSA9IAlERUZBVUxUX05BTUU7CQoKI2RlZmluZSB1aW50IHVuc2lnbmVk
+IGludAoKLyogRnVuY3Rpb24gUHJvdG90eXBlcyAqLwpzc2l6ZV90IG1lbXRlc3RfcmVhZCAoc3Ry
+dWN0IGZpbGUgKiwgY2hhciAqLCBzaXplX3QsIGxvZmZfdCAqKTsKc3NpemVfdCBtZW10ZXN0X3dy
+aXRlIChzdHJ1Y3QgZmlsZSAqLCBjb25zdCBjaGFyICosIHNpemVfdCwgbG9mZl90ICopOwppbnQg
+bWVtdGVzdF9pb2N0bChzdHJ1Y3QgaW5vZGUgKiwgc3RydWN0IGZpbGUgKiwgdW5zaWduZWQgaW50
+LCB1bnNpZ25lZCBsb25nKTsKaW50IG1lbXRlc3Rfb3BlbiAoc3RydWN0IGlub2RlICosIHN0cnVj
+dCBmaWxlICopOwppbnQgbWVtdGVzdF9yZWxlYXNlIChzdHJ1Y3QgaW5vZGUgKiwgc3RydWN0IGZp
+bGUgKik7CgoKTU9EVUxFX0FVVEhPUigiU2l2YSBQcmFzYWQuIik7Ck1PRFVMRV9ERVNDUklQVElP
+TigiVGhpcyBhIGEgdmVyeSBzaW1wbGUgbWVtb3J5IHRlc3QgbW9kdWxlIik7Ck1PRFVMRV9MSUNF
+TlNFKCJHUEwiKTsKCgovKgogKiBUaGlzIG11c3QgYmUgbWFkZSBzdGF0aWMgc2luY2UgaXQgaXMg
+dXNlIGFmdGVyIHRoZSBjdXJyZW50CiAqIGZ1bmN0aW9uIHJldHVybnMuIEl0IGhvbGRzIHRoZSBt
+ZXRob2RzIHVzZWQgYnkgdGhlIGRyaXZlci4KICovCiNkZWZpbmUgTlVNTUlOT1JTIDUKc3RhdGlj
+IHN0cnVjdCBmaWxlX29wZXJhdGlvbnMgbWVtdGVzdF9mb3BzID0gewoJLnJlYWQgPSBtZW10ZXN0
+X3JlYWQsCgkud3JpdGUgPSBtZW10ZXN0X3dyaXRlLAoJLmlvY3RsID0gbWVtdGVzdF9pb2N0bCwK
+CS5vcGVuID0gbWVtdGVzdF9vcGVuLAoJLnJlbGVhc2UgPSBtZW10ZXN0X3JlbGVhc2UsCgkub3du
+ZXIgPSBUSElTX01PRFVMRSwKfTsKCgpzdGF0aWMgZGV2X3QgbWVtdGVzdGRldjsKc3RhdGljIHN0
+cnVjdCBjZGV2ICptZW10ZXN0X2NkZXY7CgoKI2RlZmluZSBLKHgpICgoeCkgPDwgKFBBR0VfU0hJ
+RlQgLSAxMCkpCiNkZWZpbmUgUEFHRUZBQ1RPUiAzMgoKCi8qCiAqIG15X2luaXRfbW9kdWxlKCkK
+ICoKICogRmlyc3QgZnVuY3Rpb24gY2FsbGVkIHdoZW4gbG9hZGVkIHdpdGggaW5zbW9kLiBUaGlz
+IHJlZ2lzdGVycyB0aGUKICogY2hhciBkcml2ZXIgaGFuZGxlci4KICoKICogUmV0dXJucyAwIGlm
+IHN1Y2Nlc3NmdWxsLCBub24temVybyBvbiBmYWlsdXJlCiAqLwppbnQgbXlfaW5pdF9tb2R1bGUo
+dm9pZCkKewoJdW5zaWduZWQgbG9uZyB0b3RhbF9tZW1vcnksIGZyZWVfbWVtb3J5LCBwYWdlX3Np
+emU7Cgl1bnNpZ25lZCBsb25nIHRlc3RhYmxlX21lbW9yeSwgdGVzdGFibGVfcGFnZXM7CglzdHJ1
+Y3Qgc3lzaW5mbyBtZW1pbmZvcm1hdGlvbjsKCWludCByZXR2YWw7CgoJLyogTG9hZCBjaGFyYWN0
+ZXIgZHJpdmVyICovCiAgICAJbWVtdGVzdF9jZGV2ID0gY2Rldl9hbGxvYygpOwogICAgCW1lbXRl
+c3RkZXYgPSBNS0RFVihtYWpvciwwKTsKCXJldHZhbCA9IHJlZ2lzdGVyX2NocmRldl9yZWdpb24o
+bWVtdGVzdGRldixOVU1NSU5PUlMsbmFtZSk7CgoJLyogRmFpbCB0byBsb2FkIGlmIHJlZ2lzdGVy
+X2NoYXJkcml2ZXIgZmFpbHMgKi8KCWlmIChyZXR2YWwgPCAwKQoJCXJldHVybiByZXR2YWw7IAoK
+CS8qIElmIG1ham9yID0gMCwgaXQgaWYgYXV0by1hbGxvY2F0ZWQgKi8KCWlmICghbWFqb3IpIAoJ
+CW1ham9yID0gcmV0dmFsOwoKCXByaW50ayhLRVJOX0VNRVJHICJNZW10ZXN0IG1vZHVsZSByZWdp
+c3RlcmVkIHdpdGggbWFqb3IgPSAlZFxuIixtYWpvcik7CgoJbWVtdGVzdF9jZGV2LT5vcHMgPSAm
+bWVtdGVzdF9mb3BzOwoJbWVtdGVzdF9jZGV2LT5vd25lciA9IFRISVNfTU9EVUxFOwoJcmV0dmFs
+ID0gY2Rldl9hZGQobWVtdGVzdF9jZGV2LG1lbXRlc3RkZXYsTlVNTUlOT1JTKTsKCglzaV9tZW1p
+bmZvKCZtZW1pbmZvcm1hdGlvbik7CgoJdG90YWxfbWVtb3J5ID0gSyhtZW1pbmZvcm1hdGlvbi50
+b3RhbHJhbSk7ICAvLyBpbiBLYnl0ZXMKCXRvdGFsX21lbW9yeSAqPSAxMDI0OyAgCQkJICAgIC8v
+IFJlZ3VsYXIgYnl0ZXMKCWZyZWVfbWVtb3J5ID0gSyhtZW1pbmZvcm1hdGlvbi5mcmVlcmFtKTsK
+CWZyZWVfbWVtb3J5ICo9IDEwMjQ7CgoJcGFnZV9zaXplID0gUEFHRV9TSVpFICogUEFHRUZBQ1RP
+UjsKCglwcmludGsoS0VSTl9FTUVSRyAiU3lzdGVtIEluZm9ybWF0aW9uLi4uXG4iKTsKCXByaW50
+ayhLRVJOX0VNRVJHICJUb3RhbCBNZW1vcnkgICAgID0gJXVLLlxuIiwgKHVpbnQpKHRvdGFsX21l
+bW9yeS8xMDI0KSk7CglwcmludGsoS0VSTl9FTUVSRyAiRnJlZSBNZW1vcnkgICAgICA9ICV1Sy5c
+biIsICh1aW50KShmcmVlX21lbW9yeS8xMDI0KSk7CglwcmludGsoS0VSTl9FTUVSRyAiVGVzdCBQ
+YWdlIFNpemUgICA9ICUwOFguXG4iLCAodWludClwYWdlX3NpemUpOwoKCXRlc3RhYmxlX21lbW9y
+eSA9IChmcmVlX21lbW9yeS8xMDApKjUwOwoJdGVzdGFibGVfcGFnZXMgPSB0ZXN0YWJsZV9tZW1v
+cnkgLyAocGFnZV9zaXplKTsKCglyZXR1cm4gcmV0dmFsOwp9CgoKCi8qCiAqIG15X2NsZWFudXBf
+bW9kdWxlKCkKICoKICogQ2FsbGVkIHdoZW4gbW9kdWxlIGlzIHJlbW92ZWQgYnkgaW5zbW9kLiAK
+ICovCnZvaWQgbXlfY2xlYW51cF9tb2R1bGUodm9pZCkKewoJcHJpbnRrKEtFUk5fRU1FUkcgIm1l
+bXRlc3QgQ2xlYW5pbmcgdXAgdGhlIG1vZHVsZS5cbiIpOwoKCWNkZXZfZGVsKG1lbXRlc3RfY2Rl
+dik7CgkvKiBVbnJlZ2lzdGVyIGNoYXJhY3RlciBkcml2ZXIuICovCgl1bnJlZ2lzdGVyX2NocmRl
+dl9yZWdpb24obWVtdGVzdGRldixOVU1NSU5PUlMpOwp9CgoKLy8gKiBSZXR1cm5zIG51bWJlciBv
+ZiBieXRlcyByZWFkCnNzaXplX3QgbWVtdGVzdF9yZWFkIChzdHJ1Y3QgZmlsZSAqZmlscCwgY2hh
+ciAqYnVmLCBzaXplX3QgbmJ5dGVzLCBsb2ZmX3QqIHBwb3MpCnsKICAgICAgICBpbnQgdHI7Cglj
+aGFyIHN0cmluZ3Bhc3NbXSA9ICJEdWRlLCBoZXJlIGlzIHRoZSBpbmZvIGZyb20ga2VybmVsIHRv
+IHVzZXIiOwoKCXByaW50ayhLRVJOX0VNRVJHICJtZW10ZXN0IFJFQUQuXG4iKTsKCgl0ciA9IDgw
+OwogICAgICAgIHRyID0gdHIgLSBjb3B5X3RvX3VzZXIoYnVmLCBzdHJpbmdwYXNzLCB0cik7Cgog
+ICAgICAgIHJldHVybiB0cjsKfQoKCi8vICogUmV0dXJucyB0aGUgbnVtYmVyIG9mIGJ5dGVzIHdy
+aXR0ZW4Kc3NpemVfdCBtZW10ZXN0X3dyaXRlIChzdHJ1Y3QgZmlsZSAqZmlscCwgY29uc3QgY2hh
+ciAqYnVmLCBzaXplX3QgbmJ5dGVzLCBsb2ZmX3QqIHBwb3MpCnsKCXByaW50ayhLRVJOX0VNRVJH
+ICJtZW10ZXN0IFdSSVRFOiAlZCBieXRlc1xuIiwoaW50KW5ieXRlcyk7CgoJaWYgKCFuYnl0ZXMp
+CgkJcmV0dXJuIDA7CgoJcmV0dXJuIG5ieXRlczsKfQoKCi8vICogUmV0dXJucyAwIGZvciBzdWNj
+ZXNzCmludCBtZW10ZXN0X2lvY3RsKHN0cnVjdCBpbm9kZSAqaW5vZGUgLCBzdHJ1Y3QgZmlsZSAq
+IGZpbHAsIHVuc2lnbmVkIGludCBjbWQsIHVuc2lnbmVkIGxvbmcgYXJnKQp7CglwcmludGsoS0VS
+Tl9FTUVSRyAibWVtdGVzdCBJT0NUTDogY21kID0gJWRcbiIsY21kKTsKCgkvLyBKdXN0IHJldHVy
+biwgYXMgdGhlcmUgaXMgbm90aGluZyB0byBkbyBpbiBvcGVuLgoJcmV0dXJuIC1FTk9UVFk7Cn0K
+CgovLyAqIFJldHVybnMgMCBvbiBzdWNjZXNzLCBub24temVybyBvbiBlcnJvcgppbnQgbWVtdGVz
+dF9vcGVuIChzdHJ1Y3QgaW5vZGUgKiBpbm9kZSwgc3RydWN0IGZpbGUgKiBmaWxwKQp7Cgl1bnNp
+Z25lZCBpbnQgbWlub3IgPSBNSU5PUihpbm9kZS0+aV9yZGV2KTsKCglwcmludGsoS0VSTl9FTUVS
+RyAibWVtdGVzdCBPUEVOOiBNYWpvcj0lZCBNaW5vcj0lZCBNb2RlPSUwOHhcbiIsCgkJCU1BSk9S
+KGlub2RlLT5pX3JkZXYpLCBNSU5PUihpbm9kZS0+aV9yZGV2KSxmaWxwLT5mX21vZGUpOwoKCWlm
+IChtaW5vciA+MyApCgkJcmV0dXJuIC1FTlhJTzsKCgkvLyBKdXN0IHJldHVybiwgYXMgdGhlcmUg
+aXMgbm90aGluZyB0byBkbyBpbiBvcGVuLgoJcmV0dXJuIDA7Cn0KCgovLyAqIFJldHVybnMgMCBv
+biBzdWNjZXNzLCBub24temVybyBvbiBlcnJvcgppbnQgbWVtdGVzdF9yZWxlYXNlIChzdHJ1Y3Qg
+aW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmlsZSAqIGZpbHApCnsKCXByaW50ayhLRVJOX0VNRVJHICJt
+ZW10ZXN0IFJFTEVBU0VEOlxuIik7CgoJLy8gSnVzdCByZXR1cm4sIGFzIHRoZXJlIGlzIG5vdGhp
+bmcgdG8gZG8gaW4gcmVsZWFzZS4KCXJldHVybiAwOwp9CgoKbW9kdWxlX2luaXQobXlfaW5pdF9t
+b2R1bGUpOwptb2R1bGVfZXhpdChteV9jbGVhbnVwX21vZHVsZSk7Cgo=
+
+------_=_NextPart_001_01C84828.3044D25E
+Content-Type: application/octet-stream;
+	name="testmemtest.c"
+Content-Transfer-Encoding: base64
+Content-Description: testmemtest.c
+Content-Disposition: attachment;
+	filename="testmemtest.c"
+
+CiNpbmNsdWRlIDxzdGRpby5oPgojaW5jbHVkZSA8dW5pc3RkLmg+CiNpbmNsdWRlIDxmY250bC5o
+PgoKI2RlZmluZSBERVZJQ0UgIi9kZXYvbWVtdGVzdCIKI2RlZmluZSBCVUZGRVJfU0laRSAgICAg
+NTAKCmludCBtYWluKHZvaWQpCnsKCWludCBmZCwgcmV0dmFsLCBpOwoJY2hhciBidWZmZXJbQlVG
+RkVSX1NJWkUqODBdOwoJdW5zaWduZWQgbG9uZyBidWZsZW5ndGggPSAwOwoKCglmZCA9IG9wZW4o
+REVWSUNFLCBPX1JET05MWSk7CglwcmludGYoInRlc3RtZW10ZXN0OiBvcGVuIHJldHVybmVkIGZk
+PSVkLlxuIiwgZmQpOwoJaWYgKGZkIDwgMCkKCXsKCQlwcmludGYoIkNvdWxkIG5vdCBvcGVuIHRo
+ZSBkZXZpY2UgYCVzJy5cbiIsIERFVklDRSk7CgkJcmV0dXJuIC0xOwoJfQoKCXJldHZhbCA9IHJl
+YWQoZmQsIGJ1ZmZlciwgQlVGRkVSX1NJWkUqODApOwoJaWYgKHJldHZhbCA8IDEpCgkJcHJpbnRm
+KCJFcnJvciByZWFkaW5nIGluZm9ybWF0aW9uIGZyb20gJXMuXG4iLCBERVZJQ0UpOwoKCWZvciAo
+aT0wOyBpPHJldHZhbDsgaSsrKSBwcmludGYoIiVjIiwgYnVmZmVyW2ldKTsKCgljbG9zZShmZCk7
+Cgp9Cg==
+
+------_=_NextPart_001_01C84828.3044D25E--
