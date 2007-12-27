@@ -1,17 +1,20 @@
 Return-Path: <ma.alvarez@usyscom.com>
 Received: from correo.ziv.es (correo.ziv.es [212.55.31.237])
-	by ozlabs.org (Postfix) with ESMTP id 17730DDDF8
+	by ozlabs.org (Postfix) with ESMTP id 7F013DDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Dec 2007 22:12:02 +1100 (EST)
-Message-ID: <477385A4.8020808@ziv.es>
-Date: Thu, 27 Dec 2007 11:59:48 +0100
+	Fri, 28 Dec 2007 02:17:50 +1100 (EST)
+Message-ID: <4773C21B.5000206@ziv.es>
+Date: Thu, 27 Dec 2007 16:17:47 +0100
 From: "Miguel Angel Alvarez" <ma.alvarez@ziv.es>
 MIME-Version: 1.0
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Using SPI in lite5200
+To: "Miguel Angel Alvarez" <ma.alvarez@ziv.es>
+Subject: Re: Using SPI in lite5200
+References: <477385A4.8020808@ziv.es>
+In-Reply-To: <477385A4.8020808@ziv.es>
 Content-Type: text/plain;
 	format=flowed;
 	charset="iso-8859-1"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,43 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi.
+Hi
 
-We are trying to use the SPI subsystem in the MPC5200 to write a driver=20
-that supports SC16IS752 (SPI->2 UARTs).
+It seems the problem is much harder that I thought. I was trying to use=20
+SPI_MOSI, SPI_MISO, SPI_SS and SPI_CLK lines in the PSC3 of my MPC5200,=20
+and this made me thought that I could use the "mpc52xx-psc-spi" driver.
 
-Although I have read the spi-summary in the Documentation of the kernel, =
+Reading better the user guide, I have found that the "mpc52xx-psc-spi"=20
+driver is related to the "codec" spi of the PSC3 and not to the SPI=20
+subsystem. Am I right?
 
-I am not quite sure of having understood all the pieces that I require=20
-to make the system work.
+In this case... Which code should I use as "master driver"?=20
+mpc52xx-devices.c talks about a "mpc52xx-spi" driver, but I cannot find=20
+it. Does it exist?
 
-First of all, I am using the SPI associated to PSC3, so in  the=20
-mpc52xx_devices.c I have added a "[MPC52xx_PSC_SPI]" entry with exactly=20
-the same parameters as "[MPC52xx_PSC3]", except for the name, which I=20
-assign to mpc52xx-psc-spi (I suppose this is the correct driver for the=20
-master of the SPI bus).
-
-That is:
-[MPC52xx_PSC_SPI] =3D {
-        .name        =3D "mpc52xx-psc-spi",
-        .id        =3D 2,
-        .num_resources    =3D 2,
-        .resource    =3D (struct resource[]) {
-            {
-                .start    =3D 0x2400,
-                .end    =3D 0x249f,
-                .flags    =3D IORESOURCE_MEM,
-            },
-            {
-                .start    =3D MPC52xx_PSC3_IRQ,
-                .end    =3D MPC52xx_PSC3_IRQ,
-                .flags    =3D IORESOURCE_IRQ,
-            },
-        },
-    },
-
-My question is: Am I using the correct IRQ? Where can I find which is=20
-the correct one?
+All suggestions will be appreciated.
 
 Thanks
 
@@ -73,8 +54,8 @@ authorized recipients.
 If this message has reached you in error, kindly destroy it without =
 review and notify the sender immediately.
 Thank you for your help.
-ZIV uses virus scanning software but excludes any liability for viruses =
-contained in any attachment.
+=B5SysCom uses virus scanning software but excludes any liability for =
+viruses contained in any attachment.
 =20
 ------------------------------------ ROGAMOS LEA ESTE TEXTO =
 -------------------------------
@@ -85,5 +66,5 @@ como =FAnico destinatario autorizado.
 Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
 revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
 Gracias por su colaboraci=F3n. =20
-ZIV utiliza software antivirus, pero no se hace responsable de los virus =
-contenidos en los ficheros anexos.
+=B5SysCom utiliza software antivirus, pero no se hace responsable de los =
+virus contenidos en los ficheros anexos.
