@@ -1,20 +1,17 @@
-Return-Path: <chengk_thomson@sina.com>
-Received: from smtp.sina.com.cn (smtp.sina.com.cn [202.108.3.233])
-	by ozlabs.org (Postfix) with ESMTP id 6D5CEDDDDB
+Return-Path: <ma.alvarez@usyscom.com>
+Received: from correo.ziv.es (correo.ziv.es [212.55.31.237])
+	by ozlabs.org (Postfix) with ESMTP id 17730DDDF8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Dec 2007 21:01:37 +1100 (EST)
-Received: from imageasus (unknown [221.221.167.200])
-	by smtp.sina.com.cn (SINAMAIL) with ESMTP id 0E007108D45
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Dec 2007 17:34:19 +0800 (CST)
-Date: Wed, 26 Dec 2007 17:34:19 +0800
-From: "chengk_thomson" <chengk_thomson@sina.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: 
-Message-ID: <200712261734192702036@sina.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon273377660331_====="
+	Thu, 27 Dec 2007 22:12:02 +1100 (EST)
+Message-ID: <477385A4.8020808@ziv.es>
+Date: Thu, 27 Dec 2007 11:59:48 +0100
+From: "Miguel Angel Alvarez" <ma.alvarez@ziv.es>
+MIME-Version: 1.0
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Using SPI in lite5200
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,51 +22,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi.
 
-This is a multi-part message in MIME format.
+We are trying to use the SPI subsystem in the MPC5200 to write a driver=20
+that supports SC16IS752 (SPI->2 UARTs).
 
---=====003_Dragon273377660331_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+Although I have read the spi-summary in the Documentation of the kernel, =
 
-linuxppc-embedded@ozlabs.org
+I am not quite sure of having understood all the pieces that I require=20
+to make the system work.
 
-2007-12-26 
+First of all, I am using the SPI associated to PSC3, so in  the=20
+mpc52xx_devices.c I have added a "[MPC52xx_PSC_SPI]" entry with exactly=20
+the same parameters as "[MPC52xx_PSC3]", except for the name, which I=20
+assign to mpc52xx-psc-spi (I suppose this is the correct driver for the=20
+master of the SPI bus).
 
+That is:
+[MPC52xx_PSC_SPI] =3D {
+        .name        =3D "mpc52xx-psc-spi",
+        .id        =3D 2,
+        .num_resources    =3D 2,
+        .resource    =3D (struct resource[]) {
+            {
+                .start    =3D 0x2400,
+                .end    =3D 0x249f,
+                .flags    =3D IORESOURCE_MEM,
+            },
+            {
+                .start    =3D MPC52xx_PSC3_IRQ,
+                .end    =3D MPC52xx_PSC3_IRQ,
+                .flags    =3D IORESOURCE_IRQ,
+            },
+        },
+    },
 
+My question is: Am I using the correct IRQ? Where can I find which is=20
+the correct one?
 
-chengk_thomson 
+Thanks
 
---=====003_Dragon273377660331_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=gb2312">
-<META content="MSHTML 6.00.2900.3243" name=GENERATOR>
-<STYLE>BLOCKQUOTE {
-	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px; MARGIN-LEFT: 2em
-}
-OL {
-	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
-}
-UL {
-	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
-}
-</STYLE>
-</HEAD>
-<BODY style="FONT-SIZE: 10pt; FONT-FAMILY: verdana">
-<DIV><FONT face=Verdana size=2><A 
-href="mailto:linuxppc-embedded@ozlabs.org">linuxppc-embedded@ozlabs.org</A></FONT></DIV>
-<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
-<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2007-12-26 
-</FONT></DIV><FONT face=Verdana size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
-
-<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>chengk_thomson</SPAN> 
-</FONT></DIV></FONT></BODY></HTML>
-
---=====003_Dragon273377660331_=====--
+Miguel =C1ngel=20
+=20
+----------------------------------------- PLEASE NOTE =
+-------------------------------------------
+This message, along with any attachments, may be confidential or legally =
+privileged.=20
+It is intended only for the named person(s), who is/are the only =
+authorized recipients.
+If this message has reached you in error, kindly destroy it without =
+review and notify the sender immediately.
+Thank you for your help.
+ZIV uses virus scanning software but excludes any liability for viruses =
+contained in any attachment.
+=20
+------------------------------------ ROGAMOS LEA ESTE TEXTO =
+-------------------------------
+Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
+con derecho legal.=20
+Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
+como =FAnico destinatario autorizado.
+Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
+revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
+Gracias por su colaboraci=F3n. =20
+ZIV utiliza software antivirus, pero no se hace responsable de los virus =
+contenidos en los ficheros anexos.
