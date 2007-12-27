@@ -1,21 +1,35 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from tama555.ecl.ntt.co.jp (tama555.ecl.ntt.co.jp [129.60.39.106])
-	by ozlabs.org (Postfix) with ESMTP id 99706DDDEE
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 15:44:04 +1100 (EST)
-To: balbir@linux.vnet.ibm.com
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D7F98DDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 16:45:54 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBR5lboP006297
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:47:37 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lBR5jobk135740
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:45:50 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lBR5jonb002246
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:45:50 -0500
+Message-ID: <47733C01.1080002@linux.vnet.ibm.com>
+Date: Thu, 27 Dec 2007 11:15:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47732C41.7000003@linux.vnet.ibm.com>
 References: <20071224044850.GA11449@linux.vnet.ibm.com>
 	<20071227121108L.fujita.tomonori@lab.ntt.co.jp>
 	<47732C41.7000003@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20071227134335O.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 27 Dec 2007 13:43:35 +0900
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org
+	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20071227134335O.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 27 Dec 2007 10:08:25 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+FUJITA Tomonori wrote:
+> On Thu, 27 Dec 2007 10:08:25 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> FUJITA Tomonori wrote:
+>>> On Mon, 24 Dec 2007 10:18:50 +0530
+>>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>>
+>> [snip]
+>>
+>>> I might break the IOMMU code. Can you reproduce it easily? If so,
+>>> reverting my IOMMU patches (I've attached a patch to revert them) fix
+>>> the problem?
+>> [snip]
+>>
+>>
+>> Yes, this patch fixes the problem for me.
+> 
+> Thanks, so you can reproduce it easily, right?
+> 
 
-> FUJITA Tomonori wrote:
-> > On Mon, 24 Dec 2007 10:18:50 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> [snip]
-> 
-> > 
-> > I might break the IOMMU code. Can you reproduce it easily? If so,
-> > reverting my IOMMU patches (I've attached a patch to revert them) fix
-> > the problem?
-> 
-> [snip]
-> 
-> 
-> Yes, this patch fixes the problem for me.
+Yes, quite easily
 
-Thanks, so you can reproduce it easily, right?
+> The problem is that I don't want to revert these changes. I'll see
+> how these changes cause the problem shortly.
 
-The problem is that I don't want to revert these changes. I'll see
-how these changes cause the problem shortly.
+I'll try and find some bandwidth to review/test the patches and help you
+figure out the right solution.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
