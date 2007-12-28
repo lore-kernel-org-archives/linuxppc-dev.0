@@ -1,18 +1,24 @@
-Return-Path: <SRS0=Jm3s=RT=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 23283DDE0C
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 06:18:08 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: External int in dts
-Date: Fri, 28 Dec 2007 20:12:56 +0100
-References: <47753CD3.3000209@pikatech.com>
-In-Reply-To: <47753CD3.3000209@pikatech.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712282012.56516.sr@denx.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts30-srv.bellnexxia.net (tomts30.bellnexxia.net
+	[209.226.175.104]) by ozlabs.org (Postfix) with ESMTP id CC1B0DDDEF
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 07:09:49 +1100 (EST)
+Received: from toip6.srvr.bell.ca ([209.226.175.125])
+	by tomts10-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20071228193008.HFIW1733.tomts10-srv.bellnexxia.net@toip6.srvr.bell.ca>
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 14:30:08 -0500
+Date: Fri, 28 Dec 2007 14:30:08 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Adrian Bunk <adrian.bunk@movial.fi>
+Subject: Re: [2.6.24 patch] restore Cell OProfile support
+Message-ID: <20071228193008.GB23157@Krystal>
+References: <20071228185649.GC4738@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071228185649.GC4738@stusta.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 28 December 2007, Sean MacLennan wrote:
-> I have an FPGA which uses external int 1, which is interrupt 24 on UIC0.
-> I tried the following entry in various places:
->
->         FPGA0: fpga {
->             compatible = "pika,fpga";
->             interrupts = <18 4>;
+* Adrian Bunk (adrian.bunk@movial.fi) wrote:
+> This patch restores the Cell OProfile support that was killed by
+> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+> 
+> Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+> 
 
-Is the interrupt level sensitive and active high? Then "4" is correct here. 
-But if it is active low then you should use "8" here".
+Same here : why isn't this on by default when SPU_FS and OPROFILE are
+enabled ?
 
-Best regards,
-Stefan
+> ---
+> 
+>  kernel/Kconfig.instrumentation |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> 6d1446d35d367fdbdd2a0a29e0d156646ff40630 
+> diff --git a/kernel/Kconfig.instrumentation b/kernel/Kconfig.instrumentation
+> index a76635d..9d143e6 100644
+> --- a/kernel/Kconfig.instrumentation
+> +++ b/kernel/Kconfig.instrumentation
+> @@ -53,2 +53,10 @@ config HARDWARE_PM
+>  
+> +config OPROFILE_CELL
+> +	bool "OProfile for Cell Broadband Engine"
+> +	depends on PPC && (SPU_FS = y && OPROFILE = m) || (SPU_FS = y && OPROFILE = y) 
+> +	default y
+> +	help
+> +	  Profiling of Cell BE SPUs requires special support enabled
+> +	  by this option.
+> +
+>  config KPROBES
+> 
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
