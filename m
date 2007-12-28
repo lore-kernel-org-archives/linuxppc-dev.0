@@ -1,17 +1,15 @@
-Return-Path: <sprasad@bivio.net>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 92845DDDF8
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 15:01:04 +1100 (EST)
+Date: Thu, 27 Dec 2007 22:08:36 -0600
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH 1/2] [POWERPC] smp_call_function_map should be static
+Message-ID: <20071228040836.GA23635@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Device node - How does kernel know about it
-Date: Thu, 27 Dec 2007 19:27:17 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA2D@corpexc01.corp.networkrobots.com>
-In-Reply-To: <Pine.LNX.4.60.0712280936420.1827@rtl14.hofr.at>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
-	<Pine.LNX.4.60.0712280936420.1827@rtl14.hofr.at>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: "Nicholas Mc Guire" <der.herr@hofr.at>,
-	"Jon Smirl" <jonsmirl@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,69 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you Jon and Nicholas.
+smp_call_function_map should be static, and for consistency prepend it
+with __ like other local helper functions in the same file.
 
-I already have "console=3DttyS0" in the kernel command line. That is not
-helping me.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-I looked at the major/minor numbers with a good working system and it
-looks correct for the nodes created in ramdisk.
-
-What is the kernel routine that is first called when there is, for
-example a read() function call from user program?=20
-I would like to start debugging from there and see if any thing at all
-happens when there is a call. Appreciate your help with this question.
-
-Thanks
-Siva
-
-
------Original Message-----
-From: Nicholas Mc Guire [mailto:der.herr@hofr.at]=20
-Sent: Friday, December 28, 2007 12:39 AM
-To: Siva Prasad
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: Device node - How does kernel know about it
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-> * Ramdisk is also executing fine, just that prints are not coming out
-of
-> serial. I can see the execution of various user programs with a printk
-> in sys_execve() routine. Ramdisk has all the required files like
-> /dev/console, /dev/ttyS0, etc.
-> * Looking further into tty driver, I noticed that call to tty_write()
-or
-> do_tty_write() is not happening at all. So, somewhere the interface
-> between kernel and user program is lost.
-> * Just to check it out, I tried to write a small kernel module and a
-> test program.
->  - Attached memtest.c module (not really testing memory there. :-))
->  - Attached testmemtest.c user program, that just open's it and reads
-> the information
->  - Created a device node using "mknod /dev/memtest c 168 0"
->  - When I do "insmod memtest.ko" inside the ramdisk bootup scripts, I
-> could see all the printk's on the console
->  - When I execute "testmemtest" next in the same script, it does not
-> display the printk inside of memtest.c module. This only indicates
-that
-> read call did not really go to the kernel side.
->  - Just to check my program's validity, I checked on a similar machine
-> and all the code works fine.
->  - "uname -r" also matches with what I built. So, chances of exiting
-> from open call because of mismatch is remote. Since userland cannot
-> print, I have no idea what exactly is happening there.
->
-The kernel will simply look at the major:minor numbers - so maybe you
-simply have a wrong major/minor for /dev/ttyS0 ? in that case you will
-see nothing but other than that most things will go on working.
-
-hofrat
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFHdLY2nU7rXZKfY2oRApFpAKCKfGanKHGuFFJmUFy3aQtjmWNjEACfU7uK
-hrfpn2RMn5l23ZqCOXV5rd8=3D
-=3DGfsF
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 338950a..cefeee8 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -181,12 +181,13 @@ static struct call_data_struct {
+  * <wait> If true, wait (atomically) until function has completed on other CPUs.
+  * [RETURNS] 0 on success, else a negative status code. Does not return until
+  * remote CPUs are nearly ready to execute <<func>> or are or have executed.
++ * <map> is a cpu map of the cpus to send IPI to.
+  *
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+  */
+-int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
+-			int wait, cpumask_t map)
++static int __smp_call_function_map(void (*func) (void *info), void *info,
++				   int nonatomic, int wait, cpumask_t map)
+ {
+ 	struct call_data_struct data;
+ 	int ret = -1, num_cpus;
+@@ -265,7 +266,8 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
+ static int __smp_call_function(void (*func)(void *info), void *info,
+ 			       int nonatomic, int wait)
+ {
+-	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
++	return __smp_call_function_map(func, info, nonatomic, wait,
++				       cpu_online_map);
+ }
+ 
+ int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+@@ -278,8 +280,8 @@ int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+ }
+ EXPORT_SYMBOL(smp_call_function);
+ 
+-int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int nonatomic,
+-			int wait)
++int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
++			     int nonatomic, int wait)
+ {
+ 	cpumask_t map = CPU_MASK_NONE;
+ 	int ret = 0;
+@@ -292,7 +294,7 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
+ 
+ 	cpu_set(cpu, map);
+ 	if (cpu != get_cpu())
+-		ret = smp_call_function_map(func,info,nonatomic,wait,map);
++		ret = __smp_call_function_map(func, info, nonatomic, wait, map);
+ 	else {
+ 		local_irq_disable();
+ 		func(info);
