@@ -1,12 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <www@tchaikovsky.artsenscene.org>
+Received: from tchaikovsky.artsenscene.org (crazy.xmat.net [91.121.11.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6BE7ADDDF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 23:37:08 +1100 (EST)
+To: jonsmirl@gmail.com
+Subject: Re: [PATCH 0/5] Version 17,  series to add device tree naming to i2c
+Message-ID: <uyqq2ui6.1198844066.4263970.khali@gcu-squad.org>
+In-Reply-To: <9e4733910712270847j35778e43i66fda3eca9dc125@mail.gmail.com>
+From: "Jean Delvare" <khali@linux-fr.org>
+Errors-To: "Jean Delvare" <khali@linux-fr.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18292.49574.906807.484581@cargo.ozlabs.ibm.com>
-Date: Fri, 28 Dec 2007 20:28:06 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Sender: World Wide Web Owner <www@tchaikovsky.artsenscene.org>
+Date: Fri, 28 Dec 2007 13:14:28 +0100
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,61 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do
+Hi John,
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Le 27/12/2007, Jon Smirl =E9crit:
+>On 12/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+>> Another rework of the i2c for powerpc device tree patch. This version impl=
+ements standard alias naming only on the powerpc platform and only for the de=
+vice tree names. The old naming mechanism of i2c_client.name,driver_name is l=
+eft in place and not changed for non-powerpc platforms. This patch is fully c=
+apable of dynamically loading the i2c modules. You can modprobe in the i2c-mp=
+c driver and the i2c modules described in the device tree will be automatical=
+ly loaded. Modules also work if compiled in.
+>
+>Are there any further objections to this patch? Can it all go in
+>through the powerpc trees or do the i2c people want to send it on?
 
-to get two more bug-fixes that the Cell guys would like to see in
-2.6.24 (and which only affect Cell).  The changes are less than the
-diffstat might indicate since a couple of functions got moved from one
-file to another by the second commit listed below.
+I am on vacation until January 4th. I will review your patchset the week
+following my return.
 
-Thanks,
-Paul.
-
- arch/powerpc/platforms/cell/Kconfig          |    5 ++
- arch/powerpc/platforms/cell/Makefile         |    1 
- arch/powerpc/platforms/cell/spu_notify.c     |   67 ++++++++++++++++++++++++++
- arch/powerpc/platforms/cell/spu_syscalls.c   |   14 +++++
- arch/powerpc/platforms/cell/spufs/context.c  |   16 ------
- arch/powerpc/platforms/cell/spufs/sched.c    |   29 +++--------
- arch/powerpc/platforms/cell/spufs/syscalls.c |    1 
- arch/powerpc/platforms/ps3/os-area.c         |   40 ++++++++++++----
- include/asm-powerpc/spu.h                    |    4 ++
- 9 files changed, 129 insertions(+), 48 deletions(-)
- create mode 100644 arch/powerpc/platforms/cell/spu_notify.c
-
-commit ec5d2dfe72cf4808ae4ecee03454a4d91dfcbe0c
-Author: Geoff Levand <geoffrey.levand@am.sony.com>
-Date:   Mon Dec 24 04:41:01 2007 +1100
-
-    [POWERPC] PS3: Fix printing of os-area magic numbers
-    
-    Fix a bug in the printing of the os-area magic numbers which assumed
-    that magic numbers were zero terminated strings.  The magic numbers
-    are represented in memory as integers.  If the os-area sections are
-    not initialized correctly they could contained random data that would
-    be printed to the display.  Also unify the handling of header and db
-    magic numbers and make both of type array of u8.
-    
-    Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit aed3a8c9bb1a8623a618232087c5ff62718e3b9a
-Author: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-Date:   Sat Dec 15 01:27:30 2007 +1100
-
-    [POWERPC] Oprofile: Remove dependency on spufs module
-    
-    This removes an OProfile dependency on the spufs module.  This
-    dependency was causing a problem for multiplatform systems that are
-    built with support for Oprofile on Cell but try to load the oprofile
-    module on a non-Cell system.
-    
-    Signed-off-by: Bob Nelson <rrnelson@us.ibm.com>
-    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-    Acked-by: Jeremy Kerr <jk@ozlabs.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+Thanks for your patience,
+--
+Jean Delvare
