@@ -1,17 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: update:   RE: nap/dfs on 7448
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-In-Reply-To: <556445368AFA1C438794ABDA8901891C07C113CC@USA0300MS03.na.xerox.net>
-References: <556445368AFA1C438794ABDA8901891C0738E1E8@USA0300MS03.na.xerox.net>
-	<1191304917.6310.99.camel@pasglop>
-	<556445368AFA1C438794ABDA8901891C07C113CC@USA0300MS03.na.xerox.net>
-Content-Type: text/plain
-Date: Fri, 28 Dec 2007 16:19:45 +1100
-Message-Id: <1198819185.7209.18.camel@pasglop>
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from tama555.ecl.ntt.co.jp (tama555.ecl.ntt.co.jp [129.60.39.106])
+	by ozlabs.org (Postfix) with ESMTP id D6D8CDDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 16:31:27 +1100 (EST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <47733C01.1080002@linux.vnet.ibm.com>
+References: <47732C41.7000003@linux.vnet.ibm.com>
+	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
+	<47733C01.1080002@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
+Date: Fri, 28 Dec 2007 14:30:43 +0900
+Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 27 Dec 2007 11:15:37 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-On Thu, 2007-12-27 at 17:37 -0500, Leisner, Martin wrote:
-> Turns out the Tundra TSI109 has various "problems" trying
-> to nap -- its not a 7448 issue...
+> FUJITA Tomonori wrote:
+> > On Thu, 27 Dec 2007 10:08:25 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> >> FUJITA Tomonori wrote:
+> >>> On Mon, 24 Dec 2007 10:18:50 +0530
+> >>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >>>
+> >> [snip]
+> >>
+> >>> I might break the IOMMU code. Can you reproduce it easily? If so,
+> >>> reverting my IOMMU patches (I've attached a patch to revert them) fix
+> >>> the problem?
+> >> [snip]
+> >>
+> >>
+> >> Yes, this patch fixes the problem for me.
+> > 
+> > Thanks, so you can reproduce it easily, right?
+> > 
 > 
-> We're working with tundra to get a workaround (in software, they 
-> won't respin the part).  It seems DMA while napping is an issue, we
-> have to turn off the tsi109 ethernet queues before entering nap mode...
+> Yes, quite easily
 > 
-> If anyone needs this work, let me know (it will  be covered under GPL).
+> > The problem is that I don't want to revert these changes. I'll see
+> > how these changes cause the problem shortly.
+> 
+> I'll try and find some bandwidth to review/test the patches and help you
+> figure out the right solution.
 
-This looks like yet another f*cked up bridge ... I wonder if we'll ever
-get a half decent working northbridge for those processors...
+Thanks,
 
-Unfortunately, it looks like the market for those is limited to junk
-from vendor A and shit from vendor B...
+Can you try this?
 
-Is the problem limited to the TSI internal ethernet or it happens with
-any DMA ?
 
-Looks to me like turning off DMA in NAP mode basically makes NAP mode
-unuseable, perdiod. You can't start loosing packets because your
-processor is idle. So no power saving, and let's eat the watts since
-they won't respin the part. Great !
-
-Ben.
+diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
+index e7d8544..495575a 100644
+--- a/lib/iommu-helper.c
++++ b/lib/iommu-helper.c
+@@ -8,15 +8,20 @@
+ static unsigned long find_next_zero_area(unsigned long *map,
+ 					 unsigned long size,
+ 					 unsigned long start,
+-					 unsigned int nr)
++					 unsigned int nr,
++					 unsigned long align_mask)
+ {
+ 	unsigned long index, end, i;
+ again:
+ 	index = find_next_zero_bit(map, size, start);
++
++	/* Align allocation */
++	index = (index + align_mask) & ~align_mask;
++
+ 	end = index + nr;
+-	if (end > size)
++	if (end >= size)
+ 		return -1;
+-	for (i = index + 1; i < end; i++) {
++	for (i = index; i < end; i++) {
+ 		if (test_bit(i, map)) {
+ 			start = i+1;
+ 			goto again;
+@@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
+ {
+ 	unsigned long index;
+ again:
+-	index = find_next_zero_area(map, size, start, nr);
++	index = find_next_zero_area(map, size, start, nr, align_mask);
+ 	if (index != -1) {
+-		index = (index + align_mask) & ~align_mask;
+ 		if (is_span_boundary(index, nr, shift, boundary_size)) {
+ 			/* we could do more effectively */
+ 			start = index + 1;
