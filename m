@@ -1,23 +1,18 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
-	by ozlabs.org (Postfix) with ESMTP id 11BF3DDDF2
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 05:35:20 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so7082669pyi.0
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 10:35:18 -0800 (PST)
-Date: Fri, 28 Dec 2007 12:35:14 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Problems with arch/powerpc
-Message-ID: <20071228123514.7a2509c6@vader.jdub.homelinux.org>
-In-Reply-To: <47752412.7040708@pikatech.com>
-References: <47742519.8060502@pikatech.com>
-	<20071227194753.56bc92f8@vader.jdub.homelinux.org>
-	<477493D9.7070700@pikatech.com> <47749548.8020908@pikatech.com>
-	<20071228072512.01c6eba8@vader.jdub.homelinux.org>
-	<47752412.7040708@pikatech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Return-Path: <SRS0=Jm3s=RT=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 23283DDE0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 06:18:08 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: External int in dts
+Date: Fri, 28 Dec 2007 20:12:56 +0100
+References: <47753CD3.3000209@pikatech.com>
+In-Reply-To: <47753CD3.3000209@pikatech.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712282012.56516.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 28 Dec 2007 11:28:02 -0500
-Sean MacLennan <smaclennan@pikatech.com> wrote:
+On Friday 28 December 2007, Sean MacLennan wrote:
+> I have an FPGA which uses external int 1, which is interrupt 24 on UIC0.
+> I tried the following entry in various places:
+>
+>         FPGA0: fpga {
+>             compatible = "pika,fpga";
+>             interrupts = <18 4>;
 
-> Josh Boyer wrote:
-> > Does the setjmp call use floating point instructions?  I'm wondering if
-> > the APU isn't enabled for the FPU on the Yosemite board for some
-> > reason.  If that wasn't enabled, weird things would happen.
-> >   
-> That was it! The cputable did not have an entry for the 440EP Rev C! So 
-> the FPU flag was not being set.
+Is the interrupt level sensitive and active high? Then "4" is correct here. 
+But if it is active low then you should use "8" here".
 
-Cool!  Care to send a patch to add that entry?
+Best regards,
+Stefan
 
-josh
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
