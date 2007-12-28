@@ -1,17 +1,14 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7851EDDDFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 02:17:50 +1100 (EST)
-Message-ID: <477513CC.3060109@scram.de>
-Date: Fri, 28 Dec 2007 16:18:36 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 0BC6ADDE19
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 02:19:52 +1100 (EST)
+Date: Fri, 28 Dec 2007 09:27:29 -0600
+From: Olof Johansson <olof@lixom.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH/RFC] Add support for freescale watchdog to CPM serial driver.
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] [POWERPC] pasemi: Distribute interrupts evenly across cpus
+Message-ID: <20071228152729.GA2989@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,86 +18,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If a freescale watchdog device node is present, reset the watchdog
-while waiting for serial input.
+[POWERPC] pasemi: Distribute interrupts evenly across cpus
+    
+By default the OpenPIC on PWRficient will bias to one core (since that
+will improve changes of the other core being able to stay idle/powered
+down). However, this conflicts with most irq load balancing schemes,
+since setting an interrupt to be delivered to either core doesn't really
+result in the load being shared. It also doesn't work well with the
+soft irq disable feature of PPC, since EE will stay on until the first
+interrupt is taken while soft disabled, but the PIC doesn't know that
+when choosing the target.
+    
+There's a conf0 bit to specify that deliveries should be evenly spread
+(round robin) between the cores. Running in that mode makes more sense
+for Linux.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/boot/cpm-serial.c |   33 ++++++++++++++++++++++++++++++++-
- 1 files changed, 32 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/cpm-serial.c b/arch/powerpc/boot/cpm-serial.c
-index 28296fa..d85f038 100644
---- a/arch/powerpc/boot/cpm-serial.c
-+++ b/arch/powerpc/boot/cpm-serial.c
-@@ -6,6 +6,9 @@
-  *
-  * It is assumed that the firmware (or the platform file) has already set
-  * up the port.
-+ *
-+ * If a watchdog node exists, periodically reset the watchdog while waiting
-+ * for console input.
-  */
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index 932b2ec..6c37457 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -224,7 +224,7 @@ static __init void pas_init_IRQ(void)
+ 	openpic_addr = of_read_number(opprop, naddr);
+ 	printk(KERN_DEBUG "OpenPIC addr: %lx\n", openpic_addr);
  
- #include "types.h"
-@@ -50,7 +53,16 @@ struct cpm_bd {
- 	u8 *addr; /* Buffer address in host memory */
- };
+-	mpic_flags = MPIC_PRIMARY | MPIC_LARGE_VECTORS;
++	mpic_flags = MPIC_PRIMARY | MPIC_LARGE_VECTORS | MPIC_NO_BIAS;
  
-+struct pq_wdt {
-+	u32 res0;
-+	u32 swcrr; /* System watchdog control register */
-+	u32 swcnr; /* System watchdog count register */
-+	u8  res1[2];
-+	u16 swsrr; /* System watchdog service register */
-+};
+ 	nmiprop = of_get_property(mpic_node, "nmi-source", NULL);
+ 	if (nmiprop)
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 5a9d8c1..f88ff09 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1279,6 +1279,11 @@ void __init mpic_init(struct mpic *mpic)
+ 			   mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
+ 			   | MPIC_GREG_GCONF_8259_PTHROU_DIS);
+ 
++	if (mpic->flags & MPIC_NO_BIAS)
++		mpic_write(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0),
++			mpic_read(mpic->gregs, MPIC_INFO(GREG_GLOBAL_CONF_0))
++			| MPIC_GREG_GCONF_NO_BIAS);
 +
- static void *cpcr;
-+static struct pq_wdt *wdt;
- static struct cpm_param *param;
- static struct cpm_smc *smc;
- static struct cpm_scc *scc;
-@@ -154,6 +166,11 @@ static void cpm_serial_putc(unsigned char c)
+ 	/* Set current processor priority to 0 */
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0);
  
- static unsigned char cpm_serial_tstc(void)
- {
-+	if (wdt) {
-+		out_be16(&wdt->swsrr, 0x556c);
-+		out_be16(&wdt->swsrr, 0xaa39);
-+	}
-+
- 	barrier();
- 	return !(rbdf->sc & 0x8000);
- }
-@@ -178,7 +195,7 @@ int cpm_console_init(void *devp, struct serial_console_data *scdp)
- 	void *reg_virt[2];
- 	int is_smc = 0, is_cpm2 = 0, n;
- 	unsigned long reg_phys;
--	void *parent, *muram;
-+	void *parent, *muram, *watchdog;
+diff --git a/include/asm-powerpc/mpic.h b/include/asm-powerpc/mpic.h
+index e7ac810..943c5a3 100644
+--- a/include/asm-powerpc/mpic.h
++++ b/include/asm-powerpc/mpic.h
+@@ -22,6 +22,7 @@
+ #define MPIC_GREG_GLOBAL_CONF_0		0x00020
+ #define		MPIC_GREG_GCONF_RESET			0x80000000
+ #define		MPIC_GREG_GCONF_8259_PTHROU_DIS		0x20000000
++#define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
+ #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
+ #define		MPIC_GREG_GCONF_MCK			0x08000000
+ #define MPIC_GREG_GLOBAL_CONF_1		0x00030
+@@ -350,6 +351,8 @@ struct mpic
+ #define MPIC_LARGE_VECTORS		0x00000100
+ /* Enable delivery of prio 15 interrupts as MCK instead of EE */
+ #define MPIC_ENABLE_MCK			0x00000200
++/* Disable bias among target selection, spread interrupts evenly */
++#define MPIC_NO_BIAS			0x00000400
  
- 	if (dt_is_compatible(devp, "fsl,cpm1-smc-uart")) {
- 		is_smc = 1;
-@@ -260,6 +277,20 @@ int cpm_console_init(void *devp, struct serial_console_data *scdp)
- 	if (n < 4)
- 		return -1;
- 
-+	watchdog = finddevice("/soc/wdt");
-+	if (watchdog && (dt_is_compatible(watchdog, "fsl,pq1-wdt") ||
-+			 dt_is_compatible(watchdog, "fsl,pq2-wdt") ||
-+			 dt_is_compatible(watchdog, "fsl,pq2pro-wdt"))) {
-+		n = getprop(watchdog, "virtual-reg", reg_virt,
-+			 sizeof(reg_virt));
-+		if (n < (int)sizeof(reg_virt)) {
-+			if (!dt_xlate_reg(watchdog, 0, &reg_phys, NULL))
-+				return -1;
-+			reg_virt[0] = (void *)reg_phys;
-+		}
-+		wdt = reg_virt[0];
-+	}
-+
- 	scdp->open = cpm_serial_open;
- 	scdp->putc = cpm_serial_putc;
- 	scdp->getc = cpm_serial_getc;
--- 
-1.5.3.7
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
