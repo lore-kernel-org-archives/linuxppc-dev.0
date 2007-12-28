@@ -1,21 +1,14 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from tama555.ecl.ntt.co.jp (tama555.ecl.ntt.co.jp [129.60.39.106])
-	by ozlabs.org (Postfix) with ESMTP id D6D8CDDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 16:31:27 +1100 (EST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47733C01.1080002@linux.vnet.ibm.com>
-References: <47732C41.7000003@linux.vnet.ibm.com>
-	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
-	<47733C01.1080002@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 28 Dec 2007 14:30:43 +0900
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org
+Return-Path: <cecolong@yahoo.com>
+Received: from web34413.mail.mud.yahoo.com (web34413.mail.mud.yahoo.com
+	[66.163.178.162]) by ozlabs.org (Postfix) with SMTP id 7D23EDDDEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 14:55:52 +1100 (EST)
+Date: Thu, 27 Dec 2007 19:49:09 -0800 (PST)
+From: goog long <cecolong@yahoo.com>
+Subject: 2.6.10 kernel hangs after timer_init
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1703318137-1198813749=:17819"
+Message-ID: <912804.17819.qm@web34413.mail.mud.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,79 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 27 Dec 2007 11:15:37 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+--0-1703318137-1198813749=:17819
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-> FUJITA Tomonori wrote:
-> > On Thu, 27 Dec 2007 10:08:25 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >> FUJITA Tomonori wrote:
-> >>> On Mon, 24 Dec 2007 10:18:50 +0530
-> >>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >>>
-> >> [snip]
-> >>
-> >>> I might break the IOMMU code. Can you reproduce it easily? If so,
-> >>> reverting my IOMMU patches (I've attached a patch to revert them) fix
-> >>> the problem?
-> >> [snip]
-> >>
-> >>
-> >> Yes, this patch fixes the problem for me.
-> > 
-> > Thanks, so you can reproduce it easily, right?
-> > 
-> 
-> Yes, quite easily
-> 
-> > The problem is that I don't want to revert these changes. I'll see
-> > how these changes cause the problem shortly.
-> 
-> I'll try and find some bandwidth to review/test the patches and help you
-> figure out the right solution.
+2.6.10 kernel hangs on my board with PPC64 processors. The log is below. There must be a fix for this somewhere because it boots just fine on 2.6.14 kernel. Could someone please point me to the fix for this?
 
-Thanks,
+time_init: decrementer frequency = 112.500000 MHz
+time_init: processor frequency   = 1800.000000 MHz
+ -> set_preferred_console()
+stdout is /ht@0/isa@8,2/serial@a0
+Found serial console at ttyS0
+smp_prepare_cpus
+smp_mpic_probe()...
+nr_cpus: 2
+smp: kicking cpu 1
+       
+---------------------------------
+Never miss a thing.   Make Yahoo your homepage.
+--0-1703318137-1198813749=:17819
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Can you try this?
+2.6.10 kernel hangs on my board with PPC64 processors. The log is below. There must be a fix for this somewhere because it boots just fine on 2.6.14 kernel. Could someone please point me to the fix for this?<br><br>time_init: decrementer frequency = 112.500000 MHz<br>time_init: processor frequency&nbsp;&nbsp; = 1800.000000 MHz<br>&nbsp;-&gt; set_preferred_console()<br>stdout is /ht@0/isa@8,2/serial@a0<br>Found serial console at ttyS0<br>smp_prepare_cpus<br>smp_mpic_probe()...<br>nr_cpus: 2<br>smp: kicking <span style="border-bottom: 1px dashed rgb(0, 102, 204); cursor: pointer;" class="yshortcuts" id="lw_1198813711_0">cpu</span> 1<p>&#32;
 
 
-diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-index e7d8544..495575a 100644
---- a/lib/iommu-helper.c
-+++ b/lib/iommu-helper.c
-@@ -8,15 +8,20 @@
- static unsigned long find_next_zero_area(unsigned long *map,
- 					 unsigned long size,
- 					 unsigned long start,
--					 unsigned int nr)
-+					 unsigned int nr,
-+					 unsigned long align_mask)
- {
- 	unsigned long index, end, i;
- again:
- 	index = find_next_zero_bit(map, size, start);
-+
-+	/* Align allocation */
-+	index = (index + align_mask) & ~align_mask;
-+
- 	end = index + nr;
--	if (end > size)
-+	if (end >= size)
- 		return -1;
--	for (i = index + 1; i < end; i++) {
-+	for (i = index; i < end; i++) {
- 		if (test_bit(i, map)) {
- 			start = i+1;
- 			goto again;
-@@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
- {
- 	unsigned long index;
- again:
--	index = find_next_zero_area(map, size, start, nr);
-+	index = find_next_zero_area(map, size, start, nr, align_mask);
- 	if (index != -1) {
--		index = (index + align_mask) & ~align_mask;
- 		if (is_span_boundary(index, nr, shift, boundary_size)) {
- 			/* we could do more effectively */
- 			start = index + 1;
+
+      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
+
+
+--0-1703318137-1198813749=:17819--
