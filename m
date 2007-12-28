@@ -1,35 +1,12 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE782DDDF8
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 18:35:54 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBS7ZmwA013750
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 02:35:48 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBS7Zmoo491436
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 02:35:48 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBS7ZmLB031207
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 02:35:48 -0500
-Message-ID: <4774A74B.3000105@linux.vnet.ibm.com>
-Date: Fri, 28 Dec 2007 13:05:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-References: <47732C41.7000003@linux.vnet.ibm.com>
-	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
-	<47733C01.1080002@linux.vnet.ibm.com>
-	<20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071228143043U.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18292.49574.906807.484581@cargo.ozlabs.ibm.com>
+Date: Fri, 28 Dec 2007 20:28:06 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,58 +16,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FUJITA Tomonori wrote:
-[snip]
-> Thanks,
-> 
-> Can you try this?
-> 
-> 
-> diff --git a/lib/iommu-helper.c b/lib/iommu-helper.c
-> index e7d8544..495575a 100644
-> --- a/lib/iommu-helper.c
-> +++ b/lib/iommu-helper.c
-> @@ -8,15 +8,20 @@
->  static unsigned long find_next_zero_area(unsigned long *map,
->  					 unsigned long size,
->  					 unsigned long start,
-> -					 unsigned int nr)
-> +					 unsigned int nr,
-> +					 unsigned long align_mask)
->  {
->  	unsigned long index, end, i;
->  again:
->  	index = find_next_zero_bit(map, size, start);
-> +
-> +	/* Align allocation */
-> +	index = (index + align_mask) & ~align_mask;
-> +
->  	end = index + nr;
-> -	if (end > size)
-> +	if (end >= size)
->  		return -1;
-> -	for (i = index + 1; i < end; i++) {
-> +	for (i = index; i < end; i++) {
->  		if (test_bit(i, map)) {
->  			start = i+1;
->  			goto again;
-> @@ -50,9 +55,8 @@ unsigned long iommu_area_alloc(unsigned long *map, unsigned long size,
->  {
->  	unsigned long index;
->  again:
-> -	index = find_next_zero_area(map, size, start, nr);
-> +	index = find_next_zero_area(map, size, start, nr, align_mask);
->  	if (index != -1) {
-> -		index = (index + align_mask) & ~align_mask;
->  		if (is_span_boundary(index, nr, shift, boundary_size)) {
->  			/* we could do more effectively */
->  			start = index + 1;
+Linus,
 
-This on top of -mm? Or on top of the reverted iommu patch.
+Please do
 
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+to get two more bug-fixes that the Cell guys would like to see in
+2.6.24 (and which only affect Cell).  The changes are less than the
+diffstat might indicate since a couple of functions got moved from one
+file to another by the second commit listed below.
+
+Thanks,
+Paul.
+
+ arch/powerpc/platforms/cell/Kconfig          |    5 ++
+ arch/powerpc/platforms/cell/Makefile         |    1 
+ arch/powerpc/platforms/cell/spu_notify.c     |   67 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/cell/spu_syscalls.c   |   14 +++++
+ arch/powerpc/platforms/cell/spufs/context.c  |   16 ------
+ arch/powerpc/platforms/cell/spufs/sched.c    |   29 +++--------
+ arch/powerpc/platforms/cell/spufs/syscalls.c |    1 
+ arch/powerpc/platforms/ps3/os-area.c         |   40 ++++++++++++----
+ include/asm-powerpc/spu.h                    |    4 ++
+ 9 files changed, 129 insertions(+), 48 deletions(-)
+ create mode 100644 arch/powerpc/platforms/cell/spu_notify.c
+
+commit ec5d2dfe72cf4808ae4ecee03454a4d91dfcbe0c
+Author: Geoff Levand <geoffrey.levand@am.sony.com>
+Date:   Mon Dec 24 04:41:01 2007 +1100
+
+    [POWERPC] PS3: Fix printing of os-area magic numbers
+    
+    Fix a bug in the printing of the os-area magic numbers which assumed
+    that magic numbers were zero terminated strings.  The magic numbers
+    are represented in memory as integers.  If the os-area sections are
+    not initialized correctly they could contained random data that would
+    be printed to the display.  Also unify the handling of header and db
+    magic numbers and make both of type array of u8.
+    
+    Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit aed3a8c9bb1a8623a618232087c5ff62718e3b9a
+Author: Bob Nelson <rrnelson@linux.vnet.ibm.com>
+Date:   Sat Dec 15 01:27:30 2007 +1100
+
+    [POWERPC] Oprofile: Remove dependency on spufs module
+    
+    This removes an OProfile dependency on the spufs module.  This
+    dependency was causing a problem for multiplatform systems that are
+    built with support for Oprofile on Cell but try to load the oprofile
+    module on a non-Cell system.
+    
+    Signed-off-by: Bob Nelson <rrnelson@us.ibm.com>
+    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+    Acked-by: Jeremy Kerr <jk@ozlabs.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
