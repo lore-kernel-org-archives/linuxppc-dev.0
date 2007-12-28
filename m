@@ -1,19 +1,17 @@
-Return-Path: <sprasad@bivio.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Device node - How does kernel know about it
-Date: Thu, 27 Dec 2007 20:55:04 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA32@corpexc01.corp.networkrobots.com>
-In-Reply-To: <9e4733910712272015m30ffc13cu6022ee9d29f9bddc@mail.gmail.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
-	<Pine.LNX.4.60.0712280936420.1827@rtl14.hofr.at>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA2D@corpexc01.corp.networkrobots.com>
-	<9e4733910712272015m30ffc13cu6022ee9d29f9bddc@mail.gmail.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: update:   RE: nap/dfs on 7448
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+In-Reply-To: <556445368AFA1C438794ABDA8901891C07C113CC@USA0300MS03.na.xerox.net>
+References: <556445368AFA1C438794ABDA8901891C0738E1E8@USA0300MS03.na.xerox.net>
+	<1191304917.6310.99.camel@pasglop>
+	<556445368AFA1C438794ABDA8901891C07C113CC@USA0300MS03.na.xerox.net>
+Content-Type: text/plain
+Date: Fri, 28 Dec 2007 16:19:45 +1100
+Message-Id: <1198819185.7209.18.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,106 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon,
 
-Yes!... I have CONFIG_EARLY_PRINTK=3Dy, and I could see early prints
-during booting the kernel. Afterwards, printk's also work as expected.
-Only printf's from user space has problem.
+On Thu, 2007-12-27 at 17:37 -0500, Leisner, Martin wrote:
+> Turns out the Tundra TSI109 has various "problems" trying
+> to nap -- its not a 7448 issue...
+> 
+> We're working with tundra to get a workaround (in software, they 
+> won't respin the part).  It seems DMA while napping is an issue, we
+> have to turn off the tsi109 ethernet queues before entering nap mode...
+> 
+> If anyone needs this work, let me know (it will  be covered under GPL).
 
-- Siva
+This looks like yet another f*cked up bridge ... I wonder if we'll ever
+get a half decent working northbridge for those processors...
 
+Unfortunately, it looks like the market for those is limited to junk
+from vendor A and shit from vendor B...
 
------Original Message-----
-From: Jon Smirl [mailto:jonsmirl@gmail.com]=20
-Sent: Thursday, December 27, 2007 8:16 PM
-To: Siva Prasad
-Cc: Nicholas Mc Guire; linuxppc-dev@ozlabs.org;
-linuxppc-embedded@ozlabs.org
-Subject: Re: Device node - How does kernel know about it
+Is the problem limited to the TSI internal ethernet or it happens with
+any DMA ?
 
-On 12/27/07, Siva Prasad <sprasad@bivio.net> wrote:
-> Thank you Jon and Nicholas.
->
-> I already have "console=3DttyS0" in the kernel command line. That is =
-not
-> helping me.
+Looks to me like turning off DMA in NAP mode basically makes NAP mode
+unuseable, perdiod. You can't start loosing packets because your
+processor is idle. So no power saving, and let's eat the watts since
+they won't respin the part. Great !
 
-Do you have
-CONFIG_EARLY_PRINTK=3Dy
-in .config?
-
-
->
-> I looked at the major/minor numbers with a good working system and it
-> looks correct for the nodes created in ramdisk.
->
-> What is the kernel routine that is first called when there is, for
-> example a read() function call from user program?
-> I would like to start debugging from there and see if any thing at all
-> happens when there is a call. Appreciate your help with this question.
->
-> Thanks
-> Siva
->
->
-> -----Original Message-----
-> From: Nicholas Mc Guire [mailto:der.herr@hofr.at]
-> Sent: Friday, December 28, 2007 12:39 AM
-> To: Siva Prasad
-> Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-> Subject: Re: Device node - How does kernel know about it
->
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> > * Ramdisk is also executing fine, just that prints are not coming
-out
-> of
-> > serial. I can see the execution of various user programs with a
-printk
-> > in sys_execve() routine. Ramdisk has all the required files like
-> > /dev/console, /dev/ttyS0, etc.
-> > * Looking further into tty driver, I noticed that call to
-tty_write()
-> or
-> > do_tty_write() is not happening at all. So, somewhere the interface
-> > between kernel and user program is lost.
-> > * Just to check it out, I tried to write a small kernel module and a
-> > test program.
-> >  - Attached memtest.c module (not really testing memory there. :-))
-> >  - Attached testmemtest.c user program, that just open's it and
-reads
-> > the information
-> >  - Created a device node using "mknod /dev/memtest c 168 0"
-> >  - When I do "insmod memtest.ko" inside the ramdisk bootup scripts,
-I
-> > could see all the printk's on the console
-> >  - When I execute "testmemtest" next in the same script, it does not
-> > display the printk inside of memtest.c module. This only indicates
-> that
-> > read call did not really go to the kernel side.
-> >  - Just to check my program's validity, I checked on a similar
-machine
-> > and all the code works fine.
-> >  - "uname -r" also matches with what I built. So, chances of exiting
-> > from open call because of mismatch is remote. Since userland cannot
-> > print, I have no idea what exactly is happening there.
-> >
-> The kernel will simply look at the major:minor numbers - so maybe you
-> simply have a wrong major/minor for /dev/ttyS0 ? in that case you will
-> see nothing but other than that most things will go on working.
->
-> hofrat
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.2.4 (GNU/Linux)
->
-> iD8DBQFHdLY2nU7rXZKfY2oRApFpAKCKfGanKHGuFFJmUFy3aQtjmWNjEACfU7uK
-> hrfpn2RMn5l23ZqCOXV5rd8=3D
-> =3DGfsF
-> -----END PGP SIGNATURE-----
->
-
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Ben.
