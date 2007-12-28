@@ -1,18 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7EF7FDDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 15:03:37 +1100 (EST)
-Date: Thu, 27 Dec 2007 22:11:09 -0600
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH 2/2] [POWERPC] Make smp_send_stop() handle panic and xmon
-	reboot
-Message-ID: <20071228041109.GB23635@lixom.net>
-References: <20071228040836.GA23635@lixom.net>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 48E6FDDDF8
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 15:15:36 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so5441089wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 20:15:36 -0800 (PST)
+Message-ID: <9e4733910712272015m30ffc13cu6022ee9d29f9bddc@mail.gmail.com>
+Date: Thu, 27 Dec 2007 23:15:35 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Siva Prasad" <sprasad@bivio.net>
+Subject: Re: Device node - How does kernel know about it
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA2D@corpexc01.corp.networkrobots.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071228040836.GA23635@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
+	<Pine.LNX.4.60.0712280936420.1827@rtl14.hofr.at>
+	<D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA2D@corpexc01.corp.networkrobots.com>
+Cc: linuxppc-dev@ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,114 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-smp_send_stop() will send an IPI to all other cpus to shut them down.
-However, for the case of xmon-based reboots (as well as potentially some
-panics), the other cpus are (or might be) spinning with interrupts off,
-and won't take the IPI.
+On 12/27/07, Siva Prasad <sprasad@bivio.net> wrote:
+> Thank you Jon and Nicholas.
+>
+> I already have "console=ttyS0" in the kernel command line. That is not
+> helping me.
 
-Current code will drop us into the debugger when the IPI fails, which
-means we're in an infinite loop that we can't get out of without an
-external reset of some sort.
-
-Instead, make the smp_send_stop() IPI call path just print the warning
-about being unable to send IPIs, but make it return so the rest of the
-shutdown sequence can continue. It's not perfect, but the lesser of
-two evils.
-
-Also move the call_lock handling outside of smp_call_function_map so we
-can avoid deadlocks in smp_send_stop().
+Do you have
+CONFIG_EARLY_PRINTK=y
+in .config?
 
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+>
+> I looked at the major/minor numbers with a good working system and it
+> looks correct for the nodes created in ramdisk.
+>
+> What is the kernel routine that is first called when there is, for
+> example a read() function call from user program?
+> I would like to start debugging from there and see if any thing at all
+> happens when there is a call. Appreciate your help with this question.
+>
+> Thanks
+> Siva
+>
+>
+> -----Original Message-----
+> From: Nicholas Mc Guire [mailto:der.herr@hofr.at]
+> Sent: Friday, December 28, 2007 12:39 AM
+> To: Siva Prasad
+> Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
+> Subject: Re: Device node - How does kernel know about it
+>
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> > * Ramdisk is also executing fine, just that prints are not coming out
+> of
+> > serial. I can see the execution of various user programs with a printk
+> > in sys_execve() routine. Ramdisk has all the required files like
+> > /dev/console, /dev/ttyS0, etc.
+> > * Looking further into tty driver, I noticed that call to tty_write()
+> or
+> > do_tty_write() is not happening at all. So, somewhere the interface
+> > between kernel and user program is lost.
+> > * Just to check it out, I tried to write a small kernel module and a
+> > test program.
+> >  - Attached memtest.c module (not really testing memory there. :-))
+> >  - Attached testmemtest.c user program, that just open's it and reads
+> > the information
+> >  - Created a device node using "mknod /dev/memtest c 168 0"
+> >  - When I do "insmod memtest.ko" inside the ramdisk bootup scripts, I
+> > could see all the printk's on the console
+> >  - When I execute "testmemtest" next in the same script, it does not
+> > display the printk inside of memtest.c module. This only indicates
+> that
+> > read call did not really go to the kernel side.
+> >  - Just to check my program's validity, I checked on a similar machine
+> > and all the code works fine.
+> >  - "uname -r" also matches with what I built. So, chances of exiting
+> > from open call because of mismatch is remote. Since userland cannot
+> > print, I have no idea what exactly is happening there.
+> >
+> The kernel will simply look at the major:minor numbers - so maybe you
+> simply have a wrong major/minor for /dev/ttyS0 ? in that case you will
+> see nothing but other than that most things will go on working.
+>
+> hofrat
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.2.4 (GNU/Linux)
+>
+> iD8DBQFHdLY2nU7rXZKfY2oRApFpAKCKfGanKHGuFFJmUFy3aQtjmWNjEACfU7uK
+> hrfpn2RMn5l23ZqCOXV5rd8=
+> =GfsF
+> -----END PGP SIGNATURE-----
+>
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index cefeee8..8730687 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -76,6 +76,8 @@ void smp_call_function_interrupt(void);
- 
- int smt_enabled_at_boot = 1;
- 
-+static int ipi_fail_ok;
-+
- static void (*crash_ipi_function_ptr)(struct pt_regs *) = NULL;
- 
- #ifdef CONFIG_PPC64
-@@ -204,8 +206,6 @@ static int __smp_call_function_map(void (*func) (void *info), void *info,
- 	if (wait)
- 		atomic_set(&data.finished, 0);
- 
--	spin_lock(&call_lock);
--
- 	/* remove 'self' from the map */
- 	if (cpu_isset(smp_processor_id(), map))
- 		cpu_clear(smp_processor_id(), map);
-@@ -232,7 +232,8 @@ static int __smp_call_function_map(void (*func) (void *info), void *info,
- 			printk("smp_call_function on cpu %d: other cpus not "
- 				"responding (%d)\n", smp_processor_id(),
- 				atomic_read(&data.started));
--			debugger(NULL);
-+			if (!ipi_fail_ok)
-+				debugger(NULL);
- 			goto out;
- 		}
- 	}
-@@ -259,15 +260,18 @@ static int __smp_call_function_map(void (*func) (void *info), void *info,
-  out:
- 	call_data = NULL;
- 	HMT_medium();
--	spin_unlock(&call_lock);
- 	return ret;
- }
- 
- static int __smp_call_function(void (*func)(void *info), void *info,
- 			       int nonatomic, int wait)
- {
--	return __smp_call_function_map(func, info, nonatomic, wait,
-+	int ret;
-+	spin_lock(&call_lock);
-+	ret =__smp_call_function_map(func, info, nonatomic, wait,
- 				       cpu_online_map);
-+	spin_unlock(&call_lock);
-+	return ret;
- }
- 
- int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
-@@ -293,9 +297,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- 		return -EINVAL;
- 
- 	cpu_set(cpu, map);
--	if (cpu != get_cpu())
-+	if (cpu != get_cpu()) {
-+		spin_lock(&call_lock);
- 		ret = __smp_call_function_map(func, info, nonatomic, wait, map);
--	else {
-+		spin_unlock(&call_lock);
-+	} else {
- 		local_irq_disable();
- 		func(info);
- 		local_irq_enable();
-@@ -307,7 +313,22 @@ EXPORT_SYMBOL(smp_call_function_single);
- 
- void smp_send_stop(void)
- {
--	__smp_call_function(stop_this_cpu, NULL, 1, 0);
-+	int nolock;
-+
-+	/* It's OK to fail sending the IPI, since the alternative is to
-+	 * be stuck forever waiting on the other CPU to take the interrupt.
-+	 *
-+	 * It's better to at least continue and go through reboot, since this
-+	 * function is usually called at panic or reboot time in the first
-+	 * place.
-+	 */
-+	ipi_fail_ok = 1;
-+
-+	/* Don't deadlock in case we got called through panic */
-+	nolock = !spin_trylock(&call_lock);
-+	__smp_call_function_map(stop_this_cpu, NULL, 1, 0, cpu_online_map);
-+	if (!nolock)
-+		spin_unlock(&call_lock);
- }
- 
- void smp_call_function_interrupt(void)
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
