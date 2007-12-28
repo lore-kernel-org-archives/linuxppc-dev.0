@@ -1,14 +1,23 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 73409DDE0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 05:13:40 +1100 (EST)
-Message-ID: <47753CD3.3000209@pikatech.com>
-Date: Fri, 28 Dec 2007 13:13:39 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: External int in dts
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 11BF3DDDF2
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 05:35:20 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so7082669pyi.0
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Dec 2007 10:35:18 -0800 (PST)
+Date: Fri, 28 Dec 2007 12:35:14 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: Problems with arch/powerpc
+Message-ID: <20071228123514.7a2509c6@vader.jdub.homelinux.org>
+In-Reply-To: <47752412.7040708@pikatech.com>
+References: <47742519.8060502@pikatech.com>
+	<20071227194753.56bc92f8@vader.jdub.homelinux.org>
+	<477493D9.7070700@pikatech.com> <47749548.8020908@pikatech.com>
+	<20071228072512.01c6eba8@vader.jdub.homelinux.org>
+	<47752412.7040708@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have an FPGA which uses external int 1, which is interrupt 24 on UIC0. 
-I tried the following entry in various places:
+On Fri, 28 Dec 2007 11:28:02 -0500
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-        FPGA0: fpga {
-            compatible = "pika,fpga";
-            interrupts = <18 4>;
-            interrupt-parent = <&UIC0>;
-        };
+> Josh Boyer wrote:
+> > Does the setjmp call use floating point instructions?  I'm wondering if
+> > the APU isn't enabled for the FPU on the Yosemite board for some
+> > reason.  If that wasn't enabled, weird things would happen.
+> >   
+> That was it! The cputable did not have an entry for the 440EP Rev C! So 
+> the FPU flag was not being set.
 
-Any hints, or is this the wrong way to enable an external int?
+Cool!  Care to send a patch to add that entry?
 
-Cheers,
-   Sean
+josh
