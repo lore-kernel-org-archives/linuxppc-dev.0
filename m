@@ -1,35 +1,14 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D7F98DDDF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 16:45:54 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lBR5lboP006297
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:47:37 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lBR5jobk135740
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:45:50 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lBR5jonb002246
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Dec 2007 00:45:50 -0500
-Message-ID: <47733C01.1080002@linux.vnet.ibm.com>
-Date: Thu, 27 Dec 2007 11:15:37 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <root@hofr.at>
+Date: Fri, 28 Dec 2007 09:39:13 +0100 (CET)
+From: Nicholas Mc Guire <der.herr@hofr.at>
+To: Siva Prasad <sprasad@bivio.net>
+Subject: Re: Device node - How does kernel know about it
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
+Message-ID: <Pine.LNX.4.60.0712280936420.1827@rtl14.hofr.at>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: SCSI errors on powerpc with 2.6.24-rc6-mm1
-References: <20071224044850.GA11449@linux.vnet.ibm.com>
-	<20071227121108L.fujita.tomonori@lab.ntt.co.jp>
-	<47732C41.7000003@linux.vnet.ibm.com>
-	<20071227134335O.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20071227134335O.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,37 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FUJITA Tomonori wrote:
-> On Thu, 27 Dec 2007 10:08:25 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> FUJITA Tomonori wrote:
->>> On Mon, 24 Dec 2007 10:18:50 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->> [snip]
->>
->>> I might break the IOMMU code. Can you reproduce it easily? If so,
->>> reverting my IOMMU patches (I've attached a patch to revert them) fix
->>> the problem?
->> [snip]
->>
->>
->> Yes, this patch fixes the problem for me.
-> 
-> Thanks, so you can reproduce it easily, right?
-> 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Yes, quite easily
+> * Ramdisk is also executing fine, just that prints are not coming out of
+> serial. I can see the execution of various user programs with a printk
+> in sys_execve() routine. Ramdisk has all the required files like
+> /dev/console, /dev/ttyS0, etc.
+> * Looking further into tty driver, I noticed that call to tty_write() or
+> do_tty_write() is not happening at all. So, somewhere the interface
+> between kernel and user program is lost.
+> * Just to check it out, I tried to write a small kernel module and a
+> test program.
+>  - Attached memtest.c module (not really testing memory there. :-))
+>  - Attached testmemtest.c user program, that just open's it and reads
+> the information
+>  - Created a device node using "mknod /dev/memtest c 168 0"
+>  - When I do "insmod memtest.ko" inside the ramdisk bootup scripts, I
+> could see all the printk's on the console
+>  - When I execute "testmemtest" next in the same script, it does not
+> display the printk inside of memtest.c module. This only indicates that
+> read call did not really go to the kernel side.
+>  - Just to check my program's validity, I checked on a similar machine
+> and all the code works fine.
+>  - "uname -r" also matches with what I built. So, chances of exiting
+> from open call because of mismatch is remote. Since userland cannot
+> print, I have no idea what exactly is happening there.
+>
+The kernel will simply look at the major:minor numbers - so maybe you
+simply have a wrong major/minor for /dev/ttyS0 ? in that case you will
+see nothing but other than that most things will go on working.
 
-> The problem is that I don't want to revert these changes. I'll see
-> how these changes cause the problem shortly.
+hofrat
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
 
-I'll try and find some bandwidth to review/test the patches and help you
-figure out the right solution.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+iD8DBQFHdLY2nU7rXZKfY2oRApFpAKCKfGanKHGuFFJmUFy3aQtjmWNjEACfU7uK
+hrfpn2RMn5l23ZqCOXV5rd8=
+=GfsF
+-----END PGP SIGNATURE-----
