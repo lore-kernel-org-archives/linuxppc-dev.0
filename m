@@ -1,20 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EFF29DDDFC
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 15:03:28 +1100 (EST)
-Date: Sat, 29 Dec 2007 15:03:19 +1100
+	by ozlabs.org (Postfix) with ESMTP id 0F3F5DDDFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 17:24:39 +1100 (EST)
+Date: Sat, 29 Dec 2007 17:24:26 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFC] Add support for PowerQUICC watchdog
-Message-Id: <20071229150319.1045b2a3.sfr@canb.auug.org.au>
-In-Reply-To: <47751287.6000801@scram.de>
-References: <47751287.6000801@scram.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2 2/4] USB: add Cypress c67x00 OTG controller core driver
+Message-Id: <20071229172426.4488046b.sfr@canb.auug.org.au>
+In-Reply-To: <20071228235236.16003.44475.stgit@trillian.secretlab.ca>
+References: <20071228234537.16003.56035.stgit@trillian.secretlab.ca>
+	<20071228235236.16003.44475.stgit@trillian.secretlab.ca>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y"
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	wim@iguana.be, linux-kernel@vger.kernel.org
+	boundary="Signature=_Sat__29_Dec_2007_17_24_26_+1100_kF4psHD=129==+fk"
+Cc: akpm@osdl.org, dbrownell@users.sourceforge.net,
+	linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
+	linuxppc-dev@ozlabs.org, stern@rowland.harvard.edu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,69 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y
+--Signature=_Sat__29_Dec_2007_17_24_26_+1100_kF4psHD=129==+fk
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Jochen,
+Hi Grant,
 
-Just a couple of suggestions.
+Just one nit ...
 
-On Fri, 28 Dec 2007 16:13:11 +0100 Jochen Friedrich <jochen@scram.de> wrote:
+On Fri, 28 Dec 2007 16:52:36 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
 >
-> +int __init pq_wdt_early_init(void)
+> +static int __devinit c67x00_drv_probe(struct platform_device *pdev)
 > +{
->
-> +	data =3D of_get_property(soc, "bus-frequency", NULL);
-> +	if (!data) {
-> +		of_node_put(soc);
-> +		printk(KERN_ERR "Could not find bus-frequency in soc node\n");
-> +		ret =3D -ENODEV;
-> +		goto out;
-> +	}
-> +	of_node_put(soc);
+> +	struct c67x00_device *c67x00;
+> +	struct c67x00_platform_data *pdata;
+> +	struct resource *res, *res2;
+> +	int ret, i;
+> +
+> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res)
+> +		return -ENODEV;
+> +
+> +	res2 =3D platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+> +	if (!res2)
+> +		return -ENODEV;
+> +
+> +	pdata =3D (struct c67x00_platform_data*)pdev->dev.platform_data;
 
-If you move the "of_node_put(soc)" just above the "if (!data)" then you
-won't need to repeat it.
-
-> +static struct of_platform_driver pq_wdt_driver =3D {
-> +	.owner		=3D THIS_MODULE,
-> +	.name		=3D "pq-wdt",
-> +	.match_table	=3D pq_wdt_match,
-> +	.probe		=3D pq_wdt_probe,
-> +	.remove		=3D pq_wdt_remove,
-> +};
-
-We are removing the owner and name fields from struct of_platform_driver, s=
-o the preferred initialization looks like this:
-
-static struct of_platform_driver pq_wdt_driver =3D {
-	.match_table	=3D pq_wdt_match,
-	.probe		=3D pq_wdt_probe,
-	.remove		=3D pq_wdt_remove,
-	.driver		=3D {
-		.name	=3D "pq-wdt",
-		.owner	=3D THIS_MODULE,
-	}
-};
-
-or similar.
+This cast is unnecessary.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y
+--Signature=_Sat__29_Dec_2007_17_24_26_+1100_kF4psHD=129==+fk
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHdccNTgG2atn1QN8RAnmjAJ9nwNbZ6t1Qdau5o6Rm+uGjwisdfgCfWWnV
-eSzxT51yMkDyHIS8HCPsr84=
-=YWjB
+iD8DBQFHdeghTgG2atn1QN8RAp2MAKCPYuqWm4uPI+ijLr1ENLRk0G/IvgCffLrK
+p10+rYn3uJp1wvfV4YeC0P4=
+=/tSF
 -----END PGP SIGNATURE-----
 
---Signature=_Sat__29_Dec_2007_15_03_19_+1100_HhGJOTqV8F4flA2y--
+--Signature=_Sat__29_Dec_2007_17_24_26_+1100_kF4psHD=129==+fk--
