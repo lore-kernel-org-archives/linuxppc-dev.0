@@ -1,24 +1,20 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts5-srv.bellnexxia.net (tomts5-srv.bellnexxia.net
-	[209.226.175.25]) by ozlabs.org (Postfix) with ESMTP id A701DDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Dec 2007 03:14:24 +1100 (EST)
-Received: from toip7.srvr.bell.ca ([209.226.175.124])
-	by tomts5-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20071229161422.BKHC17217.tomts5-srv.bellnexxia.net@toip7.srvr.bell.ca>
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 11:14:22 -0500
-Date: Sat, 29 Dec 2007 11:09:21 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <adrian.bunk@movial.fi>
-Subject: [2.6.24 patch] Fix Cell OProfile support
-Message-ID: <20071229160921.GB12262@Krystal>
-References: <20071228185649.GC4738@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071228185649.GC4738@stusta.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, oprofile-list@lists.sourceforge.net
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 15938DDDE9
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Dec 2007 04:13:13 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Vitaly Bordug'" <vitb@kernel.crashing.org>,
+	"'Paul Mackerras'" <paulus@samba.org>
+References: <20071206225121.31080.86606.stgit@localhost.localdomain>
+Subject: RE: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
+	layerfunctionality
+Date: Sat, 29 Dec 2007 18:13:08 +0100
+Message-ID: <003c01c84a3e$15d3a9c0$02ac10ac@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <20071206225121.31080.86606.stgit@localhost.localdomain>
+Cc: netdev@vger.kernel.org, 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,41 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch restores the Cell OProfile support that was killed by
-commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+> -----Original Message-----
+> From: 
+> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
+> abs.org] On Behalf Of Vitaly Bordug
+> Sent: den 6 december 2007 23:51
+> To: Paul Mackerras
+> Cc: netdev@vger.kernel.org; linuxppc-dev
+> Subject: [PATCH 1/3] [NET] phy/fixed.c: rework to not 
+> duplicate PHY layerfunctionality
+> 
+> 
+> With that patch fixed.c now fully emulates MDIO bus, thus no need
+> to duplicate PHY layer functionality. That, in turn, drastically
+> simplifies the code, and drops down line count.
+> 
+> As an additional bonus, now there is no need to register MDIO bus
+> for each PHY, all emulated PHYs placed on the platform fixed MDIO bus.
+> There is also no more need to pre-allocate PHYs via .config option,
+> this is all now handled dynamically.
+> 
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> Acked-by: Jeff Garzik <jeff@garzik.org>
 
-It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
-this as a supplementary user-selectable option, it is now automatically enabled
-whenever SPU_FS and OPROFILE are enabled.
+What happened to this patch set? Is it sitting in a tree somewhere waiting
+for 2.4.25 or does it need more work?
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Adrian Bunk <adrian.bunk@movial.fi>
-CC: Randy Dunlap <randy.dunlap@oracle.com>
-CC: phil.el@wanadoo.fr
-CC: paulus@samba.org
-CC: linuxppc-dev@ozlabs.org
-CC: oprofile-list@lists.sourceforge.net
----
- arch/powerpc/Kconfig |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: linux-2.6-lttng/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-12-28 17:00:24.000000000 -0500
-+++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-12-28 17:00:39.000000000 -0500
-@@ -163,6 +163,10 @@ config PPC_OF_PLATFORM_PCI
- 	depends on PPC64 # not supported on 32 bits yet
- 	default n
- 
-+config OPROFILE_CELL
-+	def_bool y
-+	depends on (SPU_FS = y && OPROFILE = m) || (SPU_FS = y && OPROFILE = y)
-+
- source "init/Kconfig"
- 
- source "arch/powerpc/platforms/Kconfig"
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ Jocke
