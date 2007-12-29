@@ -1,22 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C0179DDDE9
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 17:43:52 +1100 (EST)
-Date: Sat, 29 Dec 2007 17:43:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-Message-Id: <20071229174346.1f4c5067.sfr@canb.auug.org.au>
-In-Reply-To: <20071228235241.16003.2229.stgit@trillian.secretlab.ca>
-References: <20071228234537.16003.56035.stgit@trillian.secretlab.ca>
-	<20071228235241.16003.2229.stgit@trillian.secretlab.ca>
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts5-srv.bellnexxia.net (tomts5-srv.bellnexxia.net
+	[209.226.175.25]) by ozlabs.org (Postfix) with ESMTP id A701DDDD0B
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Dec 2007 03:14:24 +1100 (EST)
+Received: from toip7.srvr.bell.ca ([209.226.175.124])
+	by tomts5-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20071229161422.BKHC17217.tomts5-srv.bellnexxia.net@toip7.srvr.bell.ca>
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 11:14:22 -0500
+Date: Sat, 29 Dec 2007 11:09:21 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Adrian Bunk <adrian.bunk@movial.fi>
+Subject: [2.6.24 patch] Fix Cell OProfile support
+Message-ID: <20071229160921.GB12262@Krystal>
+References: <20071228185649.GC4738@stusta.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__29_Dec_2007_17_43_46_+1100_Iq/VjGJUrZy2NAHg"
-Cc: akpm@osdl.org, dbrownell@users.sourceforge.net,
-	linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-	linuxppc-dev@ozlabs.org, stern@rowland.harvard.edu
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071228185649.GC4738@stusta.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__29_Dec_2007_17_43_46_+1100_Iq/VjGJUrZy2NAHg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch restores the Cell OProfile support that was killed by
+commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
 
-Hi Grant,
+It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
+this as a supplementary user-selectable option, it is now automatically enabled
+whenever SPU_FS and OPROFILE are enabled.
 
-Just did a superficial look over this.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Adrian Bunk <adrian.bunk@movial.fi>
+CC: Randy Dunlap <randy.dunlap@oracle.com>
+CC: phil.el@wanadoo.fr
+CC: paulus@samba.org
+CC: linuxppc-dev@ozlabs.org
+CC: oprofile-list@lists.sourceforge.net
+---
+ arch/powerpc/Kconfig |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-On Fri, 28 Dec 2007 16:52:41 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> +++ b/drivers/usb/c67x00/c67x00-hcd.c
-> +
-> +#define OK(x)			len =3D (x); break
+Index: linux-2.6-lttng/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-12-28 17:00:24.000000000 -0500
++++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-12-28 17:00:39.000000000 -0500
+@@ -163,6 +163,10 @@ config PPC_OF_PLATFORM_PCI
+ 	depends on PPC64 # not supported on 32 bits yet
+ 	default n
+ 
++config OPROFILE_CELL
++	def_bool y
++	depends on (SPU_FS = y && OPROFILE = m) || (SPU_FS = y && OPROFILE = y)
++
+ source "init/Kconfig"
+ 
+ source "arch/powerpc/platforms/Kconfig"
 
-I was going to say "URK!" but it looks like it is not used, so just
-remove it.
-
-> +static int c67x00_hub_status_data(struct usb_hcd *hcd, char *buf)
-> +{
-> +	struct c67x00_hcd *c67x00 =3D hcd_to_c67x00_hcd(hcd);
-> +	struct c67x00_sie *sie =3D c67x00->sie;
-> +	u16 status;
-> +	int i;
-> +
-> +	*buf =3D 0;
-> +	status =3D c67x00_ll_husb_get_status(sie);
-> +	for (i=3D0; i<C67X00_PORTS; i++)
-
-Spacing.
-
-> +static int c67x00_hcd_get_frame(struct usb_hcd *hcd)
-> +{
-> +	struct c67x00_hcd *c67x00 =3D hcd_to_c67x00_hcd(hcd);
-> +	u16 temp_val;
-> +	dev_dbg(c67x00_hcd_dev(c67x00), "%s\n", __FUNCTION__);
-
-We normally put a blank line between declarations and code.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__29_Dec_2007_17_43_46_+1100_Iq/VjGJUrZy2NAHg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHdeynTgG2atn1QN8RAshgAJ0dfXlXxeV9tMT+NUHFjydo/NdZqQCeK/ix
-aUrNZdFAd6YZllYQKwRFTVg=
-=JHY8
------END PGP SIGNATURE-----
-
---Signature=_Sat__29_Dec_2007_17_43_46_+1100_Iq/VjGJUrZy2NAHg--
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
