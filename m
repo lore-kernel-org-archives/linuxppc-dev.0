@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <flar@cynthia.pants.nu>
+Date: Sun, 30 Dec 2007 15:43:32 -0800
+From: Brad Boyer <flar@allandria.com>
+To: Siva Prasad <sprasad@bivio.net>
+Subject: Re: Device node - How does kernel know about it
+Message-ID: <20071230234332.GC2203@cynthia.pants.nu>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AF958@corpexc01.corp.networkrobots.com>
+	<Pine.LNX.4.60.0712280936420.1827@rtl14.hofr.at>
+	<D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA2D@corpexc01.corp.networkrobots.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18296.18584.806777.211368@cargo.ozlabs.ibm.com>
-Date: Mon, 31 Dec 2007 12:40:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: Please pull powerpc.git merge branch
-In-Reply-To: <47757040.4020508@am.sony.com>
-References: <18292.49574.906807.484581@cargo.ozlabs.ibm.com>
-	<47757040.4020508@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org, rrnelson@linux.vnet.ibm.com, jk@ozlabs.org,
-	arnd@arndb.de
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7012AFA2D@corpexc01.corp.networkrobots.com>
+Cc: linuxppc-dev@ozlabs.org, Nicholas Mc Guire <der.herr@hofr.at>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand writes:
+On Thu, Dec 27, 2007 at 07:27:17PM -0800, Siva Prasad wrote:
+> What is the kernel routine that is first called when there is, for
+> example a read() function call from user program? 
+> I would like to start debugging from there and see if any thing at all
+> happens when there is a call. Appreciate your help with this question.
 
-> This broke Cell builds.
-> 
-> arch/powerpc/platforms/cell/spufs/sched.c:200: multiple definition of `.notify_spus_active'
-> arch/powerpc/platforms/cell/spu_syscalls.c:149: first defined here
-> 
-> 
-> commit aed3a8c9bb1a8623a618232087c5ff62718e3b9a
-> Author: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-> Date:   Sat Dec 15 01:27:30 2007 +1100
-> 
->     [POWERPC] Oprofile: Remove dependency on spufs module
-> 
-> 
-> Looking at the code, it seems just when CONFIG_SPU_FS=y, not when =m.
+I don't generally recommend starting debugging at that level, but I'll
+try to give you some pointers. Every system call coming into the kernel
+from a user space program initially runs a little piece of assembly
+language code that looks up a handler (by number) in the system call
+table and sets up the proper environment to call the appropriate function
+that implements that call (which is written in C). Normally, those
+functions are named with a prefix of sys_ and the name of the system
+call. For example, the implementation of read(2) is called sys_read. You
+should be able to find it in fs/read_write.c. Other system call
+implementations are scattered around to be with code related to that
+call. Most of the file related ones can be found someplace under the
+fs directory.
 
-Indeed.  Clearly, several people have failed to review this patch
-properly. :(
-
-It looks to me that the definition of notify_spus_active under #ifndef
-MODULE in spufs/sched.c is bogus and should just be removed
-completely.  Also, I don't see any need for do_notify_spus_active to
-be exported.
-
-I propose the patch below.  Arnd, Jeremy, Bob, any opinions?
-
-Paul.
----
-
-diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
-index 6e2a45e..9ad53e6 100644
---- a/arch/powerpc/platforms/cell/spufs/sched.c
-+++ b/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -192,15 +192,6 @@ void do_notify_spus_active(void)
- 		mutex_unlock(&cbe_spu_info[node].list_mutex);
- 	}
- }
--EXPORT_SYMBOL_GPL(do_notify_spus_active);
--
--#ifndef MODULE
--void notify_spus_active(void)
--{
--	do_notify_spus_active();
--}
--EXPORT_SYMBOL_GPL(notify_spus_active);
--#endif
- 
- /**
-  * spu_bind_context - bind spu context to physical spu
+	Brad Boyer
+	flar@allandria.com
