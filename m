@@ -1,22 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A0C84DDE1A
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Dec 2007 09:10:31 +1100 (EST)
-Message-ID: <4776C5EE.70004@freescale.com>
-Date: Sat, 29 Dec 2007 16:10:54 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 389FEDDE04
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Dec 2007 11:31:11 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so2098310uge.0
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Dec 2007 16:31:10 -0800 (PST)
+Date: Sun, 30 Dec 2007 03:20:28 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v5] qe: add ability to upload QE firmware
+Message-ID: <20071230002028.GA14724@zarina>
+References: <11970422334145-git-send-email-timur@freescale.com>
+	<20071226165004.GA11449@localhost.localdomain>
+	<4776C518.6060002@freescale.com>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2] ucc_uart: add support for Freescale QUICCEngine UART
-References: <11970458703666-git-send-email-timur@freescale.com>
-	<20071226165816.GB11449@localhost.localdomain>
-In-Reply-To: <20071226165816.GB11449@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <4776C518.6060002@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Andy Fleming <AFLEMING@freescale.com>
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,52 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-
->> +		ucc@2400 {
->> +			device_type = "serial";
->> +			compatible = "ucc_uart";
->> +			model = "UCC";
+On Sat, Dec 29, 2007 at 04:07:20PM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> model isn't used, is it needed at all?
-
-I have no idea, but all the other UCC nodes have it, so I'm going to 
-keep it.  Maybe one day we'll merge QE and CPM drivers, so this would be 
-useful.
-
->> +	if (soft_uart) {
->> +		struct qe_firmware_info *qe_fw_info;
->> +
->> +		qe_fw_info = qe_get_firmware_info();
->> +
->> +		/* Check if the firmware has been uploaded. */
->> +		if (strstr(qe_fw_info->id, "Soft-UART")) {
+> >> +		firmware {
+> >> +			id = "Soft-UART";
+> >> +			extended_modes = <0 0>;
+> >> +			virtual_traps = <0 0 0 0 0 0 0 0>;
+> > 
+> > I believe using underscores for the property name is discouraged.
 > 
-> qe_fw_info used w/o NULL checking.
+> Ugh, this one change would require me to repost all my patches.  Oh 
+> well.  I wish someone else had noticed it before I got to version 5.
 
-Ok.
+Yeah, sorry about that.
 
-> [...]
->> +
->> +	qe_port->port.irq = irq_of_parse_and_map(np, 0);
->> +	if (qe_port->port.irq == NO_IRQ) {
->> +		dev_err(&ofdev->dev, "could not map IRQ for UCC%u\n",
->> +		       qe_port->ucc_num + 1);
->> +		kfree(qe_port);
->> +		return -EINVAL;
->> +	}
->> +
->> +	np = of_find_node_by_type(NULL, "qe");
+But you know it, reviewing is tedious, and only few of us are doing
+reviews for the code they don't use.
+
+I've started to use this code just now, so I reviewed it on the way.
+
+> I'll post a new version on January 7, when I get back to the office.
 > 
-> Please, add "fsl,qe" compatible matching.
-
-Ok.
-
->> +static struct of_platform_driver ucc_uart_of_driver = {
->> +	.owner  	= THIS_MODULE,
->> +	.name   	= "ucc_uart",
+> >> +A Python program that creates firmware binaries from the header files normally
+> >> +distributed by Freescale can be found on http://opensource.freescale.com.
+> > 
+> > Hm... I didn't find it there. Could you provide more specific pointer?
 > 
-> Maybe better fsl,ucc_uart?
+> I'll add those files only after my patches have been applied.  The 
+> layout may change between now and then, and I don't want to have to 
+> repost the firmware.
+> 
+> >> +
+> >> +	/*
+> >> +	 * If we haven't checked yet, and a driver hasn't uploaded a firmware
+> >> +	 * yet, then check the device tree for information.
+> >> +	 */
+> >> +	do {
+> >         ^^^^
+> > This is very unusual method of error handling. You could stick
+> > to gotos and lower the indentation level.
+> 
+> Ok, I'll change it.  I wasn't crazy about it after I wrote it, anyway.
+> 
+> >> +		qe = of_find_node_by_type(NULL, "qe");
+> > 
+> > Please, add compatible "fsl,qe" matching, so this code could
+> > work with new device trees.
+> 
+> Ok, but that new design was added after I posted this patch.
+> 
+> >> +		/* Find the 'firmware' child node */
+> >> +		while ((fw = of_get_next_child(qe, fw)))
+> >> +			if (strcmp(fw->name, "firmware") == 0)
+> >> +				break;
+> > 
+> > Hmm. Maybe of_find_node_by_name? Or better by compatible.
+> 
+> What's wrong with looking for the firmware node inside the QE node? 
+> That's the only place it can be?
 
-The CPM serial driver uses "cpm_uart" and the QE ethernet driver uses 
-"ucc_geth", so ucc_uart matches the pattern.
+Ah, I see it now. Revoking my comment.
+
+> >> +		iprop = of_get_property(fw, "extended_modes", NULL);
+> > 
+> > Checking for size?
+> 
+> Ok.
+
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
