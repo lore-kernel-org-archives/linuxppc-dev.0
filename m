@@ -1,22 +1,22 @@
-Return-Path: <invite+hvpv=e6e@facebookmail.com>
-Received: from vipmx-out.facebook.com (outmail002.sctm.tfbnw.net
-	[204.15.20.237]) by ozlabs.org (Postfix) with ESMTP id 3A97CDDE0E
+Return-Path: <vincitoreg@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id 63987DDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Dec 2007 05:52:16 +1100 (EST)
-Received: from register.facebook.com (intlb01-mip2.sctm.tfbnw.net [10.1.240.7])
-	by vipmx-out.facebook.com [vipemail005] (8.13.6/8.13.6) with ESMTP id
-	lBSIqFg5016105
-	for <linuxppc-embedded@ozlabs.org>; Fri, 28 Dec 2007 10:52:15 -0800
-Date: Fri, 28 Dec 2007 10:52:15 -0800
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-From: Subramani Venkatesh <invite+hvpv=e6e@facebookmail.com>
-Subject: Check out my Facebook profile
-Message-ID: <0bfc26928b60958f314f9598a0fc8138@register.facebook.com>
-Errors-To: invite+hvpv=e6e@facebookmail.com
+	Mon, 31 Dec 2007 02:31:03 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so2962364rvf.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 30 Dec 2007 07:31:01 -0800 (PST)
+Message-ID: <d3ef3b090712300731i24402bbexe38071f7d0e74a6a@mail.gmail.com>
+Date: Sun, 30 Dec 2007 07:31:01 -0800
+From: Vincitore <vincitoreg@gmail.com>
+To: "Rune Torgersen" <runet@innovsys.com>
+Subject: Re: How can I support 2GB of memory in Linux kernel on 440SPe
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03C7D08F@ismail.innsys.innovsys.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="b1_0bfc26928b60958f314f9598a0fc8138"
-Reply-To: Subramani Venkatesh <subbu.linux@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <d3ef3b090712280559s121d9368nc7bc0edafe2d20f4@mail.gmail.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03C7D08F@ismail.innsys.innovsys.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,59 +27,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Rune,
 
---b1_0bfc26928b60958f314f9598a0fc8138
-Content-Type: text/plain; charset = "UTF-8"
-Content-Transfer-Encoding: 8bit
+I tried what you suggested. With no luck.
 
-I set up a Facebook profile with my pictures, videos and events and I want to add you as a friend so you can see it. First, you need to join Facebook! Once you join, you can also create your own profile.
+I enabled CONFIG_HIGHMEM=y
 
-Thanks,
-Subramani
+Now I panic when  when unpacking_rootfs.
 
-Here's the link:
-http://www.facebook.com/p.php?i=1015582164&k=S5L6Y2RYS4TF6AGGW16TP&r&v=2
+...
+Memory: 2076148k available (2160k kernel code, 764k data, 144k init,
+1048572k highmem)
+Mount-cache hash table entries: 512
+checking if image is initramfs...Oops: kernel access of bad area, sig: 11 [#1]
+NIP: A02A9618 LR: A02A9598 CTR: A002EAE8
+REGS: dfc01e60 TRAP: 0300   Not tainted  (2.6.19.2)
+MSR: 00029000 <EE,ME>  CR: 24000084  XER: 00000000
+DAR: 1FDEA000, DSISR: 00000000
+TASK = a13e4ba0[1] 'swapper' THREAD: dfc00000
+GPR00: 00000000 DFC01F10 A13E4BA0 DFC10000 000000D0 00000001 2D89B700 A02C0000
+GPR08: DFC01D18 A02C0000 00000000 A02C3F78 24000084 70000000 A02D0000 00000000
+GPR16: 00000001 00800000 7FFFF0FC 00000000 A02C0000 A02C0000 7FFEE61C 00000001
+GPR24: 00000000 007FFE70 00000D80 00184F9D 1FDEA000 A02D0000 A00012F8 A02D0000
+NIP [A02A9618] unpack_to_rootfs+0xdc/0xa54
+LR [A02A9598] unpack_to_rootfs+0x5c/0xa54
+Call Trace:
+[DFC01F10] [A02A9598] unpack_to_rootfs+0x5c/0xa54 (unreliable)
+[DFC01F60] [A02AA050] populate_rootfs+0x7c/0x104
+[DFC01F80] [A0001328] init+0x30/0x2a4
+[DFC01FF0] [A00047E0] kernel_thread+0x44/0x60
+Instruction dump:
+912b0000 3ce0a02c 3d20a02c 914b0004 90074038 90093f8c 3ce0a02c 80074038
+2f800000 409e0054 2f9b0000 419e004c <881c0000> 39753f78 2f800030 82cb0000
 
-___________________
-This e-mail may contain promotional materials. If you do not wish to receive future commercial mailings from Facebook, please click on the link below. Facebook's offices are located at 156 University Ave., Palo Alto, CA 94301.
-http://www.facebook.com/o.php?u=1033762081&k=bb963f
+This is the same if I have CONFIG_HIGHMEM disabled. The only
+difference is highmem now shows up as 0k.
 
-
---b1_0bfc26928b60958f314f9598a0fc8138
-Content-Type: text/html; charset = "UTF-8"
-Content-Transfer-Encoding: 8bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    </head>
-    <body style="margin: 0px; padding:0px;">
-      <!-- container table is 98% b/c yahoo mail needs 1% to display right -->
-      <table width="98%" border="0" cellspacing="0" cellpadding="40"><tr>
-          <td bgcolor="#F7F7F7" width="100%" style="font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;">
-            <table cellpadding="0" cellspacing="0" border="0" width="620">
-              <tr>
-                <td align="left" bgcolor="#3b5998" height="34" valign="middle" style="padding-left: 18px; font-size: 22px; font-family: 'lucida grande', tahoma, verdana, arial, sans-serif; color: #fff;"><span style="font-weight: bold; letter-spacing: -0.03em;">facebook</span></td></tr>
-            </table> <table cellpadding="0" cellspacing="0" border="0" width="620" style="border-bottom: 1px solid #3b5998; border-left: 1px solid #ccc; border-right: 1px solid #ccc;" bgcolor="#ffffff">
-              <tr><td bgcolor="white" width="*" style="font-size: 11px; padding: 18px 18px 18px 18px; font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;" valign="top" align="left">
-
-                  <h1 style="font-size: 13px;">Check out my Facebook profile</h1>I set up a Facebook profile with my pictures, videos and events and I want to add you as a friend so you can see it. First, you need to join Facebook! Once you join, you can also create your own profile.<br />
-<br />
-Thanks,<br />
-Subramani<br />
-<br />
-Here's the link:<br />
-<a style="color: #3b5998; text-decoration: none;" href="http://www.facebook.com/p.php?i=1015582164&k=S5L6Y2RYS4TF6AGGW16TP&r&v=2">http://www.facebook.com/p.php?i=1015582164&k=S5L6Y2RYS4TF6AGGW16TP&r&v=2</a></td> </tr>
-          </table>
-          <table cellpadding="0" cellspacing="0" border="0" width="620">
-           <tr>
-            <td style="color: #666666; padding: 10px; font-size: 9px; font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;">This e-mail may contain promotional materials. If you do not wish to receive future commercial mailings from Facebook, please <a href="http://www.facebook.com/o.php?u=1033762081&k=bb963f" style="color: #3b5998">opt out</a>. Facebook's offices are located at 156 University Ave., Palo Alto, CA 94301.</td>
-            </tr>
-           </table>
-          </td>
-        </tr></table></body></html>
+Memory: 2076148k available (2160k kernel code, 764k data, 144k init, 0k highmem)
+Mount-cache hash table entries: 512
+checking if image is initramfs...Oops: kernel access of bad area, sig: 11 [#1]
+...
 
 
+Vincitore
 
---b1_0bfc26928b60958f314f9598a0fc8138--
+On 12/28/07, Rune Torgersen <runet@innovsys.com> wrote:
+> > From: linuxppc-embedded-bounces+runet=innovsys.com@ozlabs.org
+> > [mailto:linuxppc-embedded-bounces+runet=innovsys.com@ozlabs.or
+> > g] On Behalf Of Vincitore
+> > Sent: Friday, December 28, 2007 8:00 AM
+> > To: linuxppc-embedded@ozlabs.org
+> > Subject: How can I support 2GB of memory in Linux kernel on 440SPe
+> >
+> > Hi,
+> >
+> > I need to support 2GB of memory on a custom 440SPe board.
+> >
+> > I see to support 1GB of memory on the 440SPe yucca board the following
+> > configuration changes were done.
+>
+> Just leave the configuration for 1 GB, and enable CONFIG_HIGHMEM
+> That gives you 2 (or more) GB of RAM, with 1G as lowmwm.
+>
