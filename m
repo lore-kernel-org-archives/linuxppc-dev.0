@@ -1,15 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 38ABADDDF9
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Dec 2007 10:45:48 +1100 (EST)
-Date: Sun, 30 Dec 2007 17:53:45 -0600
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: Please pull from 'for-2.6.25' branch of pasemi tree
-Message-ID: <20071230235345.GA23903@lixom.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18296.18584.806777.211368@cargo.ozlabs.ibm.com>
+Date: Mon, 31 Dec 2007 12:40:40 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: Please pull powerpc.git merge branch
+In-Reply-To: <47757040.4020508@am.sony.com>
+References: <18292.49574.906807.484581@cargo.ozlabs.ibm.com>
+	<47757040.4020508@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org, rrnelson@linux.vnet.ibm.com, jk@ozlabs.org,
+	arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Geoff Levand writes:
 
-Please pull from:
+> This broke Cell builds.
+> 
+> arch/powerpc/platforms/cell/spufs/sched.c:200: multiple definition of `.notify_spus_active'
+> arch/powerpc/platforms/cell/spu_syscalls.c:149: first defined here
+> 
+> 
+> commit aed3a8c9bb1a8623a618232087c5ff62718e3b9a
+> Author: Bob Nelson <rrnelson@linux.vnet.ibm.com>
+> Date:   Sat Dec 15 01:27:30 2007 +1100
+> 
+>     [POWERPC] Oprofile: Remove dependency on spufs module
+> 
+> 
+> Looking at the code, it seems just when CONFIG_SPU_FS=y, not when =m.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/olof/pasemi.git for-2.6.25
+Indeed.  Clearly, several people have failed to review this patch
+properly. :(
 
-For the following pasemi patches:
+It looks to me that the definition of notify_spus_active under #ifndef
+MODULE in spufs/sched.c is bogus and should just be removed
+completely.  Also, I don't see any need for do_notify_spus_active to
+be exported.
 
-Olof Johansson (3):
-      [POWERPC] pasemi: Implement NMI support
-      [POWERPC] pasemi: Distribute interrupts evenly across cpus
-      [POWERPC] Enable CONFIG_PCI_MSI and CONFIG_MD in pasemi_defconfig
+I propose the patch below.  Arnd, Jeremy, Bob, any opinions?
 
- arch/powerpc/configs/pasemi_defconfig |   30 ++++++++++++++++++++++++++----
- arch/powerpc/platforms/pasemi/setup.c |   30 +++++++++++++++++++++++++++---
- arch/powerpc/sysdev/mpic.c            |   31 ++++++++++++++++++++++++++++---
- arch/powerpc/sysdev/mpic.h            |    3 ---
- include/asm-powerpc/mpic.h            |   20 +++++++++++++++++++-
- 5 files changed, 100 insertions(+), 14 deletions(-)
+Paul.
+---
 
-
-Thanks,
-
--Olof
+diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
+index 6e2a45e..9ad53e6 100644
+--- a/arch/powerpc/platforms/cell/spufs/sched.c
++++ b/arch/powerpc/platforms/cell/spufs/sched.c
+@@ -192,15 +192,6 @@ void do_notify_spus_active(void)
+ 		mutex_unlock(&cbe_spu_info[node].list_mutex);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(do_notify_spus_active);
+-
+-#ifndef MODULE
+-void notify_spus_active(void)
+-{
+-	do_notify_spus_active();
+-}
+-EXPORT_SYMBOL_GPL(notify_spus_active);
+-#endif
+ 
+ /**
+  * spu_bind_context - bind spu context to physical spu
