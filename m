@@ -1,65 +1,41 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E961DDDE22
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Dec 2007 23:44:09 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1J9Jzz-00058Q-3J
-	for linuxppc-embedded@ozlabs.org; Mon, 31 Dec 2007 04:44:07 -0800
-Message-ID: <14557204.post@talk.nabble.com>
-Date: Mon, 31 Dec 2007 04:44:07 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: How to do IO mapped Implimentation ???
-In-Reply-To: <14522349.post@talk.nabble.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 7871BDDE42
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jan 2008 03:10:34 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [2.6.24 patch] Fix Cell OProfile support
+Date: Mon, 31 Dec 2007 17:10:06 +0100
+References: <20071228185649.GC4738@stusta.de> <20071229160921.GB12262@Krystal>
+In-Reply-To: <20071229160921.GB12262@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <14522349.post@talk.nabble.com>
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712311710.08869.arnd@arndb.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	phil.el@wanadoo.fr, linux-kernel@vger.kernel.org,
+	paulus@samba.org, oprofile-list@lists.sourceforge.net,
+	Adrian Bunk <adrian.bunk@movial.fi>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-You are absolutly right and i guess it will certainly work for 8248 as well ,
-but the only concern is that " here in mine case the register is not memory
-mapped where as its IO mapped " we have to consider the memory as IO port
-and then access the data ....
-
-What you have used i guess its memory mapped ...Is it that accessing memory
-mapped is same as io mapped ?????
-
-
----Misbah
-
-Misbah khan wrote:
+On Saturday 29 December 2007, Mathieu Desnoyers wrote:
+> This patch restores the Cell OProfile support that was killed by
+> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
 > 
-> Hi all...
-> 
-> I am writing a driver in which device port is mapped to CPLD and 8 bit
-> data bus is directly connected from processor to CPLD. Read write on CPLD
-> memory mapped (buffer/register) is required to control the device. This is
-> now IO mapped to processor.
-> 
-> I need to know whether i am right if i impliment like this :-
->          addr=ioremap(base_addr);          // Remap to Mem mapped address
->          outb(addr) and inb(addr);
-> 
-> Please suggest me if i am wrong or there could be better solution to this
-> .
-> 
-> -----Misbah <><
->          
-> 
+> It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
+> this as a supplementary user-selectable option, it is now automatically enabled
+> whenever SPU_FS and OPROFILE are enabled.
 
--- 
-View this message in context: http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14557204.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+This one has already been superceded by the fix in 
+aed3a8c9bb1a8623a618232087c5ff62718e3b9a, which made CONFIG_OPROFILE_CELL an
+automatically selected option, from arch/powerpc/platforms/cell/Kconfig.
+
+	Arnd <><
