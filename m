@@ -1,18 +1,17 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Please pull powerpc.git merge branch
-Date: Mon, 31 Dec 2007 17:12:45 +0100
-References: <18292.49574.906807.484581@cargo.ozlabs.ibm.com>
-	<47757040.4020508@am.sony.com>
-	<18296.18584.806777.211368@cargo.ozlabs.ibm.com>
-In-Reply-To: <18296.18584.806777.211368@cargo.ozlabs.ibm.com>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6F129DDE98
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jan 2008 03:14:12 +1100 (EST)
+Message-ID: <4779157D.2040305@scram.de>
+Date: Mon, 31 Dec 2007 17:14:53 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712311712.46075.arnd@arndb.de>
-Cc: rrnelson@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
-	jk@ozlabs.org
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Update .gitignore files.
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 31 December 2007, Paul Mackerras wrote:
+Update .gitignore as needed by dtc addition.
 
-> Geoff Levand writes:
-> >=20
-> > Looking at the code, it seems just when CONFIG_SPU_FS=3Dy, not when =3D=
-m.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/boot/.gitignore         |    1 +
+ arch/powerpc/boot/dtc-src/.gitignore |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dtc-src/.gitignore
 
-Right, thanks for reporting this.
-
-> It looks to me that the definition of notify_spus_active under #ifndef
-> MODULE in spufs/sched.c is bogus and should just be removed
-> completely. =A0Also, I don't see any need for do_notify_spus_active to
-> be exported.
->=20
-> I propose the patch below. =A0Arnd, Jeremy, Bob, any opinions?
-
-I'm still out of office and can't do a proper test on this in the
-way I should have done on the original patch, but your assessment and
-patch looks entirely correct.
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
+index 65f4118..b160322 100644
+--- a/arch/powerpc/boot/.gitignore
++++ b/arch/powerpc/boot/.gitignore
+@@ -1,4 +1,5 @@
+ addnote
++dtc
+ empty.c
+ hack-coff
+ infblock.c
+diff --git a/arch/powerpc/boot/dtc-src/.gitignore b/arch/powerpc/boot/dtc-src/.gitignore
+new file mode 100644
+index 0000000..a7c3f94
+--- /dev/null
++++ b/arch/powerpc/boot/dtc-src/.gitignore
+@@ -0,0 +1,3 @@
++dtc-lexer.lex.c
++dtc-parser.tab.c
++dtc-parser.tab.h
+-- 
+1.5.3.7
