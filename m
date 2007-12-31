@@ -1,21 +1,23 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23DB2DDE1F
+	by ozlabs.org (Postfix) with ESMTP id 11902DDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Dec 2007 19:14:52 +1100 (EST)
-Date: Mon, 31 Dec 2007 11:14:43 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: rmcguire@videopresence.com
-Subject: Re: 83xx, ELDK 2.6.23, IP-Config: No network devices
-Message-ID: <20071231111443.4c6d8691@kernel.crashing.org>
-In-Reply-To: <000001c84b47$50b0e2b0$6405a8c0@absolut>
-References: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org>
-	<000001c84b47$50b0e2b0$6405a8c0@absolut>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 31 Dec 2007 21:02:28 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1J9HTV-0001QV-0z
+	for linuxppc-embedded@ozlabs.org; Mon, 31 Dec 2007 02:02:25 -0800
+Message-ID: <14555864.post@talk.nabble.com>
+Date: Mon, 31 Dec 2007 02:02:25 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: How to do IO mapped Implimentation ???
+In-Reply-To: <14522349.post@talk.nabble.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <14522349.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +28,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, 30 Dec 2007 16:51:44 -0800
-Russell McGuire wrote:
 
-> 1) Is there some basic kernel feature I am missing? I have enabled
-> the GIGE UEC GETH driver in the kernel.  Perhaps a PHY LIB? Isn't
-> generic MII supported by default?
+I have used in_be32() and out_be32() for ppc8248 in one of my driver for FPGA
+in which the fpga memory is mapped here it is Io mapped thats the only
+difference ....remapping and using in_8() and out_8() will it work for
+BigEndian arch ????
+
+-----Misbah <><
+
+
+Misbah khan wrote:
 > 
-yes you will need phylib
-
-> 2) Is there something in the startup board files, that I need to add
-> to register my PHY like an of_put_node()? Again I have pretty much
-> copied the MPC8360E MDS board and it is starting, and defining the
-> par_io port already, except that my PHY ID <on the iC2 bus, is using
-> dev ID 0x01>. However, I don't see the probe function being called,
-> so I don't think this is a concern yet.
-I think you will need to write a driver for your specific PHY access to get it covered by phy abstraction layer.
-Generic mii thing is useful when it has access to phy regs somehow (live examples are some BCM phys that do not have specs
-available but the thing works using generic mii and standard phy regs).
+> Hi all...
+> 
+> I am writing a driver in which device port is mapped to CPLD and 8 bit
+> data bus is directly connected from processor to CPLD. Read write on CPLD
+> memory mapped (buffer/register) is required to control the device. This is
+> now IO mapped to processor.
+> 
+> I need to know whether i am right if i impliment like this :-
+>          addr=ioremap(base_addr);          // Remap to Mem mapped address
+>          outb(addr) and inb(addr);
+> 
+> Please suggest me if i am wrong or there could be better solution to this
+> .
+> 
+> -----Misbah <><
+>          
+> 
 
 -- 
-Sincerely, Vitaly
+View this message in context: http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14555864.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
