@@ -1,22 +1,20 @@
-Return-Path: <vincitoreg@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.191])
-	by ozlabs.org (Postfix) with ESMTP id 49419DDE07
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpauth04.prod.mesa1.secureserver.net
+	(smtpauth04.prod.mesa1.secureserver.net [64.202.165.95])
+	by ozlabs.org (Postfix) with SMTP id 7538FDDDF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Dec 2007 02:36:10 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so2963610rvf.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Dec 2007 07:36:09 -0800 (PST)
-Message-ID: <d3ef3b090712300736p7add09caq5ee5acfbf9e6652d@mail.gmail.com>
-Date: Sun, 30 Dec 2007 07:36:09 -0800
-From: Vincitore <vincitoreg@gmail.com>
-To: "Michele Pallaro" <michele.pallaro@alcatel-lucent.it>
-Subject: Re: How can I support 2GB of memory in Linux kernel on 440SPe
-In-Reply-To: <47751456.7010600@alcatel-lucent.it>
+	Mon, 31 Dec 2007 11:52:17 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org>
+Subject: 83xx, ELDK 2.6.23, IP-Config: No network devices
+Date: Sun, 30 Dec 2007 16:51:44 -0800
+Message-ID: <000001c84b47$50b0e2b0$6405a8c0@absolut>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <d3ef3b090712280559s121d9368nc7bc0edafe2d20f4@mail.gmail.com>
-	<47751456.7010600@alcatel-lucent.it>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org>
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,80 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Michele,
+All,
+	
+Attempting to get MPC8360 board booted into Linux using a NFS root fs.
 
-I also tried this and it did not work. It also panics while unpacking rootfs
+I can see the kernel boots up, and registers both the MDIO driver and the
+ucc_geth: driver, and with additional debug they encounter no errors.
 
-Onced your system is up do you see all of the 2GB of Memory.
+However, for some reason the probe function never gets called for the MDIO
+or the UCC driver. So as a result <assuming> the IP layer never gets a
+network device. I am using a National DP83865 PHY device connected directly
+to the 83xx QE. I don't see any direct definition for this PHY device, but
+it doesn't even look like it queries the ID.
 
-# cat /proc/meminfo
+So two questions:
 
-Thank You,
+1) Is there some basic kernel feature I am missing? I have enabled the GIGE
+UEC GETH driver in the kernel.  Perhaps a PHY LIB? Isn't generic MII
+supported by default?
 
-Vincitore
+2) Is there something in the startup board files, that I need to add to
+register my PHY like an of_put_node()? Again I have pretty much copied the
+MPC8360E MDS board and it is starting, and defining the par_io port already,
+except that my PHY ID <on the iC2 bus, is using dev ID 0x01>. However, I
+don't see the probe function being called, so I don't think this is a
+concern yet.
 
+Anyway, how do I get the UEC_driver to see my phy device so I can get the
+NFS to boot?
 
-On 12/28/07, Michele Pallaro <michele.pallaro@alcatel-lucent.it> wrote:
-> CONFIG_ADVANCED_OPTIONS=y
-> # CONFIG_HIGHMEM_START_BOOL is not set
-> CONFIG_HIGHMEM_START=0xfe000000
-> # CONFIG_LOWMEM_SIZE_BOOL is not set
-> CONFIG_LOWMEM_SIZE=0x30000000
-> CONFIG_KERNEL_START_BOOL=y
-> CONFIG_KERNEL_START=0x80000000
-> # CONFIG_TASK_SIZE_BOOL is not set
-> CONFIG_TASK_SIZE=0x80000000
->
-> I use ppc 8555E with 2G
->
-> Michele
->
->
-> Vincitore wrote:
-> > Hi,
-> >
-> > I need to support 2GB of memory on a custom 440SPe board.
-> >
-> > I see to support 1GB of memory on the 440SPe yucca board the following
-> > configuration changes were done.
-> >
-> > #
-> > # Advanced setup
-> > #
-> >
-> > CONFIG_ADVANCED_OPTIONS=y
-> > CONFIG_HIGHMEM_START=0xfe000000
-> > CONFIG_LOWMEM_SIZE_BOOL=y
-> > CONFIG_LOWMEM_SIZE=0x40000000
-> > CONFIG_KERNEL_START_BOOL=y
-> > CONFIG_KERNEL_START=0xa0000000
-> > # CONFIG_TASK_SIZE_BOOL is not set
-> > CONFIG_TASK_SIZE=0x80000000
-> > # CONFIG_CONSISTENT_START_BOOL is not set CONFIG_CONSISTENT_START=0xff100000
-> > # CONFIG_CONSISTENT_SIZE_BOOL is not set
-> > CONFIG_CONSISTENT_SIZE=0x00200000 # CONFIG_BOOT_LOAD_BOOL is not set
-> > CONFIG_BOOT_LOAD=0x01000000
-> >
-> > It looks like the only thing I would need to do is modify the
-> > following for 2GB support.
-> >
-> > CONFIG_LOWMEM_SIZE=0x80000000
-> > and
-> > CONFIG_KERNEL_START=0x60000000
-> >
-> > But this does not work. It almost does, but right after I get to the
-> > Linux prompt, this system panics. If I scale back to one 1GB
-> > everything works great.
-> >
-> > Any ideas?
-> >
-> > Thank You,
-> >
-> > Vincitore
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
->
->
+-Russ
