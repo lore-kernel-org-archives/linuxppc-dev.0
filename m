@@ -1,20 +1,23 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpauth04.prod.mesa1.secureserver.net
-	(smtpauth04.prod.mesa1.secureserver.net [64.202.165.95])
-	by ozlabs.org (Postfix) with SMTP id 7538FDDDF6
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8AA90DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Dec 2007 11:52:17 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org>
-Subject: 83xx, ELDK 2.6.23, IP-Config: No network devices
-Date: Sun, 30 Dec 2007 16:51:44 -0800
-Message-ID: <000001c84b47$50b0e2b0$6405a8c0@absolut>
+	Mon, 31 Dec 2007 17:46:54 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1J9EQE-0005RO-OF
+	for linuxppc-embedded@ozlabs.org; Sun, 30 Dec 2007 22:46:50 -0800
+Message-ID: <14554843.post@talk.nabble.com>
+Date: Sun, 30 Dec 2007 22:46:50 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: How to do IO mapped Implimentation ???
+In-Reply-To: <14522349.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org>
-Reply-To: rmcguire@videopresence.com
+Content-Type: text/plain; charset=us-ascii
+References: <14522349.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +28,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-All,
-	
-Attempting to get MPC8360 board booted into Linux using a NFS root fs.
 
-I can see the kernel boots up, and registers both the MDIO driver and the
-ucc_geth: driver, and with additional debug they encounter no errors.
+yes with respect to ioremap() its right ...i just missed the secound argument
+....
 
-However, for some reason the probe function never gets called for the MDIO
-or the UCC driver. So as a result <assuming> the IP layer never gets a
-network device. I am using a National DP83865 PHY device connected directly
-to the 83xx QE. I don't see any direct definition for this PHY device, but
-it doesn't even look like it queries the ID.
+in_8() and out_8() will work fine or i need to use in_be8() and out_be8() on
+PPC architecture ????
 
-So two questions:
+---Misbah<><
 
-1) Is there some basic kernel feature I am missing? I have enabled the GIGE
-UEC GETH driver in the kernel.  Perhaps a PHY LIB? Isn't generic MII
-supported by default?
 
-2) Is there something in the startup board files, that I need to add to
-register my PHY like an of_put_node()? Again I have pretty much copied the
-MPC8360E MDS board and it is starting, and defining the par_io port already,
-except that my PHY ID <on the iC2 bus, is using dev ID 0x01>. However, I
-don't see the probe function being called, so I don't think this is a
-concern yet.
+Misbah khan wrote:
+> 
+> Hi all...
+> 
+> I am writing a driver in which device port is mapped to CPLD and 8 bit
+> data bus is directly connected from processor to CPLD. Read write on CPLD
+> memory mapped (buffer/register) is required to control the device. This is
+> now IO mapped to processor.
+> 
+> I need to know whether i am right if i impliment like this :-
+>          addr=ioremap(base_addr);          // Remap to Mem mapped address
+>          outb(addr) and inb(addr);
+> 
+> Please suggest me if i am wrong or there could be better solution to this
+> .
+> 
+> -----Misbah <><
+>          
+> 
 
-Anyway, how do I get the UEC_driver to see my phy device so I can get the
-NFS to boot?
-
--Russ
+-- 
+View this message in context: http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14554843.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
