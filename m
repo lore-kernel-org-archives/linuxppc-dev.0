@@ -1,145 +1,105 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 12C90DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 23:54:41 +1100 (EST)
-Message-ID: <47A1C51B.1090206@scram.de>
-Date: Thu, 31 Jan 2008 13:54:51 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <jeynergilcaga@gmail.com>
+Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.250])
+	by ozlabs.org (Postfix) with ESMTP id C76ABDDE1E
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 Jan 2008 01:43:11 +1100 (EST)
+Received: by hs-out-2122.google.com with SMTP id x43so3860353hsb.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 31 Dec 2007 06:43:10 -0800 (PST)
+Message-ID: <cad107560712310643s332b46cdqc5cf39d9a20c6bd4@mail.gmail.com>
+Date: Mon, 31 Dec 2007 22:43:10 +0800
+From: "Jeyner Gil Caga" <jeynergilcaga@gmail.com>
+To: "Misbah khan" <misbah_khan@engineer.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: How to do IO mapped Implimentation ???
+In-Reply-To: <14557204.post@talk.nabble.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH/RFC] [POWERPC] Add i2c pins to dts and board setup
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_3512_22829686.1199112190411"
+References: <14522349.post@talk.nabble.com> <14557204.post@talk.nabble.com>
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add CPM i2c support for mpc8272, mpc866 and mpc885 boards.
+------=_Part_3512_22829686.1199112190411
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
- arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
- arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    5 +++++
- arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
- arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
- 6 files changed, 42 insertions(+), 0 deletions(-)
+Oh, I just missed the io mapped in your previous email. Unfortunately, my
+experience is only limited to memory map. I think they should be the same.
 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 7285ca1..7273996 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -215,6 +215,16 @@
- 				linux,network-index = <1>;
- 				fsl,cpm-command = <16200300>;
- 			};
-+
-+			i2c@11860 {
-+				compatible = "fsl,mpc8248-i2c",
-+					     "fsl,cpm2-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <11860 20 8afc 2>;
-+				interrupts = <1 8>;
-+				interrupt-parent = <&PIC>;
-+				fsl,cpm-command = <29600000>;
-+			};
- 		};
- 
- 		PIC: interrupt-controller@10c00 {
-diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
-index daf9433..d669049 100644
---- a/arch/powerpc/boot/dts/mpc866ads.dts
-+++ b/arch/powerpc/boot/dts/mpc866ads.dts
-@@ -169,6 +169,16 @@
- 				fsl,cpm-command = <0000>;
- 				linux,network-index = <1>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc866-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-index 8848e63..fd9c9d7 100644
---- a/arch/powerpc/boot/dts/mpc885ads.dts
-+++ b/arch/powerpc/boot/dts/mpc885ads.dts
-@@ -213,6 +213,16 @@
- 				fsl,cpm-command = <0080>;
- 				linux,network-index = <2>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc885-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 3fce6b3..8f1862a 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -96,6 +96,11 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
- 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
- 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* I2C */
-+	{3, 26, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
-+	{3, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
-+
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index c028a5b..caaec29 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
- 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
-+
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 6e7ded0..45ed6cd 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
- 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
- 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
- #endif
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
--- 
-1.5.3.8
+On 12/31/07, Misbah khan <misbah_khan@engineer.com> wrote:
+>
+>
+> You are absolutly right and i guess it will certainly work for 8248 as
+> well ,
+> but the only concern is that " here in mine case the register is not
+> memory
+> mapped where as its IO mapped " we have to consider the memory as IO port
+> and then access the data ....
+>
+> What you have used i guess its memory mapped ...Is it that accessing
+> memory
+> mapped is same as io mapped ?????
+>
+>
+> ---Misbah
+>
+> Misbah khan wrote:
+> >
+> > Hi all...
+> >
+> > I am writing a driver in which device port is mapped to CPLD and 8 bit
+> > data bus is directly connected from processor to CPLD. Read write on
+> CPLD
+> > memory mapped (buffer/register) is required to control the device. This
+> is
+> > now IO mapped to processor.
+> >
+> > I need to know whether i am right if i impliment like this :-
+> >          addr=ioremap(base_addr);          // Remap to Mem mapped
+> address
+> >          outb(addr) and inb(addr);
+> >
+> > Please suggest me if i am wrong or there could be better solution to
+> this
+> > .
+> >
+> > -----Misbah <><
+> >
+> >
+>
+> --
+> View this message in context:
+> http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14557204.html
+> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+
+------=_Part_3512_22829686.1199112190411
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Oh, I just missed the io mapped in your previous email. Unfortunately, my experience is only limited to memory map. I think they should be the same.<br><br>
+<div><span class="gmail_quote">On 12/31/07, <b class="gmail_sendername">Misbah khan</b> &lt;<a href="mailto:misbah_khan@engineer.com">misbah_khan@engineer.com</a>&gt; wrote:</span>
+<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid"><br>You are absolutly right and i guess it will certainly work for 8248 as well ,<br>but the only concern is that &quot; here in mine case the register is not memory
+<br>mapped where as its IO mapped &quot; we have to consider the memory as IO port<br>and then access the data ....<br><br>What you have used i guess its memory mapped ...Is it that accessing memory<br>mapped is same as io mapped ?????
+<br><br><br>---Misbah<br><br>Misbah khan wrote:<br>&gt;<br>&gt; Hi all...<br>&gt;<br>&gt; I am writing a driver in which device port is mapped to CPLD and 8 bit<br>&gt; data bus is directly connected from processor to CPLD. Read write on CPLD
+<br>&gt; memory mapped (buffer/register) is required to control the device. This is<br>&gt; now IO mapped to processor.<br>&gt;<br>&gt; I need to know whether i am right if i impliment like this :-<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr=ioremap(base_addr);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Remap to Mem mapped address
+<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;outb(addr) and inb(addr);<br>&gt;<br>&gt; Please suggest me if i am wrong or there could be better solution to this<br>&gt; .<br>&gt;<br>&gt; -----Misbah &lt;&gt;&lt;<br>&gt;<br>&gt;<br><br>--<br>View this message in context: 
+<a href="http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14557204.html">http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14557204.html</a><br>Sent from the linuxppc-embedded mailing list archive at 
+<a href="http://Nabble.com">Nabble.com</a>.<br><br>_______________________________________________<br>Linuxppc-embedded mailing list<br><a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div><br>
+
+------=_Part_3512_22829686.1199112190411--
