@@ -1,21 +1,21 @@
-Return-Path: <jeynergilcaga@gmail.com>
-Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.247])
-	by ozlabs.org (Postfix) with ESMTP id 4170DDDE16
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 23DB2DDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Dec 2007 19:09:13 +1100 (EST)
-Received: by hs-out-2122.google.com with SMTP id x43so3736465hsb.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Dec 2007 00:09:12 -0800 (PST)
-Message-ID: <cad107560712310009j5a0098a1wdfd0c40b0c7fadc4@mail.gmail.com>
-Date: Mon, 31 Dec 2007 16:09:12 +0800
-From: "Jeyner Gil Caga" <jeynergilcaga@gmail.com>
-To: "Misbah khan" <misbah_khan@engineer.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: How to do IO mapped Implimentation ???
-In-Reply-To: <14554843.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_3202_27479606.1199088552213"
-References: <14522349.post@talk.nabble.com> <14554843.post@talk.nabble.com>
+	Mon, 31 Dec 2007 19:14:52 +1100 (EST)
+Date: Mon, 31 Dec 2007 11:14:43 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: rmcguire@videopresence.com
+Subject: Re: 83xx, ELDK 2.6.23, IP-Config: No network devices
+Message-ID: <20071231111443.4c6d8691@kernel.crashing.org>
+In-Reply-To: <000001c84b47$50b0e2b0$6405a8c0@absolut>
+References: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org>
+	<000001c84b47$50b0e2b0$6405a8c0@absolut>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,82 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3202_27479606.1199088552213
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 30 Dec 2007 16:51:44 -0800
+Russell McGuire wrote:
 
-In ppc440 epx, I couldn't find any in_be8() or out_be8(), so I just use
-in_8() and out_8().
+> 1) Is there some basic kernel feature I am missing? I have enabled
+> the GIGE UEC GETH driver in the kernel.  Perhaps a PHY LIB? Isn't
+> generic MII supported by default?
+> 
+yes you will need phylib
 
-gil
+> 2) Is there something in the startup board files, that I need to add
+> to register my PHY like an of_put_node()? Again I have pretty much
+> copied the MPC8360E MDS board and it is starting, and defining the
+> par_io port already, except that my PHY ID <on the iC2 bus, is using
+> dev ID 0x01>. However, I don't see the probe function being called,
+> so I don't think this is a concern yet.
+I think you will need to write a driver for your specific PHY access to get it covered by phy abstraction layer.
+Generic mii thing is useful when it has access to phy regs somehow (live examples are some BCM phys that do not have specs
+available but the thing works using generic mii and standard phy regs).
 
-
-On 12/31/07, Misbah khan <misbah_khan@engineer.com> wrote:
->
->
-> yes with respect to ioremap() its right ...i just missed the secound
-> argument
-> ....
->
-> in_8() and out_8() will work fine or i need to use in_be8() and out_be8()
-> on
-> PPC architecture ????
->
-> ---Misbah<><
->
->
-> Misbah khan wrote:
-> >
-> > Hi all...
-> >
-> > I am writing a driver in which device port is mapped to CPLD and 8 bit
-> > data bus is directly connected from processor to CPLD. Read write on
-> CPLD
-> > memory mapped (buffer/register) is required to control the device. This
-> is
-> > now IO mapped to processor.
-> >
-> > I need to know whether i am right if i impliment like this :-
-> >          addr=ioremap(base_addr);          // Remap to Mem mapped
-> address
-> >          outb(addr) and inb(addr);
-> >
-> > Please suggest me if i am wrong or there could be better solution to
-> this
-> > .
-> >
-> > -----Misbah <><
-> >
-> >
->
-> --
-> View this message in context:
-> http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14554843.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-------=_Part_3202_27479606.1199088552213
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div><br>In ppc440 epx, I couldn&#39;t find any in_be8() or out_be8(), so I just use in_8() and out_8().</div>
-<div>&nbsp;</div>
-<div>gil</div>
-<div><br>&nbsp;</div>
-<div><span class="gmail_quote">On 12/31/07, <b class="gmail_sendername">Misbah khan</b> &lt;<a href="mailto:misbah_khan@engineer.com">misbah_khan@engineer.com</a>&gt; wrote:</span>
-<blockquote class="gmail_quote" style="PADDING-LEFT: 1ex; MARGIN: 0px 0px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid"><br>yes with respect to ioremap() its right ...i just missed the secound argument<br>....<br><br>in_8() and out_8() will work fine or i need to use in_be8() and out_be8() on
-<br>PPC architecture ????<br><br>---Misbah&lt;&gt;&lt;<br><br><br>Misbah khan wrote:<br>&gt;<br>&gt; Hi all...<br>&gt;<br>&gt; I am writing a driver in which device port is mapped to CPLD and 8 bit<br>&gt; data bus is directly connected from processor to CPLD. Read write on CPLD
-<br>&gt; memory mapped (buffer/register) is required to control the device. This is<br>&gt; now IO mapped to processor.<br>&gt;<br>&gt; I need to know whether i am right if i impliment like this :-<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addr=ioremap(base_addr);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Remap to Mem mapped address
-<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;outb(addr) and inb(addr);<br>&gt;<br>&gt; Please suggest me if i am wrong or there could be better solution to this<br>&gt; .<br>&gt;<br>&gt; -----Misbah &lt;&gt;&lt;<br>&gt;<br>&gt;<br><br>--<br>View this message in context: 
-<a href="http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14554843.html">http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14554843.html</a><br>Sent from the linuxppc-embedded mailing list archive at 
-<a href="http://Nabble.com">Nabble.com</a>.<br><br>_______________________________________________<br>Linuxppc-embedded mailing list<br><a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div><br>
-
-------=_Part_3202_27479606.1199088552213--
+-- 
+Sincerely, Vitaly
