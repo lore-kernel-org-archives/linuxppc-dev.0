@@ -1,22 +1,18 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 7871BDDE42
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jan 2008 03:10:34 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [2.6.24 patch] Fix Cell OProfile support
-Date: Mon, 31 Dec 2007 17:10:06 +0100
-References: <20071228185649.GC4738@stusta.de> <20071229160921.GB12262@Krystal>
-In-Reply-To: <20071229160921.GB12262@Krystal>
+Subject: Re: Please pull powerpc.git merge branch
+Date: Mon, 31 Dec 2007 17:12:45 +0100
+References: <18292.49574.906807.484581@cargo.ozlabs.ibm.com>
+	<47757040.4020508@am.sony.com>
+	<18296.18584.806777.211368@cargo.ozlabs.ibm.com>
+In-Reply-To: <18296.18584.806777.211368@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200712311710.08869.arnd@arndb.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	phil.el@wanadoo.fr, linux-kernel@vger.kernel.org,
-	paulus@samba.org, oprofile-list@lists.sourceforge.net,
-	Adrian Bunk <adrian.bunk@movial.fi>
+Message-Id: <200712311712.46075.arnd@arndb.de>
+Cc: rrnelson@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
+	jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 29 December 2007, Mathieu Desnoyers wrote:
-> This patch restores the Cell OProfile support that was killed by
-> commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
-> 
-> It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
-> this as a supplementary user-selectable option, it is now automatically enabled
-> whenever SPU_FS and OPROFILE are enabled.
+On Monday 31 December 2007, Paul Mackerras wrote:
 
-This one has already been superceded by the fix in 
-aed3a8c9bb1a8623a618232087c5ff62718e3b9a, which made CONFIG_OPROFILE_CELL an
-automatically selected option, from arch/powerpc/platforms/cell/Kconfig.
+> Geoff Levand writes:
+> >=20
+> > Looking at the code, it seems just when CONFIG_SPU_FS=3Dy, not when =3D=
+m.
 
-	Arnd <><
+Right, thanks for reporting this.
+
+> It looks to me that the definition of notify_spus_active under #ifndef
+> MODULE in spufs/sched.c is bogus and should just be removed
+> completely. =A0Also, I don't see any need for do_notify_spus_active to
+> be exported.
+>=20
+> I propose the patch below. =A0Arnd, Jeremy, Bob, any opinions?
+
+I'm still out of office and can't do a proper test on this in the
+way I should have done on the original patch, but your assessment and
+patch looks entirely correct.
+
+Acked-by: Arnd Bergmann <arnd@arndb.de>
