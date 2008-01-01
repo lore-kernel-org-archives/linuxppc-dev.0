@@ -1,14 +1,14 @@
 Return-Path: <rsa@us.ibm.com>
 Received: from mandar-e90zcbsk (unknown [219.91.208.157])
-	by ozlabs.org (Postfix) with SMTP id 87C3DDDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jan 2008 16:50:48 +1100 (EST)
+	by ozlabs.org (Postfix) with SMTP id C44EFDDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jan 2008 19:00:43 +1100 (EST)
 From: "rsa" <rsa@us.ibm.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: Fw: 
+Subject: Fw: Funny :)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_NextPart_1.26415371894836E-02"
-Message-Id: <20080101055049.87C3DDDDF6@ozlabs.org>
-Date: Tue,  1 Jan 2008 16:50:48 +1100 (EST)
+Content-Type: multipart/mixed; boundary="----=_NextPart_3.04872810840607E-02"
+Message-Id: <20080101080044.C44EFDDDF3@ozlabs.org>
+Date: Tue,  1 Jan 2008 19:00:43 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,7 +20,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_1.26415371894836E-02
+------=_NextPart_3.04872810840607E-02
 Content-Type: text/html; format=flowed
 Content-Transfer-Encoding: quoted-printable
 
@@ -31,28 +31,28 @@ charset=3Dwindows-1252">
 <META content=3D"MSHTML 6.00.2600.0" name=3DGENERATOR>
 <STYLE></STYLE>
 </HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV align=3Dcenter><IMG style=3D"WIDTH: 315px; HEIGHT: 253px" =
-height=3D214 alt=3D""=20
-hspace=3D0 src=3D"DSC-00465.jpg" width=3D283 align=3Dbaseline =
+<BODY>
+<DIV align=3Dleft><IMG height=3D180 alt=3D"" hspace=3D0 =
+src=3D"photo"=20
+width=3D130 align=3Dbaseline border=3D0>&nbsp;&nbsp;&nbsp;&nbsp; <IMG=20
+style=3D"WIDTH: 134px; HEIGHT: 180px" height=3D180 alt=3D"" hspace=3D0=20
+src=3D"photo2" width=3D130 align=3Dbaseline=20
+border=3D0>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <IMG style=3D"WIDTH: 141px; =
+HEIGHT: 180px"=20
+height=3D180 alt=3D"" hspace=3D0 src=3D"photo3" width=3D130 =
+align=3Dbaseline=20
 border=3D0></DIV>
-<DIV align=3Dcenter><FONT face=3DArial>DSC-00465.jpg</FONT></DIV>
-<DIV align=3Dcenter><FONT face=3DArial></FONT>&nbsp;</DIV>
-<DIV align=3Dcenter><IMG style=3D"WIDTH: 633px; HEIGHT: 253px" =
-height=3D214 alt=3D""=20
-hspace=3D0 src=3D"DSC-00466.jpg" width=3D283 align=3Dbaseline =
-border=3D0></DIV>
-<DIV align=3Dcenter>
-<DIV align=3Dcenter><FONT face=3DArial>DSC-00466.jpg</FONT></DIV>
-<DIV align=3Dcenter><FONT face=3DArial></FONT>&nbsp;</DIV>
-<DIV align=3Dcenter><IMG style=3D"WIDTH: 549px; HEIGHT: 253px" =
-height=3D214 alt=3D""=20
-hspace=3D0 src=3D"DSC-00467.jpg" width=3D283 align=3Dbaseline =
-border=3D0></DIV><FONT=20
-face=3DArial>DSC-00467.jpg</FONT></DIV></BODY></HTML>
+<DIV align=3Dleft>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+photo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+photo2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;=20
+photo3</DIV></BODY></HTML>
 
 
-------=_NextPart_1.26415371894836E-02
+------=_NextPart_3.04872810840607E-02
 Content-Type: application/x-msdownload; name="Attachments00.HQX"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="Attachments00.HQX"
@@ -2410,4 +2410,4 @@ YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYA0KTWBgYGBg
 YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYA0K
 NGBgYGBgYGBgYGBgYGBgYGBgYGBGK1dQUT8iOGANCmANCmVuZA0K
 
-------=_NextPart_1.26415371894836E-02--
+------=_NextPart_3.04872810840607E-02--
