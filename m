@@ -1,17 +1,19 @@
-Return-Path: <jfannin@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id 7DBC3DDE2F
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 02:37:22 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so964668anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jan 2008 07:37:22 -0800 (PST)
-Date: Tue, 1 Jan 2008 10:36:07 -0500
-From: Joseph Fannin <jfannin@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: export copy_page() on 32bit
-Message-ID: <20080101153607.GA6391@nineveh.local>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 157BBDDE21
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 04:25:33 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so8761747wag.13
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jan 2008 09:25:32 -0800 (PST)
+Message-ID: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+Date: Tue, 1 Jan 2008 12:25:32 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <11981089894052-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <11981089894052-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Export copy_page() on 32bit powerpc; unionfs needs it.
+On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
+> +               ssi@16000 {
+> +                       compatible = "fsl,ssi";
+> +                       cell-index = <0>;
+> +                       reg = <16000 100>;
+> +                       interrupt-parent = <&mpic>;
+> +                       interrupts = <3e 2>;
+> +                       fsl,mode = "i2s-slave";
+> +                       codec {
+> +                               compatible = "cirrus,cs4270";
+> +                               /* MCLK source is a stand-alone oscillator */
+> +                               bus-frequency = <bb8000>;
+> +                       };
+> +               };
 
-Unionfs already builds as a module on 64bit powerpc, so the export is
-placed within an existing CONFIG_PPC32 #ifdef.
+Does this need to be bus-frequency? It's always called MCLK in all of
+the literature.
 
-Signed-off-by: Joseph Fannin <jfannin@gmail.com>
----
+In my case the MCLK comes from a chip on the i2c bus that is
+programmable How would that be encoded?.
 
-I ran into this in the -mm tree; it's not new to 2.6.24-rc6-mm1.
-
-I haven't been able to find any evidence that copy_page() is exported
-with 64bit; maybe this is because copy_page there is a wrapper around
-the exported copy_4K_page() and gets optimized away, or maybe I just
-don't know where to look.
-
-If copy_page() is exported for 64bit somewhere, this might not be the
-right thing?
-
-diff -aurN -x .git linux-mm.orig/arch/powerpc/kernel/ppc_ksyms.c linux-mm.patched/arch/powerpc/kernel/ppc_ksyms.c
---- linux-mm.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-01-01 04:03:33.000000000 -0500
-+++ linux-mm.patched/arch/powerpc/kernel/ppc_ksyms.c	2008-01-01 04:15:33.000000000 -0500
-@@ -59,6 +59,7 @@
- extern int sys_sigreturn(struct pt_regs *regs);
- 
- EXPORT_SYMBOL(clear_pages);
-+EXPORT_SYMBOL(copy_page);
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
- EXPORT_SYMBOL(DMA_MODE_READ);
- EXPORT_SYMBOL(DMA_MODE_WRITE);
-
-
---
-Joseph Fannin
-jfannin@gmail.com
+-- 
+Jon Smirl
+jonsmirl@gmail.com
