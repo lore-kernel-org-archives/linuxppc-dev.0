@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00DC9DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 09:49:09 +1100 (EST)
-Subject: Re: [PATCH 1/2] [POWERPC] smp_call_function_map should be static
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20080101213135.GA1474@lixom.net>
-References: <20071228040836.GA23635@lixom.net>
-	<1199219313.6751.0.camel@pasglop>  <20080101213135.GA1474@lixom.net>
-Content-Type: text/plain
-Date: Wed, 02 Jan 2008 09:48:48 +1100
-Message-Id: <1199227728.6751.2.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 938ACDDE19
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 11:35:18 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [2.6.24] Add PPC nvram ioctls to compat_ioctl
+Date: Wed, 2 Jan 2008 01:34:41 +0100
+References: <20071231224558.GA16517@lixom.net>
+In-Reply-To: <20071231224558.GA16517@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801020134.41761.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> With the locking changes in 2/2, it will need a new exported function
-> that does the locking around the call to __*. With that, it'd be easier
-> to just merge this.
+On Monday 31 December 2007, Olof Johansson wrote:
+> Fix the following console warning when running 'nvsetenv', and makes
+> setting of new variables work again:
 > 
-> I.e. __smp_call_function_map() will be the internal (lockless) version,
-> and you'll end up adding a nonstatic smp_call_function_map() that does
-> locking and calls the __* one.
+> ioctl32(nvsetenv:4022): Unknown cmd fd(3) cmd(20007043){t:'p';sz:0}
+> arg(00000003) on /dev/nvram
 > 
-> Is that OK with you?
+> That's the IOC_NVRAM_SYNC call.
+> 
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+> index e8b7c3a..7be6765 100644
+> --- a/fs/compat_ioctl.c
+> +++ b/fs/compat_ioctl.c
 
-Yup, it's fine.
+Please don't. I have this long-term plan of getting rid of fs/compat_ioctl.c,
+the better answer is to convert arch/powerpc/kernel/nvram_64.c and
+drivers/char/generic_nvram.c from the .ioctl file_operation to
+.unlocked_ioctl/.compat_ioctl.
 
-Cheers,
-Ben.
+	Arnd <><
