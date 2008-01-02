@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id A0205DDE22
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 10:37:01 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1078376anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Jan 2008 15:37:00 -0800 (PST)
-Message-ID: <fa686aa40801021537h58ed2deehfd85c75871973758@mail.gmail.com>
-Date: Wed, 2 Jan 2008 16:37:00 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH v4 02/13] [POWERPC] Add 'fsl,
-	lpb' bus type for MPC5200 LocalPlus Bus
-In-Reply-To: <20071109171149.16289.88635.stgit@hekate.izotz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071109171137.16289.39575.stgit@hekate.izotz.org>
-	<20071109171149.16289.88635.stgit@hekate.izotz.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1F1C3DDE16
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 10:41:36 +1100 (EST)
+Date: Thu, 3 Jan 2008 10:41:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCHv2] i2c: adds support for i2c bus on Frescale CPM1/CPM2
+	controllers
+Message-Id: <20080103104121.58697148.sfr@canb.auug.org.au>
+In-Reply-To: <477BEB60.4070703@scram.de>
+References: <477BEB60.4070703@scram.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__3_Jan_2008_10_41_21_+1100_SkN8.jo6R1F/9AQQ"
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +25,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
-> Define MPC52xx specific device id list, add new
-> 'fsl,lpb' compatible id for LocalPlus Bus.
+--Signature=_Thu__3_Jan_2008_10_41_21_+1100_SkN8.jo6R1F/9AQQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'll pick this up, but I'm going to drop the .compatible="soc" line.
-(I'd like to drop the device_type="soc" line also, but that requires a
-bit more thought first).
+Hi Jochen,
 
-Cheers,
-g.
+Just a few trivial things.
 
+On Wed, 02 Jan 2008 20:52:00 +0100 Jochen Friedrich <jochen@scram.de> wrote:
 >
-> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-> Acked-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
->
->  arch/powerpc/platforms/52xx/mpc52xx_common.c |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
->
->
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> index 9850685..2df97c5 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> @@ -124,11 +124,18 @@ mpc5200_setup_xlb_arbiter(void)
->         iounmap(xlb);
->  }
->
-> +static struct of_device_id mpc52xx_ids[] = {
-> +       { .type = "soc", },
-> +       { .compatible = "soc", },
-> +       { .compatible = "fsl,lpb", },
-> +       {},
-> +};
+> +++ b/drivers/i2c/busses/i2c-cpm.c
 > +
->  void __init
->  mpc52xx_declare_of_platform_devices(void)
->  {
->         /* Find every child of the SOC node and add it to of_platform */
-> -       if (of_platform_bus_probe(NULL, NULL, NULL))
-> +       if (of_platform_bus_probe(NULL, mpc52xx_ids, NULL))
->                 printk(KERN_ERR __FILE__ ": "
->                         "Error while probing of_platform bus\n");
->  }
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+> +static irqreturn_t cpm_i2c_interrupt(int irq, void *dev_id)
+> +{
+> +	struct i2c_adapter *adap;
+> +	struct cpm_i2c *cpm;
+> +	struct i2c_reg __iomem *i2c_reg;
+> +	int i;
+> +
+> +	adap =3D (struct i2c_adapter *) dev_id;
 
+This cast is unnecessary. In fact, you could just pass dev_id to the
+following call to i2c_get_adapdata() and eliminate adap completely.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> +	/* Get 'me going again.
+> +	 */
+
+For short comments, just make them one line.  Similarly later as well.
+
+> +	/* This chip can't do zero length writes. However, the i2c core uses
+> +	   them to scan for devices. The best we can do is to convert them
+> +	   into 1 byte reads */
+
+For multiline comments, we normally do
+/*
+ * blah ...
+ * more blah
+ */
+
+> +static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, =
+int num)
+> +{
+> +
+> +	while (tptr < num) {
+> +		/* Check for outstanding messages */
+> +		dev_dbg(&adap->dev, "test ready.\n");
+> +		if (!(tbdf[tptr].cbd_sc & BD_SC_READY)) {
+> +			dev_dbg(&adap->dev, "ready.\n");
+> +			rmsg =3D &msgs[tptr];
+> +			ret =3D cpm_i2c_check_message(adap, rmsg, tptr, rptr);
+> +			tptr++;
+> +			if (rmsg->flags & I2C_M_RD)
+> +				rptr++;
+> +			if (ret) {
+> +				cpm_i2c_force_close(adap);
+> +				mutex_unlock(&cpm->i2c_mutex);
+> +				return ret;
+> +			}
+> +		} else {
+> +			dev_dbg(&adap->dev, "not ready.\n");
+> +			ret =3D wait_event_interruptible_timeout(cpm->i2c_wait,
+> +				!(tbdf[tptr].cbd_sc & BD_SC_READY), 1 * HZ);
+> +			if (ret =3D=3D 0) {
+> +				cpm_i2c_force_close(adap);
+> +				dev_dbg(&adap->dev, "I2C read: timeout!\n");
+> +				mutex_unlock(&cpm->i2c_mutex);
+> +				return -EREMOTEIO;
+> +			}
+
+You might want to consolidate the two error paths above using gotos to an
+error return section below.
+
+> +static void of_register_i2c_devices(struct i2c_adapter *adap,
+> +				    struct device_node *adap_node)
+> +{
+> +	struct device_node *node =3D NULL;
+> +
+> +	while ((node =3D of_get_next_child(adap_node, node))) {
+
+Use
+	for_each_child_of_node(adap_node, node) {
+instead and you don't need to initialise "node" above.
+
+> +static struct of_device_id cpm_i2c_match[] =3D {
+
+const?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__3_Jan_2008_10_41_21_+1100_SkN8.jo6R1F/9AQQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHfCEnTgG2atn1QN8RAp7VAJ4k/Ifbxw+graKKsteTNun7k7wmLgCgga9t
+9mJ0EjQ5KdFXogPKDKL84UQ=
+=G5X1
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_Jan_2008_10_41_21_+1100_SkN8.jo6R1F/9AQQ--
