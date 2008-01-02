@@ -1,29 +1,31 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 9A5CEDDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 04:26:28 +1100 (EST)
-Received: from pd4mr1so.prod.shaw.ca
-	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JU100AOA1PL7D80@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 02 Jan 2008 10:24:57 -0700 (MST)
-Received: from pn2ml6so.prod.shaw.ca ([10.0.121.150])
-	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JU100I9J1O65I00@pd4mr1so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Wed, 02 Jan 2008 10:24:07 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JU100I8R1O6IS30@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 02 Jan 2008 10:24:06 -0700 (MST)
-Date: Wed, 02 Jan 2008 10:23:56 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] Sequoia: typo in calling machine_device_initcall()
-To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
-Message-id: <20080102172356.26645.63895.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6D8ACDDECB
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 04:39:30 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m02HfGTk016234
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jan 2008 12:41:16 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m02HdShW498198
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jan 2008 12:39:28 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m02HdSG3020189
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jan 2008 12:39:28 -0500
+Date: Wed, 2 Jan 2008 11:37:52 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [POWERPC] Sequoia: typo in calling
+	machine_device_initcall()
+Message-ID: <20080102113752.2e53a1c7@zod.rchland.ibm.com>
+In-Reply-To: <20080102172356.26645.63895.stgit@trillian.secretlab.ca>
+References: <20080102172356.26645.63895.stgit@trillian.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,24 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Wed, 02 Jan 2008 10:23:56 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
- arch/powerpc/platforms/44x/sequoia.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Oh, that's fun... my build scripts say this passed.  Looking at
+powerpc.sequoia_defconfig.log.passed shows it obviously failed.  I hate
+it when automated tools suck.
 
-diff --git a/arch/powerpc/platforms/44x/sequoia.c b/arch/powerpc/platforms/44x/sequoia.c
-index 374f8c7..d279db4 100644
---- a/arch/powerpc/platforms/44x/sequoia.c
-+++ b/arch/powerpc/platforms/44x/sequoia.c
-@@ -38,7 +38,7 @@ static int __init sequoia_device_probe(void)
- 
- 	return 0;
- }
--machien_device_initcall(sequoia, sequoia_device_probe);
-+machine_device_initcall(sequoia, sequoia_device_probe);
- 
- static int __init sequoia_probe(void)
- {
+Thanks Grant.  Applied to my for-2.6.25 branch
+
+josh
+
+> ---
+> 
+>  arch/powerpc/platforms/44x/sequoia.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/44x/sequoia.c b/arch/powerpc/platforms/44x/sequoia.c
+> index 374f8c7..d279db4 100644
+> --- a/arch/powerpc/platforms/44x/sequoia.c
+> +++ b/arch/powerpc/platforms/44x/sequoia.c
+> @@ -38,7 +38,7 @@ static int __init sequoia_device_probe(void)
+> 
+>  	return 0;
+>  }
+> -machien_device_initcall(sequoia, sequoia_device_probe);
+> +machine_device_initcall(sequoia, sequoia_device_probe);
+> 
+>  static int __init sequoia_probe(void)
+>  {
+> 
