@@ -1,19 +1,31 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 1081ADDE48
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 22:30:04 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 2/3] PS3: Add logical performance monitor device support
-Date: Sat, 5 Jan 2008 12:29:32 +0100
-References: <20080105003019.595703814@am.sony.com>
-	<477EF5AC.7090105@am.sony.com>
-In-Reply-To: <477EF5AC.7090105@am.sony.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9A532DDE9A
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 22:31:01 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m05BUs77016426
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 Jan 2008 22:30:54 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m05BYbUL268000
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 Jan 2008 22:34:37 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m05BUjT5022215
+	for <linuxppc-dev@ozlabs.org>; Sat, 5 Jan 2008 22:30:45 +1100
+Date: Wed, 2 Jan 2008 22:42:08 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: Enable RTC for Ebony and Walnut
+Message-ID: <20080102114208.GD23168@localhost.localdomain>
+References: <20071221022130.GI2665@localhost.localdomain>
+	<20071221212922.GC11910@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801051229.33099.arnd@arndb.de>
-Cc: paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071221212922.GC11910@lixom.net>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gU2F0dXJkYXkgMDUgSmFudWFyeSAyMDA4LCBHZW9mZiBMZXZhbmQgd3JvdGU6Cj4gKyAgICAg
-ICBzdHJ1Y3QgbGF5b3V0IHsKPiArICAgICAgICAgICAgICAgc3RydWN0IHBzM19zeXN0ZW1fYnVz
-X2RldmljZSBkZXY7Cj4gKyAgICAgICB9ICpwOwoKV2hhdCdzIHRoZSBwb2ludCBvZiB0aGlzIGRh
-dGEgc3RydWN0dXJlPyBZb3UgZG9uJ3QgdXNlIHRoZQpzdHJ1Y3QgYW55d2hlcmUsIGFuZCBpdCBv
-bmx5IGhhcyBvbmUgbWVtYmVyLCBzbyB5b3UgY291bGQKanVzdCBkZWNsYXJlIHRoYXQgZGlyZWN0
-bHkuCgo+ICugoKCgoKCgaWYgKHRtcDEgIT0gdG1wMikgewo+ICugoKCgoKCgoKCgoKCgoKBwcl9k
-ZWJ1ZygiJXM6JWQ6IHdyb25nIGxwYXJcbiIsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgX19m
-dW5jX18sIF9fTElORV9fKTsKPiAroKCgoKCgoKCgoKCgoKCgcmVzdWx0ID0gLTE7Cj4gK6CgoKCg
-oKCgoKCgoKCgoGdvdG8gZmFpbF9yaWdodHM7Cj4gK6CgoKCgoKB9Cj4gKwo+ICugoKCgoKCgaWYg
-KCEocC0+ZGV2LmxwbS5yaWdodHMgJiBQUzNfTFBNX1JJR0hUU19VU0VfTFBNKSkgewo+ICugoKCg
-oKCgoKCgoKCgoKBwcl9kZWJ1ZygiJXM6JWQ6IGRvbid0IGhhdmUgcmlnaHRzIHRvIHVzZSBscG1c
-biIsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgX19mdW5jX18sIF9fTElORV9fKTsKPiAroKCg
-oKCgoKCgoKCgoKCgcmVzdWx0ID0gLTE7Cj4gK6CgoKCgoKCgoKCgoKCgoGdvdG8gZmFpbF9yaWdo
-dHM7Cj4gK6CgoKCgoKB9Cj4gKwoKSSB0aGluayBfX2luaXQgZnVuY3Rpb25zIHNob3VsZCByZXR1
-cm4gZXJyb3IgY29kZXMgbGlrZSAtRVBFUk0gb3IKLUVJTlZBTCwgbm90IG51bWVyaWMgLTEuCgpB
-cGFydCBmcm9tIHRoYXQsIHRoZSBwYXRjaCBsb29rcyBnb29kLgoKCUFybmQgPD48Cg==
+On Fri, Dec 21, 2007 at 03:29:22PM -0600, Olof Johansson wrote:
+> Hi,
+> 
+> On Fri, Dec 21, 2007 at 01:21:30PM +1100, David Gibson wrote:
+> > Index: working-2.6/arch/powerpc/platforms/Kconfig
+> > ===================================================================
+> > --- working-2.6.orig/arch/powerpc/platforms/Kconfig	2007-12-10 10:52:44.000000000 +1100
+> > +++ working-2.6/arch/powerpc/platforms/Kconfig	2007-12-21 13:11:34.000000000 +1100
+> > @@ -315,6 +315,9 @@ config FSL_ULI1575
+> >  config CPM
+> >  	bool
+> >  
+> > +config OF_RTC
+> > +	bool
+> > +
+> 
+> New config options should have descriptions, even if they're silent
+> ones.
+
+Uh.. but if there's a description, won't kconfig prompt for the
+option?  This one should only ever be selected by the platform
+options.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
