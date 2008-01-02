@@ -1,14 +1,26 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id BE69CDDE42
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:37:26 +1100 (EST)
-Date: Wed, 2 Jan 2008 12:45:49 -0600
-From: Olof Johansson <olof@lixom.net>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] pasemi: Fix NMI handling check
-Message-ID: <20080102184549.GA17792@lixom.net>
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id 03EA0DDEDD
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:43:49 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so3898009rvf.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Jan 2008 10:43:46 -0800 (PST)
+Message-ID: <9e4733910801021043l7571ea00o7b8072b04ca68ad5@mail.gmail.com>
+Date: Wed, 2 Jan 2008 13:43:46 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <fa686aa40801020922q6fbda176l5fc7c80b5e61281f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
+	<477BADF5.9060003@freescale.com>
+	<9e4733910801020756p18e12ce8o618b8eae5e7c5a53@mail.gmail.com>
+	<fa686aa40801020832y373c091dn925bfe64afddcb81@mail.gmail.com>
+	<9e4733910801020912k50dceaebm11b59c1cee571e56@mail.gmail.com>
+	<fa686aa40801020922q6fbda176l5fc7c80b5e61281f@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,25 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[POWERPC] pasemi: Fix NMI handling check
-    
-The logic that checks to see if a machine check is caused by an NMI will
-always match when NMI hasn't been initialized, since the mpic routine
-will return NO_IRQ (and that's what the nmi_virq value is as well).
-    
-Signed-off-by: Olof Johansson <olof@lixom.net>
+On 1/2/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > Alternatively, the best place for this device would be on the ASOC
+> > bus, but the ASOC bus hasn't been created when the platform code runs.
+> > Maybe I can figure out a place in the platform code to create this
+> > device after the ASOC driver has loaded and created the bus. Does the
+> > platform code get control back after loading all of the device
+> > drivers?
+>
+> Yes, but it requires the core ASoC code to not be a module.  Then you
+> can use machine_device_initcall() to register the device at a later
+> time.
+
+How about this for a simpler solution? My mpc5200-psc-ac97 and
+mpc5200-psc-i2c drivers can create a device on the ASOC bus named
+after the first entry in the compatible field of the root node. That
+will cause the correct driver to get activated. I'm in the process of
+making ASOC drivers dynamically loadable like the i2c ones.
 
 
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 1940e67..a89d098 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -264,7 +264,7 @@ static int pas_machine_check_handler(struct pt_regs *regs)
- 	srr0 = regs->nip;
- 	srr1 = regs->msr;
- 
--	if (mpic_get_mcirq() == nmi_virq) {
-+	if (nmi_virq != NO_IRQ && mpic_get_mcirq() == nmi_virq) {
- 		printk(KERN_ERR "NMI delivered\n");
- 		debugger(regs);
- 		mpic_end_irq(nmi_virq);
+-- 
+Jon Smirl
+jonsmirl@gmail.com
