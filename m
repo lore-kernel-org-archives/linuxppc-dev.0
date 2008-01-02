@@ -1,19 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id ADDB1DDDFB
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 15:27:07 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so9077199wag.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jan 2008 20:27:06 -0800 (PST)
-Message-ID: <9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
-Date: Tue, 1 Jan 2008 23:27:06 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-In-Reply-To: <11981089894052-git-send-email-timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 9A51CDDE18
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 15:34:04 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1008402anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jan 2008 20:34:03 -0800 (PST)
+Message-ID: <fa686aa40801012034t4cbf4827m82f05ee8f65cd4ee@mail.gmail.com>
+Date: Tue, 1 Jan 2008 21:34:03 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "LIU KAN" <liukanh@gmail.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Using C67x00 on PXA255 with ov511
+In-Reply-To: <e99250190801011938w54ad1921oc85bb54fc0481b9d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <11981089894052-git-send-email-timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+References: <e99250190801011938w54ad1921oc85bb54fc0481b9d@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,69 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
->  sound/soc/fsl/fsl_ssi.c                      |  614 +++++++++++++++++++
->  sound/soc/fsl/fsl_ssi.h                      |  224 +++++++
+On 1/1/08, LIU KAN <liukanh@gmail.com> wrote:
+> Hello, Grant
+>
+>         Thank you for the work on the patch of c67x00, I have use it
+> successfully on PXA255, but I still have some problem.
+>         Now I can use c67x00 together with usb-disk in 2.6 kerenl at a
+> writing speed around 5MB/s. But when I use c67x00 to connect webcam, which
+> is drived by ov511, I get the mosaic like picture in  attachment. And when I
+> use cy7c67300 provided by cypress in 2.4 kernel with ov511, it work fine. Is
+> this because the speed the c67x00 driver for iso_ transfers is too slow? or
+> any other reason?
+>         How can I solve the problem?
 
-I'm confused about this part. You built a driver for the mpc8610 ssi
-port.  This port has a device tree entry.
+Most likely the scheduling algorithm is not quite right for the
+c67x00.  I've had problems with that in the past myself.  You can try
+playing around with the parameters in claim_frame_bw() in
+c67x00-sched.c.  The web cam is probably using iso transfers so you
+should try to find out if all the requested ISO transfers are actually
+getting scheduled by the driver.
 
-+		ssi@16000 {
-+			compatible = "fsl,ssi";
-+			cell-index = <0>;
-+			reg = <16000 100>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <3e 2>;
-+			fsl,mode = "i2s-slave";
-+			codec {
-+				compatible = "cirrus,cs4270";
-+				/* MCLK source is a stand-alone oscillator */
-+				bus-frequency = <bb8000>;
-+			};
-+		};
+Please let me know what you find out.  This driver still needs a lot
+of tuning and your observations will help a lot.
 
-But then you don't create an of_platform_driver for this device.
-Instead you create one for the fabric driver, struct
-of_platform_driver mpc8610_hpcd_of_driver, and directly link the SSI
-driver into it.
-
-+static struct of_device_id mpc8610_hpcd_match[] = {
-+	{
-+		.compatible = "fsl,ssi",
-+	},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, mpc8610_hpcd_match);
-+
-+static struct of_platform_driver mpc8610_hpcd_of_driver = {
-+	.owner  	= THIS_MODULE,
-+	.name   	= "mpc8610_hpcd",
-+	.match_table    = mpc8610_hpcd_match,
-+	.probe  	= mpc8610_hpcd_probe,
-+	.remove 	= mpc8610_hpcd_remove,
-+};
-
-static int mpc8610_hpcd_probe(struct of_device *ofdev,
-	const struct of_device_id *match)
-{
-.....
-	machine_data->dai.cpu_dai = fsl_ssi_create_dai(&ssi_info);
-
-Isn't this two separate drivers that have been combined into one
-driver? Or does the fsl_ssi channel only work on the mpc8610_hpcd?
-
-This is the problem of knowing how to load the fabric driver that I
-was talking about in the other threads. A device that can occur on
-more than one chip ".compatible = "fsl,ssi"," is being used to pull in
-a platform specific fabric driver, "mpc8610_hpcd". You can use the
-kernel config system to select the right driver for ".compatible =
-"fsl,ssi"," that matches you hardware and compile it in.
-
-But that doesn't work in my environment. My generic channel is
-"fsl,i2s". I have four different systems booting off from a shared
-network drive. Each of these systems needs the common "fsl,i2s" driver
-but they all four need different fabric drivers.
+Cheers,
+g.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
