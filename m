@@ -1,19 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 938ACDDE19
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 11:35:18 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [2.6.24] Add PPC nvram ioctls to compat_ioctl
-Date: Wed, 2 Jan 2008 01:34:41 +0100
-References: <20071231224558.GA16517@lixom.net>
-In-Reply-To: <20071231224558.GA16517@lixom.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 2 Jan 2008 11:26:52 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080102002652.GA4655@localhost.localdomain>
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801020134.41761.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 31 December 2007, Olof Johansson wrote:
-> Fix the following console warning when running 'nvsetenv', and makes
-> setting of new variables work again:
+On Tue, Jan 01, 2008 at 12:25:32PM -0500, Jon Smirl wrote:
+> On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
+> > +               ssi@16000 {
+> > +                       compatible = "fsl,ssi";
+> > +                       cell-index = <0>;
+> > +                       reg = <16000 100>;
+> > +                       interrupt-parent = <&mpic>;
+> > +                       interrupts = <3e 2>;
+> > +                       fsl,mode = "i2s-slave";
+> > +                       codec {
+> > +                               compatible = "cirrus,cs4270";
+> > +                               /* MCLK source is a stand-alone oscillator */
+> > +                               bus-frequency = <bb8000>;
+> > +                       };
+> > +               };
 > 
-> ioctl32(nvsetenv:4022): Unknown cmd fd(3) cmd(20007043){t:'p';sz:0}
-> arg(00000003) on /dev/nvram
+> Does this need to be bus-frequency? It's always called MCLK in all of
+> the literature.
 > 
-> That's the IOC_NVRAM_SYNC call.
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> 
-> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-> index e8b7c3a..7be6765 100644
-> --- a/fs/compat_ioctl.c
-> +++ b/fs/compat_ioctl.c
+> In my case the MCLK comes from a chip on the i2c bus that is
+> programmable How would that be encoded?.
 
-Please don't. I have this long-term plan of getting rid of fs/compat_ioctl.c,
-the better answer is to convert arch/powerpc/kernel/nvram_64.c and
-drivers/char/generic_nvram.c from the .ioctl file_operation to
-.unlocked_ioctl/.compat_ioctl.
+Grah!  If there's one obvious frequency for a node, it should always
+be "clock-frequency".  This bus-frequency nonsense seems to be a
+disease that started as a secondary frequency in Freescale CPU nodes,
+and has escaped to all sorts of other places.
 
-	Arnd <><
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
