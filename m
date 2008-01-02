@@ -4,22 +4,20 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2C1CADDEE8
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:09:21 +1100 (EST)
-Date: Wed, 2 Jan 2008 12:08:30 -0600
+	by ozlabs.org (Postfix) with ESMTP id 4975EDDEBD
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:12:48 +1100 (EST)
+Date: Wed, 2 Jan 2008 12:12:26 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20080102180830.GC4398@loki.buserror.net>
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<20071220040633.GA6732@lixom.net> <476A7B23.2040905@freescale.com>
-	<20071220223943.GA24138@lixom.net> <476AEEB3.2010403@freescale.com>
-	<476AF015.5040600@freescale.com> <476DCECD.6040008@freescale.com>
+Subject: Re: [PATCH v2] ucc_uart: add support for Freescale QUICCEngine UART
+Message-ID: <20080102181226.GA4486@loki.buserror.net>
+References: <11970458703666-git-send-email-timur@freescale.com>
+	<20071226165816.GB11449@localhost.localdomain>
+	<4776C5EE.70004@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <476DCECD.6040008@freescale.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org
+In-Reply-To: <4776C5EE.70004@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 22, 2007 at 08:58:21PM -0600, Timur Tabi wrote:
-> Scott Wood wrote:
->
->>> None of the SOC nodes in any DTS have a "compatible" entry.
->>
->> Not quite true; ep88xc, mpc8272ads, and pq2fads have them.
->
-> Ah ok.  So what should the compatible entry for 8641 be?
->
-> 	compatible = "fsl,mpc8641"
+On Sat, Dec 29, 2007 at 04:10:54PM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
+> 
+> >> +		ucc@2400 {
+> >> +			device_type = "serial";
+> >> +			compatible = "ucc_uart";
+> >> +			model = "UCC";
+> > 
+> > model isn't used, is it needed at all?
+> 
+> I have no idea, but all the other UCC nodes have it, so I'm going to 
+> keep it.  Maybe one day we'll merge QE and CPM drivers, so this would be 
+> useful.
 
-Yes.
+No, it wouldn't -- that's what compatible is for.
 
-> That looks a lot like what a compatible entry for the CPU should be.
+> >> +static struct of_platform_driver ucc_uart_of_driver = {
+> >> +	.owner  	= THIS_MODULE,
+> >> +	.name   	= "ucc_uart",
+> > 
+> > Maybe better fsl,ucc_uart?
 
-I guess technically the cpu should list something like fsl,e600 (or
-whatever suffix is relevant).
+fsl,qe-uart is defined by Documentation/powerpc/booting-without-of.txt.
+
+> The CPM serial driver uses "cpm_uart" and the QE ethernet driver uses 
+> "ucc_geth", so ucc_uart matches the pattern.
+
+cpm_uart is a legacy match -- the current binding specifies
+fsl,cpm1-smc-uart, fsl,cpm2-scc-uart, etc.
 
 -Scott
