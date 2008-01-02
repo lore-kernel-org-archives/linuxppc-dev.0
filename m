@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id C53ECDDE05
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 22:54:18 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Add MPC837x PCIE controller RC mode support
-Date: Wed, 2 Jan 2008 12:53:07 +0100
-References: <1199272605.22416.8.camel@Guyver>
-In-Reply-To: <1199272605.22416.8.camel@Guyver>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4F2F1DDE07
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 02:11:21 +1100 (EST)
+Message-ID: <477BA974.8010308@freescale.com>
+Date: Wed, 02 Jan 2008 09:10:44 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801021253.08280.arnd@arndb.de>
-Cc: Wood Scott <scottwood@freescale.com>,
-	kim phillips <Kim.Phillips@freescale.com>, Li Li <r64360@freescale.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+In-Reply-To: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 02 January 2008, Li Li wrote:
-> =A0#ifdef CONFIG_PCI
-> -=A0=A0=A0=A0=A0=A0=A0for_each_compatible_node(np, "pci", "fsl,mpc8349-pc=
-i")
-> -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mpc83xx_add_bridge(np);
-> +=A0=A0=A0=A0=A0=A0=A0for_each_compatible_node(np, "pci", "fsl,mpc8349-pc=
-i") {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (primary_pci_bus) {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mpc=
-83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pri=
-mary_pci_bus =3D 0;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0} else
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mpc=
-83xx_add_bridge(np, PPC_83XX_PCI);
-> +=A0=A0=A0=A0=A0=A0=A0}
-> +
-> +=A0=A0=A0=A0=A0=A0=A0for_each_compatible_node(np, "pci", "fsl,mpc8377-pc=
-ie") {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (primary_pci_bus) {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mpc=
-83xx_add_bridge(np, PPC_83XX_PCIE | PPC_83XX_PCI_PRIMARY);
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pri=
-mary_pci_bus =3D 0;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0} else
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mpc=
-83xx_add_bridge(np, PPC_83XX_PCIE);
-> +=A0=A0=A0=A0=A0=A0=A0}
-> +
-> +=A0=A0=A0=A0=A0=A0=A0ppc_md.pci_exclude_device =3D mpc837x_exclude_devic=
-e;
-> =A0#endif
+Jon Smirl wrote:
+> On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
+>> +               ssi@16000 {
+>> +                       compatible = "fsl,ssi";
+>> +                       cell-index = <0>;
+>> +                       reg = <16000 100>;
+>> +                       interrupt-parent = <&mpic>;
+>> +                       interrupts = <3e 2>;
+>> +                       fsl,mode = "i2s-slave";
+>> +                       codec {
+>> +                               compatible = "cirrus,cs4270";
+>> +                               /* MCLK source is a stand-alone oscillator */
+>> +                               bus-frequency = <bb8000>;
+>> +                       };
+>> +               };
+> 
+> Does this need to be bus-frequency? It's always called MCLK in all of
+> the literature.
 
-A few comments on how I think this can be improved:
+I'm trying to make this node as generic as possible.  The fabric driver 
+is the one that will parse this node and pass the data to the codec 
+driver, so I can't use any codec-specific terms.
 
-* Instead of duplicating this code across all platforms, make a single
-function that does the probing in one place (including the #ifdef
-CONFIG_PCI).
+The API from the fabric driver for passing clock information includes a 
+clock ID, a direction, and a frequency.  I can do something like this:
 
-* Better yet, get rid of mpc83xx_add_bridge and make it possible for the
-mpc83xx code to use the of_pci_phb_driver from
-arch/powerpc/kernel/of_platform.c. This used to be impossible because
-of the differences  between 32 and 64 bit code for PCI probing, but
-I think with the work than benh put into unifying the two, we should
-be pretty close now.
+clock1 = <0, bb8000>
 
-* The detection method for the primary bus is somewhat fragile, because
-we depend on the order of the nodes in the device tree, which is not
-specified to have a meaning. /Maybe/ there could be a property in
-(at most) one of the PCI host bridge nodes saying that this specific bus
-is the primary one.
+Would that be better?
 
-* Since you are using exactly the same probing code for pci and pcie,
-you may want to check for a more generic "compatible" property than
-the specific model, so you can use the same code for both.
+> 
+> In my case the MCLK comes from a chip on the i2c bus that is
+> programmable How would that be encoded?.
 
-	Arnd <><
+I'm going under the assumption that MCLK does not change once the board 
+is up and running.  In your case, you'd need to do something quite 
+different, because you're not reading the clock info from the device 
+tree and passing it to the codec at initialization once.  If you want to 
+define an extension to the 'codec' child node that handles that, I'll 
+add it to the documentation.
