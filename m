@@ -1,21 +1,26 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2CF97DE048
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 04:54:00 +1100 (EST)
-Date: Wed, 2 Jan 2008 17:23:40 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20080102172340.GA2007@sirena.org.uk>
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
-	<477BA974.8010308@freescale.com>
-MIME-Version: 1.0
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts5-srv.bellnexxia.net (tomts5-srv.bellnexxia.net
+	[209.226.175.25]) by ozlabs.org (Postfix) with ESMTP id 33C17DDE99
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 04:57:32 +1100 (EST)
+Received: from toip4.srvr.bell.ca ([209.226.175.87])
+	by tomts5-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20080102175729.CHIY17217.tomts5-srv.bellnexxia.net@toip4.srvr.bell.ca>
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jan 2008 12:57:29 -0500
+Date: Wed, 2 Jan 2008 12:47:29 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [2.6.24 patch] Fix Cell OProfile support
+Message-ID: <20080102174729.GC2189@Krystal>
+References: <20071228185649.GC4738@stusta.de> <20071229160921.GB12262@Krystal>
+	<200712311710.08869.arnd@arndb.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <477BA974.8010308@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+In-Reply-To: <200712311710.08869.arnd@arndb.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, oprofile-list@lists.sourceforge.net,
+	Adrian Bunk <adrian.bunk@movial.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 02, 2008 at 09:10:44AM -0600, Timur Tabi wrote:
-> Jon Smirl wrote:
+* Arnd Bergmann (arnd@arndb.de) wrote:
+> On Saturday 29 December 2007, Mathieu Desnoyers wrote:
+> > This patch restores the Cell OProfile support that was killed by
+> > commit 09cadedbdc01f1a4bea1f427d4fb4642eaa19da9.
+> > 
+> > It puts it in arch/powerpc/Kconfig. Since I don't see any good reason to leave
+> > this as a supplementary user-selectable option, it is now automatically enabled
+> > whenever SPU_FS and OPROFILE are enabled.
+> 
+> This one has already been superceded by the fix in 
+> aed3a8c9bb1a8623a618232087c5ff62718e3b9a, which made CONFIG_OPROFILE_CELL an
+> automatically selected option, from arch/powerpc/platforms/cell/Kconfig.
+> 
 
-> > Does this need to be bus-frequency? It's always called MCLK in all of
-> > the literature.
+Great, so my patch should be dropped. Thanks!
 
-> I'm trying to make this node as generic as possible.  The fabric driver 
-> is the one that will parse this node and pass the data to the codec 
-> driver, so I can't use any codec-specific terms.
+Mathieu
 
-> The API from the fabric driver for passing clock information includes a 
-> clock ID, a direction, and a frequency.  I can do something like this:
+> 	Arnd <><
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> clock1 = <0, bb8000>
-
-> Would that be better?
-
-To cover everything you'd need to be able to specify all the clocking
-parameters, especially a PLL configuration, and also specify more than
-one of each item.  Even then you'd still have problems like...
-
-> > In my case the MCLK comes from a chip on the i2c bus that is
-> > programmable How would that be encoded?.
-
-> I'm going under the assumption that MCLK does not change once the board 
-> is up and running.  In your case, you'd need to do something quite 
-> different, because you're not reading the clock info from the device 
-> tree and passing it to the codec at initialization once.  If you want to 
-> define an extension to the 'codec' child node that handles that, I'll 
-> add it to the documentation.
-
-According to the documentation in your patch the bus frequency should
-already be optional (though I don't immediately see that in the code,
-but then I'm entirely unfamiliar with OpenFirmware device trees).
-Boards that reconfigure the clocking at run time can then provide
-code to set the clocking up at the appropriate times, which is probably
-what they want anyway.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
