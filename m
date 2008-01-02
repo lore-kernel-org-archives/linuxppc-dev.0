@@ -1,23 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99523DDDF8
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A701ADDF21
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Jan 2008 20:18:18 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1J9zjq-0003g7-Ll
-	for linuxppc-embedded@ozlabs.org; Wed, 02 Jan 2008 01:18:14 -0800
-Message-ID: <14575369.post@talk.nabble.com>
-Date: Wed, 2 Jan 2008 01:18:14 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: How to do IO mapped Implimentation ???
-In-Reply-To: <14522349.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <14522349.post@talk.nabble.com>
+	Thu,  3 Jan 2008 05:05:00 +1100 (EST)
+Subject: Re: Differences between git tree
+From: Jon Loeliger <jdl@freescale.com>
+To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+In-Reply-To: <F795765B112E7344AF36AA911279641502D1A907@xmb-sjc-212.amer.cisco.com>
+References: <mailman.56.1171312373.21008.linuxppc-embedded@ozlabs.org>
+	<F795765B112E7344AF36AA911279641502D1A907@xmb-sjc-212.amer.cisco.com>
+Content-Type: text/plain
+Message-Id: <1199297091.7345.20.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 02 Jan 2008 12:04:51 -0600
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,32 +28,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-12-20 at 07:11, Bizhan Gholikhamseh (bgholikh) wrote:
+> Hi,
+> Could someone let me know what is the each of these git tree are?
+> 
+> http://opensource.freescale.com/pub/scm/linux-2.6-jdl.git
+> AND
+> http://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
 
-Till now i assume that Io mapped and memory mapped Implimentation are same
-...the biggest doubt is How the two would remain the same ....If any of you
-have worked on it Please share your experience with me ....
+Hrm.  I suppose I should answer that one...
 
+Use Paul's tree from kernel.org.
 
-Misbah khan wrote:
-> 
-> Hi all...
-> 
-> I am writing a driver in which device port is mapped to CPLD and 8 bit
-> data bus is directly connected from processor to CPLD. Read write on CPLD
-> memory mapped (buffer/register) is required to control the device. This is
-> now IO mapped to processor.
-> 
-> I need to know whether i am right if i impliment like this :-
->          addr=ioremap(base_addr);          // Remap to Mem mapped address
->          outb(addr) and inb(addr);
-> 
-> Please suggest me if i am wrong or there could be better solution to this
-> .
-> 
-> -----Misbah <><
->          
-> 
+My tree on opensource.freescale.com was my random patches
+and crud, being published so others could get a hold of them.
+Anything of value there has been moved or integrated into
+Paul or Linus' tree by now.
 
--- 
-View this message in context: http://www.nabble.com/How-to-do-IO-mapped-Implimentation-----tp14522349p14575369.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+HTH,
+jdl
