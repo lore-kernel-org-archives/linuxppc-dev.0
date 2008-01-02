@@ -1,24 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
-	by ozlabs.org (Postfix) with ESMTP id 03EA0DDEDD
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:43:49 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so3898009rvf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Jan 2008 10:43:46 -0800 (PST)
-Message-ID: <9e4733910801021043l7571ea00o7b8072b04ca68ad5@mail.gmail.com>
-Date: Wed, 2 Jan 2008 13:43:46 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-In-Reply-To: <fa686aa40801020922q6fbda176l5fc7c80b5e61281f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 38A27DDEF5
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:50:03 +1100 (EST)
+Date: Wed, 2 Jan 2008 18:49:57 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080102184957.GB2007@sirena.org.uk>
 References: <11981089894052-git-send-email-timur@freescale.com>
 	<9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
 	<477BADF5.9060003@freescale.com>
-	<9e4733910801020756p18e12ce8o618b8eae5e7c5a53@mail.gmail.com>
-	<fa686aa40801020832y373c091dn925bfe64afddcb81@mail.gmail.com>
-	<9e4733910801020912k50dceaebm11b59c1cee571e56@mail.gmail.com>
-	<fa686aa40801020922q6fbda176l5fc7c80b5e61281f@mail.gmail.com>
+	<fa686aa40801020828u5103d09cn2aa5eab7dda2fcff@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40801020828u5103d09cn2aa5eab7dda2fcff@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
 	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -30,25 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/2/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > Alternatively, the best place for this device would be on the ASOC
-> > bus, but the ASOC bus hasn't been created when the platform code runs.
-> > Maybe I can figure out a place in the platform code to create this
-> > device after the ASOC driver has loaded and created the bus. Does the
-> > platform code get control back after loading all of the device
-> > drivers?
->
-> Yes, but it requires the core ASoC code to not be a module.  Then you
-> can use machine_device_initcall() to register the device at a later
-> time.
+On Wed, Jan 02, 2008 at 09:28:12AM -0700, Grant Likely wrote:
+> On 1/2/08, Timur Tabi <timur@freescale.com> wrote:
 
-How about this for a simpler solution? My mpc5200-psc-ac97 and
-mpc5200-psc-i2c drivers can create a device on the ASOC bus named
-after the first entry in the compatible field of the root node. That
-will cause the correct driver to get activated. I'm in the process of
-making ASOC drivers dynamically loadable like the i2c ones.
+> > However, it doesn't make sense to have a node in the device tree for the
+> > fabric driver, because there is no such "device".  The fabric driver is
+> > an abstraction.  So I need to chose some other node to probe the fabric
+> > driver with.  I chose the SSI, since each SSI can have only one codec.
 
+I'm not sure I'd go so far as to say that the fabric/machine driver is
+purely an abstraction.  It does represent real hardware, often with
+software control.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> Does that mean with ASoC V2 you can instantiate it with the board
+> specific platform code instead?  I think that is the consensus we were
+> leaning towards in the last discussion about this issue.
+
+With ASoC v2 rather than having a single monolithic ASoC device which
+probes everything ASoC is converted into a proper subsystem with each
+component (codec, SoC CPU port, whatever) having a sysfs-visible driver.
+These drivers register with the core as they are probed with the probing
+happening through whatever mechanism is appropriate for the driver.
+
+The machine support code (fabric driver in PowerPC terms, I think?)
+tells the core how everything is connected together by registering
+devices representing the links (eg, I2S) between the codecs, CPU and
+other devices.  The ASoC core is then responsible for ensuring that all
+the required components are present before it registers with the ALSA
+core.
