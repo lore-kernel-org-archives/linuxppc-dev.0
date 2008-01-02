@@ -1,15 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8A6BDDDE02
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 16:25:36 +1100 (EST)
-Date: Wed, 2 Jan 2008 16:25:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] therm_pm72: suppress some compile warnings
-Message-Id: <20080102162532.38d9c1e1.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 946A1DDDFD
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 17:21:40 +1100 (EST)
+Received: from pd3mr2so.prod.shaw.ca
+	(pd3mr2so-qfe3.prod.shaw.ca [10.0.141.178]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JU0001YS702B9C0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 01 Jan 2008 23:21:38 -0700 (MST)
+Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
+	by pd3mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JU0004FZ6ZYS150@pd3mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Tue, 01 Jan 2008 23:21:37 -0700 (MST)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JU000JS76ZXIH10@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 01 Jan 2008 23:21:34 -0700 (MST)
+Date: Tue, 01 Jan 2008 23:21:25 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH v3 2/4] USB: add Cypress c67x00 OTG controller core driver
+In-reply-to: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
+To: linux-usb-devel@lists.sourceforge.net, dbrownell@users.sourceforge.net,
+	gregkh@suse.de, linuxppc-dev@ozlabs.org, jacmet@sunsite.dk,
+	stern@rowland.harvard.edu
+Message-id: <20080102062125.15073.93313.stgit@trillian.secretlab.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,165 +37,355 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We don't really care if any of these calls to device_create_file fails,
-so just issue warnings in that case.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-drivers/macintosh/therm_pm72.c: In function 'init_cpu_state':
-drivers/macintosh/therm_pm72.c:1185: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1186: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1187: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1188: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1189: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1191: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1192: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1193: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1194: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1195: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c: In function 'init_backside_state':
-drivers/macintosh/therm_pm72.c:1383: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1384: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c: In function 'init_drives_state':
-drivers/macintosh/therm_pm72.c:1503: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1504: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c: In function 'init_dimms_state':
-drivers/macintosh/therm_pm72.c:1625: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c: In function 'init_slots_state':
-drivers/macintosh/therm_pm72.c:1743: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
-drivers/macintosh/therm_pm72.c:1744: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
+This patch add the core driver for the c67x00 USB OTG controller.  The core
+driver is responsible for the platform bus binding and creating either
+USB HCD or USB Gadget instances for each of the serial interface engines
+on the chip.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+This driver does not directly implement the HCD or gadget behaviours; it
+just controls access to the chip.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/macintosh/therm_pm72.c |   55 +++++++++++++++++++++++++++------------
- 1 files changed, 38 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
-index 6fadc9a..1e0a69a 100644
---- a/drivers/macintosh/therm_pm72.c
-+++ b/drivers/macintosh/therm_pm72.c
-@@ -1157,6 +1157,8 @@ static void do_monitor_cpu_rack(struct cpu_pid_state *state)
-  */
- static int init_cpu_state(struct cpu_pid_state *state, int index)
- {
-+	int err;
-+
- 	state->index = index;
- 	state->first = 1;
- 	state->rpm = (cpu_pid_type == CPU_PID_TYPE_RACKMAC) ? 4000 : 1000;
-@@ -1182,18 +1184,21 @@ static int init_cpu_state(struct cpu_pid_state *state, int index)
- 	DBG("CPU %d Using %d power history entries\n", index, state->count_power);
- 
- 	if (index == 0) {
--		device_create_file(&of_dev->dev, &dev_attr_cpu0_temperature);
--		device_create_file(&of_dev->dev, &dev_attr_cpu0_voltage);
--		device_create_file(&of_dev->dev, &dev_attr_cpu0_current);
--		device_create_file(&of_dev->dev, &dev_attr_cpu0_exhaust_fan_rpm);
--		device_create_file(&of_dev->dev, &dev_attr_cpu0_intake_fan_rpm);
-+		err = device_create_file(&of_dev->dev, &dev_attr_cpu0_temperature);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu0_voltage);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu0_current);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu0_exhaust_fan_rpm);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu0_intake_fan_rpm);
- 	} else {
--		device_create_file(&of_dev->dev, &dev_attr_cpu1_temperature);
--		device_create_file(&of_dev->dev, &dev_attr_cpu1_voltage);
--		device_create_file(&of_dev->dev, &dev_attr_cpu1_current);
--		device_create_file(&of_dev->dev, &dev_attr_cpu1_exhaust_fan_rpm);
--		device_create_file(&of_dev->dev, &dev_attr_cpu1_intake_fan_rpm);
-+		err = device_create_file(&of_dev->dev, &dev_attr_cpu1_temperature);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu1_voltage);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu1_current);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu1_exhaust_fan_rpm);
-+		err |= device_create_file(&of_dev->dev, &dev_attr_cpu1_intake_fan_rpm);
- 	}
-+	if (err)
-+		printk(KERN_WARNING "Failed to create some of the atribute"
-+			"files for CPU %d\n", index);
- 
- 	return 0;
-  fail:
-@@ -1329,6 +1334,7 @@ static int init_backside_state(struct backside_pid_state *state)
- {
- 	struct device_node *u3;
- 	int u3h = 1; /* conservative by default */
-+	int err;
- 
- 	/*
- 	 * There are different PID params for machines with U3 and machines
-@@ -1380,8 +1386,11 @@ static int init_backside_state(struct backside_pid_state *state)
- 	if (state->monitor == NULL)
- 		return -ENODEV;
- 
--	device_create_file(&of_dev->dev, &dev_attr_backside_temperature);
--	device_create_file(&of_dev->dev, &dev_attr_backside_fan_pwm);
-+	err = device_create_file(&of_dev->dev, &dev_attr_backside_temperature);
-+	err |= device_create_file(&of_dev->dev, &dev_attr_backside_fan_pwm);
-+	if (err)
-+		printk(KERN_WARNING "Failed to create attribute file(s)"
-+			" for backside fan\n");
- 
- 	return 0;
- }
-@@ -1492,6 +1501,8 @@ static void do_monitor_drives(struct drives_pid_state *state)
-  */
- static int init_drives_state(struct drives_pid_state *state)
- {
-+	int err;
-+
- 	state->ticks = 1;
- 	state->first = 1;
- 	state->rpm = 1000;
-@@ -1500,8 +1511,11 @@ static int init_drives_state(struct drives_pid_state *state)
- 	if (state->monitor == NULL)
- 		return -ENODEV;
- 
--	device_create_file(&of_dev->dev, &dev_attr_drives_temperature);
--	device_create_file(&of_dev->dev, &dev_attr_drives_fan_rpm);
-+	err = device_create_file(&of_dev->dev, &dev_attr_drives_temperature);
-+	err |= device_create_file(&of_dev->dev, &dev_attr_drives_fan_rpm);
-+	if (err)
-+		printk(KERN_WARNING "Failed to create attribute file(s)"
-+			" for drives bay fan\n");
- 
- 	return 0;
- }
-@@ -1622,7 +1636,9 @@ static int init_dimms_state(struct dimm_pid_state *state)
- 	if (state->monitor == NULL)
- 		return -ENODEV;
- 
--       	device_create_file(&of_dev->dev, &dev_attr_dimms_temperature);
-+	if (device_create_file(&of_dev->dev, &dev_attr_dimms_temperature))
-+		printk(KERN_WARNING "Failed to create attribute file"
-+			" for DIMM temperature\n");
- 
- 	return 0;
- }
-@@ -1732,6 +1748,8 @@ static void do_monitor_slots(struct slots_pid_state *state)
-  */
- static int init_slots_state(struct slots_pid_state *state)
- {
-+	int err;
-+
- 	state->ticks = 1;
- 	state->first = 1;
- 	state->pwm = 50;
-@@ -1740,8 +1758,11 @@ static int init_slots_state(struct slots_pid_state *state)
- 	if (state->monitor == NULL)
- 		return -ENODEV;
- 
--	device_create_file(&of_dev->dev, &dev_attr_slots_temperature);
--	device_create_file(&of_dev->dev, &dev_attr_slots_fan_pwm);
-+	err = device_create_file(&of_dev->dev, &dev_attr_slots_temperature);
-+	err |= device_create_file(&of_dev->dev, &dev_attr_slots_fan_pwm);
-+	if (err)
-+		printk(KERN_WARNING "Failed to create attribute file(s)"
-+			" for slots bay fan\n");
- 
- 	return 0;
- }
--- 
-1.5.3.7
+ drivers/usb/c67x00/c67x00-drv.c |  278 +++++++++++++++++++++++++++++++++++++++
+ include/linux/usb/c67x00.h      |   45 ++++++
+ 2 files changed, 323 insertions(+), 0 deletions(-)
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+diff --git a/drivers/usb/c67x00/c67x00-drv.c b/drivers/usb/c67x00/c67x00-drv.c
+new file mode 100644
+index 0000000..0f0720a
+--- /dev/null
++++ b/drivers/usb/c67x00/c67x00-drv.c
+@@ -0,0 +1,278 @@
++/*
++ * c67x00-drv.c: Cypress C67X00 USB Common infrastructure
++ *
++ * Copyright (C) 2006-2007 Barco N.V.
++ *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
++ *    based on multiple host controller drivers inside the linux kernel.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA  02110-1301  USA.
++ */
++
++/*
++ * This file implements the common infrastructure for using the c67x00.
++ * It is both the link between the platform configuration and subdrivers and
++ * the link between the common hardware parts and the subdrivers (e.g.
++ * interrupt handling).
++ *
++ * The c67x00 has 2 SIE's (serial interface engine) wich can be configured
++ * to be host, device or OTG (with some limitations, E.G. only SIE1 can be OTG).
++ *
++ * Depending on the platform configuration, the SIE's are created (setup_sie)
++ * and the corresponding subdriver is initialized (c67x00_probe_sie).
++ */
++
++#include <linux/device.h>
++#include <linux/list.h>
++#include <linux/usb.h>
++#include <linux/usb/c67x00.h>
++#include <asm/io.h>
++
++#include "c67x00.h"
++
++static struct platform_driver c67x00_driver;
++
++static void
++c67x00_setup_sie(struct c67x00_sie *sie, struct c67x00_device *dev, int sie_num)
++{
++	static unsigned int id = 0;
++
++	/* Fill in needed attributes */
++	sie->pdev = platform_device_register_simple("c67x00_sie",
++						    id++, NULL, 0);
++	/* driver used in hub.c: hub_port_init */
++	sie->pdev->dev.driver = &c67x00_driver.driver;
++	spin_lock_init(&sie->lock);
++	sie->dev = dev;
++	sie->sie_num = sie_num;
++	sie->mode = c67x00_sie_config(dev->pdata->sie_config, sie_num);
++}
++
++static void c67x00_teardown_sie(struct c67x00_sie *sie)
++{
++	sie->pdev->dev.driver = NULL;
++	platform_device_unregister(sie->pdev);
++}
++
++/* ------------------------------------------------------------------ */
++
++static void c67x00_probe_sie(struct c67x00_sie *sie)
++{
++	switch (c67x00_sie_config(sie->dev->pdata->sie_config, sie->sie_num)) {
++	case C67X00_SIE_HOST:
++		c67x00_hcd_probe(sie);
++		break;
++
++	case C67X00_SIE_UNUSED:
++		dev_info(sie_dev(sie),
++			 "Not using SIE %d as requested\n", sie->sie_num);
++		break;
++
++	default:
++		dev_err(sie_dev(sie),
++			"Unsupported configuration: 0x%x for SIE %d\n",
++			c67x00_sie_config(sie->dev->pdata->sie_config,
++					  sie->sie_num), sie->sie_num);
++		break;
++	}
++}
++
++static void c67x00_remove_sie(struct c67x00_sie *sie)
++{
++	switch (c67x00_sie_config(sie->dev->pdata->sie_config, sie->sie_num)) {
++	case C67X00_SIE_HOST:
++		c67x00_hcd_remove(sie);
++		break;
++
++	default:
++		break;
++	}
++}
++
++/* ------------------------------------------------------------------ */
++
++static irqreturn_t c67x00_irq(int irq, void *__dev)
++{
++	struct c67x00_device *c67x00 = __dev;
++	struct c67x00_sie *sie;
++	u16 msg;
++	int i, count = 8;
++
++	c67x00->int_status = c67x00_ll_hpi_status(c67x00);
++	if (!c67x00->int_status)
++		return IRQ_NONE;
++
++	while (c67x00->int_status != 0 && (count-- >= 0)) {
++		c67x00_ll_irq(c67x00);
++		for (i = 0; i < C67X00_SIES; i++) {
++			sie = &c67x00->sie[i];
++			msg = 0;
++			spin_lock(&sie->lock);
++			if (c67x00->int_status & SIEMSG_FLAG(sie->sie_num))
++				msg = c67x00_ll_get_siemsg(c67x00,sie->sie_num);
++			if (sie->irq)
++				sie->irq(sie, msg);
++			spin_unlock(&sie->lock);
++		}
++		c67x00->int_status = c67x00_ll_hpi_status(c67x00);
++	}
++
++	if (c67x00->int_status)
++		dev_warn(&c67x00->pdev->dev, "Not all interrupts handled! "
++			 "status = 0x%04x\n", c67x00->int_status);
++
++	return IRQ_HANDLED;
++}
++
++/* ---------------------------------------------------------------------
++ * Platform bus binding
++ */
++
++static int __devinit c67x00_drv_probe(struct platform_device *pdev)
++{
++	struct c67x00_device *c67x00;
++	struct c67x00_platform_data *pdata;
++	struct resource *res, *res2;
++	int ret, i;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
++
++	res2 = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (!res2)
++		return -ENODEV;
++
++	pdata = pdev->dev.platform_data;
++	if (!pdata)
++		return -ENODEV;
++
++	c67x00 = kzalloc(sizeof(*c67x00), GFP_KERNEL);
++	if (!c67x00)
++		return -ENOMEM;
++
++	if (!request_mem_region(res->start, res->end - res->start + 1,
++				pdev->name)) {
++		dev_err(&pdev->dev, "Memory region busy\n");
++		ret = -EBUSY;
++		goto request_mem_failed;
++	}
++	c67x00->hpi.base = ioremap(res->start, res->end - res->start + 1);
++	if (!c67x00->hpi.base) {
++		dev_err(&pdev->dev, "Unable to map HPI registers\n");
++		ret = -EIO;
++		goto map_failed;
++	}
++
++	spin_lock_init(&c67x00->hw_lock);
++	c67x00->hpi.regstep = pdata->hpi_regstep;
++	c67x00->pdata = pdev->dev.platform_data;
++	c67x00->pdev = pdev;
++
++	for (i = 0; i < C67X00_SIES; i++)
++		c67x00_setup_sie(&c67x00->sie[i], c67x00, i);
++
++	c67x00_ll_init(c67x00);
++	c67x00_ll_hpi_reg_init(c67x00);
++
++	dev_info(&pdev->dev, "USB OTG controller, p:0x%x, v:0x%p, irq:%i\n",
++	         res->start, c67x00->hpi.base, res2->start);
++
++	ret = request_irq(res2->start, c67x00_irq, 0, pdev->name, c67x00);
++	if (ret) {
++		dev_err(&pdev->dev, "Cannot claim IRQ\n");
++		goto request_irq_failed;
++	}
++
++	ret = c67x00_ll_reset(c67x00);
++	if (ret) {
++		dev_err(&pdev->dev, "Device reset failed\n");
++		goto reset_failed;
++	}
++
++	for (i = 0; i < C67X00_SIES; i++)
++		c67x00_probe_sie(&c67x00->sie[i]);
++
++	platform_set_drvdata(pdev, c67x00);
++
++	return 0;
++
++ reset_failed:
++	free_irq(res2->start, c67x00);
++ request_irq_failed:
++	iounmap(c67x00->hpi.base);
++ map_failed:
++	release_mem_region(res->start, res->end - res->start + 1);
++ request_mem_failed:
++	kfree(c67x00);
++
++	return ret;
++}
++
++static int __devexit c67x00_drv_remove(struct platform_device *pdev)
++{
++	struct c67x00_device *c67x00 = platform_get_drvdata(pdev);
++	struct resource *res;
++	int i;
++
++	for (i = 0; i < C67X00_SIES; i++) {
++		c67x00_remove_sie(&c67x00->sie[i]);
++		c67x00_teardown_sie(&c67x00->sie[i]);
++	}
++
++	c67x00_ll_release(c67x00);
++
++	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (res)
++		free_irq(res->start, c67x00);
++
++	iounmap(c67x00->hpi.base);
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (res)
++		release_mem_region(res->start, res->end - res->start + 1);
++
++	kfree(c67x00);
++
++	return 0;
++}
++
++static struct platform_driver c67x00_driver = {
++	.probe = c67x00_drv_probe,
++	.remove = __devexit_p(c67x00_drv_remove),
++	.driver = {
++		.owner = THIS_MODULE,
++		.name = "c67x00",
++	},
++};
++
++static int __init c67x00_init(void)
++{
++	if (usb_disabled())
++		return -ENODEV;
++
++	return platform_driver_register(&c67x00_driver);
++}
++module_init(c67x00_init);
++
++static void __exit c67x00_exit(void)
++{
++	platform_driver_unregister(&c67x00_driver);
++}
++module_exit(c67x00_exit);
++
++MODULE_AUTHOR("Peter Korsgaard, Jan Veldeman, Grant Likely");
++MODULE_DESCRIPTION("Cypress C67X00 USB Controller Driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/usb/c67x00.h b/include/linux/usb/c67x00.h
+new file mode 100644
+index 0000000..80b1a87
+--- /dev/null
++++ b/include/linux/usb/c67x00.h
+@@ -0,0 +1,45 @@
++/*
++ * usb_c67x00.h: platform definitions for the Cypress C67X00 USB chip
++ *
++ * Copyright (C) 2006-2007 Barco N.V.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA  02110-1301  USA.
++ */
++
++#ifndef _LINUX_USB_C67X00_H
++#define _LINUX_USB_C67X00_H
++
++/* SIE configuration */
++#define C67X00_SIE_UNUSED	0
++#define C67X00_SIE_HOST		1
++#define C67X00_SIE_PERIPHERAL	2
++
++#define c67x00_sie_config(config, n)  (((config)>>(4*(n)))&0x3)
++
++#define C67X00_SIE1_UNUSED	(C67X00_SIE_UNUSED	<< 0)
++#define C67X00_SIE1_HOST	(C67X00_SIE_HOST	<< 0)
++#define C67X00_SIE1_PERIPHERAL	(C67X00_SIE_PERIPHERAL	<< 0)
++
++#define C67X00_SIE2_UNUSED	(C67X00_SIE_UNUSED	<< 4)
++#define C67X00_SIE2_HOST	(C67X00_SIE_HOST	<< 4)
++#define C67X00_SIE2_PERIPHERAL	(C67X00_SIE_PERIPHERAL	<< 4)
++
++struct c67x00_platform_data {
++	int sie_config;			/* SIEs config (C67X00_SIEx_*) */
++	unsigned long hpi_regstep;	/* Step between HPI registers  */
++};
++
++#endif /* _LINUX_USB_C67X00_H */
