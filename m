@@ -1,18 +1,21 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [209.5.119.169])
-	by ozlabs.org (Postfix) with ESMTP id E0B64DDEE7
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 04:50:03 +1100 (EST)
-Date: Wed, 2 Jan 2008 12:50:01 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] mpc85xx_ads: add in missing of_node_put()
-Message-ID: <20080102175001.GA18205@windriver.com>
-References: <20071221154009.GB20661@windriver.com>
-	<20071223095038.ce1ad7a5.sfr@canb.auug.org.au>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2CF97DE048
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 04:54:00 +1100 (EST)
+Date: Wed, 2 Jan 2008 17:23:40 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080102172340.GA2007@sirena.org.uk>
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<477BA974.8010308@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071223095038.ce1ad7a5.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <477BA974.8010308@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,85 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message: Re: [PATCH] mpc85xx_ads: add in missing of_node_put()
-on 23/12/2007 Stephen Rothwell wrote:
+On Wed, Jan 02, 2008 at 09:10:44AM -0600, Timur Tabi wrote:
+> Jon Smirl wrote:
 
-> On Fri, 21 Dec 2007 10:40:09 -0500 Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
-> >
-> > cpm2_pic_init() does its own of_node_get() so we should do an of_node_put()
-> > before calling it.
-> 
-> The of_node_put() should really go after the call to cpm2_pic_init(), that
-> way you retain a raised ref count at all times.  Sorry fo not being
-> entirely clear before.
+> > Does this need to be bus-frequency? It's always called MCLK in all of
+> > the literature.
 
-No problem.  Updated version below.
+> I'm trying to make this node as generic as possible.  The fabric driver 
+> is the one that will parse this node and pass the data to the codec 
+> driver, so I can't use any codec-specific terms.
 
-Thanks,
-Paul.
+> The API from the fabric driver for passing clock information includes a 
+> clock ID, a direction, and a frequency.  I can do something like this:
 
+> clock1 = <0, bb8000>
 
->From eea2826182b4b732ded224240ef9dc89a881ce4b Mon Sep 17 00:00:00 2001
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Fri, 21 Dec 2007 10:12:38 -0500
-Subject: [PATCH] mpc85xx_ads: add in missing of_node_put()
+> Would that be better?
 
-Add in missing of_node_put() after cpm2_pic_init(). This and other coding
-style cleanups as suggested by Stephen Rothwell.
+To cover everything you'd need to be able to specify all the clocking
+parameters, especially a PLL configuration, and also specify more than
+one of each item.  Even then you'd still have problems like...
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_ads.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+> > In my case the MCLK comes from a chip on the i2c bus that is
+> > programmable How would that be encoded?.
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index bccdc25..91781a9 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -52,9 +52,9 @@ static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
- {
- 	int cascade_irq;
- 
--	while ((cascade_irq = cpm2_get_irq()) >= 0) {
-+	while ((cascade_irq = cpm2_get_irq()) >= 0)
- 		generic_handle_irq(cascade_irq);
--	}
-+
- 	desc->chip->eoi(irq);
- }
- 
-@@ -70,13 +70,12 @@ static void __init mpc85xx_ads_pic_init(void)
- #endif
- 
- 	np = of_find_node_by_type(np, "open-pic");
--
--	if (np == NULL) {
-+	if (!np) {
- 		printk(KERN_ERR "Could not find open-pic node\n");
- 		return;
- 	}
- 
--	if(of_address_to_resource(np, 0, &r)) {
-+	if (of_address_to_resource(np, 0, &r)) {
- 		printk(KERN_ERR "Could not map mpic register space\n");
- 		of_node_put(np);
- 		return;
-@@ -100,6 +99,7 @@ static void __init mpc85xx_ads_pic_init(void)
- 	irq = irq_of_parse_and_map(np, 0);
- 
- 	cpm2_pic_init(np);
-+	of_node_put(np);
- 	set_irq_chained_handler(irq, cpm2_cascade);
- #endif
- }
-@@ -112,7 +112,7 @@ struct cpm_pin {
- 	int port, pin, flags;
- };
- 
--static struct cpm_pin mpc8560_ads_pins[] = {
-+static const struct cpm_pin mpc8560_ads_pins[] = {
- 	/* SCC1 */
- 	{3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
- 	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
--- 
-1.5.0.rc1.gf4b6c
+> I'm going under the assumption that MCLK does not change once the board 
+> is up and running.  In your case, you'd need to do something quite 
+> different, because you're not reading the clock info from the device 
+> tree and passing it to the codec at initialization once.  If you want to 
+> define an extension to the 'codec' child node that handles that, I'll 
+> add it to the documentation.
+
+According to the documentation in your patch the bus frequency should
+already be optional (though I don't immediately see that in the code,
+but then I'm entirely unfamiliar with OpenFirmware device trees).
+Boards that reconfigure the clocking at run time can then provide
+code to set the clocking up at the appropriate times, which is probably
+what they want anyway.
