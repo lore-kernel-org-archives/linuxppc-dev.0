@@ -4,18 +4,22 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1A16FDDEC5
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:06:57 +1100 (EST)
-Date: Wed, 2 Jan 2008 12:06:55 -0600
+	by ozlabs.org (Postfix) with ESMTP id 2C1CADDEE8
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 05:09:21 +1100 (EST)
+Date: Wed, 2 Jan 2008 12:08:30 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFC] powerpc: DBox2 Board Support
-Message-ID: <20080102180655.GB4398@loki.buserror.net>
-References: <476D61DB.2090201@scram.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080102180830.GC4398@loki.buserror.net>
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<20071220040633.GA6732@lixom.net> <476A7B23.2040905@freescale.com>
+	<20071220223943.GA24138@lixom.net> <476AEEB3.2010403@freescale.com>
+	<476AF015.5040600@freescale.com> <476DCECD.6040008@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <476D61DB.2090201@scram.de>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <476DCECD.6040008@freescale.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,190 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 22, 2007 at 08:13:31PM +0100, Jochen Friedrich wrote:
-> +		gtx@0 {
-> +			compatible = "c-cube,gtx";
-> +			reg = <400000 3000 0 200000>;
-> +			interrupts = <2 2>;
-> +			interrupt-parent = <&PIC>;
-> +		};
-> +
-> +		fp@0 {
-> +			compatible = "betaresearch,dbox2-fp";
-> +			interrupts = <4 2>;
-> +			interrupt-parent = <&PIC>;
-> +			gpios = <0 e>;
-> +			gpio-parent = <&CPM1_PIO>;
-> +		};
-> +
-> +		fe@0 {
-> +			compatible = "betaresearch,dbox2-fe";
-> +			interrupts = <e 2>;
-> +			interrupt-parent = <&PIC>;
-> +		};
-
-These unit addresses look wrong.
-
-> +		cam@4000000 {
-> +			compatible = "betaresearch,dbox2-cam";
-> +			reg = <4000000 20000>;
-> +			interrupts = <6 2>;
-> +			interrupt-parent = <&PIC>;
-> +			gpios = <1 1c 1 1d 1 1e 1 1f>;
-> +			gpio-parent = <&CPM1_PIO>;
-> +		};
-> +
-> +		cam@4040000 {
-> +			compatible = "betaresearch,dbox2-cam";
-> +			reg = <4040000 20000>;
-> +			interrupts = <6 2>;
-> +			interrupt-parent = <&PIC>;
-> +			gpios = <1 1c 1 1d 1 1e 1 1f>;
-> +			gpio-parent = <&CPM1_PIO>;
-> +		};
-
-Maybe gpios should have a length field?  Or maybe we should just
-phandle to a separate node under the gpio controller node.  What happens if
-a device sits on two different gpio-parents?
-
-> +		flash@8000000 {
-> +			// Flash also has info about model needed by setup
-> +			compatible = "cfi-flash",
-> +				     "betaresearch,dbox2-config";
-
-What does dbox2-config mean?
-
-> +			ovpartition@20000 {
-> +				label = "Flash without bootloader";
-> +				reg = <20000 7e0000>;
-> +			};
-> +			ovpartition@0 {
-> +				label = "Complete Flash";
-> +				reg = <0 800000>;
-> +				read-only;
-> +			};
-
-What is "ovpartition"?
-
-> +		wdt@0 {
-> +			device_type = "watchdog";
-> +			compatible = "fsl,mpc823-wdt",
-> +				     "fsl,pq1-wdt";
-> +			reg = <0 10>;
-> +		};
-
-No device_type.
-
-> +		cpm@9c0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges;
-> +			reg = <9c0 40>;
-> +			command-proc = <9c0>;
-
-command-proc is obsolete.
-
-> +			muram@2000 {
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
-> +				ranges = <0 2000 2000>;
-> +
-> +				data@0 {
-> +					compatible = "fsl,cpm-muram-data";
-> +					reg = <0 1c00>;
-> +				};
-> +			};
-
-Should have compatible of fsl,cpm-muram on the muram node as well, even
-though the current code doesn't use it.
-
-> +			// Port D is LCD exclusive. Don't export as GPIO
-> +			CPM1_PIO: pio@970 {
-> +				compatible = "fsl,cpm1-pario";
-> +				reg = <970 180>;
-> +				num-ports = <3>;
-> +				#gpio-cells = <2>;
-> +			};
-
-Why are we doing things differently just because all of the pins on this
-port happen to be directed to one device?  If it's because the Linux GPIO
-API sucks, then either fix the API, or work around the suckage in software,
-not the device tree.
-
-> +			lcd@970 {
-> +				reg = <970 10>;
-> +				compatible = "samsung,ks0713";
-> +			};
-
-So some driver that matches on samsung,ks0713 has to know the details of the
-mpc8xx GPIO registers?
-
-> +			brg@9f0 {
-> +				compatible = "fsl,mpc823-brg",
-> +					     "fsl,cpm1-brg",
-> +					     "fsl,cpm-brg";
-> +				reg = <9f0 10>;
-> +			};
-
-Should have clock-frequency in the brg node.
-
-> +			i2c@860 {
-> +				compatible = "fsl,mpc823-i2c",
-> +					     "fsl,cpm1-i2c",
-> +					     "fsl,cpm-i2c";
-> +				reg = <860 20 3c80 30>;
-> +				interrupts = <10 3>;
-> +				interrupt-parent = <&CPM_PIC>;
-> +				fsl,cpm-command = <0010>;
-> +			};
-
-Should have #address-cells and #size-cells.
-
-> +enum dbox2_mid dbox2_get_mid(void)
-> +{
-> +	return dbox2_manuf_id;
-> +}
-> +EXPORT_SYMBOL_GPL(dbox2_get_mid);
-
-Honestly, you're claiming derived-work status by calling a function that
-returns an integer, that was read directly from hardware?
-
-> +	if (dbox2_manuf_id == DBOX2_MID_NOKIA)
-> +		np = of_find_node_by_path("/localbus@8000000/enx@0");
-> +	else
-> +		np = of_find_node_by_path("/localbus@8000000/gtx@0");
-> +
-> +	if (np) {
-> +		of_detach_node(np);
-> +		of_node_put(np);
-> +	}
-> +
-> +	if (dbox2_manuf_id == DBOX2_MID_PHILIPS)
-> +		np = of_find_node_by_path("/localbus@8000000/cam@4000000");
-> +	else
-> +		np = of_find_node_by_path("/localbus@8000000/cam@4040000");
-> +
-> +	if (np) {
-> +		of_detach_node(np);
-> +		of_node_put(np);
-> +	}
-> +}
-
-I'd use separate device trees (I only did this kind of thing in mpc885ads
-because it's dip-switchable), but whatever...
-
-> diff --git a/include/asm-powerpc/mpc8xx.h b/include/asm-powerpc/mpc8xx.h
-> index 2be014b..b6fd7d6 100644
-> --- a/include/asm-powerpc/mpc8xx.h
-> +++ b/include/asm-powerpc/mpc8xx.h
-> @@ -23,6 +23,10 @@
-> #include <platforms/8xx/mpc885ads.h>
-> #endif
+On Sat, Dec 22, 2007 at 08:58:21PM -0600, Timur Tabi wrote:
+> Scott Wood wrote:
 >
-> +#if defined(CONFIG_DBOX2)
-> +#include <platforms/8xx/dbox2.h>
-> +#endif
+>>> None of the SOC nodes in any DTS have a "compatible" entry.
+>>
+>> Not quite true; ep88xc, mpc8272ads, and pq2fads have them.
+>
+> Ah ok.  So what should the compatible entry for 8641 be?
+>
+> 	compatible = "fsl,mpc8641"
 
-This shouldn't be needed.
+Yes.
+
+> That looks a lot like what a compatible entry for the CPU should be.
+
+I guess technically the cpu should list something like fsl,e600 (or
+whatever suffix is relevant).
 
 -Scott
