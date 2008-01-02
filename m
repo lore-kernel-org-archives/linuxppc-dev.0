@@ -1,33 +1,31 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 946A1DDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 17:21:40 +1100 (EST)
-Received: from pd3mr2so.prod.shaw.ca
-	(pd3mr2so-qfe3.prod.shaw.ca [10.0.141.178]) by l-daemon
+Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 4411CDDE22
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 17:21:44 +1100 (EST)
+Received: from pd4mr4so.prod.shaw.ca
+	(pd4mr4so-qfe3.prod.shaw.ca [10.0.141.215]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JU0001YS702B9C0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Tue, 01 Jan 2008 23:21:38 -0700 (MST)
-Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
-	by pd3mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	with ESMTP id <0JU000DG1706YZ10@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 01 Jan 2008 23:21:42 -0700 (MST)
+Received: from pn2ml2so.prod.shaw.ca ([10.0.121.146])
+	by pd4mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JU0004FZ6ZYS150@pd3mr2so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Tue, 01 Jan 2008 23:21:37 -0700 (MST)
+	5 2006)) with ESMTP id <0JU000GJL700EG10@pd4mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Tue, 01 Jan 2008 23:21:42 -0700 (MST)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JU000JS76ZXIH10@l-daemon> for linuxppc-dev@ozlabs.org;
-	Tue, 01 Jan 2008 23:21:34 -0700 (MST)
-Date: Tue, 01 Jan 2008 23:21:25 -0700
+	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
+	2006))
+	with ESMTP id <0JU00031G6ZTZ110@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 01 Jan 2008 23:21:36 -0700 (MST)
+Date: Tue, 01 Jan 2008 23:21:19 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 2/4] USB: add Cypress c67x00 OTG controller core driver
-In-reply-to: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
+Subject: [PATCH v3 1/4] USB: add Cypress c67x00 low level interface code
 To: linux-usb-devel@lists.sourceforge.net, dbrownell@users.sourceforge.net,
 	gregkh@suse.de, linuxppc-dev@ozlabs.org, jacmet@sunsite.dk,
 	stern@rowland.harvard.edu
-Message-id: <20080102062125.15073.93313.stgit@trillian.secretlab.ca>
+Message-id: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
-References: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,29 +37,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-This patch add the core driver for the c67x00 USB OTG controller.  The core
-driver is responsible for the platform bus binding and creating either
-USB HCD or USB Gadget instances for each of the serial interface engines
-on the chip.
-
-This driver does not directly implement the HCD or gadget behaviours; it
-just controls access to the chip.
+This patch adds the low level support code for the Cypress c67x00 family of
+OTG controllers.  The low level code is responsible for register access and
+implements the software protocol for communicating with the c67x00 device.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/usb/c67x00/c67x00-drv.c |  278 +++++++++++++++++++++++++++++++++++++++
- include/linux/usb/c67x00.h      |   45 ++++++
- 2 files changed, 323 insertions(+), 0 deletions(-)
+ drivers/usb/c67x00/c67x00-ll-hpi.c |  516 ++++++++++++++++++++++++++++++++++++
+ drivers/usb/c67x00/c67x00.h        |  242 +++++++++++++++++
+ 2 files changed, 758 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/c67x00/c67x00-drv.c b/drivers/usb/c67x00/c67x00-drv.c
+diff --git a/drivers/usb/c67x00/c67x00-ll-hpi.c b/drivers/usb/c67x00/c67x00-ll-hpi.c
 new file mode 100644
-index 0000000..0f0720a
+index 0000000..d6a95d6
 --- /dev/null
-+++ b/drivers/usb/c67x00/c67x00-drv.c
-@@ -0,0 +1,278 @@
++++ b/drivers/usb/c67x00/c67x00-ll-hpi.c
+@@ -0,0 +1,516 @@
 +/*
-+ * c67x00-drv.c: Cypress C67X00 USB Common infrastructure
++ * c67x00-ll-hpi.c: Cypress C67X00 USB Low level interface using HPI
 + *
 + * Copyright (C) 2006-2007 Barco N.V.
 + *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
@@ -83,271 +77,511 @@ index 0000000..0f0720a
 + * MA  02110-1301  USA.
 + */
 +
-+/*
-+ * This file implements the common infrastructure for using the c67x00.
-+ * It is both the link between the platform configuration and subdrivers and
-+ * the link between the common hardware parts and the subdrivers (e.g.
-+ * interrupt handling).
-+ *
-+ * The c67x00 has 2 SIE's (serial interface engine) wich can be configured
-+ * to be host, device or OTG (with some limitations, E.G. only SIE1 can be OTG).
-+ *
-+ * Depending on the platform configuration, the SIE's are created (setup_sie)
-+ * and the corresponding subdriver is initialized (c67x00_probe_sie).
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/list.h>
-+#include <linux/usb.h>
-+#include <linux/usb/c67x00.h>
 +#include <asm/io.h>
-+
++#include <asm/byteorder.h>
 +#include "c67x00.h"
 +
-+static struct platform_driver c67x00_driver;
++/* -------------------------------------------------------------------------- */
++/* Interface definitions */
 +
-+static void
-+c67x00_setup_sie(struct c67x00_sie *sie, struct c67x00_device *dev, int sie_num)
-+{
-+	static unsigned int id = 0;
++#define COMM_ACK			0x0FED
++#define COMM_NAK			0xDEAD
 +
-+	/* Fill in needed attributes */
-+	sie->pdev = platform_device_register_simple("c67x00_sie",
-+						    id++, NULL, 0);
-+	/* driver used in hub.c: hub_port_init */
-+	sie->pdev->dev.driver = &c67x00_driver.driver;
-+	spin_lock_init(&sie->lock);
-+	sie->dev = dev;
-+	sie->sie_num = sie_num;
-+	sie->mode = c67x00_sie_config(dev->pdata->sie_config, sie_num);
-+}
++#define COMM_CTRL_REG_ADDR		0x01BC
++#define COMM_CTRL_REG_DATA		0x01BE
++#define COMM_CTRL_REG_LOGIC		0x01C0
++#define COMM_WRITE_CTRL_REG		0xCE03
++#define COMM_READ_CTRL_REG		0xCE02
 +
-+static void c67x00_teardown_sie(struct c67x00_sie *sie)
-+{
-+	sie->pdev->dev.driver = NULL;
-+	platform_device_unregister(sie->pdev);
-+}
++#define COMM_RESET			0xFA50
++#define COMM_EXEC_INT			0xCE01
++#define COMM_INT_NUM			0x01C2
++/* Registers 0 to COMM_REGS-1 */
++#define COMM_R(x)			(0x01C4 + 2 * (x))
 +
-+/* ------------------------------------------------------------------ */
++#define HUSB_SIE_pCurrentTDPtr(x)	( (x) ? 0x01B2 : 0x01B0 )
++#define HUSB_SIE_pTDListDone_Sem(x)	( (x) ? 0x01B8 : 0x01B6 )
++#define HUSB_pEOT			0x01B4
 +
-+static void c67x00_probe_sie(struct c67x00_sie *sie)
-+{
-+	switch (c67x00_sie_config(sie->dev->pdata->sie_config, sie->sie_num)) {
-+	case C67X00_SIE_HOST:
-+		c67x00_hcd_probe(sie);
-+		break;
++/* Software interrupts */
++/* 114, 115: */
++#define HUSB_SIE_INIT_INT(x)		( (x) ? 0x0073 : 0x0072 )
++#define HUSB_RESET_INT			0x0074	/* 116 */
 +
-+	case C67X00_SIE_UNUSED:
-+		dev_info(sie_dev(sie),
-+			 "Not using SIE %d as requested\n", sie->sie_num);
-+		break;
-+
-+	default:
-+		dev_err(sie_dev(sie),
-+			"Unsupported configuration: 0x%x for SIE %d\n",
-+			c67x00_sie_config(sie->dev->pdata->sie_config,
-+					  sie->sie_num), sie->sie_num);
-+		break;
-+	}
-+}
-+
-+static void c67x00_remove_sie(struct c67x00_sie *sie)
-+{
-+	switch (c67x00_sie_config(sie->dev->pdata->sie_config, sie->sie_num)) {
-+	case C67X00_SIE_HOST:
-+		c67x00_hcd_remove(sie);
-+		break;
-+
-+	default:
-+		break;
-+	}
-+}
-+
-+/* ------------------------------------------------------------------ */
-+
-+static irqreturn_t c67x00_irq(int irq, void *__dev)
-+{
-+	struct c67x00_device *c67x00 = __dev;
-+	struct c67x00_sie *sie;
-+	u16 msg;
-+	int i, count = 8;
-+
-+	c67x00->int_status = c67x00_ll_hpi_status(c67x00);
-+	if (!c67x00->int_status)
-+		return IRQ_NONE;
-+
-+	while (c67x00->int_status != 0 && (count-- >= 0)) {
-+		c67x00_ll_irq(c67x00);
-+		for (i = 0; i < C67X00_SIES; i++) {
-+			sie = &c67x00->sie[i];
-+			msg = 0;
-+			spin_lock(&sie->lock);
-+			if (c67x00->int_status & SIEMSG_FLAG(sie->sie_num))
-+				msg = c67x00_ll_get_siemsg(c67x00,sie->sie_num);
-+			if (sie->irq)
-+				sie->irq(sie, msg);
-+			spin_unlock(&sie->lock);
-+		}
-+		c67x00->int_status = c67x00_ll_hpi_status(c67x00);
-+	}
-+
-+	if (c67x00->int_status)
-+		dev_warn(&c67x00->pdev->dev, "Not all interrupts handled! "
-+			 "status = 0x%04x\n", c67x00->int_status);
-+
-+	return IRQ_HANDLED;
-+}
-+
++#define SUSB_INIT_INT			0x0071
 +/* ---------------------------------------------------------------------
-+ * Platform bus binding
++ * HPI implementation
++ *
++ * The c67x00 chip also support control via SPI or HSS serial
++ * interfaces.  However, this driver assumes that register access can
++ * be performed from IRQ context.  While this is a safe assuption with
++ * the HPI interface, it is not true for the serial interfaces.
 + */
 +
-+static int __devinit c67x00_drv_probe(struct platform_device *pdev)
++/* HPI registers */
++#define HPI_DATA	0
++#define HPI_MAILBOX	1
++#define HPI_ADDR	2
++#define HPI_STATUS	3
++
++static inline u16 hpi_read_reg(struct c67x00_device *dev, int reg)
 +{
-+	struct c67x00_device *c67x00;
-+	struct c67x00_platform_data *pdata;
-+	struct resource *res, *res2;
-+	int ret, i;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res)
-+		return -ENODEV;
-+
-+	res2 = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (!res2)
-+		return -ENODEV;
-+
-+	pdata = pdev->dev.platform_data;
-+	if (!pdata)
-+		return -ENODEV;
-+
-+	c67x00 = kzalloc(sizeof(*c67x00), GFP_KERNEL);
-+	if (!c67x00)
-+		return -ENOMEM;
-+
-+	if (!request_mem_region(res->start, res->end - res->start + 1,
-+				pdev->name)) {
-+		dev_err(&pdev->dev, "Memory region busy\n");
-+		ret = -EBUSY;
-+		goto request_mem_failed;
-+	}
-+	c67x00->hpi.base = ioremap(res->start, res->end - res->start + 1);
-+	if (!c67x00->hpi.base) {
-+		dev_err(&pdev->dev, "Unable to map HPI registers\n");
-+		ret = -EIO;
-+		goto map_failed;
-+	}
-+
-+	spin_lock_init(&c67x00->hw_lock);
-+	c67x00->hpi.regstep = pdata->hpi_regstep;
-+	c67x00->pdata = pdev->dev.platform_data;
-+	c67x00->pdev = pdev;
-+
-+	for (i = 0; i < C67X00_SIES; i++)
-+		c67x00_setup_sie(&c67x00->sie[i], c67x00, i);
-+
-+	c67x00_ll_init(c67x00);
-+	c67x00_ll_hpi_reg_init(c67x00);
-+
-+	dev_info(&pdev->dev, "USB OTG controller, p:0x%x, v:0x%p, irq:%i\n",
-+	         res->start, c67x00->hpi.base, res2->start);
-+
-+	ret = request_irq(res2->start, c67x00_irq, 0, pdev->name, c67x00);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Cannot claim IRQ\n");
-+		goto request_irq_failed;
-+	}
-+
-+	ret = c67x00_ll_reset(c67x00);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Device reset failed\n");
-+		goto reset_failed;
-+	}
-+
-+	for (i = 0; i < C67X00_SIES; i++)
-+		c67x00_probe_sie(&c67x00->sie[i]);
-+
-+	platform_set_drvdata(pdev, c67x00);
-+
-+	return 0;
-+
-+ reset_failed:
-+	free_irq(res2->start, c67x00);
-+ request_irq_failed:
-+	iounmap(c67x00->hpi.base);
-+ map_failed:
-+	release_mem_region(res->start, res->end - res->start + 1);
-+ request_mem_failed:
-+	kfree(c67x00);
-+
-+	return ret;
++	return __raw_readw(dev->hpi.base + reg * dev->hpi.regstep);
 +}
 +
-+static int __devexit c67x00_drv_remove(struct platform_device *pdev)
++static inline void hpi_write_reg(struct c67x00_device *dev, int reg, u16 value)
 +{
-+	struct c67x00_device *c67x00 = platform_get_drvdata(pdev);
-+	struct resource *res;
++	__raw_writew(value, dev->hpi.base + reg * dev->hpi.regstep);
++}
++
++static inline u16 hpi_read_word_nolock(struct c67x00_device *dev, u16 reg)
++{
++	hpi_write_reg(dev, HPI_ADDR, reg);
++	return hpi_read_reg(dev, HPI_DATA);
++}
++
++static inline u16 hpi_read_word(struct c67x00_device *dev, u16 reg)
++{
++	u16 value;
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	value = hpi_read_word_nolock(dev, reg);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++
++	return value;
++}
++
++static inline void hpi_write_word_nolock(struct c67x00_device *dev, u16 reg,
++					 u16 value)
++{
++	hpi_write_reg(dev, HPI_ADDR, reg);
++	hpi_write_reg(dev, HPI_DATA, value);
++}
++
++static inline void hpi_write_word(struct c67x00_device *dev, u16 reg, u16 value)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	hpi_write_word_nolock(dev, reg, value);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++}
++
++/*
++ * Only data is little endian, addr has cpu endianess
++ */
++static inline void hpi_write_words_le16(struct c67x00_device *dev, u16 addr,
++					u16 * data, u16 count)
++{
++	unsigned long flags;
 +	int i;
 +
-+	for (i = 0; i < C67X00_SIES; i++) {
-+		c67x00_remove_sie(&c67x00->sie[i]);
-+		c67x00_teardown_sie(&c67x00->sie[i]);
++	spin_lock_irqsave(&dev->hw_lock, flags);
++
++	hpi_write_reg(dev, HPI_ADDR, addr);
++	for (i = 0; i < count; i++)
++		hpi_write_reg(dev, HPI_DATA, cpu_to_le16(*data++));
++
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++}
++
++/*
++ * Only data is little endian, addr has cpu endianess
++ */
++static inline void hpi_read_words_le16(struct c67x00_device *dev, u16 addr,
++				       u16 * data, u16 count)
++{
++	unsigned long flags;
++	int i;
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	hpi_write_reg(dev, HPI_ADDR, addr);
++	for (i = 0; i < count; i++)
++		*data++ = le16_to_cpu(hpi_read_reg(dev, HPI_DATA));
++
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++}
++
++static inline void hpi_set_bits(struct c67x00_device *dev, u16 reg, u16 mask)
++{
++	u16 value;
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	value = hpi_read_word_nolock(dev, reg);
++	hpi_write_word_nolock(dev, reg, value | mask);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++}
++
++static inline void hpi_clear_bits(struct c67x00_device *dev, u16 reg, u16 mask)
++{
++	u16 value;
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	value = hpi_read_word_nolock(dev, reg);
++	hpi_write_word_nolock(dev, reg, value & ~mask);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++}
++
++static inline u16 hpi_recv_mbox(struct c67x00_device *dev)
++{
++	u16 value;
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	value = hpi_read_reg(dev, HPI_MAILBOX);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++
++	return value;
++}
++
++static inline u16 hpi_send_mbox(struct c67x00_device *dev, u16 value)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	hpi_write_reg(dev, HPI_MAILBOX, value);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++
++	return value;
++}
++
++u16 c67x00_ll_hpi_status(struct c67x00_device * dev)
++{
++	u16 value;
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->hw_lock, flags);
++	value = hpi_read_reg(dev, HPI_STATUS);
++	spin_unlock_irqrestore(&dev->hw_lock, flags);
++
++	return value;
++}
++
++void c67x00_ll_hpi_reg_init(struct c67x00_device *dev)
++{
++	int i;
++
++	hpi_recv_mbox(dev);
++	c67x00_ll_hpi_status(dev);
++	hpi_write_word(dev, HPI_IRQ_ROUTING_REG, 0);
++
++	for (i=0; i<C67X00_SIES; i++) {
++		hpi_write_word(dev, SIEMSG_REG(i), 0);
++		hpi_read_word(dev, SIEMSG_REG(i));
++	}
++}
++
++void c67x00_ll_hpi_enable_sofeop(struct c67x00_sie *sie)
++{
++	hpi_set_bits(sie->dev, HPI_IRQ_ROUTING_REG,
++		     SOFEOP_TO_HPI_EN(sie->sie_num));
++}
++
++void c67x00_ll_hpi_disable_sofeop(struct c67x00_sie *sie)
++{
++	hpi_clear_bits(sie->dev, HPI_IRQ_ROUTING_REG,
++		       SOFEOP_TO_HPI_EN(sie->sie_num));
++}
++
++/* -------------------------------------------------------------------------- */
++/* Transactions */
++
++static inline u16 ll_recv_msg(struct c67x00_device *dev)
++{
++	u16 res;
++
++	res = wait_for_completion_timeout(&dev->lcp.msg_received, 5 * HZ);
++	WARN_ON(!res);
++
++	return (res == 0) ? -EIO : 0;
++}
++
++/* -------------------------------------------------------------------------- */
++
++u16 c67x00_comm_read_ctrl_reg(struct c67x00_device * dev, u16 addr)
++{
++	unsigned long msg, res;
++	int rc;
++
++	mutex_lock(&dev->lcp.mutex);
++	hpi_write_word(dev, COMM_CTRL_REG_ADDR, addr);
++	hpi_send_mbox(dev, COMM_READ_CTRL_REG);
++	rc = ll_recv_msg(dev);
++
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
++
++	msg = dev->lcp.last_msg;
++	if (msg != COMM_ACK) {
++		dev_warn(&dev->pdev->dev, "COMM_READ_CTRL_REG didn't ACK!\n");
++		res = 0;
++	} else {
++		res = hpi_read_word(dev, COMM_CTRL_REG_DATA);
++	}
++	mutex_unlock(&dev->lcp.mutex);
++	return res;
++}
++
++int c67x00_comm_exec_int(struct c67x00_device *dev, u16 nr,
++			 struct c67x00_lcp_int_data *data)
++{
++	int i, rc;
++
++	mutex_lock(&dev->lcp.mutex);
++	hpi_write_word(dev, COMM_INT_NUM, nr);
++	for (i = 0; i < COMM_REGS; i++)
++		hpi_write_word(dev, COMM_R(i), data->regs[i]);
++	hpi_send_mbox(dev, COMM_EXEC_INT);
++	rc = ll_recv_msg(dev);
++	mutex_unlock(&dev->lcp.mutex);
++
++	return rc;
++}
++
++/* -------------------------------------------------------------------------- */
++/* General functions */
++
++u16 c67x00_ll_get_siemsg(struct c67x00_device *dev, int sie)
++{
++	return hpi_read_word(dev, SIEMSG_REG(sie));
++}
++
++void c67x00_ll_set_siemsg(struct c67x00_device *dev, int sie, u16 val)
++{
++	hpi_write_word(dev, SIEMSG_REG(sie), val);
++}
++
++u16 c67x00_ll_get_usb_ctl(struct c67x00_sie *sie)
++{
++	return hpi_read_word(sie->dev, USB_CTL_REG(sie->sie_num));
++}
++
++/* -------------------------------------------------------------------------- */
++/* Host specific functions */
++
++void c67x00_ll_set_husb_eot(struct c67x00_device *dev, u16 value)
++{
++	mutex_lock(&dev->lcp.mutex);
++	hpi_write_word(dev, HUSB_pEOT, value);
++	mutex_unlock(&dev->lcp.mutex);
++}
++
++static inline void c67x00_ll_husb_sie_init(struct c67x00_sie *sie)
++{
++	struct c67x00_device *dev = sie->dev;
++	struct c67x00_lcp_int_data data;
++	int rc;
++
++	rc = c67x00_comm_exec_int(dev, HUSB_SIE_INIT_INT(sie->sie_num), &data);
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
++}
++
++void c67x00_ll_husb_reset(struct c67x00_sie *sie, int port)
++{
++	struct c67x00_device *dev = sie->dev;
++	struct c67x00_lcp_int_data data;
++	int rc;
++
++	data.regs[0] = 50;	/* Reset USB port for 50ms */
++	data.regs[1] = port | (sie->sie_num << 1);
++	rc = c67x00_comm_exec_int(dev, HUSB_RESET_INT, &data);
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
++}
++
++void c67x00_ll_husb_set_current_td(struct c67x00_sie *sie, u16 addr)
++{
++	hpi_write_word(sie->dev, HUSB_SIE_pCurrentTDPtr(sie->sie_num), addr);
++}
++
++u16 c67x00_ll_husb_get_current_td(struct c67x00_sie *sie)
++{
++	return hpi_read_word(sie->dev, HUSB_SIE_pCurrentTDPtr(sie->sie_num));
++}
++
++/**
++ * c67x00_ll_husb_clear_status - clear the host status bits
++ */
++void c67x00_ll_husb_clear_status(struct c67x00_sie *sie, u16 bits)
++{
++	hpi_write_word(sie->dev, HOST_STAT_REG(sie->sie_num), bits);
++}
++
++u16 c67x00_ll_husb_get_status(struct c67x00_sie *sie)
++{
++	return hpi_read_word(sie->dev, HOST_STAT_REG(sie->sie_num));
++}
++
++u16 c67x00_ll_husb_get_frame(struct c67x00_sie * sie)
++{
++	return hpi_read_word(sie->dev, HOST_FRAME_REG(sie->sie_num));
++}
++
++void c67x00_ll_husb_init_host_port(struct c67x00_sie *sie)
++{
++	/* Set port into host mode */
++	hpi_set_bits(sie->dev, USB_CTL_REG(sie->sie_num), HOST_MODE);
++	c67x00_ll_husb_sie_init(sie);
++	/* Clear interrupts */
++	c67x00_ll_husb_clear_status(sie, HOST_STAT_MASK);
++	/* Check */
++	if (!(hpi_read_word(sie->dev, USB_CTL_REG(sie->sie_num)) & HOST_MODE))
++		dev_warn(sie_dev(sie),
++			 "SIE %d not set to host mode\n", sie->sie_num);
++}
++
++void c67x00_ll_husb_reset_port(struct c67x00_sie *sie, int port)
++{
++	/* Clear connect change */
++	c67x00_ll_husb_clear_status(sie, PORT_CONNECT_CHANGE(port));
++
++	/* Enable interrupts */
++	hpi_set_bits(sie->dev, HPI_IRQ_ROUTING_REG,
++		     SOFEOP_TO_CPU_EN(sie->sie_num));
++	hpi_set_bits(sie->dev, HOST_IRQ_EN_REG(sie->sie_num),
++		     SOF_EOP_IRQ_EN | DONE_IRQ_EN);
++
++	/* Enable pull down transistors */
++	hpi_set_bits(sie->dev, USB_CTL_REG(sie->sie_num), PORT_RES_EN(port));
++}
++
++/* -------------------------------------------------------------------------- */
++void c67x00_ll_susb_init(struct c67x00_sie *sie)
++{
++	struct c67x00_device *dev = sie->dev;
++	struct c67x00_lcp_int_data data;
++	int rc;
++
++	data.regs[1] = 1;	/* full speed */
++	data.regs[2] = sie->sie_num + 1;
++	rc = c67x00_comm_exec_int(dev, SUSB_INIT_INT, &data);
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
++
++	hpi_clear_bits(dev, HPI_IRQ_ROUTING_REG,
++		       SOFEOP_TO_HPI_EN(sie->sie_num));
++	hpi_set_bits(dev, HPI_IRQ_ROUTING_REG, SOFEOP_TO_CPU_EN(sie->sie_num));
++}
++
++/* -------------------------------------------------------------------------- */
++
++void c67x00_ll_irq(struct c67x00_device *dev)
++{
++	if ((dev->int_status & MBX_OUT_FLG) == 0)
++		return;
++
++	dev->lcp.last_msg = hpi_recv_mbox(dev);
++	complete(&dev->lcp.msg_received);
++}
++
++/* -------------------------------------------------------------------------- */
++
++int c67x00_ll_reset(struct c67x00_device *dev)
++{
++	int rc;
++
++	mutex_lock(&dev->lcp.mutex);
++	hpi_send_mbox(dev, COMM_RESET);
++	rc = ll_recv_msg(dev);
++	mutex_unlock(&dev->lcp.mutex);
++
++	return rc;
++}
++
++/* -------------------------------------------------------------------------- */
++
++/**
++ * c67x00_write_mem_le16 - write into c67x00 memory
++ * Only data is little endian, addr has cpu endianess.
++ */
++void c67x00_ll_hpi_write_mem_le16(struct c67x00_device *dev, u16 addr, int len,
++				  char *data)
++{
++	/* Sanity check */
++	if (addr + len > 0xffff) {
++		dev_err(&dev->pdev->dev,
++			"Trying to write beyond writable region!\n");
++		return;
 +	}
 +
-+	c67x00_ll_release(c67x00);
++	if (addr & 0x01) {
++		/* unaligned access */
++		u16 tmp;
++		tmp = hpi_read_word(dev, addr - 1);
++		tmp = (tmp & 0x00ff) | (*data++ << 8);
++		hpi_write_word(dev, addr - 1, tmp);
++		addr++;
++		len--;
++	}
 +
-+	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (res)
-+		free_irq(res->start, c67x00);
++	hpi_write_words_le16(dev, addr, (u16 *) data, len / 2);
++	data += len & ~0x01;
++	addr += len & ~0x01;
++	len &= 0x01;
 +
-+	iounmap(c67x00->hpi.base);
++	if (len) {
++		u16 tmp;
++		tmp = hpi_read_word(dev, addr);
++		tmp = (tmp & 0xff00) | (*data++);
++		hpi_write_word(dev, addr, tmp);
++		addr++;
++		len--;
++	}
 +
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (res)
-+		release_mem_region(res->start, res->end - res->start + 1);
-+
-+	kfree(c67x00);
-+
-+	return 0;
 +}
 +
-+static struct platform_driver c67x00_driver = {
-+	.probe = c67x00_drv_probe,
-+	.remove = __devexit_p(c67x00_drv_remove),
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = "c67x00",
-+	},
-+};
-+
-+static int __init c67x00_init(void)
++/**
++ * c67x00_ll_hpi_read_mem_le16 - read from c67x00 memory
++ * Only data is little endian, addr has cpu endianess.
++ */
++void c67x00_ll_hpi_read_mem_le16(struct c67x00_device *dev, u16 addr, int len,
++				 char *data)
 +{
-+	if (usb_disabled())
-+		return -ENODEV;
++	if (addr & 0x01) {
++		/* unaligned access */
++		u16 tmp;
++		tmp = hpi_read_word(dev, addr - 1);
++		*data++ = (tmp >> 8) & 0x00ff;
++		addr++;
++		len--;
++	}
 +
-+	return platform_driver_register(&c67x00_driver);
++	hpi_read_words_le16(dev, addr, (u16 *) data, len / 2);
++	data += len & ~0x01;
++	addr += len & ~0x01;
++	len &= 0x01;
++
++	if (len) {
++		u16 tmp;
++		tmp = hpi_read_word(dev, addr);
++		*data++ = tmp & 0x00ff;
++		addr++;
++		len--;
++	}
 +}
-+module_init(c67x00_init);
 +
-+static void __exit c67x00_exit(void)
++/* -------------------------------------------------------------------------- */
++
++void c67x00_ll_init(struct c67x00_device *dev)
 +{
-+	platform_driver_unregister(&c67x00_driver);
++	mutex_init(&dev->lcp.mutex);
++	init_completion(&dev->lcp.msg_received);
 +}
-+module_exit(c67x00_exit);
 +
-+MODULE_AUTHOR("Peter Korsgaard, Jan Veldeman, Grant Likely");
-+MODULE_DESCRIPTION("Cypress C67X00 USB Controller Driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/usb/c67x00.h b/include/linux/usb/c67x00.h
++void c67x00_ll_release(struct c67x00_device *dev)
++{
++}
+diff --git a/drivers/usb/c67x00/c67x00.h b/drivers/usb/c67x00/c67x00.h
 new file mode 100644
-index 0000000..80b1a87
+index 0000000..00a38df
 --- /dev/null
-+++ b/include/linux/usb/c67x00.h
-@@ -0,0 +1,45 @@
++++ b/drivers/usb/c67x00/c67x00.h
+@@ -0,0 +1,242 @@
 +/*
-+ * usb_c67x00.h: platform definitions for the Cypress C67X00 USB chip
++ * c67x00.h: Cypress C67X00 USB register and field definitions
 + *
 + * Copyright (C) 2006-2007 Barco N.V.
++ *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
++ *    based on multiple host controller drivers inside the linux kernel.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -365,27 +599,222 @@ index 0000000..80b1a87
 + * MA  02110-1301  USA.
 + */
 +
-+#ifndef _LINUX_USB_C67X00_H
-+#define _LINUX_USB_C67X00_H
++#ifndef _USB_C67X00_H
++#define _USB_C67X00_H
 +
-+/* SIE configuration */
-+#define C67X00_SIE_UNUSED	0
-+#define C67X00_SIE_HOST		1
-+#define C67X00_SIE_PERIPHERAL	2
++#include <linux/interrupt.h>
++#include <linux/list.h>
++#include <linux/platform_device.h>
++#include <linux/completion.h>
++#include <linux/mutex.h>
 +
-+#define c67x00_sie_config(config, n)  (((config)>>(4*(n)))&0x3)
++/* ---------------------------------------------------------------------
++ * Cypress C67x00 register definitions
++ */
 +
-+#define C67X00_SIE1_UNUSED	(C67X00_SIE_UNUSED	<< 0)
-+#define C67X00_SIE1_HOST	(C67X00_SIE_HOST	<< 0)
-+#define C67X00_SIE1_PERIPHERAL	(C67X00_SIE_PERIPHERAL	<< 0)
++/* Processor control registers */
++/* =========================== */
 +
-+#define C67X00_SIE2_UNUSED	(C67X00_SIE_UNUSED	<< 4)
-+#define C67X00_SIE2_HOST	(C67X00_SIE_HOST	<< 4)
-+#define C67X00_SIE2_PERIPHERAL	(C67X00_SIE_PERIPHERAL	<< 4)
++/* Hardware Revision Register */
++#define HW_REV_REG		0xC004
 +
-+struct c67x00_platform_data {
-+	int sie_config;			/* SIEs config (C67X00_SIEx_*) */
-+	unsigned long hpi_regstep;	/* Step between HPI registers  */
++/* General USB registers */
++/* ===================== */
++
++/* USB Control Register */
++#define USB_CTL_REG(x)		( (x) ? 0xC0AA : 0xC08A )
++
++#define LOW_SPEED_PORT(x)	( (x) ? 0x0800 : 0x0400 )
++#define HOST_MODE		0x0200
++#define PORT_RES_EN(x)		( (x) ? 0x0100 : 0x0080 )
++#define SOF_EOP_EN(x)		( (x) ? 0x0002 : 0x0001 )
++
++/* USB Host only registers */
++/* ======================= */
++
++/* Host n Control Register */
++#define HOST_CTL_REG(x)		((x) ? 0xC0A0 : 0xC080)
++
++#define PREAMBLE_EN		0x0080	/* Preamble enable */
++#define SEQ_SEL			0x0040	/* Data Toggle Sequence Bit Select */
++#define ISO_EN			0x0010	/* Isochronous enable  */
++#define ARM_EN			0x0001	/* Arm operation */
++
++/* Host n Interrupt Enable Register */
++#define HOST_IRQ_EN_REG(x)	( (x) ? 0xC0AC : 0xC08C)
++
++#define SOF_EOP_IRQ_EN		0x0200	/* SOF/EOP Interrupt Enable  */
++#define DONE_IRQ_EN		0x0001	/* Done Interrupt Enable  */
++
++/* Host n status register */
++#define HOST_STAT_REG(x)	( (x) ? 0xC0B0 : 0xC090 )
++
++#define HOST_STAT_MASK		0x02FD
++#define SOF_EOP_IRQ_FLG		0x0200
++#define PORT_CONNECT_CHANGE(x)	( (x) ? 0x0020 : 0x0010 )
++#define PORT_SE0_STATUS(x)	( (x) ? 0x0008 : 0x0004 )
++
++/* Host Frame Register */
++#define HOST_FRAME_REG(x)	( (x) ? 0xC0B6 : 0xC096 )
++
++#define HOST_FRAME_MASK		0x07FF
++
++/* HPI registers */
++/* ============= */
++
++/* HPI Status register */
++#define SOFEOP_FLG(x)		(1 << ( (x) ? 12 : 10 ))
++#define SIEMSG_FLAG(x)		(1 << (4 + (x)))
++#define MBX_OUT_FLG		0x0001	/* Message out available */
++
++/* Interrupt routing register */
++#define HPI_IRQ_ROUTING_REG	0x0142
++
++#define SOFEOP_TO_HPI_EN(x)	( (x) ? 0x2000 : 0x0800 )
++#define SOFEOP_TO_CPU_EN(x)	( (x) ? 0x1000 : 0x0400 )
++
++/* SIE msg registers */
++#define SIEMSG_REG(x)		( (x) ? 0x0148 : 0x0144 )
++
++#define HUSB_TDListDone		0x1000
++
++#define CY_HCD_BUF_ADDR		0x500	/* Base address for host */
++#define SIE_TD_SIZE		0x200	/* size of the td list */
++#define SIE_TD_BUF_SIZE		0x400	/* size of the data buffer */
++
++#define SIE_TD_OFFSET(host)	( (host) ? (SIE_TD_SIZE+SIE_TD_BUF_SIZE) : 0 )
++#define SIE_BUF_OFFSET(host)	(SIE_TD_OFFSET(host) + SIE_TD_SIZE)
++
++/* ---------------------------------------------------------------------
++ * Driver data structures
++ */
++
++struct c67x00_device;
++
++/**
++ * struct c67x00_lcp
++ */
++struct c67x00_lcp {
++	/* Internal use only */
++	struct mutex mutex;
++	struct completion msg_received;
++	u16 last_msg;
 +};
 +
-+#endif /* _LINUX_USB_C67X00_H */
++/**
++ * struct c67x00_lcp_data
++ */
++#define COMM_REGS 14
++struct c67x00_lcp_int_data {
++	u16 regs[COMM_REGS];
++};
++
++/**
++ * struct c67x00_sie - Common data associated with an SIE
++ * @lock: lock to protect this struct
++ * @private_data: subdriver dependent data
++ * @pdev: platform device associated with this SIE, created in c67x00-drv.c
++ * @irq: subdriver depenent irq handler, set NULL when not used
++ * @msg_received: called when an SIEmsg has been received
++ * @dev: link to common driver structure
++ * @sie_num: SIE number on chip, starting from 0
++ * @mode: SIE mode (host/peripheral/otg/not used)
++ *
++ * Each SIE has a separate platform_device associated with it, because the
++ * hcd needs such a device for itself (TODO: use a struct device instead
++ * of a new platform device).
++ */
++struct c67x00_sie {
++	/* Entries to be used by the subdrivers */
++	spinlock_t lock;	/* protect this structure */
++	void *private_data;
++	struct platform_device *pdev;
++	void (*irq) (struct c67x00_sie * sie, u16 msg);
++
++	/* Read only: */
++	struct c67x00_device *dev;
++	int sie_num;
++	int mode;
++};
++
++#define sie_dev(s)	(&(s)->pdev->dev)
++
++struct c67x00_hpi {
++	void __iomem *base;
++	int regstep;
++};
++
++#define C67X00_SIES	2
++#define C67X00_PORTS	2
++
++/**
++ * struct c67x00_device - Common data structure for a c67x00 instance
++ * @hpi: hpi addresses
++ * @sie: array of sie's on this chip
++ * @pdata: configuration provided by the platform
++ * @hw_lock: hardware lock
++ * @int_status: interrupt status register, only valid in_interrupt()
++ * @lcp: link control protocol dependent data
++ */
++struct c67x00_device {
++	struct c67x00_hpi hpi;
++	struct c67x00_sie sie[C67X00_SIES];
++	struct platform_device *pdev;
++	struct c67x00_platform_data *pdata;
++	spinlock_t hw_lock;
++
++	u16 int_status;
++	struct c67x00_lcp lcp;
++};
++
++/* ---------------------------------------------------------------------
++ * HCD setup and teardown hooks; defined here because these are the
++ * only routines which are called directly by the core driver.
++ */
++extern int c67x00_hcd_probe(struct c67x00_sie *sie);
++extern void c67x00_hcd_remove(struct c67x00_sie *sie);
++
++/* ---------------------------------------------------------------------
++ * Low level interface functions
++ */
++
++/* Host Port Interface (hpi) functions */
++u16 c67x00_ll_hpi_status(struct c67x00_device *dev);
++void c67x00_ll_hpi_reg_init(struct c67x00_device *dev);
++void c67x00_ll_hpi_enable_sofeop(struct c67x00_sie *sie);
++void c67x00_ll_hpi_disable_sofeop(struct c67x00_sie *sie);
++
++/* General functions */
++u16 c67x00_ll_get_siemsg(struct c67x00_device *dev, int sie);
++void c67x00_ll_set_siemsg(struct c67x00_device *dev, int sie, u16 val);
++u16 c67x00_ll_get_usb_ctl(struct c67x00_sie *sie);
++
++/* Host specific functions */
++void c67x00_ll_set_husb_eot(struct c67x00_device *dev, u16 value);
++void c67x00_ll_husb_reset(struct c67x00_sie *sie, int port);
++void c67x00_ll_husb_set_current_td(struct c67x00_sie *sie, u16 addr);
++u16 c67x00_ll_husb_get_current_td(struct c67x00_sie *sie);
++void c67x00_ll_husb_clear_status(struct c67x00_sie *sie, u16 bits);
++u16 c67x00_ll_husb_get_status(struct c67x00_sie *sie);
++u16 c67x00_ll_husb_get_frame(struct c67x00_sie *sie);
++void c67x00_ll_husb_init_host_port(struct c67x00_sie *sie);
++void c67x00_ll_husb_reset_port(struct c67x00_sie *sie, int port);
++
++/* Slave specific functions */
++void c67x00_ll_susb_init(struct c67x00_sie *sie);
++
++/* Read and write to memory */
++void c67x00_ll_hpi_write_mem_le16(struct c67x00_device *dev, u16 addr,
++				  int len, char *data);
++void c67x00_ll_hpi_read_mem_le16(struct c67x00_device *dev, u16 addr,
++				 int len, char *data);
++
++/* Called by c67x00_irq to handle lcp interrupts */
++void c67x00_ll_irq(struct c67x00_device *dev);
++
++/* Setup and teardown */
++void c67x00_ll_init(struct c67x00_device *dev);
++void c67x00_ll_release(struct c67x00_device *dev);
++int c67x00_ll_reset(struct c67x00_device *dev);
++
++#endif				/* _USB_C67X00_H */
