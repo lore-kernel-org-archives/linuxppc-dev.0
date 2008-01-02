@@ -1,20 +1,26 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8BB72DDED0
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 07:29:01 +1100 (EST)
-Message-ID: <477BF446.9070401@scram.de>
-Date: Wed, 02 Jan 2008 21:29:58 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <roland@redhat.com>
+Received: from QMTA04.emeryville.ca.mail.comcast.net
+	(qmta04.emeryville.ca.mail.comcast.net [76.96.30.40])
+	by ozlabs.org (Postfix) with ESMTP id 7820BDDE9B
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 08:09:07 +1100 (EST)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH/RFC] powerpc: DBox2 Board Support
-References: <476D61DB.2090201@scram.de>
-	<20080102180655.GB4398@loki.buserror.net>
-In-Reply-To: <20080102180655.GB4398@loki.buserror.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH -mm] compat_binfmt_elf Kconfig
+In-Reply-To: Sam Ravnborg's message of  Wednesday,
+	2 January 2008 20:10:30 +0100
+	<20080102191030.GA11217@uranus.ravnborg.org>
+References: <20071223183920.GA13976@elte.hu>
+	<20071223211603.3FFB126F8E7@magilla.localdomain>
+	<20071230163614.GB1384@elte.hu>
+	<20080102044157.A5CC526F99F@magilla.localdomain>
+	<20080102111431.GD14731@elte.hu>
+	<20080102191030.GA11217@uranus.ravnborg.org>
+Message-Id: <20080102210831.9F80426F9A0@magilla.localdomain>
+Date: Wed,  2 Jan 2008 13:08:31 -0800 (PST)
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,143 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+This patch should go in immediately after:
 
-> These unit addresses look wrong.
+	commit 5e45efc63e33ee2bae9ff4d500b53d3bf86d2b48
+	Author: Roland McGrath <roland@redhat.com>
 
-I know. These have (hopefully) been fixed in v3.
-
-> What does dbox2-config mean?
-
-I used it to search for the vendor info byte in the flash. It has been moved to the boot wrapper in v3.
-Later this should all be moved to u-boot, IMHO.
-
->> +			ovpartition@20000 {
->> +				label = "Flash without bootloader";
->> +				reg = <20000 7e0000>;
->> +			};
->> +			ovpartition@0 {
->> +				label = "Complete Flash";
->> +				reg = <0 800000>;
->> +				read-only;
->> +			};
-> 
-> What is "ovpartition"?
-
-Overlay partition. Is there a better way to specify this?
-
->> +			// Port D is LCD exclusive. Don't export as GPIO
->> +			CPM1_PIO: pio@970 {
->> +				compatible = "fsl,cpm1-pario";
->> +				reg = <970 180>;
->> +				num-ports = <3>;
->> +				#gpio-cells = <2>;
->> +			};
-> 
-> Why are we doing things differently just because all of the pins on this
-> port happen to be directed to one device?  If it's because the Linux GPIO
-> API sucks, then either fix the API, or work around the suckage in software,
-> not the device tree.
-> 
->> +			lcd@970 {
->> +				reg = <970 10>;
->> +				compatible = "samsung,ks0713";
->> +			};
-> 
-> So some driver that matches on samsung,ks0713 has to know the details of the
-> mpc8xx GPIO registers?
-
-The GPIO API only has an accessor for 1bit I/O. The LCD, however has for 1bit
-control lines and an 8bit port. The GPIO API currently is unable to handle this.
-
->> +			i2c@860 {
->> +				compatible = "fsl,mpc823-i2c",
->> +					     "fsl,cpm1-i2c",
->> +					     "fsl,cpm-i2c";
->> +				reg = <860 20 3c80 30>;
->> +				interrupts = <10 3>;
->> +				interrupt-parent = <&CPM_PIC>;
->> +				fsl,cpm-command = <0010>;
->> +			};
-> 
-> Should have #address-cells and #size-cells.
-
-In the meantime, i use the i2c patches from Jon Smirl and have added
-these parameters.
-
-> 
->> +enum dbox2_mid dbox2_get_mid(void)
->> +{
->> +	return dbox2_manuf_id;
->> +}
->> +EXPORT_SYMBOL_GPL(dbox2_get_mid);
-> 
-> Honestly, you're claiming derived-work status by calling a function that
-> returns an integer, that was read directly from hardware?
-
-Nope. It was a big fat hint not to use this value :). It has been moved to the
-device tree in the mean time.
-
-> I'd use separate device trees (I only did this kind of thing in mpc885ads
-> because it's dip-switchable), but whatever...
-
-I don't really like having to use different images on different DBoxes. It's
-already too much to have two images (there are two different flash layouts).
-People tend to brick their box by flashing the wrong image.
-
->> --- a/include/asm-powerpc/mpc8xx.h
->> +++ b/include/asm-powerpc/mpc8xx.h
->> @@ -23,6 +23,10 @@
->> #include <platforms/8xx/mpc885ads.h>
->> #endif
->>
->> +#if defined(CONFIG_DBOX2)
->> +#include <platforms/8xx/dbox2.h>
->> +#endif
-> 
-> This shouldn't be needed.
-
-Already gone in v3.
-
-> What happens if a device sits on two different gpio-parents?
-
-On the dbox2, there are even stranger devices. One is using iomaped address spaces, GPIO and an i2c control interface.
-Another one uses GPIO and an i2c control interface. For now, they appear twice in the device tree (once under i2c and 
-once under localbus or pio). Is there a better way to do this?
-
-localbus@8000000 {
-	cam@3,0 {
-		compatible = "betaresearch,dbox2-cam";
-		reg = <3 0 20000 6 0 20000>;
-		interrupts = <6 2>;
-		interrupt-parent = <&PIC>;
-		gpios = <1 1c 1 1d 1 1e 1 1f>;
-		gpio-parent = <&CPM1_PIO>;
-	};
-};
-soc@ff000000 {
-	cpm@9c0 {
-		CPM1_PIO: pio@950 {
-			fp@0,0 {
-				compatible = "betaresearch,dbox2-fp";
-				interrupts = <4 2>;
-				interrupt-parent = <&PIC>;
-				gpios = <0 e>;
-				gpio-parent = <&CPM1_PIO>;
-			};
-		};
-		i2c@860 {
-			fp@30 {
-				compatible = "betaresearch,dbox2-fp";
-				reg = <30>;
-			};
-			cam@37 {
-				compatible = "betaresearch,dbox2-cam";
-				reg = <37>;
-			};			
-		};
-	};
-};
+	    compat_binfmt_elf
 
 Thanks,
-Jochen
+Roland
+
+---
+[PATCH] compat_binfmt_elf Kconfig
+
+This adds Kconfig and Makefile bits to build fs/compat_binfmt_elf.c,
+just added.  Each arch that wants to use this file needs to add a
+"select COMPAT_BINFMT_ELF" line in its Kconfig bits that enable COMPAT.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ fs/Kconfig.binfmt |    4 ++++
+ fs/Makefile       |    1 +
+ 2 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
+index d4fc609..0000000 100644  
+--- a/fs/Kconfig.binfmt
++++ b/fs/Kconfig.binfmt
+@@ -23,6 +23,10 @@ config BINFMT_ELF
+ 	  ld.so (check the file <file:Documentation/Changes> for location and
+ 	  latest version).
+ 
++config COMPAT_BINFMT_ELF
++	bool
++	depends on COMPAT && MMU
++
+ config BINFMT_ELF_FDPIC
+ 	bool "Kernel support for FDPIC ELF binaries"
+ 	default y
+diff --git a/fs/Makefile b/fs/Makefile
+index 500cf15..0000000 100644  
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -39,6 +39,7 @@ obj-$(CONFIG_BINFMT_MISC)	+= binfmt_misc
+ obj-y				+= binfmt_script.o
+ 
+ obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
++obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
+ obj-$(CONFIG_BINFMT_ELF_FDPIC)	+= binfmt_elf_fdpic.o
+ obj-$(CONFIG_BINFMT_SOM)	+= binfmt_som.o
+ obj-$(CONFIG_BINFMT_FLAT)	+= binfmt_flat.o
