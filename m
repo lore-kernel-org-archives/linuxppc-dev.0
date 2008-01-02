@@ -1,34 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 530B4DDED1
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 17:22:44 +1100 (EST)
-Received: from pd4mr4so.prod.shaw.ca
-	(pd4mr4so-qfe3.prod.shaw.ca [10.0.141.215]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JU0006TV70B8Y90@l-daemon> for linuxppc-dev@ozlabs.org;
-	Tue, 01 Jan 2008 23:21:47 -0700 (MST)
-Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
-	by pd4mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JU000GOW709EG10@pd4mr4so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Tue, 01 Jan 2008 23:21:45 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
-	2006))
-	with ESMTP id <0JU0006CA7076Z20@l-daemon> for linuxppc-dev@ozlabs.org;
-	Tue, 01 Jan 2008 23:21:44 -0700 (MST)
-Date: Tue, 01 Jan 2008 23:21:35 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 4/4] USB: add Cypress c67x00 OTG controller driver to
-	Kconfig and Makefiles
-In-reply-to: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
-To: linux-usb-devel@lists.sourceforge.net, dbrownell@users.sourceforge.net,
-	gregkh@suse.de, linuxppc-dev@ozlabs.org, jacmet@sunsite.dk,
-	stern@rowland.harvard.edu
-Message-id: <20080102062135.15073.73117.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-References: <20080102062119.15073.22456.stgit@trillian.secretlab.ca>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 82EFFDDE04
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jan 2008 21:54:18 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JA1Ek-0006GA-7t
+	for linuxppc-dev@ozlabs.org; Wed, 02 Jan 2008 02:54:14 -0800
+Message-ID: <14576412.post@talk.nabble.com>
+Date: Wed, 2 Jan 2008 02:54:14 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-dev@ozlabs.org
+Subject: How to creat a .config file for a driver and How to use it in a
+	device driver?????
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,65 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-add c67x00 driver to build
+Hi all ...
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+i am writing a device driver in which the default configuration for LCD
+display i need to keep it in a .config file so that as the system boots it
+take the value from this file and does the initial configuration in the init
+of the driver. If user changes the .config file content in the next boot the
+LCD driver should take the new default configuration 
 
- drivers/usb/Makefile        |    2 ++
- drivers/usb/c67x00/Makefile |   11 +++++++++++
- drivers/usb/host/Kconfig    |   12 ++++++++++++
- 3 files changed, 25 insertions(+), 0 deletions(-)
+There will also be a run time config which could be changed at the rum time
+but will not change the default configuration.
 
-diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
-index 516a640..a419c42 100644
---- a/drivers/usb/Makefile
-+++ b/drivers/usb/Makefile
-@@ -17,6 +17,8 @@ obj-$(CONFIG_USB_SL811_HCD)	+= host/
- obj-$(CONFIG_USB_U132_HCD)	+= host/
- obj-$(CONFIG_USB_R8A66597_HCD)	+= host/
- 
-+obj-$(CONFIG_USB_C67X00_HCD)	+= c67x00/
-+
- obj-$(CONFIG_USB_ACM)		+= class/
- obj-$(CONFIG_USB_PRINTER)	+= class/
- 
-diff --git a/drivers/usb/c67x00/Makefile b/drivers/usb/c67x00/Makefile
-new file mode 100644
-index 0000000..7e6eb0b
---- /dev/null
-+++ b/drivers/usb/c67x00/Makefile
-@@ -0,0 +1,11 @@
-+#
-+# Makefile for Cypress C67X00 USB Controller
-+#
-+
-+ifeq ($(CONFIG_USB_DEBUG),y)
-+	EXTRA_CFLAGS		+= -DDEBUG
-+endif
-+
-+obj-$(CONFIG_USB_C67X00_HCD)	+= c67x00.o
-+
-+c67x00-objs := c67x00-drv.o c67x00-ll-hpi.o c67x00-hcd.o c67x00-sched.o
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index 49a91c5..49521d1 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -261,3 +261,15 @@ config USB_R8A66597_HCD
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called r8a66597-hcd.
- 
-+config USB_C67X00_HCD
-+	tristate "Cypress C67x00 HCD support"
-+	depends on USB
-+	help
-+	  The Cypress C67x00 (EZ-Host/EZ-OTG) chips are dual-role
-+	  host/peripheral/OTG USB controllers.
-+
-+	  Enable this option to support this chip in host controller mode.
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called c67x00.
+
+i am writing a LCD driver for PPC arch i need to know that how should i
+creat a .config file and How should i use it my device driver. ??????
+
+If you had an exprience in this regard please do share with me ...
+
+----Misbah <><
+-- 
+View this message in context: http://www.nabble.com/How-to-creat-a-.config-file-for-a-driver-and-How-to-use-it-in-a-device-driver------tp14576412p14576412.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
