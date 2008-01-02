@@ -1,33 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 3B945DDEE1
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 06:38:12 +1100 (EST)
-Received: from pd2mr6so.prod.shaw.ca (pd2mr6so-qfe3.prod.shaw.ca [10.0.141.9])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JU10094L7V17300@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 02 Jan 2008 12:37:49 -0700 (MST)
-Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
-	by pd2mr6so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JU100JS87NCA400@pd2mr6so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Wed, 02 Jan 2008 12:33:16 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JU100E797NBJ550@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 02 Jan 2008 12:33:12 -0700 (MST)
-Date: Wed, 02 Jan 2008 12:33:03 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 5/5] [POWERPC] 8xxx and embedded6xx: Use machine_*_initcall()
-	hooks in platform code
-In-reply-to: <20080102191135.24178.99973.stgit@trillian.secretlab.ca>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
-	vitb@kernel.crashing.org, galak@kernel.crashing.org, olof@lixom.net
-Message-id: <20080102193256.24178.18507.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-References: <20080102191135.24178.99973.stgit@trillian.secretlab.ca>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 261DFDDE39
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 06:40:49 +1100 (EST)
+Message-ID: <477BE8F8.9030804@scram.de>
+Date: Wed, 02 Jan 2008 20:41:44 +0100
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 4/5] Convert PowerPC MPC i2c to of_platform_driver from
+	platform_driver
+References: <20071220044136.20091.70984.stgit@terra.home>
+	<20071220044144.20091.35917.stgit@terra.home>
+In-Reply-To: <20071220044144.20091.35917.stgit@terra.home>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,288 +25,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Hi Jon,
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+> Convert MPC i2c driver from being a platform_driver to an open firmware version. Error returns were improved. Routine names were changed from fsl_ to mpc_ to make them match the file name
 
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    5 +----
- arch/powerpc/platforms/82xx/pq2fads.c        |    5 +----
- arch/powerpc/platforms/83xx/mpc832x_mds.c    |    5 +----
- arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   11 ++---------
- arch/powerpc/platforms/83xx/mpc834x_mds.c    |    5 +----
- arch/powerpc/platforms/83xx/mpc836x_mds.c    |    5 +----
- arch/powerpc/platforms/83xx/mpc837x_mds.c    |    5 +----
- arch/powerpc/platforms/85xx/mpc85xx_ads.c    |    5 +----
- arch/powerpc/platforms/85xx/mpc85xx_cds.c    |    6 +-----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c    |    5 +----
- arch/powerpc/platforms/8xx/mpc86xads_setup.c |    5 ++---
- arch/powerpc/platforms/embedded6xx/ls_uart.c |    5 +----
- 12 files changed, 14 insertions(+), 53 deletions(-)
+I did the same for my i2c-cpm. Tested with the frontprocessor driver (dbox2 specific) converted to new style. I'll post the new i2c-cpm, as well.
 
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index fd83440..3fce6b3 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -165,14 +165,11 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc8272_ads))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 	return 0;
- }
--device_initcall(declare_of_platform_devices);
-+machine_device_initcall(mpc8272_ads, declare_of_platform_devices);
- 
- /*
-  * Called very early, device-tree isn't unflattened
-diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
-index 1be5005..68196e3 100644
---- a/arch/powerpc/platforms/82xx/pq2fads.c
-+++ b/arch/powerpc/platforms/82xx/pq2fads.c
-@@ -176,14 +176,11 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
--	if (!machine_is(pq2fads))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 	return 0;
- }
--device_initcall(declare_of_platform_devices);
-+machine_device_initcall(pq2fads, declare_of_platform_devices);
- 
- define_machine(pq2fads)
- {
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 1e570bb..dbdd4ad 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -110,15 +110,12 @@ static struct of_device_id mpc832x_ids[] = {
- 
- static int __init mpc832x_declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc832x_mds))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, mpc832x_ids, NULL);
- 
- 	return 0;
- }
--device_initcall(mpc832x_declare_of_platform_devices);
-+machine_device_initcall(mpc832x_mds, mpc832x_declare_of_platform_devices);
- 
- static void __init mpc832x_sys_init_IRQ(void)
- {
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index ffb2e93..1b57028 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -63,9 +63,6 @@ static struct spi_board_info mpc832x_spi_boardinfo = {
- 
- static int __init mpc832x_spi_init(void)
- {
--	if (!machine_is(mpc832x_rdb))
--		return 0;
--
- 	par_io_config_pin(3,  0, 3, 0, 1, 0); /* SPI1 MOSI, I/O */
- 	par_io_config_pin(3,  1, 3, 0, 1, 0); /* SPI1 MISO, I/O */
- 	par_io_config_pin(3,  2, 3, 0, 1, 0); /* SPI1 CLK,  I/O */
-@@ -79,8 +76,7 @@ static int __init mpc832x_spi_init(void)
- 			    mpc83xx_spi_activate_cs,
- 			    mpc83xx_spi_deactivate_cs);
- }
--
--device_initcall(mpc832x_spi_init);
-+machine_device_initcall(mpc832x_rdb, mpc832x_spi_init);
- 
- /* ************************************************************************
-  *
-@@ -123,15 +119,12 @@ static struct of_device_id mpc832x_ids[] = {
- 
- static int __init mpc832x_declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc832x_rdb))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, mpc832x_ids, NULL);
- 
- 	return 0;
- }
--device_initcall(mpc832x_declare_of_platform_devices);
-+machine_device_initcall(mpc832x_rdb, mpc832x_declare_of_platform_devices);
- 
- void __init mpc832x_rdb_init_IRQ(void)
- {
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-index 459fb72..2b8a0a3 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-@@ -115,13 +115,10 @@ static struct of_device_id mpc834x_ids[] = {
- 
- static int __init mpc834x_declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc834x_mds))
--		return 0;
--
- 	of_platform_bus_probe(NULL, mpc834x_ids, NULL);
- 	return 0;
- }
--device_initcall(mpc834x_declare_of_platform_devices);
-+machine_device_initcall(mpc834x_mds, mpc834x_declare_of_platform_devices);
- 
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 2ac9890..db491ec 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -141,15 +141,12 @@ static struct of_device_id mpc836x_ids[] = {
- 
- static int __init mpc836x_declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc836x_mds))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, mpc836x_ids, NULL);
- 
- 	return 0;
- }
--device_initcall(mpc836x_declare_of_platform_devices);
-+machine_device_initcall(mpc836x_mds, mpc836x_declare_of_platform_devices);
- 
- static void __init mpc836x_mds_init_IRQ(void)
- {
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index 9cdc32b..cfd0548 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -50,15 +50,12 @@ static struct of_device_id mpc837x_ids[] = {
- 
- static int __init mpc837x_declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc837x_mds))
--		return 0;
--
- 	/* Publish of_device */
- 	of_platform_bus_probe(NULL, mpc837x_ids, NULL);
- 
- 	return 0;
- }
--device_initcall(mpc837x_declare_of_platform_devices);
-+machine_device_initcall(mpc837x_mds, mpc837x_declare_of_platform_devices);
- 
- static void __init mpc837x_mds_init_IRQ(void)
- {
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index bccdc25..a3fa1b0 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -233,13 +233,10 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc85xx_ads))
--		return 0;
--
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 	return 0;
- }
--device_initcall(declare_of_platform_devices);
-+machine_device_initcall(mpc85xx_ads, declare_of_platform_devices);
- 
- /*
-  * Called very early, device-tree isn't unflattened
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 4d063ee..8b1de78 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -222,9 +222,6 @@ static int mpc85xx_cds_8259_attach(void)
- 	struct device_node *cascade_node = NULL;
- 	int cascade_irq;
- 
--	if (!machine_is(mpc85xx_cds))
--		return 0;
--
- 	/* Initialize the i8259 controller */
- 	for_each_node_by_type(np, "interrupt-controller")
- 		if (of_device_is_compatible(np, "chrp,iic")) {
-@@ -262,8 +259,7 @@ static int mpc85xx_cds_8259_attach(void)
- 
- 	return 0;
- }
--
--device_initcall(mpc85xx_cds_8259_attach);
-+machine_device_initcall(mpc85xx_cds, mpc85xx_cds_8259_attach);
- 
- #endif /* CONFIG_PPC_I8259 */
- 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index e6c63a5..9f4f3aa 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -144,15 +144,12 @@ static struct of_device_id mpc85xx_ids[] = {
- 
- static int __init mpc85xx_publish_devices(void)
- {
--	if (!machine_is(mpc85xx_mds))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL,mpc85xx_ids,NULL);
- 
- 	return 0;
- }
--device_initcall(mpc85xx_publish_devices);
-+machine_device_initcall(mpc85xx_mds, mpc85xx_publish_devices);
- 
- static void __init mpc85xx_mds_pic_init(void)
- {
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index d2927a4..d7965f8 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -128,12 +128,11 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
--	if (machine_is(mpc86x_ads))
--		of_platform_bus_probe(NULL, of_bus_ids, NULL);
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 
- 	return 0;
- }
--device_initcall(declare_of_platform_devices);
-+machine_device_initcall(mpc86x_ads, declare_of_platform_devices);
- 
- define_machine(mpc86x_ads) {
- 	.name			= "MPC86x ADS",
-diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-index c99264c..9d891bd 100644
---- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
-+++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-@@ -117,9 +117,6 @@ static int __init ls_uarts_init(void)
- 	phys_addr_t phys_addr;
- 	int len;
- 
--	if (!machine_is(linkstation))
--		return 0;
--
- 	avr = of_find_node_by_path("/soc10x/serial@80004500");
- 	if (!avr)
- 		return -EINVAL;
-@@ -142,4 +139,4 @@ static int __init ls_uarts_init(void)
- 	return 0;
- }
- 
--late_initcall(ls_uarts_init);
-+machine_late_initcall(linkstation, ls_uarts_init);
+> +static void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node)
+> +{
+> +	struct device_node *node = NULL;
+> +
+> +	while ((node = of_get_next_child(adap_node, node))) {
+> +		struct i2c_board_info info;
+> +		const u32 *addr;
+> +		const char *compatible;
+> +		int len;
+> +
+> +		addr = of_get_property(node, "reg", &len);
+> +		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+> +			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing reg attribute\n");
+> +			continue;
+> +		}
+> +
+> +		info.irq = irq_of_parse_and_map(node, 0);
+> +		if (info.irq == NO_IRQ)
+> +			info.irq = -1;
+> +
+> +		compatible = of_get_property(node, "compatible", &len);
+> +		if (!compatible) {
+> +			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing compatible attribute\n");
+> +			continue;
+> +		}
+> +		
+> +		/* need full alias i2c:NOF,vendor,device */
+> +		strcpy(info.driver_name, I2C_OF_MODULE_PREFIX);
+> +		strncat(info.driver_name, compatible, sizeof(info.driver_name));
+> +		request_module(info.driver_name);
+> +		
+> +		/* need module alias OF,vendor,device */
+> +		strcpy(info.driver_name, OF_I2C_PREFIX);
+> +		strncat(info.driver_name, compatible, sizeof(info.driver_name));
+> +		
+> +		info.type[0] = '\0';
+> +		info.platform_data = NULL;
+> +		info.addr = *addr;
+> +
+> +		if (!i2c_new_device(adap, &info)) {
+> +			printk(KERN_ERR "i2c-mpc.c: Failed to load driver for %s\n", info.driver_name);
+> +			continue;
+> +		}
+> +	}
+> +}
+
+Should this go into some central file? Else we would have to copy it in any i2c bus driver that supports powerpc.
+This would at least be i2c-cpm and i2c-gpio.
+
+> +static int mpc_i2c_probe(struct of_device *op, const struct of_device_id *match)
+> +{
+> +	int result = 0;
+> +	struct mpc_i2c *i2c;
+> +
+> +	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+> +	if (!i2c)
+> +		return -ENOMEM;
+> +
+> +	if (of_get_property(op->node, "dfsrr", NULL))
+> +		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+> +
+> +	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
+> +		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+> +
+> +	init_waitqueue_head(&i2c->queue);
+> +
+> +	i2c->base = of_iomap(op->node, 0);
+> +	if (!i2c->base) {
+> +		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+> +		result = -ENOMEM;
+> +		goto fail_map;
+> +	}
+> +
+> +	i2c->irq = irq_of_parse_and_map(op->node, 0);
+> +	if (i2c->irq == NO_IRQ) {
+> +		result = -ENXIO;
+> +		goto fail_irq;
+> +	}
+> +
+> +	result = request_irq(i2c->irq, mpc_i2c_isr, IRQF_SHARED, "i2c-mpc", i2c);
+> +	if (result < 0) {
+> +		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
+> +		goto fail_request;
+> +	}
+> +
+> +	mpc_i2c_setclock(i2c);
+> +
+> +	dev_set_drvdata(&op->dev, i2c);
+> +
+> +	i2c->adap = mpc_ops;
+> +	i2c_set_adapdata(&i2c->adap, i2c);
+> +	i2c->adap.dev.parent = &op->dev;
+> +
+> +	result = i2c_add_adapter(&i2c->adap);
+> +	if (result < 0) {
+> +		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+> +		goto fail_add;
+> +	}
+> +
+> +	of_register_i2c_devices(&i2c->adap, op->node);
+> +
+> +	return result;
+> +
+> +fail_add:
+> +	free_irq(i2c->irq, i2c);
+> +fail_request:
+> +	irq_dispose_mapping(i2c->irq);
+> +fail_irq:
+> +	iounmap(i2c->base);
+> +fail_map:
+> +	kfree(i2c);
+> +	return result;
+> +};
+
+IMHO, there should be a node attribute to override i2c_adapter.class. Legacy i2c drivers (in particular v4l and dvb drivers) use this class to decide which adapter to bind to. dbox2 needs I2C_CLASS_TV_DIGITAL (4).
+
+Thanks,
+Jochen
