@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 08D49DDF1A
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5A6D7DDF52
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 04:33:51 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1143917anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 03 Jan 2008 09:33:50 -0800 (PST)
-Message-ID: <fa686aa40801030933t48953a38q4a5bc85a07fbfa02@mail.gmail.com>
-Date: Thu, 3 Jan 2008 10:33:50 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: mojtaba <kernelppc@gmail.com>
-Subject: Re: File system problem
-In-Reply-To: <004901c84e2a$1cac5c70$56051550$@com>
+	Fri,  4 Jan 2008 04:58:58 +1100 (EST)
+Message-ID: <477D2255.3040803@freescale.com>
+Date: Thu, 03 Jan 2008 11:58:45 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <169c03cb0801021932s6671526dve15d1948da52ae30@mail.gmail.com>
-	<004901c84e2a$1cac5c70$56051550$@com>
+To: suja Baburaj <sujababuraj@gmail.com>
+Subject: Re: MPC8260ADS and linux-2.6
+References: <a3b98ac10801022105w240b0f96race4d3aa84e51f27@mail.gmail.com>
+In-Reply-To: <a3b98ac10801022105w240b0f96race4d3aa84e51f27@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,26 +27,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/3/08, mojtaba <kernelppc@gmail.com> wrote:
-> Hi Jean-Samuel,
->
-> Actually, I removed the console and null created by buildroot and create
-> them manually using make node. This time the system freezes at this point.
-> "Freeing unused kernel memory: 76k init"
+suja Baburaj wrote:
+> I have an MPC8260ADS board with (eldk)linux-2.4.25 working fine on it.
+> Now i want to try linux-2.6.X on the board.
 
-It looks like your inittab is not setup correctly to me.
+There's no support for that specific board in mainstream 2.6 yet, but it 
+should be fairly simple to get it working using the mpc8272ads support 
+as an example.
 
-Do you have a /dev/ttyS0 device file?  Is inittab trying to start a
-getty process (getty allows you to log in.)
-
-Try adding "init=/bin/sh" to your kernel boot parameters to prove that
-userspace is working.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+-Scott
