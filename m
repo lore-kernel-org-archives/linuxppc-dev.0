@@ -1,29 +1,19 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0CB16DDEDE
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 10:13:43 +1100 (EST)
-Date: Thu, 3 Jan 2008 23:13:39 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20080103231338.GB18709@sirena.org.uk>
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
-	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
-	<477BAB67.4080003@freescale.com>
-	<fa686aa40801020812o471e18e6u9fe20676d320e958@mail.gmail.com>
-	<477D24AA.4050804@freescale.com>
-	<fa686aa40801031017n42f6fbf1nb2da5097ef13cf3c@mail.gmail.com>
-	<477D2F52.7090306@freescale.com>
-	<fa686aa40801031113od68e2a3m6cb60b8fa6f26c17@mail.gmail.com>
-	<477D3507.5090906@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id CB17DDDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 10:34:53 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCh v3] powerpc: add hugepagesz boot-time parameter
+Date: Fri, 4 Jan 2008 00:34:24 +0100
+References: <477D68E6.2070108@linux.vnet.ibm.com>
+In-Reply-To: <477D68E6.2070108@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <477D3507.5090906@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Timur Tabi <timur@freescale.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801040034.25329.arnd@arndb.de>
+Cc: mel@csn.ul.ie, Jon Tollefson <kniht@linux.vnet.ibm.com>, csnook@redhat.com,
+	Paul Mackerras <paulus@samba.org>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,17 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 03, 2008 at 01:18:31PM -0600, Scott Wood wrote:
-> Grant Likely wrote:
+On Thursday 03 January 2008, Jon Tollefson wrote:
+> Paul, please include this in 2.6.25 if there are no objections.
 
-> > Gah!  Don't do that!  Then you need to maintain both directions in the
-> > dts file.  Software is good at generating reverse mappings.
+No objections to this version from me, just questions.
 
-> Software is, however, lousy at correctly wading through 
-> poorly-structured data (which device trees are full of) to figure out 
-> how to locate the link it wants to follow backwards.
+> This patch adds the hugepagesz boot-time parameter for ppc64. =A0It lets
+> one pick the size for huge pages. The choices available are 64K and 16M
+> when the base page size is 4k. It defaults to 16M (previously the only
+> only choice) if nothing or an invalid choice is specified.
 
-Thinking about that from an ASoC v2 perspective the approach that this
-immediately suggests is to represent the links between the devices in
-the device tree and then have those links reference the attached
-devices.
+We started discussing this in v1, but the discussion got sidetracked:
+Is there a technical reason why you don't also allow 1M pages, which
+may be useful in certain scenarios?
+
+On the Cell/B.E. platforms (IBM/Mercury blades, Toshiba Celleb, PS3), the
+second large page size is an option that can be set in a HID SPR
+to either 64KB or 1MB. Unfortunately, we can't do these two simultaneously,
+but the firmware can change the default and put it into the device tree,
+or you could have the kernel override the firmware settings.
+
+Going a lot further, do you have plans for a fully dynamic hugepage size,
+e.g. using a mount option for hugetlbfs? I can see that as rather useful,
+but at the same time it's probably much more complicated than the boot time
+option.
+
+	Arnd <><
