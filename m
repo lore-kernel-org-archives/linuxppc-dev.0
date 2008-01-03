@@ -1,16 +1,14 @@
-Return-Path: <jochen@scram.de>
-Message-ID: <477CCB0F.8020504@scram.de>
-Date: Thu, 03 Jan 2008 12:46:23 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>,  linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCHv3] powerpc: DBox2 Board Support
-References: <477522DB.4000100@scram.de>
-	<20080102112030.GB23168@localhost.localdomain>
-In-Reply-To: <20080102112030.GB23168@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Outstanding DTC patches? 
+In-Reply-To: Your message of "Thu, 03 Jan 2008 15:48:43 +1100."
+	<20080103044843.GD25357@localhost.localdomain>
+References: <1199298062.7345.25.camel@ld0161-tx32>
+	<20080103044843.GD25357@localhost.localdomain>
+Date: Thu, 03 Jan 2008 08:14:53 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JAQqT-00056B-FP@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,58 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
-
->> +/ {
->> +	model = "unknown,dbox2"; // boot wrapper fills in correct manufacturer
+So, like, the other day David Gibson mumbled:
 > 
-> Probably better just to leave model out of the dts and let the
-> bootwrapper add it.
+> I posted this one a while back, but I guess it dropped through the
+> cracks.
 
-Unfortunately, dtc requires a model:
+Yep, sorry.
 
-$ dtc arch/powerpc/boot/dts/dbox2.dts
-DTC: dts->dts  on file "arch/powerpc/boot/dts/dbox2.dts"
-ERROR: Missing "model" property in /
+> There's also the patch I sent you quite a long time ago that
+> adds a clarifying readme about the licensing situation - that might be
+> an idea for v1.1, too.
 
->> +		flash@0,0 {
->> +			compatible = "cfi-flash";
->> +			reg = <0 0 800000>;
->> +			bank-width = <4>;
->> +			device-width = <1>;
->> +			#address-cells = <1>;
->> +			#size-cells = <1>;
->> +			partition@0 {
->> +				label = "BR bootloader";
->> +				reg = <0 20000>;
->> +				read-only;
->> +			};
->> +			partition@20000 {
->> +				label = "FLFS (U-Boot)";
->> +				reg = <20000 20000>;
->> +			};
->> +			partition@40000 {
->> +				label = "rootfs";
->> +				reg = <40000 7c0000>;
->> +			};
->> +			ovpartition@20000 {
+I can not find this; neither locally nor on patchworks.
+Do you have a Subject: line, a URL, or could you
+please repost it?
+
+
+> dtc: Remove header information dumping
 > 
-> Uh.. I really don't know what the MTD driver will handle these
-> overlapping partitions.  I suspect it will not be pretty...
+> Currently, when used in -Idtb mode, dtc will dump information about
+> the input blob's header fields to stderr.  This is kind of ugly, and
+> can get in the way of dtc's real output.
 > 
->> +				label = "Flash without bootloader";
->> +				reg = <20000 7e0000>;
->> +			};
->> +			ovpartition@0 {
->> +				label = "Complete Flash";
->> +				reg = <0 800000>;
->> +				read-only;
->> +			};
->> +		};
->> +	};
+> This patch, therefore, removes this.  So that there's still a way of
+> getting this information for debugging purposes, it places something
+> similar to the removed code into ftdump, replacing the couple of
+> header fields it currently prints with a complete header dump.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-MTD handles this correctly. dbox2 uses "Flash without bootloader" for flashing image updates and "Complete Flash" for creating a backup of everything.
-OpenWRT also uses overlapping partitions BTW (and also for flashing updates).
+Applied.
 
 Thanks,
-Jochen
+jdl
