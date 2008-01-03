@@ -1,19 +1,20 @@
-Return-Path: <jeff@mock.com>
-Received: from mail.mock.com (gw.mock.com [209.157.146.194])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.mock.com", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DCFB8DDF00
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 659D0DDED4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 05:04:08 +1100 (EST)
-Message-ID: <477D2393.5050106@mock.com>
-Date: Thu, 03 Jan 2008 10:04:03 -0800
-From: Jeff Mock <jeff@mock.com>
+	Fri,  4 Jan 2008 05:18:27 +1100 (EST)
 MIME-Version: 1.0
-To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
-Subject: Re: Drivers' probe function calling order
-References: <F1F6EC0C8B75034F9E3A79FC85122E8EC2DE1E@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8EC2DE1E@aquib01a>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: MPC8260ADS and linux-2.6
+Date: Thu, 3 Jan 2008 12:18:25 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03D1682A@ismail.innsys.innovsys.com>
+In-Reply-To: <477D2255.3040803@freescale.com>
+References: <a3b98ac10801022105w240b0f96race4d3aa84e51f27@mail.gmail.com>
+	<477D2255.3040803@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>,
+	"suja Baburaj" <sujababuraj@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,22 +26,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The only way I've know to do this is to build the drivers as modules and 
-load them in the desired order from the startup scripts called from init.
+> From: Scott Wood
+> Sent: Thursday, January 03, 2008 11:59 AM
+> To: suja Baburaj
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: MPC8260ADS and linux-2.6
+>=20
+> suja Baburaj wrote:
+> > I have an MPC8260ADS board with (eldk)linux-2.4.25 working=20
+> fine on it.
+> > Now i want to try linux-2.6.X on the board.
+>=20
+> There's no support for that specific board in mainstream 2.6=20
+> yet, but it=20
+> should be fairly simple to get it working using the=20
+> mpc8272ads support=20
+> as an example.
 
-If there's a better way I would like to know about it also...
-
-jeff
-
-
-DI BACCO ANTONIO - technolabs wrote:
-> How can I fix the calling order of two monolithic drivers? I have an spi
-> driver and a driver for a dataflash, how can I force the system to call
-> probe function of the spi driver first?
->  
-> Bye and thanks.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+There is support, but it is in arch/ppc not arch/powerpc
+(PQ2FADS support works for this board in arch/ppc)
