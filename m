@@ -1,14 +1,27 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: Outstanding DTC patches? 
-In-Reply-To: Your message of "Thu, 03 Jan 2008 15:48:43 +1100."
-	<20080103044843.GD25357@localhost.localdomain>
-References: <1199298062.7345.25.camel@ld0161-tx32>
-	<20080103044843.GD25357@localhost.localdomain>
-Date: Thu, 03 Jan 2008 08:14:53 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JAQqT-00056B-FP@jdl.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 00FA0DDE3B
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 01:33:14 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so10121773wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jan 2008 06:33:13 -0800 (PST)
+Message-ID: <9e4733910801030633x70b80dbl650afbf3ebc4490e@mail.gmail.com>
+Date: Thu, 3 Jan 2008 09:33:13 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jon Smirl" <jonsmirl@gmail.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>,
+	linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	"Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <20080103044620.GC25357@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
+	<477BADF5.9060003@freescale.com>
+	<9e4733910801020756p18e12ce8o618b8eae5e7c5a53@mail.gmail.com>
+	<fa686aa40801020832y373c091dn925bfe64afddcb81@mail.gmail.com>
+	<9e4733910801020912k50dceaebm11b59c1cee571e56@mail.gmail.com>
+	<20080103044620.GC25357@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,36 +31,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> 
-> I posted this one a while back, but I guess it dropped through the
-> cracks.
+On 1/2/08, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Wed, Jan 02, 2008 at 12:12:00PM -0500, Jon Smirl wrote:
+> > On 1/2/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > > On 1/2/08, Jon Smirl <jonsmirl@gmail.com> wrote:
+> > > > On 1/2/08, Timur Tabi <timur@freescale.com> wrote:
+> > > > mpc8610_hpcd is the harder one to load since it doesn't have a device
+> > > > tree entry. What you want to do it match on the compatible field of
+> > > > the root node.
+> > > >
+> > > > static struct of_device_id fabric_of_match[] = {
+> > > >         {
+> > > >                 .compatible     = "fsl,MPC8610HPCD",
+> > > >         },
+> > > >         {},
+> > > > };
+> > > >
+> > > > But this doesn't work since the root is the device tree isn't passed
+> > > > down into the device probe code. (Could this be fixed?)
+> > >
+> > > The driver can always get the root node.  But better yet, instantiate
+> > > the correct fabric device (probably as a platform_device) from the
+> > > platform code.  Then the correct fabric driver can probe against it.
+> >
+> > The meaning of this has finally sunk into my consciousness. The
+> > platform code can create a device that isn't bound to a driver. So why
+> > not make this an of_platform_device?  This is basically a pseudo
+> > device that isn't in the device tree.
+> >
+> > Alternatively, the best place for this device would be on the ASOC
+> > bus, but the ASOC bus hasn't been created when the platform code runs.
+> > Maybe I can figure out a place in the platform code to create this
+> > device after the ASOC driver has loaded and created the bus. Does the
+> > platform code get control back after loading all of the device
+> > drivers?
+> >
+> > In the longer term I'd like to kill platform_bus on powerpc and only
+> > use of_platform_bus. Platform_bus seems to be functioning like a
+> > catch-all and collecting junk from lots of different platforms.
+>
+> Not going to happen.  of_platform_bus is not the right solution, and
+> in fact we're looking at moving (gradually) away from using
+> of_platform_bus, and instead using platform devices (along with the
+> device node being available for *any* struct device via the
+> arch_sysdata).
 
-Yep, sorry.
+I do agree that of_platform_bus should have been derived from
+platform_bus, not a separate structure. This is causing problems in
+the ASLA code  where they want typed pointers.
 
-> There's also the patch I sent you quite a long time ago that
-> adds a clarifying readme about the licensing situation - that might be
-> an idea for v1.1, too.
+In my little test patch, I disabled platform_bus on my MPC5200. This
+generated some compiler errors which exposed a bunch of MPC83xxx and
+Apple code that was getting compiled into my MPC5200 kernel.  These
+were platform bus drivers that weren't properly ifdef'd.
 
-I can not find this; neither locally nor on patchworks.
-Do you have a Subject: line, a URL, or could you
-please repost it?
+So I guess my objection is more along the lines of getting rid of
+driver code inside the arch directory and switching everything to
+modules. Then we could periodically turn off platform bus on each
+platform and make sure everything still builds.
 
 
-> dtc: Remove header information dumping
-> 
-> Currently, when used in -Idtb mode, dtc will dump information about
-> the input blob's header fields to stderr.  This is kind of ugly, and
-> can get in the way of dtc's real output.
-> 
-> This patch, therefore, removes this.  So that there's still a way of
-> getting this information for debugging purposes, it places something
-> similar to the removed code into ftdump, replacing the couple of
-> header fields it currently prints with a complete header dump.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+>
+> --
+> David Gibson                    | I'll have my music baroque, and my code
+> david AT gibson.dropbear.id.au  | minimalist, thank you.  NOT _the_ _other_
+>                                 | _way_ _around_!
+> http://www.ozlabs.org/~dgibson
+>
 
-Applied.
 
-Thanks,
-jdl
+-- 
+Jon Smirl
+jonsmirl@gmail.com
