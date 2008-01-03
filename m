@@ -4,19 +4,21 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5829BDDE9D
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 05:22:03 +1100 (EST)
-Message-ID: <477D280C.4000800@freescale.com>
-Date: Thu, 03 Jan 2008 12:23:08 -0600
+	by ozlabs.org (Postfix) with ESMTP id DA099DDF2A
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 05:25:40 +1100 (EST)
+Message-ID: <477D28D3.3000102@freescale.com>
+Date: Thu, 03 Jan 2008 12:26:27 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>, Jon Smirl <jonsmirl@gmail.com>,
-	linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
-Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-References: <11981089894052-git-send-email-timur@freescale.com>	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>	<477BA974.8010308@freescale.com>
-	<20080102172340.GA2007@sirena.org.uk>
-In-Reply-To: <20080102172340.GA2007@sirena.org.uk>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2] ucc_uart: add support for Freescale QUICCEngine UART
+References: <11970458703666-git-send-email-timur@freescale.com>
+	<20071226165816.GB11449@localhost.localdomain>
+	<4776C5EE.70004@freescale.com>
+	<20080102181226.GA4486@loki.buserror.net>
+In-Reply-To: <20080102181226.GA4486@loki.buserror.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark Brown wrote:
+Scott Wood wrote:
 
->> clock1 = <0, bb8000>
+>>>> +static struct of_platform_driver ucc_uart_of_driver = {
+>>>> +	.owner  	= THIS_MODULE,
+>>>> +	.name   	= "ucc_uart",
+>>> Maybe better fsl,ucc_uart?
 > 
->> Would that be better?
-> 
-> To cover everything you'd need to be able to specify all the clocking
-> parameters, especially a PLL configuration, and also specify more than
-> one of each item.  Even then you'd still have problems like...
+> fsl,qe-uart is defined by Documentation/powerpc/booting-without-of.txt.
 
-The ASoC V1 API for communicating clock data from the fabric driver to the 
-codec driver only allows for three parameters.
+Wait, I'm confused.  What does the of_platform_driver.name string have to do 
+with the compatible field in the device tree?  Like I said earlier, I'm just 
+following the example of the other QE device drivers.  If you want me to break 
+that example, I'm going to need an explanation why the other drivers do it wrong.
 
-> According to the documentation in your patch the bus frequency should
-> already be optional 
-
-My code does not currently support that configuration, and I don't have any 
-hardware that works that way, so I don't know what it would look like.  I'm 
-just trying to make the driver as flexible as possible, given ASoC V1 constraints.
 
 -- 
 Timur Tabi
