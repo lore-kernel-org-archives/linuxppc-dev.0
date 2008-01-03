@@ -1,24 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 41F0BDDECB
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 05:15:56 +1100 (EST)
-Message-ID: <477D2691.4090104@freescale.com>
-Date: Thu, 03 Jan 2008 12:16:49 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>, Jon Smirl <jonsmirl@gmail.com>,
-	linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 9ECFDDDF7B
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 05:17:02 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1147066anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jan 2008 10:17:01 -0800 (PST)
+Message-ID: <fa686aa40801031017n42f6fbf1nb2da5097ef13cf3c@mail.gmail.com>
+Date: Thu, 3 Jan 2008 11:17:00 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <477D24AA.4050804@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
-	<477BADF5.9060003@freescale.com>
-	<20080103044432.GB25357@localhost.localdomain>
-In-Reply-To: <20080103044432.GB25357@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
+	<477BAB67.4080003@freescale.com>
+	<fa686aa40801020812o471e18e6u9fe20676d320e958@mail.gmail.com>
+	<477D24AA.4050804@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,15 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On 1/3/08, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>
+> > Why not be a child of the i2c bus with a phandle to the ssi bus?
+>
+> Because when I probe the SSI node, I want to know what the attached codec is.
+>   So if anything, I would need a pointer from the SSI bus *to* the respective
+> child on the I2C bus.
 
-> Instantiating the fabric driver off any node is wrong, precisely
-> because it is an abstraction.  The fabric driver should be
-> instantiated by the platform code.
+That's fine too (it's what is done with Ethernet PHYs).  My preference
+is the other way around, but it's not a big issue in this case.
 
-Can you tell me how to do that?
-
+Cheers,
+g.
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
