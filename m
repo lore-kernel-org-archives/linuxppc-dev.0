@@ -1,27 +1,19 @@
-Return-Path: <rubini@mail.gnudd.com>
-Received: from mail.gnudd.com (unknown [213.203.150.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2431DDDEC0
+Return-Path: <jsamch@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 697D9DDEFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 09:09:32 +1100 (EST)
-Received: from mail.gnudd.com (rubini@localhost [127.0.0.1])
-	by mail.gnudd.com (8.13.4/8.13.4/Debian-3sarge3) with ESMTP id
-	m03LsuoX020700
-	for <linuxppc-embedded@ozlabs.org>; Thu, 3 Jan 2008 22:54:56 +0100
-Received: (from rubini@localhost)
-	by mail.gnudd.com (8.13.4/8.13.4/Submit) id m03Lsuls020697
-	for linuxppc-embedded@ozlabs.org; Thu, 3 Jan 2008 22:54:56 +0100
-Date: Thu, 3 Jan 2008 22:54:56 +0100
-From: Alessandro Rubini <rubini@gnudd.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Drivers' probe function calling order
-Message-ID: <20080103215456.GA20691@mail.gnudd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Sender: rubini@gnudd.com
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8EC2DE1E@aquib01a>
-References: <F1F6EC0C8B75034F9E3A79FC85122E8EC2DE1E@aquib01a> 
+	Fri,  4 Jan 2008 10:57:44 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so2069943pyg.27
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 03 Jan 2008 15:57:43 -0800 (PST)
+Message-ID: <169c03cb0801031557r1efbd89fsd971533e04477daa@mail.gmail.com>
+Date: Thu, 3 Jan 2008 18:57:43 -0500
+From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
+Sender: jsamch@gmail.com
+To: linuxppc-embedded@ozlabs.org, kernelppc@gmail.com
+Subject: RE: File system problem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,15 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> Message: 9
+> Date: Thu, 3 Jan 2008 18:00:14 +0100
+> From: "mojtaba"
+>
+> Actually, I removed the console and null created by buildroot and create
+> them manually using make node. This time the system freezes at this point=
+.
+> "Freeing unused kernel memory: 76k init"
 
-> how can I force the system to call
-> probe function of the spi driver first?
+Hi Mojtaba,
 
-You can declare their init functions at different initcall level.  For
-example declaring the dataflash one as late_initcall(). Or declare
-the spi one as subsys_initcall() -- whatever makes more sense.
+I just want to comment on your observation that the file size in /dev
+was zero.  This is normal as the device files are 'special' since they
+are a mean of abstracting the interface to the kernel.  I had to read
+the online book listed below before I could understand the inner
+workings of those special files.  If you plan on interfacing your FPGA
+with the Linux Kernel, I suggest you read it too, as it is a very
+insightful book:
+http://lwn.net/Kernel/LDD3/
 
-There might be cleaner ways according to your setup, but this will
-surely work.
+At this point, your system is not frozen, but your init script and
+configuration files are probably not all correctly set.  You might
+need to read some documentation about buildroot to see what its init
+scripts are trying to do.
 
-/alessandro
+You might be missing a library or symlink (I got that problem in my
+attempt to build the BusyBox root filesystem from scratch).  One way
+to go at the problem is to pass the init=3D/bin/ash or something like
+that to your kernel at the boot prompt (you could even make some
+trivial 'hello world' program and pass it to the kernel as the init
+process).  This way, you can dive right into a shell or your program
+and avoid init and its configuration.
+
+After some copying of required libraries in /lib (I'm using uClibc)
+and the creation of the required symbolic links, I got my Busybox root
+filesystem working on my ML-310 board.
+
+Good luck!
+
+Regards,
+
+Jean-Samuel
+--=20
+Ph.D. candidate
+Integrated Microsystems Laboratory
+McGill University, Montr=E9al, QC, CANADA
+Web Page: http://chaos.ece.mcgill.ca
