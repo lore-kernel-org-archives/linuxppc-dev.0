@@ -1,22 +1,17 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id E195CDDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 01:54:45 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so10131646wag.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jan 2008 06:54:45 -0800 (PST)
-Message-ID: <9e4733910801030654i7409e383n6b7f844aa543f234@mail.gmail.com>
-Date: Thu, 3 Jan 2008 09:54:45 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Timur Tabi" <timur@freescale.com>, "Jon Smirl" <jonsmirl@gmail.com>,
-	linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-In-Reply-To: <20080103044432.GB25357@localhost.localdomain>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 271E5DDF1F
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 02:00:38 +1100 (EST)
+Message-ID: <477CF841.2020200@windriver.com>
+Date: Thu, 03 Jan 2008 09:59:13 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
-	<477BADF5.9060003@freescale.com>
-	<20080103044432.GB25357@localhost.localdomain>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [DTC] small ftdump cleanup patch
+References: <20080103144056.GB28644@windriver.com> <E1JARRd-0005ED-Qr@jdl.com>
+In-Reply-To: <E1JARRd-0005ED-Qr@jdl.com>
+Content-Type: multipart/mixed; boundary="------------060707060802070504030504"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,80 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/2/08, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Wed, Jan 02, 2008 at 09:29:57AM -0600, Timur Tabi wrote:
-> > Jon Smirl wrote:
-> > > On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
-> > >>  sound/soc/fsl/fsl_ssi.c                      |  614 +++++++++++++++++++
-> > >>  sound/soc/fsl/fsl_ssi.h                      |  224 +++++++
-> > >
-> > > I'm confused about this part. You built a driver for the mpc8610 ssi
-> > > port.  This port has a device tree entry.
-> > >
-> > > +           ssi@16000 {
-> > > +                   compatible = "fsl,ssi";
-> > > +                   cell-index = <0>;
-> > > +                   reg = <16000 100>;
-> > > +                   interrupt-parent = <&mpic>;
-> > > +                   interrupts = <3e 2>;
-> > > +                   fsl,mode = "i2s-slave";
-> > > +                   codec {
-> > > +                           compatible = "cirrus,cs4270";
-> > > +                           /* MCLK source is a stand-alone oscillator */
-> > > +                           bus-frequency = <bb8000>;
-> > > +                   };
-> > > +           };
-> > >
-> > > But then you don't create an of_platform_driver for this device.
-> > > Instead you create one for the fabric driver, struct
-> > > of_platform_driver mpc8610_hpcd_of_driver, and directly link the SSI
-> > > driver into it.
-> >
-> > That's the best plan I came up with.  This is apparently fixed in ASoC
-> > V2.  From ASoC V1's perspective, the fabric driver must be the master.
-> > However, it doesn't make sense to have a node in the device tree for the
-> > fabric driver, because there is no such "device".  The fabric driver is
-> > an abstraction.  So I need to chose some other node to probe the fabric
-> > driver with.  I chose the SSI, since each SSI can have only one
-> > codec.
+This is a multi-part message in MIME format.
+--------------060707060802070504030504
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Jon Loeliger wrote:
+> So, like, the other day Paul Gortmaker mumbled:
+>   
+>> Here is a small patch to clean up the usage info and the error returns
+>> for ftdump -- not sure what the future holds for ftdump vs. simply using
+>> "dtc -I dtb -O dts someblob.dtb" ...
+>>
+>> Paul.
+>>     
 >
-> Instantiating the fabric driver off any node is wrong, precisely
-> because it is an abstraction.  The fabric driver should be
-> instantiated by the platform code.
-
-Instantiating it from the platform code forces me to put it either the
-of_platform_bus or the platform_bus since there aren't any other buses
-around when the platform code runs. Platform bus doesn't implement
-dynamic module loading. So that means it has to go onto the
-of_platform_bus. That implies that is it a pseudo-device without a
-pseudo-device entry in the device tree which is fine with me. I'll
-need to poke around in the of_bus code and see if the driver will load
-without a device tree entry.
-
-A simple fix to this would be to let me instantiate the driver off
-from the root node of the tree. That's the conceptually correct place
-for instantiating a driver that extends the platform code. Should I
-try adjusting the of probing code to pass the node in, or are there
-major objections?
-
-Also, as others have pointed out, this driver is not an abstraction.
-It represents the mess of wires hooking the codec up to the jacks on
-the back panel and possibly GPIO pins that control the wiring. You
-need this because the pins on HD audio codecs are completely
-reconfigurable and the same chip can be wired in a thousand different
-ways. It lets you have a generic codec driver and the move the
-platform specific code out of the driver.
-
-
+> Paul,
 >
-> --
-> David Gibson                    | I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au  | minimalist, thank you.  NOT _the_ _other_
->                                 | _way_ _around_!
-> http://www.ozlabs.org/~dgibson
->
+> Any chance of a signed-off-by line?
+>   
+
+Sure,  here is the whole thing.
+
+Paul.
 
 
+
+--------------060707060802070504030504
+Content-Type: text/plain;
+ name="0001-ftdump-minor-usage-and-error-return-cleanup.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-ftdump-minor-usage-and-error-return-cleanup.txt"
+
+>From cef80fcd1efddaebcb366fb897430260cebb0c84 Mon Sep 17 00:00:00 2001
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Thu, 3 Jan 2008 09:56:09 -0500
+Subject: [PATCH] ftdump: minor usage and error return cleanup
+
+Improve the usage info and use standard error return values in ftdump.
+
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ ftdump.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/ftdump.c b/ftdump.c
+index 53343d7..49bc7cf 100644
+--- a/ftdump.c
++++ b/ftdump.c
+@@ -8,6 +8,8 @@
+ #include <ctype.h>
+ #include <netinet/in.h>
+ #include <byteswap.h>
++#include <errno.h>
++#include <libgen.h>
+ 
+ #include <fdt.h>
+ 
+@@ -165,21 +167,22 @@ int main(int argc, char *argv[])
+ 	char buf[16384];	/* 16k max */
+ 	int size;
+ 
+-	if (argc < 2) {
+-		fprintf(stderr, "supply input filename\n");
+-		return 5;
++	if (argc != 2) {
++		fprintf(stderr, "Usage: %s filename.dtb\n", basename(argv[0]));
++		fprintf(stderr, "\t-dump binary device tree blob contents.\n");
++		return EINVAL;
+ 	}
+ 
+ 	fp = fopen(argv[1], "rb");
+ 	if (fp == NULL) {
+ 		fprintf(stderr, "unable to open %s\n", argv[1]);
+-		return 10;
++		return errno;
+ 	}
+ 
+ 	size = fread(buf, 1, sizeof(buf), fp);
+ 	if (size == sizeof(buf)) {	/* too large */
+ 		fprintf(stderr, "file too large\n");
+-		return 10;
++		return EFBIG;
+ 	}
+ 
+ 	dump_blob(buf);
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.0.rc1.gf4b6c
+
+
+--------------060707060802070504030504--
