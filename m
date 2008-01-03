@@ -1,20 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 659D0DDED4
+Return-Path: <carlos@kenati.com>
+Received: from ims.2wire.com (ims.2wire.com [206.171.6.87])
+	by ozlabs.org (Postfix) with ESMTP id AF029DDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 05:18:27 +1100 (EST)
+	Fri,  4 Jan 2008 05:55:50 +1100 (EST)
+Message-ID: <477D2CE0.1050806@kenati.com>
+Date: Thu, 03 Jan 2008 10:43:44 -0800
+From: Carlos Munoz <carlos@kenati.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: MPC8260ADS and linux-2.6
-Date: Thu, 3 Jan 2008 12:18:25 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03D1682A@ismail.innsys.innovsys.com>
-In-Reply-To: <477D2255.3040803@freescale.com>
-References: <a3b98ac10801022105w240b0f96race4d3aa84e51f27@mail.gmail.com>
-	<477D2255.3040803@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>,
-	"suja Baburaj" <sujababuraj@gmail.com>
+To: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: Reading a config file in a driver ....
+References: <14591717.post@talk.nabble.com> <20080103163019.GA4223@lixom.net>
+In-Reply-To: <20080103163019.GA4223@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,22 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: Scott Wood
-> Sent: Thursday, January 03, 2008 11:59 AM
-> To: suja Baburaj
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: MPC8260ADS and linux-2.6
->=20
-> suja Baburaj wrote:
-> > I have an MPC8260ADS board with (eldk)linux-2.4.25 working=20
-> fine on it.
-> > Now i want to try linux-2.6.X on the board.
->=20
-> There's no support for that specific board in mainstream 2.6=20
-> yet, but it=20
-> should be fairly simple to get it working using the=20
-> mpc8272ads support=20
-> as an example.
+Olof Johansson wrote:
+> On Wed, Jan 02, 2008 at 09:03:20PM -0800, Misbah khan wrote:
+>   
+>> Hi all ....
+>>
+>> I am writing a LCD driver in which the default configuration for LCD would
+>> be loded at the Init . This default configuration if keep in the driver then
+>> for a change in default configuration we need to compile the driver which we
+>> never want . Hence we want a .config file in /etc/lcd.config dir which could
+>> be changed and the next boot will take this configuration as the default
+>> configuration. 
+>>
+>> I need to know How to read from the config file in the driver form the dir
+>> /etc/lcd.config. The driver would be installed at boot up 
+>>     
+>
+> The driver/kernel shouldn't read the file directly, if anything you
+> should have a userspace tool that reads it and adjusts the driver via
+> sysfs or similar. That tool can be run from some of the init scripts,
+> or from the ramdisk in case you want to do it early.
+>   
+What I've done in the past is to use module_param() to define variables 
+that get set when the module is loaded. Then all you need to do is edit 
+the /etc/modules file and change the parameter value. However, this 
+technique is only efficient if only a few parameters will ever change. 
+If you need to change more than a few parameters, Olof's suggestion 
+would be preferred.
 
-There is support, but it is in arch/ppc not arch/powerpc
-(PQ2FADS support works for this board in arch/ppc)
+Carlos
