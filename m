@@ -1,16 +1,21 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 65AD4DDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 18:32:03 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <cc783558d0d687131f756488692cc34b@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] [POWERPC] Check that the syscall table matches the
-	syscall
-Date: Thu, 3 Jan 2008 01:32:21 -0600
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 5CCAADDE33
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 19:14:46 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Li Li <r64360@freescale.com>
+Subject: Re: [PATCH] powerpc: Add MPC837x PCIE controller RC mode support
+Date: Thu, 3 Jan 2008 09:14:11 +0100
+References: <1199272605.22416.8.camel@Guyver>
+	<200801021253.08280.arnd@arndb.de>
+	<1199342440.7375.29.camel@Guyver>
+In-Reply-To: <1199342440.7375.29.camel@Guyver>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200801030914.12628.arnd@arndb.de>
+Cc: Wood Scott <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Phillips Kim <Kim.Phillips@freescale.com>, Li Tony <Tony.Li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hmmm, in-reply-to on the web archive is broken again, sfr alerted.
+On Thursday 03 January 2008, Li Li wrote:
+> > * The detection method for the primary bus is somewhat fragile,
+> > because 
+> > we depend on the order of the nodes in the device tree, which is not 
+> > specified to have a meaning. /Maybe/ there could be a property in 
+> > (at most) one of the PCI host bridge nodes saying that this specific
+> > bus 
+> > is the primary one.
+> > 
+> 
+> Put this primary in code is more save than in dts.
+> The dts lacks error checking function. If provide error dts such as two
+> pci hosts both has primary property will occur chaos.
 
-On Thu Jan 3 16:41:41 EST 2008, Stephen Rothwell wrote:
+It's easy enough to just panic() if you find more than one primary bus,
+since the information from the device tree is static enough that one
+will know how to fix this after seeing the error.
 
-> Hopefully this will catch any out of order additions to the
-> table in the future.
-
->  #ifdef CONFIG_PPC64
-> -#define SYSCALL(func)          .llong  .sys_##func,.sys_##func
-> -#define COMPAT_SYS(func)       .llong  .sys_##func,.compat_sys_##func
-> -#define PPC_SYS(func)          .llong  .ppc_##func,.ppc_##func
-> +#define CHECK_SYS(n)           .org .sys_call_table + n * 16
-> +
-> +#define SYSCALL(func)          CHECK_SYS(__NR_##func); \
-> +                               .llong  .sys_##func,.sys_##func
-> +#define COMPAT_SYS(func)       CHECK_SYS(__NR_##func); \
-> +                               .llong  .sys_##func,.compat_sys_##func
->
-
-While it may detect misordered additions, it does nothing to check for 
-holes.   Actually, it would hide holes:  presently, if you leave a hole 
-the entry you add at the end of the table will not work / crash the 
-kernel.  After this patch, the hole will crash the kernel but the new 
-syscall will work.
-
-I'm still thinking this through, but perhaps instead of checking the 
-numbers by org in asm, we can define another way to include the 
-systable.h, possibly as a build-only check target.
-
-Something compareing the line number to __NR_##func perhaps cpp into a 
-simple awk script ...
-
-later,
-milton
+	Arnd <><
