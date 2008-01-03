@@ -1,17 +1,23 @@
-Return-Path: <jwboyer@gmail.com>
-Date: Thu, 3 Jan 2008 10:01:31 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH] powerpc: #address-cells & #size-cells properties not
-	inherited
-Message-ID: <20080103100131.5b1c64b8@zod.rchland.ibm.com>
-In-Reply-To: <20080103153256.GA18716@mag.az.mvista.com>
-References: <20080103000750.GA22035@mag.az.mvista.com>
-	<20080102194640.48c97d0c@vader.jdub.homelinux.org>
-	<20080103153256.GA18716@mag.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, David Gibson <dgibson@ozlabs.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4D672DDE9A
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jan 2008 04:38:23 +1100 (EST)
+Date: Thu, 3 Jan 2008 11:37:17 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 4/5] [POWERPC] 8xx: Use machine_*_initcall() hooks in
+	platform code
+Message-ID: <20080103173717.GA4287@loki.buserror.net>
+References: <20080102191135.24178.99973.stgit@trillian.secretlab.ca>
+	<20080102193233.24178.74501.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080102193233.24178.74501.stgit@trillian.secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 3 Jan 2008 08:32:56 -0700
-"Mark A. Greer" <mgreer@mvista.com> wrote:
-
-> On Wed, Jan 02, 2008 at 07:46:40PM -0600, Josh Boyer wrote:
-> > On Wed, 2 Jan 2008 17:07:50 -0700
-> > "Mark A. Greer" <mgreer@mvista.com> wrote:
-> > 
-> > > From: Mark A. Greer <mgreer@mvista.com>
-> > > 
-> > > Fix error in booting-without-of.txt that indicates that a node can inherit
-> > > its #address-cells and #size-cells definitions from its parent's parent.
-> > > This is not correct and the latest dtc enforces it.
-> > 
-> > I'm lazy so I haven't checked myself, but by "latest dtc" does that
-> > mean the DTC that's in the kernel now?
-> > 
-> > Things are going to be fun when we start saying generic things like
-> > "latest DTC".  And when upstream DTC gets new features or enforcements,
-> > we'll have to have all the in-kernel DTS files patched up when that
-> > version of DTC gets merged in-kernel.  Just something to keep in mind
-> > as we move along.
+On Wed, Jan 02, 2008 at 12:32:51PM -0700, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 > 
-> Yeah, I thought about that last night, actually.
-> I think I'll just change that sentence to "This is not correct."
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
 > 
-> Avoid the issue :)
+>  arch/powerpc/platforms/8xx/ep88xc.c          |    5 ++---
+>  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    5 ++---
 
-Lazy!  I like it ;)
+How about mpc86xads_setup.c?
 
-josh
+-Scott
