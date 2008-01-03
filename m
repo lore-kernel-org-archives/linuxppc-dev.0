@@ -1,22 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id CE1A0DDEE4
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 08D49DDF1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 04:27:26 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1143434anc.78
+	Fri,  4 Jan 2008 04:33:51 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1143917anc.78
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 03 Jan 2008 09:27:25 -0800 (PST)
-Message-ID: <fa686aa40801030927l4dc95a63s9670d6f6deb3a8c5@mail.gmail.com>
-Date: Thu, 3 Jan 2008 10:27:24 -0700
+	Thu, 03 Jan 2008 09:33:50 -0800 (PST)
+Message-ID: <fa686aa40801030933t48953a38q4a5bc85a07fbfa02@mail.gmail.com>
+Date: Thu, 3 Jan 2008 10:33:50 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: mojtaba <kernelppc@gmail.com>
 Subject: Re: File system problem
-In-Reply-To: <004801c84e21$59312760$0b937620$@com>
+In-Reply-To: <004901c84e2a$1cac5c70$56051550$@com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <169c03cb0801021932s6671526dve15d1948da52ae30@mail.gmail.com>
-	<004801c84e21$59312760$0b937620$@com>
+	<004901c84e2a$1cac5c70$56051550$@com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,29 +29,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 On 1/3/08, mojtaba <kernelppc@gmail.com> wrote:
-> Hi,
-> Thank you very much for your answers.
+> Hi Jean-Samuel,
 >
-> But I have both console and null in /dev.
->
-> -rw-rw-rw- 1 mojtaba mojtaba    0 2007-12-26 15:50 console
-> -rw-rw-rw- 1 mojtaba mojtaba    0 2007-12-26 15:50 null
->
-> They have been created by buildroot. Do I need to create them manually?
-> Actually the size of both of them is 0 and both are empty files. Is that a
-> problem?
+> Actually, I removed the console and null created by buildroot and create
+> them manually using make node. This time the system freezes at this point.
+> "Freeing unused kernel memory: 76k init"
 
-They should look like this:
+It looks like your inittab is not setup correctly to me.
 
-crw------- 1 root root 5, 1 2008-01-03 07:43 /dev/console
-crw-rw-rw- 1 root root 1, 3 2007-10-08 18:39 /dev/null
+Do you have a /dev/ttyS0 device file?  Is inittab trying to start a
+getty process (getty allows you to log in.)
 
-They are not regular files.  They are device files created with the
-'mknod' command.
-
-Instead of a size, these files have 2 number; the device major and
-minor numbers.  /dev/console uses major 5, minor 1.  /dev/null is
-major 1 minor 3.
+Try adding "init=/bin/sh" to your kernel boot parameters to prove that
+userspace is working.
 
 Cheers,
 g.
