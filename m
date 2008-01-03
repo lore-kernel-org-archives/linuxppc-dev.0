@@ -1,19 +1,21 @@
-Return-Path: <jsamch@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id CC200DDE20
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2520BDDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Jan 2008 14:33:00 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so1688115pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 02 Jan 2008 19:32:59 -0800 (PST)
-Message-ID: <169c03cb0801021932s6671526dve15d1948da52ae30@mail.gmail.com>
-Date: Wed, 2 Jan 2008 22:32:58 -0500
-From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
-Sender: jsamch@gmail.com
-To: linuxppc-embedded@ozlabs.org, kernelppc@gmail.com
-Subject: RE: File system problem
+	Thu,  3 Jan 2008 16:03:22 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JAIEi-0004w7-2j
+	for linuxppc-embedded@ozlabs.org; Wed, 02 Jan 2008 21:03:20 -0800
+Message-ID: <14591717.post@talk.nabble.com>
+Date: Wed, 2 Jan 2008 21:03:20 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Reading a config file in a driver ....
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Date: Wed, 2 Jan 2008 19:50:13 +0100
-> From: "mojtaba"
-> I am trying to boot a root file system build by buildroot. But I got this
-> error" init has generated signal 11 but has no handler for it".
->
-> My kernel version is 2.6.24-rc3
-> My target system is PPC 405 (XILINX VIRTEX II pro) I am using the 26-12-2=
-007
-> snapshot of buildroot.
-[ ... ]
-> Warning: unable to open an initial console.
-> init has generated signal 11 but has no handler for it Kernel panic - not
 
-Hi Mojtaba,
+Hi all ....
 
-I got a similar error on my ML-310 when I tried a new root filesystem.
- As far as I recall, I needed to make sure that two entries existed in
-/dev, namely:
+I am writing a LCD driver in which the default configuration for LCD would
+be loded at the Init . This default configuration if keep in the driver then
+for a change in default configuration we need to compile the driver which we
+never want . Hence we want a .config file in /etc/lcd.config dir which could
+be changed and the next boot will take this configuration as the default
+configuration. 
 
-crw-------    1 root     root       5,   1 Jan  1 05:18 console
-crw-rw----    1 root     root       1,   3 Dec 10  2007 null
+I need to know How to read from the config file in the driver form the dir
+/etc/lcd.config. The driver would be installed at boot up 
 
-I think that you are missing /dev/console and then init cannot run
-since it has nowhere to put its standard output.
+Please if any of you have an experience in this or could suggest something
+,I would really appriciate ...
 
-You can make those by mounting your CF card on your development host
-and (as root) make the nodes:
 
-# mknod -m 660 /dev/console c 5 1
-# mknod -m 660 /dev/null c 1 3
-
-In my case, I use the UartLite (ttyUL0) serial port driver, but I'm
-pretty sure this is going to fix the problem you are observing.
-
-Regards,
-
-Jean-Samuel
---=20
-Ph.D. candidate
-Integrated Microsystems Laboratory
-McGill University, Montr=E9al, QC, CANADA
-Web Page: http://chaos.ece.mcgill.ca
+----Misbah <><
+-- 
+View this message in context: http://www.nabble.com/Reading-a-config-file-in-a-driver-....-tp14591717p14591717.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
