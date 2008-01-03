@@ -1,21 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2520BDDE29
+Return-Path: <sujababuraj@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
+	by ozlabs.org (Postfix) with ESMTP id 7C00FDDE03
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Jan 2008 16:03:22 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JAIEi-0004w7-2j
-	for linuxppc-embedded@ozlabs.org; Wed, 02 Jan 2008 21:03:20 -0800
-Message-ID: <14591717.post@talk.nabble.com>
-Date: Wed, 2 Jan 2008 21:03:20 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
+	Thu,  3 Jan 2008 16:05:06 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1462772wxd.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 02 Jan 2008 21:05:05 -0800 (PST)
+Message-ID: <a3b98ac10801022105w240b0f96race4d3aa84e51f27@mail.gmail.com>
+Date: Thu, 3 Jan 2008 10:35:05 +0530
+From: "suja Baburaj" <sujababuraj@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Reading a config file in a driver ....
+Subject: MPC8260ADS and linux-2.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----=_Part_10647_15705439.1199336705151"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_10647_15705439.1199336705151
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi all ....
+Hi,
 
-I am writing a LCD driver in which the default configuration for LCD would
-be loded at the Init . This default configuration if keep in the driver then
-for a change in default configuration we need to compile the driver which we
-never want . Hence we want a .config file in /etc/lcd.config dir which could
-be changed and the next boot will take this configuration as the default
-configuration. 
+I have an MPC8260ADS board with (eldk)linux-2.4.25 working fine on it.
+Now i want to try linux-2.6.X on the board.
 
-I need to know How to read from the config file in the driver form the dir
-/etc/lcd.config. The driver would be installed at boot up 
+Which is the latest available linux-2.6 for MPC8260ADS and where to
+get it from?
 
-Please if any of you have an experience in this or could suggest something
-,I would really appriciate ...
+Thanks and Regards,
+suja
 
+------=_Part_10647_15705439.1199336705151
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-----Misbah <><
--- 
-View this message in context: http://www.nabble.com/Reading-a-config-file-in-a-driver-....-tp14591717p14591717.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+<br>Hi,<br><br>I have an MPC8260ADS board with (eldk)linux-2.4.25 working fine on it.<br>Now i want to try linux-2.6.X on the board. <br><br>Which is the latest available linux-2.6 for MPC8260ADS and where to<br>get it from?
+<br><br>Thanks and Regards,<br>suja<br>
+
+------=_Part_10647_15705439.1199336705151--
