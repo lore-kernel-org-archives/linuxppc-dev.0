@@ -1,32 +1,16 @@
-Return-Path: <Tony.Li@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7EF4EDDE30
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2008 19:45:03 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m038inIS014145
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jan 2008 01:44:49 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m038ilNu026844
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jan 2008 02:44:48 -0600 (CST)
-Subject: Re: [PATCH] powerpc: Add MPC837x PCIE controller RC mode support
-From: Li Li <r64360@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200801030914.12628.arnd@arndb.de>
-References: <1199272605.22416.8.camel@Guyver>
-	<200801021253.08280.arnd@arndb.de> <1199342440.7375.29.camel@Guyver>
-	<200801030914.12628.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 03 Jan 2008 16:31:06 +0800
-Message-Id: <1199349066.4437.5.camel@Guyver>
-Mime-Version: 1.0
-Cc: Wood Scott <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Phillips Kim <Kim.Phillips@freescale.com>, Li Tony <Tony.Li@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 3 Jan 2008 15:44:32 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080103044432.GB25357@localhost.localdomain>
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801012027p4be16b92r43af773f4e5ae531@mail.gmail.com>
+	<477BADF5.9060003@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <477BADF5.9060003@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,32 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-01-03 at 16:14 +0800, Arnd Bergmann wrote:
-> On Thursday 03 January 2008, Li Li wrote: 
-> > > * The detection method for the primary bus is somewhat fragile, 
-> > > because 
-> > > we depend on the order of the nodes in the device tree, which is
-> not 
-> > > specified to have a meaning. /Maybe/ there could be a property in 
-> > > (at most) one of the PCI host bridge nodes saying that this
-> specific 
-> > > bus 
-> > > is the primary one. 
-> > > 
+On Wed, Jan 02, 2008 at 09:29:57AM -0600, Timur Tabi wrote:
+> Jon Smirl wrote:
+> > On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
+> >>  sound/soc/fsl/fsl_ssi.c                      |  614 +++++++++++++++++++
+> >>  sound/soc/fsl/fsl_ssi.h                      |  224 +++++++
 > > 
-> > Put this primary in code is more save than in dts. 
-> > The dts lacks error checking function. If provide error dts such as
-> two 
-> > pci hosts both has primary property will occur chaos.
+> > I'm confused about this part. You built a driver for the mpc8610 ssi
+> > port.  This port has a device tree entry.
+> > 
+> > +		ssi@16000 {
+> > +			compatible = "fsl,ssi";
+> > +			cell-index = <0>;
+> > +			reg = <16000 100>;
+> > +			interrupt-parent = <&mpic>;
+> > +			interrupts = <3e 2>;
+> > +			fsl,mode = "i2s-slave";
+> > +			codec {
+> > +				compatible = "cirrus,cs4270";
+> > +				/* MCLK source is a stand-alone oscillator */
+> > +				bus-frequency = <bb8000>;
+> > +			};
+> > +		};
+> > 
+> > But then you don't create an of_platform_driver for this device.
+> > Instead you create one for the fabric driver, struct
+> > of_platform_driver mpc8610_hpcd_of_driver, and directly link the SSI
+> > driver into it.
 > 
-> It's easy enough to just panic() if you find more than one primary
-> bus, 
-> since the information from the device tree is static enough that one 
-> will know how to fix this after seeing the error.
-> 
+> That's the best plan I came up with.  This is apparently fixed in ASoC 
+> V2.  From ASoC V1's perspective, the fabric driver must be the master. 
+> However, it doesn't make sense to have a node in the device tree for the 
+> fabric driver, because there is no such "device".  The fabric driver is 
+> an abstraction.  So I need to chose some other node to probe the fabric 
+> driver with.  I chose the SSI, since each SSI can have only one
+> codec.
 
-It is just a case. what about if do not find primary pci host.
-The current code can prevent this potential error and make system
-robust.
+Instantiating the fabric driver off any node is wrong, precisely
+because it is an abstraction.  The fabric driver should be
+instantiated by the platform code.
 
-- Tony
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
