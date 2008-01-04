@@ -1,21 +1,19 @@
-Return-Path: <kernelppc@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 080B3DDEC3
+Return-Path: <ravi.rao@rflelect.com>
+Received: from noteshub1.teal.com (mail.teal.com [67.155.213.211])
+	by ozlabs.org (Postfix) with ESMTP id 291D6DDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 22:56:51 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so608946nfd.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 04 Jan 2008 03:56:50 -0800 (PST)
-From: "mojtaba" <kernelppc@gmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <169c03cb0801031557r1efbd89fsd971533e04477daa@mail.gmail.com>
-In-Reply-To: <169c03cb0801031557r1efbd89fsd971533e04477daa@mail.gmail.com>
-Subject: RE: File system problem
-Date: Fri, 4 Jan 2008 12:57:36 +0100
-Message-ID: <008101c84ec9$002b2640$008172c0$@com>
+	Sat,  5 Jan 2008 07:58:14 +1100 (EST)
+In-Reply-To: <14612548.post@talk.nabble.com>
+To: linuxlink-help@timesys.com
+Subject: Control not branching to the instruction present at resetvec i.e
+	0xfffffffc
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <OFD408300E.ACB35FD3-ON852573C6.0072065E-852573C6.007337FA@RFLELECT.COM>
+From: ravi.rao@rflelect.com
+Date: Fri, 4 Jan 2008 15:58:08 -0500
+Content-Type: multipart/alternative;
+	boundary="=_alternative 007337F5852573C6_="
+Cc: Miki.Groftisza@rflelect.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,84 +24,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-Thank you all for your helps.
+This is a multipart message in MIME format.
+--=_alternative 007337F5852573C6_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Today I tried to make the file system again using buildroot. This time I
-included busybox to the packages for target system (Before that, I did =
-not
-include the busybox). Surprisingly the system boot correctly.
+Hi All,
+    We have a custom target board based on PPC-EP405. We just got the 
+board from the hardware team .I connected the board to BDI200 and powered 
+it on. 
+The control came to the resetvec address which is 0xfffffffc. I was able 
+to read and write to flash. So I erased the flash and burnt the bootloader 
+into flash from 0xfffc0000.
+I verified that the instruction at 0xfffffffc is 4bfc2104 whicis actually 
+a branch to 0xfffc2100. Also a memory dump of 0xfffc2100 shows the correct 
+code. This proved that
+the uboot bootloader was burnt properly.
+Now when I reset the board the control never reaches 0xfffc2100 i.e for 
+some reason the code at the resetvec is not getting executed. Any help or 
+pointers to resolve this is greatly appreciated.
+Thanks,
+Ravishankar Govindarao
+RFL Electronics Inc.
+E-mail : Ravi.Rao@rflelect.com
+Voice: 973.334.3100 Ext. 233
+Fax: 973.334.3863
+ 
+CONFIDENTIALITY NOTE
+This e-mail, including any attachments, may contain confidential and/or 
+legally privileged information.  The Information is intended only for the 
+use of the individual or entity named on this e-mail .  If you are not the 
+intended recipient, you are hereby notified that any disclosure, copying, 
+distribution, or the taking of any action in reliance on the contents of 
+this transmitted Information is strictly prohibited.  Further, if you are 
+not the intended recipient, please notify us by return e-mail and delete 
+the Information promptly.
+ 
+ 
+ 
+--=_alternative 007337F5852573C6_=
+Content-Type: text/html; charset="US-ASCII"
 
-But, I do not want to use busybox. I already compiled coreutiles and I =
-want
-to put them on my target system. After building the root file system I =
-tried
-to replace those symbolic links to busybox(such as ls, cp, ...) with the
-real commands from coreutiles but I got this error.
 
-Freeing unused kernel memory: 76k init
-missing file opeKernel panic - not syncing: Attempted to kill init!
-rand
-Try `/bin/Rebooting in 180 seconds..sh --help' for more information.
-
-So, how can I use coreutils instead of busybox?
-
-Regards,
-Mojtaba
-
------Original Message-----
-From: jsamch@gmail.com [mailto:jsamch@gmail.com] On Behalf Of =
-Jean-Samuel
-Chenard
-Sent: Friday, January 04, 2008 12:58 AM
-To: linuxppc-embedded@ozlabs.org; kernelppc@gmail.com
-Subject: RE: File system problem
-
-> Message: 9
-> Date: Thu, 3 Jan 2008 18:00:14 +0100
-> From: "mojtaba"
->
-> Actually, I removed the console and null created by buildroot and =
-create
-> them manually using make node. This time the system freezes at this =
-point.
-> "Freeing unused kernel memory: 76k init"
-
-Hi Mojtaba,
-
-I just want to comment on your observation that the file size in /dev
-was zero.  This is normal as the device files are 'special' since they
-are a mean of abstracting the interface to the kernel.  I had to read
-the online book listed below before I could understand the inner
-workings of those special files.  If you plan on interfacing your FPGA
-with the Linux Kernel, I suggest you read it too, as it is a very
-insightful book:
-http://lwn.net/Kernel/LDD3/
-
-At this point, your system is not frozen, but your init script and
-configuration files are probably not all correctly set.  You might
-need to read some documentation about buildroot to see what its init
-scripts are trying to do.
-
-You might be missing a library or symlink (I got that problem in my
-attempt to build the BusyBox root filesystem from scratch).  One way
-to go at the problem is to pass the init=3D/bin/ash or something like
-that to your kernel at the boot prompt (you could even make some
-trivial 'hello world' program and pass it to the kernel as the init
-process).  This way, you can dive right into a shell or your program
-and avoid init and its configuration.
-
-After some copying of required libraries in /lib (I'm using uClibc)
-and the creation of the required symbolic links, I got my Busybox root
-filesystem working on my ML-310 board.
-
-Good luck!
-
-Regards,
-
-Jean-Samuel
---=20
-Ph.D. candidate
-Integrated Microsystems Laboratory
-McGill University, Montr=E9al, QC, CANADA
-Web Page: http://chaos.ece.mcgill.ca
+<br><font size=2 face="sans-serif">Hi All,</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; We have a custom target
+board based on PPC-EP405. We just got the board from the hardware team
+.I connected the board to BDI200 and powered it on. </font>
+<br><font size=2 face="sans-serif">The control came to the resetvec address
+which is 0xfffffffc. I was able to read and write to flash. So I erased
+the flash and burnt the bootloader into flash from 0xfffc0000.</font>
+<br><font size=2 face="sans-serif">I verified that the instruction at 0xfffffffc
+is <b>4bfc2104 </b>whicis actually a branch to 0xfffc2100. Also a memory
+dump of 0xfffc2100 shows the correct code. This proved that</font>
+<br><font size=2 face="sans-serif">the uboot bootloader was burnt properly.</font>
+<br><font size=2 face="sans-serif">Now when I reset the board the control
+never reaches 0xfffc2100 i.e for some reason the code at the resetvec is
+not getting executed. Any help or pointers to resolve this is greatly appreciated.</font>
+<br><font size=2 face="sans-serif">Thanks,<br>
+</font><font size=2>Ravishankar Govindarao<br>
+RFL Electronics Inc.<br>
+E-mail</font><font size=1> </font><font size=2>: </font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue><u>Ravi.Rao@rflelect.com</u></font></a>
+<br><font size=2>Voice: 973.334.3100 Ext. 233<br>
+Fax: 973.334.3863</font>
+<p><font size=2>&nbsp;</font>
+<div align=center>
+<br><font size=2 color=blue><u>CONFIDENTIALITY NOTE</u></font></div>
+<br><font size=1>This e-mail, including any attachments, may contain confidential
+and/or legally privileged information.&nbsp; The Information is intended
+only for the use of the individual or entity named on this e-mail</font><font size=1>
+</font><font size=1>.&nbsp; If you are not the intended recipient, you
+are hereby notified that any disclosure, copying, distribution, or the
+taking of any action in reliance on the contents of this transmitted Information
+is strictly prohibited.&nbsp; Further, if you are not the intended recipient,
+please notify us by return e-mail and delete the Information promptly.</font>
+<p><font size=2>&nbsp;</font>
+<p><font size=2>&nbsp;</font>
+<p><font size=3>&nbsp;</font>
+--=_alternative 007337F5852573C6_=--
