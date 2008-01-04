@@ -1,29 +1,20 @@
-Return-Path: <rubini@mail.gnudd.com>
-Received: from mail.gnudd.com (unknown [213.203.150.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EC542DDE02
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 714D8DDDF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 21:20:43 +1100 (EST)
-Received: from mail.gnudd.com (rubini@localhost [127.0.0.1])
-	by mail.gnudd.com (8.13.4/8.13.4/Debian-3sarge3) with ESMTP id
-	m04AKcNP031636
-	for <linuxppc-embedded@ozlabs.org>; Fri, 4 Jan 2008 11:20:38 +0100
-Received: (from rubini@localhost)
-	by mail.gnudd.com (8.13.4/8.13.4/Submit) id m04AKbm5031633
-	for linuxppc-embedded@ozlabs.org; Fri, 4 Jan 2008 11:20:37 +0100
-Date: Fri, 4 Jan 2008 11:20:37 +0100
-From: Alessandro Rubini <rubini@gnudd.com>
+	Fri,  4 Jan 2008 21:45:49 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: ioremap and outb
-Message-ID: <20080104102037.GA31627@mail.gnudd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Sender: rubini@gnudd.com
-In-Reply-To: <14612559.post@talk.nabble.com>
+Date: Fri, 4 Jan 2008 11:45:20 +0100
 References: <14612559.post@talk.nabble.com>
-	<F1F6EC0C8B75034F9E3A79FC85122E8EC2DE1E@aquib01a>
 	<20080103215456.GA20691@mail.gnudd.com>
+	<20080104102037.GA31627@mail.gnudd.com>
+In-Reply-To: <20080104102037.GA31627@mail.gnudd.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801041145.21085.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,27 +25,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Friday 04 January 2008, Alessandro Rubini wrote:
+> > =A0 =A0 =A0 =A0 =A0addr=3Dioremap(base_addr,size); =A0 =A0 =A0 =A0 =A0/=
+/ Remap to Mem mapped
+>=20
+> Yes.
 
-Please don't change subject matter without changing subject line, and please
-open a new thread when asking a new question.
+In newer drivers that are specific to powerpc, it's often easier
+to use the of_iomap() function to map a device, so you don't
+have to calculate the base address manually from the device tree.
 
-> I am writing a driver in which device port is mapped to CPLD and 8 bit data
-> bus is directly connected from processor to CPLD. Read write on CPLD memory
-> mapped (buffer/register) is required to control the device. This is now IO
-> mapped to processor.
+> > =A0 =A0 =A0 =A0 =A0out_8(addr) and in_8(addr);=20
+>=20
+> It should be right, although __raw_readb() and __raw_writeb() may
+> suffice for you.
 
-This is typical. You'll find quite a lot of examples.
+Actually not. While they may work, the __raw_* functions do not have
+a specific meaning in device drivers. Depending on the I/O model, they
+may or may not work on a given platform. The {in,out}_{8,{be,le}{16,32,64}}
+functions however are defined to operate on local (not PCI) ioremapped
+mmio devices, and are usually more efficient than the {read,write}{b,w,l,q}
+variant you'd use on PCI devices.
 
->          addr=ioremap(base_addr,size);          // Remap to Mem mapped
-
-Yes.
-
->          out_8(addr) and in_8(addr); 
-
-It should be right, although __raw_readb() and __raw_writeb() may
-suffice for you. Please check the comments in <asm/io.h>.
-
-It may also happen that you need to read/write  32 bits instead of 8,
-but this depends on your specific hardware.
-
-/alessandro
+	Arnd <><
