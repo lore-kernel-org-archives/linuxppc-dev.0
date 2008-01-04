@@ -1,19 +1,24 @@
-Return-Path: <jsamch@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id 697D9DDEFD
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8E725DDE99
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 10:57:44 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so2069943pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 03 Jan 2008 15:57:43 -0800 (PST)
-Message-ID: <169c03cb0801031557r1efbd89fsd971533e04477daa@mail.gmail.com>
-Date: Thu, 3 Jan 2008 18:57:43 -0500
-From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
-Sender: jsamch@gmail.com
-To: linuxppc-embedded@ozlabs.org, kernelppc@gmail.com
-Subject: RE: File system problem
+	Fri,  4 Jan 2008 19:32:24 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JAhyX-00083z-45
+	for linuxppc-embedded@ozlabs.org; Fri, 04 Jan 2008 00:32:21 -0800
+Message-ID: <14612548.post@talk.nabble.com>
+Date: Fri, 4 Jan 2008 00:32:21 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Reading a config file in a driver ....
+In-Reply-To: <477D2CE0.1050806@kenati.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+References: <14591717.post@talk.nabble.com> <20080103163019.GA4223@lixom.net>
+	<477D2CE0.1050806@kenati.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +29,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Message: 9
-> Date: Thu, 3 Jan 2008 18:00:14 +0100
-> From: "mojtaba"
->
-> Actually, I removed the console and null created by buildroot and create
-> them manually using make node. This time the system freezes at this point=
-.
-> "Freeing unused kernel memory: 76k init"
 
-Hi Mojtaba,
+i appriciate your concept and i need to know this :-
 
-I just want to comment on your observation that the file size in /dev
-was zero.  This is normal as the device files are 'special' since they
-are a mean of abstracting the interface to the kernel.  I had to read
-the online book listed below before I could understand the inner
-workings of those special files.  If you plan on interfacing your FPGA
-with the Linux Kernel, I suggest you read it too, as it is a very
-insightful book:
-http://lwn.net/Kernel/LDD3/
+The config should be in a structure or a bit mask . The user will have to
+change the value whenever he needs to change the default config. Where
+should i put that struct or bit field defination ???? He should know it
+preciesly before he change ????
 
-At this point, your system is not frozen, but your init script and
-configuration files are probably not all correctly set.  You might
-need to read some documentation about buildroot to see what its init
-scripts are trying to do.
+Can you share with me your Implimentation so that i could get the exactly
+how you had done ...
 
-You might be missing a library or symlink (I got that problem in my
-attempt to build the BusyBox root filesystem from scratch).  One way
-to go at the problem is to pass the init=3D/bin/ash or something like
-that to your kernel at the boot prompt (you could even make some
-trivial 'hello world' program and pass it to the kernel as the init
-process).  This way, you can dive right into a shell or your program
-and avoid init and its configuration.
+----Misbah < ><
 
-After some copying of required libraries in /lib (I'm using uClibc)
-and the creation of the required symbolic links, I got my Busybox root
-filesystem working on my ML-310 board.
+Carlos Munoz-2 wrote:
+> 
+> Olof Johansson wrote:
+>> On Wed, Jan 02, 2008 at 09:03:20PM -0800, Misbah khan wrote:
+>>   
+>>> Hi all ....
+>>>
+>>> I am writing a LCD driver in which the default configuration for LCD
+>>> would
+>>> be loded at the Init . This default configuration if keep in the driver
+>>> then
+>>> for a change in default configuration we need to compile the driver
+>>> which we
+>>> never want . Hence we want a .config file in /etc/lcd.config dir which
+>>> could
+>>> be changed and the next boot will take this configuration as the default
+>>> configuration. 
+>>>
+>>> I need to know How to read from the config file in the driver form the
+>>> dir
+>>> /etc/lcd.config. The driver would be installed at boot up 
+>>>     
+>>
+>> The driver/kernel shouldn't read the file directly, if anything you
+>> should have a userspace tool that reads it and adjusts the driver via
+>> sysfs or similar. That tool can be run from some of the init scripts,
+>> or from the ramdisk in case you want to do it early.
+>>   
+> What I've done in the past is to use module_param() to define variables 
+> that get set when the module is loaded. Then all you need to do is edit 
+> the /etc/modules file and change the parameter value. However, this 
+> technique is only efficient if only a few parameters will ever change. 
+> If you need to change more than a few parameters, Olof's suggestion 
+> would be preferred.
+> 
+> Carlos
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-Good luck!
-
-Regards,
-
-Jean-Samuel
---=20
-Ph.D. candidate
-Integrated Microsystems Laboratory
-McGill University, Montr=E9al, QC, CANADA
-Web Page: http://chaos.ece.mcgill.ca
+-- 
+View this message in context: http://www.nabble.com/Reading-a-config-file-in-a-driver-....-tp14591717p14612548.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
