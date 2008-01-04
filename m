@@ -1,20 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 714D8DDDF9
+Return-Path: <sujababuraj@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.186])
+	by ozlabs.org (Postfix) with ESMTP id ACF43DDE4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jan 2008 21:45:49 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: ioremap and outb
-Date: Fri, 4 Jan 2008 11:45:20 +0100
-References: <14612559.post@talk.nabble.com>
-	<20080103215456.GA20691@mail.gnudd.com>
-	<20080104102037.GA31627@mail.gnudd.com>
-In-Reply-To: <20080104102037.GA31627@mail.gnudd.com>
+	Fri,  4 Jan 2008 22:22:10 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so4474279rvf.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 04 Jan 2008 03:22:09 -0800 (PST)
+Message-ID: <a3b98ac10801040322p236e9467xc61c4e8dc03532ef@mail.gmail.com>
+Date: Fri, 4 Jan 2008 16:52:09 +0530
+From: "suja Baburaj" <sujababuraj@gmail.com>
+To: "Rune Torgersen" <runet@innovsys.com>
+Subject: Re: MPC8260ADS and linux-2.6
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03D1682A@ismail.innsys.innovsys.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801041145.21085.arnd@arndb.de>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_15307_23750534.1199445729544"
+References: <a3b98ac10801022105w240b0f96race4d3aa84e51f27@mail.gmail.com>
+	<477D2255.3040803@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D1682A@ismail.innsys.innovsys.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,26 +29,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 04 January 2008, Alessandro Rubini wrote:
-> > =A0 =A0 =A0 =A0 =A0addr=3Dioremap(base_addr,size); =A0 =A0 =A0 =A0 =A0/=
-/ Remap to Mem mapped
->=20
-> Yes.
+------=_Part_15307_23750534.1199445729544
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-In newer drivers that are specific to powerpc, it's often easier
-to use the of_iomap() function to map a device, so you don't
-have to calculate the base address manually from the device tree.
+Hi,
+The PQ2FADS support worked for MPC8260ADS.
+Thanks to Rune and scott for the input.
+-suja
 
-> > =A0 =A0 =A0 =A0 =A0out_8(addr) and in_8(addr);=20
->=20
-> It should be right, although __raw_readb() and __raw_writeb() may
-> suffice for you.
 
-Actually not. While they may work, the __raw_* functions do not have
-a specific meaning in device drivers. Depending on the I/O model, they
-may or may not work on a given platform. The {in,out}_{8,{be,le}{16,32,64}}
-functions however are defined to operate on local (not PCI) ioremapped
-mmio devices, and are usually more efficient than the {read,write}{b,w,l,q}
-variant you'd use on PCI devices.
 
-	Arnd <><
+> >
+> > suja Baburaj wrote:
+> > > I have an MPC8260ADS board with (eldk)linux-2.4.25 working
+> > fine on it.
+> > > Now i want to try linux-2.6.X on the board.
+> >
+> > There's no support for that specific board in mainstream 2.6
+> > yet, but it
+> > should be fairly simple to get it working using the
+> > mpc8272ads support
+> > as an example.
+>
+> There is support, but it is in arch/ppc not arch/powerpc
+> (PQ2FADS support works for this board in arch/ppc)
+>
+
+------=_Part_15307_23750534.1199445729544
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>The PQ2FADS support worked for MPC8260ADS.<br>Thanks to Rune and scott for the input.<br>-suja<br><br><br><div class="gmail_quote"><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<br><div><div></div><div class="Wj3C7c">&gt;<br>&gt; suja Baburaj wrote:<br>&gt; &gt; I have an MPC8260ADS board with (eldk)linux-2.4.25 working<br>&gt; fine on it.<br>&gt; &gt; Now i want to try linux-2.6.X on the board.
+<br>&gt;<br>&gt; There&#39;s no support for that specific board in mainstream 2.6<br>&gt; yet, but it<br>&gt; should be fairly simple to get it working using the<br>&gt; mpc8272ads support<br>&gt; as an example.<br><br></div>
+</div>There is support, but it is in arch/ppc not arch/powerpc<br>(PQ2FADS support works for this board in arch/ppc)<br></blockquote></div><br>
+
+------=_Part_15307_23750534.1199445729544--
