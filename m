@@ -1,20 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 4 Jan 2008 10:51:56 +1100
+Date: Fri, 4 Jan 2008 13:43:24 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20080103235156.GE12883@localhost.localdomain>
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
-	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
-	<477BAB67.4080003@freescale.com>
-	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
-	<477D2150.4020506@freescale.com>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: Outstanding DTC patches?
+Message-ID: <20080104024324.GA4326@localhost.localdomain>
+References: <1199298062.7345.25.camel@ld0161-tx32>
+	<20080103044843.GD25357@localhost.localdomain>
+	<E1JAQqT-00056B-FP@jdl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <477D2150.4020506@freescale.com>
-Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, alsa-devel@alsa-project.org,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <E1JAQqT-00056B-FP@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 03, 2008 at 11:54:24AM -0600, Timur Tabi wrote:
-> Jon Smirl wrote:
-> > On 1/2/08, Timur Tabi <timur@freescale.com> wrote:
-> >> Jon Smirl wrote:
-> >>> On 1/1/08, Jon Smirl <jonsmirl@gmail.com> wrote:
-> >>>> On 12/19/07, Timur Tabi <timur@freescale.com> wrote:
-[snip]
-> > Don't we want to follow the device tree policy of putting the device
-> > on the controlling bus and then link it to the data bus?
+On Thu, Jan 03, 2008 at 08:14:53AM -0600, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > 
+> > I posted this one a while back, but I guess it dropped through the
+> > cracks.
 > 
-> Normally, that sounds like a good idea, but the cs4270 is an I2S
-> device first, and an I2C device second.  I need to be able to find
-> that codec from the I2S node.  My I2S driver would not know to scan
-> all I2C devices to find the codec.
+> Yep, sorry.
+> 
+> > There's also the patch I sent you quite a long time ago that
+> > adds a clarifying readme about the licensing situation - that might be
+> > an idea for v1.1, too.
+> 
+> I can not find this; neither locally nor on patchworks.
+> Do you have a Subject: line, a URL, or could you
+> please repost it?
 
-And what distinction are you drawing between "first" and "second"
-here?  For the device tree, the primary bus should the the one by
-which it's addressable - i.e. where the control registers are, not
-the data path.
+Ah, I think I sent it by private mail, so it won't be in patchwork.
+Here you are:
 
-Why would the I2S need to scan for codecs?  Wouldn't it be up to the
-codec driver to register with I2S?
+dtc/libfdt: Add README clarifying licensing
+
+The fact the dtc are distributed together, but have different licenses
+can be a bit confusing.  Several people have enquired as to what the
+deal is with the libfdt licensing, so this patch adds a README
+clarifying the situation with a rationale.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/README.license
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/README.license	2007-11-02 11:43:19.000000000 +1100
+@@ -0,0 +1,56 @@
++Licensing and contribution policy of dtc and libfdt
++===================================================
++
++This dtc package contains two pieces of software: dtc itself, and
++libfdt which comprises the files in the libfdt/ subdirectory.  These
++two pieces of software, although closely related, are quite distinct.
++dtc does not incoporate or rely on libfdt for its operation, nor vice
++versa.  It is important that these two pieces of software have
++different license conditions.
++
++As the copyright banners in each source file attest, dtc is licensed
++under the GNU GPL.  The full text of the GPL can be found in the file
++entitled 'GPL' which should be included in this package.  dtc code,
++therefore, may not be incorporated into works which do not have a GPL
++compatible license.
++
++libfdt, however, is GPL/BSD dual-licensed.  That is, it may be used
++either under the terms of the GPL, or under the terms of the 2-clause
++BSD license (aka the ISC license).  The full terms of that license are
++given in the copyright banners of each of the libfdt source files.
++This is, in practice, equivalent to being BSD licensed, since the
++terms of the BSD license are strictly more permissive than the GPL.
++
++I made the decision to license libfdt in this way because I want to
++encourage widespread and correct usage of flattened device trees,
++including by proprietary or otherwise GPL-incompatible firmware or
++tools.  Allowing libfdt to be used under the terms of the BSD license
++makes that it easier for vendors or authors of such software to do so.
++
++This does mean that libfdt code could be "stolen" - say, included in a
++proprietary fimware and extended without contributing those extensions
++back to the libfdt mainline.  While I hope that doesn't happen, I
++believe the goal of allowing libfdt to be widely used is more
++important than avoiding that.  libfdt is quite small, and hardly
++rocket science; so the incentive for such impolite behaviour is small,
++and the inconvenience caused therby is not dire.
++
++Licenses such as the LGPL which would allow code to be used in non-GPL
++software, but also require contributions to be returned were
++considered.  However, libfdt is designed to be used in firmwares and
++other environments with unusual technical constraints.  It's difficult
++to anticipate all possible changes which might be needed to meld
++libfdt into such environments and so difficult to suitably word a
++license that puts the boundary between what is and isn't permitted in
++the intended place.  Again, I judged encouraging widespread use of
++libfdt by keeping the license terms simple and familiar to be the more
++important goal.
++
++**IMPORTANT** It's intended that all of libfdt as released remain
++permissively licensed this way.  Therefore only contributions which
++are released under these terms can be merged into the libfdt mainline.
++
++
++David Gibson <david@gibson.dropbear.id.au>
++(principal original author of dtc and libfdt)
++2 November 2007
+
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
