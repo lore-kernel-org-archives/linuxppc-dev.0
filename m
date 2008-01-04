@@ -1,19 +1,16 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 800CEDDEB9
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 01:30:18 +1100 (EST)
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] Add yyerrorf() for formatted error messages. 
-In-Reply-To: Your message of "Thu, 03 Jan 2008 17:45:58 CST."
-	<477D73B6.1070108@freescale.com>
-References: <20080103234329.GA8441@ld0162-tx32.am.freescale.net>
-	<477D73B6.1070108@freescale.com>
-Date: Fri, 04 Jan 2008 08:30:12 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Outstanding DTC patches? 
+In-Reply-To: Your message of "Fri, 04 Jan 2008 13:43:24 +1100."
+	<20080104024324.GA4326@localhost.localdomain>
+References: <1199298062.7345.25.camel@ld0161-tx32>
+	<20080103044843.GD25357@localhost.localdomain>
+	<E1JAQqT-00056B-FP@jdl.com>
+	<20080104024324.GA4326@localhost.localdomain>
+Date: Fri, 04 Jan 2008 08:38:21 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JAnYr-0003hT-06@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <E1JAngj-0003ih-Or@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Scott Wood mumbled:
+So, like, the other day David Gibson mumbled:
+> Ah, I think I sent it by private mail, so it won't be in patchwork.
+> Here you are:
+
+Ah, that explains it.
+
+> dtc/libfdt: Add README clarifying licensing
 > 
-> I forgot to tag them as such, but these are of course dtc patches and
-> not Linux patches.
+> The fact the dtc are distributed together, but have different licenses
+> can be a bit confusing.  Several people have enquired as to what the
+> deal is with the libfdt licensing, so this patch adds a README
+> clarifying the situation with a rationale.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-All three applied (to DTC :-)).
+After correcting the log-message English a bit, it was applied.
 
-Will you follow up with a patch for /bininc/ or /bin-include/
-as well now?  (I'm fine with either, and I forget where David's
-preference there landed.)
+    The fact that the dtc and libfdt are distributed together, but have
+    different licenses, can be a bit confusing.  Several people have
+    enquired as to what the deal is with the libfdt licensing, so this
+    patch adds a README clarifying the situation with a rationale.
+
+To be in agreement in the record, I too signed off on that patch.
+
+Objections to either, please let me know!
 
 Thanks,
 jdl
