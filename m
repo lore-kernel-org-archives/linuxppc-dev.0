@@ -1,23 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 52F09DDDEC
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 08:54:53 +1100 (EST)
-Subject: Re: [PATCH] ibm_newemac: Increase number of default rx-/tx-buffers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@gmail.com>
-In-Reply-To: <20080105154805.118eb3d1@vader.jdub.homelinux.org>
-References: <1199526609-12290-1-git-send-email-sr@denx.de>
-	<1199528388.7291.55.camel@pasglop> <200801051338.17957.sr@denx.de>
-	<1199566386.7291.58.camel@pasglop>
-	<20080105154805.118eb3d1@vader.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Sun, 06 Jan 2008 08:54:28 +1100
-Message-Id: <1199570068.7291.65.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 5 Jan 2008 23:25:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] MTD for Taco
+Message-ID: <20080105122542.GH4326@localhost.localdomain>
+References: <477F12D1.2070109@pikatech.com> <200801051041.18173.sr@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200801051041.18173.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, Jan 05, 2008 at 10:41:17AM +0100, Stefan Roese wrote:
+> On Saturday 05 January 2008, Sean MacLennan wrote:
+> > +++ drivers/mtd/maps/taco.c     2008-01-02 13:07:43.000000000 -0500
+> > @@ -0,0 +1,140 @@
+> > +/*
+> > + * $Id: $
+> > + *
+> > + * drivers/mtd/maps/taco.c
+> > + *
+> > + * Mapping for PIKA Taco flash
+> 
+> I'm pretty sure that you don't need a board specific mapping driver
+> for NOR flash. physmap_of should be exactly what you need. You just need
+> to fill the device tree properties correctly.
 
-On Sat, 2008-01-05 at 15:48 -0600, Josh Boyer wrote:
-> No need for a defconfig update patch.  Paul or I usually do a general
-> defconfig update for most boards before the next kernel version.  This
-> will get picked up then.
+Absolutely.  We should not be using C-coded maps in arch/powerpc
 
-Will it ? I think the defconfigs will stick to the old value.
-
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
