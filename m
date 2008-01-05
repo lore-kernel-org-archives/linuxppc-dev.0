@@ -1,14 +1,14 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 5508CDDE2B
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 16:11:51 +1100 (EST)
-Message-ID: <477F1196.7000109@pikatech.com>
-Date: Sat, 05 Jan 2008 00:11:50 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E0990DDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 16:17:06 +1100 (EST)
+Message-ID: <477F12D1.2070109@pikatech.com>
+Date: Sat, 05 Jan 2008 00:17:05 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Hwmon for Taco
-Content-Type: multipart/mixed; boundary="------------010109060708050703090707"
+Subject: [PATCH] MTD for Taco
+Content-Type: multipart/mixed; boundary="------------000806040002010103050004"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,481 +19,287 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------010109060708050703090707
+--------------000806040002010103050004
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-The taco has an fpga that controls the fan. It must be feed the current 
-temperature from an ad7414 chip. This patch adds a patched ad7414 temp 
-sensor from the ppc arch and adds a small driver (taco-dtm) to read the 
-temperature and feed it to the fpga.
+This patch adds the maps for the taco. It also gets the ndfc.c NAND 
+driver in a compilable state. The map is guaranteed to change since the 
+exact NOR/NAND flash configuration is in flux right now when we found 
+the 256M NAND flash won't boot properly.
 
-Without this driver, the taco will just run the fan at high speed all 
-the time. I don't even know if this is a problem since cases for the 
-taco are very rare and I don't have one. I have never actually heard the 
-fan running in a case. Although I did see an early version of the fan 
-spin up and spin down.
+Currently it configures the NOR in a reasonable fashion and leaves the 
+NAND as one honkin' parition.
 
 Cheers,
    Sean
 
---------------010109060708050703090707
+
+--------------000806040002010103050004
 Content-Type: text/plain;
- name="hwmon.patch"
+ name="mtd.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="hwmon.patch"
+ filename="mtd.patch"
 
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index a0445be..2fda94d 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -57,6 +57,16 @@ config SENSORS_ABITUGURU3
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called abituguru3.
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index a592fc0..24cbafa 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -588,6 +588,15 @@ config MTD_INTEL_VR_NOR
+ 	  Map driver for a NOR flash bank located on the Expansion Bus of the
+ 	  Intel Vermilion Range chipset.
  
-+config SENSORS_AD7414
-+	tristate "Analog Devices AD7414"
-+	depends on I2C && EXPERIMENTAL
++config MTD_TACO
++	tristate "Flash devices mapped on Taco boards."
++	depends on MTD_CFI && PPC32 && 44x && TACO
 +	help
-+	  If you say yes here you get support for the Analog Devices
-+	  AD7414 temperature monitoring chip.
++	  This enables access routined for the flash chips on the PIKA
++	  Taco board.
++	  If you have this board and would like to use the flash
++	  chips on it, say 'Y'.
 +
-+	  This driver can also be built as a module. If so, the module
-+	  will be called ad7414.
-+
- config SENSORS_AD7418
- 	tristate "Analog Devices AD7416, AD7417 and AD7418"
- 	depends on I2C && EXPERIMENTAL
-@@ -763,4 +773,13 @@ config HWMON_DEBUG_CHIP
- 	  a problem with I2C support and want to see more of what is going
- 	  on.
+ config MTD_PLATRAM
+ 	tristate "Map driver for platform device RAM (mtd-ram)"
+ 	select MTD_RAM
+diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+index 316382a..4de7ef9 100644
+--- a/drivers/mtd/maps/Makefile
++++ b/drivers/mtd/maps/Makefile
+@@ -69,3 +69,4 @@ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+ obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
+ obj-$(CONFIG_MTD_MTX1)		+= mtx-1_flash.o
+ obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
++obj-$(CONFIG_MTD_TACO)	        += taco.o
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index 246d451..ca9f35a 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -153,7 +153,7 @@ config MTD_NAND_S3C2410_HWECC
  
-+config TACO_DTM
-+	tristate "PIKA DTM (Dynamic Thermal Management)"
-+	depends on HWMON && TACO
-+	select SENSORS_AD7414
-+	default y
-+	help
-+	  Say Y here if you have a PIKA Taco board. This driver is
-+	  required for the DTM to work properly.
-+
- endif # HWMON
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 55595f6..f993c5a 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_SENSORS_W83791D)	+= w83791d.o
+ config MTD_NAND_NDFC
+ 	tristate "NDFC NanD Flash Controller"
+-	depends on 4xx && !PPC_MERGE
++	depends on 4xx
+ 	select MTD_NAND_ECC_SMC
+ 	help
+ 	 NDFC Nand Flash Controllers are integrated in IBM/AMCC's 4xx SoCs
+diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
+index 1c0e89f..f5e93cf 100644
+--- a/drivers/mtd/nand/ndfc.c
++++ b/drivers/mtd/nand/ndfc.c
+@@ -24,11 +24,6 @@
+ #include <linux/platform_device.h>
  
- obj-$(CONFIG_SENSORS_ABITUGURU)	+= abituguru.o
- obj-$(CONFIG_SENSORS_ABITUGURU3)+= abituguru3.o
-+obj-$(CONFIG_SENSORS_AD7414)	+= ad7414.o
- obj-$(CONFIG_SENSORS_AD7418)	+= ad7418.o
- obj-$(CONFIG_SENSORS_ADM1021)	+= adm1021.o
- obj-$(CONFIG_SENSORS_ADM1025)	+= adm1025.o
-@@ -69,6 +70,8 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
- obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
- obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
+ #include <asm/io.h>
+-#ifdef CONFIG_40x
+-#include <asm/ibm405.h>
+-#else
+-#include <asm/ibm44x.h>
+-#endif
  
-+obj-$(CONFIG_TACO_DTM)		+= taco-dtm.o
+ struct ndfc_nand_mtd {
+ 	struct mtd_info			mtd;
+@@ -110,6 +105,40 @@ static int ndfc_calculate_ecc(struct mtd_info *mtd,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_TACO
++/* The NDFC may allow 32bit read/writes, but it sure doesn't work on
++ * the taco!
++ */
++static void ndfc_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
++{
++	struct ndfc_controller *ndfc = &ndfc_ctrl;
++	uint8_t *p = (uint8_t *) buf;
 +
- ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
- EXTRA_CFLAGS += -DDEBUG
- endif
++	for(;len > 0; len -= 1)
++		*p++ = __raw_readb(ndfc->ndfcbase + NDFC_DATA);
++}
++
++static void ndfc_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
++{
++	struct ndfc_controller *ndfc = &ndfc_ctrl;
++	uint8_t *p = (uint8_t *) buf;
++
++	for(;len > 0; len -= 1)
++		__raw_writeb(*p++, ndfc->ndfcbase + NDFC_DATA);
++}
++
++static int ndfc_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
++{
++	struct ndfc_controller *ndfc = &ndfc_ctrl;
++	uint8_t *p = (uint8_t *) buf;
++
++	for(;len > 0; len -= 1)
++		if (*p++ != __raw_readb(ndfc->ndfcbase + NDFC_DATA))
++			return -EFAULT;
++
++	return 0;
++}
++#else
+ /*
+  * Speedups for buffer read/write/verify
+  *
+@@ -145,6 +174,7 @@ static int ndfc_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
+ 			return -EFAULT;
+ 	return 0;
+ }
++#endif
+ 
+ /*
+  * Initialize chip structure
+@@ -237,7 +267,7 @@ static int ndfc_nand_probe(struct platform_device *pdev)
+ #ifndef CONFIG_PHYS_64BIT
+ 	ndfc->ndfcbase = ioremap((phys_addr_t)phys, res->end - res->start + 1);
+ #else
+-	ndfc->ndfcbase = ioremap64(phys, res->end - res->start + 1);
++	ndfc->ndfcbase = ioremap(phys, res->end - res->start + 1);
+ #endif
+ 	if (!ndfc->ndfcbase) {
+ 		printk(KERN_ERR "NDFC: ioremap failed\n");
 --- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ drivers/hwmon/ad7414.c	2008-01-04 15:26:08.000000000 -0500
-@@ -0,0 +1,311 @@
++++ drivers/mtd/maps/taco.c	2008-01-02 13:07:43.000000000 -0500
+@@ -0,0 +1,140 @@
 +/*
-+ * An hwmon driver for the Analog Devices AD7414
++ * $Id: $
 + *
-+ * Copyright 2006 Stefan Roese <sr@denx.de>, DENX Software Engineering
++ * drivers/mtd/maps/taco.c
 + *
-+ * Based on ad7418.c
-+ * Copyright 2006 Tower Technologies, Alessandro Zummo <a.zummo@towertech.it>
++ * Mapping for PIKA Taco flash
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * Based on original work by
++ *      Matt Porter <mporter@kernel.crashing.org>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
 +#include <linux/module.h>
-+#include <linux/jiffies.h>
-+#include <linux/i2c.h>
-+#include <linux/hwmon.h>
-+#include <linux/err.h>
-+#include <linux/mutex.h>
-+#include <linux/delay.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
 +
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/map.h>
++#include <linux/mtd/partitions.h>
 +
-+#define DRV_VERSION "0.2" // upped version for Pika mods
++#include <asm/io.h>
 +
-+/* straight from the datasheet */
-+#define AD7414_TEMP_MIN (-55000)
-+#define AD7414_TEMP_MAX 125000
++#define TACO_FLASH_BASE 0xffc00000 // SAM CHECK
 +
-+/* Addresses to scan */
-+static unsigned short normal_i2c[] = { 0x48, 0x4a, I2C_CLIENT_END };
++#define RW_KERNEL_SZ	0x00180000
++#define RW_ROOT_SZ      0x03480000
++#define RW_FPGA_SZ	0x00040000
++#define RW_ENV_SZ       0x00040000
++#define RW_UBOOT_SZ	0x00080000
 +
-+/* Insmod parameters */
-+I2C_CLIENT_INSMOD;
-+
-+/* AD7414 registers */
-+#define AD7414_REG_TEMP		0x00
-+#define AD7414_REG_CONF		0x01
-+#define AD7414_REG_T_HIGH	0x02
-+#define AD7414_REG_T_LOW	0x03
-+
-+struct ad7414_data {
-+	struct i2c_client	client;
-+	struct class_device	*class_dev;
-+	struct mutex		lock;
-+	char			valid;		/* !=0 if following fields are valid */
-+	unsigned long		last_updated;	/* In jiffies */
-+	u16			temp_input;	/* Register values */
-+	u8			temp_max;
-+	u8			temp_min;
-+	u8			temp_alert;
-+	u8			temp_max_flag;
-+	u8			temp_min_flag;
-+};
-+
-+static int ad7414_attach_adapter(struct i2c_adapter *adapter);
-+static int ad7414_detect(struct i2c_adapter *adapter, int address, int kind);
-+static int ad7414_detach_client(struct i2c_client *client);
-+
-+static struct i2c_driver ad7414_driver = {
-+	.driver = {
-+		.name	= "ad7414",
++static struct mtd_partition taco_flash_parts[] = {
++	{ // 0
++		.name   = "kernel",
++		.offset = 0,
++		.size   = RW_KERNEL_SZ
 +	},
-+	.attach_adapter	= ad7414_attach_adapter,
-+	.detach_client	= ad7414_detach_client,
++	{ // 1
++		.name   = "root",
++		.offset = RW_KERNEL_SZ,
++		.size   = RW_ROOT_SZ
++	},
++	{ // 2
++		.name   = "user",
++		.offset = RW_KERNEL_SZ + RW_ROOT_SZ,
++		.size   = 0 // auto - must be zero
++	},
++	/* ------------------------ */
++	{  // 3
++		.name = "fpga",
++		.size = RW_FPGA_SZ
++	},
++	{ // 4
++		.name = "env",
++		.size = RW_ENV_SZ
++	},
++	{ // 5
++		.name = "u-boot",
++		.size = RW_UBOOT_SZ
++	}
 +};
 +
-+/*
-+ * TEMP: 0.001C/bit (-55C to +125C)
-+ * REG: (0.5C/bit, two's complement) << 7
-+ */
-+static inline int AD7414_TEMP_FROM_REG(u16 reg)
-+{
-+	/* use integer division instead of equivalent right shift to
-+	 * guarantee arithmetic shift and preserve the sign
-+	 */
-+	return ((s16)reg / 128) * 500;
-+}
-+
-+/* All registers are word-sized, except for the configuration registers.
-+ * AD7414 uses a high-byte first convention, which is exactly opposite to
-+ * the usual practice.
-+ */
-+static int ad7414_read(struct i2c_client *client, u8 reg)
-+{
-+	if (reg == AD7414_REG_TEMP)
-+		return swab16(i2c_smbus_read_word_data(client, reg));
-+	else
-+		return i2c_smbus_read_byte_data(client, reg);
-+}
-+
-+static int ad7414_write(struct i2c_client *client, u8 reg, u16 value)
-+{
-+	return i2c_smbus_write_byte_data(client, reg, value);
-+}
-+
-+/* PIKA Taco - we need to access the temperature in kernel mode. As a
-+ * hack we store the device here. This works because we only have one
-+ * ad7414 chip.
-+ */
-+static struct device *ad7414_dev;
-+
-+static void ad7414_init_client(struct i2c_client *client)
-+{
-+	/* TODO: anything to do here??? */
-+	ad7414_dev = &client->dev;
-+}
-+
-+static struct ad7414_data *ad7414_update_device(struct device *dev)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct ad7414_data *data = i2c_get_clientdata(client);
-+
-+	mutex_lock(&data->lock);
-+
-+	if (time_after(jiffies, data->last_updated + HZ + HZ / 2)
-+		|| !data->valid) {
-+		dev_dbg(&client->dev, "starting ad7414 update\n");
-+
-+		/* This is the difference - set one-shot.
-+		 *
-+		 * After fairly extensive testing it looks like the config
-+		 * always returns 0x40. So since I was told to write 0x44, I
-+		 * am not only following orders but save a read. The udelay is
-+		 * required for the one shot.
-+		 *
-+		 * Turning this on doesn't seem to make a difference and it
-+		 * will only be called every second so it looks like a
-+		 * relatively harmless change.
-+		 */
-+		ad7414_write(client, AD7414_REG_CONF, 0x44);
-+		udelay(29);
-+		/* */
-+
-+		data->temp_input = ad7414_read(client, AD7414_REG_TEMP);
-+		data->temp_alert = (data->temp_input >> 5) & 0x01;
-+		data->temp_max_flag = (data->temp_input >> 4) & 0x01;
-+		data->temp_min_flag = (data->temp_input >> 3) & 0x01;
-+		data->temp_max = ad7414_read(client, AD7414_REG_T_HIGH);
-+		data->temp_min = ad7414_read(client, AD7414_REG_T_LOW);
-+
-+		data->last_updated = jiffies;
-+		data->valid = 1;
-+	}
-+
-+	mutex_unlock(&data->lock);
-+
-+	return data;
-+}
-+
-+int ad7414_get_temp(void)
-+{
-+	if(ad7414_dev) {
-+		struct ad7414_data *data = ad7414_update_device(ad7414_dev);
-+		return data->temp_input;
-+	} else
-+		return 0x1f4; // +125
-+}
-+EXPORT_SYMBOL(ad7414_get_temp);
-+
-+#define show(value) \
-+static ssize_t show_##value(struct device *dev, struct device_attribute *attr, char *buf)		\
-+{									\
-+	struct ad7414_data *data = ad7414_update_device(dev);		\
-+	return sprintf(buf, "%d\n", AD7414_TEMP_FROM_REG(data->value));	\
-+}
-+show(temp_input);
-+
-+#define show_8(value)	\
-+static ssize_t show_##value(struct device *dev, struct device_attribute *attr, char *buf)		\
-+{								\
-+	struct ad7414_data *data = ad7414_update_device(dev);	\
-+	return sprintf(buf, "%d\n", data->value);		\
-+}
-+show_8(temp_max);
-+show_8(temp_min);
-+show_8(temp_alert);
-+show_8(temp_max_flag);
-+show_8(temp_min_flag);
-+
-+#define set(value, reg)	\
-+static ssize_t set_##value(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)	\
-+{								\
-+	struct i2c_client *client = to_i2c_client(dev);		\
-+	struct ad7414_data *data = i2c_get_clientdata(client);	\
-+	int temp = simple_strtoul(buf, NULL, 10);		\
-+								\
-+	mutex_lock(&data->lock);				\
-+	data->value = temp;					\
-+	ad7414_write(client, reg, data->value);			\
-+	mutex_unlock(&data->lock);				\
-+	return count;						\
-+}
-+set(temp_max, AD7414_REG_T_HIGH);
-+set(temp_min, AD7414_REG_T_LOW);
-+
-+static DEVICE_ATTR(temp1_max, S_IWUSR | S_IRUGO, show_temp_max, set_temp_max);
-+static DEVICE_ATTR(temp1_min, S_IWUSR | S_IRUGO, show_temp_min, set_temp_min);
-+static DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_input, NULL);
-+static DEVICE_ATTR(temp1_alert, S_IRUGO, show_temp_alert, NULL);
-+static DEVICE_ATTR(temp1_max_flag, S_IRUGO, show_temp_max_flag, NULL);
-+static DEVICE_ATTR(temp1_min_flag, S_IRUGO, show_temp_min_flag, NULL);
-+
-+static int ad7414_attach_adapter(struct i2c_adapter *adapter)
-+{
-+	if (!(adapter->class & I2C_CLASS_HWMON))
-+		return 0;
-+	return i2c_probe(adapter, &addr_data, ad7414_detect);
-+}
-+
-+static struct attribute *ad7414_attributes[] = {
-+	&dev_attr_temp1_input.attr,
-+	&dev_attr_temp1_max.attr,
-+	&dev_attr_temp1_min.attr,
-+	&dev_attr_temp1_alert.attr,
-+	&dev_attr_temp1_max_flag.attr,
-+	&dev_attr_temp1_min_flag.attr,
-+	NULL
++struct map_info taco_flash_map = {
++	.name = "taco-flash",
++	.bankwidth = 2,
 +};
 +
-+static const struct attribute_group ad7414_group = {
-+	.attrs = ad7414_attributes,
-+};
++static struct mtd_info *taco_mtd;
 +
-+static int ad7414_detect(struct i2c_adapter *adapter, int address, int kind)
++int __init init_taco_flash(void)
 +{
-+	struct i2c_client *client;
-+	struct ad7414_data *data;
-+	int err = 0;
++	unsigned long flash_base, flash_size;
++	int i, user_size; // must be signed!
 +
-+	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA |
-+					I2C_FUNC_SMBUS_WORD_DATA))
-+		goto exit;
++	// SAM How do we get the flash size??????
++	flash_base = TACO_FLASH_BASE;
++	flash_size = 64 * 0x100000; // SAM HACK 64M
 +
-+	if (!(data = kzalloc(sizeof(struct ad7414_data), GFP_KERNEL))) {
-+		err = -ENOMEM;
-+		goto exit;
++	taco_flash_map.size = flash_size;
++	taco_flash_map.phys = flash_base;
++	taco_flash_map.virt = (void __iomem *)ioremap(flash_base, flash_size);
++
++	if (!taco_flash_map.virt) {
++		printk("init_taco_flash: failed to ioremap\n");
++		return -EIO;
 +	}
 +
-+	client = &data->client;
-+	client->addr = address;
-+	client->adapter = adapter;
-+	client->driver = &ad7414_driver;
-+	client->flags = 0;
++	/* user gets left over space */
++	user_size = flash_size;
++	for(i = 0; i < ARRAY_SIZE(taco_flash_parts); ++i)
++		user_size -= taco_flash_parts[i].size;
++	if(user_size > 0)
++		taco_flash_parts[2].size = user_size;
 +
-+	i2c_set_clientdata(client, data);
++	/* u-boot */
++	flash_size -= RW_UBOOT_SZ;
++	taco_flash_parts[5].offset = flash_size;
 +
-+	mutex_init(&data->lock);
++	/* env */
++	flash_size -= RW_ENV_SZ;
++	taco_flash_parts[4].offset = flash_size;
 +
-+	/* TODO: not testing for AD7414 done yet... */
++	/* fpga */
++	flash_size -= RW_FPGA_SZ;
++	taco_flash_parts[3].offset = flash_size;
 +
-+	strlcpy(client->name, ad7414_driver.driver.name, I2C_NAME_SIZE);
++	simple_map_init(&taco_flash_map);
 +
-+	if ((err = i2c_attach_client(client)))
-+		goto exit_free;
++	taco_mtd = do_map_probe("cfi_probe", &taco_flash_map);
 +
-+	dev_info(&client->dev, "chip found, driver version " DRV_VERSION "\n");
-+
-+	/* Initialize the AD7414 chip */
-+	ad7414_init_client(client);
-+
-+	/* Register sysfs hooks */
-+	if ((err = sysfs_create_group(&client->dev.kobj, &ad7414_group)))
-+		goto exit_detach;
-+
-+	data->class_dev = hwmon_device_register(&client->dev);
-+	if (IS_ERR(data->class_dev)) {
-+		err = PTR_ERR(data->class_dev);
-+		goto exit_remove;
++	if (taco_mtd) {
++		taco_mtd->owner = THIS_MODULE;
++		return add_mtd_partitions(taco_mtd,
++								  taco_flash_parts,
++								  ARRAY_SIZE(taco_flash_parts));
 +	}
 +
-+	return 0;
-+
-+exit_remove:
-+	sysfs_remove_group(&client->dev.kobj, &ad7414_group);
-+exit_detach:
-+	i2c_detach_client(client);
-+exit_free:
-+	kfree(data);
-+exit:
-+	return err;
++	return -ENXIO;
 +}
 +
-+static int ad7414_detach_client(struct i2c_client *client)
++static void __exit cleanup_taco_flash(void)
 +{
-+	struct ad7414_data *data = i2c_get_clientdata(client);
-+	ad7414_dev = NULL;
-+	hwmon_device_unregister(data->class_dev);
-+	sysfs_remove_group(&client->dev.kobj, &ad7414_group);
-+	i2c_detach_client(client);
-+	kfree(data);
-+	return 0;
++	if (taco_mtd) {
++		del_mtd_partitions(taco_mtd);
++		/* moved iounmap after map_destroy - armin */
++		map_destroy(taco_mtd);
++		iounmap((void *)taco_flash_map.virt);
++		taco_mtd = NULL;
++	}
 +}
 +
-+static int __init ad7414_init(void)
-+{
-+	return i2c_add_driver(&ad7414_driver);
-+}
++module_init(init_taco_flash);
++module_exit(cleanup_taco_flash);
 +
-+static void __exit ad7414_exit(void)
-+{
-+	i2c_del_driver(&ad7414_driver);
-+}
-+
-+MODULE_AUTHOR("Stefan Roese <sr@denx.de>");
-+MODULE_DESCRIPTION("AD7414 driver");
 +MODULE_LICENSE("GPL");
-+MODULE_VERSION(DRV_VERSION);
-+
-+module_init(ad7414_init);
-+module_exit(ad7414_exit);
---- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ drivers/hwmon/taco-dtm.c	2008-01-05 00:06:21.000000000 -0500
-@@ -0,0 +1,78 @@
-+/*
-+ *  drivers/hwmon/taco-dtm.c
-+ *
-+ *  Overview: On the Taco, the fpga controls the fan. This provides
-+ *  the temperature to the fpga.
-+ *
-+ *  Copyright (c) 2008 PIKA Technologies
-+ *    Sean MacLennan <smaclennan@pikatech.com>
-+ *
-+ *  This program is free software; you can redistribute	 it and/or modify it
-+ *  under  the terms of	 the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the	License, or (at your
-+ *  option) any later version.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kthread.h>
-+#include <linux/io.h>
-+
-+
-+#define TACO_FPGA_BASE 0x80000000
-+
-+
-+extern int ad7414_get_temp(void);
-+
-+static unsigned __iomem *dtm_fpga;
-+static struct task_struct *dtm_thread;
-+
-+
-+static int taco_dtm_thread(void *arg)
-+{
-+	while(!kthread_should_stop()) {
-+		int temp = ad7414_get_temp();
-+
-+		// Write to FPGA
-+		out_be32(dtm_fpga, temp);
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+	return 0;
-+}
-+
-+
-+int __init taco_dtm_init_module(void)
-+{
-+	if((dtm_fpga = ioremap(TACO_FPGA_BASE + 0x20, 4)) == 0) {
-+		printk("FPGA ioremap failed\n");
-+		return -ENODEV;
-+	}
-+
-+	dtm_thread = kthread_run(taco_dtm_thread, NULL, "taco-dtm");
-+
-+	if(IS_ERR(dtm_thread)) {
-+		iounmap(dtm_fpga);
-+		printk("Unable to start Taco DTM thread\n");
-+		return PTR_ERR(dtm_thread);
-+	}
-+
-+	return 0;
-+}
-+
-+
-+void __exit taco_dtm_exit_module(void)
-+{
-+	kthread_stop(dtm_thread);
-+	iounmap(dtm_fpga);
-+}
-+
-+
-+module_init(taco_dtm_init_module);
-+module_exit(taco_dtm_exit_module);
-+
-+MODULE_DESCRIPTION("PIKA DTM driver");
-+MODULE_AUTHOR("Sean MacLennan");
-+MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("MTD map and partitions for Taco boards");
 
---------------010109060708050703090707--
+--------------000806040002010103050004--
