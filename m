@@ -1,18 +1,21 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C74CEDDE0F
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 14:13:36 +1100 (EST)
-Message-ID: <477EF59C.2070809@am.sony.com>
-Date: Fri, 04 Jan 2008 19:12:28 -0800
+	by ozlabs.org (Postfix) with ESMTP id 2E1EEDDE9A
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 14:13:38 +1100 (EST)
+Message-ID: <477EF5A5.70906@am.sony.com>
+Date: Fri, 04 Jan 2008 19:12:37 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 0/3] PS3 logical performance monitor patches for 2.6.25
+Subject: [patch 1/3] PS3: Add logical performance monitor repository routines
+References: <20080105003019.595703814@am.sony.com>
+In-Reply-To: <20080105003019.595703814@am.sony.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org,
+	Takashi Yamamoto <Takashi02_Yamamoto@hq.scei.sony.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+From: Takashi Yamamoto <Takashi02_Yamamoto@hq.scei.sony.co.jp>
 
-This is a small set of patches that adds support for the PS3's logical
-performance monitor.
+Add repository routines for the PS3 Logical Performance Monitor (lpm).
 
-The logical performance monitor is a hypervisor abstraction that provides
-access to the Cell processor's performance monitoring features needed by
-profilers such as oprofile and perfmon.
+Signed-off-by: Takashi Yamamoto <Takashi02_Yamamoto@hq.scei.sony.co.jp>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ arch/powerpc/platforms/ps3/platform.h   |    7 ++++
+ arch/powerpc/platforms/ps3/repository.c |   48 ++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 1 deletion(-)
 
-Please apply for 2.6.25.
-
-  [1/3] PS3: Add logical performance monitor repository routines
-  [2/3] PS3: Add logical performance monitor device support
-  [3/3] PS3: Add logical performance monitor driver support
-
--Geoff
-
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -189,7 +189,7 @@ int ps3_repository_read_stor_dev_region(
+ /* repository pu and memory info */
+ 
+ int ps3_repository_read_num_pu(unsigned int *num_pu);
+-int ps3_repository_read_ppe_id(unsigned int *pu_index, unsigned int *ppe_id);
++int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id);
+ int ps3_repository_read_rm_base(unsigned int ppe_id, u64 *rm_base);
+ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
+ int ps3_repository_read_region_total(u64 *region_total);
+@@ -203,6 +203,11 @@ int ps3_repository_read_be_node_id(unsig
+ int ps3_repository_read_tb_freq(u64 node_id, u64 *tb_freq);
+ int ps3_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq);
+ 
++/* repository performance monitor info */
++
++int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
++	u64 *rights);
++
+ /* repository 'Other OS' area */
+ 
+ int ps3_repository_read_boot_dat_addr(u64 *lpar_addr);
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -902,6 +902,54 @@ int ps3_repository_read_be_tb_freq(unsig
+ 		: ps3_repository_read_tb_freq(node_id, tb_freq);
+ }
+ 
++int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
++	u64 *rights)
++{
++	int result;
++	u64 node_id;
++
++	*lpar = 0;
++	*rights = 0;
++	result = ps3_repository_read_be_node_id(be_index, &node_id);
++	return result ? result
++		: read_node(PS3_LPAR_ID_PME,
++			    make_first_field("be", 0),
++			    node_id,
++			    make_field("lpm", 0),
++			    make_field("priv", 0),
++			    lpar, rights);
++}
++
++int ps3_repository_read_num_pu(unsigned int *num_pu)
++{
++	int result;
++	u64 v1;
++
++	v1 = 0;
++	result = read_node(PS3_LPAR_ID_CURRENT,
++			   make_first_field("bi", 0),
++			   make_field("pun", 0),
++			   0, 0,
++			   &v1, NULL);
++	*num_pu = v1;
++	return result;
++}
++
++int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
++{
++	int result;
++	u64 v1;
++
++	v1 = 0;
++	result = read_node(PS3_LPAR_ID_CURRENT,
++		make_first_field("bi", 0),
++		make_field("pu", pu_index),
++		0, 0,
++		&v1, NULL);
++	*pu_id = v1;
++	return result;
++}
++
+ #if defined(DEBUG)
+ 
+ int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
 
 -- 
