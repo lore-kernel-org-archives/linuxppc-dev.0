@@ -1,20 +1,30 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail144-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4B360DE099
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 14:13:57 +1100 (EST)
-Message-ID: <477EF5AC.7090105@am.sony.com>
-Date: Fri, 04 Jan 2008 19:12:44 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 42993DDDFC
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 14:28:06 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1276292anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jan 2008 19:28:04 -0800 (PST)
+Message-ID: <fa686aa40801041928r78907778t1c44af93079bcdd4@mail.gmail.com>
+Date: Fri, 4 Jan 2008 20:28:04 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <477EED00.8070207@freescale.com>
 MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [patch 2/3] PS3: Add logical performance monitor device support
-References: <20080105003019.595703814@am.sony.com>
-In-Reply-To: <20080105003019.595703814@am.sony.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
+	<477BAB67.4080003@freescale.com>
+	<fa686aa40801020812o471e18e6u9fe20676d320e958@mail.gmail.com>
+	<477D24AA.4050804@freescale.com>
+	<fa686aa40801031017n42f6fbf1nb2da5097ef13cf3c@mail.gmail.com>
+	<477D2F52.7090306@freescale.com>
+	<fa686aa40801031113od68e2a3m6cb60b8fa6f26c17@mail.gmail.com>
+	<477EED00.8070207@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,181 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add PS3 logical performance monitor (lpm) device support to the
-PS3 system-bus and platform device registration routines.
+On 1/4/08, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+> > Don't put
+> > that burden on the dts author.
+>
+> As the DTS author in question, I hereby declare that such a requirement is not
+> a burden in the slightest.  Thank you.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- arch/powerpc/platforms/ps3/device-init.c |   95 ++++++++++++++++++++++++++++++-
- arch/powerpc/platforms/ps3/system-bus.c  |    5 +
- include/asm-powerpc/ps3.h                |    7 ++
- 3 files changed, 106 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/ps3/lpm.c
+Dude, you work for *Freescale*.  The set of dts authors affected
+include every engineer writing a device tree for a board that uses
+this part.  :-)
 
---- a/arch/powerpc/platforms/ps3/device-init.c
-+++ b/arch/powerpc/platforms/ps3/device-init.c
-@@ -30,6 +30,97 @@
- 
- #include "platform.h"
- 
-+static int __init ps3_register_lpm_devices(void)
-+{
-+	int result;
-+	unsigned int pu_count;
-+	u64 tmp1;
-+	u64 tmp2;
-+	struct layout {
-+		struct ps3_system_bus_device dev;
-+	} *p;
-+
-+	pr_debug(" -> %s:%d\n", __func__, __LINE__);
-+
-+	p = kzalloc(sizeof(*p), GFP_KERNEL);
-+	if (!p)
-+		return -ENOMEM;
-+
-+	p->dev.match_id = PS3_MATCH_ID_LPM;
-+	p->dev.dev_type = PS3_DEVICE_TYPE_LPM;
-+
-+	result = ps3_repository_read_num_pu(&pu_count);
-+
-+	if (result) {
-+		pr_debug("%s:%d: ps3_repository_read_num_pu failed \n",
-+			__func__, __LINE__);
-+		goto fail_read_repo;
-+	}
-+
-+	/* The current lpm driver only supports a single BE processor. */
-+
-+	if (pu_count > 1) {
-+		pr_info("%s:%d: found %u BE processors, only one supported\n",
-+			__func__, __LINE__, pu_count);
-+	}
-+
-+	result = ps3_repository_read_pu_id(0, &p->dev.lpm.pu_id);
-+
-+	if (result) {
-+		pr_debug("%s:%d: ps3_repository_read_pu_id failed \n",
-+			__func__, __LINE__);
-+		goto fail_read_repo;
-+	}
-+
-+	result = ps3_repository_read_lpm_privileges(0, &tmp1,
-+		&p->dev.lpm.rights);
-+
-+	if (result) {
-+		pr_debug("%s:%d: ps3_repository_read_lpm_privleges failed \n",
-+			__func__, __LINE__);
-+		goto fail_read_repo;
-+	}
-+
-+	lv1_get_logical_partition_id(&tmp2);
-+
-+	if (tmp1 != tmp2) {
-+		pr_debug("%s:%d: wrong lpar\n",
-+			__func__, __LINE__);
-+		result = -1;
-+		goto fail_rights;
-+	}
-+
-+	if (!(p->dev.lpm.rights & PS3_LPM_RIGHTS_USE_LPM)) {
-+		pr_debug("%s:%d: don't have rights to use lpm\n",
-+			__func__, __LINE__);
-+		result = -1;
-+		goto fail_rights;
-+	}
-+
-+	pr_debug("%s:%d: pu_id %lu, rights %lu(%lxh)\n",
-+		__func__, __LINE__, p->dev.lpm.pu_id, p->dev.lpm.rights,
-+		p->dev.lpm.rights);
-+
-+	result = ps3_system_bus_device_register(&p->dev);
-+
-+	if (result) {
-+		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
-+			__func__, __LINE__);
-+		goto fail_register;
-+	}
-+
-+	pr_debug(" <- %s:%d\n", __func__, __LINE__);
-+	return 0;
-+
-+
-+fail_register:
-+fail_rights:
-+fail_read_repo:
-+	kfree(p);
-+	pr_debug(" <- %s:%d: failed\n", __func__, __LINE__);
-+	return result;
-+}
-+
- /**
-  * ps3_setup_gelic_device - Setup and register a gelic device instance.
-  *
-@@ -787,6 +878,8 @@ static int __init ps3_register_devices(v
- 
- 	ps3_register_sound_devices();
- 
-+	ps3_register_lpm_devices();
-+
- 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return 0;
- }
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -715,6 +715,7 @@ int ps3_system_bus_device_register(struc
- 	static unsigned int dev_ioc0_count;
- 	static unsigned int dev_sb_count;
- 	static unsigned int dev_vuart_count;
-+	static unsigned int dev_lpm_count;
- 
- 	if (!dev->core.parent)
- 		dev->core.parent = &ps3_system_bus;
-@@ -737,6 +738,10 @@ int ps3_system_bus_device_register(struc
- 		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
- 			"vuart_%02x", ++dev_vuart_count);
- 		break;
-+	case PS3_DEVICE_TYPE_LPM:
-+		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
-+			"lpm_%02x", ++dev_lpm_count);
-+		break;
- 	default:
- 		BUG();
- 	};
---- a/include/asm-powerpc/ps3.h
-+++ b/include/asm-powerpc/ps3.h
-@@ -317,6 +317,7 @@ enum ps3_match_id {
- 	PS3_MATCH_ID_STOR_FLASH     = 8,
- 	PS3_MATCH_ID_SOUND          = 9,
- 	PS3_MATCH_ID_GRAPHICS       = 10,
-+	PS3_MATCH_ID_LPM            = 11,
- };
- 
- #define PS3_MODULE_ALIAS_EHCI           "ps3:1"
-@@ -329,11 +330,13 @@ enum ps3_match_id {
- #define PS3_MODULE_ALIAS_STOR_FLASH     "ps3:8"
- #define PS3_MODULE_ALIAS_SOUND          "ps3:9"
- #define PS3_MODULE_ALIAS_GRAPHICS       "ps3:10"
-+#define PS3_MODULE_ALIAS_LPM            "ps3:11"
- 
- enum ps3_system_bus_device_type {
- 	PS3_DEVICE_TYPE_IOC0 = 1,
- 	PS3_DEVICE_TYPE_SB,
- 	PS3_DEVICE_TYPE_VUART,
-+	PS3_DEVICE_TYPE_LPM,
- };
- 
- /**
-@@ -350,6 +353,10 @@ struct ps3_system_bus_device {
- 	struct ps3_dma_region *d_region;  /* SB, IOC0 */
- 	struct ps3_mmio_region *m_region; /* SB, IOC0*/
- 	unsigned int port_number;         /* VUART */
-+	struct {                          /* LPM */
-+		u64 pu_id;
-+		u64 rights;
-+	} lpm;
- 
- /*	struct iommu_table *iommu_table; -- waiting for BenH's cleanups */
- 	struct device core;
+Cheers,
+g.
 
 -- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
