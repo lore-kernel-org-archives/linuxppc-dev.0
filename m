@@ -1,18 +1,17 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C6406DDEB7
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 05:36:18 +1100 (EST)
-Message-ID: <477FCE21.9080808@pikatech.com>
-Date: Sat, 05 Jan 2008 13:36:17 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A513ADDF02
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 05:39:18 +1100 (EST)
+Message-ID: <477FCED5.6080005@pikatech.com>
+Date: Sat, 05 Jan 2008 13:39:17 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] i2c-ibm_iic driver
-References: <477EF225.4070505@pikatech.com> <200801051224.52693.arnd@arndb.de>
-	<200801051349.34488.sr@denx.de> <200801051354.11202.arnd@arndb.de>
-In-Reply-To: <200801051354.11202.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] Hwmon for Taco
+References: <477F1196.7000109@pikatech.com> <1199517763.7291.47.camel@pasglop>
+In-Reply-To: <1199517763.7291.47.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Saturday 05 January 2008, Stefan Roese wrote:
->   
->>> This is probably not specific enough. I'm rather sure that someone at IBM
->>> has implemented an i2c chip that this driver doesn't support. Maybe
->>>
->>>       .compatible = "ibm,405-iic"
->>>
->>> or similar would be a better thing to check for.
->>>       
->>         .compatible = "ibm,4xx-iic"
->>
->> please, since 405 and 440 have the same I2C controller.
->>
+Benjamin Herrenschmidt wrote:
+>> +module_exit(ad7414_exit);
+>> --- /dev/null	2005-11-20 22:22:37.000000000 -0500
+>> +++ drivers/hwmon/taco-dtm.c	2008-01-05 00:06:21.000000000 -0500
+>> @@ -0,0 +1,78 @@
+>> +/*
+>> + *  drivers/hwmon/taco-dtm.c
+>> + *
+>> + *  Overview: On the Taco, the fpga controls the fan. This provides
+>> + *  the temperature to the fpga.
+>> + *
+>> + *  Copyright (c) 2008 PIKA Technologies
+>> + *    Sean MacLennan <smaclennan@pikatech.com>
+>> + *
+>> + *  This program is free software; you can redistribute	 it and/or modify it
+>> + *  under  the terms of	 the GNU General  Public License as published by the
+>> + *  Free Software Foundation;  either version 2 of the	License, or (at your
+>> + *  option) any later version.
+>> + *
+>> + */
+>> +
+>> +#include <linux/module.h>
+>> +#include <linux/kthread.h>
+>> +#include <linux/io.h>
+>> +
+>> +
+>> +#define TACO_FPGA_BASE 0x80000000
 >>     
 >
-> But that's not how compatible properties work -- they should not
-> contain wildcards. If you have different devices that are
-> backwards compatible, you should list the older one in all
-> newer devices, e.g. the 440 can list that it is compatible
-> with both ibm,405-iic and ibm,440-iic. If there was an earlier
-> 401 that had iic as well, you may even want to include that
-> in the device tree.
+> That should be in the device-tree...
 >
-> 	Arnd <><
+> Cheers,
+> Ben.
+>
+>
 >   
-Ok. The 44x based .dts files do not list 405-iic, so would I think I 
-will add two compatibility matches, one for 405 and one for 440EP. That 
-way I do not break all the current .dts files. Everybody ok with that?
+It is in the device tree, I just forgot to update the driver to use it. 
+Thanks.
 
 Cheers,
     Sean
