@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 70765DDE03
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 06:19:24 +1100 (EST)
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A0299DDE07
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 06:20:21 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] i2c-ibm_iic driver
-Date: Sat, 5 Jan 2008 20:18:22 +0100
-References: <477EF225.4070505@pikatech.com> <200801051354.11202.arnd@arndb.de>
-	<477FCE21.9080808@pikatech.com>
-In-Reply-To: <477FCE21.9080808@pikatech.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] MTD for Taco
+Date: Sat, 5 Jan 2008 20:19:54 +0100
+References: <477F12D1.2070109@pikatech.com> <200801051041.18173.sr@denx.de>
+	<477FCA53.8010103@pikatech.com>
+In-Reply-To: <477FCA53.8010103@pikatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200801052018.22954.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+  charset="iso-8859-1"
+Message-Id: <200801052019.55443.arnd@arndb.de>
+Cc: Stefan Roese <sr@denx.de>, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +24,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Saturday 05 January 2008, Sean MacLennan wrote:
-> 
-> Ok. The 44x based .dts files do not list 405-iic, so would I think I 
-> will add two compatibility matches, one for 405 and one for 440EP. That 
-> way I do not break all the current .dts files. Everybody ok with that?
-> 
+> > You do break arch/ppc support with this patch. We have to still support
+> > arch/ppc a few month, so please don't break this support for now.
+> > =A0=20
+> Gotcha. Is CONFIG_PPC_MERGED the right flag for things like this?
 
-Sounds good. There are obviously no other drivers that know only
-about 405 but not about 440, so there is no backwards compatibility
-problem. If we ever get a 450/460/470/... that we want to support
-with this driver, it can simply claim to be compatible with 440 or 405
-if not both.
+Yes, but it it's spelled CONFIG_PPC_MERGE, not CONFIG_PPC_MERGED.
 
-	Arnd <><
+	Arnd=20
