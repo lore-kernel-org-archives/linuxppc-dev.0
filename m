@@ -1,17 +1,19 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A513ADDF02
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 05:39:18 +1100 (EST)
-Message-ID: <477FCED5.6080005@pikatech.com>
-Date: Sat, 05 Jan 2008 13:39:17 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 70765DDE03
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 06:19:24 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] i2c-ibm_iic driver
+Date: Sat, 5 Jan 2008 20:18:22 +0100
+References: <477EF225.4070505@pikatech.com> <200801051354.11202.arnd@arndb.de>
+	<477FCE21.9080808@pikatech.com>
+In-Reply-To: <477FCE21.9080808@pikatech.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] Hwmon for Taco
-References: <477F1196.7000109@pikatech.com> <1199517763.7291.47.camel@pasglop>
-In-Reply-To: <1199517763.7291.47.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200801052018.22954.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> +module_exit(ad7414_exit);
->> --- /dev/null	2005-11-20 22:22:37.000000000 -0500
->> +++ drivers/hwmon/taco-dtm.c	2008-01-05 00:06:21.000000000 -0500
->> @@ -0,0 +1,78 @@
->> +/*
->> + *  drivers/hwmon/taco-dtm.c
->> + *
->> + *  Overview: On the Taco, the fpga controls the fan. This provides
->> + *  the temperature to the fpga.
->> + *
->> + *  Copyright (c) 2008 PIKA Technologies
->> + *    Sean MacLennan <smaclennan@pikatech.com>
->> + *
->> + *  This program is free software; you can redistribute	 it and/or modify it
->> + *  under  the terms of	 the GNU General  Public License as published by the
->> + *  Free Software Foundation;  either version 2 of the	License, or (at your
->> + *  option) any later version.
->> + *
->> + */
->> +
->> +#include <linux/module.h>
->> +#include <linux/kthread.h>
->> +#include <linux/io.h>
->> +
->> +
->> +#define TACO_FPGA_BASE 0x80000000
->>     
->
-> That should be in the device-tree...
->
-> Cheers,
-> Ben.
->
->
->   
-It is in the device tree, I just forgot to update the driver to use it. 
-Thanks.
+On Saturday 05 January 2008, Sean MacLennan wrote:
+> 
+> Ok. The 44x based .dts files do not list 405-iic, so would I think I 
+> will add two compatibility matches, one for 405 and one for 440EP. That 
+> way I do not break all the current .dts files. Everybody ok with that?
+> 
 
-Cheers,
-    Sean
+Sounds good. There are obviously no other drivers that know only
+about 405 but not about 440, so there is no backwards compatibility
+problem. If we ever get a 450/460/470/... that we want to support
+with this driver, it can simply claim to be compatible with 440 or 405
+if not both.
+
+	Arnd <><
