@@ -1,30 +1,23 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 985BDDDE03
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 10:27:29 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m04MOr4x001019
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jan 2008 17:24:53 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m04NRQ5U118020
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jan 2008 16:27:26 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m04NR7Ph023539
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jan 2008 16:27:07 -0700
-Subject: [PATCH] enable built-in networking for Sequoia defconfig
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 04 Jan 2008 17:26:54 -0600
-Message-Id: <1199489214.9673.18.camel@basalt>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D1DBADDE1A
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 13:35:19 +1100 (EST)
+Message-ID: <477EED00.8070207@freescale.com>
+Date: Fri, 04 Jan 2008 20:35:44 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <11981089894052-git-send-email-timur@freescale.com>	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>	<477BAB67.4080003@freescale.com>	<fa686aa40801020812o471e18e6u9fe20676d320e958@mail.gmail.com>	<477D24AA.4050804@freescale.com>	<fa686aa40801031017n42f6fbf1nb2da5097ef13cf3c@mail.gmail.com>	<477D2F52.7090306@freescale.com>
+	<fa686aa40801031113od68e2a3m6cb60b8fa6f26c17@mail.gmail.com>
+In-Reply-To: <fa686aa40801031113od68e2a3m6cb60b8fa6f26c17@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,66 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Enable EMAC driver for Sequoia (and while we're in there, disable
-Macintosh drivers for Sequoia and Bamboo).
+Grant Likely wrote:
+> On 1/3/08, Scott Wood <scottwood@freescale.com> wrote:
+>> Grant Likely wrote:
+>>> On 1/3/08, Timur Tabi <timur@freescale.com> wrote:
+>>>> Grant Likely wrote:
+>>>>
+>>>>> Why not be a child of the i2c bus with a phandle to the ssi bus?
+>>>> Because when I probe the SSI node, I want to know what the attached codec is.
+>>>>   So if anything, I would need a pointer from the SSI bus *to* the respective
+>>>> child on the I2C bus.
+>>> That's fine too (it's what is done with Ethernet PHYs).  My preference
+>>> is the other way around, but it's not a big issue in this case.
+>> I'd just link in both directions, and let software follow it in
+>> whichever direction it prefers.
+> 
+> Gah!  Don't do that!  Then you need to maintain both directions in the
+> dts file. 
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+So?  What's wrong with that?
 
-diff --git a/arch/powerpc/configs/bamboo_defconfig b/arch/powerpc/configs/bamboo_defconfig
---- a/arch/powerpc/configs/bamboo_defconfig
-+++ b/arch/powerpc/configs/bamboo_defconfig
-@@ -372,9 +372,7 @@ CONFIG_MISC_DEVICES=y
- # CONFIG_FIREWIRE is not set
- # CONFIG_IEEE1394 is not set
- # CONFIG_I2O is not set
--CONFIG_MACINTOSH_DRIVERS=y
--# CONFIG_MAC_EMUMOUSEBTN is not set
--# CONFIG_WINDFARM is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
- CONFIG_NETDEVICES=y
- # CONFIG_NETDEVICES_MULTIQUEUE is not set
- # CONFIG_DUMMY is not set
-diff --git a/arch/powerpc/configs/sequoia_defconfig b/arch/powerpc/configs/sequoia_defconfig
---- a/arch/powerpc/configs/sequoia_defconfig
-+++ b/arch/powerpc/configs/sequoia_defconfig
-@@ -446,9 +446,7 @@ CONFIG_MISC_DEVICES=y
- # CONFIG_FIREWIRE is not set
- # CONFIG_IEEE1394 is not set
- # CONFIG_I2O is not set
--CONFIG_MACINTOSH_DRIVERS=y
--# CONFIG_MAC_EMUMOUSEBTN is not set
--# CONFIG_WINDFARM is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
- CONFIG_NETDEVICES=y
- # CONFIG_NETDEVICES_MULTIQUEUE is not set
- # CONFIG_DUMMY is not set
-@@ -459,10 +457,28 @@ CONFIG_NETDEVICES=y
- # CONFIG_VETH is not set
- # CONFIG_IP1000 is not set
- # CONFIG_ARCNET is not set
--# CONFIG_NET_ETHERNET is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+# CONFIG_MII is not set
-+# CONFIG_HAPPYMEAL is not set
-+# CONFIG_SUNGEM is not set
-+# CONFIG_CASSINI is not set
-+# CONFIG_NET_VENDOR_3COM is not set
-+# CONFIG_NET_TULIP is not set
-+# CONFIG_HP100 is not set
-+CONFIG_IBM_NEW_EMAC=y
-+CONFIG_IBM_NEW_EMAC_RXB=128
-+CONFIG_IBM_NEW_EMAC_TXB=64
-+CONFIG_IBM_NEW_EMAC_POLL_WEIGHT=32
-+CONFIG_IBM_NEW_EMAC_RX_COPY_THRESHOLD=256
-+CONFIG_IBM_NEW_EMAC_RX_SKB_HEADROOM=0
-+# CONFIG_IBM_NEW_EMAC_DEBUG is not set
- CONFIG_IBM_NEW_EMAC_ZMII=y
- CONFIG_IBM_NEW_EMAC_RGMII=y
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
- CONFIG_IBM_NEW_EMAC_EMAC4=y
-+# CONFIG_NET_PCI is not set
-+# CONFIG_B44 is not set
- CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
+> Software is good at generating reverse mappings. 
+
+What software would that be?  Currently, there is no software that will do 
+that?  Or are you saying that you want my driver to search the entire device 
+tree until it finds the reverse mapping?  I don't think *that* is a good idea.
+
+> Don't put
+> that burden on the dts author. 
+
+As the DTS author in question, I hereby declare that such a requirement is not 
+a burden in the slightest.  Thank you.
+
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
