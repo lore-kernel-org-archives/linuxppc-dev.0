@@ -4,19 +4,18 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8EA0DDDE2B
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 13:38:53 +1100 (EST)
-Message-ID: <477EEDFA.9010205@freescale.com>
-Date: Fri, 04 Jan 2008 20:39:54 -0600
+	by ozlabs.org (Postfix) with ESMTP id 1F324DDE29
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 13:42:09 +1100 (EST)
+Message-ID: <477EEEC5.9050603@freescale.com>
+Date: Fri, 04 Jan 2008 20:43:17 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>, Jon Smirl <jonsmirl@gmail.com>,
-	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
+To: Jon Smirl <jonsmirl@gmail.com>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org
 Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-References: <11981089894052-git-send-email-timur@freescale.com>	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>	<477BAB67.4080003@freescale.com>	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>	<477D2150.4020506@freescale.com>
-	<20080103235156.GE12883@localhost.localdomain>
-In-Reply-To: <20080103235156.GE12883@localhost.localdomain>
+References: <11981089894052-git-send-email-timur@freescale.com>	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>	<477BA974.8010308@freescale.com>	<20080102172340.GA2007@sirena.org.uk>	<477D280C.4000800@freescale.com>
+	<20080103230004.GA18709@sirena.org.uk>
+In-Reply-To: <20080103230004.GA18709@sirena.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,21 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+Mark Brown wrote:
 
-> And what distinction are you drawing between "first" and "second"
-> here? 
+> Each individual call to set_sysclk() only takes three parameters but it
+> can be called repeatedly and some configurations are going to require
+> this. 
 
-Oh, that's an easy one:  The CS4270 can work without an I2C or SPI connection, 
-but it will never work without an I2S connection.
+In other words, ...
 
-> Why would the I2S need to scan for codecs?  Wouldn't it be up to the
-> codec driver to register with I2S?
+clock1 = <0, bb8000>
+clock2 = <1, 653230>
+clock23 = <0, ab2372>
 
-Not in ASoC V1.  The codec driver registers with ASoC, but the actual 
-connection to other devices (e.g. the I2S driver) is done either in the I2S 
-driver or in the fabric driver, depending on your mood.  And that connection 
-is done via a pointer to a structure in the codec driver.
+> and of course the ordering matters.  
+
+Ok, you got me there.  But then, isn't this just another example where the 
+device tree is incapable of describing a complex configuration, and so we need 
+a platform driver?
+
+
+> Indeed.  Providing the device tree stuff doesn't get set in stone I'm
+> not sure we need to nail this down perfectly for ASoC v1 when we're
+> running into trouble working around it.
+
+I definitely agree with that.  I'll be the first to admit that this driver, 
+much like ASoC V1, is a prototype.
 
 -- 
 Timur Tabi
