@@ -1,19 +1,17 @@
-Return-Path: <SRS0=i/5s=R3=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 74326DDEE0
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jan 2008 23:59:14 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] i2c-ibm_iic driver
-Date: Sat, 5 Jan 2008 13:58:33 +0100
-References: <477EF225.4070505@pikatech.com> <200801051349.34488.sr@denx.de>
-	<200801051354.11202.arnd@arndb.de>
-In-Reply-To: <200801051354.11202.arnd@arndb.de>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 62B68DDE3D
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 05:10:43 +1100 (EST)
+Message-ID: <477FC822.5000305@pikatech.com>
+Date: Sat, 05 Jan 2008 13:10:42 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200801051358.33473.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] Base Taco Platform support
+References: <477F0C46.6080900@pikatech.com> <1199517639.7291.45.camel@pasglop>
+In-Reply-To: <1199517639.7291.45.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 05 January 2008, Arnd Bergmann wrote:
-> > > This is probably not specific enough. I'm rather sure that someone at
-> > > IBM has implemented an i2c chip that this driver doesn't support. May=
-be
-> > >
-> > > =A0=A0=A0=A0=A0=A0.compatible =3D "ibm,405-iic"
-> > >
-> > > or similar would be a better thing to check for.
-> >
-> > =A0=A0=A0=A0=A0=A0=A0=A0.compatible =3D "ibm,4xx-iic"
-> >
-> > please, since 405 and 440 have the same I2C controller.
+Benjamin Herrenschmidt wrote:
+> On Fri, 2008-01-04 at 23:49 -0500, Sean MacLennan wrote:
+>   
+>> Here is a patch for the base taco platform. It is against for-2.6.25. It 
+>> adds basically everything in the arch/powerpc.
+>>     
 >
-> But that's not how compatible properties work -- they should not
-> contain wildcards. If you have different devices that are
-> backwards compatible, you should list the older one in all
-> newer devices, e.g. the 440 can list that it is compatible
-> with both ibm,405-iic and ibm,440-iic. If there was an earlier
-> 401 that had iic as well, you may even want to include that
-> in the device tree.
+> Care to tell us a bit more about what Taco is ? Even better is to also
+> do that in your Kconfig entry, maybe along with a URL to your web site.
+>
+> Cheers,
+> Ben.
+>
+>
+>   
+Can do, if I can figure out what it is ;) Basically it is a telephony 
+appliance geared mainly to low-density asterisk users.
 
-OK. Thanks for clarifying.
+I will update the Kconfig.
 
-Best regards,
-Stefan
+Cheers,
+    Sean
