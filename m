@@ -1,20 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id E3F52DDE24
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 08:56:54 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 3/3] PS3: Add logical performance monitor driver support
-Date: Sun, 6 Jan 2008 22:56:17 +0100
-References: <20080105003019.595703814@am.sony.com>
-	<200801051256.22732.arnd@arndb.de> <47813CA4.8000203@am.sony.com>
-In-Reply-To: <47813CA4.8000203@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801062256.18885.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Takashi Yamamoto <Takashi02_Yamamoto@hq.scei.sony.co.jp>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 48452DDE17
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 09:46:40 +1100 (EST)
+Date: Sun, 6 Jan 2008 16:46:24 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: jdl@jdl.com, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] Handle absolute pathnames correctly in dtc_open_file.
+Message-ID: <20080106224623.GA8239@ld0162-tx32.am.freescale.net>
+References: <20080104211045.GB28991@ld0162-tx32.am.freescale.net>
+	<20080106033716.GL4326@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080106033716.GL4326@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 06 January 2008, Geoff Levand wrote:
+On Sun, Jan 06, 2008 at 02:37:16PM +1100, David Gibson wrote:
+> >  out:
+> > +	free((void *)file->dir);
 > 
-> > This mutex is documented as the 'open/close' mutex and you use it
-> > to prevent concurrent execution of the open and close functions.
-> > However, it's unclear what data structures are actually protected
-> > by it.
-> > 
-> > I think this is the result of unusual lifetime rules for the lpm_priv
-> > object, which I already mentioned above.
-> 
-> Yes, we really just need to use the mutex to allow only a single instance,
-> and so do a mutex_trylock() in ps3_lpm_open() and return -EBUSY on fail,
-> and then a mutex_unlock() in ps3_lpm_close().
+> That cast shouldn't be there.
 
-A simple atomic_test_and_set in open() should do the job just as well then.
+It generates a constness warning otherwise.  I was on the fence over
+whether to just remove the constness (even though the data is never
+modified during its lifetime); would that be preferable?
 
-	Arnd <><
+-Scott
