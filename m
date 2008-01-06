@@ -1,26 +1,21 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A359EDDE04
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 01:17:15 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m06EGRiT021441
-	for <linuxppc-dev@ozlabs.org>; Sun, 6 Jan 2008 07:17:00 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m06EGQP2013349
-	for <linuxppc-dev@ozlabs.org>; Sun, 6 Jan 2008 08:16:26 -0600 (CST)
-From: Liu Yu <Yu.Liu@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix remainder calculating bug in single floating point
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE78CDDDE9
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 07:08:29 +1100 (EST)
+Subject: Re: [PATCH] Fix remainder calculating bug in single floating point
 	division
-Date: Sun,  6 Jan 2008 22:26:53 +0800
-Message-Id: <11996296134110-git-send-email-Yu.Liu@freescale.com>
-Cc: Liu Yu <Yu.Liu@freescale.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Liu Yu <Yu.Liu@freescale.com>
+In-Reply-To: <11996296134110-git-send-email-Yu.Liu@freescale.com>
+References: <11996296134110-git-send-email-Yu.Liu@freescale.com>
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 07:07:45 +1100
+Message-Id: <1199650065.7291.81.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,51 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This bug exists in the emulation of floating point division for powerpc.
 
-The original code cannot count the remainder correctly. 
-I can provide a test case to trigger this bug. 
-When use fdiv to count 1.1754941e-38f / 0.9999999f, 
-the result is expected to be 1.175494e-38f, 
-but we will get 1.174921e-38f in the original case.
+On Sun, 2008-01-06 at 22:26 +0800, Liu Yu wrote:
+> This bug exists in the emulation of floating point division for powerpc.
+> 
+> The original code cannot count the remainder correctly. 
+> I can provide a test case to trigger this bug. 
+> When use fdiv to count 1.1754941e-38f / 0.9999999f, 
+> the result is expected to be 1.175494e-38f, 
+> but we will get 1.174921e-38f in the original case.
 
-Comments are always welcomed!
+It's nice to see somebody digging in that scary math emu stuff. If you
+could also get rid of the warnings, it would be perfect :-)
 
-Signed-off-by: Liu Yu <Yu.Liu@freescale.com>
----
- arch/powerpc/math-emu/sfp-machine.h |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+Now, appart from that, I seem to remember Dan telling me at some point
+in the past (I think it was Dan... ) that this code was lifted from
+somewhere else (glibc ? gcc soft-float ?), in which case it might be
+worth to fix that somewhere else as well, or if it's already been fixed,
+maybe resync. 
 
-diff --git a/arch/powerpc/math-emu/sfp-machine.h b/arch/powerpc/math-emu/sfp-machine.h
-index 4b17d83..644cee2 100644
---- a/arch/powerpc/math-emu/sfp-machine.h
-+++ b/arch/powerpc/math-emu/sfp-machine.h
-@@ -324,10 +324,10 @@ extern int  fp_pack_ds(void *, long, unsigned long, unsigned long, long, long);
-     __r1 = __r1 * __ll_B | __ll_highpart (n0);				\
-     if (__r1 < __m)							\
-       {									\
--	__q1--, __r1 += (d);						\
--	if (__r1 >= (d)) /* we didn't get carry when adding to __r1 */	\
--	  if (__r1 < __m)						\
-+	do {								\
- 	    __q1--, __r1 += (d);					\
-+	  /* we didn't get carry when adding to __r1 */			\
-+	} while (__r1 >= (d) && __r1 < __m);				\
-       }									\
-     __r1 -= __m;							\
- 									\
-@@ -337,10 +337,9 @@ extern int  fp_pack_ds(void *, long, unsigned long, unsigned long, long, long);
-     __r0 = __r0 * __ll_B | __ll_lowpart (n0);				\
-     if (__r0 < __m)							\
-       {									\
--	__q0--, __r0 += (d);						\
--	if (__r0 >= (d))						\
--	  if (__r0 < __m)						\
-+	do {								\
- 	    __q0--, __r0 += (d);					\
-+	} while (__r0 >= (d) && __r0 < __m);				\
-       }									\
-     __r0 -= __m;							\
- 									\
--- 
-1.5.2
+Cheers,
+Ben.
