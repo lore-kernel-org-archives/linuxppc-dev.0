@@ -1,18 +1,22 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id DDD34DDE0D
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jan 2008 14:21:00 +1100 (EST)
-Message-ID: <4780491A.8080006@pikatech.com>
-Date: Sat, 05 Jan 2008 22:20:58 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sun, 6 Jan 2008 11:46:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080106004637.GJ4326@localhost.localdomain>
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
+	<477BAB67.4080003@freescale.com>
+	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
+	<477D2150.4020506@freescale.com>
+	<20080103235156.GE12883@localhost.localdomain>
+	<477EEDFA.9010205@freescale.com>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
-	david@gibson.dropbear.id.au
-Subject: Re: [PATCH] MTD for Taco
-References: <477F12D1.2070109@pikatech.com> <200801051041.18173.sr@denx.de>
-	<20080105122542.GH4326@localhost.localdomain>
-In-Reply-To: <20080105122542.GH4326@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <477EEDFA.9010205@freescale.com>
+Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, alsa-devel@alsa-project.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
->> I'm pretty sure that you don't need a board specific mapping driver
->> for NOR flash. physmap_of should be exactly what you need. You just need
->> to fill the device tree properties correctly.
->>     
->
-> Absolutely.  We should not be using C-coded maps in arch/powerpc
->
->   
+On Fri, Jan 04, 2008 at 08:39:54PM -0600, Timur Tabi wrote:
+> David Gibson wrote:
+> 
+> > And what distinction are you drawing between "first" and "second"
+> > here? 
+> 
+> Oh, that's an easy one:  The CS4270 can work without an I2C or SPI connection, 
+> but it will never work without an I2S connection.
+> 
+> > Why would the I2S need to scan for codecs?  Wouldn't it be up to the
+> > codec driver to register with I2S?
+> 
+> Not in ASoC V1.  The codec driver registers with ASoC, but the actual 
+> connection to other devices (e.g. the I2S driver) is done either in the I2S 
+> driver or in the fabric driver, depending on your mood.  And that connection 
+> is done via a pointer to a structure in the codec driver.
 
-Ok a couple of questions. How do I find out the size of the NOR flash? 
-It was in a global in the ppc arch.
+Ok, but couldn't you strucutre your I2S or fabric driver so that it
+only becomes fully operational once the codec driver has registered
+with it?
 
-Also, where is the best place to fixup the partitions? We have paritions 
-that must be at the top and ones that must be at the bottom, so we 
-dynamically setup the partitions based on the NOR size. The NOR size is 
-variable.
-
-And is it ok the name the paritions in the dts based on an index? I 
-notice others use an address, but since I don't know the address up 
-front I just used index numbers.
-
-Cheers,
-   Sean
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
