@@ -1,19 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 88BD8DDE08
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 07:39:24 +1100 (EST)
-Date: Sun, 6 Jan 2008 14:48:23 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: Re: Enable RTC for Ebony and Walnut
-Message-ID: <20080106204823.GB12640@lixom.net>
-References: <20071221022130.GI2665@localhost.localdomain>
-	<20071221212922.GC11910@lixom.net>
-	<20080102114208.GD23168@localhost.localdomain>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-va3-R.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5532ADDE23
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 07:40:48 +1100 (EST)
+Message-ID: <47813C94.10505@am.sony.com>
+Date: Sun, 06 Jan 2008 12:39:48 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080102114208.GD23168@localhost.localdomain>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch 2/3] PS3: Add logical performance monitor device support
+References: <20080105003019.595703814@am.sony.com>
+	<477EF5AC.7090105@am.sony.com> <200801051229.33099.arnd@arndb.de>
+In-Reply-To: <200801051229.33099.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 02, 2008 at 10:42:08PM +1100, David Gibson wrote:
-> On Fri, Dec 21, 2007 at 03:29:22PM -0600, Olof Johansson wrote:
-> > Hi,
-> > 
-> > On Fri, Dec 21, 2007 at 01:21:30PM +1100, David Gibson wrote:
-> > > Index: working-2.6/arch/powerpc/platforms/Kconfig
-> > > ===================================================================
-> > > --- working-2.6.orig/arch/powerpc/platforms/Kconfig	2007-12-10 10:52:44.000000000 +1100
-> > > +++ working-2.6/arch/powerpc/platforms/Kconfig	2007-12-21 13:11:34.000000000 +1100
-> > > @@ -315,6 +315,9 @@ config FSL_ULI1575
-> > >  config CPM
-> > >  	bool
-> > >  
-> > > +config OF_RTC
-> > > +	bool
-> > > +
-> > 
-> > New config options should have descriptions, even if they're silent
-> > ones.
+On 01/05/2008 03:29 AM, Arnd Bergmann wrote:
+> On Saturday 05 January 2008, Geoff Levand wrote:
+>> +       struct layout {
+>> +               struct ps3_system_bus_device dev;
+>> +       } *p;
 > 
-> Uh.. but if there's a description, won't kconfig prompt for the
-> option?  This one should only ever be selected by the platform
-> options.
+> What's the point of this data structure? You don't use the
+> struct anywhere, and it only has one member, so you could
+> just declare that directly.
 
-Sorry, should have said "should have help texts to describe them". Yes,
-the one-line description will trigger a question, but adding a short
-help text describing what the config option is for does not.
+Yes, this code was just cut and pasted from a device that
+had more members.
 
+>> +       if (tmp1 != tmp2) {
+>> +               pr_debug("%s:%d: wrong lpar\n",
+>> +                       __func__, __LINE__);
+>> +               result = -1;
+>> +               goto fail_rights;
+>> +       }
+>> +
+>> +       if (!(p->dev.lpm.rights & PS3_LPM_RIGHTS_USE_LPM)) {
+>> +               pr_debug("%s:%d: don't have rights to use lpm\n",
+>> +                       __func__, __LINE__);
+>> +               result = -1;
+>> +               goto fail_rights;
+>> +       }
+>> +
+> 
+> I think __init functions should return error codes like -EPERM or
+> -EINVAL, not numeric -1.
 
--Olof
+I'll fix it in the next post.
+
+-Geoff
