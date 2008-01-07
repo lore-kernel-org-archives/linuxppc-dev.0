@@ -1,28 +1,17 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2AFC8DDED0
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 01:24:35 +1100 (EST)
-Date: Mon, 7 Jan 2008 14:24:30 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20080107142429.GB6497@sirena.org.uk>
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
-	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
-	<477BAB67.4080003@freescale.com>
-	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
-	<477D2150.4020506@freescale.com>
-	<20080103235156.GE12883@localhost.localdomain>
-	<477EEDFA.9010205@freescale.com>
-	<20080106004637.GJ4326@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080106004637.GJ4326@localhost.localdomain>
-Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, alsa-devel@alsa-project.org,
-	Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 9A5F7DDEBE
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 01:25:35 +1100 (EST)
+Received: from localhost.localdomain (yow-pgortmak-d1.ottawa.windriver.com
+	[128.224.146.65])
+	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id m07EPXT2001642
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 06:25:33 -0800 (PST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Cc: 
+Subject: [PATCH 0/7] Powerpc support for SBC8560 board
+Date: Mon,  7 Jan 2008 09:25:25 -0500
+Message-Id: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,12 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 06, 2008 at 11:46:37AM +1100, David Gibson wrote:
 
-> Ok, but couldn't you strucutre your I2S or fabric driver so that it
-> only becomes fully operational once the codec driver has registered
-> with it?
+This is a respin of the sbc8560 patches, incorporating the feedback and
+suggested changes from everyone.  Changes include:
 
-That's what ASoC v2 is doing, more or less (the core brings things on
-line rather than drivers doing it).  For v1 so long as it doesn't cause
-any problems in practice I'm not sure I'd worry about it too much.
+-coding style and missing of_put (Stephen Rothwell)
+
+-minor dtc cleanups for gianfar, mdio, mpic etc. (David Gibson / Kumar Gala)
+
+-use for_each macros in legacy_serial to improve readability, and as
+groundwork for next change (me)
+
+-convert dtc "duart" + "device-type="soc" thing to be an epld entry
+listed as compatible with "localbus" -- plus add localbus as an acceptable
+parent in legacy_serial (David Gibson / Scott Wood)
+
+-rtc is now a child of the epld/localbus and does not use device_type
+in the dtc, nor in the platform detection code (David Gibson)
+
+-add CPM2 data to dts for FCC ports (on optional daughterboard) based
+on the MPC8560ADS dts (me)
+
+-add dts aliases, conversion to dts-v1 (Kumar)
+
+Patches are as follows:
+
+1  powerpc-use-for_each-in-legacy_serial.txt
+2  powerpc-allow-localbus-compatible-serial-ports-for-console-device.txt
+3  sbc8560-add-support-for-Wind-River-SBC8560-in-arch-powerpc.txt
+4  sbc8560-Add-device-tree-source-for-Wind-River-SBC8560-board.txt
+5  sbc8560-Convert-WRS-SBC8560-device-tree-to-v1-format.txt
+6  CPM2-Make-support-for-the-CPM2-optional-on-8560-based-boards.txt
+7  sbc8560-Add-default-.config-file-for-Wind-River-SBC8560.txt
+
+Thanks again to all those who provided feedback.
+
+Paul.
