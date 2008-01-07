@@ -1,20 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 668ECDDF08
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 03:04:30 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/7] powerpc: allow localbus compatible serial ports for
-	console device
-Date: Mon, 7 Jan 2008 17:04:22 +0100
-References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
-	<200801071533.47018.arnd@arndb.de> <47824641.8090208@windriver.com>
-In-Reply-To: <47824641.8090208@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801071704.23151.arnd@arndb.de>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1D4DEDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 04:25:26 +1100 (EST)
+Date: Mon, 7 Jan 2008 11:25:03 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH 1/3] Add support for binary includes.
+Message-ID: <20080107172503.GA12954@ld0162-tx32.am.freescale.net>
+References: <20080104211043.GA28991@ld0162-tx32.am.freescale.net>
+	<20080105122043.GG4326@localhost.localdomain>
+	<E1JBtq4-0005DJ-7o@jdl.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1JBtq4-0005DJ-7o@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 07 January 2008, Paul Gortmaker wrote:
->=20
-> I'd thought about doing that, but there are slight differences
-> in each test. =A0To remain 100% faithful to the original implementation
-> you'd have to have a table or similar that had these various fields
-> and loop over that -- something like:
->=20
-> compat =A0 =A0 =A0parent =A0 pnt-compat =A0pnt-type =A0 add-fcn
-> ---------------------------------------------------------------
-> ns16550 =A0 =A0 NULL =A0 =A0 NULL =A0 =A0 =A0 =A0soc =A0 =A0 =A0 =A0add_l=
-egacy_soc_port
-> NULL =A0 =A0 =A0 =A0isa =A0 =A0 =A0NULL =A0 =A0 =A0 =A0NULL =A0 =A0 =A0 a=
-dd_legacy_isa_port
-> ns16550 =A0 =A0 NULL =A0 =A0 NULL =A0 =A0 =A0 =A0tsi-bridge add_legacy_so=
-c_port
-> ns16550 =A0 =A0 NULL =A0 =A0 ibm,opb =A0 =A0 opb =A0 =A0 =A0 =A0add_legac=
-y_soc_port
-> ns16550 =A0 =A0 NULL =A0 =A0 localbus =A0 =A0NULL =A0 =A0 =A0 add_legacy_=
-soc_port
->=20
-> But, if we were willing to move away from checks based on
-> the parent->type and stick with parent->compat, then the
-> unification would be a lot cleaner and easier to implement.
+On Mon, Jan 07, 2008 at 09:24:32AM -0600, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > 
+> > 
+> > Hrm.  Can we leave this one until after 1.1?   Since it adds new
+> > syntax, I think it would be worth cogitating a bit longer.
+> 
+> Double hrm.
+> 
+> Scott, can you remind us why this feature was requested
+> off the U-Boot list, please?  I'm trying to decide if we
+> really do want to get it into the 1.1 release.
 
-Unfortunately, some of our cell blades don't have the right
-'compatible' property, so you still need to check the type for
-the opb case.
+U-boot wants it because they're planning on using device trees as their
+new multi-image format.
 
-> (we could also leave the ISA one out as an oddball, and then
-> not have to carry an add-fcn either).
+I implemented it for a similar, but different reason -- passing guest
+device trees to a hypervisor within a hypervisor config tree.
 
-yes, that seems reasonable.
-
-	Arnd <><
+-Scott
