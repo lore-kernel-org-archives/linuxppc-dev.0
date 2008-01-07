@@ -1,26 +1,27 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C0CE2DDE18
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 22:53:41 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 15338DDE18
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 22:53:42 +1100 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m07BrZph000151
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 04:53:35 -0700 (MST)
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	m07Bra3J010009
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 04:53:37 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m07BrVDM024529
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 05:53:34 -0600 (CST)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m07BrVDO024529
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 05:53:35 -0600 (CST)
 From: Li Yang <leoli@freescale.com>
 To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] add MPC837x USB platform support
-Date: Mon,  7 Jan 2008 20:03:19 +0800
-Message-Id: <1199707400-23588-2-git-send-email-leoli@freescale.com>
-In-Reply-To: <1199707400-23588-1-git-send-email-leoli@freescale.com>
+Subject: [PATCH 3/3] USB device tree cleanups
+Date: Mon,  7 Jan 2008 20:03:20 +0800
+Message-Id: <1199707400-23588-3-git-send-email-leoli@freescale.com>
+In-Reply-To: <1199707400-23588-2-git-send-email-leoli@freescale.com>
 References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
+	<1199707400-23588-2-git-send-email-leoli@freescale.com>
 Cc: Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,148 +32,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add chip specific and board specific initialization for MPC837x USB.
+Remove device_type = "usb"
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/platforms/83xx/mpc837x_mds.c |   48 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/83xx/mpc83xx.h     |    3 ++
- arch/powerpc/platforms/83xx/usb.c         |   39 +++++++++++++++++++++++
- 3 files changed, 90 insertions(+), 0 deletions(-)
+ Documentation/powerpc/booting-without-of.txt |    4 ----
+ arch/powerpc/boot/dts/mpc8313erdb.dts        |    1 -
+ arch/powerpc/boot/dts/mpc832x_mds.dts        |    1 -
+ arch/powerpc/boot/dts/mpc8349emitx.dts       |    2 --
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    1 -
+ arch/powerpc/boot/dts/mpc834x_mds.dts        |    2 --
+ arch/powerpc/boot/dts/mpc836x_mds.dts        |    1 -
+ arch/powerpc/platforms/83xx/usb.c            |    8 ++++----
+ arch/powerpc/sysdev/fsl_soc.c                |    8 ++------
+ 9 files changed, 6 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index 166c111..de60872 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -27,6 +27,53 @@ unsigned long isa_io_base = 0;
- unsigned long isa_mem_base = 0;
- #endif
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index e9a3cb1..65e8baa 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1408,7 +1408,6 @@ platforms are moved over to use the flattened-device-tree model.
  
-+#define BCSR12_USB_SER_MASK	0x8a
-+#define BCSR12_USB_SER_PIN	0x80
-+#define BCSR12_USB_SER_DEVICE	0x02
-+extern int mpc837x_usb_cfg(void);
-+
-+static int mpc837xmds_usb_cfg(void)
-+{
-+	struct device_node *np;
-+	const void *phy_type, *mode;
-+	void __iomem *bcsr_regs = NULL;
-+	u8 bcsr12;
-+	int ret;
-+
-+	ret = mpc837x_usb_cfg();
-+	if (ret)
-+		return ret;
-+	/* Map BCSR area */
-+	np = of_find_node_by_name(NULL, "bcsr");
-+	if (np) {
-+		struct resource res;
-+
-+		of_address_to_resource(np, 0, &res);
-+		bcsr_regs = ioremap(res.start, res.end - res.start + 1);
-+		of_node_put(np);
-+	}
-+	if (!bcsr_regs)
-+		return -1;
-+
-+	np = of_find_node_by_name(NULL, "usb");
-+	phy_type = of_get_property(np, "phy_type", NULL);
-+	if (phy_type && !strcmp(phy_type, "ulpi")) {
-+		clrbits8(bcsr_regs + 12, BCSR12_USB_SER_PIN);
-+	} else if (phy_type && !strcmp(phy_type, "serial")) {
-+		mode = of_get_property(np, "dr_mode", NULL);
-+		bcsr12 = in_8(bcsr_regs + 12) & ~BCSR12_USB_SER_MASK;
-+		bcsr12 |= BCSR12_USB_SER_PIN;
-+		if (mode && !strcmp(mode, "peripheral"))
-+			bcsr12 |= BCSR12_USB_SER_DEVICE;
-+		out_8(bcsr_regs + 12, bcsr12);
-+	} else {
-+		printk(KERN_ERR "USB DR: unsupported PHY\n");
-+	}
-+
-+	iounmap(bcsr_regs);
-+	return 0;
-+}
-+
- /* ************************************************************************
-  *
-  * Setup the architecture
-@@ -45,6 +92,7 @@ static void __init mpc837x_mds_setup_arch(void)
- 	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-+	mpc837xmds_usb_cfg();
- }
+    Example multi port host USB controller device node :
+ 	usb@22000 {
+-	        device_type = "usb";
+ 		compatible = "fsl-usb2-mph";
+ 		reg = <22000 1000>;
+ 		#address-cells = <1>;
+@@ -1422,7 +1421,6 @@ platforms are moved over to use the flattened-device-tree model.
  
- static struct of_device_id mpc837x_ids[] = {
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index b778cb4..88bb748 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -14,6 +14,7 @@
- #define MPC83XX_SCCR_USB_DRCM_11   0x00300000
- #define MPC83XX_SCCR_USB_DRCM_01   0x00100000
- #define MPC83XX_SCCR_USB_DRCM_10   0x00200000
-+#define MPC837X_SCCR_USB_DRCM_11   0x00c00000
+    Example dual role USB controller device node :
+ 	usb@23000 {
+-		device_type = "usb";
+ 		compatible = "fsl-usb2-dr";
+ 		reg = <23000 1000>;
+ 		#address-cells = <1>;
+@@ -1586,7 +1584,6 @@ platforms are moved over to use the flattened-device-tree model.
+    iii) USB (Universal Serial Bus Controller)
  
- /* system i/o configuration register low */
- #define MPC83XX_SICRL_OFFS         0x114
-@@ -22,6 +23,8 @@
- #define MPC834X_SICRL_USB1         0x20000000
- #define MPC831X_SICRL_USB_MASK     0x00000c00
- #define MPC831X_SICRL_USB_ULPI     0x00000800
-+#define MPC837X_SICRL_USB_MASK     0xf0000000
-+#define MPC837X_SICRL_USB_ULPI     0x50000000
+    Required properties:
+-   - device_type : should be "usb".
+    - compatible : could be "qe_udc" or "fhci-hcd".
+    - mode : the could be "host" or "slave".
+    - reg : Offset and length of the register set for the device
+@@ -1600,7 +1597,6 @@ platforms are moved over to use the flattened-device-tree model.
  
- /* system i/o configuration register high */
- #define MPC83XX_SICRH_OFFS         0x118
+    Example(slave):
+ 	usb@6c0 {
+-		device_type = "usb";
+ 		compatible = "qe_udc";
+ 		reg = <6c0 40>;
+ 		interrupts = <8b 0>;
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 9e7eba9..b48b9e2 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -80,7 +80,6 @@
+ 
+ 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+ 		usb@23000 {
+-			device_type = "usb";
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <23000 1000>;
+ 			#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index c64f303..0d40adb 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -200,7 +200,6 @@
+ 		};
+ 
+ 		usb@6c0 {
+-			device_type = "usb";
+ 			compatible = "qe_udc";
+ 			reg = <6c0 40 8B00 100>;
+ 			interrupts = <b>;
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 5072f6d..9d411f8 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -78,7 +78,6 @@
+ 		};
+ 
+ 		usb@22000 {
+-			device_type = "usb";
+ 			compatible = "fsl-usb2-mph";
+ 			reg = <22000 1000>;
+ 			#address-cells = <1>;
+@@ -90,7 +89,6 @@
+ 		};
+ 
+ 		usb@23000 {
+-			device_type = "usb";
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <23000 1000>;
+ 			#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+index 074f7a2..17c4858 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+@@ -78,7 +78,6 @@
+ 		};
+ 
+ 		usb@23000 {
+-			device_type = "usb";
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <23000 1000>;
+ 			#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+index 49363f8..fe2928b 100644
+--- a/arch/powerpc/boot/dts/mpc834x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+@@ -95,7 +95,6 @@
+ 		/* phy type (ULPI or SERIAL) are only types supportted for MPH */
+ 		/* port = 0 or 1 */
+ 		usb@22000 {
+-			device_type = "usb";
+ 			compatible = "fsl-usb2-mph";
+ 			reg = <22000 1000>;
+ 			#address-cells = <1>;
+@@ -107,7 +106,6 @@
+ 		};
+ 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+ 		usb@23000 {
+-			device_type = "usb";
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <23000 1000>;
+ 			#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index 0b2d2b5..6fa418a 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -231,7 +231,6 @@
+ 		};
+ 
+ 		usb@6c0 {
+-			device_type = "usb";
+ 			compatible = "qe_udc";
+ 			reg = <6c0 40 8B00 100>;
+ 			interrupts = <b>;
 diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index b45160f..2985c9c 100644
+index 2985c9c..2f0a051 100644
 --- a/arch/powerpc/platforms/83xx/usb.c
 +++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -179,3 +179,42 @@ int mpc831x_usb_cfg(void)
- 	return ret;
- }
- #endif /* CONFIG_PPC_MPC831x */
-+
-+#ifdef CONFIG_PPC_MPC837x
-+int mpc837x_usb_cfg(void)
-+{
-+	void __iomem *immap;
-+	struct device_node *np = NULL;
-+	const void *prop;
-+	int ret = 0;
-+
-+	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
-+	if (!np)
-+		return -ENODEV;
-+	prop = of_get_property(np, "phy_type", NULL);
-+
-+	if (strcmp(prop, "ulpi") && strcmp(prop, "serial")) {
-+		printk(KERN_WARNING "837x USB PHY type not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Map IMMR space for pin and clock settings */
-+	immap = ioremap(get_immrbase(), 0x1000);
-+	if (!immap) {
-+		of_node_put(np);
-+		return -ENOMEM;
-+	}
-+
-+	/* Configure clock */
-+	clrsetbits_be32(immap + MPC83XX_SCCR_OFFS, MPC837X_SCCR_USB_DRCM_11,
-+			MPC837X_SCCR_USB_DRCM_11);
-+
-+	/* Configure pin mux for ULPI/serial */
-+	clrsetbits_be32(immap + MPC83XX_SICRL_OFFS, MPC837X_SICRL_USB_MASK,
-+			MPC837X_SICRL_USB_ULPI);
-+
-+	iounmap(immap);
-+	of_node_put(np);
-+	return ret;
-+}
-+#endif /* CONFIG_PPC_MPC837x */
+@@ -41,7 +41,7 @@ int mpc834x_usb_cfg(void)
+ 	sicrl = in_be32(immap + MPC83XX_SICRL_OFFS) & ~MPC834X_SICRL_USB_MASK;
+ 	sicrh = in_be32(immap + MPC83XX_SICRH_OFFS) & ~MPC834X_SICRH_USB_UTMI;
+ 
+-	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
++	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
+ 	if (np) {
+ 		sccr |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
+ 
+@@ -67,7 +67,7 @@ int mpc834x_usb_cfg(void)
+ 		port0_is_dr = 1;
+ 		of_node_put(np);
+ 	}
+-	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-mph");
++	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-mph");
+ 	if (np) {
+ 		sccr |= MPC83XX_SCCR_USB_MPHCM_11; /* 1:3 */
+ 
+@@ -111,7 +111,7 @@ int mpc831x_usb_cfg(void)
+ 	const void *dr_mode;
+ #endif
+ 
+-	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
++	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
+ 	if (!np)
+ 		return -ENODEV;
+ 	prop = of_get_property(np, "phy_type", NULL);
+@@ -188,7 +188,7 @@ int mpc837x_usb_cfg(void)
+ 	const void *prop;
+ 	int ret = 0;
+ 
+-	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
++	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
+ 	if (!np)
+ 		return -ENODEV;
+ 	prop = of_get_property(np, "phy_type", NULL);
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 3ace747..f5f1bef 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -533,9 +533,7 @@ static int __init fsl_usb_of_init(void)
+ 		*usb_dev_dr_client = NULL;
+ 	int ret;
+ 
+-	for (np = NULL, i = 0;
+-	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-mph")) != NULL;
+-	     i++) {
++	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
+ 		struct resource r[2];
+ 		struct fsl_usb2_platform_data usb_data;
+ 		const unsigned char *prop = NULL;
+@@ -580,9 +578,7 @@ static int __init fsl_usb_of_init(void)
+ 			goto unreg_mph;
+ 	}
+ 
+-	for (np = NULL;
+-	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-dr")) != NULL;
+-	     i++) {
++	for_each_compatible_node(np, NULL, "fsl-usb2-dr") {
+ 		struct resource r[2];
+ 		struct fsl_usb2_platform_data usb_data;
+ 		const unsigned char *prop = NULL;
 -- 
 1.5.3.5.643.g40e25
