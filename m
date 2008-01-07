@@ -1,26 +1,32 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sekhar.pedamallu@patni.com>
+Received: from pcsbom.patni.com (pcsbom.patni.com [203.189.177.133])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 43835DDE23
+	by ozlabs.org (Postfix) with ESMTP id 15A79DDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  6 Jan 2008 01:19:08 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JB9rd-0007Dg-2D
-	for linuxppc-embedded@ozlabs.org; Sat, 05 Jan 2008 06:19:05 -0800
-Message-ID: <14633599.post@talk.nabble.com>
-Date: Sat, 5 Jan 2008 06:19:05 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Control not branching to the instruction present at resetvec
-	i.e 0xfffffffc
-In-Reply-To: <OFD408300E.ACB35FD3-ON852573C6.0072065E-852573C6.007337FA@RFLELECT.COM>
+	Mon,  7 Jan 2008 16:41:52 +1100 (EST)
+Received: from pcsakruti.patni.com (pcsakruti.patni.com [192.168.8.190])
+	by pcsbom.patni.com (8.13.1/8.13.1) with ESMTP id m075ehfg028604
+	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Jan 2008 11:11:05 +0530
+Received: from aktrakshak.patni.com (aktrakshak.patni.com [192.168.8.183])
+	by pcsakruti.patni.com (8.13.1/8.13.4) with SMTP id m075du3M001086
+	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Jan 2008 11:10:01 +0530
+Received: from lords.patni.com ([192.168.8.1])
+	by aktrakshak.patni.com (SMSSMTP 4.1.11.41) with SMTP id
+	M2008010711045900963
+	for <linuxppc-embedded@ozlabs.org>; Mon, 07 Jan 2008 11:04:59 +0530
+Received: from pcp40256 ([192.168.190.96]) (authenticated bits=0)
+	by lords.patni.com (8.13.4/8.13.4) with ESMTP id m075eamj007389
+	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Jan 2008 11:10:39 +0530
+Message-Id: <200801070540.m075eamj007389@lords.patni.com>
+From: "Sekhar Pedamallu" <sekhar.pedamallu@patni.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Concatenation of MTD devices
+Date: Mon, 7 Jan 2008 11:10:39 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <14591717.post@talk.nabble.com> <20080103163019.GA4223@lixom.net>
-	<477D2CE0.1050806@kenati.com> <14612548.post@talk.nabble.com>
-	<OFD408300E.ACB35FD3-ON852573C6.0072065E-852573C6.007337FA@RFLELECT.COM>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_04AE_01C8511D.EFA1D100"
+Reply-To: sekhar.pedamallu@patni.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,53 +37,169 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format...
 
-Hi Mr Ravi ...
-I suggest you to post a new concern in a new thread ....
+------=_NextPart_000_04AE_01C8511D.EFA1D100
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-----Misbah 
+Hi dudes,
 
-ravi.rao wrote:
-> 
-> Hi All,
->     We have a custom target board based on PPC-EP405. We just got the 
-> board from the hardware team .I connected the board to BDI200 and powered 
-> it on. 
-> The control came to the resetvec address which is 0xfffffffc. I was able 
-> to read and write to flash. So I erased the flash and burnt the bootloader 
-> into flash from 0xfffc0000.
-> I verified that the instruction at 0xfffffffc is 4bfc2104 whicis actually 
-> a branch to 0xfffc2100. Also a memory dump of 0xfffc2100 shows the correct 
-> code. This proved that
-> the uboot bootloader was burnt properly.
-> Now when I reset the board the control never reaches 0xfffc2100 i.e for 
-> some reason the code at the resetvec is not getting executed. Any help or 
-> pointers to resolve this is greatly appreciated.
-> Thanks,
-> Ravishankar Govindarao
-> RFL Electronics Inc.
-> E-mail : Ravi.Rao@rflelect.com
-> Voice: 973.334.3100 Ext. 233
-> Fax: 973.334.3863
->  
-> CONFIDENTIALITY NOTE
-> This e-mail, including any attachments, may contain confidential and/or 
-> legally privileged information.  The Information is intended only for the 
-> use of the individual or entity named on this e-mail .  If you are not the 
-> intended recipient, you are hereby notified that any disclosure, copying, 
-> distribution, or the taking of any action in reliance on the contents of 
-> this transmitted Information is strictly prohibited.  Further, if you are 
-> not the intended recipient, please notify us by return e-mail and delete 
-> the Information promptly.
->  
->  
->  
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+ 
 
--- 
-View this message in context: http://www.nabble.com/Reading-a-config-file-in-a-driver-....-tp14591717p14633599.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Had any one worked on the concatenation of MTD devices on ppc . I need to
+concatenate two MTD devices. I have a found an option in Kernel
+configuration. Apart from could u help me in finding out such driver codes
+which involves concatenation ???
+
+ 
+
+Thanks in advance :-)
+
+ 
+
+Thanks & Regards ,
+
+Sekhar Pedamallu
+
+ 
+
+
+http://www.patni.com
+World-Wide Partnerships. World-Class Solutions.
+_____________________________________________________________________
+
+This e-mail message may contain proprietary, confidential or legally
+privileged information for the sole use of the person or entity to
+whom this message was originally addressed. Any review, e-transmission
+dissemination or other use of or taking of any action in reliance upon
+this information by persons or entities other than the intended
+recipient is prohibited. If you have received this e-mail in error
+kindly delete  this e-mail from your records. If it appears that this
+mail has been forwarded to you without proper authority, please notify
+us immediately at netadmin@patni.com and delete this mail. 
+_____________________________________________________________________
+
+------=_NextPart_000_04AE_01C8511D.EFA1D100
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
+hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Gautami;
+	panose-1:2 0 5 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>Hi dudes,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>Had any one worked on the concatenation of MTD devices on
+ppc . I need to concatenate two MTD devices. I have a found an option in Ke=
+rnel
+configuration. Apart from could u help me in finding out such driver codes
+which involves concatenation ???<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>Thanks in advance </span></font><font size=3D2 face=3DWi=
+ngdings><span
+style=3D'font-size:10.0pt;font-family:Wingdings'>J</span></font><font size=
+=3D2
+face=3DArial><span style=3D'font-size:10.0pt;font-family:Arial'><o:p></o:p>=
+</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=3D'font-size:1=
+0.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><em><b><i><font size=3D3 color=3Dblue face=3DGautami><=
+span
+style=3D'font-size:12.0pt;font-family:Gautami;color:blue;font-weight:bold'>=
+Thanks
+&amp; Regards ,</span></font></i></b></em><o:p></o:p></p>
+
+<p class=3DMsoNormal><em><b><i><font size=3D5 color=3Dmaroon face=3D"Times =
+New Roman"><span
+style=3D'font-size:18.0pt;color:maroon;font-weight:bold'>Sekhar Pedamallu</=
+span></font></i></b></em><o:p></o:p></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=3D=
+'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<br><a href=3Dhttp://www.patni.com>http://www.patni.com</a><br>
+World-Wide Partnerships. World-Class Solutions.
+<br>
+_____________________________________________________________________
+<br> <br>
+This e-mail message may contain proprietary, confidential or legally
+privileged information for the sole use of the person or entity to
+whom this message was originally addressed. Any review, e-transmission
+dissemination or other use of or taking of any action in reliance upon
+this information by persons or entities other than the intended
+recipient is prohibited. If you have received this e-mail in error
+kindly delete  this e-mail from your records. If it appears that this
+mail has been forwarded to you without proper authority, please notify
+us immediately at netadmin@patni.com and delete this mail. <br>
+_____________________________________________________________________
+</body>
+
+</html>
+
+------=_NextPart_000_04AE_01C8511D.EFA1D100--
