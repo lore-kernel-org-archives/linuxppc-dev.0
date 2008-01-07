@@ -1,23 +1,17 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D4DEDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 04:25:26 +1100 (EST)
-Date: Mon, 7 Jan 2008 11:25:03 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 1/3] Add support for binary includes.
-Message-ID: <20080107172503.GA12954@ld0162-tx32.am.freescale.net>
-References: <20080104211043.GA28991@ld0162-tx32.am.freescale.net>
-	<20080105122043.GG4326@localhost.localdomain>
-	<E1JBtq4-0005DJ-7o@jdl.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1JBtq4-0005DJ-7o@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EC62BDDE35
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 04:54:19 +1100 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1JBwAx-0006Il-CE
+	for linuxppc-dev@ozlabs.org; Mon, 07 Jan 2008 11:54:16 -0600
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC PATCH 0/3]: Add StorCenter port to arch/powerpc
+Date: Mon, 07 Jan 2008 11:54:15 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JBwAx-0006Il-CE@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 07, 2008 at 09:24:32AM -0600, Jon Loeliger wrote:
-> So, like, the other day David Gibson mumbled:
-> > 
-> > 
-> > Hrm.  Can we leave this one until after 1.1?   Since it adds new
-> > syntax, I think it would be worth cogitating a bit longer.
-> 
-> Double hrm.
-> 
-> Scott, can you remind us why this feature was requested
-> off the U-Boot list, please?  I'm trying to decide if we
-> really do want to get it into the 1.1 release.
+Guys,
 
-U-boot wants it because they're planning on using device trees as their
-new multi-image format.
+I have the bulk of a port for the iomega StorCenter that
+Andy and I have been working on.  We'd like your feedback!
 
-I implemented it for a similar, but different reason -- passing guest
-device trees to a hypervisor within a hypervisor config tree.
+Specifically, it's not quite working yet, and for lack of
+actually getting serial output, we're having some difficulty
+still.  I post it here in a desperate attempt to let some
+eagle-eyed person point out my obvious "D'oh" problem.
 
--Scott
+Thanks,
+jdl
+
+
+ arch/powerpc/boot/Makefile                      |    3 +-
+ arch/powerpc/boot/cuboot-824x.c                 |   52 +
+ arch/powerpc/boot/dts/storcenter.dts            |  159 +++
+ arch/powerpc/configs/storcenter_defconfig       | 1538 +++++++++++++++++++++++
+ arch/powerpc/platforms/embedded6xx/Kconfig      |   15 +-
+ arch/powerpc/platforms/embedded6xx/Makefile     |    2 +
+ arch/powerpc/platforms/embedded6xx/storcenter.c |  158 +++
+ 7 files changed, 1924 insertions(+), 3 deletions(-)
