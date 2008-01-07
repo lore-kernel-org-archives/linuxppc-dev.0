@@ -2,20 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D08F9DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 10:33:24 +1100 (EST)
-Subject: Re: [PATCH][POWERPC] Workaround for iommu page alignment
+	by ozlabs.org (Postfix) with ESMTP id 0638CDDE4A
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 10:34:39 +1100 (EST)
+Subject: [PATCH][POWERPC] Workaround for iommu page alignment (#2)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1199745684.7518.25.camel@concordia>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1199742359.6734.14.camel@pasglop>
 References: <1199742359.6734.14.camel@pasglop>
-	<1199745684.7518.25.camel@concordia>
 Content-Type: text/plain
-Date: Tue, 08 Jan 2008 10:33:01 +1100
-Message-Id: <1199748781.6734.18.camel@pasglop>
+Date: Tue, 08 Jan 2008 10:34:22 +1100
+Message-Id: <1199748862.6734.20.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,12 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+powerpc: Workaround for iommu page alignment
 
-> I don't see in the code where you implement the "size > PAGE_SIZE"
-> condition. But I only just got back from holidays .. :)
+Our iommu page size is currently always 4K. That means with our current
+code, drivers may do a dma_map_sg() of a 64K page and obtain a dma_addr_t
+that is only 4K aligned.
 
-Indeed ... a "quilt ref" was missing :-(
+This works fine in most cases except some infiniband HW it seems, where
+they tell the HW about the page size and it ignores the low bits of the
+DMA address.
 
-New patch coming ...
+This works around it by making our IOMMU code enforce a PAGE_SIZE alignment
+for mappings of objects that are page aligned in the first place and whose
+size is larger or equal to a page.
 
-Ben.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+And this version actually does what the comment says (I had forgotten
+to quilt ref... a common mistake).
+
+Index: linux-work/arch/powerpc/kernel/iommu.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/iommu.c	2007-12-21 10:39:39.000000000 +1100
++++ linux-work/arch/powerpc/kernel/iommu.c	2007-12-21 10:48:12.000000000 +1100
+@@ -278,6 +278,7 @@ int iommu_map_sg(struct iommu_table *tbl
+ 	unsigned long flags;
+ 	struct scatterlist *s, *outs, *segstart;
+ 	int outcount, incount, i;
++	unsigned int align;
+ 	unsigned long handle;
+ 
+ 	BUG_ON(direction == DMA_NONE);
+@@ -309,7 +310,12 @@ int iommu_map_sg(struct iommu_table *tbl
+ 		/* Allocate iommu entries for that segment */
+ 		vaddr = (unsigned long) sg_virt(s);
+ 		npages = iommu_num_pages(vaddr, slen);
+-		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
++		align = 0;
++		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && slen >= PAGE_SIZE &&
++		    (vaddr & ~PAGE_MASK) == 0)
++			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
++		entry = iommu_range_alloc(tbl, npages, &handle,
++					  mask >> IOMMU_PAGE_SHIFT, align);
+ 
+ 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
+ 
+@@ -572,7 +578,7 @@ dma_addr_t iommu_map_single(struct iommu
+ {
+ 	dma_addr_t dma_handle = DMA_ERROR_CODE;
+ 	unsigned long uaddr;
+-	unsigned int npages;
++	unsigned int npages, align;
+ 
+ 	BUG_ON(direction == DMA_NONE);
+ 
+@@ -580,8 +586,13 @@ dma_addr_t iommu_map_single(struct iommu
+ 	npages = iommu_num_pages(uaddr, size);
+ 
+ 	if (tbl) {
++		align = 0;
++		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && size >= PAGE_SIZE &&
++		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
++			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
++
+ 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
+-					 mask >> IOMMU_PAGE_SHIFT, 0);
++					 mask >> IOMMU_PAGE_SHIFT, align);
+ 		if (dma_handle == DMA_ERROR_CODE) {
+ 			if (printk_ratelimit())  {
+ 				printk(KERN_INFO "iommu_alloc failed, "
