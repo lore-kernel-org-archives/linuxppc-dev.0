@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7EA11DDEE6
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 08:46:18 +1100 (EST)
-Subject: [PATCH][POWERPC] Workaround for iommu page alignment
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 08:45:59 +1100
-Message-Id: <1199742359.6734.14.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 38B5DDDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 08:48:46 +1100 (EST)
+Date: Mon, 7 Jan 2008 15:57:56 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH][POWERPC] Workaround for iommu page alignment
+Message-ID: <20080107215755.GA31230@lixom.net>
+References: <1199742359.6734.14.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1199742359.6734.14.camel@pasglop>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,72 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Our iommu page size is currently always 4K. That means with our current
-code, drivers may do a dma_map_sg() of a 64K page and obtain a dma_addr_t
-that is only 4K aligned.
+On Tue, Jan 08, 2008 at 08:45:59AM +1100, Benjamin Herrenschmidt wrote:
+> Our iommu page size is currently always 4K. That means with our current
+> code, drivers may do a dma_map_sg() of a 64K page and obtain a dma_addr_t
+> that is only 4K aligned.
+> 
+> This works fine in most cases except some infiniband HW it seems, where
+> they tell the HW about the page size and it ignores the low bits of the
+> DMA address.
+> 
+> This works around it by making our IOMMU code enforce a PAGE_SIZE alignment
+> for mappings of objects that are page aligned in the first place and whose
+> size is larger or equal to a page.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This works fine in most cases except some infiniband HW it seems, where
-they tell the HW about the page size and it ignores the low bits of the
-DMA address.
+Acked-by: Olof Johansson <olof@lixom.net>
 
-This works around it by making our IOMMU code enforce a PAGE_SIZE alignment
-for mappings of objects that are page aligned in the first place and whose
-size is larger or equal to a page.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Looks like it fell through the holiday cracks ... 
-
-It could still go in 2.6.24 I suppose... If not, put it in 2.6.25 and
-we'll backport to stable later.
-
-Index: linux-work/arch/powerpc/kernel/iommu.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/iommu.c	2007-12-21 10:39:39.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/iommu.c	2007-12-21 10:46:18.000000000 +1100
-@@ -278,6 +278,7 @@ int iommu_map_sg(struct iommu_table *tbl
- 	unsigned long flags;
- 	struct scatterlist *s, *outs, *segstart;
- 	int outcount, incount, i;
-+	unsigned int align;
- 	unsigned long handle;
- 
- 	BUG_ON(direction == DMA_NONE);
-@@ -309,7 +310,11 @@ int iommu_map_sg(struct iommu_table *tbl
- 		/* Allocate iommu entries for that segment */
- 		vaddr = (unsigned long) sg_virt(s);
- 		npages = iommu_num_pages(vaddr, slen);
--		entry = iommu_range_alloc(tbl, npages, &handle, mask >> IOMMU_PAGE_SHIFT, 0);
-+		align = 0;
-+		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT && (vaddr & ~PAGE_MASK) == 0)
-+			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
-+		entry = iommu_range_alloc(tbl, npages, &handle,
-+					  mask >> IOMMU_PAGE_SHIFT, align);
- 
- 		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
- 
-@@ -572,7 +577,7 @@ dma_addr_t iommu_map_single(struct iommu
- {
- 	dma_addr_t dma_handle = DMA_ERROR_CODE;
- 	unsigned long uaddr;
--	unsigned int npages;
-+	unsigned int npages, align;
- 
- 	BUG_ON(direction == DMA_NONE);
- 
-@@ -580,8 +585,13 @@ dma_addr_t iommu_map_single(struct iommu
- 	npages = iommu_num_pages(uaddr, size);
- 
- 	if (tbl) {
-+		align = 0;
-+		if (IOMMU_PAGE_SHIFT < PAGE_SHIFT &&
-+		    ((unsigned long)vaddr & ~PAGE_MASK) == 0)
-+			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
-+
- 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction,
--					 mask >> IOMMU_PAGE_SHIFT, 0);
-+					 mask >> IOMMU_PAGE_SHIFT, align);
- 		if (dma_handle == DMA_ERROR_CODE) {
- 			if (printk_ratelimit())  {
- 				printk(KERN_INFO "iommu_alloc failed, "
+-Olof
