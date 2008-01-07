@@ -1,27 +1,27 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id CCF15DDE20
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 05:32:29 +1100 (EST)
-Received: from pd4mr1so.prod.shaw.ca
-	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JUA00KLJE5IF6D0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 07 Jan 2008 11:32:06 -0700 (MST)
+Received: from pd4mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 4D3E1DDF9A
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 05:32:36 +1100 (EST)
+Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JUA008RVE2SFH10@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 07 Jan 2008 11:30:28 -0700 (MST)
 Received: from pn2ml3so.prod.shaw.ca ([10.0.121.147])
-	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JUA008B8E5G3BA0@pd4mr1so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 07 Jan 2008 11:32:06 -0700 (MST)
+	5 2006)) with ESMTP id <0JUA00FPIE2Q68D0@pd2mr5so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 07 Jan 2008 11:30:28 -0700 (MST)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
 	2006))
-	with ESMTP id <0JUA0006OE5C8Y80@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 07 Jan 2008 11:32:03 -0700 (MST)
-Date: Mon, 07 Jan 2008 11:27:24 -0700
+	with ESMTP id <0JUA00037E2NI960@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 07 Jan 2008 11:30:25 -0700 (MST)
+Date: Mon, 07 Jan 2008 11:15:56 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] mpc5200: eliminate mpc52xx_*_map_*() functions.
-To: linuxppc-dev@ozlabs.org
-Message-id: <20080107182636.12429.12714.stgit@trillian.secretlab.ca>
+Subject: [RFC] Add of_find_matching_node() helper function
+To: paulus@samba.org, sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
+Message-id: <20080107181418.11906.13427.stgit@trillian.secretlab.ca>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,255 +35,179 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-mpc5200 platform code defines a bunch of map functions which duplicate the
-functionality of of_iomap().  Remove them and use of_iomap() instead.
+Similar to of_find_compatible_node(), of_find_matching_node() and
+for_each_matching_node() allow you to iterate over the device tree
+looking for specific nodes except that it accepts a of_device_id
+table instead of strings.
+
+This patch also moves of_match_node() from driver/of/device.c to
+driver/of/base.c to colocate it with the of_find_matching_node which
+depends on it.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
-If there are no objections to this one, I'll be putting it in my 5200 tree
-and asking Paulus to pull it in the next day or so
+I've found this change useful for the 5200 board ports to clean up the
+platform matching code.  It works well in my environment, but it could
+have farther reaching consequences.  Please review and comment.
 
 Cheers,
 g.
 
- arch/powerpc/platforms/52xx/lite5200.c       |   10 ++++-
- arch/powerpc/platforms/52xx/lite5200_pm.c    |    6 +++
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   51 +++++---------------------
- arch/powerpc/platforms/52xx/mpc52xx_pic.c    |    8 +++-
- arch/powerpc/platforms/52xx/mpc52xx_pm.c     |    8 +++-
- drivers/spi/mpc52xx_psc_spi.c                |    9 ++++-
- include/asm-powerpc/mpc52xx.h                |    2 -
- 7 files changed, 40 insertions(+), 54 deletions(-)
+ drivers/of/base.c         |   58 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/of/device.c       |   29 -----------------------
+ include/linux/of.h        |    8 ++++++
+ include/linux/of_device.h |    2 --
+ 4 files changed, 66 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index ce903be..5a8d190 100644
---- a/arch/powerpc/platforms/52xx/lite5200.c
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -42,10 +42,13 @@
- static void __init
- lite5200_fix_clock_config(void)
- {
-+	struct device_node *np;
- 	struct mpc52xx_cdm  __iomem *cdm;
- 
- 	/* Map zones */
--	cdm = mpc52xx_find_and_map("mpc5200-cdm");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200-cdm");
-+	cdm = of_iomap(np, 0);
-+	of_node_put(np);
- 	if (!cdm) {
- 		printk(KERN_ERR "%s() failed; expect abnormal behaviour\n",
- 		       __FUNCTION__);
-@@ -74,10 +77,13 @@ lite5200_fix_clock_config(void)
- static void __init
- lite5200_fix_port_config(void)
- {
-+	struct device_node *np;
- 	struct mpc52xx_gpio __iomem *gpio;
- 	u32 port_config;
- 
--	gpio = mpc52xx_find_and_map("mpc5200-gpio");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200-gpio");
-+	gpio = of_iomap(np, 0);
-+	of_node_put(np);
- 	if (!gpio) {
- 		printk(KERN_ERR "%s() failed. expect abnormal behavior\n",
- 		       __FUNCTION__);
-diff --git a/arch/powerpc/platforms/52xx/lite5200_pm.c b/arch/powerpc/platforms/52xx/lite5200_pm.c
-index ffa14af..c3ada1e 100644
---- a/arch/powerpc/platforms/52xx/lite5200_pm.c
-+++ b/arch/powerpc/platforms/52xx/lite5200_pm.c
-@@ -42,6 +42,8 @@ static int lite5200_pm_set_target(suspend_state_t state)
- 
- static int lite5200_pm_prepare(void)
- {
-+	struct device_node *np;
-+
- 	/* deep sleep? let mpc52xx code handle that */
- 	if (lite5200_pm_target_state == PM_SUSPEND_STANDBY)
- 		return mpc52xx_pm_prepare();
-@@ -50,7 +52,9 @@ static int lite5200_pm_prepare(void)
- 		return -EINVAL;
- 
- 	/* map registers */
--	mbar = mpc52xx_find_and_map("mpc5200");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200");
-+	mbar = of_iomap(np, 0);
-+	of_node_put(np);
- 	if (!mbar) {
- 		printk(KERN_ERR "%s:%i Error mapping registers\n", __func__, __LINE__);
- 		return -ENOSYS;
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-index 9bdbee4..90a4cec 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -26,45 +26,6 @@
-  */
- static volatile struct mpc52xx_gpt *mpc52xx_wdt = NULL;
- 
--static void __iomem *
--mpc52xx_map_node(struct device_node *ofn)
--{
--	const u32 *regaddr_p;
--	u64 regaddr64, size64;
--
--	if (!ofn)
--		return NULL;
--
--	regaddr_p = of_get_address(ofn, 0, &size64, NULL);
--	if (!regaddr_p) {
--		of_node_put(ofn);
--		return NULL;
--	}
--
--	regaddr64 = of_translate_address(ofn, regaddr_p);
--
--	of_node_put(ofn);
--
--	return ioremap((u32)regaddr64, (u32)size64);
--}
--
--void __iomem *
--mpc52xx_find_and_map(const char *compatible)
--{
--	return mpc52xx_map_node(
--		of_find_compatible_node(NULL, NULL, compatible));
--}
--
--EXPORT_SYMBOL(mpc52xx_find_and_map);
--
--void __iomem *
--mpc52xx_find_and_map_path(const char *path)
--{
--	return mpc52xx_map_node(of_find_node_by_path(path));
--}
--
--EXPORT_SYMBOL(mpc52xx_find_and_map_path);
--
- /**
-  * 	mpc52xx_find_ipb_freq - Find the IPB bus frequency for a device
-  * 	@node:	device node
-@@ -101,9 +62,12 @@ EXPORT_SYMBOL(mpc52xx_find_ipb_freq);
- void __init
- mpc5200_setup_xlb_arbiter(void)
- {
-+	struct device_node *np;
- 	struct mpc52xx_xlb  __iomem *xlb;
- 
--	xlb = mpc52xx_find_and_map("mpc5200-xlb");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200-xlb");
-+	xlb = of_iomap(np, 0);
-+	of_node_put(np);
- 	if (!xlb) {
- 		printk(KERN_ERR __FILE__ ": "
- 			"Error mapping XLB in mpc52xx_setup_cpu().  "
-@@ -156,16 +120,19 @@ mpc52xx_map_wdt(void)
- 	for_each_compatible_node(np, NULL, "fsl,mpc5200-gpt") {
- 		has_wdt = of_get_property(np, "fsl,has-wdt", NULL);
- 		if (has_wdt) {
--			mpc52xx_wdt = mpc52xx_map_node(np);
-+			mpc52xx_wdt = of_iomap(np, 0);
-+			of_node_put(np);
- 			return;
- 		}
- 	}
- 	for_each_compatible_node(np, NULL, "mpc5200-gpt") {
- 		has_wdt = of_get_property(np, "has-wdt", NULL);
- 		if (has_wdt) {
--			mpc52xx_wdt = mpc52xx_map_node(np);
-+			mpc52xx_wdt = of_iomap(np, 0);
-+			of_node_put(np);
- 			return;
- 		}
-+
- 	}
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 9377f3b..b306fef 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -273,3 +273,61 @@ struct device_node *of_find_compatible_node(struct device_node *from,
+ 	return np;
  }
- 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-index 61100f2..07e8987 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-@@ -364,16 +364,18 @@ void __init mpc52xx_init_irq(void)
- {
- 	u32 intr_ctrl;
- 	struct device_node *picnode;
-+	struct device_node *np;
- 
- 	/* Remap the necessary zones */
- 	picnode = of_find_compatible_node(NULL, NULL, "mpc5200-pic");
--
--	intr = mpc52xx_find_and_map("mpc5200-pic");
-+	intr = of_iomap(picnode, 0);
- 	if (!intr)
- 		panic(__FILE__	": find_and_map failed on 'mpc5200-pic'. "
- 				"Check node !");
- 
--	sdma = mpc52xx_find_and_map("mpc5200-bestcomm");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200-bestcomm");
-+	sdma = of_iomap(np, 0);
-+	of_node_put(np);
- 	if (!sdma)
- 		panic(__FILE__	": find_and_map failed on 'mpc5200-bestcomm'. "
- 				"Check node !");
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-index 7ffa7ba..52f0277 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -59,10 +59,14 @@ int mpc52xx_set_wakeup_gpio(u8 pin, u8 level)
- 
- int mpc52xx_pm_prepare(void)
- {
+ EXPORT_SYMBOL(of_find_compatible_node);
++
++/**
++ * of_match_node - Tell if an device_node has a matching of_match structure
++ *	@matches:	array of of device match structures to search in
++ *	@node:		the of device structure to match against
++ *
++ *	Low level utility function used by device matching.
++ */
++const struct of_device_id *of_match_node(const struct of_device_id *matches,
++					 const struct device_node *node)
++{
++	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
++		int match = 1;
++		if (matches->name[0])
++			match &= node->name
++				&& !strcmp(matches->name, node->name);
++		if (matches->type[0])
++			match &= node->type
++				&& !strcmp(matches->type, node->type);
++		if (matches->compatible[0])
++			match &= of_device_is_compatible(node,
++						matches->compatible);
++		if (match)
++			return matches;
++		matches++;
++	}
++	return NULL;
++}
++EXPORT_SYMBOL(of_match_node);
++
++/**
++ *	of_find_matching_node - Find a node based on an of_device_id match
++ *				table.
++ *	@from:		The node to start searching from or NULL, the node
++ *			you pass will not be searched, only the next one
++ *			will; typically, you pass what the previous call
++ *			returned. of_node_put() will be called on it
++ *	@matches:	array of of device match structures to search in
++ *
++ *	Returns a node pointer with refcount incremented, use
++ *	of_node_put() on it when done.
++ */
++struct device_node *of_find_matching_node(struct device_node *from,
++					  const struct of_device_id *matches)
++{
 +	struct device_node *np;
 +
- 	/* map the whole register space */
--	mbar = mpc52xx_find_and_map("mpc5200");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200");
-+	mbar = of_iomap(np, 0);
-+	of_node_put(np);
- 	if (!mbar) {
--		printk(KERN_ERR "%s:%i Error mapping registers\n", __func__, __LINE__);
-+		pr_err("mpc52xx_pm_prepare(): could not map registers\n");
- 		return -ENOSYS;
- 	}
- 	/* these offsets are from mpc5200 users manual */
-diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-index 7051e6c..d398c93 100644
---- a/drivers/spi/mpc52xx_psc_spi.c
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -330,6 +330,7 @@ static void mpc52xx_psc_spi_cleanup(struct spi_device *spi)
++	read_lock(&devtree_lock);
++	np = from ? from->allnext : allnodes;
++	for (; np; np = np->allnext) {
++		if (of_match_node(matches, np) && of_node_get(np))
++			break;
++	}
++	of_node_put(from);
++	read_unlock(&devtree_lock);
++	return np;
++}
++EXPORT_SYMBOL(of_find_matching_node);
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index 6245f06..29681c4 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -10,35 +10,6 @@
+ #include <asm/errno.h>
  
- static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
- {
-+	struct device_node *np;
- 	struct mpc52xx_cdm __iomem *cdm;
- 	struct mpc52xx_gpio __iomem *gpio;
- 	struct mpc52xx_psc __iomem *psc = mps->psc;
-@@ -338,8 +339,12 @@ static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
- 	int ret = 0;
+ /**
+- * of_match_node - Tell if an device_node has a matching of_match structure
+- * @ids: array of of device match structures to search in
+- * @node: the of device structure to match against
+- *
+- * Low level utility function used by device matching.
+- */
+-const struct of_device_id *of_match_node(const struct of_device_id *matches,
+-					 const struct device_node *node)
+-{
+-	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
+-		int match = 1;
+-		if (matches->name[0])
+-			match &= node->name
+-				&& !strcmp(matches->name, node->name);
+-		if (matches->type[0])
+-			match &= node->type
+-				&& !strcmp(matches->type, node->type);
+-		if (matches->compatible[0])
+-			match &= of_device_is_compatible(node,
+-						matches->compatible);
+-		if (match)
+-			return matches;
+-		matches++;
+-	}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_match_node);
+-
+-/**
+  * of_match_device - Tell if an of_device structure has a matching
+  * of_match structure
+  * @ids: array of of device match structures to search in
+diff --git a/include/linux/of.h b/include/linux/of.h
+index c65af7b..b5f33ef 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -17,6 +17,7 @@
+  */
+ #include <linux/types.h>
+ #include <linux/bitops.h>
++#include <linux/mod_devicetable.h>
  
- #if defined(CONFIG_PPC_MERGE)
--	cdm = mpc52xx_find_and_map("mpc5200-cdm");
--	gpio = mpc52xx_find_and_map("mpc5200-gpio");
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200-cdm");
-+	cdm = of_iomap(np, 0);
-+	of_node_put(np);
-+	np = of_find_compatible_node(NULL, NULL, "mpc5200-gpio");
-+	gpio = of_iomap(np, 0);
-+	of_node_put(np);
- #else
- 	cdm = ioremap(MPC52xx_PA(MPC52xx_CDM_OFFSET), MPC52xx_CDM_SIZE);
- 	gpio = ioremap(MPC52xx_PA(MPC52xx_GPIO_OFFSET), MPC52xx_GPIO_SIZE);
-diff --git a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
-index d7efbe0..1c48c6d 100644
---- a/include/asm-powerpc/mpc52xx.h
-+++ b/include/asm-powerpc/mpc52xx.h
-@@ -248,8 +248,6 @@ struct mpc52xx_cdm {
+ #include <asm/prom.h>
  
- #ifndef __ASSEMBLY__
+@@ -41,6 +42,11 @@ extern struct device_node *of_find_compatible_node(struct device_node *from,
+ #define for_each_compatible_node(dn, type, compatible) \
+ 	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
+ 	     dn = of_find_compatible_node(dn, type, compatible))
++extern struct device_node *of_find_matching_node(struct device_node *from,
++	const struct of_device_id *matches);
++#define for_each_matching_node(dn, matches) \
++	for (dn = of_find_matching_node(NULL, matches); dn; \
++	     dn = of_find_matching_node(dn, matches))
+ extern struct device_node *of_find_node_by_path(const char *path);
+ extern struct device_node *of_find_node_by_phandle(phandle handle);
+ extern struct device_node *of_get_parent(const struct device_node *node);
+@@ -60,5 +66,7 @@ extern const void *of_get_property(const struct device_node *node,
+ 				int *lenp);
+ extern int of_n_addr_cells(struct device_node *np);
+ extern int of_n_size_cells(struct device_node *np);
++extern const struct of_device_id *of_match_node(
++	const struct of_device_id *matches, const struct device_node *node);
  
--extern void __iomem * mpc52xx_find_and_map(const char *);
--extern void __iomem * mpc52xx_find_and_map_path(const char *path);
- extern unsigned int mpc52xx_find_ipb_freq(struct device_node *node);
- extern void mpc5200_setup_xlb_arbiter(void);
- extern void mpc52xx_declare_of_platform_devices(void);
+ #endif /* _LINUX_OF_H */
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index 212bffb..6dc1195 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -10,8 +10,6 @@
+ 
+ #define	to_of_device(d) container_of(d, struct of_device, dev)
+ 
+-extern const struct of_device_id *of_match_node(
+-	const struct of_device_id *matches, const struct device_node *node);
+ extern const struct of_device_id *of_match_device(
+ 	const struct of_device_id *matches, const struct of_device *dev);
+ 
