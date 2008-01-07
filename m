@@ -2,17 +2,17 @@ Return-Path: <jdl@jdl.com>
 Received: from jdl.com (jdl.com [208.123.74.7])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3EC9DDED7
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 07:09:15 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 49513DDEEE
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 07:13:18 +1100 (EST)
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 1/3] Add StorCenter DTS first draft. 
-In-Reply-To: Your message of "Mon, 07 Jan 2008 12:26:13 MST."
-	<fa686aa40801071126o1dd9798eub6006e1f0f33797f@mail.gmail.com>
-References: <E1JBwBQ-0006Iy-54@jdl.com>
-	<fa686aa40801071126o1dd9798eub6006e1f0f33797f@mail.gmail.com>
-Date: Mon, 07 Jan 2008 14:09:09 -0600
+Subject: Re: [RFC PATCH 2/3] Add initial iomega StorCenter board port. 
+In-Reply-To: Your message of "Mon, 07 Jan 2008 12:31:36 MST."
+	<fa686aa40801071131u5d1adec8x84b269a14b492202@mail.gmail.com>
+References: <E1JBwBn-0006JC-Nn@jdl.com>
+	<fa686aa40801071131u5d1adec8x84b269a14b492202@mail.gmail.com>
+Date: Mon, 07 Jan 2008 14:13:14 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JByHV-0007Lk-HK@jdl.com>
+Message-Id: <E1JByLS-0007PJ-72@jdl.com>
 Cc: linuxppc-dev@ozlabs.org, andy@protium.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,45 +24,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day "Grant Likely" mumbled:
-> > +
-> > +               ranges = <80000000 80000000 70000000    /* pci mem space */
-> > +                         fdf00000 fdf00000 00100000    /* EUMB */
-> > +                         fe000000 fe000000 00c00000    /* pci i/o space */
-> > +                         fec00000 fec00000 00300000    /* pci cfg regs */
-> > +                         fef00000 fef00000 00100000>;  /* pci iack */
 > 
-> This doesn't look nice.  On the other ppc boards, Kumar moved the pci
-> bus node out of the soc node so the the internal register range is
-> separate from the soc.
+> Curious; why in platforms/embedded6xx vs platforms/82xx?
 
-Oh crap.  I forgot about that.  Yes, you are right.
+82xx is nominally the _other_ 82xx family. :-)
+This is just more historical precedent, and the fact
+that it is similar to the linkstation there.
 
-> I think it should look like this:
+> >  obj-$(CONFIG_MPC7448HPC2)      += mpc7448_hpc2.o
+> >  obj-$(CONFIG_LINKSTATION)      += linkstation.o ls_uart.o
+> > +obj-$(CONFIG_STORCENTER)       += storcenter.o
+> >  obj-$(CONFIG_PPC_HOLLY)                += holly.o
+> >  obj-$(CONFIG_PPC_PRPMC2800)    += prpmc2800.o
+> > +obj-$(CONFIG_STORCENTER)       += storcenter.o
 > 
-> {
->     soc@fdf00000 {
->         compatible = "fsl,mpc8241-immr";
->         ranges = <0 fe000000 00100000>;
->         serial@4500 {
->             blah....
->         };
->         blah....
->     };
->     pci@800000000 {
->         ranges = blah....
->     };
-> };
+> Linked twice?
 
-So, I'll definitely rework that part as in indicated
-
-> > +                       clock-frequency = <d# 97553800>; /* Hz */
-> 
-> That's kind of an odd number for clock frequency.  Usually clock
-> frequencies are *big* and *round*.  :-)
-
-And this one, according to Andy, is nice-n-measured right
-off the crystal!  I had 10M in there originally even.
-But I'll double check that with him to be sure.
+I wanted to make double-sure to screw it up.  You know. :-)
 
 Thanks,
 jdl
