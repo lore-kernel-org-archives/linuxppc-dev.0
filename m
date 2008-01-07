@@ -1,29 +1,32 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 4D3E1DDF9A
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 05:32:36 +1100 (EST)
-Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JUA008RVE2SFH10@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 07 Jan 2008 11:30:28 -0700 (MST)
-Received: from pn2ml3so.prod.shaw.ca ([10.0.121.147])
-	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JUA00FPIE2Q68D0@pd2mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 07 Jan 2008 11:30:28 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
-	2006))
-	with ESMTP id <0JUA00037E2NI960@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 07 Jan 2008 11:30:25 -0700 (MST)
-Date: Mon, 07 Jan 2008 11:15:56 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC] Add of_find_matching_node() helper function
-To: paulus@samba.org, sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
-Message-id: <20080107181418.11906.13427.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 37A93DDEB7
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 05:46:04 +1100 (EST)
+Message-ID: <47827360.9090106@freescale.com>
+Date: Mon, 07 Jan 2008 12:45:52 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
+	<477BAB67.4080003@freescale.com>
+	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
+	<477D2150.4020506@freescale.com>
+	<20080103235156.GE12883@localhost.localdomain>
+	<477EEDFA.9010205@freescale.com>
+	<20080106004637.GJ4326@localhost.localdomain>
+	<47824AA3.5070808@freescale.com>
+	<1199731487.19903.56.camel@localhost.localdomain>
+In-Reply-To: <1199731487.19903.56.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,181 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Liam Girdwood wrote:
+> On Mon, 2008-01-07 at 09:52 -0600, Timur Tabi wrote:
+>> So all I'm trying to do now is get my driver, with warts and all, into the tree 
+>> so that I can focus with Liam et al to get a real ASoC V2 up and running.
+>>
+> 
+> I'll commit the MPC8610 into the ASoC (v1) dev tree soon (hopefully
+> tonight). This will allow folks to use it in the meantime whilst we sort
+> out any changes.
 
-Similar to of_find_compatible_node(), of_find_matching_node() and
-for_each_matching_node() allow you to iterate over the device tree
-looking for specific nodes except that it accepts a of_device_id
-table instead of strings.
+I'm working on some minor updates, so hold off for now.  I'll post a new patch 
+later this afternoon.
 
-This patch also moves of_match_node() from driver/of/device.c to
-driver/of/base.c to colocate it with the of_find_matching_node which
-depends on it.
+> I'll then port (what I can) to V2, although I may need some assistance
+> with some of the PPC sections.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+I'll be 100% available for that.
 
-I've found this change useful for the 5200 board ports to clean up the
-platform matching code.  It works well in my environment, but it could
-have farther reaching consequences.  Please review and comment.
-
-Cheers,
-g.
-
- drivers/of/base.c         |   58 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/of/device.c       |   29 -----------------------
- include/linux/of.h        |    8 ++++++
- include/linux/of_device.h |    2 --
- 4 files changed, 66 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 9377f3b..b306fef 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -273,3 +273,61 @@ struct device_node *of_find_compatible_node(struct device_node *from,
- 	return np;
- }
- EXPORT_SYMBOL(of_find_compatible_node);
-+
-+/**
-+ * of_match_node - Tell if an device_node has a matching of_match structure
-+ *	@matches:	array of of device match structures to search in
-+ *	@node:		the of device structure to match against
-+ *
-+ *	Low level utility function used by device matching.
-+ */
-+const struct of_device_id *of_match_node(const struct of_device_id *matches,
-+					 const struct device_node *node)
-+{
-+	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
-+		int match = 1;
-+		if (matches->name[0])
-+			match &= node->name
-+				&& !strcmp(matches->name, node->name);
-+		if (matches->type[0])
-+			match &= node->type
-+				&& !strcmp(matches->type, node->type);
-+		if (matches->compatible[0])
-+			match &= of_device_is_compatible(node,
-+						matches->compatible);
-+		if (match)
-+			return matches;
-+		matches++;
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL(of_match_node);
-+
-+/**
-+ *	of_find_matching_node - Find a node based on an of_device_id match
-+ *				table.
-+ *	@from:		The node to start searching from or NULL, the node
-+ *			you pass will not be searched, only the next one
-+ *			will; typically, you pass what the previous call
-+ *			returned. of_node_put() will be called on it
-+ *	@matches:	array of of device match structures to search in
-+ *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
-+ */
-+struct device_node *of_find_matching_node(struct device_node *from,
-+					  const struct of_device_id *matches)
-+{
-+	struct device_node *np;
-+
-+	read_lock(&devtree_lock);
-+	np = from ? from->allnext : allnodes;
-+	for (; np; np = np->allnext) {
-+		if (of_match_node(matches, np) && of_node_get(np))
-+			break;
-+	}
-+	of_node_put(from);
-+	read_unlock(&devtree_lock);
-+	return np;
-+}
-+EXPORT_SYMBOL(of_find_matching_node);
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index 6245f06..29681c4 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -10,35 +10,6 @@
- #include <asm/errno.h>
- 
- /**
-- * of_match_node - Tell if an device_node has a matching of_match structure
-- * @ids: array of of device match structures to search in
-- * @node: the of device structure to match against
-- *
-- * Low level utility function used by device matching.
-- */
--const struct of_device_id *of_match_node(const struct of_device_id *matches,
--					 const struct device_node *node)
--{
--	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
--		int match = 1;
--		if (matches->name[0])
--			match &= node->name
--				&& !strcmp(matches->name, node->name);
--		if (matches->type[0])
--			match &= node->type
--				&& !strcmp(matches->type, node->type);
--		if (matches->compatible[0])
--			match &= of_device_is_compatible(node,
--						matches->compatible);
--		if (match)
--			return matches;
--		matches++;
--	}
--	return NULL;
--}
--EXPORT_SYMBOL(of_match_node);
--
--/**
-  * of_match_device - Tell if an of_device structure has a matching
-  * of_match structure
-  * @ids: array of of device match structures to search in
-diff --git a/include/linux/of.h b/include/linux/of.h
-index c65af7b..b5f33ef 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -17,6 +17,7 @@
-  */
- #include <linux/types.h>
- #include <linux/bitops.h>
-+#include <linux/mod_devicetable.h>
- 
- #include <asm/prom.h>
- 
-@@ -41,6 +42,11 @@ extern struct device_node *of_find_compatible_node(struct device_node *from,
- #define for_each_compatible_node(dn, type, compatible) \
- 	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
- 	     dn = of_find_compatible_node(dn, type, compatible))
-+extern struct device_node *of_find_matching_node(struct device_node *from,
-+	const struct of_device_id *matches);
-+#define for_each_matching_node(dn, matches) \
-+	for (dn = of_find_matching_node(NULL, matches); dn; \
-+	     dn = of_find_matching_node(dn, matches))
- extern struct device_node *of_find_node_by_path(const char *path);
- extern struct device_node *of_find_node_by_phandle(phandle handle);
- extern struct device_node *of_get_parent(const struct device_node *node);
-@@ -60,5 +66,7 @@ extern const void *of_get_property(const struct device_node *node,
- 				int *lenp);
- extern int of_n_addr_cells(struct device_node *np);
- extern int of_n_size_cells(struct device_node *np);
-+extern const struct of_device_id *of_match_node(
-+	const struct of_device_id *matches, const struct device_node *node);
- 
- #endif /* _LINUX_OF_H */
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-index 212bffb..6dc1195 100644
---- a/include/linux/of_device.h
-+++ b/include/linux/of_device.h
-@@ -10,8 +10,6 @@
- 
- #define	to_of_device(d) container_of(d, struct of_device, dev)
- 
--extern const struct of_device_id *of_match_node(
--	const struct of_device_id *matches, const struct device_node *node);
- extern const struct of_device_id *of_match_device(
- 	const struct of_device_id *matches, const struct of_device *dev);
- 
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
