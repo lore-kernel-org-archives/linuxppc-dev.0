@@ -1,16 +1,16 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 89BA3DDEE6
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 07:27:53 +1100 (EST)
-Date: Mon, 7 Jan 2008 14:27:36 -0600
+	by ozlabs.org (Postfix) with ESMTP id A71D0DE0EE
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 07:28:07 +1100 (EST)
+Date: Mon, 7 Jan 2008 14:27:51 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: jdl@jdl.com
-Subject: [DTC PATCH 1/2] Convert malloc() uses to xmalloc().
-Message-ID: <20080107202736.GA17782@ld0162-tx32.am.freescale.net>
+Subject: [DTC PATCH 2/2] Preserve scanner state when /include/ing.
+Message-ID: <20080107202751.GB17782@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -23,61 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This allows /include/s to work when in non-default states,
+such as PROPNODECHAR.
+
+We may want to use state stacks to get rid of BEGIN_DEFAULT() altogether...
+
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- dtc-lexer.l |    6 +-----
- srcpos.c    |   12 +++---------
- 2 files changed, 4 insertions(+), 14 deletions(-)
+ dtc-lexer.l |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/dtc-lexer.l b/dtc-lexer.l
-index bfb996e..f2836a8 100644
+index f2836a8..920b87f 100644
 --- a/dtc-lexer.l
 +++ b/dtc-lexer.l
-@@ -273,11 +273,7 @@ int push_input_file(const char *filename)
- 		exit(1);
- 	}
+@@ -18,7 +18,7 @@
+  *                                                                   USA
+  */
  
--	incl_file = malloc(sizeof(struct incl_file));
--	if (!incl_file) {
--		yyerror("Can not allocate include file space.");
--		return 0;
--	}
-+	incl_file = xmalloc(sizeof(struct incl_file));
+-%option noyywrap nounput yylineno
++%option noyywrap nounput yylineno stack
  
- 	/*
- 	 * Save current context.
-diff --git a/srcpos.c b/srcpos.c
-index 7a0c47e..7d0f0a7 100644
---- a/srcpos.c
-+++ b/srcpos.c
-@@ -33,9 +33,7 @@ static int dtc_open_one(struct dtc_file *file,
- 	char *fullname;
+ %x INCLUDE
+ %x BYTESTRING
+@@ -55,7 +55,7 @@ static int dts_version; /* = 0 */
+ %}
  
- 	if (search) {
--		fullname = malloc(strlen(search) + strlen(fname) + 2);
--		if (!fullname)
--			die("Out of memory\n");
-+		fullname = xmalloc(strlen(search) + strlen(fname) + 2);
+ %%
+-<*>"/include/"		BEGIN(INCLUDE);
++<*>"/include/"		yy_push_state(INCLUDE);
  
- 		strcpy(fullname, search);
- 		strcat(fullname, "/");
-@@ -63,15 +61,11 @@ struct dtc_file *dtc_open_file(const char *fname,
- 	struct dtc_file *file;
- 	const char *slash;
+ <INCLUDE>\"[^"\n]*\"	{
+ 			yytext[strlen(yytext) - 1] = 0;
+@@ -63,7 +63,7 @@ static int dts_version; /* = 0 */
+ 				/* Some unrecoverable error.*/
+ 				exit(1);
+ 			}
+-			BEGIN_DEFAULT();
++			yy_pop_state();
+ 		}
  
--	file = malloc(sizeof(struct dtc_file));
--	if (!file)
--		die("Out of memory\n");
-+	file = xmalloc(sizeof(struct dtc_file));
  
- 	slash = strrchr(fname, '/');
- 	if (slash) {
--		char *dir = malloc(slash - fname + 1);
--		if (!dir)
--			die("Out of memory\n");
-+		char *dir = xmalloc(slash - fname + 1);
- 
- 		memcpy(dir, fname, slash - fname);
- 		dir[slash - fname] = 0;
 -- 
 1.5.3
