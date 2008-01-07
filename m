@@ -1,22 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5CC5BDDE30
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 23:39:05 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCh v3] powerpc: add hugepagesz boot-time parameter
-Date: Mon, 7 Jan 2008 13:37:56 +0100
-References: <477D68E6.2070108@linux.vnet.ibm.com>
-	<200801040034.25329.arnd@arndb.de>
-	<20080107120410.GB29254@csn.ul.ie>
-In-Reply-To: <20080107120410.GB29254@csn.ul.ie>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 47815DDE08
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 00:37:25 +1100 (EST)
+Date: Mon, 7 Jan 2008 13:37:17 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+Message-ID: <20080107133716.GA6497@sirena.org.uk>
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<477BA974.8010308@freescale.com>
+	<20080102172340.GA2007@sirena.org.uk>
+	<477D280C.4000800@freescale.com>
+	<20080103230004.GA18709@sirena.org.uk>
+	<477EEEC5.9050603@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200801071337.59877.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-	csnook@redhat.com, Paul Mackerras <paulus@samba.org>,
-	David Gibson <dwg@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <477EEEC5.9050603@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 07 January 2008, Mel Gorman wrote:
-> 
-> > We started discussing this in v1, but the discussion got sidetracked:
-> > Is there a technical reason why you don't also allow 1M pages, which
-> > may be useful in certain scenarios?
-> > 
-> 
-> I cannot see why not although the ideal would be that the necessary
-> information to support the pagesize would be provided by the firmware
-> instead of hard-coded values.
-> 
-> > On the Cell/B.E. platforms (IBM/Mercury blades, Toshiba Celleb, PS3), the
-> > second large page size is an option that can be set in a HID SPR
-> > to either 64KB or 1MB. Unfortunately, we can't do these two simultaneously,
-> > but the firmware can change the default and put it into the device tree,
-> > or you could have the kernel override the firmware settings.
+On Fri, Jan 04, 2008 at 08:43:17PM -0600, Timur Tabi wrote:
+> Mark Brown wrote:
 
-The problem with the firmware choosing the page size is that it has much
-less of an idea about what the user wants to do than the kernel.
-It's not exclusive however. We can first teach the kernel to deal
-with firmware setting the 1MB or 1GB page size, and later implement
-changing the HW setting from the kernel.
+> In other words, ...
 
-	Arnd <><
+> clock1 = <0, bb8000>
+> clock2 = <1, 653230>
+> clock23 = <0, ab2372>
+
+Yes, something like that would cover it.  I'm not sure what is idiomatic
+for the device tree.
+
+> > and of course the ordering matters.  
+
+> Ok, you got me there.  But then, isn't this just another example where the 
+> device tree is incapable of describing a complex configuration, and so we need 
+> a platform driver?
+
+Yes, you could certainly do that - as you say, any device tree based
+configuration would be optional so it's not a blocker if some things
+aren't supported.
+
+It'd be nice to have some idea of how to handle it should someone want
+to do it but I wouldn't think it's essential.  The most common case
+where specific ordering is required is that a PLL will need to have all
+its inputs configured before the PLL is activated so it'd probably cover
+a large proportion of cases to do that last.
+
+> > Indeed.  Providing the device tree stuff doesn't get set in stone I'm
+> > not sure we need to nail this down perfectly for ASoC v1 when we're
+> > running into trouble working around it.
+
+> I definitely agree with that.  I'll be the first to admit that this driver, 
+> much like ASoC V1, is a prototype.
+
+Yes, from an ASoC point of view the driver looks good as it is.  The
+only discussion is about the PowerPC probing stuff.
