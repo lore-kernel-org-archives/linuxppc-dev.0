@@ -1,18 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8CB28DDE16
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 16:12:51 +1100 (EST)
-Date: Mon, 7 Jan 2008 16:12:44 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Check that the syscall table matches the syscall
-	numbers
-Message-Id: <20080107161244.dfc8131e.sfr@canb.auug.org.au>
-In-Reply-To: <20080103164141.8faa9f27.sfr@canb.auug.org.au>
-References: <20080103164141.8faa9f27.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Milton Miller <miltonm@bga.com>
+Return-Path: <roland@redhat.com>
+Received: from QMTA08.westchester.pa.mail.comcast.net
+	(qmta08.westchester.pa.mail.comcast.net [76.96.62.80])
+	by ozlabs.org (Postfix) with ESMTP id 270D8DDE16
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 16:41:17 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH update -mm 16/43] powerpc user_regset compat
+In-Reply-To: Roland McGrath's message of  Thursday,
+	20 December 2007 03:58:08 -0800
+	<20071220115808.015F626F98D@magilla.localdomain>
+References: <20071220115200.C767E26F98A@magilla.localdomain>
+	<20071220115808.015F626F98D@magilla.localdomain>
+Message-Id: <20080107054041.D7F0926F9A4@magilla.localdomain>
+Date: Sun,  6 Jan 2008 21:40:41 -0800 (PST)
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,147 +27,201 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Also check that __NR_syscalls has been updated appropriately.
+This patch replaces my 2007-12-20 patch by the same title, and has to take
+its place in the order of applying that whole series.  
 
-Hopefully this will catch any out of order additions to the
-table in the future.
+Further testing revealed a bug that resulted in regset-based core dumps of
+32-bit processes on 64-bit kernels having r0..r3 cleared to zero.  The fix
+(interdiff from original patch) is a trivial pair of lines in two places.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+Thanks,
+Roland
+
 ---
- arch/powerpc/kernel/Makefile      |   10 ++++++
- arch/powerpc/kernel/systbl_chk.c  |   58 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/systbl_chk.sh |   33 +++++++++++++++++++++
- 3 files changed, 101 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/kernel/systbl_chk.c
- create mode 100644 arch/powerpc/kernel/systbl_chk.sh
 
-This version does not modify the current code for generating the syscall
-tables and does more checking.
+This extends task_user_regset_view CONFIG_PPC64 with support for the 32-bit
+view of register state, compatible with what a CONFIG_PPC32 kernel provides.
+This will enable generic machine-independent code to access user-mode
+threads' registers for debugging and dumping.
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 9374bc9..d9b3770 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -91,3 +91,13 @@ obj-$(CONFIG_PPC64)		+= $(obj64-y)
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/ptrace.c |  162 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 162 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index eb00274..60de9ee 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -501,8 +501,170 @@ static const struct user_regset_view user_ppc_native_view = {
+ 	.regsets = native_regsets, .n = ARRAY_SIZE(native_regsets)
+ };
  
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
-+
-+extra-y				+= systbl_chk.i
-+$(obj)/systbl.o:		systbl_chk
-+
-+quiet_cmd_systbl_chk = CALL    $<
-+      cmd_systbl_chk = $(CONFIG_SHELL) $< $(obj)/systbl_chk.i
-+
-+PHONY += systbl_chk
-+systbl_chk: $(src)/systbl_chk.sh $(obj)/systbl_chk.i
-+	$(call cmd,systbl_chk)
-diff --git a/arch/powerpc/kernel/systbl_chk.c b/arch/powerpc/kernel/systbl_chk.c
-new file mode 100644
-index 0000000..238aa63
---- /dev/null
-+++ b/arch/powerpc/kernel/systbl_chk.c
-@@ -0,0 +1,58 @@
-+/*
-+ * This file, when run through CPP produces a list of syscall numbers
-+ * in the order of systbl.h.  That way we can check for gaps and syscalls
-+ * that are out of order.
-+ *
-+ * Unfortunately, we cannot check for the correct ordering of entries
-+ * using SYSX().
-+ *
-+ * Copyright © IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <asm/unistd.h>
-+
-+#define SYSCALL(func)		__NR_##func
-+#define COMPAT_SYS(func)	__NR_##func
-+#define PPC_SYS(func)		__NR_##func
 +#ifdef CONFIG_PPC64
-+#define OLDSYS(func)		-1
-+#define SYS32ONLY(func)		-1
-+#else
-+#define OLDSYS(func)		__NR_old##func
-+#define SYS32ONLY(func)		__NR_##func
-+#endif
-+#define SYSX(f, f3264, f32)	-1
++#include <linux/compat.h>
 +
-+#define SYSCALL_SPU(func)	SYSCALL(func)
-+#define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
-+#define PPC_SYS_SPU(func)	PPC_SYS(func)
-+#define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
++static int gpr32_get(struct task_struct *target,
++		     const struct user_regset *regset,
++		     unsigned int pos, unsigned int count,
++		     void *kbuf, void __user *ubuf)
++{
++	const unsigned long *regs = &target->thread.regs->gpr[0];
++	compat_ulong_t *k = kbuf;
++	compat_ulong_t __user *u = ubuf;
++	compat_ulong_t reg;
 +
-+/* Just insert a marker for ni_syscalls */
-+#define	__NR_ni_syscall		-1
++	if (target->thread.regs == NULL)
++		return -EIO;
++
++	CHECK_FULL_REGS(target->thread.regs);
++
++	pos /= sizeof(reg);
++	count /= sizeof(reg);
++
++	if (kbuf)
++		for (; count > 0 && pos < PT_MSR; --count)
++			*k++ = regs[pos++];
++	else
++		for (; count > 0 && pos < PT_MSR; --count)
++			if (__put_user((compat_ulong_t) regs[pos++], u++))
++				return -EFAULT;
++
++	if (count > 0 && pos == PT_MSR) {
++		reg = get_user_msr(target);
++		if (kbuf)
++			*k++ = reg;
++		else if (__put_user(reg, u++))
++			return -EFAULT;
++		++pos;
++		--count;
++	}
++
++	if (kbuf)
++		for (; count > 0 && pos < PT_REGS_COUNT; --count)
++			*k++ = regs[pos++];
++	else
++		for (; count > 0 && pos < PT_REGS_COUNT; --count)
++			if (__put_user((compat_ulong_t) regs[pos++], u++))
++				return -EFAULT;
++
++	kbuf = k;
++	ubuf = u;
++	pos *= sizeof(reg);
++	count *= sizeof(reg);
++	return user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
++					PT_REGS_COUNT * sizeof(reg), -1);
++}
++
++static int gpr32_set(struct task_struct *target,
++		     const struct user_regset *regset,
++		     unsigned int pos, unsigned int count,
++		     const void *kbuf, const void __user *ubuf)
++{
++	unsigned long *regs = &target->thread.regs->gpr[0];
++	const compat_ulong_t *k = kbuf;
++	const compat_ulong_t __user *u = ubuf;
++	compat_ulong_t reg;
++
++	if (target->thread.regs == NULL)
++		return -EIO;
++
++	CHECK_FULL_REGS(target->thread.regs);
++
++	pos /= sizeof(reg);
++	count /= sizeof(reg);
++
++	if (kbuf)
++		for (; count > 0 && pos < PT_MSR; --count)
++			regs[pos++] = *k++;
++	else
++		for (; count > 0 && pos < PT_MSR; --count) {
++			if (__get_user(reg, u++))
++				return -EFAULT;
++			regs[pos++] = reg;
++		}
++
++
++	if (count > 0 && pos == PT_MSR) {
++		if (kbuf)
++			reg = *k++;
++		else if (__get_user(reg, u++))
++			return -EFAULT;
++		set_user_msr(target, reg);
++		++pos;
++		--count;
++	}
++
++	if (kbuf)
++		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
++			regs[pos++] = *k++;
++	else
++		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
++			if (__get_user(reg, u++))
++				return -EFAULT;
++			regs[pos++] = reg;
++		}
++
++	if (count > 0 && pos == PT_TRAP) {
++		if (kbuf)
++			reg = *k++;
++		else if (__get_user(reg, u++))
++			return -EFAULT;
++		set_user_trap(target, reg);
++		++pos;
++		--count;
++	}
++
++	kbuf = k;
++	ubuf = u;
++	pos *= sizeof(reg);
++	count *= sizeof(reg);
++	return user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
++					 (PT_TRAP + 1) * sizeof(reg), -1);
++}
 +
 +/*
-+ * These are the known exceptions.
-+ * Hopefully, there will be no more.
++ * These are the regset flavors matching the CONFIG_PPC32 native set.
 + */
-+#define	__NR_llseek		__NR__llseek
-+#undef	__NR_umount
-+#define	__NR_umount		__NR_umount2
-+#define	__NR_old_getrlimit	__NR_getrlimit
-+#define	__NR_newstat		__NR_stat
-+#define	__NR_newlstat		__NR_lstat
-+#define	__NR_newfstat		__NR_fstat
-+#define	__NR_newuname		__NR_uname
-+#define	__NR_sysctl		__NR__sysctl
-+#define __NR_olddebug_setcontext	__NR_sys_debug_setcontext
++static const struct user_regset compat_regsets[] = {
++	[REGSET_GPR] = {
++		.core_note_type = NT_PRSTATUS, .n = ELF_NGREG,
++		.size = sizeof(compat_long_t), .align = sizeof(compat_long_t),
++		.get = gpr32_get, .set = gpr32_set
++	},
++	[REGSET_FPR] = {
++		.core_note_type = NT_PRFPREG, .n = ELF_NFPREG,
++		.size = sizeof(double), .align = sizeof(double),
++		.get = fpr_get, .set = fpr_set
++	},
++#ifdef CONFIG_ALTIVEC
++	[REGSET_VMX] = {
++		.core_note_type = NT_PPC_VMX, .n = 34,
++		.size = sizeof(vector128), .align = sizeof(vector128),
++		.active = vr_active, .get = vr_get, .set = vr_set
++	},
++#endif
++#ifdef CONFIG_SPE
++	[REGSET_SPE] = {
++		.n = 35,
++		.size = sizeof(u32), .align = sizeof(u32),
++		.active = evr_active, .get = evr_get, .set = evr_set
++	},
++#endif
++};
 +
-+/* We call sys_ugetrlimit for syscall number __NR_getrlimit */
-+#define getrlimit		ugetrlimit
++static const struct user_regset_view user_ppc_compat_view = {
++	.name = "ppc", .e_machine = EM_PPC, .ei_osabi = ELF_OSABI,
++	.regsets = compat_regsets, .n = ARRAY_SIZE(compat_regsets)
++};
++#endif	/* CONFIG_PPC64 */
 +
-+START_TABLE
-+#include <asm/systbl.h>
-+END_TABLE __NR_syscalls
-diff --git a/arch/powerpc/kernel/systbl_chk.sh b/arch/powerpc/kernel/systbl_chk.sh
-new file mode 100644
-index 0000000..19415e7
---- /dev/null
-+++ b/arch/powerpc/kernel/systbl_chk.sh
-@@ -0,0 +1,33 @@
-+#!/bin/sh
-+#
-+# Just process the CPP output from systbl_chk.c and complain
-+# if anything is out of order.
-+#
-+# Copyright © 2008 IBM Corporation
-+#
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of the GNU General Public License
-+# as published by the Free Software Foundation; either version
-+# 2 of the License, or (at your option) any later version.
-+
-+awk	'BEGIN { num = -1; }	# Ignore the beginning of the file
-+	/^#/ { next; }
-+	/^[ \t]*$/ { next; }
-+	/^START_TABLE/ { num = 0; next; }
-+	/^END_TABLE/ {
-+		if (num != $2) {
-+			printf "__NR_syscalls (%s) is not one more than the last syscall (%s)\n",
-+				$2, num - 1;
-+			exit(1);
-+		}
-+		num = -1;	# Ignore the rest of the file
-+	}
-+	{
-+		if (num == -1) next;
-+		if (($1 != -1) && ($1 != num)) {
-+			printf "Syscall %s out of order (expected %s)\n",
-+				$1, num;
-+			exit(1);
-+		};
-+		num++;
-+	}' "$1"
--- 
-1.5.3.7
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+ const struct user_regset_view *task_user_regset_view(struct task_struct *task)
+ {
++#ifdef CONFIG_PPC64
++	if (test_tsk_thread_flag(task, TIF_32BIT))
++		return &user_ppc_compat_view;
++#endif
+ 	return &user_ppc_native_view;
+ }
+ 
