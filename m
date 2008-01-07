@@ -1,19 +1,19 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2039BDDDFE
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 23:35:49 +1100 (EST)
-Date: Mon, 7 Jan 2008 12:04:11 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5CC5BDDE30
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 23:39:05 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mel Gorman <mel@csn.ul.ie>
 Subject: Re: [PATCh v3] powerpc: add hugepagesz boot-time parameter
-Message-ID: <20080107120410.GB29254@csn.ul.ie>
+Date: Mon, 7 Jan 2008 13:37:56 +0100
 References: <477D68E6.2070108@linux.vnet.ibm.com>
 	<200801040034.25329.arnd@arndb.de>
+	<20080107120410.GB29254@csn.ul.ie>
+In-Reply-To: <20080107120410.GB29254@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200801040034.25329.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200801071337.59877.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
 	csnook@redhat.com, Paul Mackerras <paulus@samba.org>,
 	David Gibson <dwg@au1.ibm.com>
@@ -26,50 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (04/01/08 00:34), Arnd Bergmann didst pronounce:
-> On Thursday 03 January 2008, Jon Tollefson wrote:
-> > Paul, please include this in 2.6.25 if there are no objections.
+On Monday 07 January 2008, Mel Gorman wrote:
 > 
-> No objections to this version from me, just questions.
+> > We started discussing this in v1, but the discussion got sidetracked:
+> > Is there a technical reason why you don't also allow 1M pages, which
+> > may be useful in certain scenarios?
+> > 
 > 
-> > This patch adds the hugepagesz boot-time parameter for ppc64.  It lets
-> > one pick the size for huge pages. The choices available are 64K and 16M
-> > when the base page size is 4k. It defaults to 16M (previously the only
-> > only choice) if nothing or an invalid choice is specified.
+> I cannot see why not although the ideal would be that the necessary
+> information to support the pagesize would be provided by the firmware
+> instead of hard-coded values.
 > 
-> We started discussing this in v1, but the discussion got sidetracked:
-> Is there a technical reason why you don't also allow 1M pages, which
-> may be useful in certain scenarios?
-> 
+> > On the Cell/B.E. platforms (IBM/Mercury blades, Toshiba Celleb, PS3), the
+> > second large page size is an option that can be set in a HID SPR
+> > to either 64KB or 1MB. Unfortunately, we can't do these two simultaneously,
+> > but the firmware can change the default and put it into the device tree,
+> > or you could have the kernel override the firmware settings.
 
-I cannot see why not although the ideal would be that the necessary
-information to support the pagesize would be provided by the firmware
-instead of hard-coded values.
+The problem with the firmware choosing the page size is that it has much
+less of an idea about what the user wants to do than the kernel.
+It's not exclusive however. We can first teach the kernel to deal
+with firmware setting the 1MB or 1GB page size, and later implement
+changing the HW setting from the kernel.
 
-> On the Cell/B.E. platforms (IBM/Mercury blades, Toshiba Celleb, PS3), the
-> second large page size is an option that can be set in a HID SPR
-> to either 64KB or 1MB. Unfortunately, we can't do these two simultaneously,
-> but the firmware can change the default and put it into the device tree,
-> or you could have the kernel override the firmware settings.
-> 
-> Going a lot further, do you have plans for a fully dynamic hugepage size,
-> e.g. using a mount option for hugetlbfs?
-
-A mount option for hugetlbfs to select a hugepage size is a long-term
-goal. However, a lot of changes are required to support such a thing. Selecting
-the hugepage size at boot-time is a reasonable starting point and one that
-might be usable with some additional work by x86-64 on AMD processors
-supporting 1GiB pages.
-
-> I can see that as rather useful,
-> but at the same time it's probably much more complicated than the boot time
-> option.
-> 
-
-Not probably at all. It is *certainly* much more complicated than the
-boot-time option :)
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Arnd <><
