@@ -1,30 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BF68FDDEA2
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 02:52:27 +1100 (EST)
-Message-ID: <47824AA3.5070808@freescale.com>
-Date: Mon, 07 Jan 2008 09:52:03 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 668ECDDF08
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 03:04:30 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/7] powerpc: allow localbus compatible serial ports for
+	console device
+Date: Mon, 7 Jan 2008 17:04:22 +0100
+References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
+	<200801071533.47018.arnd@arndb.de> <47824641.8090208@windriver.com>
+In-Reply-To: <47824641.8090208@windriver.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>, Jon Smirl <jonsmirl@gmail.com>,
-	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
-Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-References: <11981089894052-git-send-email-timur@freescale.com>
-	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
-	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
-	<477BAB67.4080003@freescale.com>
-	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
-	<477D2150.4020506@freescale.com>
-	<20080103235156.GE12883@localhost.localdomain>
-	<477EEDFA.9010205@freescale.com>
-	<20080106004637.GJ4326@localhost.localdomain>
-In-Reply-To: <20080106004637.GJ4326@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801071704.23151.arnd@arndb.de>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,20 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On Monday 07 January 2008, Paul Gortmaker wrote:
+>=20
+> I'd thought about doing that, but there are slight differences
+> in each test. =A0To remain 100% faithful to the original implementation
+> you'd have to have a table or similar that had these various fields
+> and loop over that -- something like:
+>=20
+> compat =A0 =A0 =A0parent =A0 pnt-compat =A0pnt-type =A0 add-fcn
+> ---------------------------------------------------------------
+> ns16550 =A0 =A0 NULL =A0 =A0 NULL =A0 =A0 =A0 =A0soc =A0 =A0 =A0 =A0add_l=
+egacy_soc_port
+> NULL =A0 =A0 =A0 =A0isa =A0 =A0 =A0NULL =A0 =A0 =A0 =A0NULL =A0 =A0 =A0 a=
+dd_legacy_isa_port
+> ns16550 =A0 =A0 NULL =A0 =A0 NULL =A0 =A0 =A0 =A0tsi-bridge add_legacy_so=
+c_port
+> ns16550 =A0 =A0 NULL =A0 =A0 ibm,opb =A0 =A0 opb =A0 =A0 =A0 =A0add_legac=
+y_soc_port
+> ns16550 =A0 =A0 NULL =A0 =A0 localbus =A0 =A0NULL =A0 =A0 =A0 add_legacy_=
+soc_port
+>=20
+> But, if we were willing to move away from checks based on
+> the parent->type and stick with parent->compat, then the
+> unification would be a lot cleaner and easier to implement.
 
-> Ok, but couldn't you strucutre your I2S or fabric driver so that it
-> only becomes fully operational once the codec driver has registered
-> with it?
+Unfortunately, some of our cell blades don't have the right
+'compatible' property, so you still need to check the type for
+the opb case.
 
-Not in ASoC V1.  You have to understand, ASoC V1 was designed without any 
-consideration for runtime-bindings and other OF goodies.  All connections 
-between the drivers are static, literally.  In fact, I wouldn't be surprised if 
-some ASoC drivers cannot be compiled as modules.
+> (we could also leave the ISA one out as an oddball, and then
+> not have to carry an add-fcn either).
 
-So all I'm trying to do now is get my driver, with warts and all, into the tree 
-so that I can focus with Liam et al to get a real ASoC V2 up and running.
+yes, that seems reasonable.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+	Arnd <><
