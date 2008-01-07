@@ -1,23 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 233E5DDE38
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (mail.securics.com [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id D7D29DDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 00:53:00 +1100 (EST)
-Message-ID: <47822EAF.1000803@scram.de>
-Date: Mon, 07 Jan 2008 14:52:47 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: rmcguire@videopresence.com
-Subject: Re: 83xx, ucc_geth, kernel 2.6.23, IP-Config: No network devices
-References: <mailman.1.1198890002.24584.linuxppc-embedded@ozlabs.org><000001c84b47$50b0e2b0$6405a8c0@absolut>	<20071231111443.4c6d8691@kernel.crashing.org>
-	<000001c8511b$bc0c03d0$6405a8c0@absolut>
-	<47820A60.2040500@scram.de>
-	<000401c8512d$3b9d93a0$6405a8c0@absolut>
-In-Reply-To: <000401c8512d$3b9d93a0$6405a8c0@absolut>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  8 Jan 2008 05:12:59 +1100 (EST)
+Received: from [192.168.1.182] (unknown [192.168.1.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by securics.com (Postfix) with ESMTP id 59109B8C0B8
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  7 Jan 2008 10:42:24 -0700 (MST)
+Subject: MMU failure, Virtex4-FX60
+From: Robert Woodworth <rwoodworth@securics.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 07 Jan 2008 10:42:24 -0700
+Message-Id: <1199727744.17452.8.camel@PisteOff>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Russell,
+Hello!
 
-> Next question, I can see that 'quick' mods I have made to the Marvell driver
-> are indeed matching up with the device ID that the Freescale MII device is
-> pulling back from my 'National' part. <I'll make a real phy driver once I
-> get this working>. I.e. I can see the phy_probe get called when this Id is
-> registered.  You can see the extra debug messages above the National DP83865
-> device registration, and the probe returns 0 for success I assume. <err =
-> 0>.
-> 
-> I am still getting the "IP-Config: No network devices" error before the NFS
-> boot tries to take place.
+I'm building a new Virtex4-FX60 device.  I have built it with the new
+MPMC3 and a 256MB SO-DIMM.  It works successfully with a "mem-test" type
+embedded program.
 
-I would add some more debugging printk output to check where the device
-initialisation fails. Or if the phy runs without any initialisation, you
-could use the fixed-phy patches from Vitali Bordug and hardcode the speed and
-duplex settings in the device tree until you real phy driver is finished.
+I cannot get it to boot a Linux kernel.  I have traced it down to the
+MMU not getting mapped correctly. 
 
-thanks,
-Jochen
+I can load the kernel via jtag, get the pre-boot messages on the serial
+but then when it tries to jump to 0xc0002218 (start_here: head_4xxx.S)
+it fails with a "Machine check exception; invalid instruction address".
+
+Using the debugger and examining the memory once the mmu is suppose to
+be configured, I see that it is not mapping 0xc0000000  to the proper
+location.  I'm sure I've set something up wrong in my FPGA and I need to
+re-synthesize.  But what?
+
+
+Any hints on which registers to look for or what I need to do??
+
+
+
+RJW.
