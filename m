@@ -1,28 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 15338DDE18
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 22:53:42 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m07Bra3J010009
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 04:53:37 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m07BrVDO024529
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 05:53:35 -0600 (CST)
-From: Li Yang <leoli@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] USB device tree cleanups
-Date: Mon,  7 Jan 2008 20:03:20 +0800
-Message-Id: <1199707400-23588-3-git-send-email-leoli@freescale.com>
-In-Reply-To: <1199707400-23588-2-git-send-email-leoli@freescale.com>
-References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
-	<1199707400-23588-2-git-send-email-leoli@freescale.com>
-Cc: Li Yang <leoli@freescale.com>, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2039BDDDFE
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 23:35:49 +1100 (EST)
+Date: Mon, 7 Jan 2008 12:04:11 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCh v3] powerpc: add hugepagesz boot-time parameter
+Message-ID: <20080107120410.GB29254@csn.ul.ie>
+References: <477D68E6.2070108@linux.vnet.ibm.com>
+	<200801040034.25329.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200801040034.25329.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
+	csnook@redhat.com, Paul Mackerras <paulus@samba.org>,
+	David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,210 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove device_type = "usb"
+On (04/01/08 00:34), Arnd Bergmann didst pronounce:
+> On Thursday 03 January 2008, Jon Tollefson wrote:
+> > Paul, please include this in 2.6.25 if there are no objections.
+> 
+> No objections to this version from me, just questions.
+> 
+> > This patch adds the hugepagesz boot-time parameter for ppc64.  It lets
+> > one pick the size for huge pages. The choices available are 64K and 16M
+> > when the base page size is 4k. It defaults to 16M (previously the only
+> > only choice) if nothing or an invalid choice is specified.
+> 
+> We started discussing this in v1, but the discussion got sidetracked:
+> Is there a technical reason why you don't also allow 1M pages, which
+> may be useful in certain scenarios?
+> 
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- Documentation/powerpc/booting-without-of.txt |    4 ----
- arch/powerpc/boot/dts/mpc8313erdb.dts        |    1 -
- arch/powerpc/boot/dts/mpc832x_mds.dts        |    1 -
- arch/powerpc/boot/dts/mpc8349emitx.dts       |    2 --
- arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    1 -
- arch/powerpc/boot/dts/mpc834x_mds.dts        |    2 --
- arch/powerpc/boot/dts/mpc836x_mds.dts        |    1 -
- arch/powerpc/platforms/83xx/usb.c            |    8 ++++----
- arch/powerpc/sysdev/fsl_soc.c                |    8 ++------
- 9 files changed, 6 insertions(+), 22 deletions(-)
+I cannot see why not although the ideal would be that the necessary
+information to support the pagesize would be provided by the firmware
+instead of hard-coded values.
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index e9a3cb1..65e8baa 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1408,7 +1408,6 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    Example multi port host USB controller device node :
- 	usb@22000 {
--	        device_type = "usb";
- 		compatible = "fsl-usb2-mph";
- 		reg = <22000 1000>;
- 		#address-cells = <1>;
-@@ -1422,7 +1421,6 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    Example dual role USB controller device node :
- 	usb@23000 {
--		device_type = "usb";
- 		compatible = "fsl-usb2-dr";
- 		reg = <23000 1000>;
- 		#address-cells = <1>;
-@@ -1586,7 +1584,6 @@ platforms are moved over to use the flattened-device-tree model.
-    iii) USB (Universal Serial Bus Controller)
- 
-    Required properties:
--   - device_type : should be "usb".
-    - compatible : could be "qe_udc" or "fhci-hcd".
-    - mode : the could be "host" or "slave".
-    - reg : Offset and length of the register set for the device
-@@ -1600,7 +1597,6 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    Example(slave):
- 	usb@6c0 {
--		device_type = "usb";
- 		compatible = "qe_udc";
- 		reg = <6c0 40>;
- 		interrupts = <8b 0>;
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index 9e7eba9..b48b9e2 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -80,7 +80,6 @@
- 
- 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
--			device_type = "usb";
- 			compatible = "fsl-usb2-dr";
- 			reg = <23000 1000>;
- 			#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index c64f303..0d40adb 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -200,7 +200,6 @@
- 		};
- 
- 		usb@6c0 {
--			device_type = "usb";
- 			compatible = "qe_udc";
- 			reg = <6c0 40 8B00 100>;
- 			interrupts = <b>;
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 5072f6d..9d411f8 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -78,7 +78,6 @@
- 		};
- 
- 		usb@22000 {
--			device_type = "usb";
- 			compatible = "fsl-usb2-mph";
- 			reg = <22000 1000>;
- 			#address-cells = <1>;
-@@ -90,7 +89,6 @@
- 		};
- 
- 		usb@23000 {
--			device_type = "usb";
- 			compatible = "fsl-usb2-dr";
- 			reg = <23000 1000>;
- 			#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-index 074f7a2..17c4858 100644
---- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-@@ -78,7 +78,6 @@
- 		};
- 
- 		usb@23000 {
--			device_type = "usb";
- 			compatible = "fsl-usb2-dr";
- 			reg = <23000 1000>;
- 			#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index 49363f8..fe2928b 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -95,7 +95,6 @@
- 		/* phy type (ULPI or SERIAL) are only types supportted for MPH */
- 		/* port = 0 or 1 */
- 		usb@22000 {
--			device_type = "usb";
- 			compatible = "fsl-usb2-mph";
- 			reg = <22000 1000>;
- 			#address-cells = <1>;
-@@ -107,7 +106,6 @@
- 		};
- 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
--			device_type = "usb";
- 			compatible = "fsl-usb2-dr";
- 			reg = <23000 1000>;
- 			#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index 0b2d2b5..6fa418a 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -231,7 +231,6 @@
- 		};
- 
- 		usb@6c0 {
--			device_type = "usb";
- 			compatible = "qe_udc";
- 			reg = <6c0 40 8B00 100>;
- 			interrupts = <b>;
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 2985c9c..2f0a051 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -41,7 +41,7 @@ int mpc834x_usb_cfg(void)
- 	sicrl = in_be32(immap + MPC83XX_SICRL_OFFS) & ~MPC834X_SICRL_USB_MASK;
- 	sicrh = in_be32(immap + MPC83XX_SICRH_OFFS) & ~MPC834X_SICRH_USB_UTMI;
- 
--	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
-+	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
- 	if (np) {
- 		sccr |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
- 
-@@ -67,7 +67,7 @@ int mpc834x_usb_cfg(void)
- 		port0_is_dr = 1;
- 		of_node_put(np);
- 	}
--	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-mph");
-+	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-mph");
- 	if (np) {
- 		sccr |= MPC83XX_SCCR_USB_MPHCM_11; /* 1:3 */
- 
-@@ -111,7 +111,7 @@ int mpc831x_usb_cfg(void)
- 	const void *dr_mode;
- #endif
- 
--	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
-+	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
- 	if (!np)
- 		return -ENODEV;
- 	prop = of_get_property(np, "phy_type", NULL);
-@@ -188,7 +188,7 @@ int mpc837x_usb_cfg(void)
- 	const void *prop;
- 	int ret = 0;
- 
--	np = of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
-+	np = of_find_compatible_node(NULL, NULL, "fsl-usb2-dr");
- 	if (!np)
- 		return -ENODEV;
- 	prop = of_get_property(np, "phy_type", NULL);
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 3ace747..f5f1bef 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -533,9 +533,7 @@ static int __init fsl_usb_of_init(void)
- 		*usb_dev_dr_client = NULL;
- 	int ret;
- 
--	for (np = NULL, i = 0;
--	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-mph")) != NULL;
--	     i++) {
-+	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
- 		struct resource r[2];
- 		struct fsl_usb2_platform_data usb_data;
- 		const unsigned char *prop = NULL;
-@@ -580,9 +578,7 @@ static int __init fsl_usb_of_init(void)
- 			goto unreg_mph;
- 	}
- 
--	for (np = NULL;
--	     (np = of_find_compatible_node(np, "usb", "fsl-usb2-dr")) != NULL;
--	     i++) {
-+	for_each_compatible_node(np, NULL, "fsl-usb2-dr") {
- 		struct resource r[2];
- 		struct fsl_usb2_platform_data usb_data;
- 		const unsigned char *prop = NULL;
+> On the Cell/B.E. platforms (IBM/Mercury blades, Toshiba Celleb, PS3), the
+> second large page size is an option that can be set in a HID SPR
+> to either 64KB or 1MB. Unfortunately, we can't do these two simultaneously,
+> but the firmware can change the default and put it into the device tree,
+> or you could have the kernel override the firmware settings.
+> 
+> Going a lot further, do you have plans for a fully dynamic hugepage size,
+> e.g. using a mount option for hugetlbfs?
+
+A mount option for hugetlbfs to select a hugepage size is a long-term
+goal. However, a lot of changes are required to support such a thing. Selecting
+the hugepage size at boot-time is a reasonable starting point and one that
+might be usable with some additional work by x86-64 on AMD processors
+supporting 1GiB pages.
+
+> I can see that as rather useful,
+> but at the same time it's probably much more complicated than the boot time
+> option.
+> 
+
+Not probably at all. It is *certainly* much more complicated than the
+boot-time option :)
+
 -- 
-1.5.3.5.643.g40e25
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
