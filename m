@@ -1,19 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH][POWERPC] Workaround for iommu page alignment
-From: Michael Ellerman <michael@ellerman.id.au>
-To: benh@kernel.crashing.org
-In-Reply-To: <1199742359.6734.14.camel@pasglop>
-References: <1199742359.6734.14.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ITFpJa84ub5aFfuVMFsS"
-Date: Tue, 08 Jan 2008 09:41:24 +1100
-Message-Id: <1199745684.7518.25.camel@concordia>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id BDD15DDE3B
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 10:05:16 +1100 (EST)
+Date: Tue, 8 Jan 2008 10:05:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 2/3] add MPC837x USB platform support
+Message-Id: <20080108100504.5263632b.sfr@canb.auug.org.au>
+In-Reply-To: <1199707400-23588-2-git-send-email-leoli@freescale.com>
+References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
+	<1199707400-23588-2-git-send-email-leoli@freescale.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__8_Jan_2008_10_05_04_+1100_FfYD1Hvdcv2.q42+"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-ITFpJa84ub5aFfuVMFsS
-Content-Type: text/plain
+--Signature=_Tue__8_Jan_2008_10_05_04_+1100_FfYD1Hvdcv2.q42+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2008-01-08 at 08:45 +1100, Benjamin Herrenschmidt wrote:
-> Our iommu page size is currently always 4K. That means with our current
-> code, drivers may do a dma_map_sg() of a 64K page and obtain a dma_addr_t
-> that is only 4K aligned.
->=20
-> This works fine in most cases except some infiniband HW it seems, where
-> they tell the HW about the page size and it ignores the low bits of the
-> DMA address.
->=20
-> This works around it by making our IOMMU code enforce a PAGE_SIZE alignme=
-nt
-> for mappings of objects that are page aligned in the first place and whos=
-e
-> size is larger or equal to a page.
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Hi,
 
-I don't see in the code where you implement the "size > PAGE_SIZE"
-condition. But I only just got back from holidays .. :)
+Just a couple of comments.
 
-cheers
+On Mon,  7 Jan 2008 20:03:19 +0800 Li Yang <leoli@freescale.com> wrote:
+>
+> +static int mpc837xmds_usb_cfg(void)
+> +{
+>
+> +	np =3D of_find_node_by_name(NULL, "usb");
+> +	phy_type =3D of_get_property(np, "phy_type", NULL);
+
+No check for np being NULL
+
+> +	if (phy_type && !strcmp(phy_type, "ulpi")) {
+> +		clrbits8(bcsr_regs + 12, BCSR12_USB_SER_PIN);
+> +	} else if (phy_type && !strcmp(phy_type, "serial")) {
+> +		mode =3D of_get_property(np, "dr_mode", NULL);
+> +		bcsr12 =3D in_8(bcsr_regs + 12) & ~BCSR12_USB_SER_MASK;
+> +		bcsr12 |=3D BCSR12_USB_SER_PIN;
+> +		if (mode && !strcmp(mode, "peripheral"))
+> +			bcsr12 |=3D BCSR12_USB_SER_DEVICE;
+> +		out_8(bcsr_regs + 12, bcsr12);
+> +	} else {
+> +		printk(KERN_ERR "USB DR: unsupported PHY\n");
+> +	}
+> +
+> +	iounmap(bcsr_regs);
+> +	return 0;
+
+No of_node_put(np)
+
+> +#ifdef CONFIG_PPC_MPC837x
+> +int mpc837x_usb_cfg(void)
+> +{
+>
+> +	np =3D of_find_compatible_node(NULL, "usb", "fsl-usb2-dr");
+> +	if (!np)
+> +		return -ENODEV;
+> +	prop =3D of_get_property(np, "phy_type", NULL);
+> +
+> +	if (strcmp(prop, "ulpi") && strcmp(prop, "serial")) {
+
+No check for prop being NULL.
+
+> +		printk(KERN_WARNING "837x USB PHY type not supported\n");
+> +		return -EINVAL;
+
+No of_node_put(np)
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ITFpJa84ub5aFfuVMFsS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Tue__8_Jan_2008_10_05_04_+1100_FfYD1Hvdcv2.q42+
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHgqqUdSjSd0sB4dIRAuhvAJ903bMtQUJj3SOO7DKRXS/NFgAibACgv/Ny
-C1LFcnkZdXOEK7jpQFj/ox0=
-=OZcY
+iD8DBQFHgrAlTgG2atn1QN8RApW9AJ4p62owqyLE/vlVlbFzyRAEySDP+QCfTj3z
+6TwHREMq0zqNdQhAflCD9m8=
+=egfn
 -----END PGP SIGNATURE-----
 
---=-ITFpJa84ub5aFfuVMFsS--
+--Signature=_Tue__8_Jan_2008_10_05_04_+1100_FfYD1Hvdcv2.q42+--
