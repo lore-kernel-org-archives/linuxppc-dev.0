@@ -1,21 +1,30 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 4D2A4DDEED
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 02:33:32 +1100 (EST)
-Message-ID: <47824641.8090208@windriver.com>
-Date: Mon, 07 Jan 2008 10:33:21 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BF68FDDEA2
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 02:52:27 +1100 (EST)
+Message-ID: <47824AA3.5070808@freescale.com>
+Date: Mon, 07 Jan 2008 09:52:03 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/7] powerpc: allow localbus compatible serial ports for
-	console device
-References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
-	<11997159331132-git-send-email-paul.gortmaker@windriver.com>
-	<11997159342128-git-send-email-paul.gortmaker@windriver.com>
-	<200801071533.47018.arnd@arndb.de>
-In-Reply-To: <200801071533.47018.arnd@arndb.de>
+To: Timur Tabi <timur@freescale.com>, Jon Smirl <jonsmirl@gmail.com>,
+	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <11981089894052-git-send-email-timur@freescale.com>
+	<9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
+	<477BAB67.4080003@freescale.com>
+	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
+	<477D2150.4020506@freescale.com>
+	<20080103235156.GE12883@localhost.localdomain>
+	<477EEDFA.9010205@freescale.com>
+	<20080106004637.GJ4326@localhost.localdomain>
+In-Reply-To: <20080106004637.GJ4326@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Monday 07 January 2008, Paul Gortmaker wrote:
->   
->> +       /* Next, fill our array with any localbus serial ports */
->> +       for_each_compatible_node(np, "serial", "ns16550") {
->> +               struct device_node *lbs = of_get_parent(np);
->> +               if (lbs && of_device_is_compatible(lbs, "localbus")) {
->> +                       index = add_legacy_soc_port(np, np);
->> +                       if (index >= 0 && np == stdout)
->> +                               legacy_serial_console = index;
->> +               }
->> +               of_node_put(lbs);
->> +       }
->> +
->>     
->
-> This is getting a little silly. Can't you finally unify the code
-> so it checks for any 8250/16450/16550 on any soc/isa/tsi-bridge/opb/localbus?
->   
+David Gibson wrote:
 
-I'd thought about doing that, but there are slight differences
-in each test.  To remain 100% faithful to the original implementation
-you'd have to have a table or similar that had these various fields
-and loop over that -- something like:
+> Ok, but couldn't you strucutre your I2S or fabric driver so that it
+> only becomes fully operational once the codec driver has registered
+> with it?
 
-compat      parent   pnt-compat  pnt-type   add-fcn
----------------------------------------------------------------
-ns16550     NULL     NULL        soc        add_legacy_soc_port
-NULL        isa      NULL        NULL       add_legacy_isa_port
-ns16550     NULL     NULL        tsi-bridge add_legacy_soc_port
-ns16550     NULL     ibm,opb     opb        add_legacy_soc_port
-ns16550     NULL     localbus    NULL       add_legacy_soc_port
+Not in ASoC V1.  You have to understand, ASoC V1 was designed without any 
+consideration for runtime-bindings and other OF goodies.  All connections 
+between the drivers are static, literally.  In fact, I wouldn't be surprised if 
+some ASoC drivers cannot be compiled as modules.
 
-But, if we were willing to move away from checks based on
-the parent->type and stick with parent->compat, then the
-unification would be a lot cleaner and easier to implement.
-(we could also leave the ISA one out as an oddball, and then
-not have to carry an add-fcn either).
+So all I'm trying to do now is get my driver, with warts and all, into the tree 
+so that I can focus with Liam et al to get a real ASoC V2 up and running.
 
-Paul.
-
-
-
-
-> 	Arnd <><
->   
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
