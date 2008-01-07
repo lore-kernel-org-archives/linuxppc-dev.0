@@ -1,14 +1,20 @@
 Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 1/3] Add support for binary includes. 
-In-Reply-To: Your message of "Sat, 05 Jan 2008 23:20:43 +1100."
-	<20080105122043.GG4326@localhost.localdomain>
-References: <20080104211043.GA28991@ld0162-tx32.am.freescale.net>
-	<20080105122043.GG4326@localhost.localdomain>
-Date: Mon, 07 Jan 2008 09:24:32 -0600
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2341DDDE9F
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 02:25:59 +1100 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] Handle absolute pathnames correctly in dtc_open_file.
+In-Reply-To: Your message of "Sun, 06 Jan 2008 16:46:24 CST."
+	<20080106224623.GA8239@ld0162-tx32.am.freescale.net>
+References: <20080104211045.GB28991@ld0162-tx32.am.freescale.net>
+	<20080106033716.GL4326@localhost.localdomain>
+	<20080106224623.GA8239@ld0162-tx32.am.freescale.net>
+Date: Mon, 07 Jan 2008 09:25:56 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JBtq4-0005DJ-7o@jdl.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Message-Id: <E1JBtrQ-0005Df-9Z@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,17 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
+So, like, the other day Scott Wood mumbled:
+> On Sun, Jan 06, 2008 at 02:37:16PM +1100, David Gibson wrote:
+> > >  out:
+> > > +	free((void *)file->dir);
+> > 
+> > That cast shouldn't be there.
 > 
-> 
-> Hrm.  Can we leave this one until after 1.1?   Since it adds new
-> syntax, I think it would be worth cogitating a bit longer.
+> It generates a constness warning otherwise.  I was on the fence over
+> whether to just remove the constness (even though the data is never
+> modified during its lifetime); would that be preferable?
 
-Double hrm.
+The earlier patch was applied for functionality reasons.
+If needed, a follow-up patch to sort this out is still welcome.
 
-Scott, can you remind us why this feature was requested
-off the U-Boot list, please?  I'm trying to decide if we
-really do want to get it into the 1.1 release.
-
-Thanks,
 jdl
