@@ -1,23 +1,20 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA08.westchester.pa.mail.comcast.net
-	(qmta08.westchester.pa.mail.comcast.net [76.96.62.80])
-	by ozlabs.org (Postfix) with ESMTP id 270D8DDE16
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 16:41:17 +1100 (EST)
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E19A9DDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2008 18:07:37 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JBm57-0003ih-LW
+	for linuxppc-dev@ozlabs.org; Sun, 06 Jan 2008 23:07:33 -0800
+Message-ID: <14660018.post@talk.nabble.com>
+Date: Sun, 6 Jan 2008 23:07:33 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-dev@ozlabs.org
+Subject: How to write a device driver in such a fashion .????
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH update -mm 16/43] powerpc user_regset compat
-In-Reply-To: Roland McGrath's message of  Thursday,
-	20 December 2007 03:58:08 -0800
-	<20071220115808.015F626F98D@magilla.localdomain>
-References: <20071220115200.C767E26F98A@magilla.localdomain>
-	<20071220115808.015F626F98D@magilla.localdomain>
-Message-Id: <20080107054041.D7F0926F9A4@magilla.localdomain>
-Date: Sun,  6 Jan 2008 21:40:41 -0800 (PST)
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,201 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch replaces my 2007-12-20 patch by the same title, and has to take
-its place in the order of applying that whole series.  
 
-Further testing revealed a bug that resulted in regset-based core dumps of
-32-bit processes on 64-bit kernels having r0..r3 cleared to zero.  The fix
-(interdiff from original patch) is a trivial pair of lines in two places.
+Hi all ....
 
+I need your suggession to write a driver with such requirements :-
 
-Thanks,
-Roland
+On Initiation by the application of which key is pressed driver should
+perform the task accordingly. There are 7 keys so seven different task the
+driver will perform. 
 
----
+1 . I do not want to use any entry point such as read/write/ioctl. In such a
+case how to access the driver.
+2. We dont want to implement this as a chracrter driver.
+3. The driver shall look pretty much like an application where in asscssing
+the H/W memory map .
 
-This extends task_user_regset_view CONFIG_PPC64 with support for the 32-bit
-view of register state, compatible with what a CONFIG_PPC32 kernel provides.
-This will enable generic machine-independent code to access user-mode
-threads' registers for debugging and dumping.
+Hence no entry point and no registeration but an application could be able
+to communicate ....
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/ptrace.c |  162 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 162 insertions(+), 0 deletions(-)
+I need your suggession in this regard .....
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index eb00274..60de9ee 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -501,8 +501,170 @@ static const struct user_regset_view user_ppc_native_view = {
- 	.regsets = native_regsets, .n = ARRAY_SIZE(native_regsets)
- };
- 
-+#ifdef CONFIG_PPC64
-+#include <linux/compat.h>
-+
-+static int gpr32_get(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     void *kbuf, void __user *ubuf)
-+{
-+	const unsigned long *regs = &target->thread.regs->gpr[0];
-+	compat_ulong_t *k = kbuf;
-+	compat_ulong_t __user *u = ubuf;
-+	compat_ulong_t reg;
-+
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	CHECK_FULL_REGS(target->thread.regs);
-+
-+	pos /= sizeof(reg);
-+	count /= sizeof(reg);
-+
-+	if (kbuf)
-+		for (; count > 0 && pos < PT_MSR; --count)
-+			*k++ = regs[pos++];
-+	else
-+		for (; count > 0 && pos < PT_MSR; --count)
-+			if (__put_user((compat_ulong_t) regs[pos++], u++))
-+				return -EFAULT;
-+
-+	if (count > 0 && pos == PT_MSR) {
-+		reg = get_user_msr(target);
-+		if (kbuf)
-+			*k++ = reg;
-+		else if (__put_user(reg, u++))
-+			return -EFAULT;
-+		++pos;
-+		--count;
-+	}
-+
-+	if (kbuf)
-+		for (; count > 0 && pos < PT_REGS_COUNT; --count)
-+			*k++ = regs[pos++];
-+	else
-+		for (; count > 0 && pos < PT_REGS_COUNT; --count)
-+			if (__put_user((compat_ulong_t) regs[pos++], u++))
-+				return -EFAULT;
-+
-+	kbuf = k;
-+	ubuf = u;
-+	pos *= sizeof(reg);
-+	count *= sizeof(reg);
-+	return user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
-+					PT_REGS_COUNT * sizeof(reg), -1);
-+}
-+
-+static int gpr32_set(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     const void *kbuf, const void __user *ubuf)
-+{
-+	unsigned long *regs = &target->thread.regs->gpr[0];
-+	const compat_ulong_t *k = kbuf;
-+	const compat_ulong_t __user *u = ubuf;
-+	compat_ulong_t reg;
-+
-+	if (target->thread.regs == NULL)
-+		return -EIO;
-+
-+	CHECK_FULL_REGS(target->thread.regs);
-+
-+	pos /= sizeof(reg);
-+	count /= sizeof(reg);
-+
-+	if (kbuf)
-+		for (; count > 0 && pos < PT_MSR; --count)
-+			regs[pos++] = *k++;
-+	else
-+		for (; count > 0 && pos < PT_MSR; --count) {
-+			if (__get_user(reg, u++))
-+				return -EFAULT;
-+			regs[pos++] = reg;
-+		}
-+
-+
-+	if (count > 0 && pos == PT_MSR) {
-+		if (kbuf)
-+			reg = *k++;
-+		else if (__get_user(reg, u++))
-+			return -EFAULT;
-+		set_user_msr(target, reg);
-+		++pos;
-+		--count;
-+	}
-+
-+	if (kbuf)
-+		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
-+			regs[pos++] = *k++;
-+	else
-+		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
-+			if (__get_user(reg, u++))
-+				return -EFAULT;
-+			regs[pos++] = reg;
-+		}
-+
-+	if (count > 0 && pos == PT_TRAP) {
-+		if (kbuf)
-+			reg = *k++;
-+		else if (__get_user(reg, u++))
-+			return -EFAULT;
-+		set_user_trap(target, reg);
-+		++pos;
-+		--count;
-+	}
-+
-+	kbuf = k;
-+	ubuf = u;
-+	pos *= sizeof(reg);
-+	count *= sizeof(reg);
-+	return user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
-+					 (PT_TRAP + 1) * sizeof(reg), -1);
-+}
-+
-+/*
-+ * These are the regset flavors matching the CONFIG_PPC32 native set.
-+ */
-+static const struct user_regset compat_regsets[] = {
-+	[REGSET_GPR] = {
-+		.core_note_type = NT_PRSTATUS, .n = ELF_NGREG,
-+		.size = sizeof(compat_long_t), .align = sizeof(compat_long_t),
-+		.get = gpr32_get, .set = gpr32_set
-+	},
-+	[REGSET_FPR] = {
-+		.core_note_type = NT_PRFPREG, .n = ELF_NFPREG,
-+		.size = sizeof(double), .align = sizeof(double),
-+		.get = fpr_get, .set = fpr_set
-+	},
-+#ifdef CONFIG_ALTIVEC
-+	[REGSET_VMX] = {
-+		.core_note_type = NT_PPC_VMX, .n = 34,
-+		.size = sizeof(vector128), .align = sizeof(vector128),
-+		.active = vr_active, .get = vr_get, .set = vr_set
-+	},
-+#endif
-+#ifdef CONFIG_SPE
-+	[REGSET_SPE] = {
-+		.n = 35,
-+		.size = sizeof(u32), .align = sizeof(u32),
-+		.active = evr_active, .get = evr_get, .set = evr_set
-+	},
-+#endif
-+};
-+
-+static const struct user_regset_view user_ppc_compat_view = {
-+	.name = "ppc", .e_machine = EM_PPC, .ei_osabi = ELF_OSABI,
-+	.regsets = compat_regsets, .n = ARRAY_SIZE(compat_regsets)
-+};
-+#endif	/* CONFIG_PPC64 */
-+
- const struct user_regset_view *task_user_regset_view(struct task_struct *task)
- {
-+#ifdef CONFIG_PPC64
-+	if (test_tsk_thread_flag(task, TIF_32BIT))
-+		return &user_ppc_compat_view;
-+#endif
- 	return &user_ppc_native_view;
- }
- 
+-----Misbah  
+-- 
+View this message in context: http://www.nabble.com/How-to-write-a-device-driver-in-such-a-fashion-.-----tp14660018p14660018.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
