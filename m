@@ -4,27 +4,26 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 727EEDDFFB
+	by ozlabs.org (Postfix) with ESMTP id 728E6DE000
 	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 03:01:42 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m08G1b7I026110
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 09:01:38 -0700 (MST)
+	m08G1bGV026094
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 09:01:37 -0700 (MST)
 Received: from localhost.localdomain (mvp-10-214-72-80.am.freescale.net
 	[10.214.72.80])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m08G1XJL004714
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 10:01:37 -0600 (CST)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m08G1XJK004714
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 10:01:36 -0600 (CST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/7] Separate MPC52xx PSC FIFO registers from rest of PSC
-Date: Tue,  8 Jan 2008 09:01:31 -0700
-Message-Id: <1199808093-15929-6-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1199808093-15929-5-git-send-email-jrigby@freescale.com>
+Subject: [PATCH 4/7] Device tree for MPC5121 ADS
+Date: Tue,  8 Jan 2008 09:01:30 -0700
+Message-Id: <1199808093-15929-5-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1199808093-15929-4-git-send-email-jrigby@freescale.com>
 References: <1199808093-15929-1-git-send-email-jrigby@freescale.com>
 	<1199808093-15929-2-git-send-email-jrigby@freescale.com>
 	<1199808093-15929-3-git-send-email-jrigby@freescale.com>
 	<1199808093-15929-4-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-5-git-send-email-jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,79 +33,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is in preparation for the addition of MPC512x
-PSC support.  The main difference in the 512x is
-in the fifo registers.
+Bare minimum tree containing only
+what is currently supported.
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
 ---
- drivers/serial/mpc52xx_uart.c     |   10 ++++++----
- include/asm-powerpc/mpc52xx_psc.h |    3 +++
- include/asm-ppc/mpc52xx_psc.h     |    3 +++
- 3 files changed, 12 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/dts/mpc5121ads.dts |  102 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 102 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc5121ads.dts
 
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index ec36ad7..25a91c9 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -111,6 +111,7 @@ static void mpc52xx_uart_of_enumerate(void);
- #endif
- 
- #define PSC(port) ((struct mpc52xx_psc __iomem *)((port)->membase))
-+#define FIFO(port) ((struct mpc52xx_psc_fifo __iomem *)(PSC(port)+1))
- 
- 
- /* Forward declaration of the interruption handling routine */
-@@ -222,6 +223,7 @@ static int
- mpc52xx_uart_startup(struct uart_port *port)
- {
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
-+	struct mpc52xx_psc_fifo __iomem *fifo = FIFO(port);
- 	int ret;
- 
- 	/* Request IRQ */
-@@ -238,10 +240,10 @@ mpc52xx_uart_startup(struct uart_port *port)
- 
- 	out_be16(&psc->mpc52xx_psc_clock_select, 0xdd00); /* /16 prescaler on */
- 
--	out_8(&psc->rfcntl, 0x00);
--	out_be16(&psc->rfalarm, 0x1ff);
--	out_8(&psc->tfcntl, 0x07);
--	out_be16(&psc->tfalarm, 0x80);
-+	out_8(&fifo->rfcntl, 0x00);
-+	out_be16(&fifo->rfalarm, 0x1ff);
-+	out_8(&fifo->tfcntl, 0x07);
-+	out_be16(&fifo->tfalarm, 0x80);
- 
- 	port->read_status_mask |= MPC52xx_PSC_IMR_RXRDY | MPC52xx_PSC_IMR_TXRDY;
- 	out_be16(&psc->mpc52xx_psc_imr,port->read_status_mask);
-diff --git a/include/asm-powerpc/mpc52xx_psc.h b/include/asm-powerpc/mpc52xx_psc.h
-index 26690d2..bea42b9 100644
---- a/include/asm-powerpc/mpc52xx_psc.h
-+++ b/include/asm-powerpc/mpc52xx_psc.h
-@@ -153,6 +153,9 @@ struct mpc52xx_psc {
- 	u8		reserved16[3];
- 	u8		irfdr;		/* PSC + 0x54 */
- 	u8		reserved17[3];
-+};
+diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
+new file mode 100644
+index 0000000..26471ff
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc5121ads.dts
+@@ -0,0 +1,102 @@
++/*
++ * MPC5121E MDS Device Tree Source
++ *
++ * Copyright 2007 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+struct mpc52xx_psc_fifo {
- 	u16		rfnum;		/* PSC + 0x58 */
- 	u16		reserved18;
- 	u16		tfnum;		/* PSC + 0x5c */
-diff --git a/include/asm-ppc/mpc52xx_psc.h b/include/asm-ppc/mpc52xx_psc.h
-index c82b8d4..39fcd02 100644
---- a/include/asm-ppc/mpc52xx_psc.h
-+++ b/include/asm-ppc/mpc52xx_psc.h
-@@ -159,6 +159,9 @@ struct mpc52xx_psc {
- 	u8		reserved16[3];
- 	u8		irfdr;		/* PSC + 0x54 */
- 	u8		reserved17[3];
-+};
++/ {
++	model = "MPC5121ADS";
++	compatible = "MPC5121ADS";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+struct mpc52xx_psc_fifo {
- 	u16		rfnum;		/* PSC + 0x58 */
- 	u16		reserved18;
- 	u16		tfnum;		/* PSC + 0x5c */
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5121@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;	// 32 bytes
++			i-cache-line-size = <20>;	// 32 bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			ref-frequency = <3ef1480>;	// 66MHz ref clock
++			timebase-frequency = <2f34f60>; // 49.5MHz (396MHz/8) makes time tick correctly
++			bus-frequency = <bcd3d80>;	// 198MHz csb bus
++			clock-frequency = <179a7b00>;	// 396MHz ppc core ??
++			32-bit;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 10000000>;	// 256MB at 0
++	};
++
++	cpld@82000000 {
++		device_type = "board-control";
++		reg = <82000000 8000>;
++	};
++
++	soc5121@80000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 80000000 400000>;
++		reg = <80000000 400000>;
++		ref-frequency = <3ef1480>;	// 66MHz ref
++		bus-frequency = <5e69ec0>;	// 99MHz ips ref
++
++		// IPIC
++		// interrupts cell = <intr #, sense>
++		// sense values match linux IORESOURCE_IRQ_* defines:
++		// sense == 8: Level, low assertion
++		// sense == 2: Edge, high-to-low change
++		//
++		ipic: pic@c00 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <c00 100>;
++			built-in;
++			device_type = "ipic";
++		};
++
++		// 512x PSCs are not 52xx PSCs compatible
++		// PSC3 serial port A aka ttyPSC0
++		serial@11300 {
++			device_type = "serial";
++			compatible = "mpc512x-psc-uart";
++			port-number = <0>;  // Logical port assignment
++			cell-index = <3>;
++			reg = <11300 100>;
++			interrupts = <28 8>; // actually the fifo irq
++			interrupt-parent = < &ipic >;
++		};
++
++		// PSC4 serial port B aka ttyPSC1
++		serial@11400 {
++			device_type = "serial";
++			compatible = "mpc512x-psc-uart";
++			port-number = <1>;  // Logical port assignment
++			cell-index = <4>;
++			reg = <11400 100>;
++			interrupts = <28 8>; // actually the fifo irq
++			interrupt-parent = < &ipic >;
++		};
++
++		pscsfifo@11f00 {
++			compatible = "mpc512x-pscsfifo";
++			reg = <11f00 100>;
++			interrupts = <28 8>;
++			interrupt-parent = < &ipic >;
++		};
++	};
++};
 -- 
 1.5.3.5.726.g41a7a
