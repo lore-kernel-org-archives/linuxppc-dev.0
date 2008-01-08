@@ -1,19 +1,17 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 7430ADDFD0
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 05:35:49 +1100 (EST)
-Message-ID: <4783C284.1070400@pikatech.com>
-Date: Tue, 08 Jan 2008 13:35:48 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] i2c-ibm_iic driver - new patch
-References: <477EF225.4070505@pikatech.com><200801051354.11202.arnd@arndb.de><477FCE21.9080808@pikatech.com><200801052018.22954.arnd@arndb.de><20080106001238.GI4326@localhost.localdomain><4782D9E0.4070600@pikatech.com><20080108155240.503ca3ab.sfr@canb.auug.org.au><4783108B.6070308@pikatech.com>
-	<20080108173636.73db1623.sfr@canb.auug.org.au>
-In-Reply-To: <20080108173636.73db1623.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id E5A49DE1DE
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 05:36:06 +1100 (EST)
+Date: Tue, 8 Jan 2008 21:45:18 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/3] [POWERPC] Implement support for the GPIO LIB API
+Message-ID: <20080108184518.GA18445@localhost.localdomain>
+References: <20080108184341.GA29753@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080108184341.GA29753@localhost.localdomain>
+Cc: Arnd Bergmann <arnd@arndb.de>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,295 +21,449 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Let's try again.
+This patch implements support for the GPIO LIB API. Two calls
+unimplemented though: irq_to_gpio and gpio_to_irq.
 
-Cheers,
-    Sean
+Various OF helpers provided to ease life and reduce code duplication.
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index c466c6c..e9e1493 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -241,7 +241,6 @@ config I2C_PIIX4
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   58 ++++++++
+ arch/powerpc/Kconfig                         |    5 +
+ arch/powerpc/kernel/Makefile                 |    1 +
+ arch/powerpc/kernel/gpio.c                   |  186 ++++++++++++++++++++++++++
+ include/asm-powerpc/gpio.h                   |  126 +++++++++++++++++
+ 5 files changed, 376 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/kernel/gpio.c
+ create mode 100644 include/asm-powerpc/gpio.h
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index ee0209a..dd2613c 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -60,6 +60,10 @@ Table of Contents
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
  
- config I2C_IBM_IIC
- 	tristate "IBM PPC 4xx on-chip I2C interface"
--	depends on IBM_OCP
- 	help
- 	  Say Y here if you want to use IIC peripheral found on 
- 	  embedded IBM PPC 4xx based systems. 
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-index 9b43ff7..98476fc 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.c
-+++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -6,6 +6,9 @@
-  * Copyright (c) 2003, 2004 Zultys Technologies.
-  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-  *
-+ * Copyright (c) 2008 PIKA Technologies
-+ * Sean MacLennan <smaclennan@pikatech.com>
-+ *
-  * Based on original work by 
-  * 	Ian DaSilva  <idasilva@mvista.com>
-  *      Armin Kuster <akuster@mvista.com>
-@@ -39,12 +42,17 @@
- #include <asm/io.h>
- #include <linux/i2c.h>
- #include <linux/i2c-id.h>
++  VIII - Specifying GPIO information for devices
++    1) gpios property
++    2) gpio-controller nodes
 +
-+#ifdef CONFIG_IBM_OCP
- #include <asm/ocp.h>
- #include <asm/ibm4xx.h>
-+#else
-+#include <linux/of_platform.h>
-+#endif
+   Appendix A - Sample SOC node for MPC8540
  
- #include "i2c-ibm_iic.h"
  
--#define DRIVER_VERSION "2.1"
-+#define DRIVER_VERSION "2.2"
+@@ -2618,6 +2622,60 @@ encodings listed below:
+ 	2 =  high to low edge sensitive type enabled
+ 	3 =  low to high edge sensitive type enabled
  
- MODULE_DESCRIPTION("IBM IIC driver v" DRIVER_VERSION);
- MODULE_LICENSE("GPL");
-@@ -650,13 +658,14 @@ static inline u8 iic_clckdiv(unsigned int opb)
- 	opb /= 1000000;
- 	
- 	if (opb < 20 || opb > 150){
--		printk(KERN_CRIT "ibm-iic: invalid OPB clock frequency %u MHz\n",
-+		printk(KERN_WARNING "ibm-iic: invalid OPB clock frequency %u MHz\n",
- 			opb);
- 		opb = opb < 20 ? 20 : 150;
- 	}
- 	return (u8)((opb + 9) / 10 - 1);
- }
++VIII - Specifying GPIO information for devices
++==============================================
++
++1) gpios property
++-----------------
++
++Nodes that makes use of GPIOs should define them using `gpios' property,
++format of which is: <&gpio-controller1-phandle gpio1-specifier
++		     &gpio-controller2-phandle gpio2-specifier
++		     ...>;
++
++Note that gpio-specifier length is controller dependent.
++
++gpio-specifier may encode: bank, pin position inside the bank,
++whether pin is open-drain and whether pin is active-low.
++
++Example of the node using GPIOs:
++
++	nand-flash@1,0 {
++		compatible = "stmicro,NAND512W3A2BN6E", "fsl,upm-nand";
++		reg = <1 0 1>;
++		width = <1>;
++		upm = "A";
++		upm-addr-offset = <16>;
++		upm-cmd-offset = <8>;
++		gpios = <&qe_pio_e 18>;
++		wait-pattern;
++		wait-write;
++	};
++
++In that example gpio-specifier is "18" and encodes GPIO pin number only,
++as accepted by the "qe_pio_e" gpio-controller.
++
++2) gpio-controller nodes
++------------------------
++
++Every GPIO controller node must have #gpio-cells property defined,
++this information will be used to translate gpio-specifiers.
++
++Example of two SOC GPIO banks defined as gpio-controller nodes:
++
++	qe_pio_a: gpio-controller@1400 {
++		#gpio-cells = <1>;
++		compatible = "fsl,qe-pario-bank";
++		reg = <0x1400 0x18>;
++		gpio-controller;
++	};
++
++	qe_pio_e: gpio-controller@1460 {
++		#gpio-cells = <1>;
++		compatible = "fsl,qe-pario-bank";
++		reg = <0x1460 0x18>;
++		gpio-controller;
++	};
  
-+#ifdef CONFIG_IBM_OCP
- /*
-  * Register single IIC interface
-  */
-@@ -672,7 +681,7 @@ static int __devinit iic_probe(struct ocp_device *ocp){
- 			ocp->def->index);
+ Appendix A - Sample SOC node for MPC8540
+ ========================================
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 66a3d8c..b38c84a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -73,6 +73,11 @@ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
  
- 	if (!(dev = kzalloc(sizeof(*dev), GFP_KERNEL))) {
--		printk(KERN_CRIT "ibm-iic%d: failed to allocate device data\n",
-+		printk(KERN_ERR "ibm-iic%d: failed to allocate device data\n",
- 			ocp->def->index);
- 		return -ENOMEM;
- 	}
-@@ -687,7 +696,7 @@ static int __devinit iic_probe(struct ocp_device *ocp){
- 	}
++config GENERIC_GPIO
++	bool
++	help
++	  Generic GPIO API support
++
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool PPC64
  
- 	if (!(dev->vaddr = ioremap(ocp->def->paddr, sizeof(struct iic_regs)))){
--		printk(KERN_CRIT "ibm-iic%d: failed to ioremap device registers\n",
-+		printk(KERN_ERR "ibm-iic%d: failed to ioremap device registers\n",
- 			dev->idx);
- 		ret = -ENXIO;
- 		goto fail2;
-@@ -746,7 +755,7 @@ static int __devinit iic_probe(struct ocp_device *ocp){
- 	adap->nr = dev->idx >= 0 ? dev->idx : 0;
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 9374bc9..943045c 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
++obj-$(CONFIG_GPIO_LIB)		+= gpio.o
  
- 	if ((ret = i2c_add_numbered_adapter(adap)) < 0) {
--		printk(KERN_CRIT "ibm-iic%d: failed to register i2c adapter\n",
-+		printk(KERN_ERR "ibm-iic%d: failed to register i2c adapter\n",
- 			dev->idx);
- 		goto fail;
- 	}
-@@ -779,7 +788,7 @@ static void __devexit iic_remove(struct ocp_device *ocp)
- 	struct ibm_iic_private* dev = (struct ibm_iic_private*)ocp_get_drvdata(ocp);
- 	BUG_ON(dev == NULL);
- 	if (i2c_del_adapter(&dev->adap)){
--		printk(KERN_CRIT "ibm-iic%d: failed to delete i2c adapter :(\n",
-+		printk(KERN_ERR "ibm-iic%d: failed to delete i2c adapter :(\n",
- 			dev->idx);
- 		/* That's *very* bad, just shutdown IRQ ... */
- 		if (dev->irq >= 0){
-@@ -831,3 +840,189 @@ static void __exit iic_exit(void)
- 
- module_init(iic_init);
- module_exit(iic_exit);
-+#else
+ pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
+ obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
+diff --git a/arch/powerpc/kernel/gpio.c b/arch/powerpc/kernel/gpio.c
+new file mode 100644
+index 0000000..f41d1e0
+--- /dev/null
++++ b/arch/powerpc/kernel/gpio.c
+@@ -0,0 +1,186 @@
 +/*
-+ * Register single IIC interface
++ * OF helpers for the GPIO API
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + */
-+static int __devinit iic_probe(struct of_device *ofdev,
-+			       const struct of_device_id *match)
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <asm/prom.h>
++#include <asm/gpio.h>
++
++int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
++			 const void *gpio_spec)
 +{
-+	static int index = 0;
-+	struct device_node *np = ofdev->node;
-+	struct ibm_iic_private* dev;
-+	struct i2c_adapter* adap;
-+	const u32 *indexp, *freq;
-+	int ret;
++	const u32 *gpio = gpio_spec;
 +
-+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+	if (!dev) {
-+		printk(KERN_ERR "ibm-iic: failed to allocate device data\n");
-+		return -ENOMEM;
++	if (*gpio > of_gc->gc.ngpio)
++		return -EINVAL;
++
++	return *gpio;
++}
++EXPORT_SYMBOL(of_gpio_simple_xlate);
++
++int of_get_gpio(struct device_node *np, int index)
++{
++	int ret = -EINVAL;
++	struct device_node *gc;
++	struct of_gpio_chip *of_gc = NULL;
++	int size;
++	const u32 *gpios;
++	u32 nr_cells;
++	int i;
++	const void *gpio_spec;
++	const u32 *gpio_cells;
++	int gpio_index = 0;
++
++	gpios = of_get_property(np, "gpios", &size);
++	if (!gpios) {
++		ret = -ENOENT;
++		goto err0;
 +	}
++	nr_cells = size / sizeof(u32);
 +
-+	/* This assumes we don't mix index and non-index entries. */
-+	indexp = of_get_property(np, "index", NULL);
-+	dev->idx = indexp ? *indexp : index++;
++	for (i = 0; i < nr_cells;) {
++		const phandle *gpio_phandle;
 +
-+	dev_set_drvdata(&ofdev->dev, dev);
++		gpio_phandle = gpios + i;
++		gpio_spec = gpio_phandle + 1;
 +
-+	dev->vaddr = of_iomap(np, 0);
-+	if (dev->vaddr == NULL) {
-+		printk(KERN_ERR "ibm-iic%d: failed to ioremap device registers\n",
-+			dev->idx);
-+		ret = -ENXIO;
-+		goto fail1;
-+	}
-+
-+	init_waitqueue_head(&dev->wq);
-+
-+	if (iic_force_poll)
-+		dev->irq = NO_IRQ;
-+	else {
-+		dev->irq = irq_of_parse_and_map(np, 0);
-+		if (dev->irq == NO_IRQ)
-+			printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
-+		else {
-+			/* Disable interrupts until we finish initialization,
-+			   assumes level-sensitive IRQ setup...
-+			*/
-+			iic_interrupt_mode(dev, 0);
-+			if (request_irq(dev->irq, iic_handler, 0, "IBM IIC", dev)){
-+				printk(KERN_ERR "ibm-iic%d: request_irq %d failed\n",
-+				       dev->idx, dev->irq);
-+				/* Fallback to the polling mode */
-+				dev->irq = NO_IRQ;
-+			}
++		gc = of_find_node_by_phandle(*gpio_phandle);
++		if (!gc) {
++			pr_debug("%s: could not find phandle for gpios\n",
++				 np->full_name);
++			goto err0;
 +		}
-+	}
 +
-+	if (dev->irq == NO_IRQ)
-+		printk(KERN_WARNING "ibm-iic%d: using polling mode\n",
-+			   dev->idx);
-+
-+	/* Board specific settings */
-+	if (iic_force_fast || of_get_property(np, "fast-mode", NULL))
-+		dev->fast_mode = 1;
-+	else
-+		dev->fast_mode = 0;
-+
-+	/* clckdiv is the same for *all* IIC interfaces, but I'd rather
-+	 * make a copy than introduce another global. --ebs
-+	 */
-+	freq = of_get_property(np, "clock-frequency", NULL);
-+	if (freq == NULL) {
-+		freq = of_get_property(np->parent, "clock-frequency", NULL);
-+		if (freq == NULL) {
-+			printk(KERN_ERR "ibm-iic%d: Unable to get bus frequency\n",
-+			       dev->idx);
-+			ret = -EBUSY;
-+			goto fail;
++		of_gc = gc->data;
++		if (!of_gc) {
++			pr_debug("%s: gpio controller %s isn't registered\n",
++				 np->full_name, gc->full_name);
++			goto err1;
 +		}
++
++		gpio_cells = of_get_property(gc, "#gpio-cells", &size);
++		if (!gpio_cells || size != sizeof(*gpio_cells) ||
++				*gpio_cells != of_gc->gpio_cells) {
++			pr_debug("%s: wrong #gpio-cells for %s\n",
++				 np->full_name, gc->full_name);
++			goto err1;
++		}
++
++		/* Next phandle is at phandle cells + #gpio-cells */
++		i += sizeof(*gpio_phandle) / sizeof(u32) + *gpio_cells;
++		if (i >= nr_cells + 1) {
++			pr_debug("%s: insufficient gpio-spec length\n",
++				 np->full_name);
++			goto err1;
++		}
++
++		if (gpio_index == index)
++			break;
++
++		of_gc = NULL;
++		of_node_put(gc);
++		gpio_index++;
 +	}
 +
-+	dev->clckdiv = iic_clckdiv(*freq);
-+	DBG("%d: clckdiv = %d\n", dev->idx, dev->clckdiv);
-+
-+	/* Initialize IIC interface */
-+	iic_dev_init(dev);
-+
-+	/* Register it with i2c layer */
-+	adap = &dev->adap;
-+	adap->dev.parent = &ofdev->dev;
-+	strcpy(adap->name, "IBM IIC");
-+	i2c_set_adapdata(adap, dev);
-+	adap->id = I2C_HW_OCP;
-+	adap->class = I2C_CLASS_HWMON;
-+	adap->algo = &iic_algo;
-+	adap->client_register = NULL;
-+	adap->client_unregister = NULL;
-+	adap->timeout = 1;
-+	adap->retries = 1;
-+	adap->nr = dev->idx;
-+
-+	ret = i2c_add_numbered_adapter(adap);
-+	if (ret  < 0) {
-+		printk(KERN_ERR "ibm-iic%d: failed to register i2c adapter\n",
-+			dev->idx);
-+		goto fail;
++	if (!of_gc) {
++		ret = -ENOENT;
++		goto err0;
 +	}
 +
-+	printk(KERN_INFO "ibm-iic%d: using %s mode\n", dev->idx,
-+		dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
++	ret = of_gc->xlate(of_gc, np, gpio_spec);
++	if (ret < 0)
++		goto err1;
 +
-+	return 0;
-+
-+fail:
-+	if (dev->irq != NO_IRQ){
-+		iic_interrupt_mode(dev, 0);
-+		free_irq(dev->irq, dev);
-+	}
-+
-+	iounmap(dev->vaddr);
-+fail1:
-+	dev_set_drvdata(&ofdev->dev, NULL);
-+	kfree(dev);
++	ret += of_gc->gc.base;
++err1:
++	of_node_put(gc);
++err0:
++	pr_debug("%s exited with status %d\n", __func__, ret);
 +	return ret;
 +}
++EXPORT_SYMBOL(of_get_gpio);
 +
-+/*
-+ * Cleanup initialized IIC interface
-+ */
-+static int __devexit iic_remove(struct of_device *ofdev)
++static int of_get_gpiochip_base(struct device_node *np)
 +{
-+	struct ibm_iic_private* dev = dev_get_drvdata(&ofdev->dev);
++	struct device_node *gc = NULL;
++	int gpiochip_base = 0;
 +
-+	BUG_ON(dev == NULL);
-+	if (i2c_del_adapter(&dev->adap)){
-+		printk(KERN_ERR "ibm-iic%d: failed to delete i2c adapter :(\n",
-+			dev->idx);
-+		/* That's *very* bad, just shutdown IRQ ... */
-+		if (dev->irq != NO_IRQ){
-+		    iic_interrupt_mode(dev, 0);
-+		    free_irq(dev->irq, dev);
-+		    dev->irq = NO_IRQ;
++	while ((gc = of_find_all_nodes(gc))) {
++		if (!of_get_property(gc, "gpio-controller", NULL))
++			continue;
++
++		if (gc != np) {
++			gpiochip_base += ARCH_GPIOS_PER_CHIP;
++			continue;
 +		}
-+	} else {
-+		if (dev->irq != NO_IRQ){
-+		    iic_interrupt_mode(dev, 0);
-+		    free_irq(dev->irq, dev);
-+		}
-+		iounmap(dev->vaddr);
-+		kfree(dev);
++
++		of_node_put(gc);
++
++		if (gpiochip_base >= ARCH_OF_GPIOS_END)
++			return -ENOSPC;
++
++		return gpiochip_base;
 +	}
 +
++	return -ENOENT;
++}
++
++int of_mm_gpiochip_add(struct device_node *np,
++		       const struct of_gpio_chip *of_gc)
++{
++	int ret = -ENOMEM;
++	struct of_mm_gpio_chip *mm_gc;
++
++	mm_gc = kzalloc(sizeof(*mm_gc), GFP_KERNEL);
++	if (!mm_gc)
++		goto err0;
++
++	mm_gc->of_gc = *of_gc;
++
++	mm_gc->of_gc.gc.label = kstrdup(np->full_name, GFP_KERNEL);
++	if (!mm_gc->of_gc.gc.label)
++		goto err1;
++
++	ret = of_get_gpiochip_base(np);
++	if (ret < 0)
++		goto err2;
++
++	mm_gc->regs = of_iomap(np, 0);
++	if (!mm_gc->regs) {
++		ret = -ENOMEM;
++		goto err1;
++	}
++
++	mm_gc->of_gc.gc.base = ret;
++
++	np->data = &mm_gc->of_gc;
++
++	ret = gpiochip_add(&mm_gc->of_gc.gc);
++	if (ret)
++		goto err2;
++
++	of_node_get(np);
++
++	pr_debug("%s: registered as generic GPIO chip, base is %d\n",
++		 np->full_name, mm_gc->of_gc.gc.base);
 +	return 0;
++err2:
++	np->data = NULL;
++	kfree(mm_gc->of_gc.gc.label);
++err1:
++	kfree(mm_gc);
++err0:
++	pr_err("%s: GPIO chip registration failed with status %d\n",
++	       np->full_name, ret);
++	return ret;
 +}
++EXPORT_SYMBOL(of_mm_gpiochip_add);
+diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+new file mode 100644
+index 0000000..1cc2e90
+--- /dev/null
++++ b/include/asm-powerpc/gpio.h
+@@ -0,0 +1,126 @@
++/*
++ * Generic GPIO API implementation for PowerPC.
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
 +
++#ifndef __ASM_POWERPC_GPIO_H
++#define __ASM_POWERPC_GPIO_H
 +
-+static const struct of_device_id ibm_iic_match[] =
-+{
-+	{ .type = "i2c", .compatible = "ibm,iic-405ex", },
-+	{ .type = "i2c", .compatible = "ibm,iic-405gp", },
-+	{ .type = "i2c", .compatible = "ibm,iic-440gp", },
-+	{ .type = "i2c", .compatible = "ibm,iic-440gpx", },
-+	{ .type = "i2c", .compatible = "ibm,iic-440grx", },
-+	{}
-+};
++#include <asm-generic/gpio.h>
 +
-+static struct of_platform_driver ibm_iic_driver =
-+{
-+	.name   = "ibm-iic",
-+	.match_table = ibm_iic_match,
-+	.probe  = iic_probe,
-+	.remove = iic_remove,
-+};
++#ifdef CONFIG_GPIO_LIB
 +
-+static int __init ibm_iic_init(void)
-+{
-+	printk(KERN_INFO "IBM IIC driver v" DRIVER_VERSION "\n");
-+	return of_register_platform_driver(&ibm_iic_driver);
-+}
-+module_init(ibm_iic_init);
++#define ARCH_OF_GPIOS_BASE	0
++#define ARCH_OF_GPIOS_END	(ARCH_GPIOS_PER_CHIP * 7)
++#define ARCH_NON_OF_GPIOS_BASE	ARCH_OF_GPIOS_END
++#define ARCH_NON_OF_GPIOS_END	ARCH_NR_GPIOS
 +
-+static void __exit ibm_iic_exit(void)
-+{
-+	of_unregister_platform_driver(&ibm_iic_driver);
-+}
-+module_exit(ibm_iic_exit);
++#if ARCH_NON_OF_GPIOS_BASE >= ARCH_NON_OF_GPIOS_END
++#error "Default ARCH_NR_GPIOS isn't sufficient, define yours."
 +#endif
++
++/*
++ * We don't (yet) implement inlined/rapid versions for on-chip gpios.
++ * Just call gpiolib.
++ */
++static inline int gpio_get_value(unsigned int gpio)
++{
++	return __gpio_get_value(gpio);
++}
++
++static inline void gpio_set_value(unsigned int gpio, int value)
++{
++	__gpio_set_value(gpio, value);
++}
++
++/*
++ * Not implemented, yet.
++ */
++static inline int gpio_to_irq(unsigned int gpio)
++{
++	return -ENOSYS;
++}
++
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -ENOSYS;
++}
++
++/*
++ * Generic OF GPIO chip
++ */
++struct of_gpio_chip {
++	struct gpio_chip gc;
++	int gpio_cells;
++	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
++		     const void *gpio_spec);
++};
++
++#define to_of_gpio_chip(x) container_of(x, struct of_gpio_chip, gc)
++
++/*
++ * OF GPIO chip for memory mapped banks
++ */
++struct of_mm_gpio_chip {
++	struct of_gpio_chip of_gc;
++	void __iomem *regs;
++};
++
++#define to_of_mm_gpio_chip(x) container_of(to_of_gpio_chip(x), \
++					   struct of_mm_gpio_chip, of_gc)
++
++/**
++ * of_gpio_simple_xlate - Translate GPIO number given in the device tree
++ * @of_gc:	pointer to the OF GPIO chip
++ * @np:		device node to get GPIO from
++ * @gpio_spec:	pointer to the gpio-spec field in the `gpios' property
++ *
++ * This is gpio-controller specific function, returns translated GPIO
++ * number.
++ */
++extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
++				struct device_node *np,
++				const void *gpio_spec);
++
++/**
++ * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
++ * @np:		device node to get GPIO from
++ * @index:	index of the GPIO
++ *
++ * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
++ * value on the error condition.
++ */
++extern int of_get_gpio(struct device_node *np, int index);
++
++/**
++ * of_mm_gpiochip_add - Add memory mapped GPIO chip (bank)
++ * @np:		device node of the GPIO chip
++ * @of_gc:	pointer to the of_gpio_chip template
++ *
++ * To use this function you should fill of_gc template with:
++ *
++ * 1) In the gpio_chip structure:
++ *    a) all callbacks
++ *    b) ngpios (GPIOs per bank)
++ *
++ * 2) In the of_gpio_chip structure:
++ *    a) xlate callback
++ *    b) gpio_cells
++ *
++ * If succeeded, this function will map bank's memory and will
++ * do all necessary work for you. Then you'll able to use .regs
++ * to manage GPIOs from the callbacks.
++ */
++extern int of_mm_gpiochip_add(struct device_node *np,
++			      const struct of_gpio_chip *of_gc);
++
++#endif /* CONFIG_GPIO_LIB */
++
++#endif /* __ASM_POWERPC_GPIO_H */
+-- 
+1.5.2.2
