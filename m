@@ -1,24 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <lg@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (unknown [80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E3FBCDE050
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 03:46:03 +1100 (EST)
-Date: Tue, 8 Jan 2008 10:40:44 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] i2c-ibm_iic driver - new patch
-Message-ID: <20080108164044.GA4949@loki.buserror.net>
-References: <477EF225.4070505@pikatech.com>
-	<20080108155240.503ca3ab.sfr@canb.auug.org.au>
-	<4783108B.6070308@pikatech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4783108B.6070308@pikatech.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Stefan Roese <sr@denx.de>,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 23256DDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 23:45:02 +1100 (EST)
+Subject: Re: [PATCH v2] [POWERPC] Update MPC8610 HPCD to support audio drivers
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080108115654.d0ac909b.sfr@canb.auug.org.au>
+References: <1199732204949-git-send-email-timur@freescale.com>
+	<1199732204578-git-send-email-timur@freescale.com>
+	<20080108115654.d0ac909b.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Tue, 08 Jan 2008 12:39:14 +0000
+Message-Id: <1199795954.19903.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 08, 2008 at 12:56:27AM -0500, Sean MacLennan wrote:
-> Stephen Rothwell wrote:
-> > On Mon, 07 Jan 2008 21:03:12 -0500 Sean MacLennan <smaclennan@pikatech.com> wrote:
-> >> +static int __devinit iic_probe(struct of_device *ofdev,
-> >> +							   const struct of_device_id *match)
-> >>     
+On Tue, 2008-01-08 at 11:56 +1100, Stephen Rothwell wrote:
+> Hi Timur,
+> 
+> On Mon,  7 Jan 2008 12:56:43 -0600 Timur Tabi <timur@freescale.com> wrote:
 > >
-> > Indenting could be better.
-> >   
-> Sorry. Since this kernel is in a "work" directory and not in 
-> /usr/src/linux* my rules for deciding on the tab size didn't work :( I 
-> tried to correct the tabbing.
+> > +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> > @@ -34,9 +34,27 @@
+> >  
+> >  #include <asm/mpic.h>
+> >  
+> > +#include <linux/of_platform.h>
+> >  #include <sysdev/fsl_pci.h>
+> >  #include <sysdev/fsl_soc.h>
+> >  
+> > +static struct of_device_id mpc8610_ids[] = {
+> 
+> __initdata
+> 
+> > +	{ .compatible = "fsl,mpc8610", },
+> > +	{}
+> > +};
+> > +
+> > +static int __init mpc8610_declare_of_platform_devices(void)
+> > +{
+> > +	if (!machine_is(mpc86xx_hpcd))
+> > +		return 0;
+> > +
+> > +	/* Without this call, the SSI device driver won't get probed. */
+> > +	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+> > +
+> > +	return 0;
+> > +}
+> > +device_initcall(mpc8610_declare_of_platform_devices);
+> 
+> We have machine_device_initcall for this now.
+> 
 
-Better to tab to the semantic indentation level (in this case there is
-none), and then use spaces to align -- that way it looks right regardless of
-what the tab size is set to.
+Now changed in ASoC dev branch.
 
--Scott
+Liam
