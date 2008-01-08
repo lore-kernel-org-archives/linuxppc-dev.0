@@ -4,18 +4,21 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AE58DDDFF9
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 03:42:43 +1100 (EST)
-Date: Tue, 8 Jan 2008 10:42:14 -0600
+	by ozlabs.org (Postfix) with ESMTP id E3FBCDE050
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 03:46:03 +1100 (EST)
+Date: Tue, 8 Jan 2008 10:40:44 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: How to write a device driver in such a fashion .????
-Message-ID: <20080108164214.GB4949@loki.buserror.net>
-References: <14660018.post@talk.nabble.com> <14682271.post@talk.nabble.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] i2c-ibm_iic driver - new patch
+Message-ID: <20080108164044.GA4949@loki.buserror.net>
+References: <477EF225.4070505@pikatech.com>
+	<20080108155240.503ca3ab.sfr@canb.auug.org.au>
+	<4783108B.6070308@pikatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <14682271.post@talk.nabble.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <4783108B.6070308@pikatech.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Stefan Roese <sr@denx.de>,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 07, 2008 at 08:31:10PM -0800, Misbah khan wrote:
-> 
-> using mmap() in application to access the h/w is only possible if  the device
-> memory is mapped in the kernel virtual memory how come we directly map to
-> the physical memory to virtual from user space ??? 
+On Tue, Jan 08, 2008 at 12:56:27AM -0500, Sean MacLennan wrote:
+> Stephen Rothwell wrote:
+> > On Mon, 07 Jan 2008 21:03:12 -0500 Sean MacLennan <smaclennan@pikatech.com> wrote:
+> >> +static int __devinit iic_probe(struct of_device *ofdev,
+> >> +							   const struct of_device_id *match)
+> >>     
+> >
+> > Indenting could be better.
+> >   
+> Sorry. Since this kernel is in a "work" directory and not in 
+> /usr/src/linux* my rules for deciding on the tab size didn't work :( I 
+> tried to correct the tabbing.
 
-No, /dev/mem takes physical addresses, not kernel virtual.
+Better to tab to the semantic indentation level (in this case there is
+none), and then use spaces to align -- that way it looks right regardless of
+what the tab size is set to.
 
 -Scott
