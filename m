@@ -1,31 +1,19 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3C691DDDEA
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 11:39:56 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m080dseW024043
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 19:39:54 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m080dsdA487524
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 19:39:54 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m080drlg020123
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 19:39:54 -0500
-Message-ID: <4782C658.4050901@austin.ibm.com>
-Date: Mon, 07 Jan 2008 18:39:52 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 8/8] pseries: phyp dump: Tracking memory range freed.
-References: <4782B985.2090508@austin.ibm.com>
-In-Reply-To: <4782B985.2090508@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
-	strosake@us.ibm.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1EABEDDF1B
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 11:49:00 +1100 (EST)
+Date: Tue, 8 Jan 2008 11:48:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] Add of_find_matching_node() helper function
+Message-Id: <20080108114849.847db508.sfr@canb.auug.org.au>
+In-Reply-To: <20080107181418.11906.13427.stgit@trillian.secretlab.ca>
+References: <20080107181418.11906.13427.stgit@trillian.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__8_Jan_2008_11_48_49_+1100_DlLEYjL5rEsF1L4B"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,93 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__8_Jan_2008_11_48_49_+1100_DlLEYjL5rEsF1L4B
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Grant,
 
-This patch tracks the size freed. For now it does a simple
-rudimentary calculation of the ranges freed. The idea is
-to keep it simple at the external shell script level and 
-send in large chunks for now.
+On Mon, 07 Jan 2008 11:15:56 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> +++ b/include/linux/of.h
+> @@ -60,5 +66,7 @@ extern const void *of_get_property(const struct device_=
+node *node,
+>  				int *lenp);
+>  extern int of_n_addr_cells(struct device_node *np);
+>  extern int of_n_size_cells(struct device_node *np);
+> +extern const struct of_device_id *of_match_node(
+> +	const struct of_device_id *matches, const struct device_node *node);
+> =20
+>  #endif /* _LINUX_OF_H */
+> diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+> index 212bffb..6dc1195 100644
+> --- a/include/linux/of_device.h
+> +++ b/include/linux/of_device.h
+> @@ -10,8 +10,6 @@
+> =20
+>  #define	to_of_device(d) container_of(d, struct of_device, dev)
+> =20
+> -extern const struct of_device_id *of_match_node(
+> -	const struct of_device_id *matches, const struct device_node *node);
+>  extern const struct of_device_id *of_match_device(
+>  	const struct of_device_id *matches, const struct of_device *dev);
 
-Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
------
+So you should really change all the callers of of_match_node to include lin=
+ux/of.h.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
- arch/powerpc/platforms/pseries/phyp_dump.c |   36 +++++++++++++++++++++++++++++
- include/asm-powerpc/phyp_dump.h            |    3 ++
- 2 files changed, 39 insertions(+)
+--Signature=_Tue__8_Jan_2008_11_48_49_+1100_DlLEYjL5rEsF1L4B
+Content-Type: application/pgp-signature
 
-Index: 2.6.24-rc5/include/asm-powerpc/phyp_dump.h
-===================================================================
---- 2.6.24-rc5.orig/include/asm-powerpc/phyp_dump.h	2008-01-07 22:55:28.000000000 -0600
-+++ 2.6.24-rc5/include/asm-powerpc/phyp_dump.h	2008-01-07 22:58:02.000000000 -0600
-@@ -24,6 +24,9 @@ struct phyp_dump {
- 	/* Memory that is reserved during very early boot. */
- 	unsigned long init_reserve_start;
- 	unsigned long init_reserve_size;
-+	/* Scratch area memory details */
-+	unsigned long scratch_reserve_start;
-+	unsigned long scratch_reserve_size;
- };
- 
- extern struct phyp_dump *phyp_dump_info;
-Index: 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c
-===================================================================
---- 2.6.24-rc5.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-01-07 22:57:27.000000000 -0600
-+++ 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c	2008-01-07 22:58:02.000000000 -0600
-@@ -287,6 +287,39 @@ release_memory_range(unsigned long start
- 	}
- }
- 
-+/**
-+ * track_freed_range -- Counts the range being freed.
-+ * Once the counter goes to zero, it re-registers dump for
-+ * future use.
-+ */
-+static void
-+track_freed_range(unsigned long addr, unsigned long length)
-+{
-+	static unsigned long scratch_area_size, reserved_area_size;
-+
-+	if (addr < phyp_dump_info->init_reserve_start)
-+		return;
-+
-+	if ((addr >= phyp_dump_info->init_reserve_start) &&
-+	    (addr <= phyp_dump_info->init_reserve_start +
-+	     phyp_dump_info->init_reserve_size))
-+		reserved_area_size += length;
-+
-+	if ((addr >= phyp_dump_info->scratch_reserve_start) &&
-+	    (addr <= phyp_dump_info->scratch_reserve_start +
-+	     phyp_dump_info->scratch_reserve_size))
-+		scratch_area_size += length;
-+
-+	if ((reserved_area_size == phyp_dump_info->init_reserve_start) &&
-+	    (scratch_area_size == phyp_dump_info->scratch_reserve_size)) {
-+
-+		invalidate_last_dump(&phdr,
-+				phyp_dump_info->scratch_reserve_start);
-+		register_dump_area (&phdr,
-+				phyp_dump_info->scratch_reserve_start);
-+	}
-+}
-+
- /* ------------------------------------------------- */
- /**
-  * sysfs_release_region -- sysfs interface to release memory range.
-@@ -310,6 +343,8 @@ store_release_region(struct kset *kset, 
- 	if (ret != 2)
- 		return -EINVAL;
- 
-+	track_freed_range(start_addr, length);
-+
- 	/* Range-check - don't free any reserved memory that
- 	 * wasn't reserved for phyp-dump */
- 	if (start_addr < phyp_dump_info->init_reserve_start)
-@@ -414,6 +449,7 @@ static int __init phyp_dump_setup(void)
- 	}
- 
- 	/* Don't allow user to release the 256MB scratch area */
-+	/* this might be wrong */
- 	phyp_dump_info->init_reserve_size = free_area_length;
- 
- 	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHgsh1TgG2atn1QN8RArJIAJ96weIRkx8YcvmrNDAusiSsgtsmmwCfRV2H
+HlPELl3rvSz1h9JKo3MxI/w=
+=qyCk
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__8_Jan_2008_11_48_49_+1100_DlLEYjL5rEsF1L4B--
