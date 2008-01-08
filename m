@@ -1,23 +1,15 @@
-Return-Path: <padmanabha@tesbv.com>
-Received: from hermes.tesbv.com (hermes.tesbv.com [213.215.41.187])
-	by ozlabs.org (Postfix) with ESMTP id EE070DDF15
+Return-Path: <sim.diak@yahoo.com.cn>
+Received: from web92013.mail.cnb.yahoo.com (web92013.mail.cnb.yahoo.com
+	[203.209.230.60]) by ozlabs.org (Postfix) with SMTP id B2026DDEF8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 21:10:14 +1100 (EST)
-Received: from athos.tesbv.com (unknown [192.168.50.10])
-	by hermes.tesbv.com (Postfix) with ESMTP id 7F0D9F43A9
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 11:15:01 +0100 (CET)
-Received: from [10.20.0.64] (unknown [10.20.0.64])
-	by athos.tesbv.com (Postfix) with ESMTP id ED85C400A
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 11:10:03 +0100 (CET)
-Message-ID: <47834C13.7030303@tesbv.com>
-Date: Tue, 08 Jan 2008 15:40:27 +0530
-From: padmanabha <padmanabha@tesbv.com>
-MIME-Version: 1.0
+	Wed,  9 Jan 2008 00:40:38 +1100 (EST)
+Date: Tue, 8 Jan 2008 21:40:32 +0800 (CST)
+From: diak sim <sim.diak@yahoo.com.cn>
+Subject: port linux-2.6 to ml410, problem on disabling external interrupts
 To: linuxppc-embedded@ozlabs.org
-Subject: PPC4xx : Failed to perform memory to memory DMA
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2000563917-1199799632=:44671"
+Message-ID: <486779.44671.qm@web92013.mail.cnb.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,225 +20,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-I  am using 2.6.23  kernel for ppc 440spe based board. When i tried 
-memory to memory DMA  ( please find  the code given below )
-DMA is not happening.
-
-I am trying the same for last few days.... without any success.  Can any 
-one guide me.
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-
-
-#include<linux/kernel.h>
-#include<linux/module.h>
-#include<linux/delay.h>
-
-#include<asm/ppc4xx_dma.h>
-#include<asm/io.h>
-#include<linux/slab.h>
-
-MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("PPC4xx Mem to Mem DMA  demo");
-MODULE_AUTHOR("padmanabha@tesbv.com");
-
-extern void flush_dcache_all(void);
-
-#define DMA_CHANNEL_NUM                         0
-#define SIZE                                                    4096
-
-ppc_dma_ch_t  ppc_dma_channel;
-ppc_dma_ch_t p_init;
-
-void * vir_dst_addr;
-void * vir_src_addr;
-
-unsigned long int  phy_src;
-unsigned long int  phy_dst;
-
-int ret, offset;
-
-void dma_trns(void)
-{
-
-    memset( (char *)&p_init, 0, sizeof(p_init));
-
-    p_init.polarity = 0;
-    p_init.pwidth   = PW_8;
-
-    ret = ppc4xx_init_dma_channel( DMA_CHANNEL_NUM, &p_init);
-
-    if (ret  ==   DMA_STATUS_GOOD)
-    {
-        printk("%s: init_dma_channel return %d, dest is 
-%p\n",__FUNCTION__, ret, vir_dst_addr);
-    }
-
-    else if(ret  ==   DMA_STATUS_BAD_CHANNEL)
-    {
-
-      printk("TS2: bad channel \n");
-
-    }
-
-    flush_dcache_all();
-
-    ppc4xx_clr_dma_status( DMA_CHANNEL_NUM);
-
-    ppc4xx_set_dma_mode(DMA_CHANNEL_NUM,DMA_MODE_MM);
-    ppc4xx_set_src_addr( DMA_CHANNEL_NUM, (phys_addr_t) phy_src);
-    ppc4xx_set_dst_addr(DMA_CHANNEL_NUM,  (phys_addr_t) phy_dst);
-    ppc4xx_set_dma_count(DMA_CHANNEL_NUM,(SIZE * 2 ));
-
-    ppc4xx_set_channel_priority(DMA_CHANNEL_NUM,PRIORITY_HIGH);
-
-    ppc4xx_enable_dma(DMA_CHANNEL_NUM);
-
-
-    // wait till completion of DMA
-
-
-     while( 1)
-     {
-          mdelay(100);
-
-          ret = 1;
-          ret = ppc4xx_get_dma_residue( DMA_CHANNEL_NUM);
-
-          if( ret == 0)
-          {
-              printk(" no dma operation is pending\n");
-              break;
-          }
-
-     }
-
-   ppc4xx_disable_dma( DMA_CHANNEL_NUM);
-
-  return  ;
-}
-
-static int dma_test_init(void)
-{
-
-  vir_src_addr = (void *) __get_free_pages(GFP_KERNEL | GFP_DMA, 1);
-
-  if( vir_src_addr == NULL )
-  {
-      printk( " Memory not allocated\n");
-      return 1;
-  }
-  printk("%s: virtual address for src buffer is 0x%p \n",__FUNCTION__, 
-(unsigned int *)vir_src_addr);
-  memset( (unsigned long *)vir_src_addr, 0x55, sizeof(unsigned long) * 
-(SIZE *2));
-
-#if SRC_DISPLAY
-
-  ret = 0;
-
-  while(ret < 100)
-  {
-
-      printk( "%s: value at virtual addr 0x%p is 0x%X \n", 
-__FUNCTION__,( (unsigned int *)vir_src_addr + ret ),\
-
-      *( (unsigned int *)vir_src_addr + ret));
-
-      ret++;
-
-  }
-
-#endif
-
-  vir_dst_addr = (void *) __get_free_pages(GFP_KERNEL | GFP_DMA,1);
-
-  if( vir_dst_addr == NULL )
-  {
-      printk( " Memory not allocated\n");
-      free_pages( (unsigned long)vir_src_addr, 1);
-      return 1;
-  }
-  printk("%s: virtual address for dst buffer is 0x%p 
-\n",__FUNCTION__,(unsigned int *)vir_dst_addr);
-  memset( (unsigned long *)vir_dst_addr, 0, sizeof(unsigned long) * 
-(SIZE *2));
-
-#if DST_DISPLAY
-
-  ret = 0;
-  while(ret < 100)
-  {
-
-      printk( "%s: value at virtual addr 0x%p is 0x%X \n", 
-__FUNCTION__,( (unsigned int *)vir_dst_addr + ret ),\
-      *( (unsigned int *)vir_dst_addr + ret));
-
-      ret++;
-
-  }
-#endif
-
-//      phy_src = virt_to_bus(vir_src_addr);
-//      phy_dst = virt_to_bus(vir_dst_addr);
-
-    phy_src = iopa( (unsigned long ) vir_src_addr);
-    phy_dst =  iopa(  (unsigned long )vir_dst_addr);
-
-  dma_trns();
-
-    ret = 1;
-    ret = ppc4xx_get_dma_residue( DMA_CHANNEL_NUM);
-    if( ret == 0)
-    {
-        printk(" no dma operation is pending\n");
-
-    }
-
-  return 0;
-}
-
-
-void dma_test_exit(void)
-{
-    ret = ppc4xx_get_channel_config( DMA_CHANNEL_NUM, &ppc_dma_channel);
-
-    if( ret != DMA_STATUS_GOOD )
-    {
-       printk("TS2: DMA STATUS  is not good \n");
-    }
-    else
-    {
-       printk("TS2:  DMA STATUS  good \n");
-
-    }
-
-    ret = 0;
-
-    while(ret < 100)
-    {
-
-       printk( "%s: value at virtual addr 0x%p after dma is 0x%X \n", 
-__FUNCTION__,( (unsigned int *)vir_dst_addr + ret ), \
-       *( (unsigned int *)vir_dst_addr + ret)) ;
-
-       ret++;
-    }
-
-   mdelay(100);
-
-   free_pages( (unsigned long)vir_src_addr, 1);
-   free_pages( (unsigned long)vir_dst_addr, 1);
-
-}
-
-module_init(dma_test_init);
-module_exit(dma_test_exit);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-
-
-Thanks and Regards,
-Padmanabha.s
+--0-2000563917-1199799632=:44671
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+there is a strange problem.=0A=0Amy platform is ml410, port linux-2.6.23rc2=
+ vertex kernel to it. the toolchain is generated by crosstool. the cross-gc=
+c is powerpc-405-linux-gnu-gcc 4.0.2.when i complete the kernel compiling a=
+nd download it to the board to run, there are a few questions.=0A=0Aat firs=
+t, i can't see anything output after "Now booting the kernel". through debu=
+gging i found that init_IRQ() function in init/main.c can't run to the end.=
+ so i cut it and rerun the kernel. it runs so long until the rootfs is moun=
+ted. the problem occurs in executing /linuxrc. it says "init has generated =
+signal 4 but has no handler for it". the reason, i've known, is that i disa=
+bled the init_IRQ() function. then i get down to search for the wrong point=
+.=0A=0Athe init_IRQ() called in init/main.c is defined in arch/powerpc/kern=
+el/irq.c. init_IRQ() calls ppc_md.init_IRQ(). ppc_md is a variable of "stru=
+ct machdep_calls". the ppc_md.init_IRQ is evaluated in arch/ppc/syslib/ppc4=
+xx_setup.c. the statement is ppc_md.init_IRQ =3D ppc4xx_init_IRQ. and the p=
+pc4xx_init_IRQ() calls ppc4xx_pic_init() defined in arch/ppc/syslib/xilinx_=
+pic.c.=0A=0Atracing into ppc4xx_pic_init() function, i located the problem =
+at "intc_out_be32(intc + IER, 0)". "intc_out_be32" is a macro as the real f=
+orm "out_be32((addr), (mask))". the out_be32() is a function defined in inc=
+lude/asm-ppc/io.h.=0A=0Aextern inline void out_be32(volatile unsigned __iom=
+em *addr, int val)=0A{=0A        __asm__ __volatile__("sync; stw%U0%X0 %1,%=
+0" : "=3Dm" (*addr) : "r" (val));=0A}=0A=0Ai replace "intc_out_be32(intc + =
+IER, 0)" with the assemble statements and rerun, nothing changes.=0A=0AXPS'=
+s debugger points out that the kernel stop in _delay() function. but there =
+is not any call to this function. only the 2 assemble statements are there.=
+=0A=0Adividing the "sync" and "stw" into 2 __asm__ ones, "sync" is passed b=
+ut "stw" makes a strange _delay() calling.=0A=0Aso strange it is, who can h=
+elp me?=0A=0Athanks.=0A=0A=0A=0A=0A      __________________________________=
+_________________________ =0A=E9=9B=85=E8=99=8E=E9=82=AE=E7=AE=B1=E4=BC=A0=
+=E9=80=92=E6=96=B0=E5=B9=B4=E7=A5=9D=E7=A6=8F=EF=BC=8C=E4=B8=AA=E6=80=A7=E8=
+=B4=BA=E5=8D=A1=E9=80=81=E4=BA=B2=E6=9C=8B=EF=BC=81 =0Ahttp://cn.mail.yahoo=
+.com/gc/index.html?entry=3D5&souce=3Dmail_mailletter_tagline
+--0-2000563917-1199799632=:44671
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
+font-size:12pt"><div>there is a strange problem.<br><br>my platform is ml41=
+0, port linux-2.6.23rc2 vertex kernel to it. the toolchain is generated by =
+crosstool. the cross-gcc is powerpc-405-linux-gnu-gcc 4.0.2.when i complete=
+ the kernel compiling and download it to the board to run, there are a few =
+questions.<br><br>at first, i can't see anything output after "Now booting =
+the kernel". through debugging i found that init_IRQ() function in init/mai=
+n.c can't run to the end. so i cut it and rerun the kernel. it runs so long=
+ until the rootfs is mounted. the problem occurs in executing /linuxrc. it =
+says "init has generated signal 4 but has no handler for it". the reason, i=
+'ve known, is that i disabled the init_IRQ() function. then i get down to s=
+earch for the wrong point.<br><br>the init_IRQ() called in init/main.c
+ is defined in arch/powerpc/kernel/irq.c. init_IRQ() calls ppc_md.init_IRQ(=
+). ppc_md is a variable of "struct machdep_calls". the ppc_md.init_IRQ is e=
+valuated in arch/ppc/syslib/ppc4xx_setup.c. the statement is ppc_md.init_IR=
+Q =3D ppc4xx_init_IRQ. and the ppc4xx_init_IRQ() calls ppc4xx_pic_init() de=
+fined in arch/ppc/syslib/xilinx_pic.c.<br><br>tracing into ppc4xx_pic_init(=
+) function, i located the problem at "intc_out_be32(intc + IER, 0)". "intc_=
+out_be32" is a macro as the real form "out_be32((addr), (mask))". the out_b=
+e32() is a function defined in include/asm-ppc/io.h.<br><br>extern inline v=
+oid out_be32(volatile unsigned __iomem *addr, int val)<br>{<br>&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __asm__ __volatile__("sync; stw%U0%X0 %1,%0"=
+ : "=3Dm" (*addr) : "r" (val));<br>}<br><br>i replace "intc_out_be32(intc +=
+ IER, 0)" with the assemble statements and rerun, nothing changes.<br><br>X=
+PS's debugger points out that the kernel stop in _delay() function. but
+ there is not any call to this function. only the 2 assemble statements are=
+ there.<br><br>dividing the "sync" and "stw" into 2 __asm__ ones, "sync" is=
+ passed but "stw" makes a strange _delay() calling.<br><br>so strange it is=
+, who can help me?<br><br>thanks.<br></div></div><br>=0A=0A=0A      <hr siz=
+e=3D1><a href=3D"http://cn.mail.yahoo.com/gc/index.html?entry=3D5&souce=3Dm=
+ail_mailletter_tagline">=E9=9B=85=E8=99=8E=E9=82=AE=E7=AE=B1=E4=BC=A0=E9=80=
+=92=E6=96=B0=E5=B9=B4=E7=A5=9D=E7=A6=8F=EF=BC=8C=E4=B8=AA=E6=80=A7=E8=B4=BA=
+=E5=8D=A1=E9=80=81=E4=BA=B2=E6=9C=8B=EF=BC=81</a> </body></html>
+--0-2000563917-1199799632=:44671--
