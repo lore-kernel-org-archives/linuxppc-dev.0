@@ -1,20 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0E00DDEEE
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 09:11:48 +1100 (EST)
-Date: Tue, 8 Jan 2008 16:11:39 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 1/3 v2] Add StorCenter DTS first draft.
-Message-ID: <20080108221139.GA5599@loki.buserror.net>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2A2A3DE07A
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 09:13:46 +1100 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3 v2] Add StorCenter DTS first draft. 
+In-Reply-To: Your message of "Tue, 08 Jan 2008 16:11:39 CST."
+	<20080108221139.GA5599@loki.buserror.net>
 References: <E1JCMb2-0002mG-LK@jdl.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1JCMb2-0002mG-LK@jdl.com>
+	<20080108221139.GA5599@loki.buserror.net>
+Date: Tue, 08 Jan 2008 16:13:42 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JCMha-0002qu-9L@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,19 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 08, 2008 at 04:06:56PM -0600, Jon Loeliger wrote:
-> +/ {
-> +	model = "StorCenter";
-> +	compatible = "storcenter";
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +        aliases {
-> +                serial0 = &serial0;
-> +                serial1 = &serial1;
-> +                pci0 = &pci0;
-> +        };
+So, like, the other day Scott Wood mumbled:
+> On Tue, Jan 08, 2008 at 04:06:56PM -0600, Jon Loeliger wrote:
+> > +/ {
+> > +	model = "StorCenter";
+> > +	compatible = "storcenter";
+> > +	#address-cells = <1>;
+> > +	#size-cells = <1>;
+> > +
+> > +        aliases {
+> > +                serial0 = &serial0;
+> > +                serial1 = &serial1;
+> > +                pci0 = &pci0;
+> > +        };
+> 
+> These should be tabs, not spaces.  Likewise in some other parts of the file.
+> 
+> -Scott
 
-These should be tabs, not spaces.  Likewise in some other parts of the file.
+Shoot me now.
 
--Scott
+jdl
