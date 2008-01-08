@@ -1,32 +1,22 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2CF2BDDF61
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 09:56:50 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m08Mul1r018554
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 17:56:47 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m08MulLB387836
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 17:56:47 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m08MulTu024477
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 17:56:47 -0500
-Message-ID: <4783FFAD.2090105@austin.ibm.com>
-Date: Tue, 08 Jan 2008 16:56:45 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 7/8] pseries: phyp dump: Unregister and print dump areas.
-References: <4782B985.2090508@austin.ibm.com>	<4782C5CB.4080802@austin.ibm.com>
-	<20080108152554.eb06f84a.sfr@canb.auug.org.au>
-In-Reply-To: <20080108152554.eb06f84a.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	lkessler@us.ibm.com, strosake@us.ibm.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A5DEDDDF2C
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 10:29:25 +1100 (EST)
+Date: Wed, 9 Jan 2008 10:29:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] Use <linux/of_{platform, device}.h> and not <asm/...>
+	variants.
+Message-Id: <20080109102912.16215a01.sfr@canb.auug.org.au>
+In-Reply-To: <E1JCF5S-00043W-0U@jdl.com>
+References: <E1JBwNX-0006XF-26@jdl.com>
+	<20080108113637.5208a0c7.sfr@canb.auug.org.au>
+	<E1JCF5S-00043W-0U@jdl.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,48 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen,
+--Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> +	/* Add addr value if not initialized before */
->> +	if (ph->cpu_data.destination_address == 0) {
->> +		ph->cpu_data.destination_address += addr;
-> 
-> Could be just '=' like further down, right?
+On Tue, 08 Jan 2008 08:05:49 -0600 Jon Loeliger <jdl@jdl.com> wrote:
+>
+> By $DIETY, I'll obtain Janitorial Karma one way or another!
 
-Actually the one below should be += as well. Thanks for catching it.
+:-)
 
->> +	/* total reserved size - start of scratch area */
->> +	second_addr_range = phdr.cpu_data.destination_address -
->> +				phyp_dump_info->init_reserve_size;
->> +	return sprintf(buf, "CPU:0x%lx-0x%lx: HPTE:0x%lx-0x%lx:"
->> +			    " DUMP:0x%lx-0x%lx, 0x%lx-0x%lx:\n",
->> +	  phdr.cpu_data.destination_address, phdr.cpu_data.length_copied,
->> +	  phdr.hpte_data.destination_address, phdr.hpte_data.length_copied,
->> +	  phdr.kernel_data.destination_address, phdr.kernel_data.length_copied,
->> +	  phyp_dump_info->init_reserve_start, second_addr_range);
-> 
-> This indentation should be (probably) two tabs.
+> The question now is, what next?  I'm thinking about
+> picking on arch/sparc/, then drivers/ and sound/,
+> and finally pick off /include.
 
-I kept it one with a few spaces as otherwise it was exceeding 80, I guess, I can just have one per line
-and that should take care of that.
+arch/sparc{,64} should be easy if you have a cross compiler (though it
+should work, Dave gets cranky if you break his tree :-))  Dave should just
+take the patches if you do test compile them.  Tell him I sent you :-)
 
-> 
->> +	/* re-register the dump area, if old dump was invalid */
->> +	if ((dump_header) && (dump_header->status & DUMP_ERROR_FLAG)) {
->             ^           ^
-> Extra parentheses.
+> To be honest, I'm not sure what the final /include
+> structure is supposed to look like or do as both
+> pairs of these files mutually include their counterpart.
+> (i/l/of_d.h includes i/a/of_d.h which includes i/l/of_d.h)
+> (i/l/of_p.h includes i/a/of_p.h which includes i/l/of_p.h)
 
-Just for clarity.. I would prefer that, if thats okay.
+The intention is that everyone only includes linux/of*.h (except for
+linux/of*.h of course) at which point we should be able to remove the
+includes of linux/of*.h from asm*/of*.h.
 
-> 
->> +		invalidate_last_dump (&phdr, dump_area_start);
->> +		register_dump_area (&phdr, dump_area_start);
-> 
-> No spaces after function names.
-> 
+> But, of course, the various asm/of_{platform,device}.h files
+> are different for each arch/, so I wasn't sure if the longer
+> term plan had folding the arch variants straight into the
+> include/linux/ version of the file or not.  Seems there will
+> come a point when the sparc and powerpc variants will need
+> to be more unified...
 
+Some more unification should be possible over time, but that is much
+harder.
 
-Yeah, will take that out from here and other files as well.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks,
-Manish
+--Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHhAdOTgG2atn1QN8RAlY0AJ9SvmGCL1TO+w5KIv9aftnmK0RbOQCbBhz9
+kIiV+AP+Z+zN1d2QbwzywfI=
+=JI3G
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC--
