@@ -1,14 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <E031E6FD-8A6F-49D5-9241-33B6ADEECCF7@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B24B7DDE0D
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 17:15:06 +1100 (EST)
+Message-Id: <1315E111-6C49-4FB4-A4AA-806812A7CCFF@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <20080108052743.GA18083@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+In-Reply-To: <1199745618755-git-send-email-paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH/RFC] mpc83xx/85xx SysRQ/brk over 8250 console
-Date: Tue, 8 Jan 2008 00:11:19 -0600
-References: <20080108052743.GA18083@windriver.com>
-Cc: Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] sbc85xx: remove PCI exclude device for sbc8548/sbc8560
+Date: Tue, 8 Jan 2008 00:15:00 -0600
+References: <E22DFF32-E85B-4A58-89D4-E447BEB8BA28@kernel.crashing.org>
+	<1199745618755-git-send-email-paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +25,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 7, 2008, at 11:27 PM, Paul Gortmaker wrote:
+On Jan 7, 2008, at 4:40 PM, Paul Gortmaker wrote:
 
-> It seems that if a break is rec'd on the serial console (as per SysRQ
-> or similar) on some 83xx and 85xx processors, then a pulse of IRQs is
-> generated which makes the use of SysRQ itself about 99% impossible.  I
-> experimented with trying several ACK strategies, but in the end the
-> thing which worked best was just to wait for the surge of events to  
-> pass
-> (a fraction of a second).  The number of events can be on the order of
-> 1000 (as reported by /proc/interrupts)
+> The PCI exclude device for the sbc85xx boards was only filtering out
+> the PHB and nothing else.  This functionality is no longer required
+> at a board specific level -- it is handled as a more global quirk now.
 >
-> I really dislike seeing board specific ifdefs within what should be
-> board independent code, so I'm hoping that once the problem is known,
-> that a more elegant solution will pop into someone's head.  Or at  
-> least
-> this will hopefully save someone the grief of re-investigating the  
-> source
-> and start a discussion.
->
-> I've seen this on two different 834x boards and also an 8548 based
-> board.  At this point, it is not clear to me if the problem extends
-> beyond these CPU/soc to all with UARTs at 4500/4600.
->
-> While less than ideal, the work-around below which simply ignores the
-> events does allow a person to use SysRQ on such platforms.
->
-> The definition of the RFE bit (Rx FIFO error) can be found in pretty
-> much any of the MPC CPU PDFs (for those with 4500/4600 16550s).
->
-> Paul.
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-This should really get posted to linux-kernel@vger.kernel.org and  
-probably linux-serial@vger.kernel.org lists.
+Can you respin the full patch set with the update .dts to v1.
 
 - k
