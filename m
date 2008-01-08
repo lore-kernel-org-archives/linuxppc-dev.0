@@ -1,19 +1,14 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA790DDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 17:04:42 +1100 (EST)
-Message-Id: <86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
+Message-Id: <E031E6FD-8A6F-49D5-9241-33B6ADEECCF7@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-In-Reply-To: <4782DAD8.1080104@pikatech.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+In-Reply-To: <20080108052743.GA18083@windriver.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: How complete should the DTS be?
-Date: Tue, 8 Jan 2008 00:04:36 -0600
-References: <4782DAD8.1080104@pikatech.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH/RFC] mpc83xx/85xx SysRQ/brk over 8250 console
+Date: Tue, 8 Jan 2008 00:11:19 -0600
+References: <20080108052743.GA18083@windriver.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +19,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 7, 2008, at 8:07 PM, Sean MacLennan wrote:
+On Jan 7, 2008, at 11:27 PM, Paul Gortmaker wrote:
 
-> Just a general question about DTS "completeness". Like all 440EP
-> processors, the taco has two i2c buses. However, only one bus has
-> anything connected to it.
+> It seems that if a break is rec'd on the serial console (as per SysRQ
+> or similar) on some 83xx and 85xx processors, then a pulse of IRQs is
+> generated which makes the use of SysRQ itself about 99% impossible.  I
+> experimented with trying several ACK strategies, but in the end the
+> thing which worked best was just to wait for the surge of events to  
+> pass
+> (a fraction of a second).  The number of events can be on the order of
+> 1000 (as reported by /proc/interrupts)
 >
-> Should I show both bus entries in the DTS, or only the one that is  
-> used?
-> I have generally only been showing the devices that are present. i.e.
-> Only one emac, only one serial port.
+> I really dislike seeing board specific ifdefs within what should be
+> board independent code, so I'm hoping that once the problem is known,
+> that a more elegant solution will pop into someone's head.  Or at  
+> least
+> this will hopefully save someone the grief of re-investigating the  
+> source
+> and start a discussion.
 >
-> Is there a convention for this?
+> I've seen this on two different 834x boards and also an 8548 based
+> board.  At this point, it is not clear to me if the problem extends
+> beyond these CPU/soc to all with UARTs at 4500/4600.
+>
+> While less than ideal, the work-around below which simply ignores the
+> events does allow a person to use SysRQ on such platforms.
+>
+> The definition of the RFE bit (Rx FIFO error) can be found in pretty
+> much any of the MPC CPU PDFs (for those with 4500/4600 16550s).
+>
+> Paul.
 
-
-The .dts should reflect the HW as its used.  On some reference boards  
-we might put out more info because of the various configs these types  
-of boards can be setup in.  However if something has a static config  
-just describe that.  So in your example of two i2c buses with only one  
-connected, just describe the one that is used.
+This should really get posted to linux-kernel@vger.kernel.org and  
+probably linux-serial@vger.kernel.org lists.
 
 - k
