@@ -1,20 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F1BACDDEBF
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 14:18:38 +1100 (EST)
-Date: Tue, 8 Jan 2008 14:18:27 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 2/8] pseries: phyp dump: config file
-Message-Id: <20080108141827.403bc8cc.sfr@canb.auug.org.au>
-In-Reply-To: <4782C0C8.2050702@austin.ibm.com>
-References: <4782B985.2090508@austin.ibm.com> <4782C0C8.2050702@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__8_Jan_2008_14_18_27_+1100_61NaMp2EcUEwNZIm"
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	lkessler@us.ibm.com, strosake@us.ibm.com
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B19DDDDEA0
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 14:32:59 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	m083Wg5f021271
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 20:32:43 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m083WfhN022436
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 21:32:42 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 3/3] USB device tree cleanups
+Date: Tue, 8 Jan 2008 11:32:39 +0800
+Message-ID: <989B956029373F45A0B8AF029708189001BA007C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20080108101028.db21d18a.sfr@canb.auug.org.au>
+References: <1199707400-23588-1-git-send-email-leoli@freescale.com><1199707400-23588-2-git-send-email-leoli@freescale.com><1199707400-23588-3-git-send-email-leoli@freescale.com>
+	<20080108101028.db21d18a.sfr@canb.auug.org.au>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__8_Jan_2008_14_18_27_+1100_61NaMp2EcUEwNZIm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 07 Jan 2008 18:16:08 -0600 Manish Ahuja <ahuja@austin.ibm.com> wrot=
-e:
->
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of Stephen Rothwell
+> Sent: Tuesday, January 08, 2008 7:10 AM
+> To: Li Yang
+> Cc: linuxppc-dev@ozlabs.org; paulus@samba.org
+> Subject: Re: [PATCH 3/3] USB device tree cleanups
 >=20
-> Add hypervisor-assisted dump to kernel config
+> On Mon,  7 Jan 2008 20:03:20 +0800 Li Yang=20
+> <leoli@freescale.com> wrote:
+> >
+> > +++ b/arch/powerpc/sysdev/fsl_soc.c
+> > @@ -533,9 +533,7 @@ static int __init fsl_usb_of_init(void)
+> >  		*usb_dev_dr_client =3D NULL;
+> >  	int ret;
+> > =20
+> > -	for (np =3D NULL, i =3D 0;
+> > -	     (np =3D of_find_compatible_node(np, "usb",=20
+> "fsl-usb2-mph")) !=3D NULL;
+> > -	     i++) {
+> > +	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
 >=20
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> 'i' is no longer being updated (or indeed set to anything)=20
+> but is still used in the loop - at least in Paulus' current tree).
 
-This patch should probably come last in the series so that all the code
-is there before some bisecting autobuilder tries to configure it.
+Good catch. My careless mistake.  Thanks.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__8_Jan_2008_14_18_27_+1100_61NaMp2EcUEwNZIm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHguuITgG2atn1QN8RAj9lAKCAWhiDWj/e9og+DO3hVjTT9wKSVwCfUBLU
-hrMRln7KmrHEATjPckGFt+c=
-=c3Pd
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Jan_2008_14_18_27_+1100_61NaMp2EcUEwNZIm--
+- Leo
