@@ -1,21 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B6123DDF2F
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 12:04:20 +1100 (EST)
-Date: Tue, 8 Jan 2008 12:04:09 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC 1/2] mpc5200: Add common clock setting routine
-	mpc52xx_set_psc_clkdiv()
-Message-Id: <20080108120409.9b8acf75.sfr@canb.auug.org.au>
-In-Reply-To: <20080107190335.13535.29837.stgit@trillian.secretlab.ca>
-References: <20080107185849.13535.38262.stgit@trillian.secretlab.ca>
-	<20080107190335.13535.29837.stgit@trillian.secretlab.ca>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/8] pseries: phyp dump: reserve-release proof-of-concept
+From: Michael Ellerman <michael@ellerman.id.au>
+To: linasvepstas@gmail.com
+In-Reply-To: <3ae3aa420801071649w6a8d3939y176dc389d68f4870@mail.gmail.com>
+References: <4782C1A8.3050804@austin.ibm.com>
+	<200801080126.51897.arnd@arndb.de>
+	<3ae3aa420801071649w6a8d3939y176dc389d68f4870@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-OIEinUS2DnDlgGN4/O+n"
+Date: Tue, 08 Jan 2008 12:13:57 +1100
+Message-Id: <1199754837.7518.71.camel@concordia>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__8_Jan_2008_12_04_09_+1100_PssUl06bROkud=l_"
-Cc: linuxppc-dev@ozlabs.org, dragos.carp@toptica.com
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
+	strosake@us.ibm.com, Arnd Bergmann <arnd@arndb.de>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,66 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__8_Jan_2008_12_04_09_+1100_PssUl06bROkud=l_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-OIEinUS2DnDlgGN4/O+n
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 07 Jan 2008 12:03:59 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> =20
-> -static struct of_device_id __init mpc52xx_ids[] =3D {
+On Mon, 2008-01-07 at 18:49 -0600, Linas Vepstas wrote:
+> On 07/01/2008, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Tuesday 08 January 2008, Manish Ahuja wrote:
+> >
+> > > Initial patch for reserving memory in early boot, and freeing it late=
+r.
+> > > If the previous boot had ended with a crash, the reserved memory woul=
+d contain
+> > > a copy of the crashed kernel data.
+> > >
+> > > Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+> > > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> >
+> > I think the signed-off-by chain needs to be modified. The way it appear=
+s,
+> > you handled the patch first, then sent it to Linas, who forwarded it
+> > to whoever will take the patches from the list.
 
-Why not just leave this here and mark in __initdata?
+> > This obviously isn't true, since you are actually the one who is sendin=
+g
+> > out the patches. Moreover, I believe that the linas@austin.ibm.com
+> > address is now dead, and shouldn't be used for this any more.
+>=20
+> Hmm. I wanted to indicate that the work was done while I was at IBM;
+> clearly, no one is going through git and changing old, expired email
+> addrs, and so submission based on the old addr seemed appropriate.
+>=20
+> I'm taking the Signed-off-by line as a quasi-legal thing: a fancy ID stri=
+ng,
+> identifying the author(s),  rather than a new way to manage email
+> address books.
 
-> +/**
-> + * mpc52xx_declare_of_platform_devices: register internal devices and ch=
-ildren
-> + *					of the localplus bus to the of_platform
-> + *					bus.
-> + */
->  void __init
->  mpc52xx_declare_of_platform_devices(void)
->  {
-> +	const static struct of_device_id mpc52xx_bus_ids[] =3D {
+No one's changing the git history (you can't), but it seems silly to
+submit a patch with an address that is already dead. There is a general
+expectation that if/when someone finds a bug in the code they can email
+the signed-off-by addresses and get a real person.
 
-Or just mark it __initdata instead of const?
+As far as indicating it was written at IBM, that should be covered by
+the copyright notices.
 
-> +		{ .compatible =3D "fsl,mpc5200-immr", },
-> +		{ .compatible =3D "fsl,lpb", },
-> +		{ .type =3D "builtin", .compatible =3D "mpc5200", }, /* efika */
-> +		{ .type =3D "soc", .compatible =3D "mpc5200", }, /* old */
-
-And you lost the comment about the last two being deprecated mates.
-
-> +mpc52xx_map_common_devices(void)
->  {
->  	struct device_node *np;
-> -	struct of_device_id gpt_ids[] =3D {
-> +	const static struct of_device_id gpt_ids[] =3D {
-
-Again __initdata?
-
-> +	const static struct of_device_id cdm_ids[] =3D {
-
-And again?
+cheers
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---Signature=_Tue__8_Jan_2008_12_04_09_+1100_PssUl06bROkud=l_
-Content-Type: application/pgp-signature
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-OIEinUS2DnDlgGN4/O+n
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHgswNTgG2atn1QN8RAg69AJwIsHkJu+blaS0HGkRlNqnl79FazQCeNI0U
-cPgi+BGJCn08uQXdvep+dCI=
-=IvuC
+iD8DBQBHgs5VdSjSd0sB4dIRAsqEAJ905lNzFFMKscKdq4OeqOkHvjRZ7QCdHvhU
+4if0hwJ+ZMcrf39BzLnb9AM=
+=QT5w
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__8_Jan_2008_12_04_09_+1100_PssUl06bROkud=l_--
+--=-OIEinUS2DnDlgGN4/O+n--
