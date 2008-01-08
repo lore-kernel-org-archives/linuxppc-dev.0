@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 215C5DDF84
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 02:18:43 +1100 (EST)
-Message-Id: <86DFF89A-5ED9-4C17-8A8F-E79324955213@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <989B956029373F45A0B8AF029708189001BA00F1@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 1/3] add default device trees for MPC837x MDS board
-Date: Tue, 8 Jan 2008 09:18:12 -0600
-References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
-	<FB3D7D27-D06F-4AD2-B4A1-00FBA26251AF@kernel.crashing.org>
-	<989B956029373F45A0B8AF029708189001BA00F1@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F046EDDFB3
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 02:28:20 +1100 (EST)
+Message-ID: <47839623.4090200@freescale.com>
+Date: Tue, 08 Jan 2008 09:26:27 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v6] qe: add ability to upload QE firmware
+References: <11997441442105-git-send-email-timur@freescale.com>
+	<20080108133747.f717e4b4.sfr@canb.auug.org.au>
+In-Reply-To: <20080108133747.f717e4b4.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>
->>
->> Could I convince you to convert these to dts-v1 format?
->
-> Ok, I can do it.  The DTS spec changes too much lately.  :(
+Stephen Rothwell wrote:
 
-Thanks.  I'll merge the two patches into one when I commit.  Its open  
-source development ;)
+> If you use:
+> 	for_each_child_of_node(qe, fw)
+> You don't need to initialise 'fw' in its declararion.
 
-- k
+I can't find for_each_child_of_node.  It's not in Kumar's for-2.6.25 branch.
+
+> Why not:
+> 	const u64 *iprop;
+> 	int len;
+> 
+> 	iprop = of_get_property(fs, "extended-modes", &len);
+
+Ok.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
