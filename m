@@ -1,22 +1,21 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 47484DDF46
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 11:49:28 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1556513anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jan 2008 16:49:28 -0800 (PST)
-Message-ID: <3ae3aa420801071649w6a8d3939y176dc389d68f4870@mail.gmail.com>
-Date: Mon, 7 Jan 2008 18:49:27 -0600
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 3/8] pseries: phyp dump: reserve-release proof-of-concept
-In-Reply-To: <200801080126.51897.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4782C1A8.3050804@austin.ibm.com>
-	<200801080126.51897.arnd@arndb.de>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
-	strosake@us.ibm.com
-Reply-To: linasvepstas@gmail.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 46572DDEFC
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 11:57:14 +1100 (EST)
+Date: Tue, 8 Jan 2008 11:56:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] [POWERPC] Update MPC8610 HPCD to support audio drivers
+Message-Id: <20080108115654.d0ac909b.sfr@canb.auug.org.au>
+In-Reply-To: <1199732204578-git-send-email-timur@freescale.com>
+References: <1199732204949-git-send-email-timur@freescale.com>
+	<1199732204578-git-send-email-timur@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__8_Jan_2008_11_56_54_+1100_heGnggeRpHB3xyv5"
+Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 07/01/2008, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tuesday 08 January 2008, Manish Ahuja wrote:
+--Signature=_Tue__8_Jan_2008_11_56_54_+1100_heGnggeRpHB3xyv5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Timur,
+
+On Mon,  7 Jan 2008 12:56:43 -0600 Timur Tabi <timur@freescale.com> wrote:
 >
-> > Initial patch for reserving memory in early boot, and freeing it later.
-> > If the previous boot had ended with a crash, the reserved memory would contain
-> > a copy of the crashed kernel data.
-> >
-> > Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
-> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
->
-> I think the signed-off-by chain needs to be modified. The way it appears,
-> you handled the patch first, then sent it to Linas, who forwarded it
-> to whoever will take the patches from the list.
+> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> @@ -34,9 +34,27 @@
+> =20
+>  #include <asm/mpic.h>
+> =20
+> +#include <linux/of_platform.h>
+>  #include <sysdev/fsl_pci.h>
+>  #include <sysdev/fsl_soc.h>
+> =20
+> +static struct of_device_id mpc8610_ids[] =3D {
 
-Well,
--- there was dual authorship. I remangled the patches while Manish wrote
-code & tested. And I'd mailed them out the first time around, so you could
-say I forwarded after heavy editing.
+__initdata
 
+> +	{ .compatible =3D "fsl,mpc8610", },
+> +	{}
+> +};
+> +
+> +static int __init mpc8610_declare_of_platform_devices(void)
+> +{
+> +	if (!machine_is(mpc86xx_hpcd))
+> +		return 0;
+> +
+> +	/* Without this call, the SSI device driver won't get probed. */
+> +	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(mpc8610_declare_of_platform_devices);
 
-> This obviously isn't true, since you are actually the one who is sending
-> out the patches. Moreover, I believe that the linas@austin.ibm.com
-> address is now dead, and shouldn't be used for this any more.
+We have machine_device_initcall for this now.
 
-Hmm. I wanted to indicate that the work was done while I was at IBM;
-clearly, no one is going through git and changing old, expired email
-addrs, and so submission based on the old addr seemed appropriate.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'm taking the Signed-off-by line as a quasi-legal thing: a fancy ID string,
-identifying the author(s),  rather than a new way to manage email
-address books.
+--Signature=_Tue__8_Jan_2008_11_56_54_+1100_heGnggeRpHB3xyv5
+Content-Type: application/pgp-signature
 
-> So, depending on which of you two wrote the majority of a patch, I think
-> it should be either
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-I'm not sure there was a clear majority. I think Manish did more work
-in general, but we hacked this together side by side. I got him to create
-working tested code; I busted it up into individual, clean, documented,
-mailing-list ready chunks.
+iD8DBQFHgspiTgG2atn1QN8RAmsHAJ9D1TDq1jyQQQuMJ9nM/pYYWAZxaQCfdEeZ
+m1WSdEY6ixVcax7dV6nQczw=
+=xiB3
+-----END PGP SIGNATURE-----
 
---linas
+--Signature=_Tue__8_Jan_2008_11_56_54_+1100_heGnggeRpHB3xyv5--
