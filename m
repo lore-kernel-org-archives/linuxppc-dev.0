@@ -1,22 +1,23 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E678DDDF51
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 04:44:17 +1100 (EST)
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 3/7] Basic Freescale MPC512x support 
-In-Reply-To: Your message of "Tue, 08 Jan 2008 11:40:38 CST."
-	<20080108174038.GA20819@lixom.net>
-References: <1199808093-15929-1-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-2-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-3-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-4-git-send-email-jrigby@freescale.com>
-	<20080108174038.GA20819@lixom.net>
-Date: Tue, 08 Jan 2008 11:44:11 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JCIUl-0008EX-Du@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6E89FDDF2B
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 04:50:38 +1100 (EST)
+Date: Tue, 8 Jan 2008 11:48:09 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 2/4] nand base: Give drivers a chance to do late
+	initialization.
+Message-ID: <20080108174809.GB5188@loki.buserror.net>
+References: <20071213171551.GA4459@loki.buserror.net>
+	<1199779069.4111.379.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1199779069.4111.379.camel@shinybook.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Olof Johansson mumbled:
+On Tue, Jan 08, 2008 at 07:57:49AM +0000, David Woodhouse wrote:
 > 
-> > @@ -0,0 +1,90 @@
-> > +#include <asm/system.h>
-> > +#include <asm/atomic.h>
-> > +#include <asm/machdep.h>
-> > +#include <asm/ipic.h>
-> > +#include <asm/prom.h>
-> > +#include <asm/time.h>
-> > +#include <asm/of_platform.h>
+> On Thu, 2007-12-13 at 11:15 -0600, Scott Wood wrote:
+> > Some nand controllers, such as the Freescale enhanced local bus controller,
+> > need to do late initialization based on details of the chip that has been
+> > probed, such as chip size, large/small pages, etc.  A late_init() callback
+> > method is added to allow this.
 > 
-> Stephen will tell you to include linux/of_platform.h instead. :-)
+> Do you really need this so late? Can't it be done between
+> nand_scan_ident() and nand_scan_tail()? That's why we split nand_scan()
+> into two in the first place...
 
-Yeah, watch me outright NAK it too. :-)
+Yeah, that'd work.  I'll send an updated driver soon.
 
-jdl
+-Scott
