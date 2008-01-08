@@ -1,19 +1,27 @@
-Return-Path: <SRS0=J7kT=R6=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 25259DDF6C
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 06:23:54 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] Miscellaneous for Taco
-Date: Tue, 8 Jan 2008 20:23:11 +0100
-References: <477F13C0.7040006@pikatech.com> <1199566583.7291.63.camel@pasglop>
-	<4783C3E8.3090107@pikatech.com>
-In-Reply-To: <4783C3E8.3090107@pikatech.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2AB10DDF5E
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 06:25:23 +1100 (EST)
+Date: Tue, 8 Jan 2008 13:25:31 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 3/7] Basic Freescale MPC512x support
+Message-ID: <20080108192531.GB5296@loki.buserror.net>
+References: <1199808093-15929-1-git-send-email-jrigby@freescale.com>
+	<1199808093-15929-2-git-send-email-jrigby@freescale.com>
+	<1199808093-15929-3-git-send-email-jrigby@freescale.com>
+	<1199808093-15929-4-git-send-email-jrigby@freescale.com>
+	<fa686aa40801080919y7c426007vd031bb79e8f9a03d@mail.gmail.com>
+	<20080108175513.GC5188@loki.buserror.net>
+	<fa686aa40801080956n20f31a54xe02328a139ac3a3b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801082023.11475.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40801080956n20f31a54xe02328a139ac3a3b@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 08 January 2008, Sean MacLennan wrote:
-> How about just 44x?
->
-> Cheers,
->     Sean
->
-> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-> index 7580aa5..682deae 100644
-> --- a/drivers/usb/Kconfig
-> +++ b/drivers/usb/Kconfig
-> @@ -39,6 +39,7 @@ config USB_ARCH_HAS_OHCI
->         # PPC:
->         default y if STB03xxx
->         default y if PPC_MPC52xx
-> +       default y if 44x
+On Tue, Jan 08, 2008 at 10:56:41AM -0700, Grant Likely wrote:
+> On 1/8/08, Scott Wood <scottwood@freescale.com> wrote:
+> > On Tue, Jan 08, 2008 at 10:19:20AM -0700, Grant Likely wrote:
+> > > > +config MPC5121_ADS
+> > > > +       bool "Freescale MPC5121E ADS"
+> > > > +       select DEFAULT_UIMAGE
+> > > > +       help
+> > > > +         This option enables support for the MPC5121E ADS board.
+> > >
+> > > Make this depend on PPC_MULTIPLATFORM and PPC32
+> >
+> > I don't think PPC_MULTIPLATFORM is appropriate here... it seems to be
+> > OF-specific.
+> 
+> 52xx is multiplatform.
 
-No. Not all 44x have OHCI built in. Currently 440EP, 440EPx and 405EZ have it. 
-But since your patch only touches 440EP, you should just enable OHCI for 
-exactly this platform.
+"multiplatform" and "PPC_MULTIPLATFORM" are not the same.  The config option
+is misnamed.
 
-Best regards,
-Stefan
+> It works well on both OF and non-OF boards.
+
+It may work, but it pulls in code like prom_init.c that is not needed on
+non-OF boards.  It's also quite confusing to have an embedded board's
+checkbox only show up when you say yes to "Generic desktop/server/laptop".
+
+-Scott
