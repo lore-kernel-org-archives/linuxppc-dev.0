@@ -1,23 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B4E9EDDEBA
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 11:32:32 +1100 (EST)
-Date: Tue, 8 Jan 2008 11:32:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH 3/7] sbc8560: add support for Wind River SBC8560 in
-	arch/powerpc
-Message-Id: <20080108113219.860ac365.sfr@canb.auug.org.au>
-In-Reply-To: <11997159352727-git-send-email-paul.gortmaker@windriver.com>
-References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
-	<11997159331132-git-send-email-paul.gortmaker@windriver.com>
-	<11997159342128-git-send-email-paul.gortmaker@windriver.com>
-	<11997159352727-git-send-email-paul.gortmaker@windriver.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__8_Jan_2008_11_32_19_+1100_w.R6p1Dz.Qs=bc4n"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 83D50DDEBF
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 11:35:13 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m080ZAvw009728
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 19:35:10 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m080ZAXQ499098
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 19:35:10 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m080ZA4k003175
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2008 19:35:10 -0500
+Message-ID: <4782C53D.4060506@austin.ibm.com>
+Date: Mon, 07 Jan 2008 18:35:09 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 6/8] pseries: phyp dump: debugging print routines.
+References: <4782B985.2090508@austin.ibm.com>
+In-Reply-To: <4782B985.2090508@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
+	strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,68 +35,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__8_Jan_2008_11_32_19_+1100_w.R6p1Dz.Qs=bc4n
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Paul,
 
-On Mon,  7 Jan 2008 09:25:28 -0500 Paul Gortmaker <paul.gortmaker@windriver=
-.com> wrote:
->
-> +++ b/arch/powerpc/platforms/85xx/sbc8560.c
->
-> +static void __init sbc8560_pic_init(void)
-> +{
->
-> +#ifdef CONFIG_CPM2
-> +	/* Setup CPM2 PIC */
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,cpm2-pic");
-> +	if (np =3D=3D NULL) {
-> +		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
-> +		return;
-> +	}
-> +	irq =3D irq_of_parse_and_map(np, 0);
+Provide some basic debugging support.
 
-What happens if that fails?
+Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+Signed-off-by: Linas Vepsts <linas@austin.ibm.com>
+-----
 
-> +
-> +	cpm2_pic_init(np);
-> +	of_node_put(np);
-> +	set_irq_chained_handler(irq, cpm2_cascade);
+ arch/powerpc/platforms/pseries/phyp_dump.c |   53 ++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
-Does passing NO_IRQ matter here (in the case that irq_of_parse_and_map fail=
-s)?
-
-> +static const struct cpm_pin sbc8560_pins[] =3D {
-
-Of course, these could be __initdata (but not const as well).  Sorry
-about not mentioning this last time and it is a trivial change that
-should not stop this stuff going in.
-
-> +static int __init sbc8560_probe(void)
-> +{
-> +        unsigned long root =3D of_get_flat_dt_root();
-> +
-> +        return of_flat_dt_is_compatible(root, "SBC8560");
-
-To use the flattened device tree accessors, you should include asm/prom.h
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__8_Jan_2008_11_32_19_+1100_w.R6p1Dz.Qs=bc4n
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHgsSaTgG2atn1QN8RApS7AJ0Vr0YSH14tftrFTCvwC0sriLR2RQCdGYu7
-3uXm8JwOE9bcBH6fmLVrx0U=
-=x9v/
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Jan_2008_11_32_19_+1100_w.R6p1Dz.Qs=bc4n--
+Index: 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c
+===================================================================
+--- 2.6.24-rc5.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-01-01 23:24:10.000000000 -0600
++++ 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c	2008-01-01 23:24:27.000000000 -0600
+@@ -2,7 +2,7 @@
+  * Hypervisor-assisted dump
+  *
+  * Linas Vepstas, Manish Ahuja 2007
+- * Copyrhgit (c) 2007 IBM Corp.
++ * Copyright (c) 2007 IBM Corp.
+  *
+  *      This program is free software; you can redistribute it and/or
+  *      modify it under the terms of the GNU General Public License
+@@ -139,6 +139,51 @@ static unsigned long init_dump_header(st
+ 	return addr_offset;
+ }
+ 
++#ifdef DEBUG
++static void print_dump_header(const struct phyp_dump_header *ph)
++{
++	printk(KERN_INFO "dump header:\n");
++	/* setup some ph->sections required */
++	printk(KERN_INFO "version = %d\n", ph->version);
++	printk(KERN_INFO "Sections = %d\n", ph->num_of_sections);
++	printk(KERN_INFO "Status = 0x%x\n", ph->status);
++
++	/* No ph->disk, so all should be set to 0 */
++	printk(KERN_INFO "Offset to first section 0x%x\n", ph->first_offset_section);
++	printk(KERN_INFO "dump disk sections should be zero\n");
++	printk(KERN_INFO "dump disk section = %d\n",ph->dump_disk_section);
++	printk(KERN_INFO "block num = %ld\n",ph->block_num_dd);
++	printk(KERN_INFO "number of blocks = %ld\n",ph->num_of_blocks_dd);
++	printk(KERN_INFO "dump disk offset = %d\n",ph->offset_dd);
++	printk(KERN_INFO "Max auto time= %d\n",ph->maxtime_to_auto);
++
++	/*set cpu state and hpte states as well scratch pad area */
++	printk(KERN_INFO " CPU AREA \n");
++	printk(KERN_INFO "cpu dump_flags =%d\n",ph->cpu_data.dump_flags);
++	printk(KERN_INFO "cpu source_type =%d\n",ph->cpu_data.source_type);
++	printk(KERN_INFO "cpu error_flags =%d\n",ph->cpu_data.error_flags);
++	printk(KERN_INFO "cpu source_address =%lx\n",ph->cpu_data.source_address);
++	printk(KERN_INFO "cpu source_length =%lx\n",ph->cpu_data.source_length);
++	printk(KERN_INFO "cpu length_copied =%lx\n",ph->cpu_data.length_copied);
++
++	printk(KERN_INFO " HPTE AREA \n");
++	printk(KERN_INFO "HPTE dump_flags =%d\n",ph->hpte_data.dump_flags);
++	printk(KERN_INFO "HPTE source_type =%d\n",ph->hpte_data.source_type);
++	printk(KERN_INFO "HPTE error_flags =%d\n",ph->hpte_data.error_flags);
++	printk(KERN_INFO "HPTE source_address =%lx\n",ph->hpte_data.source_address);
++	printk(KERN_INFO "HPTE source_length =%lx\n",ph->hpte_data.source_length);
++	printk(KERN_INFO "HPTE length_copied =%lx\n",ph->hpte_data.length_copied);
++
++	printk(KERN_INFO " SRSD AREA \n");
++	printk(KERN_INFO "SRSD dump_flags =%d\n",ph->kernel_data.dump_flags);
++	printk(KERN_INFO "SRSD source_type =%d\n",ph->kernel_data.source_type);
++	printk(KERN_INFO "SRSD error_flags =%d\n",ph->kernel_data.error_flags);
++	printk(KERN_INFO "SRSD source_address =%lx\n",ph->kernel_data.source_address);
++	printk(KERN_INFO "SRSD source_length =%lx\n",ph->kernel_data.source_length);
++	printk(KERN_INFO "SRSD length_copied =%lx\n",ph->kernel_data.length_copied);
++}
++#endif
++
+ static void register_dump_area(struct phyp_dump_header *ph, unsigned long addr)
+ {
+ 	int rc;
+@@ -154,6 +199,9 @@ static void register_dump_area(struct ph
+ 	if (rc)
+ 	{
+ 		printk (KERN_ERR "phyp-dump: unexpected error (%d) on register\n", rc);
++#ifdef DEBUG
++		print_dump_header (ph);
++#endif
+ 	}
+ }
+ 
+@@ -271,6 +319,9 @@ static int __init phyp_dump_setup(void)
+ 		release_all();
+ 		return -ENOSYS;
+ 	}
++#ifdef DEBUG
++	print_dump_header (dump_header);
++#endif
+ 
+ 	/* Is there dump data waiting for us? If there isn't,
+ 	 * then register a new dump area, and release all of
