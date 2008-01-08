@@ -1,13 +1,13 @@
 Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F046EDDFB3
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 02:28:20 +1100 (EST)
-Message-ID: <47839623.4090200@freescale.com>
-Date: Tue, 08 Jan 2008 09:26:27 -0600
+	by ozlabs.org (Postfix) with ESMTP id 37AE0DDFCA
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 02:29:33 +1100 (EST)
+Message-ID: <478396D1.2020806@freescale.com>
+Date: Tue, 08 Jan 2008 09:29:21 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Stephen Rothwell <sfr@canb.auug.org.au>
@@ -28,19 +28,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Stephen Rothwell wrote:
 
-> If you use:
-> 	for_each_child_of_node(qe, fw)
-> You don't need to initialise 'fw' in its declararion.
-
-I can't find for_each_child_of_node.  It's not in Kumar's for-2.6.25 branch.
-
 > Why not:
 > 	const u64 *iprop;
 > 	int len;
 > 
 > 	iprop = of_get_property(fs, "extended-modes", &len);
+> 	if (iprop && (len == sizeof(u64))
+> 		qe_firmware_info.extended_modes = *iprop;
 
-Ok.
+Actually, I like my way better, because then I don't have to define 'len', and I 
+don't have to define two integer property variables one for u32 and one for u64. 
+  Besides, now that I'm at version 6, I'd rather not post updates for minor 
+stylistic changes.
 
 -- 
 Timur Tabi
