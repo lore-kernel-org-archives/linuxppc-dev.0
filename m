@@ -1,23 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5856CDDE3E
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 15:52:52 +1100 (EST)
-Date: Tue, 8 Jan 2008 15:52:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] i2c-ibm_iic driver - new patch
-Message-Id: <20080108155240.503ca3ab.sfr@canb.auug.org.au>
-In-Reply-To: <4782D9E0.4070600@pikatech.com>
-References: <477EF225.4070505@pikatech.com> <200801051354.11202.arnd@arndb.de>
-	<477FCE21.9080808@pikatech.com> <200801052018.22954.arnd@arndb.de>
-	<20080106001238.GI4326@localhost.localdomain>
-	<4782D9E0.4070600@pikatech.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__8_Jan_2008_15_52_40_+1100_yaybGaNuTtAttHi1"
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <paul.gortmaker@windriver.com>
+Date: Tue, 8 Jan 2008 00:27:44 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Linuxppc-dev@ozlabs.org
+Subject: [PATCH/RFC] mpc83xx/85xx SysRQ/brk over 8250 console
+Message-ID: <20080108052743.GA18083@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,109 +15,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__8_Jan_2008_15_52_40_+1100_yaybGaNuTtAttHi1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It seems that if a break is rec'd on the serial console (as per SysRQ
+or similar) on some 83xx and 85xx processors, then a pulse of IRQs is
+generated which makes the use of SysRQ itself about 99% impossible.  I
+experimented with trying several ACK strategies, but in the end the
+thing which worked best was just to wait for the surge of events to pass
+(a fraction of a second).  The number of events can be on the order of
+1000 (as reported by /proc/interrupts)
 
-Hi Sean,
+I really dislike seeing board specific ifdefs within what should be
+board independent code, so I'm hoping that once the problem is known,
+that a more elegant solution will pop into someone's head.  Or at least
+this will hopefully save someone the grief of re-investigating the source
+and start a discussion.
 
-On Mon, 07 Jan 2008 21:03:12 -0500 Sean MacLennan <smaclennan@pikatech.com>=
- wrote:
->
+I've seen this on two different 834x boards and also an 8548 based
+board.  At this point, it is not clear to me if the problem extends
+beyond these CPU/soc to all with UARTs at 4500/4600.
 
-Please don't post patches as attachments.
+While less than ideal, the work-around below which simply ignores the
+events does allow a person to use SysRQ on such platforms.
 
-> +static int __devinit iic_probe(struct of_device *ofdev,
-> +							   const struct of_device_id *match)
+The definition of the RFE bit (Rx FIFO error) can be found in pretty
+much any of the MPC CPU PDFs (for those with 4500/4600 16550s).
 
-Indenting could be better.
+Paul.
 
-> +{
-
-> +	if (!(dev =3D kzalloc(sizeof(*dev), GFP_KERNEL))) {
-
-Please split the assignments from the tests.  Here and elsewhere.
-
-> +		printk(KERN_CRIT "ibm-iic: failed to allocate device data\n");
-
-I am not sure that these messages are necessary and, even if so, not KERN_C=
-RIT.
-
-> +	if(iic_force_poll)
-
-Space after "if"
-
-> +	if (dev->irq !=3D NO_IRQ) {
-	.
-	.
-> +	}
-> +
-> +	if (dev->irq =3D=3D NO_IRQ)
-
-	else instead?
-
-> +		printk(KERN_WARNING "ibm-iic%d: using polling mode\n",
-> +			   dev->idx);
-> +static int __devexit iic_remove(struct of_device *ofdev)
-> +{
-> +	struct ibm_iic_private* dev =3D (struct ibm_iic_private*)dev_get_drvdat=
-a(&ofdev->dev);
-
-Unnecessary cast.
-
-> +	if (i2c_del_adapter(&dev->adap)){
-> +		printk(KERN_CRIT "ibm-iic%d: failed to delete i2c adapter :(\n",
-> +			dev->idx);
-
-This is not a KERN_CRIT situation ...
-
-> +		/* That's *very* bad, just shutdown IRQ ... */
-> +		if (dev->irq >=3D 0){
-
-What is that testing? For NO_IRQ as below?
-
-> +		    iic_interrupt_mode(dev, 0);
-> +		    free_irq(dev->irq, dev);
-> +		    dev->irq =3D -1;
-
-NO_IRQ?
-
-> +		}
-> +	} else {
-> +		if (dev->irq !=3D NO_IRQ){
-> +		    iic_interrupt_mode(dev, 0);
-> +		    free_irq(dev->irq, dev);
-> +		}
-> +		iounmap(dev->vaddr);
-> +		kfree(dev);
-
-Should these last two be after the below brace?
-
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static struct of_device_id ibm_iic_match[] =3D
-
-This should be const.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__8_Jan_2008_15_52_40_+1100_yaybGaNuTtAttHi1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHgwGcTgG2atn1QN8RAuPBAKCSQGatOBkCRR2CiohHSEca4LBlKACgldxZ
-kPNPtpttoc6nOB2RJtM98bo=
-=Is5y
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Jan_2008_15_52_40_+1100_yaybGaNuTtAttHi1--
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index f94109c..2761c64 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1426,6 +1426,24 @@ serial8250_handle_port(struct uart_8250_port *up)
+ 
+ 	status = serial_inp(up, UART_LSR);
+ 
++#if defined(CONFIG_MPC834x) || defined(CONFIG_MPC8540)
++	/*
++	 * There appears to be a quirk in the implementation on some 8xxx
++	 * where after a break is rec'd (UART_LSR_BI), the UART generates
++	 * a short duration burst of bogus IRQ events with the signature
++	 * of RFE set (along with "normal" bits set) in the LSR.
++	 */
++
++#define RFE_8xxx_ERR_BITS (	UART_LSR_RFE	| UART_LSR_TEMT	| \
++				UART_LSR_THRE	| UART_LSR_BI	| \
++				UART_LSR_DR	)
++
++	if (status == RFE_8xxx_ERR_BITS) {
++		spin_unlock_irqrestore(&up->port.lock, flags);
++		return;
++	}
++#endif
++
+ 	DEBUG_INTR("status = %x...", status);
+ 
+ 	if (status & UART_LSR_DR)
+diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
+index 96c0d93..1ea6436 100644
+--- a/include/linux/serial_reg.h
++++ b/include/linux/serial_reg.h
+@@ -111,6 +111,7 @@
+ #define UART_MCR_DTR		0x01 /* DTR complement */
+ 
+ #define UART_LSR	5	/* In:  Line Status Register */
++#define UART_LSR_RFE		0x80 /* Rx FIFO Error (BE, FE, or PE) */
+ #define UART_LSR_TEMT		0x40 /* Transmitter empty */
+ #define UART_LSR_THRE		0x20 /* Transmit-hold-register empty */
+ #define UART_LSR_BI		0x10 /* Break interrupt indicator */
