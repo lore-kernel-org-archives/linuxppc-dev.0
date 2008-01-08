@@ -1,11 +1,17 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Date: Tue, 8 Jan 2008 00:27:44 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH/RFC] mpc83xx/85xx SysRQ/brk over 8250 console
-Message-ID: <20080108052743.GA18083@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <026A8588-DC44-4EBB-885B-6D70117BF1A1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <4A496992-9B46-427D-8F40-447E92F8CA3D@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] add MPC837x MDS board default device tree
+Date: Mon, 7 Jan 2008 23:46:07 -0600
+References: <1196851073-11801-1-git-send-email-leoli@freescale.com>
+	<20071207020130.GA26412@localhost.localdomain>
+	<4A496992-9B46-427D-8F40-447E92F8CA3D@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,70 +21,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It seems that if a break is rec'd on the serial console (as per SysRQ
-or similar) on some 83xx and 85xx processors, then a pulse of IRQs is
-generated which makes the use of SysRQ itself about 99% impossible.  I
-experimented with trying several ACK strategies, but in the end the
-thing which worked best was just to wait for the surge of events to pass
-(a fraction of a second).  The number of events can be on the order of
-1000 (as reported by /proc/interrupts)
 
-I really dislike seeing board specific ifdefs within what should be
-board independent code, so I'm hoping that once the problem is known,
-that a more elegant solution will pop into someone's head.  Or at least
-this will hopefully save someone the grief of re-investigating the source
-and start a discussion.
+On Dec 14, 2007, at 2:12 AM, Kumar Gala wrote:
 
-I've seen this on two different 834x boards and also an 8548 based
-board.  At this point, it is not clear to me if the problem extends
-beyond these CPU/soc to all with UARTs at 4500/4600.
+>
+> On Dec 6, 2007, at 8:01 PM, David Gibson wrote:
+>
+>> On Wed, Dec 05, 2007 at 06:37:53PM +0800, Li Yang wrote:
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> ---
+>>> Update SATA nodes; remove serdes nodes; add aliases and labels.
+>>>
+>>> arch/powerpc/boot/dts/mpc8377_mds.dts |  270 +++++++++++++++++++++++
+>>> ++++++++
+>>> arch/powerpc/boot/dts/mpc8378_mds.dts |  256 +++++++++++++++++++++++
+>>> ++++++
+>>> arch/powerpc/boot/dts/mpc8379_mds.dts |  284 +++++++++++++++++++++++
+>>> ++++++++++
+>>> 3 files changed, 810 insertions(+), 0 deletions(-)
+>>> create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
+>>> create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
+>>> create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
+>>>
+>>> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/
+>>> boot/dts/mpc8377_mds.dts
+>>> new file mode 100644
+>>> index 0000000..919ffd0
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+>> [snip]
+>>> +	aliases {
+>>> +		ethernet0 = "/soc@e0000000/ethernet@24000";
+>>> +		ethernet1 = "/soc@e0000000/ethernet@25000";
+>>> +		serial0 = "/soc@e0000000/serial@4500";
+>>> +		serial1 = "/soc@e0000000/serial@4600";
+>>> +		pci0 = "/pci@e0008500";
+>>
+>> You can use path references for these now.
+>>
+>>> +	};
+>>> +
+>>> +	cpus {
+>>> +		#address-cells = <1>;
+>>> +		#size-cells = <0>;
+>>> +
+>>> +		PowerPC,837x@0 {
+>>
+>> This should absolutely not have a "x" in it.  Either have an exact
+>> model, or just use "cpu@9" (in which case you can put the model in
+>> "compatible").
+>>
+>> [snip]
+>>> +		i2c@3000 {
+>>> +			device_type = "i2c";
+>>
+>> Drop the device_type.  No "i2c" device_type class is defined.
+>>
+>> [snip]
+>>> +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+>>> +		usb@23000 {
+>>> +			device_type = "usb";
+>>
+>> Drop device_type here too.
+>>
+>>> +			compatible = "fsl-usb2-dr";
+>>> +			reg = <23000 1000>;
+>>> +			#address-cells = <1>;
+>>> +			#size-cells = <0>;
+>>> +			interrupt-parent = < &ipic >;
+>>> +			interrupts = <26 8>;
+>>> +			phy_type = "utmi_wide";
+>>> +		};
+>>> +
+>>> +		mdio@24520 {
+>>> +			device_type = "mdio";
+>>> +			compatible = "gianfar";
+>>
+>> Grr... not your fault, but this crap in the gianfar driver where it
+>> uses the same compatible property for the mdio and MAC has to be
+>> fixed.
+>
+> I've fixed this now.  Look at my tree/patch.
+>
+>> [snip]
+>>
+>>> +		serial1:serial@4600 {
+>>
+>> Standard style puts a space after the colon.
+>>
+>>> +			device_type = "serial";
+>>> +			compatible = "ns16550";
+>>> +			reg = <4600 100>;
+>>> +			clock-frequency = <0>;
+>>> +			interrupts = <a 8>;
+>>> +			interrupt-parent = < &ipic >;
+>>> +		};
+>>> +
+>>> +		crypto@30000 {
+>>> +			model = "SEC3";
+>>> +			compatible = "talitos";
+>>
+>> This driver, also, needs fixing to recognize a better formatted
+>> compatible property.
+>
+> Can you respin with David's changes as well as mirror my cleanup of
+> the other 83xx/85xx .dts
 
-While less than ideal, the work-around below which simply ignores the
-events does allow a person to use SysRQ on such platforms.
 
-The definition of the RFE bit (Rx FIFO error) can be found in pretty
-much any of the MPC CPU PDFs (for those with 4500/4600 16550s).
+Any updates on new versions of the .dts for mpc837x?
 
-Paul.
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index f94109c..2761c64 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1426,6 +1426,24 @@ serial8250_handle_port(struct uart_8250_port *up)
- 
- 	status = serial_inp(up, UART_LSR);
- 
-+#if defined(CONFIG_MPC834x) || defined(CONFIG_MPC8540)
-+	/*
-+	 * There appears to be a quirk in the implementation on some 8xxx
-+	 * where after a break is rec'd (UART_LSR_BI), the UART generates
-+	 * a short duration burst of bogus IRQ events with the signature
-+	 * of RFE set (along with "normal" bits set) in the LSR.
-+	 */
-+
-+#define RFE_8xxx_ERR_BITS (	UART_LSR_RFE	| UART_LSR_TEMT	| \
-+				UART_LSR_THRE	| UART_LSR_BI	| \
-+				UART_LSR_DR	)
-+
-+	if (status == RFE_8xxx_ERR_BITS) {
-+		spin_unlock_irqrestore(&up->port.lock, flags);
-+		return;
-+	}
-+#endif
-+
- 	DEBUG_INTR("status = %x...", status);
- 
- 	if (status & UART_LSR_DR)
-diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
-index 96c0d93..1ea6436 100644
---- a/include/linux/serial_reg.h
-+++ b/include/linux/serial_reg.h
-@@ -111,6 +111,7 @@
- #define UART_MCR_DTR		0x01 /* DTR complement */
- 
- #define UART_LSR	5	/* In:  Line Status Register */
-+#define UART_LSR_RFE		0x80 /* Rx FIFO Error (BE, FE, or PE) */
- #define UART_LSR_TEMT		0x40 /* Transmitter empty */
- #define UART_LSR_THRE		0x20 /* Transmit-hold-register empty */
- #define UART_LSR_BI		0x10 /* Break interrupt indicator */
+- k
