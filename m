@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4BB61DDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 17:21:32 +1100 (EST)
-Message-Id: <C387A6C8-3FC9-4DD9-A79D-3ADAB1F5A73F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 9C28ADDF1E
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 17:23:23 +1100 (EST)
+Message-Id: <CC561FA6-0590-4BC0-B42B-7EE1B379CE8E@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Dan Malek <dan@embeddedalley.com>
-In-Reply-To: <66F0B96A-5B53-48D3-BB90-07841F3EA1EE@embeddedalley.com>
+To: Liu Yu <Yu.Liu@freescale.com>
+In-Reply-To: <11996296134110-git-send-email-Yu.Liu@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
 Subject: Re: [PATCH] Fix remainder calculating bug in single floating point
 	division
-Date: Tue, 8 Jan 2008 00:20:08 -0600
+Date: Tue, 8 Jan 2008 00:22:25 -0600
 References: <11996296134110-git-send-email-Yu.Liu@freescale.com>
-	<1199650065.7291.81.camel@pasglop>
-	<66F0B96A-5B53-48D3-BB90-07841F3EA1EE@embeddedalley.com>
-Cc: Liu Yu <Yu.Liu@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +25,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 6, 2008, at 2:44 PM, Dan Malek wrote:
+On Jan 6, 2008, at 8:26 AM, Liu Yu wrote:
 
+> This bug exists in the emulation of floating point division for  
+> powerpc.
 >
-> On Jan 6, 2008, at 12:07 PM, Benjamin Herrenschmidt wrote:
+> The original code cannot count the remainder correctly.
+> I can provide a test case to trigger this bug.
+> When use fdiv to count 1.1754941e-38f / 0.9999999f,
+> the result is expected to be 1.175494e-38f,
+> but we will get 1.174921e-38f in the original case.
 >
->> It's nice to see somebody digging in that scary math emu stuff. If  
->> you
->> could also get rid of the warnings, it would be perfect :-)
->
-> Yes, it is :-)  I didn't think it would have a life beyond MPC8xx.
->
->> .... that this code was lifted from
->> somewhere else (glibc ? gcc soft-float ?),
->
-> It seems like a lifetime ago....  I copied the framework
-> from Sparc, and the internals from gcc soft-float.  I didn't
-> change any of the internal emulation functions (hence,
-> some of the warnings), just the calling interface.
->
-> While it's convenient, I still don't think kernel float
-> emulation should be a solution.  The tools should
-> generate soft-float for the applications and libraries.
+> Comments are always welcomed!
 
-If we think this is really true, we could move to using include/math- 
-emu/* instead of the files in powerpc/math-emu.
-
-The problem I had was when I tried to recreate the history of the code  
-in powerpc/math-emu and how it doesn't really match the glibc code  
-base.  There are some differences and I wasn't sure if they were do to  
-trying to match PPC HW at a bit level or not.
-
-I was hoping that the work Liu Yu would get as a bit of a testsuite to  
-see if there was any harm in moving over to include/math-emu.
+can you provide the test case that shows the error.
 
 - k
