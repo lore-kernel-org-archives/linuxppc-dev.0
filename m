@@ -1,15 +1,16 @@
-Return-Path: <jiehanca@yahoo.com.cn>
-Received: from web15107.mail.cnb.yahoo.com (web15107.mail.cnb.yahoo.com
-	[202.165.103.76]) by ozlabs.org (Postfix) with SMTP id 50122DDEDD
+Return-Path: <hangtoo@163.com>
+Received: from m5-81.163.com (m5-81.163.com [202.108.5.81])
+	by ozlabs.org (Postfix) with SMTP id D90AEDDEC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 11:39:07 +1100 (EST)
-Date: Mon, 7 Jan 2008 16:32:27 -0800 (PST)
-From: jie han <jiehanca@yahoo.com.cn>
-Subject: How to config linux kernel(ARCH=powerpc)?
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-420974133-1199752347=:77887"
-Message-ID: <244511.77887.qm@web15107.mail.cnb.yahoo.com>
+	Tue,  8 Jan 2008 12:33:17 +1100 (EST)
+Date: Tue, 8 Jan 2008 09:18:23 +0800
+From: "tony" <hangtoo@163.com>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: Re:How to config linux kernel(ARCH=powerpc)?
+Message-ID: <200801080918222817608@163.com>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon721813537465_====="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,41 +21,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-420974133-1199752347=:77887
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
 
-Hi everyone:
+This is a multi-part message in MIME format.
 
-I downloaded linux kernel 2.6 from www.denx.de and unzip the kernel source code.My operation is make mrproper at first and  then make pasemi_defconfig,it didn't work,the show message as follow:
+--=====003_Dragon721813537465_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-linux-2.6-denx->make mrproper
+hi Jie
+maybe you should try it like this:
+linux-2.6-denx->make ARCH=ppc CROSS_COMPILE=ppc_4xx- pasemi_defconfig
+make sure you have installed the ppc_4xx- tools.
+good luck
 
-linux-2.6-denx->make pasemi_defconfig
-kernel/power/Kconfig:68:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-***
-*** Can't find default configuration "arch/ppc/configs/pasemi_defconfig"!
-***
-make[1]: *** [pasemi_defconfig] Error 1
-make: *** [pasemi_defconfig] Error 2
+tony
 
- I make the other default config file under arch/powperpc/configs directory,it show the same wrong message.How can I do fix it ?Thanks ahead,
+               
 
-Sincerely,
+--=====003_Dragon721813537465_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-Jie
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=gb2312">
+<META content="MSHTML 6.00.2900.3243" name=GENERATOR>
+<STYLE>BLOCKQUOTE {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px; MARGIN-LEFT: 2em
+}
+OL {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+UL {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+</STYLE>
+</HEAD>
+<BODY>
+<DIV>hi Jie</DIV>
+<DIV style="TEXT-INDENT: 2em">maybe you should&nbsp;try it like this:</DIV>
+<DIV style="TEXT-INDENT: 2em">linux-2.6-denx-&gt;make ARCH=ppc 
+CROSS_COMPILE=ppc_4xx-&nbsp;pasemi_defconfig</DIV>
+<DIV style="TEXT-INDENT: 2em">make sure you have installed the ppc_4xx- 
+tools.</DIV>
+<DIV style="TEXT-INDENT: 2em">good luck</DIV>
+<DIV style="TEXT-INDENT: 2em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 2em">tony</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</DIV></BODY></HTML>
 
-
-       
----------------------------------
-Never miss a thing.   Make Yahoo your homepage.
---0-420974133-1199752347=:77887
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Hi everyone:<br><br>I downloaded linux kernel 2.6 from www.denx.de and unzip the kernel source code.My operation is make mrproper at first and&nbsp; then make pasemi_defconfig,it didn't work,the show message as follow:<br><br>linux-2.6-denx-&gt;make mrproper<br><br>linux-2.6-denx-&gt;make pasemi_defconfig<br>kernel/power/Kconfig:68:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'<br>***<br>*** Can't find default configuration "arch/ppc/configs/pasemi_defconfig"!<br>***<br>make[1]: *** [pasemi_defconfig] Error 1<br>make: *** [pasemi_defconfig] Error 2<br><br> I make the other default config file under arch/powperpc/configs directory,it show the same wrong message.How can I do fix it ?Thanks ahead,<br><br>Sincerely,<br><br>Jie<br><br><p>&#32;
-
-      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
-
-
---0-420974133-1199752347=:77887--
+--=====003_Dragon721813537465_=====--
