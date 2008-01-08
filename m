@@ -1,21 +1,15 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
-	by ozlabs.org (Postfix) with ESMTP id 85C69DDEB6
+Return-Path: <padmanabha@tesbv.com>
+Received: from hermes.tesbv.com (hermes.tesbv.com [213.215.41.187])
+	by ozlabs.org (Postfix) with ESMTP id ACE51DDEC4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 12:55:53 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so3779354pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 07 Jan 2008 17:55:52 -0800 (PST)
-Date: Mon, 7 Jan 2008 19:55:47 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: "tony" <hangtoo@163.com>, jie han <jiehanca@yahoo.com.cn>
-Subject: Re: How to config linux kernel(ARCH=powerpc)?
-Message-ID: <20080107195547.1c71f42b@hansolo.jdub.homelinux.org>
-In-Reply-To: <200801080918222817608@163.com>
-References: <200801080918222817608@163.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Tue,  8 Jan 2008 20:52:51 +1100 (EST)
+Message-ID: <4783480C.1070600@tesbv.com>
+Date: Tue, 08 Jan 2008 15:23:16 +0530
+From: padmanabha <padmanabha@tesbv.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org,  reynekejunk@hotmail.com
+Subject: PPC4xx memory to memory DMA 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,16 +20,223 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 Jan 2008 09:18:23 +0800
-"tony" <hangtoo@163.com> wrote:
+Hi,
 
-> hi Jie
-> maybe you should try it like this:
-> linux-2.6-denx->make ARCH=ppc CROSS_COMPILE=ppc_4xx- pasemi_defconfig
-> make sure you have installed the ppc_4xx- tools.
+I  am using 2.6.23  kernel for ppc 440spe based board. When i tried 
+memory to memory DMA  ( please find  the code given below )
+ DMA is not happening.
 
-Um.. no.  pasemi is a 64bit CPU.  Get the powerpc tree from kernel.org,
-make sure you have a PowerPC 64bit toolchain, and try with make
-ARCH=powerpc
+I am trying the same for last few days.... without any success.  Can any 
+one guide me.
 
-josh
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include<linux/kernel.h>
+#include<linux/module.h>
+#include<linux/delay.h>
+
+#include<asm/ppc4xx_dma.h>
+#include<asm/io.h>
+#include<linux/slab.h>
+
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("PPC4xx Mem to Mem DMA  demo");
+MODULE_AUTHOR("padmanabha@tesbv.com");
+
+extern void flush_dcache_all(void);
+
+#define DMA_CHANNEL_NUM                         0
+#define SIZE                                                    4096
+
+ppc_dma_ch_t  ppc_dma_channel;
+ppc_dma_ch_t p_init;
+
+void * vir_dst_addr;
+void * vir_src_addr;
+
+unsigned long int  phy_src;
+unsigned long int  phy_dst;
+
+int ret, offset;
+
+void dma_trns(void)
+{
+
+      memset( (char *)&p_init, 0, sizeof(p_init));
+
+      p_init.polarity = 0;
+      p_init.pwidth   = PW_8;
+
+      ret = ppc4xx_init_dma_channel( DMA_CHANNEL_NUM, &p_init);
+
+      if (ret  ==   DMA_STATUS_GOOD)
+      {
+          printk("%s: init_dma_channel return %d, dest is 
+%p\n",__FUNCTION__, ret, vir_dst_addr);
+      }
+
+      else if(ret  ==   DMA_STATUS_BAD_CHANNEL)
+      {
+
+        printk("TS2: bad channel \n");
+
+      }
+
+      flush_dcache_all();
+
+      ppc4xx_clr_dma_status( DMA_CHANNEL_NUM);
+
+      ppc4xx_set_dma_mode(DMA_CHANNEL_NUM,DMA_MODE_MM);
+      ppc4xx_set_src_addr( DMA_CHANNEL_NUM, (phys_addr_t) phy_src);
+      ppc4xx_set_dst_addr(DMA_CHANNEL_NUM,  (phys_addr_t) phy_dst);
+      ppc4xx_set_dma_count(DMA_CHANNEL_NUM,(SIZE * 2 ));
+
+      ppc4xx_set_channel_priority(DMA_CHANNEL_NUM,PRIORITY_HIGH);
+
+      ppc4xx_enable_dma(DMA_CHANNEL_NUM);
+
+
+      // wait till completion of DMA
+
+
+       while( 1)
+       {
+            mdelay(100);
+
+            ret = 1;
+            ret = ppc4xx_get_dma_residue( DMA_CHANNEL_NUM);
+
+            if( ret == 0)
+            {
+                printk(" no dma operation is pending\n");
+                break;
+            }
+
+       }
+
+     ppc4xx_disable_dma( DMA_CHANNEL_NUM);
+
+    return  ;
+}
+
+static int dma_test_init(void)
+{
+
+    vir_src_addr = (void *) __get_free_pages(GFP_KERNEL | GFP_DMA, 1);
+
+    if( vir_src_addr == NULL )
+    {
+        printk( " Memory not allocated\n");
+        return 1;
+    }
+    printk("%s: virtual address for src buffer is 0x%p \n",__FUNCTION__, 
+(unsigned int *)vir_src_addr);
+    memset( (unsigned long *)vir_src_addr, 0x55, sizeof(unsigned long) * 
+(SIZE *2));
+
+#if SRC_DISPLAY
+
+    ret = 0;
+
+    while(ret < 100)
+    {
+
+        printk( "%s: value at virtual addr 0x%p is 0x%X \n", 
+__FUNCTION__,( (unsigned int *)vir_src_addr + ret ),\
+
+        *( (unsigned int *)vir_src_addr + ret));
+
+        ret++;
+
+    }
+
+#endif
+
+    vir_dst_addr = (void *) __get_free_pages(GFP_KERNEL | GFP_DMA,1);
+
+    if( vir_dst_addr == NULL )
+    {
+        printk( " Memory not allocated\n");
+        free_pages( (unsigned long)vir_src_addr, 1);
+        return 1;
+    }
+    printk("%s: virtual address for dst buffer is 0x%p 
+\n",__FUNCTION__,(unsigned int *)vir_dst_addr);
+    memset( (unsigned long *)vir_dst_addr, 0, sizeof(unsigned long) * 
+(SIZE *2));
+
+#if DST_DISPLAY
+
+    ret = 0;
+    while(ret < 100)
+    {
+
+        printk( "%s: value at virtual addr 0x%p is 0x%X \n", 
+__FUNCTION__,( (unsigned int *)vir_dst_addr + ret ),\
+        *( (unsigned int *)vir_dst_addr + ret));
+
+        ret++;
+
+    }
+#endif
+
+//      phy_src = virt_to_bus(vir_src_addr);
+//      phy_dst = virt_to_bus(vir_dst_addr);
+
+      phy_src = iopa( (unsigned long ) vir_src_addr);
+      phy_dst =  iopa(  (unsigned long )vir_dst_addr);
+
+    dma_trns();
+
+      ret = 1;
+      ret = ppc4xx_get_dma_residue( DMA_CHANNEL_NUM);
+      if( ret == 0)
+      {
+          printk(" no dma operation is pending\n");
+
+      }
+
+    return 0;
+}
+
+
+void dma_test_exit(void)
+{
+      ret = ppc4xx_get_channel_config( DMA_CHANNEL_NUM, &ppc_dma_channel);
+
+      if( ret != DMA_STATUS_GOOD )
+      {
+         printk("TS2: DMA STATUS  is not good \n");
+      }
+      else
+      {
+         printk("TS2:  DMA STATUS  good \n");
+
+      }
+
+      ret = 0;
+
+      while(ret < 100)
+      {
+
+         printk( "%s: value at virtual addr 0x%p after dma is 0x%X \n", 
+__FUNCTION__,( (unsigned int *)vir_dst_addr + ret ), \
+         *( (unsigned int *)vir_dst_addr + ret)) ;
+
+         ret++;
+      }
+
+     mdelay(100);
+
+     free_pages( (unsigned long)vir_src_addr, 1);
+     free_pages( (unsigned long)vir_dst_addr, 1);
+
+}
+
+module_init(dma_test_init);
+module_exit(dma_test_exit);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Thanks and Regards,
+Padmanabha.s
