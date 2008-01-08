@@ -2,19 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B24B7DDE0D
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 17:15:06 +1100 (EST)
-Message-Id: <1315E111-6C49-4FB4-A4AA-806812A7CCFF@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 4BB61DDEEF
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2008 17:21:32 +1100 (EST)
+Message-Id: <C387A6C8-3FC9-4DD9-A79D-3ADAB1F5A73F@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <1199745618755-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Dan Malek <dan@embeddedalley.com>
+In-Reply-To: <66F0B96A-5B53-48D3-BB90-07841F3EA1EE@embeddedalley.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] sbc85xx: remove PCI exclude device for sbc8548/sbc8560
-Date: Tue, 8 Jan 2008 00:15:00 -0600
-References: <E22DFF32-E85B-4A58-89D4-E447BEB8BA28@kernel.crashing.org>
-	<1199745618755-git-send-email-paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix remainder calculating bug in single floating point
+	division
+Date: Tue, 8 Jan 2008 00:20:08 -0600
+References: <11996296134110-git-send-email-Yu.Liu@freescale.com>
+	<1199650065.7291.81.camel@pasglop>
+	<66F0B96A-5B53-48D3-BB90-07841F3EA1EE@embeddedalley.com>
+Cc: Liu Yu <Yu.Liu@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +27,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 7, 2008, at 4:40 PM, Paul Gortmaker wrote:
+On Jan 6, 2008, at 2:44 PM, Dan Malek wrote:
 
-> The PCI exclude device for the sbc85xx boards was only filtering out
-> the PHB and nothing else.  This functionality is no longer required
-> at a board specific level -- it is handled as a more global quirk now.
 >
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> On Jan 6, 2008, at 12:07 PM, Benjamin Herrenschmidt wrote:
+>
+>> It's nice to see somebody digging in that scary math emu stuff. If  
+>> you
+>> could also get rid of the warnings, it would be perfect :-)
+>
+> Yes, it is :-)  I didn't think it would have a life beyond MPC8xx.
+>
+>> .... that this code was lifted from
+>> somewhere else (glibc ? gcc soft-float ?),
+>
+> It seems like a lifetime ago....  I copied the framework
+> from Sparc, and the internals from gcc soft-float.  I didn't
+> change any of the internal emulation functions (hence,
+> some of the warnings), just the calling interface.
+>
+> While it's convenient, I still don't think kernel float
+> emulation should be a solution.  The tools should
+> generate soft-float for the applications and libraries.
 
-Can you respin the full patch set with the update .dts to v1.
+If we think this is really true, we could move to using include/math- 
+emu/* instead of the files in powerpc/math-emu.
+
+The problem I had was when I tried to recreate the history of the code  
+in powerpc/math-emu and how it doesn't really match the glibc code  
+base.  There are some differences and I wasn't sure if they were do to  
+trying to match PPC HW at a bit level or not.
+
+I was hoping that the work Liu Yu would get as a bit of a testsuite to  
+see if there was any harm in moving over to include/math-emu.
 
 - k
