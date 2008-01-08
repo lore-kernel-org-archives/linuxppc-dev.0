@@ -1,22 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id EF40DDDEB6
+Return-Path: <jiehanca@yahoo.com.cn>
+Received: from web15107.mail.cnb.yahoo.com (web15107.mail.cnb.yahoo.com
+	[202.165.103.76]) by ozlabs.org (Postfix) with SMTP id 50122DDEDD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jan 2008 08:02:22 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1539869anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 07 Jan 2008 13:02:22 -0800 (PST)
-Message-ID: <fa686aa40801071302u78d01f11y5c489553e06c0c01@mail.gmail.com>
-Date: Mon, 7 Jan 2008 14:02:21 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Joachim Meyer" <Jogi95@web.de>
-Subject: Re: Linux for ml310
-In-Reply-To: <520220685@web.de>
+	Tue,  8 Jan 2008 11:39:07 +1100 (EST)
+Date: Mon, 7 Jan 2008 16:32:27 -0800 (PST)
+From: jie han <jiehanca@yahoo.com.cn>
+Subject: How to config linux kernel(ARCH=powerpc)?
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <520220685@web.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-420974133-1199752347=:77887"
+Message-ID: <244511.77887.qm@web15107.mail.cnb.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,47 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/7/08, Joachim Meyer <Jogi95@web.de> wrote:
-> Hi
->
-> I'm trying to run a Linux System on a ml310
-> I'm using the Kernel 2.4.26 from Bitkeeper und and EDK9.1 Sp2
-> I can compile my Kernel without Errors, with a Crosscompiler made by crosstools, if I don't copy the BSP files in the Kernel Directory.
-> If I do so, I can't compile. It aborts with the error:
-> serial.c:4040: error: 'XPAR_UARTNS550_0_CLOCK_FREQ_HZ' undeclared (first use in this function)
-> If I don't use the UART in my Kernel config I get other errors like:
-> adapter.c:96: error: `XPAR_XEMAC_NUM_INSTANCES' undeclared (first use in this function)
-> I don't really know what to do now. Where should I look for the solution?
+--0-420974133-1199752347=:77887
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Applying the BSP to the 2.4 kernel is a error prone process.  You need
-to be using the *exact* version of the MontaVista kernel that EDK is
-expecting, otherwise it breaks and you need to fix it up manually.
-2.6 is much better and you don't need to copy over the whole BSP; just
-the xparameters.h file.
+Hi everyone:
 
-> Did I something wrong by generating the BSP or do I have to use an older version of the edk/ise?
->
-> When I was trying to find a solution I read some of the things in this mailing list, and now I'm concered about these 2 points
-> -Board
-> -Kernel Version
-> Is it a good idea to use the ml310?
-> I want a Linux, an ethernet device, a RS232 device and system-ace. Later I would try to patch the Linux with rtai for real-time-support.
-> I read about troubles with the ethernet device on the ml310 because of troubles with the pci bus. Would it be much easier to use an XUP-Board?
-> Would it be easier to use the kernel 2.6.x? Has anybody experience in running an rtai-patched Linux on an ml310 - bzw XUP Board?
+I downloaded linux kernel 2.6 from www.denx.de and unzip the kernel source code.My operation is make mrproper at first and  then make pasemi_defconfig,it didn't work,the show message as follow:
 
-I strongly recommend moving to 2.6.  I don't know if anyone has got
-rtai going on it for the virtex, but your chances of getting help are
-much higher because virtex 2.6 support is being actively developed.
+linux-2.6-denx->make mrproper
 
-As for the XUP board, I haven't had a chance to get mine running yet,
-but I know others have had good success with it.
+linux-2.6-denx->make pasemi_defconfig
+kernel/power/Kconfig:68:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+***
+*** Can't find default configuration "arch/ppc/configs/pasemi_defconfig"!
+***
+make[1]: *** [pasemi_defconfig] Error 1
+make: *** [pasemi_defconfig] Error 2
 
-Cheers,
-g.
+ I make the other default config file under arch/powperpc/configs directory,it show the same wrong message.How can I do fix it ?Thanks ahead,
+
+Sincerely,
+
+Jie
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+       
+---------------------------------
+Never miss a thing.   Make Yahoo your homepage.
+--0-420974133-1199752347=:77887
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hi everyone:<br><br>I downloaded linux kernel 2.6 from www.denx.de and unzip the kernel source code.My operation is make mrproper at first and&nbsp; then make pasemi_defconfig,it didn't work,the show message as follow:<br><br>linux-2.6-denx-&gt;make mrproper<br><br>linux-2.6-denx-&gt;make pasemi_defconfig<br>kernel/power/Kconfig:68:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'<br>***<br>*** Can't find default configuration "arch/ppc/configs/pasemi_defconfig"!<br>***<br>make[1]: *** [pasemi_defconfig] Error 1<br>make: *** [pasemi_defconfig] Error 2<br><br> I make the other default config file under arch/powperpc/configs directory,it show the same wrong message.How can I do fix it ?Thanks ahead,<br><br>Sincerely,<br><br>Jie<br><br><p>&#32;
+
+      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
+
+
+--0-420974133-1199752347=:77887--
