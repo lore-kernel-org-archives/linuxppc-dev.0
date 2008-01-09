@@ -1,15 +1,19 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 7A472DDF50
+	by ozlabs.org (Postfix) with ESMTP id 1F3D5DDF25
 	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:49:35 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] sbc834x: Add support for Wind River SBC834x boards
-Date: Wed,  9 Jan 2008 00:49:30 -0500
-Message-Id: <1199857773848-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 2/3] sbc834x: Add device tree source for Wind River SBC834x
+	board.
+Date: Wed,  9 Jan 2008 00:49:31 -0500
+Message-Id: <11998577743516-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1199857773848-git-send-email-paul.gortmaker@windriver.com>
 References: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
-Message-Id: <ac667c5b2e8acb0f92d31b8e3b590432bb939df9.1199850992.git.paul.gortmaker@windriver.com>
+	<1199857773848-git-send-email-paul.gortmaker@windriver.com>
+Message-Id: <b9cda8aa586eba852f0763db2347d545a5b31be6.1199850992.git.paul.gortmaker@windriver.com>
+In-Reply-To: <ac667c5b2e8acb0f92d31b8e3b590432bb939df9.1199850992.git.paul.gortmaker@windriver.com>
+References: <ac667c5b2e8acb0f92d31b8e3b590432bb939df9.1199850992.git.paul.gortmaker@windriver.com>
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,67 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds the basic support for the Wind River SBC834x boards.  The
-SBC8349 is more common, although it should work on the SBC8347 board
-as well.  Support is heavily based on the existing MPC834x_MDS code.
+This adds the device tree source for the Wind River SBC834x board.
+It is based on the MPC834x_MDS DTS, with the biggest difference being
+the lack of BCSR and the PCI2 that the MDS gets via the PIB. That,
+and this file is also dts-v1 format.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/platforms/83xx/Kconfig   |    9 ++-
- arch/powerpc/platforms/83xx/Makefile  |    1 +
- arch/powerpc/platforms/83xx/sbc834x.c |  116 +++++++++++++++++++++++++++++++++
- 3 files changed, 125 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/sbc8349.dts |  247 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 247 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 2430ac8..782bff0 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -55,6 +55,13 @@ config MPC837x_MDS
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for the MPC837x MDS Processor Board.
-+
-+config SBC834x
-+	bool "Wind River SBC834x"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the Wind River SBC834x board.
-+
- endchoice
- 
- config PPC_MPC831x
-@@ -73,7 +80,7 @@ config MPC834x
- 	bool
- 	select PPC_UDBG_16550
- 	select PPC_INDIRECT_PCI
--	default y if MPC834x_MDS || MPC834x_ITX
-+	default y if MPC834x_MDS || MPC834x_ITX || SBC834x
- 
- config PPC_MPC836x
- 	bool
-diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
-index df46629..3a35242 100644
---- a/arch/powerpc/platforms/83xx/Makefile
-+++ b/arch/powerpc/platforms/83xx/Makefile
-@@ -10,3 +10,4 @@ obj-$(CONFIG_MPC834x_ITX)	+= mpc834x_itx.o
- obj-$(CONFIG_MPC836x_MDS)	+= mpc836x_mds.o
- obj-$(CONFIG_MPC832x_MDS)	+= mpc832x_mds.o
- obj-$(CONFIG_MPC837x_MDS)	+= mpc837x_mds.o
-+obj-$(CONFIG_SBC834x)		+= sbc834x.o
-diff --git a/arch/powerpc/platforms/83xx/sbc834x.c b/arch/powerpc/platforms/83xx/sbc834x.c
+diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
 new file mode 100644
-index 0000000..b448123
+index 0000000..dd5a0f2
 --- /dev/null
-+++ b/arch/powerpc/platforms/83xx/sbc834x.c
-@@ -0,0 +1,116 @@
++++ b/arch/powerpc/boot/dts/sbc8349.dts
+@@ -0,0 +1,247 @@
 +/*
-+ * arch/powerpc/platforms/83xx/sbc834x.c
++ * SBC8349E Device Tree Source
 + *
-+ * Wind River SBC834x board specific routines
++ * Copyright 2007 Wind River Inc.
 + *
-+ * By Paul Gortmaker (see MAINTAINERS for contact information)
++ * Paul Gortmaker (see MAINTAINERS for contact information)
 + *
-+ * Based largely on the mpc834x_mds.c support by Kumar Gala.
++ *	-based largely on the Freescale MPC834x_MDS dts.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -88,106 +55,237 @@ index 0000000..b448123
 + * option) any later version.
 + */
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/major.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/of_platform.h>
++/dts-v1/;
 +
-+#include <asm/system.h>
-+#include <asm/atomic.h>
-+#include <asm/time.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <sysdev/fsl_soc.h>
++/ {
++	model = "SBC8349E";
++	compatible = "SBC834xE";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#include "mpc83xx.h"
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++	};
 +
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
-+static void __init sbc834x_setup_arch(void)
-+{
-+#ifdef CONFIG_PCI
-+	struct device_node *np;
-+#endif
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("sbc834x_setup_arch()", 0);
++		PowerPC,8349@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <0x20>;	// 32 bytes
++			i-cache-line-size = <0x20>;	// 32 bytes
++			d-cache-size = <0x8000>;		// L1, 32K
++			i-cache-size = <0x8000>;		// L1, 32K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
 +
-+#ifdef CONFIG_PCI
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
-+		mpc83xx_add_bridge(np);
-+#endif
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;	// 256MB at 0
++	};
 +
-+}
++	soc@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <0x0 0xe0000000 0x00100000>;
++		reg = <0xe0000000 0x00000200>;
++		bus-frequency = <0>;
 +
-+static void __init sbc834x_init_IRQ(void)
-+{
-+	struct device_node *np;
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <0x200 0x100>;
++		};
 +
-+	np = of_find_node_by_type(NULL, "ipic");
-+	if (!np)
-+		return;
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <0xe 0x8>;
++			interrupt-parent = <&ipic>;
++			dfsrr;
++		};
 +
-+	ipic_init(np, 0);
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <0xf 0x8>;
++			interrupt-parent = <&ipic>;
++			dfsrr;
++		};
 +
-+	/* Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
-+	 */
-+	ipic_set_default_priority();
-+}
++		spi@7000 {
++			device_type = "spi";
++			compatible = "fsl_spi";
++			reg = <0x7000 0x1000>;
++			interrupts = <0x10 0x8>;
++			interrupt-parent = <&ipic>;
++			mode = "cpu";
++		};
 +
-+static struct of_device_id sbc834x_ids[] = {
-+	{ .type = "soc", },
-+	{ .compatible = "soc", },
-+	{},
-+};
++		/* phy type (ULPI or SERIAL) are only types supported for MPH */
++		/* port = 0 or 1 */
++		usb@22000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-mph";
++			reg = <0x22000 0x1000>;
++			#address-cells = <0x1>;
++			#size-cells = <0>;
++			interrupt-parent = <&ipic>;
++			interrupts = <0x27 0x8>;
++			phy_type = "ulpi";
++			port1;
++		};
++		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
++		usb@23000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-dr";
++			reg = <0x23000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = <&ipic>;
++			interrupts = <0x26 0x8>;
++			dr_mode = "otg";
++			phy_type = "ulpi";
++		};
 +
-+static int __init sbc834x_declare_of_platform_devices(void)
-+{
-+	if (!machine_is(sbc834x))
-+		return 0;
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,gianfar-mdio";
++			reg = <0x24520 0x20>;
 +
-+	of_platform_bus_probe(NULL, sbc834x_ids, NULL);
-+	return 0;
-+}
-+device_initcall(sbc834x_declare_of_platform_devices);
++			phy0: ethernet-phy@19 {
++				interrupt-parent = <&ipic>;
++				interrupts = <0x14 0x8>;
++				reg = <0x19>;
++				device_type = "ethernet-phy";
++			};
++			phy1: ethernet-phy@1a {
++				interrupt-parent = <&ipic>;
++				interrupts = <0x15 0x8>;
++				reg = <0x1a>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init sbc834x_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++		enet0: ethernet@24000 {
++			cell-index = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <0x20 0x8 0x21 0x8 0x22 0x8>;
++			interrupt-parent = <&ipic>;
++			phy-handle = <&phy0>;
++			linux,network-index = <0>;
++		};
 +
-+	return of_flat_dt_is_compatible(root, "SBC834x");
-+}
++		enet1: ethernet@25000 {
++			cell-index = <1>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <0x23 0x8 0x24 0x8 0x25 0x8>;
++			interrupt-parent = <&ipic>;
++			phy-handle = <&phy1>;
++			linux,network-index = <1>;
++		};
 +
-+define_machine(sbc834x) {
-+	.name			= "SBC834x",
-+	.probe			= sbc834x_probe,
-+	.setup_arch		= sbc834x_setup_arch,
-+	.init_IRQ		= sbc834x_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.restart		= mpc83xx_restart,
-+	.time_init		= mpc83xx_time_init,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <0x9 0x8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <0xa 0x8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		/* May need to remove if on a part without crypto engine */
++		crypto@30000 {
++			device_type = "crypto";
++			model = "SEC2";
++			compatible = "talitos";
++			reg = <0x30000 0x10000>;
++			interrupts = <0xb 0x8>;
++			interrupt-parent = <&ipic>;
++			num-channels = <4>;
++			channel-fifo-len = <0x18>;
++			exec-units-mask = <0x0000007e>;
++			/* desc mask is for rev2.0,
++			 * we need runtime fixup for >2.0 */
++			descriptor-types-mask = <0x01010ebf>;
++		};
++
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense values match linux IORESOURCE_IRQ_* defines:
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		ipic: pic@700 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x700 0x100>;
++			device_type = "ipic";
++		};
++	};
++
++	pci0: pci@e0008500 {
++		cell-index = <1>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++
++				/* IDSEL 0x11 */
++				 0x8800 0x0 0x0 0x1 &ipic 0x14 0x8
++				 0x8800 0x0 0x0 0x2 &ipic 0x15 0x8
++				 0x8800 0x0 0x0 0x3 &ipic 0x16 0x8
++				 0x8800 0x0 0x0 0x4 &ipic 0x17 0x8>;
++
++		interrupt-parent = <&ipic>;
++		interrupts = <0x42 0x8>;
++		bus-range = <0 0>;
++		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
++			  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
++			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xe0008500 0x100>;
++		compatible = "fsl,mpc8349-pci";
++		device_type = "pci";
++	};
 +};
 -- 
 1.5.0.rc1.gf4b6c
