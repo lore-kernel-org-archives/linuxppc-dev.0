@@ -1,17 +1,16 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 38B85DDF25
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:49:34 +1100 (EST)
-Received: from localhost.localdomain (yow-pgortmak-d1.ottawa.windriver.com
-	[128.224.146.65])
-	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id m095nWmL008497
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 21:49:33 -0800 (PST)
+	by ozlabs.org (Postfix) with ESMTP id 7A472DDF50
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:49:35 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Cc: 
-Subject: [PATCH 0/3] Powerpc support for SBC834x board
-Date: Wed,  9 Jan 2008 00:49:29 -0500
-Message-Id: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 1/3] sbc834x: Add support for Wind River SBC834x boards
+Date: Wed,  9 Jan 2008 00:49:30 -0500
+Message-Id: <1199857773848-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
+References: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
+Message-Id: <ac667c5b2e8acb0f92d31b8e3b590432bb939df9.1199850992.git.paul.gortmaker@windriver.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +20,174 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This adds the basic support for the Wind River SBC834x boards.  The
+SBC8349 is more common, although it should work on the SBC8347 board
+as well.  Support is heavily based on the existing MPC834x_MDS code.
 
-The following three patches add support for the Wind River SBC834x board
-into arch/powerpc.  The support is primarily based on the existing Fsl
-MPC834x_MDS board support.  
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/platforms/83xx/Kconfig   |    9 ++-
+ arch/powerpc/platforms/83xx/Makefile  |    1 +
+ arch/powerpc/platforms/83xx/sbc834x.c |  116 +++++++++++++++++++++++++++++++++
+ 3 files changed, 125 insertions(+), 1 deletions(-)
 
-1) Add support for Wind River SBC834x boards
-
- b/arch/powerpc/platforms/83xx/Kconfig   |    9 ++
- b/arch/powerpc/platforms/83xx/Makefile  |    1 
- b/arch/powerpc/platforms/83xx/sbc834x.c |  117 +++++++++++++++++++++++++++++++-
- 3 files changed, 125 insertions(+), 2 deletions(-)
-
-
-2) Add device tree source (v1) for Wind River SBC834x board
-
- b/arch/powerpc/boot/dts/sbc8349.dts |  248 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 247 insertions(+), 1 deletion(-)
-
-
-3) Add default config file for Wind River SBC8349 board
-
- b/arch/powerpc/configs/sbc834x_defconfig |  801 ++++++++++++++++++++++++++++++-
- 1 file changed, 800 insertions(+), 1 deletion(-)
-
-
-I've tested this with u-boot 1.3.1 + the three recent minor sbc834x u-boot
-patches I'd put out plus the latest dtc from git, and it all seems happy.
-
-Paul.
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 2430ac8..782bff0 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -55,6 +55,13 @@ config MPC837x_MDS
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC837x MDS Processor Board.
++
++config SBC834x
++	bool "Wind River SBC834x"
++	select DEFAULT_UIMAGE
++	help
++	  This option enables support for the Wind River SBC834x board.
++
+ endchoice
+ 
+ config PPC_MPC831x
+@@ -73,7 +80,7 @@ config MPC834x
+ 	bool
+ 	select PPC_UDBG_16550
+ 	select PPC_INDIRECT_PCI
+-	default y if MPC834x_MDS || MPC834x_ITX
++	default y if MPC834x_MDS || MPC834x_ITX || SBC834x
+ 
+ config PPC_MPC836x
+ 	bool
+diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
+index df46629..3a35242 100644
+--- a/arch/powerpc/platforms/83xx/Makefile
++++ b/arch/powerpc/platforms/83xx/Makefile
+@@ -10,3 +10,4 @@ obj-$(CONFIG_MPC834x_ITX)	+= mpc834x_itx.o
+ obj-$(CONFIG_MPC836x_MDS)	+= mpc836x_mds.o
+ obj-$(CONFIG_MPC832x_MDS)	+= mpc832x_mds.o
+ obj-$(CONFIG_MPC837x_MDS)	+= mpc837x_mds.o
++obj-$(CONFIG_SBC834x)		+= sbc834x.o
+diff --git a/arch/powerpc/platforms/83xx/sbc834x.c b/arch/powerpc/platforms/83xx/sbc834x.c
+new file mode 100644
+index 0000000..b448123
+--- /dev/null
++++ b/arch/powerpc/platforms/83xx/sbc834x.c
+@@ -0,0 +1,116 @@
++/*
++ * arch/powerpc/platforms/83xx/sbc834x.c
++ *
++ * Wind River SBC834x board specific routines
++ *
++ * By Paul Gortmaker (see MAINTAINERS for contact information)
++ *
++ * Based largely on the mpc834x_mds.c support by Kumar Gala.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/major.h>
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
++#include <linux/root_dev.h>
++#include <linux/of_platform.h>
++
++#include <asm/system.h>
++#include <asm/atomic.h>
++#include <asm/time.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/ipic.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <sysdev/fsl_soc.h>
++
++#include "mpc83xx.h"
++
++/* ************************************************************************
++ *
++ * Setup the architecture
++ *
++ */
++static void __init sbc834x_setup_arch(void)
++{
++#ifdef CONFIG_PCI
++	struct device_node *np;
++#endif
++
++	if (ppc_md.progress)
++		ppc_md.progress("sbc834x_setup_arch()", 0);
++
++#ifdef CONFIG_PCI
++	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
++		mpc83xx_add_bridge(np);
++#endif
++
++}
++
++static void __init sbc834x_init_IRQ(void)
++{
++	struct device_node *np;
++
++	np = of_find_node_by_type(NULL, "ipic");
++	if (!np)
++		return;
++
++	ipic_init(np, 0);
++
++	/* Initialize the default interrupt mapping priorities,
++	 * in case the boot rom changed something on us.
++	 */
++	ipic_set_default_priority();
++}
++
++static struct of_device_id sbc834x_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init sbc834x_declare_of_platform_devices(void)
++{
++	if (!machine_is(sbc834x))
++		return 0;
++
++	of_platform_bus_probe(NULL, sbc834x_ids, NULL);
++	return 0;
++}
++device_initcall(sbc834x_declare_of_platform_devices);
++
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init sbc834x_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "SBC834x");
++}
++
++define_machine(sbc834x) {
++	.name			= "SBC834x",
++	.probe			= sbc834x_probe,
++	.setup_arch		= sbc834x_setup_arch,
++	.init_IRQ		= sbc834x_init_IRQ,
++	.get_irq		= ipic_get_irq,
++	.restart		= mpc83xx_restart,
++	.time_init		= mpc83xx_time_init,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
+-- 
+1.5.0.rc1.gf4b6c
