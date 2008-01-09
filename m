@@ -1,20 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B86A9DDEA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 04:30:43 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m09HUcvT003782
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 11:30:39 -0600
-Date: Wed, 9 Jan 2008 11:28:30 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Fix handling of memreserve if the range lands in
-	highmem
-Message-ID: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
+Return-Path: <neko@genesi-usa.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id AFCBFDDF2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 04:40:47 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so119654uge.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 09:40:45 -0800 (PST)
+Message-ID: <478507E0.80109@genesi-usa.com>
+Date: Wed, 09 Jan 2008 17:44:00 +0000
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sven Luther <sven@genesi-usa.com>
+Subject: Re: [RFC] add phy-handle property for fec_mpc52xx
+References: <20080109163058.21643.30876.stgit@trillian.secretlab.ca>
+	<4784FCB1.3010509@genesi-usa.com>
+	<20080109171849.GC6789@powerlinux.fr>
+In-Reply-To: <20080109171849.GC6789@powerlinux.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,98 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There were several issues if a memreserve range existed and happened
-to be in highmem:
 
-* The bootmem allocator is only aware of lowmem so calling
-  reserve_bootmem with a highmem address would cause a BUG_ON
-* All highmem pages were provided to the buddy allocator
+Sven Luther wrote:
 
-Added a lmb_is_reserved() api that we now use to determine if a highem
-page should continue to be PageReserved or provided to the buddy
-allocator.
+> This is crazy, and not future proof. The way Grant did it, checking for
+> the existence of the node before creating is enough for any reasonable
+> upgrade to the firmware.
+> 
+> If future firmware will break with this, then they will break other
+> stuff anyway, and a new patch is needed.
 
-Also, we incorrectly reported the amount of pages reserved since all
-highmem pages are initally marked reserved and we clear the
-PageReserved flag as we "free" up the highmem pages.
+In other words, Grant's method is crazy and not future-proof, too.
 
----
+I don't see the difference, Sven, and this demonstrates entirely
 
-As normal, posted here for review, will be pushed via my for-2.6.25 branch
+>> Just make sure it's less than.. let's say, a certain version of efika.forth,
+>> and I will roll a version which has a higher version and some extra features
+>> like CAN/I2C exposure.
+>>
+>> If you run efika.forth it will not touch the device tree. If you don't, it
+>> will add the small amount of patches. Add a huge comment that this hunk of
+>> code should be scheduled for deletion at some later date. Put a Kconfig
+>> around it so it can be taken out, even, at distro option.
+> 
+> Have you not read Grant's code ? It create the nodes only if they are
+> not existent already.
 
- arch/powerpc/mm/lmb.c     |   13 +++++++++++++
- arch/powerpc/mm/mem.c     |   14 ++++++++++----
- include/asm-powerpc/lmb.h |    1 +
- 3 files changed, 24 insertions(+), 4 deletions(-)
+What if they ARE existant under other names, you will have two ethernet-phy
+in the system, maybe with the same name, and this is stupid. What if it adds
+the wrong properties if we work out something is wrong somewhere?
 
-diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
-index 8f4d2dc..4ce23bc 100644
---- a/arch/powerpc/mm/lmb.c
-+++ b/arch/powerpc/mm/lmb.c
-@@ -342,3 +342,16 @@ void __init lmb_enforce_memory_limit(unsigned long memory_limit)
- 		}
- 	}
- }
-+
-+int __init lmb_is_reserved(unsigned long addr)
-+{
-+	int i;
-+
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long upper = lmb.reserved.region[i].base +
-+				      lmb.reserved.region[i].size - 1;
-+		if ((addr >= lmb.reserved.region[i].base) && (addr <= upper))
-+			return 1;
-+	}
-+	return 0;
-+}
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 5402fb6..a004032 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -218,9 +218,13 @@ void __init do_init_bootmem(void)
- #endif
+Linux prom_init must not be a moving target for firmware development - it is
+the hardest thing to replace (it is not like loading and unloading a module)
+and it may in fact be polluting valid device trees REGARDLESS of any checks
+you might make. You cannot make Linux try and PREDICT how the device tree
+looks based on arbitrary name strings, because Linux device tree usage does
+not comply with the IEEE 1275-1994 definition of device tree properties.
 
- 	/* reserve the sections we're already using */
--	for (i = 0; i < lmb.reserved.cnt; i++)
--		reserve_bootmem(lmb.reserved.region[i].base,
--				lmb_size_bytes(&lmb.reserved, i));
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long addr = lmb.reserved.region[i].base +
-+				     lmb_size_bytes(&lmb.reserved, i) - 1;
-+		if (addr < total_lowmem)
-+			reserve_bootmem(lmb.reserved.region[i].base,
-+					lmb_size_bytes(&lmb.reserved, i));
-+	}
+Grant's patch should look for a compatible property with "ethernet-phy" in
+it, check for phy-handle in the ethernet node, make sure that a node very
+similar to mdio does not already exist, etc, it is going into a screen of
+code to do it comprehensively and future proof.
 
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
-@@ -334,11 +338,13 @@ void __init mem_init(void)
- 		highmem_mapnr = total_lowmem >> PAGE_SHIFT;
- 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
- 			struct page *page = pfn_to_page(pfn);
--
-+			if (lmb_is_reserved(pfn << PAGE_SHIFT))
-+				continue;
- 			ClearPageReserved(page);
- 			init_page_count(page);
- 			__free_page(page);
- 			totalhigh_pages++;
-+			reservedpages--;
- 		}
- 		totalram_pages += totalhigh_pages;
- 		printk(KERN_DEBUG "High memory: %luk\n",
-diff --git a/include/asm-powerpc/lmb.h b/include/asm-powerpc/lmb.h
-index b5f9f4c..5d1dc48 100644
---- a/include/asm-powerpc/lmb.h
-+++ b/include/asm-powerpc/lmb.h
-@@ -51,6 +51,7 @@ extern unsigned long __init __lmb_alloc_base(unsigned long size,
- extern unsigned long __init lmb_phys_mem_size(void);
- extern unsigned long __init lmb_end_of_DRAM(void);
- extern void __init lmb_enforce_memory_limit(unsigned long memory_limit);
-+extern int __init lmb_is_reserved(unsigned long addr);
+Just don't do it at all. The burden is on Genesi. So, it's difficult right
+now, and hard for users, so what? That's OUR problem, I dare say today it
+is MY problem. I do not want this to become a LINUX problem in the future
+when a new board comes out that is Efika-compatible, requiring patch
+removal, reshuffling, compliance testing etc.
 
- extern void lmb_dump_all(void);
+You do realise any new firmware with this kernel needs to work, regardless
+of the patch being present, in order to be validated? We can't ship an
+Efika board with a firmware which actively breaks because of a Linux
+kernel patch for older boards and some ancient bad decision, and saying
+"to use a new Efika you must use a brand new Linux kernel" is the kind of
+insanity in embedded development which made us choose SmartFirmware over
+U-Boot and FDT in the first place..
+
+I am not happy that we are being dragged into this model of playing
+"first to mainline" with arbitrary snippets of code which do NOT improve
+things in the long term.
+
 
 -- 
-1.5.3.7
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
