@@ -1,15 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 10 Jan 2008 10:42:16 +1100
+Date: Thu, 10 Jan 2008 10:48:03 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3] add default device trees for MPC837x MDS board
-Message-ID: <20080109234215.GA17153@localhost.localdomain>
-References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
-	<fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
+To: Liu Yu <Yu.Liu@freescale.com>
+Subject: Re: [PATCH] Fix remainder calculating bug in single floating point
+	division
+Message-ID: <20080109234803.GB17153@localhost.localdomain>
+References: <11996296134110-git-send-email-Yu.Liu@freescale.com>
+	<CC561FA6-0590-4BC0-B42B-7EE1B379CE8E@kernel.crashing.org>
+	<6EBEC19BF4A8F843BCD6B9155BBE2515D1B515@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
+In-Reply-To: <6EBEC19BF4A8F843BCD6B9155BBE2515D1B515@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 08, 2008 at 08:58:17AM -0700, Grant Likely wrote:
-> Hi Leo,
+On Wed, Jan 09, 2008 at 09:24:07AM +0800, Liu Yu wrote:
 > 
-> comments below.  I've made my comments on the first file, but they
-> apply to the other two also.
+> > 
+> > can you provide the test case that shows the error.
+> > 
 > 
-> Cheers,
-> g.
+> It seems that math-emu only be used for MPC8xx on current kernel.
 
-[snip]
-> > +               ranges = <0 e0000000 00100000>;
-> > +               reg = <e0000000 00000200>;
-> > +               bus-frequency = <0>;
-> > +
-> > +               wdt@200 {
-> > +                       compatible = "mpc83xx_wdt";
-> 
-> "fsl,mpc8377_wdt", "fsl,mpc83xx_wdt" as per generic names recommended practice.
-
-Uh.. that's reasonable advice, but it has nothing to do with the
-generic names recommended practice.
+It can be used for IBM/AMCC 4xx too.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
