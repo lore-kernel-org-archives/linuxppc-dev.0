@@ -1,13 +1,13 @@
 Return-Path: <matvejchikov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id 456E1DDEEF
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id DAD05DE0AA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 07:14:25 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so452431pyg.27
+	Thu, 10 Jan 2008 07:20:45 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so454824pyg.27
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 09 Jan 2008 12:14:24 -0800 (PST)
-Message-ID: <8496f91a0801091214n88c8d89q65beb1f160146eaa@mail.gmail.com>
-Date: Wed, 9 Jan 2008 23:14:24 +0300
+	Wed, 09 Jan 2008 12:20:44 -0800 (PST)
+Message-ID: <8496f91a0801091220l166b7278qdbd261c298e6826d@mail.gmail.com>
+Date: Wed, 9 Jan 2008 23:20:43 +0300
 From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
 To: linuxppc-embedded@ozlabs.org, netdev@vger.kernel.org
 Subject: Re: [PATCH for 2.6.24][NET] fs_enet: check for phydev existence in
