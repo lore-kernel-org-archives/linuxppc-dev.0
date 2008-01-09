@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.246])
-	by ozlabs.org (Postfix) with ESMTP id A802BDE0FB
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 687BCDDF56
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 05:07:32 +1100 (EST)
-Received: by ag-out-0708.google.com with SMTP id 33so244172agc.0
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 09 Jan 2008 10:07:31 -0800 (PST)
-Message-ID: <fa686aa40801091007h4bc65804h9a7b562a49478deb@mail.gmail.com>
-Date: Wed, 9 Jan 2008 11:07:31 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Joachim Meyer" <Jogi95@web.de>
-Subject: Re: Linux for ml310
-In-Reply-To: <524275432@web.de>
+	Thu, 10 Jan 2008 05:32:04 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <524275432@web.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Control not branching to the instruction present at resetvec	i.e
+	0xfffffffc
+Date: Wed, 9 Jan 2008 10:28:06 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D701494050@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.1.1199581203.5432.linuxppc-embedded@ozlabs.org>
+References: <mailman.1.1199581203.5432.linuxppc-embedded@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,46 +24,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/9/08, Joachim Meyer <Jogi95@web.de> wrote:
-> Hi again
->
-> In which xparams* files should i look for the right definition?
-> In the xparameters.h from the BSP I can't find it, it looks like this:
-> -------------------------------------------------------------------
-> /*
->  * include/asm-ppc/xparameters.h
->  *
->  * This file includes the correct xparameters.h for the CONFIG'ed board
->  *
->  * Author: MontaVista Software, Inc.
->  *         source@mvista.com
->  *
->  * 2004 (c) MontaVista Software, Inc.  This file is licensed under the terms
->  * of the GNU General Public License version 2.  This program is licensed
->  * "as is" without any warranty of any kind, whether express or implied.
->  */
->
-> #include <linux/config.h>
->
-> #if defined(CONFIG_XILINX_ML300)
-> #include <platforms/4xx/xparameters/xparameters_ml300.h>
+Ravi,
 
-<--- Add fixups here.
+If you already have BDI2000, why don't you single step on it?
 
-> #endif
-> #if defined(CONFIG_XILINX_ML40x)
-> #include <platforms/4xx/xparameters/xparameters_ml40x.h>
-> #endif
+Thanks
+Siva
 
-The fixups should look like this:
 
-#define XPAR_UARTNS550_0_CLOCK_FREQ_HZ \
-                XPAR_<real-name-from-xparams-ml300>_FREQ_HZ
-#define XPAR_INTC_0_UARTNS550_0_VEC_ID \
-                XPAR_<real-name-from-xparams-ml300>_VEC_ID
-#define XPAR_UARTNS550_0_BASEADDR \
-                XPAR_<real-name-from-xparams-ml300>_BASEADDR
+Date: Sat, 5 Jan 2008 06:19:05 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: Control not branching to the instruction present at
+	resetvec	i.e 0xfffffffc
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <14633599.post@talk.nabble.com>
+Content-Type: text/plain; charset=3Dus-ascii
 
-Note: when you generate the EDK bsp, *make sure* you generated it for
-the "linux 2.6" target; not "standalone".  If you don't then
-xparams_ml300 will be missing stuff.
+
+Hi Mr Ravi ...
+I suggest you to post a new concern in a new thread ....
+
+----Misbah=20
+
+ravi.rao wrote:
+>=20
+> Hi All,
+>     We have a custom target board based on PPC-EP405. We just got the=20
+> board from the hardware team .I connected the board to BDI200 and
+powered=20
+> it on.=20
+> The control came to the resetvec address which is 0xfffffffc. I was
+able=20
+> to read and write to flash. So I erased the flash and burnt the
+bootloader=20
+> into flash from 0xfffc0000.
+> I verified that the instruction at 0xfffffffc is 4bfc2104 whicis
+actually=20
+> a branch to 0xfffc2100. Also a memory dump of 0xfffc2100 shows the
+correct=20
+> code. This proved that
+> the uboot bootloader was burnt properly.
+> Now when I reset the board the control never reaches 0xfffc2100 i.e
+for=20
+> some reason the code at the resetvec is not getting executed. Any help
+or=20
+> pointers to resolve this is greatly appreciated.
+> Thanks,
+> Ravishankar Govindarao
+> RFL Electronics Inc.
+> E-mail : Ravi.Rao@rflelect.com
+> Voice: 973.334.3100 Ext. 233
+> Fax: 973.334.3863
+> =20
