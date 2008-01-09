@@ -1,24 +1,18 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id 2E6DFDDE0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 04:22:09 +1100 (EST)
-Date: Wed, 9 Jan 2008 18:22:08 +0100
-From: Sven Luther <sven@genesi-usa.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: add phy-handle property for fec_mpc52xx
-Message-ID: <20080109172208.GD6789@powerlinux.fr>
-References: <20080109140608.GA15673@aepfle.de> <4784E78C.40904@genesi-usa.com>
-	<20080109153511.GA5086@powerlinux.fr>
-	<4784F695.7050507@genesi-usa.com>
-	<20080109162923.GA6290@powerlinux.fr>
-	<4784F803.9030003@genesi-usa.com>
-	<20080109170540.GA6789@powerlinux.fr>
-	<478501C0.9040905@genesi-usa.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2555ADDFF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 04:26:15 +1100 (EST)
+Message-ID: <478503B6.3060402@pikatech.com>
+Date: Wed, 09 Jan 2008 12:26:14 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <478501C0.9040905@genesi-usa.com>
-Cc: Sven Luther <sven@genesi-usa.com>, Olaf Hering <olaf@aepfle.de>,
-	linuxppc-dev@ozlabs.org
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] Miscellaneous for Taco
+References: <477F13C0.7040006@pikatech.com> <1199566583.7291.63.camel@pasglop>
+	<4783C3E8.3090107@pikatech.com> <200801082023.11475.sr@denx.de>
+In-Reply-To: <200801082023.11475.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 09, 2008 at 05:17:52PM +0000, Matt Sealey wrote:
-> 
-> Sven Luther wrote:
-> >On Wed, Jan 09, 2008 at 04:36:19PM +0000, Matt Sealey wrote:
-> >>The link that Olaf presented, www.powerdeveloper.org/asset/by-id/46 *is*
-> >>the upstream support for now. What his patch does is say, the upstream
-> >>support exists, but we don't like it, so we will supplement the patch..
-> >
-> >Matt, your work on efika.forth is laudable, and it is nice that you took
-> >the time to support it.
-> >
-> >*BUT* it is not acceptable for a distribution, or for someone who will
-> >have to do user support, to have to launch a second binary before
-> >launching the kernel. Especially when netbooting for example.
-> 
-> Then I think you are all missing the fact that I said there *IS A REALLY
-> CUTE WAY OF INSTALLING IT ONCE* by uploading it into nvramrc, it will not
-> be a runnable script, but executed on boot, because it'll be flashed into
-> nvramrc.
-> 
-> However I don't have the time to go into making this app, creating the
-> tools to munge efika.forth into a correct more uploadable format, and
-> creating the install tool. I barely have enough time to track this list
-> and make sure any drivers requiring firmware tree changes are taken care
-> of (I definitely lost the plot with the USB one, I haven't even checked
-> it even though I was asked to 2 weeks ago..)
-> 
-> Unfortunately one guy who already has a significant amount of work to do
-> all day, who is not the responsible person for firmware issues, and is
-> not being assisted by anyone in the community either generated and
-> maintained by Genesi or existing around Linux, poses some serious problems
-> with timeliness of updates.
-> 
-> If anyone wants to stop patching Linux and instead make efika.forth easier
-> to use, feel free, REALLY. Sven, are you volunteering for this REALLY
-> tiny task? It will probably take all of a day for a couple of guys to
-> work up the tools to do it based on very simple instructions and data
-> provided.. the work is probably worth the price of a pizza, so no
-> contracts are going to be worked out for it.
-
-Just fix it conditionally in linux, like it is being proposed, and
-everyone is happy :)
-
-Friendly,
-
-Sven Luther
+Stefan Roese wrote:
+> On Tuesday 08 January 2008, Sean MacLennan wrote:
+>   
+>> How about just 44x?
+>>
+>> Cheers,
+>>     Sean
+>>
+>> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+>> index 7580aa5..682deae 100644
+>> --- a/drivers/usb/Kconfig
+>> +++ b/drivers/usb/Kconfig
+>> @@ -39,6 +39,7 @@ config USB_ARCH_HAS_OHCI
+>>         # PPC:
+>>         default y if STB03xxx
+>>         default y if PPC_MPC52xx
+>> +       default y if 44x
+>>     
+>
+> No. Not all 44x have OHCI built in. Currently 440EP, 440EPx and 405EZ have it. 
+> But since your patch only touches 440EP, you should just enable OHCI for 
+> exactly this platform.
+>
+> Best regards,
+> Stefan
+>   
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index 7580aa5..2660f30 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -39,6 +39,7 @@ config USB_ARCH_HAS_OHCI
+        # PPC:
+        default y if STB03xxx
+        default y if PPC_MPC52xx
++       default y if 440EP
+        # MIPS:
+        default y if SOC_AU1X00
+        # more:
