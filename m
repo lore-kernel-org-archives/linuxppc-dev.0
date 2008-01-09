@@ -1,31 +1,21 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B8EC5DDF05
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 12:24:25 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m091O9UK001387
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 18:24:10 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m091O8vS018779
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 19:24:09 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Fix remainder calculating bug in single floating point
-	division
-Date: Wed, 9 Jan 2008 09:24:07 +0800
-Message-ID: <6EBEC19BF4A8F843BCD6B9155BBE2515D1B515@zch01exm26.fsl.freescale.net>
-In-Reply-To: <CC561FA6-0590-4BC0-B42B-7EE1B379CE8E@kernel.crashing.org>
-References: <11996296134110-git-send-email-Yu.Liu@freescale.com>
-	<CC561FA6-0590-4BC0-B42B-7EE1B379CE8E@kernel.crashing.org>
-From: "Liu Yu" <Yu.Liu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7B421DDF1E
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 13:36:56 +1100 (EST)
+Date: Wed, 9 Jan 2008 13:36:44 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: John Rigby <jrigby@freescale.com>
+Subject: Re: [PATCH 3/7] Basic Freescale MPC512x support
+Message-Id: <20080109133644.84276ffa.sfr@canb.auug.org.au>
+In-Reply-To: <1199808093-15929-4-git-send-email-jrigby@freescale.com>
+References: <1199808093-15929-1-git-send-email-jrigby@freescale.com>
+	<1199808093-15929-2-git-send-email-jrigby@freescale.com>
+	<1199808093-15929-3-git-send-email-jrigby@freescale.com>
+	<1199808093-15929-4-git-send-email-jrigby@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__9_Jan_2008_13_36_44_+1100_aA6=K3ix6BwqRp5o"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -36,32 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__9_Jan_2008_13_36_44_+1100_aA6=K3ix6BwqRp5o
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->=20
-> can you provide the test case that shows the error.
->=20
+On Tue,  8 Jan 2008 09:01:29 -0700 John Rigby <jrigby@freescale.com> wrote:
+>
+> +++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+> +#include <asm/of_platform.h>
 
-It seems that math-emu only be used for MPC8xx on current kernel.
+I see I don't need to comment on this :-)
 
----
-#include <stdio.h>
-#include <math.h>
-#include <bits/nan.h>
-#include <bits/inf.h>
+> +static void __init mpc5121_ads_init_IRQ(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	np =3D of_find_node_by_type(NULL, "ipic");
+> +	if (!np)
+> +		return;
+> +
+> +	ipic_init(np, 0);
+> +
+> +	/*
+> +	 * Initialize the default interrupt mapping priorities,
+> +	 * in case the boot rom changed something on us.
+> +	 */
+> +	ipic_set_default_priority();
+> +}
 
-void
-fdiv(float f, float f1, float expected)
-{
-    float f2;
+This needs an of_node_put(np) somewhere.
 
-    f2 =3D f / f1;
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-    printf("fdiv %e / %e =3D %e expected %e %s \n", f, f1, f2, expected,
-               (f2 =3D=3D expected) ? "(PASS)" : "(FAIL)");
-}
-=20
-int
-main(void)
-{
-	fdiv(1.1754941e-38f, 0.9999999f, 1.1754942e-38f);
-}
+--Signature=_Wed__9_Jan_2008_13_36_44_+1100_aA6=K3ix6BwqRp5o
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHhDNBTgG2atn1QN8RAhwjAJ4nrgo2NyPYYp0Ue7E8128pUV9hlQCdF8dH
+iz0pWA5RRpjZJ1YEFUwoK3w=
+=5ctH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Jan_2008_13_36_44_+1100_aA6=K3ix6BwqRp5o--
