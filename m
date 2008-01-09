@@ -1,21 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1D4EADE017
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 11:27:06 +1100 (EST)
-Date: Wed, 9 Jan 2008 18:36:34 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device
-	driver
-Message-ID: <20080110003634.GA19966@lixom.net>
-References: <20080109190852.GA18827@localhost.localdomain>
-	<20080109191041.GB23283@localhost.localdomain>
-	<20080110104048.2fea6ab3.sfr@canb.auug.org.au>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 10 Jan 2008 10:42:16 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/3] add default device trees for MPC837x MDS board
+Message-ID: <20080109234215.GA17153@localhost.localdomain>
+References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
+	<fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080110104048.2fea6ab3.sfr@canb.auug.org.au>
-Cc: Paul Mundt <lethal@linux-sh.org>, linuxppc-dev@ozlabs.org,
-	Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+In-Reply-To: <fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 10, 2008 at 10:40:48AM +1100, Stephen Rothwell wrote:
-> Hi Anton,
+On Tue, Jan 08, 2008 at 08:58:17AM -0700, Grant Likely wrote:
+> Hi Leo,
 > 
-> Juts one small trivial comment (could be fixed later).
+> comments below.  I've made my comments on the first file, but they
+> apply to the other two also.
 > 
-> On Wed, 9 Jan 2008 22:10:41 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> >
-> > +static struct of_device_id pata_of_platform_match[] = {
+> Cheers,
+> g.
+
+[snip]
+> > +               ranges = <0 e0000000 00100000>;
+> > +               reg = <e0000000 00000200>;
+> > +               bus-frequency = <0>;
+> > +
+> > +               wdt@200 {
+> > +                       compatible = "mpc83xx_wdt";
 > 
-> This could be declared const.
+> "fsl,mpc8377_wdt", "fsl,mpc83xx_wdt" as per generic names recommended practice.
 
-Good point, but let's not hold up merge based on this. Need something
-for janitors to do too, and it's good enough to merge as-is. :)
+Uh.. that's reasonable advice, but it has nothing to do with the
+generic names recommended practice.
 
-
--Olof
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
