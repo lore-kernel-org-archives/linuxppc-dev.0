@@ -1,20 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 44C4ADDF16
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 18:01:16 +1100 (EST)
-Date: Wed, 9 Jan 2008 18:01:05 +1100
+	by ozlabs.org (Postfix) with ESMTP id 859C8DDF61
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 18:15:13 +1100 (EST)
+Date: Wed, 9 Jan 2008 18:15:01 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH 1/3] sbc834x: Add support for Wind River SBC834x boards
-Message-Id: <20080109180105.7c745bde.sfr@canb.auug.org.au>
-In-Reply-To: <1199857773848-git-send-email-paul.gortmaker@windriver.com>
-References: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
-	<1199857773848-git-send-email-paul.gortmaker@windriver.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 2/4 v2] PS3: Add logical performance monitor repository
+	routines
+Message-Id: <20080109181501.334e98c8.sfr@canb.auug.org.au>
+In-Reply-To: <47846B38.7010409@am.sony.com>
+References: <477EF59C.2070809@am.sony.com>
+	<47846B38.7010409@am.sony.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__9_Jan_2008_18_01_05_+1100_T4dRwAZgb4C1hCLK"
-Cc: linuxppc-dev@ozlabs.org
+	boundary="Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,64 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_Jan_2008_18_01_05_+1100_T4dRwAZgb4C1hCLK
+--Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Paul,
-
-On Wed,  9 Jan 2008 00:49:30 -0500 Paul Gortmaker <paul.gortmaker@windriver=
-.com> wrote:
+On Tue, 08 Jan 2008 22:35:36 -0800 Geoff Levand <geoffrey.levand@am.sony.co=
+m> wrote:
 >
-> +static void __init sbc834x_init_IRQ(void)
+> +int ps3_repository_read_num_pu(unsigned int *num_pu)
 > +{
-> +	struct device_node *np;
+> +	int result;
+> +	u64 v1;
 > +
-> +	np =3D of_find_node_by_type(NULL, "ipic");
-> +	if (!np)
-> +		return;
-> +
-> +	ipic_init(np, 0);
-> +
-> +	/* Initialize the default interrupt mapping priorities,
-> +	 * in case the boot rom changed something on us.
-> +	 */
-> +	ipic_set_default_priority();
-> +}
+> +	v1 =3D 0;
+> +	result =3D read_node(PS3_LPAR_ID_CURRENT,
+> +			   make_first_field("bi", 0),
+> +			   make_field("pun", 0),
+> +			   0, 0,
+> +			   &v1, NULL);
+> +	*num_pu =3D v1;
 
-This needs an of_node_put(np) somewhere.
+Why not just pass "num_pu" instead of &v1 to read_node()?
 
-> +static struct of_device_id sbc834x_ids[] =3D {
-
-__initdata
-
-> +static int __init sbc834x_declare_of_platform_devices(void)
+> +int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
 > +{
-> +	if (!machine_is(sbc834x))
-> +		return 0;
+> +	int result;
+> +	u64 v1;
 > +
-> +	of_platform_bus_probe(NULL, sbc834x_ids, NULL);
-> +	return 0;
-> +}
-> +device_initcall(sbc834x_declare_of_platform_devices);
+> +	v1 =3D 0;
+> +	result =3D read_node(PS3_LPAR_ID_CURRENT,
+> +		make_first_field("bi", 0),
+> +		make_field("pu", pu_index),
+> +		0, 0,
+> +		&v1, NULL);
+> +	*pu_id =3D v1;
 
-machine_device_initcall(sbc834x, ...
+Similarly with "pu_id"?
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__9_Jan_2008_18_01_05_+1100_T4dRwAZgb4C1hCLK
+--Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHhHE1TgG2atn1QN8RAlycAJ9PRVHMUKn+whMb0yRmAiWuZmU9rgCggJDV
-dKeJNQyV8kTm+XCXmGLkHXU=
-=11MM
+iD8DBQFHhHR5TgG2atn1QN8RApYEAJ91ItpRYW8Xqh5nmoD3yjcv0wnu5QCgl/wn
+MxUDJ4IRErYTVm0AOzuj0/U=
+=dvcu
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__9_Jan_2008_18_01_05_+1100_T4dRwAZgb4C1hCLK--
+--Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt--
