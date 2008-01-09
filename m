@@ -1,19 +1,22 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 1A57FDE105
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 05:50:43 +1100 (EST)
-Message-ID: <47851781.90105@pikatech.com>
-Date: Wed, 09 Jan 2008 13:50:41 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3AB5CDE02E
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 05:54:03 +1100 (EST)
+Date: Wed, 9 Jan 2008 12:53:49 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range
+	lands in highmem
+Message-ID: <20080109185349.GC4337@loki.buserror.net>
+References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] MTD for Taco
-References: <477F12D1.2070109@pikatech.com>
-	<200801051041.18173.sr@denx.de><47850CEF.9060209@pikatech.com>
-	<20080109124243.73205d68@zod.rchland.ibm.com>
-In-Reply-To: <20080109124243.73205d68@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,73 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Wed, 09 Jan 2008 13:05:35 -0500
-> Sean MacLennan <smaclennan@pikatech.com> wrote:
->
->   
->> Stefan Roese wrote:
->>     
->>> On Saturday 05 January 2008, Sean MacLennan wrote:
->>>   
->>>       
->>>> This patch adds the maps for the taco. It also gets the ndfc.c NAND
->>>> driver in a compilable state. The map is guaranteed to change since the
->>>> exact NOR/NAND flash configuration is in flux right now when we found
->>>> the 256M NAND flash won't boot properly.
->>>>
->>>> Currently it configures the NOR in a reasonable fashion and leaves the
->>>> NAND as one honkin' parition.
->>>>     
->>>>         
->>> <snip>
->>>
->>>   
->>>       
->>>> diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
->>>> index 1c0e89f..f5e93cf 100644
->>>> --- a/drivers/mtd/nand/ndfc.c
->>>> +++ b/drivers/mtd/nand/ndfc.c
->>>> @@ -24,11 +24,6 @@
->>>>  #include <linux/platform_device.h>
->>>>  
->>>>  #include <asm/io.h>
->>>> -#ifdef CONFIG_40x
->>>> -#include <asm/ibm405.h>
->>>> -#else
->>>> -#include <asm/ibm44x.h>
->>>> -#endif
->>>>     
->>>>         
->>> You do break arch/ppc support with this patch. We have to still support
->>> arch/ppc a few month, so please don't break this support for now.
->>>  
->>>       
->> Here is an updated patch that does not break the ppc arch support. 
->> Unfortunately, it still has the taco specific patch. I can't find 
->> anything different between the taco and the sequoia and since this patch 
->> fixes the problem, the hardware guys refuse to look into it. I can't 
->> blame them as we are overloaded as it is.
->>
->> But I will send out the patch anyway in case anybody needs the ndfc 
->> driver working under the powerpc arch.
->>     
->
-> This doesn't really get the addresses, etc from the device tree though,
-> correct?
->
-> josh
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->   
-No. You have to setup everything the old way. This *just* gets it 
-working so if you have the PPC layout, it will work.
+On Wed, Jan 09, 2008 at 11:28:30AM -0600, Kumar Gala wrote:
+>  	/* reserve the sections we're already using */
+> -	for (i = 0; i < lmb.reserved.cnt; i++)
+> -		reserve_bootmem(lmb.reserved.region[i].base,
+> -				lmb_size_bytes(&lmb.reserved, i));
+> +	for (i = 0; i < lmb.reserved.cnt; i++) {
+> +		unsigned long addr = lmb.reserved.region[i].base +
+> +				     lmb_size_bytes(&lmb.reserved, i) - 1;
+> +		if (addr < total_lowmem)
+> +			reserve_bootmem(lmb.reserved.region[i].base,
+> +					lmb_size_bytes(&lmb.reserved, i));
+> +	}
 
-Unless testing goes *really* well, I doubt I will have time in the short 
-term to port it to the of_platform. I'm afraid I will have to live with 
-"it works, don't touch it" for now :(
+It looks like if the reserved area straddles the highmem boundary, it'll
+only reserve the highmem portion.
 
-Cheers,
-   Sean
+-Scott
