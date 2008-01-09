@@ -1,21 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7166ADDE07
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 5BDA8DE198
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 06:07:17 +1100 (EST)
-Message-ID: <47851990.7020908@freescale.com>
-Date: Wed, 09 Jan 2008 12:59:28 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Thu, 10 Jan 2008 06:16:09 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so78263anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 09 Jan 2008 11:16:05 -0800 (PST)
+Message-ID: <fa686aa40801091116n20d9b1cet131f57f41120e07e@mail.gmail.com>
+Date: Wed, 9 Jan 2008 12:16:04 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Joachim Meyer" <Jogi95@web.de>
+Subject: Re: Linux for ml310
+In-Reply-To: <524369371@web.de>
 MIME-Version: 1.0
-To: jay_chen <jay_chen@alphanetworks.com>
-Subject: Re: Use 2G RAM in 8548, vmalloc fail, adjust_total_lowmem
-References: <OF590B6FCB.576A8335-ON482573CB.00169CC3@alphanetworks.com>
-In-Reply-To: <OF590B6FCB.576A8335-ON482573CB.00169CC3@alphanetworks.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+References: <524369371@web.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,48 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-jay_chen wrote:
-> Hello, all~~~
-> 
-> I am using a MCP8548 board with 2.6.14.5 kernel.
-> And I would like to upgrade memory from 512MB to 2048MB.
-> Finally, I realize this is not so easy as I think. I encounter several
-> problems. :~~
+On 1/9/08, Joachim Meyer <Jogi95@web.de> wrote:
+> Hi
+>
+> Thanks for your great help!
+> I added following lines which I found at the old xparameters_ml300.h, which was part of the kernel-sources but was replaced with the one of the BSP:
+> ----------------------------------------------------------------------------------------------------------------------------------
+> #define XPAR_XUARTNS550_CLOCK_HZ 100000000
+> #define XPAR_DCR_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR 6
+> #define XPAR_OPB_UART16550_0_BASEADDR 0xA0000000
+> #define XPAR_UARTNS550_0_CLOCK_FREQ_HZ XPAR_XUARTNS550_CLOCK_HZ
+> #define XPAR_INTC_0_UARTNS550_0_VEC_ID XPAR_DCR_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR
+> #define XPAR_UARTNS550_0_BASEADDR (XPAR_OPB_UART16550_0_BASEADDR+0x1000)
 
-Well, it should be easy if you use highmem...
+wait... Are you using the value from the *old* or *new*
+xparameters_ml300.h?  The values from the old file *will* *not* *work*
+for your design.  You must find the appropriate values from your new
+xparams file.
 
-> First, I change mem=512M to mem=2048M.
-> 
-> 1. vmalloc fail problem
+Hmmm.... but, this whole discussion assmues that your using a 16550
+serial port.  If you are using the uartlite instead then all of the
+above is unnecessary; you just need to turn off 16550 console support
+in the kernel config.
 
-Are you saying you have vmalloc failures if you don't do any of the 
-below, and enable highmem, with 2GB RAM?  Could you provide more details?
+Cheers,
+g.
 
-> So, I change kernel config in "advanced setup"
-> Change  "Set maximum low memory" from 0x30000000 to 0x80000000.
-> Change "Virtual address of kernel base" from 0xC0000000 to 0x60000000.
-> Change "Set custom user task size" from 0x80000000 to 0x60000000
-> 
-> Someone said that he could change "Virtual address of kernel base" to
-> 0xA0000000 without problem.
-> Could I change it to 0x60000000? Any possible problem?
-
-There are always *possible* problems. :-)
-In theory it should work, but it's not a very well tread path.
-
-> In adjust_total_lowmem(), fsl_booke_mmu.c 
-> It always limits the low memory to 768MB.  (no matter we set mem=768MB or
-> mem=1024MB, or mem=2048MB) 
-> __max_low_memory = max_low_mem = __cam0 + __cam1 + __cam2; (each TLB could
-> map up to 256MB)
-> 
-> My question is could I use more than 3 TLBs here? Such as 8 TLBs to map 2G
-> ram?
-
-Yes.
-
-> Or could I use e500v2 new feature, that is 1 TLB could map up to 4G?
-
-Yes.
-
--Scott
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
