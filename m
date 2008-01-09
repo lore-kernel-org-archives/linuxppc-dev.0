@@ -1,19 +1,16 @@
-Return-Path: <sprasad@bivio.net>
-Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
-	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 687BCDDF56
+Return-Path: <Jogi95@web.de>
+Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
+	by ozlabs.org (Postfix) with ESMTP id F32BEDE177
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 05:32:04 +1100 (EST)
+	Thu, 10 Jan 2008 06:00:30 +1100 (EST)
+Date: Wed, 09 Jan 2008 20:00:27 +0100
+Message-Id: <524369371@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Control not branching to the instruction present at resetvec	i.e
-	0xfffffffc
-Date: Wed, 9 Jan 2008 10:28:06 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D701494050@corpexc01.corp.networkrobots.com>
-In-Reply-To: <mailman.1.1199581203.5432.linuxppc-embedded@ozlabs.org>
-References: <mailman.1.1199581203.5432.linuxppc-embedded@ozlabs.org>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-embedded@ozlabs.org>
+From: Joachim Meyer <Jogi95@web.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux for ml310
+Content-Type: text/plain; charset=iso-8859-15
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,55 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ravi,
+Hi
 
-If you already have BDI2000, why don't you single step on it?
+Thanks for your great help!
+I added following lines which I found at the old xparameters=5Fml300.h, whic=
+h was part of the kernel-sources but was replaced with the one of the BSP:=
 
-Thanks
-Siva
-
-
-Date: Sat, 5 Jan 2008 06:19:05 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: Control not branching to the instruction present at
-	resetvec	i.e 0xfffffffc
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <14633599.post@talk.nabble.com>
-Content-Type: text/plain; charset=3Dus-ascii
-
-
-Hi Mr Ravi ...
-I suggest you to post a new concern in a new thread ....
-
-----Misbah=20
-
-ravi.rao wrote:
->=20
-> Hi All,
->     We have a custom target board based on PPC-EP405. We just got the=20
-> board from the hardware team .I connected the board to BDI200 and
-powered=20
-> it on.=20
-> The control came to the resetvec address which is 0xfffffffc. I was
-able=20
-> to read and write to flash. So I erased the flash and burnt the
-bootloader=20
-> into flash from 0xfffc0000.
-> I verified that the instruction at 0xfffffffc is 4bfc2104 whicis
-actually=20
-> a branch to 0xfffc2100. Also a memory dump of 0xfffc2100 shows the
-correct=20
-> code. This proved that
-> the uboot bootloader was burnt properly.
-> Now when I reset the board the control never reaches 0xfffc2100 i.e
-for=20
-> some reason the code at the resetvec is not getting executed. Any help
-or=20
-> pointers to resolve this is greatly appreciated.
-> Thanks,
-> Ravishankar Govindarao
-> RFL Electronics Inc.
-> E-mail : Ravi.Rao@rflelect.com
-> Voice: 973.334.3100 Ext. 233
-> Fax: 973.334.3863
-> =20
+--------------------------------------------------------------------------=
+--------------------------------------------------------
+#define XPAR=5FXUARTNS550=5FCLOCK=5FHZ 100000000
+#define XPAR=5FDCR=5FINTC=5F0=5FOPB=5FUART16550=5F0=5FIP2INTC=5FIRPT=5FINTR 6
+#define XPAR=5FOPB=5FUART16550=5F0=5FBASEADDR 0xA0000000
+#define XPAR=5FUARTNS550=5F0=5FCLOCK=5FFREQ=5FHZ XPAR=5FXUARTNS550=5FCLOCK=5FHZ
+#define XPAR=5FINTC=5F0=5FUARTNS550=5F0=5FVEC=5FID XPAR=5FDCR=5FINTC=5F0=5FOPB=5FUART16550=5F0=5FIP2=
+INTC=5FIRPT=5FINTR
+#define XPAR=5FUARTNS550=5F0=5FBASEADDR (XPAR=5FOPB=5FUART16550=5F0=5FBASEADDR+0x1000)
+--------------------------------------------------------------------------=
+--------------------------------------------------------
+now  the compiling ends successfully.
+Thanks again
+Joachim
+=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
+Jetzt neu! Sch=FCtzen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
+kostenlos testen. http://www.pc-sicherheit.web.de/startseite/=3Fmc=3D022220
