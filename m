@@ -1,13 +1,15 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B2BAADE0A5
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 07:19:14 +1100 (EST)
-Message-ID: <47852C41.8000506@pikatech.com>
-Date: Wed, 09 Jan 2008 15:19:13 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 219CBDE0F7
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 07:21:12 +1100 (EST)
+Message-ID: <47852CB3.3000208@pikatech.com>
+Date: Wed, 09 Jan 2008 15:21:07 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/5] Warp Base Platform
+Subject: [PATCH 2/5] Warp Base Platform - dts
+References: <47852C41.8000506@pikatech.com>
+In-Reply-To: <47852C41.8000506@pikatech.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,305 +20,240 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have split up the patches slightly differently based on Josh's comments.
-
-The first patch is basically the platform/44x files.
-
 Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 ---
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 66a3d8c..b3e4c35 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -469,7 +469,7 @@ config MCA
- config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| PPC_PS3
-+		|| PPC_PS3 || 44x
- 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index d248013..a95409e 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -53,6 +53,19 @@ config RAINIER
- 	help
- 	  This option enables support for the AMCC PPC440GRX evaluation board.
- 
-+config WARP
-+	bool "PIKA Warp"
-+	depends on 44x
-+	default n
-+	select 440EP
-+	help
-+	  This option enables support for the PIKA Warp(tm) Appliance. The Warp
-+          is a small computer replacement with up to 9 ports of FXO/FXS plus VOIP
-+	  stations and trunks.
-+
-+	  See http://www.pikatechnologies.com/ and follow the "PIKA for Computer
-+	  Telephony Developers" link for more information.
-+
- #config LUAN
- #	bool "Luan"
- #	depends on 44x
-@@ -75,6 +88,7 @@ config 440EP
- 	select PPC_FPU
- 	select IBM440EP_ERR42
- 	select IBM_NEW_EMAC_ZMII
-+	select USB_ARCH_HAS_OHCI
- 
- config 440EPX
- 	bool
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index a2a0dc1..c1733c0 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_BAMBOO)	+= bamboo.o
- obj-$(CONFIG_SEQUOIA)	+= sequoia.o
- obj-$(CONFIG_KATMAI)	+= katmai.o
- obj-$(CONFIG_RAINIER)	+= rainier.o
-+obj-$(CONFIG_WARP)	+= warp.o
 --- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ arch/powerpc/platforms/44x/warp.c	2008-01-08 17:59:48.000000000 -0500
-@@ -0,0 +1,239 @@
++++ arch/powerpc/boot/dts/warp.dts	2008-01-08 12:04:10.000000000 -0500
+@@ -0,0 +1,232 @@
 +/*
-+ * PIKA Warp(tm) board specific routines
++ * Device Tree Source for PIKA Warp
 + *
 + * Copyright (c) 2008 PIKA Technologies
 + *   Sean MacLennan <smaclennan@pikatech.com>
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
 + */
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
-+#include <linux/kthread.h>
 +
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "pika,warp";
++	compatible = "pika,warp";
++	dcr-parent = <&/cpus/cpu@0>;
 +
-+#include "44x.h"
++	aliases {
++		ethernet0 = &EMAC0;
++		serial0 = &UART0;
++	};
 +
-+#define WARP_GPIO_BASE 0xEF600B00ULL
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+static __initdata struct of_device_id warp_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
++		cpu@0 {
++			device_type = "cpu";
++			model = "PowerPC,440EP";
++			reg = <0>;
++			clock-frequency = <0>; /* Filled in by zImage */
++			timebase-frequency = <0>; /* Filled in by zImage */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; /* Filled in by zImage */
++	};
++
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic-440ep","ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	UIC1: interrupt-controller1 {
++		compatible = "ibm,uic-440ep","ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	SDR0: sdr {
++		compatible = "ibm,sdr-440ep";
++		dcr-reg = <00e 002>;
++	};
++
++	CPR0: cpr {
++		compatible = "ibm,cpr-440ep";
++		dcr-reg = <00c 002>;
++	};
++
++	plb {
++		compatible = "ibm,plb-440ep", "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by zImage */
++
++		SDRAM0: sdram {
++			compatible = "ibm,sdram-440ep", "ibm,sdram-405gp";
++			dcr-reg = <010 2>;
++		};
++
++		DMA0: dma {
++			compatible = "ibm,dma-440ep", "ibm,dma-440gp";
++			dcr-reg = <100 027>;
++		};
++
++		FPGA0: fpga {
++			compatible = "pika,fpga";
++	   		reg = <0 80000000 2200>;
++			interrupts = <18 8>;
++			interrupt-parent = <&UIC0>;
++		};
++
++		MAL0: mcmal {
++			compatible = "ibm,mcmal-440ep", "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <2>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					/*RXEOB*/ 1 &UIC0 b 4
++					/*SERR*/  2 &UIC1 0 4
++					/*TXDE*/  3 &UIC1 1 4
++					/*RXDE*/  4 &UIC1 2 4>;
++		};
++
++		POB0: opb {
++		  	compatible = "ibm,opb-440ep", "ibm,opb-440gp", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++		  	ranges = <00000000 0 00000000 80000000
++			          80000000 0 80000000 80000000>;
++		  	interrupt-parent = <&UIC1>;
++		  	interrupts = <7 4>;
++		  	clock-frequency = <0>; /* Filled in by zImage */
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-440ep", "ibm,ebc-440gp", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				interrupts = <5 1>;
++				interrupt-parent = <&UIC1>;
++
++				nor_flash@0,0 {
++					/* Really spansion */
++					compatible = "amd,s29gl512n", "cfi-flash";
++					bank-width = <2>;
++					reg = <0 ffc00000 4000000>;
++					#address-cells = <1>;
++					#size-cells = <1>;
++					partition@0 {
++						label = "kernel";
++						reg = <0 180000>;
++					};
++					partition@180000 {
++						label = "root";
++						reg = <180000 3480000>;
++					};
++					partition@3600000 {
++						label = "user";
++						reg = <3600000 900000>;
++					};
++					partition@3f00000 {
++						label = "fpga";
++						reg = <3f00000 40000>;
++					};
++					partition@3f40000 {
++						label = "env";
++						reg = <3f40000 40000>;
++					};
++					partition@3f80000 {
++						label = "u-boot";
++						reg = <3f80000 80000>;
++					};
++				};
++			};
++
++			UART0: serial@ef600300 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600300 8>;
++		   		virtual-reg = <ef600300>;
++		   		clock-frequency = <0>; /* Filled in by zImage */
++		   		current-speed = <1c200>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <0 4>;
++	   		};
++
++			IIC0: i2c@ef600700 {
++				device_type = "i2c";
++				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
++				reg = <ef600700 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			ZMII0: emac-zmii@ef600d00 {
++				device_type = "zmii-interface";
++				compatible = "ibm,zmii-440ep", "ibm,zmii-440gp", "ibm,zmii";
++				reg = <ef600d00 c>;
++			};
++
++			EMAC0: ethernet@ef600e00 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-440ep", "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <ef600e00 70>;
++				local-mac-address = [000000000000];
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++
++			usb@ef601000 {
++				compatible = "ohci-be";
++				reg = <ef601000 80>;
++				interrupts = <8 1 9 1>;
++				interrupt-parent = < &UIC1 >;
++			};
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@ef600300";
++	};
 +};
-+
-+static int __init warp_device_probe(void)
-+{
-+	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-+
-+	return 0;
-+}
-+machine_device_initcall(warp, warp_device_probe);
-+
-+static int __init warp_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if(!of_flat_dt_is_compatible(root, "pika,warp"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+define_machine(warp) {
-+	.name 				= "Warp",
-+	.probe 				= warp_probe,
-+	.progress 			= udbg_progress,
-+	.init_IRQ 			= uic_init_tree,
-+	.get_irq 			= uic_get_irq,
-+	.restart			= ppc44x_reset_system,
-+	.calibrate_decr 	= generic_calibrate_decr,
-+};
-+
-+/* This is for the power LEDs 1 = on, 0 = off, -1 = leave alone */
-+void warp_set_power_leds(int green, int red)
-+{
-+	static void *gpio_base = NULL;
-+	unsigned leds;
-+
-+	if(gpio_base == NULL) {
-+		if((gpio_base = ioremap(WARP_GPIO_BASE, 0x148)) == NULL) {
-+			printk("ERROR: Unable to remap GPIO base.\n");
-+			return;
-+		}
-+	}
-+
-+	leds = readl(gpio_base + 0x100);
-+
-+	switch(green) {
-+	case 0: leds &= ~0x80; break;
-+	case 1: leds |=  0x80; break;
-+	}
-+	switch(red) {
-+	case 0: leds &= ~0x40; break;
-+	case 1: leds |=  0x40; break;
-+	}
-+
-+	writel(leds, gpio_base + 0x100);
-+}
-+EXPORT_SYMBOL(warp_set_power_leds);
-+
-+
-+static int pika_dtm_thread(void *fpga)
-+{
-+	extern int ad7414_get_temp(int index);
-+
-+	while(!kthread_should_stop()) {
-+		int temp = ad7414_get_temp(0);
-+
-+		out_be32(fpga, temp);
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+	return 0;
-+}
-+
-+
-+static int __devinit warp_fpga_init(void)
-+{
-+	struct device_node *np;
-+	void *fpga;
-+	int irq;
-+	struct resource res;
-+	struct task_struct *dtm_thread;
-+
-+	if((np = of_find_compatible_node(NULL, NULL, "pika,fpga")) == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to find fpga\n");
-+		return -ENOENT;
-+	}
-+
-+	if((irq = irq_of_parse_and_map(np, 0)) == NO_IRQ) {
-+		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
-+		return -EBUSY;
-+	}
-+
-+	/* We do not call of_iomap here since it would map in the entire
-+	 * fpga space, which is over 8k.
-+	 */
-+	if(of_address_to_resource(np, 0, &res) ||
-+	   (fpga = ioremap(res.start, 0x24)) == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to map FPGA\n");
-+		return -ENOENT;
-+	}
-+
-+	/* Turn off the line LEDs */
-+	out_be32(fpga + 8, 0);
-+
-+	dtm_thread = kthread_run(pika_dtm_thread, fpga + 0x20, "pika-dtm");
-+
-+	if(IS_ERR(dtm_thread)) {
-+		iounmap(fpga);
-+		printk(KERN_ERR __FILE__ ": Unable to start PIKA DTM thread\n");
-+		return PTR_ERR(dtm_thread);
-+	}
-+
-+	return 0;
-+}
-+device_initcall(warp_fpga_init);
-+
-+#define NAND_FLASH
-+#ifdef NAND_FLASH
-+/* --- All of this code is for the NAND flash */
-+
-+#include <linux/platform_device.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/map.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/ndfc.h>
-+
-+
-+#define CS_NAND_0	1	/* use chip select 1 for NAND device 0 */
-+
-+#define WARP_NAND_FLASH_REG_ADDR	0xD0000000UL
-+#define WARP_NAND_FLASH_REG_SIZE	0x2000
-+
-+static struct resource warp_ndfc = {
-+	.start = WARP_NAND_FLASH_REG_ADDR,
-+	.end   = WARP_NAND_FLASH_REG_ADDR + WARP_NAND_FLASH_REG_SIZE,
-+	.flags = IORESOURCE_MEM,
-+};
-+
-+static struct mtd_partition nand_parts[] = {
-+	{
-+		.name = "nand",
-+		.offset = 0,
-+		.size = MTDPART_SIZ_FULL,
-+	}
-+};
-+
-+struct ndfc_controller_settings warp_ndfc_settings = {
-+	.ccr_settings = (NDFC_CCR_BS(CS_NAND_0) | NDFC_CCR_ARAC1),
-+	.ndfc_erpn = 0,
-+};
-+
-+static struct ndfc_chip_settings warp_chip0_settings = {
-+	.bank_settings = 0x80002222,
-+};
-+
-+struct platform_nand_ctrl warp_nand_ctrl = {
-+	.priv = &warp_ndfc_settings,
-+};
-+
-+static struct platform_device warp_ndfc_device = {
-+	.name = "ndfc-nand",
-+	.id = 0,
-+	.dev = {
-+		.platform_data = &warp_nand_ctrl,
-+	},
-+	.num_resources = 1,
-+	.resource = &warp_ndfc,
-+};
-+
-+static struct nand_ecclayout nand_oob_16 = {
-+	.eccbytes = 3,
-+	.eccpos = { 0, 1, 2, 3, 6, 7 },
-+	.oobfree = { {.offset = 8, .length = 16} }
-+};
-+
-+static struct platform_nand_chip warp_nand_chip0 = {
-+	.nr_chips = 1,
-+	.chip_offset = CS_NAND_0,
-+	.nr_partitions = ARRAY_SIZE(nand_parts),
-+	.partitions = nand_parts,
-+	.chip_delay = 50,
-+	.ecclayout = &nand_oob_16,
-+	.priv = &warp_chip0_settings,
-+};
-+
-+static struct platform_device warp_nand_device = {
-+	.name = "ndfc-chip",
-+	.id = 0,
-+	.num_resources = 1,
-+	.resource = &warp_ndfc,
-+	.dev = {
-+		.platform_data = &warp_nand_chip0,
-+		.parent = &warp_ndfc_device.dev,
-+	}
-+};
-+
-+static int warp_setup_flash(void)
-+{
-+	platform_device_register(&warp_ndfc_device);
-+	platform_device_register(&warp_nand_device);
-+
-+	return 0;
-+}
-+device_initcall(warp_setup_flash);
-+
-+#endif /* NAND_FLASH */
