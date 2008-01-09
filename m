@@ -1,20 +1,16 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
-	by ozlabs.org (Postfix) with ESMTP id CE1DEDDF05
-	for <linuxppc-embedded@ozlabs.org.>;
-	Wed,  9 Jan 2008 16:11:36 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id k20so97583rvb.3
-	for <linuxppc-embedded@ozlabs.org.>;
-	Tue, 08 Jan 2008 21:11:35 -0800 (PST)
-Message-ID: <5c9cd53b0801082111i72cf0e1co478f0cd37b21269b@mail.gmail.com>
-Date: Wed, 9 Jan 2008 00:11:35 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-embedded@ozlabs.org.
-Subject: printk() does not work on UART1
-In-Reply-To: <5c9cd53b0801081611ve59e9a8q6ae2fd227bfc0ed8@mail.gmail.com>
+Return-Path: <Jogi95@web.de>
+Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
+	by ozlabs.org (Postfix) with ESMTP id 0FA3FDDFDF
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 Jan 2008 02:19:59 +1100 (EST)
+Date: Wed, 09 Jan 2008 16:19:55 +0100
+Message-Id: <524013725@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <5c9cd53b0801081611ve59e9a8q6ae2fd227bfc0ed8@mail.gmail.com>
+From: Joachim Meyer <Jogi95@web.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux for ml310
+Content-Type: text/plain; charset=iso-8859-15
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,16 +21,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi
 
-I have one mpc8568 board using UART1 as the serial port.  The OS is
-Linux Kernel2.4.  If I use the polling mode driver of
-gen550_progress(), it works fine. However the printk() does not work
-after the console_init(). Anyone know what shall I change in the
-kernel to use UART1 as serial console? I assume the default is UART0,
-but I don't know where the value is set. I changed the CONFIG_CMDLINE
-to ttyS1, it does NOT work.
+First I want to thank you for you fast and useful answer last time.
+I decided to use the kernel 2.6 for my ml310 now.
 
-Thanks for your help,
+I downloaded this Kernel:
+http://git.secretlab.ca/git/gitweb.cgi=3Fp=3Dlinux-2.6-virtex.git;a=3Dsnapshot;h=
+=3Dd7ed933b578d9c4dec0e23a5a6f78c464b31c47c;sf=3Dtbz2
+Is this a complete Kernel=3F I don't really understand this whole git-tree s=
+tuff.
+then i copied the arch/ppc/configs/ml300=5Fdefconfig to .config.
+I used an edk9.1 with linux=5F2=5F6 as OS for the ppc405=5F0,  0x10000000 for me=
+mory size, 100000000 for uart16550 bus clock freq and set the target direc=
+tory. Under connected=5Fperiphs where: RS232=5FUart, SPI=5FEEPROM, PCI32=5FBRIDGE,=
+ SysACE=5FCompactFlash and opb=5Fintc=5F0.
+At Software I pressed the "Generate Libaries and BSPs" Button and copied t=
+he generated xparameters.h to linux-2.6-virtex/arch/ppc/platforms/4xx/xpar=
+ameters.
+I tried to compile with=20
+make ARCH=3Dppc CROSS=5FCOMPILE=3Dpowerpc-405-linux-gnu- zImage
+but it soon aborted with:
+---------------------------
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CC      arch/ppc/syslib/xilinx=5Fpic.o
+In file included from arch/ppc/syslib/xilinx=5Fpic.c:16:
+arch/ppc/platforms/4xx/xparameters/xparameters.h:14:26: linux/config.h: No=
+ such file or directory
+make[1]: *** [arch/ppc/syslib/xilinx=5Fpic.o] Error 1
+make: *** [arch/ppc/syslib] Error 2
+------------------------------
 
-Mike
+Can you help me=3F
+Is there any tutorial (beside http://wiki.secretlab.ca/index.php/Linux=5Fon=5F=
+Xilinx=5FVirtex) which provides detailed information=3F
+Which Kernel should I use (And where to get it)=3F
+Are ther eany patches necessary=3F
+As crosscompiler I used crosstool with:
+eval `cat powerpc-405.dat gcc-4.1.0-glibc-2.3.6.dat` sh all.sh --notest
+
+I hope I don't bother you too much
+Greetings & Thanks
+Joachim
+=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
+Jetzt neu! Sch=FCtzen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
+kostenlos testen. http://www.pc-sicherheit.web.de/startseite/=3Fmc=3D022220
