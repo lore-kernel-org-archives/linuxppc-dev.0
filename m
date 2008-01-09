@@ -1,22 +1,19 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id B4DB7DDFAD
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:18:36 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] sbc85xx: remove PCI exclude device for sbc8548/sbc8560
-Date: Wed,  9 Jan 2008 00:18:30 -0500
-Message-Id: <11998559142028-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <11998559133555-git-send-email-paul.gortmaker@windriver.com>
-References: <1199855910574-git-send-email-paul.gortmaker@windriver.com>
-	<11998559111835-git-send-email-paul.gortmaker@windriver.com>
-	<11998559121892-git-send-email-paul.gortmaker@windriver.com>
-	<11998559133433-git-send-email-paul.gortmaker@windriver.com>
-	<11998559133555-git-send-email-paul.gortmaker@windriver.com>
-Message-Id: <c5cc1c9274b620f983c70674b957c9d558689591.1199854466.git.paul.gortmaker@windriver.com>
-In-Reply-To: <93a0b006474cd6884392682c82b232fc2aea7794.1199854466.git.paul.gortmaker@windriver.com>
-References: <93a0b006474cd6884392682c82b232fc2aea7794.1199854466.git.paul.gortmaker@windriver.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 65AAFDDF70
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:30:04 +1100 (EST)
+Date: Wed, 9 Jan 2008 16:29:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH 2/3 v2] Add initial iomega StorCenter board port.
+Message-Id: <20080109162953.c100bc4a.sfr@canb.auug.org.au>
+In-Reply-To: <E1JCMbN-0002mN-MD@jdl.com>
+References: <E1JCMbN-0002mN-MD@jdl.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,77 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PCI exclude device for the sbc85xx boards was only filtering out
-the PHB and nothing else.  This functionality is no longer required
-at a board specific level -- it is handled as a more global quirk now.
+--Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/platforms/85xx/sbc8548.c |   13 -------------
- arch/powerpc/platforms/85xx/sbc8560.c |   13 -------------
- 2 files changed, 0 insertions(+), 26 deletions(-)
+Hi Jon,
 
-diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
-index f3ab271..de27b57 100644
---- a/arch/powerpc/platforms/85xx/sbc8548.c
-+++ b/arch/powerpc/platforms/85xx/sbc8548.c
-@@ -49,17 +49,6 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
--#ifdef CONFIG_PCI
--static int sbc8548_exclude_device(struct pci_controller *hose,
--				  u_char bus, u_char devfn)
--{
--	if (bus == 0 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--	else
--		return PCIBIOS_SUCCESSFUL;
--}
--#endif
--
- static void __init sbc8548_pic_init(void)
- {
- 	struct mpic *mpic;
-@@ -114,8 +103,6 @@ static void __init sbc8548_setup_arch(void)
- 				fsl_add_bridge(np, 0);
- 		}
- 	}
--
--	ppc_md.pci_exclude_device = sbc8548_exclude_device;
- #endif
- }
- 
-diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
-index 6aef38b..2030e87 100644
---- a/arch/powerpc/platforms/85xx/sbc8560.c
-+++ b/arch/powerpc/platforms/85xx/sbc8560.c
-@@ -37,17 +37,6 @@
- #include <sysdev/cpm2_pic.h>
- #endif
- 
--#ifdef CONFIG_PCI
--static int sbc8560_exclude_device(struct pci_controller *hose,
--				   u_char bus, u_char devfn)
--{
--	if (bus == 0 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--	else
--		return PCIBIOS_SUCCESSFUL;
--}
--#endif /* CONFIG_PCI */
--
- #ifdef CONFIG_CPM2
- 
- static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
-@@ -199,8 +188,6 @@ static void __init sbc8560_setup_arch(void)
- #ifdef CONFIG_PCI
- 	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
- 		fsl_add_bridge(np, 1);
--
--	ppc_md.pci_exclude_device = sbc8560_exclude_device;
- #endif
- }
- 
--- 
-1.5.0.rc1.gf4b6c
+On Tue, 08 Jan 2008 16:07:17 -0600 Jon Loeliger <jdl@jdl.com> wrote:
+>
+> +static void __init storcenter_init_IRQ(void)
+> +{
+> +	struct mpic *mpic;
+> +	struct device_node *dnp;
+> +	const void *prop;
+> +	int size;
+> +	phys_addr_t paddr;
+> +
+> +	dnp =3D of_find_node_by_type(NULL, "open-pic");
+> +	if (dnp =3D=3D NULL)
+> +		return;
+> +
+> +	prop =3D of_get_property(dnp, "reg", &size);
+> +	paddr =3D (phys_addr_t)of_translate_address(dnp, prop);
+> +	mpic =3D mpic_alloc(dnp, paddr, MPIC_PRIMARY | MPIC_WANTS_RESET,
+> +			4, 32, " EPIC     ");
+> +	BUG_ON(mpic =3D=3D NULL);
+
+> +	mpic_assign_isu(mpic, 0, paddr + 0x10200);
+> +	mpic_assign_isu(mpic, 1, paddr + 0x10220);
+> +	mpic_assign_isu(mpic, 2, paddr + 0x10240);
+> +	mpic_assign_isu(mpic, 3, paddr + 0x10260);
+> +	mpic_assign_isu(mpic, 4, paddr + 0x10280);
+> +	mpic_assign_isu(mpic, 5, paddr + 0x11120);
+> +	mpic_assign_isu(mpic, 6, paddr + 0x11140);
+> +
+> +	mpic_init(mpic);
+> +}
+
+The above needs a of_node_put(dnp) somewhere.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHhFvUTgG2atn1QN8RAuvqAJ4vC2We1tslVNwnbaMgHcQhseWBfACfdGi5
+JV/NjgTimGs/JjM+MPt6hpk=
+=t2ud
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k--
