@@ -1,26 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A0418DDF38
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 14:17:00 +1100 (EST)
-Date: Wed, 9 Jan 2008 14:16:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: John Rigby <jrigby@freescale.com>
-Subject: Re: [PATCH 7/7] Add MPC512x PSC serial driver
-Message-Id: <20080109141649.04a1783c.sfr@canb.auug.org.au>
-In-Reply-To: <1199808093-15929-8-git-send-email-jrigby@freescale.com>
-References: <1199808093-15929-1-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-2-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-3-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-4-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-5-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-6-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-7-git-send-email-jrigby@freescale.com>
-	<1199808093-15929-8-git-send-email-jrigby@freescale.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__9_Jan_2008_14_16_49_+1100_gswNDRYK/kay9iWZ"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 38A25DDF50
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 15:29:35 +1100 (EST)
+Date: Tue, 8 Jan 2008 22:29:11 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
+Message-ID: <20080109042911.GT14201@localdomain>
+References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4782C026.8080302@austin.ibm.com>
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	lkessler@us.ibm.com, strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,70 +22,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_Jan_2008_14_16_49_+1100_gswNDRYK/kay9iWZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue,  8 Jan 2008 09:01:33 -0700 John Rigby <jrigby@freescale.com> wrote:
->
-> +++ b/drivers/serial/mpc512x_uart.c
->
-> +#include <asm/of_platform.h>
-
-Purely to avoid suggestions of favouritism, I will not the above. :-)
-
-> +static struct of_device_id mpc512x_uart_of_match[] =3D {
-
-Please make this const.
-
-> +static void mpc512x_uart_of_enumerate(void)
-> +{
-
-> +	for_each_node_by_type(np, "serial") {
-> +		if (!of_match_node(mpc512x_uart_of_match, np))
-> +			continue;
+Manish Ahuja wrote:
 > +
-> +		/* Is a particular device number requested? */
-> +		devno =3D of_get_property(np, "port-number", NULL);
-> +		mpc512x_uart_of_assign(of_node_get(np), devno ? *devno : -1);
+> +                   Hypervisor-Assisted Dump
+> +                   ------------------------
+> +                       November 2007
 
-This of_node_get() should be in mpc512x_uart_of_assign() where the
-reference is kept.
+Date is unneeded (and, uhm, dated :)
 
-> +static struct of_platform_driver mpc512x_uart_of_driver =3D {
-> +	.owner =3D THIS_MODULE,
-> +	.name =3D "mpc52xx-psc-uart",
 
-You don't need these two (we are removing them) but move the .owner
-assignment to the .driver part below.
+> +The goal of hypervisor-assisted dump is to enable the dump of
+> +a crashed system, and to do so from a fully-reset system, and
+> +to minimize the total elapsed time until the system is back
+> +in production use.
 
-> +	.match_table =3D mpc512x_uart_of_match,
-> +	.probe =3D mpc512x_uart_of_probe,
-> +	.remove =3D mpc512x_uart_of_remove,
-> +#ifdef CONFIG_PM
-> +	.suspend =3D mpc512x_uart_of_suspend,
-> +	.resume =3D mpc512x_uart_of_resume,
-> +#endif
-> +	.driver =3D {
-> +		   .name =3D "mpc52xx-psc-uart",
-> +		   },
-> +};
+Is it actually faster than kdump?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__9_Jan_2008_14_16_49_+1100_gswNDRYK/kay9iWZ
-Content-Type: application/pgp-signature
+> +As compared to kdump or other strategies, hypervisor-assisted
+> +dump offers several strong, practical advantages:
+> +
+> +-- Unlike kdump, the system has been reset, and loaded
+> +   with a fresh copy of the kernel.  In particular,
+> +   PCI and I/O devices have been reinitialized and are
+> +   in a clean, consistent state.
+> +-- As the dump is performed, the dumped memory becomes
+> +   immediately available to the system for normal use.
+> +-- After the dump is completed, no further reboots are
+> +   required; the system will be fully usable, and running
+> +   in it's normal, production mode on it normal kernel.
+> +
+> +The above can only be accomplished by coordination with,
+> +and assistance from the hypervisor. The procedure is
+> +as follows:
+> +
+> +-- When a system crashes, the hypervisor will save
+> +   the low 256MB of RAM to a previously registered
+> +   save region. It will also save system state, system
+> +   registers, and hardware PTE's.
+> +
+> +-- After the low 256MB area has been saved, the
+> +   hypervisor will reset PCI and other hardware state.
+> +   It will *not* clear RAM. It will then launch the
+> +   bootloader, as normal.
+> +
+> +-- The freshly booted kernel will notice that there
+> +   is a new node (ibm,dump-kernel) in the device tree,
+> +   indicating that there is crash data available from
+> +   a previous boot. It will boot into only 256MB of RAM,
+> +   reserving the rest of system memory.
+> +
+> +-- Userspace tools will parse /sys/kernel/release_region
+> +   and read /proc/vmcore to obtain the contents of memory,
+> +   which holds the previous crashed kernel. The userspace
+> +   tools may copy this info to disk, or network, nas, san,
+> +   iscsi, etc. as desired.
+> +
+> +   For Example: the values in /sys/kernel/release-region
+> +   would look something like this (address-range pairs).
+> +   CPU:0x177fee000-0x10000: HPTE:0x177ffe020-0x1000: /
+> +   DUMP:0x177fff020-0x10000000, 0x10000000-0x16F1D370A
+> +
+> +-- As the userspace tools complete saving a portion of
+> +   dump, they echo an offset and size to
+> +   /sys/kernel/release_region to release the reserved
+> +   memory back to general use.
+> +
+> +   An example of this is:
+> +     "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
+> +   which will release 256MB at the 1GB boundary.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+This violates the "one file, one value" rule of sysfs, but nobody
+really takes that seriously, I guess.  In any case, consider
+documenting this in Documentation/ABI.
 
-iD8DBQFHhDylTgG2atn1QN8RAsHIAJsHg9nyB5zxKZW/xyDL0UKNh2BuIgCdGoq6
-iz1k89y2fnZbeTcDkZ+/8NA=
-=1qpO
------END PGP SIGNATURE-----
 
---Signature=_Wed__9_Jan_2008_14_16_49_+1100_gswNDRYK/kay9iWZ--
+> +
+> +Please note that the hypervisor-assisted dump feature
+> +is only available on Power6-based systems with recent
+> +firmware versions.
+
+This statement will of course become dated/incorrect so I recommend
+removing it.
+
+
+> +
+> +Implementation details:
+> +----------------------
+> +In order for this scheme to work, memory needs to be reserved
+> +quite early in the boot cycle. However, access to the device
+> +tree this early in the boot cycle is difficult, and device-tree
+> +access is needed to determine if there is a crash data waiting.
+
+I don't think this bit about early device tree access is correct.  By
+the time your code is reserving memory (from early_init_devtree(), I
+think), RTAS has been instantiated and you are able to test for the
+existence of /rtas/ibm,dump-kernel.
+
+
+> +To work around this problem, all but 256MB of RAM is reserved
+> +during early boot. A short while later in boot, a check is made
+> +to determine if there is dump data waiting. If there isn't,
+> +then the reserved memory is released to general kernel use.
+
+So I think these gymnastics are unneeded -- unless I'm
+misunderstanding something, you should be able to determine very early
+whether to reserve that memory.
+
+
+> +If there is dump data, then the /sys/kernel/release_region
+> +file is created, and the reserved memory is held.
+> +
+> +If there is no waiting dump data, then all but 256MB of the
+> +reserved ram will be released for general kernel use. The
+> +highest 256 MB of RAM will *not* be released: this region
+> +will be kept permanently reserved, so that it can act as
+> +a receptacle for a copy of the low 256MB in the case a crash
+> +does occur. See, however, "open issues" below, as to whether
+> +such a reserved region is really needed.
+> +
+> +Currently the dump will be copied from /proc/vmcore to a
+> +a new file upon user intervention. The starting address
+> +to be read and the range for each data point in provided
+                                               ^is
+
+> +in /sys/kernel/release_region.
+> +
+> +The tools to examine the dump will be same as the ones
+> +used for kdump.
+> +
+> +
+> +General notes:
+> +--------------
+> +Security: please note that there are potential security issues
+> +with any sort of dump mechanism. In particular, plaintext
+> +(unencrypted) data, and possibly passwords, may be present in
+> +the dump data. Userspace tools must take adequate precautions to
+> +preserve security.
+> +
+> +Open issues/ToDo:
+> +------------
+> + o The various code paths that tell the hypervisor that a crash
+> +   occurred, vs. it simply being a normal reboot, should be
+> +   reviewed, and possibly clarified/fixed.
+> +
+> + o Instead of using /sys/kernel, should there be a /sys/dump
+> +   instead? There is a dump_subsys being created by the s390 code,
+> +   perhaps the pseries code should use a similar layout as well.
+
+Well, it seems to me that there's little reason to duplicate the s390
+layout unless we can actually share code.
+
+FWIW, I've been thinking about making a /sys/firmware/phyp hierarchy
+which could contain much of the System P-specific functions (DLPAR,
+lparcfg, other crud in /proc/ppc64)... seems suited to this
+platform-specific dump mechanism.
