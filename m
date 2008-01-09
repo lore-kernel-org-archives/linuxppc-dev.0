@@ -1,20 +1,20 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id D68F3DDF60
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 02:42:03 +1100 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] enable built-in networking for Sequoia defconfig
-Date: Wed, 9 Jan 2008 16:39:59 +0100
-References: <1199489214.9673.18.camel@basalt>
-	<200801091542.38914.matthias.fuchs@esd-electronics.com>
-	<20080109092133.7ce85e94@zod.rchland.ibm.com>
-In-Reply-To: <20080109092133.7ce85e94@zod.rchland.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.245])
+	by ozlabs.org (Postfix) with ESMTP id D7CF9DDF20
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 02:46:10 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 33so211359agc.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 07:46:09 -0800 (PST)
+Message-ID: <fa686aa40801090746k4ec5c208j9daf224cb2570071@mail.gmail.com>
+Date: Wed, 9 Jan 2008 08:46:08 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Matt Sealey" <matt@genesi-usa.com>
+Subject: Re: add phy-handle property for fec_mpc52xx
+In-Reply-To: <4784E78C.40904@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801091639.59481.matthias.fuchs@esd-electronics.com>
-Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080109140608.GA15673@aepfle.de> <4784E78C.40904@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks,
+On 1/9/08, Matt Sealey <matt@genesi-usa.com> wrote:
+> Please let's keep the nature of our firmware and the Linux codebase
+> independant, and move the burden of support to Genesi, and not the
+> Linux PowerPC team. After all, what is next, after phy-handle do
+> you want to add i2c, irda, missing xlb/cdm entries in the patch so
+> that other things work? Does everyone have to custom compile their
+> own kernel? What happens if we do another firmware release and
+> the Linux kernel overwrites important values without checking as
+> it does now? It simply causes problems.
 
-Sorry, I must have been blind.
+FWIW, I've got a patch in my tree that removes a bunch of the efika
+fixups.  I've learned a lot over the past year and I'm taking a more
+pragmatic approach.  So, fixups that are not absolutely required to
+get a working Efika are going away.
 
-Matthias
+However, I'm still inclined to pick up Olaf's patch with the
+appropriate protections around it so it is only done if the nodes are
+missing.
 
-On Wednesday 09 January 2008 16:21, Josh Boyer wrote:
-> On Wed, 9 Jan 2008 15:42:38 +0100
-> Matthias Fuchs <matthias.fuchs@esd-electronics.com> wrote:
-> 
-> > On Wednesday 09 January 2008 13:07, Josh Boyer wrote:
-> > > On Wed, 9 Jan 2008 12:16:25 +0100
-> > > Matthias Fuchs <matthias.fuchs@esd-electronics.com> wrote:
-> > > 
-> > > > Josh, 
-> > > > 
-> > > > Where did you apply this patch to? Couldn't find it in your for-2.6.25 branch.
-> > > 
-> > > I applied it there, just haven't pushed it out yet.  Will do that today.
-> > > 
-> > > > BTW, is it normal to edit the defconfig file by hand?
-> > > 
-> > > The defconfig?  Not sure.  What I normally do is a make foo_defconfig,
-> > > edit the .config, make oldconfig, and copy the resulting .config back
-> > > to foo_defconfig.
-> > Yes, this is what I also do.
-> > 
-> > But how did Hollis get these lines into .config or sequoia_defconfig:
-> > 
-> > +CONFIG_IBM_NEW_EMAC=y
-> > +CONFIG_IBM_NEW_EMAC_RXB=128
-> > +CONFIG_IBM_NEW_EMAC_TXB=64
-> > +CONFIG_IBM_NEW_EMAC_POLL_WEIGHT=32
-> > +CONFIG_IBM_NEW_EMAC_RX_COPY_THRESHOLD=256
-> > +CONFIG_IBM_NEW_EMAC_RX_SKB_HEADROOM=0
-> > 
-> > I did not find any Kconfigs where these might come from.
-> 
-> They're in drivers/net/ibm_newemac/Kconfig.
-> 
-> josh
-> 
-> 
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
