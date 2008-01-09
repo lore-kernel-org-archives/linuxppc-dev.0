@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7AEC5DDFA2
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:41:23 +1100 (EST)
-Message-Id: <9536E0AC-E4D2-4E86-8DC6-F40A322FC817@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <478520E4.1050204@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range lands
-	in highmem
-Date: Wed, 9 Jan 2008 13:41:09 -0600
-References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
-	<20080109185349.GC4337@loki.buserror.net>
-	<3B831CF0-E978-42E7-BA26-7598BC27A5F6@kernel.crashing.org>
-	<478520E4.1050204@freescale.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9104DDDFA8
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:46:12 +1100 (EST)
+Message-ID: <4785246D.6090206@freescale.com>
+Date: Wed, 09 Jan 2008 13:45:49 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: Help with device tree binding for SMC serial
+References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,38 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Rune Torgersen wrote:
+> Hi
+> 
+> We're trying to get a SMC serial port on a8280 to work.
+> I cannot find any ecxamples on the binding, so we've tried to make one.
+> 
+> is this anywhere close to workable?
+> 
+> serial@11a80 {
+> 	device_type = "serial";
+> 	compatible = "fsl,mpc8280-smc-uart",
+> 				 "fsl,cpm2-smc-uart";
+> 	reg = <11a80 10 87fc 2>;
 
-On Jan 9, 2008, at 1:30 PM, Scott Wood wrote:
+The current binding has the actual parameter ram block as the second reg 
+property, not the two-byte pointer.  If your firmware doesn't initialize 
+the pointer, you'll have to do it in platform code.
 
-> Kumar Gala wrote:
->> On Jan 9, 2008, at 12:53 PM, Scott Wood wrote:
->>> It looks like if the reserved area straddles the highmem boundary,  
->>> it'll
->>> only reserve the highmem portion.
->> Yeah, I thought about that.  I'm wondering if we should warn about  
->> this.. its seems like a bad thing to do.
->
-> How is the firmware supposed to know where Linux sets its lowmem  
-> limit?  I think this is something that needs to be handled.
+> 	interrupts = <4 8>;
+> 	interrupt-parent = <&PIC>;
+> 	fsl,cpm-brg = <7>;
+> 	fsl,cpm-command = <01000000>;
+> };
 
-Yeah I agree with that as well.
+cpm-command should be <1d000000> for SMC1.
 
-I'm thinking I'll add something like:
+Otherwise, it looks OK.
 
-                 if (addr < total_lowmem)
-                         reserve_bootmem(lmb.reserved.region[i].base,
-                                         lmb_size_bytes(&lmb.reserved,  
-i));
-+               else if (lmb.reserved.region[i].base > total_lowmem) {
-+                       unsigned long adjusted_size;
-+//                     adjusted_size = xxx;
-
-need to figure out the math here.
-
-+                       reserve_bootmem(lmb.reserved.region[i].base,
-+                                       adjusted_size);
-+               }
-
-that should solve the problem.
-
-- k
+-Scott
