@@ -1,22 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 72489DDEE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:48:11 +1100 (EST)
-Date: Wed, 9 Jan 2008 12:20:38 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH for 2.6.24][NET] fs_enet: check for phydev existence in
-	the ethtool handlers
-Message-ID: <20080109182038.GA4337@loki.buserror.net>
-References: <1199875566.3408.11.camel@p60365-ste> <4784C509.5030507@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4784C509.5030507@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 187ACDDFC3
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:54:27 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m09JsO6E025022
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 14:54:24 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m09JsM0Q127690
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 12:54:22 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m09JsLFm011350
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 12:54:22 -0700
+Date: Wed, 9 Jan 2008 13:54:03 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] Miscellaneous for Taco
+Message-ID: <20080109135403.7dd3949e@zod.rchland.ibm.com>
+In-Reply-To: <47852000.20503@pikatech.com>
+References: <477F13C0.7040006@pikatech.com> <1199566583.7291.63.camel@pasglop>
+	<4783C3E8.3090107@pikatech.com> <200801082023.11475.sr@denx.de>
+	<478503B6.3060402@pikatech.com>
+	<20080109131807.4cb2af29@zod.rchland.ibm.com>
+	<47852000.20503@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,92 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 09, 2008 at 01:58:49PM +0100, Heiko Schocher wrote:
-> @@ -1312,6 +1312,9 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
->  	       ndev->dev_addr[0], ndev->dev_addr[1], ndev->dev_addr[2],
->  	       ndev->dev_addr[3], ndev->dev_addr[4], ndev->dev_addr[5]);
+On Wed, 09 Jan 2008 14:26:56 -0500
+Sean MacLennan <smaclennan@pikatech.com> wrote:
+
+> Josh Boyer wrote:
+> > On Wed, 09 Jan 2008 12:26:14 -0500
+> > Sean MacLennan <smaclennan@pikatech.com> wrote:
+> >
+> >   
+> >> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> >>     
+> >
+> > This one needs to go to the linux-usb list and David Brownell.
+> >
+> > Although I'm not sure what the benefit here really is.  You can still
+> > set this in the defconfig without adding this patch...  I don't see a
+> > need to do a default.
+> >   
+> Without the default, I was unable to select this option. I may have 
+> solved it the wrong way. It seems if there is no string after the 
+> tristate or boolean, you are not allowed to set the variable, it can 
+> only default. So with no default, I cannot enable this option and 
+> therefore cannot enable the ohci driver.
 > 
-> +	/* to initialize the fep->cur_rx,... */
-> +	/* not doing this, will cause a crash in fs_enet_rx_napi */
-> +	fs_init_bds(ndev);
->  	return 0;
+> Again, I think the "default PCI" case catches most boards and all 
+> PCI-less, or possibly PCI-less, boards need a default.
 
-We don't want to allocate ring buffers for network interfaces that are never
-opened, especially given the small amount of memory on some boards that use
-this driver.
+Ah, possibly.  Did you try doing a 'select USB_ARCH_HAS_OHCI' in the
+config 440EP section of arch/powerpc/platforms/44x/Kconfig?
 
-Instead, we should probably not be calling napi_enable() until the link is
-up and init_bds() has been called.
+I'm just trying to save you some trouble.  There's nothing actually
+wrong with your patch now, other than it has to be sent to the right
+maintainer.
 
-> @@ -1342,9 +1345,13 @@ static int fs_enet_remove(struct of_device *ofdev)
->  }
-> 
->  static struct of_device_id fs_enet_match[] = {
-> -#ifdef CONFIG_FS_ENET_HAS_SCC
-> +#if defined(CONFIG_FS_ENET_HAS_SCC)
->  	{
-> +#if defined(CONFIG_CPM1)
->  		.compatible = "fsl,cpm1-scc-enet",
-> +#else
-> +		.compatible = "fsl,cpm2-scc-enet",
-> +#endif
-
-I know there are already ifdefs of this sort, and that multiplatform
-cpm1/cpm2 is very unlikely to ever happen, but can we try to avoid
-introducing more such ifdefs?
-
-We can have both match entries present at the same time.
-
->  		.data = (void *)&fs_scc_ops,
->  	},
->  #endif
-> diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-> index 48f2f30..3b5ca76 100644
-> --- a/drivers/net/fs_enet/mac-scc.c
-> +++ b/drivers/net/fs_enet/mac-scc.c
-> @@ -50,6 +50,7 @@
->  #include "fs_enet.h"
-> 
->  /*************************************************/
-> +#define SCC_EB ((u_char)0x10)  /* Set big endian byte order */
-
-This is already defined in asm-powerpc/commproc.h, and thus will cause a
-duplicate definition when building for 8xx.  Please add this definition to
-asm-powerpc/cpm2.h.
-
-> +#if defined(CONFIG_CPM1)
->  	W16(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | (op << 8));
->  	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
->  		if ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
->  			return 0;
-> +#else
-> +	W32(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | op);
-> +	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
-> +		if ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
-> +			return 0;
-> +
-> +#endif
-
-Commit 362f9b6fa8c9670cc5496390845021c2865d049b in Paul's tree makes this
-unnecessary.
-
-> @@ -306,8 +317,15 @@ static void restart(struct net_device *dev)
-> 
->  	/* Initialize function code registers for big-endian.
->  	 */
-> +#ifdef CONFIG_CPM2
-> +	/* from oldstyle driver in arch/ppc */
-> +	/* seems necessary */
-> +	W8(ep, sen_genscc.scc_rfcr, SCC_EB | 0x20);
-> +	W8(ep, sen_genscc.scc_tfcr, SCC_EB | 0x20);
-> +#else
->  	W8(ep, sen_genscc.scc_rfcr, SCC_EB);
->  	W8(ep, sen_genscc.scc_tfcr, SCC_EB);
-> +#endif
-
-Please define 0x20 as SCC_GBL (Snooping Enabled) in cpm2.h, and
-conditionalize this on #ifndef CONFIG_NOT_COHERENT_CACHE.
-
-You can remove the comment; it's really necessary, not just "seems" so. :-)
-
--Scott
+josh
