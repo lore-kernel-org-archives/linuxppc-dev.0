@@ -1,20 +1,22 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id B6C05DE03B
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 01:58:52 +1100 (EST)
-Date: Wed, 9 Jan 2008 15:58:50 +0100
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: add phy-handle property for fec_mpc52xx
-Message-ID: <20080109145850.GA4413@powerlinux.fr>
-References: <20080109140608.GA15673@aepfle.de>
-	<fa686aa40801090644q5d1aa117ka7e8f5aed34237bd@mail.gmail.com>
-	<20080109144910.GA4222@powerlinux.fr>
-	<fa686aa40801090650l38bea6a0l7a1ea2d81667f42e@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 14B06DDFC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 02:03:39 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so58519anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 07:03:32 -0800 (PST)
+Message-ID: <fa686aa40801090703m5f411795j890bfa714a128b1e@mail.gmail.com>
+Date: Wed, 9 Jan 2008 08:03:31 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Subject: Re: Please pull linux-2.6-virtex.git
+In-Reply-To: <87ir23tbgz.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40801090650l38bea6a0l7a1ea2d81667f42e@mail.gmail.com>
-From: Sven Luther <sven@powerlinux.fr>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40801082207h24c9b262i55b9756c3c435d7c@mail.gmail.com>
+	<20080109063512.1226b979@zod.rchland.ibm.com>
+	<87ir23tbgz.fsf@macbook.be.48ers.dk>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 09, 2008 at 07:50:14AM -0700, Grant Likely wrote:
-> On 1/9/08, Sven Luther <sven@powerlinux.fr> wrote:
-> > On Wed, Jan 09, 2008 at 07:44:58AM -0700, Grant Likely wrote:
-> > > Woo!  Thanks Olaf.  I was just about to sit down and write something
-> > > like this myself.  Looks good to me.  I'll pick this up (but I'm going
-> > > to move it to the fixup_device_tree_efika() function)
-> >
-> > Indeed, thanks, this makes the efika kernel again work out of the box.
-> > Would it be possible to merge this upstream asap ?
-> 
-> I'll see if paulus will pick it up for 2.6.24
+On 1/9/08, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+> >>>>> "Josh" == Josh Boyer <jwboyer@linux.vnet.ibm.com> writes:
+>
+>  Josh> On Tue, 8 Jan 2008 23:07:51 -0700
+>  Josh> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+>
+>  >> Josh, here are some Xilinx Virtex changes for 2.6.25:
+>  >>
+>  >> git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.25
+>
+>  Josh> Hm..  Seems Peter has some comments on the first one.  Shall I wait for
+>  Josh> that to get hashed out?
+>
+> Yes please.
 
-Cool, this would mean the only thing missing the patchset i have been
-carrying is the sound driver. Do you see something else that has been
-added since then ? 
+Gah; teach me to pick up patches right before bed.  I shouldn't have
+picked up the ulite console changes patch just yet.  I've dropped it
+from the series until I have a chance to rework it.  Sorry.
 
-Friendly,
+Here's the new pull request
 
-Sven Luther
+The following changes since commit 4f43143f9fbbb679c38d2ff99e44d3aaa00d0fe1:
+  Paul Mackerras (1):
+        Merge branch 'for-2.6.25' of git://git.kernel.org/.../olof/pasemi
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.25
+
+Stephen Neuendorffer (5):
+      [POWERPC] Xilinx: update compatible list for interrupt controller
+      [POWERPC] Xilinx: Add correct compatible list for device tree
+bus bindings.
+      [POWERPC] Xilinx: Update booting-without-of.
+      [POWERPC] Xilinx: updated device tree compatibility to match
+uboot bsp generator.
+      [POWERPC] Xilinx uartlite: Section type fixups
+
+ Documentation/powerpc/booting-without-of.txt |   56 +++++++++++++++-----------
+ arch/powerpc/boot/serial.c                   |    3 +-
+ arch/powerpc/platforms/40x/virtex.c          |   12 +++++-
+ arch/powerpc/sysdev/xilinx_intc.c            |    8 +++-
+ drivers/serial/uartlite.c                    |    6 +-
+ 5 files changed, 56 insertions(+), 29 deletions(-)
+
+>
+> --
+> Bye, Peter Korsgaard
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
