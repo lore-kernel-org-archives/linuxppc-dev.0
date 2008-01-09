@@ -1,13 +1,23 @@
-Return-Path: <sprasad@bivio.net>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C852F6.BF8641D6"
-Subject: Trying 10/HALF
-Date: Wed, 9 Jan 2008 11:35:10 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D701494071@corpexc01.corp.networkrobots.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7AEC5DDFA2
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:41:23 +1100 (EST)
+Message-Id: <9536E0AC-E4D2-4E86-8DC6-F40A322FC817@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <478520E4.1050204@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range lands
+	in highmem
+Date: Wed, 9 Jan 2008 13:41:09 -0600
+References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
+	<20080109185349.GC4337@loki.buserror.net>
+	<3B831CF0-E978-42E7-BA26-7598BC27A5F6@kernel.crashing.org>
+	<478520E4.1050204@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,134 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C852F6.BF8641D6
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Jan 9, 2008, at 1:30 PM, Scott Wood wrote:
 
-Hi,
+> Kumar Gala wrote:
+>> On Jan 9, 2008, at 12:53 PM, Scott Wood wrote:
+>>> It looks like if the reserved area straddles the highmem boundary,  
+>>> it'll
+>>> only reserve the highmem portion.
+>> Yeah, I thought about that.  I'm wondering if we should warn about  
+>> this.. its seems like a bad thing to do.
+>
+> How is the firmware supposed to know where Linux sets its lowmem  
+> limit?  I think this is something that needs to be handled.
 
-=20
+Yeah I agree with that as well.
 
-After booting, my MPC8641 based board keeps printing "Trying 10/HALF"
-for ever. I am unable to use the Ethernet, even though there are
-interrupts occuring. Based on /proc/interrupts, both tx and rx interrupt
-count is increasing, and zero count for enet_error interrupt.
+I'm thinking I'll add something like:
 
-=20
+                 if (addr < total_lowmem)
+                         reserve_bootmem(lmb.reserved.region[i].base,
+                                         lmb_size_bytes(&lmb.reserved,  
+i));
++               else if (lmb.reserved.region[i].base > total_lowmem) {
++                       unsigned long adjusted_size;
++//                     adjusted_size = xxx;
 
-I think this is coming from drivers/net/phy/phy.c during
-autonegotiation. However, I am not sure how to take care of this.
-Appreciate some pointers.
+need to figure out the math here.
 
-=20
++                       reserve_bootmem(lmb.reserved.region[i].base,
++                                       adjusted_size);
++               }
 
-Thanks
+that should solve the problem.
 
-Siva
-
-=20
-
-
-------_=_NextPart_001_01C852F6.BF8641D6
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>After booting, my MPC8641 based board keeps printing =
-&#8220;Trying
-10/HALF&#8221; for ever. I am unable to use the Ethernet, even though =
-there are
-interrupts occuring. Based on /proc/interrupts, both tx and rx interrupt =
-count
-is increasing, and zero count for enet_error =
-interrupt.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I think this is coming from drivers/net/phy/phy.c =
-during
-autonegotiation. However, I am not sure how to take care of this. =
-Appreciate
-some pointers.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Siva<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C852F6.BF8641D6--
+- k
