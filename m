@@ -1,19 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 65AAFDDF70
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:30:04 +1100 (EST)
-Date: Wed, 9 Jan 2008 16:29:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 2/3 v2] Add initial iomega StorCenter board port.
-Message-Id: <20080109162953.c100bc4a.sfr@canb.auug.org.au>
-In-Reply-To: <E1JCMbN-0002mN-MD@jdl.com>
-References: <E1JCMbN-0002mN-MD@jdl.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 38B85DDF25
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 16:49:34 +1100 (EST)
+Received: from localhost.localdomain (yow-pgortmak-d1.ottawa.windriver.com
+	[128.224.146.65])
+	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id m095nWmL008497
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jan 2008 21:49:33 -0800 (PST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Cc: 
+Subject: [PATCH 0/3] Powerpc support for SBC834x board
+Date: Wed,  9 Jan 2008 00:49:29 -0500
+Message-Id: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Jon,
+The following three patches add support for the Wind River SBC834x board
+into arch/powerpc.  The support is primarily based on the existing Fsl
+MPC834x_MDS board support.  
 
-On Tue, 08 Jan 2008 16:07:17 -0600 Jon Loeliger <jdl@jdl.com> wrote:
->
-> +static void __init storcenter_init_IRQ(void)
-> +{
-> +	struct mpic *mpic;
-> +	struct device_node *dnp;
-> +	const void *prop;
-> +	int size;
-> +	phys_addr_t paddr;
-> +
-> +	dnp =3D of_find_node_by_type(NULL, "open-pic");
-> +	if (dnp =3D=3D NULL)
-> +		return;
-> +
-> +	prop =3D of_get_property(dnp, "reg", &size);
-> +	paddr =3D (phys_addr_t)of_translate_address(dnp, prop);
-> +	mpic =3D mpic_alloc(dnp, paddr, MPIC_PRIMARY | MPIC_WANTS_RESET,
-> +			4, 32, " EPIC     ");
-> +	BUG_ON(mpic =3D=3D NULL);
+1) Add support for Wind River SBC834x boards
 
-> +	mpic_assign_isu(mpic, 0, paddr + 0x10200);
-> +	mpic_assign_isu(mpic, 1, paddr + 0x10220);
-> +	mpic_assign_isu(mpic, 2, paddr + 0x10240);
-> +	mpic_assign_isu(mpic, 3, paddr + 0x10260);
-> +	mpic_assign_isu(mpic, 4, paddr + 0x10280);
-> +	mpic_assign_isu(mpic, 5, paddr + 0x11120);
-> +	mpic_assign_isu(mpic, 6, paddr + 0x11140);
-> +
-> +	mpic_init(mpic);
-> +}
+ b/arch/powerpc/platforms/83xx/Kconfig   |    9 ++
+ b/arch/powerpc/platforms/83xx/Makefile  |    1 
+ b/arch/powerpc/platforms/83xx/sbc834x.c |  117 +++++++++++++++++++++++++++++++-
+ 3 files changed, 125 insertions(+), 2 deletions(-)
 
-The above needs a of_node_put(dnp) somewhere.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+2) Add device tree source (v1) for Wind River SBC834x board
 
---Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k
-Content-Type: application/pgp-signature
+ b/arch/powerpc/boot/dts/sbc8349.dts |  248 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 247 insertions(+), 1 deletion(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHhFvUTgG2atn1QN8RAuvqAJ4vC2We1tslVNwnbaMgHcQhseWBfACfdGi5
-JV/NjgTimGs/JjM+MPt6hpk=
-=t2ud
------END PGP SIGNATURE-----
+3) Add default config file for Wind River SBC8349 board
 
---Signature=_Wed__9_Jan_2008_16_29_53_+1100_qabl4gJsvu=_IL2k--
+ b/arch/powerpc/configs/sbc834x_defconfig |  801 ++++++++++++++++++++++++++++++-
+ 1 file changed, 800 insertions(+), 1 deletion(-)
+
+
+I've tested this with u-boot 1.3.1 + the three recent minor sbc834x u-boot
+patches I'd put out plus the latest dtc from git, and it all seems happy.
+
+Paul.
