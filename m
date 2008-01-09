@@ -1,34 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A81EADDF0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 19:39:07 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m098cuJ1025606
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 01:39:02 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m098cttM008900
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 02:38:55 -0600 (CST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id A9E54DDF50
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 21:01:40 +1100 (EST)
+Date: Wed, 9 Jan 2008 11:01:38 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [patch 2/4 v2] PS3: Add logical performance monitor repository
+	routines
+In-Reply-To: <20080109181501.334e98c8.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0801091100470.1492@vixen.sonytel.be>
+References: <477EF59C.2070809@am.sony.com> <47846B38.7010409@am.sony.com>
+	<20080109181501.334e98c8.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [PATCH 1/3] add default device trees for MPC837x MDS board
-Date: Wed, 9 Jan 2008 16:38:54 +0800
-Message-ID: <989B956029373F45A0B8AF029708189001BA0211@zch01exm26.fsl.freescale.net>
-In-Reply-To: <fa686aa40801080953y14ecdc60i8c2418ba8d6e809a@mail.gmail.com>
-References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
-	<fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
-	<20080108173845.GA5188@loki.buserror.net>
-	<fa686aa40801080953y14ecdc60i8c2418ba8d6e809a@mail.gmail.com>
-From: "Li Yang" <LeoLi@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Wood Scott" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-1247821799-1199872898=:1492"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,40 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On=20
-> Behalf Of Grant Likely
-> Sent: Wednesday, January 09, 2008 1:54 AM
-> To: Wood Scott
-> Cc: Li Yang; linuxppc-dev@ozlabs.org; paulus@samba.org
-> Subject: Re: [PATCH 1/3] add default device trees for MPC837x=20
-> MDS board
->=20
-> On 1/8/08, Scott Wood <scottwood@freescale.com> wrote:
-> > On Tue, Jan 08, 2008 at 08:58:17AM -0700, Grant Likely wrote:
-> > > On 1/7/08, Li Yang <leoli@freescale.com> wrote:
-> > > > +                       phy_type =3D "utmi_wide";
-> > >
-> > > fsl,phy_type please.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-1247821799-1199872898=:1492
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 9 Jan 2008, Stephen Rothwell wrote:
+> On Tue, 08 Jan 2008 22:35:36 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
 > >
-> > Again, code will break.  Can we stop ambushing people=20
-> submitting board=20
-> > support with complaints against existing, non-board-specific=20
-> > code/device trees?  Fix that first, then complain if new=20
-> code reintroduces the crud.
->=20
-> I disagree (about bringing up these comments).  New board=20
-> port is the time to bring these issue up.  It keeps the issue=20
-> in the forefront so it actually gets fixed.
+> > +int ps3_repository_read_num_pu(unsigned int *num_pu)
+> > +{
+> > +	int result;
+> > +	u64 v1;
+> > +
+> > +	v1 = 0;
+> > +	result = read_node(PS3_LPAR_ID_CURRENT,
+> > +			   make_first_field("bi", 0),
+> > +			   make_field("pun", 0),
+> > +			   0, 0,
+> > +			   &v1, NULL);
+> > +	*num_pu = v1;
+> 
+> Why not just pass "num_pu" instead of &v1 to read_node()?
 
-Hi,
+We need a temporary because num_pu and v1 differ in size.
+The alternative is to make num_pu u64.
 
-I agree that it's good to bring these issues up for a better standarized =
-device tree definition.  It will be even better if the guidelines are =
-documented rather than nuncupated on the mail list.  However, I think =
-that adding new board support is independent of fixing preexistent =
-issues.  I do prefer to fix these issues together with other occurrences =
-by separated patches rather than respin the new board support over and =
-over again.
+> > +int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
+> > +{
+> > +	int result;
+> > +	u64 v1;
+> > +
+> > +	v1 = 0;
+> > +	result = read_node(PS3_LPAR_ID_CURRENT,
+> > +		make_first_field("bi", 0),
+> > +		make_field("pu", pu_index),
+> > +		0, 0,
+> > +		&v1, NULL);
+> > +	*pu_id = v1;
+> 
+> Similarly with "pu_id"?
 
-- Leo
+Yep, here we don't need the temporary.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-1247821799-1199872898=:1492--
