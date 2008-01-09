@@ -1,20 +1,16 @@
-Return-Path: <matvejchikov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id DAD05DE0AA
+Return-Path: <Jogi95@web.de>
+Received: from fmmailgate05.web.de (fmmailgate05.web.de [217.72.192.243])
+	by ozlabs.org (Postfix) with ESMTP id A706BDE053
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 07:20:45 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so454824pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 09 Jan 2008 12:20:44 -0800 (PST)
-Message-ID: <8496f91a0801091220l166b7278qdbd261c298e6826d@mail.gmail.com>
-Date: Wed, 9 Jan 2008 23:20:43 +0300
-From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: linuxppc-embedded@ozlabs.org, netdev@vger.kernel.org
-Subject: Re: [PATCH for 2.6.24][NET] fs_enet: check for phydev existence in
-	the ethtool handlers
+	Thu, 10 Jan 2008 08:30:02 +1100 (EST)
+Date: Wed, 09 Jan 2008 22:29:59 +0100
+Message-Id: <524587219@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: matvejchikov@gmail.com
+From: Joachim Meyer <Jogi95@web.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux for ml310
+Content-Type: text/plain; charset=iso-8859-15
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +21,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi folks!
+Hi 
 
-I had the same problem too. The solution was the following:
-http://www.mail-archive.com/netdev@vger.kernel.org/msg37951.html
+I switched "Xilinx uartlite serieal port support" and "Support for console on Xilinxuartlite serialport" on and "8250/16550 and compatible serial support" off, in the kernel config.
+Then I removed the things I added in the xparameters.h and compiled successfully.
+But I have yet a few Questions:
 
-Also have a look at the potential multicasting recovery problem in
-fs_enet driver:
-http://patchwork.ozlabs.org/linuxppc/patch?id=10700
+- What would you recommend to use? UART-Lite or a 16550 serial port. Can I get a console running on the RS232 Port of the Board with both possibilities?
 
-Best regards,
-Matvejchikov Ilya.
+- Can you recommend anything for my next steps to get an running linux (rootfs usw.)? So far I oriented myself on the Klingauf page, but I think it is perhaps not the best one because its too old and some things will probably not work the way he did it anymore.
+
+Greez & Thanks
+Joachim
+_________________________________________________________________________
+In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
