@@ -1,22 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 859C8DDF61
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 18:15:13 +1100 (EST)
-Date: Wed, 9 Jan 2008 18:15:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 2/4 v2] PS3: Add logical performance monitor repository
-	routines
-Message-Id: <20080109181501.334e98c8.sfr@canb.auug.org.au>
-In-Reply-To: <47846B38.7010409@am.sony.com>
-References: <477EF59C.2070809@am.sony.com>
-	<47846B38.7010409@am.sony.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A81EADDF0E
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 19:39:07 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m098cuJ1025606
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 01:39:02 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m098cttM008900
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 02:38:55 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [PATCH 1/3] add default device trees for MPC837x MDS board
+Date: Wed, 9 Jan 2008 16:38:54 +0800
+Message-ID: <989B956029373F45A0B8AF029708189001BA0211@zch01exm26.fsl.freescale.net>
+In-Reply-To: <fa686aa40801080953y14ecdc60i8c2418ba8d6e809a@mail.gmail.com>
+References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
+	<fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
+	<20080108173845.GA5188@loki.buserror.net>
+	<fa686aa40801080953y14ecdc60i8c2418ba8d6e809a@mail.gmail.com>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Wood Scott" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> -----Original Message-----
+> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On=20
+> Behalf Of Grant Likely
+> Sent: Wednesday, January 09, 2008 1:54 AM
+> To: Wood Scott
+> Cc: Li Yang; linuxppc-dev@ozlabs.org; paulus@samba.org
+> Subject: Re: [PATCH 1/3] add default device trees for MPC837x=20
+> MDS board
+>=20
+> On 1/8/08, Scott Wood <scottwood@freescale.com> wrote:
+> > On Tue, Jan 08, 2008 at 08:58:17AM -0700, Grant Likely wrote:
+> > > On 1/7/08, Li Yang <leoli@freescale.com> wrote:
+> > > > +                       phy_type =3D "utmi_wide";
+> > >
+> > > fsl,phy_type please.
+> >
+> > Again, code will break.  Can we stop ambushing people=20
+> submitting board=20
+> > support with complaints against existing, non-board-specific=20
+> > code/device trees?  Fix that first, then complain if new=20
+> code reintroduces the crud.
+>=20
+> I disagree (about bringing up these comments).  New board=20
+> port is the time to bring these issue up.  It keeps the issue=20
+> in the forefront so it actually gets fixed.
 
-On Tue, 08 Jan 2008 22:35:36 -0800 Geoff Levand <geoffrey.levand@am.sony.co=
-m> wrote:
->
-> +int ps3_repository_read_num_pu(unsigned int *num_pu)
-> +{
-> +	int result;
-> +	u64 v1;
-> +
-> +	v1 =3D 0;
-> +	result =3D read_node(PS3_LPAR_ID_CURRENT,
-> +			   make_first_field("bi", 0),
-> +			   make_field("pun", 0),
-> +			   0, 0,
-> +			   &v1, NULL);
-> +	*num_pu =3D v1;
+Hi,
 
-Why not just pass "num_pu" instead of &v1 to read_node()?
+I agree that it's good to bring these issues up for a better standarized =
+device tree definition.  It will be even better if the guidelines are =
+documented rather than nuncupated on the mail list.  However, I think =
+that adding new board support is independent of fixing preexistent =
+issues.  I do prefer to fix these issues together with other occurrences =
+by separated patches rather than respin the new board support over and =
+over again.
 
-> +int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
-> +{
-> +	int result;
-> +	u64 v1;
-> +
-> +	v1 =3D 0;
-> +	result =3D read_node(PS3_LPAR_ID_CURRENT,
-> +		make_first_field("bi", 0),
-> +		make_field("pu", pu_index),
-> +		0, 0,
-> +		&v1, NULL);
-> +	*pu_id =3D v1;
-
-Similarly with "pu_id"?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHhHR5TgG2atn1QN8RApYEAJ91ItpRYW8Xqh5nmoD3yjcv0wnu5QCgl/wn
-MxUDJ4IRErYTVm0AOzuj0/U=
-=dvcu
------END PGP SIGNATURE-----
-
---Signature=_Wed__9_Jan_2008_18_15_01_+1100_t0K9mJof6y_lquVt--
+- Leo
