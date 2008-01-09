@@ -1,16 +1,21 @@
-Return-Path: <Jogi95@web.de>
-Received: from fmmailgate05.web.de (fmmailgate05.web.de [217.72.192.243])
-	by ozlabs.org (Postfix) with ESMTP id C85C0DE29B
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9B491DE01E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 04:32:30 +1100 (EST)
-Date: Wed, 09 Jan 2008 18:29:40 +0100
-Message-Id: <524275432@web.de>
+	Thu, 10 Jan 2008 04:52:24 +1100 (EST)
 MIME-Version: 1.0
-From: Joachim Meyer <Jogi95@web.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Linux for ml310
-Content-Type: text/plain; charset=iso-8859-15
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: i2c device for a linux 2.6 in XUPV2P
+Date: Wed, 9 Jan 2008 09:52:18 -0800
+References: <ef1737dc0712241327t3cc7c14kcb91e9a4e550df18@mail.gmail.com> 
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Josep Maria Batlle" <jepmalinux@gmail.com>, <linuxppc-embedded@ozlabs.org>
+Message-Id: <20080109175219.C0C31168005B@mail1-blu.bigfish.com>
+Cc: git <git@xilinx.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,101 +26,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi again
 
-In which xparams* files should i look for the right definition=3F
-In the xparameters.h from the BSP I can't find it, it looks like this:
--------------------------------------------------------------------
-/*
- * include/asm-ppc/xparameters.h
- *
- * This file includes the correct xparameters.h for the CONFIG'ed board
- *
- * Author: MontaVista Software, Inc.
- *         source@mvista.com
- *
- * 2004 (c) MontaVista Software, Inc.  This file is licensed under the ter=
-ms
- * of the GNU General Public License version 2.  This program is licensed
- * "as is" without any warranty of any kind, whether express or implied.
- */
+Yes, it should be possible, however I don't believe the Linux adapter
+for the i2c driver has been updated for current 2.6 kernel versions.
+It's not currently on git.xilinx.com, and apparently the i2c subsystem
+has changed significantly since the adapter was written, so it's not a
+straightforward update.
 
-#include <linux/config.h>
+If all you want to do is some simple configuration, then bitbanging the
+i2c is straightforward.  I'll send you a driver that I cooked up at one
+point in a separate email.
 
-#if defined(CONFIG=5FXILINX=5FML300)
-#include <platforms/4xx/xparameters/xparameters=5Fml300.h>
-#endif
-#if defined(CONFIG=5FXILINX=5FML40x)
-#include <platforms/4xx/xparameters/xparameters=5Fml40x.h>
-#endif
-#if defined(CONFIG=5FMEMEC=5F2VPX)
-#include <platforms/4xx/xparameters/xparameters=5F2vpx.h>
-#endif
+Steve
 
-/*
- * A few reasonable defaults for the #defines which could be missing depen=
-ding
- * on the IP version or variant (e.g. OPB vs PLB)
- */
-
-#ifndef XPAR=5FEMAC=5F0=5FCAM=5FEXIST
-#define XPAR=5FEMAC=5F0=5FCAM=5FEXIST 0
-#endif
-#ifndef XPAR=5FEMAC=5F0=5FJUMBO=5FEXIST
-#define XPAR=5FEMAC=5F0=5FJUMBO=5FEXIST 0
-#endif
-#ifndef XPAR=5FEMAC=5F0=5FTX=5FDRE=5FTYPE
-#define XPAR=5FEMAC=5F0=5FTX=5FDRE=5FTYPE 0
-#endif
-#ifndef XPAR=5FEMAC=5F0=5FRX=5FDRE=5FTYPE
-#define XPAR=5FEMAC=5F0=5FRX=5FDRE=5FTYPE 0
-#endif
-#ifndef XPAR=5FEMAC=5F0=5FTX=5FINCLUDE=5FCSUM
-#define XPAR=5FEMAC=5F0=5FTX=5FINCLUDE=5FCSUM 0
-#endif
-#ifndef XPAR=5FEMAC=5F0=5FRX=5FINCLUDE=5FCSUM
-#define XPAR=5FEMAC=5F0=5FRX=5FINCLUDE=5FCSUM 0
-#endif
-
-#ifndef XPAR=5FEMAC=5F1=5FCAM=5FEXIST
-#define XPAR=5FEMAC=5F1=5FCAM=5FEXIST 0
-#endif
-#ifndef XPAR=5FEMAC=5F1=5FJUMBO=5FEXIST
-#define XPAR=5FEMAC=5F1=5FJUMBO=5FEXIST 0
-#endif
-#ifndef XPAR=5FEMAC=5F1=5FTX=5FDRE=5FTYPE
-#define XPAR=5FEMAC=5F1=5FTX=5FDRE=5FTYPE 0
-#endif
-#ifndef XPAR=5FEMAC=5F1=5FRX=5FDRE=5FTYPE
-#define XPAR=5FEMAC=5F1=5FRX=5FDRE=5FTYPE 0
-#endif
-#ifndef XPAR=5FEMAC=5F1=5FTX=5FINCLUDE=5FCSUM
-#define XPAR=5FEMAC=5F1=5FTX=5FINCLUDE=5FCSUM 0
-#endif
-#ifndef XPAR=5FEMAC=5F1=5FRX=5FINCLUDE=5FCSUM
-#define XPAR=5FEMAC=5F1=5FRX=5FINCLUDE=5FCSUM 0
-#endif
-
-#ifndef XPAR=5FGPIO=5F0=5FIS=5FDUAL
-#define XPAR=5FGPIO=5F0=5FIS=5FDUAL 0
-#endif
-#ifndef XPAR=5FGPIO=5F1=5FIS=5FDUAL
-#define XPAR=5FGPIO=5F1=5FIS=5FDUAL 0
-#endif
-#ifndef XPAR=5FGPIO=5F2=5FIS=5FDUAL
-#define XPAR=5FGPIO=5F2=5FIS=5FDUAL 0
-#endif
-#ifndef XPAR=5FGPIO=5F3=5FIS=5FDUAL
-#define XPAR=5FGPIO=5F3=5FIS=5FDUAL 0
-#endif
-#ifndef XPAR=5FGPIO=5F4=5FIS=5FDUAL
-#define XPAR=5FGPIO=5F4=5FIS=5FDUAL 0
-#endif
-----------------------------------------------------
-
-Did I something wrong in the edk Projekt, or are there other xparameters w=
-here I must look=3F
-Greetings & THX
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
-Jetzt neu! Sch=FCtzen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
-kostenlos testen. http://www.pc-sicherheit.web.de/startseite/=3Fmc=3D022220
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Josep =
+Maria
+Batlle
+> Sent: Monday, December 24, 2007 1:27 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: i2c device for a linux 2.6 in XUPV2P
+>=20
+> Hi all,
+>=20
+> I have booted up linux 2.6 on Xilinx XUPV2P (using the base of ml300
+config file).
+> Now I am trying to use the i2c in the user-space. First of all: is it
+possible?
+>=20
+> My first attempts have not worked. I have made this:
+> 1) I enable "I2C Support" and "I2C device interface" in the kernel
+recompilation.
+> 2) I added the "i2c-0" device in /dev (# mknod i2c-0 c 89 0)
+> 3) then I run a simple program to open the device (provided by the
+"dev-interface" file of i2c kernel
+> documentation) that returns this errno message: "No such device".
+>=20
+> I have tried to use the device number 1, 2, 3, 4 but these have not
+worked. I have tried to use the
+> device "i2cn" but not worked. I have tried to use all the BSP's from
+the EDK (7.1i) and then only the
+> "xparameters_ml300.h" in the compilation. After all of this, now I am
+modifying the RFS for "mdev"...
+> Somebody can tell me what I am doing wrong if this use is possible?
+>=20
+> I use the kernel tree "virtex-for-2.6.24" from SecretLab and Busybox
+1.7.2.
+>=20
+> Thanks.
