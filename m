@@ -1,20 +1,15 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 14A6EDE207
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 03:53:04 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so113142uge.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 08:53:03 -0800 (PST)
-Message-ID: <4784FCB1.3010509@genesi-usa.com>
-Date: Wed, 09 Jan 2008 16:56:17 +0000
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B570EDE0F7
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 04:05:23 +1100 (EST)
+Message-ID: <4784FED1.2040206@pikatech.com>
+Date: Wed, 09 Jan 2008 12:05:21 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] add phy-handle property for fec_mpc52xx
-References: <20080109163058.21643.30876.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080109163058.21643.30876.stgit@trillian.secretlab.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de, sven@genesi-usa.com
+To: i2c@lm-sensors.org, khali@linux-fr.org
+Subject: [PATCH] i2c-ibm_iic driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,107 +19,300 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Okay I have a better suggestion.
+This patch allows the i2c-ibm_iic driver to be built either as an ocp 
+driver or an of_platform driver. This allows it to run under the powerpc 
+arch but maintains backward compatibility with the ppc arch.
 
-Apply all the prom_init fixes you like. But, instead of swizzling on the
-individual nodes, do it blanket for the firmware version.
+Cheers,
+   Sean MacLennan
 
-For instance, wrap the entire efika fixups stuff with a check for the
-openprom property "built-on" - this is the date the firmware was built.
-efika.forth will change this!
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
 
-Just make sure it's less than.. let's say, a certain version of efika.forth,
-and I will roll a version which has a higher version and some extra features
-like CAN/I2C exposure.
-
-If you run efika.forth it will not touch the device tree. If you don't, it
-will add the small amount of patches. Add a huge comment that this hunk of
-code should be scheduled for deletion at some later date. Put a Kconfig
-around it so it can be taken out, even, at distro option.
-
-Does that sound better? Right now I'm a little too busy to write and
-compile test code for it so I will not venture to submit a patch..
-do we want to work on a comprehensive, required efika.forth release
-that fixes these things together, or is it just my job for now?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
-Grant Likely wrote:
-> From: Olaf Hering <olaf@aepfle.de>
-> 
-> The new network driver fec_mpc52xx will not work on efika because the
-> firmware does not provide all required properties.
-> http://www.powerdeveloper.org/asset/by-id/46 has a Forth script to
-> create more properties. But only the phy stuff is required to get a
-> working network.
-> 
-> This should go into the kernel because its appearently
-> impossible to boot the script via tftp and then load the real boot
-> binary (yaboot or zimage).
-> 
-> (Olaf's s-o-b line needs to go here)
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> 
-> Here's my respin of Olaf's patch to move it to fixup_device_tree_efika()
-> and to make it check if the nodes exist before blindly creating them.
-> 
-> Cheers,
-> g.
-> 
->  arch/powerpc/kernel/prom_init.c |   39 +++++++++++++++++++++++++++++++++++++++
->  1 files changed, 39 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 1add6ef..5d89a21 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -2216,6 +2216,45 @@ static void __init fixup_device_tree_efika(void)
->  			prom_printf("fixup_device_tree_efika: ",
->  				"skipped entry %x - setprop error\n", i);
->  	}
-> +
-> +	/* Make sure ethernet mdio bus node exists */
-> +	node = call_prom("finddevice", 1, 1, ADDR("/builtin/mdio"));
-> +	if (!PHANDLE_VALID(node)) {
-> +		prom_printf("Adding Ethernet MDIO node\n");
-> +		call_prom("interpret", 1, 1,
-> +			" s\" /builtin\" find-device"
-> +			" new-device"
-> +				" 1 encode-int s\" #address-cells\" property"
-> +				" 0 encode-int s\" #size-cells\" property"
-> +				" s\" mdio\" 2dup device-name device-type"
-> +				" s\" mpc5200b-fec-phy\" encode-string"
-> +				" s\" compatible\" property"
-> +				" 0xf0003000 0x400 reg"
-> +				" 0x2 encode-int"
-> +				" 0x5 encode-int encode+"
-> +				" 0x3 encode-int encode+"
-> +				" s\" interrupts\" property"
-> +			" finish-device");
-> +	};
-> +
-> +	/* Make sure ethernet phy device node exist */
-> +	node = call_prom("finddevice", 1, 1, ADDR("/builtin/mdio/ethernet-phy"));
-> +	if (!PHANDLE_VALID(node)) {
-> +		prom_printf("Adding Ethernet PHY node\n");
-> +		call_prom("interpret", 1, 1,
-> +			" s\" /builtin/mdio\" find-device"
-> +			" new-device"
-> +				" s\" ethernet-phy\" device-name"
-> +				" 0x10 encode-int s\" reg\" property"
-> +				" my-self"
-> +				" ihandle>phandle"
-> +			" finish-device"
-> +			" s\" /builtin/ethernet\" find-device"
-> +				" encode-int"
-> +				" s\" phy-handle\" property"
-> +			" device-end");
-> +	}
-> +
->  }
->  #else
->  #define fixup_device_tree_efika()
-> 
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index c466c6c..e9e1493 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -241,7 +241,6 @@ config I2C_PIIX4
+ 
+ config I2C_IBM_IIC
+ 	tristate "IBM PPC 4xx on-chip I2C interface"
+-	depends on IBM_OCP
+ 	help
+ 	  Say Y here if you want to use IIC peripheral found on 
+ 	  embedded IBM PPC 4xx based systems. 
+diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
+index 9b43ff7..98476fc 100644
+--- a/drivers/i2c/busses/i2c-ibm_iic.c
++++ b/drivers/i2c/busses/i2c-ibm_iic.c
+@@ -6,6 +6,9 @@
+  * Copyright (c) 2003, 2004 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
++ * Copyright (c) 2008 PIKA Technologies
++ * Sean MacLennan <smaclennan@pikatech.com>
++ *
+  * Based on original work by 
+  * 	Ian DaSilva  <idasilva@mvista.com>
+  *      Armin Kuster <akuster@mvista.com>
+@@ -39,12 +42,17 @@
+ #include <asm/io.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-id.h>
++
++#ifdef CONFIG_IBM_OCP
+ #include <asm/ocp.h>
+ #include <asm/ibm4xx.h>
++#else
++#include <linux/of_platform.h>
++#endif
+ 
+ #include "i2c-ibm_iic.h"
+ 
+-#define DRIVER_VERSION "2.1"
++#define DRIVER_VERSION "2.2"
+ 
+ MODULE_DESCRIPTION("IBM IIC driver v" DRIVER_VERSION);
+ MODULE_LICENSE("GPL");
+@@ -650,13 +658,14 @@ static inline u8 iic_clckdiv(unsigned int opb)
+ 	opb /= 1000000;
+ 	
+ 	if (opb < 20 || opb > 150){
+-		printk(KERN_CRIT "ibm-iic: invalid OPB clock frequency %u MHz\n",
++		printk(KERN_WARNING "ibm-iic: invalid OPB clock frequency %u MHz\n",
+ 			opb);
+ 		opb = opb < 20 ? 20 : 150;
+ 	}
+ 	return (u8)((opb + 9) / 10 - 1);
+ }
+ 
++#ifdef CONFIG_IBM_OCP
+ /*
+  * Register single IIC interface
+  */
+@@ -672,7 +681,7 @@ static int __devinit iic_probe(struct ocp_device *ocp){
+ 			ocp->def->index);
+ 
+ 	if (!(dev = kzalloc(sizeof(*dev), GFP_KERNEL))) {
+-		printk(KERN_CRIT "ibm-iic%d: failed to allocate device data\n",
++		printk(KERN_ERR "ibm-iic%d: failed to allocate device data\n",
+ 			ocp->def->index);
+ 		return -ENOMEM;
+ 	}
+@@ -687,7 +696,7 @@ static int __devinit iic_probe(struct ocp_device *ocp){
+ 	}
+ 
+ 	if (!(dev->vaddr = ioremap(ocp->def->paddr, sizeof(struct iic_regs)))){
+-		printk(KERN_CRIT "ibm-iic%d: failed to ioremap device registers\n",
++		printk(KERN_ERR "ibm-iic%d: failed to ioremap device registers\n",
+ 			dev->idx);
+ 		ret = -ENXIO;
+ 		goto fail2;
+@@ -746,7 +755,7 @@ static int __devinit iic_probe(struct ocp_device *ocp){
+ 	adap->nr = dev->idx >= 0 ? dev->idx : 0;
+ 
+ 	if ((ret = i2c_add_numbered_adapter(adap)) < 0) {
+-		printk(KERN_CRIT "ibm-iic%d: failed to register i2c adapter\n",
++		printk(KERN_ERR "ibm-iic%d: failed to register i2c adapter\n",
+ 			dev->idx);
+ 		goto fail;
+ 	}
+@@ -779,7 +788,7 @@ static void __devexit iic_remove(struct ocp_device *ocp)
+ 	struct ibm_iic_private* dev = (struct ibm_iic_private*)ocp_get_drvdata(ocp);
+ 	BUG_ON(dev == NULL);
+ 	if (i2c_del_adapter(&dev->adap)){
+-		printk(KERN_CRIT "ibm-iic%d: failed to delete i2c adapter :(\n",
++		printk(KERN_ERR "ibm-iic%d: failed to delete i2c adapter :(\n",
+ 			dev->idx);
+ 		/* That's *very* bad, just shutdown IRQ ... */
+ 		if (dev->irq >= 0){
+@@ -831,3 +840,189 @@ static void __exit iic_exit(void)
+ 
+ module_init(iic_init);
+ module_exit(iic_exit);
++#else
++/*
++ * Register single IIC interface
++ */
++static int __devinit iic_probe(struct of_device *ofdev,
++			       const struct of_device_id *match)
++{
++	static int index = 0;
++	struct device_node *np = ofdev->node;
++	struct ibm_iic_private* dev;
++	struct i2c_adapter* adap;
++	const u32 *indexp, *freq;
++	int ret;
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev) {
++		printk(KERN_ERR "ibm-iic: failed to allocate device data\n");
++		return -ENOMEM;
++	}
++
++	/* This assumes we don't mix index and non-index entries. */
++	indexp = of_get_property(np, "index", NULL);
++	dev->idx = indexp ? *indexp : index++;
++
++	dev_set_drvdata(&ofdev->dev, dev);
++
++	dev->vaddr = of_iomap(np, 0);
++	if (dev->vaddr == NULL) {
++		printk(KERN_ERR "ibm-iic%d: failed to ioremap device registers\n",
++			dev->idx);
++		ret = -ENXIO;
++		goto fail1;
++	}
++
++	init_waitqueue_head(&dev->wq);
++
++	if (iic_force_poll)
++		dev->irq = NO_IRQ;
++	else {
++		dev->irq = irq_of_parse_and_map(np, 0);
++		if (dev->irq == NO_IRQ)
++			printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
++		else {
++			/* Disable interrupts until we finish initialization,
++			   assumes level-sensitive IRQ setup...
++			*/
++			iic_interrupt_mode(dev, 0);
++			if (request_irq(dev->irq, iic_handler, 0, "IBM IIC", dev)){
++				printk(KERN_ERR "ibm-iic%d: request_irq %d failed\n",
++				       dev->idx, dev->irq);
++				/* Fallback to the polling mode */
++				dev->irq = NO_IRQ;
++			}
++		}
++	}
++
++	if (dev->irq == NO_IRQ)
++		printk(KERN_WARNING "ibm-iic%d: using polling mode\n",
++			   dev->idx);
++
++	/* Board specific settings */
++	if (iic_force_fast || of_get_property(np, "fast-mode", NULL))
++		dev->fast_mode = 1;
++	else
++		dev->fast_mode = 0;
++
++	/* clckdiv is the same for *all* IIC interfaces, but I'd rather
++	 * make a copy than introduce another global. --ebs
++	 */
++	freq = of_get_property(np, "clock-frequency", NULL);
++	if (freq == NULL) {
++		freq = of_get_property(np->parent, "clock-frequency", NULL);
++		if (freq == NULL) {
++			printk(KERN_ERR "ibm-iic%d: Unable to get bus frequency\n",
++			       dev->idx);
++			ret = -EBUSY;
++			goto fail;
++		}
++	}
++
++	dev->clckdiv = iic_clckdiv(*freq);
++	DBG("%d: clckdiv = %d\n", dev->idx, dev->clckdiv);
++
++	/* Initialize IIC interface */
++	iic_dev_init(dev);
++
++	/* Register it with i2c layer */
++	adap = &dev->adap;
++	adap->dev.parent = &ofdev->dev;
++	strcpy(adap->name, "IBM IIC");
++	i2c_set_adapdata(adap, dev);
++	adap->id = I2C_HW_OCP;
++	adap->class = I2C_CLASS_HWMON;
++	adap->algo = &iic_algo;
++	adap->client_register = NULL;
++	adap->client_unregister = NULL;
++	adap->timeout = 1;
++	adap->retries = 1;
++	adap->nr = dev->idx;
++
++	ret = i2c_add_numbered_adapter(adap);
++	if (ret  < 0) {
++		printk(KERN_ERR "ibm-iic%d: failed to register i2c adapter\n",
++			dev->idx);
++		goto fail;
++	}
++
++	printk(KERN_INFO "ibm-iic%d: using %s mode\n", dev->idx,
++		dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
++
++	return 0;
++
++fail:
++	if (dev->irq != NO_IRQ){
++		iic_interrupt_mode(dev, 0);
++		free_irq(dev->irq, dev);
++	}
++
++	iounmap(dev->vaddr);
++fail1:
++	dev_set_drvdata(&ofdev->dev, NULL);
++	kfree(dev);
++	return ret;
++}
++
++/*
++ * Cleanup initialized IIC interface
++ */
++static int __devexit iic_remove(struct of_device *ofdev)
++{
++	struct ibm_iic_private* dev = dev_get_drvdata(&ofdev->dev);
++
++	BUG_ON(dev == NULL);
++	if (i2c_del_adapter(&dev->adap)){
++		printk(KERN_ERR "ibm-iic%d: failed to delete i2c adapter :(\n",
++			dev->idx);
++		/* That's *very* bad, just shutdown IRQ ... */
++		if (dev->irq != NO_IRQ){
++		    iic_interrupt_mode(dev, 0);
++		    free_irq(dev->irq, dev);
++		    dev->irq = NO_IRQ;
++		}
++	} else {
++		if (dev->irq != NO_IRQ){
++		    iic_interrupt_mode(dev, 0);
++		    free_irq(dev->irq, dev);
++		}
++		iounmap(dev->vaddr);
++		kfree(dev);
++	}
++
++	return 0;
++}
++
++
++static const struct of_device_id ibm_iic_match[] =
++{
++	{ .type = "i2c", .compatible = "ibm,iic-405ex", },
++	{ .type = "i2c", .compatible = "ibm,iic-405gp", },
++	{ .type = "i2c", .compatible = "ibm,iic-440gp", },
++	{ .type = "i2c", .compatible = "ibm,iic-440gpx", },
++	{ .type = "i2c", .compatible = "ibm,iic-440grx", },
++	{}
++};
++
++static struct of_platform_driver ibm_iic_driver =
++{
++	.name   = "ibm-iic",
++	.match_table = ibm_iic_match,
++	.probe  = iic_probe,
++	.remove = iic_remove,
++};
++
++static int __init ibm_iic_init(void)
++{
++	printk(KERN_INFO "IBM IIC driver v" DRIVER_VERSION "\n");
++	return of_register_platform_driver(&ibm_iic_driver);
++}
++module_init(ibm_iic_init);
++
++static void __exit ibm_iic_exit(void)
++{
++	of_unregister_platform_driver(&ibm_iic_driver);
++}
++module_exit(ibm_iic_exit);
++#endif
