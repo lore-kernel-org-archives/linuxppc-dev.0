@@ -1,21 +1,17 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.189])
-	by ozlabs.org (Postfix) with ESMTP id 09DBEDDEED
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 02:34:25 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so336025rvf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 07:34:23 -0800 (PST)
-Message-ID: <5c9cd53b0801090734t56c0c64lf29d748777c57894@mail.gmail.com>
-Date: Wed, 9 Jan 2008 10:34:23 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: "Haiying Wang" <Haiying.Wang@freescale.com>
-Subject: Re: printk() does not work on UART1
-In-Reply-To: <1199888068.3004.3.camel@udp097527uds.am.freescale.net>
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id A50B4DE024
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 02:35:12 +1100 (EST)
+Date: Wed, 9 Jan 2008 16:35:11 +0100
+From: Sven Luther <sven@genesi-usa.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: add phy-handle property for fec_mpc52xx
+Message-ID: <20080109153511.GA5086@powerlinux.fr>
+References: <20080109140608.GA15673@aepfle.de> <4784E78C.40904@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <5c9cd53b0801081611ve59e9a8q6ae2fd227bfc0ed8@mail.gmail.com>
-	<5c9cd53b0801082106p7b57e11ejc809c182a26599d5@mail.gmail.com>
-	<1199888068.3004.3.camel@udp097527uds.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4784E78C.40904@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>, sven@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I found the problem. The CONFIG_CMDLINE was overwritten. Right now, it
-is working.
+On Wed, Jan 09, 2008 at 03:26:04PM +0000, Matt Sealey wrote:
+> Clarification: I really have to disagree with this patch, and Sven.
+> 
+> The whole point of removing the stuff from the Linux kernel (as the
+> efika.forth script and the associated patch performs) is that it means
+> the Linux kernel is no longer a "moving target" for our firmware
+> development.
 
-Thanks for all the help,
+What firmware development ? 
 
-Mike
+> If users require these kernels they can run efika.forth - the major
+> stumbling block being this is quite ugly to do right now. This is our
+> problem - bplan, Genesi, myself whoever you want to target - it should
+> not be made into a Linux problem by creating this "moving target" that
+> needs constant patching to maintain driver coherency.
 
+Then get the firmware fixed, and everyone would be happy. I don't see
+that happening in the near future, just as there has been no pegasos
+firmware release in ages, and my work on it has been scratched, and
+ignored for the efika firmware which has lot of regression compared to
+the latest pegasos beta releases.
 
-On 1/9/08, Haiying Wang <Haiying.Wang@freescale.com> wrote:
-> On Wed, 2008-01-09 at 00:06 -0500, mike zheng wrote:
-> >  Hi All,
-> >
-> >  I have one mpc8568 board using UART1 as the serial port.  The OS is
-> >  Linux Kernel2.4.  If I use the polling mode driver of
-> >  gen550_progress(), it works fine. However the printk() does not work
-> >  after the console_init(). Anyone know what shall I change in the
-> >  kernel to use UART1 as serial console? I assume the default is UART0,
-> >  but I don't know where the value is set. I changed the CONFIG_CMDLINE
-> >  to ttyS1, it does NOT work.
->
-> Make sure you've configured PC0/1/2/3 for UART1 SOUT/RTS/CTS/SIN in
-> u-boot.
->
-> Haiying
->
->
+A new efika firmware upgrade has been promised in, what was it, marsch
+last year or so, where is it ? 
+
+Let's just fix this in the kernel, until we get a fixed efika firmware,
+then we can drop it easily enough. But until this happens, we need to be
+able to boot the kernel without any extra work on the users part.
+
+Friendly,
+
+Sven Luther
