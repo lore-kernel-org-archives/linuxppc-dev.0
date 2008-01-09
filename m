@@ -1,18 +1,21 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 407ECDDEB7
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:26:57 +1100 (EST)
-Message-ID: <47852000.20503@pikatech.com>
-Date: Wed, 09 Jan 2008 14:26:56 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Miscellaneous for Taco
-References: <477F13C0.7040006@pikatech.com><1199566583.7291.63.camel@pasglop><4783C3E8.3090107@pikatech.com><200801082023.11475.sr@denx.de><478503B6.3060402@pikatech.com>
-	<20080109131807.4cb2af29@zod.rchland.ibm.com>
-In-Reply-To: <20080109131807.4cb2af29@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 80C60DDED5
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:27:50 +1100 (EST)
+Message-Id: <3B831CF0-E978-42E7-BA26-7598BC27A5F6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080109185349.GC4337@loki.buserror.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range lands
+	in highmem
+Date: Wed, 9 Jan 2008 13:27:28 -0600
+References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
+	<20080109185349.GC4337@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Wed, 09 Jan 2008 12:26:14 -0500
-> Sean MacLennan <smaclennan@pikatech.com> wrote:
->
->   
->> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
->>     
->
-> This one needs to go to the linux-usb list and David Brownell.
->
-> Although I'm not sure what the benefit here really is.  You can still
-> set this in the defconfig without adding this patch...  I don't see a
-> need to do a default.
->   
-Without the default, I was unable to select this option. I may have 
-solved it the wrong way. It seems if there is no string after the 
-tristate or boolean, you are not allowed to set the variable, it can 
-only default. So with no default, I cannot enable this option and 
-therefore cannot enable the ohci driver.
 
-Again, I think the "default PCI" case catches most boards and all 
-PCI-less, or possibly PCI-less, boards need a default.
+On Jan 9, 2008, at 12:53 PM, Scott Wood wrote:
 
-Cheers,
-   Sean
+> On Wed, Jan 09, 2008 at 11:28:30AM -0600, Kumar Gala wrote:
+>> 	/* reserve the sections we're already using */
+>> -	for (i = 0; i < lmb.reserved.cnt; i++)
+>> -		reserve_bootmem(lmb.reserved.region[i].base,
+>> -				lmb_size_bytes(&lmb.reserved, i));
+>> +	for (i = 0; i < lmb.reserved.cnt; i++) {
+>> +		unsigned long addr = lmb.reserved.region[i].base +
+>> +				     lmb_size_bytes(&lmb.reserved, i) - 1;
+>> +		if (addr < total_lowmem)
+>> +			reserve_bootmem(lmb.reserved.region[i].base,
+>> +					lmb_size_bytes(&lmb.reserved, i));
+>> +	}
+>
+> It looks like if the reserved area straddles the highmem boundary,  
+> it'll
+> only reserve the highmem portion.
+
+Yeah, I thought about that.  I'm wondering if we should warn about  
+this.. its seems like a bad thing to do.
+
+- k
