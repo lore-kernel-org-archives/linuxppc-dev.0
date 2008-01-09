@@ -1,22 +1,21 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 1A5D8DDFAE
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 03:33:09 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so110088uge.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 08:33:04 -0800 (PST)
-Message-ID: <4784F803.9030003@genesi-usa.com>
-Date: Wed, 09 Jan 2008 16:36:19 +0000
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Sven Luther <sven@genesi-usa.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.240])
+	by ozlabs.org (Postfix) with ESMTP id 1A648DE1C3
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 03:44:59 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 33so225437agc.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 08:44:55 -0800 (PST)
+Message-ID: <fa686aa40801090844t18fd5e2cy63dd6b3c46ca1ae2@mail.gmail.com>
+Date: Wed, 9 Jan 2008 09:44:55 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Matt Sealey" <matt@genesi-usa.com>
 Subject: Re: add phy-handle property for fec_mpc52xx
+In-Reply-To: <4784F7D1.1050301@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20080109140608.GA15673@aepfle.de> <4784E78C.40904@genesi-usa.com>
-	<20080109153511.GA5086@powerlinux.fr>
-	<4784F695.7050507@genesi-usa.com>
-	<20080109162923.GA6290@powerlinux.fr>
-In-Reply-To: <20080109162923.GA6290@powerlinux.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
+	<fa686aa40801090746k4ec5c208j9daf224cb2570071@mail.gmail.com>
+	<4784F7D1.1050301@genesi-usa.com>
 Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,25 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 1/9/08, Matt Sealey <matt@genesi-usa.com> wrote:
+> > However, I'm still inclined to pick up Olaf's patch with the
+> > appropriate protections around it so it is only done if the nodes are
+> > missing.
+>
+> Eh.. yeah. Maybe. Seems like a cop-out to me. I would rather you removed
+> the patch and called us a bunch of idiots for coding bad firmware, than
+> have the fixups be dependant on what could turn into a very well coded
+> but essentially screen-long list of fixups for myriad firmware versions
+> where the properties may or may not be present or correct for various
+> firmware versions and devices.
 
-Sven Luther wrote:
-> On Wed, Jan 09, 2008 at 04:30:13PM +0000, Matt Sealey wrote:
->> Sven Luther wrote:
->>> Let's just fix this in the kernel, until we get a fixed efika firmware,
->>> then we can drop it easily enough. But until this happens, we need to be
->>> able to boot the kernel without any extra work on the users part.
->> That is exactly why I don't like the idea. Yes, it makes it easier for users
->> and easier for distro managers to say "it supports the Efika" but it makes
->> the Forth fixing, and any further firmware development (ignore the lack of
->> releases, it means nothing) much harder.
-> 
-> efika firmware development is dead. Until we see a release we should
-> assume that the efika is a firmware with breakage, and no upstream
+I've come to the conclusion that Postel knew what he was talking
+about; "Be conservative in what you do; be liberal in what you accept
+from others."  :-)
 
-The link that Olaf presented, www.powerdeveloper.org/asset/by-id/46 *is*
-the upstream support for now. What his patch does is say, the upstream
-support exists, but we don't like it, so we will supplement the patch..
+I 100% agree that this stuff is better done in firmware.  However,
+until that stuff is in place; it is 100% reasonable and desirable to
+work around it in prom_init.  That being said, I will modify prom_init
+to not blindly apply fixups if they have already been done in
+firmware.
+
+> Grant, are you any good at coding firmware-level stuff without utilizing
+> any preexisting code under the GPL? I'd like to collaborate on an installer
+> tool which can put efika.forth (and therefore all these fixes) in.
+
+I'm good at firmware stuff, but time comes at a premium.  This level
+of work would require a contract arrangement between our two
+companies.
+
+Cheers,
+g.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
