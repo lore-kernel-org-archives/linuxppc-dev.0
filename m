@@ -1,20 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1570EDDF5A
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 17:37:52 +1100 (EST)
-Date: Wed, 9 Jan 2008 17:37:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH V2] [POWERPC] Add common clock setting routine
-	mpc52xx_psc_set_clkdiv()
-Message-Id: <20080109173741.02a32a2a.sfr@canb.auug.org.au>
-In-Reply-To: <20080109050950.14630.17832.stgit@trillian.secretlab.ca>
-References: <20080109050950.14630.17832.stgit@trillian.secretlab.ca>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__9_Jan_2008_17_37_41_+1100_6tUMVoH0+emEVJ=m"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E8716DDF3D
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 17:41:27 +1100 (EST)
+Message-ID: <47846B38.7010409@am.sony.com>
+Date: Tue, 08 Jan 2008 22:35:36 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: paulus@samba.org
+Subject: [patch 2/4 v2] PS3: Add logical performance monitor repository
+	routines
+References: <477EF59C.2070809@am.sony.com>
+In-Reply-To: <477EF59C.2070809@am.sony.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,75 +25,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_Jan_2008_17_37_41_+1100_6tUMVoH0+emEVJ=m
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Grant,
+From: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 
-Just a couple of trivial things.
+Add repository routines for the PS3 Logical Performance Monitor (lpm).
 
-On Tue, 08 Jan 2008 22:09:50 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> +int mpc52xx_set_psc_clkdiv(int psc_id, int clkdiv)
+Signed-off-by: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+v2: correct Yamamoto-san's mail addr.
 
-> +	switch (psc_id) {
-> +	  case 1: reg =3D &mpc52xx_cdm->mclken_div_psc1; mask =3D 0x20; break;
-> +	  case 2: reg =3D &mpc52xx_cdm->mclken_div_psc2; mask =3D 0x40; break;
-> +	  case 3: reg =3D &mpc52xx_cdm->mclken_div_psc3; mask =3D 0x80; break;
-> +	  case 6: reg =3D &mpc52xx_cdm->mclken_div_psc6; mask =3D 0x10; break;
-> +	  default:
-> +		return -ENODEV;
-> +	}
+ arch/powerpc/platforms/ps3/platform.h   |    7 ++++
+ arch/powerpc/platforms/ps3/repository.c |   48 ++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 1 deletion(-)
 
-We line up case labels with the switch statement itself.
-
-> +int mpc52xx_set_psc_clkdiv(int psc_id, int clkdiv)
-
-> +	switch (psc_id) {
-> +	  case 1: reg =3D &cdm->mclken_div_psc1; mask =3D 0x20; break;
-> +	  case 2: reg =3D &cdm->mclken_div_psc2; mask =3D 0x40; break;
-> +	  case 3: reg =3D &cdm->mclken_div_psc3; mask =3D 0x80; break;
-> +	  case 6: reg =3D &cdm->mclken_div_psc6; mask =3D 0x10; break;
-> +	  default:
-> +	  	return -ENODEV;
-> +	}
-
-Here as well.
-
-> +++ b/include/asm-powerpc/mpc52xx.h
-> -extern void mpc5200_setup_xlb_arbiter(void);
-> -extern void mpc52xx_declare_of_platform_devices(void);
-> +extern void __init mpc5200_setup_xlb_arbiter(void);
-> +extern void __init mpc52xx_declare_of_platform_devices(void);
-> +extern void __init mpc52xx_map_common_devices(void);
-
-We don't mark things __init in header files.  It is unnecessary and can
-get out of sync - which causes unexpected results.
-
-> +/* mpc52xx_pci.c */
->  #ifdef CONFIG_PCI
->  extern int __init mpc52xx_add_bridge(struct device_node *node);
->  extern void __init mpc52xx_setup_pci(void);
-
-I see where yours above came from ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__9_Jan_2008_17_37_41_+1100_6tUMVoH0+emEVJ=m
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHhGu5TgG2atn1QN8RAqg8AJ0V0BXjlbfzFz55uocmMrDdsUjtBACfQj3+
-FSOHS0vpE2kf3rEdU2TtuiY=
-=oUtK
------END PGP SIGNATURE-----
-
---Signature=_Wed__9_Jan_2008_17_37_41_+1100_6tUMVoH0+emEVJ=m--
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -189,7 +189,7 @@ int ps3_repository_read_stor_dev_region(
+ /* repository pu and memory info */
+ 
+ int ps3_repository_read_num_pu(unsigned int *num_pu);
+-int ps3_repository_read_ppe_id(unsigned int *pu_index, unsigned int *ppe_id);
++int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id);
+ int ps3_repository_read_rm_base(unsigned int ppe_id, u64 *rm_base);
+ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
+ int ps3_repository_read_region_total(u64 *region_total);
+@@ -203,6 +203,11 @@ int ps3_repository_read_be_node_id(unsig
+ int ps3_repository_read_tb_freq(u64 node_id, u64 *tb_freq);
+ int ps3_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq);
+ 
++/* repository performance monitor info */
++
++int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
++	u64 *rights);
++
+ /* repository 'Other OS' area */
+ 
+ int ps3_repository_read_boot_dat_addr(u64 *lpar_addr);
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -902,6 +902,54 @@ int ps3_repository_read_be_tb_freq(unsig
+ 		: ps3_repository_read_tb_freq(node_id, tb_freq);
+ }
+ 
++int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
++	u64 *rights)
++{
++	int result;
++	u64 node_id;
++
++	*lpar = 0;
++	*rights = 0;
++	result = ps3_repository_read_be_node_id(be_index, &node_id);
++	return result ? result
++		: read_node(PS3_LPAR_ID_PME,
++			    make_first_field("be", 0),
++			    node_id,
++			    make_field("lpm", 0),
++			    make_field("priv", 0),
++			    lpar, rights);
++}
++
++int ps3_repository_read_num_pu(unsigned int *num_pu)
++{
++	int result;
++	u64 v1;
++
++	v1 = 0;
++	result = read_node(PS3_LPAR_ID_CURRENT,
++			   make_first_field("bi", 0),
++			   make_field("pun", 0),
++			   0, 0,
++			   &v1, NULL);
++	*num_pu = v1;
++	return result;
++}
++
++int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
++{
++	int result;
++	u64 v1;
++
++	v1 = 0;
++	result = read_node(PS3_LPAR_ID_CURRENT,
++		make_first_field("bi", 0),
++		make_field("pu", pu_index),
++		0, 0,
++		&v1, NULL);
++	*pu_id = v1;
++	return result;
++}
++
+ #if defined(DEBUG)
+ 
+ int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
