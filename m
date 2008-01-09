@@ -1,22 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A5DEDDDF2C
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 10:29:25 +1100 (EST)
-Date: Wed, 9 Jan 2008 10:29:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH] Use <linux/of_{platform, device}.h> and not <asm/...>
-	variants.
-Message-Id: <20080109102912.16215a01.sfr@canb.auug.org.au>
-In-Reply-To: <E1JCF5S-00043W-0U@jdl.com>
-References: <E1JBwNX-0006XF-26@jdl.com>
-	<20080108113637.5208a0c7.sfr@canb.auug.org.au>
-	<E1JCF5S-00043W-0U@jdl.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.191])
+	by ozlabs.org (Postfix) with ESMTP id C84D2DDE01
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 11:11:54 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so22684rvf.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jan 2008 16:11:52 -0800 (PST)
+Message-ID: <5c9cd53b0801081611ve59e9a8q6ae2fd227bfc0ed8@mail.gmail.com>
+Date: Tue, 8 Jan 2008 19:11:52 -0500
+From: "mike zheng" <mail4mz@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: printk() does not work on UART1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi All,
 
-On Tue, 08 Jan 2008 08:05:49 -0600 Jon Loeliger <jdl@jdl.com> wrote:
->
-> By $DIETY, I'll obtain Janitorial Karma one way or another!
+I have one mpc8568 board using UART1 as the serial port.  The OS is
+Linux Kernel2.4.  If I use the polling mode driver of
+gen550_progress(), it works fine. However the printk() does not work
+after the console_init(). Anyone know what shall I change in the
+kernel to use UART1 as serial console? I assume the default is UART0,
+but I don't know where the value is set. I changed the CONFIG_CMDLINE
+to ttyS1, it does NOT work.
 
-:-)
+Thanks for your help,
 
-> The question now is, what next?  I'm thinking about
-> picking on arch/sparc/, then drivers/ and sound/,
-> and finally pick off /include.
-
-arch/sparc{,64} should be easy if you have a cross compiler (though it
-should work, Dave gets cranky if you break his tree :-))  Dave should just
-take the patches if you do test compile them.  Tell him I sent you :-)
-
-> To be honest, I'm not sure what the final /include
-> structure is supposed to look like or do as both
-> pairs of these files mutually include their counterpart.
-> (i/l/of_d.h includes i/a/of_d.h which includes i/l/of_d.h)
-> (i/l/of_p.h includes i/a/of_p.h which includes i/l/of_p.h)
-
-The intention is that everyone only includes linux/of*.h (except for
-linux/of*.h of course) at which point we should be able to remove the
-includes of linux/of*.h from asm*/of*.h.
-
-> But, of course, the various asm/of_{platform,device}.h files
-> are different for each arch/, so I wasn't sure if the longer
-> term plan had folding the arch variants straight into the
-> include/linux/ version of the file or not.  Seems there will
-> come a point when the sparc and powerpc variants will need
-> to be more unified...
-
-Some more unification should be possible over time, but that is much
-harder.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHhAdOTgG2atn1QN8RAlY0AJ9SvmGCL1TO+w5KIv9aftnmK0RbOQCbBhz9
-kIiV+AP+Z+zN1d2QbwzywfI=
-=JI3G
------END PGP SIGNATURE-----
-
---Signature=_Wed__9_Jan_2008_10_29_12_+1100_NbSi=hyfy+oXMyZC--
+Mike
