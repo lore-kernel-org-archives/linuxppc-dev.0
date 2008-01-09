@@ -1,18 +1,19 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 38A25DDF50
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 15:29:35 +1100 (EST)
-Date: Tue, 8 Jan 2008 22:29:11 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-Message-ID: <20080109042911.GT14201@localdomain>
-References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 94860DDF16
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2008 15:39:52 +1100 (EST)
+Message-ID: <47845009.8070106@windriver.com>
+Date: Tue, 08 Jan 2008 23:39:37 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4782C026.8080302@austin.ibm.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	lkessler@us.ibm.com, strosake@us.ibm.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 3/7] sbc8560: add support for Wind River SBC8560 in
+	arch/powerpc
+References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>	<11997159331132-git-send-email-paul.gortmaker@windriver.com>	<11997159342128-git-send-email-paul.gortmaker@windriver.com>	<11997159352727-git-send-email-paul.gortmaker@windriver.com>
+	<20080108113219.860ac365.sfr@canb.auug.org.au>
+In-Reply-To: <20080108113219.860ac365.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,158 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Manish Ahuja wrote:
-> +
-> +                   Hypervisor-Assisted Dump
-> +                   ------------------------
-> +                       November 2007
+Stephen Rothwell wrote:
+> Hi Paul,
+>
+> On Mon,  7 Jan 2008 09:25:28 -0500 Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+>   
+>
 
-Date is unneeded (and, uhm, dated :)
+[...]
 
+>> +static const struct cpm_pin sbc8560_pins[] = {
+>>     
+>
+> Of course, these could be __initdata (but not const as well).  Sorry
+> about not mentioning this last time and it is a trivial change that
+> should not stop this stuff going in.
+>   
 
-> +The goal of hypervisor-assisted dump is to enable the dump of
-> +a crashed system, and to do so from a fully-reset system, and
-> +to minimize the total elapsed time until the system is back
-> +in production use.
+No problem.  I think you will find all these issues are applicable to
+the mpc8560mds support that I based things off too.  I'd rather do
+a single patch for both boards to deal with these, rather than respin
+the sbc8560 patches again and leave the mpc8560mds behind.
+Assuming everyone else is OK with this approach.
 
-Is it actually faster than kdump?
-
-
-> +As compared to kdump or other strategies, hypervisor-assisted
-> +dump offers several strong, practical advantages:
-> +
-> +-- Unlike kdump, the system has been reset, and loaded
-> +   with a fresh copy of the kernel.  In particular,
-> +   PCI and I/O devices have been reinitialized and are
-> +   in a clean, consistent state.
-> +-- As the dump is performed, the dumped memory becomes
-> +   immediately available to the system for normal use.
-> +-- After the dump is completed, no further reboots are
-> +   required; the system will be fully usable, and running
-> +   in it's normal, production mode on it normal kernel.
-> +
-> +The above can only be accomplished by coordination with,
-> +and assistance from the hypervisor. The procedure is
-> +as follows:
-> +
-> +-- When a system crashes, the hypervisor will save
-> +   the low 256MB of RAM to a previously registered
-> +   save region. It will also save system state, system
-> +   registers, and hardware PTE's.
-> +
-> +-- After the low 256MB area has been saved, the
-> +   hypervisor will reset PCI and other hardware state.
-> +   It will *not* clear RAM. It will then launch the
-> +   bootloader, as normal.
-> +
-> +-- The freshly booted kernel will notice that there
-> +   is a new node (ibm,dump-kernel) in the device tree,
-> +   indicating that there is crash data available from
-> +   a previous boot. It will boot into only 256MB of RAM,
-> +   reserving the rest of system memory.
-> +
-> +-- Userspace tools will parse /sys/kernel/release_region
-> +   and read /proc/vmcore to obtain the contents of memory,
-> +   which holds the previous crashed kernel. The userspace
-> +   tools may copy this info to disk, or network, nas, san,
-> +   iscsi, etc. as desired.
-> +
-> +   For Example: the values in /sys/kernel/release-region
-> +   would look something like this (address-range pairs).
-> +   CPU:0x177fee000-0x10000: HPTE:0x177ffe020-0x1000: /
-> +   DUMP:0x177fff020-0x10000000, 0x10000000-0x16F1D370A
-> +
-> +-- As the userspace tools complete saving a portion of
-> +   dump, they echo an offset and size to
-> +   /sys/kernel/release_region to release the reserved
-> +   memory back to general use.
-> +
-> +   An example of this is:
-> +     "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
-> +   which will release 256MB at the 1GB boundary.
-
-This violates the "one file, one value" rule of sysfs, but nobody
-really takes that seriously, I guess.  In any case, consider
-documenting this in Documentation/ABI.
-
-
-> +
-> +Please note that the hypervisor-assisted dump feature
-> +is only available on Power6-based systems with recent
-> +firmware versions.
-
-This statement will of course become dated/incorrect so I recommend
-removing it.
-
-
-> +
-> +Implementation details:
-> +----------------------
-> +In order for this scheme to work, memory needs to be reserved
-> +quite early in the boot cycle. However, access to the device
-> +tree this early in the boot cycle is difficult, and device-tree
-> +access is needed to determine if there is a crash data waiting.
-
-I don't think this bit about early device tree access is correct.  By
-the time your code is reserving memory (from early_init_devtree(), I
-think), RTAS has been instantiated and you are able to test for the
-existence of /rtas/ibm,dump-kernel.
-
-
-> +To work around this problem, all but 256MB of RAM is reserved
-> +during early boot. A short while later in boot, a check is made
-> +to determine if there is dump data waiting. If there isn't,
-> +then the reserved memory is released to general kernel use.
-
-So I think these gymnastics are unneeded -- unless I'm
-misunderstanding something, you should be able to determine very early
-whether to reserve that memory.
-
-
-> +If there is dump data, then the /sys/kernel/release_region
-> +file is created, and the reserved memory is held.
-> +
-> +If there is no waiting dump data, then all but 256MB of the
-> +reserved ram will be released for general kernel use. The
-> +highest 256 MB of RAM will *not* be released: this region
-> +will be kept permanently reserved, so that it can act as
-> +a receptacle for a copy of the low 256MB in the case a crash
-> +does occur. See, however, "open issues" below, as to whether
-> +such a reserved region is really needed.
-> +
-> +Currently the dump will be copied from /proc/vmcore to a
-> +a new file upon user intervention. The starting address
-> +to be read and the range for each data point in provided
-                                               ^is
-
-> +in /sys/kernel/release_region.
-> +
-> +The tools to examine the dump will be same as the ones
-> +used for kdump.
-> +
-> +
-> +General notes:
-> +--------------
-> +Security: please note that there are potential security issues
-> +with any sort of dump mechanism. In particular, plaintext
-> +(unencrypted) data, and possibly passwords, may be present in
-> +the dump data. Userspace tools must take adequate precautions to
-> +preserve security.
-> +
-> +Open issues/ToDo:
-> +------------
-> + o The various code paths that tell the hypervisor that a crash
-> +   occurred, vs. it simply being a normal reboot, should be
-> +   reviewed, and possibly clarified/fixed.
-> +
-> + o Instead of using /sys/kernel, should there be a /sys/dump
-> +   instead? There is a dump_subsys being created by the s390 code,
-> +   perhaps the pseries code should use a similar layout as well.
-
-Well, it seems to me that there's little reason to duplicate the s390
-layout unless we can actually share code.
-
-FWIW, I've been thinking about making a /sys/firmware/phyp hierarchy
-which could contain much of the System P-specific functions (DLPAR,
-lparcfg, other crud in /proc/ppc64)... seems suited to this
-platform-specific dump mechanism.
+Thanks,
+Paul.
