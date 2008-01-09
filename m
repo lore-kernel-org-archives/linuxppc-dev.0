@@ -1,20 +1,19 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 4A321DE08A
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 05:45:03 +1100 (EST)
-Date: Wed, 9 Jan 2008 12:44:37 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Linas Vepstas <linasvepstas@gmail.com>
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-Message-ID: <20080109184437.GU14201@localdomain>
-References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
-	<20080109042911.GT14201@localdomain>
-	<3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 1A57FDE105
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 05:50:43 +1100 (EST)
+Message-ID: <47851781.90105@pikatech.com>
+Date: Wed, 09 Jan 2008 13:50:41 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
-	strosake@us.ibm.com
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] MTD for Taco
+References: <477F12D1.2070109@pikatech.com>
+	<200801051041.18173.sr@denx.de><47850CEF.9060209@pikatech.com>
+	<20080109124243.73205d68@zod.rchland.ibm.com>
+In-Reply-To: <20080109124243.73205d68@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,94 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linas,
+Josh Boyer wrote:
+> On Wed, 09 Jan 2008 13:05:35 -0500
+> Sean MacLennan <smaclennan@pikatech.com> wrote:
+>
+>   
+>> Stefan Roese wrote:
+>>     
+>>> On Saturday 05 January 2008, Sean MacLennan wrote:
+>>>   
+>>>       
+>>>> This patch adds the maps for the taco. It also gets the ndfc.c NAND
+>>>> driver in a compilable state. The map is guaranteed to change since the
+>>>> exact NOR/NAND flash configuration is in flux right now when we found
+>>>> the 256M NAND flash won't boot properly.
+>>>>
+>>>> Currently it configures the NOR in a reasonable fashion and leaves the
+>>>> NAND as one honkin' parition.
+>>>>     
+>>>>         
+>>> <snip>
+>>>
+>>>   
+>>>       
+>>>> diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
+>>>> index 1c0e89f..f5e93cf 100644
+>>>> --- a/drivers/mtd/nand/ndfc.c
+>>>> +++ b/drivers/mtd/nand/ndfc.c
+>>>> @@ -24,11 +24,6 @@
+>>>>  #include <linux/platform_device.h>
+>>>>  
+>>>>  #include <asm/io.h>
+>>>> -#ifdef CONFIG_40x
+>>>> -#include <asm/ibm405.h>
+>>>> -#else
+>>>> -#include <asm/ibm44x.h>
+>>>> -#endif
+>>>>     
+>>>>         
+>>> You do break arch/ppc support with this patch. We have to still support
+>>> arch/ppc a few month, so please don't break this support for now.
+>>>  
+>>>       
+>> Here is an updated patch that does not break the ppc arch support. 
+>> Unfortunately, it still has the taco specific patch. I can't find 
+>> anything different between the taco and the sequoia and since this patch 
+>> fixes the problem, the hardware guys refuse to look into it. I can't 
+>> blame them as we are overloaded as it is.
+>>
+>> But I will send out the patch anyway in case anybody needs the ndfc 
+>> driver working under the powerpc arch.
+>>     
+>
+> This doesn't really get the addresses, etc from the device tree though,
+> correct?
+>
+> josh
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>   
+No. You have to setup everything the old way. This *just* gets it 
+working so if you have the PPC layout, it will work.
 
-Linas Vepstas wrote:
-> 
-> On 08/01/2008, Nathan Lynch <ntl@pobox.com> wrote:
-> > Manish Ahuja wrote:
-> > > +
-> > > +The goal of hypervisor-assisted dump is to enable the dump of
-> > > +a crashed system, and to do so from a fully-reset system, and
-> > > +to minimize the total elapsed time until the system is back
-> > > +in production use.
-> >
-> > Is it actually faster than kdump?
-> 
-> This is a basic presumption;
+Unless testing goes *really* well, I doubt I will have time in the short 
+term to port it to the of_platform. I'm afraid I will have to live with 
+"it works, don't touch it" for now :(
 
-I used the word "actually".  I already know that it is intended to be
-faster.  :)
-
-
-> it should blow it away, as, after all,
-> it requires one less reboot!
-
-There's more than rebooting going on during system dump processing.
-Depending on the system type, booting may not be where most time is
-spent.
-
-
-> As a side effect, the system is in
-> production *while* the dump is being taken;
-
-A dubious feature IMO.  Seems that the design potentially trades
-reliability of first failure data capture for availability.
-E.g. system crashes, reboots, resumes processing while copying dump,
-crashes again before dump procedure is complete.  How is that handled,
-if at all?
-
-
-> with kdump,
-> you can't go into production until after the dump is finished,
-> and the system has been rebooted a second time.  On
-> systems with terabytes of RAM, the time difference can be
-> hours.
-
-The difference in time it takes to resume the normal workload may be
-significant, yes.  But the time it takes to get a usable dump image
-would seem to be the basically the same.
-
-Since you bring up large systems... a system with terabytes of RAM is
-practically guaranteed to be a NUMA configuration with dozens of cpus.
-When processing a dump on such a system, I wonder how well we fare:
-can we successfully boot with (say) 128 cpus and 256MB of usable
-memory?  Do we have to hot-online nodes as system memory is freed up
-(and does that even work)?  We need to be able to restore the system
-to its optimal topology when the dump is finished; if the best we can
-do is a degraded configuration, the workload will suffer and the
-system admin is likely to just reboot the machine again so the kernel
-will have the right NUMA topology.
-
-
-> > > +Implementation details:
-> > > +----------------------
-> > > +In order for this scheme to work, memory needs to be reserved
-> > > +quite early in the boot cycle. However, access to the device
-> > > +tree this early in the boot cycle is difficult, and device-tree
-> > > +access is needed to determine if there is a crash data waiting.
-> >
-> > I don't think this bit about early device tree access is correct.  By
-> > the time your code is reserving memory (from early_init_devtree(), I
-> > think), RTAS has been instantiated and you are able to test for the
-> > existence of /rtas/ibm,dump-kernel.
-> 
-> If I remember right, it was still too early to look up this token directly,
-> so we wrote some code to crawl the flat device tree to find it.  But
-> not only was that a lot of work, but I somehow decided that doing this
-> to the flat tree was wrong, as otherwise someone would surely have
-> written the access code.  If this can be made to work, that would be
-> great, but we couldn't make it work at the time.
-> 
-> > > +To work around this problem, all but 256MB of RAM is reserved
-> > > +during early boot. A short while later in boot, a check is made
-> > > +to determine if there is dump data waiting. If there isn't,
-> > > +then the reserved memory is released to general kernel use.
-> >
-> > So I think these gymnastics are unneeded -- unless I'm
-> > misunderstanding something, you should be able to determine very early
-> > whether to reserve that memory.
-> 
-> Only if you can get at rtas, but you can't get at rtas at that point.
-
-Sorry, but I think you are mistaken (see Michael's earlier reply).
+Cheers,
+   Sean
