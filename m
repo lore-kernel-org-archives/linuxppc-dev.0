@@ -1,29 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5DA30DE031
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 03:18:55 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m09GIgHv001084
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 11:18:42 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m09GIg2d135798
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 11:18:42 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m09GIfP4021763
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jan 2008 11:18:42 -0500
-Date: Wed, 9 Jan 2008 10:18:26 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-Subject: Re: PCI interrupt assignment on sequoia board
-Message-ID: <20080109101826.51c6799c@zod.rchland.ibm.com>
-In-Reply-To: <200801091653.22478.matthias.fuchs@esd-electronics.com>
-References: <200801091653.22478.matthias.fuchs@esd-electronics.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B0AEADE03D
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 03:21:13 +1100 (EST)
+Message-Id: <1658343B-6560-4175-AF35-ACC237A87E50@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Liu Yu <Yu.Liu@freescale.com>
+In-Reply-To: <6EBEC19BF4A8F843BCD6B9155BBE2515D1B70D@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] Fix remainder calculating bug in single floating
+	pointdivision
+Date: Wed, 9 Jan 2008 10:19:50 -0600
+References: <11996296134110-git-send-email-Yu.Liu@freescale.com><1199650065.7291.81.camel@pasglop><66F0B96A-5B53-48D3-BB90-07841F3EA1EE@embeddedalley.com>
+	<C387A6C8-3FC9-4DD9-A79D-3ADAB1F5A73F@kernel.crashing.org>
+	<6EBEC19BF4A8F843BCD6B9155BBE2515D1B70D@zch01exm26.fsl.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,45 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 9 Jan 2008 16:53:22 +0100
-Matthias Fuchs <matthias.fuchs@esd-electronics.com> wrote:
 
-> Hi,
-> 
-> I noticed that Josh's 'for-2.5.25' does not assign PCI interrupts correctly:
-> 
-> bash-3.00# lspci -v
-> 00:00.0 Class 0680: 1014:027f
->         Subsystem: 10e8:cafe
->         Flags: bus master, medium devsel, latency 0, IRQ 16
->         Memory at <unassigned> (32-bit, prefetchable)
->         Capabilities: [58] Power Management version 2
-> 
-> 00:0a.0 Class 0b20: 1014:027f	(this is a PPC440EPx PCI target board in a sequoia PCI slot)
->         Subsystem: 12fe:0441
->         Flags: bus master, medium devsel, latency 128, IRQ 16
->         Memory at 0000000180000000 (32-bit, prefetchable) [size=64M]
->         Memory at 0000000184000000 (32-bit, prefetchable) [size=16M]
->         Capabilities: [58] Power Management version 2
-> 
-> 00:0c.0 Class 0200: 168c:0013 (rev 01)
->         Subsystem: 14b7:0a60
->         Flags: bus master, medium devsel, latency 128, IRQ 16
->         Memory at 0000000185000000 (32-bit, non-prefetchable) [size=64K]
->         Capabilities: [44] Power Management version 2
-> 
-> bash-3.00# uname -a
-> Linux sequoia 2.6.24-rc6-g78994e24 #5 Wed Jan 9 16:22:31 CET 2008 ppc ppc ppc GNU/Linux
-> 
-> 
-> All interrupts are '16'. But I expected 67 as correctly stated in the device tree.
-> This test has been made with the uboot wrapper code.
-> 
-> Any idea?
+On Jan 9, 2008, at 9:38 AM, Liu Yu wrote:
 
-Does lspci display the virtual IRQ number that is assigned when the
-device tree is parsed and interrupts are mapped?  I think so.  If you
-look at the other devices in /proc/interrupts you'll see they have the
-virtual IRQ numbers as well.
+>
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+b13201=freescale.com@ozlabs.org
+>> [mailto:linuxppc-dev-bounces+b13201=freescale.com@ozlabs.org]
+>> On Behalf Of Kumar Gala
+>> Sent: Tuesday, January 08, 2008 2:20 PM
+>> To: Dan Malek
+>> Cc: Liu Yu; linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH] Fix remainder calculating bug in single
+>> floating pointdivision
+>>
+>>
+>> On Jan 6, 2008, at 2:44 PM, Dan Malek wrote:
+>>
+>>>
+>>> On Jan 6, 2008, at 12:07 PM, Benjamin Herrenschmidt wrote:
+>>>
+>>>> It's nice to see somebody digging in that scary math emu stuff. If
+>>>> you could also get rid of the warnings, it would be perfect :-)
+>>>
+>>> Yes, it is :-)  I didn't think it would have a life beyond MPC8xx.
+>>>
+>>>> .... that this code was lifted from
+>>>> somewhere else (glibc ? gcc soft-float ?),
+>>>
+>>> It seems like a lifetime ago....  I copied the framework
+>> from Sparc,
+>>> and the internals from gcc soft-float.  I didn't change any of the
+>>> internal emulation functions (hence, some of the warnings),
+>> just the
+>>> calling interface.
+>>>
+>>> While it's convenient, I still don't think kernel float emulation
+>>> should be a solution.  The tools should generate soft-float for the
+>>> applications and libraries.
+>>
+>> If we think this is really true, we could move to using include/math-
+>> emu/* instead of the files in powerpc/math-emu.
+>
+> Why it's better to move to using include/math-emu.
+> I found they have similar framework, is powerpc/math-emu evolved from
+> include/math-emu?
 
-josh
+* We dont really need more than one way in the kernel source tree to  
+do math-emu
+* include/math-emu is used by more archs so gets more review
+* include/math-emu is closer to glibc soft-fp code so fixes to one  
+apply cleanly to the other
+
+- k
