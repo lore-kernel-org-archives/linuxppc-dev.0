@@ -1,16 +1,19 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Generic MMC-over-SPI binding?
-Date: Wed, 9 Jan 2008 22:55:31 +0100
-References: <47838708.5050008@hogyros.de> <200801081827.13940.arnd@arndb.de>
-	<478501A2.60506@hogyros.de>
-In-Reply-To: <478501A2.60506@hogyros.de>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id F1365DDEB6
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 09:22:42 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801092255.32056.arnd@arndb.de>
-Cc: linuxppc-embedded@ozlabs.org
+	charset="us-ascii"
+Subject: RE: Help with device tree binding for SMC serial
+Date: Wed, 9 Jan 2008 16:22:39 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03D58BC9@ismail.innsys.innovsys.com>
+In-Reply-To: <4785246D.6090206@freescale.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com>
+	<4785246D.6090206@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 09 January 2008, Simon Richter wrote:
-> > The important part where this connects to the mmc-spi driver is that
-> > you need to set spi_board_info->modalias to "mmc-spi", if the
-> > device node can be identified as an mmc card.
-> 
-> Doing that now, using the code you provided as a base. The SPI child 
-> device gets registered, but it appears something is still missing as no 
-> messages I could attribute to mmc-spi appear. My suspicion would be that 
-> it doesn't like the monolithic kernel for some reason (the mmc-spi 
-> driver registers itself as a driver called "mmc_spi", not sure if the 
-> modalias handling will catch that; still investigating there).
+> From: Scott Wood=20
+> Sent: Wednesday, January 09, 2008 1:46 PM
+> > We're trying to get a SMC serial port on a8280 to work.
+> > I cannot find any ecxamples on the binding, so we've tried=20
+> to make one.
+> >=20
+> > is this anywhere close to workable?
+> >=20
+> > serial@11a80 {
+> > 	device_type =3D "serial";
+> > 	compatible =3D "fsl,mpc8280-smc-uart",
+> > 				 "fsl,cpm2-smc-uart";
+> > 	reg =3D <11a80 10 87fc 2>;
+>=20
+> The current binding has the actual parameter ram block as the=20
+> second reg=20
+> property, not the two-byte pointer.  If your firmware doesn't=20
+> initialize=20
+> the pointer, you'll have to do it in platform code.
+>=20
+> > 	interrupts =3D <4 8>;
+> > 	interrupt-parent =3D <&PIC>;
+> > 	fsl,cpm-brg =3D <7>;
+> > 	fsl,cpm-command =3D <01000000>;
+> > };
+>=20
+> cpm-command should be <1d000000> for SMC1.
+>=20
+> Otherwise, it looks OK.
 
-Right, the modalias needs to be the same as the driver name, not the
-module name, so you should change it to mmc_spi as well.
-For loading the module it would not make a difference because - and _
-are treated the same by the module loader, but the device only
-gets associated with the driver when it matches exactly.
+Ok we're now using
+serial@11a80 {
+	device_type =3D "serial";
+	compatible =3D "fsl,mpc8280-smc-uart",
+				 "fsl,cpm2-smc-uart";
+	reg =3D <11a80 10 0 40>;            // <base_address length
+parameter_ram_address length>
+	interrupts =3D <4 8>;                 // Interrupt from table 4.3
+of mpc8280rm, interrupt is level or edge
+	interrupt-parent =3D <&PIC>;
+	fsl,cpm-brg =3D <7>;
+	fsl,cpm-command =3D <1d000000>;       // Page and Sub-block code
+of the CPCR
+};
 
-> > Then you call that function after registering the master, from
-> > mpc52xx_psc_spi_of_probe.
-> 
-> I've changed mpc52xx_psc_spi_do_probe to have an additional argument for 
-> the OF device node of the SPI master; ARCH=ppc can call this with NULL 
-> as long as it still exists.
+Right now we're trying to just get a kernel to give us some serial
+output, so we can continue the porting job.
+We're unsig a cuImage (using the pq2fads code right now).
 
-Ok. keeping the code itself in the mpc52xx_psc_spi driver is fine as long
-as it's relatively small. Other of_platform_drivers for SPI will just
-have to it the same way.
-
-	Arnd <><
+Now our problem is that the serial port is spitting out 0x0a's as fast
+as it can.
+Seems to be repeadtin the linefeed at the end of "Uncompressing Kernel
+Image ... OK"
