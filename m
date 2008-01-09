@@ -1,16 +1,26 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2C081DE0CD
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 07:26:00 +1100 (EST)
-Message-ID: <47852DD6.5000702@pikatech.com>
-Date: Wed, 09 Jan 2008 15:25:58 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <scottwood@FREESCALE.COM>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 45DE0DDF2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 08:13:43 +1100 (EST)
+Message-ID: <478525E7.3060106@freescale.com>
+Date: Wed, 09 Jan 2008 13:52:07 -0600
+From: Scott Wood <scottwood@FREESCALE.COM>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] Warp Base Platform - cputable
-References: <47852C41.8000506@pikatech.com>
-In-Reply-To: <47852C41.8000506@pikatech.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range lands
+	in highmem
+References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
+	<20080109185349.GC4337@loki.buserror.net>
+	<3B831CF0-E978-42E7-BA26-7598BC27A5F6@kernel.crashing.org>
+	<478520E4.1050204@freescale.com>
+	<9536E0AC-E4D2-4E86-8DC6-F40A322FC817@kernel.crashing.org>
+In-Reply-To: <9536E0AC-E4D2-4E86-8DC6-F40A322FC817@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I think I sent this, but I will include it here for completeness.
-It adds the 440EP Rev C to the cputable.
+Kumar Gala wrote:
+> I'm thinking I'll add something like:
+> 
+>                 if (addr < total_lowmem)
+>                         reserve_bootmem(lmb.reserved.region[i].base,
+>                                         lmb_size_bytes(&lmb.reserved, i));
+> +               else if (lmb.reserved.region[i].base > total_lowmem) {
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
----
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index f1928af..ece0c71 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1226,6 +1226,18 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_4xx,
- 		.platform		= "ppc440",
- 	},
-+	{ /* Matches both physical and logical PVR for 440EP (logical pvr = pvr | 0x8) */
-+		.pvr_mask		= 0xf0000ff7,
-+		.pvr_value		= 0x400008d4,
-+		.cpu_name		= "440EP Rev. C",
-+		.cpu_features		= CPU_FTRS_44X,
-+		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_440ep,
-+		.machine_check		= machine_check_4xx,
-+		.platform		= "ppc440",
-+	},
- 	{ /* Use logical PVR for 440EP (logical pvr = pvr | 0x8) */
- 		.pvr_mask		= 0xf0000fff,
- 		.pvr_value		= 0x400008db,
+less than, surely?
+
+> +                       unsigned long adjusted_size;
+> +//                     adjusted_size = xxx;
+> 
+> need to figure out the math here.
+
+Wouldn't it just be total_lowmem - lmb.reserved.region[i].base?
+
+-Scott
