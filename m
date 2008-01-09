@@ -1,18 +1,17 @@
-Return-Path: <rwoodworth@securics.com>
-Received: from securics.com (mail.securics.com [128.198.58.14])
-	by ozlabs.org (Postfix) with ESMTP id 648C7DE0E6
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp100.biz.mail.re2.yahoo.com (smtp100.biz.mail.re2.yahoo.com
+	[206.190.52.46]) by ozlabs.org (Postfix) with SMTP id 66C44DDF48
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Jan 2008 08:54:37 +1100 (EST)
-Subject: Re: MMU failure, Virtex4-FX60
-From: Robert Woodworth <rwoodworth@securics.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40801071021g611ee7d6jbeafb4616cf29464@mail.gmail.com>
-References: <1199727744.17452.8.camel@PisteOff>
-	<fa686aa40801071021g611ee7d6jbeafb4616cf29464@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 08 Jan 2008 14:54:36 -0700
-Message-Id: <1199829276.4598.7.camel@PisteOff>
-Mime-Version: 1.0
+	Wed,  9 Jan 2008 11:45:54 +1100 (EST)
+Message-ID: <478417B0.5030705@qstreams.com>
+Date: Tue, 08 Jan 2008 19:39:12 -0500
+From: Ben Warren <bwarren@qstreams.com>
+MIME-Version: 1.0
+To: Jeff Parent <jeff.parent@gmail.com>
+Subject: Re: PowerPC Cross Compiler's Arch doesnt match
+References: <464e946e0801081339o2585362ci5b209154a8526089@mail.gmail.com>
+In-Reply-To: <464e946e0801081339o2585362ci5b209154a8526089@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,51 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-After further investigation...
-There is a pending interrupt from the PLB waiting at bootup and it gets
-hit by Linux when the MSR gets set and enables critical interrupts (same
-time that it jumps into 0xC000XXXX).  The kernel code detects the
-interrupt as a PLB data bus error and goes into crash sequence die().
+Hi Jeff,
 
-I think I have a problem with my reset hardware, such that the PLB is
-not getting reset correctly with the PPC.  With all interrupts disabled
-and running a standalone C program, the PLB and memory work fine.
-Any Virtex experts out there have any hints?
+Jeff Parent wrote:
+> I'm building a linux distro for work, that runs on embedded systems 
+> with either and ARM 9 or a PowerPC 603.  I've had great luck building 
+> a cross compiler w/ crosstools and using them in the compiler jail 
+> created by Scratchbox.  Now I am working on porting all my work to the 
+> PowerPC.  When I build the cross compilers I have selected GCC-4.0.1 
+> and GLIBC-2.3.5 for both setups.  I create my jail in Scratchbox for 
+> the PowerPC and try compiling any of the GNU applications and when 
+> running the configure script I get:
+>
+I have no idea what Scratchbox is, but when running gnu configure to 
+cross-compile something, you typically need to supply the following 
+switches:
 
+--host=powerpc-linux --build=i686
 
+and CC will have to point to your cross compiler (e.g. export 
+CC=powerpc-linux-gcc, or export CC=ppc_6xx-gcc, whatever your cross 
+compiler is called).  Of course, the values of these switches will 
+depend on your setup, but this is what I use and I've built all sorts of 
+packages from source.
 
-RJW.
-
-
-
-
-On Mon, 2008-01-07 at 11:21 -0700, Grant Likely wrote:
-> On 1/7/08, Robert Woodworth <rwoodworth@securics.com> wrote:
-> > Hello!
-> >
-> > I'm building a new Virtex4-FX60 device.  I have built it with the new
-> > MPMC3 and a 256MB SO-DIMM.  It works successfully with a "mem-test" type
-> > embedded program.
-> >
-> > I cannot get it to boot a Linux kernel.  I have traced it down to the
-> > MMU not getting mapped correctly.
-> >
-> > I can load the kernel via jtag, get the pre-boot messages on the serial
-> > but then when it tries to jump to 0xc0002218 (start_here: head_4xxx.S)
-> > it fails with a "Machine check exception; invalid instruction address".
-> >
-> > Using the debugger and examining the memory once the mmu is suppose to
-> > be configured, I see that it is not mapping 0xc0000000  to the proper
-> > location.  I'm sure I've set something up wrong in my FPGA and I need to
-> > re-synthesize.  But what?
-> 
-> Hmmm, I haven't seen that failure mode before.  MMU handling on an of
-> my virtex platforms has never been a problem.  Take a look at the TLB
-> registers to see how they are configured to see if the mappings are
-> really getting written.
-> 
-> What kernel version are you using?
-> 
-> Cheers,
-> g.
-> 
+regards,
+Ben
