@@ -1,15 +1,21 @@
-Return-Path: <Jogi95@web.de>
-Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
-	by ozlabs.org (Postfix) with ESMTP id 0FA3FDDFDF
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.248])
+	by ozlabs.org (Postfix) with ESMTP id 5DC54DE089
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jan 2008 02:19:59 +1100 (EST)
-Date: Wed, 09 Jan 2008 16:19:55 +0100
-Message-Id: <524013725@web.de>
-MIME-Version: 1.0
-From: Joachim Meyer <Jogi95@web.de>
-To: Grant Likely <grant.likely@secretlab.ca>
+	Thu, 10 Jan 2008 02:24:17 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 33so206121agc.0
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 09 Jan 2008 07:24:16 -0800 (PST)
+Message-ID: <fa686aa40801090724s60ecc812ub65f87d5a5bf57a0@mail.gmail.com>
+Date: Wed, 9 Jan 2008 08:24:15 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Joachim Meyer" <Jogi95@web.de>
 Subject: Re: Linux for ml310
-Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <524013725@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <524013725@web.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,51 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+On 1/9/08, Joachim Meyer <Jogi95@web.de> wrote:
+> Hi
+>
+http://git.secretlab.ca/git/gitweb.cgi?p=linux-2.6-virtex.git;a=snapshot;h=d7ed933b578d9c4dec0e23a5a6f78c464b31c47c;sf=tbz2
+> Is this a complete Kernel? I don't really understand this whole git-tree stuff.
+> then i copied the arch/ppc/configs/ml300_defconfig to .config.
 
-First I want to thank you for you fast and useful answer last time.
-I decided to use the kernel 2.6 for my ml310 now.
+Hint: this does the same thing,
+$ ARCH=ppc make ml300_defconfig
 
-I downloaded this Kernel:
-http://git.secretlab.ca/git/gitweb.cgi=3Fp=3Dlinux-2.6-virtex.git;a=3Dsnapshot;h=
-=3Dd7ed933b578d9c4dec0e23a5a6f78c464b31c47c;sf=3Dtbz2
-Is this a complete Kernel=3F I don't really understand this whole git-tree s=
-tuff.
-then i copied the arch/ppc/configs/ml300=5Fdefconfig to .config.
-I used an edk9.1 with linux=5F2=5F6 as OS for the ppc405=5F0,  0x10000000 for me=
-mory size, 100000000 for uart16550 bus clock freq and set the target direc=
-tory. Under connected=5Fperiphs where: RS232=5FUart, SPI=5FEEPROM, PCI32=5FBRIDGE,=
- SysACE=5FCompactFlash and opb=5Fintc=5F0.
-At Software I pressed the "Generate Libaries and BSPs" Button and copied t=
-he generated xparameters.h to linux-2.6-virtex/arch/ppc/platforms/4xx/xpar=
-ameters.
-I tried to compile with=20
-make ARCH=3Dppc CROSS=5FCOMPILE=3Dpowerpc-405-linux-gnu- zImage
-but it soon aborted with:
----------------------------
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CC      arch/ppc/syslib/xilinx=5Fpic.o
-In file included from arch/ppc/syslib/xilinx=5Fpic.c:16:
-arch/ppc/platforms/4xx/xparameters/xparameters.h:14:26: linux/config.h: No=
- such file or directory
-make[1]: *** [arch/ppc/syslib/xilinx=5Fpic.o] Error 1
-make: *** [arch/ppc/syslib] Error 2
-------------------------------
+> I used an edk9.1 with linux_2_6 as OS for the ppc405_0,  0x10000000 for memory size, 100000000 for uart16550 bus clock freq and set the target directory. Under connected_periphs where: RS232_Uart, SPI_EEPROM, PCI32_BRIDGE, SysACE_CompactFlash and opb_intc_0.
+> At Software I pressed the "Generate Libaries and BSPs" Button and copied the generated xparameters.h to linux-2.6-virtex/arch/ppc/platforms/4xx/xparameters.
 
-Can you help me=3F
-Is there any tutorial (beside http://wiki.secretlab.ca/index.php/Linux=5Fon=5F=
-Xilinx=5FVirtex) which provides detailed information=3F
-Which Kernel should I use (And where to get it)=3F
-Are ther eany patches necessary=3F
-As crosscompiler I used crosstool with:
-eval `cat powerpc-405.dat gcc-4.1.0-glibc-2.3.6.dat` sh all.sh --notest
+you want to copy xparameter_ml???.h to arch/ppc/platform/4xx/xparameters_ml300.h
 
-I hope I don't bother you too much
-Greetings & Thanks
-Joachim
-=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F
-Jetzt neu! Sch=FCtzen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
-kostenlos testen. http://www.pc-sicherheit.web.de/startseite/=3Fmc=3D022220
+Do not replace xparameter.h; it's a wrapper around the real xparams
+file and it defines things that Linux needs.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
