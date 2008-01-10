@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04167DE045
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 18:23:55 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0A7NoU6006948
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 01:23:51 -0600
-Date: Thu, 10 Jan 2008 01:21:42 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] Fix handling of memreserve if the range lands in highmem
-Message-ID: <Pine.LNX.4.64.0801100120290.13810@blarg.am.freescale.net>
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 45527DDFE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 19:11:19 +1100 (EST)
+Message-ID: <4785D3D8.7080300@denx.de>
+Date: Thu, 10 Jan 2008 09:14:16 +0100
+From: Heiko Schocher <hs@denx.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH for 2.6.24][NET] fs_enet: check for phydev existence in
+	the ethtool handlers
+References: <1199875566.3408.11.camel@p60365-ste> <4784C509.5030507@denx.de>
+	<20080109182038.GA4337@loki.buserror.net>
+In-Reply-To: <20080109182038.GA4337@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,105 +24,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There were several issues if a memreserve range existed and happened
-to be in highmem:
+Hello Scott,
 
-* The bootmem allocator is only aware of lowmem so calling
-  reserve_bootmem with a highmem address would cause a BUG_ON
-* All highmem pages were provided to the buddy allocator
+Scott Wood wrote:
+> On Wed, Jan 09, 2008 at 01:58:49PM +0100, Heiko Schocher wrote:
+>> @@ -1312,6 +1312,9 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
+>>  	       ndev->dev_addr[0], ndev->dev_addr[1], ndev->dev_addr[2],
+>>  	       ndev->dev_addr[3], ndev->dev_addr[4], ndev->dev_addr[5]);
+>>
+>> +	/* to initialize the fep->cur_rx,... */
+>> +	/* not doing this, will cause a crash in fs_enet_rx_napi */
+>> +	fs_init_bds(ndev);
+>>  	return 0;
+> 
+> We don't want to allocate ring buffers for network interfaces that are never
+> opened, especially given the small amount of memory on some boards that use
+> this driver.
+> 
+> Instead, we should probably not be calling napi_enable() until the link is
+> up and init_bds() has been called.
 
-Added a lmb_is_reserved() api that we now use to determine if a highem
-page should continue to be PageReserved or provided to the buddy
-allocator.
+Ah, okay. I actually tried calling fs_init_bds(ndev); in fs_enet_open() after
+napi_enable, and this also works fine. I think there is the better place for
+it. Thanks.
 
-Also, we incorrectly reported the amount of pages reserved since all
-highmem pages are initally marked reserved and we clear the
-PageReserved flag as we "free" up the highmem pages.
+> 
+>> @@ -1342,9 +1345,13 @@ static int fs_enet_remove(struct of_device *ofdev)
+>>  }
+>>
+>>  static struct of_device_id fs_enet_match[] = {
+>> -#ifdef CONFIG_FS_ENET_HAS_SCC
+>> +#if defined(CONFIG_FS_ENET_HAS_SCC)
+>>  	{
+>> +#if defined(CONFIG_CPM1)
+>>  		.compatible = "fsl,cpm1-scc-enet",
+>> +#else
+>> +		.compatible = "fsl,cpm2-scc-enet",
+>> +#endif
+> 
+> I know there are already ifdefs of this sort, and that multiplatform
+> cpm1/cpm2 is very unlikely to ever happen, but can we try to avoid
+> introducing more such ifdefs?
+> 
+> We can have both match entries present at the same time.
 
----
+OK, fix this.
 
-Handle case pointed out by Scott Wood if a memreserve crosses the lowmem
-boundary.
+> 
+>>  		.data = (void *)&fs_scc_ops,
+>>  	},
+>>  #endif
+>> diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+>> index 48f2f30..3b5ca76 100644
+>> --- a/drivers/net/fs_enet/mac-scc.c
+>> +++ b/drivers/net/fs_enet/mac-scc.c
+>> @@ -50,6 +50,7 @@
+>>  #include "fs_enet.h"
+>>
+>>  /*************************************************/
+>> +#define SCC_EB ((u_char)0x10)  /* Set big endian byte order */
+> 
+> This is already defined in asm-powerpc/commproc.h, and thus will cause a
+> duplicate definition when building for 8xx.  Please add this definition to
+> asm-powerpc/cpm2.h.
 
- arch/powerpc/mm/lmb.c     |   13 +++++++++++++
- arch/powerpc/mm/mem.c     |   20 ++++++++++++++++----
- include/asm-powerpc/lmb.h |    1 +
- 3 files changed, 30 insertions(+), 4 deletions(-)
+OK, will fix it.
 
-diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
-index 8f4d2dc..4ce23bc 100644
---- a/arch/powerpc/mm/lmb.c
-+++ b/arch/powerpc/mm/lmb.c
-@@ -342,3 +342,16 @@ void __init lmb_enforce_memory_limit(unsigned long memory_limit)
- 		}
- 	}
- }
-+
-+int __init lmb_is_reserved(unsigned long addr)
-+{
-+	int i;
-+
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long upper = lmb.reserved.region[i].base +
-+				      lmb.reserved.region[i].size - 1;
-+		if ((addr >= lmb.reserved.region[i].base) && (addr <= upper))
-+			return 1;
-+	}
-+	return 0;
-+}
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 5402fb6..0b29da3 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -218,9 +218,19 @@ void __init do_init_bootmem(void)
- #endif
+> 
+>> +#if defined(CONFIG_CPM1)
+>>  	W16(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | (op << 8));
+>>  	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+>>  		if ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+>>  			return 0;
+>> +#else
+>> +	W32(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | op);
+>> +	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+>> +		if ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+>> +			return 0;
+>> +
+>> +#endif
+> 
+> Commit 362f9b6fa8c9670cc5496390845021c2865d049b in Paul's tree makes this
+> unnecessary.
 
- 	/* reserve the sections we're already using */
--	for (i = 0; i < lmb.reserved.cnt; i++)
--		reserve_bootmem(lmb.reserved.region[i].base,
--				lmb_size_bytes(&lmb.reserved, i));
-+	for (i = 0; i < lmb.reserved.cnt; i++) {
-+		unsigned long addr = lmb.reserved.region[i].base +
-+				     lmb_size_bytes(&lmb.reserved, i) - 1;
-+		if (addr < total_lowmem)
-+			reserve_bootmem(lmb.reserved.region[i].base,
-+					lmb_size_bytes(&lmb.reserved, i));
-+		else if (lmb.reserved.region[i].base < total_lowmem) {
-+			unsigned long adjusted_size = total_lowmem -
-+				      lmb.reserved.region[i].base;
-+			reserve_bootmem(lmb.reserved.region[i].base,
-+					adjusted_size);
-+		}
-+	}
+Tried this patch, works fine for me :-)
 
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
-@@ -334,11 +344,13 @@ void __init mem_init(void)
- 		highmem_mapnr = total_lowmem >> PAGE_SHIFT;
- 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
- 			struct page *page = pfn_to_page(pfn);
--
-+			if (lmb_is_reserved(pfn << PAGE_SHIFT))
-+				continue;
- 			ClearPageReserved(page);
- 			init_page_count(page);
- 			__free_page(page);
- 			totalhigh_pages++;
-+			reservedpages--;
- 		}
- 		totalram_pages += totalhigh_pages;
- 		printk(KERN_DEBUG "High memory: %luk\n",
-diff --git a/include/asm-powerpc/lmb.h b/include/asm-powerpc/lmb.h
-index b5f9f4c..5d1dc48 100644
---- a/include/asm-powerpc/lmb.h
-+++ b/include/asm-powerpc/lmb.h
-@@ -51,6 +51,7 @@ extern unsigned long __init __lmb_alloc_base(unsigned long size,
- extern unsigned long __init lmb_phys_mem_size(void);
- extern unsigned long __init lmb_end_of_DRAM(void);
- extern void __init lmb_enforce_memory_limit(unsigned long memory_limit);
-+extern int __init lmb_is_reserved(unsigned long addr);
+> 
+>> @@ -306,8 +317,15 @@ static void restart(struct net_device *dev)
+>>
+>>  	/* Initialize function code registers for big-endian.
+>>  	 */
+>> +#ifdef CONFIG_CPM2
+>> +	/* from oldstyle driver in arch/ppc */
+>> +	/* seems necessary */
+>> +	W8(ep, sen_genscc.scc_rfcr, SCC_EB | 0x20);
+>> +	W8(ep, sen_genscc.scc_tfcr, SCC_EB | 0x20);
+>> +#else
+>>  	W8(ep, sen_genscc.scc_rfcr, SCC_EB);
+>>  	W8(ep, sen_genscc.scc_tfcr, SCC_EB);
+>> +#endif
+> 
+> Please define 0x20 as SCC_GBL (Snooping Enabled) in cpm2.h, and
+> conditionalize this on #ifndef CONFIG_NOT_COHERENT_CACHE.
+> 
+> You can remove the comment; it's really necessary, not just "seems" so. :-)
 
- extern void lmb_dump_all(void);
+OK, fix it.
 
+Will resend this fixed patch.
+
+thanks
+Heiko
 -- 
-1.5.3.7
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
