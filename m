@@ -1,12 +1,20 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: paulus@samba.org
-Subject: [PATCH] Fix CPU hotplug when using the SLB shadow buffer 
-In-reply-to: <23336.1199947743@neuling.org> 
-References: <23336.1199947743@neuling.org>
-Date: Thu, 10 Jan 2008 18:11:54 +1100
-Message-ID: <26792.1199949114@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 632D8DE03C
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 18:13:28 +1100 (EST)
+Date: Thu, 10 Jan 2008 18:13:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH V3] [POWERPC] Add common clock setting routine
+	mpc52xx_psc_set_clkdiv()
+Message-Id: <20080110181316.1213f273.sfr@canb.auug.org.au>
+In-Reply-To: <20080110052629.8853.52821.stgit@trillian.secretlab.ca>
+References: <20080110052629.8853.52821.stgit@trillian.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH"
+Cc: linuxppc-dev@ozlabs.org, dragos.carp@toptica.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,89 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Before we register the SLB shadow buffer, we need to invalidate the
-entries in the buffer otherwise we can end up stale entries from when we
-offlined the CPU.
+--Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch does this invalidate as well as unregistering the buffer with
-PHYP before we offline the cpu.  Tested and fixes crashes seen on 970MP
-(thanks to tonyb) and POWER5.
+Hi Grant,
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Updates for comments by mpe.
+On Wed, 09 Jan 2008 22:26:30 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> +mpc52xx_map_common_devices(void)
+>  {
 
-Also, thanks to Anton for helping find this problem.
+> +	/* Clock Distribution Module, used by PSC clock setting function */
+> +	np =3D of_find_matching_node(NULL, mpc52xx_cdm_ids);
 
- arch/powerpc/mm/slb.c                        |    2 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
- arch/powerpc/platforms/pseries/lpar.c        |    3 +++
- include/asm-powerpc/mmu-hash64.h             |    1 +
- 4 files changed, 7 insertions(+), 1 deletion(-)
+What happens if we find no node?
 
-Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
-+++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
-@@ -77,7 +77,7 @@ static inline void slb_shadow_update(uns
- 	get_slb_shadow()->save_area[entry].esid = mk_esid_data(ea, ssize, entry);
- }
- 
--static inline void slb_shadow_clear(unsigned long entry)
-+void slb_shadow_clear(unsigned long entry)
- {
- 	get_slb_shadow()->save_area[entry].esid = 0;
- }
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -29,6 +29,7 @@
- #include <asm/vdso_datapage.h>
- #include <asm/pSeries_reconfig.h>
- #include "xics.h"
-+#include "plpar_wrappers.h"
- 
- /* This version can't take the spinlock, because it never returns */
- static struct rtas_args rtas_stop_self_args = {
-@@ -58,6 +59,7 @@ static void pseries_mach_cpu_die(void)
- 	local_irq_disable();
- 	idle_task_exit();
- 	xics_teardown_cpu(0);
-+	unregister_slb_shadow(smp_processor_id(), __pa(get_slb_shadow()));
- 	rtas_stop_self();
- 	/* Should never get here... */
- 	BUG();
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/lpar.c
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
-@@ -253,6 +253,7 @@ void vpa_init(int cpu)
- 	int hwcpu = get_hard_smp_processor_id(cpu);
- 	unsigned long addr;
- 	long ret;
-+	int i;
- 
- 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
- 		lppaca[cpu].vmxregs_in_use = 1;
-@@ -272,6 +273,8 @@ void vpa_init(int cpu)
- 	 */
- 	addr = __pa(&slb_shadow[cpu]);
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+		for (i = 0; i < SLB_NUM_BOLTED; i++)
-+			slb_shadow_clear(i);
- 		ret = register_slb_shadow(hwcpu, addr);
- 		if (ret)
- 			printk(KERN_ERR
-Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
-+++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
-@@ -286,6 +286,7 @@ extern void hpte_init_iSeries(void);
- extern void hpte_init_beat(void);
- extern void hpte_init_beat_v3(void);
- 
-+extern void slb_shadow_clear(unsigned long entry);
- extern void stabs_alloc(void);
- extern void slb_initialize(void);
- extern void slb_flush_and_rebolt(void);
+> +	mpc52xx_cdm =3D of_iomap(np, 0);
+> +	of_node_put(np);
+>  }
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHhcWQTgG2atn1QN8RAmBmAJoCTNFlpRj5uY28dz5r6f0i5ezAMgCfQlLK
+JHpLNkESi5Ie3oDV8lER+P0=
+=oAqZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH--
