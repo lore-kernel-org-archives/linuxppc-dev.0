@@ -1,24 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 10 Jan 2008 14:49:19 +1100
+Date: Thu, 10 Jan 2008 14:52:01 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>, Jon Smirl <jonsmirl@gmail.com>,
-	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org
-Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
-Message-ID: <20080110034919.GI17816@localhost.localdomain>
-References: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
-	<9e4733910801010942y47e4cdbfge5e0d3e44ab96760@mail.gmail.com>
-	<477BAB67.4080003@freescale.com>
-	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
-	<477D2150.4020506@freescale.com>
-	<20080103235156.GE12883@localhost.localdomain>
-	<477EEDFA.9010205@freescale.com>
-	<20080106004637.GJ4326@localhost.localdomain>
-	<47824AA3.5070808@freescale.com>
-	<20080107182853.GA17312@sirena.org.uk>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] Look for include files in the directory of the
+	including file.
+Message-ID: <20080110035201.GJ17816@localhost.localdomain>
+References: <20080103234331.GB8441@ld0162-tx32.am.freescale.net>
+	<20080104042739.GC4326@localhost.localdomain>
+	<20080106225252.GB8239@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080107182853.GA17312@sirena.org.uk>
+In-Reply-To: <20080106225252.GB8239@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 07, 2008 at 06:28:54PM +0000, Mark Brown wrote:
-> On Mon, Jan 07, 2008 at 09:52:03AM -0600, Timur Tabi wrote:
-> > David Gibson wrote:
+On Sun, Jan 06, 2008 at 04:52:52PM -0600, Scott Wood wrote:
+> On Fri, Jan 04, 2008 at 03:27:39PM +1100, David Gibson wrote:
+> > > +	newfile = dtc_open_file(filename, searchptr);
+> > > +	if (!newfile) {
+> > > +		yyerrorf("Couldn't open \"%s\": %s",
+> > > +		         filename, strerror(errno));
+> > > +		exit(1);
+> > 
+> > Use die() here, that's what it's for.
 > 
-> > > Ok, but couldn't you strucutre your I2S or fabric driver so that it
-> > > only becomes fully operational once the codec driver has registered
-> > > with it?
+> die() doesn't print file and line information.
 > 
-> > Not in ASoC V1.  You have to understand, ASoC V1 was designed without any 
-> > consideration for runtime-bindings and other OF goodies.  All connections 
-> > between the drivers are static, literally.  In fact, I wouldn't be surprised if 
-> > some ASoC drivers cannot be compiled as modules.
+> > > +	while (search) {
+> > > +		if (dtc_open_one(file, search->dir, fname))
+> > > +			return file;
+> > 
+> > Don't we need a different case here somewhere for if someone specifies
+> > an include file as an absolute path?  Have I missed something?
 > 
-> I'd just like to emphasise this point - ASoC v1 really doesn't
-> understand the idea that the components of the sound subsystem might be
-> probed separately.  It's set up to handle bare hardware with everything
-> being probed from code in the machine/fabric driver.  This makes life
-> very messy for platforms with something like the device tree.
+> Yeah, I forgot about that, and sent another patch to fix it when I
+> noticed (jdl had already pulled, so I didn't send an amended patch).
 > 
-> As has been said, handling this properly is one of the major motivations
-> behind ASoC v2.
+> > [snip]
+> > > +struct search_path {
+> > > +	const char *dir; /* NULL for current directory */
+> > > +	struct search_path *prev, *next;
+> > > +};
+> > 
+> > I wouldn't suggest a doubly linked list here.  Or at least not without
+> > converting our many existing singly linked lists at the same time.
+> 
+> The doubly-linked list is intended to make it easier to construct search
+> path lists one-at-a-time from arguments in the proper order, without
+> needing to reverse the list at the end.
 
-Ick.  Ok.
-
-Nonetheless, messing up the device tree to workaround ASoC V1's silly
-limitations is not a good idea.  The device tree must represent the
-hardware as much as possible.  If that means we have to have a bunch
-of platform-specific hacks to instatiate the drivers in the correct
-order / combination, that's unfortunate, but there you go.
+We've already got that problem with a bunch of the lists we create
+during parsing (we have several ugly add-to-end-of-singly-linked-list
+functions).  Going to doubly-linked lists might not be a bad idea, but
+we should do it across the board, probably using the kernel's list.h
+or something like it.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
