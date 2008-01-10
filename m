@@ -1,28 +1,22 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 87C2ADE159
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 03:34:52 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so165137anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 08:34:51 -0800 (PST)
-Message-ID: <3ae3aa420801100834r6bd2750eqa7c8d29877350463@mail.gmail.com>
-Date: Thu, 10 Jan 2008 10:34:51 -0600
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: "Olof Johansson" <olof@lixom.net>
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-In-Reply-To: <20080110162120.GA4831@lixom.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id 3B920DE17E
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 03:35:47 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so165217anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 08:35:46 -0800 (PST)
+Message-ID: <fa686aa40801100835u256e4be2s484ec6546bcd2fc0@mail.gmail.com>
+Date: Thu, 10 Jan 2008 09:35:46 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [PATCH v2] [POWERPC] Update MPC8610 HPCD to support audio drivers
+In-Reply-To: <1199732204578-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
-	<20080109042911.GT14201@localdomain>
-	<3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
-	<20080109184437.GU14201@localdomain>
-	<3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
-	<20080110031723.GA22168@lixom.net>
-	<3ae3aa420801092012m5e47cbd7lc7a5f91842074af7@mail.gmail.com>
-	<20080110162120.GA4831@lixom.net>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
-	Nathan Lynch <ntl@pobox.com>, strosake@us.ibm.com
-Reply-To: linasvepstas@gmail.com
+References: <1199732204949-git-send-email-timur@freescale.com>
+	<1199732204578-git-send-email-timur@freescale.com>
+Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,63 +26,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/01/2008, Olof Johansson <olof@lixom.net> wrote:
-> On Wed, Jan 09, 2008 at 10:12:13PM -0600, Linas Vepstas wrote:
-> > On 09/01/2008, Olof Johansson <olof@lixom.net> wrote:
-> > > On Wed, Jan 09, 2008 at 08:33:53PM -0600, Linas Vepstas wrote:
-> > >
-> > > > Heh. That's the elbow-grease of this thing.  The easy part is to get
-> > > > the core function working. The hard part is to test these various configs,
-> > > > and when they don't work, figure out what went wrong. That will take
-> > > > perseverence and brains.
-> > >
-> > > This just sounds like a whole lot of extra work to get a feature that
-> > > already exists.
-> >
-> > Well, no. kexec is horribly ill-behaved with respect to PCI. The
-> > kexec kernel starts running with PCI devices in some random
-> > state; maybe they're DMA'ing or who knows what. kexec tries
-> > real hard to whack a few needed pci devices into submission
-> > but it has been hit-n-miss, and the source of 90% of the kexec
-> > headaches and debugging effort. Its not pretty.
+On 1/7/08, Timur Tabi <timur@freescale.com> wrote:
+> Update the MPC8610 HPCD files to support the audio driver.  Update
+> booting-without-of.txt with information on the SSI device.
 >
-> It surprises me that this hasn't been possible to resolve with less than
-> architecting a completely new interface, given that the platform has
-> all this fancy support for isolating and resetting adapters. After all,
-> the exact same thing has to be done by the hypervisor before rebooting
-> the partition.
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> Updated based on comments from mailing lists.  Split the patch into two parts.
+>
+> This patch applies on top of
+> git://git.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git.
+>
+>  Documentation/powerpc/booting-without-of.txt |   40 ++++++
+>  arch/powerpc/boot/dts/mpc8610_hpcd.dts       |  110 ++++++++++++++++-
+>  arch/powerpc/configs/mpc8610_hpcd_defconfig  |  171 +++++++++++++++++++++++++-
+>  arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |   18 +++
+>  4 files changed, 335 insertions(+), 4 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index e9a3cb1..826af91 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -53,6 +53,7 @@ Table of Contents
+>        j) CFI or JEDEC memory-mapped NOR flash
+>        k) Global Utilities Block
+>        l) Xilinx IP cores
+> +      p) Freescale Synchronous Serial Interface
+>
+>    VII - Specifying interrupt information for devices
+>      1) interrupts property
+> @@ -2514,6 +2515,45 @@ platforms are moved over to use the flattened-device-tree model.
+>        Requred properties:
+>         - current-speed : Baud rate of uartlite
+>
+> +    p) Freescale Synchronous Serial Interface
+> +
+> +       The SSI is a serial device that communicates with audio codecs.  It can
+> +       be programmed in AC97, I2S, left-justified, or right-justified modes.
+> +
+> +       Required properties:
+> +       - compatible      : compatible list, containing "fsl,ssi"
+> +       - cell-index      : the SSI, <0> = SSI1, <1> = SSI2, and so on
+> +       - reg             : offset and length of the register set for the device
+> +       - interrupts      : <a b> where a is the interrupt number and b is a
+> +                            field that represents an encoding of the sense and
+> +                           level information for the interrupt.  This should be
+> +                           encoded based on the information in section 2)
+> +                           depending on the type of interrupt controller you
+> +                           have.
+> +       - interrupt-parent : the phandle for the interrupt controller that
+> +                            services interrupts for this device.
+> +       - fsl,mode        : the operating mode for the SSI interface
+> +                           "i2s-slave" - I2S mode, SSI is clock slave
+> +                           "i2s-master" - I2S mode, SSI is clock master
+> +                           "lj-slave" - left-justified mode, SSI is clock slave
+> +                           "lj-master" - l.j. mode, SSI is clock master
+> +                           "rj-slave" - right-justified mode, SSI is clock slave
+> +                           "rj-master" - r.j., SSI is clock master
+> +                           "ac97-slave" - AC97 mode, SSI is clock slave
+> +                           "ac97-master" - AC97 mode, SSI is clock master
+> +
+> +       Optional properties:
+> +       - codec           : child node that defines an audio codec connected
+> +                           to this SSI
+> +
+> +       Child 'codec' node required properties:
+> +       - compatible      : compatible list, contains the name of the codec
+> +
+> +       Child 'codec' node optional properties:
+> +       - bus-frequency   : The frequency of the input clock, which typically
+> +                            comes from an on-board dedicated oscillator.
+> +
+> +
+>     More devices will be defined as this spec matures.
+>
+>  VII - Specifying interrupt information for devices
+> diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+> index 966edf1..fda0ace 100644
+> --- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+> +++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+> @@ -1,7 +1,7 @@
+>  /*
+>   * MPC8610 HPCD Device Tree Source
+>   *
+> - * Copyright 2007 Freescale Semiconductor Inc.
+> + * Copyright 2007-2008 Freescale Semiconductor Inc.
+>   *
+>   * This program is free software; you can redistribute  it and/or modify it
+>   * under the terms of the GNU General Public License Version 2 as published
+> @@ -42,6 +42,7 @@
+>                 #size-cells = <1>;
+>                 #interrupt-cells = <2>;
+>                 device_type = "soc";
+> +               compatible = "fsl,mpc8610";
 
-OK, point taken.
+Something like "fsl,mpc8610-immr" might be a better choice here.  This
+node doesn't actually describe the entire chip (for example, the PPC
+cores are in the cpus node); but it does describe the internally
+memory mapped registers.
 
--- The phyp interfaces are there for AIX, which I guess must
-   not have kexec-like ability. So this is a case of Linux leveraging
-  a feature architected for AIX.
+Cheers,
+g.
 
--- There's also this idea, somewhat weak, that the crash may
-   have corrupted the ram where the  kexec kernel sits.
-   For someone who is used to seeing crashes due to
-   null pointer deref's, this seems fairly unlikely. But perhaps
-   crashes in production systems are more mind-bending.
-   (we did have a case where a USB stick used for boot
-   continued to scribble on memory long after it was
-   supposed to be quiet and unused. This resulted in
-   a very hard to debug crash.)
-
-   A solution to a corrupted
-   kexec kernel would be to disable memory access to
-   where kexec sits, e.g un-mapping or making r/o the
-   pages where it lies. This begs the questions of "who
-   unhides the kexec kernel", and "what if this 'who' gets
-   corrupted"?
-
-   In short, the kexec kernel does not boot
-   exactly the same as a cold boot, and so this opens
-   a can of worms about "well, what's different, how do
-   we minimize these differences, etc." and I think that
-   lead AIX to punt, and say "lets just use one single,
-   well-known boot loader/ boot sequence instead of
-   inventing a new one", thus leading to the phyp design.
-
-   But that's just my guess.. :-)
-
---linas
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
