@@ -1,18 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 02133DE01B
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 02:42:51 +1100 (EST)
-Date: Thu, 10 Jan 2008 09:52:25 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Platform matching style (was:: [RFC] add phy-handle property
-	for fec_mpc52xx)
-Message-ID: <20080110155225.GA3944@lixom.net>
-References: <fa686aa40801100731k62b004ecq4f6058aea5df9da0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40801100731k62b004ecq4f6058aea5df9da0@mail.gmail.com>
-Cc: olaf@aepfle.de, sven@genesi-usa.com, linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A9EDDDE098
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 02:44:37 +1100 (EST)
+Date: Thu, 10 Jan 2008 18:53:37 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
+	layerfunctionality
+Message-ID: <20080110155336.GA28899@localhost.localdomain>
+References: <20071206225121.31080.86606.stgit@localhost.localdomain>
+	<003c01c84a3e$15d3a9c0$02ac10ac@Jocke>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <003c01c84a3e$15d3a9c0$02ac10ac@Jocke>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 10, 2008 at 08:31:18AM -0700, Grant Likely wrote:
-
-> 1. Apply a device tree fixup to change device_type from "chrp" to
-> "efika" (the current solution)
-> 2. Modify chrp_probe() to check specifically for the Efika when probing
-> 3. Modify the link order so that Efika is probed before CHRP.
->
-> All three of these solutions will work, but I'd like to get opinions
-> on which is stylistically the best approach (or if there is another
-> approach I'm missing).
+On Sat, Dec 29, 2007 at 06:13:08PM +0100, Joakim Tjernlund wrote:
+> > -----Original Message-----
+> > From: 
+> > linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
+> > [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
+> > abs.org] On Behalf Of Vitaly Bordug
+> > Sent: den 6 december 2007 23:51
+> > To: Paul Mackerras
+> > Cc: netdev@vger.kernel.org; linuxppc-dev
+> > Subject: [PATCH 1/3] [NET] phy/fixed.c: rework to not 
+> > duplicate PHY layerfunctionality
+> > 
+> > 
+> > With that patch fixed.c now fully emulates MDIO bus, thus no need
+> > to duplicate PHY layer functionality. That, in turn, drastically
+> > simplifies the code, and drops down line count.
+> > 
+> > As an additional bonus, now there is no need to register MDIO bus
+> > for each PHY, all emulated PHYs placed on the platform fixed MDIO bus.
+> > There is also no more need to pre-allocate PHYs via .config option,
+> > this is all now handled dynamically.
+> > 
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> > Acked-by: Jeff Garzik <jeff@garzik.org>
 > 
-> In general, I'm trying to reduce the Efika fixups down to only what is
-> absolutely necessary and as much as possible work with the provided
-> device tree.
+> What happened to this patch set? Is it sitting in a tree somewhere waiting
+> for 2.4.25 or does it need more work?
+        ^ we're too late then. ;-)
 
-(3) sounds fragile to me.
+Patches already began to fuzz at the fsl_soc.c, yet more time and
+they'll reject to apply. So.. Paul, Kumar can we get this in for
+2.6.25?
 
-There's already code in the kernel that does (2): pSeries_probe checks
-to make sure it's not running on a cell blade. That has the benefit of
-presenting something closer to the real device tree to the user through
-/proc/device-tree, not that I'm sure it has all that much value.
+I believe afterward this one will need some attention too:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048473.html
+
+Thanks in advance,
 
 
--Olof
+p.s. I just noticed that "fsl_soc: add support for gianfar for
+fixed-link .." patch could be cosmetically improved (removing
+casts, adding checks for size after the of_get_property), but I
+hope we can do this on top of already applied patches.
+
+Thanks again,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
