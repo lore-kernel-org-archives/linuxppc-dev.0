@@ -1,21 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-va3-R.bigfish.com (outbound-va3.frontbridge.com
+Received: from outbound3-va3-R.bigfish.com (outbound-va3.frontbridge.com
 	[216.32.180.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 376A7DE01E
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 12:03:46 +1100 (EST)
-Message-ID: <47856E60.4060109@am.sony.com>
-Date: Wed, 09 Jan 2008 17:01:20 -0800
+	by ozlabs.org (Postfix) with ESMTP id 8A0E5DE041
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 12:03:47 +1100 (EST)
+Message-ID: <47856E6E.40901@am.sony.com>
+Date: Wed, 09 Jan 2008 17:01:34 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 2/4 v3] PS3: Add logical performance monitor repository
-	routines
-References: <477EF59C.2070809@am.sony.com> <47846B38.7010409@am.sony.com>
-In-Reply-To: <47846B38.7010409@am.sony.com>
+Subject: [patch 3/4 v3] PS3: Add logical performance monitor device support
+References: <477EF59C.2070809@am.sony.com> <47846B3F.6060003@am.sony.com>
+In-Reply-To: <47846B3F.6060003@am.sony.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,167 +24,178 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add PS3 logical performance monitor device support to the
+PS3 system-bus and platform device registration routines.
 
-From: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
-
-Add repository routines for the PS3 logical performance monitor.
-
-Signed-off-by: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
-v2: o Correct Yamamoto-san's mail addr.
-v3: o Change num_pu and pu_id to type u64.
-    o Add comments to describe some symbol names.
+v2: o Add enum ps3_lpm_tb_type.
+    o Remove redundant enclosing structure and return proper
+      error codes from ps3_register_lpm_devices().
+v3: o Add lpm.node_id to struct ps3_system_bus_device.
+    o Cleanup repository discovery logic.
 
- arch/powerpc/platforms/ps3/platform.h   |   12 +++--
- arch/powerpc/platforms/ps3/repository.c |   75 +++++++++++++++++++++++++++++++-
- 2 files changed, 83 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/ps3/device-init.c |   85 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/ps3/system-bus.c  |    5 +
+ include/asm-powerpc/ps3.h                |    8 ++
+ 3 files changed, 98 insertions(+)
+ create mode 100644 arch/powerpc/platforms/ps3/lpm.c
 
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -186,10 +186,10 @@ int ps3_repository_read_stor_dev_region(
- 	unsigned int dev_index, unsigned int region_index,
- 	unsigned int *region_id, u64 *region_start, u64 *region_size);
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -30,6 +30,89 @@
  
--/* repository pu and memory info */
-+/* repository logical pu and memory info */
+ #include "platform.h"
  
--int ps3_repository_read_num_pu(unsigned int *num_pu);
--int ps3_repository_read_ppe_id(unsigned int *pu_index, unsigned int *ppe_id);
-+int ps3_repository_read_num_pu(u64 *num_pu);
-+int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id);
- int ps3_repository_read_rm_base(unsigned int ppe_id, u64 *rm_base);
- int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
- int ps3_repository_read_region_total(u64 *region_total);
-@@ -200,9 +200,15 @@ int ps3_repository_read_mm_info(u64 *rm_
- 
- int ps3_repository_read_num_be(unsigned int *num_be);
- int ps3_repository_read_be_node_id(unsigned int be_index, u64 *node_id);
-+int ps3_repository_read_be_id(u64 node_id, u64 *be_id);
- int ps3_repository_read_tb_freq(u64 node_id, u64 *tb_freq);
- int ps3_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq);
- 
-+/* repository performance monitor info */
-+
-+int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
-+	u64 *rights);
-+
- /* repository 'Other OS' area */
- 
- int ps3_repository_read_boot_dat_addr(u64 *lpar_addr);
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -684,6 +684,35 @@ int ps3_repository_read_stor_dev_region(
- 	return result;
- }
- 
-+/**
-+ * ps3_repository_read_num_pu - Number of logical PU processors for this lpar.
-+ */
-+
-+int ps3_repository_read_num_pu(u64 *num_pu)
-+{
-+	*num_pu = 0;
-+	return read_node(PS3_LPAR_ID_CURRENT,
-+			   make_first_field("bi", 0),
-+			   make_field("pun", 0),
-+			   0, 0,
-+			   num_pu, NULL);
-+}
-+
-+/**
-+ * ps3_repository_read_pu_id - Read the logical PU id.
-+ * @pu_index: Zero based index.
-+ * @pu_id: The logical PU id.
-+ */
-+
-+int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
-+{
-+	return read_node(PS3_LPAR_ID_CURRENT,
-+		make_first_field("bi", 0),
-+		make_field("pu", pu_index),
-+		0, 0,
-+		pu_id, NULL);
-+}
-+
- int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size)
- {
- 	return read_node(PS3_LPAR_ID_CURRENT,
-@@ -856,6 +885,10 @@ int ps3_repository_read_boot_dat_info(u6
- 		: ps3_repository_read_boot_dat_size(size);
- }
- 
-+/**
-+ * ps3_repository_read_num_be - Number of physical BE processors in the system.
-+ */
-+
- int ps3_repository_read_num_be(unsigned int *num_be)
- {
- 	int result;
-@@ -871,6 +904,12 @@ int ps3_repository_read_num_be(unsigned 
- 	return result;
- }
- 
-+/**
-+ * ps3_repository_read_be_node_id - Read the physical BE processor node id.
-+ * @be_index: Zero based index.
-+ * @node_id: The BE processor node id.
-+ */
-+
- int ps3_repository_read_be_node_id(unsigned int be_index, u64 *node_id)
- {
- 	return read_node(PS3_LPAR_ID_PME,
-@@ -881,6 +920,22 @@ int ps3_repository_read_be_node_id(unsig
- 		node_id, 0);
- }
- 
-+/**
-+ * ps3_repository_read_be_id - Read the physical BE processor id.
-+ * @node_id: The BE processor node id.
-+ * @be_id: The BE processor id.
-+ */
-+
-+int ps3_repository_read_be_id(u64 node_id, u64 *be_id)
-+{
-+	return read_node(PS3_LPAR_ID_PME,
-+		make_first_field("be", 0),
-+		node_id,
-+		0,
-+		0,
-+		be_id, NULL);
-+}
-+
- int ps3_repository_read_tb_freq(u64 node_id, u64 *tb_freq)
- {
- 	return read_node(PS3_LPAR_ID_PME,
-@@ -897,11 +952,29 @@ int ps3_repository_read_be_tb_freq(unsig
- 	u64 node_id;
- 
- 	*tb_freq = 0;
--	result = ps3_repository_read_be_node_id(0, &node_id);
-+	result = ps3_repository_read_be_node_id(be_index, &node_id);
- 	return result ? result
- 		: ps3_repository_read_tb_freq(node_id, tb_freq);
- }
- 
-+int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
-+	u64 *rights)
++static int __init ps3_register_lpm_devices(void)
 +{
 +	int result;
-+	u64 node_id;
++	u64 tmp1;
++	u64 tmp2;
++	struct ps3_system_bus_device *dev;
 +
-+	*lpar = 0;
-+	*rights = 0;
-+	result = ps3_repository_read_be_node_id(be_index, &node_id);
-+	return result ? result
-+		: read_node(PS3_LPAR_ID_PME,
-+			    make_first_field("be", 0),
-+			    node_id,
-+			    make_field("lpm", 0),
-+			    make_field("priv", 0),
-+			    lpar, rights);
++	pr_debug(" -> %s:%d\n", __func__, __LINE__);
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev)
++		return -ENOMEM;
++
++	dev->match_id = PS3_MATCH_ID_LPM;
++	dev->dev_type = PS3_DEVICE_TYPE_LPM;
++
++	/* The current lpm driver only supports a single BE processor. */
++
++	result = ps3_repository_read_be_node_id(0, &dev->lpm.node_id);
++
++	if (result) {
++		pr_debug("%s:%d: ps3_repository_read_be_node_id failed \n",
++			__func__, __LINE__);
++		goto fail_read_repo;
++	}
++
++	result = ps3_repository_read_lpm_privileges(dev->lpm.node_id, &tmp1,
++		&dev->lpm.rights);
++
++	if (result) {
++		pr_debug("%s:%d: ps3_repository_read_lpm_privleges failed \n",
++			__func__, __LINE__);
++		goto fail_read_repo;
++	}
++
++	lv1_get_logical_partition_id(&tmp2);
++
++	if (tmp1 != tmp2) {
++		pr_debug("%s:%d: wrong lpar\n",
++			__func__, __LINE__);
++		result = -ENODEV;
++		goto fail_rights;
++	}
++
++	if (!(dev->lpm.rights & PS3_LPM_RIGHTS_USE_LPM)) {
++		pr_debug("%s:%d: don't have rights to use lpm\n",
++			__func__, __LINE__);
++		result = -EPERM;
++		goto fail_rights;
++	}
++
++	pr_debug("%s:%d: pu_id %lu, rights %lu(%lxh)\n",
++		__func__, __LINE__, dev->lpm.pu_id, dev->lpm.rights,
++		dev->lpm.rights);
++
++	result = ps3_repository_read_pu_id(0, &dev->lpm.pu_id);
++
++	if (result) {
++		pr_debug("%s:%d: ps3_repository_read_pu_id failed \n",
++			__func__, __LINE__);
++		goto fail_read_repo;
++	}
++
++	result = ps3_system_bus_device_register(dev);
++
++	if (result) {
++		pr_debug("%s:%d ps3_system_bus_device_register failed\n",
++			__func__, __LINE__);
++		goto fail_register;
++	}
++
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return 0;
++
++
++fail_register:
++fail_rights:
++fail_read_repo:
++	kfree(dev);
++	pr_debug(" <- %s:%d: failed\n", __func__, __LINE__);
++	return result;
 +}
 +
- #if defined(DEBUG)
+ /**
+  * ps3_setup_gelic_device - Setup and register a gelic device instance.
+  *
+@@ -787,6 +870,8 @@ static int __init ps3_register_devices(v
  
- int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
+ 	ps3_register_sound_devices();
+ 
++	ps3_register_lpm_devices();
++
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+ 	return 0;
+ }
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -715,6 +715,7 @@ int ps3_system_bus_device_register(struc
+ 	static unsigned int dev_ioc0_count;
+ 	static unsigned int dev_sb_count;
+ 	static unsigned int dev_vuart_count;
++	static unsigned int dev_lpm_count;
+ 
+ 	if (!dev->core.parent)
+ 		dev->core.parent = &ps3_system_bus;
+@@ -737,6 +738,10 @@ int ps3_system_bus_device_register(struc
+ 		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
+ 			"vuart_%02x", ++dev_vuart_count);
+ 		break;
++	case PS3_DEVICE_TYPE_LPM:
++		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
++			"lpm_%02x", ++dev_lpm_count);
++		break;
+ 	default:
+ 		BUG();
+ 	};
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -317,6 +317,7 @@ enum ps3_match_id {
+ 	PS3_MATCH_ID_STOR_FLASH     = 8,
+ 	PS3_MATCH_ID_SOUND          = 9,
+ 	PS3_MATCH_ID_GRAPHICS       = 10,
++	PS3_MATCH_ID_LPM            = 11,
+ };
+ 
+ #define PS3_MODULE_ALIAS_EHCI           "ps3:1"
+@@ -329,11 +330,13 @@ enum ps3_match_id {
+ #define PS3_MODULE_ALIAS_STOR_FLASH     "ps3:8"
+ #define PS3_MODULE_ALIAS_SOUND          "ps3:9"
+ #define PS3_MODULE_ALIAS_GRAPHICS       "ps3:10"
++#define PS3_MODULE_ALIAS_LPM            "ps3:11"
+ 
+ enum ps3_system_bus_device_type {
+ 	PS3_DEVICE_TYPE_IOC0 = 1,
+ 	PS3_DEVICE_TYPE_SB,
+ 	PS3_DEVICE_TYPE_VUART,
++	PS3_DEVICE_TYPE_LPM,
+ };
+ 
+ /**
+@@ -350,6 +353,11 @@ struct ps3_system_bus_device {
+ 	struct ps3_dma_region *d_region;  /* SB, IOC0 */
+ 	struct ps3_mmio_region *m_region; /* SB, IOC0*/
+ 	unsigned int port_number;         /* VUART */
++	struct {                          /* LPM */
++		u64 node_id;
++		u64 pu_id;
++		u64 rights;
++	} lpm;
+ 
+ /*	struct iommu_table *iommu_table; -- waiting for BenH's cleanups */
+ 	struct device core;
