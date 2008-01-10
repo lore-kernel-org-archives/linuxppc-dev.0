@@ -1,17 +1,22 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 2/3] Look for include files in the directory of the
-	including file.
-In-Reply-To: Your message of "Thu, 10 Jan 2008 14:52:01 +1100."
-	<20080110035201.GJ17816@localhost.localdomain>
-References: <20080103234331.GB8441@ld0162-tx32.am.freescale.net>
-	<20080104042739.GC4326@localhost.localdomain>
-	<20080106225252.GB8239@ld0162-tx32.am.freescale.net>
-	<20080110035201.GJ17816@localhost.localdomain>
-Date: Thu, 10 Jan 2008 08:25:18 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JCyLO-00072t-Vi@jdl.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 6F82EDDEDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 02:01:13 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so156237anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 07:01:10 -0800 (PST)
+Message-ID: <fa686aa40801100701q7454d8d0o8542ce9cc10f3bfb@mail.gmail.com>
+Date: Thu, 10 Jan 2008 08:01:09 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH V3] [POWERPC] Add common clock setting routine
+	mpc52xx_psc_set_clkdiv()
+In-Reply-To: <20080110181316.1213f273.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080110052629.8853.52821.stgit@trillian.secretlab.ca>
+	<20080110181316.1213f273.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, dragos.carp@toptica.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> > The doubly-linked list is intended to make it easier to construct search
-> > path lists one-at-a-time from arguments in the proper order, without
-> > needing to reverse the list at the end.
-> 
-> We've already got that problem with a bunch of the lists we create
-> during parsing (we have several ugly add-to-end-of-singly-linked-list
-> functions).  Going to doubly-linked lists might not be a bad idea, but
-> we should do it across the board, probably using the kernel's list.h
-> or something like it.
+On 1/10/08, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Grant,
+>
+> On Wed, 09 Jan 2008 22:26:30 -0700 Grant Likely <grant.likely@secretlab.ca> wrote:
+> >
+> > +mpc52xx_map_common_devices(void)
+> >  {
+>
+> > +     /* Clock Distribution Module, used by PSC clock setting function */
+> > +     np = of_find_matching_node(NULL, mpc52xx_cdm_ids);
+>
+> What happens if we find no node?
 
-I would be happy to accept a kernel's-list.h-based refactoring
-for doubly linked lists after the imminent 1.1 release!
+Both of_iomap and of_put fail gracefully if np is NULL.  IIRC that was
+done on purpose so this exact thing could be done.
 
-jdl
+Users of mpc52xx_cdm (and the others done in this style) all check for
+mpc52xx_cdm being NULL before dereferencing.
+
+>
+> > +     mpc52xx_cdm = of_iomap(np, 0);
+> > +     of_node_put(np);
+> >  }
+>
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+>
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
