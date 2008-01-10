@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 632D8DE03C
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 18:13:28 +1100 (EST)
-Date: Thu, 10 Jan 2008 18:13:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH V3] [POWERPC] Add common clock setting routine
-	mpc52xx_psc_set_clkdiv()
-Message-Id: <20080110181316.1213f273.sfr@canb.auug.org.au>
-In-Reply-To: <20080110052629.8853.52821.stgit@trillian.secretlab.ca>
-References: <20080110052629.8853.52821.stgit@trillian.secretlab.ca>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH"
-Cc: linuxppc-dev@ozlabs.org, dragos.carp@toptica.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 04167DE045
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 18:23:55 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0A7NoU6006948
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 01:23:51 -0600
+Date: Thu, 10 Jan 2008 01:21:42 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] Fix handling of memreserve if the range lands in highmem
+Message-ID: <Pine.LNX.4.64.0801100120290.13810@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +23,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+There were several issues if a memreserve range existed and happened
+to be in highmem:
 
-Hi Grant,
+* The bootmem allocator is only aware of lowmem so calling
+  reserve_bootmem with a highmem address would cause a BUG_ON
+* All highmem pages were provided to the buddy allocator
 
-On Wed, 09 Jan 2008 22:26:30 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> +mpc52xx_map_common_devices(void)
->  {
+Added a lmb_is_reserved() api that we now use to determine if a highem
+page should continue to be PageReserved or provided to the buddy
+allocator.
 
-> +	/* Clock Distribution Module, used by PSC clock setting function */
-> +	np =3D of_find_matching_node(NULL, mpc52xx_cdm_ids);
+Also, we incorrectly reported the amount of pages reserved since all
+highmem pages are initally marked reserved and we clear the
+PageReserved flag as we "free" up the highmem pages.
 
-What happens if we find no node?
+---
 
-> +	mpc52xx_cdm =3D of_iomap(np, 0);
-> +	of_node_put(np);
->  }
+Handle case pointed out by Scott Wood if a memreserve crosses the lowmem
+boundary.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ arch/powerpc/mm/lmb.c     |   13 +++++++++++++
+ arch/powerpc/mm/mem.c     |   20 ++++++++++++++++----
+ include/asm-powerpc/lmb.h |    1 +
+ 3 files changed, 30 insertions(+), 4 deletions(-)
 
---Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH
-Content-Type: application/pgp-signature
+diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
+index 8f4d2dc..4ce23bc 100644
+--- a/arch/powerpc/mm/lmb.c
++++ b/arch/powerpc/mm/lmb.c
+@@ -342,3 +342,16 @@ void __init lmb_enforce_memory_limit(unsigned long memory_limit)
+ 		}
+ 	}
+ }
++
++int __init lmb_is_reserved(unsigned long addr)
++{
++	int i;
++
++	for (i = 0; i < lmb.reserved.cnt; i++) {
++		unsigned long upper = lmb.reserved.region[i].base +
++				      lmb.reserved.region[i].size - 1;
++		if ((addr >= lmb.reserved.region[i].base) && (addr <= upper))
++			return 1;
++	}
++	return 0;
++}
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 5402fb6..0b29da3 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -218,9 +218,19 @@ void __init do_init_bootmem(void)
+ #endif
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+ 	/* reserve the sections we're already using */
+-	for (i = 0; i < lmb.reserved.cnt; i++)
+-		reserve_bootmem(lmb.reserved.region[i].base,
+-				lmb_size_bytes(&lmb.reserved, i));
++	for (i = 0; i < lmb.reserved.cnt; i++) {
++		unsigned long addr = lmb.reserved.region[i].base +
++				     lmb_size_bytes(&lmb.reserved, i) - 1;
++		if (addr < total_lowmem)
++			reserve_bootmem(lmb.reserved.region[i].base,
++					lmb_size_bytes(&lmb.reserved, i));
++		else if (lmb.reserved.region[i].base < total_lowmem) {
++			unsigned long adjusted_size = total_lowmem -
++				      lmb.reserved.region[i].base;
++			reserve_bootmem(lmb.reserved.region[i].base,
++					adjusted_size);
++		}
++	}
 
-iD8DBQFHhcWQTgG2atn1QN8RAmBmAJoCTNFlpRj5uY28dz5r6f0i5ezAMgCfQlLK
-JHpLNkESi5Ie3oDV8lER+P0=
-=oAqZ
------END PGP SIGNATURE-----
+ 	/* XXX need to clip this if using highmem? */
+ 	sparse_memory_present_with_active_regions(0);
+@@ -334,11 +344,13 @@ void __init mem_init(void)
+ 		highmem_mapnr = total_lowmem >> PAGE_SHIFT;
+ 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
+ 			struct page *page = pfn_to_page(pfn);
+-
++			if (lmb_is_reserved(pfn << PAGE_SHIFT))
++				continue;
+ 			ClearPageReserved(page);
+ 			init_page_count(page);
+ 			__free_page(page);
+ 			totalhigh_pages++;
++			reservedpages--;
+ 		}
+ 		totalram_pages += totalhigh_pages;
+ 		printk(KERN_DEBUG "High memory: %luk\n",
+diff --git a/include/asm-powerpc/lmb.h b/include/asm-powerpc/lmb.h
+index b5f9f4c..5d1dc48 100644
+--- a/include/asm-powerpc/lmb.h
++++ b/include/asm-powerpc/lmb.h
+@@ -51,6 +51,7 @@ extern unsigned long __init __lmb_alloc_base(unsigned long size,
+ extern unsigned long __init lmb_phys_mem_size(void);
+ extern unsigned long __init lmb_end_of_DRAM(void);
+ extern void __init lmb_enforce_memory_limit(unsigned long memory_limit);
++extern int __init lmb_is_reserved(unsigned long addr);
 
---Signature=_Thu__10_Jan_2008_18_13_16_+1100_OuAHt/ZSHGT5g=eH--
+ extern void lmb_dump_all(void);
+
+-- 
+1.5.3.7
