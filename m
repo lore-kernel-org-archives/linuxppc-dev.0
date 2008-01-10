@@ -1,21 +1,29 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id EA762DE039
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 20:44:27 +1100 (EST)
-Date: Thu, 10 Jan 2008 10:44:25 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 4/4 v3] PS3: Add logical performance monitor driver support
-In-Reply-To: <47856E80.2080209@am.sony.com>
-Message-ID: <Pine.LNX.4.64.0801101043380.16544@vixen.sonytel.be>
-References: <477EF59C.2070809@am.sony.com> <47846B48.5000003@am.sony.com>
-	<47856E80.2080209@am.sony.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-377911201-1199958265=:16544"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
+Return-Path: <lg@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (unknown [80.75.67.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8E92ADDF7E
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 21:30:21 +1100 (EST)
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <9e4733910801092141m5d4476d0l1c081307fd5c1969@mail.gmail.com>
+References: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<477BAB67.4080003@freescale.com>
+	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>
+	<477D2150.4020506@freescale.com>
+	<20080103235156.GE12883@localhost.localdomain>
+	<477EEDFA.9010205@freescale.com>
+	<20080106004637.GJ4326@localhost.localdomain>
+	<47824AA3.5070808@freescale.com> <20080107182853.GA17312@sirena.org.uk>
+	<20080110034919.GI17816@localhost.localdomain>
+	<9e4733910801092141m5d4476d0l1c081307fd5c1969@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 10:30:15 +0000
+Message-Id: <1199961015.19903.270.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 2008-01-10 at 00:41 -0500, Jon Smirl wrote:
 
----584349381-377911201-1199958265=:16544
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> ASOC v2 is sitting on a Wolfson server out of tree. I have been using
+> it for several months without problem. The pace of it being merged
+> could probably be sped up.
 
-On Wed, 9 Jan 2008, Geoff Levand wrote:
-> --- /dev/null
-> +++ b/drivers/ps3/ps3-lpm.c
+I think we are probably looking at submission in the next 8 - 10 weeks.
+Currently most of the core code is complete, however some platforms and
+codecs still need porting.
 
-> + * @node_id: The node id of a BE prosessor whos performance monitor this
-                                              ^^^^
-					      whose
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-377911201-1199958265=:16544--
+Liam
