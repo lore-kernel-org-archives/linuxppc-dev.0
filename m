@@ -1,15 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 10 Jan 2008 14:13:31 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: How complete should the DTS be?
-Message-ID: <20080110031331.GF17816@localhost.localdomain>
-References: <4782DAD8.1080104@pikatech.com>
-	<86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E559ADE013
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 14:14:18 +1100 (EST)
+Message-ID: <47858D89.4070706@pikatech.com>
+Date: Wed, 09 Jan 2008 22:14:17 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/5] Warp Base Platform - dts
+References: <47852C41.8000506@pikatech.com> <47852CB3.3000208@pikatech.com>
+	<20080110024753.GC17816@localhost.localdomain>
+In-Reply-To: <20080110024753.GC17816@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 08, 2008 at 12:04:36AM -0600, Kumar Gala wrote:
-> 
-> On Jan 7, 2008, at 8:07 PM, Sean MacLennan wrote:
-> 
-> > Just a general question about DTS "completeness". Like all 440EP
-> > processors, the taco has two i2c buses. However, only one bus has
-> > anything connected to it.
-> >
-> > Should I show both bus entries in the DTS, or only the one that is  
-> > used?
-> > I have generally only been showing the devices that are present. i.e.
-> > Only one emac, only one serial port.
-> >
-> > Is there a convention for this?
-> 
-> The .dts should reflect the HW as its used.  On some reference boards  
-> we might put out more info because of the various configs these types  
-> of boards can be setup in.  However if something has a static config  
-> just describe that.  So in your example of two i2c buses with only one  
-> connected, just describe the one that is used.
+David Gibson wrote:
+> On Wed, Jan 09, 2008 at 03:21:07PM -0500, Sean MacLennan wrote:
+>   
+>> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+>> ---
+>> --- /dev/null	2005-11-20 22:22:37.000000000 -0500
+>> +++ arch/powerpc/boot/dts/warp.dts	2008-01-08 12:04:10.000000000 -0500
+>>     
+>
+> [snip]
+>   
+>> +	plb {
+>> +		compatible = "ibm,plb-440ep", "ibm,plb-440gp", "ibm,plb4";
+>> +		#address-cells = <2>;
+>> +		#size-cells = <1>;
+>> +		ranges;
+>> +		clock-frequency = <0>; /* Filled in by zImage */
+>> +
+>> +		SDRAM0: sdram {
+>> +			compatible = "ibm,sdram-440ep", "ibm,sdram-405gp";
+>> +			dcr-reg = <010 2>;
+>> +		};
+>> +
+>> +		DMA0: dma {
+>> +			compatible = "ibm,dma-440ep", "ibm,dma-440gp";
+>> +			dcr-reg = <100 027>;
+>> +		};
+>> +
+>> +		FPGA0: fpga {
+>>     
+>
+> Surely this must be off the EBC, not directly of the PLB...?
+>   
+Could be, I don't really know :( I will move it if it makes more sense.
 
-Hrm... I'd say this is not something which has a firm convention yet.
-
-It's going to become more of an issue once we get a macros system for
-dtc, so the "440EP" macro would have all the devices, even if some are
-not connected on a given board.
-
-I'm contemplating suggesting that we adopt the "status" property from
-IEEE1275 to cover this.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+    Sean
