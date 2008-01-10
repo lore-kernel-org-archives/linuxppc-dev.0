@@ -4,25 +4,21 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1645DE027
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 04:24:55 +1100 (EST)
-Message-ID: <478654F1.2060305@freescale.com>
-Date: Thu, 10 Jan 2008 11:25:05 -0600
+	by ozlabs.org (Postfix) with ESMTP id 8AF90DE027
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 04:28:12 +1100 (EST)
+Message-ID: <4786556C.8040108@freescale.com>
+Date: Thu, 10 Jan 2008 11:27:08 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range lands
-	in highmem
-References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
-	<20080109185349.GC4337@loki.buserror.net>
-	<3B831CF0-E978-42E7-BA26-7598BC27A5F6@kernel.crashing.org>
-	<478520E4.1050204@freescale.com>
-	<9536E0AC-E4D2-4E86-8DC6-F40A322FC817@kernel.crashing.org>
-	<478525E7.3060106@freescale.com>
-	<354E8B44-78B4-49DF-8DCF-5E70BB982E86@kernel.crashing.org>
-In-Reply-To: <354E8B44-78B4-49DF-8DCF-5E70BB982E86@kernel.crashing.org>
+To: hs@denx.de
+Subject: Re: [PATCH for 2.6.24][NET] fs_enet: check for phydev existence in
+	the ethtool handlers
+References: <1199875566.3408.11.camel@p60365-ste> <4784C509.5030507@denx.de>
+	<20080109182038.GA4337@loki.buserror.net>
+	<4785D3D8.7080300@denx.de> <4785E014.4040709@denx.de>
+In-Reply-To: <4785E014.4040709@denx.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,24 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Heiko Schocher wrote:
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index f2a4d39..f432a18 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -810,6 +810,10 @@ static int fs_enet_open(struct net_device *dev)
+>  	if (fep->fpi->use_napi)
+>  		napi_enable(&fep->napi);
 > 
-> On Jan 9, 2008, at 1:52 PM, Scott Wood wrote:
-> 
->> Kumar Gala wrote:
->>> I'm thinking I'll add something like:
->>>                if (addr < total_lowmem)
->>>                        reserve_bootmem(lmb.reserved.region[i].base,
->>>                                        lmb_size_bytes(&lmb.reserved, 
->>> i));
->>> +               else if (lmb.reserved.region[i].base > total_lowmem) {
->>
->> less than, surely?
-> 
-> damn, why didn't I see your email before a spent 20 minutes debugging 
-> this ;)
+> +	/* to initialize the fep->cur_rx,... */
+> +	/* not doing this, will cause a crash in fs_enet_rx_napi */
+> +	fs_init_bds(fep->ndev);
 
-Because, as happens all too often lately, Freescale's mail servers 
-needed to chew on it for an hour and a half before sending it on. :-P
+We should do this just before napi_enable() rather than just after, to 
+eliminate any chance of a race window.
+
+Looks good otherwise.
 
 -Scott
