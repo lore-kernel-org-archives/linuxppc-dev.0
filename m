@@ -1,24 +1,28 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A599DE019
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 04:23:10 +1100 (EST)
-Message-ID: <4786546C.7070700@freescale.com>
-Date: Thu, 10 Jan 2008 11:22:52 -0600
+	by ozlabs.org (Postfix) with ESMTP id A1645DE027
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 04:24:55 +1100 (EST)
+Message-ID: <478654F1.2060305@freescale.com>
+Date: Thu, 10 Jan 2008 11:25:05 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, jdl@jdl.com, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/3] Return a non-zero exit code if an error occurs	during
-	dts parsing.
-References: <20080103234333.GC8441@ld0162-tx32.am.freescale.net>
-	<20080104043033.GD4326@localhost.localdomain>
-	<20080106225509.GC8239@ld0162-tx32.am.freescale.net>
-	<20080110035609.GL17816@localhost.localdomain>
-In-Reply-To: <20080110035609.GL17816@localhost.localdomain>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Fix handling of memreserve if the range lands
+	in highmem
+References: <Pine.LNX.4.64.0801091127400.8069@blarg.am.freescale.net>
+	<20080109185349.GC4337@loki.buserror.net>
+	<3B831CF0-E978-42E7-BA26-7598BC27A5F6@kernel.crashing.org>
+	<478520E4.1050204@freescale.com>
+	<9536E0AC-E4D2-4E86-8DC6-F40A322FC817@kernel.crashing.org>
+	<478525E7.3060106@freescale.com>
+	<354E8B44-78B4-49DF-8DCF-5E70BB982E86@kernel.crashing.org>
+In-Reply-To: <354E8B44-78B4-49DF-8DCF-5E70BB982E86@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Sun, Jan 06, 2008 at 04:55:09PM -0600, Scott Wood wrote:
->> On Fri, Jan 04, 2008 at 03:30:33PM +1100, David Gibson wrote:
->>> This is unequivocally wrong.  boot_info should have information about
->>> the contents of the blob, not state information like the error.
->> "This blob is invalid" *is* information about the contents of the blob.
->>
->>> If you're going to use an ugly global, then use it everywhere.
->> Why go out of our way to make the code even less library-able/thread-safe?
+Kumar Gala wrote:
 > 
-> It doesn't make it any less thread-safe.  A global variable used some
-> places is just as bad as a global variable used everywhere from that
-> point of view, and is more complicated.
+> On Jan 9, 2008, at 1:52 PM, Scott Wood wrote:
+> 
+>> Kumar Gala wrote:
+>>> I'm thinking I'll add something like:
+>>>                if (addr < total_lowmem)
+>>>                        reserve_bootmem(lmb.reserved.region[i].base,
+>>>                                        lmb_size_bytes(&lmb.reserved, 
+>>> i));
+>>> +               else if (lmb.reserved.region[i].base > total_lowmem) {
+>>
+>> less than, surely?
+> 
+> damn, why didn't I see your email before a spent 20 minutes debugging 
+> this ;)
 
-But the knowledge of the fact that the boot_info struct is a global is 
-isolated to the treesource code.  I don't see any reason to add another 
-global at the *interface* level, much less that not doing so is 
-"unequivocally wrong".
+Because, as happens all too often lately, Freescale's mail servers 
+needed to chew on it for an hour and a half before sending it on. :-P
 
 -Scott
