@@ -1,37 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 072C4DE053
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 01:00:15 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0ADxjcL029237
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 08:59:50 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0ADxFni113264
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:59:35 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0ADwUPx030091
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:58:31 -0700
-Date: Thu, 10 Jan 2008 07:58:30 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: How complete should the DTS be?
-Message-ID: <20080110075830.247a13e5@zod.rchland.ibm.com>
-In-Reply-To: <1199947849.6734.231.camel@pasglop>
-References: <4782DAD8.1080104@pikatech.com>
-	<86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
-	<20080110031331.GF17816@localhost.localdomain>
-	<4785B2F5.6040001@pikatech.com>
-	<20080110060245.GE19088@localhost.localdomain>
-	<1199947849.6734.231.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 5DDDBDE059
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 01:14:27 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1186849wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 06:14:26 -0800 (PST)
+Message-ID: <9e4733910801100614y7522a573qb2af41a714b08d5@mail.gmail.com>
+Date: Thu, 10 Jan 2008 09:14:26 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org,
+	"Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH 0/5] Version 17, series to add device tree naming to i2c
+In-Reply-To: <20071220044136.20091.70984.stgit@terra.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071220044136.20091.70984.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,46 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 Jan 2008 17:50:49 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+What is the review status of this series, should I post it again?
 
-> 
-> On Thu, 2008-01-10 at 17:02 +1100, David Gibson wrote:
-> > On Thu, Jan 10, 2008 at 12:53:57AM -0500, Sean MacLennan wrote:
-> > > David Gibson wrote:
-> > > > Hrm... I'd say this is not something which has a firm convention yet.
-> > > > It's going to become more of an issue once we get a macros system for
-> > > > dtc, so the "440EP" macro would have all the devices, even if some are
-> > > > not connected on a given board.
-> > > >
-> > > > I'm contemplating suggesting that we adopt the "status" property from
-> > > > IEEE1275 to cover this.
-> > > >
-> > > >   
-> > > When I am laying out the dts, leaving out what isn't used makes the dts 
-> > > file cleaner, at least in my view. It doesn't hurt to have the second 
-> > > i2c bus there, but it also doesn't help and leaving it out points out 
-> > > that it is not used.
-> > > 
-> > > When we get a macro system I assume the second i2c bus will be there but 
-> > > hidden by a macro. It will still be clean and shouldn't cause grief.
-> > 
-> > Right, but if it is there we'll want to mark it as unused in some way
-> > so that the kernel doesn't waste resources attempting to drive it.
-> 
-> Sure but I don't want to make it mandatory for people to put unused
-> devices in. If the macro system brings them in, then yes, it's good to
-> have a way to properly mark them unused. But people hand crafting DTS
-> shouldn't have to bloat them.
-> 
-> There is -one- case where you may want to put unused devices, is if you
-> do some kind of resource management on that specific bus (like need to
-> be able to dynamically allocate space on the bus). In this case, you
-> want to know everything that's there and potentially decodes addresses
-> to avoid collisions.
+On 12/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Since copying i2c-mpc.c to maintain support for the ppc architecture seems to be an issue; instead rework i2c-mpc.c to use CONFIG_PPC_MERGE #ifdefs to support both the ppc and powerpc architecture. When ppc is deleted in six months these #ifdefs will need to be removed.
+>
+> Another rework of the i2c for powerpc device tree patch. This version implements standard alias naming only on the powerpc platform and only for the device tree names. The old naming mechanism of i2c_client.name,driver_name is left in place and not changed for non-powerpc platforms. This patch is fully capable of dynamically loading the i2c modules. You can modprobe in the i2c-mpc driver and the i2c modules described in the device tree will be automatically loaded. Modules also work if compiled in.
+>
+> The follow on patch to module-init-tools is also needed since the i2c subsystem has never implemented dynamic loading.
+>
+> The following series implements standard linux module aliasing for i2c modules on arch=powerpc. It then converts the mpc i2c driver from being a platform driver to an open firmware one. I2C device names are picked up from the device tree. Module aliasing is used to translate from device tree names into to linux kernel names. Several i2c drivers are updated to use the new aliasing.
+>
+> --
+> Jon Smirl
+> jonsmirl@gmail.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-There are other uses too.  E.g. pin sharing between devices based on
-DIP switch settings.  You'd want to enumerate all the devices, and then
-add 'status = "failed-not-connected"' to the ones that don't have pins.
 
-josh
+-- 
+Jon Smirl
+jonsmirl@gmail.com
