@@ -1,29 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D059DE031
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 06:20:24 +1100 (EST)
-Message-ID: <47866FDE.5070307@freescale.com>
-Date: Thu, 10 Jan 2008 13:19:58 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 38A61DE00F
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 07:10:37 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1363758wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 12:10:36 -0800 (PST)
+Message-ID: <9e4733910801101210w5846bb4ds38a603a489ef0522@mail.gmail.com>
+Date: Thu, 10 Jan 2008 15:10:36 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <478641E3.5070404@freescale.com>
 MIME-Version: 1.0
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: Help with device tree binding for SMC serial
-References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com>
-	<4785246D.6090206@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D58BC9@ismail.innsys.innovsys.com>
-	<47854AE1.7080802@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D58BEF@ismail.innsys.innovsys.com>
-	<47854D6D.2010906@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D58C20@ismail.innsys.innovsys.com>
-	<20080110175348.GA4317@loki.buserror.net>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D99E60@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03D99E60@ismail.innsys.innovsys.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<20080106004637.GJ4326@localhost.localdomain>
+	<47824AA3.5070808@freescale.com>
+	<20080107182853.GA17312@sirena.org.uk>
+	<20080110034919.GI17816@localhost.localdomain>
+	<9e4733910801092141m5d4476d0l1c081307fd5c1969@mail.gmail.com>
+	<1199961015.19903.270.camel@localhost.localdomain>
+	<47863C31.50309@freescale.com>
+	<fa686aa40801100801p3da98eecn44401b17fe652da8@mail.gmail.com>
+	<478641E3.5070404@freescale.com>
+Cc: alsa-devel@alsa-project.org, Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,17 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
-> Not sure what was wrong. We took a step back, and redid some stuff, and
-> now we have serial output from the boot-wrapper.
-> THe checkstop came from the wrapper grying to access the bcsr and doing
-> the chip select fixup. We don';t have a bcsr on our board, and the cs
-> layout is different.
+On 1/10/08, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>
+> > The driver doesn't need to be 100% correct.  Drivers are easy to
+> > change if they aren't quite right.  There are no long term
+> > consequences.
+>  >
+> > However, the device tree issues must be addressed before it is merged
+> > and deployed.  Otherwise we end up having to support poorly designed
+> > trees over the long term.
+>
+> I agree.  Correct me if I'm wrong, but I think the only device tree "issue" is
+> the definition of the 'codec' node under the SSI node.  If so, I'm not sure what
+> other changes need to be mode.
 
-There's no bcsr access in the upstream bootwrapper (the mention of bcsr 
-in cuboot-pq2.c is just one reason why some boards require us to do the 
-CS programming), and the CS programming is chip-level, not board-level 
-(it just requires that the device tree have a correct localbus node for 
-the board).
+Isn't your codec is i2c controlled? Where does the main node for the
+code live, i2c bus or ssi bus? What does the link between the buses
+look like for pointing to the codec entry?
 
--Scott
+What about fsl,ssi being too generic for a compatible type?
+
+>
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
