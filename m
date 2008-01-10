@@ -1,25 +1,14 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id E3977DDF58
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 13:47:58 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so110688anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 18:47:57 -0800 (PST)
-Message-ID: <3ae3aa420801091847l189df8dwb2348624f0267af@mail.gmail.com>
-Date: Wed, 9 Jan 2008 20:47:57 -0600
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-In-Reply-To: <1199919545.7880.11.camel@concordia>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 10 Jan 2008 13:47:53 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 2/5] Warp Base Platform - dts
+Message-ID: <20080110024753.GC17816@localhost.localdomain>
+References: <47852C41.8000506@pikatech.com> <47852CB3.3000208@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
-	<20080109042911.GT14201@localdomain>
-	<3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
-	<20080109184437.GU14201@localdomain>
-	<1199919545.7880.11.camel@concordia>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
-	Nathan Lynch <ntl@pobox.com>, strosake@us.ibm.com
-Reply-To: linasvepstas@gmail.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47852CB3.3000208@pikatech.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +18,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 09/01/2008, Michael Ellerman <michael@ellerman.id.au> wrote:
->
-> > > Only if you can get at rtas, but you can't get at rtas at that point.
->
-> AFAICT you don't need to get at RTAS, you just need to look at the
-> device tree to see if the property is present, and that is trivial.
->
-> You probably just need to add a check in early_init_dt_scan_rtas() which
-> sets a flag for the PHYP dump stuff, or add your own scan routine if you
-> need.
+On Wed, Jan 09, 2008 at 03:21:07PM -0500, Sean MacLennan wrote:
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> ---
+> --- /dev/null	2005-11-20 22:22:37.000000000 -0500
+> +++ arch/powerpc/boot/dts/warp.dts	2008-01-08 12:04:10.000000000 -0500
 
-I no longer remember the details. I do remember spending a lot of time
-trying to figure out how to do this. I know I didn't want to write my own scan
-routine; maybe that's what stopped me.  As it happens, we also did most
-of the development on a broken phyp which simply did not even have
-this property, no matter what, and so that may have brain-damaged me.
+[snip]
+> +	plb {
+> +		compatible = "ibm,plb-440ep", "ibm,plb-440gp", "ibm,plb4";
+> +		#address-cells = <2>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +		clock-frequency = <0>; /* Filled in by zImage */
+> +
+> +		SDRAM0: sdram {
+> +			compatible = "ibm,sdram-440ep", "ibm,sdram-405gp";
+> +			dcr-reg = <010 2>;
+> +		};
+> +
+> +		DMA0: dma {
+> +			compatible = "ibm,dma-440ep", "ibm,dma-440gp";
+> +			dcr-reg = <100 027>;
+> +		};
+> +
+> +		FPGA0: fpga {
 
-I went for the "most elegant" solution, where "most elegant" is defined
-as "fewest lines of code", "least effort", etc.
+Surely this must be off the EBC, not directly of the PLB...?
 
-Manish may need some hands-on help to extract this token during
-early boot.  Hopefully, he'll let us know.
+> +			compatible = "pika,fpga";
+> +	   		reg = <0 80000000 2200>;
+> +			interrupts = <18 8>;
+> +			interrupt-parent = <&UIC0>;
+> +		};
 
---linas
+[snip]
+> +			IIC0: i2c@ef600700 {
+> +				device_type = "i2c";
+
+Drop this device_type.
+
+> +				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
+> +				reg = <ef600700 14>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <2 4>;
+> +			};
+> +
+> +			ZMII0: emac-zmii@ef600d00 {
+> +				device_type = "zmii-interface";
+
+And this one.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
