@@ -1,20 +1,31 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id A9EDDDE098
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 02:44:37 +1100 (EST)
-Date: Thu, 10 Jan 2008 18:53:37 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>, Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
-	layerfunctionality
-Message-ID: <20080110155336.GA28899@localhost.localdomain>
-References: <20071206225121.31080.86606.stgit@localhost.localdomain>
-	<003c01c84a3e$15d3a9c0$02ac10ac@Jocke>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <003c01c84a3e$15d3a9c0$02ac10ac@Jocke>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 2AF71DE154
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 03:01:05 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so161927anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 08:01:04 -0800 (PST)
+Message-ID: <fa686aa40801100801p3da98eecn44401b17fe652da8@mail.gmail.com>
+Date: Thu, 10 Jan 2008 09:01:04 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+In-Reply-To: <47863C31.50309@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>
+	<20080103235156.GE12883@localhost.localdomain>
+	<477EEDFA.9010205@freescale.com>
+	<20080106004637.GJ4326@localhost.localdomain>
+	<47824AA3.5070808@freescale.com>
+	<20080107182853.GA17312@sirena.org.uk>
+	<20080110034919.GI17816@localhost.localdomain>
+	<9e4733910801092141m5d4476d0l1c081307fd5c1969@mail.gmail.com>
+	<1199961015.19903.270.camel@localhost.localdomain>
+	<47863C31.50309@freescale.com>
+Cc: alsa-devel@alsa-project.org, Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 29, 2007 at 06:13:08PM +0100, Joakim Tjernlund wrote:
-> > -----Original Message-----
-> > From: 
-> > linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
-> > [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
-> > abs.org] On Behalf Of Vitaly Bordug
-> > Sent: den 6 december 2007 23:51
-> > To: Paul Mackerras
-> > Cc: netdev@vger.kernel.org; linuxppc-dev
-> > Subject: [PATCH 1/3] [NET] phy/fixed.c: rework to not 
-> > duplicate PHY layerfunctionality
-> > 
-> > 
-> > With that patch fixed.c now fully emulates MDIO bus, thus no need
-> > to duplicate PHY layer functionality. That, in turn, drastically
-> > simplifies the code, and drops down line count.
-> > 
-> > As an additional bonus, now there is no need to register MDIO bus
-> > for each PHY, all emulated PHYs placed on the platform fixed MDIO bus.
-> > There is also no more need to pre-allocate PHYs via .config option,
-> > this is all now handled dynamically.
-> > 
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > Acked-by: Jeff Garzik <jeff@garzik.org>
-> 
-> What happened to this patch set? Is it sitting in a tree somewhere waiting
-> for 2.4.25 or does it need more work?
-        ^ we're too late then. ;-)
+On 1/10/08, Timur Tabi <timur@freescale.com> wrote:
+> Liam Girdwood wrote:
+>
+> > I think we are probably looking at submission in the next 8 - 10 weeks.
+> > Currently most of the core code is complete, however some platforms and
+> > codecs still need porting.
+>
+> With that in mind, can I get some kind of consensus from the PPC side as to
+> whether this ASoC V1 driver is okay?  I want to get it into 2.6.25.
+>
+> Keep in mind:
+>
+> 1) ASoC V1 is not PowerPC-friendly, so it's impossible to make an ASoC V1
+> PowerPC driver "100% correct".
 
-Patches already began to fuzz at the fsl_soc.c, yet more time and
-they'll reject to apply. So.. Paul, Kumar can we get this in for
-2.6.25?
+The driver doesn't need to be 100% correct.  Drivers are easy to
+change if they aren't quite right.  There are no long term
+consequences.
 
-I believe afterward this one will need some attention too:
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048473.html
+However, the device tree issues must be addressed before it is merged
+and deployed.  Otherwise we end up having to support poorly designed
+trees over the long term.
 
-Thanks in advance,
+So, I'm okay with merging the driver *minus* the .dts and
+booting-without-of.txt changes.
 
-
-p.s. I just noticed that "fsl_soc: add support for gianfar for
-fixed-link .." patch could be cosmetically improved (removing
-casts, adding checks for size after the of_get_property), but I
-hope we can do this on top of already applied patches.
-
-Thanks again,
+Cheers,
+g.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
