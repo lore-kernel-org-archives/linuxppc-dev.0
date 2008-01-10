@@ -1,16 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 10 Jan 2008 13:56:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH 4/7] sbc8560: Add device tree source for Wind River
-	SBC8560 board
-Message-ID: <20080110025622.GE17816@localhost.localdomain>
-References: <ef7d84e06c45289f51f35845ccaa63bbf31827db.1199715362.git.paul.gortmaker@windriver.com>
-	<d10d083bafb978936975111f09669120201072ec.1199715362.git.paul.gortmaker@windriver.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 29B59DDF9A
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 14:07:54 +1100 (EST)
+Date: Wed, 9 Jan 2008 21:17:23 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Linas Vepstas <linasvepstas@gmail.com>
+Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
+Message-ID: <20080110031723.GA22168@lixom.net>
+References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
+	<20080109042911.GT14201@localdomain>
+	<3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
+	<20080109184437.GU14201@localdomain>
+	<3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d10d083bafb978936975111f09669120201072ec.1199715362.git.paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
+	Nathan Lynch <ntl@pobox.com>, strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,62 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 07, 2008 at 09:25:29AM -0500, Paul Gortmaker wrote:
-> This adds the device tree source for the Wind River SBC8560 board.  The
-> biggest difference between this and the MPC8560ADS reference platform
-> dts is the use of an external 16550 compatible UART instead of the CPM2.
-> 
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
->  arch/powerpc/boot/dts/sbc8560.dts |  285 +++++++++++++++++++++++++++++++++++++
+On Wed, Jan 09, 2008 at 08:33:53PM -0600, Linas Vepstas wrote:
 
-[snip]
-> +	epld@fc000000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		compatible = "localbus";
+> Heh. That's the elbow-grease of this thing.  The easy part is to get
+> the core function working. The hard part is to test these various configs,
+> and when they don't work, figure out what went wrong. That will take
+> perseverence and brains.
 
-This compatible doesn't look specific enough.  It should at least have
-a vendor prefix.
+This just sounds like a whole lot of extra work to get a feature that
+already exists. Also, features like these seem to just get tested when the
+next enterprise distro is released, so they're broken for long stretches
+of time in mainline.
 
-> +		ranges = <0 fc000000 00c00000>;
-
-Typically, we've been doing these external bust controller type
-gadgets with address-cells = <2>, the first cell explicitly encoding
-the chipselect.  This gets us closer to the ideal of the device tree
-encoding only hardware information, not how the bridge controller is
-configured (although "ranges" will still have to contain configuration
-dependent information).
+There's a bunch of problems like the NUMA ones, which would by far be
+easiest to solve by just doing another reboot or kexec, wouldn't they?
 
 
-> +
-> +		serial0: serial@700000 {
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <700000 100>;
-> +			clock-frequency = <1C2000>;
-> +			interrupts = <9 2>;
-> +			interrupt-parent = <&mpic>;
-> +		};
-> +
-> +		serial1: serial@800000 {
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <800000 100>;
-> +			clock-frequency = <1C2000>;
-> +			interrupts = <a 2>;
-> +			interrupt-parent = <&mpic>;
-> +		};
-> +
-> +		rtc@900000 {
-> +			compatible = "m48t59";
-> +			reg = <900000 2000>;
-> +		};
-> +	};
-> +};
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+-Olof
