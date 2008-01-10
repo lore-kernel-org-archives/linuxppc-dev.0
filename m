@@ -1,17 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 10 Jan 2008 17:02:45 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: How complete should the DTS be?
-Message-ID: <20080110060245.GE19088@localhost.localdomain>
-References: <4782DAD8.1080104@pikatech.com>
-	<86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
-	<20080110031331.GF17816@localhost.localdomain>
-	<4785B2F5.6040001@pikatech.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4785B2F5.6040001@pikatech.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix CPU hotplug when using the SLB shadow buffer
+Date: Thu, 10 Jan 2008 17:49:03 +1100
+Message-ID: <23336.1199947743@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +15,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 10, 2008 at 12:53:57AM -0500, Sean MacLennan wrote:
-> David Gibson wrote:
-> > Hrm... I'd say this is not something which has a firm convention yet.
-> > It's going to become more of an issue once we get a macros system for
-> > dtc, so the "440EP" macro would have all the devices, even if some are
-> > not connected on a given board.
-> >
-> > I'm contemplating suggesting that we adopt the "status" property from
-> > IEEE1275 to cover this.
-> >
-> >   
-> When I am laying out the dts, leaving out what isn't used makes the dts 
-> file cleaner, at least in my view. It doesn't hurt to have the second 
-> i2c bus there, but it also doesn't help and leaving it out points out 
-> that it is not used.
-> 
-> When we get a macro system I assume the second i2c bus will be there but 
-> hidden by a macro. It will still be clean and shouldn't cause grief.
+Before we register the SLB shadow buffer, we need to invalidate the
+entries in the buffer otherwise we can end up stale entries from when we
+offlined the CPU.
 
-Right, but if it is there we'll want to mark it as unused in some way
-so that the kernel doesn't waste resources attempting to drive it.
+This patch does this invalidate as well as unregistering the buffer with
+PHYP before we offline the cpu.  Tested and fixes crashes seen on 970MP
+(thanks to tonyb) and POWER5.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+paulus: This, or some variant of it, is probably 2.6.24 material.
+
+ arch/powerpc/mm/slb.c                        |    2 +-
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
+ arch/powerpc/platforms/pseries/lpar.c        |    6 ++++++
+ 3 files changed, 9 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+@@ -77,7 +77,7 @@ static inline void slb_shadow_update(uns
+ 	get_slb_shadow()->save_area[entry].esid = mk_esid_data(ea, ssize, entry);
+ }
+ 
+-static inline void slb_shadow_clear(unsigned long entry)
++void slb_shadow_clear(unsigned long entry)
+ {
+ 	get_slb_shadow()->save_area[entry].esid = 0;
+ }
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -29,6 +29,7 @@
+ #include <asm/vdso_datapage.h>
+ #include <asm/pSeries_reconfig.h>
+ #include "xics.h"
++#include "plpar_wrappers.h"
+ 
+ /* This version can't take the spinlock, because it never returns */
+ static struct rtas_args rtas_stop_self_args = {
+@@ -58,6 +59,7 @@ static void pseries_mach_cpu_die(void)
+ 	local_irq_disable();
+ 	idle_task_exit();
+ 	xics_teardown_cpu(0);
++	unregister_slb_shadow(smp_processor_id(), __pa(get_slb_shadow()));
+ 	rtas_stop_self();
+ 	/* Should never get here... */
+ 	BUG();
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/lpar.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
+@@ -248,16 +248,22 @@ out:
+ 	of_node_put(stdout_node);
+ }
+ 
++extern void slb_shadow_clear(unsigned long entry);
++
+ void vpa_init(int cpu)
+ {
+ 	int hwcpu = get_hard_smp_processor_id(cpu);
+ 	unsigned long addr;
+ 	long ret;
++	int i;
+ 
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		lppaca[cpu].vmxregs_in_use = 1;
+ 
+ 	addr = __pa(&lppaca[cpu]);
++	for (i = 0; i < SLB_NUM_BOLTED; i++){
++		slb_shadow_clear(i);
++	}
+ 	ret = register_vpa(hwcpu, addr);
+ 
+ 	if (ret) {
