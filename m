@@ -1,19 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 39CF5DE0AB
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 02:31:19 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so159034anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 07:31:18 -0800 (PST)
-Message-ID: <fa686aa40801100731k62b004ecq4f6058aea5df9da0@mail.gmail.com>
-Date: Thu, 10 Jan 2008 08:31:18 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: benh@kernel.crashing.org
-Subject: Platform matching style (was:: [RFC] add phy-handle property for
-	fec_mpc52xx)
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 55CC6DE12D
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 02:41:34 +1100 (EST)
+Message-ID: <47863C31.50309@freescale.com>
+Date: Thu, 10 Jan 2008 09:39:29 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de, sven@genesi-usa.com
+To: Jon Smirl <jonsmirl@gmail.com>, david@gibson.dropbear.id.au,
+	Grant Likely <grant.likely@secretlab.ca>, Olof Johansson <olof@lixom.net>
+Subject: Re: [alsa-devel] [PATCH] ASoC drivers for the Freescale MPC8610 SoC
+References: <9e4733910801010925j67192427o4e0e824b9d7e0ad0@mail.gmail.com>	
+	<477BAB67.4080003@freescale.com>	
+	<9e4733910801020734n115888cbt86351f67f2311629@mail.gmail.com>	
+	<477D2150.4020506@freescale.com>	
+	<20080103235156.GE12883@localhost.localdomain>	
+	<477EEDFA.9010205@freescale.com>	
+	<20080106004637.GJ4326@localhost.localdomain>	
+	<47824AA3.5070808@freescale.com>
+	<20080107182853.GA17312@sirena.org.uk>	
+	<20080110034919.GI17816@localhost.localdomain>	
+	<9e4733910801092141m5d4476d0l1c081307fd5c1969@mail.gmail.com>
+	<1199961015.19903.270.camel@localhost.localdomain>
+In-Reply-To: <1199961015.19903.270.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Liam Girdwood <lg@opensource.wolfsonmicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/9/08, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> As much as I despise having to work around firmware bugs, it looks
-> indeed like this one has been broken for way too long to the point where
-> users are being hurt, distros are being hurt, and telling people to
-> whack things in nvramrc is just plain gross, so let's merge it.
+Liam Girdwood wrote:
 
-Tangent question:
+> I think we are probably looking at submission in the next 8 - 10 weeks.
+> Currently most of the core code is complete, however some platforms and
+> codecs still need porting.
 
-The Efika has device_type = "chrp" in the root node, but in Linux
-Efika support does not use CHRP, it uses
-arch/powerpc/platforms/52xx/efika.c.  However, if CHRP support is
-compiled in then it will see the chrp device_type and bind to it
-before efika.c has a chance to probe.  I see three reasonable
-solutions to this:
+With that in mind, can I get some kind of consensus from the PPC side as to 
+whether this ASoC V1 driver is okay?  I want to get it into 2.6.25.
 
-1. Apply a device tree fixup to change device_type from "chrp" to
-"efika" (the current solution)
-2. Modify chrp_probe() to check specifically for the Efika when probing
-3. Modify the link order so that Efika is probed before CHRP.
+Keep in mind:
 
-All three of these solutions will work, but I'd like to get opinions
-on which is stylistically the best approach (or if there is another
-approach I'm missing).
+1) ASoC V1 is not PowerPC-friendly, so it's impossible to make an ASoC V1 
+PowerPC driver "100% correct".
 
-In general, I'm trying to reduce the Efika fixups down to only what is
-absolutely necessary and as much as possible work with the provided
-device tree.
+2) The CS4270 driver does not support I2C nodes in the device tree, so there's 
+not point in adding any to the 8610 DTS.
 
-Cheers,
-g.
-
+3) Liam and I are working on porting this driver to ASoC V2 and resolving all 
+open PPC issue, but that won't be done in time for 2.6.25.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Timur Tabi
+Linux kernel developer at Freescale
