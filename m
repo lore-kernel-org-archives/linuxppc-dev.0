@@ -1,22 +1,24 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-234-thursday.dmz.nerim.net
-	[195.5.254.234]) by ozlabs.org (Postfix) with ESMTP id 67896DE004
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 03:44:14 +1100 (EST)
-Received: from mallaury.nerim.net (smtp-104-thursday.noc.nerim.net
-	[62.4.17.104])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 7E1E527F28
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 17:15:14 +0100 (CET)
-Date: Thu, 10 Jan 2008 17:14:05 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 0/5] Version 17, series to add device tree naming to i2c
-Message-ID: <20080110171405.48195afc@hyperion.delvare>
-In-Reply-To: <9e4733910801100614y7522a573qb2af41a714b08d5@mail.gmail.com>
-References: <20071220044136.20091.70984.stgit@terra.home>
-	<9e4733910801100614y7522a573qb2af41a714b08d5@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3A599DE019
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 04:23:10 +1100 (EST)
+Message-ID: <4786546C.7070700@freescale.com>
+Date: Thu, 10 Jan 2008 11:22:52 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>, jdl@jdl.com, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/3] Return a non-zero exit code if an error occurs	during
+	dts parsing.
+References: <20080103234333.GC8441@ld0162-tx32.am.freescale.net>
+	<20080104043033.GD4326@localhost.localdomain>
+	<20080106225509.GC8239@ld0162-tx32.am.freescale.net>
+	<20080110035609.GL17816@localhost.localdomain>
+In-Reply-To: <20080110035609.GL17816@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 Jan 2008 09:14:26 -0500, Jon Smirl wrote:
-> What is the review status of this series, should I post it again?
+David Gibson wrote:
+> On Sun, Jan 06, 2008 at 04:55:09PM -0600, Scott Wood wrote:
+>> On Fri, Jan 04, 2008 at 03:30:33PM +1100, David Gibson wrote:
+>>> This is unequivocally wrong.  boot_info should have information about
+>>> the contents of the blob, not state information like the error.
+>> "This blob is invalid" *is* information about the contents of the blob.
+>>
+>>> If you're going to use an ugly global, then use it everywhere.
+>> Why go out of our way to make the code even less library-able/thread-safe?
+> 
+> It doesn't make it any less thread-safe.  A global variable used some
+> places is just as bad as a global variable used everywhere from that
+> point of view, and is more complicated.
 
-No please! /o\
+But the knowledge of the fact that the boot_info struct is a global is 
+isolated to the treesource code.  I don't see any reason to add another 
+global at the *interface* level, much less that not doing so is 
+"unequivocally wrong".
 
-I'll go through your numerous past posts now, stay tuned.
-
--- 
-Jean Delvare
+-Scott
