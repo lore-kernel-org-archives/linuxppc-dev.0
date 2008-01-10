@@ -1,25 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linasvepstas@gmail.com
-In-Reply-To: <3ae3aa420801092012m5e47cbd7lc7a5f91842074af7@mail.gmail.com>
-References: <4782B985.2090508@austin.ibm.com>
-	<4782C026.8080302@austin.ibm.com> <20080109042911.GT14201@localdomain>
-	<3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
-	<20080109184437.GU14201@localdomain>
-	<3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
-	<20080110031723.GA22168@lixom.net>
-	<3ae3aa420801092012m5e47cbd7lc7a5f91842074af7@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-4gEKaI/k4aiRac3zX06v"
-Date: Thu, 10 Jan 2008 15:52:31 +1100
-Message-Id: <1199940751.7880.34.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE902DE041
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 16:01:26 +1100 (EST)
+Subject: Re: [RFC] add phy-handle property for fec_mpc52xx
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080109163058.21643.30876.stgit@trillian.secretlab.ca>
+References: <20080109163058.21643.30876.stgit@trillian.secretlab.ca>
+Content-Type: text/plain
+Date: Thu, 10 Jan 2008 16:01:01 +1100
+Message-Id: <1199941261.6734.224.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, lkessler@us.ibm.com, mahuja@us.ibm.com,
-	Nathan Lynch <ntl@pobox.com>, Olof Johansson <olof@lixom.net>,
-	strosake@us.ibm.com
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de, sven@genesi-usa.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,54 +25,91 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-4gEKaI/k4aiRac3zX06v
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2008-01-09 at 09:32 -0700, Grant Likely wrote:
+> From: Olaf Hering <olaf@aepfle.de>
+> 
+> The new network driver fec_mpc52xx will not work on efika because the
+> firmware does not provide all required properties.
+> http://www.powerdeveloper.org/asset/by-id/46 has a Forth script to
+> create more properties. But only the phy stuff is required to get a
+> working network.
+> 
+> This should go into the kernel because its appearently
+> impossible to boot the script via tftp and then load the real boot
+> binary (yaboot or zimage).
+> 
+> (Olaf's s-o-b line needs to go here)
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-On Wed, 2008-01-09 at 22:12 -0600, Linas Vepstas wrote:
-> On 09/01/2008, Olof Johansson <olof@lixom.net> wrote:
-> > On Wed, Jan 09, 2008 at 08:33:53PM -0600, Linas Vepstas wrote:
-> >
-> > > Heh. That's the elbow-grease of this thing.  The easy part is to get
-> > > the core function working. The hard part is to test these various con=
-figs,
-> > > and when they don't work, figure out what went wrong. That will take
-> > > perseverence and brains.
-> >
-> > This just sounds like a whole lot of extra work to get a feature that
-> > already exists.
->=20
-> Well, no. kexec is horribly ill-behaved with respect to PCI. The
-> kexec kernel starts running with PCI devices in some random
-> state; maybe they're DMA'ing or who knows what. kexec tries
-> real hard to whack a few needed pci devices into submission
-> but it has been hit-n-miss, and the source of 90% of the kexec
-> headaches and debugging effort. Its not pretty.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Isn't that what EEH and the IOMMU are for? :)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-4gEKaI/k4aiRac3zX06v
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHhaSPdSjSd0sB4dIRAowrAJ9qGc+rVNzzemi8zRITbVnb2Zn9mwCgvatJ
-oG8jjuCplQ5GZ6tMSzIftI0=
-=qqpY
------END PGP SIGNATURE-----
-
---=-4gEKaI/k4aiRac3zX06v--
+As much as I despise having to work around firmware bugs, it looks
+indeed like this one has been broken for way too long to the point where
+users are being hurt, distros are being hurt, and telling people to
+whack things in nvramrc is just plain gross, so let's merge it.
+> ---
+> 
+> Here's my respin of Olaf's patch to move it to fixup_device_tree_efika()
+> and to make it check if the nodes exist before blindly creating them.
+> 
+> Cheers,
+> g.
+> 
+>  arch/powerpc/kernel/prom_init.c |   39 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 39 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 1add6ef..5d89a21 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2216,6 +2216,45 @@ static void __init fixup_device_tree_efika(void)
+>  			prom_printf("fixup_device_tree_efika: ",
+>  				"skipped entry %x - setprop error\n", i);
+>  	}
+> +
+> +	/* Make sure ethernet mdio bus node exists */
+> +	node = call_prom("finddevice", 1, 1, ADDR("/builtin/mdio"));
+> +	if (!PHANDLE_VALID(node)) {
+> +		prom_printf("Adding Ethernet MDIO node\n");
+> +		call_prom("interpret", 1, 1,
+> +			" s\" /builtin\" find-device"
+> +			" new-device"
+> +				" 1 encode-int s\" #address-cells\" property"
+> +				" 0 encode-int s\" #size-cells\" property"
+> +				" s\" mdio\" 2dup device-name device-type"
+> +				" s\" mpc5200b-fec-phy\" encode-string"
+> +				" s\" compatible\" property"
+> +				" 0xf0003000 0x400 reg"
+> +				" 0x2 encode-int"
+> +				" 0x5 encode-int encode+"
+> +				" 0x3 encode-int encode+"
+> +				" s\" interrupts\" property"
+> +			" finish-device");
+> +	};
+> +
+> +	/* Make sure ethernet phy device node exist */
+> +	node = call_prom("finddevice", 1, 1, ADDR("/builtin/mdio/ethernet-phy"));
+> +	if (!PHANDLE_VALID(node)) {
+> +		prom_printf("Adding Ethernet PHY node\n");
+> +		call_prom("interpret", 1, 1,
+> +			" s\" /builtin/mdio\" find-device"
+> +			" new-device"
+> +				" s\" ethernet-phy\" device-name"
+> +				" 0x10 encode-int s\" reg\" property"
+> +				" my-self"
+> +				" ihandle>phandle"
+> +			" finish-device"
+> +			" s\" /builtin/ethernet\" find-device"
+> +				" encode-int"
+> +				" s\" phy-handle\" property"
+> +			" device-end");
+> +	}
+> +
+>  }
+>  #else
+>  #define fixup_device_tree_efika()
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
