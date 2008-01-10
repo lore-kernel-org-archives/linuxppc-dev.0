@@ -1,17 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 10 Jan 2008 10:48:03 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Liu Yu <Yu.Liu@freescale.com>
-Subject: Re: [PATCH] Fix remainder calculating bug in single floating point
-	division
-Message-ID: <20080109234803.GB17153@localhost.localdomain>
-References: <11996296134110-git-send-email-Yu.Liu@freescale.com>
-	<CC561FA6-0590-4BC0-B42B-7EE1B379CE8E@kernel.crashing.org>
-	<6EBEC19BF4A8F843BCD6B9155BBE2515D1B515@zch01exm26.fsl.freescale.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 50127DE03B
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 11:59:32 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so102794anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jan 2008 16:59:31 -0800 (PST)
+Message-ID: <fa686aa40801091659i69c47fe3h533e8ca858059bb7@mail.gmail.com>
+Date: Wed, 9 Jan 2008 17:59:30 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Grant Likely" <grant.likely@secretlab.ca>, "Li Yang" <leoli@freescale.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH 1/3] add default device trees for MPC837x MDS board
+In-Reply-To: <20080109234215.GA17153@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6EBEC19BF4A8F843BCD6B9155BBE2515D1B515@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1199707400-23588-1-git-send-email-leoli@freescale.com>
+	<fa686aa40801080758o35dce96ej5db45576769561a5@mail.gmail.com>
+	<20080109234215.GA17153@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 09, 2008 at 09:24:07AM +0800, Liu Yu wrote:
-> 
-> > 
-> > can you provide the test case that shows the error.
-> > 
-> 
-> It seems that math-emu only be used for MPC8xx on current kernel.
+On 1/9/08, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Tue, Jan 08, 2008 at 08:58:17AM -0700, Grant Likely wrote:
+> > > +                       compatible = "mpc83xx_wdt";
+> >
+> > "fsl,mpc8377_wdt", "fsl,mpc83xx_wdt" as per generic names recommended practice.
+>
+> Uh.. that's reasonable advice, but it has nothing to do with the
+> generic names recommended practice.
 
-It can be used for IBM/AMCC 4xx too.
+Actually, that *is* advice given in the generic names recommended
+practice document:
+
+http://www.openfirmware.org/1275/practice/gnames/gnamv14a.html#HDR11
+Section 6.2, last sentence.
+
+:-)
+
+Cheers,
+g.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
