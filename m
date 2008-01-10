@@ -1,22 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 29B59DDF9A
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 14:07:54 +1100 (EST)
-Date: Wed, 9 Jan 2008 21:17:23 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Linas Vepstas <linasvepstas@gmail.com>
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-Message-ID: <20080110031723.GA22168@lixom.net>
-References: <4782B985.2090508@austin.ibm.com> <4782C026.8080302@austin.ibm.com>
-	<20080109042911.GT14201@localdomain>
-	<3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
-	<20080109184437.GU14201@localdomain>
-	<3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 10 Jan 2008 14:13:31 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: How complete should the DTS be?
+Message-ID: <20080110031331.GF17816@localhost.localdomain>
+References: <4782DAD8.1080104@pikatech.com>
+	<86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, lkessler@us.ibm.com,
-	Nathan Lynch <ntl@pobox.com>, strosake@us.ibm.com
+In-Reply-To: <86AA8535-E2CF-4891-900B-340049A5CA19@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 09, 2008 at 08:33:53PM -0600, Linas Vepstas wrote:
+On Tue, Jan 08, 2008 at 12:04:36AM -0600, Kumar Gala wrote:
+> 
+> On Jan 7, 2008, at 8:07 PM, Sean MacLennan wrote:
+> 
+> > Just a general question about DTS "completeness". Like all 440EP
+> > processors, the taco has two i2c buses. However, only one bus has
+> > anything connected to it.
+> >
+> > Should I show both bus entries in the DTS, or only the one that is  
+> > used?
+> > I have generally only been showing the devices that are present. i.e.
+> > Only one emac, only one serial port.
+> >
+> > Is there a convention for this?
+> 
+> The .dts should reflect the HW as its used.  On some reference boards  
+> we might put out more info because of the various configs these types  
+> of boards can be setup in.  However if something has a static config  
+> just describe that.  So in your example of two i2c buses with only one  
+> connected, just describe the one that is used.
 
-> Heh. That's the elbow-grease of this thing.  The easy part is to get
-> the core function working. The hard part is to test these various configs,
-> and when they don't work, figure out what went wrong. That will take
-> perseverence and brains.
+Hrm... I'd say this is not something which has a firm convention yet.
 
-This just sounds like a whole lot of extra work to get a feature that
-already exists. Also, features like these seem to just get tested when the
-next enterprise distro is released, so they're broken for long stretches
-of time in mainline.
+It's going to become more of an issue once we get a macros system for
+dtc, so the "440EP" macro would have all the devices, even if some are
+not connected on a given board.
 
-There's a bunch of problems like the NUMA ones, which would by far be
-easiest to solve by just doing another reboot or kexec, wouldn't they?
+I'm contemplating suggesting that we adopt the "status" property from
+IEEE1275 to cover this.
 
-
--Olof
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
