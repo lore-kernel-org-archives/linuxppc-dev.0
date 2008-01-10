@@ -1,31 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 30D59DE04D
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 05:25:10 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0AIP7EU010352
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 13:25:07 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0AIOwo5086790
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 11:25:00 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0AIOwQP006185
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 11:24:58 -0700
-Date: Thu, 10 Jan 2008 12:24:27 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: ibm4xx_quiesce_eth?
-Message-ID: <20080110122427.59102355@zod.rchland.ibm.com>
-In-Reply-To: <47866614.3010203@pikatech.com>
-References: <47866614.3010203@pikatech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 3BAA1DE05C
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 05:38:08 +1100 (EST)
+Message-ID: <478666C6.2030104@denx.de>
+Date: Thu, 10 Jan 2008 19:41:10 +0100
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH for 2.6.24][NET] fs_enet: check for phydev existence in
+	the ethtool handlers
+References: <1199875566.3408.11.camel@p60365-ste> <4784C509.5030507@denx.de>
+	<20080109182038.GA4337@loki.buserror.net>
+	<4785D3D8.7080300@denx.de> <4785E014.4040709@denx.de>
+	<4786556C.8040108@freescale.com>
+In-Reply-To: <4786556C.8040108@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,25 +26,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 Jan 2008 13:38:12 -0500
-Sean MacLennan <smaclennan@pikatech.com> wrote:
+Hello Scott,
 
-> What exactly does this function do?
+Scott Wood wrote:
+> Heiko Schocher wrote:
+>> diff --git a/drivers/net/fs_enet/fs_enet-main.c
+>> b/drivers/net/fs_enet/fs_enet-main.c
+>> index f2a4d39..f432a18 100644
+>> --- a/drivers/net/fs_enet/fs_enet-main.c
+>> +++ b/drivers/net/fs_enet/fs_enet-main.c
+>> @@ -810,6 +810,10 @@ static int fs_enet_open(struct net_device *dev)
+>>      if (fep->fpi->use_napi)
+>>          napi_enable(&fep->napi);
+>>
+>> +    /* to initialize the fep->cur_rx,... */
+>> +    /* not doing this, will cause a crash in fs_enet_rx_napi */
+>> +    fs_init_bds(fep->ndev);
 > 
->     /* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't
->      * do this for us
->      */
-> 
-> On the taco, with the 440EP, it doesn't seem to make any difference if I 
-> call this or not. Since I am using u-boot, is it not needed?
+> We should do this just before napi_enable() rather than just after, to
+> eliminate any chance of a race window.
 
-There are firmwares that do not reset the EMAC and MAL before passing
-control to the client program (Linux in our case).  This can cause
-weird things to happen, like spurious interrupts or DMAs from the
-hardware overwriting kernel memory.  So we quiesce the hardware really
-early on those.
+Yes, you are right.
+Here is the new patch:
 
-I don't believe U-Boot has that problem.  If it does, it should be
-fixed :)
+>From 3b8db4261199f0115d8e0188b6bffbc9f5e7673d Mon Sep 17 00:00:00 2001
+From: Heiko Schocher <hs@denx.de>
+Date: Thu, 10 Jan 2008 19:28:18 +0100
+Subject: [PATCH] [POWERPC] Fix Ethernet over SCC on a CPM2,
+          also Fix crash in fs_enet_rx_napi()
 
-josh
+Signed-off-by: Heiko Schocher <hs@denx.de>
+---
+ drivers/net/fs_enet/fs_enet-main.c |   10 +++++++++-
+ drivers/net/fs_enet/mac-scc.c      |    8 +++++++-
+ include/asm-powerpc/cpm2.h         |    5 +++++
+ 3 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index f2a4d39..70a0319 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -807,6 +807,10 @@ static int fs_enet_open(struct net_device *dev)
+ 	int r;
+ 	int err;
+
++	/* to initialize the fep->cur_rx,... */
++	/* not doing this, will cause a crash in fs_enet_rx_napi */
++	fs_init_bds(fep->ndev);
++
+ 	if (fep->fpi->use_napi)
+ 		napi_enable(&fep->napi);
+
+@@ -982,6 +986,7 @@ static struct net_device *fs_init_instance(struct device *dev,
+ 	fep = netdev_priv(ndev);
+
+ 	fep->dev = dev;
++	fep->ndev = ndev;
+ 	dev_set_drvdata(dev, ndev);
+ 	fep->fpi = fpi;
+ 	if (fpi->init_ioports)
+@@ -1085,7 +1090,6 @@ static struct net_device *fs_init_instance(struct device *dev,
+ 	}
+ 	registered = 1;
+
+-
+ 	return ndev;
+
+ err:
+@@ -1347,6 +1351,10 @@ static struct of_device_id fs_enet_match[] = {
+ 		.compatible = "fsl,cpm1-scc-enet",
+ 		.data = (void *)&fs_scc_ops,
+ 	},
++	{
++		.compatible = "fsl,cpm2-scc-enet",
++		.data = (void *)&fs_scc_ops,
++	},
+ #endif
+ #ifdef CONFIG_FS_ENET_HAS_FCC
+ 	{
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index fe3d8a6..3889271 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -50,7 +50,6 @@
+ #include "fs_enet.h"
+
+ /*************************************************/
+-
+ #if defined(CONFIG_CPM1)
+ /* for a 8xx __raw_xxx's are sufficient */
+ #define __fs_out32(addr, x)	__raw_writel(x, addr)
+@@ -65,6 +64,8 @@
+ #define __fs_out16(addr, x)	out_be16(addr, x)
+ #define __fs_in32(addr)	in_be32(addr)
+ #define __fs_in16(addr)	in_be16(addr)
++#define __fs_out8(addr, x)	out_8(addr, x)
++#define __fs_in8(addr)	in_8(addr)
+ #endif
+
+ /* write, read, set bits, clear bits */
+@@ -297,8 +298,13 @@ static void restart(struct net_device *dev)
+
+ 	/* Initialize function code registers for big-endian.
+ 	 */
++#ifndef CONFIG_NOT_COHERENT_CACHE
++	W8(ep, sen_genscc.scc_rfcr, SCC_EB | SCC_GBL);
++	W8(ep, sen_genscc.scc_tfcr, SCC_EB | SCC_GBL);
++#else
+ 	W8(ep, sen_genscc.scc_rfcr, SCC_EB);
+ 	W8(ep, sen_genscc.scc_tfcr, SCC_EB);
++#endif
+
+ 	/* Set maximum bytes per receive buffer.
+ 	 * This appears to be an Ethernet frame size, not the buffer
+diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
+index f1112c1..14c6496 100644
+--- a/include/asm-powerpc/cpm2.h
++++ b/include/asm-powerpc/cpm2.h
+@@ -375,6 +375,11 @@ typedef struct scc_param {
+ 	uint	scc_tcrc;	/* Internal */
+ } sccp_t;
+
++/* Function code bits.
++*/
++#define SCC_EB	((u_char) 0x10)	/* Set big endian byte order */
++#define SCC_GBL	((u_char) 0x20) /* Snooping enabled */
++
+ /* CPM Ethernet through SCC1.
+  */
+ typedef struct scc_enet {
+-- 
+1.5.2.2
+
+
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
