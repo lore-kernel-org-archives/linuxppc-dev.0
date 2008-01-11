@@ -1,27 +1,23 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id DCC5ADDE41
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 11:07:37 +1100 (EST)
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 14F14DE0AA
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 11:15:13 +1100 (EST)
+Date: Thu, 10 Jan 2008 18:24:50 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH v2] [ALSA] Add ASoC drivers for the
+	Freescale MPC8610 SoC
+Message-ID: <20080111002450.GA13291@lixom.net>
+References: <12000050651235-git-send-email-timur@freescale.com>
+	<12000050664035-git-send-email-timur@freescale.com>
+	<12000050682718-git-send-email-timur@freescale.com>
+	<fa686aa40801101502v264d8caw6faf935d71b15c9@mail.gmail.com>
+	<4786A650.2080107@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Help with device tree binding for SMC serial
-Date: Thu, 10 Jan 2008 18:07:34 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03D9A042@ismail.innsys.innovsys.com>
-In-Reply-To: <47866FDE.5070307@freescale.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com>
-	<4785246D.6090206@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D58BC9@ismail.innsys.innovsys.com>
-	<47854AE1.7080802@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D58BEF@ismail.innsys.innovsys.com>
-	<47854D6D.2010906@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D58C20@ismail.innsys.innovsys.com>
-	<20080110175348.GA4317@loki.buserror.net>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D99E60@ismail.innsys.innovsys.com>
-	<47866FDE.5070307@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4786A650.2080107@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> From: Scott Wood [
-> Rune Torgersen wrote:
-> > Not sure what was wrong. We took a step back, and redid=20
-> some stuff, and
-> > now we have serial output from the boot-wrapper.
-> > THe checkstop came from the wrapper grying to access the=20
-> bcsr and doing
-> > the chip select fixup. We don';t have a bcsr on our board,=20
-> and the cs
-> > layout is different.
->=20
-> There's no bcsr access in the upstream bootwrapper (the=20
-> mention of bcsr=20
-> in cuboot-pq2.c is just one reason why some boards require us=20
-> to do the=20
-> CS programming), and the CS programming is chip-level, not=20
-> board-level=20
-> (it just requires that the device tree have a correct=20
-> localbus node for=20
-> the board).
+On Thu, Jan 10, 2008 at 05:12:16PM -0600, Timur Tabi wrote:
+> Grant Likely wrote:
+> 
+> > Does the driver access the DMA and GUTS registers directly?  If so,
+> > what do you have to protect against race conditions of other drivers
+> > accessing them also.
+> 
+> I don't have any more protection than any other driver that accesses SOC 
+> registers directly.  Last I heard, Zhang's DMA driver was in limbo, and that 
+> driver would be the best place to arbitrate DMA register access.  I was planning 
+> on adding arbitration support to that driver after both drivers were applied.
 
-Finally got it (sort-of) working.
-Turned out that for some reason the console init is setting the baudrate
-to 9600
-the options string passed in to the console init fuunction is NULL.
+Having been in a similar situation myself (needing to share resources
+between DMA, ethernet and function offload), I recommend creating a
+separate small library that all those drivers use, instead of making
+some sort of dependency between drivers in completely different parts
+of the kernel.
 
-Any idea oon how this should be passed in from u-boot?
+
+-Olof
