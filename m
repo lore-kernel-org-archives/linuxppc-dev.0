@@ -1,18 +1,19 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id EF87CDDDF5
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 18:10:47 +1100 (EST)
-Message-ID: <47871675.6030602@pikatech.com>
-Date: Fri, 11 Jan 2008 02:10:45 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id DCD64DDEF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 19:20:08 +1100 (EST)
+Date: Fri, 11 Jan 2008 09:20:06 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH] ps3: vuart: semaphore to mutex
+In-Reply-To: <20080111042137.378247237@mvista.com>
+Message-ID: <Pine.LNX.4.64.0801110919500.10759@vixen.sonytel.be>
+References: <20080111042137.378247237@mvista.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/5] Warp Base Platform
-References: <47852C41.8000506@pikatech.com>
-	<20080111174259.b749f1f0.sfr@canb.auug.org.au>
-In-Reply-To: <20080111174259.b749f1f0.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-459734380-1200039606=:10759"
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,347 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> On Wed, 09 Jan 2008 15:19:13 -0500 Sean MacLennan <smaclennan@pikatech.com> wrote:
->   
->> I have split up the patches slightly differently based on Josh's comments.
->>
->> The first patch is basically the platform/44x files.
->>
->> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
->>     
->
->   
->> No comments? I really thought I would get raked over the coals for this one.
->>     
->
-> Ah ha! A challenge!  :-)
->   
-I hoped somebody would respond to that ;)
->
->> +static int pika_dtm_thread(void *fpga)
->> +{
->> +	extern int ad7414_get_temp(int index);
->>     
->
-> no externs in C code - put it in a header file.
->   
-I didn't know where to put this extern. It is fairly specific to this 
-driver, although a generic function... if that makes sense. It returns 
-the exact contents of the register rather than doing any conversion.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Any recommendations for a location gladly accepted.
+---584349381-459734380-1200039606=:10759
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-And if anybody is wondering, the NAND code *does* work. It is commented 
-out because it requires u-boot 1.3.0 and most of the tacos have an 
-earlier u-boot. This is just a short term hack while we switch everybody 
-over to the new kernel.
+On Thu, 10 Jan 2008, Daniel Walker wrote:
+> This probe_mutex conforms to the new struct mutex type.
+> This patch converts it from the old semaphore to the new struct mutex.
 
-And below has all the above mentioned fixes, except the extern.
+The PS3 tree already has this change.
 
-Cheers,
-    Sean
+With kind regards,
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
----
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 66a3d8c..b3e4c35 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -469,7 +469,7 @@ config MCA
- config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| PPC_PS3
-+		|| PPC_PS3 || 44x
- 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index d248013..a95409e 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -53,6 +53,19 @@ config RAINIER
- 	help
- 	  This option enables support for the AMCC PPC440GRX evaluation board.
- 
-+config WARP
-+	bool "PIKA Warp"
-+	depends on 44x
-+	default n
-+	select 440EP
-+	help
-+	  This option enables support for the PIKA Warp(tm) Appliance. The Warp
-+          is a small computer replacement with up to 9 ports of FXO/FXS plus VOIP
-+	  stations and trunks.
-+
-+	  See http://www.pikatechnologies.com/ and follow the "PIKA for Computer
-+	  Telephony Developers" link for more information.
-+
- #config LUAN
- #	bool "Luan"
- #	depends on 44x
-@@ -75,6 +88,7 @@ config 440EP
- 	select PPC_FPU
- 	select IBM440EP_ERR42
- 	select IBM_NEW_EMAC_ZMII
-+	select USB_ARCH_HAS_OHCI
- 
- config 440EPX
- 	bool
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index a2a0dc1..c1733c0 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_BAMBOO)	+= bamboo.o
- obj-$(CONFIG_SEQUOIA)	+= sequoia.o
- obj-$(CONFIG_KATMAI)	+= katmai.o
- obj-$(CONFIG_RAINIER)	+= rainier.o
-+obj-$(CONFIG_WARP)	+= warp.o
---- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ arch/powerpc/platforms/44x/warp.c	2008-01-11 02:08:20.000000000 -0500
-@@ -0,0 +1,244 @@
-+/*
-+ * PIKA Warp(tm) board specific routines
-+ *
-+ * Copyright (c) 2008 PIKA Technologies
-+ *   Sean MacLennan <smaclennan@pikatech.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
-+#include <linux/kthread.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+
-+#include "44x.h"
-+
-+#define WARP_GPIO_BASE 0xEF600B00ULL
-+
-+static __initdata struct of_device_id warp_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
-+
-+static int __init warp_device_probe(void)
-+{
-+	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-+	return 0;
-+}
-+machine_device_initcall(warp, warp_device_probe);
-+
-+static int __init warp_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "pika,warp"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+define_machine(warp) {
-+	.name		= "Warp",
-+	.probe 		= warp_probe,
-+	.progress 	= udbg_progress,
-+	.init_IRQ 	= uic_init_tree,
-+	.get_irq 	= uic_get_irq,
-+	.restart	= ppc44x_reset_system,
-+	.calibrate_decr = generic_calibrate_decr,
-+};
-+
-+/* This is for the power LEDs 1 = on, 0 = off, -1 = leave alone */
-+void warp_set_power_leds(int green, int red)
-+{
-+	static void *gpio_base = NULL;
-+	unsigned leds;
-+
-+	if (gpio_base == NULL) {
-+		gpio_base = ioremap(WARP_GPIO_BASE, 0x148);
-+		if (gpio_base == NULL) {
-+			printk("ERROR: Unable to remap GPIO base.\n");
-+			return;
-+		}
-+	}
-+
-+	leds = readl(gpio_base + 0x100);
-+
-+	switch(green) {
-+	case 0: leds &= ~0x80; break;
-+	case 1: leds |=  0x80; break;
-+	}
-+	switch(red) {
-+	case 0: leds &= ~0x40; break;
-+	case 1: leds |=  0x40; break;
-+	}
-+
-+	writel(leds, gpio_base + 0x100);
-+}
-+EXPORT_SYMBOL(warp_set_power_leds);
-+
-+
-+static int pika_dtm_thread(void *fpga)
-+{
-+	extern int ad7414_get_temp(int index);
-+
-+	while(!kthread_should_stop()) {
-+		int temp = ad7414_get_temp(0);
-+
-+		out_be32(fpga, temp);
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+	return 0;
-+}
-+
-+
-+static int __devinit warp_fpga_init(void)
-+{
-+	struct device_node *np;
-+	void *fpga;
-+	int irq;
-+	struct resource res;
-+	struct task_struct *dtm_thread;
-+
-+	np = of_find_compatible_node(NULL, NULL, "pika,fpga");
-+	if (np == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to find fpga\n");
-+		return -ENOENT;
-+	}
-+
-+	irq = irq_of_parse_and_map(np, 0);
-+	if (irq  == NO_IRQ) {
-+		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
-+		return -EBUSY;
-+	}
-+
-+	/* We do not call of_iomap here since it would map in the entire
-+	 * fpga space, which is over 8k.
-+	 */
-+	if (of_address_to_resource(np, 0, &res)) {
-+		printk(KERN_ERR __FILE__ ": Unable to get FPGA address\n");
-+		return -ENOENT;
-+	}
-+	fpga = ioremap(res.start, 0x24);
-+	if(fpga == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to map FPGA\n");
-+		return -ENOENT;
-+	}
-+
-+	/* Turn off the line LEDs */
-+	out_be32(fpga + 8, 0);
-+
-+	dtm_thread = kthread_run(pika_dtm_thread, fpga + 0x20, "pika-dtm");
-+	if (IS_ERR(dtm_thread)) {
-+		iounmap(fpga);
-+		printk(KERN_ERR __FILE__ ": Unable to start PIKA DTM thread\n");
-+		return PTR_ERR(dtm_thread);
-+	}
-+
-+	return 0;
-+}
-+device_initcall(warp_fpga_init);
-+
-+// SAM not yet #define NAND_FLASH
-+#ifdef NAND_FLASH
-+/* --- All of this code is for the NAND flash */
-+
-+#include <linux/platform_device.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/map.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/ndfc.h>
-+
-+
-+#define CS_NAND_0	1	/* use chip select 1 for NAND device 0 */
-+
-+#define WARP_NAND_FLASH_REG_ADDR	0xD0000000UL
-+#define WARP_NAND_FLASH_REG_SIZE	0x2000
-+
-+static struct resource warp_ndfc = {
-+	.start = WARP_NAND_FLASH_REG_ADDR,
-+	.end   = WARP_NAND_FLASH_REG_ADDR + WARP_NAND_FLASH_REG_SIZE,
-+	.flags = IORESOURCE_MEM,
-+};
-+
-+static struct mtd_partition nand_parts[] = {
-+	{
-+		.name = "nand",
-+		.offset = 0,
-+		.size = MTDPART_SIZ_FULL,
-+	}
-+};
-+
-+struct ndfc_controller_settings warp_ndfc_settings = {
-+	.ccr_settings = (NDFC_CCR_BS(CS_NAND_0) | NDFC_CCR_ARAC1),
-+	.ndfc_erpn = 0,
-+};
-+
-+static struct ndfc_chip_settings warp_chip0_settings = {
-+	.bank_settings = 0x80002222,
-+};
-+
-+struct platform_nand_ctrl warp_nand_ctrl = {
-+	.priv = &warp_ndfc_settings,
-+};
-+
-+static struct platform_device warp_ndfc_device = {
-+	.name = "ndfc-nand",
-+	.id = 0,
-+	.dev = {
-+		.platform_data = &warp_nand_ctrl,
-+	},
-+	.num_resources = 1,
-+	.resource = &warp_ndfc,
-+};
-+
-+static struct nand_ecclayout nand_oob_16 = {
-+	.eccbytes = 3,
-+	.eccpos = { 0, 1, 2, 3, 6, 7 },
-+	.oobfree = { {.offset = 8, .length = 16} }
-+};
-+
-+static struct platform_nand_chip warp_nand_chip0 = {
-+	.nr_chips = 1,
-+	.chip_offset = CS_NAND_0,
-+	.nr_partitions = ARRAY_SIZE(nand_parts),
-+	.partitions = nand_parts,
-+	.chip_delay = 50,
-+	.ecclayout = &nand_oob_16,
-+	.priv = &warp_chip0_settings,
-+};
-+
-+static struct platform_device warp_nand_device = {
-+	.name = "ndfc-chip",
-+	.id = 0,
-+	.num_resources = 1,
-+	.resource = &warp_ndfc,
-+	.dev = {
-+		.platform_data = &warp_nand_chip0,
-+		.parent = &warp_ndfc_device.dev,
-+	}
-+};
-+
-+static int warp_setup_flash(void)
-+{
-+	platform_device_register(&warp_ndfc_device);
-+	platform_device_register(&warp_nand_device);
-+
-+	return 0;
-+}
-+device_initcall(warp_setup_flash);
-+
-+#endif /* NAND_FLASH */
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-459734380-1200039606=:10759--
