@@ -1,18 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 11 Jan 2008 16:32:31 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH 2/5] Warp Base Platform - dts
-Message-ID: <20080111053231.GC25055@localhost.localdomain>
-References: <47852C41.8000506@pikatech.com> <47852CB3.3000208@pikatech.com>
-	<20080110024753.GC17816@localhost.localdomain>
-	<4786B147.5070206@pikatech.com>
-	<20080111002037.GB23402@localhost.localdomain>
-	<4786FCD0.5020100@pikatech.com>
+Return-Path: <SRS0=Qnq1=SB=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 15808DDFAC
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 17:15:18 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: ibm4xx_quiesce_eth?
+Date: Fri, 11 Jan 2008 07:14:59 +0100
+References: <47866614.3010203@pikatech.com>
+	<20080110122427.59102355@zod.rchland.ibm.com>
+In-Reply-To: <20080110122427.59102355@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4786FCD0.5020100@pikatech.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801110715.00058.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 11, 2008 at 12:21:20AM -0500, Sean MacLennan wrote:
-> David Gibson wrote:
-> > On Thu, Jan 10, 2008 at 06:59:03PM -0500, Sean MacLennan wrote:
-> >   
-> >> New version with recommended changes. Device types removed. FPGA
-> >> moved to correct bus.
-> >>     
+On Thursday 10 January 2008, Josh Boyer wrote:
+> On Thu, 10 Jan 2008 13:38:12 -0500
+>
+> Sean MacLennan <smaclennan@pikatech.com> wrote:
+> > What exactly does this function do?
 > >
-> > [snip]
-> >   
-> >> +				fpga@2,0 {
-> >> +					compatible = "pika,fpga";
-> >> +			   		reg = <0 80000000 2200>;
-> >>     
+> >     /* Quiesce the MAL and EMAC(s) since PIBS/OpenBIOS don't
+> >      * do this for us
+> >      */
 > >
-> > Your reg property doesn't match your node name here...
-> >   
-> Is the following correct?
-> 
-> 				fpga@2,0 {
-> 					compatible = "pika,fpga";
-> 			   		reg = <2 80000000 2200>;
-> 					interrupts = <18 8>;
-> 					interrupt-parent = <&UIC0>;
-> 				};
+> > On the taco, with the 440EP, it doesn't seem to make any difference if I
+> > call this or not. Since I am using u-boot, is it not needed?
+>
+> There are firmwares that do not reset the EMAC and MAL before passing
+> control to the client program (Linux in our case).  This can cause
+> weird things to happen, like spurious interrupts or DMAs from the
+> hardware overwriting kernel memory.  So we quiesce the hardware really
+> early on those.
+>
+> I don't believe U-Boot has that problem.  If it does, it should be
+> fixed :)
 
-No.  You'd need
-	fpga@2,80000000 {
-		reg = <2 80000000 2200>;
-		...
-	};
+No, U-Boot doesn't have this problem.
 
-If, indeed, the fpga really has 32 bit address lines and requires the
-high one to be 1...
+Best regards,
+Stefan
 
-Or possibly what you actually want is:
-	fpga@2,0 {
-		reg = <2 0 2200>;
-		...
-	};
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
