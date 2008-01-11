@@ -1,16 +1,12 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 11 Jan 2008 11:20:37 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH 2/5] Warp Base Platform - dts
-Message-ID: <20080111002037.GB23402@localhost.localdomain>
-References: <47852C41.8000506@pikatech.com> <47852CB3.3000208@pikatech.com>
-	<20080110024753.GC17816@localhost.localdomain>
-	<4786B147.5070206@pikatech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4786B147.5070206@pikatech.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org
+Subject: [PATCH] Fix CPU hotplug when using the SLB shadow buffer 
+In-reply-to: <26792.1199949114@neuling.org> 
+References: <23336.1199947743@neuling.org> <26792.1199949114@neuling.org>
+Date: Fri, 11 Jan 2008 11:47:07 +1100
+Message-ID: <28640.1200012427@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +16,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 10, 2008 at 06:59:03PM -0500, Sean MacLennan wrote:
-> New version with recommended changes. Device types removed. FPGA
-> moved to correct bus.
+Before we register the SLB shadow buffer, we need to invalidate the
+entries in the buffer otherwise we can end up stale entries from when we
+offlined the CPU.
 
-[snip]
-> +				fpga@2,0 {
-> +					compatible = "pika,fpga";
-> +			   		reg = <0 80000000 2200>;
+This patch does this invalidate as well as unregistering the buffer with
+PHYP before we offline the cpu.  Tested and fixes crashes seen on 970MP
+(thanks to tonyb) and POWER5.
 
-Your reg property doesn't match your node name here...
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Updates for offline comments from paulus
 
-> +					interrupts = <18 8>;
-> +					interrupt-parent = <&UIC0>;
-> +				};
+ arch/powerpc/mm/slb.c                        |    8 ++++++++
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
+ arch/powerpc/platforms/pseries/lpar.c        |    1 +
+ include/asm-powerpc/mmu-hash64.h             |    1 +
+ 4 files changed, 12 insertions(+)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+@@ -82,6 +82,14 @@ static inline void slb_shadow_clear(unsi
+ 	get_slb_shadow()->save_area[entry].esid = 0;
+ }
+ 
++void slb_shadow_clear_all(void)
++{
++	int i;
++
++	for (i = 0; i < SLB_NUM_BOLTED; i++)
++		slb_shadow_clear(i);
++}
++
+ static inline void create_shadowed_slbe(unsigned long ea, int ssize,
+ 					unsigned long flags,
+ 					unsigned long entry)
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -29,6 +29,7 @@
+ #include <asm/vdso_datapage.h>
+ #include <asm/pSeries_reconfig.h>
+ #include "xics.h"
++#include "plpar_wrappers.h"
+ 
+ /* This version can't take the spinlock, because it never returns */
+ static struct rtas_args rtas_stop_self_args = {
+@@ -58,6 +59,7 @@ static void pseries_mach_cpu_die(void)
+ 	local_irq_disable();
+ 	idle_task_exit();
+ 	xics_teardown_cpu(0);
++	unregister_slb_shadow(smp_processor_id(), __pa(get_slb_shadow()));
+ 	rtas_stop_self();
+ 	/* Should never get here... */
+ 	BUG();
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/lpar.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
+@@ -272,6 +272,7 @@ void vpa_init(int cpu)
+ 	 */
+ 	addr = __pa(&slb_shadow[cpu]);
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
++		slb_shadow_clear_all();
+ 		ret = register_slb_shadow(hwcpu, addr);
+ 		if (ret)
+ 			printk(KERN_ERR
+Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
++++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+@@ -286,6 +286,7 @@ extern void hpte_init_iSeries(void);
+ extern void hpte_init_beat(void);
+ extern void hpte_init_beat_v3(void);
+ 
++extern void slb_shadow_clear_all(void);
+ extern void stabs_alloc(void);
+ extern void slb_initialize(void);
+ extern void slb_flush_and_rebolt(void);
