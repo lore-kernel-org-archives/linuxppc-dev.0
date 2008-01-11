@@ -1,22 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 61BAEDE09B
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 03:05:43 +1100 (EST)
-Message-ID: <478793BF.4070709@scram.de>
-Date: Fri, 11 Jan 2008 17:05:19 +0100
-From: Jochen Friedrich <jochen@scram.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 243FDDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 03:13:50 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
+Date: Fri, 11 Jan 2008 18:24:46 +0300
+References: <7310408706.20071107014010@emcraft.com>
+	<20071128195037.GB22325@gate.ebshome.net>
+In-Reply-To: <20071128195037.GB22325@gate.ebshome.net>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [i2c] [PATCH 0/5] Version 17,	series to add device tree naming
-	to i2c
-References: <20071220044136.20091.70984.stgit@terra.home>	<20080111095638.775670ed@hyperion.delvare>
-	<9e4733910801110752k57f1fd7crd5f143900fc64f0b@mail.gmail.com>
-In-Reply-To: <9e4733910801110752k57f1fd7crd5f143900fc64f0b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801111824.46920.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
 
->>> The following series implements standard linux module aliasing for i2c modules on arch=powerpc. It then converts the mpc i2c driver from being a platform driver to an open firmware one. I2C device names are picked up from the device tree. Module aliasing is used to translate from device tree names into to linux kernel names. Several i2c drivers are updated to use the new aliasing.
+ Hello, Eugene,
 
->> Now that I have read all the previous versions of this patch series
->> and, more importantly, all objections that were raised on the way, I
->> can start reviewing the latest iteration of your patches. I'll also do
->> some testing, although I have no powerpc stuff here, but at least I
->> want to make sure that there are no regressions introduced by your
->> patches on x86.
+ The h/w snooping mechanism you are talking about is limited to the Low 
+Latency (LL) segment of the PLB bus in ppc440sp and ppc440spe chips (see 
+section "7.2.7 L2 Cache Coherency" of the ppc440spe spec), whereas DMA and 
+XOR engines use the High Bandwidth (HB) segment of PLB bus (see 
+section "1.1.2 Internal Buses" of the ppc440spe spec).
 
-> Various people were worried about x86. Around version 15 I altered the
-> patches so that they only impacted PowerPC. If they impact x86 in
-> current form that is a bug.
+ Thus, the h/w snooping mechanism is not able to trace the results of 
+operations performed by DMA and XOR engines and keep L2-cache coherent with 
+SDRAM, because the data flow through the HB PLB segment. This leads to, for 
+example, incorrect results of RAID-parity calculations if one uses the h/w 
+accelerated ppc440spe ADMA driver with L2-cache enabled.
 
-I can only second this. The latest version of i2c-cpm
-(http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=15902) makes
-use of this patch, as well. On the dbox2, loading and unloading of
-modules in any order just works fine.
+ The s/w synchronization algorithms proposed in my patches has no LL PLB 
+limitations as opposed to h/w snooping, but, probably, this is not the best 
+way of how it might be implemented. Even though with these patches the h/w 
+accelerated RAID starts to operate correctly (with L2-cache enabled) there is 
+a performance degradation (induced by loops in the L2-cache synchronization 
+routines) observed in the most cases. So, as a result, there is no benefit 
+from using L2-cache for these, RAID, cases at all.
 
-Thanks,
-Jochen
+ Regards, Yuri
+
+On Wednesday 28 November 2007 22:50, Eugene Surovegin wrote:
+> On Wed, Nov 07, 2007 at 01:40:10AM +0300, Yuri Tikhonov wrote:
+> > 
+> >  Hello all,
+> > 
+> >  Here is a patch-set for support L2-cache synchronization routines for
+> > the ppc44x processors family. I know that the "ppc" branch is for 
+bug-fixing only, thus
+> > the patch-set is just FYI [though enabled but non-coherent L2-cache may 
+appear as a bug for
+> > someone who uses one of the boards listed below :)].
+> > 
+> > [PATCH 1/2] [PPC 4xx] invalidate_l2cache_range() implementation for 
+ppc44x;
+> > [PATCH 2/2] [PPC 44x] enable L2-cache for the following ppc44x-based 
+boards: ALPR,
+> > Katmai, Ocotea, and Taishan.
+> 
+> Why is this all needed?
+> 
+> IIRC ibm440gx_l2c_enable() configures 64G snoop region for L2C.
+> 
+> Did AMCC made non-only-coherent L2C chips recently?
+> 
+> -- 
+> Eugene
+> 
+> 
+
+-- 
+Yuri Tikhonov, Senior Software Engineer
+Emcraft Systems, www.emcraft.com
