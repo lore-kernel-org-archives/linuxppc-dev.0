@@ -1,21 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from vms044pub.verizon.net (vms044pub.verizon.net [206.46.252.44])
-	by ozlabs.org (Postfix) with ESMTP id AA197DE185
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 13:48:09 +1100 (EST)
-Received: from terra.home ([96.233.72.204])
-	by vms044.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
-	(built Apr
-	3 2006)) with ESMTPA id <0JUI00B48FRV6QF1@vms044.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Fri, 11 Jan 2008 20:47:55 -0600 (CST)
-Date: Fri, 11 Jan 2008 21:47:48 -0500
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 19 5/5] Convert pfc8563 i2c driver from old style to new style
-In-reply-to: <20080112024737.7023.61680.stgit@terra.home>
-To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-id: <20080112024748.7023.90680.stgit@terra.home>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-References: <20080112024737.7023.61680.stgit@terra.home>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BF720DE2FC
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 13:48:21 +1100 (EST)
+Date: Fri, 11 Jan 2008 13:02:16 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: Device Tree & PCI
+Message-ID: <20080111190215.GA10857@loki.buserror.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03D9A381@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03D9A381@ismail.innsys.innovsys.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,165 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert pfc8563 i2c driver from old style to new style. The
-driver is also modified to support device tree names via the
-i2c mod alias mechanism.
+On Fri, Jan 11, 2008 at 12:17:41PM -0600, Rune Torgersen wrote:
+> 		PCI_INT: pic@5,10 {
+> 			#interrupt-cells = <1>;
+> 			interrupt-controller;
+> 			reg = <5 10 4>;                             //
+> Chip select, offset, length
+> 			compatible = "apmax-pciintmux";
+> 			interrupt-parent = <&PIC>;
+> 			interrupts = <19 8>;                        //
+> IRQ7, interrupt#25
+> 		};
 
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
----
+Is this interrupt controller getting registered before the PCI bus gets
+probed?
 
- drivers/rtc/rtc-pcf8563.c |  107 +++++++++++----------------------------------
- 1 files changed, 27 insertions(+), 80 deletions(-)
-
-
-diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
-index 0242d80..e1ea2a0 100644
---- a/drivers/rtc/rtc-pcf8563.c
-+++ b/drivers/rtc/rtc-pcf8563.c
-@@ -25,10 +25,6 @@
-  * located at 0x51 will pass the validation routine due to
-  * the way the registers are implemented.
-  */
--static unsigned short normal_i2c[] = { I2C_CLIENT_END };
--
--/* Module parameters */
--I2C_CLIENT_INSMOD;
- 
- #define PCF8563_REG_ST1		0x00 /* status */
- #define PCF8563_REG_ST2		0x01
-@@ -72,9 +68,6 @@ struct pcf8563 {
- 	int c_polarity;	/* 0: MO_C=1 means 19xx, otherwise MO_C=1 means 20xx */
- };
- 
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind);
--static int pcf8563_detach(struct i2c_client *client);
--
- /*
-  * In the routines that deal directly with the pcf8563 hardware, we use
-  * rtc_time -- month 0-11, hour 0-23, yr = calendar year-epoch.
-@@ -257,98 +250,52 @@ static const struct rtc_class_ops pcf8563_rtc_ops = {
- 	.set_time	= pcf8563_rtc_set_time,
- };
- 
--static int pcf8563_attach(struct i2c_adapter *adapter)
-+static int pcf8563_remove(struct i2c_client *client)
- {
--	return i2c_probe(adapter, &addr_data, pcf8563_probe);
-+	struct rtc_device *rtc = i2c_get_clientdata(client);
-+
-+	if (rtc)
-+		rtc_device_unregister(rtc);
-+
-+	return 0;
- }
- 
-+static struct i2c_device_id pcf8563_id[] = {
-+	OF_I2C_ID("philips,pcf8563", 0)
-+	OF_I2C_ID("epson,rtc8564", 0)
-+	{},
-+};
-+MODULE_DEVICE_TABLE(i2c, pcf8563_id);
-+
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id);
-+
- static struct i2c_driver pcf8563_driver = {
- 	.driver		= {
--		.name	= "pcf8563",
-+		.name	= "rtc-pcf8563",
- 	},
- 	.id		= I2C_DRIVERID_PCF8563,
--	.attach_adapter = &pcf8563_attach,
--	.detach_client	= &pcf8563_detach,
-+	.probe = &pcf8563_probe,
-+	.remove = &pcf8563_remove,
-+	.id_table	= pcf8563_id,
- };
- 
--static int pcf8563_probe(struct i2c_adapter *adapter, int address, int kind)
-+static int pcf8563_probe(struct i2c_client *client, const struct i2c_device_id *id)
- {
--	struct pcf8563 *pcf8563;
--	struct i2c_client *client;
-+	int result;
- 	struct rtc_device *rtc;
- 
--	int err = 0;
--
--	dev_dbg(&adapter->dev, "%s\n", __FUNCTION__);
--
--	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C)) {
--		err = -ENODEV;
--		goto exit;
--	}
--
--	if (!(pcf8563 = kzalloc(sizeof(struct pcf8563), GFP_KERNEL))) {
--		err = -ENOMEM;
--		goto exit;
--	}
--
--	client = &pcf8563->client;
--	client->addr = address;
--	client->driver = &pcf8563_driver;
--	client->adapter	= adapter;
--
--	strlcpy(client->name, pcf8563_driver.driver.name, I2C_NAME_SIZE);
--
--	/* Verify the chip is really an PCF8563 */
--	if (kind < 0) {
--		if (pcf8563_validate_client(client) < 0) {
--			err = -ENODEV;
--			goto exit_kfree;
--		}
--	}
--
--	/* Inform the i2c layer */
--	if ((err = i2c_attach_client(client)))
--		goto exit_kfree;
--
--	dev_info(&client->dev, "chip found, driver version " DRV_VERSION "\n");
-+	result = pcf8563_validate_client(client);
-+	if (result)
-+		return result;
- 
- 	rtc = rtc_device_register(pcf8563_driver.driver.name, &client->dev,
- 				&pcf8563_rtc_ops, THIS_MODULE);
--
--	if (IS_ERR(rtc)) {
--		err = PTR_ERR(rtc);
--		goto exit_detach;
--	}
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 
- 	i2c_set_clientdata(client, rtc);
- 
- 	return 0;
--
--exit_detach:
--	i2c_detach_client(client);
--
--exit_kfree:
--	kfree(pcf8563);
--
--exit:
--	return err;
--}
--
--static int pcf8563_detach(struct i2c_client *client)
--{
--	struct pcf8563 *pcf8563 = container_of(client, struct pcf8563, client);
--	int err;
--	struct rtc_device *rtc = i2c_get_clientdata(client);
--
--	if (rtc)
--		rtc_device_unregister(rtc);
--
--	if ((err = i2c_detach_client(client)))
--		return err;
--
--	kfree(pcf8563);
--
--	return 0;
- }
- 
- static int __init pcf8563_init(void)
+-Scott
