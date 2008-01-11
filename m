@@ -1,21 +1,24 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+Return-Path: <greg@kroah.com>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1F647DE224
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 04:48:35 +1100 (EST)
-Date: Fri, 11 Jan 2008 09:41:52 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
-Message-ID: <20080111174152.GA17240@gate.ebshome.net>
-References: <7310408706.20071107014010@emcraft.com>
-	<20071128195037.GB22325@gate.ebshome.net>
-	<200801111824.46920.yur@emcraft.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 427DFDE092
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 04:50:32 +1100 (EST)
+Date: Fri, 11 Jan 2008 09:49:09 -0800
+From: Greg KH <greg@kroah.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: PCI Failed to allocate mem for PCI ROM
+Message-ID: <20080111174909.GA7916@kroah.com>
+References: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org>
+	<47872BC8.2040204@gmail.com>
+	<0119CD93-D9F1-42E0-9F6A-A50B2C63B19D@kernel.crashing.org>
+	<47873333.5020202@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200801111824.46920.yur@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
+In-Reply-To: <47873333.5020202@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-pci@atrey.karlin.mff.cuni.cz, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 11, 2008 at 06:24:46PM +0300, Yuri Tikhonov wrote:
-> 
->  Hello, Eugene,
-> 
->  The h/w snooping mechanism you are talking about is limited to the Low 
-> Latency (LL) segment of the PLB bus in ppc440sp and ppc440spe chips (see 
-> section "7.2.7 L2 Cache Coherency" of the ppc440spe spec), whereas DMA and 
-> XOR engines use the High Bandwidth (HB) segment of PLB bus (see 
-> section "1.1.2 Internal Buses" of the ppc440spe spec).
-> 
->  Thus, the h/w snooping mechanism is not able to trace the results of 
-> operations performed by DMA and XOR engines and keep L2-cache coherent with 
-> SDRAM, because the data flow through the HB PLB segment. This leads to, for 
-> example, incorrect results of RAID-parity calculations if one uses the h/w 
-> accelerated ppc440spe ADMA driver with L2-cache enabled.
-> 
->  The s/w synchronization algorithms proposed in my patches has no LL PLB 
-> limitations as opposed to h/w snooping, but, probably, this is not the best 
-> way of how it might be implemented. Even though with these patches the h/w 
-> accelerated RAID starts to operate correctly (with L2-cache enabled) there is 
-> a performance degradation (induced by loops in the L2-cache synchronization 
-> routines) observed in the most cases. So, as a result, there is no benefit 
-> from using L2-cache for these, RAID, cases at all.
+On Fri, Jan 11, 2008 at 10:13:23AM +0100, Jiri Slaby wrote:
+> On 01/11/2008 10:07 AM, Kumar Gala wrote:
+>> On Jan 11, 2008, at 2:41 AM, Jiri Slaby wrote:
+>>> On 01/11/2008 09:29 AM, Kumar Gala wrote:
+>>>> Greg,
+>>>> I'm getting the following message from the kernel on an embedded ppc32 
+>>>> system:
+>>>> PCI: Failed to allocate mem resource #9:100000@e0000000 for 0000:00:00.0
+>>>> The HW setup is a PCIe host controller and an e1000 NIC card.  It 
+>>>> appears that pci_bus_assign_resources() is trying to call 
+>>>> pci_assign_resource() for the ROM and the resource for the ROM is 
+>>>> [100000:1fffff] where the PHB is [c0000000:dfffffff].
+>>>> It seems like the resno that pci_assign_resource is getting called with 
+>>>> is wrong and thus pci_update_resource() doesn't get called.
+>>>> any ideas?
+>>>
+>>> Kernel version, please.
+>> Sorry, its 2.6.24-rc7 + some ppc patches queued for 2.6.25
+>
+> Could you try this patch?
+> http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob_plain;f=pci/pci-remove-default-pci-expansion-rom-memory-allocation.patch
+>
+> Greg: is this 2.6.25 material, please? We need this for SP2.
 
-Thanks a lot for explanation, Yuri. I'd never imagine they were so 
-stupid to make new chips with such behaviour.
+Yes, this is queued up for 2.6.25, and I have no objection to adding it
+for SLE10 SP2 if needed.  But I think there is another patch in the
+series that also goes with this, ask IBM, they know what is needed here.
 
--- 
-Eugene
+thanks,
+
+greg k-h
