@@ -1,31 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2B16BDDE35
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 04:57:24 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0BHvMd9024168
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 12:57:22 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0BHvLpA057998
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 12:57:21 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0BHvLjI015789
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 12:57:21 -0500
-Date: Fri, 11 Jan 2008 11:56:38 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH 3/5] Warp Base Platform
-Message-ID: <20080111115638.509a787c@zod.rchland.ibm.com>
-In-Reply-To: <47870A0F.7060905@pikatech.com>
-References: <47852C41.8000506@pikatech.com> <47852D16.2070906@pikatech.com>
-	<20080110024926.GD17816@localhost.localdomain>
-	<4786B295.3000501@pikatech.com> <47870A0F.7060905@pikatech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id C0792DE123
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 05:11:21 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Help with device tree binding for SMC serial
+Date: Fri, 11 Jan 2008 12:11:19 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03D9A37A@ismail.innsys.innovsys.com>
+In-Reply-To: <4787A663.2020902@freescale.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com><4785246D.6090206@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B03D58BC9@ismail.innsys.innovsys.com><47854AE1.7080802@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B03D58BEF@ismail.innsys.innovsys.com><47854D6D.2010906@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B03D58C20@ismail.innsys.innovsys.com><20080110175348.GA4317@loki.buserror.net><DCEAAC0833DD314AB0B58112AD99B93B03D99E60@ismail.innsys.innovsys.com><47866FDE.5070307@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D9A042@ismail.innsys.innovsys.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D9A092@ismail.innsys.innovsys.com>
+	<4787A663.2020902@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -36,13 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 11 Jan 2008 01:17:51 -0500
-Sean MacLennan <smaclennan@pikatech.com> wrote:
+> From: Scott Wood=20
+>=20
+> You could add something to the cuboot code to fill in current-speed=20
+> based on the value in the bd_t.
+>=20
 
-> Update based on fixes to warp.dts.
-> 
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-
-Looks good.
-
-josh
+Ahh.. That was what I'm missing.
+Where in the devicetree is that supposed to be at?
