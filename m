@@ -1,23 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CB6D5DDF60
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 10:42:57 +1100 (EST)
-Message-ID: <4786A37C.2040905@freescale.com>
-Date: Thu, 10 Jan 2008 17:00:12 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id DCC5ADDE41
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 11:07:37 +1100 (EST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3] [POWERPC] Update MPC8610 HPCD to support audio drivers
-References: <12000050651235-git-send-email-timur@freescale.com>	<12000050664035-git-send-email-timur@freescale.com>
-	<fa686aa40801101452q608907f3rf6f98a5d091d09d9@mail.gmail.com>
-In-Reply-To: <fa686aa40801101452q608907f3rf6f98a5d091d09d9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: olof@lixom.net, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	Timur Tabi <timur@freescale.com>, david@gibson.dropbear.id.au
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Help with device tree binding for SMC serial
+Date: Thu, 10 Jan 2008 18:07:34 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03D9A042@ismail.innsys.innovsys.com>
+In-Reply-To: <47866FDE.5070307@freescale.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com>
+	<4785246D.6090206@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D58BC9@ismail.innsys.innovsys.com>
+	<47854AE1.7080802@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D58BEF@ismail.innsys.innovsys.com>
+	<47854D6D.2010906@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D58C20@ismail.innsys.innovsys.com>
+	<20080110175348.GA4317@loki.buserror.net>
+	<DCEAAC0833DD314AB0B58112AD99B93B03D99E60@ismail.innsys.innovsys.com>
+	<47866FDE.5070307@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
->> +                dma@21300 {
->> +                        #address-cells = <1>;
->> +                        #size-cells = <1>;
->> +                        compatible = "fsl,mpc8610-dma", "fsl,eloplus-dma";
->> +                        cell-index = <0>;
->> +                        reg = <21300 4>; /* DMA general status register */
->> +                        ranges = <0 21100 200>;
->> +
->> +                        dma-channel@0 {
->> +                               compatible = "fsl,mpc8610-dma-channel",
->> +                                       "fsl,eloplus-dma-channel";
-> 
-> Nit: you probably don't need the compatible property for these channel
-> nodes since they are 100% dependent on the parent for describing the
-> behaviour.
+> From: Scott Wood [
+> Rune Torgersen wrote:
+> > Not sure what was wrong. We took a step back, and redid=20
+> some stuff, and
+> > now we have serial output from the boot-wrapper.
+> > THe checkstop came from the wrapper grying to access the=20
+> bcsr and doing
+> > the chip select fixup. We don';t have a bcsr on our board,=20
+> and the cs
+> > layout is different.
+>=20
+> There's no bcsr access in the upstream bootwrapper (the=20
+> mention of bcsr=20
+> in cuboot-pq2.c is just one reason why some boards require us=20
+> to do the=20
+> CS programming), and the CS programming is chip-level, not=20
+> board-level=20
+> (it just requires that the device tree have a correct=20
+> localbus node for=20
+> the board).
 
-The compatible property in the child nodes gives the driver the option 
-of matching the channel rather than the whole thing.
+Finally got it (sort-of) working.
+Turned out that for some reason the console init is setting the baudrate
+to 9600
+the options string passed in to the console init fuunction is NULL.
 
--Scott
+Any idea oon how this should be passed in from u-boot?
