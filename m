@@ -1,15 +1,27 @@
-Return-Path: <jdl@jdl.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: libfdt: Add fdt_set_name() function 
-In-Reply-To: Your message of "Fri, 11 Jan 2008 08:30:03 CST."
-	<20080111083003.38b556d6@zod.rchland.ibm.com>
-References: <20080111035505.GB25055@localhost.localdomain>
-	<E1JDKBV-0007Hq-Dm@jdl.com>
-	<20080111083003.38b556d6@zod.rchland.ibm.com>
-Date: Fri, 11 Jan 2008 08:38:15 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JDL1T-0007bi-Mm@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 58BD0DDF0E
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 02:08:51 +1100 (EST)
+Message-ID: <47878674.7010705@freescale.com>
+Date: Fri, 11 Jan 2008 09:08:36 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [alsa-devel] [PATCH v2] [ALSA] Add ASoC drivers for the	Freescale
+	MPC8610 SoC
+References: <12000050651235-git-send-email-timur@freescale.com>
+	<12000050664035-git-send-email-timur@freescale.com>
+	<12000050682718-git-send-email-timur@freescale.com>
+	<fa686aa40801101502v264d8caw6faf935d71b15c9@mail.gmail.com>
+	<4786A650.2080107@freescale.com> <20080111002450.GA13291@lixom.net>
+In-Reply-To: <20080111002450.GA13291@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Josh Boyer mumbled:
-> On Fri, 11 Jan 2008 07:44:33 -0600
-> Jon Loeliger <jdl@jdl.com> wrote:
-> 
-> > So, like, the other day David Gibson mumbled:
-> > > This patch adds an fdt_set_name() function to libfdt, mirroring
-> > > fdt_get_name().  This is a r/w function which alters the name of a
-> > > given device tree node.
-> > > 
-> > > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> > 
-> > Applied.
-> 
-> Awesome.  Now if we could just get that into the kernel and usable in
-> the wrappers... :)
+Olof Johansson wrote:
 
-I've pushed it out now.
+> Having been in a similar situation myself (needing to share resources
+> between DMA, ethernet and function offload), I recommend creating a
+> separate small library that all those drivers use, instead of making
+> some sort of dependency between drivers in completely different parts
+> of the kernel.
 
-I guess we'll try to get the real v1.1.0 into the kernel then?
-Maybe at 2.6.25?
+Well, the DMA driver should be in soon.  Actually, it should be in now, because 
+I saw a blurb in this month's Linux Journal about it.  As soon as I find it :-), 
+I'll post a new patch that adds arbitration.
 
-jdl
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
