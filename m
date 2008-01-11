@@ -1,16 +1,19 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.188])
-	by ozlabs.org (Postfix) with ESMTP id 477E5DE059
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 10:21:17 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1120055rvf.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 15:21:14 -0800 (PST)
-Message-ID: <5c9cd53b0801111521v25d0c1dt21ee59373826298@mail.gmail.com>
-Date: Fri, 11 Jan 2008 18:21:14 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Quick Engine Support on Kernel 2.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2912EDE05E
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 10:25:15 +1100 (EST)
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: StorCenter Help? 
+In-Reply-To: Your message of "Fri, 11 Jan 2008 16:20:12 MST."
+	<fa686aa40801111520m3b9c3ea6rc7ee38519dcc9a4b@mail.gmail.com>
+References: <E1JDT1Q-0007Bj-1Q@jdl.com>
+	<fa686aa40801111520m3b9c3ea6rc7ee38519dcc9a4b@mail.gmail.com>
+Date: Fri, 11 Jan 2008 17:25:11 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JDTFP-0007OE-MM@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,11 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+So, like, the other day "Grant Likely" mumbled:
+> 
+> Since you're getting absolutely no output after uncompression it
+> probably means that you're failing in the boot wrapper...
 
-Is there any BSP on Linux Kernel 2.4 support Quick Engine of MPC8568?
-If not, which BSP shall I start the porting? The BSP(on Kernel2.6) of
-MPC8568MDS from Freescale supports CPM2, but not QE. What the
-difference between CPM2 and QE?
+Or not getting to the boot wrapper...
 
-Thanks,
+> which means mmu is off, and the serial port is already set up by u-boot.
+>
+> You should be able to add direct writes to the uart fifo register from
+> within the bootwrapper code to see how far you get in the progress.
+
+Tried that.  Didn't work at all.
+
+I think I have some variant of BAT setup failure or so.
+
+jdl
