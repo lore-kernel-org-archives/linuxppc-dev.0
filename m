@@ -1,21 +1,22 @@
-Return-Path: <enno.luebbers@upb.de>
-Received: from mail.uni-paderborn.de (mail.uni-paderborn.de [131.234.142.9])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AED1BDE04D
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 75FE4DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Jan 2008 23:46:50 +1100 (EST)
-Received: from nb-techinf-4.cs.uni-paderborn.de ([131.234.20.215])
-	by mail.uni-paderborn.de with esmtpsa (TLS-1.0:RSA_AES_128_CBC_SHA:16)
-	(Exim 4.62 cyclopia) id 1JDIFf-0000bk-Bt
-	for linuxppc-embedded@ozlabs.org; Fri, 11 Jan 2008 12:40:43 +0100
-Message-Id: <8CD31E85-5490-4E42-B91F-1217A415B214@upb.de>
-From: =?ISO-8859-1?Q?Enno_L=FCbbers?= <enno.luebbers@upb.de>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Linux for ml310
-Date: Fri, 11 Jan 2008 12:40:43 +0100
+	Sat, 12 Jan 2008 04:27:57 +1100 (EST)
+Message-ID: <4787A71E.7000509@freescale.com>
+Date: Fri, 11 Jan 2008 11:27:58 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: raul.moreno@telvent.abengoa.com
+Subject: Re: 2.6.22-ppc8xx fec.c bugs
+References: <OF431AD1B5.8B0529FD-ONC12573CD.002EB1C5-C12573CD.0030B37E@abengoa.com>
+In-Reply-To: <OF431AD1B5.8B0529FD-ONC12573CD.002EB1C5-C12573CD.0030B37E@abengoa.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Joachim,
+raul.moreno@telvent.abengoa.com wrote:
+> I didn't know ppc was deprecated. Why is it so? 
 
-I haven't tried the XUP or the ML310 yet, but I just managed to get  
-Linux 2.4.26 from Bitkeeper running on a ML403 board (a Virtex-4FX12).  
-However, I'm seriously considering moving to the 2.6 kernel, for  
-various reasons.
+Having separate 32 and 64 bit powerpc trees was a maintenance headache. 
+  The way arch/ppc is structured was a maintenance headache.
 
-Your problems seem to be related to the BSP configuration. Have you  
-set the corerct options in the Software Platform Settings of the EDK?  
-In particular, you need to set the clock frequency and the attached  
-peripherals in the "OS and Libraries" section.
+> I have been using this architecture since I started with Linux (not too
+> long ago) because I manage a mpc866 processor.
 
-Regards
-- Enno
+mpc866 chips are supported in arch/powerpc.
 
--- 
-Dipl.-Ing. Enno Luebbers
-Computer Science Department
-University of Paderborn	
+> Do you mean that I should port to arch/powerpc?
 
-Warburger Str. 100		
-33098 Paderborn			
+Yes.
 
-http://wwwcs.upb.de/cs/ag-platzner
-phone:  05251 / 60-5397
-fax:    05251 / 60-5377
+-Scott
