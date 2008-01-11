@@ -1,23 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB780DE06D
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 04:25:25 +1100 (EST)
-Message-ID: <4787A663.2020902@freescale.com>
-Date: Fri, 11 Jan 2008 11:24:51 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 91912DE03D
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 04:48:25 +1100 (EST)
+Date: Fri, 11 Jan 2008 09:48:22 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] ibm_newemac: Increase number of default rx-/tx-buffers
+Message-ID: <20080111174822.GB17240@gate.ebshome.net>
+References: <1199526609-12290-1-git-send-email-sr@denx.de>
+	<1199528388.7291.55.camel@pasglop> <200801051338.17957.sr@denx.de>
 MIME-Version: 1.0
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: Help with device tree binding for SMC serial
-References: <DCEAAC0833DD314AB0B58112AD99B93B03D58A34@ismail.innsys.innovsys.com><4785246D.6090206@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B03D58BC9@ismail.innsys.innovsys.com><47854AE1.7080802@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B03D58BEF@ismail.innsys.innovsys.com><47854D6D.2010906@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B03D58C20@ismail.innsys.innovsys.com><20080110175348.GA4317@loki.buserror.net><DCEAAC0833DD314AB0B58112AD99B93B03D99E60@ismail.innsys.innovsys.com><47866FDE.5070307@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D9A042@ismail.innsys.innovsys.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03D9A092@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03D9A092@ismail.innsys.innovsys.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200801051338.17957.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,14 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
-> Ok, needed a valid console= line on the command line. WHen we tried
-> that, we had a typo, so it was not recognized.
-> Our old 2.6.18 arch/ppc kernel didn't need a console parameter, it got
-> the baudrate from u-boot somehow.
-> Anyway of doing that here too?
+On Sat, Jan 05, 2008 at 01:38:17PM +0100, Stefan Roese wrote:
+> On Saturday 05 January 2008, Benjamin Herrenschmidt wrote:
+> > On Sat, 2008-01-05 at 10:50 +0100, Stefan Roese wrote:
+> > > Performance tests done by AMCC have shown that 256 buffer increase the
+> > > performance of the Linux EMAC driver. So let's update the default
+> > > values to match this setup.
+> > >
+> > > Signed-off-by: Stefan Roese <sr@denx.de>
+> > > ---
+> >
+> > Do we have the numbers ? Did they also measure latency ?
+> 
+> I hoped this question would not come. ;) No, unfortunately I don't have any 
+> numbers. Just the recommendation from AMCC to always use 256 buffers.
 
-You could add something to the cuboot code to fill in current-speed 
-based on the value in the bd_t.
+This cannot be true for all chips. Default numbers I selected weren't 
+random. In particular, 256 for Tx doesn't make a lot of sense for 405. 
+You just gonna waste memory.
 
--Scott
+I'd be quite reluctant to follow such advices from AMCC without actual 
+details. 
+
+-- 
+Eugene
