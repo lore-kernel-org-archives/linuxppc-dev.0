@@ -1,17 +1,30 @@
-Return-Path: <dwalker@mvista.com>
-Received: from dwalker1.mvista.com (gateway-1237.mvista.com [63.81.120.158])
+Return-Path: <Poonam.Aggrwal@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA23ADE0C5
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 15:26:05 +1100 (EST)
-Message-Id: <20080111042137.378247237@mvista.com>
-Date: Thu, 10 Jan 2008 20:21:37 -0800
-Message-Id: <20080111041959.337397837@mvista.com>
-Date: Thu, 10 Jan 2008 20:19:59 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: geoffrey.levand@am.sony.com
-Subject: [PATCH] ps3: vuart: semaphore to mutex
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C0618DDFDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 15:58:44 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	m0B4waBd019527
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 21:58:37 -0700 (MST)
+Received: from zin33exm24.fsl.freescale.net (zin33exm24.ap.freescale.net
+	[10.232.192.24])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0B4wBGQ017274
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2008 22:58:12 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE:  [PATCH 0/3] UCC TDM driver for MPC83xx platforms 
+Date: Fri, 11 Jan 2008 10:28:10 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C26E7662@zin33exm24.fsl.freescale.net>
+In-Reply-To: <FBA61160C48B8D438F3323FEFB4EF2C26E765F@zin33exm24.fsl.freescale.net>
+References: <FBA61160C48B8D438F3323FEFB4EF2C259F2F6@zin33exm24.fsl.freescale.net>
+	<FBA61160C48B8D438F3323FEFB4EF2C26E765F@zin33exm24.fsl.freescale.net>
+From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,126 +34,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This probe_mutex conforms to the new struct mutex type.
-This patch converts it from the old semaphore to the new struct mutex.
+=20
+Hello  All
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+I am waiting for more feedback on the patches.
 
----
- drivers/ps3/ps3-vuart.c |   23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+If there are no objections please consider them for 2.6.25.
 
-Index: linux-2.6.23/drivers/ps3/ps3-vuart.c
-===================================================================
---- linux-2.6.23.orig/drivers/ps3/ps3-vuart.c
-+++ linux-2.6.23/drivers/ps3/ps3-vuart.c
-@@ -23,6 +23,7 @@
- #include <linux/interrupt.h>
- #include <linux/workqueue.h>
- #include <linux/bitops.h>
-+#include <linux/mutex.h>
- #include <asm/ps3.h>
- 
- #include <asm/firmware.h>
-@@ -877,7 +878,7 @@ static int ps3_vuart_handle_port_interru
- struct vuart_bus_priv {
- 	struct ports_bmp *bmp;
- 	unsigned int virq;
--	struct semaphore probe_mutex;
-+	struct mutex probe_mutex;
- 	int use_count;
- 	struct ps3_system_bus_device *devices[PORT_COUNT];
- } static vuart_bus_priv;
-@@ -1015,7 +1016,7 @@ static int ps3_vuart_probe(struct ps3_sy
- 		return -EINVAL;
- 	}
- 
--	down(&vuart_bus_priv.probe_mutex);
-+	mutex_lock(&vuart_bus_priv.probe_mutex);
- 
- 	result = ps3_vuart_bus_interrupt_get();
- 
-@@ -1075,7 +1076,7 @@ static int ps3_vuart_probe(struct ps3_sy
- 		goto fail_probe;
- 	}
- 
--	up(&vuart_bus_priv.probe_mutex);
-+	mutex_unlock(&vuart_bus_priv.probe_mutex);
- 
- 	return result;
- 
-@@ -1088,7 +1089,7 @@ fail_dev_malloc:
- fail_busy:
- 	ps3_vuart_bus_interrupt_put();
- fail_setup_interrupt:
--	up(&vuart_bus_priv.probe_mutex);
-+	mutex_unlock(&vuart_bus_priv.probe_mutex);
- 	dev_dbg(&dev->core, "%s:%d: failed\n", __func__, __LINE__);
- 	return result;
- }
-@@ -1127,7 +1128,7 @@ static int ps3_vuart_remove(struct ps3_s
- 
- 	BUG_ON(!dev);
- 
--	down(&vuart_bus_priv.probe_mutex);
-+	mutex_lock(&vuart_bus_priv.probe_mutex);
- 
- 	dev_dbg(&dev->core, " -> %s:%d: match_id %d\n", __func__, __LINE__,
- 		dev->match_id);
-@@ -1135,7 +1136,7 @@ static int ps3_vuart_remove(struct ps3_s
- 	if (!dev->core.driver) {
- 		dev_dbg(&dev->core, "%s:%d: no driver bound\n", __func__,
- 			__LINE__);
--		up(&vuart_bus_priv.probe_mutex);
-+		mutex_unlock(&vuart_bus_priv.probe_mutex);
- 		return 0;
- 	}
- 
-@@ -1158,7 +1159,7 @@ static int ps3_vuart_remove(struct ps3_s
- 	priv = NULL;
- 
- 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
--	up(&vuart_bus_priv.probe_mutex);
-+	mutex_unlock(&vuart_bus_priv.probe_mutex);
- 	return 0;
- }
- 
-@@ -1178,7 +1179,7 @@ static int ps3_vuart_shutdown(struct ps3
- 
- 	BUG_ON(!dev);
- 
--	down(&vuart_bus_priv.probe_mutex);
-+	mutex_lock(&vuart_bus_priv.probe_mutex);
- 
- 	dev_dbg(&dev->core, " -> %s:%d: match_id %d\n", __func__, __LINE__,
- 		dev->match_id);
-@@ -1186,7 +1187,7 @@ static int ps3_vuart_shutdown(struct ps3
- 	if (!dev->core.driver) {
- 		dev_dbg(&dev->core, "%s:%d: no driver bound\n", __func__,
- 			__LINE__);
--		up(&vuart_bus_priv.probe_mutex);
-+		mutex_unlock(&vuart_bus_priv.probe_mutex);
- 		return 0;
- 	}
- 
-@@ -1210,7 +1211,7 @@ static int ps3_vuart_shutdown(struct ps3
- 
- 	dev_dbg(&dev->core, " <- %s:%d\n", __func__, __LINE__);
- 
--	up(&vuart_bus_priv.probe_mutex);
-+	mutex_unlock(&vuart_bus_priv.probe_mutex);
- 	return 0;
- }
- 
-@@ -1221,7 +1222,7 @@ static int __init ps3_vuart_bus_init(voi
- 	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
- 		return -ENODEV;
- 
--	init_MUTEX(&vuart_bus_priv.probe_mutex);
-+	mutex_init(&vuart_bus_priv.probe_mutex);
- 
- 	return 0;
- }
--- 
+With Regards
+Poonam=20
+=20
+=20
 
--- 
+-----Original Message-----
+From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
+On Behalf Of Aggrwal Poonam
+Sent: Monday, December 10, 2007 5:23 PM
+To: rubini@vision.unipv.it; linux-ppcdev@ozlabs.kernel.org;
+netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Gala Kumar
+Cc: Barkowski Michael; Phillips Kim; Kalra Ashish; Cutler Richard
+Subject: [PATCH 0/3] UCC TDM driver for MPC83xx platforms=20
+
+There are three patches
+[PATCH 1/3] drivers/misc : UCC TDM driver for mpc83xx platforms. This
+driver is usable in VoIP iind of applications to interface with SLIC
+kind of devices to exchange TDM voice samples.
+
+[PATCH 2/3] arch/ : Platform changes
+- device tree entries for UCC TDM driver for MPC8323ERDB platform.
+- QE changes related to TDM , like,
+	 1) Modified ucc_fast_init so that it can be used by fast UCC
+based TDM driver. Mainly changes have been made to configure TDM clocks
+and Fsyncs.
+
+	2) Modified get_brg_clk so that it can return the input frequncy
+and input source of any BRG by reading the corresponding entries from
+device tree.
+
+	3) Added new nodes brg and clocks in the device tree which
+represent input clocks for different BRGs.
+
+	4) Modified qe_setbrg accordingly.
+- new device tree entries added for "clocks" and "brg"
+
+[PATCH 3/3] Documentation
+- Modified Documentation to explain the device tree entries related to
+UCC TDM driver and the new nodes added("clocks" and "brg")
+
+The patch applies over a merge of galak's for-2.6.25 plus for-2.6.24
+plus of_doc_update branches.
+In brief the steps were
+git clone
+git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+powerpc-galak git checkout -b for-2.6.25 origin/for-2.6.25 git checkout
+-b for-2.6.24 origin/for-2.6.24 git checkout -b of_doc_update
+origin/of_doc_update
+git pull . for-2.6.24    # merge the other two
+git pull . for-2.6.25=20
+git checkout -b tdm      # clean slate for tdm rebase work
+
+Also after applying the patches changes have to be made corresponding to
+Tabi's patch "qe: add function qe_clock_source".
+
+The driver has been tested with a VoIP stack and application on
+MPC8323ERDB.
+
+With Regards
+Poonam=20
+=20
+=20
+--
+To unsubscribe from this list: send the line "unsubscribe netdev" in the
+body of a message to majordomo@vger.kernel.org More majordomo info at
+http://vger.kernel.org/majordomo-info.html
