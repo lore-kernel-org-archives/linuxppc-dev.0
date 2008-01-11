@@ -1,23 +1,22 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0FB48DE025
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4C303DDFCA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Jan 2008 08:27:51 +1100 (EST)
+	Fri, 11 Jan 2008 17:38:12 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JDDWp-00043r-La
+	for linuxppc-embedded@ozlabs.org; Thu, 10 Jan 2008 22:38:07 -0800
+Message-ID: <14750580.post@talk.nabble.com>
+Date: Thu, 10 Jan 2008 22:38:07 -0800 (PST)
+From: Smily santhosh <Santhosh.Bachu@lntemsys.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Is it required to develope new hub class driver for MPC8272 in
+	Montavista ?
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Subject: RE: In PowerPC's feature,
-	are there any difference between ML410 and ML403?
-Date: Thu, 10 Jan 2008 13:27:47 -0800
-In-Reply-To: <147365.85546.qm@web92009.mail.cnb.yahoo.com>
-References: <147365.85546.qm@web92009.mail.cnb.yahoo.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "diak sim" <sim.diak@yahoo.com.cn>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080110212749.3A4D312A804E@mail170-sin.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,37 +28,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-There shouldn't be a significant different in the cores themselves, =
-however, there are many ways to get the FPGA design slightly wrong where =
-it won't boot, or to get the kernel xparameters file out of synch with =
-the FPGA design.  This is most likely your problem.
+Hi Friends,
+I have few queries ,
+before that let me give details
+    Kernel : 2.6.10_mvl401-8272ads - Montavista - MPC8272,
+    USB HUB controller : ISP1520BD (Externally Connected - 1- Up Stream port
+and 4- Down Stream ports ).
+    I am familiar  with mass storage driver.
 
-Steve
+In kernel  source code (drivers/usb/core/hub), huc.c is present which does
+core functionality of hub. And ISP1520 descriptors says it is Class specific
+driver not Vendor specific one. So i hope i can use same source hub.c file.  
+Am i need to develope any specific driver for it ? (Hope: No) . 
+Any thing else i need to do ? Currently i am going through the code(hub.c).
+What are the possible test cases to validate hub connection and hub working
+?
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of diak sim
-> Sent: Thursday, January 10, 2008 5:56 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: In PowerPC's feature,are there any difference between ML410 =
-and ML403?
->=20
-> Hello everyone,
->=20
-> I am using ML410 to port a Linux 2.6 kernel, but init_IRQ() doesn't =
-pass.
-> Porting Linux 2.6 to ML403 is successful? No such a problem?
-> In PowerPC's feature, are there any difference between ML410 and =
-ML403?
->=20
-> Thanks.
->=20
->=20
-> ________________________________
->=20
-> =
-=D1=C5=BB=A2=D3=CA=CF=E4=B4=AB=B5=DD=D0=C2=C4=EA=D7=A3=B8=A3=A3=AC=B8=F6=D0=
-=D4=BA=D8=BF=A8=CB=CD=C7=D7=C5=F3=A3=A1 =
-<http://cn.mail.yahoo.com/gc/index.html?entry=3D5&souce=3Dmail_mailletter=
-_tagline>
+Any response from you appreciated ?
+
+
+Santhosh
+Sharing the knowledge .. always makes you good. :-)
+
+
+-- 
+View this message in context: http://www.nabble.com/Is-it-required-to-develope-new-hub-class-driver-for-MPC8272-in-Montavista---tp14750580p14750580.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
