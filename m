@@ -1,13 +1,13 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH] Fix CPU hotplug when using the SLB shadow buffer 
+To: paulus@samba.org
+Subject: [PATCH] Fix CPU hotplug when using the SLB shadow buffer 
 In-reply-to: <20080111011221.GW14201@localdomain> 
 References: <23336.1199947743@neuling.org> <26792.1199949114@neuling.org>
 	<28640.1200012427@neuling.org> <20080111011221.GW14201@localdomain>
-Date: Fri, 11 Jan 2008 13:59:30 +1100
-Message-ID: <6532.1200020370@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Date: Fri, 11 Jan 2008 14:02:47 +1100
+Message-ID: <6998.1200020567@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,17 +17,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > @@ -58,6 +59,7 @@ static void pseries_mach_cpu_die(void)
-> >  	local_irq_disable();
-> >  	idle_task_exit();
-> >  	xics_teardown_cpu(0);
-> > +	unregister_slb_shadow(smp_processor_id(), __pa(get_slb_shadow()));
->                                      ^
-> Should that not be hard_smp_processor_id()?
+Before we register the SLB shadow buffer, we need to invalidate the
+entries in the buffer otherwise we can end up stale entries from when we
+offlined the CPU.
 
-Thanks.. I think you're right since we register each CPU with a
-get_hard_smp_processor_id(cpu).  
+This patch does this invalidate as well as unregistering the buffer with
+PHYP before we offline the cpu.  Tested and fixes crashes seen on 970MP
+(thanks to tonyb) and POWER5.
 
-I'll update.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Updated based on comment from ntl
 
-Mikey
+ arch/powerpc/mm/slb.c                        |    8 ++++++++
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
+ arch/powerpc/platforms/pseries/lpar.c        |    1 +
+ include/asm-powerpc/mmu-hash64.h             |    1 +
+ 4 files changed, 12 insertions(+)
+
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+@@ -82,6 +82,14 @@ static inline void slb_shadow_clear(unsi
+ 	get_slb_shadow()->save_area[entry].esid = 0;
+ }
+ 
++void slb_shadow_clear_all(void)
++{
++	int i;
++
++	for (i = 0; i < SLB_NUM_BOLTED; i++)
++		slb_shadow_clear(i);
++}
++
+ static inline void create_shadowed_slbe(unsigned long ea, int ssize,
+ 					unsigned long flags,
+ 					unsigned long entry)
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -29,6 +29,7 @@
+ #include <asm/vdso_datapage.h>
+ #include <asm/pSeries_reconfig.h>
+ #include "xics.h"
++#include "plpar_wrappers.h"
+ 
+ /* This version can't take the spinlock, because it never returns */
+ static struct rtas_args rtas_stop_self_args = {
+@@ -58,6 +59,7 @@ static void pseries_mach_cpu_die(void)
+ 	local_irq_disable();
+ 	idle_task_exit();
+ 	xics_teardown_cpu(0);
++	unregister_slb_shadow(hard_smp_processor_id(), __pa(get_slb_shadow()));
+ 	rtas_stop_self();
+ 	/* Should never get here... */
+ 	BUG();
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/lpar.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/lpar.c
+@@ -272,6 +272,7 @@ void vpa_init(int cpu)
+ 	 */
+ 	addr = __pa(&slb_shadow[cpu]);
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
++		slb_shadow_clear_all();
+ 		ret = register_slb_shadow(hwcpu, addr);
+ 		if (ret)
+ 			printk(KERN_ERR
+Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
++++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+@@ -286,6 +286,7 @@ extern void hpte_init_iSeries(void);
+ extern void hpte_init_beat(void);
+ extern void hpte_init_beat_v3(void);
+ 
++extern void slb_shadow_clear_all(void);
+ extern void stabs_alloc(void);
+ extern void slb_initialize(void);
+ extern void slb_flush_and_rebolt(void);
