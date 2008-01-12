@@ -1,18 +1,20 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id AFCB1DDE98
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 16:10:55 +1100 (EST)
+Return-Path: <SRS0=h5jx=SC=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7E065DDEC2
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 17:14:04 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/5] Warp Base Platform - dts
+Date: Sat, 12 Jan 2008 07:13:54 +0100
+References: <47852C41.8000506@pikatech.com>
+	<20080111115451.15756368@zod.rchland.ibm.com>
+	<4787FB77.5070905@pikatech.com>
+In-Reply-To: <4787FB77.5070905@pikatech.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C854D9.81C15FC7"
-Subject: RE: Device Tree & PCI
-Date: Fri, 11 Jan 2008 23:08:14 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D2@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B03D9A381@ismail.innsys.innovsys.com>
-	<20080111190215.GA10857@loki.buserror.net>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801120713.54856.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,111 +24,216 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Saturday 12 January 2008, Sean MacLennan wrote:
+> +++ arch/powerpc/boot/dts/warp.dts	2008-01-11 15:58:03.000000000 -0500
+> @@ -0,0 +1,234 @@
+> +/*
+> + * Device Tree Source for PIKA Warp
+> + *
+> + * Copyright (c) 2008 PIKA Technologies
+> + *   Sean MacLennan <smaclennan@pikatech.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without
+> + * any warranty of any kind, whether express or implied.
+> + */
+> +
+> +/ {
+> +	#address-cells = <2>;
+> +	#size-cells = <1>;
+> +	model = "pika,warp";
+> +	compatible = "pika,warp";
+> +	dcr-parent = <&/cpus/cpu@0>;
+> +
+> +	aliases {
+> +		ethernet0 = &EMAC0;
+> +		serial0 = &UART0;
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		cpu@0 {
+> +			device_type = "cpu";
+> +			model = "PowerPC,440EP";
+> +			reg = <0>;
+> +			clock-frequency = <0>; /* Filled in by zImage */
+> +			timebase-frequency = <0>; /* Filled in by zImage */
+> +			i-cache-line-size = <20>;
+> +			d-cache-line-size = <20>;
+> +			i-cache-size = <8000>;
+> +			d-cache-size = <8000>;
+> +			dcr-controller;
+> +			dcr-access-method = "native";
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <0 0 0>; /* Filled in by zImage */
+> +	};
+> +
+> +	UIC0: interrupt-controller0 {
+> +		compatible = "ibm,uic-440ep","ibm,uic";
+> +		interrupt-controller;
+> +		cell-index = <0>;
+> +		dcr-reg = <0c0 009>;
+> +		#address-cells = <0>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <2>;
+> +	};
+> +
+> +	UIC1: interrupt-controller1 {
+> +		compatible = "ibm,uic-440ep","ibm,uic";
+> +		interrupt-controller;
+> +		cell-index = <1>;
+> +		dcr-reg = <0d0 009>;
+> +		#address-cells = <0>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <2>;
+> +		interrupts = <1e 4 1f 4>; /* cascade */
+> +		interrupt-parent = <&UIC0>;
+> +	};
+> +
+> +	SDR0: sdr {
+> +		compatible = "ibm,sdr-440ep";
+> +		dcr-reg = <00e 002>;
+> +	};
+> +
+> +	CPR0: cpr {
+> +		compatible = "ibm,cpr-440ep";
+> +		dcr-reg = <00c 002>;
+> +	};
+> +
+> +	plb {
+> +		compatible = "ibm,plb-440ep", "ibm,plb-440gp", "ibm,plb4";
+> +		#address-cells = <2>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +		clock-frequency = <0>; /* Filled in by zImage */
+> +
+> +		SDRAM0: sdram {
+> +			compatible = "ibm,sdram-440ep", "ibm,sdram-405gp";
+> +			dcr-reg = <010 2>;
+> +		};
+> +
+> +		DMA0: dma {
+> +			compatible = "ibm,dma-440ep", "ibm,dma-440gp";
+> +			dcr-reg = <100 027>;
+> +		};
+> +
+> +		MAL0: mcmal {
+> +			compatible = "ibm,mcmal-440ep", "ibm,mcmal-440gp", "ibm,mcmal";
+> +			dcr-reg = <180 62>;
+> +			num-tx-chans = <4>;
+> +			num-rx-chans = <2>;
+> +			interrupt-parent = <&MAL0>;
+> +			interrupts = <0 1 2 3 4>;
+> +			#interrupt-cells = <1>;
+> +			#address-cells = <0>;
+> +			#size-cells = <0>;
+> +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
+> +					/*RXEOB*/ 1 &UIC0 b 4
+> +					/*SERR*/  2 &UIC1 0 4
+> +					/*TXDE*/  3 &UIC1 1 4
+> +					/*RXDE*/  4 &UIC1 2 4>;
+> +		};
+> +
+> +		POB0: opb {
+> +		  	compatible = "ibm,opb-440ep", "ibm,opb-440gp", "ibm,opb";
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +		  	ranges = <00000000 0 00000000 80000000
+> +			          80000000 0 80000000 80000000>;
+> +		  	interrupt-parent = <&UIC1>;
+> +		  	interrupts = <7 4>;
+> +		  	clock-frequency = <0>; /* Filled in by zImage */
+> +
+> +			EBC0: ebc {
+> +				compatible = "ibm,ebc-440ep", "ibm,ebc-440gp", "ibm,ebc";
+> +				dcr-reg = <012 2>;
+> +				#address-cells = <2>;
+> +				#size-cells = <1>;
+> +				clock-frequency = <0>; /* Filled in by zImage */
+> +				interrupts = <5 1>;
+> +				interrupt-parent = <&UIC1>;
+> +
+> +				fpga@2,0 {
+> +					compatible = "pika,fpga";
+> +			   		reg = <2 0 2200>;
+> +					interrupts = <18 8>;
+> +					interrupt-parent = <&UIC0>;
+> +				};
+> +
+> +				nor_flash@0,0 {
+> +					compatible = "amd,s29gl512n", "cfi-flash";
+> +					bank-width = <2>;
+> +					reg = <0 0 4000000>;
+> +					#address-cells = <1>;
+> +					#size-cells = <1>;
+> +					partition@0 {
+> +						label = "kernel";
+> +						reg = <0 180000>;
+> +					};
+> +					partition@180000 {
+> +						label = "root";
+> +						reg = <180000 3480000>;
+> +					};
+> +					partition@3600000 {
+> +						label = "user";
+> +						reg = <3600000 900000>;
+> +					};
+> +					partition@3f00000 {
+> +						label = "fpga";
+> +						reg = <3f00000 40000>;
+> +					};
+> +					partition@3f40000 {
+> +						label = "env";
+> +						reg = <3f40000 40000>;
+> +					};
+> +					partition@3f80000 {
+> +						label = "u-boot";
+> +						reg = <3f80000 80000>;
+> +					};
+> +				};
+> +			};
+> +
+> +			UART0: serial@ef600300 {
+> +		   		device_type = "serial";
+> +		   		compatible = "ns16550";
+> +		   		reg = <ef600300 8>;
+> +		   		virtual-reg = <ef600300>;
+> +		   		clock-frequency = <0>; /* Filled in by zImage */
+> +		   		current-speed = <1c200>;
+> +		   		interrupt-parent = <&UIC0>;
+> +		   		interrupts = <0 4>;
+> +	   		};
+> +
+> +			IIC0: i2c@ef600700 {
+> +				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
+> +				reg = <ef600700 14>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <2 4>;
+> +			};
+> +
+> +			GPIO0: gpio@ef600b00 {
+> +				compatible = "ibm,gpio-440ep";
+> +				reg = <ef600b00 148>;
+> +			};
 
-------_=_NextPart_001_01C854D9.81C15FC7
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+You define here one gpio node that covers both gpio controllers of the 440EP. 
+I suggest to use two nodes here, like:
 
->From: Scott Wood
->Sent: Fri 1/11/2008 1:02 PM
->To: Rune Torgersen
->Cc: linuxppc-dev@ozlabs.org
->Subject: Re: Device Tree & PCI
->=20
->On Fri, Jan 11, 2008 at 12:17:41PM -0600, Rune Torgersen wrote:
->> 		PCI_INT: pic@5,10 {
->> 			#interrupt-cells =3D <1>;
->> 			interrupt-controller;
->> 			reg =3D <5 10 4>;                             //
->> Chip select, offset, length
->> 			compatible =3D "apmax-pciintmux";
->> 			interrupt-parent =3D <&PIC>;
->> 			interrupts =3D <19 8>;                        //
->> IRQ7, interrupt#25
->> 		};
->
->Is this interrupt controller getting registered before the PCI bus gets
->probed?
+			GPIO0: gpio@ef600b00 {
+				compatible = "ibm,gpio-440ep";
+				reg = <ef600b00 48>;
+			};
 
-Yes, and we got the disk controller on the primary side to work fully.
-The kernel is still spitting those messages out, and we have determined =
-it does so when scanning the secondary side of the bridge, so we're =
-suspecting our bridge node in the device tree is not correct.
+			GPIO1: gpio@ef600c00 {
+				compatible = "ibm,gpio-440ep";
+				reg = <ef600c00 48>;
+			};
 
-
-------_=_NextPart_001_01C854D9.81C15FC7
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: Device Tree &amp; PCI</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>&gt;From: Scott Wood<BR>
-&gt;Sent: Fri 1/11/2008 1:02 PM<BR>
-&gt;To: Rune Torgersen<BR>
-&gt;Cc: linuxppc-dev@ozlabs.org<BR>
-&gt;Subject: Re: Device Tree &amp; PCI<BR>
-&gt;<BR>
-&gt;On Fri, Jan 11, 2008 at 12:17:41PM -0600, Rune Torgersen wrote:<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PCI_INT: pic@5,10 {<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #interrupt-cells =3D =
-&lt;1&gt;;<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-controller;<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;5 10 =
-4&gt;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp; //<BR>
-&gt;&gt; Chip select, offset, length<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;apmax-pciintmux&quot;;<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;PIC&gt;;<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt;19 =
-8&gt;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-//<BR>
-&gt;&gt; IRQ7, interrupt#25<BR>
-&gt;&gt; &nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-&gt;<BR>
-&gt;Is this interrupt controller getting registered before the PCI bus =
-gets<BR>
-&gt;probed?<BR>
-<BR>
-Yes, and we got the disk controller on the primary side to work =
-fully.<BR>
-The kernel is still spitting those messages out, and we have determined =
-it does so when scanning the secondary side of the bridge, so we're =
-suspecting our bridge node in the device tree is not correct.<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C854D9.81C15FC7--
+Best regards,
+Stefan
