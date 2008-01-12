@@ -1,25 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9734DDDFF8
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 12:53:31 +1100 (EST)
-Subject: Re: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <20080111223831.GA2947@gate.ebshome.net>
-References: <7310408706.20071107014010@emcraft.com>
-	<20071128195037.GB22325@gate.ebshome.net>
-	<200801111824.46920.yur@emcraft.com>
-	<20080111174152.GA17240@gate.ebshome.net>
-	<1200089135.6896.59.camel@pasglop>
-	<20080111223831.GA2947@gate.ebshome.net>
-Content-Type: text/plain
-Date: Sat, 12 Jan 2008 12:52:55 +1100
-Message-Id: <1200102775.6896.97.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 44E46DDE2C
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 13:40:19 +1100 (EST)
+Date: Sat, 12 Jan 2008 13:40:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 1/5] Warp Base Platform
+Message-Id: <20080112134005.a262c95c.sfr@canb.auug.org.au>
+In-Reply-To: <4787FE23.7010201@pikatech.com>
+References: <47852C41.8000506@pikatech.com>
+	<20080111174259.b749f1f0.sfr@canb.auug.org.au>
+	<47871675.6030602@pikatech.com>
+	<20080111115143.4ed89ab6@zod.rchland.ibm.com>
+	<4787FE23.7010201@pikatech.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__12_Jan_2008_13_40_05_+1100_zFSsT3x_/SZOmO7p"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,46 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Sat__12_Jan_2008_13_40_05_+1100_zFSsT3x_/SZOmO7p
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2008-01-11 at 14:38 -0800, Eugene Surovegin wrote:
-> On Sat, Jan 12, 2008 at 09:05:35AM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > > >  The s/w synchronization algorithms proposed in my patches has no LL PLB 
-> > > > limitations as opposed to h/w snooping, but, probably, this is not the best 
-> > > > way of how it might be implemented. Even though with these patches the h/w 
-> > > > accelerated RAID starts to operate correctly (with L2-cache enabled) there is 
-> > > > a performance degradation (induced by loops in the L2-cache synchronization 
-> > > > routines) observed in the most cases. So, as a result, there is no benefit 
-> > > > from using L2-cache for these, RAID, cases at all.
-> > > 
-> > > Thanks a lot for explanation, Yuri. I'd never imagine they were so 
-> > > stupid to make new chips with such behaviour.
-> > 
-> > Indeed. Now the question is do we want to make that configurable by the
-> > platform so it can select whether to enable snooping, or use this
-> > mechanism (in which case we can disable snooping on the L2) ?
-> 
-> I don't think we should panish platforms with sane L2 caches, because 
-> there are some brain-dead ones.
+Hi Sean,
 
-I agree, which is why I'm thinking about making it some kind of explicit
-thing that a give platform would call from it's setup_arch() callbacks
-to turn on manual L2 sycnhronization.
+On Fri, 11 Jan 2008 18:39:15 -0500 Sean MacLennan <smaclennan@pikatech.com>=
+ wrote:
+>
+> +++ arch/powerpc/platforms/44x/warp-nand.c	2008-01-11 18:04:10.000000000 =
+-0500
+> @@ -0,0 +1,85 @@
 
-> > Another option would be to make the dma_ops smart enough to know whether
-> > a given device is on the snooped portion of the bus, which would be
-> > easier to do after I merge 32 and 64 bits DMA ops, so we get the ability
-> > to change the dma-ops per bus or per device even.
-> > 
-> > What do you guys think ?
-> 
-> I like the idea of having smart DMA routines with different 
-> per-bus/device behaviour.
+You need a copyright/license notice.
 
-That would be longer term. When I merge the dma ops, I'll look into a
-way to provide 44x specific DMA ops that handle that case, and then a
-way for devices to be tagged (maybe via the device-tree) on whether they
-are on an L2 coherent or non-L2 coherent segment of the bus.
+The only other concern I have left is the extern in the C file, but that
+can be dealt with later.
 
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__12_Jan_2008_13_40_05_+1100_zFSsT3x_/SZOmO7p
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHiCiLTgG2atn1QN8RAh35AKCXejEbyvYBqJlIeiYLmXBswC5hfACeNmjB
+02Q1OfZTpUlwgG7dnngk7rQ=
+=6LeZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__12_Jan_2008_13_40_05_+1100_zFSsT3x_/SZOmO7p--
