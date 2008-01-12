@@ -1,20 +1,22 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-106-saturday.noc.nerim.net
-	[62.4.17.106]) by ozlabs.org (Postfix) with ESMTP id 6F50CDDE10
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 19:47:01 +1100 (EST)
-Date: Sat, 12 Jan 2008 09:46:58 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [i2c] [PATCH 1/5] Implement module aliasing for i2c to
-	translate from device tree names
-Message-ID: <20080112094658.197acb08@hyperion.delvare>
-In-Reply-To: <20080111202015.65c3c160@hyperion.delvare>
-References: <20071220044136.20091.70984.stgit@terra.home>
-	<20071220044138.20091.31417.stgit@terra.home>
-	<20080111202015.65c3c160@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0D962DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 20:08:35 +1100 (EST)
+Date: Sat, 12 Jan 2008 01:08:33 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ibm_newemac: Increase number of default rx-/tx-buffers
+Message-ID: <20080112090833.GA29314@gate.ebshome.net>
+References: <1199526609-12290-1-git-send-email-sr@denx.de>
+	<20080111174822.GB17240@gate.ebshome.net>
+	<1200089457.6896.65.camel@pasglop> <200801120826.53091.sr@denx.de>
+	<1200124644.6896.99.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1200124644.6896.99.camel@pasglop>
+Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
-
-On Fri, 11 Jan 2008 20:20:15 +0100, Jean Delvare wrote:
-> > +{
-> > +	/* only powerpc drivers implement the id_table,
-> > +	 * it is empty on other platforms */
-> > +	if (id) {
-> > +		while (id->name[0]) {
-> > +			if (strcmp(client->driver_name, id->name) == 0)
+On Sat, Jan 12, 2008 at 06:57:24PM +1100, Benjamin Herrenschmidt wrote:
 > 
-> This doesn't look right to me. You should be comparing client->name,
-> not client->driver_name, with id->name. Where id_table is implemented,
-> client->driver_name might not even be set. I see that the next patch in
-> the series makes use of client->driver_name as well, so your code
-> "works"... but this ain't correct still.
+> On Sat, 2008-01-12 at 08:26 +0100, Stefan Roese wrote:
+> > 
+> > We shouldn't make it too complicated. We can always select different
+> > settings 
+> > in the defconfig file. My thinking here is to better wast a little
+> > memory 
+> > with a potential performance improvement. Just me 0.02$
+> 
+> If it gets really critical, then we can move those settings to the
+> device-tree.
 
-Err, scratch this (and related comments), I just realized what you were
-trying to do. That's different from what I had in mind and so I read
-your code wrong. I'll read it (and test it) again not making this
-incorrect assumption and my comments will likely be different after
-that. Well, I still think that it needs to be changed a bit, but
-probably not in the direction I suggested at first (which, I realize
-now, has its own share of issues - so it's not fair to me to point you
-there.)
-
-Sorry for the trouble. I'll post updated comments later today, but I'm
-also pretty busy with other issues, some of which need to be solved
-before 2.6.24 is released so I can't really delay them.
+Come on guys, it's not that critical. I guess I just don't trust a 
+certain company :)
 
 -- 
-Jean Delvare
+Eugene
