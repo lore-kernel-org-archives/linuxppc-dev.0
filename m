@@ -1,23 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 62AE8DDDFC
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 13:59:45 +1100 (EST)
-Message-ID: <47882D20.5060902@pikatech.com>
-Date: Fri, 11 Jan 2008 21:59:44 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id BD886DE05D
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 14:00:43 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2232368wag.13
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2008 19:00:42 -0800 (PST)
+Message-ID: <9e4733910801111900w6ace7c3bxe7e5f781db07ae4b@mail.gmail.com>
+Date: Fri, 11 Jan 2008 22:00:42 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [PATCH 19 1/5] Implement module aliasing for i2c to
+	translate from device tree names
+In-Reply-To: <20080112024739.7023.90634.stgit@terra.home>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 1/5] Warp Base Platform
-References: <47852C41.8000506@pikatech.com>
-	<20080111174259.b749f1f0.sfr@canb.auug.org.au>
-	<47871675.6030602@pikatech.com>
-	<20080111115143.4ed89ab6@zod.rchland.ibm.com>
-	<4787FE23.7010201@pikatech.com>
-	<20080112134005.a262c95c.sfr@canb.auug.org.au>
-	<20080112030015.GA9903@lixom.net>
-In-Reply-To: <20080112030015.GA9903@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080112024737.7023.61680.stgit@terra.home>
+	<20080112024739.7023.90634.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,333 +24,315 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+Comment was wrong, I2C_OF_MODULE_PREFIX was needed. Add it back.
+
+Implement module aliasing for i2c to translate from device tree names
+
+This patch allows new style i2c chip drivers to have alias names using
+the official kernel aliasing system and MODULE_DEVICE_TABLE(). I've
+tested it on PowerPC and x86. This change is required for PowerPC
+device tree support.
+
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 66a3d8c..b3e4c35 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -469,7 +469,7 @@ config MCA
- config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| PPC_PS3
-+		|| PPC_PS3 || 44x
- 	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index d248013..a95409e 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -53,6 +53,19 @@ config RAINIER
- 	help
- 	  This option enables support for the AMCC PPC440GRX evaluation board.
- 
-+config WARP
-+	bool "PIKA Warp"
-+	depends on 44x
-+	default n
-+	select 440EP
-+	help
-+	  This option enables support for the PIKA Warp(tm) Appliance. The Warp
-+          is a small computer replacement with up to 9 ports of FXO/FXS plus VOIP
-+	  stations and trunks.
-+
-+	  See http://www.pikatechnologies.com/ and follow the "PIKA for Computer
-+	  Telephony Developers" link for more information.
-+
- #config LUAN
- #	bool "Luan"
- #	depends on 44x
-@@ -75,6 +88,7 @@ config 440EP
- 	select PPC_FPU
- 	select IBM440EP_ERR42
- 	select IBM_NEW_EMAC_ZMII
-+	select USB_ARCH_HAS_OHCI
- 
- config 440EPX
- 	bool
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index a2a0dc1..7aaee9d 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -5,3 +5,5 @@ obj-$(CONFIG_BAMBOO)	+= bamboo.o
- obj-$(CONFIG_SEQUOIA)	+= sequoia.o
- obj-$(CONFIG_KATMAI)	+= katmai.o
- obj-$(CONFIG_RAINIER)	+= rainier.o
-+obj-$(CONFIG_WARP)	+= warp.o
-+#obj-$(CONFIG_WARP)	+= warp-nand.o
---- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ arch/powerpc/platforms/44x/warp-nand.c	2008-01-11 21:56:02.000000000 -0500
-@@ -0,0 +1,92 @@
-+/*
-+ * PIKA Warp(tm) NAND flash specific routines
-+ *
-+ * Copyright (c) 2008 PIKA Technologies
-+ *   Sean MacLennan <smaclennan@pikatech.com>
-+ */
-+
-+#include <linux/platform_device.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/map.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/ndfc.h>
-+
-+
-+#define CS_NAND_0	1	/* use chip select 1 for NAND device 0 */
-+
-+#define WARP_NAND_FLASH_REG_ADDR	0xD0000000UL
-+#define WARP_NAND_FLASH_REG_SIZE	0x2000
-+
-+static struct resource warp_ndfc = {
-+	.start = WARP_NAND_FLASH_REG_ADDR,
-+	.end   = WARP_NAND_FLASH_REG_ADDR + WARP_NAND_FLASH_REG_SIZE,
-+	.flags = IORESOURCE_MEM,
-+};
-+
-+static struct mtd_partition nand_parts[] = {
-+	{
-+		.name = "nand",
-+		.offset = 0,
-+		.size = MTDPART_SIZ_FULL,
+
+ drivers/hwmon/f75375s.c         |    4 ++--
+ drivers/i2c/chips/ds1682.c      |    2 +-
+ drivers/i2c/chips/menelaus.c    |    2 +-
+ drivers/i2c/chips/tps65010.c    |    2 +-
+ drivers/i2c/chips/tsl2550.c     |    2 +-
+ drivers/i2c/i2c-core.c          |   24 +++++++++++++++++++++++-
+ drivers/rtc/rtc-ds1307.c        |    2 +-
+ drivers/rtc/rtc-ds1374.c        |    2 +-
+ drivers/rtc/rtc-m41t80.c        |    2 +-
+ drivers/rtc/rtc-rs5c372.c       |    2 +-
+ include/linux/i2c.h             |    5 ++---
+ include/linux/mod_devicetable.h |   20 ++++++++++++++++++++
+ scripts/mod/file2alias.c        |   12 ++++++++++++
+ 13 files changed, 67 insertions(+), 14 deletions(-)
+
+
+diff --git a/drivers/hwmon/f75375s.c b/drivers/hwmon/f75375s.c
+index 6892f76..2247de6 100644
+--- a/drivers/hwmon/f75375s.c
++++ b/drivers/hwmon/f75375s.c
+@@ -117,7 +117,7 @@ struct f75375_data {
+ static int f75375_attach_adapter(struct i2c_adapter *adapter);
+ static int f75375_detect(struct i2c_adapter *adapter, int address, int kind);
+ static int f75375_detach_client(struct i2c_client *client);
+-static int f75375_probe(struct i2c_client *client);
++static int f75375_probe(struct i2c_client *client, const struct
+i2c_device_id *id);
+ static int f75375_remove(struct i2c_client *client);
+
+ static struct i2c_driver f75375_legacy_driver = {
+@@ -628,7 +628,7 @@ static void f75375_init(struct i2c_client *client,
+struct f75375_data *data,
+
+ }
+
+-static int f75375_probe(struct i2c_client *client)
++static int f75375_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	struct f75375_data *data = i2c_get_clientdata(client);
+ 	struct f75375s_platform_data *f75375s_pdata = client->dev.platform_data;
+diff --git a/drivers/i2c/chips/ds1682.c b/drivers/i2c/chips/ds1682.c
+index 9e94542..93c0441 100644
+--- a/drivers/i2c/chips/ds1682.c
++++ b/drivers/i2c/chips/ds1682.c
+@@ -200,7 +200,7 @@ static struct bin_attribute ds1682_eeprom_attr = {
+ /*
+  * Called when a ds1682 device is matched with this driver
+  */
+-static int ds1682_probe(struct i2c_client *client)
++static int ds1682_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	int rc;
+
+diff --git a/drivers/i2c/chips/menelaus.c b/drivers/i2c/chips/menelaus.c
+index 2dea012..89ef9b6 100644
+--- a/drivers/i2c/chips/menelaus.c
++++ b/drivers/i2c/chips/menelaus.c
+@@ -1149,7 +1149,7 @@ static inline void menelaus_rtc_init(struct
+menelaus_chip *m)
+
+ static struct i2c_driver menelaus_i2c_driver;
+
+-static int menelaus_probe(struct i2c_client *client)
++static int menelaus_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	struct menelaus_chip	*menelaus;
+ 	int			rev = 0, val;
+diff --git a/drivers/i2c/chips/tps65010.c b/drivers/i2c/chips/tps65010.c
+index e320994..6b13642 100644
+--- a/drivers/i2c/chips/tps65010.c
++++ b/drivers/i2c/chips/tps65010.c
+@@ -465,7 +465,7 @@ static int __exit tps65010_remove(struct i2c_client *client)
+ 	return 0;
+ }
+
+-static int tps65010_probe(struct i2c_client *client)
++static int tps65010_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	struct tps65010		*tps;
+ 	int			status;
+diff --git a/drivers/i2c/chips/tsl2550.c b/drivers/i2c/chips/tsl2550.c
+index 3de4b19..27c553d 100644
+--- a/drivers/i2c/chips/tsl2550.c
++++ b/drivers/i2c/chips/tsl2550.c
+@@ -364,7 +364,7 @@ static int tsl2550_init_client(struct i2c_client *client)
+  */
+
+ static struct i2c_driver tsl2550_driver;
+-static int __devinit tsl2550_probe(struct i2c_client *client)
++static int __devinit tsl2550_probe(struct i2c_client *client, const
+struct i2c_device_id *id)
+ {
+ 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+ 	struct tsl2550_data *data;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index b5e13e4..5f62230 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -47,6 +47,19 @@ static DEFINE_IDR(i2c_adapter_idr);
+
+ /* ------------------------------------------------------------------------- */
+
++static const struct i2c_device_id *i2c_match_id(
++		const struct i2c_device_id *id, struct i2c_client *client)
++{
++	/* only powerpc drivers implement the id_table,
++	 * it is empty on other platforms */
++	while (id->name[0]) {
++		if (strcmp(client->name, id->name) == 0)
++			return id;
++		id++;
 +	}
-+};
-+
-+struct ndfc_controller_settings warp_ndfc_settings = {
-+	.ccr_settings = (NDFC_CCR_BS(CS_NAND_0) | NDFC_CCR_ARAC1),
-+	.ndfc_erpn = 0,
-+};
-+
-+static struct ndfc_chip_settings warp_chip0_settings = {
-+	.bank_settings = 0x80002222,
-+};
-+
-+struct platform_nand_ctrl warp_nand_ctrl = {
-+	.priv = &warp_ndfc_settings,
-+};
-+
-+static struct platform_device warp_ndfc_device = {
-+	.name = "ndfc-nand",
-+	.id = 0,
-+	.dev = {
-+		.platform_data = &warp_nand_ctrl,
-+	},
-+	.num_resources = 1,
-+	.resource = &warp_ndfc,
-+};
-+
-+static struct nand_ecclayout nand_oob_16 = {
-+	.eccbytes = 3,
-+	.eccpos = { 0, 1, 2, 3, 6, 7 },
-+	.oobfree = { {.offset = 8, .length = 16} }
-+};
-+
-+static struct platform_nand_chip warp_nand_chip0 = {
-+	.nr_chips = 1,
-+	.chip_offset = CS_NAND_0,
-+	.nr_partitions = ARRAY_SIZE(nand_parts),
-+	.partitions = nand_parts,
-+	.chip_delay = 50,
-+	.ecclayout = &nand_oob_16,
-+	.priv = &warp_chip0_settings,
-+};
-+
-+static struct platform_device warp_nand_device = {
-+	.name = "ndfc-chip",
-+	.id = 0,
-+	.num_resources = 1,
-+	.resource = &warp_ndfc,
-+	.dev = {
-+		.platform_data = &warp_nand_chip0,
-+		.parent = &warp_ndfc_device.dev,
-+	}
-+};
-+
-+static int warp_setup_nand_flash(void)
-+{
-+	platform_device_register(&warp_ndfc_device);
-+	platform_device_register(&warp_nand_device);
-+
-+	return 0;
++	return NULL;
 +}
-+device_initcall(warp_setup_nand_flash);
---- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ arch/powerpc/platforms/44x/warp.c	2008-01-11 20:20:17.000000000 -0500
-@@ -0,0 +1,175 @@
-+/*
-+ * PIKA Warp(tm) board specific routines
-+ *
-+ * Copyright (c) 2008 PIKA Technologies
-+ *   Sean MacLennan <smaclennan@pikatech.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
-+#include <linux/kthread.h>
 +
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
+ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+@@ -58,6 +71,10 @@ static int i2c_device_match(struct device *dev,
+struct device_driver *drv)
+ 	if (!is_newstyle_driver(driver))
+ 		return 0;
+
++	/* match on an id table if there is one */
++	if (driver->id_table)
++		return i2c_match_id(driver->id_table, client) != NULL;
 +
-+#include "44x.h"
+ 	/* new style drivers use the same kind of driver matching policy
+ 	 * as platform devices or SPI:  compare device and driver IDs.
+ 	 */
+@@ -89,12 +106,17 @@ static int i2c_device_probe(struct device *dev)
+ {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(dev->driver);
++	const struct i2c_device_id *id = NULL;
+
+ 	if (!driver->probe)
+ 		return -ENODEV;
+ 	client->driver = driver;
+ 	dev_dbg(dev, "probe\n");
+-	return driver->probe(client);
 +
++	if (driver->id_table)
++		id = i2c_match_id(driver->id_table, client);
++	
++	return driver->probe(client, id);
+ }
+
+ static int i2c_device_remove(struct device *dev)
+diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
+index bc1c7fe..9b0eab9 100644
+--- a/drivers/rtc/rtc-ds1307.c
++++ b/drivers/rtc/rtc-ds1307.c
+@@ -326,7 +326,7 @@ static struct bin_attribute nvram = {
+
+ static struct i2c_driver ds1307_driver;
+
+-static int __devinit ds1307_probe(struct i2c_client *client)
++static int __devinit ds1307_probe(struct i2c_client *client, const
+struct i2c_device_id *id)
+ {
+ 	struct ds1307		*ds1307;
+ 	int			err = -ENODEV;
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 45bda18..dab6008 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -355,7 +355,7 @@ static const struct rtc_class_ops ds1374_rtc_ops = {
+ 	.ioctl = ds1374_ioctl,
+ };
+
+-static int ds1374_probe(struct i2c_client *client)
++static int ds1374_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	struct ds1374 *ds1374;
+ 	int ret;
+diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
+index 1cb33ca..457f2ca 100644
+--- a/drivers/rtc/rtc-m41t80.c
++++ b/drivers/rtc/rtc-m41t80.c
+@@ -756,7 +756,7 @@ static struct notifier_block wdt_notifier = {
+  *
+  *****************************************************************************
+  */
+-static int m41t80_probe(struct i2c_client *client)
++static int m41t80_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	int i, rc = 0;
+ 	struct rtc_device *rtc = NULL;
+diff --git a/drivers/rtc/rtc-rs5c372.c b/drivers/rtc/rtc-rs5c372.c
+index 6b67b50..25de13b 100644
+--- a/drivers/rtc/rtc-rs5c372.c
++++ b/drivers/rtc/rtc-rs5c372.c
+@@ -494,7 +494,7 @@ static void rs5c_sysfs_unregister(struct device *dev)
+
+ static struct i2c_driver rs5c372_driver;
+
+-static int rs5c372_probe(struct i2c_client *client)
++static int rs5c372_probe(struct i2c_client *client, const struct
+i2c_device_id *id)
+ {
+ 	int err = 0;
+ 	struct rs5c372 *rs5c372;
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index a100c9f..0ca1a59 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -126,7 +126,7 @@ struct i2c_driver {
+ 	 * With the driver model, device enumeration is NEVER done by drivers;
+ 	 * it's done by infrastructure.  (NEW STYLE DRIVERS ONLY)
+ 	 */
+-	int (*probe)(struct i2c_client *);
++	int (*probe)(struct i2c_client *, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *);
+
+ 	/* driver model interfaces that don't relate to enumeration  */
+@@ -141,11 +141,10 @@ struct i2c_driver {
+
+ 	struct device_driver driver;
+ 	struct list_head list;
++	struct i2c_device_id *id_table;
+ };
+ #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
+
+-#define I2C_NAME_SIZE	20
+-
+ /**
+  * struct i2c_client - represent an I2C slave device
+  * @flags: I2C_CLIENT_TEN indicates the device uses a ten bit chip address;
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index e9fddb4..612d416 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -367,4 +367,24 @@ struct virtio_device_id {
+ };
+ #define VIRTIO_DEV_ANY_ID	0xffffffff
+
++/* i2c */
 +
-+static __initdata struct of_device_id warp_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
++/* These defines are used to separate PowerPC open firmware
++ * drivers into their own namespace */
++#define I2C_NAME_SIZE	(16*3)  /* Needs to be large enough to hold
+device tree style names */
++#define I2C_MODULE_PREFIX "i2c:"
++#ifdef CONFIG_OF
++#define OF_I2C_PREFIX "OF,"
++#define I2C_OF_MODULE_PREFIX I2C_MODULE_PREFIX OF_I2C_PREFIX
++#define OF_I2C_ID(s,d) { OF_I2C_PREFIX s, (d) },
++#else
++#define OF_I2C_ID(s,d)
++#endif
++
++struct i2c_device_id {
++	char name[I2C_NAME_SIZE];
++	kernel_ulong_t driver_data;	/* Data private to the driver */
 +};
 +
-+static int __init warp_device_probe(void)
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index d802b5a..ac05b04 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -539,6 +539,14 @@ static int do_virtio_entry(const char *filename,
+struct virtio_device_id *id,
+ 	return 1;
+ }
+
++/* Looks like: i2c:s */
++static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
++			   char *alias)
 +{
-+	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-+	return 0;
-+}
-+machine_device_initcall(warp, warp_device_probe);
-+
-+static int __init warp_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "pika,warp"))
-+		return 0;
-+
++	sprintf(alias, I2C_MODULE_PREFIX "%s", id->name);
 +	return 1;
 +}
 +
-+define_machine(warp) {
-+	.name		= "Warp",
-+	.probe 		= warp_probe,
-+	.progress 	= udbg_progress,
-+	.init_IRQ 	= uic_init_tree,
-+	.get_irq 	= uic_get_irq,
-+	.restart	= ppc44x_reset_system,
-+	.calibrate_decr = generic_calibrate_decr,
-+};
-+
-+/* This is for the power LEDs 1 = on, 0 = off, -1 = leave alone */
-+void warp_set_power_leds(int green, int red)
-+{
-+	static void __iomem *gpio_base = NULL;
-+	unsigned leds;
-+
-+	if (gpio_base == NULL) {
-+		struct device_node *np;
-+
-+		np = of_find_compatible_node(NULL, NULL, "ibm,gpio-440EP");
-+		if (np == NULL) {
-+			printk(KERN_ERR __FILE__ ": Unable to find gpio\n");
-+			return;
-+		}
-+		gpio_base = of_iomap(np, 0);
-+		if (gpio_base == NULL) {
-+			printk(KERN_ERR __FILE__ ": Unable to map gpio");
-+			return;
-+		}
-+	}
-+
-+	leds = readl(gpio_base + 0x100);
-+
-+	switch (green) {
-+	case 0: leds &= ~0x80; break;
-+	case 1: leds |=  0x80; break;
-+	}
-+	switch (red) {
-+	case 0: leds &= ~0x40; break;
-+	case 1: leds |=  0x40; break;
-+	}
-+
-+	writel(leds, gpio_base + 0x100);
-+}
-+EXPORT_SYMBOL(warp_set_power_leds);
-+
-+
-+#ifdef CONFIG_SENSORS_AD7414
-+static int pika_dtm_thread(void __iomem *fpga)
-+{
-+	extern int ad7414_get_temp(int index);
-+
-+	while (!kthread_should_stop()) {
-+		int temp = ad7414_get_temp(0);
-+
-+		out_be32(fpga, temp);
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+	return 0;
-+}
-+
-+static int pika_dtm_start(void __iomem *fpga)
-+{
-+	struct task_struct *dtm_thread;
-+
-+	dtm_thread = kthread_run(pika_dtm_thread, fpga + 0x20, "pika-dtm");
-+	if (IS_ERR(dtm_thread)) {
-+		printk(KERN_ERR __FILE__ ": Unable to start PIKA DTM thread\n");
-+		return PTR_ERR(dtm_thread);
-+	}
-+
-+	return 0;
-+}
-+#else
-+static int pika_dtm_start(void __iomem *fpga)
-+{
-+	printk(KERN_WARN "PIKA DTM disabled\n");
-+	return 0;
-+}
-+#endif
-+
-+
-+static int __devinit warp_fpga_init(void)
-+{
-+	struct device_node *np;
-+	struct resource res;
-+	void __iomem *fpga;
-+	int irq;
-+
-+	np = of_find_compatible_node(NULL, NULL, "pika,fpga");
-+	if (np == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to find fpga\n");
-+		return -ENOENT;
-+	}
-+
-+	irq = irq_of_parse_and_map(np, 0);
-+	if (irq  == NO_IRQ) {
-+		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
-+		return -EBUSY;
-+	}
-+
-+	/* We do not call of_iomap here since it would map in the entire
-+	 * fpga space, which is over 8k.
-+	 */
-+	if (of_address_to_resource(np, 0, &res)) {
-+		printk(KERN_ERR __FILE__ ": Unable to get FPGA address\n");
-+		return -ENOENT;
-+	}
-+	fpga = ioremap(res.start, 0x24);
-+	if (fpga == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to map FPGA\n");
-+		return -ENOENT;
-+	}
-+
-+	if (pika_dtm_start(fpga)) {
-+		iounmap(fpga);
-+		return -ENOENT;
-+	}
-+
-+	/* SAM TODO: Start the watchdog here */
-+
-+	return 0;
-+}
-+device_initcall(warp_fpga_init);
+ /* Ignore any prefix, eg. v850 prepends _ */
+ static inline int sym_is(const char *symbol, const char *name)
+ {
+@@ -669,6 +677,10 @@ void handle_moddevtable(struct module *mod,
+struct elf_info *info,
+ 		do_table(symval, sym->st_size,
+ 			 sizeof(struct virtio_device_id), "virtio",
+ 			 do_virtio_entry, mod);
++	else if (sym_is(symname, "__mod_i2c_device_table"))
++		do_table(symval, sym->st_size,
++			 sizeof(struct i2c_device_id), "i2c",
++			 do_i2c_entry, mod);
+ 	free(zeros);
+ }
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
