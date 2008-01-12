@@ -1,12 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18312.1349.656827.252548@cargo.ozlabs.ibm.com>
-Date: Sat, 12 Jan 2008 11:09:41 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9734DDDFF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 12:53:31 +1100 (EST)
+Subject: Re: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20080111223831.GA2947@gate.ebshome.net>
+References: <7310408706.20071107014010@emcraft.com>
+	<20071128195037.GB22325@gate.ebshome.net>
+	<200801111824.46920.yur@emcraft.com>
+	<20080111174152.GA17240@gate.ebshome.net>
+	<1200089135.6896.59.camel@pasglop>
+	<20080111223831.GA2947@gate.ebshome.net>
+Content-Type: text/plain
+Date: Sat, 12 Jan 2008 12:52:55 +1100
+Message-Id: <1200102775.6896.97.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,58 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do
+On Fri, 2008-01-11 at 14:38 -0800, Eugene Surovegin wrote:
+> On Sat, Jan 12, 2008 at 09:05:35AM +1100, Benjamin Herrenschmidt wrote:
+> > 
+> > > >  The s/w synchronization algorithms proposed in my patches has no LL PLB 
+> > > > limitations as opposed to h/w snooping, but, probably, this is not the best 
+> > > > way of how it might be implemented. Even though with these patches the h/w 
+> > > > accelerated RAID starts to operate correctly (with L2-cache enabled) there is 
+> > > > a performance degradation (induced by loops in the L2-cache synchronization 
+> > > > routines) observed in the most cases. So, as a result, there is no benefit 
+> > > > from using L2-cache for these, RAID, cases at all.
+> > > 
+> > > Thanks a lot for explanation, Yuri. I'd never imagine they were so 
+> > > stupid to make new chips with such behaviour.
+> > 
+> > Indeed. Now the question is do we want to make that configurable by the
+> > platform so it can select whether to enable snooping, or use this
+> > mechanism (in which case we can disable snooping on the L2) ?
+> 
+> I don't think we should panish platforms with sane L2 caches, because 
+> there are some brain-dead ones.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+I agree, which is why I'm thinking about making it some kind of explicit
+thing that a give platform would call from it's setup_arch() callbacks
+to turn on manual L2 sycnhronization.
 
-to get two more bug fixes for powerpc, as listed below.
+> > Another option would be to make the dma_ops smart enough to know whether
+> > a given device is on the snooped portion of the bus, which would be
+> > easier to do after I merge 32 and 64 bits DMA ops, so we get the ability
+> > to change the dma-ops per bus or per device even.
+> > 
+> > What do you guys think ?
+> 
+> I like the idea of having smart DMA routines with different 
+> per-bus/device behaviour.
 
-Thanks,
-Paul.
+That would be longer term. When I merge the dma ops, I'll look into a
+way to provide 44x specific DMA ops that handle that case, and then a
+way for devices to be tagged (maybe via the device-tree) on whether they
+are on an L2 coherent or non-L2 coherent segment of the bus.
 
- arch/powerpc/kernel/prom_init.c              |   39 ++++++++++++++++++++++++++
- arch/powerpc/mm/slb.c                        |    8 +++++
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 +
- arch/powerpc/platforms/pseries/lpar.c        |    1 +
- include/asm-powerpc/mmu-hash64.h             |    1 +
- 5 files changed, 51 insertions(+), 0 deletions(-)
-
-commit 473980a99316c0e788bca50996375a2815124ce1
-Author: Michael Neuling <mikey@neuling.org>
-Date:   Fri Jan 11 14:02:47 2008 +1100
-
-    [POWERPC] Fix CPU hotplug when using the SLB shadow buffer
-    
-    Before we register the SLB shadow buffer, we need to invalidate the
-    entries in the buffer, otherwise we can end up stale entries from when
-    we previously offlined the CPU.
-    
-    This does this invalidate as well as unregistering the buffer with
-    PHYP before we offline the cpu.  Tested and fixes crashes seen on
-    970MP (thanks to tonyb) and POWER5.
-    
-    Signed-off-by: Michael Neuling <mikey@neuling.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 6f4347c969674ed45de7d08d4b26d6326a95b959
-Author: Olaf Hering <olaf@aepfle.de>
-Date:   Thu Jan 10 01:06:08 2008 +1100
-
-    [POWERPC] efika: add phy-handle property for fec_mpc52xx
-    
-    The new network driver fec_mpc52xx will not work on efika because the
-    firmware does not provide all required properties.
-    http://www.powerdeveloper.org/asset/by-id/46 has a Forth script to
-    create more properties. But only the phy stuff is required to get a
-    working network.
-    
-    This should go into the kernel because its appearently
-    impossible to boot the script via tftp and then load the real boot
-    binary (yaboot or zimage).
-    
-    Signed-off-by: Olaf Hering <olaf@aepfle.de>
-    Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cheers,
+Ben.
