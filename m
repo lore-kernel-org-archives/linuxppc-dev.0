@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 632A7DDE26
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jan 2008 10:05:38 +1100 (EST)
-Message-Id: <041B1E64-51C3-414A-AC1B-0C4E2114BC24@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1200089015.6896.56.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: RFC: Only deal with apple fix if res is memory
-Date: Sat, 12 Jan 2008 17:05:26 -0600
-References: <Pine.LNX.4.64.0801111038380.17281@blarg.am.freescale.net>
-	<1200089015.6896.56.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ink@jurassic.park.msu.ru>
+Received: from jurassic.park.msu.ru (jurassic.park.msu.ru [195.208.223.243])
+	by ozlabs.org (Postfix) with ESMTP id A2187DDE1D
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jan 2008 02:36:18 +1100 (EST)
+Date: Sat, 12 Jan 2008 18:12:12 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: PCI Failed to allocate mem for PCI ROM
+Message-ID: <20080112151212.GB19279@jurassic.park.msu.ru>
+References: <1B75C5A8-E512-40CB-A6F3-351640701D0D@kernel.crashing.org>
+	<20080111175039.GB7916@kroah.com>
+	<E1025115-6BE2-46B6-8416-A5ADD506E2ED@kernel.crashing.org>
+	<20080112072705.GB7234@colo.lackof.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080112072705.GB7234@colo.lackof.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>,
+	linux-pci@atrey.karlin.mff.cuni.cz, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, Jan 12, 2008 at 12:27:05AM -0700, Grant Grundler wrote:
+> Looking at setup-bus.c:pci_bridge_check_ranges(), I'm concluding that:
+> [7] is IO Range.
+> [8] is MMIO
+> [9] is Prefetchable MMIO
+> [10] no clue...maybe used by host PCI bus controllers.
 
-On Jan 11, 2008, at 4:03 PM, Benjamin Herrenschmidt wrote:
+#10 is for cardbus bridges, IIRC.
 
->
-> On Fri, 2008-01-11 at 10:38 -0600, Kumar Gala wrote:
->> Ben,
->>
->> Will this impact the apple fix?  I'm getting some _IO cases hitting  
->> this.
->
-> No, your fix is right, it's a bug to compare against pci_mem_offset  
-> and
-> not check if it's a memory resource in the first place. I would  
-> suggest
-> that you do the res->flags test first in the if () statement for  
-> clarity
-> though.
+> 0x100000 is 1MB and would be the minimum MMIO range that can be allocated.
+> So that looks right too. Probably need to find out what is allocating
+> 0xe0000000 instead.
 
-ok, will clean up the patch and resend.
+I believe that the setup-bus code just tried to allocate 1M ROM of some
+device using prefetchable window of the bridge 0000:00:00.0. That failed,
+probably because there is no MEM space left on the root bus, which is
+perfectly OK. Then, the ROM might be successfully allocated in the
+non-prefetchable MMIO space.
 
-- k
+So, I don't see any problem in this situation. The only thing I could
+suggest is to lower the log level in that message from KERN_ERR to
+KERN_WARNING...
+
+Ivan.
