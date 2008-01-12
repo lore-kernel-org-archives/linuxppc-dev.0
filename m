@@ -1,19 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 00F01DE049
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 17:35:37 +1100 (EST)
-Message-ID: <47885FB7.8000705@pikatech.com>
-Date: Sat, 12 Jan 2008 01:35:35 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <SRS0=h5jx=SC=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 5209CDDDEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jan 2008 18:26:58 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] ibm_newemac: Increase number of default rx-/tx-buffers
+Date: Sat, 12 Jan 2008 08:26:52 +0100
+References: <1199526609-12290-1-git-send-email-sr@denx.de>
+	<20080111174822.GB17240@gate.ebshome.net>
+	<1200089457.6896.65.camel@pasglop>
+In-Reply-To: <1200089457.6896.65.camel@pasglop>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 1/5] Warp Base Platform
-References: <47852C41.8000506@pikatech.com>
-	<20080111115143.4ed89ab6@zod.rchland.ibm.com>
-	<4787FE23.7010201@pikatech.com> <200801120723.29393.sr@denx.de>
-In-Reply-To: <200801120723.29393.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200801120826.53091.sr@denx.de>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,56 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> On Saturday 12 January 2008, Sean MacLennan wrote:
->   
->> Josh Boyer wrote:
->>     
->>>> +		if (gpio_base == NULL) {
->>>> +			printk("ERROR: Unable to remap GPIO base.\n");
->>>> +			return;
->>>> +		}
->>>> +	}
->>>> +
->>>> +	leds = readl(gpio_base + 0x100);
->>>>         
->>> Do you really want readl here?  That will byte-swap.
->>>       
->> According to the docs I got from the hardware guys, this is correct.
->> That does *not* mean they didn't get it wrong. Unfortunately, it was
->> just on a piece of paper and I don't know if I still have it.
->>     
->
-> You are accessing the 440EP GPIO controller here right? Then you really should 
-> use big endian access routines. From you code I assume that you have 
-> connected the LED signals to GPIO00 and GPIO01. I suggest to use code that 
-> looks like this:
->
-> #define LED_GREEN	(0x80000000 >> 0)
-> #define LED_RED		(0x80000000 >> 1)
->
-> 	leds = in_be32(gpio_base);
->
-> 	switch (green) {
-> 	case 0: leds &= ~LED_GREEN; break;
-> 	case 1: leds |=  LED_GREEN; break;
-> 	}
-> 	switch (red) {
-> 	case 0: leds &= ~LED_RED; break;
-> 	case 1: leds |=  LED_RED; break;
-> 	}
->
->        outbe32(leds, gpio_base);
->
-> And when you change the dts to describe both GPIO controllers you should map 
-> the 2nd one and remove the 0x100 offset above as I have done above.
->
-> Best regards,
-> Stefan
->   
-Ok. I will look into that. What is the best practice for looking up the 
-second GPIO controller? I have been using of_find_compatible_type. I 
-could call it a second time with a from arg.
+On Friday 11 January 2008, Benjamin Herrenschmidt wrote:
+> On Fri, 2008-01-11 at 09:48 -0800, Eugene Surovegin wrote:
+> > On Sat, Jan 05, 2008 at 01:38:17PM +0100, Stefan Roese wrote:
+> > > On Saturday 05 January 2008, Benjamin Herrenschmidt wrote:
+> > > > On Sat, 2008-01-05 at 10:50 +0100, Stefan Roese wrote:
+> > > > > Performance tests done by AMCC have shown that 256 buffer increase
+> > > > > the performance of the Linux EMAC driver. So let's update the
+> > > > > default values to match this setup.
+> > > > >
+> > > > > Signed-off-by: Stefan Roese <sr@denx.de>
+> > > > > ---
+> > > >
+> > > > Do we have the numbers ? Did they also measure latency ?
+> > >
+> > > I hoped this question would not come. ;) No, unfortunately I don't have
+> > > any numbers. Just the recommendation from AMCC to always use 256
+> > > buffers.
+> >
+> > This cannot be true for all chips. Default numbers I selected weren't
+> > random. In particular, 256 for Tx doesn't make a lot of sense for 405.
+> > You just gonna waste memory.
 
-Cheers,
-    Sean
+This may be the case with the "old" 405 PPC's. But with the new ones coming 
+out right now, like the up to 666MHz 405EX with GBit support, 256 could be an 
+improvement. I still owe you figures though. Will try to do some testing in a 
+short while.
+
+> > I'd be quite reluctant to follow such advices from AMCC without actual
+> > details.
+>
+> I think we can make defaults based on other config options nowadays. Not
+> very nice but we could do things like
+>
+> 	default 128 if PPC_40x
+> 	default 256
+>
+> Or even more detailed.
+
+We shouldn't make it too complicated. We can always select different settings 
+in the defconfig file. My thinking here is to better wast a little memory 
+with a potential performance improvement. Just me 0.02$
+
+Best regards,
+Stefan
