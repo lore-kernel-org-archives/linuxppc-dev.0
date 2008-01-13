@@ -1,17 +1,24 @@
-Return-Path: <bodonoghue@codehermit.ie>
-Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
-	by ozlabs.org (Postfix) with ESMTP id 76271DDE19
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 01:53:17 +1100 (EST)
-Subject: Re: [PATCH 1/3] 8xx: Analogue & Micro Adder875 board support.
-From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080111200705.GA696@loki.buserror.net>
-References: <20080111200705.GA696@loki.buserror.net>
-Content-Type: text/plain
-Date: Sun, 13 Jan 2008 14:26:12 +0000
-Message-Id: <1200234372.3990.24.camel@neuromancer.mindspace>
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-100-sunday.nerim.net [62.4.16.100])
+	by ozlabs.org (Postfix) with ESMTP id 9375DDDE1E
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 02:09:47 +1100 (EST)
+Date: Sun, 13 Jan 2008 16:09:46 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [i2c] [PATCH 0/5] Version 17, series to add device tree naming
+	to i2c
+Message-ID: <20080113160946.5cddc813@hyperion.delvare>
+In-Reply-To: <9e4733910801120800g5b13c84u8720442fc8551339@mail.gmail.com>
+References: <20071220044136.20091.70984.stgit@terra.home>
+	<20080111095638.775670ed@hyperion.delvare>
+	<9e4733910801110752k57f1fd7crd5f143900fc64f0b@mail.gmail.com>
+	<20080111201550.12abb02c@hyperion.delvare>
+	<9e4733910801111216g7dfee16ev72ec3c58e5d6c746@mail.gmail.com>
+	<20080112100835.616d6bd9@hyperion.delvare>
+	<9e4733910801120800g5b13c84u8720442fc8551339@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,116 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Greetings Scott.
+Hi Jon,
 
-Using u-boot Adder_config 
+On Sat, 12 Jan 2008 11:00:31 -0500, Jon Smirl wrote:
+> On 1/12/08, Jean Delvare wrote:
+> > What I meant is that the translation from Open Firmware device name to
+> > Linux device name could happen in different ways. Making module aliases
+> > out of the is one possibility but this is not the only one.
+> >
+> > I am curious why the translation could not happen "offline". As I
+> > understand it, you're getting the device names from these .dts files.
+> > However you're not parsing them in the kernel directly, are you? I
+> > presume that you have some tool that converts these files into C code
+> > that the kernel can use? This conversion tool could translate the names.
+> 
+> Those dts files are for embedded devices that were specifically
+> developed for Linux. All of the PowerPC Macs in the world have a
+> device tree in ROM that was developed by Apple following the Open
+> Firmware standard. Same thing for Sun boxes, but I'm not working on
+> those.
 
-U-Boot 1.3.1-g5c740711-dirty (Jan 13 2008 - 13:43:30) - using an ELDK
-4.1 uclibc toolchain
+OK. So basically we have to handle two different cases here, trees that
+come from the .dts files and trees that are read from ROMs, right?
+Does this mean that .dts files are compiled to some binary format to
+look like what is in the ROMs? Is there kernel code that parses this?
+Please explain how both types are handled by the kernel. I need to
+understand how this works before I can decide where the OF names ->
+Linux names translation can happen.
 
-I can't boot your board - port.
+> The kernel has an existing mechanism for handling translations like
+> these, the alias scheme.
 
-I've applied your code against Linus' git v2.6.26-rc7 as at today.
-I have to apply 
+That we agree on. My concern here is that you want to replace the Linux
+names of i2c devices by OF names, without realizing that the Linux
+names have a use outside of the kernel. We can't just replace them like
+that, it would break some user-space applications. That's the reason
+why I believe that it would make more sense to translate from OF names
+to Linux names early in the process, so that the kernel, and thus
+user-space applications, always handle and see the Linux names,
+independently of the platform. I'm asking questions in order to figure
+out whether and how this could be achieved.
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 31147a0..8c060ca 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -163,7 +163,7 @@ ps3)
-     ksection=.kernel:vmlinux.bin
-     isection=.kernel:initrd
-     ;;
--ep88xc)
-+ep88xc|ep405|redboot*)
-     platformo="$object/fixed-head.o $object/$platform.o"
-     binary=y
-     ;;
+> Currently developers add entries to the table in their private builds
+> for the i2c devices they are using. Another way to avoid adding a
+> table entry is to create a platform device in the platform code. But
+> this support is being extended to audio codecs too. There are hundreds
+> of audio codecs.
+> 
+> The whole purpose of this code is to dynamically load the correct i2c
+> and audio drivers by reading the device tree instead of having static
+> i2s/codec devices for every possible platform combination.
 
-and
+I2C driver autoloading is already implemented, and works. Just not the
+way you expected, but it works.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 18e3271..e426052 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -56,7 +56,7 @@ src-plat := of.c cuboot-52xx.c cuboot-83xx.c
-cuboot-85xx.c holly.c \
-                cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
-                ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c
-cuboot-8xx.c \
-                cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c
-cuboot-bamboo.c \
--               fixed-head.S ep88xc.c cuboot-hpc2.c
-+               fixed-head.S ep88xc.c cuboot-hpc2.c redboot-8xx.c 
- src-boot := $(src-wlib) $(src-plat) empty.c
+Replacing this mechanism with standard aliases is IMHO a good idea, it
+makes the code cleaner and also more similar to what the rest of the
+kernel does, which is always nice.
 
-manually since those two fail to apply to Linus' tree - presumably
-because they depend on other patches - should I be using -mm or some
-other tree here instead ?
+However, having a module aliasing mechanism for i2c drivers does NOT
+require that OF names are used. We could implement aliasing using Linux
+device names. Note that I have no problem with using OF names for
+aliasing, however it should not break applications that currently know
+the I2C devices by their Linux name.
 
-I then run
-
-source /opt/eldk/eldk_init ppc_8xx
-
-export ARCH=powerpc
-
-make adder87x-uboot_defconfig
-
-make uImage
-
-cp arch/powerpc/boot/uImage /tftpboot - which is my tftpd root
-directory.
-
-In U-Boot then.
-
-=> tftpboot 0x400000 uImage
-=> bootm 0x400000
-
-Which doesn't boot.
-
-Attaching a BDI2000 to the target board I see that the kernel is
-panicing somewhere around line 104 of arch/powerpc/kernel/prom.c in
-of_scan_flat_dt - presumably because the kernel cannot find an
-OpenFirmware tree..
-
-I admit not understanding everything I should about where the output
-of .dts & dtc "go" with respect to booting Linux.... but, didn't want to
-ask on the list - lest I display a "lack of knowledge" ...
-
-Seriously though, could you offer a pointer as to how I run this code on
-the Adder875 here ?
-
-My kernel command line is
-
-root=/dev/nfs nfsroot=192.168.1.101:/tftpboot/root_fs rw
-ip=192.168.1.202:::::eth0:off console=ttyCPM,115200
-
-I've also tried - in ignorance of how OF works I admit to add the
-following options to u-boot to no avail.
-
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT      1
-#undef  CONFIG_OF_FLAT_TREE
-#define CONFIG_OF_BOARD_SETUP 1
-#define CONFIG_OF_HAS_BD_T    1
-#define CONFIG_OF_HAS_UBOOT_ENV       1
-
-#define OF_CPU                        "PowerPC,875@0"
-#define OF_SOC                        "soc875@ff000000"
-#define OF_TBCLK              (bd->bi_busfreq / 4)
-
-Have I missed a step with the .dts & dtc - and is this why
-of_scan_flat_dt is failing - or - should the board port simply "just
-work" with a 
-
-make dder87x-uboot_defconfig && make uImage ?
-
-
-I'm sure I've done something obscenely obvious with respect to not
-getting the whole OF thing right.... but if you could point to what that
-is... I'd be highly appreciative.
-
-
-Regards,
-Bryan
+-- 
+Jean Delvare
