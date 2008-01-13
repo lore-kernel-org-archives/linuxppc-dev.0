@@ -1,29 +1,17 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-100-sunday.nerim.net [62.4.16.100])
-	by ozlabs.org (Postfix) with ESMTP id B69C3DDEBC
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 06:05:08 +1100 (EST)
-Date: Sun, 13 Jan 2008 20:05:01 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 1/5] Implement module aliasing for i2c to translate from
-	device tree names
-Message-ID: <20080113200501.22ee5b0d@hyperion.delvare>
-In-Reply-To: <9e4733910801131050h5349f3c7g459f5dfb07724b19@mail.gmail.com>
-References: <20071220044136.20091.70984.stgit@terra.home>
-	<20071220044138.20091.31417.stgit@terra.home>
-	<20080111202015.65c3c160@hyperion.delvare>
-	<20080112094658.197acb08@hyperion.delvare>
-	<9e4733910801120826haa8905dk863ed1c8e9f420c9@mail.gmail.com>
-	<20080113154114.4a1c5166@hyperion.delvare>
-	<9e4733910801130824i547b65a9n64e415f9626d6ab5@mail.gmail.com>
-	<20080113184017.7e3b409f@hyperion.delvare>
-	<9e4733910801131001o604c1474vc2fd021d32b8c2a3@mail.gmail.com>
-	<20080113194523.51683e97@hyperion.delvare>
-	<9e4733910801131050h5349f3c7g459f5dfb07724b19@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg KH <greg@kroah.com>, i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <neko@genesi-usa.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 938F1DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 09:50:33 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so831723uge.0
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jan 2008 14:50:30 -0800 (PST)
+Message-ID: <478A967E.7080201@genesi-usa.com>
+Date: Sun, 13 Jan 2008 22:53:50 +0000
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: ppc-dev <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
+Subject: I2C and CAN bus on MPC5200B device tree
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,42 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 13 Jan 2008 13:50:46 -0500, Jon Smirl wrote:
-> On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > The eeprom case might be a bit confusing because that i2c driver
-> > supports a single device type, so the driver name is the same as the
-> > device name. Take a look at the hwmon/lm90 driver for a better example:
-> > this device supports 7 different devices. The devices are mostly
-> > compatible so it made sense to have a single driver for them, but they
-> > all differ in some way. For example, the LM90 doesn't support PEC,
-> > while the ADM1032 does. User-space needs to be able to distinguish
-> > between the various types. That's the reason why we export the device
-> > name through sysfs.
-> >
-> > Most i2c sensor drivers support several chip types, and libsensors has
-> > been relying heavily on the name attribute. Less so with the lm-sensors
-> > 3.0.0 rewrite, where most things are automatically detected, but if
-> > nothing else, giving humans a way to distinguish between the different
-> > sensor chip types is very useful. Also, not everyone will upgrade to
-> > lm-sensors 3.0.0 so we need to keep supporting the previous versions.
-> 
-> Another way to handle this is to have the drivers register multiple
-> times using different names. So LM90 would register as both LM90 and
-> ADM1032. All the code is shared, you just register it multiple times
-> under different names.
 
-This won't let us get rid of the name attribute. As I repeatedly
-explained, removing that file now would instantly break at least all
-versions of lm-sensors before 3.0.0. This alone is enough to make it
-unacceptable for the years to come.
+Hi guys,
 
-Not to mention that this seems like a waste of kernel memory. The name
-attribute certainly takes one order of magnitude less memory than
-registering the same driver multiple times.
+I know the I2C stuff is up in the air (I cannot pinpoint the documentation
+for it) and have not found any CAN bus documentation for device trees.
 
-I'm not sure why you want these i2c chip names to go way, given that
-the module aliases you'd like to add are almost the same, just in a
-different form and using OF names instead of arbitrary names.
+I want to update the firmware tree to add these but, am basically looking
+for those docs, or someone to go over a few points.. is there some kind of
+tree standard I should be looking at, or some patch I missed which has
+a driver which implements something that looks at a compatible tree?
 
 -- 
-Jean Delvare
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
