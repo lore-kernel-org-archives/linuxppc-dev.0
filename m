@@ -1,22 +1,12 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2A610DDF0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 09:54:39 +1100 (EST)
-Date: Tue, 15 Jan 2008 09:54:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(), ft_get_next_prop(),
-	and ft_getprop_offset().
-Message-Id: <20080115095434.5470b4a7.sfr@canb.auug.org.au>
-In-Reply-To: <478BE5D1.9080300@freescale.com>
-References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
-	<20080115093149.39a1d703.sfr@canb.auug.org.au>
-	<478BE5D1.9080300@freescale.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe"
-Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 14 Jan 2008 15:51:50 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/4] powerpc: mv64x60 - Use early_* PCI accessors for hotswap
+	reg
+Message-ID: <20080114225150.GB21940@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,52 +16,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Mark A. Greer <mgreer@mvista.com>
 
-On Mon, 14 Jan 2008 16:44:33 -0600 Scott Wood <scottwood@freescale.com> wro=
-te:
->
-> Stephen Rothwell wrote:
-> >> +++ b/libfdt/libfdt.h
-> >=20
-> >> +#define FDT_ERR_BADDEPTH	8
-> >=20
-> > Wouldn't it have been less intrusive to just use the next error number
-> > rather than inserting this here?
->=20
-> Yes, but then either the order in errtable[] wouldn't match the order in=
-=20
-> the header file, or the error type grouping would be broken.
->=20
-> If we want to maintain such a grouping, we should probably leave some=20
-> number space between the groups.
+The mv64x60 Hotswap register is on the first hose of the mv64x60
+hostbridge.  To access it, manually find the hose structure and
+use the early_* PCI accessor routines because the hostbridge is
+normally hidden.
 
-OK.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+ arch/powerpc/sysdev/mv64x60.h     |   22 ++++++++++++++++++++++
+ arch/powerpc/sysdev/mv64x60_pci.c |   25 +++++++++++++++----------
+ 2 files changed, 37 insertions(+), 10 deletions(-)
 
-> "pointer to a string" could be interpreted as "char *", not "char **".
-
-Yeah, it has always been a bit ambiguous.
-
-> I'll fix the others; thanks for pointing them out.
-
-No worries.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHi+guTgG2atn1QN8RAjlYAJ4ufyArcBAb/OOSkOTAttoM7+++BQCcCtNO
-ltWu14fkdQpr01xgfpK5KV4=
-=GpmE
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe--
+diff --git a/arch/powerpc/sysdev/mv64x60.h b/arch/powerpc/sysdev/mv64x60.h
+index 4f618fa..27e22f4 100644
+--- a/arch/powerpc/sysdev/mv64x60.h
++++ b/arch/powerpc/sysdev/mv64x60.h
+@@ -3,10 +3,32 @@
+ 
+ #include <linux/init.h>
+ 
++#include <asm/prom.h>
++#include <asm/pci-bridge.h>
++
+ extern void __init mv64x60_init_irq(void);
+ extern unsigned int mv64x60_get_irq(void);
+ 
+ extern void __init mv64x60_pci_init(void);
+ extern void __init mv64x60_init_early(void);
+ 
++static inline struct pci_controller *mv64x60_find_hose(u32 idx)
++{
++	struct device_node *phb;
++	struct pci_controller *hose;
++	const u32 *prop;
++	int len;
++
++	for_each_compatible_node(phb, "pci", "marvell,mv64360-pci") {
++		prop = of_get_property(phb, "cell-index", &len);
++		if (prop && (len == sizeof(prop)) && (*prop == idx)) {
++			hose = pci_find_hose_for_OF_device(phb);
++			of_node_put(phb);
++			return hose;
++		}
++	}
++
++	return NULL;
++}
++
+ #endif /* __MV64X60_H__ */
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index 1456015..2115177 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -17,6 +17,8 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ 
++#include <sysdev/mv64x60.h>
++
+ #define PCI_HEADER_TYPE_INVALID		0x7f	/* Invalid PCI header type */
+ 
+ #ifdef CONFIG_SYSFS
+@@ -24,11 +26,12 @@
+ #define MV64X60_VAL_LEN_MAX		11
+ #define MV64X60_PCICFG_CPCI_HOTSWAP	0x68
+ 
++/* cPCI Hotswap register only supported on PCI 0 interface */
+ static ssize_t mv64x60_hs_reg_read(struct kobject *kobj,
+ 				   struct bin_attribute *attr, char *buf,
+ 				   loff_t off, size_t count)
+ {
+-	struct pci_dev *phb;
++	struct pci_controller *hose;
+ 	u32 v;
+ 
+ 	if (off > 0)
+@@ -36,11 +39,12 @@ static ssize_t mv64x60_hs_reg_read(struct kobject *kobj,
+ 	if (count < MV64X60_VAL_LEN_MAX)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+-	if (!phb)
++	hose = mv64x60_find_hose(0);
++	if (!hose)
+ 		return -ENODEV;
+-	pci_read_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+-	pci_dev_put(phb);
++
++	early_read_config_dword(hose, 0, PCI_DEVFN(0, 0),
++			MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+ 
+ 	return sprintf(buf, "0x%08x\n", v);
+ }
+@@ -49,7 +53,7 @@ static ssize_t mv64x60_hs_reg_write(struct kobject *kobj,
+ 				    struct bin_attribute *attr, char *buf,
+ 				    loff_t off, size_t count)
+ {
+-	struct pci_dev *phb;
++	struct pci_controller *hose;
+ 	u32 v;
+ 
+ 	if (off > 0)
+@@ -60,11 +64,12 @@ static ssize_t mv64x60_hs_reg_write(struct kobject *kobj,
+ 	if (sscanf(buf, "%i", &v) != 1)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+-	if (!phb)
++	hose = mv64x60_find_hose(0);
++	if (!hose)
+ 		return -ENODEV;
+-	pci_write_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, v);
+-	pci_dev_put(phb);
++
++	early_write_config_dword(hose, 0, PCI_DEVFN(0, 0),
++			MV64X60_PCICFG_CPCI_HOTSWAP, v);
+ 
+ 	return count;
+ }
