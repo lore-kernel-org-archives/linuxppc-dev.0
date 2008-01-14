@@ -1,24 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 482C7DDE46
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 09:49:29 +1100 (EST)
-Message-ID: <478BE6F2.4020207@freescale.com>
-Date: Mon, 14 Jan 2008 16:49:22 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: "Bryan O'Donoghue" <bodonoghue@codehermit.ie>
-Subject: Re: [PATCH 1/3] 8xx: Analogue & Micro Adder875 board support.
-References: <20080111200705.GA696@loki.buserror.net>	
-	<1200234372.3990.24.camel@neuromancer.mindspace>	
-	<20080114152859.GA26907@ld0162-tx32.am.freescale.net>
-	<1200350407.4061.19.camel@neuromancer.mindspace>
-In-Reply-To: <1200350407.4061.19.camel@neuromancer.mindspace>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2A610DDF0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 09:54:39 +1100 (EST)
+Date: Tue, 15 Jan 2008 09:54:34 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(), ft_get_next_prop(),
+	and ft_getprop_offset().
+Message-Id: <20080115095434.5470b4a7.sfr@canb.auug.org.au>
+In-Reply-To: <478BE5D1.9080300@freescale.com>
+References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
+	<20080115093149.39a1d703.sfr@canb.auug.org.au>
+	<478BE5D1.9080300@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe"
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bryan O'Donoghue wrote:
-> Ah.
-> 
-> This explains eveything then.. there _is_ a magic image and I haven't
-> been booting it !
-> 
-> Typical.
-> 
-> I'll give the 8xx-centric ucImage a go.
+--Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is not 8xx centric; it is a compatibility layer for old, 
-non-device-tree aware u-boots (regardless of what chip you're using).
+On Mon, 14 Jan 2008 16:44:33 -0600 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> Stephen Rothwell wrote:
+> >> +++ b/libfdt/libfdt.h
+> >=20
+> >> +#define FDT_ERR_BADDEPTH	8
+> >=20
+> > Wouldn't it have been less intrusive to just use the next error number
+> > rather than inserting this here?
+>=20
+> Yes, but then either the order in errtable[] wouldn't match the order in=
+=20
+> the header file, or the error type grouping would be broken.
+>=20
+> If we want to maintain such a grouping, we should probably leave some=20
+> number space between the groups.
 
-> It occurs to me that this type of procedure should really be added to
-> the Documentation... 
-> 
-> There's no mention of it in the Linux documentation, nor in the u-boot
-> documentation and uncle Google was not informative for the types of
-> searches I was doing....
+OK.
 
-Search for "device tree" in u-boot's README.
+> "pointer to a string" could be interpreted as "char *", not "char **".
 
--Scott
+Yeah, it has always been a bit ambiguous.
+
+> I'll fix the others; thanks for pointing them out.
+
+No worries.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHi+guTgG2atn1QN8RAjlYAJ4ufyArcBAb/OOSkOTAttoM7+++BQCcCtNO
+ltWu14fkdQpr01xgfpK5KV4=
+=GpmE
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_Jan_2008_09_54_34_+1100_BUQb7mWOM5fgQAZe--
