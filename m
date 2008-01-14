@@ -1,29 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-107-backup.nerim.net [62.4.16.107])
-	by ozlabs.org (Postfix) with ESMTP id 6AA2EDDEE7
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 06:46:27 +1100 (EST)
-Date: Mon, 14 Jan 2008 20:46:25 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c
-	subsystem
-Message-ID: <20080114204625.07293dce@hyperion.delvare>
-In-Reply-To: <3ae72650801141138t27666bcerd66e96f836d1ab2b@mail.gmail.com>
-References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
-	<9e4733910801130714m1be16826jf240171972324d16@mail.gmail.com>
-	<20080113163543.16e3d26b@hyperion.delvare>
-	<9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
-	<20080113184337.5d4cd546@hyperion.delvare>
-	<9e4733910801131004i669276e2pde04b195dd10bd90@mail.gmail.com>
-	<Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be>
-	<20080114173835.5fe907db@hyperion.delvare>
-	<Pine.LNX.4.64.0801141752450.3058@vixen.sonytel.be>
-	<20080114185056.05b75fd1@hyperion.delvare>
-	<3ae72650801141138t27666bcerd66e96f836d1ab2b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A02EBDDE20
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 07:04:45 +1100 (EST)
+Message-ID: <478BC05C.2080007@pikatech.com>
+Date: Mon, 14 Jan 2008 15:04:44 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+MIME-Version: 1.0
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] MTD for Taco
+References: <477F12D1.2070109@pikatech.com>
+	<20080114024432.1dcba2f7@vader.jdub.homelinux.org>
+	<478B9CB6.7000408@pikatech.com> <200801142042.56847.sr@denx.de>
+In-Reply-To: <200801142042.56847.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,17 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 14 Jan 2008 20:38:28 +0100, Kay Sievers wrote:
-> On Jan 14, 2008 6:50 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> > I am under the impression that modules.*map are the old way to get
-> > automatic driver loading and aliases are the new way to do the same.
-> > But maybe that's just me.
-> 
-> Right, nothing on recent systems is using the map files. This patch
-> should not be needed.
-> The plan is to deprecate the creation of these files in depmod.
+Stefan Roese wrote:
+> And the EBC0_BxCR & EBC0BxAP registers for the CS where the NAND is connected? 
+> How are they configured?
+>   
+EBC0_B1CR d001c000
+EBC0_B1AP 18003c0
 
-OK, great. Thanks for the info, Kay!
+Which matches the defines in include/configs/warp.h:
 
--- 
-Jean Delvare
+    #define CFG_EBC_PB1AP        0x018003c0
+    #define CFG_EBC_PB1CR        (CFG_NAND_ADDR | 0x1c000)
+
+It also matches the defines in sequoia.h except that we are on CS1 and 
+the sequoia is on CS3.
+
+Cheers,
+   Sean
