@@ -1,20 +1,29 @@
-Return-Path: <SRS0=12G2=SE=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id BC7ACDDE1F
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 06:43:20 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] MTD for Taco
-Date: Mon, 14 Jan 2008 20:42:56 +0100
-References: <477F12D1.2070109@pikatech.com>
-	<20080114024432.1dcba2f7@vader.jdub.homelinux.org>
-	<478B9CB6.7000408@pikatech.com>
-In-Reply-To: <478B9CB6.7000408@pikatech.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801142042.56847.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-107-backup.nerim.net [62.4.16.107])
+	by ozlabs.org (Postfix) with ESMTP id 6AA2EDDEE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 06:46:27 +1100 (EST)
+Date: Mon, 14 Jan 2008 20:46:25 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c
+	subsystem
+Message-ID: <20080114204625.07293dce@hyperion.delvare>
+In-Reply-To: <3ae72650801141138t27666bcerd66e96f836d1ab2b@mail.gmail.com>
+References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
+	<9e4733910801130714m1be16826jf240171972324d16@mail.gmail.com>
+	<20080113163543.16e3d26b@hyperion.delvare>
+	<9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
+	<20080113184337.5d4cd546@hyperion.delvare>
+	<9e4733910801131004i669276e2pde04b195dd10bd90@mail.gmail.com>
+	<Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be>
+	<20080114173835.5fe907db@hyperion.delvare>
+	<Pine.LNX.4.64.0801141752450.3058@vixen.sonytel.be>
+	<20080114185056.05b75fd1@hyperion.delvare>
+	<3ae72650801141138t27666bcerd66e96f836d1ab2b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 14 January 2008, Sean MacLennan wrote:
-> Josh Boyer wrote:
-> > But did you go back and verify the EBC settings were correct on your
-> > board?  This shouldn't be needed at all if the EBC bank settings and
-> > timings are correct.
-> >
-> > josh
->
-> In the EBC0_CFG register we set the RTC (Ready Timeout Count) to 0 and
-> the sequoia uses 7. Also we set the EMS (External Master Size) to none
-> and the sequoia sets it to 8 bit.
->
-> This is in uboot, the dts are basically the same.
+On Mon, 14 Jan 2008 20:38:28 +0100, Kay Sievers wrote:
+> On Jan 14, 2008 6:50 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > I am under the impression that modules.*map are the old way to get
+> > automatic driver loading and aliases are the new way to do the same.
+> > But maybe that's just me.
+> 
+> Right, nothing on recent systems is using the map files. This patch
+> should not be needed.
+> The plan is to deprecate the creation of these files in depmod.
 
-And the EBC0_BxCR & EBC0BxAP registers for the CS where the NAND is connected? 
-How are they configured?
+OK, great. Thanks for the info, Kay!
 
-Best regards,
-Stefan
-
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+-- 
+Jean Delvare
