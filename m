@@ -1,21 +1,20 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 254CFDDE3D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 02:30:28 +1100 (EST)
-Date: Mon, 14 Jan 2008 09:28:59 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: "Bryan O'Donoghue" <bodonoghue@codehermit.ie>
-Subject: Re: [PATCH 1/3] 8xx: Analogue & Micro Adder875 board support.
-Message-ID: <20080114152859.GA26907@ld0162-tx32.am.freescale.net>
-References: <20080111200705.GA696@loki.buserror.net>
-	<1200234372.3990.24.camel@neuromancer.mindspace>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1200234372.3990.24.camel@neuromancer.mindspace>
+	by ozlabs.org (Postfix) with ESMTP id 6FA1FDDE19
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 02:59:52 +1100 (EST)
+Message-ID: <478B86E5.6060605@freescale.com>
+Date: Mon, 14 Jan 2008 09:59:33 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: mike zheng <mail4mz@gmail.com>
+Subject: Re: Quick Engine Support on Kernel 2.4
+References: <5c9cd53b0801111521v25d0c1dt21ee59373826298@mail.gmail.com>
+In-Reply-To: <5c9cd53b0801111521v25d0c1dt21ee59373826298@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,66 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 13, 2008 at 02:26:12PM +0000, Bryan O'Donoghue wrote:
-> I've applied your code against Linus' git v2.6.26-rc7 as at today.
-> I have to apply 
+mike zheng wrote:
 
-It should apply against paulus's tree.
+> Is there any BSP on Linux Kernel 2.4 support Quick Engine of MPC8568?
+> If not, which BSP shall I start the porting? The BSP(on Kernel2.6) of
+> MPC8568MDS from Freescale supports CPM2, but not QE. What the
+> difference between CPM2 and QE?
 
-> make adder87x-uboot_defconfig
-> 
-> make uImage
+Think of the QE as CPM3.
 
-make zImage, not uImage.
+"Supporting the QE" means many things.  The 2.6 kernel has core support for the 
+QE as well as support for several QE devices.  You'll need to be more specific.
 
-> cp arch/powerpc/boot/uImage /tftpboot - which is my tftpd root
-> directory.
-
-Use cuImage.8xx, not uImage.
-
-> In U-Boot then.
-> 
-> => tftpboot 0x400000 uImage
-> => bootm 0x400000
-
-0x400000 is where u-boot is going to want to relocate the image to, so
-loading the uImage there may not work.
-
-> Which doesn't boot.
-> 
-> Attaching a BDI2000 to the target board I see that the kernel is
-> panicing somewhere around line 104 of arch/powerpc/kernel/prom.c in
-> of_scan_flat_dt - presumably because the kernel cannot find an
-> OpenFirmware tree..
-
-Yes, a uImage target will be expecting to be handed a device tree.  The
-cuImage target has a device tree embedded and accepts the old-style bd_t.
-
-> I admit not understanding everything I should about where the output
-> of .dts & dtc "go" with respect to booting Linux.... but, didn't want to
-> ask on the list - lest I display a "lack of knowledge" ...
-
-Nothing wrong with asking...  doing so on the list just means a larger
-pool of people to respond, and that others with the same question can see
-the answer.
-
-> /* pass open firmware flat tree */
-> #define CONFIG_OF_LIBFDT      1
-> #undef  CONFIG_OF_FLAT_TREE
-> #define CONFIG_OF_BOARD_SETUP 1
-> #define CONFIG_OF_HAS_BD_T    1
-> #define CONFIG_OF_HAS_UBOOT_ENV       1
-> 
-> #define OF_CPU                        "PowerPC,875 at 0"
-> #define OF_SOC                        "soc875 at ff000000"
-> #define OF_TBCLK              (bd->bi_busfreq / 4)
-
-You'll probably need some 8xx-specific code if you want to go this route. 
-You'd also need to change the bootm command line to the three-argument
-version, with the third argument being the address of the device tree
-blob (the second argument can be - if there's no initrd).
-
-If you're not comfortable with the device tree stuff, I recommend just
-using cuImage for now.
-
--Scott
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
