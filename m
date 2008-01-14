@@ -1,28 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from ro-out-1112.google.com (ro-out-1112.google.com [72.14.202.176])
-	by ozlabs.org (Postfix) with ESMTP id 0EE64DDE1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 01:25:57 +1100 (EST)
-Received: by ro-out-1112.google.com with SMTP id p7so2575759roc.1
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 06:25:55 -0800 (PST)
-Message-ID: <9e4733910801140625u2503b508kc99e93ff59e31157@mail.gmail.com>
-Date: Mon, 14 Jan 2008 09:25:54 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c
-	subsystem
-In-Reply-To: <Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id BA9DEDDE3F
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 01:28:33 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1213935anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 06:28:32 -0800 (PST)
+Message-ID: <fa686aa40801140628kc112b12vc6f715c60974f68a@mail.gmail.com>
+Date: Mon, 14 Jan 2008 07:28:32 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Wolfgang Grandegger" <wg@grandegger.com>
+Subject: Re: I2C and CAN bus on MPC5200B device tree
+In-Reply-To: <478B18D9.6020201@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
-	<20080113152735.5dca46a1@hyperion.delvare>
-	<9e4733910801130714m1be16826jf240171972324d16@mail.gmail.com>
-	<20080113163543.16e3d26b@hyperion.delvare>
-	<9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
-	<20080113184337.5d4cd546@hyperion.delvare>
-	<9e4733910801131004i669276e2pde04b195dd10bd90@mail.gmail.com>
-	<Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+References: <478A967E.7080201@genesi-usa.com>
+	<fa686aa40801131635o499c8c08i6a2667cd7df1a72e@mail.gmail.com>
+	<478B18D9.6020201@grandegger.com>
+Cc: linuxppc-embedded@ozlabs.org, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,74 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/14/08, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> On Sun, 13 Jan 2008, Jon Smirl wrote:
-> > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > > On Sun, 13 Jan 2008 11:26:07 -0500, Jon Smirl wrote:
-> > > > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > > > > On Sun, 13 Jan 2008 10:14:14 -0500, Jon Smirl wrote:
-> > > > > > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > > > > > > On Mon, 17 Dec 2007 21:39:37 -0500, Jon Smirl wrote:
-> > > > > > > > Follow on to: "Series to add device tree naming to i2c"
-> > > > > > > > Teach module-init-tools about the i2c subsystem.
-> > > > > > >
-> > > > > > > Can you please explain what this patch does and why it is nee=
-ded?
-> > > > > >
-> > > > > > It generates the entries needed for the user space module tools=
- to
-> > > > > > work with the aliases. For example modprobe/depmod. It is a sta=
-ndard
-> > > > > > part of the kernel module system.
-> > > > >
-> > > > > What entries, where? What can you do after applying your patch th=
-at you
-> > > > > couldn't do before?
-> > > >
-> > > > The drivers you are testing with don't depend on other drivers.
-> > >
-> > > They do. I'm testing with the lm90 driver, which depends on the hwmon
-> > > driver. Both load automatically when the underlying i2c-parport drive=
-r
-> > > instantiate an "adm1032" i2c device.
+On 1/14/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Grant Likely wrote:
+> > On 1/13/08, Matt Sealey <matt@genesi-usa.com> wrote:
+> >> Hi guys,
+> >>
+> >> I know the I2C stuff is up in the air (I cannot pinpoint the documentation
+> >> for it) and have not found any CAN bus documentation for device trees.
+> >>
+> >> I want to update the firmware tree to add these but, am basically looking
+> >> for those docs, or someone to go over a few points.. is there some kind of
+> >> tree standard I should be looking at, or some patch I missed which has
+> >> a driver which implements something that looks at a compatible tree?
 > >
-> > I don't know exactly what those modules tables are used for. I just
-> > copied what the other subsystems do. Maybe they are used when you make
-> > an initrd to know which drivers to copy into the image.
+> > I think some consensus has been achieved for describing i2c busses and
+> > their attached devices, but I don't think booting-without-of.txt has
+> > been updated with the details yet.  I need to look into that more.
+> >
+> > I don't think anyone has tackled CAN.  Best bet is to draft a tree in
+> > the way you think it should be described and post it to the list.
+> > That will give a starting point for us to discuss it and come to
+> > consensus.
 >
-> Module-init-tools needs those table to create module aliases in the *.ko
-> files from the MODULE_DEVICE_TABLE(), so udev can load the modules based
-> on the device IDs when the devices appear in sysfs.
+> For MSCAN on the MPC5200 we currently have:
 >
-> That's the generic part. How this applies to i2c devices on platforms
-> without Open Firmware device trees is another question. I guess that's
-> where Jean gets confused (i2c_device_id got _removed_ last year,
-> because it didn't make sense (at the time?)).
+>                 mscan@900 {
+>                         device_type = "mscan";
+>                         compatible = "mpc5200b-mscan","mpc5200-mscan";
+>                         cell-index = <0>;
+>                         interrupts = <2 11 0>;
+>                         interrupt-parent = <&mpc5200_pic>;
+>                         reg = <900 80>;
+>                 };
+>
+>                 mscan@980 {
+>                         device_type = "mscan";
+>                         compatible = "mpc5200b-mscan","mpc5200-mscan";
+>                         cell-index = <1>;
+>                         interrupts = <2 12 0>;
+>                         interrupt-parent = <&mpc5200_pic>;
+>                         reg = <980 80>;
+>                 };
+>
+> The only thing missing is a property defining the routing of the CAN
+> signals, CAN 1 on I2C1 pins or CAN 2 on TMR01 pins. I think it does not
+> make sense to describe CAN devices on the CAN bus like for I2C.
 
-Last year i2c modules weren't dynamically loadable so it wasn't needed.
+I don't think that pin routing matters much for the device tree.
+Ideally, firmware should be responsible for port_config, and as long
+as it is already configured, the CAN device can find it's devices.
 
->
-> With kind regards,
->
-> Geert Uytterhoeven
-> Software Architect
->
-> Sony Network and Software Technology Center Europe
-> The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Belgi=
-um
->
-> Phone:    +32 (0)2 700 8453
-> Fax:      +32 (0)2 700 8622
-> E-mail:   Geert.Uytterhoeven@sonycom.com
-> Internet: http://www.sony-europe.com/
->
-> Sony Network and Software Technology Center Europe
-> A division of Sony Service Centre (Europe) N.V.
-> Registered office: Technologielaan 7 =B7 B-1840 Londerzeel =B7 Belgium
-> VAT BE 0413.825.160 =B7 RPR Brussels
-> Fortis Bank Zaventem =B7 Swift GEBABEBB08A =B7 IBAN BE39001382358619
+Cheers,
+g.
 
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
