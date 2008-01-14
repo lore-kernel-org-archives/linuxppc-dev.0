@@ -1,15 +1,17 @@
-Return-Path: <olof@lixom.net>
-Date: Sun, 13 Jan 2008 22:42:16 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: I2C and CAN bus on MPC5200B device tree
-Message-ID: <20080114044216.GA23349@lixom.net>
-References: <478A967E.7080201@genesi-usa.com>
-	<fa686aa40801131635o499c8c08i6a2667cd7df1a72e@mail.gmail.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 36A99DDE29
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 15:55:23 +1100 (EST)
+Message-ID: <478AEB39.70106@pikatech.com>
+Date: Sun, 13 Jan 2008 23:55:21 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40801131635o499c8c08i6a2667cd7df1a72e@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org, ppc-dev <linuxppc-dev@ozlabs.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] MTD for Taco
+References: <477F12D1.2070109@pikatech.com> <200801051041.18173.sr@denx.de>
+In-Reply-To: <200801051041.18173.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 13, 2008 at 05:35:09PM -0700, Grant Likely wrote:
-> On 1/13/08, Matt Sealey <matt@genesi-usa.com> wrote:
-> >
-> > Hi guys,
-> >
-> > I know the I2C stuff is up in the air (I cannot pinpoint the documentation
-> > for it) and have not found any CAN bus documentation for device trees.
-> >
-> > I want to update the firmware tree to add these but, am basically looking
-> > for those docs, or someone to go over a few points.. is there some kind of
-> > tree standard I should be looking at, or some patch I missed which has
-> > a driver which implements something that looks at a compatible tree?
-> 
-> I think some consensus has been achieved for describing i2c busses and
-> their attached devices, but I don't think booting-without-of.txt has
-> been updated with the details yet.  I need to look into that more.
+Stefan Roese wrote:
+>
+>> +#ifdef CONFIG_TACO
+>> +/* The NDFC may allow 32bit read/writes, but it sure doesn't work on
+>> + * the taco!
+>> + */
+>>     
+>
+> We definitely don't want to see such board specific stuff in the common
+> NDFC driver. And I really doubt that you need this change for your board.
+> We are using this ndfc driver on multiple boards, and all have no
+> problems accessing the controller with 32bit read/writes. So you most
+> likely have a problem with your board port. Perhaps something with
+> with the EBC setup. Please re-check and compare with boards that are know
+> to work, like Sequoia.
+>   
+How about adding a config option that lets you specify 8 bit access? 
+Something like CONFIG_NDFC_8BIT_ACCESS. We could default it to no and 
+put a little blurb that says something like:
 
-I think simple devices might have been agreed upon (but it's been a
-while since it was covered). Muxed busses probably hasn't. Either that
-or I completely missed the emails.
+On some platforms the 32bit read/writes cause a machine access 
+exception. If you get a machine access exception while reading the NAND 
+bad block table, try turning on 8 bit access.
 
-
--Olof
+Cheers,
+   Sean
