@@ -1,18 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 251A8DDE3E
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 17:21:21 +1100 (EST)
-Date: Mon, 14 Jan 2008 17:21:16 +1100
+	by ozlabs.org (Postfix) with ESMTP id 82A1EDDE04
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 17:46:49 +1100 (EST)
+Date: Mon, 14 Jan 2008 17:46:48 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] mtd: Factor out OF partition support from the NOR
-	driver.
-Message-Id: <20080114172116.a2e5aa18.sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] make ibmebus use of_(un)register_driver
+Message-Id: <20080114174648.bca30b55.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__14_Jan_2008_17_21_16_+1100_NU.7Z4NFu9YqzcPb"
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Heiko J Schick <schickhj@de.ibm.com>,
+	Joachim Fenkes <fenkes@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,78 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__14_Jan_2008_17_21_16_+1100_NU.7Z4NFu9YqzcPb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Scott,
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/ibmebus.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-[Corrected list address.]
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 1844359..2a6a388 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -197,16 +197,13 @@ int ibmebus_register_driver(struct of_platform_driver *drv)
+ 	/* If the driver uses devices that ibmebus doesn't know, add them */
+ 	ibmebus_create_devices(drv->match_table);
+ 
+-	drv->driver.name   = drv->name;
+-	drv->driver.bus    = &ibmebus_bus_type;
+-
+-	return driver_register(&drv->driver);
++	return of_register_driver(drv, &ibmebus_bus_type);
+ }
+ EXPORT_SYMBOL(ibmebus_register_driver);
+ 
+ void ibmebus_unregister_driver(struct of_platform_driver *drv)
+ {
+-	driver_unregister(&drv->driver);
++	of_unregister_driver(drv);
+ }
+ EXPORT_SYMBOL(ibmebus_unregister_driver);
+ 
+-- 
+1.5.3.8
 
-On Fri, 11 Jan 2008 14:43:16 -0600 Scott Wood <scottwood@freescale.com> wro=
-te:
->
-> +++ b/drivers/mtd/ofpart.c
-
-> +int __devinit of_mtd_parse_partitions(struct device *dev,
-
-> +	nr_parts =3D 0;
-> +	for (pp =3D node->child; pp; pp =3D pp->sibling)
-
-	for_each_child_of_node(node, pp)
-
-> +		nr_parts++;
-
-> +	for (pp =3D of_get_next_child(node, NULL), i =3D 0; pp;=20
-> +	     pp =3D of_get_next_child(node, pp), i++) {
-
-	i =3D 0;
-	for_each_child_of_node(node, pp) {
-
-> +		const u32 *reg;
-> +		int len;
-> +
-> +		reg =3D of_get_property(pp, "reg", &len);
-> +		if (!reg || (len !=3D 2*sizeof(u32))) {
-
-Spaces around '*'.
-
-> +			of_node_put(pp);
-> +			dev_err(dev, "Invalid 'reg' on %s\n", node->full_name);
-> +			kfree(*pparts);
-> +			*pparts =3D NULL;
-> +			return -EINVAL;
-> +		}
-> +		(*pparts)[i].offset =3D reg[0];
-> +		(*pparts)[i].size =3D reg[1];
-> +
-> +		partname =3D of_get_property(pp, "label", &len);
-> +		if (!partname)
-> +			partname =3D of_get_property(pp, "name", &len);
-> +		(*pparts)[i].name =3D (char *)partname;
-> +
-> +		if (of_get_property(pp, "read-only", &len))
-> +			(*pparts)[i].mask_flags =3D MTD_WRITEABLE;
-
-		i++;
-
-> +	}
-
---=20
+-- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__14_Jan_2008_17_21_16_+1100_NU.7Z4NFu9YqzcPb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHiv9gTgG2atn1QN8RAsqkAJ4+JkcEuYDvRh1biaxLzD8tEGkRtQCdHrm+
-4dNFr2v0LsGYLnhugQ76DnA=
-=4BwO
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Jan_2008_17_21_16_+1100_NU.7Z4NFu9YqzcPb--
