@@ -1,27 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 81EC8DDE1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 16:13:56 +1100 (EST)
-Date: Sun, 13 Jan 2008 23:24:02 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Linas Vepstas <linasvepstas@gmail.com>
-Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
-Message-ID: <20080114052402.GA23786@lixom.net>
-References: <3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
-	<20080109184437.GU14201@localdomain>
-	<3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
-	<20080110031723.GA22168@lixom.net>
-	<3ae3aa420801092012m5e47cbd7lc7a5f91842074af7@mail.gmail.com>
-	<20080110162120.GA4831@lixom.net>
-	<3ae3aa420801100834r6bd2750eqa7c8d29877350463@mail.gmail.com>
-	<4786923E.9090902@austin.ibm.com>
-	<20080111012641.GX14201@localdomain>
-	<3ae3aa420801110857l5e43fd56s5bd1c24ffac939f3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ae3aa420801110857l5e43fd56s5bd1c24ffac939f3@mail.gmail.com>
-Cc: lkessler@us.ibm.com, linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	mahuja@us.ibm.com, strosake@us.ibm.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 340F7DDE1E
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 16:48:59 +1100 (EST)
+Date: Mon, 14 Jan 2008 16:48:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
+Message-Id: <20080114164850.eaa0ff5d.sfr@canb.auug.org.au>
+In-Reply-To: <20080111200742.GB696@loki.buserror.net>
+References: <20080111200742.GB696@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,63 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 11, 2008 at 10:57:51AM -0600, Linas Vepstas wrote:
-> On 10/01/2008, Nathan Lynch <ntl@pobox.com> wrote:
-> > Mike Strosaker wrote:
-> > >
-> > > At the risk of repeating what others have already said, the PHYP-assistance
-> > > method provides some advantages that the kexec method cannot:
-> > >  - Availability of the system for production use before the dump data is
-> > > collected.  As was mentioned before, some production systems may choose not
-> > > to operate with the limited memory initially available after the reboot,
-> > > but it sure is nice to provide the option.
-> >
-> > I'm more concerned that this design encourages the user to resume a
-> > workload *which is almost certainly known to result in a system crash*
-> > before collection of crash data is complete.  Maybe the gamble will
-> > pay off most of the time, but I wouldn't want to be working support
-> > when it doesn't.
-> 
-> Workloads that cause crashes within hours of startup tend to be
-> weeded-out/discovered during pre-production test of the system
-> to be deployed. Since its pre-production test, dumps can be
-> taken in a leisurely manner. Heck, even a session at the
-> xmon prompt can be contemplated.
-> 
-> The problem is when the crash only reproduces after days or
-> weeks of uptime, on a production machine.  Since the machine
-> is in production, its got to be brought back up ASAP.  Since
-> its crashing only after days/weeks, the dump should have
-> plenty of time to complete.  (And if it crashes quickly after
-> that reboot ... well, support people always welcome ways
-> in which a bug can be reproduced more quickly/easily).
+--Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-How do you expect to have it in full production if you don't have all
-resources available for it? It's not until the dump has finished that you
-can return all memory to the production environment and use it.
+Hi Scott,
 
-This can very easily be argued in both direction, with no clear winner:
-If the crash is stress-induced (say a slashdotted website), for those
-cases it seems more rational to take the time, collect _good data_ even
-if it takes a little longer, and then go back into production. Especially
-if the alternative is to go back into production immediately, collect
-about half of the data, and then crash again. Rinse and repeat.
+On Fri, 11 Jan 2008 14:07:42 -0600 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> +++ b/arch/powerpc/platforms/82xx/ep8248e.c
 
-Anyway -- I can agree that some of the arguments w.r.t robustness and
-reliability of collecting dumps can be higher using this approach. It
-really surprises me that there's no way to reset a device through PHYP
-though. Seems like such a fundamental feature.
+> +static struct mdiobb_ops ep8248e_mdio_ops =3D {
 
-I think people are overly optimistic if they think it'll be possible
-to do all of this reliably (as in with consistent performance) without
-a second reboot though. At least without similar amounts of work being
-done as it would have taken to fix kdump's reliability in the first place.
+const, please.
 
-Speaking of reboots. PHYP isn't known for being quick at rebooting a
-partition, it used to take in the order of minutes even on a small
-machine. Has that been fixed? If not, the avoiding an extra reboot
-argument hardly seems like a benefit versus kdump+kexec, which reboots
-nearly instantly and without involvement from PHYP.
+> +static struct of_platform_driver ep8248e_mdio_driver =3D {
 
+	.driver =3D {
 
--Olof
+> +	.name =3D "ep8248e-mdio-bitbang",
+
+	},
+
+> +static const struct cpm_pin ep8248_pins[] =3D {
+
+Could be __initdata
+
+> +static void __init ep8248_setup_arch(void)
+> +{
+
+> +	ep8248e_bcsr_node =3D
+> +		of_find_compatible_node(NULL, NULL, "fsl,ep8248e-bcsr");
+> +	if (!ep8248e_bcsr_node) {
+> +		printk(KERN_ERR "No bcsr in device tree\n");
+> +		return;
+> +	}
+> +
+> +	ep8248e_bcsr =3D of_iomap(ep8248e_bcsr_node, 0);
+> +	if (!ep8248e_bcsr) {
+> +		printk(KERN_ERR "Cannot map BCSR registers\n");
+
+		of_node_put(ep8248e_bcsr_node);
+		ep8248e_bcsr_node =3D NULL;
+
+> +		return;
+
+> +static int __init declare_of_platform_devices(void)
+> +{
+> +	if (!machine_is(ep8248))
+> +		return 0;
+> +
+> +	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+> +	of_register_platform_driver(&ep8248e_mdio_driver);
+> +
+> +	return 0;
+> +}
+> +device_initcall(declare_of_platform_devices);
+
+machine_device_initcall(ep8248, declare_of_platform_devices);
+Then remove the machine_is test above.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHivfJTgG2atn1QN8RAhjKAJwKwEqbU/DfkMdSaPVeRnlVxwS5PgCZAaKP
+RW9vY/1JZ1+UsqOugAkhwHA=
+=WRzM
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5--
