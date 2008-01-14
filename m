@@ -1,19 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 340F7DDE1E
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 16:48:59 +1100 (EST)
-Date: Mon, 14 Jan 2008 16:48:50 +1100
+	by ozlabs.org (Postfix) with ESMTP id C0B49DDE20
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 17:02:25 +1100 (EST)
+Date: Mon, 14 Jan 2008 17:02:13 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] mpc82xx: Embedded Planet EP8248E support
-Message-Id: <20080114164850.eaa0ff5d.sfr@canb.auug.org.au>
-In-Reply-To: <20080111200742.GB696@loki.buserror.net>
-References: <20080111200742.GB696@loki.buserror.net>
+Subject: Re: [PATCH 2/3] mtd: Factor out OF partition support from the NOR
+	driver.
+Message-Id: <20080114170213.097b6ab7.sfr@canb.auug.org.au>
+In-Reply-To: <20080111204316.GB11215@loki.buserror.net>
+References: <20080111204316.GB11215@loki.buserror.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5"
-Cc: linuxppc-dev@ozlabs.org
+	boundary="Signature=_Mon__14_Jan_2008_17_02_13_+1100_0y1hgQ6dH0zKuvLF"
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,82 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5
+--Signature=_Mon__14_Jan_2008_17_02_13_+1100_0y1hgQ6dH0zKuvLF
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Scott,
 
-On Fri, 11 Jan 2008 14:07:42 -0600 Scott Wood <scottwood@freescale.com> wro=
+On Fri, 11 Jan 2008 14:43:16 -0600 Scott Wood <scottwood@freescale.com> wro=
 te:
 >
-> +++ b/arch/powerpc/platforms/82xx/ep8248e.c
+> +++ b/drivers/mtd/ofpart.c
 
-> +static struct mdiobb_ops ep8248e_mdio_ops =3D {
+> +int __devinit of_mtd_parse_partitions(struct device *dev,
 
-const, please.
+> +	nr_parts =3D 0;
+> +	for (pp =3D node->child; pp; pp =3D pp->sibling)
 
-> +static struct of_platform_driver ep8248e_mdio_driver =3D {
+	for_each_child_of_node(node, pp)
 
-	.driver =3D {
+> +		nr_parts++;
 
-> +	.name =3D "ep8248e-mdio-bitbang",
+> +	for (pp =3D of_get_next_child(node, NULL), i =3D 0; pp;=20
+> +	     pp =3D of_get_next_child(node, pp), i++) {
 
-	},
+	i =3D 0;
+	for_each_child_of_node(node, pp) {
 
-> +static const struct cpm_pin ep8248_pins[] =3D {
+> +		const u32 *reg;
+> +		int len;
+> +
+> +		reg =3D of_get_property(pp, "reg", &len);
+> +		if (!reg || (len !=3D 2*sizeof(u32))) {
 
-Could be __initdata
+Spaces around '*'.
 
-> +static void __init ep8248_setup_arch(void)
-> +{
+> +			of_node_put(pp);
+> +			dev_err(dev, "Invalid 'reg' on %s\n", node->full_name);
+> +			kfree(*pparts);
+> +			*pparts =3D NULL;
+> +			return -EINVAL;
+> +		}
+> +		(*pparts)[i].offset =3D reg[0];
+> +		(*pparts)[i].size =3D reg[1];
+> +
+> +		partname =3D of_get_property(pp, "label", &len);
+> +		if (!partname)
+> +			partname =3D of_get_property(pp, "name", &len);
+> +		(*pparts)[i].name =3D (char *)partname;
+> +
+> +		if (of_get_property(pp, "read-only", &len))
+> +			(*pparts)[i].mask_flags =3D MTD_WRITEABLE;
 
-> +	ep8248e_bcsr_node =3D
-> +		of_find_compatible_node(NULL, NULL, "fsl,ep8248e-bcsr");
-> +	if (!ep8248e_bcsr_node) {
-> +		printk(KERN_ERR "No bcsr in device tree\n");
-> +		return;
+		i++;
+
 > +	}
-> +
-> +	ep8248e_bcsr =3D of_iomap(ep8248e_bcsr_node, 0);
-> +	if (!ep8248e_bcsr) {
-> +		printk(KERN_ERR "Cannot map BCSR registers\n");
-
-		of_node_put(ep8248e_bcsr_node);
-		ep8248e_bcsr_node =3D NULL;
-
-> +		return;
-
-> +static int __init declare_of_platform_devices(void)
-> +{
-> +	if (!machine_is(ep8248))
-> +		return 0;
-> +
-> +	of_platform_bus_probe(NULL, of_bus_ids, NULL);
-> +	of_register_platform_driver(&ep8248e_mdio_driver);
-> +
-> +	return 0;
-> +}
-> +device_initcall(declare_of_platform_devices);
-
-machine_device_initcall(ep8248, declare_of_platform_devices);
-Then remove the machine_is test above.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5
+--Signature=_Mon__14_Jan_2008_17_02_13_+1100_0y1hgQ6dH0zKuvLF
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHivfJTgG2atn1QN8RAhjKAJwKwEqbU/DfkMdSaPVeRnlVxwS5PgCZAaKP
-RW9vY/1JZ1+UsqOugAkhwHA=
-=WRzM
+iD8DBQFHivrwTgG2atn1QN8RAkXFAJ9mvDYZgEbx3PH+QkmK9nRdUuX8RgCfS99u
+IR3CD5PnyjNWdklwjJaGn7c=
+=aR62
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__14_Jan_2008_16_48_50_+1100_aw6Qpg+_NHZ+rpB5--
+--Signature=_Mon__14_Jan_2008_17_02_13_+1100_0y1hgQ6dH0zKuvLF--
