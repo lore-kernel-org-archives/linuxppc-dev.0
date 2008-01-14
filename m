@@ -1,35 +1,28 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 50143DDE1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 23:14:46 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id m0ECEch4332594
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 12:14:38 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m0ECEc2M3014674
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 13:14:39 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m0ECEcCS027564
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 13:14:38 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] make ibmebus use of_(un)register_driver
-Date: Mon, 14 Jan 2008 13:14:37 +0100
-References: <20080114174648.bca30b55.sfr@canb.auug.org.au>
-In-Reply-To: <20080114174648.bca30b55.sfr@canb.auug.org.au>
+Return-Path: <jonsmirl@gmail.com>
+Received: from ro-out-1112.google.com (ro-out-1112.google.com [72.14.202.176])
+	by ozlabs.org (Postfix) with ESMTP id 0EE64DDE1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 01:25:57 +1100 (EST)
+Received: by ro-out-1112.google.com with SMTP id p7so2575759roc.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 06:25:55 -0800 (PST)
+Message-ID: <9e4733910801140625u2503b508kc99e93ff59e31157@mail.gmail.com>
+Date: Mon, 14 Jan 2008 09:25:54 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [i2c] [PATCH] update module-init-tools to support the i2c
+	subsystem
+In-Reply-To: <Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801141314.38120.fenkes@de.ibm.com>
-Cc: Heiko J Schick <schickhj@de.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, paulus@samba.org,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910712171839h214e0bc3q179266c86e5987b1@mail.gmail.com>
+	<20080113152735.5dca46a1@hyperion.delvare>
+	<9e4733910801130714m1be16826jf240171972324d16@mail.gmail.com>
+	<20080113163543.16e3d26b@hyperion.delvare>
+	<9e4733910801130826l799e4897pe7380ccb973b5fd0@mail.gmail.com>
+	<20080113184337.5d4cd546@hyperion.delvare>
+	<9e4733910801131004i669276e2pde04b195dd10bd90@mail.gmail.com>
+	<Pine.LNX.4.64.0801141154420.3058@vixen.sonytel.be>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,33 +32,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 14 January 2008 07:46, Stephen Rothwell wrote:
+On 1/14/08, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> On Sun, 13 Jan 2008, Jon Smirl wrote:
+> > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
+> > > On Sun, 13 Jan 2008 11:26:07 -0500, Jon Smirl wrote:
+> > > > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
+> > > > > On Sun, 13 Jan 2008 10:14:14 -0500, Jon Smirl wrote:
+> > > > > > On 1/13/08, Jean Delvare <khali@linux-fr.org> wrote:
+> > > > > > > On Mon, 17 Dec 2007 21:39:37 -0500, Jon Smirl wrote:
+> > > > > > > > Follow on to: "Series to add device tree naming to i2c"
+> > > > > > > > Teach module-init-tools about the i2c subsystem.
+> > > > > > >
+> > > > > > > Can you please explain what this patch does and why it is nee=
+ded?
+> > > > > >
+> > > > > > It generates the entries needed for the user space module tools=
+ to
+> > > > > > work with the aliases. For example modprobe/depmod. It is a sta=
+ndard
+> > > > > > part of the kernel module system.
+> > > > >
+> > > > > What entries, where? What can you do after applying your patch th=
+at you
+> > > > > couldn't do before?
+> > > >
+> > > > The drivers you are testing with don't depend on other drivers.
+> > >
+> > > They do. I'm testing with the lm90 driver, which depends on the hwmon
+> > > driver. Both load automatically when the underlying i2c-parport drive=
+r
+> > > instantiate an "adm1032" i2c device.
+> >
+> > I don't know exactly what those modules tables are used for. I just
+> > copied what the other subsystems do. Maybe they are used when you make
+> > an initrd to know which drivers to copy into the image.
+>
+> Module-init-tools needs those table to create module aliases in the *.ko
+> files from the MODULE_DEVICE_TABLE(), so udev can load the modules based
+> on the device IDs when the devices appear in sysfs.
+>
+> That's the generic part. How this applies to i2c devices on platforms
+> without Open Firmware device trees is another question. I guess that's
+> where Jean gets confused (i2c_device_id got _removed_ last year,
+> because it didn't make sense (at the time?)).
 
-> diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-> index 1844359..2a6a388 100644
-> --- a/arch/powerpc/kernel/ibmebus.c
-> +++ b/arch/powerpc/kernel/ibmebus.c
-> @@ -197,16 +197,13 @@ int ibmebus_register_driver(struct of_platform_driver *drv)
->  	/* If the driver uses devices that ibmebus doesn't know, add them */
->  	ibmebus_create_devices(drv->match_table);
-> 
-> -	drv->driver.name   = drv->name;
-> -	drv->driver.bus    = &ibmebus_bus_type;
-> -
-> -	return driver_register(&drv->driver);
-> +	return of_register_driver(drv, &ibmebus_bus_type);
->  }
->  EXPORT_SYMBOL(ibmebus_register_driver);
-> 
->  void ibmebus_unregister_driver(struct of_platform_driver *drv)
->  {
-> -	driver_unregister(&drv->driver);
-> +	of_unregister_driver(drv);
->  }
->  EXPORT_SYMBOL(ibmebus_unregister_driver);
+Last year i2c modules weren't dynamically loadable so it wasn't needed.
 
-Looks like a transparent change to me. Good one.
+>
+> With kind regards,
+>
+> Geert Uytterhoeven
+> Software Architect
+>
+> Sony Network and Software Technology Center Europe
+> The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Belgi=
+um
+>
+> Phone:    +32 (0)2 700 8453
+> Fax:      +32 (0)2 700 8622
+> E-mail:   Geert.Uytterhoeven@sonycom.com
+> Internet: http://www.sony-europe.com/
+>
+> Sony Network and Software Technology Center Europe
+> A division of Sony Service Centre (Europe) N.V.
+> Registered office: Technologielaan 7 =B7 B-1840 Londerzeel =B7 Belgium
+> VAT BE 0413.825.160 =B7 RPR Brussels
+> Fortis Bank Zaventem =B7 Swift GEBABEBB08A =B7 IBAN BE39001382358619
 
-Joachim
 
-Acked-by: Joachim Fenkes <fenkes@de.ibm.com>
+--=20
+Jon Smirl
+jonsmirl@gmail.com
