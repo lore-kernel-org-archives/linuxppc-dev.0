@@ -1,20 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <b07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6FA1FDDE19
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 02:59:52 +1100 (EST)
-Message-ID: <478B86E5.6060605@freescale.com>
-Date: Mon, 14 Jan 2008 09:59:33 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: mike zheng <mail4mz@gmail.com>
-Subject: Re: Quick Engine Support on Kernel 2.4
-References: <5c9cd53b0801111521v25d0c1dt21ee59373826298@mail.gmail.com>
-In-Reply-To: <5c9cd53b0801111521v25d0c1dt21ee59373826298@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	by ozlabs.org (Postfix) with ESMTP id 23A6ADDE28
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 03:32:15 +1100 (EST)
+Date: Mon, 14 Jan 2008 10:29:35 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] fsl_soc: Fix get_immrbase() to use ranges, rather than reg.
+Message-ID: <20080114162935.GA27862@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,18 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-mike zheng wrote:
+The reg property in fsl soc nodes should be removed.
 
-> Is there any BSP on Linux Kernel 2.4 support Quick Engine of MPC8568?
-> If not, which BSP shall I start the porting? The BSP(on Kernel2.6) of
-> MPC8568MDS from Freescale supports CPM2, but not QE. What the
-> difference between CPM2 and QE?
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_soc.c |   14 +++++++++++---
+ 1 files changed, 11 insertions(+), 3 deletions(-)
 
-Think of the QE as CPM3.
-
-"Supporting the QE" means many things.  The 2.6 kernel has core support for the 
-QE as well as support for several QE devices.  You'll need to be more specific.
-
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 3ace747..7502e03 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -54,10 +54,18 @@ phys_addr_t get_immrbase(void)
+ 	soc = of_find_node_by_type(NULL, "soc");
+ 	if (soc) {
+ 		int size;
+-		const void *prop = of_get_property(soc, "reg", &size);
++		u32 naddr;
++		const u32 *prop = of_get_property(soc, "#address-cells", &size);
++
++		if (prop && size == 4)
++			naddr = *prop;
++		else
++			naddr = 2;
++
++		prop = of_get_property(soc, "ranges", &size);
++		if (prop && size == 12)
++			immrbase = of_translate_address(soc, prop + naddr);
+ 
+-		if (prop)
+-			immrbase = of_translate_address(soc, prop);
+ 		of_node_put(soc);
+ 	}
+ 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.3
