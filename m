@@ -1,22 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id BA9DEDDE3F
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 01:28:33 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1213935anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 06:28:32 -0800 (PST)
-Message-ID: <fa686aa40801140628kc112b12vc6f715c60974f68a@mail.gmail.com>
-Date: Mon, 14 Jan 2008 07:28:32 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: I2C and CAN bus on MPC5200B device tree
-In-Reply-To: <478B18D9.6020201@grandegger.com>
+Return-Path: <linasvepstas@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
+	by ozlabs.org (Postfix) with ESMTP id 784C3DDE29
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 02:21:24 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so2540213pyg.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 07:21:22 -0800 (PST)
+Message-ID: <3ae3aa420801140721g3381b3d3u28b7b30fbaebe88@mail.gmail.com>
+Date: Mon, 14 Jan 2008 09:21:22 -0600
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+To: "Olof Johansson" <olof@lixom.net>
+Subject: Re: [PATCH 1/8] pseries: phyp dump: Docmentation
+In-Reply-To: <20080114052402.GA23786@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <478A967E.7080201@genesi-usa.com>
-	<fa686aa40801131635o499c8c08i6a2667cd7df1a72e@mail.gmail.com>
-	<478B18D9.6020201@grandegger.com>
-Cc: linuxppc-embedded@ozlabs.org, ppc-dev <linuxppc-dev@ozlabs.org>
+References: <3ae3aa420801090731r2e25e42awcae385b448e20b16@mail.gmail.com>
+	<3ae3aa420801091833i6cf32616o2a060579be1f3191@mail.gmail.com>
+	<20080110031723.GA22168@lixom.net>
+	<3ae3aa420801092012m5e47cbd7lc7a5f91842074af7@mail.gmail.com>
+	<20080110162120.GA4831@lixom.net>
+	<3ae3aa420801100834r6bd2750eqa7c8d29877350463@mail.gmail.com>
+	<4786923E.9090902@austin.ibm.com> <20080111012641.GX14201@localdomain>
+	<3ae3aa420801110857l5e43fd56s5bd1c24ffac939f3@mail.gmail.com>
+	<20080114052402.GA23786@lixom.net>
+Cc: lkessler@us.ibm.com, linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	mahuja@us.ibm.com, strosake@us.ibm.com
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +33,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/14/08, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Grant Likely wrote:
-> > On 1/13/08, Matt Sealey <matt@genesi-usa.com> wrote:
-> >> Hi guys,
-> >>
-> >> I know the I2C stuff is up in the air (I cannot pinpoint the documentation
-> >> for it) and have not found any CAN bus documentation for device trees.
-> >>
-> >> I want to update the firmware tree to add these but, am basically looking
-> >> for those docs, or someone to go over a few points.. is there some kind of
-> >> tree standard I should be looking at, or some patch I missed which has
-> >> a driver which implements something that looks at a compatible tree?
-> >
-> > I think some consensus has been achieved for describing i2c busses and
-> > their attached devices, but I don't think booting-without-of.txt has
-> > been updated with the details yet.  I need to look into that more.
-> >
-> > I don't think anyone has tackled CAN.  Best bet is to draft a tree in
-> > the way you think it should be described and post it to the list.
-> > That will give a starting point for us to discuss it and come to
-> > consensus.
+On 13/01/2008, Olof Johansson <olof@lixom.net> wrote:
 >
-> For MSCAN on the MPC5200 we currently have:
->
->                 mscan@900 {
->                         device_type = "mscan";
->                         compatible = "mpc5200b-mscan","mpc5200-mscan";
->                         cell-index = <0>;
->                         interrupts = <2 11 0>;
->                         interrupt-parent = <&mpc5200_pic>;
->                         reg = <900 80>;
->                 };
->
->                 mscan@980 {
->                         device_type = "mscan";
->                         compatible = "mpc5200b-mscan","mpc5200-mscan";
->                         cell-index = <1>;
->                         interrupts = <2 12 0>;
->                         interrupt-parent = <&mpc5200_pic>;
->                         reg = <980 80>;
->                 };
->
-> The only thing missing is a property defining the routing of the CAN
-> signals, CAN 1 on I2C1 pins or CAN 2 on TMR01 pins. I think it does not
-> make sense to describe CAN devices on the CAN bus like for I2C.
+> How do you expect to have it in full production if you don't have all
+> resources available for it? It's not until the dump has finished that you
+> can return all memory to the production environment and use it.
 
-I don't think that pin routing matters much for the device tree.
-Ideally, firmware should be responsible for port_config, and as long
-as it is already configured, the CAN device can find it's devices.
+With the PHYP dump, each chunk of RAM is returned for
+general use immediately after being dumped; so its not
+an all-or-nothing proposition.  Production systems don't
+often hit 100% RAM use right out of the gate, they often
+take hours or days to get there, so again, there should
+be time to dump.
 
-Cheers,
-g.
+> This can very easily be argued in both direction, with no clear winner:
+> If the crash is stress-induced (say a slashdotted website), for those
+> cases it seems more rational to take the time, collect _good data_ even
+> if it takes a little longer, and then go back into production. Especially
+> if the alternative is to go back into production immediately, collect
+> about half of the data, and then crash again. Rinse and repeat.
+
+Again, the mode of operation for the phyp dump  is that you'll
+always have all of the data from the *first* crash, even if there
+are multiple crashes. That's because the the as-yet undumped
+RAM is not put back into production.
+
+> really surprises me that there's no way to reset a device through PHYP
+> though. Seems like such a fundamental feature.
+
+I don't know who said that; that's not right. The EEH function
+certainly does allow you to halt/restart PCI traffic to a particular
+device and also to reset the device.  So, yes, the pSeries
+kexec code should call into the eeh subsystem to rationalize
+the device state.
+
+> I think people are overly optimistic if they think it'll be possible
+> to do all of this reliably (as in with consistent performance) without
+> a second reboot though.
+
+The NUMA issues do concern me. But then, the whole virtualized,
+fractional-cpu, tickless operation stuff sounds like a performance
+tuning nightmare to begin with.
+
+> At least without similar amounts of work being
+> done as it would have taken to fix kdump's reliability in the first place.
+
+:-)
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> Speaking of reboots. PHYP isn't known for being quick at rebooting a
+> partition, it used to take in the order of minutes even on a small
+> machine. Has that been fixed?
+
+Dunno.  Probably not.
+
+>  If not, the avoiding an extra reboot
+> argument hardly seems like a benefit versus kdump+kexec, which reboots
+> nearly instantly and without involvement from PHYP.
+
+OK, let me tell you what I'm up against right now.
+I'm dealing with sporadic corruption on my home box.
+
+About a month ago, I bought a whizzy ASUS M2NE
+motherboard & an AMD64 2-core cpu, and two sticks
+of RAM, 1GB per stick. I have one new hard drive,
+SATA, and one old hard drive, from my old machine,
+the PATA.  The two disks are mirrored in a RAID-1
+config. Running Ubuntu.
+
+During install/upgrade a month ago, I noticed some of
+the install files seemed to have gotten corrupted, but
+that downloading them again got me a working version.
+This put a serious frown on my face: maybe a bad ethernet
+card or connection !?
+
+Two weeks ago, gcc stopped working one morning, although
+it worked fine the night before. I'd done nothing in the interim
+but sleep. Reinstalling it made it work again. Yesterday,
+something else stopped working.  I found the offending
+library, I compared file checksums against a known-good
+version, and they were off. (!!!) Disk corruption?
+
+Then apt-get stopped working. The /var/lib/dpkg/status file
+had randomly corrupted single bytes. Its ascii, I hand
+repaired it; it had maybe 10 bad bytes out of 2MB total size.
+
+I installed tripwire. Between the first run of tripwire, and the
+second, less than an hour later, it reported several dozen
+files have changed checksums. Manual inspection of some
+of these files against known-good versions show that, at least
+this morning, that's no longer the case.
+
+System hasn't crashed in a month, since first boot.  So
+what's going on? Is it possible that one of the two disks
+is serving up bad data, which explains the funny checksum
+behaviour? Or maybe its bad RAM, so that a fresh disk
+read shows good data?  If its bad ram, why doesn't the
+system crash?  I forced fsck last night, fsck came back
+spotless.
+
+So ... moral of the story: If phyp is doing some sort of
+hardware checks and validation, that's great. I wish I could
+afford a pSeries system for my home computer, because
+my impression is that they are very stable, and don't do
+things like data corruption.  I'm such a friggin cheapskate
+that I can't bear to spend many thousands instead of many
+hundreds of dollars. However, I will trade a longer boot
+for the dream of higher reliability.
+
+--linas
