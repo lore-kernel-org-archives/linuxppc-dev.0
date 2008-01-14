@@ -1,20 +1,18 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 54BB1DDE20
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 17:14:03 +1100 (EST)
-Date: Mon, 14 Jan 2008 17:13:58 +1100
+	by ozlabs.org (Postfix) with ESMTP id 419D3DDE27
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jan 2008 17:19:52 +1100 (EST)
+Date: Mon, 14 Jan 2008 17:19:45 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 3/3] Freescale enhanced Local Bus Controller FCM NAND
 	support.
-Message-Id: <20080114171358.644b4e2a.sfr@canb.auug.org.au>
-In-Reply-To: <20080111204320.GC11215@loki.buserror.net>
-References: <20080111204320.GC11215@loki.buserror.net>
+Message-Id: <20080114171945.a7244eb8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__14_Jan_2008_17_13_58_+1100_psAKYMDgA.mygV/F"
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@infradead.org
+	boundary="Signature=_Mon__14_Jan_2008_17_19_45_+1100_vS=oT7IRpccbuQzT"
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__14_Jan_2008_17_13_58_+1100_psAKYMDgA.mygV/F
+--Signature=_Mon__14_Jan_2008_17_19_45_+1100_vS=oT7IRpccbuQzT
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Scott,
+
+[Corrected list address.]
 
 On Fri, 11 Jan 2008 14:43:20 -0600 Scott Wood <scottwood@freescale.com> wro=
 te:
@@ -69,15 +69,15 @@ Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__14_Jan_2008_17_13_58_+1100_psAKYMDgA.mygV/F
+--Signature=_Mon__14_Jan_2008_17_19_45_+1100_vS=oT7IRpccbuQzT
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHiv2qTgG2atn1QN8RAlyVAJ9g6mIEjDgp/dQg+qwYlBHT/1OPsgCfR5HT
-T9TY9n73o/obnGKg51LpDnk=
-=pzaQ
+iD8DBQFHiv8FTgG2atn1QN8RAnnvAJ4mdJpGlKEpu6YWv6rWZCLgKut2cACgkXGd
+0EoxnDdFmlNQ4LiE2/OL5bU=
+=Si09
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__14_Jan_2008_17_13_58_+1100_psAKYMDgA.mygV/F--
+--Signature=_Mon__14_Jan_2008_17_19_45_+1100_vS=oT7IRpccbuQzT--
