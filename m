@@ -1,18 +1,24 @@
-Return-Path: <dhbaird@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 9E418DDE1E
+Return-Path: <enno.luebbers@upb.de>
+Received: from mail.uni-paderborn.de (mail.uni-paderborn.de [131.234.142.9])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C833EDDE10
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Jan 2008 16:12:39 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3564158wag.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 13 Jan 2008 21:12:38 -0800 (PST)
-Message-ID: <440abda90801132112y76f2899by4ef582c9b58fd6b6@mail.gmail.com>
-Date: Sun, 13 Jan 2008 22:12:38 -0700
-From: "David Baird" <dhbaird@gmail.com>
+	Mon, 14 Jan 2008 19:37:24 +1100 (EST)
+Received: from p4fc4cc0b.dip.t-dialin.net ([79.196.204.11] helo=[10.10.3.100])
+	by mail.uni-paderborn.de with esmtpsa
+	(TLS-1.0:RSA_AES_128_CBC_SHA1:16)
+	(Exim 4.63 chapek-ix.uni-paderborn.de) id 1JEKop-0006Ji-3G
+	for linuxppc-embedded@ozlabs.org; Mon, 14 Jan 2008 09:37:19 +0100
+Message-Id: <62D97388-4D65-4B40-A0D1-847963FF0A16@upb.de>
+From: =?ISO-8859-1?Q?Enno_L=FCbbers?= <enno.luebbers@upb.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Problem booting Linux 2.6 on Virtex-4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <440abda90801132112y76f2899by4ef582c9b58fd6b6@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: Problem booting Linux 2.6 on Virtex-4
+Date: Mon, 14 Jan 2008 09:37:16 +0100
+References: <440abda90801132112y76f2899by4ef582c9b58fd6b6@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,53 +29,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hello David,
 
-I'm having trouble with getting Linux to boot farther than early_init.
- Things start to go obviously wrong after early_init calls memset to
-clear the .bss section.  The first symptom I noticed was that the
-stack (which currently contains the link register) was getting zeroed
-by memset.  This doesn't make any sense because the stack does not
-intersect the .bss section;  I confirmed that the do not intersect by
-using JTAG+xmd to read the registers and also by inserting print
-statements.
+Am 14.01.2008 um 06:12 schrieb David Baird:
 
-So, I experimented further and discovered that different memory
-regions seem to be aliased on to each other every 2*32*256 bytes.
+> I'm having trouble with getting Linux to boot farther than early_init.
+> [...]
+> So, I experimented further and discovered that different memory
+> regions seem to be aliased on to each other every 2*32*256 bytes.
 
-e.g.:
 
-    char * ptr = 0;
-    unsigned long addr = 0xc0001234; // pick some address
-    int n = 1; // pick some integer
+This sounds either like a wrong programming of an BRx/ORx memory  
+controller register pair (which, AFAIK, the PPC405 does not have), or  
+like a messed up address map in EDK. My guess is that an optimized/ 
+sloppy implementation of the address decoder for some peripheral in an  
+EDK system could produce something like you described; or there's a  
+block RAM that's attached to a controller in the wrong way; or the  
+bank/address parameters of the DDR controller don't match the physical  
+setup... there's a lot that can go wrong obviously on a configurable  
+SoC.
 
-    // Now write values to two different addresses:
-    ptr[addr] = 42;
-    ptr[addr + n*2*32*256] = 24;
-    volatile asm ("nop");
+Can you be more specific about your hardware platform? Is this a  
+reference design? What board are you using?
 
-    // Now mysteriously, ptr[addr] == 24
+Regards
+- Enno
 
-The reason I have written 32*256 is because that corresponds to the
-number of bytes per cache line times the number of cache lines ...
-because I was suspicious this might be related to caching.  However,
-with experimentation, I found that the aliasing does not occur every
-32*256 bytes, but rather every 32*512 bytes (hence 2*32*256).
-Anyways, I looked in embed_config (and confirmed by dumping zImage.elf
-with objdump) that the cache is being invalidated with "dccci".
-"dccci" is being called, as expected, and therefore everything looks
-good in the code.
+-- 
+Dipl.-Ing. Enno Luebbers
+Computer Engineering Group
+University of Paderborn	
 
-I am completely perplexed.  The cache appears to be initialized
-properly.  I don't have any trouble in real mode.  But as soon the
-kernel switches into virtual mode (in head_4xx.S), then this memory
-aliasing problem happens.  I wrote a completely standalone assembler
-script that initializes the cache, TLBs, and virtual mode in the same
-way as embed_config and head_4xx.S and so I am able to reproduce the
-problem outside of the kernel.  I can attach that code if someone
-thinks it will be useful - just let me know.
+Warburger Str. 100		
+33098 Paderborn			
 
-Does anyone have an idea about what might be going wrong?  I can send
-more information or test anything that you want me to.
-
--David
+http://wwwcs.upb.de/cs/ag-platzner
+phone:  05251 / 60-5397
+fax:    05251 / 60-5377
