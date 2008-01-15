@@ -1,15 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 15 Jan 2008 10:34:06 +1100
+Date: Tue, 15 Jan 2008 11:16:57 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 3/4] powerpc: Katana750i - Add DTS file
-Message-ID: <20080114233406.GB20649@localhost.localdomain>
-References: <20080114225150.GB21940@mag.az.mvista.com>
-	<20080114225926.GB22862@mag.az.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(),
+	ft_get_next_prop(), and ft_getprop_offset().
+Message-ID: <20080115001657.GC20649@localhost.localdomain>
+References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080114225926.GB22862@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,258 +19,219 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 14, 2008 at 03:59:26PM -0700, Mark A. Greer wrote:
-> From: Mark A. Greer <mgreer@mvista.com>
+On Mon, Jan 14, 2008 at 10:30:04AM -0600, Scott Wood wrote:
+> ft_get_next_node() enumerates children of a given node.
+> ft_get_next_prop() enumerates propreties of a given node.
 > 
-> Add DTS file for the Emerson Katana 750i & 752i platforms.
+> ft_getprop_offset() is like ft_getprop(), but takes a property offset rather
+> than a node offset and property name; it is primarily intended for use
+> with ft_get_next_prop().
+
+Urg... this kind of serves me right for not getting my act together on
+iterator functions yet.  I really don't like this approach much.  I'll
+see if I can come up with something I prefer this afternoon.
+
+The biggest thing I dislike is that I've deliberately avoided having
+any offsets-to-properties exposed to the library user.  That's because
+the whole offsets change when you write the tree problem is worse for
+properties than nodes (in that likely idiomatic uses will be bitten by
+changes in property offsets).
+
+Some more specific comments on the patch below.
 
 [snip]
-> +/dts-v1/;
+> +const void *fdt_getprop_offset(const void *fdt, int propoffset,
+> +                               const char **name, int *lenp)
+> +{
+> +	uint32_t tag;
+> +	const struct fdt_property *prop;
+> +	int namestroff;
+> +	int err, len;
 > +
-> +/ {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	model = "Katana-75xi";	/* Default */
-> +	compatible = "emerson,katana-750i";
-> +	coherency-off;
+> +	err = fdt_check_header(fdt);
+> +	if (err)
+> +		goto fail;
+> +
+> +	tag = fdt_next_tag(fdt,propoffset, NULL);
+> +	if (tag != FDT_PROP) {
+> +		err = -FDT_ERR_BADOFFSET;
+> +		goto fail;
+> +	}
+> +
+> +	err = -FDT_ERR_BADSTRUCTURE;
+> +	prop = fdt_offset_ptr(fdt, propoffset, sizeof(*prop));
+> +	if (!prop)
+> +		goto fail;
+> +
+> +	if (name) {
+> +		namestroff = fdt32_to_cpu(prop->nameoff);
+> +		*name = fdt_string(fdt, namestroff);
+> +	}
+> +
+> +	len = fdt32_to_cpu(prop->len);
+> +	if (lenp)
+> +		*lenp = len;
+> +
+> +	prop = fdt_offset_ptr(fdt, propoffset, sizeof(*prop) + len);
+> +	if (!prop)
+> +		goto fail;
 
-Where is this flag used from?
-
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,750 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			clock-frequency = <733333333>;		/* Default */
-> +			bus-frequency = <133333333>;		/* Default */
-> +			timebase-frequency = <33333333>;	/* Default */
-> +			i-cache-line-size = <0x20>;
-> +			d-cache-line-size = <0x20>;
-> +			i-cache-size = <0x8000>;
-> +			d-cache-size = <0x8000>;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0x00000000 0x04000000>;	/* Default (64MB) */
-> +	};
-> +
-> +	mv64x60@f8100000 { /* Marvell Discovery */
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		model = "mv64360";	/* Default */
-> +		compatible = "marvell,mv64360";
-> +		clock-frequency = <133333333>;
-> +		hs_reg_valid;
-> +		reg = <0xf8100000 0x00010000>;
-> +		virtual-reg = <0xf8100000>;
-
-You seem to have virtual-reg properties on a *lot* of nodes, are they
-really necessary?  virtual-reg should be used *only* for things which
-you need to access very early in the bootwrapper.  Usually that's only
-the serial port for the console.  Come to that, the CPU is a 750 which
-has a real mode, so it seems dubious that you would need any
-virtual-reg values at all.
+This juggling to call fdt_offset_ptr() over the whole length of the
+property representation should be rolled up into an internal function
+and used within fdt_get_property() as well.
 
 [snip]
-> +		flash@e8000000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "cfi-flash";
-> +			bank-width = <4>;
-> +			device-width = <2>;
-> +			reg = <0xe8000000 0x04000000>;
-> +			monitor@0 {
-> +				label = "Monitor";
-
-If you're using the "label" property, it would be normal to name the
-nodes simply "partition@address".
-
-> +				reg = <0x00000000 0x00100000>;
-> +			};
-> +			pkernel@100000 {
-> +				label = "Primary Kernel";
-> +				reg = <0x00100000 0x00180000>;
-> +			};
-> +			pfs@280000 {
-> +				label = "Primary Filesystem";
-> +				reg = <0x00280000 0x01e00000>;
-> +			};
-> +			skernel@2080000 {
-> +				label = "Secondary Kernel";
-> +				reg = <0x02080000 0x00180000>;
-> +			};
-> +			sfs@2200000 {
-> +				label = "Secondary Filesystem";
-> +				reg = <0x02200000 0x01e00000>;
-> +			};
-> +			user@100000 { /* overlay all but monitor */
-> +				label = "User FLASH";
-> +				reg = <0x00100000 0x03f00000>;
-> +			};
-> +		};
+> +int fdt_get_next_node(const void *fdt, int startoffset,
+> +                      int *depth, int recursive)
+> +{
+> +	uint32_t tag;
+> +	int offset, nextoffset;
 > +
-> +		mdio {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			device_type = "mdio";
-
-This device_type value should not be here.
-
-> +			compatible = "marvell,mv64360-mdio";
-> +			PHY0: ethernet-phy@12 {
-> +				device_type = "ethernet-phy";
-> +				compatible = "broadcom,bcm5461";
-> +				reg = <12>;
-> +			};
-> +			PHY1: ethernet-phy@11 {
-> +				device_type = "ethernet-phy";
-> +				compatible = "broadcom,bcm5461";
-> +				reg = <11>;
-> +			};
-> +			PHY2: ethernet-phy@4 {
-> +				device_type = "ethernet-phy";
-> +				compatible = "broadcom,bcm5461";
-> +				reg = <4>;
-> +			};
-> +		};
+> +	CHECK_HEADER(fdt);
 > +
-> +		multiethernet@2000 {
+> +	if (startoffset >= 0) {
+> +		tag = fdt_next_tag(fdt, startoffset, &nextoffset);
+> +		if (tag != FDT_BEGIN_NODE)
+> +			return -FDT_ERR_BADOFFSET;
+> +	} else {
+> +		nextoffset = 0;
+> +	}
+> +
+> +	do {
+> +		offset = nextoffset;
+> +		tag = fdt_next_tag(fdt, offset, &nextoffset);
+> +
+> +		switch (tag) {
+> +		case FDT_BEGIN_NODE:
+> +			if ((*depth)++ == 0 || recursive) {
+> +				return offset;
+> +			}
+> +
+> +			break;
+> +
+> +		case FDT_END_NODE:
+> +			if (--*depth < 0)
+> +				return -FDT_ERR_NOTFOUND;
+> +
+> +			break;
+> +
+> +		case FDT_PROP:
+> +		case FDT_END:
+> +		case FDT_NOP:
+> +			break;
+> +
+> +		default:
+> +			return -FDT_ERR_BADSTRUCTURE;
+> +		}
+> +	} while (tag != FDT_END);
+> +
+> +	if (depth != 0)
+> +		return -FDT_ERR_BADSTRUCTURE;
 
-This needs some sort of "compatible" value.
+I think this should be FDT_ERR_TRUNCATED.
 
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x2000 0x2000>;
-> +			ethernet@0 {
+> +	return -FDT_ERR_NOTFOUND;
+
+In fact, so should this.  This function should never actually reach
+the FDT_END tag.
+
+> +}
+> +
+> +int fdt_get_next_prop(const void *fdt, int startoffset)
+> +{
+> +	uint32_t tag;
+> +	int offset, nextoffset;
+> +
+> +	CHECK_HEADER(fdt);
+> +
+> +	if (startoffset >= 0) {
+> +		tag = fdt_next_tag(fdt, startoffset, &nextoffset);
+> +		if (tag != FDT_BEGIN_NODE && tag != FDT_PROP)
+> +			return -FDT_ERR_BADOFFSET;
+> +	} else {
+> +		nextoffset = 0;
+
+This alternate case shouldn't be here.  For properties, the given
+offset should always be either the node offset to find within, or
+another property offset.  This other case simply makes negative and 0
+startoffset equivalent.  Instead, negative startoffset should cause
+FDT_ERR_BADOFFSET.
+
+> +	}
+> +
+> +	do {
+> +		offset = nextoffset;
+> +		tag = fdt_next_tag(fdt, offset, &nextoffset);
+> +
+> +		switch (tag) {
+> +		case FDT_BEGIN_NODE:
+> +		case FDT_END_NODE:
+> +			return -FDT_ERR_NOTFOUND;
+> +
+> +		case FDT_PROP:
+> +			return offset;
+> +
+> +		case FDT_END:
+> +		case FDT_NOP:
+> +			break;
+> +
+> +		default:
+> +			return -FDT_ERR_BADSTRUCTURE;
+> +		}
+> +	} while (tag != FDT_END);
+> +
+> +	return -FDT_ERR_BADSTRUCTURE;
+
+Should be FDT_ERR_TRUNCATED again.
+
+> +}
+> diff --git a/libfdt/fdt_strerror.c b/libfdt/fdt_strerror.c
+> index f9d32ef..4e87550 100644
+> --- a/libfdt/fdt_strerror.c
+> +++ b/libfdt/fdt_strerror.c
+> @@ -70,6 +70,7 @@ static struct errtabent errtable[] = {
+>  	ERRTABENT(FDT_ERR_BADOFFSET),
+>  	ERRTABENT(FDT_ERR_BADPATH),
+>  	ERRTABENT(FDT_ERR_BADSTATE),
+> +	ERRTABENT(FDT_ERR_BADDEPTH),
+>  
+>  	ERRTABENT(FDT_ERR_TRUNCATED),
+>  	ERRTABENT(FDT_ERR_BADMAGIC),
+> diff --git a/libfdt/libfdt.h b/libfdt/libfdt.h
+> index d053689..6c5d4a9 100644
+> --- a/libfdt/libfdt.h
+> +++ b/libfdt/libfdt.h
+> @@ -85,25 +85,28 @@
+>  	/* FDT_ERR_BADSTATE: Function was passed an incomplete device
+>  	 * tree created by the sequential-write functions, which is
+>  	 * not sufficiently complete for the requested operation. */
+> +#define FDT_ERR_BADDEPTH	8
+> +	/* FDT_ERR_BADDEPTH: Function was passed a negative
+> +	 * (or otherwise invalid) depth. */
+
+You've added this error code, but you don't actually return it
+anywhere...
 
 [snip]
-> +		CUNIT: cunit@f200 {
+>  /**
+> + * fdt_getprop_offset - retrieve the value of a given property by offset
+> + * @fdt: pointer to the device tree blob
+> + * @propoffset: offset of the property to read
+> + * @name: pointer to a character pointer (will be overwritten) or NULL
+> + * @lenp: pointer to an integer variable (will be overwritten) or NULL
+> + *
+> + * fdt_getprop() retrieves a pointer to the value of the property
+> + * named 'name' of the node at offset nodeoffset (this will be a
+> + * pointer to within the device blob itself, not a copy of the value).
+> + * If lenp is non-NULL, the length of the property value also
+> + * returned, in the integer pointed to by lenp.
 
-What is this device?  It needs some sort of "compatible" value.
-
-> +			reg = <0xf200 0x200>;
-> +		};
-> +
-> +		MPSCROUTING: mpscrouting@b400 {
-
-Ditto.
-
-> +			reg = <0xb400 0xc>;
-> +		};
-> +
-> +		MPSCINTR: mpscintr@b800 {
-
-Ditto.
-
-> +			reg = <0xb800 0x100>;
-> +			virtual-reg = <0xf810b800>;
-> +		};
+This description is incorrect - you've copied the fdt_getprop()
+description and forgotten to update it.
 
 [snip]
-> +		i2c@c000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			device_type = "i2c";
 
-This device_type value shouldn't be here either.
-
-> +			compatible = "marvell,mv64360-i2c";
-> +			reg = <0xc000 0x20>;
-> +			virtual-reg = <0xf810c000>;
-> +			freq_m = <8>;
-> +			freq_n = <3>;
-> +			interrupts = <37>;
-> +			interrupt-parent = <&PIC>;
-> +			rtc@68 {
-> +				compatible = "dallas,ds1307";
-> +				reg = <0x68>;
-> +			};
-> +		};
-
-[snip]
-> +		mpp@f000 {
-> +			compatible = "marvell,mv64360-mpp";
-> +			reg = <0xf000 0x10>;
-> +		};
-> +
-> +		gpp@f100 {
-> +			compatible = "marvell,mv64360-gpp";
-> +			reg = <0xf100 0x20>;
-> +		};
-
-What are these two devices?
-
-> +		pci@80000000 {
-> +			#address-cells = <3>;
-> +			#size-cells = <2>;
-> +			#interrupt-cells = <1>;
-> +			device_type = "pci";
-> +			compatible = "marvell,mv64360-pci";
-> +			cell-index = <1>;
-> +			reg = <0x0c78 0x8>;
-> +			ranges = <0x01000000 0x0 0x0
-> +					0xb0000000 0x0 0x04000000
-> +				  0x02000000 0x0 0x80000000
-> +					0x80000000 0x0 0x30000000>;
-> +			bus-range = <0x0 0xff>;
-> +			clock-frequency = <66000000>;
-> +			interrupt-pci-iack = <0x0cb4>;
-> +			interrupt-parent = <&PIC>;
-> +			interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-> +			interrupt-map = <
-> +				/* IDSEL 0x04 - PMC 1 */
-> +				0x2000 0 0 1 &PIC 73
-> +				0x2000 0 0 2 &PIC 74
-> +				0x2000 0 0 3 &PIC 78
-> +				0x2000 0 0 4 &PIC 72
-> +
-> +				/* IDSEL 0x05 - PMC 2 */
-> +				0x2800 0 0 1 &PIC 74
-> +				0x2800 0 0 2 &PIC 78
-> +				0x2800 0 0 3 &PIC 72
-> +				0x2800 0 0 4 &PIC 73
-> +
-> +				/* IDSEL 0x06 - T8110 */
-> +				0x3000 0 0 1 &PIC 78
-> +
-> +				/* IDSEL 0x08 - i82544 */
-> +				0x4000 0 0 1 &PIC 78
-> +			>;
-> +		};
-> +
-> +		pci@f8080000 { /* Required to acces Hotswap register */
-> +			#address-cells = <3>;
-> +			#size-cells = <2>;
-> +			#interrupt-cells = <1>;
-> +			device_type = "pci";
-> +			compatible = "marvell,mv64360-pci";
-> +			cell-index = <0>;
-> +			reg = <0x0cf8 0x8>;
-> +			ranges = <0x01000000 0x0 0x0
-> +					0xf8080000 0x0 0x00010000
-> +				  0x02000000 0x0 0xf8090000
-> +					0xf8090000 0x0 0x00010000>;
-> +			bus-range = <0x0 0xff>;
-
-Two PCI bridges with identical bus-range values seems potentially
-problematic...
-
-> +		};
-
-[snip]
-> +	chosen {
-> +		bootargs = "ip=on";
-
-The dts file should not include a "bootargs" value.  The wrapper will
-fill that in from the kernel config.
-
-> +		linux,stdout-path = "/mv64x60@f8100000/mpsc@8000";
-> +	};
-> +};
+And finally, new libfdt functions should have testcases.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
