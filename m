@@ -1,19 +1,15 @@
-Return-Path: <SRS0=XpNt=SF=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 15565DDDDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 16:15:34 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] MTD for Taco
-Date: Tue, 15 Jan 2008 06:15:19 +0100
-References: <477F12D1.2070109@pikatech.com> <200801142042.56847.sr@denx.de>
-	<478BC05C.2080007@pikatech.com>
-In-Reply-To: <478BC05C.2080007@pikatech.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801150615.19910.sr@denx.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <5511779B-76CE-4C4C-8A7B-9869BC1920DF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080114000113.GA14801@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 1/3] 8xx: Analogue & Micro Adder875 board support.
+Date: Mon, 14 Jan 2008 23:22:08 -0600
+References: <20080111200705.GA696@loki.buserror.net>
+	<20080114000113.GA14801@localhost.localdomain>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 14 January 2008, Sean MacLennan wrote:
-> Stefan Roese wrote:
-> > And the EBC0_BxCR & EBC0BxAP registers for the CS where the NAND is
-> > connected? How are they configured?
->
-> EBC0_B1CR d001c000
-> EBC0_B1AP 18003c0
->
-> Which matches the defines in include/configs/warp.h:
->
->     #define CFG_EBC_PB1AP        0x018003c0
->     #define CFG_EBC_PB1CR        (CFG_NAND_ADDR | 0x1c000)
->
-> It also matches the defines in sequoia.h except that we are on CS1 and
-> the sequoia is on CS3.
 
-Right. One thing I noticed though is, that you map the NAND to 0xd0000000, 
-which is reserved for PCI in the 440EP address space. I suggest you map it to 
-0x90000000 as done on Bamboo. Please give it a try and let me know if this 
-changes the 32bit access behavior.
+On Jan 13, 2008, at 6:01 PM, David Gibson wrote:
 
-Best regards,
-Stefan
+> On Fri, Jan 11, 2008 at 02:07:05PM -0600, Scott Wood wrote:
+>> Signed-off-by: Scott Wood <scottwood@freescale.com>
+>
+> [snip]
+>> +	aliases {
+>> +		console = &console;
+>> +		enet0 = &eth0;
+>> +		enet1 = &eth1;
+>
+> I think most other boards are settling on aliases "ethernet0"
+> etc. instead of "enet0" (though there's no reason you couldn't have
+> both.
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+We should use ethernet0 since its based on the standard naming  
+convention.
+
+- k
