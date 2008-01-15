@@ -1,22 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id F1353DDE1B
+Return-Path: <enno.luebbers@upb.de>
+Received: from mail.uni-paderborn.de (mail.uni-paderborn.de [131.234.142.9])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6F84DDEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Jan 2008 14:22:19 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1323120anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Jan 2008 19:22:18 -0800 (PST)
-Message-ID: <fa686aa40801141922m5da5682dm7173356e60548638@mail.gmail.com>
-Date: Mon, 14 Jan 2008 20:22:17 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Yedu Jathavedan" <yeduj@ece.pdx.edu>
-Subject: Re: Using USB on ML403
-In-Reply-To: <20080114183942.un31p1u02s4s8www@webmail.cecs.pdx.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080114183942.un31p1u02s4s8www@webmail.cecs.pdx.edu>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 15 Jan 2008 18:24:30 +1100 (EST)
+Received: from p4fc4beea.dip.t-dialin.net ([79.196.190.234] helo=[10.10.3.100])
+	by mail.uni-paderborn.de with esmtpsa (TLS-1.0:RSA_AES_128_CBC_SHA1:16)
+	(Exim 4.63 omicron-persei-viii) id 1JEg9p-0008AV-7d
+	for linuxppc-embedded@ozlabs.org; Tue, 15 Jan 2008 08:24:25 +0100
+Message-Id: <25E6571A-2B11-44AB-82D8-02EC15CEC35E@upb.de>
+From: =?ISO-8859-1?Q?Enno_L=FCbbers?= <enno.luebbers@upb.de>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <440abda90801141614u777edfbndc5d2c61f927dd4f@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: Problem booting Linux 2.6 on Virtex-4
+Date: Tue, 15 Jan 2008 08:24:23 +0100
+References: <440abda90801132112y76f2899by4ef582c9b58fd6b6@mail.gmail.com>
+	<62D97388-4D65-4B40-A0D1-847963FF0A16@upb.de>
+	<440abda90801141211m52bd0a3bk67014c6df2bf406c@mail.gmail.com>
+	<20080114210954.AC436CF8050@mail36-dub.bigfish.com>
+	<440abda90801141614u777edfbndc5d2c61f927dd4f@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,47 +32,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/14/08, Yedu Jathavedan <yeduj@ece.pdx.edu> wrote:
-> Hi,
->
-> I am a beginner to FPGA programming. I want to use the USB Host on
-> ML403 in a PowerPC processor reference system to store some data on a
-> Thumb Drive.
->
-> Currently, I've configured the BSP(OS support) as standalone. There is
-> the OPB USB2 IP core with drivers which I want to use. But, not sure
+Hi David,
 
-The opb_usb2_device ip core is a USB device, not a host.  It will not
-work for reading a thumb drive.
+Am 15.01.2008 um 01:14 schrieb David Baird:
 
-You want to configure your BSP as linux_v2_6 so you can get a
-xparameter_ml40x.h file which will work with linux.
+> Today, I tried a completely fresh design in EDK 9.2i (whereas I had
+> been using 9.1i).  I tried the design found in
+> EDKexamples/Virtex4_PPC_Example_9_2.zip.  This design works :-)  I am
+> not sure why it works (or rather, why the other one did not work), but
+> it works.
 
-> which port connections to use & if that will configure the Cypress
-> CY7C67300 USB controller. The Application Note Xapp925 for ML403 uses
-> OPB EPC core to configure the Cypress controller. If that is the case,
-> is there any driver for the cypress controller?
+I'm using EDK 9.1i  with the reference design from the Xilinx website (www.xilinx.com/ml403) 
+. This one is using a PLB BRAM controller for the bootup code section,  
+not an OCM BRAM. Maybe there's something wrong with the OCM  
+controller? Though OCM is not cached at all...
 
-opb_epc is the right thing to use to get the cypress c67300 working.
-I've got a driver for the c67x00 in my git tree:
+Anyway, glad it worked out.
 
-http://git.secretlab.ca/git/linux-2.6-virtex.git  in the virtex-c67x00 branch.
-
-Go here for my notes on Linux on the Virtex:
-
-http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
-
->
-> If I use Linux kernel 2.6, how would it help me? Are there any drivers
-> for the USB that I can use for kernel 2.6? If anyone has worked on
-> this problem before, I would greatly appreciate their help.
-
-All my work is targeted for 2.6.  It will be difficult to get support
-if you use 2.4
-
-Cheers,
-g.
+Regards
+- Enno
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Dipl.-Ing. Enno Luebbers
+Computer Engineering Group
+University of Paderborn	
+
+Warburger Str. 100		
+33098 Paderborn			
+
+http://wwwcs.upb.de/cs/ag-platzner
+phone:  05251 / 60-5397
+fax:    05251 / 60-5377
