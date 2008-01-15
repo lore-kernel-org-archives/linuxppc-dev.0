@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 73204DDE3F
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 15:23:41 +1100 (EST)
-Subject: Re: [PATCH] [POWERPC] Fixup use of phys_addr_t in mpic code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0801142058100.32559@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0801142058100.32559@blarg.am.freescale.net>
-Content-Type: text/plain
-Date: Tue, 15 Jan 2008 15:23:19 +1100
-Message-Id: <1200370999.10470.12.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5428FDDEA2
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 15:27:54 +1100 (EST)
+Date: Tue, 15 Jan 2008 15:27:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: emac/zmii link warnings
+Message-Id: <20080115152748.d0a05e1b.sfr@canb.auug.org.au>
+In-Reply-To: <478C336D.2080307@pikatech.com>
+References: <478C336D.2080307@pikatech.com>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__15_Jan_2008_15_27_48_+1100_6gXqq1VudM=O3NhX"
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__15_Jan_2008_15_27_48_+1100_6gXqq1VudM=O3NhX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2008-01-14 at 20:58 -0600, Kumar Gala wrote:
-> From: Becky Bruce <becky.bruce@freescale.com>
-> 
-> The mpic_map() and __mpic_map_mmio() need to use phys_addr_t for the
-> physical address they are passed.
-> 
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+On Mon, 14 Jan 2008 23:15:41 -0500 Sean MacLennan <smaclennan@pikatech.com>=
+ wrote:
+>
+> I keep getting these link(?) warnings:
+>=20
+> WARNING: vmlinux.o(.data+0x16178): Section mismatch: reference to .init.t=
+ext:emac_of_bus_notify (between 'emac_of_bus_notifier' and 'emac_phy_map_lo=
+ck')
 
-Ack. (or use resource_size_t, as you prefer).
+emac_of_bus_notify is marked __devinit and is referred to by
+emac_of_bus_notifier (which is not marked thus) (in
+drivers/net/ibm_newemac/core.c).
 
-> ---
->  arch/powerpc/sysdev/mpic.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index f88ff09..0da7069 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -267,7 +267,7 @@ static inline void _mpic_irq_write(struct mpic *mpic, unsigned int src_no,
->   */
-> 
-> 
-> -static void _mpic_map_mmio(struct mpic *mpic, unsigned long phys_addr,
-> +static void _mpic_map_mmio(struct mpic *mpic, phys_addr_t phys_addr,
->  			   struct mpic_reg_bank *rb, unsigned int offset,
->  			   unsigned int size)
->  {
-> @@ -287,7 +287,7 @@ static void _mpic_map_dcr(struct mpic *mpic, struct mpic_reg_bank *rb,
->  	BUG_ON(!DCR_MAP_OK(rb->dhost));
->  }
-> 
-> -static inline void mpic_map(struct mpic *mpic, unsigned long phys_addr,
-> +static inline void mpic_map(struct mpic *mpic, phys_addr_t phys_addr,
->  			    struct mpic_reg_bank *rb, unsigned int offset,
->  			    unsigned int size)
->  {
+> WARNING: vmlinux.o(.init.text+0x16ba8): Section mismatch: reference to .e=
+xit.text:zmii_detach (between 'emac_probe' and 'zmii_probe')
+> WARNING: vmlinux.o(.init.text+0x16bb4): Section mismatch: reference to .e=
+xit.text:mal_unregister_commac (between 'emac_probe' and 'zmii_probe')
+
+These will be similar but function calls.
+
+> Any hints as to what might be wrong? Or are they "normal".
+
+They need to be fixed.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__15_Jan_2008_15_27_48_+1100_6gXqq1VudM=O3NhX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHjDZITgG2atn1QN8RAla6AKCKRQs6nG8a+3Ls9OBCuTX2PEiPwgCeJqh8
+dZMJPfMJ/tzRdnfwgiN/6LY=
+=vZCV
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_Jan_2008_15_27_48_+1100_6gXqq1VudM=O3NhX--
