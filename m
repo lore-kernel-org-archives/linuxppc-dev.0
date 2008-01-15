@@ -1,23 +1,25 @@
-Return-Path: <dhbaird@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.228])
-	by ozlabs.org (Postfix) with ESMTP id 159E7DDDF4
+Return-Path: <yeduj@ece.pdx.edu>
+Received: from ehlo.cat.pdx.edu (ehlo.cat.pdx.edu [131.252.208.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mailhost.cecs.pdx.edu",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 689E5DDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Jan 2008 11:14:17 +1100 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so1093650nzh.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Jan 2008 16:14:15 -0800 (PST)
-Message-ID: <440abda90801141614u777edfbndc5d2c61f927dd4f@mail.gmail.com>
-Date: Mon, 14 Jan 2008 17:14:14 -0700
-From: "David Baird" <dhbaird@gmail.com>
+	Tue, 15 Jan 2008 13:53:23 +1100 (EST)
+Received: from pfeffer (pfeffer.cat.pdx.edu [131.252.208.114])
+	by ehlo.cat.pdx.edu (8.13.5/8.13.5/Debian-3ubuntu1.1) with ESMTP id
+	m0F2dgD9019772
+	for <linuxppc-embedded@ozlabs.org>; Mon, 14 Jan 2008 18:39:42 -0800
+Message-ID: <20080114183942.un31p1u02s4s8www@webmail.cecs.pdx.edu>
+Date: Mon, 14 Jan 2008 18:39:42 -0800
+From: Yedu Jathavedan <yeduj@ece.pdx.edu>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Problem booting Linux 2.6 on Virtex-4
-In-Reply-To: <20080114210954.AC436CF8050@mail36-dub.bigfish.com>
+Subject: Using USB on ML403
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <440abda90801132112y76f2899by4ef582c9b58fd6b6@mail.gmail.com>
-	<62D97388-4D65-4B40-A0D1-847963FF0A16@upb.de>
-	<440abda90801141211m52bd0a3bk67014c6df2bf406c@mail.gmail.com>
-	<20080114210954.AC436CF8050@mail36-dub.bigfish.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,51 +30,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Steve,
+Hi,
 
-On Jan 14, 2008 2:09 PM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
-> What kernel version are you targeting? Are you using arch/powerpc or arch/ppc?  V4 has a data cache errata, which isn't currently in mainline arch/powerpc.
+I am a beginner to FPGA programming. I want to use the USB Host on  
+ML403 in a PowerPC processor reference system to store some data on a  
+Thumb Drive.
 
-I am using arch/ppc/, but to be honest, I don't yet know what the
-difference is between those two trees.
+Currently, I've configured the BSP(OS support) as standalone. There is  
+the OPB USB2 IP core with drivers which I want to use. But, not sure  
+which port connections to use & if that will configure the Cypress  
+CY7C67300 USB controller. The Application Note Xapp925 for ML403 uses  
+OPB EPC core to configure the Cypress controller. If that is the case,  
+is there any driver for the cypress controller?
 
-Also, I am still learning how to use git, but it appears that I am
-using this version:
+If I use Linux kernel 2.6, how would it help me? Are there any drivers  
+for the USB that I can use for kernel 2.6? If anyone has worked on  
+this problem before, I would greatly appreciate their help.
 
-    Tags: v2.6.24-rc7
-
-I am actually using OpenEmbedded which executes the following commands
-to get the Linux tree:
-
-     git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-     cd linux-2.6
-     git clone git://git.secretlab.ca/git/linux-2.6-virtex.git  master
-
->         if((mfpvr() & 0xfffff000) == 0x20011000) {
->             /* PPC errata 213: only for Virtex-4 FX */
->             __asm__("mfccr0  0\n\t"
->                     "oris    0,0,0x50000000@h\n\t"
->                     "mtccr0  0"
->                     : : : "0");
->         }
-
-I tried out this code snippit, but it did not help :-(  I also looked
-in head.S and found that this was already in there:
-
-    #if defined(CONFIG_XILINX_VIRTEX_4_FX)
-      /* PPC errata 213: only for Virtex-4 FX */
-      mfccr0  0
-      oris    0,0,0x50000000@h
-      mtccr0  0
-    #endif
-
-Today, I tried a completely fresh design in EDK 9.2i (whereas I had
-been using 9.1i).  I tried the design found in
-EDKexamples/Virtex4_PPC_Example_9_2.zip.  This design works :-)  I am
-not sure why it works (or rather, why the other one did not work), but
-it works.
-
--David
-
-(P.S. - Sorry I forgot to send to this to the list on the first try)
+Thanks & Regards,
+Yedu Jathavedan
