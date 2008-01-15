@@ -1,22 +1,22 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 996B4DDF11
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 03:53:10 +1100 (EST)
-Date: Tue, 15 Jan 2008 10:52:30 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: jdl@jdl.com, linuxppc-dev@ozlabs.org
-Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(), ft_get_next_prop(),
-	and ft_getprop_offset().
-Message-ID: <20080115165230.GB10812@ld0162-tx32.am.freescale.net>
-References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
-	<20080115001657.GC20649@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080115001657.GC20649@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 26DF3DDF1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 04:08:11 +1100 (EST)
+Message-Id: <17A215CC-EFAE-41B9-8DB7-C6CDB4E708F2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080115164053.GA10812@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] fsl_soc: Fix get_immrbase() to use ranges,
+	rather than reg.
+Date: Tue, 15 Jan 2008 11:07:38 -0600
+References: <20080114162935.GA27862@ld0162-tx32.am.freescale.net>
+	<BFCCA52A-85B7-4DD5-ACF4-2F3E65CFD7FD@kernel.crashing.org>
+	<20080115164053.GA10812@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2008 at 11:16:57AM +1100, David Gibson wrote:
-> On Mon, Jan 14, 2008 at 10:30:04AM -0600, Scott Wood wrote:
-> > ft_get_next_node() enumerates children of a given node.
-> > ft_get_next_prop() enumerates propreties of a given node.
-> > 
-> > ft_getprop_offset() is like ft_getprop(), but takes a property offset rather
-> > than a node offset and property name; it is primarily intended for use
-> > with ft_get_next_prop().
-> 
-> Urg... this kind of serves me right for not getting my act together on
-> iterator functions yet.  I really don't like this approach much.  I'll
-> see if I can come up with something I prefer this afternoon.
 
-OK.
+On Jan 15, 2008, at 10:40 AM, Scott Wood wrote:
 
-> The biggest thing I dislike is that I've deliberately avoided having
-> any offsets-to-properties exposed to the library user.  That's because
-> the whole offsets change when you write the tree problem is worse for
-> properties than nodes (in that likely idiomatic uses will be bitten by
-> changes in property offsets).
+> On Mon, Jan 14, 2008 at 08:37:27PM -0600, Kumar Gala wrote:
+>>> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/
+>>> fsl_soc.c
+>>> index 3ace747..7502e03 100644
+>>> --- a/arch/powerpc/sysdev/fsl_soc.c
+>>> +++ b/arch/powerpc/sysdev/fsl_soc.c
+>>> @@ -54,10 +54,18 @@ phys_addr_t get_immrbase(void)
+>>> 	soc = of_find_node_by_type(NULL, "soc");
+>>> 	if (soc) {
+>>> 		int size;
+>>> -		const void *prop = of_get_property(soc, "reg", &size);
+>>> +		u32 naddr;
+>>> +		const u32 *prop = of_get_property(soc, "#address-cells",
+>>> &size);
+>>> +
+>>> +		if (prop && size == 4)
+>>> +			naddr = *prop;
+>>> +		else
+>>> +			naddr = 2;
+>>
+>> Why default to two?
+>
+> Because that's what the OF spec says the default is?
 
-We can drop the property iteration for now; I wrote it for an attempt at
-node merging which I postponed.
+fair.
 
-> > +	if (depth != 0)
-> > +		return -FDT_ERR_BADSTRUCTURE;
-> 
-> I think this should be FDT_ERR_TRUNCATED.
+>>> +		prop = of_get_property(soc, "ranges", &size);
+>>> +		if (prop && size == 12)
+>>> +			immrbase = of_translate_address(soc, prop + naddr);
+>
+> Grr, I thought I removed the size == 12 check...
+>
+>>> -		if (prop)
+>>> -			immrbase = of_translate_address(soc, prop);
+>>
+>> why not make your code an else case if we don't have reg?
+>
+> Why?
 
-I'd expect TRUNCATED when we hit totalsize without an FDT_END, not when
-we hit FDT_END in an inappropriate context.
+I agree (had to think about it a bit more).
 
-> > +	return -FDT_ERR_NOTFOUND;
-> 
-> In fact, so should this.  This function should never actually reach
-> the FDT_END tag.
+>> or something like, than we don't have to worry about adjust anything,
+>> and if you don't have any children its kinda a pointless device  
+>> tree :)
+>
+> It's not pointless, it's just incomplete.
+>
+>> 	if (soc) {
+>> 		struct device_node *child = of_get_next_child(soc, NULL);
+>> 		if (child) {
+>> 			const void *prop = of_get_property(soc, "ranges",
+>> 			NULL);
+>> 			if (prop)
+>> 				immrbase = of_translate_address(child, prop);
+>> 			of_node_put(child);
+>> 		}
+>> 		of_node_put(soc);
+>> 	}
+>
+> Why go out of our way to fail on a childless soc node?
 
-No, it's valid if you're iterating over all nodes (node -1, depth -1).
+do we see any case in which we'd have a childless soc node?
 
-> > +#define FDT_ERR_BADDEPTH	8
-> > +	/* FDT_ERR_BADDEPTH: Function was passed a negative
-> > +	 * (or otherwise invalid) depth. */
-> 
-> You've added this error code, but you don't actually return it
-> anywhere...
+I'm just concerned about make sure this works for all the various  
+cases of #address-cells and #size-cells.
 
-Oops, it must have been from the aforementioned node merging code, and I
-thought it was from fdt_get_next_node when splitting things up.
-
-> This description is incorrect - you've copied the fdt_getprop()
-> description and forgotten to update it.
-
-/me hides in shame
-
--Scott
+- k
