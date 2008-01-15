@@ -1,24 +1,20 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7D901DDECA
+Return-Path: <tlopez@aotek.es>
+Received: from smtp-out2b.sarenet.es (smtp-out2b.sarenet.es [194.30.0.43])
+	by ozlabs.org (Postfix) with ESMTP id 8F9C7DDEE8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 04:02:15 +1100 (EST)
-Subject: Re: PPC vs POWERPC
-From: Jon Loeliger <jdl@freescale.com>
-To: Matias Sundman <linux@sundmangroup.com>
-In-Reply-To: <478C8D38.3090602@sundmangroup.com>
-References: <23145.147.11.3.128.1200054808.squirrel@www.sundmangroup.com>
-	<fa686aa40801110652s67b2a05al79f78144c5b527bd@mail.gmail.com>
-	<478C8D38.3090602@sundmangroup.com>
-Content-Type: text/plain
-Message-Id: <1200416484.14540.5.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Tue, 15 Jan 2008 11:01:33 -0600
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Wed, 16 Jan 2008 04:07:29 +1100 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by smtp-out2b.sarenet.es (Postfix) with ESMTP id 77C624B385
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Jan 2008 17:42:15 +0100 (CET)
+Message-ID: <478CE2DC.5040309@aotek.es>
+Date: Tue, 15 Jan 2008 17:44:12 +0100
+From: Txema Lopez <tlopez@aotek.es>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: MPC5200B SPI codec error when there is a heavy ethernet traffic. 
+Content-Type: multipart/mixed;
+	boundary=------------040700080907070409070301
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,29 +25,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-01-15 at 04:38, Matias Sundman wrote:
->  >>Documentation/powerpc/booting-without-of.txt to find out what is
->  >>expected in the device tree.
-> 
-> Is there any more information on how the "of_*" ( e.g. of_node_put ,  
-> of_find_node_by_type ) functions should be implemented in  the 
-> "arch/powerpc/platforms/myplatform/myboard_setup.c" file
-> or is the documentation the existing "*.c" c files under 
-> arch/powerpc/platforms ?
-> 
-> Since I have a 82xx board I assume that "myboard_setup.c" file shall be 
-> put under arch/powerpc/platforms/82xx.
+This is a multi-part message in MIME format.
+--------------040700080907070409070301
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Maybe.  Which 82xx is it?  There is a notable difference
-between, say, the 824x boards and the 827x boards.  If it
-is the latter, perhaps the existing 82xx/ pq2 or mpc8272
-parts are already sufficient?
+Hi all,
 
-If it is the former group, 824x, perhaps some of the parts
-in embedded6xx/ are usable?  Also note that I am working on
-publishing an 824x StorCenter port under embedded6xx/ at
-this time as well.  First patches were posted to linuxppc-dev
-list at ozlabs.org.
+We have a MPC5200B based custom board running a 2.4.25 Denx linux 
+kernel. We use the PSC6 in SPI-codec mode to exchange some bytes 
+periodically in full-duplex with a peripheral.
 
-HTH,
-jdl
+In 'normal' conditions this communication runs fine. But when we start 
+sending packets over the Ethernet as a background activity, we see on 
+the oscilloscope that one of the SPI transfers is interrupted. Not only 
+that the SPI clock stops, something that could happen in the case that 
+the transmission Fifo is empty, or the reception Fifo is full, but that 
+the chip select actually goes high for an instant, causing the 
+peripheral to abort the communication.
+
+We have reproduced the same bug in a Lite5200B using the spi-dev driver 
+and a user application, so it seams it's not a problem of our hardware.
+
+The problem only arises if there is some heavy Ethernet traffic (a big 
+file ftp transfer or a big file copy by nfs) , so we think  the error is 
+related with the Bestcomm activity. We have contacted freescale to check 
+if it's a microprocessor bug and they are looking into it. But we think 
+it could be also a bug in the Bestcomm programming of the FEC tasks. 
+Could be it possible? At this point, we really need some help. Any clue 
+will be welcomed.
+
+
+Best regards,
+
+Txema
+
+
+
+
+
+
+
+
+--------------040700080907070409070301
+Content-Type: text/x-vcard; charset=utf-8;
+ name="tlopez.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="tlopez.vcf"
+
+begin:vcard
+fn:Jose Maria Lopez
+n:Lopez;Jose Maria
+org:Fagor Automation S. Coop.
+adr:;;San Andres 19. Apdo. 144;Arrasate-Mondragon;;20500;Spain
+email;internet:tlopez@aotek.es
+title:Sotware engineer
+tel;work:(34) 943719200
+tel;fax:(34) 943791712 
+x-mozilla-html:FALSE
+url:http://www.fagorautomation.es
+version:2.1
+end:vcard
+
+
+--------------040700080907070409070301--
