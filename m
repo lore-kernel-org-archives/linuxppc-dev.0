@@ -1,22 +1,14 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6BCAFDDEED
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 03:41:05 +1100 (EST)
-Date: Tue, 15 Jan 2008 10:40:53 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] fsl_soc: Fix get_immrbase() to use ranges,
-	rather than reg.
-Message-ID: <20080115164053.GA10812@ld0162-tx32.am.freescale.net>
-References: <20080114162935.GA27862@ld0162-tx32.am.freescale.net>
-	<BFCCA52A-85B7-4DD5-ACF4-2F3E65CFD7FD@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2BDA1DDEE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 03:51:32 +1100 (EST)
+Date: Tue, 15 Jan 2008 11:01:52 -0600
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: Please pull pasemi.git for-2.6.25 branch
+Message-ID: <20080115170152.GA25749@lixom.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BFCCA52A-85B7-4DD5-ACF4-2F3E65CFD7FD@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,60 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 14, 2008 at 08:37:27PM -0600, Kumar Gala wrote:
-> >diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/ 
-> >fsl_soc.c
-> >index 3ace747..7502e03 100644
-> >--- a/arch/powerpc/sysdev/fsl_soc.c
-> >+++ b/arch/powerpc/sysdev/fsl_soc.c
-> >@@ -54,10 +54,18 @@ phys_addr_t get_immrbase(void)
-> >	soc = of_find_node_by_type(NULL, "soc");
-> >	if (soc) {
-> >		int size;
-> >-		const void *prop = of_get_property(soc, "reg", &size);
-> >+		u32 naddr;
-> >+		const u32 *prop = of_get_property(soc, "#address-cells", 
-> >&size);
-> >+
-> >+		if (prop && size == 4)
-> >+			naddr = *prop;
-> >+		else
-> >+			naddr = 2;
-> 
-> Why default to two?
+Paul,
 
-Because that's what the OF spec says the default is?
+Please pull from 'for-2.6.25' branch of
 
-> >+		prop = of_get_property(soc, "ranges", &size);
-> >+		if (prop && size == 12)
-> >+			immrbase = of_translate_address(soc, prop + naddr);
+  master.kernel.org:/pub/scm/linux/kernel/git/olof/k.org.git for-2.6.25
 
-Grr, I thought I removed the size == 12 check...
+to receive the following updates:
 
-> >-		if (prop)
-> >-			immrbase = of_translate_address(soc, prop);
-> 
-> why not make your code an else case if we don't have reg?
+ arch/powerpc/configs/pasemi_defconfig       |    4 
+ arch/powerpc/platforms/pasemi/Kconfig       |    9 -
+ arch/powerpc/platforms/pasemi/Makefile      |    1 
+ arch/powerpc/platforms/pasemi/electra_ide.c |   96 ------------------
+ arch/powerpc/platforms/pasemi/idle.c        |    5 
+ arch/powerpc/platforms/pasemi/setup.c       |   12 --
+ drivers/ata/Kconfig                         |   12 ++
+ drivers/ata/Makefile                        |    1 
+ drivers/ata/pata_of_platform.c              |  114 ++++++++++++++++++++++
+ drivers/ata/pata_platform.c                 |  144 ++++++++++++++++------------
+ include/linux/pata_platform.h               |    9 +
+ 11 files changed, 227 insertions(+), 180 deletions(-)
 
-Why?
+Anton Vorontsov (2):
+      libata: pata_platform: make probe and remove functions device type neutral
+      libata: pata_of_platform: OF-Platform PATA device driver
 
-> or something like, than we don't have to worry about adjust anything,  
-> and if you don't have any children its kinda a pointless device tree :)
+Grant Likely (1):
+      [POWERPC] pasemi: Use machine_*_initcall() hooks in platform code
 
-It's not pointless, it's just incomplete.
+Olof Johansson (2):
+      [POWERPC] pasemi: Fix NMI handling check
+      [POWERPC] pasemi: Move electra-ide to pata_of_platform
 
-> 	if (soc) {
-> 		struct device_node *child = of_get_next_child(soc, NULL);
-> 		if (child) {
-> 			const void *prop = of_get_property(soc, "ranges", 
-> 			NULL);
-> 			if (prop)
-> 				immrbase = of_translate_address(child, prop);
-> 			of_node_put(child);
-> 		}
-> 		of_node_put(soc);
-> 	}
 
-Why go out of our way to fail on a childless soc node?
+Thanks,
 
--Scott
+Olof
