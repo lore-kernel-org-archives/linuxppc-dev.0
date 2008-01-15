@@ -1,25 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 12BCFDDE18
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 06:14:54 +1100 (EST)
-Message-ID: <478CF66C.3010405@freescale.com>
-Date: Tue, 15 Jan 2008 12:07:40 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 937DDDDE1E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 06:42:25 +1100 (EST)
+Message-ID: <478D0C93.8060204@garzik.org>
+Date: Tue, 15 Jan 2008 14:42:11 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] fsl_soc: Fix get_immrbase() to use ranges, rather than
-	reg.
-References: <20080114162935.GA27862@ld0162-tx32.am.freescale.net>
-	<BFCCA52A-85B7-4DD5-ACF4-2F3E65CFD7FD@kernel.crashing.org>
-	<20080115164053.GA10812@ld0162-tx32.am.freescale.net>
-	<17A215CC-EFAE-41B9-8DB7-C6CDB4E708F2@kernel.crashing.org>
-In-Reply-To: <17A215CC-EFAE-41B9-8DB7-C6CDB4E708F2@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [POWERPC] pasemi: Move electra-ide to pata_of_platform
+References: <20080109190852.GA18827@localhost.localdomain>
+	<20080115164033.GA25328@lixom.net>
+In-Reply-To: <20080115164033.GA25328@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mundt <lethal@linux-sh.org>, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->> Why go out of our way to fail on a childless soc node?
+Olof Johansson wrote:
+> Move electra-ide glue over to the new pata_of_platform framework, and
+> add the quirks needed to that driver.
+>     
+> ---
 > 
-> do we see any case in which we'd have a childless soc node?
+> Applied with the rest of the patches to pasemi.git for-2.6.25
+> 
+>  arch/powerpc/platforms/pasemi/electra_ide.c |   96 ----------------------------
+>  b/arch/powerpc/configs/pasemi_defconfig     |    4 -
+>  b/arch/powerpc/platforms/pasemi/Kconfig     |    9 --
+>  b/arch/powerpc/platforms/pasemi/Makefile    |    1 
+>  b/drivers/ata/pata_of_platform.c            |   20 ++++-
+> 5 files changed, 17 insertions(+), 113 deletions(-)
 
-It's possible that it could be used to communicate immrbase and soc 
-type, but nothing else.  Not overly likely, but possible.
-
-> I'm just concerned about make sure this works for all the various cases 
-> of #address-cells and #size-cells.
-
-It should.  We check the soc's #address-cells to skip the child bus 
-address, and of_translate_address should take care of looking up the 
-parent #address-cells.  The size portion of the ranges is ignored.
-
--Scott
+ACK
