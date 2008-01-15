@@ -1,15 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 2BDA1DDEE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 03:51:32 +1100 (EST)
-Date: Tue, 15 Jan 2008 11:01:52 -0600
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: Please pull pasemi.git for-2.6.25 branch
-Message-ID: <20080115170152.GA25749@lixom.net>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 996B4DDF11
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 03:53:10 +1100 (EST)
+Date: Tue, 15 Jan 2008 10:52:30 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: jdl@jdl.com, linuxppc-dev@ozlabs.org
+Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(), ft_get_next_prop(),
+	and ft_getprop_offset().
+Message-ID: <20080115165230.GB10812@ld0162-tx32.am.freescale.net>
+References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
+	<20080115001657.GC20649@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20080115001657.GC20649@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+On Tue, Jan 15, 2008 at 11:16:57AM +1100, David Gibson wrote:
+> On Mon, Jan 14, 2008 at 10:30:04AM -0600, Scott Wood wrote:
+> > ft_get_next_node() enumerates children of a given node.
+> > ft_get_next_prop() enumerates propreties of a given node.
+> > 
+> > ft_getprop_offset() is like ft_getprop(), but takes a property offset rather
+> > than a node offset and property name; it is primarily intended for use
+> > with ft_get_next_prop().
+> 
+> Urg... this kind of serves me right for not getting my act together on
+> iterator functions yet.  I really don't like this approach much.  I'll
+> see if I can come up with something I prefer this afternoon.
 
-Please pull from 'for-2.6.25' branch of
+OK.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/olof/k.org.git for-2.6.25
+> The biggest thing I dislike is that I've deliberately avoided having
+> any offsets-to-properties exposed to the library user.  That's because
+> the whole offsets change when you write the tree problem is worse for
+> properties than nodes (in that likely idiomatic uses will be bitten by
+> changes in property offsets).
 
-to receive the following updates:
+We can drop the property iteration for now; I wrote it for an attempt at
+node merging which I postponed.
 
- arch/powerpc/configs/pasemi_defconfig       |    4 
- arch/powerpc/platforms/pasemi/Kconfig       |    9 -
- arch/powerpc/platforms/pasemi/Makefile      |    1 
- arch/powerpc/platforms/pasemi/electra_ide.c |   96 ------------------
- arch/powerpc/platforms/pasemi/idle.c        |    5 
- arch/powerpc/platforms/pasemi/setup.c       |   12 --
- drivers/ata/Kconfig                         |   12 ++
- drivers/ata/Makefile                        |    1 
- drivers/ata/pata_of_platform.c              |  114 ++++++++++++++++++++++
- drivers/ata/pata_platform.c                 |  144 ++++++++++++++++------------
- include/linux/pata_platform.h               |    9 +
- 11 files changed, 227 insertions(+), 180 deletions(-)
+> > +	if (depth != 0)
+> > +		return -FDT_ERR_BADSTRUCTURE;
+> 
+> I think this should be FDT_ERR_TRUNCATED.
 
-Anton Vorontsov (2):
-      libata: pata_platform: make probe and remove functions device type neutral
-      libata: pata_of_platform: OF-Platform PATA device driver
+I'd expect TRUNCATED when we hit totalsize without an FDT_END, not when
+we hit FDT_END in an inappropriate context.
 
-Grant Likely (1):
-      [POWERPC] pasemi: Use machine_*_initcall() hooks in platform code
+> > +	return -FDT_ERR_NOTFOUND;
+> 
+> In fact, so should this.  This function should never actually reach
+> the FDT_END tag.
 
-Olof Johansson (2):
-      [POWERPC] pasemi: Fix NMI handling check
-      [POWERPC] pasemi: Move electra-ide to pata_of_platform
+No, it's valid if you're iterating over all nodes (node -1, depth -1).
 
+> > +#define FDT_ERR_BADDEPTH	8
+> > +	/* FDT_ERR_BADDEPTH: Function was passed a negative
+> > +	 * (or otherwise invalid) depth. */
+> 
+> You've added this error code, but you don't actually return it
+> anywhere...
 
-Thanks,
+Oops, it must have been from the aforementioned node merging code, and I
+thought it was from fdt_get_next_node when splitting things up.
 
-Olof
+> This description is incorrect - you've copied the fdt_getprop()
+> description and forgotten to update it.
+
+/me hides in shame
+
+-Scott
