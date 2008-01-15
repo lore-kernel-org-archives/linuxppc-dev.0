@@ -1,12 +1,12 @@
 Return-Path: <SRS0=XpNt=SF=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 80EC7DDE2C
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 18:09:42 +1100 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 6B6CDDDE48
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 18:14:35 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] [POWERPC] 4xx: Add AMCC Haleakala (405EXr) dts
-Date: Tue, 15 Jan 2008 08:09:25 +0100
-Message-Id: <1200380965-10245-1-git-send-email-sr@denx.de>
+Subject: [PATCH 1/2] [POWERPC] 4xx: Add 405EXr to cputable
+Date: Tue, 15 Jan 2008 08:09:15 +0100
+Message-Id: <1200380955-10217-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,298 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch adds the Haleakala dts. The Haleakala is a stripped down
-version of the Kilauea (405EX) with only one EMAC and only one PCIe
-interface.
+This patch adds the 405EXr to the powerpc cuptable. Basically the 405EXr
+is a 405EX with only one EMAC and only one PCIe interface.
 
 Signed-off-by: Stefan Roese <sr@denx.de>
 ---
- arch/powerpc/boot/dts/haleakala.dts |  277 +++++++++++++++++++++++++++++++++++
- 1 files changed, 277 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/haleakala.dts
+ arch/powerpc/kernel/cputable.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-new file mode 100644
-index 0000000..b8ac021
---- /dev/null
-+++ b/arch/powerpc/boot/dts/haleakala.dts
-@@ -0,0 +1,277 @@
-+/*
-+ * Device Tree Source for AMCC Haleakala (405EXr)
-+ *
-+ * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ */
-+
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	model = "amcc,haleakala";
-+	compatible = "amcc,kilauea";
-+	dcr-parent = <&/cpus/cpu@0>;
-+
-+	aliases {
-+		ethernet0 = &EMAC0;
-+		serial0 = &UART0;
-+		serial1 = &UART1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,405EXr";
-+			reg = <0>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+			timebase-frequency = <0>; /* Filled in by U-Boot */
-+			i-cache-line-size = <20>;
-+			d-cache-line-size = <20>;
-+			i-cache-size = <4000>; /* 16 kB */
-+			d-cache-size = <4000>; /* 16 kB */
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0>; /* Filled in by U-Boot */
-+	};
-+
-+	UIC0: interrupt-controller {
-+		compatible = "ibm,uic-405exr", "ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0c0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
-+
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-405exr","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0d0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1e 4 1f 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-405exr","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0e0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1c 4 1d 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-405exr", "ibm,plb4";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+		SDRAM0: memory-controller {
-+			compatible = "ibm,sdram-405exr";
-+			dcr-reg = <010 2>;
-+		};
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-405exr", "ibm,mcmal2";
-+			dcr-reg = <180 62>;
-+			num-tx-chans = <2>;
-+			num-rx-chans = <2>;
-+			interrupt-parent = <&MAL0>;
-+			interrupts = <0 1 2 3 4>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-+					/*RXEOB*/ 1 &UIC0 b 4
-+					/*SERR*/  2 &UIC1 0 4
-+					/*TXDE*/  3 &UIC1 1 4
-+					/*RXDE*/  4 &UIC1 2 4>;
-+			interrupt-map-mask = <ffffffff>;
-+		};
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-405exr", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <80000000 80000000 10000000
-+				  ef600000 ef600000 a00000
-+				  f0000000 f0000000 10000000>;
-+			dcr-reg = <0a0 5>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-405exr", "ibm,ebc";
-+				dcr-reg = <012 2>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				/* ranges property is supplied by U-Boot */
-+				interrupts = <5 1>;
-+				interrupt-parent = <&UIC1>;
-+
-+				nor_flash@0,0 {
-+					compatible = "amd,s29gl512n", "cfi-flash";
-+					bank-width = <2>;
-+					reg = <0 000000 4000000>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					partition@0 {
-+						label = "kernel";
-+						reg = <0 200000>;
-+					};
-+					partition@200000 {
-+						label = "root";
-+						reg = <200000 200000>;
-+					};
-+					partition@400000 {
-+						label = "user";
-+						reg = <400000 3b60000>;
-+					};
-+					partition@3f60000 {
-+						label = "env";
-+						reg = <3f60000 40000>;
-+					};
-+					partition@3fa0000 {
-+						label = "u-boot";
-+						reg = <3fa0000 60000>;
-+					};
-+				};
-+			};
-+
-+			UART0: serial@ef600200 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600200 8>;
-+				virtual-reg = <ef600200>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <1a 4>;
-+			};
-+
-+			UART1: serial@ef600300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600300 8>;
-+				virtual-reg = <ef600300>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <1 4>;
-+			};
-+
-+			IIC0: i2c@ef600400 {
-+				device_type = "i2c";
-+				compatible = "ibm,iic-405exr", "ibm,iic";
-+				reg = <ef600400 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <2 4>;
-+			};
-+
-+			IIC1: i2c@ef600500 {
-+				device_type = "i2c";
-+				compatible = "ibm,iic-405exr", "ibm,iic";
-+				reg = <ef600500 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <7 4>;
-+			};
-+
-+
-+			RGMII0: emac-rgmii@ef600b00 {
-+				device_type = "rgmii-interface";
-+				compatible = "ibm,rgmii-405exr", "ibm,rgmii";
-+				reg = <ef600b00 104>;
-+				has-mdio;
-+			};
-+
-+			EMAC0: ethernet@ef600900 {
-+				linux,network-index = <0>;
-+				device_type = "network";
-+				compatible = "ibm,emac-405exr", "ibm,emac4";
-+				interrupt-parent = <&EMAC0>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC0 18 4
-+						/*Wake*/  1 &UIC1 1d 4>;
-+				reg = <ef600900 70>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rgmii";
-+				phy-map = <00000000>;
-+				rgmii-device = <&RGMII0>;
-+				rgmii-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+		};
-+
-+		PCIE0: pciex@0a0000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-405exr", "ibm,plb-pciex";
-+			primary;
-+			port = <0>; /* port number */
-+			reg = <a0000000 20000000	/* Config space access */
-+			       ef000000 00001000>;	/* Registers */
-+			dcr-reg = <040 020>;
-+			sdr-base = <400>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 90000000 0 08000000
-+				  01000000 0 00000000 e0000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 80000000>;
-+
-+			/* This drives busses 0x00 to 0x3f */
-+			bus-range = <00 3f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC2 0 4 /* swizzled int A */
-+				0000 0 0 2 &UIC2 1 4 /* swizzled int B */
-+				0000 0 0 3 &UIC2 2 4 /* swizzled int C */
-+				0000 0 0 4 &UIC2 3 4 /* swizzled int D */>;
-+		};
-+	};
-+};
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index f1928af..dfb84c8 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1178,8 +1178,8 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.platform		= "ppc405",
+ 	},
+ 	{	/* 405EX */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x12910000,
++		.pvr_mask		= 0xffff0004,
++		.pvr_value		= 0x12910004,
+ 		.cpu_name		= "405EX",
+ 		.cpu_features		= CPU_FTRS_40X,
+ 		.cpu_user_features	= PPC_FEATURE_32 |
+@@ -1189,6 +1189,18 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_4xx,
+ 		.platform		= "ppc405",
+ 	},
++	{	/* 405EXr */
++		.pvr_mask		= 0xffff0004,
++		.pvr_value		= 0x12910000,
++		.cpu_name		= "405EXr",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
+ 
+ #endif /* CONFIG_40x */
+ #ifdef CONFIG_44x
 -- 
 1.5.4.rc3
