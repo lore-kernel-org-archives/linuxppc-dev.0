@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3CC0DDE3A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 01:38:20 +1100 (EST)
-Message-Id: <F67546F0-C4CA-4291-85CD-C006DC04620C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Liu Yu <Yu.Liu@freescale.com>
-In-Reply-To: <6EBEC19BF4A8F843BCD6B9155BBE2515D1B58B@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] Fix carry bug in 128-bit unsigned integer adding
-Date: Tue, 15 Jan 2008 08:37:55 -0600
-References: <11996295742378-git-send-email-Yu.Liu@freescale.com>
-	<7040EDB2-7E89-4BBD-A4FC-50E168F9286F@kernel.crashing.org>
-	<6EBEC19BF4A8F843BCD6B9155BBE2515D1B58B@zch01exm26.fsl.freescale.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 8EA89DDE28
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 01:51:48 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1370891anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 06:51:47 -0800 (PST)
+Message-ID: <fa686aa40801150651s213a745dwa4d595de5a9d191b@mail.gmail.com>
+Date: Tue, 15 Jan 2008 07:51:47 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "S. Fricke" <silvio.fricke@gmail.com>
+Subject: Re: psc and spi
+In-Reply-To: <20080115135306.GE14333@sfrouter>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080115135306.GE14333@sfrouter>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,30 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 1/15/08, S. Fricke <silvio.fricke@googlemail.com> wrote:
+> Hello friends,
+>
+> I have on the psc3 the spi-interface of a fpga connected.
+>
+>    psc3-0 - MOSI
+>    psc3-1 - MISO
+>    psc3-2 - CLK
+>    psc3-3 - SlaveSelect
+>    psc3-4 - CS-FPGA
+>    psc3-5 - CS Another device
+>    psc3-6 - SPI-SEL0
+>    psc3-7 - SPI-SEL1
+>    psc3-8/9 - Not connected
+>
+> Can I use the mpc52xx_psc_spi-driver? And if yes, how I have to use this
+> driver?  Or must I write a own spi-master/slave thing? Can anyone point me
+> to a good start-position?
 
-On Jan 8, 2008, at 9:05 PM, Liu Yu wrote:
+Yes, you should be able to use the mpc52xx_psc_spi driver.  You'' need
+to add the activate_cs and deactivate_cs hooks in your platform code
+to activate your SPI CS lines.  You'll also need to set port_config to
+have the PSC3 pins in "CODEC3" mode.
+
+Cheers,
+g.
 
 >
->>
->> take a look at how include/math-emu/op-4.h implements
->> __FP_FRAC_ADD_4 & __FP_FRAC_SUB_4.  Will that fix the bug, if
->> so we should make the code match how its done there.
->>
->> - k
->>
->>
+> Best regards,
+> Silvio Fricke
 >
-> The macro define __FP_FRAC_ADD_4 is below. It can fix the carry bug.
-> But still exist a problem that r[0-2] and x[0-2] cannot be referred to
-> the same variable.
-> If r0 and x0 are the same variable, the comparison ( r0 < x0 ) will
-> always fail.
-> I don't know whether we need to fix this problem.
+> --
+> -- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+>    Diplom-Informatiker (FH)
+>    Linux-Entwicklung
+> ----------------------------------------------------------------------------
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+>
 
-Not sure.  Probably worth asking this on the glibc list and see if  
-they have theories.  (For the short term I'd say lets use the version  
-from include/math-emu/op-4.h as a fix.  If r0 & x0 can be the same  
-variable the bug exists in a lot more places (glibc soft-fp and  
-generic kernel mathemu)
 
-- k
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
