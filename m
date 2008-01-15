@@ -1,16 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 15 Jan 2008 10:20:27 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/4] powerpc: mv64x60 - Use early_* PCI accessors for
-	hotswap reg
-Message-ID: <20080115172027.GA26853@mag.az.mvista.com>
-References: <20080114225150.GB21940@mag.az.mvista.com>
-	<20080115101936.d186329d.sfr@canb.auug.org.au>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A31D2DDF2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 04:32:05 +1100 (EST)
+Date: Tue, 15 Jan 2008 09:32:02 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] net: EMAC: Fix problem with mtu > 4080 on non TAH
+	equipped 4xx PPC's
+Message-ID: <20080115173202.GA1268@gate.ebshome.net>
+References: <1200400809-19720-1-git-send-email-sr@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080115101936.d186329d.sfr@canb.auug.org.au>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <1200400809-19720-1-git-send-email-sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,36 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2008 at 10:19:36AM +1100, Stephen Rothwell wrote:
-
-> Hi Mark,
-
-Hi Stephen.  Thanks for taking the time to review these patches.
-
-> On Mon, 14 Jan 2008 15:51:50 -0700 "Mark A. Greer" <mgreer@mvista.com> wrote:
-> >
-> > +static inline struct pci_controller *mv64x60_find_hose(u32 idx)
-> > +{
-> > +	struct device_node *phb;
-> > +	struct pci_controller *hose;
-> > +	const u32 *prop;
-> > +	int len;
-> > +
-> > +	for_each_compatible_node(phb, "pci", "marvell,mv64360-pci") {
-> > +		prop = of_get_property(phb, "cell-index", &len);
-> > +		if (prop && (len == sizeof(prop)) && (*prop == idx)) {
-> > +			hose = pci_find_hose_for_OF_device(phb);
-> > +			of_node_put(phb);
-> > +			return hose;
-> > +		}
-> > +	}
-> > +
-> > +	return NULL;
-> > +}
+On Tue, Jan 15, 2008 at 01:40:09PM +0100, Stefan Roese wrote:
+> Currently, all non TAH equipped 4xx PPC's call emac_start_xmit() upon
+> xmit. This routine doesn't check if the frame length exceeds the max.
+> MAL buffer size.
 > 
-> I would think that this is way to big to inline ...
+> This patch now changes the driver to call emac_start_xmit_sg() on all
+> platforms and not only the TAH equipped ones (440GX). This enables an
+> MTU of 9000 instead 4080.
+> 
+> Tested on Kilauea (405EX) with gbit link -> jumbo frames enabled.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> ---
+> Eugene & Ben, do you see any problems with this patch? If not, then I'll
+> send another version for the newemac driver too.
 
-Yeah, I suppose.  I'm not sure why I made it an inline, TBH.  I'll make
-it a "real" routine.
+Hmm, so why not make GigE support a condition to hook SG version of 
+xmit then? I don't like when you change behaviour for chips where it 
+perefectly legal not to do this check because you cannot change MTU 
+anyways.
 
-Mark
+-- 
+Eugene
