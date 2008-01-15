@@ -1,16 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <48889EEE-9F95-433C-AA0A-E96F7C17C54A@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 99726DDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 01:14:09 +1100 (EST)
+Message-Id: <0D036B51-00BD-428C-9B24-57BE796AE90D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080110025622.GE17816@localhost.localdomain>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080109180105.7c745bde.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 4/7] sbc8560: Add device tree source for Wind River
-	SBC8560 board
-Date: Tue, 15 Jan 2008 08:12:27 -0600
-References: <ef7d84e06c45289f51f35845ccaa63bbf31827db.1199715362.git.paul.gortmaker@windriver.com>
-	<d10d083bafb978936975111f09669120201072ec.1199715362.git.paul.gortmaker@windriver.com>
-	<20080110025622.GE17816@localhost.localdomain>
+Subject: Re: [PATCH 1/3] sbc834x: Add support for Wind River SBC834x boards
+Date: Tue, 15 Jan 2008 08:13:56 -0600
+References: <11998577723665-git-send-email-paul.gortmaker@windriver.com>
+	<1199857773848-git-send-email-paul.gortmaker@windriver.com>
+	<20080109180105.7c745bde.sfr@canb.auug.org.au>
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,68 +26,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 9, 2008, at 8:56 PM, David Gibson wrote:
+On Jan 9, 2008, at 1:01 AM, Stephen Rothwell wrote:
 
-> On Mon, Jan 07, 2008 at 09:25:29AM -0500, Paul Gortmaker wrote:
->> This adds the device tree source for the Wind River SBC8560 board.   
->> The
->> biggest difference between this and the MPC8560ADS reference platform
->> dts is the use of an external 16550 compatible UART instead of the  
->> CPM2.
+> Hi Paul,
+>
+> On Wed,  9 Jan 2008 00:49:30 -0500 Paul Gortmaker <paul.gortmaker@windriver.com 
+> > wrote:
 >>
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->> ---
->> arch/powerpc/boot/dts/sbc8560.dts |  285 +++++++++++++++++++++++++++ 
->> ++++++++++
->
-> [snip]
->> +	epld@fc000000 {
->> +		#address-cells = <1>;
->> +		#size-cells = <1>;
->> +		compatible = "localbus";
->
-> This compatible doesn't look specific enough.  It should at least have
-> a vendor prefix.
->
->> +		ranges = <0 fc000000 00c00000>;
->
-> Typically, we've been doing these external bust controller type
-> gadgets with address-cells = <2>, the first cell explicitly encoding
-> the chipselect.  This gets us closer to the ideal of the device tree
-> encoding only hardware information, not how the bridge controller is
-> configured (although "ranges" will still have to contain configuration
-> dependent information).
->
->
+>> +static void __init sbc834x_init_IRQ(void)
+>> +{
+>> +	struct device_node *np;
 >> +
->> +		serial0: serial@700000 {
->> +			device_type = "serial";
->> +			compatible = "ns16550";
->> +			reg = <700000 100>;
->> +			clock-frequency = <1C2000>;
->> +			interrupts = <9 2>;
->> +			interrupt-parent = <&mpic>;
->> +		};
+>> +	np = of_find_node_by_type(NULL, "ipic");
+>> +	if (!np)
+>> +		return;
 >> +
->> +		serial1: serial@800000 {
->> +			device_type = "serial";
->> +			compatible = "ns16550";
->> +			reg = <800000 100>;
->> +			clock-frequency = <1C2000>;
->> +			interrupts = <a 2>;
->> +			interrupt-parent = <&mpic>;
->> +		};
+>> +	ipic_init(np, 0);
 >> +
->> +		rtc@900000 {
->> +			compatible = "m48t59";
->> +			reg = <900000 2000>;
->> +		};
->> +	};
->> +};
+>> +	/* Initialize the default interrupt mapping priorities,
+>> +	 * in case the boot rom changed something on us.
+>> +	 */
+>> +	ipic_set_default_priority();
+>> +}
+>
+> This needs an of_node_put(np) somewhere.
+>
+>> +static struct of_device_id sbc834x_ids[] = {
+>
+> __initdata
+>
+>> +static int __init sbc834x_declare_of_platform_devices(void)
+>> +{
+>> +	if (!machine_is(sbc834x))
+>> +		return 0;
+>> +
+>> +	of_platform_bus_probe(NULL, sbc834x_ids, NULL);
+>> +	return 0;
+>> +}
+>> +device_initcall(sbc834x_declare_of_platform_devices);
+>
+> machine_device_initcall(sbc834x, ...
 
-Paul,
-
-any updates here based on David's comments on how we are representing  
-localbus nodes?
+Any updates here?  While David's .dts comments are probably valid I'm  
+not going to make you have to deal with them to get into the tree.  We  
+need to fix all the other 83xx platforms w/respect to those things.
 
 - k
