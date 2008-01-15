@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CC12CDDE35
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 15:23:06 +1100 (EST)
-Subject: Re: [PATCH] [POWERPC] Fixup transparent P2P resources
+	by ozlabs.org (Postfix) with ESMTP id 373FEDDE06
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 15:23:13 +1100 (EST)
+Subject: Re: [PATCH] [POWERPC] Remove update_bridge_resource
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0801142045010.32246@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0801142045010.32246@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0801142046040.32246@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0801142046040.32246@blarg.am.freescale.net>
 Content-Type: text/plain
-Date: Tue, 15 Jan 2008 15:22:45 +1100
-Message-Id: <1200370965.10470.8.camel@pasglop>
+Date: Tue, 15 Jan 2008 15:22:52 +1100
+Message-Id: <1200370972.10470.10.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -25,10 +25,9 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2008-01-14 at 20:45 -0600, Kumar Gala wrote:
-> For transparent P2P bridges the first 3 resources may get set from based on
-> BAR registers and need to get fixed up. Where as the remainder come from the
-> parent bus and have already been fixed up.
+On Mon, 2008-01-14 at 20:46 -0600, Kumar Gala wrote:
+> The 85xx/86xx pci code no longer uses update_bridge_resource and it was the
+> only caller.
 
 Ack.
 
@@ -36,23 +35,90 @@ Ack.
 > 
 > in my git tree.
 > 
->  arch/powerpc/kernel/pci-common.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
+>  arch/powerpc/kernel/pci_32.c     |   58 --------------------------------------
+>  include/asm-powerpc/pci-bridge.h |    3 --
+>  2 files changed, 0 insertions(+), 61 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 7d0afd4..980fe32 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -792,9 +792,10 @@ static void __devinit __pcibios_fixup_bus(struct pci_bus *bus)
->  		for (i = 0; i < PCI_BUS_NUM_RESOURCES; ++i) {
->  			if ((res = bus->resource[i]) == NULL)
->  				continue;
-> -			if (!res->flags || bus->self->transparent)
-> +			if (!res->flags)
-> +				continue;
-> +			if (i >= 3 && bus->self->transparent)
->  				continue;
+> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+> index a9c6cb2..1698beb 100644
+> --- a/arch/powerpc/kernel/pci_32.c
+> +++ b/arch/powerpc/kernel/pci_32.c
+> @@ -93,64 +93,6 @@ fixup_cpc710_pci64(struct pci_dev* dev)
+>  }
+>  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CPC710_PCI64,	fixup_cpc710_pci64);
+> 
 > -
->  			/* On PowerMac, Apple leaves bridge windows open over
->  			 * an inaccessible region of memory space (0...fffff)
->  			 * which is somewhat bogus, but that's what they think
+> -void __init
+> -update_bridge_resource(struct pci_dev *dev, struct resource *res)
+> -{
+> -	u8 io_base_lo, io_limit_lo;
+> -	u16 mem_base, mem_limit;
+> -	u16 cmd;
+> -	resource_size_t start, end, off;
+> -	struct pci_controller *hose = dev->sysdata;
+> -
+> -	if (!hose) {
+> -		printk("update_bridge_base: no hose?\n");
+> -		return;
+> -	}
+> -	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+> -	pci_write_config_word(dev, PCI_COMMAND,
+> -			      cmd & ~(PCI_COMMAND_IO | PCI_COMMAND_MEMORY));
+> -	if (res->flags & IORESOURCE_IO) {
+> -		off = (unsigned long) hose->io_base_virt - isa_io_base;
+> -		start = res->start - off;
+> -		end = res->end - off;
+> -		io_base_lo = (start >> 8) & PCI_IO_RANGE_MASK;
+> -		io_limit_lo = (end >> 8) & PCI_IO_RANGE_MASK;
+> -		if (end > 0xffff)
+> -			io_base_lo |= PCI_IO_RANGE_TYPE_32;
+> -		else
+> -			io_base_lo |= PCI_IO_RANGE_TYPE_16;
+> -		pci_write_config_word(dev, PCI_IO_BASE_UPPER16,
+> -				start >> 16);
+> -		pci_write_config_word(dev, PCI_IO_LIMIT_UPPER16,
+> -				end >> 16);
+> -		pci_write_config_byte(dev, PCI_IO_BASE, io_base_lo);
+> -		pci_write_config_byte(dev, PCI_IO_LIMIT, io_limit_lo);
+> -
+> -	} else if ((res->flags & (IORESOURCE_MEM | IORESOURCE_PREFETCH))
+> -		   == IORESOURCE_MEM) {
+> -		off = hose->pci_mem_offset;
+> -		mem_base = ((res->start - off) >> 16) & PCI_MEMORY_RANGE_MASK;
+> -		mem_limit = ((res->end - off) >> 16) & PCI_MEMORY_RANGE_MASK;
+> -		pci_write_config_word(dev, PCI_MEMORY_BASE, mem_base);
+> -		pci_write_config_word(dev, PCI_MEMORY_LIMIT, mem_limit);
+> -
+> -	} else if ((res->flags & (IORESOURCE_MEM | IORESOURCE_PREFETCH))
+> -		   == (IORESOURCE_MEM | IORESOURCE_PREFETCH)) {
+> -		off = hose->pci_mem_offset;
+> -		mem_base = ((res->start - off) >> 16) & PCI_PREF_RANGE_MASK;
+> -		mem_limit = ((res->end - off) >> 16) & PCI_PREF_RANGE_MASK;
+> -		pci_write_config_word(dev, PCI_PREF_MEMORY_BASE, mem_base);
+> -		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, mem_limit);
+> -
+> -	} else {
+> -		DBG(KERN_ERR "PCI: ugh, bridge %s res has flags=%lx\n",
+> -		    pci_name(dev), res->flags);
+> -	}
+> -	pci_write_config_word(dev, PCI_COMMAND, cmd);
+> -}
+> -
+> -
+>  #ifdef CONFIG_PPC_OF
+>  /*
+>   * Functions below are used on OpenFirmware machines.
+> diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
+> index 9b16d3b..d644452 100644
+> --- a/include/asm-powerpc/pci-bridge.h
+> +++ b/include/asm-powerpc/pci-bridge.h
+> @@ -152,9 +152,6 @@ extern void setup_indirect_pci(struct pci_controller* hose,
+>  			       resource_size_t cfg_addr,
+>  			       resource_size_t cfg_data, u32 flags);
+>  extern void setup_grackle(struct pci_controller *hose);
+> -extern void __init update_bridge_resource(struct pci_dev *dev,
+> -					  struct resource *res);
+> -
+>  #else	/* CONFIG_PPC64 */
+> 
+>  /*
