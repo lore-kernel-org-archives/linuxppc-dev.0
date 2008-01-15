@@ -2,23 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C04ADDE33
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 02:13:39 +1100 (EST)
-Message-Id: <F8E95D9D-F904-4D69-A83D-B29229768A6B@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 89093DDE46
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 02:37:39 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0FFbYRf021905
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 09:37:35 -0600
+Date: Tue, 15 Jan 2008 09:35:20 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <478CCB44.3000805@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [SERIAL] qe-uart: add support for Freescale QUICCEngine
-	UART
-Date: Tue, 15 Jan 2008 09:13:28 -0600
-References: <11999217062265-git-send-email-timur@freescale.com>
-	<11999217072674-git-send-email-timur@freescale.com>
-	<119992170854-git-send-email-timur@freescale.com>
-	<1CFD37C9-F06C-4C7E-836D-31C94EF464DF@kernel.crashing.org>
-	<478CCB44.3000805@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] bootwrapper: Add find_node_by_alias and
+	dt_fixup_mac_address_by_alias
+Message-ID: <Pine.LNX.4.64.0801150934390.29314@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,69 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add the ability to set the mac address given the alias for the device.
+Removes the need for having a linux,network-index property.
 
-On Jan 15, 2008, at 9:03 AM, Timur Tabi wrote:
+---
 
-> Kumar Gala wrote:
->
->> what is the define for?  you commented all the others :)
->
-> I thought you said there were no more issues? :-)
+in my git tree.
 
-I lied, get use to it ;)
+ arch/powerpc/boot/devtree.c |   14 ++++++++++++++
+ arch/powerpc/boot/ops.h     |   14 ++++++++++++++
+ 2 files changed, 28 insertions(+), 0 deletions(-)
 
-(I was going to apply the patch and thus scanned over it).
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index e5dfe44..60f561e 100644
+--- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -88,6 +88,20 @@ void dt_fixup_clock(const char *path, u32 freq)
+ 	}
+ }
 
->
->
->>> +#define UCC_WAIT_CLOSING 100
->
-> This is how long to wait after receiving a close request for  
-> characters to be sent out before actually closing the device.  I  
-> just used the same value as the CPM serial driver.
++void dt_fixup_mac_address_by_alias(const char *alias, const u8 *addr)
++{
++	void *devp = find_node_by_alias(alias);
++
++	if (devp) {
++		printf("%s: local-mac-address <-"
++		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", alias,
++		       addr[0], addr[1], addr[2],
++		       addr[3], addr[4], addr[5]);
++
++		setprop(devp, "local-mac-address", addr, 6);
++	}
++}
++
+ void dt_fixup_mac_address(u32 index, const u8 *addr)
+ {
+ 	void *devp = find_node_by_prop_value(NULL, "linux,network-index",
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 6036a98..5872ef1 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -159,9 +159,23 @@ static inline void *find_node_by_devtype(const void *prev,
+ 	return find_node_by_prop_value_str(prev, "device_type", type);
+ }
 
-Yeah, I just meant a comment to this fact would be nice.
-
->
->
->
->>> +    u16 tx_state;       /* 0xC6, TX state */
->> __be16?
->
-> Oops.
->
->>> +/*
->>> + * Set the modem control lines
->>> + *
->>> + * We currently don't support setting modem control lines, but  
->>> this function
->>> + * needs to exist, otherwise the kernel will panic.
->>> + */
->>> +void qe_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
->>> +{
->>> +}
->> What's the issue w/support of this?  (maybe a comment related to  
->> why its not supported -- if not here in the git commit message)
->
-> I didn't want to add any serial functionality that wasn't in the CPM  
-> serial driver, mostly because I don't really understand the  
-> technical details of serial communication at this level.  I figured  
-> if it's okay for the CPM driver not to handle modem control, then  
-> the QE driver doesn't have to do it either.
-
-This is fine, can we make it clear that we aren't implementing them  
-because we didn't need them not because of some board issue.  (Looking  
-at the 8250.c driver it looks like this has to do with CTS support --  
-which the QE UCC supports, we just aren't using).
-
->>> +static void qe_uart_enable_ms(struct uart_port *port)
->>> +{
->> same question as above.
->
-> Same answer!
->
-> I suppose you want me to post another version of this patch?
-
-yes.
-
-- k
++static inline void *find_node_by_alias(const char *alias)
++{
++	void *devp = finddevice("/aliases");
++
++	if (devp) {
++		char path[MAX_PATH_LEN];
++		if (getprop(devp, alias, path, MAX_PATH_LEN) > 0)
++			return finddevice(path);
++	}
++
++	return NULL;
++}
++
+ void dt_fixup_memory(u64 start, u64 size);
+ void dt_fixup_cpu_clocks(u32 cpufreq, u32 tbfreq, u32 busfreq);
+ void dt_fixup_clock(const char *path, u32 freq);
++void dt_fixup_mac_address_by_alias(const char *alias, const u8 *addr);
+ void dt_fixup_mac_address(u32 index, const u8 *addr);
+ void __dt_fixup_mac_addresses(u32 startindex, ...);
+ #define dt_fixup_mac_addresses(...) \
+-- 
+1.5.3.7
