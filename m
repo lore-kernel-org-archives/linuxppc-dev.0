@@ -1,20 +1,16 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A31D2DDF2B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 04:32:05 +1100 (EST)
-Date: Tue, 15 Jan 2008 09:32:02 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] net: EMAC: Fix problem with mtu > 4080 on non TAH
-	equipped 4xx PPC's
-Message-ID: <20080115173202.GA1268@gate.ebshome.net>
-References: <1200400809-19720-1-git-send-email-sr@denx.de>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 15 Jan 2008 10:31:19 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/4] powerpc: mv64x60 - Use early_* PCI accessors for
+	hotswap reg
+Message-ID: <20080115173119.GB26853@mag.az.mvista.com>
+References: <20080114225150.GB21940@mag.az.mvista.com>
+	<20080115102129.a4666143.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1200400809-19720-1-git-send-email-sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+In-Reply-To: <20080115102129.a4666143.sfr@canb.auug.org.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2008 at 01:40:09PM +0100, Stefan Roese wrote:
-> Currently, all non TAH equipped 4xx PPC's call emac_start_xmit() upon
-> xmit. This routine doesn't check if the frame length exceeds the max.
-> MAL buffer size.
+On Tue, Jan 15, 2008 at 10:21:29AM +1100, Stephen Rothwell wrote:
+> Hi Mark,
 > 
-> This patch now changes the driver to call emac_start_xmit_sg() on all
-> platforms and not only the TAH equipped ones (440GX). This enables an
-> MTU of 9000 instead 4080.
+> On Mon, 14 Jan 2008 15:51:50 -0700 "Mark A. Greer" <mgreer@mvista.com> wrote:
+> >
+> > +++ b/arch/powerpc/sysdev/mv64x60.h
+> > @@ -3,10 +3,32 @@
+> >  
+> >  #include <linux/init.h>
+> >  
+> > +#include <asm/prom.h>
 > 
-> Tested on Kilauea (405EX) with gbit link -> jumbo frames enabled.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> ---
-> Eugene & Ben, do you see any problems with this patch? If not, then I'll
-> send another version for the newemac driver too.
+> You probably meant to include linux/of.h here
 
-Hmm, so why not make GigE support a condition to hook SG version of 
-xmit then? I don't like when you change behaviour for chips where it 
-perefectly legal not to do this check because you cannot change MTU 
-anyways.
+Umm, apparently...  :)
 
--- 
-Eugene
+Mark
