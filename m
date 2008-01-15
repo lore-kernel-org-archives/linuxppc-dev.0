@@ -1,14 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Tue, 15 Jan 2008 14:04:01 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: lipeng@ict.ac.cn
-Subject: Re: Problems with serial and DHCP when booting from NFS
-Message-ID: <20080115140401.360db284@zod.rchland.ibm.com>
-In-Reply-To: <1233217.1191761200384592967.JavaMail.nabble@isper.nabble.com>
-References: <1233217.1191761200384592967.JavaMail.nabble@isper.nabble.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <subbu.linux@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
+	by ozlabs.org (Postfix) with ESMTP id 1F48CDDEB7
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 16 Jan 2008 07:17:02 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1635347wxd.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Jan 2008 12:17:00 -0800 (PST)
+Message-ID: <f807f08a0801151216l59400ca0i746424a84befc7a8@mail.gmail.com>
+Date: Tue, 15 Jan 2008 15:16:59 -0500
+From: "Subbu Linux" <subbu.linux@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Linux with e500 v2 core,
+	can we support Ram base address starting at 0x1_0000_0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_18862_5879758.1200428219681"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,26 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 15 Jan 2008 00:09:52 -0800
-lipeng@ict.ac.cn wrote:
+------=_Part_18862_5879758.1200428219681
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Hi all,
-> 
-> I am porting a MontaVista Linux for PPC405 and encountering some problems. I hope someone can help me find it out.
+Hi
+I am currently working on MPC8548 core, would like to know wheather current
+Linux with e500v2 core supporting Physical Address of RAM at 0x1_0000_0000,
+I know in current linux with large Page table support we can access devices
+at 0x1_0000_0000 for e500v2, but I wanted to move RAM base address to
+0x1_0000_0000, so that I can support larger RAM. Can any body suggest me if
+their is any patch available for this or is it possible to implement from
+scratch.
 
-You didn't say what kernel you're using, or what you're porting to
-(arch/ppc or arch/powerpc).
+Thanks
+Subbu
 
-> 1. About the serial port. I have solved this problem, but I don't know why. If I set "Initial Kernel Command String" as "console=ttyS0,19200 ip=on nfsroot=[my_nfsroot] rw", after outputing "Now booting the kernel" in the booting process, the booting kernel seems hanging there. In fact, when I checked the log of DHCP server, I found the PPC had already sent DHCP requests. It can be infered that the kernel had been booted but serial had something wrong, so no other information was output after "Now booting the kernel". If I set "Initial Kernel Command String" as "ip=on nfsroot=[my_nfsroot] rw", the booting information will appear on the terminal window correctly after "Now booting the kernel". I don't know why. I use Uart Lite and the baud rate is 19200.
+------=_Part_18862_5879758.1200428219681
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-uartlite doesn't show up as ttyS0 IIRC, so your initial console setting
-was wrong.
+<div>Hi</div>
+<div>I am currently working on MPC8548 core, would like to know wheather current Linux with e500v2 core supporting Physical Address of RAM at 0x1_0000_0000, I know in current linux with large Page table support we can access devices at 0x1_0000_0000 for e500v2, but I wanted to move RAM base address to 0x1_0000_0000, so that I can support larger RAM.&nbsp;Can any body suggest&nbsp;me if their is any patch available for this or&nbsp;is it possible to implement from scratch.
+</div>
+<div>&nbsp;</div>
+<div>Thanks</div>
+<div>Subbu</div>
 
-> 2. About the DHCP. The kernel is boot from NFS, so I enabled the DHCP. From the information on terminal window, I knew that DHCP requests were always time out and the client kept retrying. But when I checked the log of DHCP server, I found the server had already offered IP to the client kernel. It seems the client kernel has some problem to receive the DHCP offer, has anyone encountered similar problems? How to solve this problem?
-
-I've seen that on a board I have.  Haven't debugged it yet
-because I had to unhook everything to paint the room it was in.  I
-think it's something to do with an initialization race in the EMAC
-driver or some other place.
-
-josh
+------=_Part_18862_5879758.1200428219681--
