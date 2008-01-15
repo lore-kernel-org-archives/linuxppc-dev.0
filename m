@@ -1,12 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18316.35013.246973.689872@cargo.ozlabs.ibm.com>
-Date: Tue, 15 Jan 2008 21:19:49 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <SRS0=XpNt=SF=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7053CDDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2008 23:40:40 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
+Subject: [PATCH] net: EMAC: Fix problem with mtu > 4080 on non TAH equipped
+	4xx PPC's
+Date: Tue, 15 Jan 2008 13:40:09 +0100
+Message-Id: <1200400809-19720-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,65 +18,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Currently, all non TAH equipped 4xx PPC's call emac_start_xmit() upon
+xmit. This routine doesn't check if the frame length exceeds the max.
+MAL buffer size.
 
-Please do
+This patch now changes the driver to call emac_start_xmit_sg() on all
+platforms and not only the TAH equipped ones (440GX). This enables an
+MTU of 9000 instead 4080.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Tested on Kilauea (405EX) with gbit link -> jumbo frames enabled.
 
-to get two more bug fixes for powerpc.  One is a fix for a recently
-introduced regression which means that the kernel doesn't boot on
-POWER6 machines.  The other is a fix for something that got broken
-back in the 2.6.19 timeframe.
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+Eugene & Ben, do you see any problems with this patch? If not, then I'll
+send another version for the newemac driver too.
 
-Thanks,
-Paul.
+Thanks.
 
- arch/powerpc/kernel/iommu.c           |   17 ++++++++++++++---
- arch/powerpc/mm/slb.c                 |   10 ++--------
- arch/powerpc/platforms/pseries/lpar.c |    1 -
- include/asm-powerpc/mmu-hash64.h      |    1 -
- 4 files changed, 16 insertions(+), 13 deletions(-)
+ drivers/net/ibm_emac/ibm_emac_core.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
-commit dfbe0d3b6be52596b5694b1bb75b19562e769021
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Tue Jan 15 17:29:33 2008 +1100
-
-    [POWERPC] Fix boot failure on POWER6
-    
-    Commit 473980a99316c0e788bca50996375a2815124ce1 added a call to clear
-    the SLB shadow buffer before registering it.  Unfortunately this means
-    that we clear out the entries that slb_initialize has previously set in
-    there.  On POWER6, the hypervisor uses the SLB shadow buffer when doing
-    partition switches, and that means that after the next partition switch,
-    each non-boot CPU has no SLB entries to map the kernel text and data,
-    which causes it to crash.
-    
-    This fixes it by reverting most of 473980a9 and instead clearing the
-    3rd entry explicitly in slb_initialize.  This fixes the problem that
-    473980a9 was trying to solve, but without breaking POWER6.
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit d262c32a4bcc3e5fda0325a64e53c25fe1e999d7
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Tue Jan 8 10:34:22 2008 +1100
-
-    [POWERPC] Workaround for iommu page alignment
-    
-    Commit 5d2efba64b231a1733c4048d1708d77e07f26426 changed our iommu code
-    so that it always uses an iommu page size of 4kB.  That means with our
-    current code, drivers may do a dma_map_sg() of a 64kB page and obtain
-    a dma_addr_t that is only 4k aligned.
-    
-    This works fine in most cases except for some infiniband HW it seems,
-    where they tell the HW about the page size and it ignores the low bits
-    of the DMA address.
-    
-    This works around it by making our IOMMU code enforce a PAGE_SIZE alignment
-    for mappings of objects that are page aligned in the first place and whose
-    size is larger or equal to a page.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
+index 73664f2..198de44 100644
+--- a/drivers/net/ibm_emac/ibm_emac_core.c
++++ b/drivers/net/ibm_emac/ibm_emac_core.c
+@@ -1089,7 +1089,6 @@ static int emac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 	return emac_xmit_finish(dev, len);
+ }
+ 
+-#if defined(CONFIG_IBM_EMAC_TAH)
+ static inline int emac_xmit_split(struct ocp_enet_private *dev, int slot,
+ 				  u32 pd, int len, int last, u16 base_ctrl)
+ {
+@@ -1203,9 +1202,6 @@ static int emac_start_xmit_sg(struct sk_buff *skb, struct net_device *ndev)
+ 	DBG2("%d: stopped TX queue" NL, dev->def->index);
+ 	return 1;
+ }
+-#else
+-# define emac_start_xmit_sg	emac_start_xmit
+-#endif	/* !defined(CONFIG_IBM_EMAC_TAH) */
+ 
+ /* BHs disabled */
+ static void emac_parse_tx_error(struct ocp_enet_private *dev, u16 ctrl)
+@@ -2163,11 +2159,9 @@ static int __init emac_probe(struct ocp_device *ocpdev)
+ 
+ 	/* Fill in the driver function table */
+ 	ndev->open = &emac_open;
+-	if (dev->tah_dev) {
+-		ndev->hard_start_xmit = &emac_start_xmit_sg;
++	ndev->hard_start_xmit = &emac_start_xmit_sg;
++	if (dev->tah_dev)
+ 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+-	} else
+-		ndev->hard_start_xmit = &emac_start_xmit;
+ 	ndev->tx_timeout = &emac_full_tx_reset;
+ 	ndev->watchdog_timeo = 5 * HZ;
+ 	ndev->stop = &emac_close;
+-- 
+1.5.4.rc3
