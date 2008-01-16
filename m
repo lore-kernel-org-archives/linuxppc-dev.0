@@ -1,17 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 16 Jan 2008 14:49:39 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(),
-	ft_get_next_prop(), and ft_getprop_offset().
-Message-ID: <20080116034939.GB5016@localhost.localdomain>
-References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
-	<20080115001657.GC20649@localhost.localdomain>
-	<20080115165230.GB10812@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080115165230.GB10812@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <704B937B-6154-401F-B5BE-6A139B14D86F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080116000915.GA4283@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] bootwrapper: Add find_node_by_alias and
+	dt_fixup_mac_address_by_alias
+Date: Tue, 15 Jan 2008 22:12:04 -0600
+References: <Pine.LNX.4.64.0801150934390.29314@blarg.am.freescale.net>
+	<20080116000915.GA4283@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,77 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2008 at 10:52:30AM -0600, Scott Wood wrote:
-> On Tue, Jan 15, 2008 at 11:16:57AM +1100, David Gibson wrote:
-> > On Mon, Jan 14, 2008 at 10:30:04AM -0600, Scott Wood wrote:
-> > > ft_get_next_node() enumerates children of a given node.
-> > > ft_get_next_prop() enumerates propreties of a given node.
-> > > 
-> > > ft_getprop_offset() is like ft_getprop(), but takes a property offset rather
-> > > than a node offset and property name; it is primarily intended for use
-> > > with ft_get_next_prop().
-> > 
-> > Urg... this kind of serves me right for not getting my act together on
-> > iterator functions yet.  I really don't like this approach much.  I'll
-> > see if I can come up with something I prefer this afternoon.
-> 
-> OK.
-> 
-> > The biggest thing I dislike is that I've deliberately avoided having
-> > any offsets-to-properties exposed to the library user.  That's because
-> > the whole offsets change when you write the tree problem is worse for
-> > properties than nodes (in that likely idiomatic uses will be bitten by
-> > changes in property offsets).
-> 
-> We can drop the property iteration for now; I wrote it for an attempt at
-> node merging which I postponed.
 
-Heh.. and I spent most of yesterday working on a counter-proposal for
-property iteration.  Oh well, let's leave this for now and look at the
-node iteration first.
+On Jan 15, 2008, at 6:09 PM, David Gibson wrote:
 
-> > > +	if (depth != 0)
-> > > +		return -FDT_ERR_BADSTRUCTURE;
-> > 
-> > I think this should be FDT_ERR_TRUNCATED.
-> 
-> I'd expect TRUNCATED when we hit totalsize without an FDT_END, not when
-> we hit FDT_END in an inappropriate context.
+> On Tue, Jan 15, 2008 at 09:35:20AM -0600, Kumar Gala wrote:
+>> Add the ability to set the mac address given the alias for the  
+>> device.
+>> Removes the need for having a linux,network-index property.
+>>
+>> ---
+>>
+>> in my git tree.
+>
+> Missing a Signed-off-by.  Otherwise looks good.
 
-Well, TRUNCATED is valid for either situation, and fdt_next_tag() also
-returns FDT_END if it reaches totalsize.
+I'm not putting signed-off-by's on patches posted the list just for  
+review.. thus they will not get picked up by anyone :)
 
-> > > +	return -FDT_ERR_NOTFOUND;
-> > 
-> > In fact, so should this.  This function should never actually reach
-> > the FDT_END tag.
-> 
-> No, it's valid if you're iterating over all nodes (node -1, depth
-> -1).
-
-Uh.. yeah, I guess so.
-
-> > > +#define FDT_ERR_BADDEPTH	8
-> > > +	/* FDT_ERR_BADDEPTH: Function was passed a negative
-> > > +	 * (or otherwise invalid) depth. */
-> > 
-> > You've added this error code, but you don't actually return it
-> > anywhere...
-> 
-> Oops, it must have been from the aforementioned node merging code, and I
-> thought it was from fdt_get_next_node when splitting things up.
-
-Ok.
-
-> > This description is incorrect - you've copied the fdt_getprop()
-> > description and forgotten to update it.
-> 
-> /me hides in shame
-
-:)
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+- k
