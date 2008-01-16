@@ -1,24 +1,16 @@
-Return-Path: <kannappan@tesbv.com>
-Received: from hermes.tesbv.com (hermes.tesbv.com [213.215.41.187])
-	by ozlabs.org (Postfix) with ESMTP id 531BCDDE27
+Return-Path: <markus.mehlan@ritter-elektronik.de>
+Received: from mail.textile.saurer.com (mail.textile.saurer.com
+	[193.158.88.134]) by ozlabs.org (Postfix) with ESMTP id AECF4DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 20:13:57 +1100 (EST)
-Received: from ganga.tes (unknown [10.20.0.1])
-	by hermes.tesbv.com (Postfix) with ESMTP id 28A4AF4703
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 09:52:19 +0100 (CET)
-Received: from Kanslaptop (unknown [10.20.0.41])
-	by ganga.tes (Postfix) with ESMTP id 5B52F5C43AF
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 14:16:53 +0530 (IST)
-From: "kannappan" <kannappan@tesbv.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: PPC440SPe: generating PCIe INTx 
-Date: Wed, 16 Jan 2008 14:16:44 +0530
-Message-ID: <003601c8581c$55f27220$2900140a@Kanslaptop>
+	Wed, 16 Jan 2008 23:32:18 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0037_01C8584A.6FAAAE20"
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: MPC52xx problems with fec-driver
+Date: Wed, 16 Jan 2008 13:20:05 +0100
+Message-ID: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1A2@SRVEXC01.sts.saurer.vpn>
+From: "Mehlan, Markus (Ritter Elektronik)" <markus.mehlan@ritter-elektronik.de>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,456 +21,151 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,
 
-------=_NextPart_000_0037_01C8584A.6FAAAE20
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+i have a mpc5200b-based board with 2 ethernet interfaces,
+Kernel 2.6.23.1-rt5 (arch=3Dpowerpc), last fec/bestcomm-patches:
+eth0: mpc52xx_FEC
+eth1: natsemi dp8381x
 
-Hello All,
- 
-I would like to know how to generate PCIe INTx interrupt from Legacy
-PCIe EP in PPC440SPe.
- 
-Also, please clarify,
-Page 741 of the user manual (PPC440SPe_UM2014_V1_26.pdf) write
-Assert_INTx message to INT_ADDR[61:63].
-Page 739, table 27-9, mentions, Assert_INTA by writing to Outbound GBIF
-write channel 9, A[52:59]=0x20.
- 
-Whether the INT_ADDR is any addresses BAR3 / POM3 address?
-What is the Assert_INTx value to be written to INT_ADDR[61:63]?  How do
-I correlate with the message code values given in PCI express system
-architecture?
- 
-The message codes given in PCI express system architecture is as follows
- 
+The natsemi driver works pretty, but the FEC makes problems:
+If i ping the board i get damaged packages. The interrupt-counter
+for the control-irq (mpc52xx-fec_ctrl) stays on zero.
 
-INTx Messages
-Message Code
+The FEC interface works with an older kernel (2.6.14-rt22 arch=3Dppc).
 
-Assert_INTA
-0010 0000
+Markus
 
-Assert_INTB
-0010 0001
+root@phyCORE-MPC5200B-tiny:~ cat /proc/interrupts
+           CPU0
+ 66:          5   MPC52xx IRQ[0-3]  Edge      eth1
+132:       1368  MPC52xx Peripherals Edge      mpc52xx_psc_uart
+133:          0  MPC52xx Peripherals Edge      mpc52xx-fec_ctrl
+143:          2  MPC52xx Peripherals Edge      i2c-mpc
+144:         60  MPC52xx Peripherals Edge      i2c-mpc
+145:          0  MPC52xx Peripherals Edge      can0
+146:          0  MPC52xx Peripherals Edge      can1
+192:         32  MPC52xx SDMA Edge      mpc52xx-fec_rx
+193:         35  MPC52xx SDMA Edge      mpc52xx-fec_tx
+BAD:          0
 
-Assert_INTC
-0010 0010
+ritter-ewc2:/home/meh # ping -a 192.168.0.9
+PING 192.168.0.9 (192.168.0.9) 56(84) bytes of data.
+64 bytes from 192.168.0.9: icmp_seq=3D3 ttl=3D64 time=3D0.267 ms
+64 bytes from 192.168.0.9: icmp_seq=3D11 ttl=3D64 time=3D0.271 ms
+64 bytes from 192.168.0.9: icmp_seq=3D17 ttl=3D64 time=3D0.266 ms
+wrong data byte #20 should be 0x14 but was 0x0
+#8      8 9 a b c d e f 10 11 12 13 0 15 16 17 18 19 1a 1b 1c 1d 1e 1f
+20 21 22 23 24 25 26 27
+#40     28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 34 35 36 37
 
-Assert_INTD
-0010 0011
+--- 192.168.0.9 ping statistics ---
+19 packets transmitted, 3 received, 84% packet loss, time 18026ms
 
-Deassert_INTA
-0010 0100
-
-Deassert_INTB
-0010 0101
-
-Deassert_INTC
-0010 0110
-
-Deassert_INTD
-0010 0111
- 
- 
-Regards,
-Kans.
-
-------=_NextPart_000_0037_01C8584A.6FAAAE20
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-
-
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 10">
-<meta name=3DOriginator content=3D"Microsoft Word 10">
-<link rel=3DFile-List href=3D"cid:filelist.xml@01C8584A.6C2B2450">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"place" downloadurl=3D"http://www.5iantlavalamp.com/"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"State"/>
-<!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:GrammarState>Clean</w:GrammarState>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
-  <w:Compatibility>
-   <w:BreakWrappedTables/>
-   <w:SnapToGridInCell/>
-   <w:WrapTextWithPunct/>
-   <w:UseAsianBreakRules/>
-   <w:UseFELayout/>
-  </w:Compatibility>
-  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
- </w:WordDocument>
-</xml><![endif]--><!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;
-	mso-font-alt:"\FF2D\FF33 \660E\671D";
-	mso-font-charset:128;
-	mso-generic-font-family:roman;
-	mso-font-format:other;
-	mso-font-pitch:fixed;
-	mso-font-signature:1 134676480 16 0 131072 0;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:0 0 0 0 0 0 0 0 0 0;
-	mso-font-charset:128;
-	mso-generic-font-family:roman;
-	mso-font-format:other;
-	mso-font-pitch:fixed;
-	mso-font-signature:1 134676480 16 0 131072 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"MS Mincho";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;
-	text-underline:single;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	mso-style-noshow:yes;
-	mso-ansi-font-size:10.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:Arial;
-	mso-ascii-font-family:Arial;
-	mso-hansi-font-family:Arial;
-	mso-bidi-font-family:Arial;
-	color:windowtext;}
-p.doctext, li.doctext, div.doctext
-	{mso-style-name:doctext;
-	mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"MS Mincho";}
-span.docemphstrong
-	{mso-style-name:docemphstrong;}
-span.SpellE
-	{mso-style-name:"";
-	mso-spl-e:yes;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */=20
- table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0in 5.4pt 0in 5.4pt;
-	mso-para-margin:0in;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";}
-</style>
-<![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
-style=3D'tab-interval:.5in'>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hello All,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I would like to know how to generate <span =
-class=3DSpellE>PCIe</span>
-<span class=3DSpellE>INTx</span> interrupt from Legacy <span =
-class=3DSpellE>PCIe</span>
-EP in PPC440SPe.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Also, please clarify,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Page 741 of the user manual =
-(PPC440SPe_UM2014_V1_26.pdf) write
-Assert_INTx message to INT_<span =
-class=3DGramE>ADDR[</span>61:63].<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Page 739, table 27-9, mentions, <span =
-class=3DSpellE>Assert_INTA</span>
-by writing to Outbound GBIF write channel 9, <span =
-class=3DGramE>A[</span>52:59]=3D0x20.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Whether the INT_ADDR is any addresses BAR3 / POM3 =
-address?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>What is the Assert_INTx value to be written to =
-INT_<span
-class=3DGramE>ADDR[</span>61:63]?<span style=3D'mso-spacerun:yes'>&nbsp; =
-</span>How
-do I correlate with the message code values given in PCI express system =
-architecture?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>The message codes given in PCI express system =
-architecture
-is as follows<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<table class=3DMsoNormalTable border=3D1 cellspacing=3D0 cellpadding=3D0 =
-width=3D"100%"
- style=3D'width:100.0%;mso-cellspacing:0in;mso-padding-alt:3.0pt 3.0pt =
-3.0pt 3.0pt'>
- <thead>
-  <tr style=3D'mso-yfti-irow:0'>
-   <td style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-   <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><span
-   class=3Ddocemphstrong><b><font size=3D3 color=3Dwhite face=3D"Times =
-New Roman"><span
-   =
-style=3D'font-size:12.0pt;color:white;background:#316AC5;font-weight:bold=
-'>INTx</span></font></b></span></span><span
-   class=3Ddocemphstrong><b><span style=3D'font-weight:bold'> =
-Messages</span></b></span><b><span
-   style=3D'font-weight:bold'><o:p></o:p></span></b></p>
-   </td>
-   <td style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-   <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span
-   class=3Ddocemphstrong><b><font size=3D3 face=3D"Times New =
-Roman"><span
-   style=3D'font-size:12.0pt;font-weight:bold'>Message =
-Code</span></font></b></span><b><span
-   style=3D'font-weight:bold'><o:p></o:p></span></b></p>
-   </td>
-  </tr>
- </thead>
- <tr style=3D'mso-yfti-irow:1'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Assert_INTA</span></font></span><o:p></o:p></p=
->
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0000<o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:2'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Assert_INTB</span></font></span><o:p></o:p></p=
->
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0001<o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:3'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Assert_INTC</span></font></span><o:p></o:p></p=
->
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 <span
-  class=3DSpellE>0010</span><o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:4'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Assert_INTD</span></font></span><o:p></o:p></p=
->
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0011<o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:5'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Deassert_INTA</span></font></span><o:p></o:p><=
-/p>
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0100<o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:6'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Deassert_INTB</span></font></span><o:p></o:p><=
-/p>
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0101<o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:7'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Deassert_INTC</span></font></span><o:p></o:p><=
-/p>
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0110<o:p></o:p></span></font></p>
-  </td>
- </tr>
- <tr style=3D'mso-yfti-irow:8;mso-yfti-lastrow:yes'>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><span =
-class=3DSpellE><font
-  size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt'>Deassert_INTD</span></font></span><o:p></o:p><=
-/p>
-  </td>
-  <td valign=3Dtop style=3D'padding:3.0pt 3.0pt 3.0pt 3.0pt'>
-  <p class=3Ddoctext align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-  face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>0010 =
-0111<o:p></o:p></span></font></p>
-  </td>
- </tr>
-</table>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Regards,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><st1:State><st1:place><font size=3D2 =
-face=3DArial><span
-  =
-style=3D'font-size:10.0pt;font-family:Arial'>Kans.</span></font></st1:pla=
-ce></st1:State><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'><o:p></o:p></span></font></p=
->
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0037_01C8584A.6FAAAE20--
+------------------------------------------------------------------
+Using ritter_el392 machine description
+Linux version 2.6.23.1-rt5-el392trunk (meh@ritter-ewc2) (gcc version
+4.1.2) #445 PREEMPT RT Wed Jan 16 12:05:52 CET 2008
+Found initrd at 0xc3a2e000:0xc3f47e63
+Zone PFN ranges:
+  DMA             0 ->    16384
+  Normal      16384 ->    16384
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    16384
+Real-Time Preemption Support (C) 2004-2007 Ingo Molnar
+Built 1 zonelists in Zone order.  Total pages: 16256
+Kernel command line: console=3DttyPSC0,115200 root=3D/dev/ram0 rw
+ip=3D192.168.0.10:192.168.0.1::255.255.255.0:RITTER_EL392:eth1:off =
+panic=3D1
+WARNING: experimental RCU implementation.
+MPC52xx PIC is up and running!
+PID hash table entries: 256 (order: 8, 1024 bytes)
+console [ttyPSC0] enabled
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 56972k/65536k available (2412k kernel code, 8500k reserved, 132k
+data, 101k bss, 148k init)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+DMA: MPC52xx BestComm driver
+DMA: MPC52xx BestComm engine @f0001200 ok !
+Generic PHY xxx: Registered new driver
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 2048 (order: 4, 73728 bytes)
+TCP bind hash table entries: 2048 (order: 3, 57344 bytes)
+TCP: Hash tables configured (established 2048 bind 2048)
+TCP reno registered
+checking if image is initramfs...it isn't (no cpio magic); looks like an
+initrd
+Freeing initrd memory: 5223k freed
+io scheduler noop registered (default)
+Serial: MPC52xx PSC UART driver
+f0002c00.serial: ttyPSC0 at MMIO 0xf0002c00 (irq =3D 132) is a MPC52xx =
+PSC
+RAMDISK driver initialized: 2 RAM disks of 20480K size 1024 blocksize
+mpc52xx-mscan initializing
+mpc52xx-mscan mpc52xx-mscan.0: probe for a port 0xC500A900 done
+mpc52xx-mscan mpc52xx-mscan.1: probe for a port 0xC500C980 done
+mpc52xx MII bus: probed
+natsemi dp8381x driver, version 2.1, Sept 11, 2006
+  originally by Donald Becker <becker@scyld.com>
+  2.4.x kernel port by Jeff Garzik, Tjeerd Mulder
+PCI: Enabling device 0000:00:18.0 (0006 -> 0007)
+natsemi eth1: NatSemi DP8381[56] at 0xa0000000 (0000:00:18.0),
+00:0b:93:80:01:00, IRQ 66, port TP.
+i2c /dev entries driver
+pcf8563 1-0051: chip found, driver version 0.4.2
+pcf8563 1-0051: rtc core: registered pcf8563 as rtc0
+MPC52xx Watchdog Timer on GPT0
+MPC52xx Watchdog-Relay on GPIO
+Registered led device: el392:right
+Registered led device: el392:middle
+Registered led device: el392:left
+EL392 Front-LEDs found
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+NET: Registered protocol family 15
+can: controller area network core (rev 20070916 abi 8)
+NET: Registered protocol family 29
+can: raw protocol (rev 20070916)
+pcf8563 1-0051: setting the system clock to 2008-01-16 12:06:42
+(1200485202)
+eth1: DSPCFG accepted after 0 usec.
+eth1: link up.
+eth1: Setting full-duplex based on negotiated link capability.
+IP-Config: Complete:
+      device=3Deth1, addr=3D192.168.0.10, mask=3D255.255.255.0,
+gw=3D255.255.255.255,
+     host=3DRITTER_EL392, domain=3D, nis-domain=3D(none),
+     bootserver=3D192.168.0.1, rootserver=3D192.168.0.1, rootpath=3D
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 148k init
+mounting filesystems...done.
+running rc.d services...
+mounting... tmpfs at /dev
+creating static nodes
+creating initial udev device nodes...done
+udev startup is finished
+loading modules
+syslogd starting
+klogd starting
+starting network interfaces...
+can0: baudrate 250
+can1: baudrate 250
+net eth0: attached phy 0 to driver Generic PHY
+PURE-FTPD: No /etc/pure-ftpd.defaults found.
+/usr/sbin/pure-ftpd
+PURE-FTPD: Starting pure-ftpd: /usr/sbin/pure-ftpd
+PURE-FTPD: no upload script defined, skipping
+Done
+Starting telnetd...
+thttpd:  starting
+thttpd:  done
+el392 login:=20
+PHY: f0003000:00 - Link is Up - 100/Full
+net eth0: attached phy 0 to driver Generic PHY
