@@ -1,22 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 9864ADDE2B
+Return-Path: <vbendeb@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.231])
+	by ozlabs.org (Postfix) with ESMTP id E683CDDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 11:35:01 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: <rmcguire@videopresence.com>
-References: <mailman.1.1200358805.3196.linuxppc-embedded@ozlabs.org>
-	<000301c857b0$09f01a10$6405a8c0@absolut>
-	<000001c857d5$6154b110$23fe1330$@tjernlund@transmode.se>
-	<000301c857d7$0195f890$6405a8c0@absolut>
-In-Reply-To: <000301c857d7$0195f890$6405a8c0@absolut>
-Subject: Re: Driver - HDLC 83xx QUICC Engine??
-Date: Wed, 16 Jan 2008 01:34:51 +0100
-Message-ID: <000301c857d7$9c1eaba0$d45c02e0$@tjernlund@transmode.se>
+	Wed, 16 Jan 2008 17:03:50 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so117038nzh.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Jan 2008 22:03:49 -0800 (PST)
+Message-ID: <f608b67d0801152203j523ebdeavbab4412121a31a7@mail.gmail.com>
+Date: Tue, 15 Jan 2008 22:03:48 -0800
+From: vb <vb@vsbe.com>
+Sender: vbendeb@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: MPIC ISU
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,30 +24,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Ursprungligt meddelande-----
-> Fr=E5n: Russell McGuire [mailto:rmcguire@videopresence.com]
-> Skickat: den 16 januari 2008 01:31
-> Till: 'Joakim Tjernlund'
-> Kopia: linuxppc-embedded@ozlabs.org
-> =C4mne: RE: Driver - HDLC 83xx QUICC Engine??
->=20
-> Jocke,
->=20
-> I'll let you know if I find any.  For a starting point, I have an QE =
-ATM
-> driver, that is more than likely similar in design <though no Ethernet
-> interface>, as it supports the QE engine, and just turns the UCC into =
-ATM
-> mode, as opposed to HDLC mode. Would imagine the buffering, IO, =
-interrupts
-> are similar. I am still in process of porting it up from the 82xx CPU.
->=20
-> Although HDLC how it registers itself into the kernel is a mystery to =
-me, I
-> am having trouble finding any HDLC drivers to model this after.  Know =
-of any
-> specs? API? Etc...
+Greetings,
 
-Sorry but I don't know. Luckily for me I don't have too either.
+I am trying to write a BSP for an 8245 based device. One thing which
+really gets me puzzled is the 'ISU' facility in
+arch/powerpc/sysdev/mpic.c, there is also a notion of ISU-less
+platforms, etc. I looked through the chip's programmer's reference,
+even read the original AMD/Cypress OpenPIC specification - not a clue.
 
- Jocke
+What is it, at the very least - what does ISU stand for?
+
+I would really appreciate any hints,
+
+thank you in advance,
+/vb
