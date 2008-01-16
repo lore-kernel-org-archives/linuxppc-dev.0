@@ -1,16 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] powerpc: mv64x60 - Use early_* PCI accessors for
-	hotswap reg
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20080114225150.GB21940@mag.az.mvista.com>
-References: <20080114225150.GB21940@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 09:48:59 +1100
-Message-Id: <1200523739.6755.33.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 83DFCDDE3D
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:02:58 +1100 (EST)
+Date: Thu, 17 Jan 2008 10:02:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: John Rigby <jrigby@freescale.com>
+Subject: Re: [Add mpc5121 support PATCH v2 3/8] Basic Freescale MPC512x support
+Message-Id: <20080117100254.b43225c8.sfr@canb.auug.org.au>
+In-Reply-To: <1200519447-25555-3-git-send-email-jrigby@freescale.com>
+References: <1200519447-25555-1-git-send-email-jrigby@freescale.com>
+	<1200519447-25555-2-git-send-email-jrigby@freescale.com>
+	<1200519447-25555-3-git-send-email-jrigby@freescale.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,134 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2008-01-14 at 15:51 -0700, Mark A. Greer wrote:
-> From: Mark A. Greer <mgreer@mvista.com>
-> 
-> The mv64x60 Hotswap register is on the first hose of the mv64x60
-> hostbridge.  To access it, manually find the hose structure and
-> use the early_* PCI accessor routines because the hostbridge is
-> normally hidden.
+Hi John,
 
-Can't we unhide the NB instead ?
+On Wed, 16 Jan 2008 14:37:22 -0700 John Rigby <jrigby@freescale.com> wrote:
+>
+> +++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
 
-Cheers,
-Ben.
-
-> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
-> ---
->  arch/powerpc/sysdev/mv64x60.h     |   22 ++++++++++++++++++++++
->  arch/powerpc/sysdev/mv64x60_pci.c |   25 +++++++++++++++----------
->  2 files changed, 37 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/mv64x60.h b/arch/powerpc/sysdev/mv64x60.h
-> index 4f618fa..27e22f4 100644
-> --- a/arch/powerpc/sysdev/mv64x60.h
-> +++ b/arch/powerpc/sysdev/mv64x60.h
-> @@ -3,10 +3,32 @@
->  
->  #include <linux/init.h>
->  
-> +#include <asm/prom.h>
-> +#include <asm/pci-bridge.h>
-> +
->  extern void __init mv64x60_init_irq(void);
->  extern unsigned int mv64x60_get_irq(void);
->  
->  extern void __init mv64x60_pci_init(void);
->  extern void __init mv64x60_init_early(void);
->  
-> +static inline struct pci_controller *mv64x60_find_hose(u32 idx)
+> +static void __init mpc5121_ads_init_IRQ(void)
 > +{
-> +	struct device_node *phb;
-> +	struct pci_controller *hose;
-> +	const u32 *prop;
-> +	int len;
+> +	struct device_node *np;
 > +
-> +	for_each_compatible_node(phb, "pci", "marvell,mv64360-pci") {
-> +		prop = of_get_property(phb, "cell-index", &len);
-> +		if (prop && (len == sizeof(prop)) && (*prop == idx)) {
-> +			hose = pci_find_hose_for_OF_device(phb);
-> +			of_node_put(phb);
-> +			return hose;
-> +		}
-> +	}
+> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,ipic");
+> +	if (!np)
+> +		return;
 > +
-> +	return NULL;
-> +}
-> +
->  #endif /* __MV64X60_H__ */
-> diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
-> index 1456015..2115177 100644
-> --- a/arch/powerpc/sysdev/mv64x60_pci.c
-> +++ b/arch/powerpc/sysdev/mv64x60_pci.c
-> @@ -17,6 +17,8 @@
->  #include <asm/prom.h>
->  #include <asm/pci-bridge.h>
->  
-> +#include <sysdev/mv64x60.h>
-> +
->  #define PCI_HEADER_TYPE_INVALID		0x7f	/* Invalid PCI header type */
->  
->  #ifdef CONFIG_SYSFS
-> @@ -24,11 +26,12 @@
->  #define MV64X60_VAL_LEN_MAX		11
->  #define MV64X60_PCICFG_CPCI_HOTSWAP	0x68
->  
-> +/* cPCI Hotswap register only supported on PCI 0 interface */
->  static ssize_t mv64x60_hs_reg_read(struct kobject *kobj,
->  				   struct bin_attribute *attr, char *buf,
->  				   loff_t off, size_t count)
->  {
-> -	struct pci_dev *phb;
-> +	struct pci_controller *hose;
->  	u32 v;
->  
->  	if (off > 0)
-> @@ -36,11 +39,12 @@ static ssize_t mv64x60_hs_reg_read(struct kobject *kobj,
->  	if (count < MV64X60_VAL_LEN_MAX)
->  		return -EINVAL;
->  
-> -	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
-> -	if (!phb)
-> +	hose = mv64x60_find_hose(0);
-> +	if (!hose)
->  		return -ENODEV;
-> -	pci_read_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, &v);
-> -	pci_dev_put(phb);
-> +
-> +	early_read_config_dword(hose, 0, PCI_DEVFN(0, 0),
-> +			MV64X60_PCICFG_CPCI_HOTSWAP, &v);
->  
->  	return sprintf(buf, "0x%08x\n", v);
->  }
-> @@ -49,7 +53,7 @@ static ssize_t mv64x60_hs_reg_write(struct kobject *kobj,
->  				    struct bin_attribute *attr, char *buf,
->  				    loff_t off, size_t count)
->  {
-> -	struct pci_dev *phb;
-> +	struct pci_controller *hose;
->  	u32 v;
->  
->  	if (off > 0)
-> @@ -60,11 +64,12 @@ static ssize_t mv64x60_hs_reg_write(struct kobject *kobj,
->  	if (sscanf(buf, "%i", &v) != 1)
->  		return -EINVAL;
->  
-> -	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
-> -	if (!phb)
-> +	hose = mv64x60_find_hose(0);
-> +	if (!hose)
->  		return -ENODEV;
-> -	pci_write_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, v);
-> -	pci_dev_put(phb);
-> +
-> +	early_write_config_dword(hose, 0, PCI_DEVFN(0, 0),
-> +			MV64X60_PCICFG_CPCI_HOTSWAP, v);
->  
->  	return count;
->  }
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> +	ipic_init(np, 0);
+
+You need an op_node_put(np) here.  ipic_init will do another of_node_get()
+if it keeps a reference to np.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHjo0iTgG2atn1QN8RAnPRAJ9FqsKf5wT/lWshqIti90CEbzObEQCeOa2I
+JgNLv3qj2vHlb2mkW4mPg0g=
+=UMsg
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN--
