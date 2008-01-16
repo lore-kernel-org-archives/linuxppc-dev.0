@@ -1,38 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B2D01DDE3C
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:41:36 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0GNfVwI014416
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 18:41:31 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0GNfVrQ069848
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 16:41:31 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0GNfUlH019414
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 16:41:30 -0700
-Date: Wed, 16 Jan 2008 17:39:54 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/5] Warp Base Platform
-Message-ID: <20080116173954.469153f8@zod.rchland.ibm.com>
-In-Reply-To: <20080117103648.e225e9f5.sfr@canb.auug.org.au>
-References: <47852C41.8000506@pikatech.com>
-	<20080111115143.4ed89ab6@zod.rchland.ibm.com>
-	<4787FE23.7010201@pikatech.com> <200801120723.29393.sr@denx.de>
-	<4789235E.1030901@pikatech.com> <47892645.5070003@pikatech.com>
-	<20080113113545.f08d9199.sfr@canb.auug.org.au>
-	<478E9369.5090605@pikatech.com>
-	<20080117103648.e225e9f5.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id CA37BDDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:42:30 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so292168uge.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:42:27 -0800 (PST)
+Date: Thu, 17 Jan 2008 02:26:18 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: Fixed phy
+Message-ID: <20080116232618.GA30809@zarina>
+References: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D3@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D3@ismail.innsys.innovsys.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,15 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008 10:36:48 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Hello Rune,
 
-> On Wed, 16 Jan 2008 18:29:45 -0500 Sean MacLennan <smaclennan@pikatech.com> wrote:
-> >
-> > Everybody happy with this patch?
+On Wed, Jan 16, 2008 at 10:50:53AM -0600, Rune Torgersen wrote:
 > 
-> I am happy (about this patch at least :-))
+> Hi
+> We're doing a port to 2.6.24-rc7, and we need to set up two ethernets
+> with fixed phy's as they have phyless interfaces to a switch.
+> WE cannot find any good examples on how to do this. We've found the
+> fixed speed PHY emulation in the configuration, but are unsure on
+> how to set the PHY's up in the device tree.
+> 
+> This is using a 8280 cpu and ethernet on the FCC's
 
-Yes, I have this queued up.
+See these patches:
 
-josh
+Fixed phy subsystem rework:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047777.html
+
+Fixed phy generic dts parsing & gianfar support:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047778.html
+
+Fixed phy support for fs_enet driver (SCC/FCC/FEC):
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048090.html
+
+Example of usage:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047779.html
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
