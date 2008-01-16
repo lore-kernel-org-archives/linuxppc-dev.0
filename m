@@ -1,14 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 16 Jan 2008 11:46:42 +1100
+Date: Wed, 16 Jan 2008 14:49:39 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 2/2] [POWERPC] 4xx: Add AMCC Haleakala (405EXr) dts
-Message-ID: <20080116004642.GD4283@localhost.localdomain>
-References: <1200380965-10245-1-git-send-email-sr@denx.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [DTC PATCH] libfdt: Add ft_get_next_node(),
+	ft_get_next_prop(), and ft_getprop_offset().
+Message-ID: <20080116034939.GB5016@localhost.localdomain>
+References: <20080114163004.GA27880@ld0162-tx32.am.freescale.net>
+	<20080115001657.GC20649@localhost.localdomain>
+	<20080115165230.GB10812@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1200380965-10245-1-git-send-email-sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20080115165230.GB10812@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,61 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2008 at 08:09:25AM +0100, Stefan Roese wrote:
-> The patch adds the Haleakala dts. The Haleakala is a stripped down
-> version of the Kilauea (405EX) with only one EMAC and only one PCIe
-> interface.
+On Tue, Jan 15, 2008 at 10:52:30AM -0600, Scott Wood wrote:
+> On Tue, Jan 15, 2008 at 11:16:57AM +1100, David Gibson wrote:
+> > On Mon, Jan 14, 2008 at 10:30:04AM -0600, Scott Wood wrote:
+> > > ft_get_next_node() enumerates children of a given node.
+> > > ft_get_next_prop() enumerates propreties of a given node.
+> > > 
+> > > ft_getprop_offset() is like ft_getprop(), but takes a property offset rather
+> > > than a node offset and property name; it is primarily intended for use
+> > > with ft_get_next_prop().
+> > 
+> > Urg... this kind of serves me right for not getting my act together on
+> > iterator functions yet.  I really don't like this approach much.  I'll
+> > see if I can come up with something I prefer this afternoon.
+> 
+> OK.
+> 
+> > The biggest thing I dislike is that I've deliberately avoided having
+> > any offsets-to-properties exposed to the library user.  That's because
+> > the whole offsets change when you write the tree problem is worse for
+> > properties than nodes (in that likely idiomatic uses will be bitten by
+> > changes in property offsets).
+> 
+> We can drop the property iteration for now; I wrote it for an attempt at
+> node merging which I postponed.
 
-[snip]
-> +			IIC0: i2c@ef600400 {
-> +				device_type = "i2c";
+Heh.. and I spent most of yesterday working on a counter-proposal for
+property iteration.  Oh well, let's leave this for now and look at the
+node iteration first.
 
-No device_type here.
+> > > +	if (depth != 0)
+> > > +		return -FDT_ERR_BADSTRUCTURE;
+> > 
+> > I think this should be FDT_ERR_TRUNCATED.
+> 
+> I'd expect TRUNCATED when we hit totalsize without an FDT_END, not when
+> we hit FDT_END in an inappropriate context.
 
-> +				compatible = "ibm,iic-405exr", "ibm,iic";
-> +				reg = <ef600400 14>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <2 4>;
-> +			};
-> +
-> +			IIC1: i2c@ef600500 {
-> +				device_type = "i2c";
+Well, TRUNCATED is valid for either situation, and fdt_next_tag() also
+returns FDT_END if it reaches totalsize.
 
-Or here.
+> > > +	return -FDT_ERR_NOTFOUND;
+> > 
+> > In fact, so should this.  This function should never actually reach
+> > the FDT_END tag.
+> 
+> No, it's valid if you're iterating over all nodes (node -1, depth
+> -1).
 
-> +				compatible = "ibm,iic-405exr", "ibm,iic";
-> +				reg = <ef600500 14>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <7 4>;
-> +			};
-> +
-> +
-> +			RGMII0: emac-rgmii@ef600b00 {
-> +				device_type = "rgmii-interface";
+Uh.. yeah, I guess so.
 
-And especially not here.
+> > > +#define FDT_ERR_BADDEPTH	8
+> > > +	/* FDT_ERR_BADDEPTH: Function was passed a negative
+> > > +	 * (or otherwise invalid) depth. */
+> > 
+> > You've added this error code, but you don't actually return it
+> > anywhere...
+> 
+> Oops, it must have been from the aforementioned node merging code, and I
+> thought it was from fdt_get_next_node when splitting things up.
 
-> +				compatible = "ibm,rgmii-405exr", "ibm,rgmii";
-> +				reg = <ef600b00 104>;
-> +				has-mdio;
-> +			};
+Ok.
 
-[snip]
-> +		PCIE0: pciex@0a0000000 {
-> +			device_type = "pci";
-> +			#interrupt-cells = <1>;
-> +			#size-cells = <2>;
-> +			#address-cells = <3>;
-> +			compatible = "ibm,plb-pciex-405exr", "ibm,plb-pciex";
-> +			primary;
-> +			port = <0>; /* port number */
-> +			reg = <a0000000 20000000	/* Config space access */
-> +			       ef000000 00001000>;	/* Registers */
-> +			dcr-reg = <040 020>;
-> +			sdr-base = <400>;
+> > This description is incorrect - you've copied the fdt_getprop()
+> > description and forgotten to update it.
+> 
+> /me hides in shame
 
-Oh, for crying out loud.  They put dcrs on the bridge as well as MMIO
-registers. *facepalm*
+:)
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
