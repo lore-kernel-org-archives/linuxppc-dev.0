@@ -1,30 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64937DDE9B
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:36:05 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0GNa1h4018893
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 18:36:01 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0GNa1dg155890
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 18:36:01 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0GNa0ft028455
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 18:36:01 -0500
-Date: Wed, 16 Jan 2008 17:34:21 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 011E8DDEAB
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:36:53 +1100 (EST)
+Date: Thu, 17 Jan 2008 10:36:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] MTD for Taco
-Message-ID: <20080116173421.4c886514@zod.rchland.ibm.com>
-In-Reply-To: <478E7643.5040804@pikatech.com>
-References: <477F12D1.2070109@pikatech.com> <200801051041.18173.sr@denx.de>
-	<478AEB39.70106@pikatech.com> <478E7643.5040804@pikatech.com>
+Subject: Re: [PATCH 1/5] Warp Base Platform
+Message-Id: <20080117103648.e225e9f5.sfr@canb.auug.org.au>
+In-Reply-To: <478E9369.5090605@pikatech.com>
+References: <47852C41.8000506@pikatech.com>
+	<20080111115143.4ed89ab6@zod.rchland.ibm.com>
+	<4787FE23.7010201@pikatech.com> <200801120723.29393.sr@denx.de>
+	<4789235E.1030901@pikatech.com> <47892645.5070003@pikatech.com>
+	<20080113113545.f08d9199.sfr@canb.auug.org.au>
+	<478E9369.5090605@pikatech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__17_Jan_2008_10_36_48_+1100_Ksfb4N9bOdNmt+ow"
 Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,30 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 16 Jan 2008 16:25:23 -0500
-Sean MacLennan <smaclennan@pikatech.com> wrote:
+--Signature=_Thu__17_Jan_2008_10_36_48_+1100_Ksfb4N9bOdNmt+ow
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Sean MacLennan wrote:
-> > How about adding a config option that lets you specify 8 bit access? 
-> > Something like CONFIG_NDFC_8BIT_ACCESS. We could default it to no and 
-> > put a little blurb that says something like:
-> >
-> > On some platforms the 32bit read/writes cause a machine access 
-> > exception. If you get a machine access exception while reading the NAND 
-> > bad block table, try turning on 8 bit access.
-> >   
-> I know it would be better if 32 bit access just worked, but nobody 
-> actively objected to this idea, so here is a patch ;)
+On Wed, 16 Jan 2008 18:29:45 -0500 Sean MacLennan <smaclennan@pikatech.com>=
+ wrote:
+>
+> Everybody happy with this patch?
 
-I'm objecting, but not on the bit access reasons :).
+I am happy (about this patch at least :-))
 
-1) Needs to go to the linux-mtd@lists.infradead.org list with the
-maintainer CC'd (Thomas Gleixner)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-2) I don't want this driver enabled in mainline for boards in
-arch/powerpc until it fully understands how to parse device trees.
+--Signature=_Thu__17_Jan_2008_10_36_48_+1100_Ksfb4N9bOdNmt+ow
+Content-Type: application/pgp-signature
 
-You could separate out the 8-bit access option and send that to
-linux-mtd though
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-josh
+iD8DBQFHjpUTTgG2atn1QN8RAkObAJ9cdkOF+dtPOtyjKMvI8AA9Mmn/ogCghHGL
+csra1VOFI18E+60y3h8ibls=
+=G0dF
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__17_Jan_2008_10_36_48_+1100_Ksfb4N9bOdNmt+ow--
