@@ -1,21 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D8448DDE47
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:49:31 +1100 (EST)
-Date: Wed, 16 Jan 2008 15:49:26 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] [POWERPC] Add of_find_matching_node() helper function
-Message-Id: <20080116154926.6fe7a0b3.sfr@canb.auug.org.au>
-In-Reply-To: <18317.19252.530009.495865@cargo.ozlabs.ibm.com>
-References: <20080108192040.9556.28899.stgit@trillian.secretlab.ca>
-	<fa686aa40801150709s31a1fc6eg751ecdc209a113d6@mail.gmail.com>
-	<18317.19252.530009.495865@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18317.34394.863315.83309@cargo.ozlabs.ibm.com>
+Date: Wed, 16 Jan 2008 15:21:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH 3/8] pseries: phyp dump: reserve-release proof-of-concept
+In-Reply-To: <4782C2FB.7020105@austin.ibm.com>
+References: <4782B985.2090508@austin.ibm.com> <4782C2FB.7020105@austin.ibm.com>
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	lkessler@us.ibm.com, strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +19,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Manish Ahuja writes:
 
-On Wed, 16 Jan 2008 11:09:24 +1100 Paul Mackerras <paulus@samba.org> wrote:
->
-> Grant Likely writes:
->=20
-> > Any comments/concerns on this patch?
->=20
-> I'm about to throw it into my tree.
+> Initial patch for reserving memory in early boot, and freeing it later.
+> If the previous boot had ended with a crash, the reserved memory would contain
+> a copy of the crashed kernel data.
 
-Fine by me.
+The main problem I see here is that if this option is turned on, the
+kernel now has only 256MB of memory from early boot until
+subsys_initcalls are done -- on any machine, and whether or not there
+is actually a dump.  That means, for instance, that a machine running
+bare-metal (such as a G5) might not be able to allocate the hash table
+for the MMU.  Also, any allocations made during that time won't be
+able to be node-local.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+So it will be necessary to read the flattened device tree early on to
+see whether or not there is a dump, so that we don't reserve most of
+memory in the cases where there isn't a dump.
 
---Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHjYzaTgG2atn1QN8RAr72AKCWDAKHBev+KumwlA+wAel60jQvrQCdG2Co
-BVEd0qT8Zesv8VaxTv8m9lQ=
-=0YIS
------END PGP SIGNATURE-----
-
---Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_--
+Paul.
