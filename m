@@ -1,21 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5627EDDE38
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:41:58 +1100 (EST)
-Date: Wed, 16 Jan 2008 15:41:53 +1100
+	by ozlabs.org (Postfix) with ESMTP id D8448DDE47
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:49:31 +1100 (EST)
+Date: Wed, 16 Jan 2008 15:49:26 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] mtd: Factor out OF partition support from the NOR
-	driver.
-Message-Id: <20080116154153.2f6c2ee9.sfr@canb.auug.org.au>
-In-Reply-To: <478D450A.8060802@freescale.com>
-References: <20080114172116.a2e5aa18.sfr@canb.auug.org.au>
-	<478D450A.8060802@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] [POWERPC] Add of_find_matching_node() helper function
+Message-Id: <20080116154926.6fe7a0b3.sfr@canb.auug.org.au>
+In-Reply-To: <18317.19252.530009.495865@cargo.ozlabs.ibm.com>
+References: <20080108192040.9556.28899.stgit@trillian.secretlab.ca>
+	<fa686aa40801150709s31a1fc6eg751ecdc209a113d6@mail.gmail.com>
+	<18317.19252.530009.495865@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__16_Jan_2008_15_41_53_+1100_1z.kM1l/KnaNUVrO"
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-mtd@lists.infradead.org
+	boundary="Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__16_Jan_2008_15_41_53_+1100_1z.kM1l/KnaNUVrO
+--Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 15 Jan 2008 17:43:06 -0600 Scott Wood <scottwood@freescale.com> wro=
-te:
+On Wed, 16 Jan 2008 11:09:24 +1100 Paul Mackerras <paulus@samba.org> wrote:
 >
-> Stephen Rothwell wrote:
-> >> +	nr_parts =3D 0;
-> >> +	for (pp =3D node->child; pp; pp =3D pp->sibling)
-> >=20
-> > 	for_each_child_of_node(node, pp)
+> Grant Likely writes:
 >=20
-> "for_each_child_of_node" is only in Paul's tree, but this has to go via m=
-td.
+> > Any comments/concerns on this patch?
 >=20
-> Plus, I'm just moving the code; it's not new.
+> I'm about to throw it into my tree.
 
-OK, we can change it later.
+Fine by me.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__16_Jan_2008_15_41_53_+1100_1z.kM1l/KnaNUVrO
+--Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHjYsVTgG2atn1QN8RAkK6AKCKaUndHc0j8YRyL1qUGCMNMjlmFgCdG1N9
-OvxHUcQ3CDumS+VJimXrzsk=
-=7q3H
+iD8DBQFHjYzaTgG2atn1QN8RAr72AKCWDAKHBev+KumwlA+wAel60jQvrQCdG2Co
+BVEd0qT8Zesv8VaxTv8m9lQ=
+=0YIS
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__16_Jan_2008_15_41_53_+1100_1z.kM1l/KnaNUVrO--
+--Signature=_Wed__16_Jan_2008_15_49_26_+1100_W2WucMAqvLFB7zZ_--
