@@ -1,26 +1,27 @@
 Return-Path: <jrigby@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8F018DDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 08:37:44 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AEE03DDF47
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 08:37:46 +1100 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m0GLbUOP012281
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 14:37:30 -0700 (MST)
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m0GLbUOS027111
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 14:37:31 -0700 (MST)
 Received: from localhost.localdomain (mvp-10-214-72-34.am.freescale.net
 	[10.214.72.34])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0GLbSno018969
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:37:29 -0600 (CST)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0GLbSnp018969
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:37:30 -0600 (CST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [Add mpc5121 support PATCH v2 2/8] Add mpc512x ipic support
-Date: Wed, 16 Jan 2008 14:37:21 -0700
-Message-Id: <1200519447-25555-2-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1200519447-25555-1-git-send-email-jrigby@freescale.com>
+Subject: [Add mpc5121 support PATCH v2 3/8] Basic Freescale MPC512x support
+Date: Wed, 16 Jan 2008 14:37:22 -0700
+Message-Id: <1200519447-25555-3-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1200519447-25555-2-git-send-email-jrigby@freescale.com>
 References: <1200519447-25555-1-git-send-email-jrigby@freescale.com>
+	<1200519447-25555-2-git-send-email-jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,114 +31,275 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Added ipic_info entries for vectors used by 512x that
-were previously unused by 83xx.
+512x is very similar to 83xx and most
+of this is patterned after code from 83xx.
+
+New platform:
+    changed:
+	arch/powerpc/Kconfig
+	arch/powerpc/platforms/Kconfig
+	arch/powerpc/platforms/Kconfig.cputype
+	arch/powerpc/platforms/Makefile
+    new:
+	arch/powerpc/platforms/512x/*
+	include/asm-powerpc/mpc512x.h
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
 ---
- arch/powerpc/sysdev/ipic.c |   62 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 62 insertions(+), 0 deletions(-)
+ arch/powerpc/Kconfig                      |    2 +-
+ arch/powerpc/platforms/512x/Kconfig       |   20 ++++++
+ arch/powerpc/platforms/512x/Makefile      |    4 +
+ arch/powerpc/platforms/512x/mpc5121_ads.c |  103 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig            |    1 +
+ arch/powerpc/platforms/Kconfig.cputype    |    6 +-
+ arch/powerpc/platforms/Makefile           |    1 +
+ include/asm-powerpc/mpc512x.h             |   22 ++++++
+ 8 files changed, 155 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/platforms/512x/Kconfig
+ create mode 100644 arch/powerpc/platforms/512x/Makefile
+ create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.c
+ create mode 100644 include/asm-powerpc/mpc512x.h
 
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index 7274750..4c016da 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -48,6 +48,13 @@ static struct ipic_info ipic_info[] = {
- 		.bit	= 17,
- 		.prio_mask = 1,
- 	},
-+	[3] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 18,
-+		.prio_mask = 2,
-+	},
- 	[4] = {
- 		.mask	= IPIC_SIMSR_H,
- 		.prio	= IPIC_SIPRR_C,
-@@ -55,6 +62,34 @@ static struct ipic_info ipic_info[] = {
- 		.bit	= 19,
- 		.prio_mask = 3,
- 	},
-+	[5] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 20,
-+		.prio_mask = 4,
-+	},
-+	[6] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 21,
-+		.prio_mask = 5,
-+	},
-+	[7] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 22,
-+		.prio_mask = 6,
-+	},
-+	[8] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 23,
-+		.prio_mask = 7,
-+	},
- 	[9] = {
- 		.mask	= IPIC_SIMSR_H,
- 		.prio	= IPIC_SIPRR_D,
-@@ -223,6 +258,20 @@ static struct ipic_info ipic_info[] = {
- 		.bit	= 7,
- 		.prio_mask = 7,
- 	},
-+	[40] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 8,
-+		.prio_mask = 0,
-+	},
-+	[41] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 9,
-+		.prio_mask = 1,
-+	},
- 	[42] = {
- 		.mask	= IPIC_SIMSR_H,
- 		.prio	= IPIC_SIPRR_B,
-@@ -230,6 +279,13 @@ static struct ipic_info ipic_info[] = {
- 		.bit	= 10,
- 		.prio_mask = 2,
- 	},
-+	[43] = {
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 11,
-+		.prio_mask = 3,
-+	},
- 	[44] = {
- 		.mask	= IPIC_SIMSR_H,
- 		.prio	= IPIC_SIPRR_B,
-@@ -387,6 +443,12 @@ static struct ipic_info ipic_info[] = {
- 		.force	= IPIC_SIFCR_L,
- 		.bit	= 18,
- 	},
-+	[83] = {
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 19,
-+	},
- 	[84] = {
- 		.mask	= IPIC_SIMSR_L,
- 		.prio	= 0,
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 66a3d8c..e4efd0c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -470,7 +470,7 @@ config PCI
+ 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
+ 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
+ 		|| PPC_PS3
+-	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
++	default y if !40x && !CPM2 && !8xx && !PPC_MPC512x && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+new file mode 100644
+index 0000000..c6fa49e
+--- /dev/null
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -0,0 +1,20 @@
++config PPC_MPC512x
++	bool
++	select FSL_SOC
++	select IPIC
++	default n
++
++config PPC_MPC5121
++	bool
++	select PPC_MPC512x
++	default n
++
++config MPC5121_ADS
++	bool "Freescale MPC5121E ADS"
++	depends on PPC_MULTIPLATFORM && PPC32
++	select DEFAULT_UIMAGE
++	select WANT_DEVICE_TREE
++	select PPC_MPC5121
++	help
++	  This option enables support for the MPC5121E ADS board.
++	default n
+diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
+new file mode 100644
+index 0000000..232c89f
+--- /dev/null
++++ b/arch/powerpc/platforms/512x/Makefile
+@@ -0,0 +1,4 @@
++#
++# Makefile for the Freescale PowerPC 512x linux kernel.
++#
++obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+new file mode 100644
+index 0000000..c19cbe8
+--- /dev/null
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -0,0 +1,103 @@
++/*
++ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
++ *
++ * Description:
++ * MPC5121 ADS board setup
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/irq.h>
++#include <linux/of_platform.h>
++
++#include <asm/machdep.h>
++#include <asm/ipic.h>
++#include <asm/prom.h>
++#include <asm/time.h>
++
++/**
++ * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
++ * 	@node:	device node
++ *
++ * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
++ */
++unsigned long
++mpc512x_find_ips_freq(struct device_node *node)
++{
++	struct device_node *np;
++	const unsigned int *p_ips_freq = NULL;
++
++	of_node_get(node);
++	while (node) {
++		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
++		if (p_ips_freq)
++			break;
++
++		np = of_get_parent(node);
++		of_node_put(node);
++		node = np;
++	}
++	if (node)
++		of_node_put(node);
++
++	return p_ips_freq ? *p_ips_freq : 0;
++}
++EXPORT_SYMBOL(mpc512x_find_ips_freq);
++
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .name = "soc", },
++	{ .name = "localbus", },
++	{},
++};
++
++static void __init mpc5121_ads_declare_of_platform_devices(void)
++{
++	/* Find every child of the SOC node and add it to of_platform */
++	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
++		printk(KERN_ERR __FILE__ ": "
++			"Error while probing of_platform bus\n");
++}
++
++static void __init mpc5121_ads_init_IRQ(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
++	if (!np)
++		return;
++
++	ipic_init(np, 0);
++
++	/*
++	 * Initialize the default interrupt mapping priorities,
++	 * in case the boot rom changed something on us.
++	 */
++	ipic_set_default_priority();
++}
++
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init mpc5121_ads_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
++}
++
++define_machine(mpc5121_ads) {
++	.name			= "MPC5121 ADS",
++	.probe			= mpc5121_ads_probe,
++	.init			= mpc5121_ads_declare_of_platform_devices,
++	.init_IRQ		= mpc5121_ads_init_IRQ,
++	.get_irq		= ipic_get_irq,
++	.calibrate_decr		= generic_calibrate_decr,
++};
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index ad9b1c0..8dfdf61 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -41,6 +41,7 @@ config CLASSIC32
+ source "arch/powerpc/platforms/pseries/Kconfig"
+ source "arch/powerpc/platforms/iseries/Kconfig"
+ source "arch/powerpc/platforms/chrp/Kconfig"
++source "arch/powerpc/platforms/512x/Kconfig"
+ source "arch/powerpc/platforms/52xx/Kconfig"
+ source "arch/powerpc/platforms/powermac/Kconfig"
+ source "arch/powerpc/platforms/prep/Kconfig"
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index c3ee0b5..fb86300 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -14,7 +14,7 @@ choice
+ 	  There are five families of 32 bit PowerPC chips supported.
+ 	  The most common ones are the desktop and server CPUs (601, 603,
+ 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
+-	  embedded 52xx/82xx/83xx/86xx counterparts.
++	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
+ 	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
+ 	  (85xx) each form a family of their own that is not compatible
+ 	  with the others.
+@@ -22,7 +22,7 @@ choice
+ 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
+ 
+ config 6xx
+-	bool "52xx/6xx/7xx/74xx/82xx/83xx/86xx"
++	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
+ 	select PPC_FPU
+ 
+ config PPC_85xx
+@@ -229,7 +229,7 @@ config NR_CPUS
+ 
+ config NOT_COHERENT_CACHE
+ 	bool
+-	depends on 4xx || 8xx || E200
++	depends on 4xx || 8xx || E200 || PPC_MPC512x
+ 	default y
+ 
+ config CHECK_CACHE_COHERENCY
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index 6d9079d..a984894 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -11,6 +11,7 @@ endif
+ obj-$(CONFIG_PPC_CHRP)		+= chrp/
+ obj-$(CONFIG_40x)		+= 40x/
+ obj-$(CONFIG_44x)		+= 44x/
++obj-$(CONFIG_PPC_MPC512x)	+= 512x/
+ obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
+ obj-$(CONFIG_PPC_8xx)		+= 8xx/
+ obj-$(CONFIG_PPC_82xx)		+= 82xx/
+diff --git a/include/asm-powerpc/mpc512x.h b/include/asm-powerpc/mpc512x.h
+new file mode 100644
+index 0000000..c48a165
+--- /dev/null
++++ b/include/asm-powerpc/mpc512x.h
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: John Rigby, <jrigby@freescale.com>, Friday Apr 13 2007
++ *
++ * Description:
++ * MPC5121 Prototypes and definitions
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ */
++
++#ifndef __ASM_POWERPC_MPC512x_H__
++#define __ASM_POWERPC_MPC512x_H__
++
++extern unsigned long mpc512x_find_ips_freq(struct device_node *node);
++
++#endif /* __ASM_POWERPC_MPC512x_H__ */
++
 -- 
 1.5.3.5.726.g41a7a
