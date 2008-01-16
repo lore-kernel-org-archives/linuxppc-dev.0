@@ -1,12 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 16 Jan 2008 17:20:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: [libfdt] RFC: Node iterators
-Message-ID: <20080116062022.GD5016@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Return-Path: <SRS0=9ZSp=SG=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 31CD8DDE19
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 18:11:11 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
+Subject: [PATCH] net: EMAC: Fix problem with mtu > 4080 on non TAH equipped
+	4xx PPC's
+Date: Wed, 16 Jan 2008 08:10:24 +0100
+Message-Id: <1200467424-1616-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,173 +18,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's my counter-attempt at node iterators for libfdt.  It's based on
-an internal function very similar to Scott's fdt_next_node(), but the
-exported interfaces are altered to be (IMO) safer and simpler.
+Currently, all non TAH equipped 4xx PPC's call emac_start_xmit() upon
+xmit. This routine doesn't check if the frame length exceeds the max.
+MAL buffer size.
 
-So far, it only handles iterating across immediate children of a node,
-not traversing an entire subtree.  I'm still working on extending the
-internals to cover that case.  No property iteration as yet, either.
+This patch now changes the driver to call emac_start_xmit_sg() on all
+GigE platforms and not only the TAH equipped ones (440GX). This enables
+an MTU of 9000 instead 4080.
 
-Index: dtc/libfdt/fdt_ro.c
-===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2008-01-16 15:06:49.000000000 +1100
-+++ dtc/libfdt/fdt_ro.c	2008-01-16 16:27:55.000000000 +1100
-@@ -65,7 +65,7 @@
- static int nodename_eq(const void *fdt, int offset,
- 		       const char *s, int len)
- {
--	const char *p = fdt_offset_ptr(fdt, offset, len+1);
-+	const char *p = fdt_offset_ptr(fdt, offset + FDT_TAGSIZE, len+1);
- 
- 	if (! p)
- 		/* short match */
-@@ -104,50 +104,16 @@ int fdt_num_mem_rsv(const void *fdt)
- 	return i;
+Tested on Kilauea (405EX) with GigE link -> jumbo frames enabled.
+
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ drivers/net/ibm_emac/ibm_emac_core.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
+index 73664f2..8d1901e 100644
+--- a/drivers/net/ibm_emac/ibm_emac_core.c
++++ b/drivers/net/ibm_emac/ibm_emac_core.c
+@@ -1089,7 +1089,6 @@ static int emac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 	return emac_xmit_finish(dev, len);
  }
  
--int fdt_subnode_offset_namelen(const void *fdt, int parentoffset,
-+int fdt_subnode_offset_namelen(const void *fdt, int offset,
- 			       const char *name, int namelen)
+-#if defined(CONFIG_IBM_EMAC_TAH)
+ static inline int emac_xmit_split(struct ocp_enet_private *dev, int slot,
+ 				  u32 pd, int len, int last, u16 base_ctrl)
  {
--	int level = 0;
--	uint32_t tag;
--	int offset, nextoffset;
--
- 	CHECK_HEADER(fdt);
- 
--	tag = fdt_next_tag(fdt, parentoffset, &nextoffset);
--	if (tag != FDT_BEGIN_NODE)
--		return -FDT_ERR_BADOFFSET;
--
--	do {
--		offset = nextoffset;
--		tag = fdt_next_tag(fdt, offset, &nextoffset);
--
--		switch (tag) {
--		case FDT_END:
--			return -FDT_ERR_TRUNCATED;
--
--		case FDT_BEGIN_NODE:
--			level++;
--			if (level != 1)
--				continue;
--			if (nodename_eq(fdt, offset+FDT_TAGSIZE, name, namelen))
--				/* Found it! */
--				return offset;
--			break;
--
--		case FDT_END_NODE:
--			level--;
--			break;
--
--		case FDT_PROP:
--		case FDT_NOP:
--			break;
--
--		default:
--			return -FDT_ERR_BADSTRUCTURE;
--		}
--	} while (level >= 0);
-+	for_each_subnode(fdt, offset)
-+		if (nodename_eq(fdt, offset, name, namelen))
-+			return offset;
- 
--	return -FDT_ERR_NOTFOUND;
-+	return offset;
+@@ -1203,9 +1202,6 @@ static int emac_start_xmit_sg(struct sk_buff *skb, struct net_device *ndev)
+ 	DBG2("%d: stopped TX queue" NL, dev->def->index);
+ 	return 1;
  }
+-#else
+-# define emac_start_xmit_sg	emac_start_xmit
+-#endif	/* !defined(CONFIG_IBM_EMAC_TAH) */
  
- int fdt_subnode_offset(const void *fdt, int parentoffset,
-Index: dtc/libfdt/fdt.c
-===================================================================
---- dtc.orig/libfdt/fdt.c	2008-01-16 16:26:48.000000000 +1100
-+++ dtc/libfdt/fdt.c	2008-01-16 17:03:09.000000000 +1100
-@@ -129,6 +129,58 @@ uint32_t fdt_next_tag(const void *fdt, i
- 	return tag;
- }
+ /* BHs disabled */
+ static void emac_parse_tx_error(struct ocp_enet_private *dev, u16 ctrl)
+@@ -2163,11 +2159,8 @@ static int __init emac_probe(struct ocp_device *ocpdev)
  
-+static int _fdt_next_node(const void *fdt, int offset, int *depth)
-+{
-+	uint32_t tag;
-+	int nextoffset;
-+
-+	tag = fdt_next_tag(fdt, offset, &nextoffset);
-+	if (tag != FDT_BEGIN_NODE)
-+		return -FDT_ERR_BADOFFSET;
-+
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+
-+		switch (tag) {
-+		case FDT_PROP:
-+		case FDT_NOP:
-+			break;
-+
-+		case FDT_BEGIN_NODE:
-+			(*depth)++;
-+			if (*depth == 1)
-+				return offset;
-+			break;
-+
-+		case FDT_END_NODE:
-+			(*depth)--;
-+			break;
-+
-+		case FDT_END:
-+			return -FDT_ERR_TRUNCATED;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (*depth >= 0);
-+
-+	return -FDT_ERR_NOTFOUND;
-+}
-+
-+int _fdt_first_subnode(const void *fdt, int offset)
-+{
-+	int depth = 0;
-+
-+	return _fdt_next_node(fdt, offset, &depth);
-+}
-+
-+int _fdt_next_subnode(const void *fdt, int offset)
-+{
-+	int depth = 1;
-+	return _fdt_next_node(fdt, offset, &depth);
-+}
-+
- const char *_fdt_find_string(const char *strtab, int tabsize, const char *s)
- {
- 	int len = strlen(s) + 1;
-Index: dtc/libfdt/libfdt.h
-===================================================================
---- dtc.orig/libfdt/libfdt.h	2008-01-16 16:27:09.000000000 +1100
-+++ dtc/libfdt/libfdt.h	2008-01-16 17:06:31.000000000 +1100
-@@ -131,6 +131,18 @@ static inline void *fdt_offset_ptr_w(voi
- uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
+ 	/* Fill in the driver function table */
+ 	ndev->open = &emac_open;
+-	if (dev->tah_dev) {
+-		ndev->hard_start_xmit = &emac_start_xmit_sg;
++	if (dev->tah_dev)
+ 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+-	} else
+-		ndev->hard_start_xmit = &emac_start_xmit;
+ 	ndev->tx_timeout = &emac_full_tx_reset;
+ 	ndev->watchdog_timeo = 5 * HZ;
+ 	ndev->stop = &emac_close;
+@@ -2175,8 +2168,11 @@ static int __init emac_probe(struct ocp_device *ocpdev)
+ 	ndev->set_multicast_list = &emac_set_multicast_list;
+ 	ndev->do_ioctl = &emac_ioctl;
+ 	if (emac_phy_supports_gige(emacdata->phy_mode)) {
++		ndev->hard_start_xmit = &emac_start_xmit_sg;
+ 		ndev->change_mtu = &emac_change_mtu;
+ 		dev->commac.ops = &emac_commac_sg_ops;
++	} else {
++		ndev->hard_start_xmit = &emac_start_xmit;
+ 	}
+ 	SET_ETHTOOL_OPS(ndev, &emac_ethtool_ops);
  
- /**********************************************************************/
-+/* Traversal functions                                                */
-+/**********************************************************************/
-+
-+int _fdt_first_subnode(const void *fdt, int offset);
-+int _fdt_next_subnode(const void *fdt, int offset);
-+
-+#define for_each_subnode(fdt, offset) \
-+	for ((offset) = _fdt_first_subnode((fdt), (offset));	\
-+	     (offset) >= 0; \
-+	     (offset) = _fdt_next_subnode((fdt), (offset)))
-+
-+/**********************************************************************/
- /* General functions                                                  */
- /**********************************************************************/
- 
-
-
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.4.rc3
