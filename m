@@ -1,21 +1,18 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 83DFCDDE3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:02:58 +1100 (EST)
-Date: Thu, 17 Jan 2008 10:02:54 +1100
+Date: Thu, 17 Jan 2008 10:27:02 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: John Rigby <jrigby@freescale.com>
-Subject: Re: [Add mpc5121 support PATCH v2 3/8] Basic Freescale MPC512x support
-Message-Id: <20080117100254.b43225c8.sfr@canb.auug.org.au>
-In-Reply-To: <1200519447-25555-3-git-send-email-jrigby@freescale.com>
-References: <1200519447-25555-1-git-send-email-jrigby@freescale.com>
-	<1200519447-25555-2-git-send-email-jrigby@freescale.com>
-	<1200519447-25555-3-git-send-email-jrigby@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 4/4 v2] powerpc: Katana750i - Add platform support
+Message-Id: <20080117102702.5e21fc22.sfr@canb.auug.org.au>
+In-Reply-To: <20080116221210.GC7228@mag.az.mvista.com>
+References: <20080114225150.GB21940@mag.az.mvista.com>
+	<20080114230057.GC22862@mag.az.mvista.com>
+	<20080116221210.GC7228@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN"
-Cc: linuxppc-dev@ozlabs.org
+	boundary="Signature=_Thu__17_Jan_2008_10_27_02_+1100_Y_=tWfl5BTf76tVq"
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN
+--Signature=_Thu__17_Jan_2008_10_27_02_+1100_Y_=tWfl5BTf76tVq
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi John,
+Hi Mark,
 
-On Wed, 16 Jan 2008 14:37:22 -0700 John Rigby <jrigby@freescale.com> wrote:
+On Wed, 16 Jan 2008 15:12:10 -0700 "Mark A. Greer" <mgreer@mvista.com> wrot=
+e:
 >
-> +++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-
-> +static void __init mpc5121_ads_init_IRQ(void)
+> +static void __init katana750i_setup_arch(void)
 > +{
 > +	struct device_node *np;
+> +	phys_addr_t paddr;
+> +	const unsigned int *reg;
 > +
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,ipic");
+> +	np =3D of_find_compatible_node(NULL, NULL, "katana750i,cpld");
 > +	if (!np)
-> +		return;
-> +
-> +	ipic_init(np, 0);
+> +		printk(KERN_WARNING "No CPLD DT node; functionality reduced\n");
+> +	else {
+> +		reg =3D of_get_property(np, "reg", NULL);
+> +		if (!reg)
+> +			printk(KERN_WARNING "No CPLD reg property; "
+> +					"functionality reduced\n");
+> +		else {
+> +			paddr =3D of_translate_address(np, reg);
+> +			of_node_put(np);
+> +			cpld_base =3D ioremap(paddr, reg[1]);
+> +		}
+> +	}
 
-You need an op_node_put(np) here.  ipic_init will do another of_node_get()
-if it keeps a reference to np.
+You need an of_node_put(np) for the !reg case above.  Maybe you should
+just put it after the else clause instead of in it.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN
+--Signature=_Thu__17_Jan_2008_10_27_02_+1100_Y_=tWfl5BTf76tVq
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHjo0iTgG2atn1QN8RAnPRAJ9FqsKf5wT/lWshqIti90CEbzObEQCeOa2I
-JgNLv3qj2vHlb2mkW4mPg0g=
-=UMsg
+iD8DBQFHjpLOTgG2atn1QN8RAuoHAJ4t5OyUyXgkL5+8FVQMd1I2Hy0fnwCfcN3J
+KBA40Gk1To4IFEtrGnYfhf4=
+=lh69
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__17_Jan_2008_10_02_54_+1100_kyqtP_XVr0t/xDyN--
+--Signature=_Thu__17_Jan_2008_10_27_02_+1100_Y_=tWfl5BTf76tVq--
