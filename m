@@ -1,21 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
-	by ozlabs.org (Postfix) with ESMTP id DFD01DDE25
+Return-Path: <Jogi95@web.de>
+Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
+	by ozlabs.org (Postfix) with ESMTP id 416D8DDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jan 2008 01:50:23 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so57905anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 06:50:22 -0800 (PST)
-Message-ID: <fa686aa40801160650u6c5f35d9m325a87bc8482475f@mail.gmail.com>
-Date: Wed, 16 Jan 2008 07:50:22 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Joachim Meyer" <Jogi95@web.de>
-Subject: Re: ml310 kernel2.6 booting problems
-In-Reply-To: <537566320@web.de>
+	Thu, 17 Jan 2008 07:02:36 +1100 (EST)
+Date: Wed, 16 Jan 2008 21:02:31 +0100
+Message-Id: <538215286@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <537566320@web.de>
+From: Joachim Meyer <Jogi95@web.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: ml310 kernel2.6 booting problems
+Content-Type: text/plain; charset=iso-8859-15
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,32 +21,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/16/08, Joachim Meyer <Jogi95@web.de> wrote:
-> Hi
->
-> I made an Ace file with my Kernel and load it with the Flash Card.
-> I made the Initial release CF image on the card and copied my ace file in an folder, from which I boot with the DIP-Switch.
-> If I used
-> "console=ttyUL0 ,9600 root=/dev/xsysace/disc0/part2 rw "
+Thx for the answer
 
-try root=/dev/xsa2
-Also, the ',9600' is unnecessary with the uartlite.
+It's right, there is no /dev/console, but the MontaVista-Linux-kernel can =
+fully boot with this rootFS, how comes=3F
+Doesn't matter, I was going to make my own RootFS anyway, so can you give =
+me an hint how I would
+do this best=3F
+I tried the Klingauf-Script (www.klingauf.com) with busybox, but I still h=
+ave no console in my /dev/ and it doesn't work.
+I tried out buildroot, but I was a little overstrained with the configurat=
+ion and when I did "make" it aborted with an error message
+after a long time of working
+Then I tried ELDK. I read that I could use the Directory "<install-dir>/pp=
+c=5F4xx/" as rootfs but when I go there and look inside=20
+/dev I find only one entry:
+prw------- 1 jogi jogi 0 2007-01-20 04:58 initctl
+So this won't work, would it=3F
 
->
-> I tried to use this:
-> "console=ttyUL0 ,9600 root=fe02 rw"
-> and with this, after making ace-file etc. I get:
-> [   12.862678] EXT3 FS on xsa2, internal journal
-> [   12.899229] EXT3-fs: recovery complete.
-> [   12.982635] EXT3-fs: mounted filesystem with ordered data mode.
-> [   13.038505] VFS: Mounted root (ext3 filesystem).
-> [   13.094113] Freeing unused kernel memory: 96k init
-> [   13.159079] Warning: unable to open an initial console.
+Which way would be the best for me to get an good RootFS easily=3F
+If the answer would be buildroot can you give me a short summary which set=
+tings are importent=3F
+I read I can use my crosstool-Xcompiler, but I couldn't figure out how.=20
 
-You're probably missing the /dev/console device file
+Greetings & Thx
+Joachim
 
-g.
+=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=5F=
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Erweitern Sie FreeMail zu einem noch leistungsst=E4rkeren E-Mail-Postfach!	=09
+Mehr Infos unter http://produkte.web.de/club/=3Fmc=3D021131
