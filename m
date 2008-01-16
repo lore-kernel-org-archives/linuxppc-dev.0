@@ -1,24 +1,15 @@
-Return-Path: <jrigby@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B86CBDDDDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 08:47:25 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m0GLlLef003181
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 14:47:22 -0700 (MST)
-Received: from localhost.localdomain (mvp-10-214-72-34.am.freescale.net
-	[10.214.72.34])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0GLlKUc022001
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 15:47:21 -0600 (CST)
-From: John Rigby <jrigby@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [Add mpc5121 support PATCH v2 0/8] 
-Date: Wed, 16 Jan 2008 14:47:20 -0700
-Message-Id: <1200520040-25741-1-git-send-email-jrigby@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 16 Jan 2008 15:00:05 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: [PATCH 1/4 v2] powerpc: mv64x60 - Use early_* PCI accessors for
+	hotswap reg
+Message-ID: <20080116220005.GA7228@mag.az.mvista.com>
+References: <20080114225150.GB21940@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080114225150.GB21940@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,8 +19,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a new improved set of patches based on the
-comments that I received in response to the previous set.
+From: Mark A. Greer <mgreer@mvista.com>
 
-I believe I addressed all the concerns raised but
-I'm sure there will be new ones.
+The mv64x60 Hotswap register is on the first hose of the mv64x60
+hostbridge.  To access it, manually find the hose structure and
+use the early_* PCI accessor routines because the hostbridge is
+normally hidden.
+
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+This patch should address all of Stephen's comments.
+
+ arch/powerpc/sysdev/mv64x60.h     |    4 ++
+ arch/powerpc/sysdev/mv64x60_pci.c |   46 +++++++++++++++++++++-------
+ 2 files changed, 39 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/mv64x60.h b/arch/powerpc/sysdev/mv64x60.h
+index 4f618fa..51c4293 100644
+--- a/arch/powerpc/sysdev/mv64x60.h
++++ b/arch/powerpc/sysdev/mv64x60.h
+@@ -2,11 +2,15 @@
+ #define __MV64X60_H__
+ 
+ #include <linux/init.h>
++#include <linux/of.h>
++
++#include <asm/pci-bridge.h>
+ 
+ extern void __init mv64x60_init_irq(void);
+ extern unsigned int mv64x60_get_irq(void);
+ 
+ extern void __init mv64x60_pci_init(void);
+ extern void __init mv64x60_init_early(void);
++extern struct pci_controller *mv64x60_find_hose(u32 idx);
+ 
+ #endif /* __MV64X60_H__ */
+diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
+index 1456015..1e6f186 100644
+--- a/arch/powerpc/sysdev/mv64x60_pci.c
++++ b/arch/powerpc/sysdev/mv64x60_pci.c
+@@ -13,10 +13,12 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
++#include <linux/of.h>
+ 
+-#include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ 
++#include <sysdev/mv64x60.h>
++
+ #define PCI_HEADER_TYPE_INVALID		0x7f	/* Invalid PCI header type */
+ 
+ #ifdef CONFIG_SYSFS
+@@ -24,11 +26,31 @@
+ #define MV64X60_VAL_LEN_MAX		11
+ #define MV64X60_PCICFG_CPCI_HOTSWAP	0x68
+ 
++struct pci_controller *mv64x60_find_hose(u32 idx)
++{
++	struct device_node *phb;
++	struct pci_controller *hose;
++	const u32 *prop;
++	int len;
++
++	for_each_compatible_node(phb, "pci", "marvell,mv64360-pci") {
++		prop = of_get_property(phb, "cell-index", &len);
++		if (prop && (len == sizeof(prop)) && (*prop == idx)) {
++			hose = pci_find_hose_for_OF_device(phb);
++			of_node_put(phb);
++			return hose;
++		}
++	}
++
++	return NULL;
++}
++
++/* cPCI Hotswap register only supported on PCI 0 interface */
+ static ssize_t mv64x60_hs_reg_read(struct kobject *kobj,
+ 				   struct bin_attribute *attr, char *buf,
+ 				   loff_t off, size_t count)
+ {
+-	struct pci_dev *phb;
++	struct pci_controller *hose;
+ 	u32 v;
+ 
+ 	if (off > 0)
+@@ -36,11 +58,12 @@ static ssize_t mv64x60_hs_reg_read(struct kobject *kobj,
+ 	if (count < MV64X60_VAL_LEN_MAX)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+-	if (!phb)
++	hose = mv64x60_find_hose(0);
++	if (!hose)
+ 		return -ENODEV;
+-	pci_read_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+-	pci_dev_put(phb);
++
++	early_read_config_dword(hose, 0, PCI_DEVFN(0, 0),
++			MV64X60_PCICFG_CPCI_HOTSWAP, &v);
+ 
+ 	return sprintf(buf, "0x%08x\n", v);
+ }
+@@ -49,7 +72,7 @@ static ssize_t mv64x60_hs_reg_write(struct kobject *kobj,
+ 				    struct bin_attribute *attr, char *buf,
+ 				    loff_t off, size_t count)
+ {
+-	struct pci_dev *phb;
++	struct pci_controller *hose;
+ 	u32 v;
+ 
+ 	if (off > 0)
+@@ -60,11 +83,12 @@ static ssize_t mv64x60_hs_reg_write(struct kobject *kobj,
+ 	if (sscanf(buf, "%i", &v) != 1)
+ 		return -EINVAL;
+ 
+-	phb = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+-	if (!phb)
++	hose = mv64x60_find_hose(0);
++	if (!hose)
+ 		return -ENODEV;
+-	pci_write_config_dword(phb, MV64X60_PCICFG_CPCI_HOTSWAP, v);
+-	pci_dev_put(phb);
++
++	early_write_config_dword(hose, 0, PCI_DEVFN(0, 0),
++			MV64X60_PCICFG_CPCI_HOTSWAP, v);
+ 
+ 	return count;
+ }
