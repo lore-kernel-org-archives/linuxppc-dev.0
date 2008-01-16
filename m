@@ -1,32 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E5CFCDDE35
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 02:03:06 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0GF2vvd020419
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 10:02:57 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0GF2kRV1097782
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 10:02:47 -0500
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0GF2iwF003364
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 08:02:45 -0700
-Date: Wed, 16 Jan 2008 09:01:10 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii
-	matching table
-Message-ID: <20080116090110.1b7b2f00@zod.rchland.ibm.com>
-In-Reply-To: <1200477239.6755.21.camel@pasglop>
-References: <1200476230-14026-1-git-send-email-sr@denx.de>
-	<1200477239.6755.21.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, netdev@vger.kernel.org
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id D3F00DDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 03:50:55 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8585F.F53552E7"
+Subject: Fixed phy
+Date: Wed, 16 Jan 2008 10:50:53 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D3@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,24 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 16 Jan 2008 20:53:59 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+This is a multi-part message in MIME format.
 
-> 
-> On Wed, 2008-01-16 at 10:37 +0100, Stefan Roese wrote:
-> > With the removal the the "rgmii-interface" device_type property from the
-> > dts files, the newemac driver needs an update to only rely on compatible
-> > property.
-> > 
-> > Signed-off-by: Stefan Roese <sr@denx.de>
-> 
-> I need to test if it works on CAB, can't change the DT on those. I'll
-> let you know tomorrow.
+------_=_NextPart_001_01C8585F.F53552E7
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-This should be fine on CAB.  The rgmii node has:
 
-compatible = "ibm,rgmii-axon", "ibm,rgmii"
+Hi
+We're doing a port to 2.6.24-rc7, and we need to set up two ethernets =
+with fixed phy's as they have phyless interfaces to a switch.
+WE cannot find any good examples on how to do this. We've found the =
+fixed speed PHY emulation in the configuration, but are unsure on how to =
+set the PHY's up in the device tree.
 
-so the match should still catch on the latter.
+This is using a 8280 cpu and ethernet on the FCC's
 
-josh
+------_=_NextPart_001_01C8585F.F53552E7
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>Fixed phy</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+
+<P><FONT SIZE=3D2>Hi<BR>
+We're doing a port to 2.6.24-rc7, and we need to set up two ethernets =
+with fixed phy's as they have phyless interfaces to a switch.<BR>
+WE cannot find any good examples on how to do this. We've found the =
+fixed speed PHY emulation in the configuration, but are unsure on how to =
+set the PHY's up in the device tree.<BR>
+<BR>
+This is using a 8280 cpu and ethernet on the FCC's<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C8585F.F53552E7--
