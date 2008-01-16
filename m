@@ -1,15 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <SRS0=9ZSp=SG=denx.de=sr@srs.kundenserver.de>
+From: Stefan Roese <sr@denx.de>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 2/2] [POWERPC] 4xx: Add AMCC Haleakala (405EXr) dts
+Date: Wed, 16 Jan 2008 06:04:56 +0100
+References: <1200380965-10245-1-git-send-email-sr@denx.de>
+	<20080116004642.GD4283@localhost.localdomain>
+In-Reply-To: <20080116004642.GD4283@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18317.34394.863315.83309@cargo.ozlabs.ibm.com>
-Date: Wed, 16 Jan 2008 15:21:46 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 3/8] pseries: phyp dump: reserve-release proof-of-concept
-In-Reply-To: <4782C2FB.7020105@austin.ibm.com>
-References: <4782B985.2090508@austin.ibm.com> <4782C2FB.7020105@austin.ibm.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	lkessler@us.ibm.com, strosake@us.ibm.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801160604.56766.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +20,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Manish Ahuja writes:
+On Wednesday 16 January 2008, David Gibson wrote:
+> On Tue, Jan 15, 2008 at 08:09:25AM +0100, Stefan Roese wrote:
+> > The patch adds the Haleakala dts. The Haleakala is a stripped down
+> > version of the Kilauea (405EX) with only one EMAC and only one PCIe
+> > interface.
+>
+> [snip]
+>
+> > +			IIC0: i2c@ef600400 {
+> > +				device_type = "i2c";
+>
+> No device_type here.
 
-> Initial patch for reserving memory in early boot, and freeing it later.
-> If the previous boot had ended with a crash, the reserved memory would contain
-> a copy of the crashed kernel data.
+Ok.
 
-The main problem I see here is that if this option is turned on, the
-kernel now has only 256MB of memory from early boot until
-subsys_initcalls are done -- on any machine, and whether or not there
-is actually a dump.  That means, for instance, that a machine running
-bare-metal (such as a G5) might not be able to allocate the hash table
-for the MMU.  Also, any allocations made during that time won't be
-able to be node-local.
+> > +				compatible = "ibm,iic-405exr", "ibm,iic";
+> > +				reg = <ef600400 14>;
+> > +				interrupt-parent = <&UIC0>;
+> > +				interrupts = <2 4>;
+> > +			};
+> > +
+> > +			IIC1: i2c@ef600500 {
+> > +				device_type = "i2c";
+>
+> Or here.
 
-So it will be necessary to read the flattened device tree early on to
-see whether or not there is a dump, so that we don't reserve most of
-memory in the cases where there isn't a dump.
+Ok.
 
-Paul.
+> > +				compatible = "ibm,iic-405exr", "ibm,iic";
+> > +				reg = <ef600500 14>;
+> > +				interrupt-parent = <&UIC0>;
+> > +				interrupts = <7 4>;
+> > +			};
+> > +
+> > +
+> > +			RGMII0: emac-rgmii@ef600b00 {
+> > +				device_type = "rgmii-interface";
+>
+> And especially not here.
+
+Ok.
+
+Your comments are valid for some of the other 4xx dts files too. Should I 
+create a patch that removes these device-types there too?
+
+> > +				compatible = "ibm,rgmii-405exr", "ibm,rgmii";
+> > +				reg = <ef600b00 104>;
+> > +				has-mdio;
+> > +			};
+>
+> [snip]
+>
+> > +		PCIE0: pciex@0a0000000 {
+> > +			device_type = "pci";
+> > +			#interrupt-cells = <1>;
+> > +			#size-cells = <2>;
+> > +			#address-cells = <3>;
+> > +			compatible = "ibm,plb-pciex-405exr", "ibm,plb-pciex";
+> > +			primary;
+> > +			port = <0>; /* port number */
+> > +			reg = <a0000000 20000000	/* Config space access */
+> > +			       ef000000 00001000>;	/* Registers */
+> > +			dcr-reg = <040 020>;
+> > +			sdr-base = <400>;
+>
+> Oh, for crying out loud.  They put dcrs on the bridge as well as MMIO
+> registers. *facepalm*
+
+Yep. PCIe on 4xx has DCR, SDR *and* MMIO registers.
+
+Best regards,
+Stefan
