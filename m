@@ -1,12 +1,13 @@
 Return-Path: <SRS0=9ZSp=SG=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 5305EDDE3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 18:25:35 +1100 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 80F0CDDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 20:00:57 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] [POWERPC] 4xx: Add AMCC Haleakala (405EXr) dts
-Date: Wed, 16 Jan 2008 08:24:52 +0100
-Message-Id: <1200468292-2481-1-git-send-email-sr@denx.de>
+Subject: [PATCH] [POWERPC] 4xx: Remove "i2c" and "xxmii-interface"
+	device_types from dts
+Date: Wed, 16 Jan 2008 10:00:00 +0100
+Message-Id: <1200474000-5630-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,295 +17,246 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch adds the Haleakala dts. The Haleakala is a stripped down
-version of the Kilauea (405EX) with only one EMAC and only one PCIe
-interface.
+Remove all "i2c" and "xxmii-interface" (rgmii etc) device_type entries
+from the 4xx dts files.
 
 Signed-off-by: Stefan Roese <sr@denx.de>
 ---
- arch/powerpc/boot/dts/haleakala.dts |  274 +++++++++++++++++++++++++++++++++++
- 1 files changed, 274 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/haleakala.dts
+ arch/powerpc/boot/dts/bamboo.dts  |    3 ---
+ arch/powerpc/boot/dts/ebony.dts   |    2 --
+ arch/powerpc/boot/dts/katmai.dts  |    2 --
+ arch/powerpc/boot/dts/kilauea.dts |    3 ---
+ arch/powerpc/boot/dts/makalu.dts  |    3 ---
+ arch/powerpc/boot/dts/rainier.dts |    4 ----
+ arch/powerpc/boot/dts/sequoia.dts |    4 ----
+ arch/powerpc/boot/dts/taishan.dts |    4 ----
+ 8 files changed, 0 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-new file mode 100644
-index 0000000..5dd3d15
---- /dev/null
-+++ b/arch/powerpc/boot/dts/haleakala.dts
-@@ -0,0 +1,274 @@
-+/*
-+ * Device Tree Source for AMCC Haleakala (405EXr)
-+ *
-+ * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ */
-+
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	model = "amcc,haleakala";
-+	compatible = "amcc,kilauea";
-+	dcr-parent = <&/cpus/cpu@0>;
-+
-+	aliases {
-+		ethernet0 = &EMAC0;
-+		serial0 = &UART0;
-+		serial1 = &UART1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,405EXr";
-+			reg = <0>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+			timebase-frequency = <0>; /* Filled in by U-Boot */
-+			i-cache-line-size = <20>;
-+			d-cache-line-size = <20>;
-+			i-cache-size = <4000>; /* 16 kB */
-+			d-cache-size = <4000>; /* 16 kB */
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0>; /* Filled in by U-Boot */
-+	};
-+
-+	UIC0: interrupt-controller {
-+		compatible = "ibm,uic-405exr", "ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0c0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
-+
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-405exr","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0d0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1e 4 1f 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-405exr","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0e0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1c 4 1d 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-405exr", "ibm,plb4";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+		SDRAM0: memory-controller {
-+			compatible = "ibm,sdram-405exr";
-+			dcr-reg = <010 2>;
-+		};
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-405exr", "ibm,mcmal2";
-+			dcr-reg = <180 62>;
-+			num-tx-chans = <2>;
-+			num-rx-chans = <2>;
-+			interrupt-parent = <&MAL0>;
-+			interrupts = <0 1 2 3 4>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-+					/*RXEOB*/ 1 &UIC0 b 4
-+					/*SERR*/  2 &UIC1 0 4
-+					/*TXDE*/  3 &UIC1 1 4
-+					/*RXDE*/  4 &UIC1 2 4>;
-+			interrupt-map-mask = <ffffffff>;
-+		};
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-405exr", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <80000000 80000000 10000000
-+				  ef600000 ef600000 a00000
-+				  f0000000 f0000000 10000000>;
-+			dcr-reg = <0a0 5>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-405exr", "ibm,ebc";
-+				dcr-reg = <012 2>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				/* ranges property is supplied by U-Boot */
-+				interrupts = <5 1>;
-+				interrupt-parent = <&UIC1>;
-+
-+				nor_flash@0,0 {
-+					compatible = "amd,s29gl512n", "cfi-flash";
-+					bank-width = <2>;
-+					reg = <0 000000 4000000>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					partition@0 {
-+						label = "kernel";
-+						reg = <0 200000>;
-+					};
-+					partition@200000 {
-+						label = "root";
-+						reg = <200000 200000>;
-+					};
-+					partition@400000 {
-+						label = "user";
-+						reg = <400000 3b60000>;
-+					};
-+					partition@3f60000 {
-+						label = "env";
-+						reg = <3f60000 40000>;
-+					};
-+					partition@3fa0000 {
-+						label = "u-boot";
-+						reg = <3fa0000 60000>;
-+					};
-+				};
-+			};
-+
-+			UART0: serial@ef600200 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600200 8>;
-+				virtual-reg = <ef600200>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <1a 4>;
-+			};
-+
-+			UART1: serial@ef600300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600300 8>;
-+				virtual-reg = <ef600300>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <1 4>;
-+			};
-+
-+			IIC0: i2c@ef600400 {
-+				compatible = "ibm,iic-405exr", "ibm,iic";
-+				reg = <ef600400 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <2 4>;
-+			};
-+
-+			IIC1: i2c@ef600500 {
-+				compatible = "ibm,iic-405exr", "ibm,iic";
-+				reg = <ef600500 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <7 4>;
-+			};
-+
-+
-+			RGMII0: emac-rgmii@ef600b00 {
-+				compatible = "ibm,rgmii-405exr", "ibm,rgmii";
-+				reg = <ef600b00 104>;
-+				has-mdio;
-+			};
-+
-+			EMAC0: ethernet@ef600900 {
-+				linux,network-index = <0>;
-+				device_type = "network";
-+				compatible = "ibm,emac-405exr", "ibm,emac4";
-+				interrupt-parent = <&EMAC0>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC0 18 4
-+						/*Wake*/  1 &UIC1 1d 4>;
-+				reg = <ef600900 70>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rgmii";
-+				phy-map = <00000000>;
-+				rgmii-device = <&RGMII0>;
-+				rgmii-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+		};
-+
-+		PCIE0: pciex@0a0000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-405exr", "ibm,plb-pciex";
-+			primary;
-+			port = <0>; /* port number */
-+			reg = <a0000000 20000000	/* Config space access */
-+			       ef000000 00001000>;	/* Registers */
-+			dcr-reg = <040 020>;
-+			sdr-base = <400>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 90000000 0 08000000
-+				  01000000 0 00000000 e0000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 80000000>;
-+
-+			/* This drives busses 0x00 to 0x3f */
-+			bus-range = <00 3f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC2 0 4 /* swizzled int A */
-+				0000 0 0 2 &UIC2 1 4 /* swizzled int B */
-+				0000 0 0 3 &UIC2 2 4 /* swizzled int C */
-+				0000 0 0 4 &UIC2 3 4 /* swizzled int D */>;
-+		};
-+	};
-+};
+diff --git a/arch/powerpc/boot/dts/bamboo.dts b/arch/powerpc/boot/dts/bamboo.dts
+index 29f1a6f..7dc37c9 100644
+--- a/arch/powerpc/boot/dts/bamboo.dts
++++ b/arch/powerpc/boot/dts/bamboo.dts
+@@ -185,7 +185,6 @@
+ 	   		};
+ 
+ 			IIC0: i2c@ef600700 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
+ 				reg = <ef600700 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -193,7 +192,6 @@
+ 			};
+ 
+ 			IIC1: i2c@ef600800 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
+ 				reg = <ef600800 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -201,7 +199,6 @@
+ 			};
+ 
+ 			ZMII0: emac-zmii@ef600d00 {
+-				device_type = "zmii-interface";
+ 				compatible = "ibm,zmii-440ep", "ibm,zmii-440gp", "ibm,zmii";
+ 				reg = <ef600d00 c>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/ebony.dts b/arch/powerpc/boot/dts/ebony.dts
+index f8790c4..106ef37 100644
+--- a/arch/powerpc/boot/dts/ebony.dts
++++ b/arch/powerpc/boot/dts/ebony.dts
+@@ -215,7 +215,6 @@
+ 
+ 			IIC0: i2c@40000400 {
+ 				/* FIXME */
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440gp", "ibm,iic";
+ 				reg = <40000400 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -223,7 +222,6 @@
+ 			};
+ 			IIC1: i2c@40000500 {
+ 				/* FIXME */
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440gp", "ibm,iic";
+ 				reg = <40000500 14>;
+ 				interrupt-parent = <&UIC0>;
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index 9bdfc0f..bc32ac7 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -187,7 +187,6 @@
+ 	   		};
+ 
+ 			IIC0: i2c@10000400 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440spe", "ibm,iic-440gp", "ibm,iic";
+ 				reg = <10000400 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -195,7 +194,6 @@
+ 			};
+ 
+ 			IIC1: i2c@10000500 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440spe", "ibm,iic-440gp", "ibm,iic";
+ 				reg = <10000500 14>;
+ 				interrupt-parent = <&UIC0>;
+diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+index 67c7ea1..8baef61 100644
+--- a/arch/powerpc/boot/dts/kilauea.dts
++++ b/arch/powerpc/boot/dts/kilauea.dts
+@@ -182,7 +182,6 @@
+ 			};
+ 
+ 			IIC0: i2c@ef600400 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-405ex", "ibm,iic";
+ 				reg = <ef600400 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -190,7 +189,6 @@
+ 			};
+ 
+ 			IIC1: i2c@ef600500 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-405ex", "ibm,iic";
+ 				reg = <ef600500 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -199,7 +197,6 @@
+ 
+ 
+ 			RGMII0: emac-rgmii@ef600b00 {
+-				device_type = "rgmii-interface";
+ 				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+ 				reg = <ef600b00 104>;
+ 				has-mdio;
+diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
+index bdd70e4..710c011 100644
+--- a/arch/powerpc/boot/dts/makalu.dts
++++ b/arch/powerpc/boot/dts/makalu.dts
+@@ -182,7 +182,6 @@
+ 			};
+ 
+ 			IIC0: i2c@ef600400 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-405ex", "ibm,iic";
+ 				reg = <ef600400 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -190,7 +189,6 @@
+ 			};
+ 
+ 			IIC1: i2c@ef600500 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-405ex", "ibm,iic";
+ 				reg = <ef600500 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -199,7 +197,6 @@
+ 
+ 
+ 			RGMII0: emac-rgmii@ef600b00 {
+-				device_type = "rgmii-interface";
+ 				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+ 				reg = <ef600b00 104>;
+ 				has-mdio;
+diff --git a/arch/powerpc/boot/dts/rainier.dts b/arch/powerpc/boot/dts/rainier.dts
+index d3c2ac3..f947c75 100644
+--- a/arch/powerpc/boot/dts/rainier.dts
++++ b/arch/powerpc/boot/dts/rainier.dts
+@@ -229,7 +229,6 @@
+ 	   		};
+ 
+ 			IIC0: i2c@ef600700 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440grx", "ibm,iic";
+ 				reg = <ef600700 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -237,7 +236,6 @@
+ 			};
+ 
+ 			IIC1: i2c@ef600800 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440grx", "ibm,iic";
+ 				reg = <ef600800 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -245,13 +243,11 @@
+ 			};
+ 
+ 			ZMII0: emac-zmii@ef600d00 {
+-				device_type = "zmii-interface";
+ 				compatible = "ibm,zmii-440grx", "ibm,zmii";
+ 				reg = <ef600d00 c>;
+ 			};
+ 
+ 			RGMII0: emac-rgmii@ef601000 {
+-				device_type = "rgmii-interface";
+ 				compatible = "ibm,rgmii-440grx", "ibm,rgmii";
+ 				reg = <ef601000 8>;
+ 				has-mdio;
+diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
+index d9046c1..276f596 100644
+--- a/arch/powerpc/boot/dts/sequoia.dts
++++ b/arch/powerpc/boot/dts/sequoia.dts
+@@ -236,7 +236,6 @@
+ 	   		};
+ 
+ 			IIC0: i2c@ef600700 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440epx", "ibm,iic";
+ 				reg = <ef600700 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -244,7 +243,6 @@
+ 			};
+ 
+ 			IIC1: i2c@ef600800 {
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440epx", "ibm,iic";
+ 				reg = <ef600800 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -252,13 +250,11 @@
+ 			};
+ 
+ 			ZMII0: emac-zmii@ef600d00 {
+-				device_type = "zmii-interface";
+ 				compatible = "ibm,zmii-440epx", "ibm,zmii";
+ 				reg = <ef600d00 c>;
+ 			};
+ 
+ 			RGMII0: emac-rgmii@ef601000 {
+-				device_type = "rgmii-interface";
+ 				compatible = "ibm,rgmii-440epx", "ibm,rgmii";
+ 				reg = <ef601000 8>;
+ 				has-mdio;
+diff --git a/arch/powerpc/boot/dts/taishan.dts b/arch/powerpc/boot/dts/taishan.dts
+index 0706a4a..8278068 100644
+--- a/arch/powerpc/boot/dts/taishan.dts
++++ b/arch/powerpc/boot/dts/taishan.dts
+@@ -203,7 +203,6 @@
+ 
+ 			IIC0: i2c@40000400 {
+ 				/* FIXME */
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440gp", "ibm,iic";
+ 				reg = <40000400 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -211,7 +210,6 @@
+ 			};
+ 			IIC1: i2c@40000500 {
+ 				/* FIXME */
+-				device_type = "i2c";
+ 				compatible = "ibm,iic-440gp", "ibm,iic";
+ 				reg = <40000500 14>;
+ 				interrupt-parent = <&UIC0>;
+@@ -225,13 +223,11 @@
+ 			};
+ 
+ 			ZMII0: emac-zmii@40000780 {
+-				device_type = "zgmii-interface";
+ 				compatible = "ibm,zmii-440gx", "ibm,zmii";
+ 				reg = <40000780 c>;
+ 			};
+ 
+ 			RGMII0: emac-rgmii@40000790 {
+-				device_type = "rgmii-interface";
+ 				compatible = "ibm,rgmii";
+ 				reg = <40000790 8>;
+ 			};
 -- 
 1.5.4.rc3
