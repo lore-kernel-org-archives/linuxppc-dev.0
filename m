@@ -1,18 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 191E8DDE2A
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 05:56:01 +1100 (EST)
-Date: Thu, 17 Jan 2008 13:06:39 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc8-mm1 powerpc build errors
-Message-ID: <20080117190639.GA9499@lixom.net>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 5434ADDEF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 05:58:56 +1100 (EST)
+Date: Thu, 17 Jan 2008 10:58:53 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080117181222.GA24411@aepfle.de>
+Message-ID: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+References: <20080115150949.GA14089@aepfle.de>
+	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+	<20080117181222.GA24411@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, raisch@de.ibm.com, jgarzik@pobox.com,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 17 Jan 2008, Olaf Hering wrote:
 
-My powerpc build-all-defconfigs script found the following:
+> The patch does not help.
 
-mpc837x_mds_defconfig. Brokage looks like it came from libata's
-for_each_sg() patch.
+Duh. We need to know more about the problem.
 
-drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
-drivers/ata/sata_fsl.c:337: error: redeclaration of 'si' with no linkage
-drivers/ata/sata_fsl.c:326: error: previous declaration of 'si' was here
+> > --- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
+> > +++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
+> > @@ -2977,7 +2977,10 @@ retry:
+> >  	}
+> >  	l3 = cachep->nodelists[node];
+> >  
+> > -	BUG_ON(ac->avail > 0 || !l3);
+> > +	if (!l3)
+> > +		return NULL;
+> > +
+> > +	BUG_ON(ac->avail > 0);
+> >  	spin_lock(&l3->list_lock);
+> >  
+> >  	/* See if we can refill from the shared array */
+> 
+> Is this hsupposed to go into cache_grow()? There is no NULL check
+> for l3.
 
-powerpc_allyesconfig:
+No its for cache_alloc_refill. cache_grow should only be called for
+nodes that have memory. l3 is always used before cache_grow is called.
 
-drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
-drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has no member named 'kobj'
-drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has no member named 'kobj'
-drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has no member named 'kobj'
-drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
-drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has no member named 'kobj'
+> freeing bootmem node 1
+> Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
+> cache_grow(2781) swapper(0):c0,j4294937299 cp c0000000006a4fb8 !l3
 
-
--Olof
+Is there more backtrace information? What function called cache_grow?
