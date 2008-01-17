@@ -1,23 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D7411DDE9C
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 08:56:23 +1100 (EST)
-Date: Thu, 17 Jan 2008 14:00:07 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc8-mm1 powerpc build errors
-Message-ID: <20080117220007.GB12952@kroah.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<20080117190639.GA9499@lixom.net>
-	<20080117113523.d802f991.akpm@linux-foundation.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AB206DDE46
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 09:02:26 +1100 (EST)
+Message-ID: <478FD066.5000803@freescale.com>
+Date: Thu, 17 Jan 2008 16:02:14 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080117113523.d802f991.akpm@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	Olof Johansson <olof@lixom.net>, jgarzik@pobox.com
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: Problems with PCI on 8280
+References: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, 2008 at 11:35:23AM -0800, Andrew Morton wrote:
-> On Thu, 17 Jan 2008 13:06:39 -0600 Olof Johansson <olof@lixom.net> wrote:
-> > powerpc_allyesconfig:
-> > 
-> > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
-> > drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has no member named 'kobj'
-> > drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has no member named 'kobj'
-> > drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has no member named 'kobj'
-> > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
-> > drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has no member named 'kobj'
+Rune Torgersen wrote:
+> Our problem is that we can only access the first 128MB of the 
+> prefetchable area.
+> an access to 0x87ff_ffff works (after ioremap), while an access to 
+> 0x8800_0000 causes an bus error.
 > 
-> Looks like the driver tree wrecking ball failed to visit that driver.
+> trying to access 0x87FFFFFC -> 0x00000000
+> trying to access 0x88000000 ->Machine check in kernel mode.
+> Caused by (from SRR1=49030): Transfer error ack signal
+> 
+> It is like the prefetch area is not set up correctly for ioremap.
+> 
+> The PCI registers are set up correctly in u-boot, and we can access the 
+> whole prefetch area in u-boot without any problems.
 
-Crap, I thought I fixed that one, but the patch never made it out...
-I'll fix that tomorrow, sorry about that.
+Are you using cuImage, or a regular uImage with a device-tree-aware 
+u-boot?  If the former, try commenting out the call to fixup_pci() in 
+arch/powerpc/boot/cuboot-pq2.c and let me know if that changes anything.
 
-greg k-h
+Otherwise, are you sure the kernel didn't move BARs around such that 
+there's no longer a PCI device mapped at 0x88000000 (or that the device 
+that is there has been disabled)?
+
+Can you show the contents of the following big endian registers:
+TESCR1 (0x10040), TESCR2 (0x10044), PCIBRx (0x101ac, 0x101b0), and 
+PCIMSKx (0x101c4, 0x101c8)
+
+and the following little endian registers:
+POTARx (0x10800, 0x10818, 0x10830), POBARx (0x10808, 0x10820, 0x10838), 
+POCMRx (0x10810, 0x10828, 0x10840), POESR (0x10084), PCI_EACR (0x10890), 
+and PCI_ECCR (0x108a0)
+
+after the machine check happens?
+
+-Scott
