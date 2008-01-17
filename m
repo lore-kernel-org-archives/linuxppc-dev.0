@@ -1,22 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6302DDEBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 02:12:17 +1100 (EST)
-Message-Id: <9E91DB29-BBB8-4CC9-8F6D-71306329D7A5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-In-Reply-To: <478F6C5F.4010505@scram.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH/RFCv2] wdt: Add support for PowerQUICC watchdog
-Date: Thu, 17 Jan 2008 09:11:57 -0600
-References: <478F4E4A.4060907@scram.de>
-	<A00FB5AE-903B-461A-B234-4BA817B3C5CB@kernel.crashing.org>
-	<478F6C5F.4010505@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	wim@iguana.be, linux-kernel@vger.kernel.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3BF0EDDED1
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 02:26:39 +1100 (EST)
+Date: Thu, 17 Jan 2008 18:34:55 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Patches added to master/for-2.6.25 branch of powerpc.git
+Message-ID: <20080117153455.GA21766@localhost.localdomain>
+References: <18318.56299.476711.644917@cargo.ozlabs.ibm.com>
+	<20080117145903.GA4535@localhost.localdomain>
+	<A1DA2145-E5AE-4A7D-83D4-D86F05A9F6DF@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <A1DA2145-E5AE-4A7D-83D4-D86F05A9F6DF@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jan 17, 2008 at 09:11:00AM -0600, Kumar Gala wrote:
+> 
+> On Jan 17, 2008, at 8:59 AM, Anton Vorontsov wrote:
+> 
+> >Hello Paul, Kumar,
+> >
+> >On Thu, Jan 17, 2008 at 03:39:07PM +1100, Paul Mackerras wrote:
+> >>Includes commits pulled from Josh Boyer's tree.
+> >
+> >Um.. Probably I'm being importunate.. if so, just command me to sit
+> >silent and wait. ;-) But how about these down here? Ones that touches
+> >drivers/net/ are having "Acked-by: Jeff Garzik <jeff@garzik.org>"
+> >thus meant to go through one of powerpc tree. Not sure through which
+> >one exactly.
+> >
+> >http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047777.html
+> >http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047778.html
+> >http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047779.html
+> >
+> >^^ are mandatory to make MPC8349E-mITX's ENET1-ENET5 actually work.
+> >Plus, as you may notice all of them having "777" in the message id,
+> >they ought to be lucky, despite that today they're applying with
+> >fuzz. :-)
+> 
+> I've got these in my queue to apply.
 
-On Jan 17, 2008, at 8:55 AM, Jochen Friedrich wrote:
+Great, good to know. Thanks.
 
-> Hi Kumar,
->
->> Why are you commenting on mpc83xx_wdt with respect to pq1_wdt?
->> Also, is this driver just for PQ1 platforms or PQ1 & PQ2?  If its  
->> just pq1 we should probably call it pq1_wdt*
->
-> It should be for pq1, pq2 and pq2pro. However, i only have the  
-> possibility
-> to test this on pq1.
->
->>> arch/powerpc/platforms/8xx/mpc86xads_setup.c |    5 +
->>> arch/powerpc/platforms/8xx/mpc885ads_setup.c |    5 +
->>> arch/powerpc/sysdev/Makefile                 |    3 +
->>> arch/powerpc/sysdev/pq_wdt.c                 |  203 +++++++++++++++ 
->>> ++++++++
->>> arch/powerpc/sysdev/pq_wdt.h                 |   28 ++++
->>> drivers/watchdog/Kconfig                     |   13 ++-
->>> drivers/watchdog/Makefile                    |    1 +
->>> drivers/watchdog/pq_wdt.c                    |  225 +++++++++++++++ 
->>> +++++++++++
->>> 8 files changed, 482 insertions(+), 1 deletions(-)
->>> create mode 100644 arch/powerpc/sysdev/pq_wdt.c
->>> create mode 100644 arch/powerpc/sysdev/pq_wdt.h
->>> create mode 100644 drivers/watchdog/pq_wdt.c
->> What are the bits in sysdev/pq_wdt.{c,h}.  Why aren't these just in  
->> drivers/watchdog?
->
-> These are the parts needed to boot a device with activated watchdog.  
-> If a bootloader like u-boot activates the watchdog, it can't be  
-> deactivated again
-> and needs to be reset at regular intervals. This is done using a  
-> kernel timer.
-> The driver in drivers/watchdog disables the timer as soon as the wdt  
-> device
-> is opened.
+> If I have issues I'll ping you for a respin.
 
-Ok, but is there a need for these bits to be in sysdev vs just being  
-in the driver and calling into it.
+Sure thing.
 
-- k
+> >http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048473.html
+> >
+> >^^ fixed phy support for fs_enet. Needed for some other boards, I
+> >presume.
+> 
+> Hmm, its vitaly picking this one up?  if not I can.
+
+Ah, right. I just forgot that Vitaly resumed his tree.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
