@@ -1,20 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id C95CDDDDF2
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 09:36:20 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH 2/7] powerpc: allow localbus compatible serial ports for
-	console device
-Date: Thu, 17 Jan 2008 23:35:48 +0100
-References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
-	<200801071704.23151.arnd@arndb.de>
-	<20080117220357.GC4122@windriver.com>
-In-Reply-To: <20080117220357.GC4122@windriver.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BF78DDE192
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 09:37:31 +1100 (EST)
+Date: Thu, 17 Jan 2008 16:37:51 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH 1/3] mpc8313erdb: Add NAND to device tree, and call
+	of_platform_bus_probe().
+Message-ID: <20080117223750.GA20697@loki.buserror.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801172335.48817.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,40 +24,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 17 January 2008, Paul Gortmaker wrote:
-> +struct serial_parent {
-> +=A0=A0=A0=A0=A0=A0=A0char *type;
-> +=A0=A0=A0=A0=A0=A0=A0char *compat;
-> +};
-> +
-> +static struct __init serial_parent parents[] =3D {
-> +=A0=A0=A0=A0=A0=A0=A0{"soc", NULL},
-> +=A0=A0=A0=A0=A0=A0=A0{"tsi-bridge", NULL},
-> +=A0=A0=A0=A0=A0=A0=A0{"opb", "ibm,opb"},
-> +=A0=A0=A0=A0=A0=A0=A0{NULL, "wrs,epld-localbus"},
-> +};
-> +
-> +#define NUM_PARENTS sizeof(parents)/sizeof(struct serial_parent)
-<snip>
-> +       for (sp =3D parents; sp !=3D end; sp++) {
-> +               for_each_compatible_node(np, "serial", "ns16550") {
-> +                       struct device_node *parent =3D of_get_parent(np);
-> +                       int p_type_ok =3D 0, p_is_compat =3D 0;
-> +                       if (!parent)
-> +                               continue;
-> +                       if (sp->type && !strcmp(parent->type, sp->type))
-> +                               p_type_ok =3D 1;
-> +                       if (sp->compat && of_device_is_compatible(parent,
-> sp->compat)) +                               p_is_compat =3D 1;
-> +                       if (p_type_ok || p_is_compat) {
-> +                               index =3D add_legacy_soc_port(np, np);
-> +                               if (index >=3D 0 && np =3D=3D stdout)
-> +                                       legacy_serial_console =3D index;
-> +                       }
-> +                       of_node_put(parent);
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Please apply this series for 2.6.25.
 
-I think you can express that more densely using struct of_device_id
-and of_match_node(). Otherwise, it looks good to me, thanks a lot
-for following up on my suggestion!
+ arch/powerpc/boot/dts/mpc8313erdb.dts     |   39 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/mpc8313_rdb.c |   13 +++++++++
+ 2 files changed, 52 insertions(+), 0 deletions(-)
 
-	Arnd <><
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index c5b6665..63955a1 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -45,10 +45,49 @@
+ 		reg = <00000000 08000000>;	// 128MB at 0
+ 	};
+ 
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8313-elbc", "fsl,elbc", "simple-bus";
++		reg = <e0005000 1000>;
++		interrupts = <d#77 8>;
++		interrupt-parent = <&ipic>;
++
++		// CS0 and CS1 are swapped when
++		// booting from nand, but the
++		// addresses are the same.
++		ranges = <0 0 fe000000 00800000
++		          1 0 e2800000 00008000
++		          2 0 f0000000 00020000
++		          3 0 fa000000 00008000>;
++
++		nand@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8313-fcm-nand",
++			             "fsl,elbc-fcm-nand";
++			reg = <1 0 2000>;
++
++			u-boot@0 {
++				reg = <0 100000>;
++				read-only;
++			};
++
++			kernel@100000 {
++				reg = <100000 300000>;
++			};
++
++			fs@400000 {
++				reg = <400000 1c00000>;
++			};
++		};
++	};
++
+ 	soc8313@e0000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "soc";
++		compatible = "simple-bus";
+ 		ranges = <0 e0000000 00100000>;
+ 		reg = <e0000000 00000200>;
+ 		bus-frequency = <0>;
+diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
+index 6fb8299..4996b7d 100644
+--- a/arch/powerpc/platforms/83xx/mpc8313_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
+@@ -14,6 +14,7 @@
+  */
+ 
+ #include <linux/pci.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/time.h>
+ #include <asm/ipic.h>
+@@ -75,6 +76,18 @@ static int __init mpc8313_rdb_probe(void)
+ 	return of_flat_dt_is_compatible(root, "MPC8313ERDB");
+ }
+ 
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .compatible = "simple-bus" },
++	{},
++};
++
++static int __init declare_of_platform_devices(void)
++{
++	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++	return 0;
++}
++machine_device_initcall(mpc8313_rdb, declare_of_platform_devices);
++
+ define_machine(mpc8313_rdb) {
+ 	.name			= "MPC8313 RDB",
+ 	.probe			= mpc8313_rdb_probe,
+-- 
+1.5.3.8
