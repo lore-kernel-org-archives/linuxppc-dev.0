@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <mpm@selenic.com>
+Received: from waste.org (waste.org [66.93.16.53])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 95288DDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 10:18:44 +1100 (EST)
-Message-ID: <478FE248.1030101@freescale.com>
-Date: Thu, 17 Jan 2008 17:18:32 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: Problems with PCI on 8280
-References: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
-	<478FD066.5000803@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B039BA0D6@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D6@ismail.innsys.innovsys.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "waste.org", Issuer "waste.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4862BDDE29
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 10:54:47 +1100 (EST)
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080117145105.ad968ea6.akpm@linux-foundation.org>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<200801172315.28129.m.kozlowski@tuxland.pl>
+	<20080117145105.ad968ea6.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 17:39:54 -0600
+Message-Id: <1200613194.3839.22.camel@cinder.waste.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +26,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
->  >From: Scott Wood
->  >Are you using cuImage, or a regular uImage with a device-tree-aware u-boot
+
+On Thu, 2008-01-17 at 14:51 -0800, Andrew Morton wrote:
+> > proc_loop: /proc/3731/task/3731/pagemap
+> > kernel: BUG: sleeping function called from invalid context at fs/proc/task_mmu.c:554
+> > kernel: in_atomic():1, irqs_disabled():0
+> > kernel: Call Trace:
+> > kernel: [cf1cddf0] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> > kernel: [cf1cde20] [c002b2ec] __might_sleep+0xf4/0x108
+> > kernel: [cf1cde30] [c00d2d54] add_to_pagemap+0x40/0x11c
+> > kernel: [cf1cde50] [c00d2f44] pagemap_pte_range+0xa8/0x10c
+> > kernel: [cf1cde70] [c0081b30] walk_page_range+0x148/0x23c
+> > kernel: [cf1cdeb0] [c00d3104] pagemap_read+0x15c/0x244
+> > kernel: [cf1cdef0] [c0092144] vfs_read+0xc4/0x16c
+> > kernel: [cf1cdf10] [c009261c] sys_read+0x4c/0x90
+> > kernel: [cf1cdf40] [c001328c] ret_from_syscall+0x0/0x40
 > 
-> cuImage for now.
+> It's not really an oops - it's a warning.  add_to_pagemap() is doing a
+> put_user() inside pagemap_pte_range->pte_offset_map->kmap_atomic.
 > 
->  >If the former, try commenting out the call to fixup_pci() in
->  >arch/powerpc/boot/cuboot-pq2.c and let me know if that changes anything.
+> A known bug, I'm afraid.
 > 
-> Did that, That made our PCI bus fail completely
-
-Hmm...  that suggests that something in u-boot's setup is either 
-incorrect, or (more likely in this case) doesn't match the device tree.
-
-Or maybe it's the bus parking/arbiter tweaking at the end that u-boot is 
-missing.
-
-> We have our PCI set up to ONE 512MB outbound range doing all three.
-> (I can see where you'd save on mem usage by doing two)
+> How to fix?
 > 
-> I do see a bug tho.
-> In our case prefetch is 256MB, memio is 128MB.
-> the calculation for outbound wiondow 1 sets the size to ~(pref+mmio-1). 
-> That only works if the resulting size is a power of 2.
+> - double-buffer the data to be copied to userspace or
+> 
+> - take a local copy of the pte page then work on that instead or
+> 
+> - play copy_to_user_inatomic() tricks.
 
-Ah.  Yes, I was assuming both windows would be the same size.  The code 
-should be changed to check that, and if any conditions for setting 
-PCIBRx/PCIMSKx fail, check to see if the firmware-provided values work 
-(and if not, bail without touching anything).
+Hmm, this fell off my radar. How about something like this as a minimal
+fix (untested as -mm is a complete doorstop for me at the moment)?
 
-> If we comment out the rewrite of the outbound windows, we get PCI to work.
-> But since our u-boot sets everything up correctly (Including prefecable 
-> memory) we should not need this? or is it rewriting the device tree in 
-> some way?
+diff -r 5595adaea70f fs/proc/task_mmu.c
+--- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
++++ b/fs/proc/task_mmu.c	Thu Jan 17 17:29:21 2008 -0600
+@@ -582,20 +583,26 @@
+ {
+ 	struct pagemapread *pm = private;
+ 	pte_t *pte;
+-	int err = 0;
++	int offset = 0, err = 0;
+ 
+ 	pte = pte_offset_map(pmd, addr);
+-	for (; addr != end; pte++, addr += PAGE_SIZE) {
++	for (; addr != end; offset++, addr += PAGE_SIZE) {
+ 		u64 pfn = PM_NOT_PRESENT;
+-		if (is_swap_pte(*pte))
+-			pfn = swap_pte_to_pagemap_entry(*pte);
+-		else if (pte_present(*pte))
+-			pfn = pte_pfn(*pte);
++		if (is_swap_pte(pte[offset]))
++			pfn = swap_pte_to_pagemap_entry(pte[offset]);
++		else if (pte_present(pte[offset]))
++			pfn = pte_pfn(pte[offset]);
++#ifdef CONFIG_HIGHPTE
++		pte_unmap(pte);
+ 		err = add_to_pagemap(addr, pfn, pm);
++		pte = pte_offset_map(pmd, addr);
++#else
++		err = add_to_pagemap(addr, pfn, pm);
++#endif
+ 		if (err)
+ 			return err;
+ 	}
+-	pte_unmap(pte - 1);
++	pte_unmap(pte);
+ 
+ 	cond_resched();
+ 
 
-You shouldn't need it...  I'd compare the register values u-boot sets 
-with the values the corrected fixup_pci() sets (including the soc regs 
-at the end).  Something must be different.
-
-There is no device tree re-writing; it tries to program the hardware to 
-match what's in the device tree.
-
--Scott
+-- 
+Mathematics is the supreme nostalgia of our time.
