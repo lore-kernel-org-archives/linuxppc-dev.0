@@ -1,21 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 166CFDDE29
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 17:39:38 +1100 (EST)
-Date: Thu, 17 Jan 2008 17:39:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] Make setjmp/longjmp code generic
-Message-Id: <20080117173929.59581ddf.sfr@canb.auug.org.au>
-In-Reply-To: <20080117044542.2F6CD70006@localhost.localdomain>
-References: <1200545142.37022.89292279731.qpush@coopers>
-	<20080117044542.2F6CD70006@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__17_Jan_2008_17_39_29_+1100_LyS=A3DwBjvFG/Te"
-Cc: linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
-	Paul Mackerras <paulus@samba.org>, THEMANN@de.ibm.com
+Return-Path: <silvio.fricke@googlemail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.157])
+	by ozlabs.org (Postfix) with ESMTP id A5F90DDE17
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 18:37:02 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so499956fgg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2008 23:37:00 -0800 (PST)
+Date: Thu, 17 Jan 2008 08:36:50 +0100
+To: linuxppc-dev@ozlabs.org
+Subject: Re: psc and spi
+Message-ID: <20080117073650.GB32721@sfrouter>
+References: <20080115135306.GE14333@sfrouter>
+	<fa686aa40801150651s213a745dwa4d595de5a9d191b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UPT3ojh+0CqEDtpF"
+In-Reply-To: <fa686aa40801150651s213a745dwa4d595de5a9d191b@mail.gmail.com>
+From: "S. Fricke" <silvio.fricke@googlemail.com>
+Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__17_Jan_2008_17_39_29_+1100_LyS=A3DwBjvFG/Te
-Content-Type: text/plain; charset=US-ASCII
+
+--UPT3ojh+0CqEDtpF
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 17 Jan 2008 15:45:42 +1100 Michael Neuling <mikey@neuling.org> wrot=
-e:
->
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/misc.S
-> @@ -8,6 +8,8 @@
->   * Adapted for iSeries by Mike Corrigan (mikejc@us.ibm.com)
->   * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com)
->   *
-> + * setjmp/longjmp and xmon_save_regs code by Paul Mackerras.
-                         ^^^^^^^^^^^^^^
-This doesn't exist here.
+HeHo,
+
+> > I have on the psc3 the spi-interface of a fpga connected.
+> >
+> > [...]
+> >
+> > Can I use the mpc52xx_psc_spi-driver? And if yes, how I have to use this
+> > driver?  Or must I write a own spi-master/slave thing? Can anyone point=
+ me
+> > to a good start-position?
+>=20
+> Yes, you should be able to use the mpc52xx_psc_spi driver.  You'' need
+> to add the activate_cs and deactivate_cs hooks in your platform code
+> to activate your SPI CS lines.  You'll also need to set port_config to
+> have the PSC3 pins in "CODEC3" mode.
+
+What is the mostly used way for that?
+
+I think, firstly I must define a "fsl_spi_platform_data"-structure, for use
+in a "platform_device"-structure. And now I register this "device" with
+"platform_device_register".
+Or what is the appropriate way?
+
+Best Regards,
+Silvio Fricke
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+   Diplom-Informatiker (FH)
+   Linux-Entwicklung
+----------------------------------------------------------------------------
 
---Signature=_Thu__17_Jan_2008_17_39_29_+1100_LyS=A3DwBjvFG/Te
+
+--UPT3ojh+0CqEDtpF
 Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.8 (GNU/Linux)
 
-iD8DBQFHjvgpTgG2atn1QN8RAmx7AJ95ht+FI142sSfQ/u+HwDFDXKu0OwCdGisO
-S2KK3uycT6z+Fj7Of98/lsw=
-=qGlN
+iEYEARECAAYFAkePBZIACgkQVoIVmOSKtD5sfQCfX7x7XjSNdAkz+GRJH3yqOfy6
+HHgAnRGiDkOeilaYGBRDjzu7/8h3P7LD
+=fAsV
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__17_Jan_2008_17_39_29_+1100_LyS=A3DwBjvFG/Te--
+--UPT3ojh+0CqEDtpF--
