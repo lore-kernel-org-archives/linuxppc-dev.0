@@ -1,20 +1,23 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1B828DDEBD
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 05:12:14 +1100 (EST)
-Date: Thu, 17 Jan 2008 19:12:22 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080117181222.GA24411@aepfle.de>
-References: <20080115150949.GA14089@aepfle.de>
-	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id 83E6BDDF10
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 05:23:44 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so168856anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:23:44 -0800 (PST)
+Message-ID: <fa686aa40801171023i5188f59btfe41d09711eead09@mail.gmail.com>
+Date: Thu, 17 Jan 2008 11:23:43 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: [PATCH] [POWERPC] Update TQM5200,
+	CM5200 and Motion-PRO _defconfig and .dts files
+In-Reply-To: <478F984F.2030106@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080117143024.15372.95923.stgit@hekate.izotz.org>
+	<fa686aa40801170805g46eb4686y35c65276779d5244@mail.gmail.com>
+	<478F984F.2030106@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, Christoph Lameter wrote:
+On 1/17/08, Marian Balakowicz <m8@semihalf.com> wrote:
+> Grant Likely wrote:
+> > On 1/17/08, Marian Balakowicz <m8@semihalf.com> wrote:
+> >> Updates include:
+> >> - set soc node compatible property to "fsl,mpc5200-immr"
+> >
+> > On these three boards; which have the original mpc5200 and which have
+> > the mpc5200b?
+>
+> cm5200 and motionpro have mpc5200b, some versions of tqm5200 have
+> mpc5200, some have mpc5200b.
+>
+> > I'm not going to pick up this patch immediately, I've got an invasive
+> > set of mpc5200 device tree cleanups which need to go in first.  After
+> > that I'll revisit your changes here.
+>
+> Understood, thanks.
+>
+> >> - update i2c device tree nodes
+> >> - add mdio node
+> >> - add lpb bus node and flash device (without partitions defined)
+> >> - add second mscan node for Motio-PRO
+> >> - add rtc i2c nodes and enable RTC in _defconfigs
+> >> - use SLUB insteand of SLAB
+> >> - enable printk timestamp
+> >
+> > Can you split the defconfig changes into a separate patch...  That
+> > being said, how do you feel about merging all the 5200 defconfigs into
+> > a single defconfig?  They are all multiplatform after all and it would
+> > make maintenance easier.
+>
+> Ok, I'll split it into two patches.
+>
+> But merging defconfigs won't be a good option, boards differ in which
+> devices they use, some have PCI, some have USB, etc. Having one
+> defconfig, it would be necessary to manually customize kernel
+> configuration and remember which options are to be set/disabled.
 
-> On Thu, 17 Jan 2008, Pekka Enberg wrote:
-> 
-> > Looks similar to the one discussed on linux-mm ("[BUG] at
-> > mm/slab.c:3320" thread). Christoph?
-> 
-> Right. Try the latest version of the patch to fix it:
+That doesn't matter for defconfigs.  That needs to be done when you're
+tailoring a product regardless.  defconfigs are simply a known good
+configuration; they are not intended to be the deployed config.  If
+the defconfig enables all features used by any of the boards then it
+should be okay.
 
-The patch does not help.
- 
-> Index: linux-2.6/mm/slab.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
-> +++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
-> @@ -2977,7 +2977,10 @@ retry:
->  	}
->  	l3 = cachep->nodelists[node];
->  
-> -	BUG_ON(ac->avail > 0 || !l3);
-> +	if (!l3)
-> +		return NULL;
-> +
-> +	BUG_ON(ac->avail > 0);
->  	spin_lock(&l3->list_lock);
->  
->  	/* See if we can refill from the shared array */
+Cheers,
+g.
 
-Is this hunk supposed to go into cache_grow()? There is no NULL check
-for l3.
-
-But if I do that, it does not help:
-
-freeing bootmem node 1
-Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
-cache_grow(2781) swapper(0):c0,j4294937299 cp c0000000006a4fb8 !l3
-Kernel panic - not syncing: kmem_cache_create(): failed to create slab `size-32'
-
-Rebooting in 1 seconds..    
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
