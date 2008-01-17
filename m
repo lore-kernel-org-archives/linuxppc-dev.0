@@ -1,20 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id 36EC1DDFEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 05:26:31 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so169018anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 10:26:28 -0800 (PST)
-Message-ID: <fa686aa40801171026s6b147654sbe85b14f6d229b19@mail.gmail.com>
-Date: Thu, 17 Jan 2008 11:26:28 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH v5] [POWERPC] Add LED driver for Promess Motion-PRO board.
-In-Reply-To: <20080117180805.18035.60818.stgit@hekate.izotz.org>
+Return-Path: <scottwood@freescale.com>
+Date: Thu, 17 Jan 2008 12:48:10 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH/RFC] [POWERPC] CPM1: implement GPIO LIB API
+Message-ID: <20080117184810.GA3957@loki.buserror.net>
+References: <478F4514.7030906@scram.de>
+	<fa686aa40801170547q8c758dxef5aa301396f7f38@mail.gmail.com>
+	<478F6972.9080308@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080117180805.18035.60818.stgit@hekate.izotz.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <478F6972.9080308@scram.de>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/17/08, Marian Balakowicz <m8@semihalf.com> wrote:
-> Add support for two Motion-PRO board custom LEDs:
-> - motionpro-statusled
-> - motionpro-readyled
->
-> Signed-off-by: Jan Wrobel <wrr@semihalf.com>
-> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+On Thu, Jan 17, 2008 at 03:42:58PM +0100, Jochen Friedrich wrote:
+> Hi Grant,
+> 
+> >>  arch/powerpc/platforms/8xx/Kconfig |    2 +
+> >>  arch/powerpc/sysdev/commproc.c     |  162 +++++++++++++++++++++++++++++++++++-
+> > 
+> > Is this 8xx only?  Can it live in arch/powerpc/platforms/8xx?
+> 
+> According to the freescale docs, the GPIO ports are part of the CPM1. So I've put the
+> support into commproc.c (which maybe should be renamed to cpm1_common.c to match cpm2_common.c).
+> 
+> AFAIK, CPM1 is specific to 8xx.
 
-I'm still not quite sure what to do with this one... give me a couple
-of days to think about it and re-review it.
+If we're going to rename, I'd change commproc.c to cpm1.c, and cpm2_common.c
+to cpm2.c.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
