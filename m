@@ -1,19 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 17 Jan 2008 12:06:34 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 3/4] powerpc: Katana750i - Add DTS file
-Message-ID: <20080117010634.GA11567@localhost.localdomain>
-References: <20080114225150.GB21940@mag.az.mvista.com>
-	<20080114225926.GB22862@mag.az.mvista.com>
-	<20080114233406.GB20649@localhost.localdomain>
-	<20080115190806.GD26853@mag.az.mvista.com>
-	<20080116002228.GC4283@localhost.localdomain>
-	<20080116204809.GA24595@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080116204809.GA24595@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <bodonoghue@codehermit.ie>
+Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
+	by ozlabs.org (Postfix) with ESMTP id 9568ADDE10
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 12:34:26 +1100 (EST)
+Subject: Re: [PATCH 1/3] 8xx: Analogue & Micro Adder875 board support.
+From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20080116091607.6aa76d11@kernel.crashing.org>
+References: <20080111200705.GA696@loki.buserror.net>
+	<1200234372.3990.24.camel@neuromancer.mindspace>
+	<20080114152859.GA26907@ld0162-tx32.am.freescale.net>
+	<1200350407.4061.19.camel@neuromancer.mindspace>
+	<478BE6F2.4020207@freescale.com>
+	<1200439502.3618.26.camel@neuromancer.mindspace>
+	<20080116091607.6aa76d11@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 01:34:22 +0000
+Message-Id: <1200533662.3440.27.camel@neuromancer.mindspace>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,113 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 16, 2008 at 01:48:09PM -0700, Mark A. Greer wrote:
-> On Wed, Jan 16, 2008 at 11:22:28AM +1100, David Gibson wrote:
-> > On Tue, Jan 15, 2008 at 12:08:06PM -0700, Mark A. Greer wrote:
-> > > On Tue, Jan 15, 2008 at 10:34:06AM +1100, David Gibson wrote:
-> > > > On Mon, Jan 14, 2008 at 03:59:26PM -0700, Mark A. Greer wrote:
-> > > > > From: Mark A. Greer <mgreer@mvista.com>
-> > > 
-> > > Hi David.  Thanks for the review.
-> > > 
-> > > > > Add DTS file for the Emerson Katana 750i & 752i platforms.
-> > > > 
-> > > > [snip]
-> > > > > +/dts-v1/;
-> > > > > +
-> > > > > +/ {
-> > > > > +	#address-cells = <1>;
-> > > > > +	#size-cells = <1>;
-> > > > > +	model = "Katana-75xi";	/* Default */
-> > > > > +	compatible = "emerson,katana-750i";
-> > > > > +	coherency-off;
-> > > > 
-> > > > Where is this flag used from?
-> > > 
-> > > Its used in the bootwrapper if & when you use the mv64x60 code to setup
-> > > some of the windows to the I/O ctlrs.  This port does use that code
-> > > (because firmware doesn't do it properly) so I need the flag.
-> > 
-> > Hrm.. ok.  I'm just wondering if a new flag is really the right
-> > approach for this, or whether you should be basing the setup off the
-> > compatible property, either for the board or for the main bridge.
+On Wed, 2008-01-16 at 09:16 +0300, Vitaly Bordug wrote:
+
+Greetings Vitaly !
+
+> On Tue, 15 Jan 2008 23:25:02 +0000
+> Bryan O'Donoghue wrote:
 > 
-> I'd prefer to keep the flag.  Otherwise, the bootwrapper will need a
-> table to look up the compatible field to see if coherency is supposed
-> to be on or off.  We'd have to add an entry to that table for any
-> compatible that need coherency off, etc.  A flag seems cleaner.
-
-Hrm.  Except that you already have such a table in the cuboot file,
-adding another flag to that wouldn't be hard.
-
-What piece of hardware is it that actually determines whether
-coherency works or not?  The CPU?  The bridge?
-
-[snip]
-> > > > > +		CUNIT: cunit@f200 {
-> > > > 
-> > > > What is this device?  It needs some sort of "compatible" value.
-> > > 
-> > > Does it?  Its a separate block of regs but its only used in the mpsc
-> > > node--its never looked up on its own by kernel code.  Do all nodes need
-> > > "compatible" even when it'll never be used?  (Just want to know.)
+> > Greetings Scott.
 > > 
-> > Hrm.. if it's really just extra mpsc registers, should it be a
-> > seperate device, or just another range in the mpsc's "reg" property?
+> > I've tried both of the procedures you've outlined on the Adder875 with
+> > the patches supplied against the paulus git tree to no avail.
+> > 
+> > Pass #1 :
+> > 
+> > Doing it safe with cuImage.8xx
+> > 
 > 
-> Okay, putting into the reg property makes sense.  Its values will be
-> put into both mpsc@xxx 'reg' properties since its share.  That doesn't
-> matter, correct?
-
-Ah, sorry, I forgot there were multiple mpscs.  Their reg properties
-certainly shouldn't overlap, so you will need a separate node.
-However, you could combine your several nodes with MPSC common
-registers into a single "mpsc-common" (or something) block.  That
-would also reduce the number of phandles you need in the mpsc nodes,
-too.
-
-Or possibly this should be arranged as for the multiethernet.
-
-> Also, would you mind letting it go thru as it is now and I'll make a
-> separate patch to change this dts, the prpmc2800.dts, and related code
-> afterwards?
-
-Well, that's not really up to me.
-
-[snip]
-> > Yes :(.  I've looked at this before, though obviously I never got to
-> > figuring out what to do about it.
+> [...]
+> > => bootm 0x400000
+> > ## Booting image at 00400000 ...
+> >    Image Name:   Linux-2.6.24-rc6-g4f43143f-dirty
+> >    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> >    Data Size:    1032266 Bytes = 1008.1 kB
+> >    Load Address: 00400000
+> >    Entry Point:  00400554
+> >    Verifying Checksum ... OK
+> >    Uncompressing Kernel Image ... OK
 > > 
-> > > IMHO we need a way to change the default cmdline in the field so
-> > > sysadmins can change it per board and not have to type it in every time
-> > > they boot.  /chosen/bootargs and __builtin_cmdline can both do that.
-> > > We don't need both, though.  And, since bootargs is specified by OF
-> > > and documented in booting-without-of.txt, can we finally get rid of
-> > > __builtin_cmdline?  I'd sure like to.
-> > > 
-> > > We can probably get rid of CONFIG_CMDLINE too since everyone uses DTs
-> > > now and they can have a /chosen/bootargs.  Anyone have a reason to keep
-> > > CONFIG_CMDLINE around?
-> > > 
-> > > Would you mind elaborating on why you are opposed to /chosen/bootargs?
+> > I haven't as yet tried to single step through the bootup process -
+> > but, just to say that assuming the above procedure isn't _too_ far
+> > wrong - the stuff posted to the list agains the tree you've
+> > recommended doesn't seem to work..
 > > 
-> > Just because it's nasty for people to have to go in and change the dts
-> > just to change their default command line - which they might well want
-> > to do for things as simple as setting a default root device.
-> 
-> Yeah, but changing CONFIG_CMDLINE requires a kernel rebuild so
-> that's not great either.  Modifying __builtin_cmdline is probably the
-> easiest way to change things in the field (assuming you have a zImage)
-> but its also the least standard way of the three. :(
+> yes the sequence seems correct, so I'd check cmdline params, contents of chosen node in dts, etc to make sure stuff is being written to the proper UART with proper settings.
 
-But since the device tree is built into the zImage, changing it there
-will also require a rebuild.  No difference from that PoV.  I'd really
-suggest leaving this with CONFIG_CMDLINE just for similarity to other
-platforms until we figure out how to clean up the commandline
-confusion more generally.
+Indeed - thing is for the cuImage.8xx it's definitely _not_ something
+simple like a UART not set at the expected baud rate.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Using an Adder875 booted from U-Boot and cuImage.8xx with a  a bdi2000
+as a debugger - after the jump to kernel startup we don't even hit
+start_kernel ! There's no question about it - for whatever reason the
+cuImage.8xx for this board is definitely broken.
+
+I've been doing some experiments in the last hour or so mapping vmlinux
+to 0x400554 in gdb - since that's the entry point above - and setting an
+instruction breakpoint to do some instruction stepping.
+
+When I do that with cuImage.8xx I find that in kernel/head_8xx.S the
+code dies before going into virtual memory mode - haven't nailed down
+exactly where yet.
+
+Point being if I boot a uImage + dtb
+
+bootm 0x400000 - 0x500000 with a breakpoint set at start_kernel - then
+the uImage + dtb version _will_ hit start_kernel - where we are in
+virtual mode...
+
+_something_ wierd is for sure wrong with the cuImage.8xx and
+unfortunately it's not a simple as a silly baud rate.
+
+> > 
+> following the u-boot way (which is more correct imo) you'll need to add some code that fixes up frequencies and stuff inside dtb, or you may try to hardcode those values inside dts(if you know exactly what should be  there). Just adding CONFIG_*LIBFDT is not going to work.
+
+I agree, makes sense to go with the flow of things tbh.
+
+It still leaves as unanswered why exactly the ucImage.8xx kernel dies
+suddenly before hitting start_kernel - whereas the uImage + dtb boy is
+getting much further along in the boot.
+
+I suppose I'll do some debug with the uImage - and try to see what else
+it wants to complete the boot though, it'd be nice if the cuImage worked
+so there'd be a safety net to use as a comparison to get the uImage +
+dtb running properly.
