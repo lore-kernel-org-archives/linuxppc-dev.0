@@ -1,36 +1,35 @@
 Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Received: from mtagate8.uk.ibm.com (mtagate8.uk.ibm.com [195.212.29.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C3677DDF0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:04:02 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id m0HE3vI3112992
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 14:03:57 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m0HE3vM3696514
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 15:03:57 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m0HE3uiG023996
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 15:03:57 +0100
+	(Client CN "mtagate8.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8BB6BDDE39
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:04:41 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate8.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m0HE4bIf415964
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 14:04:37 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m0HE4b462588758
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 14:04:37 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m0HE4X5h025312
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 14:04:34 GMT
 From: Joachim Fenkes <fenkes@de.ibm.com>
 To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	"OF-General" <general@lists.openfabrics.org>,
 	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 1/4] IB/ehca: Remove CQ-QP-link before destroying QP in error
-	path of create_qp()
-Date: Thu, 17 Jan 2008 15:03:55 +0100
+Subject: [PATCH 2/4] IB/ehca: Define array to store SMI/GSI QPs
 References: <200801171502.34287.fenkes@de.ibm.com>
 In-Reply-To: <200801171502.34287.fenkes@de.ibm.com>
 MIME-Version: 1.0
+Date: Thu, 17 Jan 2008 15:04:32 +0100
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200801171503.56348.fenkes@de.ibm.com>
+Message-Id: <200801171504.33426.fenkes@de.ibm.com>
 Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
 	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -46,29 +45,53 @@ From: Hoang-Nam Nguyen <hnguyen at de.ibm.com>
 
 Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_qp.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_classes.h |    2 +-
+ drivers/infiniband/hw/ehca/ehca_main.c    |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index f116eb7..26c6a94 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -769,12 +769,15 @@ static struct ehca_qp *internal_create_qp(
- 		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
- 			ehca_err(pd->device, "Copy to udata failed");
- 			ret = -EINVAL;
--			goto create_qp_exit4;
-+			goto create_qp_exit5;
- 		}
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index 74d2b72..936580d 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -94,7 +94,7 @@ struct ehca_sma_attr {
+ 
+ struct ehca_sport {
+ 	struct ib_cq *ibcq_aqp1;
+-	struct ib_qp *ibqp_aqp1;
++	struct ib_qp *ibqp_sqp[2];
+ 	enum ib_port_state port_state;
+ 	struct ehca_sma_attr saved_attr;
+ };
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 6a56d86..cde486c 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -511,7 +511,7 @@ static int ehca_create_aqp1(struct ehca_shca *shca, u32 port)
  	}
+ 	sport->ibcq_aqp1 = ibcq;
  
- 	return my_qp;
+-	if (sport->ibqp_aqp1) {
++	if (sport->ibqp_sqp[IB_QPT_GSI]) {
+ 		ehca_err(&shca->ib_device, "AQP1 QP is already created.");
+ 		ret = -EPERM;
+ 		goto create_aqp1;
+@@ -537,7 +537,7 @@ static int ehca_create_aqp1(struct ehca_shca *shca, u32 port)
+ 		ret = PTR_ERR(ibqp);
+ 		goto create_aqp1;
+ 	}
+-	sport->ibqp_aqp1 = ibqp;
++	sport->ibqp_sqp[IB_QPT_GSI] = ibqp;
  
-+create_qp_exit5:
-+	ehca_cq_unassign_qp(my_qp->send_cq, my_qp->real_qp_num);
-+
- create_qp_exit4:
- 	if (HAS_RQ(my_qp))
- 		ipz_queue_dtor(my_pd, &my_qp->ipz_rqueue);
+ 	return 0;
+ 
+@@ -550,7 +550,7 @@ static int ehca_destroy_aqp1(struct ehca_sport *sport)
+ {
+ 	int ret;
+ 
+-	ret = ib_destroy_qp(sport->ibqp_aqp1);
++	ret = ib_destroy_qp(sport->ibqp_sqp[IB_QPT_GSI]);
+ 	if (ret) {
+ 		ehca_gen_err("Cannot destroy AQP1 QP. ret=%i", ret);
+ 		return ret;
 -- 
 1.5.2
