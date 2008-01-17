@@ -1,15 +1,22 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id A2196DDEA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 08:33:14 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C85950.90466876"
-Subject: Problems with PCI on 8280
-Date: Thu, 17 Jan 2008 15:33:13 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/2] Make setjmp/longjmp code generic
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080117064527.397cdfd6@zod.rchland.ibm.com>
+References: <1200545142.37022.89292279731.qpush@coopers>
+	<20080117044542.2F6CD70006@localhost.localdomain>
+	<20080117053857.GA29035@lixom.net> <15983.1200548209@neuling.org>
+	<20080117064527.397cdfd6@zod.rchland.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-NbHZHQq32Rsd04AWwN0e"
+Date: Fri, 18 Jan 2008 08:49:22 +1100
+Message-Id: <1200606562.7295.4.camel@concordia>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, THEMANN@de.ibm.com,
+	linuxppc-dev@ozlabs.org, RAISCH@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,317 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C85950.90466876
-Content-Type: text/plain;
-	charset="iso-8859-1"
+--=-NbHZHQq32Rsd04AWwN0e
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi.
- We have e 8280 bioard with PCI. We have three memory ranges set up;
-0x8000_0000 to 0x8fff_ffff is prefetchable memory
-0x9000_0000 to 0x97ff_ffff is non-prefetchable memory
-0x9800_0000 to 0x9800_ffff is IO.
+On Thu, 2008-01-17 at 06:45 -0600, Josh Boyer wrote:
+> On Thu, 17 Jan 2008 16:36:49 +1100
+> Michael Neuling <mikey@neuling.org> wrote:
+> > In message <20080117053857.GA29035@lixom.net> you wrote:
+> > > Hi,
+> > >=20
+> > > On Thu, Jan 17, 2008 at 03:45:42PM +1100, Michael Neuling wrote:
+> > >=20
+> > > > Index: linux-2.6-ozlabs/include/asm-powerpc/setjmp.h
+> > > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > > --- /dev/null
+> > > > +++ linux-2.6-ozlabs/include/asm-powerpc/setjmp.h
+> > > > @@ -0,0 +1,18 @@
+> > > > +/*
+> > > > + * Copyright (C) 2007 Michael Neuling
+> >                      ^^^^^^
+> >=20
+> > > > + *
+> > > > + *      This program is free software; you can redistribute it and=
+/or
+> > > > + *      modify it under the terms of the GNU General Public Licens=
+e
+> > > > + *      as published by the Free Software Foundation; either versi=
+on
+> > > > + *      2 of the License, or (at your option) any later version.
+> > > > + *
+> > > > + */
+> > > > +#ifndef _ASM_POWERPC_SETJMP_H
+> > > > +#define _ASM_POWERPC_SETJMP_H
+> > > > +
+> > > > +#define JMP_BUF_LEN    23
+> > > > +
+> > > > +extern long setjmp(long *);
+> > > > +extern void longjmp(long *, long);
+> > > > +
+> > > > +#endif /* _ASM_POWERPC_SETJMP_H */
+> > >=20
+> > > Should the above be inside #ifdef __KERNEL__?
+> >=20
+> > Yep... _and_ it's 2008 now!
+> >=20
+> > I'll update.
+>=20
+> While you're off updating it, remove the (C).  It's bogus and shouldn't
+> be there.
 
-our device tree has
-ranges =3D <42000000 0 80000000 80000000 0 10000000    // Pre-fetch =
-memory
-	  02000000 0 90000000 90000000 0 08000000    // Normal Memory
-	  01000000 0 98000000 98000000 0 00010000>;  // I/O
+And it should say IBM corp too.
 
-for the memory ranges in the PCI node (full node at the end)
+Oh and my car needs a wash when you're free ..
 
-Our problem is that we can only access the first 128MB of the =
-prefetchable area.
-an access to 0x87ff_ffff works (after ioremap), while an access to =
-0x8800_0000 causes an bus error.
+cheers
 
-trying to access 0x87FFFFFC -> 0x00000000
-trying to access 0x88000000 ->Machine check in kernel mode.
-Caused by (from SRR1=3D49030): Transfer error ack signal
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-It is like the prefetch area is not set up correctly for ioremap.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-The PCI registers are set up correctly in u-boot, and we can access the =
-whole prefetch area in u-boot without any problems.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-pci node in device tree:
+--=-NbHZHQq32Rsd04AWwN0e
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-	pci@f0010800 {
-		device_type =3D "pci";
-		reg =3D <f0010800 10c f00101ac 8 f00101c4 8>;
-		compatible =3D "fsl,mpc8280-pci", "apmax-pci", "fsl,pq2-pci";
-		#interrupt-cells =3D <1>;
-		#size-cells =3D <2>;
-		#address-cells =3D <3>;
-		clock-frequency =3D <d#49766400>;               // For our board.
-		interrupt-map-mask =3D <f800 0 0 7>;            // Anded with the =
-interrupt-map values
-		interrupt-map =3D <
-		                /* IDSEL 0x11 */
-		                00008800 0 0 1 &PCI_INT 5>;   // 3 first numbers pci =
-device specifier are: (buss << 16 | id_sel << 11) 0 0
-		                                              //    buss =3D 0, id_sel =
-=3D 11
-		                                              // Next number is =
-interrupt 1-4 mapped A-D (interrupt A for us)
-		                                              // Last two numbers are =
-host interrupt specifier (external interrupt 5)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-		//interrupt-parent =3D <&PIC>;
-		interrupt-parent =3D <&PCI_INT>;=20
-		// interrupts =3D <12 8>;
-               // Mem type 0 Bus Add  Loc. Add 0 Length      <<--- =
-Remember the mem type is little endian
-		ranges =3D <42000000 0 80000000 80000000 0 10000000    // Pre-fetch =
-memory
-		          02000000 0 90000000 90000000 0 08000000    // Normal Memory
-		          01000000 0 98000000 98000000 0 00010000>;  // I/O
-		         =20
-        bus-range =3D <0 ff>;
-        pci@12 {
-    		device_type =3D "pci";
-            reg =3D <9000 0 0 0 0>;
-    		#interrupt-cells =3D <1>;
-    		#size-cells =3D <2>;
-    		#address-cells =3D <3>;
-    		interrupt-parent =3D <&PCI_INT>;=20
-    		interrupt-map-mask =3D <0f800 0 0 7>;
-    		interrupt-map =3D <
-    		                /* IDSEL 0x10 */
-    		                00000000 0 0 1 &PCI_INT 1
+iD8DBQBHj81idSjSd0sB4dIRAvZyAKCGpms9NolhHg6BB1AX1Jl81HHX0ACfZAfn
+0YxumSJkYj1qXsQmrtztJyc=
+=fKvf
+-----END PGP SIGNATURE-----
 
-    		                /* IDSEL 0x11 */
-    		                00000800 0 0 1 &PCI_INT 2
-    		               =20
-    		                /* IDSEL 0x12 */
-    		                00001000 0 0 1 &PCI_INT 3
-    		               =20
-    		                /* IDSEL 0x13 */
-    		                00001800 0 0 1 &PCI_INT 4 >;
-        };
-	};
-
-
-
-
-
-------_=_NextPart_001_01C85950.90466876
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>Problems with PCI on 8280</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Hi.<BR>
-&nbsp;We have e 8280 bioard with PCI. We have three memory ranges set =
-up;<BR>
-0x8000_0000 to 0x8fff_ffff is prefetchable memory<BR>
-0x9000_0000 to 0x97ff_ffff is non-prefetchable memory<BR>
-0x9800_0000 to 0x9800_ffff is IO.<BR>
-<BR>
-our device tree has<BR>
-ranges =3D &lt;42000000 0 80000000 80000000 0 10000000&nbsp;&nbsp;&nbsp; =
-// Pre-fetch memory<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; 02000000 0 90000000 =
-90000000 0 08000000&nbsp;&nbsp;&nbsp; // Normal Memory<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; 01000000 0 98000000 =
-98000000 0 00010000&gt;;&nbsp; // I/O<BR>
-<BR>
-for the memory ranges in the PCI node (full node at the end)<BR>
-<BR>
-Our problem is that we can only access the first 128MB of the =
-prefetchable area.<BR>
-an access to 0x87ff_ffff works (after ioremap), while an access to =
-0x8800_0000 causes an bus error.<BR>
-<BR>
-trying to access 0x87FFFFFC -&gt; 0x00000000<BR>
-trying to access 0x88000000 -&gt;Machine check in kernel mode.<BR>
-Caused by (from SRR1=3D49030): Transfer error ack signal<BR>
-<BR>
-It is like the prefetch area is not set up correctly for ioremap.<BR>
-<BR>
-The PCI registers are set up correctly in u-boot, and we can access the =
-whole prefetch area in u-boot without any problems.<BR>
-<BR>
-pci node in device tree:<BR>
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pci@f0010800 {<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device_type =3D =
-&quot;pci&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt;f0010800 10c =
-f00101ac 8 f00101c4 8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
-&quot;fsl,mpc8280-pci&quot;, &quot;apmax-pci&quot;, =
-&quot;fsl,pq2-pci&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #interrupt-cells =3D =
-&lt;1&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells =3D =
-&lt;2&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =3D =
-&lt;3&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clock-frequency =3D =
-&lt;d#49766400&gt;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // For our board.<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-map-mask =3D =
-&lt;f800 0 0 =
-7&gt;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-// Anded with the interrupt-map values<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-map =3D &lt;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; /* IDSEL 0x11 */<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; 00008800 0 0 1 &amp;PCI_INT 5&gt;;&nbsp;&nbsp; // 3 =
-first numbers pci device specifier are: (buss &lt;&lt; 16 | id_sel =
-&lt;&lt; 11) 0 0<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; =
-buss =3D 0, id_sel =3D 11<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Next number is =
-interrupt 1-4 mapped A-D (interrupt A for us)<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Last two numbers =
-are host interrupt specifier (external interrupt 5)<BR>
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //interrupt-parent =3D =
-&lt;&amp;PIC&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;PCI_INT&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // interrupts =3D &lt;12 =
-8&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp; // Mem type 0 Bus Add&nbsp; Loc. Add 0 =
-Length&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;&lt;--- Remember the mem type =
-is little endian<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ranges =3D &lt;42000000 0 =
-80000000 80000000 0 10000000&nbsp;&nbsp;&nbsp; // Pre-fetch memory<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 02000000 0 =
-90000000 90000000 0 08000000&nbsp;&nbsp;&nbsp; // Normal Memory<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01000000 0 =
-98000000 98000000 0 00010000&gt;;&nbsp; // I/O<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bus-range =3D &lt;0 =
-ff&gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pci@12 {<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device_type =3D =
-&quot;pci&quot;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =
-=3D &lt;9000 0 0 0 0&gt;;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #interrupt-cells =3D =
-&lt;1&gt;;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells =3D =
-&lt;2&gt;;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =3D =
-&lt;3&gt;;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
-&lt;&amp;PCI_INT&gt;;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-map-mask =3D =
-&lt;0f800 0 0 7&gt;;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-map =3D &lt;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; /* IDSEL 0x10 */<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; 00000000 0 0 1 &amp;PCI_INT 1<BR>
-<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; /* IDSEL 0x11 */<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; 00000800 0 0 1 &amp;PCI_INT 2<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; /* IDSEL 0x12 */<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; 00001000 0 0 1 &amp;PCI_INT 3<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; /* IDSEL 0x13 */<BR>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp; 00001800 0 0 1 &amp;PCI_INT 4 &gt;;<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<BR>
-<BR>
-<BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C85950.90466876--
+--=-NbHZHQq32Rsd04AWwN0e--
