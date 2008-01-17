@@ -1,23 +1,18 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 39B39DDE01
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 09:51:11 +1100 (EST)
-Date: Thu, 17 Jan 2008 14:51:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-Message-Id: <20080117145105.ad968ea6.akpm@linux-foundation.org>
-In-Reply-To: <200801172315.28129.m.kozlowski@tuxland.pl>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801172315.28129.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	Matt Mackall <mpm@selenic.com>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 186A8DDE17
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 10:05:12 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8595D.6971739C"
+Subject: RE: Problems with PCI on 8280
+Date: Thu, 17 Jan 2008 17:05:11 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D6@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
+	<478FD066.5000803@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,119 +22,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008 23:15:27 +0100
-Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+This is a multi-part message in MIME format.
 
-> Hello,
-> 
->         The script below kills powerpc. oopses get longer and more
-> wonderful with every next 'cated' file.
+------_=_NextPart_001_01C8595D.6971739C
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-ppc32.
+>From: Scott Wood=20
+>Are you using cuImage, or a regular uImage with a device-tree-aware =
+u-boot
 
-> /proc/<pid>/task/<pid>/pagemap seems to be the cause of oops. The
-> important thing is that it oopses for random (that is not first in a row)
-> process from /proc. So not every 'cat /proc/<pid>/task/<pid>/pagemap'
-> causes an oops.
-> 
-> I could try to bisect this but this powerpc box is iMac G3 (cpu at 400MHz)
-> and this will take time. So any hints appreciated.
-> 
-> Regards,
-> 
-> 	Mariusz
-> 
-> script:
-> ---------
-> #!/bin/bash
-> 
-> for i in `find /proc/*/ -readable -type f`; do
->         echo -n "cat $i > /dev/null ... ";
->         logger -t proc_loop $i;
->         sync;
->         cat $i > /dev/null;
->         echo "done";
-> done
-> ----------
-> syslog:
-> proc_loop: /proc/3731/task/3731/pagemap
-> kernel: BUG: sleeping function called from invalid context at fs/proc/task_mmu.c:554
-> kernel: in_atomic():1, irqs_disabled():0
-> kernel: Call Trace:
-> kernel: [cf1cddf0] [c000840c] show_stack+0x3c/0x194 (unreliable)
-> kernel: [cf1cde20] [c002b2ec] __might_sleep+0xf4/0x108
-> kernel: [cf1cde30] [c00d2d54] add_to_pagemap+0x40/0x11c
-> kernel: [cf1cde50] [c00d2f44] pagemap_pte_range+0xa8/0x10c
-> kernel: [cf1cde70] [c0081b30] walk_page_range+0x148/0x23c
-> kernel: [cf1cdeb0] [c00d3104] pagemap_read+0x15c/0x244
-> kernel: [cf1cdef0] [c0092144] vfs_read+0xc4/0x16c
-> kernel: [cf1cdf10] [c009261c] sys_read+0x4c/0x90
-> kernel: [cf1cdf40] [c001328c] ret_from_syscall+0x0/0x40
+cuImage for now.
 
-It's not really an oops - it's a warning.  add_to_pagemap() is doing a
-put_user() inside pagemap_pte_range->pte_offset_map->kmap_atomic.
+>If the former, try commenting out the call to fixup_pci() in=20
+>arch/powerpc/boot/cuboot-pq2.c and let me know if that changes =
+anything.
 
-A known bug, I'm afraid.
+Did that, That made our PCI bus fail completely
 
-How to fix?
+Looking in fixup_pci, I see it sets up one outbound window to the size =
+of prefechable and non-prefetcabe memory
+and anoter one to the size of the IO.
 
-- double-buffer the data to be copied to userspace or
+We have our PCI set up to ONE 512MB outbound range doing all three.=20
+(I can see where you'd save on mem usage by doing two)
 
-- take a local copy of the pte page then work on that instead or
+I do see a bug tho.
+In our case prefetch is 256MB, memio is 128MB.
+the calculation for outbound wiondow 1 sets the size to ~(pref+mmio-1). =
+That only works if the resulting size is a power of 2.
 
-- play copy_to_user_inatomic() tricks.
+If we comment out the rewrite of the outbound windows, we get PCI to =
+work.
+But since our u-boot sets everything up correctly (Including prefecable =
+memory) we should not need this? or is it rewriting the device tree in =
+some way?
 
-It would be really nice to get the maps4 stuff merged this time around but
-it is looking unlikely.
 
-> kernel: --- Exception: c01 at 0xff5a364
-> kernel:     LR = 0x10002f60
-> kernel: BUG: scheduling while atomic: cat/8929/0x00000002
-> kernel: Call Trace:
-> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
-> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
-> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
-> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
-> kernel: --- Exception: c01 at 0xff5a364
-> kernel:     LR = 0x10002f60
-> kernel: BUG: scheduling while atomic: cat/8929/0x00000007
-> kernel: Call Trace:
-> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
-> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
-> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
-> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
-> kernel: --- Exception: c01 at 0xff5a364
-> kernel:     LR = 0x10002f60
-> kernel: BUG: scheduling while atomic: cat/8929/0x00000009
-> kernel: Call Trace:
-> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
-> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
-> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
-> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
-> kernel: --- Exception: c01 at 0xff5a364
-> kernel:     LR = 0x10002f60
-> kernel: Page fault in user mode with in_atomic() = 1 mm = cf2765a0
-> kernel: NIP = ff0cbc8  MSR = 4000f932
-> kernel: Oops: Weird page fault, sig: 11 [#3]
 
-hm.  Not sure how that happened.  The arch code thinks we're running in
-user mode.
 
-> kernel: PREEMPT PowerMac
-> kernel: Modules linked in: usbhid ide_cd_mod ohci_hcd usbcore uninorth_agp agpgart
-> kernel: NIP: 0ff0cbc8 LR: 0ff0d398 CTR: 0ff0d2d0
-> kernel: REGS: cf1cdf50 TRAP: 0401   Tainted: G      D  (2.6.24-rc8-mm1)
-> kernel: MSR: 4000f932 <EE,PR,FP,ME,IR,DR>  CR: 28022442  XER: 00000000
-> kernel: TASK = cf8d74f0[8929] 'cat' THREAD: cf1cc000
-> kernel: GPR00: 00000001 bf93e330 48029bf0 0ffed488 10016038 28022442 00000000 0ff5a364 
-> kernel: GPR08: 0000f932 00000000 00001032 00000000 28022442 
-> kernel: NIP [0ff0cbc8] 0xff0cbc8
-> kernel: LR [0ff0d398] 0xff0d398
-> proc_loop: /proc/3731/task/3731/wchan
-> kernel: Call Trace:
-> kernel: ---[ end trace 54bd1ed4883922c9 ]---
-> kernel: note: cat[8929] exited with preempt_count 10
-> proc_loop: /proc/3731/task/3731/oom_score
-> proc_loop: /proc/3731/task/3731/oom_adj
-> proc_loop: /proc/3731/fdinfo/0
-> [... snip ...]
+------_=_NextPart_001_01C8595D.6971739C
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: Problems with PCI on 8280</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>&gt;From: Scott Wood<BR>
+&gt;Are you using cuImage, or a regular uImage with a device-tree-aware =
+u-boot<BR>
+<BR>
+cuImage for now.<BR>
+<BR>
+&gt;If the former, try commenting out the call to fixup_pci() in<BR>
+&gt;arch/powerpc/boot/cuboot-pq2.c and let me know if that changes =
+anything.<BR>
+<BR>
+Did that, That made our PCI bus fail completely<BR>
+<BR>
+Looking in fixup_pci, I see it sets up one outbound window to the size =
+of prefechable and non-prefetcabe memory<BR>
+and anoter one to the size of the IO.<BR>
+<BR>
+We have our PCI set up to ONE 512MB outbound range doing all three.<BR>
+(I can see where you'd save on mem usage by doing two)<BR>
+<BR>
+I do see a bug tho.<BR>
+In our case prefetch is 256MB, memio is 128MB.<BR>
+the calculation for outbound wiondow 1 sets the size to ~(pref+mmio-1). =
+That only works if the resulting size is a power of 2.<BR>
+<BR>
+If we comment out the rewrite of the outbound windows, we get PCI to =
+work.<BR>
+But since our u-boot sets everything up correctly (Including prefecable =
+memory) we should not need this? or is it rewriting the device tree in =
+some way?<BR>
+<BR>
+<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C8595D.6971739C--
