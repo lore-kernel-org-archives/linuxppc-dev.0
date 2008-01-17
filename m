@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id 2515EDDE1D
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 54027DDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jan 2008 07:30:54 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so89693anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Jan 2008 12:30:51 -0800 (PST)
-Message-ID: <fa686aa40801161230q2308188djf1f6c756412051dc@mail.gmail.com>
-Date: Wed, 16 Jan 2008 13:30:49 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Joachim Meyer" <Jogi95@web.de>
-Subject: Re: ml310 kernel2.6 booting problems
-In-Reply-To: <538215286@web.de>
+	Thu, 17 Jan 2008 17:26:58 +1100 (EST)
+Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.57])
+	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m0H6QtTi003064
+	for <linuxppc-embedded@ozlabs.org>; Wed, 16 Jan 2008 22:26:55 -0800
+To: linuxppc-embedded@ozlabs.org
+Subject: Endian problem when accessing internel regs on 8347
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <538215286@web.de>
-Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <OF03A8BF8B.4AC46CCD-ON882573D3.00216F5B-882573D3.00236B8D@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Wed, 16 Jan 2008 22:26:53 -0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +26,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/16/08, Joachim Meyer <Jogi95@web.de> wrote:
-> Thx for the answer
->
-> It's right, there is no /dev/console, but the MontaVista-Linux-kernel can fully boot with this rootFS, how comes?
+Hi,
 
-hmmm, I don't know.  The montavista kernel might be running a
-different binary as the init process.  Compare the kernel parameter
-lines between the two.
+I've got an MPC8347 running the 2.6.24-rc5 kernel and I'm trying to access 
+the GPIO registers.  I already have a driver that's doing related work 
+(tho across PCI) and I just want to remap the internal CPU address to a 
+kernal address and be able to read/write the register using an IOCTL call 
+from user space.  My problem is, every accessor I try does an endian 
+conversion before giving me my data.  So here's some code snipits of what 
+I'm doing:
 
-> Doesn't matter, I was going to make my own RootFS anyway, so can you give me an hint how I would
-> do this best?
-> I tried the Klingauf-Script (www.klingauf.com) with busybox, but I still have no console in my /dev/ and it doesn't work.
+request_mem_region(0xe0000c00, 24, "my driver");  // 0xe0000c00 is the 
+memory mapped location of the GPIO regs
+data_ptr2 = ioremap(0xe0000c00, 24);
 
-Creating a console device is easy:
+Then in the IOCTL function I try to read from the register.  First I 
+tried:
 
-$ mknod /dev/console c 5 1
+ioread32(data_ptr2);
 
-> I tried out buildroot, but I was a little overstrained with the configuration and when I did "make" it aborted with an error message
-> after a long time of working
-> Then I tried ELDK. I read that I could use the Directory "<install-dir>/ppc_4xx/" as rootfs but when I go there and look inside
-> /dev I find only one entry:
-> prw------- 1 jogi jogi 0 2007-01-20 04:58 initctl
-> So this won't work, would it?
+I know that the mapping is working okay because I got the data from the 
+GPIO direction register, but it's been byte swapped.  The contents of the 
+register are 0xFFFFFFE7, but what my user space app gets back is 
+0xE7FFFFFF.  I've tried all the varients I can find, readl(), inl(), 
+in_be32(), in_le32(), even __raw_readl().  They all give me back byte 
+swapped data.  I'm very confused.  Especially since I've looked at 
+in_be32() and in_le32(), they're both inline assembly, and they use 
+different instructions.  They can't be giving me the same results.  I'm 
+sure I'm not the first person to want to access PowerPC internal registers 
+through a driver.  Can anyone give me a hint what I'm doing wrong?
 
-Looks like you haven't installed ELDK correctly.  I recommend
-rereading the instructions and giving it another try.  ELDK is a great
-starting point.
+As an additional question related to PowerPC inline assembly, can anyone 
+tell me what "%U1%X1" means in the following:
 
->
-> Which way would be the best for me to get an good RootFS easily?
-> If the answer would be buildroot can you give me a short summary which settings are importent?
+__asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync" : "=r" (ret) : 
+"m" (*addr));
 
-Personally, I use buildroot, but you should start with ELDK to get things going.
+Thanks.
 
-Cheers,
-g.
+See 'ya!
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Bruce
