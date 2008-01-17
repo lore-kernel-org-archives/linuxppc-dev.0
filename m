@@ -1,21 +1,23 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id 36908DDEC2
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 06:03:34 +1100 (EST)
-Date: Thu, 17 Jan 2008 11:03:33 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080117181222.GA24411@aepfle.de>
-Message-ID: <Pine.LNX.4.64.0801171102380.21204@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
-	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-	<20080117181222.GA24411@aepfle.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3D64EDDE27
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 06:27:41 +1100 (EST)
+Date: Thu, 17 Jan 2008 11:27:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Subject: Re: 2.6.24-rc8-mm1: powerpc: include/asm/nvram.h:62: error: field
+	'partition' has incomplete type
+Message-Id: <20080117112755.896f2c74.akpm@linux-foundation.org>
+In-Reply-To: <200801171918.09645.m.kozlowski@tuxland.pl>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<200801171918.09645.m.kozlowski@tuxland.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,5 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Could you try Pekka's suggestion of reverting  
-04231b3002ac53f8a64a7bd142fde3fa4b6808c6 ?
+On Thu, 17 Jan 2008 19:18:07 +0100 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+
+>   CC [M]  sound/ppc/awacs.o
+> In file included from sound/ppc/awacs.c:24:
+> include/asm/nvram.h:62: error: field 'partition' has incomplete type
+> make[1]: *** [sound/ppc/awacs.o] Error 1
+> make: *** [sound/ppc/awacs.o] Error 2
+
+hm.
+
+--- a/include/asm-powerpc/nvram.h~include-asm-powerpc-nvramh-needs-listh
++++ a/include/asm-powerpc/nvram.h
+@@ -11,6 +11,7 @@
+ #define _ASM_POWERPC_NVRAM_H
+ 
+ #include <linux/errno.h>
++#include <linux/list.h>
+ 
+ #define NVRW_CNT 0x20
+ #define NVRAM_HEADER_LEN 16 /* sizeof(struct nvram_header) */
+_
+
+I wonder why mainline isn't busted actually.
