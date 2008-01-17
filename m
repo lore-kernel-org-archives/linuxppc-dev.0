@@ -1,22 +1,15 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 7EF35DDE29
+Return-Path: <r_wehbi@yahoo.fr>
+Received: from web26704.mail.ukl.yahoo.com (web26704.mail.ukl.yahoo.com
+	[217.146.176.67]) by ozlabs.org (Postfix) with SMTP id 42B00DDE45
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jan 2008 10:53:42 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: <rmcguire@videopresence.com>
-References: <mailman.1.1200358805.3196.linuxppc-embedded@ozlabs.org>
-	<000301c857b0$09f01a10$6405a8c0@absolut>
-	<000001c857d5$6154b110$23fe1330$@tjernlund@transmode.se>
-	<001101c85955$fc3b5c20$6405a8c0@absolut>
-In-Reply-To: <001101c85955$fc3b5c20$6405a8c0@absolut>
-Subject: Re: Driver - HDLC 83xx QUICC Engine??
-Date: Fri, 18 Jan 2008 00:53:28 +0100
-Message-ID: <003001c85964$28e35d50$7aaa17f0$@tjernlund@transmode.se>
+	Fri, 18 Jan 2008 00:32:15 +1100 (EST)
+Date: Thu, 17 Jan 2008 14:25:34 +0100 (CET)
+From: WEHBI Rami <r_wehbi@yahoo.fr>
+Subject: error: array type has incomplete element type
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-559914106-1200576334=:76187"
+Message-ID: <154802.76187.qm@web26704.mail.ukl.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,73 +20,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-eh, that looks like something that is part of the kernel already.
-Am I missing something?
+--0-559914106-1200576334=:76187
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-      Jocke
+Hi all,
+  
+ I am trying to compile a kernel for the ppc405 embedded on the virtex 4 and I am obtaining the compiling errors listed below(at the end of this mail).
+  
+ my compiler is the crosstool  latest one. 
+  
+ I tried to compile each the  following kernel versions :
+ 2.6.23.8
+  2.6.17
+  
+ with the following versions of  gcc and glibc of the crosscompiler
+ gcc-4.0.2-glibc-2.3.5
+ gcc-4.1.0-glibc-2.3.6
+ gcc-4.1.1-glibc-2.3.6
+  
+ the result is always the same  (array type has incomplete element type)
+  
+ moreover I searched all the  files and I replaced 
+             (struct ocp_def  core_ocp[])        with  (struct ocp_def core_ocp[2]) 
+         because my architectur  contains only one UART, the result is always the same (same  error).
+  
+  
+ any help is  appreciated,
+  
+  
+  arch/ppc/syslib/virtex_devices.c:23: error: array type has incomplete element  type
+ arch/ppc/syslib/virtex_devices.c:25: error: field name not in record or union  initializer
+ arch/ppc/syslib/virtex_devices.c:25: error: (near initialization for  'core_ocp')
+ arch/ppc/syslib/virtex_devices.c:26: error: field name not in record or union  initializer
+ arch/ppc/syslib/virtex_devices.c:26: error: (near initialization for  'core_ocp')
+ arch/ppc/syslib/virtex_devices.c:27: error: field name not in record or union  initializer
+  arch/ppc/syslib/virtex_devices.c:27: error: (near initialization for  'core_ocp')
+ arch/ppc/syslib/virtex_devices.c:28: error: field name not in record or union  initializer
+ arch/ppc/syslib/virtex_devices.c:28: error: (near initialization for  'core_ocp')
+ arch/ppc/syslib/virtex_devices.c:29: error: field name not in record or union  initializer
+ arch/ppc/syslib/virtex_devices.c:29: error: (near initialization for  'core_ocp')
+ arch/ppc/syslib/virtex_devices.c:30: error: field name not in record or union  initializer
+ arch/ppc/syslib/virtex_devices.c:30: error: (near initialization for  'core_ocp')
+ arch/ppc/syslib/virtex_devices.c:30: error: 'OCP_CPM_NA' undeclared here (not  in a function)
+ arch/ppc/syslib/virtex_devices.c:63: error: field name not in record or union  initializer
+ arch/ppc/syslib/virtex_devices.c:63: error: (near initialization for   'core_ocp')
 
-> -----Ursprungligt meddelande-----
-> Fr=E5n: Russell McGuire [mailto:rmcguire@videopresence.com]
-> Skickat: den 17 januari 2008 23:12
-> Till: 'Joakim Tjernlund'
-> Kopia: linuxppc-embedded@ozlabs.org; 'Kim Phillips'
-> =C4mne: RE: Driver - HDLC 83xx QUICC Engine??
->=20
-> Jocke,
->=20
-> I ran across this patch doing some looking around. It isn't in the =
-kernel I
-> downloaded a while ago and have been working with, and I am not sure =
-of the
-> real extents of its support.
->=20
-> Maybe Kim or Kumar can fill us in, on if it is what we are looking =
-for.
->=20
-> http://patchwork.ozlabs.org/linuxppc/patch?id=3D7262
->=20
->=20
-> In any regards, it definitely looks like something we should be =
-checking
-> out.
->=20
-> -Russ
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> > Sent: Tuesday, January 15, 2008 4:19 PM
-> > To: rmcguire@videopresence.com; linuxppc-embedded@ozlabs.org
-> > Subject: SV: Driver - HDLC 83xx QUICC Engine??
-> >
-> > > -----Ursprungligt meddelande-----
-> > > Fr=E5n: =
-linuxppc-embedded-bounces+joakim.tjernlund=3Dlumentis.se@ozlabs.org
-> > [mailto:linuxppc-embedded-
-> > > bounces+joakim.tjernlund=3Dlumentis.se@ozlabs.org] F=F6r Russell =
-McGuire
-> > > Skickat: den 15 januari 2008 20:52
-> > > Till: linuxppc-embedded@ozlabs.org
-> > > =C4mne: Driver - HDLC 83xx QUICC Engine??
-> > >
-> > > All,
-> > >
-> > > Does anyone know of a project or existing driver for supporting =
-HDLC for
-> > the
-> > >
-> > > MPC83xx or MPC82XX Freescale CPUs?
-> > >
-> > > Looking to run raw HDLC over various Ethernet or T1 links.
-> > >
-> > > -Russ
-> >
-> > Me too. Perhaps not, I will be looking at presenting a Ethernet i/f =
-to the
-> > kernel but
-> > sending out HDLC frames containing the Ethernet packet. If you =
-find/have
-> > anything
-> > that helps me do that, send it my way please.
-> >
-> >      Jocke
->=20
->=20
+
+Rami
+
+
+
+             
+---------------------------------
+ Ne gardez plus qu'une seule adresse mail ! Copiez vos mails vers Yahoo! Mail 
+--0-559914106-1200576334=:76187
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<div><span class="846124916-08012008"><font size="2">Hi all,</font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2">I am trying to compile a&nbsp;kernel for the ppc405 embedded on the virtex 4 and I am obtaining the compiling errors listed below(at the end of this mail).</font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2">my compiler is the crosstool  latest one. </font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2">I tried to compile each the  following kernel versions :</font></span></div> <div><span class="846124916-08012008"><font size="2">2.6.23.8</font></span></div>  <div><span class="846124916-08012008"><font size="2">2.6.17</font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span
+ class="846124916-08012008"><font size="2">with the following versions of  gcc and glibc of the crosscompiler</font></span></div> <div><span class="846124916-08012008"><font size="2">gcc-4.0.2-glibc-2.3.5</font></span></div> <div><span class="846124916-08012008"><span class="846124916-08012008"><font size="2">gcc-4.1.0-glibc-2.3.6</font></span></span></div> <div><span class="846124916-08012008"><span class="846124916-08012008"><span class="846124916-08012008"><font size="2">gcc-4.1.1-glibc-2.3.6</font></span></span></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2">the result is always the same  (array type has incomplete element type)</font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2">moreover I searched all the  files and I replaced </font></span></div> <div><span class="846124916-08012008"><font
+ size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (struct ocp_def  core_ocp[])&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with&nbsp; (struct ocp_def core_ocp[2])&nbsp;</font></span></div> <div><span class="846124916-08012008">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font size="2">because my architectur  contains only one UART, the result is always the same (same  error).</font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2">any help is  appreciated,</font></span></div> <div><span class="846124916-08012008"></span>&nbsp;</div><span class="846124916-08012008"></span> <div><span class="846124916-08012008"></span>&nbsp;</div> <div><span class="846124916-08012008"><font size="2"> <div>arch/ppc/syslib/virtex_devices.c:23: error: array type has incomplete element  type</div> <div>arch/ppc/syslib/virtex_devices.c:25:
+ error: field name not in record or union  initializer</div> <div>arch/ppc/syslib/virtex_devices.c:25: error: (near initialization for  'core_ocp')</div> <div>arch/ppc/syslib/virtex_devices.c:26: error: field name not in record or union  initializer</div> <div>arch/ppc/syslib/virtex_devices.c:26: error: (near initialization for  'core_ocp')</div> <div>arch/ppc/syslib/virtex_devices.c:27: error: field name not in record or union  initializer</div>  <div>arch/ppc/syslib/virtex_devices.c:27: error: (near initialization for  'core_ocp')</div> <div>arch/ppc/syslib/virtex_devices.c:28: error: field name not in record or union  initializer</div> <div>arch/ppc/syslib/virtex_devices.c:28: error: (near initialization for  'core_ocp')</div> <div>arch/ppc/syslib/virtex_devices.c:29: error: field name not in record or union  initializer</div> <div>arch/ppc/syslib/virtex_devices.c:29: error: (near initialization for  'core_ocp')</div> <div>arch/ppc/syslib/virtex_devices.c:30: error:
+ field name not in record or union  initializer</div> <div>arch/ppc/syslib/virtex_devices.c:30: error: (near initialization for  'core_ocp')</div> <div>arch/ppc/syslib/virtex_devices.c:30: error: 'OCP_CPM_NA' undeclared here (not  in a function)</div> <div>arch/ppc/syslib/virtex_devices.c:63: error: field name not in record or union  initializer</div> <div>arch/ppc/syslib/virtex_devices.c:63: error: (near initialization for   'core_ocp')<br><br><br>Rami<br></div></font></span></div><p>&#32;
+      
+
+      <hr size="1"> 
+Ne gardez plus qu'une seule adresse mail ! <a href="http://fr.rd.yahoo.com/mail/mail_taglines/trueswitch/*http://www.trueswitch.com/yahoo-fr/">Copiez vos mails</a> vers Yahoo! Mail 
+--0-559914106-1200576334=:76187--
