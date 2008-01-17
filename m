@@ -1,19 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 67CEADE29B
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 09:37:51 +1100 (EST)
-Date: Thu, 17 Jan 2008 16:38:11 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH 3/3] Update mpc8313erdb defconfig for MTD, NAND, JFFS2.
-Message-ID: <20080117223811.GC20697@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 39B39DDE01
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 09:51:11 +1100 (EST)
+Date: Thu, 17 Jan 2008 14:51:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+Message-Id: <20080117145105.ad968ea6.akpm@linux-foundation.org>
+In-Reply-To: <200801172315.28129.m.kozlowski@tuxland.pl>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<200801172315.28129.m.kozlowski@tuxland.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	Matt Mackall <mpm@selenic.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,113 +27,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/configs/mpc8313_rdb_defconfig |   46 ++++++++++++++++++++--------
- 1 files changed, 33 insertions(+), 13 deletions(-)
+On Thu, 17 Jan 2008 23:15:27 +0100
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-diff --git a/arch/powerpc/configs/mpc8313_rdb_defconfig b/arch/powerpc/configs/mpc8313_rdb_defconfig
-index c9af905..db08e73 100644
---- a/arch/powerpc/configs/mpc8313_rdb_defconfig
-+++ b/arch/powerpc/configs/mpc8313_rdb_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.24-rc4
--# Thu Dec  6 16:48:31 2007
-+# Linux kernel version: 2.6.24-rc6
-+# Thu Jan 17 16:35:55 2008
- #
- # CONFIG_PPC64 is not set
- 
-@@ -144,6 +144,7 @@ CONFIG_MPC8313_RDB=y
- # CONFIG_MPC834x_MDS is not set
- # CONFIG_MPC834x_ITX is not set
- # CONFIG_MPC836x_MDS is not set
-+# CONFIG_MPC837x_MDS is not set
- CONFIG_PPC_MPC831x=y
- # CONFIG_MPIC is not set
- # CONFIG_MPIC_WEIRD is not set
-@@ -336,15 +337,16 @@ CONFIG_PREVENT_FIRMWARE_BUILD=y
- CONFIG_MTD=y
- # CONFIG_MTD_DEBUG is not set
- # CONFIG_MTD_CONCAT is not set
--# CONFIG_MTD_PARTITIONS is not set
-+CONFIG_MTD_PARTITIONS=y
-+# CONFIG_MTD_REDBOOT_PARTS is not set
-+# CONFIG_MTD_CMDLINE_PARTS is not set
- 
- #
- # User Modules And Translation Layers
- #
- CONFIG_MTD_CHAR=y
--# CONFIG_MTD_BLKDEVS is not set
--# CONFIG_MTD_BLOCK is not set
--# CONFIG_MTD_BLOCK_RO is not set
-+CONFIG_MTD_BLKDEVS=y
-+CONFIG_MTD_BLOCK=y
- # CONFIG_FTL is not set
- # CONFIG_NFTL is not set
- # CONFIG_INFTL is not set
-@@ -381,11 +383,8 @@ CONFIG_MTD_CFI_UTIL=y
- # Mapping drivers for chip access
- #
- # CONFIG_MTD_COMPLEX_MAPPINGS is not set
--CONFIG_MTD_PHYSMAP=y
--CONFIG_MTD_PHYSMAP_START=0xfe000000
--CONFIG_MTD_PHYSMAP_LEN=0x1000000
--CONFIG_MTD_PHYSMAP_BANKWIDTH=2
--# CONFIG_MTD_PHYSMAP_OF is not set
-+# CONFIG_MTD_PHYSMAP is not set
-+CONFIG_MTD_PHYSMAP_OF=y
- # CONFIG_MTD_INTEL_VR_NOR is not set
- # CONFIG_MTD_PLATRAM is not set
- 
-@@ -406,7 +405,16 @@ CONFIG_MTD_PHYSMAP_BANKWIDTH=2
- # CONFIG_MTD_DOC2000 is not set
- # CONFIG_MTD_DOC2001 is not set
- # CONFIG_MTD_DOC2001PLUS is not set
--# CONFIG_MTD_NAND is not set
-+CONFIG_MTD_NAND=y
-+CONFIG_MTD_NAND_VERIFY_WRITE=y
-+# CONFIG_MTD_NAND_ECC_SMC is not set
-+# CONFIG_MTD_NAND_MUSEUM_IDS is not set
-+CONFIG_MTD_NAND_IDS=y
-+# CONFIG_MTD_NAND_DISKONCHIP is not set
-+# CONFIG_MTD_NAND_CAFE is not set
-+# CONFIG_MTD_NAND_NANDSIM is not set
-+# CONFIG_MTD_NAND_PLATFORM is not set
-+# CONFIG_MTD_ALAUDA is not set
- # CONFIG_MTD_ONENAND is not set
- 
- #
-@@ -1178,7 +1186,17 @@ CONFIG_TMPFS=y
- # CONFIG_BEFS_FS is not set
- # CONFIG_BFS_FS is not set
- # CONFIG_EFS_FS is not set
--# CONFIG_JFFS2_FS is not set
-+CONFIG_JFFS2_FS=y
-+CONFIG_JFFS2_FS_DEBUG=0
-+CONFIG_JFFS2_FS_WRITEBUFFER=y
-+# CONFIG_JFFS2_FS_WBUF_VERIFY is not set
-+# CONFIG_JFFS2_SUMMARY is not set
-+# CONFIG_JFFS2_FS_XATTR is not set
-+# CONFIG_JFFS2_COMPRESSION_OPTIONS is not set
-+CONFIG_JFFS2_ZLIB=y
-+# CONFIG_JFFS2_LZO is not set
-+CONFIG_JFFS2_RTIME=y
-+# CONFIG_JFFS2_RUBIN is not set
- # CONFIG_CRAMFS is not set
- # CONFIG_VXFS_FS is not set
- # CONFIG_HPFS_FS is not set
-@@ -1242,6 +1260,8 @@ CONFIG_BITREVERSE=y
- CONFIG_CRC32=y
- # CONFIG_CRC7 is not set
- # CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_ZLIB_DEFLATE=y
- CONFIG_PLIST=y
- CONFIG_HAS_IOMEM=y
- CONFIG_HAS_IOPORT=y
--- 
-1.5.3.8
+> Hello,
+> 
+>         The script below kills powerpc. oopses get longer and more
+> wonderful with every next 'cated' file.
+
+ppc32.
+
+> /proc/<pid>/task/<pid>/pagemap seems to be the cause of oops. The
+> important thing is that it oopses for random (that is not first in a row)
+> process from /proc. So not every 'cat /proc/<pid>/task/<pid>/pagemap'
+> causes an oops.
+> 
+> I could try to bisect this but this powerpc box is iMac G3 (cpu at 400MHz)
+> and this will take time. So any hints appreciated.
+> 
+> Regards,
+> 
+> 	Mariusz
+> 
+> script:
+> ---------
+> #!/bin/bash
+> 
+> for i in `find /proc/*/ -readable -type f`; do
+>         echo -n "cat $i > /dev/null ... ";
+>         logger -t proc_loop $i;
+>         sync;
+>         cat $i > /dev/null;
+>         echo "done";
+> done
+> ----------
+> syslog:
+> proc_loop: /proc/3731/task/3731/pagemap
+> kernel: BUG: sleeping function called from invalid context at fs/proc/task_mmu.c:554
+> kernel: in_atomic():1, irqs_disabled():0
+> kernel: Call Trace:
+> kernel: [cf1cddf0] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cde20] [c002b2ec] __might_sleep+0xf4/0x108
+> kernel: [cf1cde30] [c00d2d54] add_to_pagemap+0x40/0x11c
+> kernel: [cf1cde50] [c00d2f44] pagemap_pte_range+0xa8/0x10c
+> kernel: [cf1cde70] [c0081b30] walk_page_range+0x148/0x23c
+> kernel: [cf1cdeb0] [c00d3104] pagemap_read+0x15c/0x244
+> kernel: [cf1cdef0] [c0092144] vfs_read+0xc4/0x16c
+> kernel: [cf1cdf10] [c009261c] sys_read+0x4c/0x90
+> kernel: [cf1cdf40] [c001328c] ret_from_syscall+0x0/0x40
+
+It's not really an oops - it's a warning.  add_to_pagemap() is doing a
+put_user() inside pagemap_pte_range->pte_offset_map->kmap_atomic.
+
+A known bug, I'm afraid.
+
+How to fix?
+
+- double-buffer the data to be copied to userspace or
+
+- take a local copy of the pte page then work on that instead or
+
+- play copy_to_user_inatomic() tricks.
+
+It would be really nice to get the maps4 stuff merged this time around but
+it is looking unlikely.
+
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: BUG: scheduling while atomic: cat/8929/0x00000002
+> kernel: Call Trace:
+> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
+> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
+> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: BUG: scheduling while atomic: cat/8929/0x00000007
+> kernel: Call Trace:
+> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
+> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
+> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: BUG: scheduling while atomic: cat/8929/0x00000009
+> kernel: Call Trace:
+> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
+> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
+> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: Page fault in user mode with in_atomic() = 1 mm = cf2765a0
+> kernel: NIP = ff0cbc8  MSR = 4000f932
+> kernel: Oops: Weird page fault, sig: 11 [#3]
+
+hm.  Not sure how that happened.  The arch code thinks we're running in
+user mode.
+
+> kernel: PREEMPT PowerMac
+> kernel: Modules linked in: usbhid ide_cd_mod ohci_hcd usbcore uninorth_agp agpgart
+> kernel: NIP: 0ff0cbc8 LR: 0ff0d398 CTR: 0ff0d2d0
+> kernel: REGS: cf1cdf50 TRAP: 0401   Tainted: G      D  (2.6.24-rc8-mm1)
+> kernel: MSR: 4000f932 <EE,PR,FP,ME,IR,DR>  CR: 28022442  XER: 00000000
+> kernel: TASK = cf8d74f0[8929] 'cat' THREAD: cf1cc000
+> kernel: GPR00: 00000001 bf93e330 48029bf0 0ffed488 10016038 28022442 00000000 0ff5a364 
+> kernel: GPR08: 0000f932 00000000 00001032 00000000 28022442 
+> kernel: NIP [0ff0cbc8] 0xff0cbc8
+> kernel: LR [0ff0d398] 0xff0d398
+> proc_loop: /proc/3731/task/3731/wchan
+> kernel: Call Trace:
+> kernel: ---[ end trace 54bd1ed4883922c9 ]---
+> kernel: note: cat[8929] exited with preempt_count 10
+> proc_loop: /proc/3731/task/3731/oom_score
+> proc_loop: /proc/3731/task/3731/oom_adj
+> proc_loop: /proc/3731/fdinfo/0
+> [... snip ...]
