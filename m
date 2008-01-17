@@ -1,23 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3D64EDDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 06:27:41 +1100 (EST)
-Date: Thu, 17 Jan 2008 11:27:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Subject: Re: 2.6.24-rc8-mm1: powerpc: include/asm/nvram.h:62: error: field
-	'partition' has incomplete type
-Message-Id: <20080117112755.896f2c74.akpm@linux-foundation.org>
-In-Reply-To: <200801171918.09645.m.kozlowski@tuxland.pl>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801171918.09645.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 13B0DDDEBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 06:27:52 +1100 (EST)
+Message-ID: <478FAC8A.9050800@scram.de>
+Date: Thu, 17 Jan 2008 20:29:14 +0100
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Patches added to master/for-2.6.25 branch of powerpc.git
+References: <18318.56299.476711.644917@cargo.ozlabs.ibm.com>	<20080117145903.GA4535@localhost.localdomain>
+	<A1DA2145-E5AE-4A7D-83D4-D86F05A9F6DF@kernel.crashing.org>
+In-Reply-To: <A1DA2145-E5AE-4A7D-83D4-D86F05A9F6DF@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008 19:18:07 +0100 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+Hi Kumar,
 
->   CC [M]  sound/ppc/awacs.o
-> In file included from sound/ppc/awacs.c:24:
-> include/asm/nvram.h:62: error: field 'partition' has incomplete type
-> make[1]: *** [sound/ppc/awacs.o] Error 1
-> make: *** [sound/ppc/awacs.o] Error 2
+>> http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048473.html
+>>
+>> ^^ fixed phy support for fs_enet. Needed for some other boards, I
+>> presume.
+> 
+> Hmm, its vitaly picking this one up?  if not I can.
 
-hm.
+That would be great. Jeff Garzik agreed to have this patch go through the PowerPC tree and this
+patch is dependent on the other fixed-phy patches.
 
---- a/include/asm-powerpc/nvram.h~include-asm-powerpc-nvramh-needs-listh
-+++ a/include/asm-powerpc/nvram.h
-@@ -11,6 +11,7 @@
- #define _ASM_POWERPC_NVRAM_H
- 
- #include <linux/errno.h>
-+#include <linux/list.h>
- 
- #define NVRW_CNT 0x20
- #define NVRAM_HEADER_LEN 16 /* sizeof(struct nvram_header) */
-_
-
-I wonder why mainline isn't busted actually.
+Thanks,
+Jochen
