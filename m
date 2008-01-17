@@ -1,15 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 17 Jan 2008 11:16:15 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: John Rigby <jrigby@freescale.com>
-Subject: Re: [Add mpc5121 support PATCH v2 2/8] Add mpc512x ipic support
-Message-ID: <20080117001615.GA9989@localhost.localdomain>
-References: <1200519447-25555-1-git-send-email-jrigby@freescale.com>
-	<1200519447-25555-2-git-send-email-jrigby@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 16 Jan 2008 17:35:13 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 4/4 v2] powerpc: Katana750i - Add platform support
+Message-ID: <20080117003513.GB1917@mag.az.mvista.com>
+References: <20080114225150.GB21940@mag.az.mvista.com>
+	<20080114230057.GC22862@mag.az.mvista.com>
+	<20080116221210.GC7228@mag.az.mvista.com>
+	<20080117102702.5e21fc22.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1200519447-25555-2-git-send-email-jrigby@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20080117102702.5e21fc22.sfr@canb.auug.org.au>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,47 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 16, 2008 at 02:37:21PM -0700, John Rigby wrote:
-> Added ipic_info entries for vectors used by 512x that
-> were previously unused by 83xx.
+On Thu, Jan 17, 2008 at 10:27:02AM +1100, Stephen Rothwell wrote:
+> Hi Mark,
+> 
+> On Wed, 16 Jan 2008 15:12:10 -0700 "Mark A. Greer" <mgreer@mvista.com> wrote:
+> >
+> > +static void __init katana750i_setup_arch(void)
+> > +{
+> > +	struct device_node *np;
+> > +	phys_addr_t paddr;
+> > +	const unsigned int *reg;
+> > +
+> > +	np = of_find_compatible_node(NULL, NULL, "katana750i,cpld");
+> > +	if (!np)
+> > +		printk(KERN_WARNING "No CPLD DT node; functionality reduced\n");
+> > +	else {
+> > +		reg = of_get_property(np, "reg", NULL);
+> > +		if (!reg)
+> > +			printk(KERN_WARNING "No CPLD reg property; "
+> > +					"functionality reduced\n");
+> > +		else {
+> > +			paddr = of_translate_address(np, reg);
+> > +			of_node_put(np);
+> > +			cpld_base = ioremap(paddr, reg[1]);
+> > +		}
+> > +	}
+> 
+> You need an of_node_put(np) for the !reg case above.  Maybe you should
+> just put it after the else clause instead of in it.
 
-I've always wondered what these great big tables in the ipic driver
-were for.  Are they anything that could be better repsresented in the
-device tree?
+Erg, yes...duh.
 
-> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-> index 7274750..4c016da 100644
-> --- a/arch/powerpc/sysdev/ipic.c
-> +++ b/arch/powerpc/sysdev/ipic.c
-> @@ -48,6 +48,13 @@ static struct ipic_info ipic_info[] = {
->  		.bit	= 17,
->  		.prio_mask = 1,
->  	},
-> +	[3] = {
-> +		.mask	= IPIC_SIMSR_H,
-> +		.prio	= IPIC_SIPRR_C,
-> +		.force	= IPIC_SIFCR_H,
-> +		.bit	= 18,
-> +		.prio_mask = 2,
-> +	},
->  	[4] = {
->  		.mask	= IPIC_SIMSR_H,
->  		.prio	= IPIC_SIPRR_C,
-> @@ -55,6 +62,34 @@ static struct ipic_info ipic_info[] = {
->  		.bit	= 19,
->  		.prio_mask = 3,
->  	},
-> +	[5] = {
-> +		.mask	= IPIC_SIMSR_H,
-> +		.prio	= IPIC_SIPRR_C,
-> +		.force	= IPIC_SIFCR_H,
-> +		.bit	= 20,
-> +		.prio_mask = 4,
-> +	},
-[...]
+Thanks again, Stephen.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Mark
