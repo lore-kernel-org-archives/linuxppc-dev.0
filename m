@@ -1,21 +1,20 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 85CF9DDF61
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:41:41 +1100 (EST)
-Message-ID: <478F6972.9080308@scram.de>
-Date: Thu, 17 Jan 2008 15:42:58 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id A31DFDDF02
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:44:25 +1100 (EST)
+Date: Thu, 17 Jan 2008 15:44:22 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 06/18] PS3: Fix kexec storage probe
+In-Reply-To: <20080116235154.946247739@am.sony.com>
+Message-ID: <Pine.LNX.4.64.0801171543470.15992@vixen.sonytel.be>
+References: <20080116235154.250479649@am.sony.com>
+	<20080116235154.946247739@am.sony.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH/RFC] [POWERPC] CPM1: implement GPIO LIB API
-References: <478F4514.7030906@scram.de>
-	<fa686aa40801170547q8c758dxef5aa301396f7f38@mail.gmail.com>
-In-Reply-To: <fa686aa40801170547q8c758dxef5aa301396f7f38@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-235241465-1200581043=:15992"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->>  arch/powerpc/platforms/8xx/Kconfig |    2 +
->>  arch/powerpc/sysdev/commproc.c     |  162 +++++++++++++++++++++++++++++++++++-
+---584349381-235241465-1200581043=:15992
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0801171544081.15992@vixen.sonytel.be>
+
+On Wed, 16 Jan 2008, geoffrey.levand@am.sony.com wrote:
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > 
-> Is this 8xx only?  Can it live in arch/powerpc/platforms/8xx?
+> The PS3 storage probe thread left the storage notification device open on
+> shutdown, so the device open would fail with LV1_BUSY when the second stage
+> kexec kernel tried to open the device.
+> 
+> To fix this:
+>   - Replace the call to wait_for_completion_interruptible() by a call to
+>     wait_event_interruptible() that also checks kthread_should_stop(),
+>   - Install a reboot notifier that stops the storage probe thread on shutdown.
 
-According to the freescale docs, the GPIO ports are part of the CPM1. So I've put the
-support into commproc.c (which maybe should be renamed to cpm1_common.c to match cpm2_common.c).
+Actually I had planned to fold this into `[patch 05/18] PS3: Use the HVs
+storage device notification mechanism properly'.
 
-AFAIK, CPM1 is specific to 8xx.
+With kind regards,
 
-Thanks,
-Jochen
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-235241465-1200581043=:15992--
