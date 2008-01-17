@@ -1,21 +1,18 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 54027DDE29
+Return-Path: <linux@sundmangroup.com>
+Received: from proxy3.bredband.net (proxy3.bredband.net [195.54.101.73])
+	by ozlabs.org (Postfix) with ESMTP id 2CECEDDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jan 2008 17:26:58 +1100 (EST)
-Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.57])
-	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m0H6QtTi003064
-	for <linuxppc-embedded@ozlabs.org>; Wed, 16 Jan 2008 22:26:55 -0800
-To: linuxppc-embedded@ozlabs.org
-Subject: Endian problem when accessing internel regs on 8347
+	Thu, 17 Jan 2008 18:01:39 +1100 (EST)
+Received: from ironport2.bredband.com (195.54.101.122) by proxy3.bredband.net
+	(7.3.127) id 473103E7017E1D73 for linuxppc-embedded@ozlabs.org;
+	Thu, 17 Jan 2008 08:01:37 +0100
+Message-ID: <478EFD4C.9070706@sundmangroup.com>
+Date: Thu, 17 Jan 2008 08:01:32 +0100
+From: Matias Sundman <linux@sundmangroup.com>
 MIME-Version: 1.0
-Message-ID: <OF03A8BF8B.4AC46CCD-ON882573D3.00216F5B-882573D3.00236B8D@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Wed, 16 Jan 2008 22:26:53 -0800
-Content-Type: text/plain; charset="US-ASCII"
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: SCHED_FIFO & System()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,44 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hello,
+I have some strange behavior in one of my systems.
 
-I've got an MPC8347 running the 2.6.24-rc5 kernel and I'm trying to access 
-the GPIO registers.  I already have a driver that's doing related work 
-(tho across PCI) and I just want to remap the internal CPU address to a 
-kernal address and be able to read/write the register using an IOCTL call 
-from user space.  My problem is, every accessor I try does an endian 
-conversion before giving me my data.  So here's some code snipits of what 
-I'm doing:
+I have a real-time thread under SCHED_FIFO which is running every 10ms. 
+It is blocking on a semaphore and released by a timer interrupt every 10ms.
+Generally this works really well.
 
-request_mem_region(0xe0000c00, 24, "my driver");  // 0xe0000c00 is the 
-memory mapped location of the GPIO regs
-data_ptr2 = ioremap(0xe0000c00, 24);
+However, there is a module in the system that makes a / system() / call 
+from c-code ;
 
-Then in the IOCTL function I try to read from the register.  First I 
-tried:
+  system("run_my_script");
 
-ioread32(data_ptr2);
+By calling and running a bash script. Independent of how the actual 
+script looks like the real time thread does not get scheduled under 80ms 
+-- the time it takes
+for the system() call to finish.
 
-I know that the mapping is working okay because I got the data from the 
-GPIO direction register, but it's been byte swapped.  The contents of the 
-register are 0xFFFFFFE7, but what my user space app gets back is 
-0xE7FFFFFF.  I've tried all the varients I can find, readl(), inl(), 
-in_be32(), in_le32(), even __raw_readl().  They all give me back byte 
-swapped data.  I'm very confused.  Especially since I've looked at 
-in_be32() and in_le32(), they're both inline assembly, and they use 
-different instructions.  They can't be giving me the same results.  I'm 
-sure I'm not the first person to want to access PowerPC internal registers 
-through a driver.  Can anyone give me a hint what I'm doing wrong?
+I can see when running a LTT session that the wake_up event occurs for 
+the real time thread 10ms into the system call but nevertheless the real 
+time thread does not get scheduled.
 
-As an additional question related to PowerPC inline assembly, can anyone 
-tell me what "%U1%X1" means in the following:
+Anybody who recognize this or similar situations?
 
-__asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync" : "=r" (ret) : 
-"m" (*addr));
 
-Thanks.
 
-See 'ya!
-
-Bruce
+Cheers // Matias
