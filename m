@@ -1,19 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E772FDDECF
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 23:57:52 +1100 (EST)
-Date: Thu, 17 Jan 2008 16:06:10 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jochen Friedrich <jochen@scram.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 556EBDDEB6
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 00:47:21 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so142893anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 05:47:20 -0800 (PST)
+Message-ID: <fa686aa40801170547q8c758dxef5aa301396f7f38@mail.gmail.com>
+Date: Thu, 17 Jan 2008 06:47:07 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jochen Friedrich" <jochen@scram.de>
 Subject: Re: [PATCH/RFC] [POWERPC] CPM1: implement GPIO LIB API
-Message-ID: <20080117130610.GA13408@localhost.localdomain>
-References: <478F4514.7030906@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
 In-Reply-To: <478F4514.7030906@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <478F4514.7030906@scram.de>
 Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
 	David Gibson <david@gibson.dropbear.id.au>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +27,77 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi Jochen,
 
-Thanks for the patch.
+comments below.
 
-On Thu, Jan 17, 2008 at 01:07:48PM +0100, Jochen Friedrich wrote:
+On 1/17/08, Jochen Friedrich <jochen@scram.de> wrote:
 > Signed-off-by: Jochen Friedrich <jochen@scram.de>
 > ---
-> arch/powerpc/platforms/8xx/Kconfig |    2 +
-> arch/powerpc/sysdev/commproc.c     |  162 
-> +++++++++++++++++++++++++++++++++++-
-> 2 files changed, 163 insertions(+), 1 deletions(-)
 
-Something happened wrt long lines, your editor seem to wrap them. :-(
+Need a more detailed change description.
 
-> diff --git a/arch/powerpc/platforms/8xx/Kconfig 
-> b/arch/powerpc/platforms/8xx/Kconfig
-> index 91fbe42..08e927c 100644
-> --- a/arch/powerpc/platforms/8xx/Kconfig
-> +++ b/arch/powerpc/platforms/8xx/Kconfig
-[...]
-> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-> index 621bc6c..be78e65 100644
-> --- a/arch/powerpc/sysdev/commproc.c
-> +++ b/arch/powerpc/sysdev/commproc.c
-[...]
-> +int cpm1_gpiochip_add16(struct device_node *np)
-> +{
-> +	return of_mm_gpiochip_add(np, &cpm1_gc16);
-> +}
+>  arch/powerpc/platforms/8xx/Kconfig |    2 +
+>  arch/powerpc/sysdev/commproc.c     |  162 +++++++++++++++++++++++++++++++++++-
 
-(1)
+Is this 8xx only?  Can it live in arch/powerpc/platforms/8xx?
+
+>  2 files changed, 163 insertions(+), 1 deletions(-)
+>
+> +static struct of_gpio_chip cpm1_gc16 = {
+> +       .gpio_cells = 1,
+> +       .xlate = of_gpio_simple_xlate,
+> +
+> +       .gc = {
+> +               .ngpio = 16,
+> +               .direction_input = cpm1_gpio_dir_in16,
+> +               .direction_output = cpm1_gpio_dir_out16,
+> +               .get = cpm1_gpio_get16,
+> +               .set = cpm1_gpio_set16,
+> +       },
+> +};
+<snip>
+> +static struct of_gpio_chip cpm1_gc32 = {
+> +       .gpio_cells = 1,
+> +       .xlate = of_gpio_simple_xlate,
+> +
+> +       .gc = {
+> +               .ngpio = 32,
+> +               .direction_input = cpm1_gpio_dir_in32,
+> +               .direction_output = cpm1_gpio_dir_out32,
+> +               .get = cpm1_gpio_get32,
+> +               .set = cpm1_gpio_set32,
+> +       },
+> +};
+
+Nit: Your naming convention seems a little backwards.  It took me a
+moment to figure out what your hooks lined up with.  Can you make the
+'16' and '32' part of the prefix instead of appended on the end?
+
+ie. use 'cpm1_gpio16_dir_in' instead of 'cpm1_gpio_dir_in16'
 
 > +int cpm1_gpiochip_add32(struct device_node *np)
 > +{
-> +	return of_mm_gpiochip_add(np, &cpm1_gc32);
+> +       return of_mm_gpiochip_add(np, &cpm1_gc32);
 > +}
 
-(2)
+Can you just drop this function and roll it into cpm_init_par_io?
 
+> +
 > +static int cpm_init_par_io(void)
 > +{
-> +	struct device_node *np;
+> +       struct device_node *np;
 > +
-> +	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
-> +		cpm1_gpiochip_add16(np);
+> +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
+> +               cpm1_gpiochip_add16(np);
 > +
-> +	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32")
-> +		cpm1_gpiochip_add32(np);
-> +	return 0;
+> +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32")
+> +               cpm1_gpiochip_add32(np);
+> +       return 0;
 > +}
 > +arch_initcall(cpm_init_par_io);
 
-I was unable to use arch_initcall() because lack of kmalloc() that
-early (needed for of_mm_gpiochip_add() and GPIO LIB in general). So,
-does it really work here?
-
-Though, I tried arch_initcall() in the board file, and well... link
-order matters a lot, so arch_initcall could indeed work in the
-arch/powerpc/sysdev/. I should try that for QE. :-)
-
-If it works, you'd better make (1) and (2) static, or just remove
-them completely, since there are no users outside of this file.
-
-Thanks!
+Cheers,
+g.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
