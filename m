@@ -1,18 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 918C9DDE2B
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 23:06:33 +1100 (EST)
-Message-ID: <478F4514.7030906@scram.de>
-Date: Thu, 17 Jan 2008 13:07:48 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <penberg@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.189])
+	by ozlabs.org (Postfix) with ESMTP id 93284DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 23:14:13 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so501009rvf.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 04:14:11 -0800 (PST)
+Message-ID: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+Date: Thu, 17 Jan 2008 14:14:11 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Sender: penberg@gmail.com
+To: "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080115150949.GA14089@aepfle.de>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: [PATCH/RFC] [POWERPC] CPM1: implement GPIO LIB API
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080115150949.GA14089@aepfle.de>
+Cc: Linux MM <linux-mm@kvack.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, clameter@sgi.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,208 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/platforms/8xx/Kconfig |    2 +
- arch/powerpc/sysdev/commproc.c     |  162 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 163 insertions(+), 1 deletions(-)
+Hi Olaf,
 
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 91fbe42..08e927c 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -4,6 +4,8 @@ config FADS
- config CPM1
- 	bool
- 	select CPM
-+	select GENERIC_GPIO
-+	select GPIO_LIB
- 
- choice
- 	prompt "8xx Machine Type"
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index 621bc6c..be78e65 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -36,6 +36,7 @@
- #include <asm/8xx_immap.h>
- #include <asm/commproc.h>
- #include <asm/io.h>
-+#include <asm/gpio.h>
- #include <asm/tlbflush.h>
- #include <asm/rheap.h>
- #include <asm/prom.h>
-@@ -441,7 +442,7 @@ struct cpm_ioport16 {
- };
- 
- struct cpm_ioport32 {
--	__be32 dir, par, sor;
-+	__be32 dir, par, sor, dat;
- };
- 
- static void cpm1_set_pin32(int port, int pin, int flags)
-@@ -648,3 +649,162 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
- 
- 	return 0;
- }
-+
-+/*
-+ * GPIO LIB API implementation
-+ */
-+
-+static int cpm1_gpio_get16(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	return !!(in_be16(&iop->dat) & pin_mask);
-+}
-+
-+static void cpm1_gpio_set16(struct gpio_chip *gc, unsigned int gpio, int value)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	if (value)
-+		setbits16(&iop->dat, pin_mask);
-+	else
-+		clrbits16(&iop->dat, pin_mask);
-+}
-+
-+static int cpm1_gpio_dir_out16(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	setbits16(&iop->dir, pin_mask);
-+
-+	cpm1_gpio_set16(gc, gpio, val);
-+
-+	return 0;
-+}
-+
-+static int cpm1_gpio_dir_in16(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	clrbits16(&iop->dir, pin_mask);
-+
-+	return 0;
-+}
-+
-+static struct of_gpio_chip cpm1_gc16 = {
-+	.gpio_cells = 1,
-+	.xlate = of_gpio_simple_xlate,
-+
-+	.gc = {
-+		.ngpio = 16,
-+		.direction_input = cpm1_gpio_dir_in16,
-+		.direction_output = cpm1_gpio_dir_out16,
-+		.get = cpm1_gpio_get16,
-+		.set = cpm1_gpio_set16,
-+	},
-+};
-+
-+int cpm1_gpiochip_add16(struct device_node *np)
-+{
-+	return of_mm_gpiochip_add(np, &cpm1_gc16);
-+}
-+
-+static int cpm1_gpio_get32(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	return !!(in_be32(&iop->dat) & pin_mask);
-+}
-+
-+static void cpm1_gpio_set32(struct gpio_chip *gc, unsigned int gpio, int value)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	if (value)
-+		setbits32(&iop->dat, pin_mask);
-+	else
-+		clrbits32(&iop->dat, pin_mask);
-+}
-+
-+static int cpm1_gpio_dir_out32(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	setbits32(&iop->dir, pin_mask);
-+
-+	cpm1_gpio_set32(gc, gpio, val);
-+
-+	return 0;
-+}
-+
-+static int cpm1_gpio_dir_in32(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	clrbits32(&iop->dir, pin_mask);
-+
-+	return 0;
-+}
-+
-+static struct of_gpio_chip cpm1_gc32 = {
-+	.gpio_cells = 1,
-+	.xlate = of_gpio_simple_xlate,
-+
-+	.gc = {
-+		.ngpio = 32,
-+		.direction_input = cpm1_gpio_dir_in32,
-+		.direction_output = cpm1_gpio_dir_out32,
-+		.get = cpm1_gpio_get32,
-+		.set = cpm1_gpio_set32,
-+	},
-+};
-+
-+int cpm1_gpiochip_add32(struct device_node *np)
-+{
-+	return of_mm_gpiochip_add(np, &cpm1_gc32);
-+}
-+
-+static int cpm_init_par_io(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
-+		cpm1_gpiochip_add16(np);
-+
-+	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32")
-+		cpm1_gpiochip_add32(np);
-+	return 0;
-+}
-+arch_initcall(cpm_init_par_io);
--- 
-1.5.3.8
+[Adding Christoph as cc.]
+
+On Jan 15, 2008 5:09 PM, Olaf Hering <olaf@aepfle.de> wrote:
+> Current linus tree crashes in kmem_cache_init, as shown below. The
+> system is a 8cpu 2.2GHz POWER5 system, model 9117-570, with 4GB ram.
+> Firmware is 240_332, 2.6.23 boots ok with the same config.
+>
+> There is a series of mm related patches in 2.6.24-rc1:
+> commit 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 seems to break it,
+
+So that's the "Memoryless nodes: Slab support" patch that I think
+cause a similar oops while ago.
+
+> Unable to handle kernel paging request for data at address 0x00000040
+> Faulting instruction address: 0xc000000000437470
+> cpu 0x0: Vector: 300 (Data Access) at [c00000000075b830]
+>     pc: c000000000437470: ._spin_lock+0x20/0x88
+>     lr: c0000000000f78a8: .cache_grow+0x7c/0x338
+>     sp: c00000000075bab0
+>    msr: 8000000000009032
+>    dar: 40
+>  dsisr: 40000000
+>   current = 0xc000000000665a50
+>   paca    = 0xc000000000666380
+>     pid   = 0, comm = swapper
+> enter ? for help
+> [c00000000075bb30] c0000000000f78a8 .cache_grow+0x7c/0x338
+> [c00000000075bbf0] c0000000000f7d04 .fallback_alloc+0x1a0/0x1f4
+> [c00000000075bca0] c0000000000f8544 .kmem_cache_alloc+0xec/0x150
+> [c00000000075bd40] c0000000000fb1c0 .kmem_cache_create+0x208/0x478
+> [c00000000075be20] c0000000005e670c .kmem_cache_init+0x218/0x4f4
+> [c00000000075bee0] c0000000005bf8ec .start_kernel+0x2f8/0x3fc
+> [c00000000075bf90] c000000000008590 .start_here_common+0x60/0xd0
+
+Looks similar to the one discussed on linux-mm ("[BUG] at
+mm/slab.c:3320" thread). Christoph?
