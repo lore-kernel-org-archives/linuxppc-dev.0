@@ -1,21 +1,36 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 556EBDDEB6
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 00:47:21 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so142893anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 05:47:20 -0800 (PST)
-Message-ID: <fa686aa40801170547q8c758dxef5aa301396f7f38@mail.gmail.com>
-Date: Thu, 17 Jan 2008 06:47:07 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jochen Friedrich" <jochen@scram.de>
-Subject: Re: [PATCH/RFC] [POWERPC] CPM1: implement GPIO LIB API
-In-Reply-To: <478F4514.7030906@scram.de>
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 09A5BDDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:02:39 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m0HE2Zbv260330
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 14:02:35 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m0HE2ZRa827578
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 15:02:35 +0100
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m0HE2Ytn026787
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 15:02:35 +0100
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 0/4] IB/ehca: fixes, port connectivity autodetection,
+	problem workaround
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <478F4514.7030906@scram.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Date: Thu, 17 Jan 2008 15:02:33 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801171502.34287.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,79 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jochen,
+This patchset will fix a minor issue, introduce port connectivity
+autodetection and work around an RDMA-related problem in eHCA2.
 
-comments below.
+[1/4] fixes an error path in destroy_qp()
+[2/4] stores the SMI/GSI QPs in a per-port array
+[3/4] adds port connectivity autodetection
+[4/4] adds the aforementioned workaround
 
-On 1/17/08, Jochen Friedrich <jochen@scram.de> wrote:
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
+The patches will apply, in order, on top of Roland's for-2.6.25 branch.
+Please review them and apply for 2.6.25 if you think they're okay.
 
-Need a more detailed change description.
-
->  arch/powerpc/platforms/8xx/Kconfig |    2 +
->  arch/powerpc/sysdev/commproc.c     |  162 +++++++++++++++++++++++++++++++++++-
-
-Is this 8xx only?  Can it live in arch/powerpc/platforms/8xx?
-
->  2 files changed, 163 insertions(+), 1 deletions(-)
->
-> +static struct of_gpio_chip cpm1_gc16 = {
-> +       .gpio_cells = 1,
-> +       .xlate = of_gpio_simple_xlate,
-> +
-> +       .gc = {
-> +               .ngpio = 16,
-> +               .direction_input = cpm1_gpio_dir_in16,
-> +               .direction_output = cpm1_gpio_dir_out16,
-> +               .get = cpm1_gpio_get16,
-> +               .set = cpm1_gpio_set16,
-> +       },
-> +};
-<snip>
-> +static struct of_gpio_chip cpm1_gc32 = {
-> +       .gpio_cells = 1,
-> +       .xlate = of_gpio_simple_xlate,
-> +
-> +       .gc = {
-> +               .ngpio = 32,
-> +               .direction_input = cpm1_gpio_dir_in32,
-> +               .direction_output = cpm1_gpio_dir_out32,
-> +               .get = cpm1_gpio_get32,
-> +               .set = cpm1_gpio_set32,
-> +       },
-> +};
-
-Nit: Your naming convention seems a little backwards.  It took me a
-moment to figure out what your hooks lined up with.  Can you make the
-'16' and '32' part of the prefix instead of appended on the end?
-
-ie. use 'cpm1_gpio16_dir_in' instead of 'cpm1_gpio_dir_in16'
-
-> +int cpm1_gpiochip_add32(struct device_node *np)
-> +{
-> +       return of_mm_gpiochip_add(np, &cpm1_gc32);
-> +}
-
-Can you just drop this function and roll it into cpm_init_par_io?
-
-> +
-> +static int cpm_init_par_io(void)
-> +{
-> +       struct device_node *np;
-> +
-> +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
-> +               cpm1_gpiochip_add16(np);
-> +
-> +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32")
-> +               cpm1_gpiochip_add32(np);
-> +       return 0;
-> +}
-> +arch_initcall(cpm_init_par_io);
-
-Cheers,
-g.
+Thanks and regards,
+  Joachim
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com
