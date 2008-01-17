@@ -1,19 +1,20 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id E83B6DDF97
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:30:56 +1100 (EST)
-Date: Thu, 17 Jan 2008 06:30:53 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
-	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 22176DDFB0
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 01:32:26 +1100 (EST)
+Message-Id: <A00FB5AE-903B-461A-B234-4BA817B3C5CB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jochen Friedrich <jochen@scram.de>
+In-Reply-To: <478F4E4A.4060907@scram.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH/RFCv2] wdt: Add support for PowerQUICC watchdog
+Date: Thu, 17 Jan 2008 08:31:26 -0600
+References: <478F4E4A.4060907@scram.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	wim@iguana.be, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008, Pekka Enberg wrote:
 
-> Looks similar to the one discussed on linux-mm ("[BUG] at
-> mm/slab.c:3320" thread). Christoph?
+On Jan 17, 2008, at 6:47 AM, Jochen Friedrich wrote:
 
-Right. Try the latest version of the patch to fix it:
+> The PowerQUICC series has a watchdog which can be activated by the  
+> boot
+> loader and then needs to be reset in regular intervals. Once the
+> watchdog is enabled, it can't be disabled anymore. This patch adds
+> support for this kind of watchdog. An early init function is  
+> provided to
+> manually reset the watchdog in early board setup. Later, a kernel  
+> timer
+> is used to reset the watchdog until the watchdog driver is opened from
+> user space. This replaces mpc8xx_wdt.c (only usable for ARCH=ppc) and
+> mpc83xx_wdt.c (untested on this platform).
 
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
-+++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
-@@ -2977,7 +2977,10 @@ retry:
- 	}
- 	l3 = cachep->nodelists[node];
- 
--	BUG_ON(ac->avail > 0 || !l3);
-+	if (!l3)
-+		return NULL;
-+
-+	BUG_ON(ac->avail > 0);
- 	spin_lock(&l3->list_lock);
- 
- 	/* See if we can refill from the shared array */
-@@ -3224,7 +3227,7 @@ static void *alternate_node_alloc(struct
- 		nid_alloc = cpuset_mem_spread_node();
- 	else if (current->mempolicy)
- 		nid_alloc = slab_node(current->mempolicy);
--	if (nid_alloc != nid_here)
-+	if (nid_alloc != nid_here && node_state(nid_alloc, N_NORMAL_MEMORY))
- 		return ____cache_alloc_node(cachep, flags, nid_alloc);
- 	return NULL;
- }
-@@ -3439,8 +3442,14 @@ __do_cache_alloc(struct kmem_cache *cach
- 	 * We may just have run out of memory on the local node.
- 	 * ____cache_alloc_node() knows how to locate memory on other nodes
- 	 */
-- 	if (!objp)
-- 		objp = ____cache_alloc_node(cache, flags, numa_node_id());
-+ 	if (!objp) {
-+		int node_id = numa_node_id();
-+		if (likely(cache->nodelists[node_id])) /* fast path */
-+ 			objp = ____cache_alloc_node(cache, flags, node_id);
-+		else /* this function can do good fallback */
-+			objp = __cache_alloc_node(cache, flags, node_id,
-+					__builtin_return_address(0));
-+	}
- 
-   out:
- 	return objp;
+Why are you commenting on mpc83xx_wdt with respect to pq1_wdt?
+
+Also, is this driver just for PQ1 platforms or PQ1 & PQ2?  If its just  
+pq1 we should probably call it pq1_wdt*
+
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+> arch/powerpc/platforms/8xx/mpc86xads_setup.c |    5 +
+> arch/powerpc/platforms/8xx/mpc885ads_setup.c |    5 +
+> arch/powerpc/sysdev/Makefile                 |    3 +
+> arch/powerpc/sysdev/pq_wdt.c                 |  203 +++++++++++++++++ 
+> ++++++
+> arch/powerpc/sysdev/pq_wdt.h                 |   28 ++++
+> drivers/watchdog/Kconfig                     |   13 ++-
+> drivers/watchdog/Makefile                    |    1 +
+> drivers/watchdog/pq_wdt.c                    |  225 +++++++++++++++++ 
+> +++++++++
+> 8 files changed, 482 insertions(+), 1 deletions(-)
+> create mode 100644 arch/powerpc/sysdev/pq_wdt.c
+> create mode 100644 arch/powerpc/sysdev/pq_wdt.h
+> create mode 100644 drivers/watchdog/pq_wdt.c
+
+What are the bits in sysdev/pq_wdt.{c,h}.  Why aren't these just in  
+drivers/watchdog?
+
+- k
