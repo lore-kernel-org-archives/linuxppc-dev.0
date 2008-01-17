@@ -1,21 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 75695DDEA2
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 2D473DDEC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jan 2008 05:00:30 +1100 (EST)
-Message-ID: <478F92EB.2000500@freescale.com>
-Date: Thu, 17 Jan 2008 11:39:55 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Bruce_Leonard@selinc.com
+	Fri, 18 Jan 2008 05:01:15 +1100 (EST)
+In-Reply-To: <478F6DB6.8050907@gmail.com>
+To: Ben Warren <biggerbadderben@gmail.com>
 Subject: Re: Endian problem when accessing internel regs on 8347
-References: <OF03A8BF8B.4AC46CCD-ON882573D3.00216F5B-882573D3.00236B8D@selinc.com>
-In-Reply-To: <OF03A8BF8B.4AC46CCD-ON882573D3.00216F5B-882573D3.00236B8D@selinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+MIME-Version: 1.0
+Message-ID: <OF5F228537.B04EB840-ON882573D3.00628576-882573D3.0062FB1E@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Thu, 17 Jan 2008 10:01:09 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,14 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bruce_Leonard@selinc.com wrote:
-> As an additional question related to PowerPC inline assembly, can anyone 
-> tell me what "%U1%X1" means in the following:
+Ben Warren <biggerbadderben@gmail.com> wrote on 01/17/2008 07:01:10 AM:
+
+> > 
+> I've attached a poorly-written-yet-functional GPIO driver that I wrote a 
+
+> while ago for the MPC8349 (same as what you have for all intents and 
+> purposes). It uses in_be32() and out_be32().
 > 
-> __asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync" : "=r" (ret) : 
-> "m" (*addr));
+Ben,
 
-They allow the compiler to use update and/or index mode for the memory 
-operand.
+Thanks for the answer.  Hummmm, at first glance it looks like you're doing 
+the same thing I am.  Only difference I can see is you use get_immrbase() 
+to figure out the address to ask for and I've got it hardcoded.  Other 
+than that we're both using request_mem_region() in in/out_be32().  Yet 
+your's works for you and mine doesn't.  Well, I'll take a closer look 
+tonight and see if there's something you're doing that I missed. 
+Unfortunately, I've gotten a higher level interrupt this morning and it 
+may ba a day or so before I get back to this and can give you any 
+feedback.  Thanks again.
 
--Scott
+See 'ya!
+
+Bruce
