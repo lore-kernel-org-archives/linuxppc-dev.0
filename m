@@ -2,9 +2,9 @@ Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Fri, 18 Jan 2008 15:50:30 +1100
-Subject: [PATCH 1/2] Make setjmp/longjmp code generic
+Subject: [PATCH 2/2] kdump shutdown hook support
 In-Reply-To: <1200631830.307661.474596673142.qpush@coopers>
-Message-Id: <20080118045030.761A662C06D@localhost.localdomain>
+Message-Id: <20080118045030.846E062C079@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,250 +15,181 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes the setjmp/longjmp code used by xmon, generically available
-to other code.  It also removes the requirement for debugger hooks to
-be only called on 0x300 (data storage) exception.
+This adds hooks into the default_machine_crash_shutdown so drivers can
+register a function to be run in the first kernel before we hand off
+to the second kernel.  This should only be used in exceptional
+circumstances, like where the device can't be reset in the second
+kernel alone (as is the case with eHEA).  To emphasize this, the
+number of handles allowed to be registered is currently #def to 1.
+
+This uses the setjmp/longjmp code to call out to the registered hooks,
+so any bogus exceptions we encounter will hopefully be recoverable.  
+
+Tested with bogus data and instruction exceptions.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/kernel/misc.S   |   65 +++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/fault.c      |    6 +--
- arch/powerpc/xmon/setjmp.S   |   61 ----------------------------------------
- arch/powerpc/xmon/xmon.c     |    6 ---
- include/asm-powerpc/setjmp.h |   18 +++++++++++
- 5 files changed, 86 insertions(+), 70 deletions(-)
+ arch/powerpc/kernel/crash.c |  106 +++++++++++++++++++++++++++++++++++++++++---
+ include/asm-powerpc/kexec.h |    3 +
+ 2 files changed, 104 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/misc.S
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/misc.S
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/misc.S
-@@ -8,6 +8,8 @@
-  * Adapted for iSeries by Mike Corrigan (mikejc@us.ibm.com)
-  * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com)
-  *
-+ * setjmp/longjmp code by Paul Mackerras.
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-@@ -15,6 +17,8 @@
-  */
- #include <asm/ppc_asm.h>
- #include <asm/unistd.h>
-+#include <asm/asm-compat.h>
-+#include <asm/asm-offsets.h>
- 
- 	.text
- 
-@@ -51,3 +55,64 @@ _GLOBAL(kernel_execve)
- 	bnslr
- 	neg	r3,r3
- 	blr
-+
-+_GLOBAL(setjmp)
-+	mflr	r0
-+	PPC_STL	r0,0(r3)
-+	PPC_STL	r1,SZL(r3)
-+	PPC_STL	r2,2*SZL(r3)
-+	mfcr	r0
-+	PPC_STL	r0,3*SZL(r3)
-+	PPC_STL	r13,4*SZL(r3)
-+	PPC_STL	r14,5*SZL(r3)
-+	PPC_STL	r15,6*SZL(r3)
-+	PPC_STL	r16,7*SZL(r3)
-+	PPC_STL	r17,8*SZL(r3)
-+	PPC_STL	r18,9*SZL(r3)
-+	PPC_STL	r19,10*SZL(r3)
-+	PPC_STL	r20,11*SZL(r3)
-+	PPC_STL	r21,12*SZL(r3)
-+	PPC_STL	r22,13*SZL(r3)
-+	PPC_STL	r23,14*SZL(r3)
-+	PPC_STL	r24,15*SZL(r3)
-+	PPC_STL	r25,16*SZL(r3)
-+	PPC_STL	r26,17*SZL(r3)
-+	PPC_STL	r27,18*SZL(r3)
-+	PPC_STL	r28,19*SZL(r3)
-+	PPC_STL	r29,20*SZL(r3)
-+	PPC_STL	r30,21*SZL(r3)
-+	PPC_STL	r31,22*SZL(r3)
-+	li	r3,0
-+	blr
-+
-+_GLOBAL(longjmp)
-+	PPC_LCMPI r4,0
-+	bne	1f
-+	li	r4,1
-+1:	PPC_LL	r13,4*SZL(r3)
-+	PPC_LL	r14,5*SZL(r3)
-+	PPC_LL	r15,6*SZL(r3)
-+	PPC_LL	r16,7*SZL(r3)
-+	PPC_LL	r17,8*SZL(r3)
-+	PPC_LL	r18,9*SZL(r3)
-+	PPC_LL	r19,10*SZL(r3)
-+	PPC_LL	r20,11*SZL(r3)
-+	PPC_LL	r21,12*SZL(r3)
-+	PPC_LL	r22,13*SZL(r3)
-+	PPC_LL	r23,14*SZL(r3)
-+	PPC_LL	r24,15*SZL(r3)
-+	PPC_LL	r25,16*SZL(r3)
-+	PPC_LL	r26,17*SZL(r3)
-+	PPC_LL	r27,18*SZL(r3)
-+	PPC_LL	r28,19*SZL(r3)
-+	PPC_LL	r29,20*SZL(r3)
-+	PPC_LL	r30,21*SZL(r3)
-+	PPC_LL	r31,22*SZL(r3)
-+	PPC_LL	r0,3*SZL(r3)
-+	mtcrf	0x38,r0
-+	PPC_LL	r0,0(r3)
-+	PPC_LL	r1,SZL(r3)
-+	PPC_LL	r2,2*SZL(r3)
-+	mtlr	r0
-+	mr	r3,r4
-+	blr
-Index: linux-2.6-ozlabs/arch/powerpc/mm/fault.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/mm/fault.c
-+++ linux-2.6-ozlabs/arch/powerpc/mm/fault.c
-@@ -167,10 +167,8 @@ int __kprobes do_page_fault(struct pt_re
- 	if (notify_page_fault(regs))
- 		return 0;
- 
--	if (trap == 0x300) {
--		if (debugger_fault_handler(regs))
--			return 0;
--	}
-+	if (unlikely(debugger_fault_handler(regs)))
-+		return 0;
- 
- 	/* On a kernel SLB miss we can only check for a valid exception entry */
- 	if (!user_mode(regs) && (address >= TASK_SIZE))
-Index: linux-2.6-ozlabs/arch/powerpc/xmon/setjmp.S
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/xmon/setjmp.S
-+++ linux-2.6-ozlabs/arch/powerpc/xmon/setjmp.S
-@@ -12,67 +12,6 @@
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- 
--_GLOBAL(xmon_setjmp)
--	mflr	r0
--	PPC_STL	r0,0(r3)
--	PPC_STL	r1,SZL(r3)
--	PPC_STL	r2,2*SZL(r3)
--	mfcr	r0
--	PPC_STL	r0,3*SZL(r3)
--	PPC_STL	r13,4*SZL(r3)
--	PPC_STL	r14,5*SZL(r3)
--	PPC_STL	r15,6*SZL(r3)
--	PPC_STL	r16,7*SZL(r3)
--	PPC_STL	r17,8*SZL(r3)
--	PPC_STL	r18,9*SZL(r3)
--	PPC_STL	r19,10*SZL(r3)
--	PPC_STL	r20,11*SZL(r3)
--	PPC_STL	r21,12*SZL(r3)
--	PPC_STL	r22,13*SZL(r3)
--	PPC_STL	r23,14*SZL(r3)
--	PPC_STL	r24,15*SZL(r3)
--	PPC_STL	r25,16*SZL(r3)
--	PPC_STL	r26,17*SZL(r3)
--	PPC_STL	r27,18*SZL(r3)
--	PPC_STL	r28,19*SZL(r3)
--	PPC_STL	r29,20*SZL(r3)
--	PPC_STL	r30,21*SZL(r3)
--	PPC_STL	r31,22*SZL(r3)
--	li	r3,0
--	blr
--
--_GLOBAL(xmon_longjmp)
--	PPC_LCMPI r4,0
--	bne	1f
--	li	r4,1
--1:	PPC_LL	r13,4*SZL(r3)
--	PPC_LL	r14,5*SZL(r3)
--	PPC_LL	r15,6*SZL(r3)
--	PPC_LL	r16,7*SZL(r3)
--	PPC_LL	r17,8*SZL(r3)
--	PPC_LL	r18,9*SZL(r3)
--	PPC_LL	r19,10*SZL(r3)
--	PPC_LL	r20,11*SZL(r3)
--	PPC_LL	r21,12*SZL(r3)
--	PPC_LL	r22,13*SZL(r3)
--	PPC_LL	r23,14*SZL(r3)
--	PPC_LL	r24,15*SZL(r3)
--	PPC_LL	r25,16*SZL(r3)
--	PPC_LL	r26,17*SZL(r3)
--	PPC_LL	r27,18*SZL(r3)
--	PPC_LL	r28,19*SZL(r3)
--	PPC_LL	r29,20*SZL(r3)
--	PPC_LL	r30,21*SZL(r3)
--	PPC_LL	r31,22*SZL(r3)
--	PPC_LL	r0,3*SZL(r3)
--	mtcrf	0x38,r0
--	PPC_LL	r0,0(r3)
--	PPC_LL	r1,SZL(r3)
--	PPC_LL	r2,2*SZL(r3)
--	mtlr	r0
--	mr	r3,r4
--	blr
--
- /*
-  * Grab the register values as they are now.
-  * This won't do a particularily good job because we really
-Index: linux-2.6-ozlabs/arch/powerpc/xmon/xmon.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/xmon/xmon.c
-+++ linux-2.6-ozlabs/arch/powerpc/xmon/xmon.c
-@@ -40,6 +40,7 @@
- #include <asm/spu.h>
- #include <asm/spu_priv1.h>
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/crash.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
+@@ -32,6 +32,8 @@
+ #include <asm/lmb.h>
  #include <asm/firmware.h>
+ #include <asm/smp.h>
++#include <asm/system.h>
 +#include <asm/setjmp.h>
  
- #ifdef CONFIG_PPC64
- #include <asm/hvcall.h>
-@@ -71,12 +72,9 @@ static unsigned long ncsum = 4096;
- static int termch;
- static char tmpstr[128];
+ #ifdef DEBUG
+ #include <asm/udbg.h>
+@@ -45,6 +47,11 @@ int crashing_cpu = -1;
+ static cpumask_t cpus_in_crash = CPU_MASK_NONE;
+ cpumask_t cpus_in_sr = CPU_MASK_NONE;
  
--#define JMP_BUF_LEN	23
- static long bus_error_jmp[JMP_BUF_LEN];
- static int catch_memory_errors;
- static long *xmon_fault_jmp[NR_CPUS];
--#define setjmp xmon_setjmp
--#define longjmp xmon_longjmp
++#define CRASH_HANDLER_MAX 1
++/* NULL terminated list of shutdown handles */
++static crash_shutdown_t crash_shutdown_handles[CRASH_HANDLER_MAX+1];
++static DEFINE_SPINLOCK(crash_handlers_lock);
++
+ #ifdef CONFIG_SMP
+ static atomic_t enter_on_soft_reset = ATOMIC_INIT(0);
  
- /* Breakpoint stuff */
- struct bpt {
-@@ -162,8 +160,6 @@ int xmon_no_auto_backtrace;
- extern void xmon_enter(void);
- extern void xmon_leave(void);
+@@ -285,9 +292,72 @@ static inline void crash_kexec_stop_spus
+ }
+ #endif /* CONFIG_SPU_BASE */
  
--extern long setjmp(long *);
--extern void longjmp(long *, long);
- extern void xmon_save_regs(struct pt_regs *);
- 
- #ifdef CONFIG_PPC64
-Index: linux-2.6-ozlabs/include/asm-powerpc/setjmp.h
-===================================================================
---- /dev/null
-+++ linux-2.6-ozlabs/include/asm-powerpc/setjmp.h
-@@ -0,0 +1,18 @@
 +/*
-+ * Copyright © 2008 Michael Neuling IBM Corporation
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ *
++ * Register a function to be called on shutdown.  Only use this if you
++ * can't reset your device in the second kernel.
 + */
-+#ifndef _ASM_POWERPC_SETJMP_H
-+#define _ASM_POWERPC_SETJMP_H
++int crash_shutdown_register(crash_shutdown_t handler)
++{
++	unsigned int i, rc;
 +
-+#define JMP_BUF_LEN    23
++	spin_lock(&crash_handlers_lock);
++	for (i = 0 ; i < CRASH_HANDLER_MAX; i++)
++		if (!crash_shutdown_handles[i]) {
++			/* Insert handle at first empty entry */
++			crash_shutdown_handles[i] = handler;
++			rc = 0;
++			break;
++		}
 +
-+extern long setjmp(long *);
-+extern void longjmp(long *, long);
++	if (i == CRASH_HANDLER_MAX) {
++		printk(KERN_ERR "Crash shutdown handles full, "
++		       "not registered.\n");
++		rc = 1;
++	}
 +
-+#endif /* _ASM_POWERPC_SETJMP_H */
++	spin_unlock(&crash_handlers_lock);
++	return rc;
++}
++EXPORT_SYMBOL(crash_shutdown_register);
++
++int crash_shutdown_unregister(crash_shutdown_t handler)
++{
++	unsigned int i, rc;
++
++	spin_lock(&crash_handlers_lock);
++	for (i = 0 ; i < CRASH_HANDLER_MAX; i++)
++		if (crash_shutdown_handles[i] == handler)
++			break;
++
++	if (i == CRASH_HANDLER_MAX) {
++		printk(KERN_ERR "Crash shutdown handle not found\n");
++		rc = 1;
++	} else {
++		/* Shift handles down */
++		for (; crash_shutdown_handles[i]; i++)
++			crash_shutdown_handles[i] =
++				crash_shutdown_handles[i+1];
++		rc = 0;
++	}
++
++	spin_unlock(&crash_handlers_lock);
++	return rc;
++}
++EXPORT_SYMBOL(crash_shutdown_unregister);
++
++static unsigned long crash_shutdown_buf[JMP_BUF_LEN];
++
++static int handle_fault(struct pt_regs *regs)
++{
++	longjmp(crash_shutdown_buf, 1);
++	return 0;
++}
++
+ void default_machine_crash_shutdown(struct pt_regs *regs)
+ {
+-	unsigned int irq;
++	unsigned int i;
++	int (*old_handler)(struct pt_regs *regs);
++
+ 
+ 	/*
+ 	 * This function is only called after the system
+@@ -301,15 +371,41 @@ void default_machine_crash_shutdown(stru
+ 	 */
+ 	hard_irq_disable();
+ 
+-	for_each_irq(irq) {
+-		struct irq_desc *desc = irq_desc + irq;
++	for_each_irq(i) {
++		struct irq_desc *desc = irq_desc + i;
+ 
+ 		if (desc->status & IRQ_INPROGRESS)
+-			desc->chip->eoi(irq);
++			desc->chip->eoi(i);
+ 
+ 		if (!(desc->status & IRQ_DISABLED))
+-			desc->chip->disable(irq);
++			desc->chip->disable(i);
++	}
++
++	/*
++	 * Call registered shutdown routines savely.  Swap out
++	 * __debugger_fault_handler, and replace on exit.
++	 */
++	old_handler = __debugger_fault_handler;
++	__debugger_fault_handler = handle_fault;
++	for (i = 0; crash_shutdown_handles[i]; i++) {
++		if (setjmp(crash_shutdown_buf) == 0) {
++			/*
++			 * Insert syncs and delay to ensure
++			 * instructions in the dangerous region don't
++			 * leak away from this protected region.
++			 */
++			asm volatile("sync; isync");
++			/* dangerous region */
++			crash_shutdown_handles[i]();
++			asm volatile("sync; isync");
++			/* 
++			 * wait a little while to see if we get a
++			 * machine check 
++			 */
++			__delay(200);
++		}
+ 	}
++	__debugger_fault_handler = old_handler;
+ 
+ 	/*
+ 	 * Make a note of crashing cpu. Will be used in machine_kexec
+Index: linux-2.6-ozlabs/include/asm-powerpc/kexec.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/kexec.h
++++ linux-2.6-ozlabs/include/asm-powerpc/kexec.h
+@@ -123,6 +123,9 @@ struct pt_regs;
+ extern void default_machine_kexec(struct kimage *image);
+ extern int default_machine_kexec_prepare(struct kimage *image);
+ extern void default_machine_crash_shutdown(struct pt_regs *regs);
++typedef void (*crash_shutdown_t)(void);
++extern int crash_shutdown_register(crash_shutdown_t handler);
++extern int crash_shutdown_unregister(crash_shutdown_t handler);
+ 
+ extern void machine_kexec_simple(struct kimage *image);
+ extern void crash_kexec_secondary(struct pt_regs *regs);
