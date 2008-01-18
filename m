@@ -1,19 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 60909DE059
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 03:31:50 +1100 (EST)
-Date: Fri, 18 Jan 2008 09:31:21 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: Olaf Hering <olaf@aepfle.de>
-Message-ID: <20080118163121.GA7720@farnsworth.org>
-References: <20080118093805.GA28004@aepfle.de>
+	by ozlabs.org (Postfix) with ESMTP id 60017DDF97
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 03:48:32 +1100 (EST)
+Date: Fri, 18 Jan 2008 10:45:17 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v4] [POWERPC] Update MPC8610 HPCD to support audio drivers
+In-Reply-To: <12006698934064-git-send-email-timur@freescale.com>
+Message-ID: <Pine.LNX.4.64.0801181042290.31902@blarg.am.freescale.net>
+References: <12006698934064-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20080118093805.GA28004@aepfle.de>
-Subject: Re: [PATCH] add modalias info to mv643xx_eth.ko
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 18, 2008 at 10:38:05AM +0100, Olaf Hering wrote:
-> mv643xx_eth has an platform modalias file in sysfs.
-> But the module itself has no alias: line. Autoloading fails
-> without the alias info in the module.
-> 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+On Fri, 18 Jan 2008, Timur Tabi wrote:
 
-Acked-by: Dale Farnsworth <dale@farnsworth.org>
+> Update the MPC8610 HPCD files to support the audio driver.  Update
+> booting-without-of.txt with information on the SSI device.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>
+> Rebased for Kumar's repo.
+>
+>  Documentation/powerpc/booting-without-of.txt |   41 ++++++
+>  arch/powerpc/boot/dts/mpc8610_hpcd.dts       |  113 +++++++++++++++++-
+>  arch/powerpc/configs/mpc8610_hpcd_defconfig  |  171 +++++++++++++++++++++++++-
+>  arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |   15 +++
+>  4 files changed, 336 insertions(+), 4 deletions(-)
+
+applied.
+
+- k
