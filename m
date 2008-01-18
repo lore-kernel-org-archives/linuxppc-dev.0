@@ -4,25 +4,30 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0D6AEDDED6
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:05:46 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 24A8ADDEED
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:05:49 +1100 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m0I05fev008406
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 17:05:42 -0700 (MST)
+	m0I05im5008426
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 17:05:44 -0700 (MST)
 Received: from localhost.localdomain (mvp-10-214-72-199.am.freescale.net
 	[10.214.72.199])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0I05dKA028206
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 18:05:41 -0600 (CST)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0I05dKE028206
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 18:05:43 -0600 (CST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [Add mpc5121 support PATCH v3 3/8] Basic Freescale MPC512x support
-Date: Thu, 17 Jan 2008 17:05:33 -0700
-Message-Id: <1200614738-25654-4-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1200614738-25654-3-git-send-email-jrigby@freescale.com>
+Subject: [Add mpc5121 support PATCH v3 7/8] Factor out 52xx dependencies from
+	52xx psc driver
+Date: Thu, 17 Jan 2008 17:05:37 -0700
+Message-Id: <1200614738-25654-8-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1200614738-25654-7-git-send-email-jrigby@freescale.com>
 References: <1200614738-25654-1-git-send-email-jrigby@freescale.com>
 	<1200614738-25654-2-git-send-email-jrigby@freescale.com>
 	<1200614738-25654-3-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-4-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-5-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-6-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-7-git-send-email-jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,277 +37,472 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-512x is very similar to 83xx and most
-of this is patterned after code from 83xx.
-
-New platform:
-    changed:
-	arch/powerpc/Kconfig
-	arch/powerpc/platforms/Kconfig
-	arch/powerpc/platforms/Kconfig.cputype
-	arch/powerpc/platforms/Makefile
-    new:
-	arch/powerpc/platforms/512x/*
-	include/asm-powerpc/mpc512x.h
+PSCs change from 5200 to 5121
+this patch localizes the differences in
+preparation for adding 5121 support
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/Kconfig                      |    2 +-
- arch/powerpc/platforms/512x/Kconfig       |   20 ++++++
- arch/powerpc/platforms/512x/Makefile      |    4 +
- arch/powerpc/platforms/512x/mpc5121_ads.c |  104 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig            |    1 +
- arch/powerpc/platforms/Kconfig.cputype    |    6 +-
- arch/powerpc/platforms/Makefile           |    1 +
- include/asm-powerpc/mpc512x.h             |   22 ++++++
- 8 files changed, 156 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/platforms/512x/Kconfig
- create mode 100644 arch/powerpc/platforms/512x/Makefile
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.c
- create mode 100644 include/asm-powerpc/mpc512x.h
+ drivers/serial/mpc52xx_uart.c |  256 ++++++++++++++++++++++++++++++----------
+ 1 files changed, 192 insertions(+), 64 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 66a3d8c..e4efd0c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -470,7 +470,7 @@ config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
- 		|| PPC_PS3
--	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
-+	default y if !40x && !CPM2 && !8xx && !PPC_MPC512x && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-new file mode 100644
-index 0000000..c6fa49e
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -0,0 +1,20 @@
-+config PPC_MPC512x
-+	bool
-+	select FSL_SOC
-+	select IPIC
-+	default n
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 9bf4521..0f6036b 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -67,7 +67,6 @@
+ #include <linux/serial.h>
+ #include <linux/sysrq.h>
+ #include <linux/console.h>
+-
+ #include <linux/delay.h>
+ #include <linux/io.h>
+ 
+@@ -110,8 +109,8 @@ static struct device_node *mpc52xx_uart_nodes[MPC52xx_PSC_MAXNUM];
+ static void mpc52xx_uart_of_enumerate(void);
+ #endif
+ 
 +
-+config PPC_MPC5121
-+	bool
-+	select PPC_MPC512x
-+	default n
+ #define PSC(port) ((struct mpc52xx_psc __iomem *)((port)->membase))
+-#define FIFO(port) ((struct mpc52xx_psc_fifo __iomem *)(PSC(port)+1))
+ 
+ 
+ /* Forward declaration of the interruption handling routine */
+@@ -134,6 +133,162 @@ static const struct of_device_id mpc52xx_uart_of_match[] = {
+ };
+ #endif
+ 
++/* ======================================================================== */
++/* PSC fifo operations for isolating differences between 52xx and 512x      */
++/* ======================================================================== */
 +
-+config MPC5121_ADS
-+	bool "Freescale MPC5121E ADS"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select DEFAULT_UIMAGE
-+	select WANT_DEVICE_TREE
-+	select PPC_MPC5121
-+	help
-+	  This option enables support for the MPC5121E ADS board.
-+	default n
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-new file mode 100644
-index 0000000..232c89f
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -0,0 +1,4 @@
-+#
-+# Makefile for the Freescale PowerPC 512x linux kernel.
-+#
-+obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-new file mode 100644
-index 0000000..50bd3a3
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -0,0 +1,104 @@
-+/*
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
-+ *
-+ * Description:
-+ * MPC5121 ADS board setup
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+
-+/**
-+ * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
-+ * 	@node:	device node
-+ *
-+ * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
-+ */
-+unsigned long
-+mpc512x_find_ips_freq(struct device_node *node)
-+{
-+	struct device_node *np;
-+	const unsigned int *p_ips_freq = NULL;
-+
-+	of_node_get(node);
-+	while (node) {
-+		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
-+		if (p_ips_freq)
-+			break;
-+
-+		np = of_get_parent(node);
-+		of_node_put(node);
-+		node = np;
-+	}
-+	if (node)
-+		of_node_put(node);
-+
-+	return p_ips_freq ? *p_ips_freq : 0;
-+}
-+EXPORT_SYMBOL(mpc512x_find_ips_freq);
-+
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{ .name = "localbus", },
-+	{},
++struct psc_ops {
++	void		(*fifo_init)(struct uart_port *port);
++	int		(*raw_rx_rdy)(struct uart_port *port);
++	int		(*raw_tx_rdy)(struct uart_port *port);
++	int		(*rx_rdy)(struct uart_port *port);
++	int		(*tx_rdy)(struct uart_port *port);
++	int		(*tx_empty)(struct uart_port *port);
++	void		(*stop_rx)(struct uart_port *port);
++	void		(*start_tx)(struct uart_port *port);
++	void		(*stop_tx)(struct uart_port *port);
++	void		(*rx_clr_irq)(struct uart_port *port);
++	void		(*tx_clr_irq)(struct uart_port *port);
++	void		(*write_char)(struct uart_port *port, unsigned char c);
++	unsigned char	(*read_char)(struct uart_port *port);
++	void		(*cw_disable_ints)(struct uart_port *port);
++	void		(*cw_restore_ints)(struct uart_port *port);
++	unsigned long	(*getuartclk)(void *p);
 +};
 +
-+static void __init mpc5121_ads_declare_of_platform_devices(void)
++#define FIFO_52xx(port) ((struct mpc52xx_psc_fifo __iomem *)(PSC(port)+1))
++static void mpc52xx_psc_fifo_init(struct uart_port *port)
 +{
-+	/* Find every child of the SOC node and add it to of_platform */
-+	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while probing of_platform bus\n");
++	struct mpc52xx_psc __iomem *psc = PSC(port);
++	struct mpc52xx_psc_fifo __iomem *fifo = FIFO_52xx(port);
++
++	/* /32 prescaler */
++	out_be16(&psc->mpc52xx_psc_clock_select, 0xdd00);
++
++	out_8(&fifo->rfcntl, 0x00);
++	out_be16(&fifo->rfalarm, 0x1ff);
++	out_8(&fifo->tfcntl, 0x07);
++	out_be16(&fifo->tfalarm, 0x80);
++
++	port->read_status_mask |= MPC52xx_PSC_IMR_RXRDY | MPC52xx_PSC_IMR_TXRDY;
++	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
 +}
 +
-+static void __init mpc5121_ads_init_IRQ(void)
++static int mpc52xx_psc_raw_rx_rdy(struct uart_port *port)
 +{
-+	struct device_node *np;
++	return in_be16(&PSC(port)->mpc52xx_psc_status)
++	    & MPC52xx_PSC_SR_RXRDY;
++}
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
-+	if (!np)
-+		return;
++static int mpc52xx_psc_raw_tx_rdy(struct uart_port *port)
++{
++	return in_be16(&PSC(port)->mpc52xx_psc_status)
++	    & MPC52xx_PSC_SR_TXRDY;
++}
 +
-+	ipic_init(np, 0);
-+	of_node_put(np);
 +
++static int mpc52xx_psc_rx_rdy(struct uart_port *port)
++{
++	return in_be16(&PSC(port)->mpc52xx_psc_status)
++	    & port->read_status_mask
++	    & MPC52xx_PSC_SR_RXRDY;
++}
++
++static int mpc52xx_psc_tx_rdy(struct uart_port *port)
++{
++	return in_be16(&PSC(port)->mpc52xx_psc_status)
++	    & port->read_status_mask
++	    & MPC52xx_PSC_SR_TXRDY;
++}
++
++static int mpc52xx_psc_tx_empty(struct uart_port *port)
++{
++	return in_be16(&PSC(port)->mpc52xx_psc_status)
++	    & MPC52xx_PSC_SR_TXEMP;
++}
++
++static void mpc52xx_psc_start_tx(struct uart_port *port)
++{
++	port->read_status_mask |= MPC52xx_PSC_IMR_TXRDY;
++	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++}
++
++static void mpc52xx_psc_stop_tx(struct uart_port *port)
++{
++	port->read_status_mask &= ~MPC52xx_PSC_IMR_TXRDY;
++	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++}
++
++static void mpc52xx_psc_stop_rx(struct uart_port *port)
++{
++	port->read_status_mask &= ~MPC52xx_PSC_IMR_RXRDY;
++	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++}
++
++static void mpc52xx_psc_rx_clr_irq(struct uart_port *port)
++{
++}
++
++static void mpc52xx_psc_tx_clr_irq(struct uart_port *port)
++{
++}
++
++static void mpc52xx_psc_write_char(struct uart_port *port, unsigned char c)
++{
++	out_8(&PSC(port)->mpc52xx_psc_buffer_8, c);
++}
++
++static unsigned char mpc52xx_psc_read_char(struct uart_port *port)
++{
++	return in_8(&PSC(port)->mpc52xx_psc_buffer_8);
++}
++
++static void mpc52xx_psc_cw_disable_ints(struct uart_port *port)
++{
++	out_be16(&PSC(port)->mpc52xx_psc_imr, 0);
++}
++
++static void mpc52xx_psc_cw_restore_ints(struct uart_port *port)
++{
++	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++}
++
++/* Search for bus-frequency property in this node or a parent */
++static unsigned long mpc52xx_getuartclk(void *p)
++{
++#if defined(CONFIG_PPC_MERGE)
 +	/*
-+	 * Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
++	 * 5200 UARTs have a / 32 prescaler
++	 * but the generic serial code assumes 16
++	 * so return ipb freq / 2
 +	 */
-+	ipic_set_default_priority();
++	return mpc52xx_find_ipb_freq(p) / 2;
++#else
++	pr_debug("unexpected call to mpc52xx_getuartclk with arch/ppc\n");
++	return NULL;
++#endif
 +}
 +
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init mpc5121_ads_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
-+}
-+
-+define_machine(mpc5121_ads) {
-+	.name			= "MPC5121 ADS",
-+	.probe			= mpc5121_ads_probe,
-+	.init			= mpc5121_ads_declare_of_platform_devices,
-+	.init_IRQ		= mpc5121_ads_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.calibrate_decr		= generic_calibrate_decr,
++static struct psc_ops mpc52xx_psc_ops = {
++	.fifo_init = mpc52xx_psc_fifo_init,
++	.raw_rx_rdy = mpc52xx_psc_raw_rx_rdy,
++	.raw_tx_rdy = mpc52xx_psc_raw_tx_rdy,
++	.rx_rdy = mpc52xx_psc_rx_rdy,
++	.tx_rdy = mpc52xx_psc_tx_rdy,
++	.tx_empty = mpc52xx_psc_tx_empty,
++	.stop_rx = mpc52xx_psc_stop_rx,
++	.start_tx = mpc52xx_psc_start_tx,
++	.stop_tx = mpc52xx_psc_stop_tx,
++	.rx_clr_irq = mpc52xx_psc_rx_clr_irq,
++	.tx_clr_irq = mpc52xx_psc_tx_clr_irq,
++	.write_char = mpc52xx_psc_write_char,
++	.read_char = mpc52xx_psc_read_char,
++	.cw_disable_ints = mpc52xx_psc_cw_disable_ints,
++	.cw_restore_ints = mpc52xx_psc_cw_restore_ints,
++	.getuartclk = mpc52xx_getuartclk,
 +};
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index ad9b1c0..8dfdf61 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -41,6 +41,7 @@ config CLASSIC32
- source "arch/powerpc/platforms/pseries/Kconfig"
- source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
-+source "arch/powerpc/platforms/512x/Kconfig"
- source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/powermac/Kconfig"
- source "arch/powerpc/platforms/prep/Kconfig"
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index c3ee0b5..fb86300 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -14,7 +14,7 @@ choice
- 	  There are five families of 32 bit PowerPC chips supported.
- 	  The most common ones are the desktop and server CPUs (601, 603,
- 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
--	  embedded 52xx/82xx/83xx/86xx counterparts.
-+	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
- 	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
- 	  (85xx) each form a family of their own that is not compatible
- 	  with the others.
-@@ -22,7 +22,7 @@ choice
- 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
- 
- config 6xx
--	bool "52xx/6xx/7xx/74xx/82xx/83xx/86xx"
-+	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
- 
- config PPC_85xx
-@@ -229,7 +229,7 @@ config NR_CPUS
- 
- config NOT_COHERENT_CACHE
- 	bool
--	depends on 4xx || 8xx || E200
-+	depends on 4xx || 8xx || E200 || PPC_MPC512x
- 	default y
- 
- config CHECK_CACHE_COHERENCY
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
-index 6d9079d..a984894 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -11,6 +11,7 @@ endif
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
- obj-$(CONFIG_40x)		+= 40x/
- obj-$(CONFIG_44x)		+= 44x/
-+obj-$(CONFIG_PPC_MPC512x)	+= 512x/
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
- obj-$(CONFIG_PPC_8xx)		+= 8xx/
- obj-$(CONFIG_PPC_82xx)		+= 82xx/
-diff --git a/include/asm-powerpc/mpc512x.h b/include/asm-powerpc/mpc512x.h
-new file mode 100644
-index 0000000..c48a165
---- /dev/null
-+++ b/include/asm-powerpc/mpc512x.h
-@@ -0,0 +1,22 @@
-+/*
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * Author: John Rigby, <jrigby@freescale.com>, Friday Apr 13 2007
-+ *
-+ * Description:
-+ * MPC5121 Prototypes and definitions
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
 +
-+#ifndef __ASM_POWERPC_MPC512x_H__
-+#define __ASM_POWERPC_MPC512x_H__
++static struct psc_ops *psc_ops = &mpc52xx_psc_ops;
+ 
+ /* ======================================================================== */
+ /* UART operations                                                          */
+@@ -142,8 +297,7 @@ static const struct of_device_id mpc52xx_uart_of_match[] = {
+ static unsigned int
+ mpc52xx_uart_tx_empty(struct uart_port *port)
+ {
+-	int status = in_be16(&PSC(port)->mpc52xx_psc_status);
+-	return (status & MPC52xx_PSC_SR_TXEMP) ? TIOCSER_TEMT : 0;
++	return psc_ops->tx_empty(port) ? TIOCSER_TEMT : 0;
+ }
+ 
+ static void
+@@ -163,16 +317,14 @@ static void
+ mpc52xx_uart_stop_tx(struct uart_port *port)
+ {
+ 	/* port->lock taken by caller */
+-	port->read_status_mask &= ~MPC52xx_PSC_IMR_TXRDY;
+-	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->stop_tx(port);
+ }
+ 
+ static void
+ mpc52xx_uart_start_tx(struct uart_port *port)
+ {
+ 	/* port->lock taken by caller */
+-	port->read_status_mask |= MPC52xx_PSC_IMR_TXRDY;
+-	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->start_tx(port);
+ }
+ 
+ static void
+@@ -185,8 +337,7 @@ mpc52xx_uart_send_xchar(struct uart_port *port, char ch)
+ 	if (ch) {
+ 		/* Make sure tx interrupts are on */
+ 		/* Truly necessary ??? They should be anyway */
+-		port->read_status_mask |= MPC52xx_PSC_IMR_TXRDY;
+-		out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++		psc_ops->start_tx(port);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&port->lock, flags);
+@@ -196,8 +347,7 @@ static void
+ mpc52xx_uart_stop_rx(struct uart_port *port)
+ {
+ 	/* port->lock taken by caller */
+-	port->read_status_mask &= ~MPC52xx_PSC_IMR_RXRDY;
+-	out_be16(&PSC(port)->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->stop_rx(port);
+ }
+ 
+ static void
+@@ -224,7 +374,6 @@ static int
+ mpc52xx_uart_startup(struct uart_port *port)
+ {
+ 	struct mpc52xx_psc __iomem *psc = PSC(port);
+-	struct mpc52xx_psc_fifo __iomem *fifo = FIFO(port);
+ 	int ret;
+ 
+ 	/* Request IRQ */
+@@ -239,15 +388,7 @@ mpc52xx_uart_startup(struct uart_port *port)
+ 
+ 	out_be32(&psc->sicr, 0);	/* UART mode DCD ignored */
+ 
+-	out_be16(&psc->mpc52xx_psc_clock_select, 0xdd00); /* /16 prescaler on */
+-
+-	out_8(&fifo->rfcntl, 0x00);
+-	out_be16(&fifo->rfalarm, 0x1ff);
+-	out_8(&fifo->tfcntl, 0x07);
+-	out_be16(&fifo->tfalarm, 0x80);
+-
+-	port->read_status_mask |= MPC52xx_PSC_IMR_RXRDY | MPC52xx_PSC_IMR_TXRDY;
+-	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->fifo_init(port);
+ 
+ 	out_8(&psc->command, MPC52xx_PSC_TX_ENABLE);
+ 	out_8(&psc->command, MPC52xx_PSC_RX_ENABLE);
+@@ -330,8 +471,7 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
+ 	 * boot for the console, all stuff is not yet ready to receive at that
+ 	 * time and that just makes the kernel oops */
+ 	/* while (j-- && mpc52xx_uart_int_rx_chars(port)); */
+-	while (!(in_be16(&psc->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXEMP) &&
+-	       --j)
++	while (!mpc52xx_uart_tx_empty(port) && --j)
+ 		udelay(1);
+ 
+ 	if (!j)
+@@ -459,11 +599,9 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 	unsigned short status;
+ 
+ 	/* While we can read, do so ! */
+-	while ((status = in_be16(&PSC(port)->mpc52xx_psc_status)) &
+-		MPC52xx_PSC_SR_RXRDY) {
+-
++	while (psc_ops->raw_rx_rdy(port)) {
+ 		/* Get the char */
+-		ch = in_8(&PSC(port)->mpc52xx_psc_buffer_8);
++		ch = psc_ops->read_char(port);
+ 
+ 		/* Handle sysreq char */
+ #ifdef SUPPORT_SYSRQ
+@@ -478,6 +616,8 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 		flag = TTY_NORMAL;
+ 		port->icount.rx++;
+ 
++		status = in_be16(&PSC(port)->mpc52xx_psc_status);
 +
-+extern unsigned long mpc512x_find_ips_freq(struct device_node *node);
-+
-+#endif /* __ASM_POWERPC_MPC512x_H__ */
-+
+ 		if (status & (MPC52xx_PSC_SR_PE |
+ 			      MPC52xx_PSC_SR_FE |
+ 			      MPC52xx_PSC_SR_RB)) {
+@@ -507,7 +647,7 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+ 
+ 	tty_flip_buffer_push(tty);
+ 
+-	return in_be16(&PSC(port)->mpc52xx_psc_status) & MPC52xx_PSC_SR_RXRDY;
++	return psc_ops->raw_rx_rdy(port);
+ }
+ 
+ static inline int
+@@ -517,7 +657,7 @@ mpc52xx_uart_int_tx_chars(struct uart_port *port)
+ 
+ 	/* Process out of band chars */
+ 	if (port->x_char) {
+-		out_8(&PSC(port)->mpc52xx_psc_buffer_8, port->x_char);
++		psc_ops->write_char(port, port->x_char);
+ 		port->icount.tx++;
+ 		port->x_char = 0;
+ 		return 1;
+@@ -530,8 +670,8 @@ mpc52xx_uart_int_tx_chars(struct uart_port *port)
+ 	}
+ 
+ 	/* Send chars */
+-	while (in_be16(&PSC(port)->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXRDY) {
+-		out_8(&PSC(port)->mpc52xx_psc_buffer_8, xmit->buf[xmit->tail]);
++	while (psc_ops->raw_tx_rdy(port)) {
++		psc_ops->write_char(port, xmit->buf[xmit->tail]);
+ 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+ 		port->icount.tx++;
+ 		if (uart_circ_empty(xmit))
+@@ -557,7 +697,6 @@ mpc52xx_uart_int(int irq, void *dev_id)
+ 	struct uart_port *port = dev_id;
+ 	unsigned long pass = ISR_PASS_LIMIT;
+ 	unsigned int keepgoing;
+-	unsigned short status;
+ 
+ 	spin_lock(&port->lock);
+ 
+@@ -566,18 +705,12 @@ mpc52xx_uart_int(int irq, void *dev_id)
+ 		/* If we don't find anything to do, we stop */
+ 		keepgoing = 0;
+ 
+-		/* Read status */
+-		status = in_be16(&PSC(port)->mpc52xx_psc_isr);
+-		status &= port->read_status_mask;
+-
+-		/* Do we need to receive chars ? */
+-		/* For this RX interrupts must be on and some chars waiting */
+-		if (status & MPC52xx_PSC_IMR_RXRDY)
++		psc_ops->rx_clr_irq(port);
++		if (psc_ops->rx_rdy(port))
+ 			keepgoing |= mpc52xx_uart_int_rx_chars(port);
+ 
+-		/* Do we need to send chars ? */
+-		/* For this, TX must be ready and TX interrupt enabled */
+-		if (status & MPC52xx_PSC_IMR_TXRDY)
++		psc_ops->tx_clr_irq(port);
++		if (psc_ops->tx_rdy(port))
+ 			keepgoing |= mpc52xx_uart_int_tx_chars(port);
+ 
+ 		/* Limit number of iteration */
+@@ -644,36 +777,33 @@ static void
+ mpc52xx_console_write(struct console *co, const char *s, unsigned int count)
+ {
+ 	struct uart_port *port = &mpc52xx_uart_ports[co->index];
+-	struct mpc52xx_psc __iomem *psc = PSC(port);
+ 	unsigned int i, j;
+ 
+ 	/* Disable interrupts */
+-	out_be16(&psc->mpc52xx_psc_imr, 0);
++	psc_ops->cw_disable_ints(port);
+ 
+ 	/* Wait the TX buffer to be empty */
+ 	j = 5000000;	/* Maximum wait */
+-	while (!(in_be16(&psc->mpc52xx_psc_status) & MPC52xx_PSC_SR_TXEMP) &&
+-	       --j)
++	while (!mpc52xx_uart_tx_empty(port) && --j)
+ 		udelay(1);
+ 
+ 	/* Write all the chars */
+ 	for (i = 0; i < count; i++, s++) {
+ 		/* Line return handling */
+ 		if (*s == '\n')
+-			out_8(&psc->mpc52xx_psc_buffer_8, '\r');
++			psc_ops->write_char(port, '\r');
+ 
+ 		/* Send the char */
+-		out_8(&psc->mpc52xx_psc_buffer_8, *s);
++		psc_ops->write_char(port, *s);
+ 
+ 		/* Wait the TX buffer to be empty */
+ 		j = 20000;	/* Maximum wait */
+-		while (!(in_be16(&psc->mpc52xx_psc_status) &
+-			 MPC52xx_PSC_SR_TXEMP) && --j)
++		while (!mpc52xx_uart_tx_empty(port) && --j)
+ 			udelay(1);
+ 	}
+ 
+ 	/* Restore interrupt state */
+-	out_be16(&psc->mpc52xx_psc_imr, port->read_status_mask);
++	psc_ops->cw_restore_ints(port);
+ }
+ 
+ #if !defined(CONFIG_PPC_MERGE)
+@@ -718,7 +848,7 @@ mpc52xx_console_setup(struct console *co, char *options)
+ {
+ 	struct uart_port *port = &mpc52xx_uart_ports[co->index];
+ 	struct device_node *np = mpc52xx_uart_nodes[co->index];
+-	unsigned int ipb_freq;
++	unsigned int uartclk;
+ 	struct resource res;
+ 	int ret;
+ 
+@@ -750,17 +880,16 @@ mpc52xx_console_setup(struct console *co, char *options)
+ 		return ret;
+ 	}
+ 
+-	/* Search for bus-frequency property in this node or a parent */
+-	ipb_freq = mpc52xx_find_ipb_freq(np);
+-	if (ipb_freq == 0) {
+-		pr_debug("Could not find IPB bus frequency!\n");
++	uartclk = psc_ops->getuartclk(np);
++	if (uartclk == 0) {
++		pr_debug("Could not find uart clock frequency!\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	/* Basic port init. Needed since we use some uart_??? func before
+ 	 * real init for early access */
+ 	spin_lock_init(&port->lock);
+-	port->uartclk	= ipb_freq / 2;
++	port->uartclk = uartclk;
+ 	port->ops	= &mpc52xx_uart_ops;
+ 	port->mapbase = res.start;
+ 	port->membase = ioremap(res.start, sizeof(struct mpc52xx_psc));
+@@ -946,7 +1075,7 @@ static int __devinit
+ mpc52xx_uart_of_probe(struct of_device *op, const struct of_device_id *match)
+ {
+ 	int idx = -1;
+-	unsigned int ipb_freq;
++	unsigned int uartclk;
+ 	struct uart_port *port = NULL;
+ 	struct resource res;
+ 	int ret;
+@@ -962,10 +1091,9 @@ mpc52xx_uart_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	pr_debug("Found %s assigned to ttyPSC%x\n",
+ 		 mpc52xx_uart_nodes[idx]->full_name, idx);
+ 
+-	/* Search for bus-frequency property in this node or a parent */
+-	ipb_freq = mpc52xx_find_ipb_freq(op->node);
+-	if (ipb_freq == 0) {
+-		dev_dbg(&op->dev, "Could not find IPB bus frequency!\n");
++	uartclk = psc_ops->getuartclk(op->node);
++	if (uartclk == 0) {
++		dev_dbg(&op->dev, "Could not find uart clock frequency!\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -973,7 +1101,7 @@ mpc52xx_uart_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	port = &mpc52xx_uart_ports[idx];
+ 
+ 	spin_lock_init(&port->lock);
+-	port->uartclk	= ipb_freq / 2;
++	port->uartclk = uartclk;
+ 	port->fifosize	= 512;
+ 	port->iotype	= UPIO_MEM;
+ 	port->flags	= UPF_BOOT_AUTOCONF |
 -- 
 1.5.3.5.726.g41a7a
