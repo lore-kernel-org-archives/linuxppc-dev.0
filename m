@@ -2,14 +2,14 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6EE77DDE44
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 01:29:35 +1100 (EST)
-Message-ID: <4790B80D.20901@scram.de>
-Date: Fri, 18 Jan 2008 15:30:37 +0100
+	by ozlabs.org (Postfix) with ESMTP id 56E60DDF06
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 01:30:17 +1100 (EST)
+Message-ID: <4790B82B.9060506@scram.de>
+Date: Fri, 18 Jan 2008 15:31:07 +0100
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH 1/7] [POWERPC] Remove unused m8xx_cpm_hostalloc/free/dump()
+Subject: [PATCH 2/7] [POWERPC] Rename m8xx_pic_init to mpc8xx_pics_init
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Cc: Scott Wood <scottwood@freescale.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
@@ -22,172 +22,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-m8xx_cpm_hostalloc is still defined in commproc.c, but no users are left
-in the kernel tree. m8xx_cpm_hostfree and m8xx_cpm_hostdump are only
-defined in the headers. Remove this dead code.
+m8xx_pic_init calls both mpc8xx_pic_init and cpm_pic_init. Renaming the
+function to use the same name space as the rest of the mpc8xx
+specific funtions and to be more meaningful.
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
- arch/powerpc/sysdev/commproc.c |   37 -------------------------------------
- arch/ppc/8xx_io/commproc.c     |   38 --------------------------------------
- include/asm-powerpc/commproc.h |    4 ----
- include/asm-ppc/commproc.h     |    4 ----
- 4 files changed, 0 insertions(+), 83 deletions(-)
+ arch/powerpc/platforms/8xx/ep88xc.c          |    2 +-
+ arch/powerpc/platforms/8xx/m8xx_setup.c      |    4 ++--
+ arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 +-
+ arch/powerpc/platforms/8xx/mpc885ads_setup.c |    2 +-
+ arch/powerpc/sysdev/commproc.h               |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index 621bc6c..818d4b0 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -48,8 +48,6 @@
- #ifndef CONFIG_PPC_CPM_NEW_BINDING
- static void m8xx_cpm_dpinit(void);
+diff --git a/arch/powerpc/platforms/8xx/ep88xc.c b/arch/powerpc/platforms/8xx/ep88xc.c
+index c518b6c..c883c31 100644
+--- a/arch/powerpc/platforms/8xx/ep88xc.c
++++ b/arch/powerpc/platforms/8xx/ep88xc.c
+@@ -166,7 +166,7 @@ define_machine(ep88xc) {
+ 	.name = "Embedded Planet EP88xC",
+ 	.probe = ep88xc_probe,
+ 	.setup_arch = ep88xc_setup_arch,
+-	.init_IRQ = m8xx_pic_init,
++	.init_IRQ = mpc8xx_pics_init,
+ 	.get_irq	= mpc8xx_get_irq,
+ 	.restart = mpc8xx_restart,
+ 	.calibrate_decr = mpc8xx_calibrate_decr,
+diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
+index ba645c2..1337457 100644
+--- a/arch/powerpc/platforms/8xx/m8xx_setup.c
++++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
+@@ -237,13 +237,13 @@ static void cpm_cascade(unsigned int irq, struct irq_desc *desc)
+ 	desc->chip->eoi(irq);
+ }
+ 
+-/* Initialize the internal interrupt controller.  The number of
++/* Initialize the internal interrupt controllers.  The number of
+  * interrupts supported can vary with the processor type, and the
+  * 82xx family can have up to 64.
+  * External interrupts can be either edge or level triggered, and
+  * need to be initialized by the appropriate driver.
+  */
+-void __init m8xx_pic_init(void)
++void __init mpc8xx_pics_init(void)
+ {
+ 	int irq;
+ 
+diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+index d2927a4..dea1df1 100644
+--- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+@@ -139,7 +139,7 @@ define_machine(mpc86x_ads) {
+ 	.name			= "MPC86x ADS",
+ 	.probe			= mpc86xads_probe,
+ 	.setup_arch		= mpc86xads_setup_arch,
+-	.init_IRQ		= m8xx_pic_init,
++	.init_IRQ		= mpc8xx_pics_init,
+ 	.get_irq		= mpc8xx_get_irq,
+ 	.restart		= mpc8xx_restart,
+ 	.calibrate_decr		= mpc8xx_calibrate_decr,
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+index 2cf1b6a..8f2aa04 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+@@ -275,7 +275,7 @@ define_machine(mpc885_ads) {
+ 	.name			= "Freescale MPC885 ADS",
+ 	.probe			= mpc885ads_probe,
+ 	.setup_arch		= mpc885ads_setup_arch,
+-	.init_IRQ		= m8xx_pic_init,
++	.init_IRQ		= mpc8xx_pics_init,
+ 	.get_irq		= mpc8xx_get_irq,
+ 	.restart		= mpc8xx_restart,
+ 	.calibrate_decr		= mpc8xx_calibrate_decr,
+diff --git a/arch/powerpc/sysdev/commproc.h b/arch/powerpc/sysdev/commproc.h
+index 9155ba4..f481adf 100644
+--- a/arch/powerpc/sysdev/commproc.h
++++ b/arch/powerpc/sysdev/commproc.h
+@@ -6,7 +6,7 @@ extern void mpc8xx_restart(char *cmd);
+ extern void mpc8xx_calibrate_decr(void);
+ extern int mpc8xx_set_rtc_time(struct rtc_time *tm);
+ extern void mpc8xx_get_rtc_time(struct rtc_time *tm);
+-extern void m8xx_pic_init(void);
++extern void mpc8xx_pics_init(void);
+ extern unsigned int mpc8xx_get_irq(void);
+ 
  #endif
--static uint host_buffer; /* One page of host buffer */
--static uint host_end;    /* end + 1 */
- cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
- immap_t __iomem *mpc8xx_immr;
- static cpic8xx_t __iomem *cpic_reg;
-@@ -268,41 +266,6 @@ out:
- }
- EXPORT_SYMBOL(cpm_command);
- 
--/* We used to do this earlier, but have to postpone as long as possible
-- * to ensure the kernel VM is now running.
-- */
--static void
--alloc_host_memory(void)
--{
--	dma_addr_t	physaddr;
--
--	/* Set the host page for allocation.
--	*/
--	host_buffer = (uint)dma_alloc_coherent(NULL, PAGE_SIZE, &physaddr,
--			GFP_KERNEL);
--	host_end = host_buffer + PAGE_SIZE;
--}
--
--/* We also own one page of host buffer space for the allocation of
-- * UART "fifos" and the like.
-- */
--uint
--m8xx_cpm_hostalloc(uint size)
--{
--	uint	retloc;
--
--	if (host_buffer == 0)
--		alloc_host_memory();
--
--	if ((host_buffer + size) >= host_end)
--		return(0);
--
--	retloc = host_buffer;
--	host_buffer += size;
--
--	return(retloc);
--}
--
- /* Set a baud rate generator.  This needs lots of work.  There are
-  * four BRGs, any of which can be wired to any channel.
-  * The internal baud rate clock is the system clock divided by 16.
-diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
-index 9da880b..3f93af8 100644
---- a/arch/ppc/8xx_io/commproc.c
-+++ b/arch/ppc/8xx_io/commproc.c
-@@ -55,8 +55,6 @@
- })
- 
- static void m8xx_cpm_dpinit(void);
--static	uint	host_buffer;	/* One page of host buffer */
--static	uint	host_end;	/* end + 1 */
- cpm8xx_t	*cpmp;		/* Pointer to comm processor space */
- 
- /* CPM interrupt vector functions.
-@@ -68,7 +66,6 @@ struct	cpm_action {
- static	struct	cpm_action cpm_vecs[CPMVEC_NR];
- static	irqreturn_t cpm_interrupt(int irq, void * dev);
- static	irqreturn_t cpm_error_interrupt(int irq, void *dev);
--static	void	alloc_host_memory(void);
- /* Define a table of names to identify CPM interrupt handlers in
-  * /proc/interrupts.
-  */
-@@ -158,21 +155,6 @@ m8xx_cpm_reset(void)
- 	cpmp = (cpm8xx_t *)commproc;
- }
- 
--/* We used to do this earlier, but have to postpone as long as possible
-- * to ensure the kernel VM is now running.
-- */
--static void
--alloc_host_memory(void)
--{
--	dma_addr_t	physaddr;
--
--	/* Set the host page for allocation.
--	*/
--	host_buffer = (uint)dma_alloc_coherent(NULL, PAGE_SIZE, &physaddr,
--			GFP_KERNEL);
--	host_end = host_buffer + PAGE_SIZE;
--}
--
- /* This is called during init_IRQ.  We used to do it above, but this
-  * was too early since init_IRQ was not yet called.
-  */
-@@ -319,26 +301,6 @@ cpm_free_handler(int cpm_vec)
- 	cpm_vecs[cpm_vec].dev_id = NULL;
- }
- 
--/* We also own one page of host buffer space for the allocation of
-- * UART "fifos" and the like.
-- */
--uint
--m8xx_cpm_hostalloc(uint size)
--{
--	uint	retloc;
--
--	if (host_buffer == 0)
--		alloc_host_memory();
--
--	if ((host_buffer + size) >= host_end)
--		return(0);
--
--	retloc = host_buffer;
--	host_buffer += size;
--
--	return(retloc);
--}
--
- /* Set a baud rate generator.  This needs lots of work.  There are
-  * four BRGs, any of which can be wired to any channel.
-  * The internal baud rate clock is the system clock divided by 16.
-diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
-index 9e3b864..9757521 100644
---- a/include/asm-powerpc/commproc.h
-+++ b/include/asm-powerpc/commproc.h
-@@ -87,10 +87,6 @@ extern uint cpm_dpram_phys(u8* addr);
- 
- extern void cpm_setbrg(uint brg, uint rate);
- 
--extern uint m8xx_cpm_hostalloc(uint size);
--extern int  m8xx_cpm_hostfree(uint start);
--extern void m8xx_cpm_hostdump(void);
--
- extern void cpm_load_patch(cpm8xx_t *cp);
- 
- /* Buffer descriptors used by many of the CPM protocols.
-diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
-index 462abb1..5418d6d 100644
---- a/include/asm-ppc/commproc.h
-+++ b/include/asm-ppc/commproc.h
-@@ -75,10 +75,6 @@ extern void *cpm_dpram_addr(unsigned long offset);
- extern uint cpm_dpram_phys(u8* addr);
- extern void cpm_setbrg(uint brg, uint rate);
- 
--extern uint m8xx_cpm_hostalloc(uint size);
--extern int  m8xx_cpm_hostfree(uint start);
--extern void m8xx_cpm_hostdump(void);
--
- extern void cpm_load_patch(volatile immap_t *immr);
- 
- /* Buffer descriptors used by many of the CPM protocols.
 -- 
 1.5.3.8
