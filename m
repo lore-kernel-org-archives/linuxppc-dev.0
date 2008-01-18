@@ -1,18 +1,22 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id EB59ADDECD
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 02:41:13 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <18320.32058.370817.762911@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2f04d94d12c17206c76178541f8127c1@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: 2.6.24-rc8-mm1 Kernel oops will running kernbench
-Date: Fri, 18 Jan 2008 09:41:19 -0600
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Cc: Andrew Morton <akpm@osdl.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3F782DDFEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 03:03:15 +1100 (EST)
+Date: Fri, 18 Jan 2008 10:03:03 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Sergej Stepanov <Sergej.Stepanov@ids.de>
+Subject: Re: [PATCH 2/2] mpc82xx: Embedded Planet EP8248E support
+Message-ID: <20080118160303.GC15620@ld0162-tx32.am.freescale.net>
+References: <20080117223205.GB17300@loki.buserror.net>
+	<1200654427.3204.4.camel@p60365-ste>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1200654427.3204.4.camel@p60365-ste>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras writes:
+On Fri, Jan 18, 2008 at 12:07:07PM +0100, Sergej Stepanov wrote:
+> 
+> > +			/* "Serial" port/SCC1 */
+> > +			scc1: serial@11a00 {
+> > +				device_type = "serial";
+> > +				compatible = "fsl,mpc8248-scc-uart",
+> > +				             "fsl,cpm2-scc-uart";
+> > +				reg = <0x11a00 0x20 0x8000 0x100>;
+> > +				interrupts = <40 8>;
+> are you sure with 40 as interrupt? has not it be "28"(hex) here?
 
-> Kamalesh Babulal writes:
->
-> > I tried reproducing the problem and was successful with following 
-> trace
-> > in which the pc is at 0x4570 as the above one
->
-> What did you do to trigger it?
->
-> > c000000000004544 <unrecov_slb>:
-> > c000000000004544:       71 8a 40 00     andi.   r10,r12,16384
-> > c000000000004548:       7c 2a 0b 78     mr      r10,r1
-> > c00000000000454c:       38 21 fd 10     addi    r1,r1,-752
-> > c000000000004550:       41 82 00 08     beq-    c000000000004558 
-> <unrecov_slb+0x14>
-> > c000000000004554:       e8 2d 01 a8     ld      r1,424(r13)
-> > c000000000004558:       2c a1 00 00     cmpdi   cr1,r1,0
-> > c00000000000455c:       40 84 00 08     bge-    cr1,c000000000004564 
-> <unrecov_slb+0x20>
-> > c000000000004560:       48 00 00 10     b       c000000000004570 
-> <unrecov_slb+0x2c>
-> > c000000000004564:       38 20 41 00     li      r1,16640
-> > c000000000004568:       b0 2d 01 c8     sth     r1,456(r13)
-> > c00000000000456c:       4b ff fb 18     b       c000000000004084 
-> <bad_stack>
-> > c000000000004570:       f9 21 01 a0     std     r9,416(r1)
->
-> So it's in the code that gets called on an unrecoverable SLB fault.
-> That's bad, we should never get those.  Does this happen with mainline
-> too, or only with -rc8-mm1?  I don't understand why we should start
-> seeing this problem unless something has changed in
-> arch/powerpc/kernel or arch/powerpc/mm (well I suppose a bug somewhere
-> else could cause memory corruption which might be able to lead to
-> this).
+This is a version 1 dts file -- the default base is decimal.
 
-The reason we get the fault here instead of a nice oops is that 
-unrecov_slb is supposed to be called after the switch to virtual mode, 
-but no code was added when the real mode slb handling was added.  
-However, its not simply adding code, as iSeries calls the same slb 
-reload code in virtual mode (as it always runs virtual), so the code 
-will have to check if translation is already on.
-
-(I had found this in a previous audit, but as Paul said, its not 
-supposed to happen, and I haven't pursued a patch).
-
->
-> Does it still happen if you take git-powerpc.patch out of the series?
->
-> Paul.
+-Scott
