@@ -1,21 +1,14 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
+Return-Path: <linuxppcdev@lists.qbjnet.com>
+Received: from kunk.qbjnet.com (vci-113.dsl.onvoy.net [137.192.135.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7921BDDEFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 05:51:49 +1100 (EST)
-Date: Fri, 18 Jan 2008 18:39:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
-	CPM serial driver.
-Message-ID: <20080118183905.2d5d8474@lxorguk.ukuu.org.uk>
-In-Reply-To: <478F4AE3.5090803@scram.de>
-References: <478F4AE3.5090803@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id F16D7DDF0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 05:53:37 +1100 (EST)
+Date: 18 Jan 2008 18:53:30 -0000
+Message-ID: <20080118185330.8295.qmail@kunk.qbjnet.com>
+From: Bob Brose <linuxppcdev@lists.qbjnet.com>
+To: linuxppc-dev@ozlabs.org
+Subject: l2cr missing from /proc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +18,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008 13:32:35 +0100
-Jochen Friedrich <jochen@scram.de> wrote:
+Why is l2cr missing from the /proc filesystem in recent 2.6 kernels?
+Is it a bug or design decision?
 
-> If a freescale watchdog device node is present, reset the watchdog
-> while waiting for serial input.
-
-Why ? We normally rely on user space for watchdog management as only the
-fact user space is behaving really proves a box is happy ?
-
-Alan
+It wasn't necessary since one could set it via a kernel arg however
+now that I'm trying to turn on cache in a 7455 and setting l3cr isn't
+supported from the command line I was wondering if l3cr was in /proc
+as well but has also gone missing (since I see l3cr code in the kernel
+source).
