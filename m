@@ -1,37 +1,20 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e28esmtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B4B99DDED3
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 21:55:11 +1100 (EST)
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
-	by e28esmtp04.in.ibm.com (8.13.1/8.13.1) with ESMTP id m0IAsgTt009751
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 16:24:42 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0IAsgJQ1048710
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 16:24:42 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id m0IAsgC7022811
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 10:54:42 GMT
-Date: Fri, 18 Jan 2008 16:24:41 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc8-mm1 Kernel oops will running kernbench
-Message-ID: <20080118105441.GA12009@balbir.in.ibm.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<479064F0.7040305@linux.vnet.ibm.com>
-	<20080118004416.6a757169.akpm@linux-foundation.org>
-	<18320.27372.202771.764301@cargo.ozlabs.ibm.com>
-	<479072BC.3080908@linux.vnet.ibm.com>
-	<18320.32464.634534.415458@cargo.ozlabs.ibm.com>
-	<479082F0.2040109@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <479082F0.2040109@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
-Reply-To: balbir@linux.vnet.ibm.com
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id 4A472DE017
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 22:07:11 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id 82427F49119
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 12:07:07 +0100 (CET)
+Subject: Re: [PATCH 2/2] mpc82xx: Embedded Planet EP8248E support
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080117223205.GB17300@loki.buserror.net>
+References: <20080117223205.GB17300@loki.buserror.net>
+Date: Fri, 18 Jan 2008 12:07:07 +0100
+Message-Id: <1200654427.3204.4.camel@p60365-ste>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,33 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> [2008-01-18 16:14:00]:
 
-> Paul Mackerras wrote:
-> > Kamalesh Babulal writes:
-> > 
-> >>>>> NIP: 0000000000004570 LR: 000000000fc42dc0 CTR: 0000000000000000
-> >>>>> REGS: c00000077b6bf8c0 TRAP: 0300   Not tainted  (2.6.24-rc8-mm1-autotest)
-> >>>>> MSR: 8000000000001000 <ME>  CR: 28022422  XER: 00000000
-> >>>>> DAR: c00000077b6bfce0, DSISR: 000000000a000000
-> > 
-> > Actually, how much RAM does this machine have?  If it has less than
-> > 32GB, then the problem is that the kernel stack pointer is bogus.
-> > (How it got to be bogus is the interesting question, of course. :)
-> > 
-> > Paul.
-> > 
-> Hi Paul,
-> 
-> The machine has around 30GB of RAM, do you want me to try, by taking 
-> the git-powerpc.patch out of the series and try reproducing the oops.
->
+> +			/* "Serial" port/SCC1 */
+> +			scc1: serial@11a00 {
+> +				device_type =3D "serial";
+> +				compatible =3D "fsl,mpc8248-scc-uart",
+> +				             "fsl,cpm2-scc-uart";
+> +				reg =3D <0x11a00 0x20 0x8000 0x100>;
+> +				interrupts =3D <40 8>;
+are you sure with 40 as interrupt? has not it be "28"(hex) here?
 
-Kamalesh, I thought I saw Paul's request for trying without
-git-powerpc.patch (it's in a separate email). 
+> +				interrupt-parent =3D <&PIC>;
+> +				fsl,cpm-brg =3D <1>;
+> +				fsl,cpm-command =3D <0x00800000>;
+> +				linux,planetcore-label =3D "SCC1";
+> +			};
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+--=20
+Dipl.-Ing. Sergej Stepanov=20
+Software-Entwicklung
+
+IDS GmbH=20
+E-PA  (Entwicklung - Prozess Automatisierung)
+Nobelstr. 18,=20
+D-76275 Ettlingen=20
+T. (0) 72 43/2 18-615=20
+F. (0) 72 43/2 18-100=20
+E. Sergej.Stepanov@ids.de
+
+<http://www.ids.de>
+Gesch=C3=A4ftsf=C3=BChrer: Norbert Wagner, Friedrich Abri=C3=9F=20
+Sitz der Gesellschaft: Ettlingen=20
+Amtsgericht Mannheim HRB 362503=20
