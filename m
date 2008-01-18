@@ -1,20 +1,23 @@
-Return-Path: <jsamch@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id EC59CDDDED
+Return-Path: <linux@sundmangroup.com>
+Received: from proxy1.bredband.net (proxy1.bredband.net [195.54.101.71])
+	by ozlabs.org (Postfix) with ESMTP id B6984DDED7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Jan 2008 13:49:16 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so1192125pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Jan 2008 18:49:14 -0800 (PST)
-Message-ID: <169c03cb0801171849i59d35893hda44a7f0c5417b58@mail.gmail.com>
-Date: Thu, 17 Jan 2008 21:49:13 -0500
-From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
-Sender: jsamch@gmail.com
-To: Jogi95@web.de
-Subject: Re: ml310 kernel2.6 booting problems
+	Fri, 18 Jan 2008 17:39:01 +1100 (EST)
+Received: from ironport.bredband.com (195.54.101.120) by proxy1.bredband.net
+	(7.3.127) id 4730FF890176D2D5 for linuxppc-embedded@ozlabs.org;
+	Fri, 18 Jan 2008 07:38:58 +0100
+Message-ID: <4790497D.3090004@sundmangroup.com>
+Date: Fri, 18 Jan 2008 07:38:53 +0100
+From: Matias Sundman <linux@sundmangroup.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+To: Scott Wood <scottwood@freescale.com>,
+	"Arnon Kaufman(Work)" <arnon.work@gmail.com>
+Subject: Re: SCHED_FIFO & System()
+References: <478EFD4C.9070706@sundmangroup.com>
+	<478FD3B7.2030105@freescale.com>
+In-Reply-To: <478FD3B7.2030105@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,47 +28,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Date: Thu, 17 Jan 2008 21:19:04 +0100
-> From: Joachim Meyer
-> Hmmm... I'm not really ready to invest that much time into the PCI for ML=
--310.
-> -------------------------------------------------------------------------=
--------
-> http://ozlabs.org/pipermail/linuxppc-embedded/2007-December/029211.html
+Hello,
+
+/>>Are you running a preemptible kernel? [Scott]/
+ 
+Yes the Kernel is configured as - Preemptible Kernel (Low-Latency Desktop)
+
+/>>//what you actually need is a better kernel preemption such as  using 
+Ingo Molnar 's  PREEMPT_RT patch. (it may reduce performance a little) 
+[Arnon]
+/
+Ok - we can try to enable the PREEMPT_RT patches.
+
+-------------------------------
+
+I also tried with a sched_yield() before the call to system() in order 
+to see if the behavior changed somewhat but it didn't.
+
+
+Cheers // Matias :-)
+
+
+
+Scott Wood skrev:
+> Matias Sundman wrote:
+>   
+>> Hello,
+>> I have some strange behavior in one of my systems.
+>>
+>> I have a real-time thread under SCHED_FIFO which is running every 10ms. 
+>> It is blocking on a semaphore and released by a timer interrupt every 10ms.
+>> Generally this works really well.
+>>
+>> However, there is a module in the system that makes a / system() / call 
+>> from c-code ;
+>>
+>>   system("run_my_script");
+>>
+>> By calling and running a bash script. Independent of how the actual 
+>> script looks like the real time thread does not get scheduled under 80ms 
+>> -- the time it takes
+>> for the system() call to finish.
+>>     
 >
-> How much work would it be (approximated), and do you think I can success =
-(I'm a novice, like you know)?
-> Would you help me (Tell me where to start & what to do)?
+> Are you running a preemptible kernel?
+>
+> -Scott
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>   
+[From : Arnon Kaufman(Work) <arnon.work@gmail.com>]
 
-Hi Joachim,
+I've seen this kind of behavior. i may guess that you configure the 
+kernel with PREEMPT, assuming it will solve the problem for you.
 
-I was also interested in getting the PCI to run on the ML-310.  I did
-spend an evening trying to integrate a patch sent over by Stephen
-Neuendorffer from Xilinx.  I managed to get everything to compile
-(basically I fixed a few missing macros and had to search a bit to
-ensure that the memory mapping was correctly ported).  Unfortunately,
-when I tried the new kernel, I think that I must have messed something
-up with the interrupt mappings (I am a newbie to PCI) and I had to
-remove some interrupt mapping from Stephen's patch.
+I'll split the problem into two:
+1. program loading stage is finished (+ reschedule)
+2. thread execution time (delay)
 
-In any case, my ML-310 was booting the Linux kernel, but something was
-not right and I did not get anymore printouts from the UART Lite.
-Since I don't have the JTAG cable, I was stuck at this point with
-little means to debug the system.  One day I'll spoil myself with one
-of those platform JTAG USB cables...
+when executing a new application it's involved with plenty of kernel 
+activity such as fetching the application from storage, loader 
+relocation,allocating and remapping pages, resolving dynamic linking 
+etc..., all the activity occurs under the hood of the kernel, suspending 
+most of the kernel activities, due to many spin locks on the way. that 
+delays other kernel threads as well, and even workqueues.
 
-I used Z-modem to transfer files to/from my workstation to my CF card
-on the ML-310 and this was an acceptable compromise.
+trying to bypass the symptom  - re-running the exact external 
+application ,  should not be involved with a second delay, as it was 
+cached. so may be running the external application in advance may be 
+good enough for you.
 
-I'd still be interested in having the PCI bus working on the ML-310,
-but now that I got my BEE2 booting Linux 2.6, its not such a big
-priority for me.  Let me know if you have some success in that
-direction.
+what you actually need is a better kernel preemption such as  using Ingo 
+Molnar 's  PREEMPT_RT patch. (it may reduce performance a little).
 
-Regards,
+the second part is that the scheduler delays the thread execution as it 
+think other kernel's entities has a higher priority such as softirqs, 
+workqueue, etc...
 
-Jean-Samuel
---=20
-Integrated Microsystems Laboratory
-McGill University, Montr=E9al, QC, CANADA
-Web Page: http://chaos.ece.mcgill.ca
+the PREEMPT_RT may solve this problem as well as it bring a better 
+priority control, with the addition of priority inheritance.
