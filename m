@@ -1,20 +1,19 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail171-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
+Received: from mail17-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A53F1DDF3C
+	by ozlabs.org (Postfix) with ESMTP id 3B354DE004
 	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 07:34:18 +1100 (EST)
-Message-ID: <47910D00.5050505@am.sony.com>
-Date: Fri, 18 Jan 2008 12:33:04 -0800
+Message-ID: <47910CDF.2010909@am.sony.com>
+Date: Fri, 18 Jan 2008 12:32:31 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 16/16] PS3: Update ps3_defconfig
+Subject: [patch 11/16] PS3: Add logical performance monitor repository routines
 References: <20080118202612.422185192@am.sony.com>
 In-Reply-To: <20080118202612.422185192@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,148 +23,169 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Update ps3_defconfig.
+From: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 
+Add repository routines for the PS3 Logical Performance Monitor.
+
+Signed-off-by: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/configs/ps3_defconfig |   49 ++++++++++++++++++++++++++-----------
- 1 file changed, 35 insertions(+), 14 deletions(-)
+v2: o Correct Yamamoto-san's mail addr.
 
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.24-rc4
--# Tue Dec  4 22:49:57 2007
-+# Linux kernel version: 2.6.24-rc8
-+# Wed Jan 16 14:31:21 2008
- #
- CONFIG_PPC64=y
+v3: o Change num_pu and pu_id to type u64.
+    o Add comments to describe some symbol names.
+
+ arch/powerpc/platforms/ps3/platform.h   |   12 +++--
+ arch/powerpc/platforms/ps3/repository.c |   75 +++++++++++++++++++++++++++++++-
+ 2 files changed, 83 insertions(+), 4 deletions(-)
+
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -180,10 +180,10 @@ int ps3_repository_read_stor_dev_region(
+ 	unsigned int dev_index, unsigned int region_index,
+ 	unsigned int *region_id, u64 *region_start, u64 *region_size);
  
-@@ -103,6 +103,7 @@ CONFIG_VM_EVENT_COUNTERS=y
- CONFIG_SLAB=y
- # CONFIG_SLUB is not set
- # CONFIG_SLOB is not set
-+CONFIG_SLABINFO=y
- CONFIG_RT_MUTEXES=y
- # CONFIG_TINY_SHMEM is not set
- CONFIG_BASE_SMALL=0
-@@ -154,7 +155,6 @@ CONFIG_PPC_PS3=y
- # CONFIG_PS3_ADVANCED is not set
- CONFIG_PS3_HTAB_SIZE=20
- # CONFIG_PS3_DYNAMIC_DMA is not set
--CONFIG_PS3_USE_LPAR_ADDR=y
- CONFIG_PS3_VUART=y
- CONFIG_PS3_PS3AV=y
- CONFIG_PS3_SYS_MANAGER=y
-@@ -162,6 +162,7 @@ CONFIG_PS3_STORAGE=y
- CONFIG_PS3_DISK=y
- CONFIG_PS3_ROM=y
- CONFIG_PS3_FLASH=y
-+CONFIG_PS3_LPM=m
- CONFIG_PPC_CELL=y
- # CONFIG_PPC_CELL_NATIVE is not set
- # CONFIG_PPC_IBM_CELL_BLADE is not set
-@@ -225,7 +226,7 @@ CONFIG_HAVE_MEMORY_PRESENT=y
- # CONFIG_SPARSEMEM_STATIC is not set
- CONFIG_SPARSEMEM_EXTREME=y
- CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
--CONFIG_SPARSEMEM_VMEMMAP=y
-+# CONFIG_SPARSEMEM_VMEMMAP is not set
- CONFIG_MEMORY_HOTPLUG=y
- CONFIG_MEMORY_HOTPLUG_SPARSE=y
- CONFIG_SPLIT_PTLOCK_CPUS=4
-@@ -338,7 +339,26 @@ CONFIG_IPV6_SIT=y
- # CONFIG_NET_PKTGEN is not set
- # CONFIG_HAMRADIO is not set
- # CONFIG_IRDA is not set
--# CONFIG_BT is not set
-+CONFIG_BT=m
-+CONFIG_BT_L2CAP=m
-+CONFIG_BT_SCO=m
-+CONFIG_BT_RFCOMM=m
-+CONFIG_BT_RFCOMM_TTY=y
-+CONFIG_BT_BNEP=m
-+CONFIG_BT_BNEP_MC_FILTER=y
-+CONFIG_BT_BNEP_PROTO_FILTER=y
-+CONFIG_BT_HIDP=m
+-/* repository pu and memory info */
++/* repository logical pu and memory info */
+ 
+-int ps3_repository_read_num_pu(unsigned int *num_pu);
+-int ps3_repository_read_ppe_id(unsigned int *pu_index, unsigned int *ppe_id);
++int ps3_repository_read_num_pu(u64 *num_pu);
++int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id);
+ int ps3_repository_read_rm_base(unsigned int ppe_id, u64 *rm_base);
+ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
+ int ps3_repository_read_region_total(u64 *region_total);
+@@ -194,9 +194,15 @@ int ps3_repository_read_mm_info(u64 *rm_
+ 
+ int ps3_repository_read_num_be(unsigned int *num_be);
+ int ps3_repository_read_be_node_id(unsigned int be_index, u64 *node_id);
++int ps3_repository_read_be_id(u64 node_id, u64 *be_id);
+ int ps3_repository_read_tb_freq(u64 node_id, u64 *tb_freq);
+ int ps3_repository_read_be_tb_freq(unsigned int be_index, u64 *tb_freq);
+ 
++/* repository performance monitor info */
 +
-+#
-+# Bluetooth device drivers
-+#
-+CONFIG_BT_HCIUSB=m
-+CONFIG_BT_HCIUSB_SCO=y
-+# CONFIG_BT_HCIUART is not set
-+# CONFIG_BT_HCIBCM203X is not set
-+# CONFIG_BT_HCIBPA10X is not set
-+# CONFIG_BT_HCIBFUSB is not set
-+# CONFIG_BT_HCIVHCI is not set
- # CONFIG_AF_RXRPC is not set
++int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
++	u64 *rights);
++
+ /* repository 'Other OS' area */
  
- #
-@@ -666,14 +686,14 @@ CONFIG_LOGO_LINUX_CLUT224=y
- #
- # Sound
- #
--CONFIG_SOUND=y
-+CONFIG_SOUND=m
+ int ps3_repository_read_boot_dat_addr(u64 *lpar_addr);
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -711,6 +711,35 @@ int ps3_repository_read_stor_dev_region(
+ 	return result;
+ }
  
- #
- # Advanced Linux Sound Architecture
- #
--CONFIG_SND=y
--CONFIG_SND_TIMER=y
--CONFIG_SND_PCM=y
-+CONFIG_SND=m
-+CONFIG_SND_TIMER=m
-+CONFIG_SND_PCM=m
- # CONFIG_SND_SEQUENCER is not set
- # CONFIG_SND_MIXER_OSS is not set
- # CONFIG_SND_PCM_OSS is not set
-@@ -702,7 +722,7 @@ CONFIG_SND_VERBOSE_PROCFS=y
- #
- # ALSA PowerPC devices
- #
--CONFIG_SND_PS3=y
-+CONFIG_SND_PS3=m
- CONFIG_SND_PS3_DEFAULT_START_DELAY=2000
++/**
++ * ps3_repository_read_num_pu - Number of logical PU processors for this lpar.
++ */
++
++int ps3_repository_read_num_pu(u64 *num_pu)
++{
++	*num_pu = 0;
++	return read_node(PS3_LPAR_ID_CURRENT,
++			   make_first_field("bi", 0),
++			   make_field("pun", 0),
++			   0, 0,
++			   num_pu, NULL);
++}
++
++/**
++ * ps3_repository_read_pu_id - Read the logical PU id.
++ * @pu_index: Zero based index.
++ * @pu_id: The logical PU id.
++ */
++
++int ps3_repository_read_pu_id(unsigned int pu_index, u64 *pu_id)
++{
++	return read_node(PS3_LPAR_ID_CURRENT,
++		make_first_field("bi", 0),
++		make_field("pu", pu_index),
++		0, 0,
++		pu_id, NULL);
++}
++
+ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size)
+ {
+ 	return read_node(PS3_LPAR_ID_CURRENT,
+@@ -883,6 +912,10 @@ int ps3_repository_read_boot_dat_info(u6
+ 		: ps3_repository_read_boot_dat_size(size);
+ }
  
- #
-@@ -747,7 +767,7 @@ CONFIG_USB_SUPPORT=y
- CONFIG_USB_ARCH_HAS_HCD=y
- CONFIG_USB_ARCH_HAS_OHCI=y
- CONFIG_USB_ARCH_HAS_EHCI=y
--CONFIG_USB=y
-+CONFIG_USB=m
- # CONFIG_USB_DEBUG is not set
++/**
++ * ps3_repository_read_num_be - Number of physical BE processors in the system.
++ */
++
+ int ps3_repository_read_num_be(unsigned int *num_be)
+ {
+ 	int result;
+@@ -898,6 +931,12 @@ int ps3_repository_read_num_be(unsigned 
+ 	return result;
+ }
  
- #
-@@ -761,13 +781,13 @@ CONFIG_USB_DEVICEFS=y
- #
- # USB Host Controller Drivers
- #
--CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_EHCI_HCD=m
- # CONFIG_USB_EHCI_SPLIT_ISO is not set
- # CONFIG_USB_EHCI_ROOT_HUB_TT is not set
- # CONFIG_USB_EHCI_TT_NEWSCHED is not set
- CONFIG_USB_EHCI_BIG_ENDIAN_MMIO=y
- # CONFIG_USB_ISP116X_HCD is not set
--CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_OHCI_HCD=m
- # CONFIG_USB_OHCI_HCD_PPC_OF is not set
- # CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
- CONFIG_USB_OHCI_BIG_ENDIAN_MMIO=y
-@@ -1033,7 +1053,8 @@ CONFIG_HAS_IOMEM=y
- CONFIG_HAS_IOPORT=y
- CONFIG_HAS_DMA=y
- CONFIG_INSTRUMENTATION=y
--# CONFIG_PROFILING is not set
-+CONFIG_PROFILING=y
-+CONFIG_OPROFILE=m
- # CONFIG_KPROBES is not set
- # CONFIG_MARKERS is not set
++/**
++ * ps3_repository_read_be_node_id - Read the physical BE processor node id.
++ * @be_index: Zero based index.
++ * @node_id: The BE processor node id.
++ */
++
+ int ps3_repository_read_be_node_id(unsigned int be_index, u64 *node_id)
+ {
+ 	return read_node(PS3_LPAR_ID_PME,
+@@ -908,6 +947,22 @@ int ps3_repository_read_be_node_id(unsig
+ 		node_id, NULL);
+ }
  
++/**
++ * ps3_repository_read_be_id - Read the physical BE processor id.
++ * @node_id: The BE processor node id.
++ * @be_id: The BE processor id.
++ */
++
++int ps3_repository_read_be_id(u64 node_id, u64 *be_id)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("be", 0),
++		node_id,
++		0,
++		0,
++		be_id, NULL);
++}
++
+ int ps3_repository_read_tb_freq(u64 node_id, u64 *tb_freq)
+ {
+ 	return read_node(PS3_LPAR_ID_PME,
+@@ -924,11 +979,29 @@ int ps3_repository_read_be_tb_freq(unsig
+ 	u64 node_id;
+ 
+ 	*tb_freq = 0;
+-	result = ps3_repository_read_be_node_id(0, &node_id);
++	result = ps3_repository_read_be_node_id(be_index, &node_id);
+ 	return result ? result
+ 		: ps3_repository_read_tb_freq(node_id, tb_freq);
+ }
+ 
++int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
++	u64 *rights)
++{
++	int result;
++	u64 node_id;
++
++	*lpar = 0;
++	*rights = 0;
++	result = ps3_repository_read_be_node_id(be_index, &node_id);
++	return result ? result
++		: read_node(PS3_LPAR_ID_PME,
++			    make_first_field("be", 0),
++			    node_id,
++			    make_field("lpm", 0),
++			    make_field("priv", 0),
++			    lpar, rights);
++}
++
+ #if defined(DEBUG)
+ 
+ int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
 
 -- 
