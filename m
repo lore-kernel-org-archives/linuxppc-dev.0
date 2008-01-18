@@ -1,27 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E483ADDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:29:45 +1100 (EST)
-Date: Thu, 17 Jan 2008 16:29:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-Message-Id: <20080117162913.0323c517.akpm@linux-foundation.org>
-In-Reply-To: <1200615168.3839.26.camel@cinder.waste.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801172315.28129.m.kozlowski@tuxland.pl>
-	<20080117145105.ad968ea6.akpm@linux-foundation.org>
-	<1200613194.3839.22.camel@cinder.waste.org>
-	<20080117160513.3456b4eb.akpm@linux-foundation.org>
-	<1200615168.3839.26.camel@cinder.waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, m.kozlowski@tuxland.pl, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 82D96DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:31:53 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C85969.8509640A"
+Subject: RE: Problems with PCI on 8280
+Date: Thu, 17 Jan 2008 18:27:46 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D8@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
+	<478FD066.5000803@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B039BA0D6@ismail.innsys.innovsys.com>
+	<478FE248.1030101@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,77 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008 18:12:48 -0600
-Matt Mackall <mpm@selenic.com> wrote:
+This is a multi-part message in MIME format.
 
-> 
-> > Do we need the ifdef?  pte_offset_map/pte_unmap should be super-cheap on
-> > !CONFIG_HIGHPTE builds.
-> 
-> In that case, pte_unmap is free, pte_offset_map is just a bit of math.
-> So yeah, we can simplify this. How about:
-> 
-> diff -r 5595adaea70f fs/proc/task_mmu.c
-> --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-> +++ b/fs/proc/task_mmu.c	Thu Jan 17 18:11:13 2008 -0600
-> @@ -582,20 +583,20 @@
->  {
->  	struct pagemapread *pm = private;
->  	pte_t *pte;
-> -	int err = 0;
-> +	int offset = 0, err = 0;
->  
-> -	pte = pte_offset_map(pmd, addr);
-> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
-> +	for (; addr != end; offset++, addr += PAGE_SIZE) {
->  		u64 pfn = PM_NOT_PRESENT;
-> -		if (is_swap_pte(*pte))
-> -			pfn = swap_pte_to_pagemap_entry(*pte);
-> -		else if (pte_present(*pte))
-> -			pfn = pte_pfn(*pte);
-> +		pte = pte_offset_map(pmd, addr);
-> +		if (is_swap_pte(pte[offset]))
-> +			pfn = swap_pte_to_pagemap_entry(pte[offset]);
-> +		else if (pte_present(pte[offset]))
-> +			pfn = pte_pfn(pte[offset]);
-> +		pte_unmap(pte);
->  		err = add_to_pagemap(addr, pfn, pm);
->  		if (err)
->  			return err;
->  	}
-> -	pte_unmap(pte - 1);
->  
->  	cond_resched();
-> 
+------_=_NextPart_001_01C85969.8509640A
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Do we need `offset' at all?
+From: Scott Wood
 
-You have
+>Hmm...  that suggests that something in u-boot's setup is either=20
+>incorrect, or (more likely in this case) doesn't match the device tree.
 
-static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-			     void *private)
-{
-	struct pagemapread *pm = private;
-	pte_t *pte;
-	int offset = 0, err = 0;
+Turns out u-boot was not setting u the inbound window size correctly.
+It was hardcoded to 512MB and we have a gig of ram. Set it correctly, =
+and CPI now works fully even without fixup_pci()
 
-	for (; addr != end; offset++, addr += PAGE_SIZE) {
-		u64 pfn = PM_NOT_PRESENT;
-		pte = pte_offset_map(pmd, addr);
-		if (is_swap_pte(pte[offset]))
-			pfn = swap_pte_to_pagemap_entry(pte[offset]);
-		else if (pte_present(pte[offset]))
-			pfn = pte_pfn(pte[offset]);
-		pte_unmap(pte);
-		err = add_to_pagemap(addr, pfn, pm);
-		if (err)
-			return err;
-	}
+>Ah.  Yes, I was assuming both windows would be the same size.  The code =
 
-	cond_resched();
+>should be changed to check that, and if any conditions for setting=20
+>PCIBRx/PCIMSKx fail, check to see if the firmware-provided values work=20
+>(and if not, bail without touching anything).
 
-	return err;
-}
+yup. In our case we only need one window.
 
-but I think we just do s/pte[offset]/*pte/.  The virtual address should be
-the only thing we need to increment as we walk across the addresses here?
+BTW. there is a bug in the inbound window size calculation.
+The mem_log2 variable sould be the shift value, not 1<< shift.
+and on the next line the window size mask sould be anded with =
+0x000f_ffff before or'ed with 0xa000_0000
+
+
+------_=_NextPart_001_01C85969.8509640A
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: Problems with PCI on 8280</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>From: Scott Wood<BR>
+<BR>
+&gt;Hmm...&nbsp; that suggests that something in u-boot's setup is =
+either<BR>
+&gt;incorrect, or (more likely in this case) doesn't match the device =
+tree.<BR>
+<BR>
+Turns out u-boot was not setting u the inbound window size =
+correctly.<BR>
+It was hardcoded to 512MB and we have a gig of ram. Set it correctly, =
+and CPI now works fully even without fixup_pci()<BR>
+<BR>
+&gt;Ah.&nbsp; Yes, I was assuming both windows would be the same =
+size.&nbsp; The code<BR>
+&gt;should be changed to check that, and if any conditions for =
+setting<BR>
+&gt;PCIBRx/PCIMSKx fail, check to see if the firmware-provided values =
+work<BR>
+&gt;(and if not, bail without touching anything).<BR>
+<BR>
+yup. In our case we only need one window.<BR>
+<BR>
+BTW. there is a bug in the inbound window size calculation.<BR>
+The mem_log2 variable sould be the shift value, not 1&lt;&lt; shift.<BR>
+and on the next line the window size mask sould be anded with =
+0x000f_ffff before or'ed with 0xa000_0000<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C85969.8509640A--
