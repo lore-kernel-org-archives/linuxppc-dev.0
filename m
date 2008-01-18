@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AF6F7DDE30
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 17:37:24 +1100 (EST)
-Message-Id: <EA71ABC4-CD55-45A4-B488-081937A211C2@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 887D0DDEBE
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 17:38:28 +1100 (EST)
+Message-Id: <F1F72DC6-5A19-4730-909B-02F7A6EB8E76@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1199776726-22963-1-git-send-email-leoli@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+In-Reply-To: <1199776726-22963-2-git-send-email-leoli@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/3 v2] add MPC837x USB platform support
-Date: Fri, 18 Jan 2008 00:37:06 -0600
+Subject: Re: [PATCH 3/3 v2] USB device tree cleanups
+Date: Fri, 18 Jan 2008 00:38:14 -0600
 References: <1199776726-22963-1-git-send-email-leoli@freescale.com>
+	<1199776726-22963-2-git-send-email-leoli@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,16 +27,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Jan 8, 2008, at 1:18 AM, Li Yang wrote:
 
-> Add chip specific and board specific initialization for MPC837x USB.
+> Remove device_type = "usb"
 >
 > Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
-> arch/powerpc/platforms/83xx/mpc837x_mds.c |   51 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/83xx/mpc83xx.h     |    3 ++
-> arch/powerpc/platforms/83xx/usb.c         |   40 ++++++++++++++++++++ 
-> ++
-> 3 files changed, 94 insertions(+), 0 deletions(-)
+> Documentation/powerpc/booting-without-of.txt |    4 ----
+> arch/powerpc/boot/dts/mpc8313erdb.dts        |    1 -
+> arch/powerpc/boot/dts/mpc832x_mds.dts        |    1 -
+> arch/powerpc/boot/dts/mpc8349emitx.dts       |    2 --
+> arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    1 -
+> arch/powerpc/boot/dts/mpc834x_mds.dts        |    2 --
+> arch/powerpc/boot/dts/mpc836x_mds.dts        |    1 -
+> arch/powerpc/platforms/83xx/usb.c            |    8 ++++----
+> arch/powerpc/sysdev/fsl_soc.c                |   12 +++++-------
+> 9 files changed, 9 insertions(+), 23 deletions(-)
 
 applied.
 
