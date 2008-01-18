@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4439FDDE39
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:38:10 +1100 (EST)
-Date: Fri, 18 Jan 2008 11:38:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
-	CPM serial driver.
-Message-Id: <20080118113804.4d4fdcc5.sfr@canb.auug.org.au>
-In-Reply-To: <478F4AE3.5090803@scram.de>
-References: <478F4AE3.5090803@scram.de>
+Return-Path: <mpm@selenic.com>
+Received: from waste.org (waste.org [66.93.16.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "waste.org", Issuer "waste.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AFED7DDE36
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:47:40 +1100 (EST)
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080117162913.0323c517.akpm@linux-foundation.org>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<200801172315.28129.m.kozlowski@tuxland.pl>
+	<20080117145105.ad968ea6.akpm@linux-foundation.org>
+	<1200613194.3839.22.camel@cinder.waste.org>
+	<20080117160513.3456b4eb.akpm@linux-foundation.org>
+	<1200615168.3839.26.camel@cinder.waste.org>
+	<20080117162913.0323c517.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 18:47:17 -0600
+Message-Id: <1200617237.3839.32.camel@cinder.waste.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91"
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+Cc: linuxppc-dev@ozlabs.org, m.kozlowski@tuxland.pl, paulus@samba.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,41 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 17 Jan 2008 13:32:35 +0100 Jochen Friedrich <jochen@scram.de> wrote:
->
-> If a freescale watchdog device node is present, reset the watchdog
-> while waiting for serial input.
->=20
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/powerpc/boot/Makefile     |    2 +-
->  arch/powerpc/boot/cpm-serial.c |    6 ++++
->  arch/powerpc/boot/cuboot-8xx.c |    1 +
->  arch/powerpc/boot/ops.h        |    2 +
->  arch/powerpc/boot/watchdog.c   |   65 ++++++++++++++++++++++++++++++++++=
-++++++
+On Thu, 2008-01-17 at 16:29 -0800, Andrew Morton wrote:
+> Do we need `offset' at all?
 
-I am just wondering if maybe that file name is to generic.
+Looks like no.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I wonder if there's a good argument for adding a pte_offset_val() which
+would let us do:
 
---Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91
-Content-Type: application/pgp-signature
+pteval = pte_offset_val(pmd, addr);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+and shrink the map/unmap window and overhead here and possibly
+elsewhere?
 
-iD8DBQFHj/TwTgG2atn1QN8RAtjeAJ9OK5TKKqICD1rV+bHfx+HLknUxgACfcp98
-hgnGoOHVPdSDbhN0wzfJ7cU=
-=2Xdv
------END PGP SIGNATURE-----
+Anyway, updated but still untested patch now with revealing comment:
 
---Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91--
+diff -r 5595adaea70f fs/proc/task_mmu.c
+--- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
++++ b/fs/proc/task_mmu.c	Thu Jan 17 18:45:57 2008 -0600
+@@ -584,18 +585,19 @@
+ 	pte_t *pte;
+ 	int err = 0;
+ 
+-	pte = pte_offset_map(pmd, addr);
+-	for (; addr != end; pte++, addr += PAGE_SIZE) {
++	for (; addr != end; addr += PAGE_SIZE) {
+ 		u64 pfn = PM_NOT_PRESENT;
++		pte = pte_offset_map(pmd, addr);
+ 		if (is_swap_pte(*pte))
+ 			pfn = swap_pte_to_pagemap_entry(*pte);
+ 		else if (pte_present(*pte))
+ 			pfn = pte_pfn(*pte);
++		/* unmap so we're not in atomic when we copy to userspace */
++		pte_unmap(pte);
+ 		err = add_to_pagemap(addr, pfn, pm);
+ 		if (err)
+ 			return err;
+ 	}
+-	pte_unmap(pte - 1);
+ 
+ 	cond_resched();
+ 
+
+
+-- 
+Mathematics is the supreme nostalgia of our time.
