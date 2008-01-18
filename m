@@ -1,23 +1,32 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 08DD9DDE16
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 17:56:11 +1100 (EST)
-Date: Fri, 18 Jan 2008 07:56:21 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080118065621.GA27495@aepfle.de>
-References: <20080115150949.GA14089@aepfle.de>
-	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-	<20080117181222.GA24411@aepfle.de>
-	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
-	<20080117211511.GA25320@aepfle.de>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0CBE2DDED1
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 18:09:58 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m0I7A9Qa019522
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 18:10:09 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0I79vkp2154686
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 18:09:57 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0I79upw014294
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 18:09:56 +1100
+Message-ID: <479050BF.1090107@linux.vnet.ibm.com>
+Date: Fri, 18 Jan 2008 12:39:51 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080117211511.GA25320@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc8-mm1 build failure on headers_check
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Sam Ravnborg <sam@ravnborg.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +36,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, Olaf Hering wrote:
+Hi Andrew,
 
-> On Thu, Jan 17, Christoph Lameter wrote:
-> 
-> > On Thu, 17 Jan 2008, Olaf Hering wrote:
-> > 
-> > > The patch does not help.
-> > 
-> > Duh. We need to know more about the problem.
-> 
-> cache_grow is called from 3 places. The third call has cleared l3 for
-> some reason.
+The kernel build fails during the headers_check on power box
 
-Typo in debug patch.
+  CHECK   include/asm/nvram.h
+/usr/local/autobench/autotest/tmp/build/linux/usr/include/asm/nvram.h requires linux/list.h, which does not exist in exported headers
+make[3]: *** [/usr/local/autobench/autotest/tmp/build/linux/usr/include/asm/.check.nvram.h] Error 1
+make[2]: *** [asm-powerpc] Error 2
+make[1]: *** [headers_check] Error 2
+make: *** [vmlinux] Error 2
 
-calls cache_grow with nodeid 0
-> [c00000000075bbd0] [c0000000000f82d0] .cache_alloc_refill+0x234/0x2c0
-calls cache_grow with nodeid 0
-> [c00000000075bbe0] [c0000000000f7f38] .____cache_alloc_node+0x17c/0x1e8
-
-calls cache_grow with nodeid 1
-> [c00000000075bbe0] [c0000000000f7d68] .fallback_alloc+0x1a0/0x1f4
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
