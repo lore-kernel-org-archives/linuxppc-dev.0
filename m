@@ -1,22 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6E5D9DDEFD
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 05:46:22 +1100 (EST)
-Message-ID: <4790F44F.8020009@scram.de>
-Date: Fri, 18 Jan 2008 19:47:43 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 48810DDF36
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 05:47:36 +1100 (EST)
+Date: Fri, 18 Jan 2008 10:47:35 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080117211511.GA25320@aepfle.de>
+Message-ID: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+References: <20080115150949.GA14089@aepfle.de>
+	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+	<20080117181222.GA24411@aepfle.de>
+	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	<20080117211511.GA25320@aepfle.de>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
-	CPM serial driver.
-References: <478F4AE3.5090803@scram.de>
-	<20080118183905.2d5d8474@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080118183905.2d5d8474@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Alan,
+On Thu, 17 Jan 2008, Olaf Hering wrote:
 
->> If a freescale watchdog device node is present, reset the watchdog
->> while waiting for serial input.
-> 
-> Why ? We normally rely on user space for watchdog management as only the
-> fact user space is behaving really proves a box is happy ?
+> early_node_map[1] active PFN ranges
+>     1:        0 ->   892928
+> Could not find start_pfn for node 0
 
-This is in the boot wrapper code, not in the linux kernel.
-
-Thanks,
-Jochen
+Corrupted min_pfn?
