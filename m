@@ -1,20 +1,19 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler1.mail.xerox.com",
-	Issuer "wvmler1.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 55A99DDF05
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it
+	(host20-155-static.82-213-b.business.telecomitalia.it
+	[213.82.155.20]) by ozlabs.org (Postfix) with ESMTP id 0BBA6DDEEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Jan 2008 07:34:03 +1100 (EST)
+	Sat, 19 Jan 2008 09:24:50 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Adding new driver in Linux 2.6 - read fails with -1
-Date: Fri, 18 Jan 2008 20:15:46 -0000
-Message-ID: <35786B99AB3FDC45A821572461791973013565B3@gbrwgceumf01.eu.xerox.net>
-In-Reply-To: <4f8c3030801180428k51645960sf0e1765f82eae1d8@mail.gmail.com>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Ramkumar J" <ramkumarj2000@gmail.com>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C85A20.EFCE0116"
+Subject: RE: A file of 5 MB on tmpfs file system uses 5 MB of RAM or more?
+Date: Fri, 18 Jan 2008 23:23:20 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E264A19@aquib01a>
+References: <F1F6EC0C8B75034F9E3A79FC85122E8EC8BBD1@aquib01a>
+	<20080118155853.GA15620@ld0162-tx32.am.freescale.net>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: "Scott Wood" <scottwood@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,63 +25,98 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: Ramkumar J [mailto:ramkumarj2000@gmail.com]=20
-> Sent: 18 January 2008 12:29
-> To: Jenkins, Clive
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Adding new driver in Linux 2.6 - read fails with -1
-> [...]
->=20
-> Hi,
->=20
-> Thanks a lot for replying. I will try using the perror() function and
-> modify the  busy-loop through wait-for functions. Also, the way I have
-> accessed the memory  mapped IO, is to ioremap() the physical address
-> and then use readl() functions.  Is this correct.=20
->=20
-> Following is the link to the driver file,
-> http://www.geocities.com/ramkumarj_2000/impulse-stream.c
-> http://www.geocities.com/ramkumarj_2000/1.txt as impulse-stream.h
->
-> This is intermediate layer and part of my application space,
-> http://www.geocities.com/ramkumarj_2000/co_stream_linux.c
->=20
-> The application is,
-> http://www.geocities.com/ramkumarj_2000/HelloWorld.c
-> http://www.geocities.com/ramkumarj_2000/HelloWorld_sw.c
->=20
-> Logs at,
-> http://www.geocities.com/ramkumarj_2000/logs.txt
-> http://www.geocities.com/ramkumarj_2000/kernellog.txt
->=20
-> My apologies for the dirty code. To add some background, it starts
-> from the main() in HelloWorld.c and it proceeds calling the
-> hear_hello() in HelloWorld_sw.c . The co_stream_* functions are
-> defined in intermediate layer co_stream_linux.c and co_stream_open
-> is defined to nothing in one header file. The open and ioctl call
-> ( modified a little in the driver now for debugging) map from
-> co_stream_attach.=20
-> co_stream_read is read and co_stream_write is the write to driver.
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C85A20.EFCE0116
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+No I simply did several malloc(s) without writing to the allocated =
+space.
+
+This means that the pages are not allocated really?
+
+
+
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com]
+Sent: Fri 18/01/2008 16.58
+To: DI BACCO ANTONIO - technolabs
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: A file of 5 MB on tmpfs file system uses 5 MB of RAM or =
+more?
 =20
-> Though the logs indicate the call of release function before the
-> read, I m not quite sure about this as the read not being called
-> have failed to get inside the kernel messages.
+On Fri, Jan 18, 2008 at 02:15:02PM +0100, DI BACCO ANTONIO - technolabs =
+wrote:
+> I have a linux-2.6.19.2 board with an MPC880 with 16MB ram and 16 MB
+> flash.=20
+> Normally I have 9-10 MB of free RAM.
+> =20
+> If I allocate 5 MB of ram memory, the system continues to work =
+normally,
 
-I still can't see everything because the header files are not shown.
+Are you sure the RAM was actually allocated (i.e. did you write to all =
+of
+the pages)?
 
-But anyway, it is getting too complex. I think you need to cut the code
-down to the mininum that causes the error if you want help from the
-list.
+-Scott
 
-A couple of hints regarding the driver's read method:
-1. If you really want to copy different data sizes into the same
-variable
-then use a union.
-2. *(char*)buffer=3Dx puts x where buffer points to; I think you wanted
-to put x into the variable buffer: *(char*)&buffer =3D x, but this is
-not very clear -- better to use a union.
-3. copy_{to,from)_user() return values that should be checked. Always
-check function return values (except maybe printf and printk), and
-display all error information.
 
-Clive
+------_=_NextPart_001_01C85A20.EFCE0116
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7235.2">
+<TITLE>RE: A file of 5 MB on tmpfs file system uses 5 MB of RAM or =
+more?</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>No I simply did several malloc(s) without writing to =
+the allocated space.<BR>
+<BR>
+This means that the pages are not allocated really?<BR>
+<BR>
+<BR>
+<BR>
+-----Original Message-----<BR>
+From: Scott Wood [<A =
+HREF=3D"mailto:scottwood@freescale.com">mailto:scottwood@freescale.com</A=
+>]<BR>
+Sent: Fri 18/01/2008 16.58<BR>
+To: DI BACCO ANTONIO - technolabs<BR>
+Cc: linuxppc-embedded@ozlabs.org<BR>
+Subject: Re: A file of 5 MB on tmpfs file system uses 5 MB of RAM or =
+more?<BR>
+<BR>
+On Fri, Jan 18, 2008 at 02:15:02PM +0100, DI BACCO ANTONIO - technolabs =
+wrote:<BR>
+&gt; I have a linux-2.6.19.2 board with an MPC880 with 16MB ram and 16 =
+MB<BR>
+&gt; flash.<BR>
+&gt; Normally I have 9-10 MB of free RAM.<BR>
+&gt;&nbsp;<BR>
+&gt; If I allocate 5 MB of ram memory, the system continues to work =
+normally,<BR>
+<BR>
+Are you sure the RAM was actually allocated (i.e. did you write to all =
+of<BR>
+the pages)?<BR>
+<BR>
+-Scott<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C85A20.EFCE0116--
