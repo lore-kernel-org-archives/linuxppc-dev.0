@@ -1,13 +1,12 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
-	by ozlabs.org (Postfix) with ESMTP id 4A368DDEC6
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 09:38:02 +1100 (EST)
-Date: Fri, 18 Jan 2008 14:38:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Mel Gorman <mel@csn.ul.ie>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2A02CDDED2
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 09:57:00 +1100 (EST)
+Date: Fri, 18 Jan 2008 23:57:13 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Christoph Lameter <clameter@sgi.com>
 Subject: Re: crash in kmem_cache_init
-In-Reply-To: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0801181436230.9169@schroedinger.engr.sgi.com>
+Message-ID: <20080118225713.GA31128@aepfle.de>
 References: <20080115150949.GA14089@aepfle.de>
 	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
 	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
@@ -18,9 +17,10 @@ References: <20080115150949.GA14089@aepfle.de>
 	<20080118213011.GC10491@csn.ul.ie>
 	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+Cc: lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
 	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
 	hanth Aravamudan <nacc@us.ibm.com>,
@@ -34,28 +34,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Jan 2008, Christoph Lameter wrote:
+On Fri, Jan 18, Christoph Lameter wrote:
 
-> Memoryless nodes: Set N_NORMAL_MEMORY for a node if we do not support HIGHMEM
+> Could you try this patch?
 
-If !CONFIG_HIGHMEM then
-
-enum node_states {
-#ifdef CONFIG_HIGHMEM
-        N_HIGH_MEMORY,          /* The node has regular or high memory */
-#else
-        N_HIGH_MEMORY = N_NORMAL_MEMORY,
-#endif
-
-So
-	for_each_online_node(nid) {
-                pg_data_t *pgdat = NODE_DATA(nid);
-                free_area_init_node(nid, pgdat, NULL,
-                                find_min_pfn_for_node(nid), NULL);
-
-                /* Any memory on that node */
-                if (pgdat->node_present_pages)
-                        node_set_state(nid, N_HIGH_MEMORY);
-			^^^ sets N_NORMAL_MEMORY      
-          	check_for_regular_memory(pgdat);
-        }
+Does not help, same crash.
