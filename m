@@ -1,30 +1,30 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 54805DE27E
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 04:06:09 +1100 (EST)
+Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 53244DE41D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 04:06:49 +1100 (EST)
 Received: from pd3mr4so.prod.shaw.ca
 	(pd3mr4so-qfe3.prod.shaw.ca [10.0.141.180]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JUU001JONGUR8B0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 18 Jan 2008 10:05:18 -0700 (MST)
-Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
+	with ESMTP id <0JUU00LEJNHOE470@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 18 Jan 2008 10:05:48 -0700 (MST)
+Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
 	by pd3mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JUU001PZNGQMC30@pd3mr4so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Fri, 18 Jan 2008 10:05:19 -0700 (MST)
+	5 2006)) with ESMTP id <0JUU001ULNHGM830@pd3mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Fri, 18 Jan 2008 10:05:49 -0700 (MST)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JUU00MIANGPUP00@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 18 Jan 2008 10:05:13 -0700 (MST)
-Date: Fri, 18 Jan 2008 10:04:49 -0700
+	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
+	2006))
+	with ESMTP id <0JUU00KEHNHBUF00@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 18 Jan 2008 10:05:39 -0700 (MST)
+Date: Fri, 18 Jan 2008 10:05:11 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC/PATCH 1/2] [POWERPC] mpc5200: normalize compatible property
-	bindings
+Subject: [RFC/PATCH 2/2] [POWERPC] Efika: prune fixups and make them more
+	carefull
 In-reply-to: <20080118170324.10592.47360.stgit@trillian.secretlab.ca>
 To: linuxppc-dev@ozlabs.org, jrigby@freescale.com, matt@genesi-usa.com,
 	tnt@246tnt.com
-Message-id: <20080118170443.10592.97538.stgit@trillian.secretlab.ca>
+Message-id: <20080118170454.10592.21512.stgit@trillian.secretlab.ca>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20080118170324.10592.47360.stgit@trillian.secretlab.ca>
@@ -39,393 +39,223 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Update MPC5200 drivers to also look for compatible properties in the
-form "fsl,mpc5200-*" to better conform to open firmware generic names
-recommended practice as published here:
+Prune back Efika fixups to only include changes that are actually required
+to get a working system.  Most of the drivers can accept the compatible
+properties, even if they don't match the what is recommented in the generic
+names recommended practice document.
 
-http://www.openfirmware.org/1275/practice/gnames/gnamv14a.html
+This patch also adds extra checks so that fixups are not performed blindly.
+Instead, the code first verifies that the device tree is faulty before
+making any changes.  This way, if the Efika firmware is updated to fix
+these issues, then the fixups will no longer get applied.
 
-This patch should *not* break compatibility with older device trees
-which do not use the 'fsl,' prefix.  The drivers will still bind against
-the older names also.
+At this point; here is the list of fixups needed for the efika:
+1. If the device_type property on the root node is 'chrp', then Linux won't
+   boot.  Change device_type to 'efika' to avoid this condition
+2. Add full interrupt list to the bestcomm node.  In actual fact, the
+   bestcomm interrupts property is technically correct, it just doesn't
+   expose the same granularity as the device driver expects.  All other
+   5200 device trees provide a separate irq number for each bestcomm
+   channel.  Rather than hack the driver, it's simpler to fix it up
+3. /builtin/sound node is missing an interrupts property
+4. /builtin/ethernet node is missing a phy-handle property and the
+   device driver doesn't know what to do without one.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/powerpc/platforms/52xx/lite5200.c       |   14 +++++++-
- arch/powerpc/platforms/52xx/lite5200_pm.c    |    8 ++++-
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   43 ++++++++++++++++----------
- arch/powerpc/platforms/52xx/mpc52xx_pci.c    |    9 ++++-
- arch/powerpc/platforms/52xx/mpc52xx_pic.c    |   14 +++++++-
- arch/powerpc/platforms/52xx/mpc52xx_pm.c     |    8 ++++-
- arch/powerpc/sysdev/bestcomm/bestcomm.c      |   13 +++++---
- drivers/ata/pata_mpc52xx.c                   |    6 +---
- drivers/net/fec_mpc52xx.c                    |    6 +---
- drivers/net/fec_mpc52xx_phy.c                |    8 ++---
- drivers/serial/mpc52xx_uart.c                |    4 ++
- drivers/spi/mpc52xx_psc_spi.c                |    5 ++-
- drivers/usb/host/ohci-ppc-of.c               |    2 +
- 13 files changed, 94 insertions(+), 46 deletions(-)
+ arch/powerpc/kernel/prom_init.c |  149 +++++++++++++++++++++------------------
+ 1 files changed, 79 insertions(+), 70 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index 5a8d190..f8ba5f2 100644
---- a/arch/powerpc/platforms/52xx/lite5200.c
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -44,9 +44,14 @@ lite5200_fix_clock_config(void)
- {
- 	struct device_node *np;
- 	struct mpc52xx_cdm  __iomem *cdm;
-+	struct of_device_id cdm_ids[] = {
-+		{ .compatible = "fsl,mpc5200-cdm", },
-+		{ .compatible = "mpc5200-cdm", },
-+		{}
-+	};
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 5d89a21..5ab4c84 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2142,82 +2142,34 @@ static void __init fixup_device_tree_pmac(void)
+ #endif
  
- 	/* Map zones */
--	np = of_find_compatible_node(NULL, NULL, "mpc5200-cdm");
-+	np = of_find_matching_node(NULL, cdm_ids);
- 	cdm = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!cdm) {
-@@ -79,9 +84,14 @@ lite5200_fix_port_config(void)
- {
- 	struct device_node *np;
- 	struct mpc52xx_gpio __iomem *gpio;
-+	struct of_device_id gpio_ids[] = {
-+		{ .compatible = "fsl,mpc5200-gpio", },
-+		{ .compatible = "mpc5200-gpio", },
-+		{}
-+	};
- 	u32 port_config;
- 
--	np = of_find_compatible_node(NULL, NULL, "mpc5200-gpio");
-+	np = of_find_matching_node(NULL, gpio_ids);
- 	gpio = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!gpio) {
-diff --git a/arch/powerpc/platforms/52xx/lite5200_pm.c b/arch/powerpc/platforms/52xx/lite5200_pm.c
-index c3ada1e..1679662 100644
---- a/arch/powerpc/platforms/52xx/lite5200_pm.c
-+++ b/arch/powerpc/platforms/52xx/lite5200_pm.c
-@@ -43,6 +43,12 @@ static int lite5200_pm_set_target(suspend_state_t state)
- static int lite5200_pm_prepare(void)
- {
- 	struct device_node *np;
-+	struct of_device_id immr_ids[] = {
-+		{ .compatible = "fsl,mpc5200-immr", },
-+		{ .type = "soc", .compatible = "mpc5200", }, /* lite5200 */
-+		{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
-+		{}
-+	};
- 
- 	/* deep sleep? let mpc52xx code handle that */
- 	if (lite5200_pm_target_state == PM_SUSPEND_STANDBY)
-@@ -52,7 +58,7 @@ static int lite5200_pm_prepare(void)
- 		return -EINVAL;
- 
- 	/* map registers */
--	np = of_find_compatible_node(NULL, NULL, "mpc5200");
-+	np = of_find_matching_node(NULL, immr_ids);
- 	mbar = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!mbar) {
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-index 6695593..0211890 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -64,8 +64,13 @@ mpc5200_setup_xlb_arbiter(void)
- {
- 	struct device_node *np;
- 	struct mpc52xx_xlb  __iomem *xlb;
-+	struct of_device_id xlb_ids[] = {
-+		{ .compatible = "fsl,mpc5200-xlb", },
-+		{ .compatible = "mpc5200-xlb", },
-+		{}
-+	};
- 
--	np = of_find_compatible_node(NULL, NULL, "mpc5200-xlb");
-+	np = of_find_matching_node(NULL, xlb_ids);
- 	xlb = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!xlb) {
-@@ -88,6 +93,9 @@ mpc5200_setup_xlb_arbiter(void)
- 	iounmap(xlb);
- }
- 
-+/*
-+ * Match table used by mpc52xx_declare_of_platform_devices
-+ */
- static struct of_device_id mpc52xx_bus_ids[] __initdata= {
- 	{ .compatible = "fsl,mpc5200-immr", },
- 	{ .compatible = "fsl,lpb", },
-@@ -95,9 +103,14 @@ static struct of_device_id mpc52xx_bus_ids[] __initdata= {
- 	/* depreciated matches; shouldn't be used in new device trees */
- 	{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
- 	{ .type = "soc", .compatible = "mpc5200", }, /* lite5200 */
--	{},
-+	{}
- };
- 
-+/**
-+ * mpc52xx_declare_of_platform_devices: register internal devices and children
-+ *					of the localplus bus to the of_platform
-+ *					bus.
-+ */
- void __init
- mpc52xx_declare_of_platform_devices(void)
- {
-@@ -107,33 +120,31 @@ mpc52xx_declare_of_platform_devices(void)
- 			"Error while probing of_platform bus\n");
- }
- 
-+/*
-+ * match tables used by mpc52xx_map_wdt()
-+ */
-+static struct of_device_id mpc52xx_gpt_ids[] __initdata = {
-+	{ .compatible = "fsl,mpc5200-gpt", },
-+	{ .compatible = "mpc5200-gpt", }, /* old */
-+	{}
-+};
-+
- void __init
- mpc52xx_map_wdt(void)
- {
--	const void *has_wdt;
- 	struct device_node *np;
+ #ifdef CONFIG_PPC_EFIKA
+-/* The current fw of the Efika has a device tree needs quite a few
+- * fixups to be compliant with the mpc52xx bindings. It's currently
+- * unknown if it will ever be compliant (come on bPlan ...) so we do fixups.
+- * NOTE that we (barely) tolerate it because the EFIKA was out before
+- * the bindings were finished, for any new boards -> RTFM ! */
 -
- 	/* mpc52xx_wdt is mapped here and used in mpc52xx_restart,
- 	 * possibly from a interrupt context. wdt is only implement
- 	 * on a gpt0, so check has-wdt property before mapping.
- 	 */
--	for_each_compatible_node(np, NULL, "fsl,mpc5200-gpt") {
--		has_wdt = of_get_property(np, "fsl,has-wdt", NULL);
--		if (has_wdt) {
-+	for_each_matching_node(np, mpc52xx_gpt_ids) {
-+		if (of_get_property(np, "fsl,has-wdt", NULL) ||
-+		    of_get_property(np, "has-wdt", NULL)) {
- 			mpc52xx_wdt = of_iomap(np, 0);
- 			of_node_put(np);
- 			return;
- 		}
- 	}
--	for_each_compatible_node(np, NULL, "mpc5200-gpt") {
--		has_wdt = of_get_property(np, "has-wdt", NULL);
--		if (has_wdt) {
--			mpc52xx_wdt = of_iomap(np, 0);
--			of_node_put(np);
--			return;
--		}
+-struct subst_entry {
+-	char *path;
+-	char *property;
+-	void *value;
+-	int value_len;
+-};
 -
--	}
- }
- 
- void
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index 4b79398..0e71722 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -410,10 +410,13 @@ mpc52xx_add_bridge(struct device_node *node)
- void __init mpc52xx_setup_pci(void)
+-static void __init fixup_device_tree_efika(void)
++/*
++ * The MPC5200 FEC driver requires an phy-handle property to tell it how
++ * to talk to the phy.  If the phy-handle property is missing, then this
++ * function is called to add the appropriate nodes and link it to the
++ * ethernet node.
++ */
++static void __init fixup_device_tree_efika_add_phy(void)
  {
- 	struct device_node *pci;
-+	struct of_device_id pci_ids[] = {
-+		{ .type = "pci", .compatible = "fsl,mpc5200-pci", },
-+		{ .type = "pci", .compatible = "mpc5200-pci", },
-+		{}
-+	};
+-	/* Substitution table */
+-	#define prop_cstr(x) x, sizeof(x)
+-	int prop_sound_irq[3] = { 2, 2, 0 };
+-	int prop_bcomm_irq[3*16] = { 3,0,0, 3,1,0, 3,2,0, 3,3,0,
+-	                             3,4,0, 3,5,0, 3,6,0, 3,7,0,
+-	                             3,8,0, 3,9,0, 3,10,0, 3,11,0,
+-	                             3,12,0, 3,13,0, 3,14,0, 3,15,0 };
+-	struct subst_entry efika_subst_table[] = {
+-		{ "/",			"device_type",	prop_cstr("efika") },
+-		{ "/builtin",		"device_type",	prop_cstr("soc") },
+-		{ "/builtin/ata",	"compatible",	prop_cstr("mpc5200b-ata\0mpc5200-ata"), },
+-		{ "/builtin/bestcomm",	"compatible",	prop_cstr("mpc5200b-bestcomm\0mpc5200-bestcomm") },
+-		{ "/builtin/bestcomm",	"interrupts",	prop_bcomm_irq, sizeof(prop_bcomm_irq) },
+-		{ "/builtin/ethernet",	"compatible",	prop_cstr("mpc5200b-fec\0mpc5200-fec") },
+-		{ "/builtin/pic",	"compatible",	prop_cstr("mpc5200b-pic\0mpc5200-pic") },
+-		{ "/builtin/serial",	"compatible",	prop_cstr("mpc5200b-psc-uart\0mpc5200-psc-uart") },
+-		{ "/builtin/sound",	"compatible",	prop_cstr("mpc5200b-psc-ac97\0mpc5200-psc-ac97") },
+-		{ "/builtin/sound",	"interrupts",	prop_sound_irq, sizeof(prop_sound_irq) },
+-		{ "/builtin/sram",	"compatible",	prop_cstr("mpc5200b-sram\0mpc5200-sram") },
+-		{ "/builtin/sram",	"device_type",	prop_cstr("sram") },
+-		{}
+-	};
+-	#undef prop_cstr
+-
+-	/* Vars */
+ 	u32 node;
+ 	char prop[64];
+-	int rv, i;
++	int rv;
  
--	pci = of_find_compatible_node(NULL, NULL, "fsl,mpc5200-pci");
--	if (!pci)
--		pci = of_find_compatible_node(NULL, NULL, "mpc5200-pci");
-+	pci = of_find_matching_node(NULL, pci_ids);
- 	if (!pci)
+-	/* Check if we're really running on a EFIKA */
+-	node = call_prom("finddevice", 1, 1, ADDR("/"));
++	/* Check if /builtin/ethernet exists - bail if it doesn't */
++	node = call_prom("finddevice", 1, 1, ADDR("/builtin/ethernet"));
+ 	if (!PHANDLE_VALID(node))
  		return;
  
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-index 07e8987..3f9d3cb 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-@@ -365,15 +365,25 @@ void __init mpc52xx_init_irq(void)
- 	u32 intr_ctrl;
- 	struct device_node *picnode;
- 	struct device_node *np;
-+	struct of_device_id pic_ids[] = {
-+		{ .compatible = "fsl,mpc5200-pic", },
-+		{ .compatible = "mpc5200-pic", },
-+		{}
-+	};
-+	struct of_device_id sdma_ids[] = {
-+		{ .compatible = "fsl,mpc5200-bestcomm", },
-+		{ .compatible = "mpc5200-bestcomm", },
-+		{}
-+	};
+-	rv = prom_getprop(node, "model", prop, sizeof(prop));
+-	if (rv == PROM_ERROR)
+-		return;
+-	if (strcmp(prop, "EFIKA5K2"))
++	/* Check if the phy-handle property exists - bail if it does */
++	rv = prom_getprop(node, "phy-handle", prop, sizeof(prop));
++	if (!rv)
+ 		return;
  
- 	/* Remap the necessary zones */
--	picnode = of_find_compatible_node(NULL, NULL, "mpc5200-pic");
-+	picnode = of_find_matching_node(NULL, pic_ids);
- 	intr = of_iomap(picnode, 0);
- 	if (!intr)
- 		panic(__FILE__	": find_and_map failed on 'mpc5200-pic'. "
- 				"Check node !");
+-	prom_printf("Applying EFIKA device tree fixups\n");
+-
+-	/* Process substitution table */
+-	for (i=0; efika_subst_table[i].path; i++) {
+-		struct subst_entry *se = &efika_subst_table[i];
+-
+-		node = call_prom("finddevice", 1, 1, ADDR(se->path));
+-		if (!PHANDLE_VALID(node)) {
+-			prom_printf("fixup_device_tree_efika: ",
+-				"skipped entry %x - not found\n", i);
+-			continue;
+-		}
+-
+-		rv = prom_setprop(node, se->path, se->property,
+-					se->value, se->value_len );
+-		if (rv == PROM_ERROR)
+-			prom_printf("fixup_device_tree_efika: ",
+-				"skipped entry %x - setprop error\n", i);
+-	}
++	/*
++	 * At this point the ethernet device doesn't have a phy described.
++	 * Now we need to add the missing phy node and linkage
++	 */
  
--	np = of_find_compatible_node(NULL, NULL, "mpc5200-bestcomm");
-+	np = of_find_matching_node(NULL, sdma_ids);
- 	sdma = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!sdma)
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-index 52f0277..722c8d4 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -60,9 +60,15 @@ int mpc52xx_set_wakeup_gpio(u8 pin, u8 level)
- int mpc52xx_pm_prepare(void)
- {
- 	struct device_node *np;
-+	struct of_device_id immr_ids[] = {
-+		{ .compatible = "fsl,mpc5200-immr", },
-+		{ .type = "soc", .compatible = "mpc5200", }, /* lite5200 */
-+		{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
-+		{}
-+	};
+-	/* Make sure ethernet mdio bus node exists */
++	/* Check for an MDIO bus node - if missing then create one */
+ 	node = call_prom("finddevice", 1, 1, ADDR("/builtin/mdio"));
+ 	if (!PHANDLE_VALID(node)) {
+ 		prom_printf("Adding Ethernet MDIO node\n");
+@@ -2226,8 +2178,8 @@ static void __init fixup_device_tree_efika(void)
+ 			" new-device"
+ 				" 1 encode-int s\" #address-cells\" property"
+ 				" 0 encode-int s\" #size-cells\" property"
+-				" s\" mdio\" 2dup device-name device-type"
+-				" s\" mpc5200b-fec-phy\" encode-string"
++				" s\" mdio\" device-name"
++				" s\" fsl,mpc5200b-mdio\" encode-string"
+ 				" s\" compatible\" property"
+ 				" 0xf0003000 0x400 reg"
+ 				" 0x2 encode-int"
+@@ -2237,8 +2189,10 @@ static void __init fixup_device_tree_efika(void)
+ 			" finish-device");
+ 	};
  
- 	/* map the whole register space */
--	np = of_find_compatible_node(NULL, NULL, "mpc5200");
-+	np = of_find_matching_node(NULL, immr_ids);
- 	mbar = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!mbar) {
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-index 740ad73..c6b04c6 100644
---- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-@@ -363,6 +363,11 @@ mpc52xx_bcom_probe(struct of_device *op, const struct of_device_id *match)
- {
- 	struct device_node *ofn_sram;
- 	struct resource res_bcom;
-+	struct of_device_id sram_ids[] = {
-+		{ .compatible = "fsl,mpc5200-sram", },
-+		{ .compatible = "mpc5200-sram", },
-+		{}
-+	};
- 
- 	int rv;
- 
-@@ -373,7 +378,7 @@ mpc52xx_bcom_probe(struct of_device *op, const struct of_device_id *match)
- 	of_node_get(op->node);
- 
- 	/* Prepare SRAM */
--	ofn_sram = of_find_compatible_node(NULL, "sram", "mpc5200-sram");
-+	ofn_sram = of_find_matching_node(NULL, sram_ids);
- 	if (!ofn_sram) {
- 		printk(KERN_ERR DRIVER_NAME ": "
- 			"No SRAM found in device tree\n");
-@@ -478,10 +483,8 @@ mpc52xx_bcom_remove(struct of_device *op)
- }
- 
- static struct of_device_id mpc52xx_bcom_of_match[] = {
--	{
--		.type		= "dma-controller",
--		.compatible	= "mpc5200-bestcomm",
--	},
-+	{ .type = "dma-controller", .compatible = "fsl,mpc5200-bestcomm", },
-+	{ .type = "dma-controller", .compatible = "mpc5200-bestcomm", },
- 	{},
- };
- 
-diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
-index 50c56e2..1a7ca37 100644
---- a/drivers/ata/pata_mpc52xx.c
-+++ b/drivers/ata/pata_mpc52xx.c
-@@ -494,10 +494,8 @@ mpc52xx_ata_resume(struct of_device *op)
- 
- 
- static struct of_device_id mpc52xx_ata_of_match[] = {
--	{
--		.type		= "ata",
--		.compatible	= "mpc5200-ata",
--	},
-+	{ .compatible = "fsl,mpc5200-ata", },
-+	{ .compatible = "mpc5200-ata", },
- 	{},
- };
- 
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 79f7ead..2700482 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -1056,10 +1056,8 @@ static int mpc52xx_fec_of_resume(struct of_device *op)
- #endif
- 
- static struct of_device_id mpc52xx_fec_match[] = {
--	{
--		.type		= "network",
--		.compatible	= "mpc5200-fec",
--	},
-+	{ .type = "network", .compatible = "fsl,mpc5200-fec", },
-+	{ .type = "network", .compatible = "mpc5200-fec", },
- 	{ }
- };
- 
-diff --git a/drivers/net/fec_mpc52xx_phy.c b/drivers/net/fec_mpc52xx_phy.c
-index ba6e8b2..1837584 100644
---- a/drivers/net/fec_mpc52xx_phy.c
-+++ b/drivers/net/fec_mpc52xx_phy.c
-@@ -177,11 +177,9 @@ static int mpc52xx_fec_mdio_remove(struct of_device *of)
- 
- 
- static struct of_device_id mpc52xx_fec_mdio_match[] = {
--	{
--		.type = "mdio",
--		.compatible = "mpc5200b-fec-phy",
--	},
--	{},
-+	{ .compatible = "fsl,mpc5200b-mdio", },
-+	{ .compatible = "mpc5200b-fec-phy", },
-+	{}
- };
- 
- struct of_platform_driver mpc52xx_fec_mdio_driver = {
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index a269ae1..06f4316 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -130,7 +130,9 @@ static irqreturn_t mpc52xx_uart_int(int irq, void *dev_id);
- 
- #if defined(CONFIG_PPC_MERGE)
- static const struct of_device_id mpc52xx_uart_of_match[] = {
--	{ .type = "serial", .compatible = "mpc5200-psc-uart", },
-+	{ .type = "serial", .compatible = "fsl,mpc5200-psc-uart", },
-+	{ .type = "serial", .compatible = "mpc5200-psc-uart", }, /* lite5200 */
-+	{ .type = "serial", .compatible = "mpc5200-serial", }, /* efika */
- 	{},
- };
- #endif
-diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-index d398c93..a3ebc63 100644
---- a/drivers/spi/mpc52xx_psc_spi.c
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -628,8 +628,9 @@ static int __exit mpc52xx_psc_spi_of_remove(struct of_device *op)
- }
- 
- static struct of_device_id mpc52xx_psc_spi_of_match[] = {
--	{ .type = "spi", .compatible = "mpc5200-psc-spi", },
--	{},
-+	{ .compatible = "fsl,mpc5200-psc-spi", },
-+	{ .compatible = "mpc5200-psc-spi", }, /* old */
-+	{}
- };
- 
- MODULE_DEVICE_TABLE(of, mpc52xx_psc_spi_of_match);
-diff --git a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
-index 0c3e6b7..a672527 100644
---- a/drivers/usb/host/ohci-ppc-of.c
-+++ b/drivers/usb/host/ohci-ppc-of.c
-@@ -136,6 +136,8 @@ ohci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
- 	ohci = hcd_to_ohci(hcd);
- 	if (is_bigendian) {
- 		ohci->flags |= OHCI_QUIRK_BE_MMIO | OHCI_QUIRK_BE_DESC;
-+		if (of_device_is_compatible(dn, "fsl,mpc5200-ohci"))
-+			ohci->flags |= OHCI_QUIRK_FRAME_NO;
- 		if (of_device_is_compatible(dn, "mpc5200-ohci"))
- 			ohci->flags |= OHCI_QUIRK_FRAME_NO;
+-	/* Make sure ethernet phy device node exist */
+-	node = call_prom("finddevice", 1, 1, ADDR("/builtin/mdio/ethernet-phy"));
++	/* Check for a PHY device node - if missing then create one and
++	 * give it's phandle to the ethernet node */
++	node = call_prom("finddevice", 1, 1,
++			 ADDR("/builtin/mdio/ethernet-phy"));
+ 	if (!PHANDLE_VALID(node)) {
+ 		prom_printf("Adding Ethernet PHY node\n");
+ 		call_prom("interpret", 1, 1,
+@@ -2254,7 +2208,62 @@ static void __init fixup_device_tree_efika(void)
+ 				" s\" phy-handle\" property"
+ 			" device-end");
  	}
++}
++
++static void __init fixup_device_tree_efika(void)
++{
++	int sound_irq[3] = { 2, 2, 0 };
++	int bcomm_irq[3*16] = { 3,0,0, 3,1,0, 3,2,0, 3,3,0,
++				3,4,0, 3,5,0, 3,6,0, 3,7,0,
++				3,8,0, 3,9,0, 3,10,0, 3,11,0,
++				3,12,0, 3,13,0, 3,14,0, 3,15,0 };
++	u32 node;
++	char prop[64];
++	int rv, len;
++
++	/* Check if we're really running on a EFIKA */
++	node = call_prom("finddevice", 1, 1, ADDR("/"));
++	if (!PHANDLE_VALID(node))
++		return;
++
++	rv = prom_getprop(node, "model", prop, sizeof(prop));
++	if (rv == PROM_ERROR)
++		return;
++	if (strcmp(prop, "EFIKA5K2"))
++		return;
++
++	prom_printf("Applying EFIKA device tree fixups\n");
++
++	/* Claiming to be 'chrp' is death */
++	node = call_prom("finddevice", 1, 1, ADDR("/"));
++	rv = prom_getprop(node, "device_type", prop, sizeof(prop));
++	if (rv != PROM_ERROR && (strcmp(prop, "chrp") == 0))
++		prom_setprop(node, "/", "device_type", "efika", sizeof("efika"));
++
++	/* Fixup bestcomm interrupts property */
++	node = call_prom("finddevice", 1, 1, ADDR("/builtin/bestcomm"));
++	if (PHANDLE_VALID(node)) {
++		len = prom_getproplen(node, "interrupts");
++		if (len == 12) {
++			prom_printf("Fixing bestcomm interrupts property\n");
++			prom_setprop(node, "/builtin/bestcom", "interrupts",
++				     bcomm_irq, sizeof(bcomm_irq));
++		}
++	}
++
++	/* Fixup sound interrupts property */
++	node = call_prom("finddevice", 1, 1, ADDR("/builtin/sound"));
++	if (PHANDLE_VALID(node)) {
++		rv = prom_getprop(node, "interrupts", prop, sizeof(prop));
++		if (rv == PROM_ERROR) {
++			prom_printf("Adding sound interrupts property\n");
++			prom_setprop(node, "/builtin/sound", "interrupts",
++				     sound_irq, sizeof(sound_irq));
++		}
++	}
+ 
++	/* Make sure ethernet phy-handle property exists */
++	fixup_device_tree_efika_add_phy();
+ }
+ #else
+ #define fixup_device_tree_efika()
