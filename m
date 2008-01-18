@@ -1,25 +1,22 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0ABBDDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 14:11:06 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m0I3B09O013836
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 20:11:00 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0I3Axof014506
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 21:10:59 -0600 (CST)
-From: Liu Yu <Yu.Liu@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix carry bug in 128-bit unsigned integer adding
-Date: Fri, 18 Jan 2008 11:21:39 +0800
-Message-Id: <12006264992105-git-send-email-Yu.Liu@freescale.com>
-Cc: Liu Yu <Yu.Liu@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D0FE2DDDFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 14:30:22 +1100 (EST)
+Date: Thu, 17 Jan 2008 21:41:03 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH] [POWERPC] Update TQM5200, CM5200 and Motion-PRO
+	_defconfig and .dts files
+Message-ID: <20080118034103.GA17898@lixom.net>
+References: <20080117143024.15372.95923.stgit@hekate.izotz.org>
+	<fa686aa40801170805g46eb4686y35c65276779d5244@mail.gmail.com>
+	<478F984F.2030106@semihalf.com>
+	<fa686aa40801171023i5188f59btfe41d09711eead09@mail.gmail.com>
+	<478FD118.8030407@semihalf.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <478FD118.8030407@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,66 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Synchronize it to the definition in include/math-emu/op-4.h for short term.
+On Thu, Jan 17, 2008 at 11:05:12PM +0100, Marian Balakowicz wrote:
+> Grant Likely wrote:
+> > On 1/17/08, Marian Balakowicz <m8@semihalf.com> wrote:
+> >> Grant Likely wrote:
+> >>> On 1/17/08, Marian Balakowicz <m8@semihalf.com> wrote:
+> ...
+> >>> Can you split the defconfig changes into a separate patch...  That
+> >>> being said, how do you feel about merging all the 5200 defconfigs into
+> >>> a single defconfig?  They are all multiplatform after all and it would
+> >>> make maintenance easier.
+> >> Ok, I'll split it into two patches.
+> >>
+> >> But merging defconfigs won't be a good option, boards differ in which
+> >> devices they use, some have PCI, some have USB, etc. Having one
+> >> defconfig, it would be necessary to manually customize kernel
+> >> configuration and remember which options are to be set/disabled.
+> > 
+> > That doesn't matter for defconfigs.  That needs to be done when you're
+> > tailoring a product regardless.  defconfigs are simply a known good
+> > configuration; they are not intended to be the deployed config.  If
+> > the defconfig enables all features used by any of the boards then it
+> > should be okay.
+> 
+> That's true, defconfigs are only reference configurations, but still,
+> I would opt for a separate defconfigs as it is more clear which target
+> given defconfig is meant for and it is more convenient for development
+> and customer to have it separate. And IMHO it's actually easier to
+> maintain, as you don't need to consider all three boards each time you
+> update defconfig and don't need to test each defconfig change on three
+> (right now) boards, etc.
 
-Signed-off-by: Liu Yu <Yu.Liu@freescale.com>
----
- arch/powerpc/math-emu/op-4.h |   40 ++++++++++++++++++++++++++++++----------
- 1 files changed, 30 insertions(+), 10 deletions(-)
+I disagree, I have one defconfig for all our boards to date. It means I
+only have one kernel to build to test on all boards, instead of having
+to build a number of different kernels. Keeping it fairly generic also
+means a customer can start out using the generic kernel in case they
+want to, and later on add their own drivers and prune out what is not
+needed.
 
-diff --git a/arch/powerpc/math-emu/op-4.h b/arch/powerpc/math-emu/op-4.h
-index fcdd6d0..c9ae626 100644
---- a/arch/powerpc/math-emu/op-4.h
-+++ b/arch/powerpc/math-emu/op-4.h
-@@ -194,19 +194,39 @@
-   (X##_f[3] = I3, X##_f[2] = I2, X##_f[1] = I1, X##_f[0] = I0)
- 
- #ifndef __FP_FRAC_ADD_4
--#define __FP_FRAC_ADD_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)		\
--  (r0 = x0 + y0,							\
--   r1 = x1 + y1 + (r0 < x0),						\
--   r2 = x2 + y2 + (r1 < x1),						\
--   r3 = x3 + y3 + (r2 < x2))
-+#define __FP_FRAC_ADD_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)	\
-+  do {								\
-+    int _c1, _c2, _c3;						\
-+    r0 = x0 + y0;						\
-+    _c1 = r0 < x0;						\
-+    r1 = x1 + y1;						\
-+    _c2 = r1 < x1;						\
-+    r1 += _c1;							\
-+    _c2 |= r1 < _c1;						\
-+    r2 = x2 + y2;						\
-+    _c3 = r2 < x2;						\
-+    r2 += _c2;							\
-+    _c3 |= r2 < _c2;						\
-+    r3 = x3 + y3 + _c3;						\
-+  } while (0)
- #endif
- 
- #ifndef __FP_FRAC_SUB_4
--#define __FP_FRAC_SUB_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)		\
--  (r0 = x0 - y0,                                                        \
--   r1 = x1 - y1 - (r0 > x0),                                            \
--   r2 = x2 - y2 - (r1 > x1),                                            \
--   r3 = x3 - y3 - (r2 > x2))
-+#define __FP_FRAC_SUB_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)	\
-+  do {								\
-+    int _c1, _c2, _c3;						\
-+    r0 = x0 - y0;						\
-+    _c1 = r0 > x0;						\
-+    r1 = x1 - y1;						\
-+    _c2 = r1 > x1;						\
-+    r1 -= _c1;							\
-+    _c2 |= r1 > _c1;						\
-+    r2 = x2 - y2;						\
-+    _c3 = r2 > x2;						\
-+    r2 -= _c2;							\
-+    _c3 |= r2 > _c2;						\
-+    r3 = x3 - y3 - _c3;						\
-+  } while (0)
- #endif
- 
- #ifndef __FP_FRAC_ADDI_4
--- 
-1.5.2
+
+-Olof
