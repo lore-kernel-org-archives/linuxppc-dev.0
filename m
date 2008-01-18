@@ -1,19 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 82D96DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:31:53 +1100 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 6B6D0DDE21
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 11:36:00 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so195114anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 16:35:59 -0800 (PST)
+Message-ID: <fa686aa40801171635m1531ae35t63aac14d6ef46d78@mail.gmail.com>
+Date: Thu, 17 Jan 2008 17:35:59 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Rigby" <jrigby@freescale.com>
+Subject: Re: [Add mpc5121 support PATCHES v3 0/8]
+In-Reply-To: <1200614738-25654-1-git-send-email-jrigby@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C85969.8509640A"
-Subject: RE: Problems with PCI on 8280
-Date: Thu, 17 Jan 2008 18:27:46 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D8@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B039BA0D4@ismail.innsys.innovsys.com>
-	<478FD066.5000803@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B039BA0D6@ismail.innsys.innovsys.com>
-	<478FE248.1030101@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1200614738-25654-1-git-send-email-jrigby@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,83 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On 1/17/08, John Rigby <jrigby@freescale.com> wrote:
+> This is a new improved set of patches based on the
+> comments that I received in response to the previous set.
+>
+> Changes since v2:
+>
+> 1/8 Add-IPIC-config-option.patch
+> 2/8 Add-mpc512x-ipic-support.patch
+>     No changes.  These two are in galak's queue for submission.
+>
+> 3/8 Basic-Freescale-MPC512x-support.patch
+>     Added missing of_put_node as pointed out by Stephen Rothwell
+>     Added Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> 4/8 Device-tree-for-MPC5121-ADS.patch
+>     Made changes suggested by Grant Likely
+>
+> 5/8 Separate-MPC52xx-PSC-FIFO-registers-from-rest-of-PSC.patch
+> 6/8 Cleanup-checkpatch.pl-problems-in-mpc52xx_uart.c.patch
+>     No changes.  Grant is picking up these patches
+>
+> 7/8 Factor-out-52xx-dependencies-from-52xx-psc-driver.patch
+>     No changes.  No comments received.  Too ugly to comment?
 
-------_=_NextPart_001_01C85969.8509640A
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+No; I'm just percolating on these two.  I'll probably pick these up,
+but I need to look at them in greater detail first.
 
-From: Scott Wood
+g.
 
->Hmm...  that suggests that something in u-boot's setup is either=20
->incorrect, or (more likely in this case) doesn't match the device tree.
-
-Turns out u-boot was not setting u the inbound window size correctly.
-It was hardcoded to 512MB and we have a gig of ram. Set it correctly, =
-and CPI now works fully even without fixup_pci()
-
->Ah.  Yes, I was assuming both windows would be the same size.  The code =
-
->should be changed to check that, and if any conditions for setting=20
->PCIBRx/PCIMSKx fail, check to see if the firmware-provided values work=20
->(and if not, bail without touching anything).
-
-yup. In our case we only need one window.
-
-BTW. there is a bug in the inbound window size calculation.
-The mem_log2 variable sould be the shift value, not 1<< shift.
-and on the next line the window size mask sould be anded with =
-0x000f_ffff before or'ed with 0xa000_0000
-
-
-------_=_NextPart_001_01C85969.8509640A
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: Problems with PCI on 8280</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>From: Scott Wood<BR>
-<BR>
-&gt;Hmm...&nbsp; that suggests that something in u-boot's setup is =
-either<BR>
-&gt;incorrect, or (more likely in this case) doesn't match the device =
-tree.<BR>
-<BR>
-Turns out u-boot was not setting u the inbound window size =
-correctly.<BR>
-It was hardcoded to 512MB and we have a gig of ram. Set it correctly, =
-and CPI now works fully even without fixup_pci()<BR>
-<BR>
-&gt;Ah.&nbsp; Yes, I was assuming both windows would be the same =
-size.&nbsp; The code<BR>
-&gt;should be changed to check that, and if any conditions for =
-setting<BR>
-&gt;PCIBRx/PCIMSKx fail, check to see if the firmware-provided values =
-work<BR>
-&gt;(and if not, bail without touching anything).<BR>
-<BR>
-yup. In our case we only need one window.<BR>
-<BR>
-BTW. there is a bug in the inbound window size calculation.<BR>
-The mem_log2 variable sould be the shift value, not 1&lt;&lt; shift.<BR>
-and on the next line the window size mask sould be anded with =
-0x000f_ffff before or'ed with 0xa000_0000<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C85969.8509640A--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
