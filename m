@@ -1,14 +1,10 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18320.11472.758570.408071@cargo.ozlabs.ibm.com>
-Date: Fri, 18 Jan 2008 15:36:32 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Patches added to master/for-2.6.25 branch of powerpc.git
-In-Reply-To: <fa686aa40801170752j5e41b1cbs82cd21bf47c7d92e@mail.gmail.com>
-References: <18318.56299.476711.644917@cargo.ozlabs.ibm.com>
-	<fa686aa40801170752j5e41b1cbs82cd21bf47c7d92e@mail.gmail.com>
+Return-Path: <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Neuling <mikey@neuling.org>
+Date: Fri, 18 Jan 2008 15:50:30 +1100
+Subject: [PATCH 0/2] Add crashdump shutdown hooks
+In-Reply-To: <1200608167.508733.302962562869.qpush@coopers>
+Message-Id: <1200631830.307661.474596673142.qpush@coopers>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,13 +15,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely writes:
+The following patches add crashdump shutdown hooks for POWERPC.
 
-> Paul, can you also please pull the following 52xx changes?
-
-Could you please re-do your tree and make sure the headline for each
-commit starts with "[POWERPC]" (unless it isn't powerpc-specific, in
-which case it probably shouldn't be in your tree...).
-
-Thanks,
-Paul.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Sorry, last update didn't include both patches.
