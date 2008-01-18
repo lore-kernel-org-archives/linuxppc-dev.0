@@ -1,28 +1,25 @@
-Return-Path: <mpm@selenic.com>
-Received: from waste.org (waste.org [66.93.16.53])
+Return-Path: <Yu.Liu@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "waste.org", Issuer "waste.org" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0F7DDDDE19
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 12:18:06 +1100 (EST)
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080117170754.b5dd139b.akpm@linux-foundation.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801172315.28129.m.kozlowski@tuxland.pl>
-	<20080117145105.ad968ea6.akpm@linux-foundation.org>
-	<1200613194.3839.22.camel@cinder.waste.org>
-	<20080117160513.3456b4eb.akpm@linux-foundation.org>
-	<1200615168.3839.26.camel@cinder.waste.org>
-	<20080117162913.0323c517.akpm@linux-foundation.org>
-	<1200617237.3839.32.camel@cinder.waste.org>
-	<20080117170754.b5dd139b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 19:16:50 -0600
-Message-Id: <1200619010.13504.2.camel@cinder.waste.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, m.kozlowski@tuxland.pl, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B0ABBDDE0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 14:11:06 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m0I3B09O013836
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 20:11:00 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0I3Axof014506
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2008 21:10:59 -0600 (CST)
+From: Liu Yu <Yu.Liu@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix carry bug in 128-bit unsigned integer adding
+Date: Fri, 18 Jan 2008 11:21:39 +0800
+Message-Id: <12006264992105-git-send-email-Yu.Liu@freescale.com>
+Cc: Liu Yu <Yu.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,18 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Synchronize it to the definition in include/math-emu/op-4.h for short term.
 
-On Thu, 2008-01-17 at 17:07 -0800, Andrew Morton wrote:
-> That worked out nicely.
+Signed-off-by: Liu Yu <Yu.Liu@freescale.com>
+---
+ arch/powerpc/math-emu/op-4.h |   40 ++++++++++++++++++++++++++++++----------
+ 1 files changed, 30 insertions(+), 10 deletions(-)
 
-Cool, feel free to add:
-
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-
-> Wasn't the old code potentially pte_unmap()ping the wrong address?  If we
-> enter with addr==end?
-
-Yes, that was busted.
-
+diff --git a/arch/powerpc/math-emu/op-4.h b/arch/powerpc/math-emu/op-4.h
+index fcdd6d0..c9ae626 100644
+--- a/arch/powerpc/math-emu/op-4.h
++++ b/arch/powerpc/math-emu/op-4.h
+@@ -194,19 +194,39 @@
+   (X##_f[3] = I3, X##_f[2] = I2, X##_f[1] = I1, X##_f[0] = I0)
+ 
+ #ifndef __FP_FRAC_ADD_4
+-#define __FP_FRAC_ADD_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)		\
+-  (r0 = x0 + y0,							\
+-   r1 = x1 + y1 + (r0 < x0),						\
+-   r2 = x2 + y2 + (r1 < x1),						\
+-   r3 = x3 + y3 + (r2 < x2))
++#define __FP_FRAC_ADD_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)	\
++  do {								\
++    int _c1, _c2, _c3;						\
++    r0 = x0 + y0;						\
++    _c1 = r0 < x0;						\
++    r1 = x1 + y1;						\
++    _c2 = r1 < x1;						\
++    r1 += _c1;							\
++    _c2 |= r1 < _c1;						\
++    r2 = x2 + y2;						\
++    _c3 = r2 < x2;						\
++    r2 += _c2;							\
++    _c3 |= r2 < _c2;						\
++    r3 = x3 + y3 + _c3;						\
++  } while (0)
+ #endif
+ 
+ #ifndef __FP_FRAC_SUB_4
+-#define __FP_FRAC_SUB_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)		\
+-  (r0 = x0 - y0,                                                        \
+-   r1 = x1 - y1 - (r0 > x0),                                            \
+-   r2 = x2 - y2 - (r1 > x1),                                            \
+-   r3 = x3 - y3 - (r2 > x2))
++#define __FP_FRAC_SUB_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)	\
++  do {								\
++    int _c1, _c2, _c3;						\
++    r0 = x0 - y0;						\
++    _c1 = r0 > x0;						\
++    r1 = x1 - y1;						\
++    _c2 = r1 > x1;						\
++    r1 -= _c1;							\
++    _c2 |= r1 > _c1;						\
++    r2 = x2 - y2;						\
++    _c3 = r2 > x2;						\
++    r2 -= _c2;							\
++    _c3 |= r2 > _c2;						\
++    r3 = x3 - y3 - _c3;						\
++  } while (0)
+ #endif
+ 
+ #ifndef __FP_FRAC_ADDI_4
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.2
