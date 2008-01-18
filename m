@@ -1,21 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <mpm@selenic.com>
+Received: from waste.org (waste.org [66.93.16.53])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B4F90DDEE9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 04:32:00 +1100 (EST)
-Message-ID: <4790E2DF.90806@scram.de>
-Date: Fri, 18 Jan 2008 18:33:19 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
-	CPM serial driver.
-References: <478F4AE3.5090803@scram.de> <4790DC33.2070104@freescale.com>
-In-Reply-To: <4790DC33.2070104@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel@vger.kernel.org
+	(Client CN "waste.org", Issuer "waste.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A5512DDEE9
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 04:33:45 +1100 (EST)
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+From: Matt Mackall <mpm@selenic.com>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+In-Reply-To: <200801181823.07718.m.kozlowski@tuxland.pl>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<20080117162913.0323c517.akpm@linux-foundation.org>
+	<1200617237.3839.32.camel@cinder.waste.org>
+	<200801181823.07718.m.kozlowski@tuxland.pl>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 11:33:12 -0600
+Message-Id: <1200677592.3835.11.camel@cinder.waste.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood schrieb:
 
->> +void watchdog_poke(void)
->> +{
->> +    if (wdt) {
->> +        out_be16(&wdt->swsrr, 0x556c);
->> +        out_be16(&wdt->swsrr, 0xaa39);
->> +    }
->> +}
+On Fri, 2008-01-18 at 18:23 +0100, Mariusz Kozlowski wrote:
+> Hello,
 > 
-> This should be a function pointer, to allow for other watchdog types.
+> > > Do we need `offset' at all?
+> > 
+> > Looks like no.
+> > 
+> > I wonder if there's a good argument for adding a pte_offset_val() which
+> > would let us do:
+> > 
+> > pteval = pte_offset_val(pmd, addr);
+> > 
+> > and shrink the map/unmap window and overhead here and possibly
+> > elsewhere?
+> > 
+> > Anyway, updated but still untested patch now with revealing comment:
+> 
+> I patched the ppc32 kernel with this and run tests on /proc.
+> This patch helps. No more BUGs and oopses :)
 
-Thanks for the comments. Stephen Rothwell also asked if the filename watchdog.c is too generic.
-I think the pq watchdog is easy enough to keep it in the generic watchdog.c file, but the
-function pointer definitely is the way to go. I'll resubmit.
+Thanks, Andrew's already queued it up.
 
-Thanks,
-Jochen
+-- 
+Mathematics is the supreme nostalgia of our time.
