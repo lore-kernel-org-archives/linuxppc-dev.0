@@ -1,27 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D03E1DDEFB
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 08:54:31 +1100 (EST)
-Message-ID: <47912016.9040907@freescale.com>
-Date: Fri, 18 Jan 2008 15:54:30 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 34E9CDDF44
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 08:55:47 +1100 (EST)
+Date: Fri, 18 Jan 2008 15:53:22 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] fsl_soc: Fix get_immrbase() to use ranges, rather than
+	reg.
+In-Reply-To: <20080114162935.GA27862@ld0162-tx32.am.freescale.net>
+Message-ID: <Pine.LNX.4.64.0801181553060.27596@blarg.am.freescale.net>
+References: <20080114162935.GA27862@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
-	CPM serial driver.
-References: <478F4AE3.5090803@scram.de>
-	<20080118183905.2d5d8474@lxorguk.ukuu.org.uk>
-	<4790F44F.8020009@scram.de>
-	<20080118204030.48fbb683@lxorguk.ukuu.org.uk>
-	<EC416CBA-9200-4D71-8D95-39798937203D@kernel.crashing.org>
-In-Reply-To: <EC416CBA-9200-4D71-8D95-39798937203D@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,11 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> So I'll ask, what serial input are you waiting for from the boot wrapper?
+On Mon, 14 Jan 2008, Scott Wood wrote:
 
-The bootwrapper has a command line editing prompt.  It's fairly 
-gratuitous in the presence of semi-decent firmware, but it's there 
-nonetheless.
+> The reg property in fsl soc nodes should be removed.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_soc.c |   14 +++++++++++---
+>  1 files changed, 11 insertions(+), 3 deletions(-)
 
--Scott
+applied.  (dropped the size == 12 check).
+
+
+- k
