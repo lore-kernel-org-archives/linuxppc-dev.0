@@ -1,15 +1,29 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 46A80DDDED
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 12:06:02 +1100 (EST)
-Date: Fri, 18 Jan 2008 12:06:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix a couple of copyright symbols
-Message-Id: <20080118120601.a45765ef.sfr@canb.auug.org.au>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 566C4DDE33
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 12:07:59 +1100 (EST)
+Date: Thu, 17 Jan 2008 17:07:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+Message-Id: <20080117170754.b5dd139b.akpm@linux-foundation.org>
+In-Reply-To: <1200617237.3839.32.camel@cinder.waste.org>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<200801172315.28129.m.kozlowski@tuxland.pl>
+	<20080117145105.ad968ea6.akpm@linux-foundation.org>
+	<1200613194.3839.22.camel@cinder.waste.org>
+	<20080117160513.3456b4eb.akpm@linux-foundation.org>
+	<1200615168.3839.26.camel@cinder.waste.org>
+	<20080117162913.0323c517.akpm@linux-foundation.org>
+	<1200617237.3839.32.camel@cinder.waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, m.kozlowski@tuxland.pl, paulus@samba.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,45 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 17 Jan 2008 18:47:17 -0600
+Matt Mackall <mpm@selenic.com> wrote:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/systbl_chk.c  |    2 +-
- arch/powerpc/kernel/systbl_chk.sh |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> On Thu, 2008-01-17 at 16:29 -0800, Andrew Morton wrote:
+> > Do we need `offset' at all?
+> 
+> Looks like no.
+> 
+> I wonder if there's a good argument for adding a pte_offset_val() which
+> would let us do:
+> 
+> pteval = pte_offset_val(pmd, addr);
+> 
+> and shrink the map/unmap window and overhead here and possibly
+> elsewhere?
+> 
+> Anyway, updated but still untested patch now with revealing comment:
+> 
+> diff -r 5595adaea70f fs/proc/task_mmu.c
+> --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
+> +++ b/fs/proc/task_mmu.c	Thu Jan 17 18:45:57 2008 -0600
+> @@ -584,18 +585,19 @@
+>  	pte_t *pte;
+>  	int err = 0;
+>  
+> -	pte = pte_offset_map(pmd, addr);
+> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
+> +	for (; addr != end; addr += PAGE_SIZE) {
+>  		u64 pfn = PM_NOT_PRESENT;
+> +		pte = pte_offset_map(pmd, addr);
+>  		if (is_swap_pte(*pte))
+>  			pfn = swap_pte_to_pagemap_entry(*pte);
+>  		else if (pte_present(*pte))
+>  			pfn = pte_pfn(*pte);
+> +		/* unmap so we're not in atomic when we copy to userspace */
+> +		pte_unmap(pte);
+>  		err = add_to_pagemap(addr, pfn, pm);
+>  		if (err)
+>  			return err;
+>  	}
+> -	pte_unmap(pte - 1);
+>  
+>  	cond_resched();
 
-Patchwork strikes again. :-(
+That worked out nicely.
 
-diff --git a/arch/powerpc/kernel/systbl_chk.c b/arch/powerpc/kernel/systbl_chk.c
-index 77824d1..238aa63 100644
---- a/arch/powerpc/kernel/systbl_chk.c
-+++ b/arch/powerpc/kernel/systbl_chk.c
-@@ -6,7 +6,7 @@
-  * Unfortunately, we cannot check for the correct ordering of entries
-  * using SYSX().
-  *
-- * Copyright Â© IBM Corporation
-+ * Copyright © IBM Corporation
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-diff --git a/arch/powerpc/kernel/systbl_chk.sh b/arch/powerpc/kernel/systbl_chk.sh
-index 367d208..19415e7 100644
---- a/arch/powerpc/kernel/systbl_chk.sh
-+++ b/arch/powerpc/kernel/systbl_chk.sh
-@@ -3,7 +3,7 @@
- # Just process the CPP output from systbl_chk.c and complain
- # if anything is out of order.
- #
--# Copyright Â© 2008 IBM Corporation
-+# Copyright © 2008 IBM Corporation
- #
- # This program is free software; you can redistribute it and/or
- # modify it under the terms of the GNU General Public License
--- 
-1.5.3.8
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Wasn't the old code potentially pte_unmap()ping the wrong address?  If we
+enter with addr==end?
