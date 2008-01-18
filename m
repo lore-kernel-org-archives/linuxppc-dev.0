@@ -1,18 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-bH556Zmx0ERcWECw1xBp"
-Date: Fri, 18 Jan 2008 16:55:03 +1100
-Message-Id: <1200635703.18783.5.camel@concordia.ozlabs.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4D660DDE1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 17:06:19 +1100 (EST)
+Date: Fri, 18 Jan 2008 17:06:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH v5] [POWERPC] Add LED driver for Promess Motion-PRO board.
+Message-Id: <20080118170613.5f5d49a5.sfr@canb.auug.org.au>
+In-Reply-To: <20080117180805.18035.60818.stgit@hekate.izotz.org>
+References: <20080117180805.18035.60818.stgit@hekate.izotz.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__18_Jan_2008_17_06_13_+1100_taUJ/CAyek3+3N.e"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,143 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-bH556Zmx0ERcWECw1xBp
-Content-Type: text/plain
+--Signature=_Fri__18_Jan_2008_17_06_13_+1100_taUJ/CAyek3+3N.e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2007-12-08 at 04:07 +0530, Balbir Singh wrote:
-> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
-> NUMA nodes can be specified using the following command line option
->=20
+Hi Marian,
 
->=20
-> Comments are as always welcome!
-
-Here's some :)
-
-> diff -puN arch/powerpc/mm/numa.c~ppc-fake-numa-easy arch/powerpc/mm/numa.=
-c
-> --- linux-2.6.24-rc4-mm1/arch/powerpc/mm/numa.c~ppc-fake-numa-easy	2007-1=
-2-07 21:25:55.000000000 +0530
-> +++ linux-2.6.24-rc4-mm1-balbir/arch/powerpc/mm/numa.c	2007-12-08 03:19:4=
-6.000000000 +0530
-> @@ -24,6 +24,8 @@
-> =20
->  static int numa_enabled =3D 1;
-> =20
-> +static char *cmdline __initdata;
-
-Can you call this fake_numa_args or something, cmdline is a bit generic.
-
-
-> @@ -39,6 +41,43 @@ static bootmem_data_t __initdata plat_no
->  static int min_common_depth;
->  static int n_mem_addr_cells, n_mem_size_cells;
-> =20
-> +static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
-> +						unsigned int *nid)
+On Thu, 17 Jan 2008 19:09:17 +0100 Marian Balakowicz <m8@semihalf.com> wrot=
+e:
+>
+> +static int __devinit mpled_probe(struct of_device *op,
+> +				 const struct of_device_id *match)
 > +{
-> +	unsigned long long mem;
-> +	char *p =3D cmdline;
-> +	static unsigned int fake_nid =3D 0;
-> +	static unsigned long long curr_boundary =3D 0;
+> +	struct motionpro_led *mpled;
+> +	const unsigned int *of_blink_delay;
+> +	const char *label;
+> +	int err;
 > +
-> +	*nid =3D fake_nid;
-
-As I mentioned in my other email I think this is broken, you
-unconditionally overwrite *nid, even if no fake numa was specified?
-
-> +	if (!p)
-> +		return 0;
+> +	dev_dbg(&op->dev, "mpled_probe: node=3D%s (op=3D%p, match=3D%p)\n",
+> +		op->node->name, op, match);
 > +
-> +	mem =3D memparse(p, &p);
-> +	if (!mem)
-> +		return 0;
+> +	mpled =3D kzalloc(sizeof(*mpled), GFP_KERNEL);
+> +	if (!mpled)
+> +		return -ENOMEM;
 > +
-> +	if (mem < curr_boundary)
-> +		return 0;
-> +
-> +	curr_boundary =3D mem;
-> +
-> +	if ((end_pfn << PAGE_SHIFT) > mem) {
-> +		/*
-> +		 * Skip commas and spaces
-> +		 */
-> +		while (*p =3D=3D ',' || *p =3D=3D ' ' || *p =3D=3D '\t')
-> +			p++;
-> +
-> +		cmdline =3D p;
-> +		fake_nid++;
-> +		*nid =3D fake_nid;
-> +		dbg("created new fake_node with id %d\n", fake_nid);
-> +		return 1;
+> +	mpled->gpt =3D of_iomap(op->node, 0);
+> +	if (!mpled->gpt) {
+> +		printk(KERN_ERR __FILE__ ": "
+> +			"Error mapping GPT registers for LED %s\n",
+> +			op->node->full_name);
+> +		err =3D -EIO;
+> +		goto err_free;
 > +	}
-> +	return 0;
-> +}
 > +
->  static void __cpuinit map_cpu_to_node(int cpu, int node)
->  {
->  	numa_cpu_lookup_table[cpu] =3D node;
-> @@ -344,12 +383,14 @@ static void __init parse_drconf_memory(s
->  			if (nid =3D=3D 0xffff || nid >=3D MAX_NUMNODES)
->  				nid =3D default_nid;
->  		}
-> -		node_set_online(nid);
-> =20
->  		size =3D numa_enforce_memory_limit(start, lmb_size);
->  		if (!size)
->  			continue;
-> =20
-> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> +		node_set_online(nid);
+> +	/* initialize GPT for LED use */
+> +	mpled_init_led(&mpled->gpt->mode);
+> +
+> +	spin_lock_init(&mpled->led_lock);
+> +	mpled->mode =3D LED_MODE_KERNEL;
+> +
+> +	/* get LED label, used to register led classdev */
+> +	label =3D of_get_property(op->node, "label", NULL);
+> +	if (label =3D=3D NULL) {
+> +		printk(KERN_ERR __FILE__ ": "
+> +			"No label property provided for LED %s\n",
+> +			op->node->full_name);
+> +		err =3D -EINVAL;
+> +		goto err_free;
 
-I can't convince myself that this is 100% ok, the moving of
-node_set_online(). At the very least it's a change in behaviour,
-previously we would online the node regardless of the memory limit.
+		goto err;
 
->  		add_active_range(nid, start >> PAGE_SHIFT,
->  				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
->  	}
-> @@ -429,7 +470,6 @@ new_range:
->  		nid =3D of_node_to_nid_single(memory);
->  		if (nid < 0)
->  			nid =3D default_nid;
-> -		node_set_online(nid);
-> =20
->  		if (!(size =3D numa_enforce_memory_limit(start, size))) {
->  			if (--ranges)
-> @@ -438,6 +478,9 @@ new_range:
->  				continue;
->  		}
-> =20
-> +		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
-> +		node_set_online(nid);
+> +static struct of_device_id mpled_match[] =3D {
 
-Ditto previous comment.
-
-cheers
+Make this const, please.
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-bH556Zmx0ERcWECw1xBp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Fri__18_Jan_2008_17_06_13_+1100_taUJ/CAyek3+3N.e
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHkD83dSjSd0sB4dIRAiaLAJ9QQPF4rINKjN8EOa5eIEJveSMX0gCdHyea
-8tl5958vOiocLRygft7mvnA=
-=3sfP
+iD8DBQFHkEHZTgG2atn1QN8RAhicAJ9Rx2XEsLrdMVVqVa98w8VRQXXaOgCdFjxB
+o5hVlzH2Pv+pkp5mk5PwbpA=
+=9/B4
 -----END PGP SIGNATURE-----
 
---=-bH556Zmx0ERcWECw1xBp--
+--Signature=_Fri__18_Jan_2008_17_06_13_+1100_taUJ/CAyek3+3N.e--
