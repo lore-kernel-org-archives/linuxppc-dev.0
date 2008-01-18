@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0571EDDF06
+	by ozlabs.org (Postfix) with ESMTP id 49471DDF2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Jan 2008 02:52:26 +1100 (EST)
-Message-Id: <F15F39D5-75B3-48C1-BD5F-FC2D28A0F117@kernel.crashing.org>
+	Sat, 19 Jan 2008 02:54:08 +1100 (EST)
+Message-Id: <57351E05-13DE-48F0-B0E5-28AADEF288A1@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Subbu Linux <subbu.linux@gmail.com>
-In-Reply-To: <f807f08a0801151216l59400ca0i746424a84befc7a8@mail.gmail.com>
+To: vb <vb@vsbe.com>
+In-Reply-To: <f608b67d0801152203j523ebdeavbab4412121a31a7@mail.gmail.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Linux with e500 v2 core,
-	can we support Ram base address starting at 0x1_0000_0000
-Date: Fri, 18 Jan 2008 09:52:21 -0600
-References: <f807f08a0801151216l59400ca0i746424a84befc7a8@mail.gmail.com>
+Subject: Re: MPIC ISU
+Date: Fri, 18 Jan 2008 09:54:01 -0600
+References: <f608b67d0801152203j523ebdeavbab4412121a31a7@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,18 +26,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 15, 2008, at 2:16 PM, Subbu Linux wrote:
+On Jan 16, 2008, at 12:03 AM, vb wrote:
 
-> Hi
-> I am currently working on MPC8548 core, would like to know wheather  
-> current Linux with e500v2 core supporting Physical Address of RAM at  
-> 0x1_0000_0000, I know in current linux with large Page table support  
-> we can access devices at 0x1_0000_0000 for e500v2, but I wanted to  
-> move RAM base address to 0x1_0000_0000, so that I can support larger  
-> RAM. Can any body suggest me if their is any patch available for  
-> this or is it possible to implement from scratch.
+> Greetings,
+>
+> I am trying to write a BSP for an 8245 based device. One thing which
+> really gets me puzzled is the 'ISU' facility in
+> arch/powerpc/sysdev/mpic.c, there is also a notion of ISU-less
+> platforms, etc. I looked through the chip's programmer's reference,
+> even read the original AMD/Cypress OpenPIC specification - not a clue.
+>
+> What is it, at the very least - what does ISU stand for?
+>
+> I would really appreciate any hints,
 
-The HW supports this.  I don't believe there is any code that exists  
-today that sets this all up.
+Interrupt service unit.  I believe its an IBM concept.
+
+For 8245 can you look at what the linkstation port is doing and mimic  
+that.  I believe its an 8245 or 8241 so it should be close to what you  
+need.
+
+         mpic = mpic_alloc(dnp, paddr, MPIC_PRIMARY |  
+MPIC_WANTS_RESET, 4, 32, " EPIC     ");
+         BUG_ON(mpic == NULL);
+
+         /* PCI IRQs */
+         mpic_assign_isu(mpic, 0, paddr + 0x10200);
+
+         /* I2C */
+         mpic_assign_isu(mpic, 1, paddr + 0x11000);
+
+         /* ttyS0, ttyS1 */
+         mpic_assign_isu(mpic, 2, paddr + 0x11100);
+
+         mpic_init(mpic);
 
 - k
