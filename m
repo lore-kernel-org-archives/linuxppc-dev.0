@@ -1,19 +1,19 @@
 Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
-	by ozlabs.org (Postfix) with ESMTP id 52FF2DDE20
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 15:55:32 +1100 (EST)
-Date: Fri, 18 Jan 2008 20:55:29 -0800 (PST)
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id DABB2DDE28
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 15:56:08 +1100 (EST)
+Date: Fri, 18 Jan 2008 20:56:02 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 To: Olaf Hering <olaf@aepfle.de>
 Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080118065621.GA27495@aepfle.de>
-Message-ID: <Pine.LNX.4.64.0801182046060.12079@schroedinger.engr.sgi.com>
+In-Reply-To: <20080117202024.GA25090@aepfle.de>
+Message-ID: <Pine.LNX.4.64.0801182048090.12079@schroedinger.engr.sgi.com>
 References: <20080115150949.GA14089@aepfle.de>
 	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
 	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
 	<20080117181222.GA24411@aepfle.de>
 	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
-	<20080117211511.GA25320@aepfle.de> <20080118065621.GA27495@aepfle.de>
+	<20080117195456.GA24901@aepfle.de> <20080117202024.GA25090@aepfle.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
@@ -27,24 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Jan 2008, Olaf Hering wrote:
+On Thu, 17 Jan 2008, Olaf Hering wrote:
 
-> calls cache_grow with nodeid 0
-> > [c00000000075bbd0] [c0000000000f82d0] .cache_alloc_refill+0x234/0x2c0
-> calls cache_grow with nodeid 0
-> > [c00000000075bbe0] [c0000000000f7f38] .____cache_alloc_node+0x17c/0x1e8
+> On Thu, Jan 17, Olaf Hering wrote:
 > 
-> calls cache_grow with nodeid 1
-> > [c00000000075bbe0] [c0000000000f7d68] .fallback_alloc+0x1a0/0x1f4
+> > Since -mm boots further, what patch should I try?
+> 
+> rc8-mm1 crashes as well, l3 passed to reap_alien() is NULL.
 
-Okay that makes sense. You have no node 0 with normal memory but the node 
-assigned to the executing processor is zero (correct?). Thus it needs to 
-fallback to node 1 and that is not possible during bootstrap. You need to 
-run kmem_cache_init() on a cpu on a processor with memory.
+Sigh. It looks like we need alien cache structures in some cases for nodes 
+that have no memory. We must allocate structures for all nodes regardless 
+if they have allocatable memory or not.
 
-Or we need to revert the patch which would allocate control 
-structures again for all online nodes regardless if they have memory or 
-not.
-
-Does reverting 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 change the 
-situation? (However, we tried this on the other thread without success).
+ 
