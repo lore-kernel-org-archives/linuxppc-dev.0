@@ -1,23 +1,28 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id DABB2DDE28
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 15:56:08 +1100 (EST)
-Date: Fri, 18 Jan 2008 20:56:02 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080117202024.GA25090@aepfle.de>
-Message-ID: <Pine.LNX.4.64.0801182048090.12079@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
-	<84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-	<Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-	<20080117181222.GA24411@aepfle.de>
-	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
-	<20080117195456.GA24901@aepfle.de> <20080117202024.GA25090@aepfle.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 01F69DDDEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 17:58:02 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so295504anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 22:58:01 -0800 (PST)
+Message-ID: <fa686aa40801182258r5a3b6465kf0e7918e0e56e0c4@mail.gmail.com>
+Date: Fri, 18 Jan 2008 23:58:01 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Rigby" <jrigby@freescale.com>
+Subject: Re: [Add mpc5121 support PATCH v3 7/8] Factor out 52xx dependencies
+	from 52xx psc driver
+In-Reply-To: <1200614738-25654-8-git-send-email-jrigby@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1200614738-25654-1-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-2-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-3-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-4-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-5-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-6-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-7-git-send-email-jrigby@freescale.com>
+	<1200614738-25654-8-git-send-email-jrigby@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008, Olaf Hering wrote:
+On 1/17/08, John Rigby <jrigby@freescale.com> wrote:
+> PSCs change from 5200 to 5121
+> this patch localizes the differences in
+> preparation for adding 5121 support
+>
+> Signed-off-by: John Rigby <jrigby@freescale.com>
 
-> On Thu, Jan 17, Olaf Hering wrote:
-> 
-> > Since -mm boots further, what patch should I try?
-> 
-> rc8-mm1 crashes as well, l3 passed to reap_alien() is NULL.
+This patch breaks the serial console on my Efika.
 
-Sigh. It looks like we need alien cache structures in some cases for nodes 
-that have no memory. We must allocate structures for all nodes regardless 
-if they have allocatable memory or not.
+g.
 
- 
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
