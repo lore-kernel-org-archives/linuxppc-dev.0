@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 128A9DDDE9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 23:21:29 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/7] [POWERPC] Get rid of conditional includes of board
-	specific setup
-Date: Sat, 19 Jan 2008 13:21:18 +0100
-References: <4790B891.3050106@scram.de>
-In-Reply-To: <4790B891.3050106@scram.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801191321.19320.arnd@arndb.de>
-Cc: Scott Wood <scottwood@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0A405DDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 23:34:26 +1100 (EST)
+Date: Sat, 19 Jan 2008 23:34:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC/PATCH 1/2] [POWERPC] mpc5200: normalize compatible
+	property bindings
+Message-Id: <20080119233417.8d4a5563.sfr@canb.auug.org.au>
+In-Reply-To: <20080118170443.10592.97538.stgit@trillian.secretlab.ca>
+References: <20080118170324.10592.47360.stgit@trillian.secretlab.ca>
+	<20080118170443.10592.97538.stgit@trillian.secretlab.ca>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__19_Jan_2008_23_34_17_+1100_CeZ06H+w1dWYXMcP"
+Cc: linuxppc-dev@ozlabs.org, jrigby@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 January 2008, Jochen Friedrich wrote:
-> Directly include mpc885ads.h from mpc885ads_setup.c. Now we can get rid
-> of the arch dependent includes in mpc8xx.h.
+--Signature=_Sat__19_Jan_2008_23_34_17_+1100_CeZ06H+w1dWYXMcP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah, very nice. How close are we to enabling an 8xx multiplatform
-build after this?
+Hi Grant,
 
-> =A0#ifdef CONFIG_8xx
-> =A0
-> =A0extern void mpc8xx_restart(char *cmd);
-> @@ -18,22 +20,9 @@ extern void mpc8xx_get_rtc_time(struct rtc_time *tm);
-> =A0extern void mpc8xx_pics_init(void);
-> =A0extern unsigned int mpc8xx_get_irq(void);
+On Fri, 18 Jan 2008 10:04:49 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> +++ b/arch/powerpc/platforms/52xx/lite5200.c
+> @@ -44,9 +44,14 @@ lite5200_fix_clock_config(void)
+>  {
+>  	struct device_node *np;
+>  	struct mpc52xx_cdm  __iomem *cdm;
+> +	struct of_device_id cdm_ids[] =3D {
 
->=20
->  #ifdef CONFIG_PCMCIA_M8XX
->  extern struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
->  #endif
-=20
-> =A0#endif /* CONFIG_8xx */
-> =A0#endif /* __CONFIG_8xx_DEFS */
+Surely this should be static and __initdata?
 
-You can also kill the #ifdef CONFIG_8xx  and the #ifdef CONFIG_PCMCIA_M8XX,
-there is no point hiding extern declarations behind an #ifdef, but it
-has the disadvantage of causing unnecessary rebuilds if the configuration
-symbols change.
+> @@ -79,9 +84,14 @@ lite5200_fix_port_config(void)
+>  {
+>  	struct device_node *np;
+>  	struct mpc52xx_gpio __iomem *gpio;
+> +	struct of_device_id gpio_ids[] =3D {
 
-	Arnd <><
+And this?
+
+> +++ b/arch/powerpc/platforms/52xx/lite5200_pm.c
+> @@ -43,6 +43,12 @@ static int lite5200_pm_set_target(suspend_state_t stat=
+e)
+>  static int lite5200_pm_prepare(void)
+>  {
+>  	struct device_node *np;
+> +	struct of_device_id immr_ids[] =3D {
+
+This should be static and const.
+
+Similarly for the rest ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__19_Jan_2008_23_34_17_+1100_CeZ06H+w1dWYXMcP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHke5OTgG2atn1QN8RAmi6AJ40CWe2PsfSSKbMFLQWNAyTG/cxMwCeLWXF
+DlnmezpCgLw6SSvLKwCZpWU=
+=xw62
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__19_Jan_2008_23_34_17_+1100_CeZ06H+w1dWYXMcP--
