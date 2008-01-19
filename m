@@ -1,29 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 61BE2DDEA2
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 17:59:14 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so295545anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2008 22:59:13 -0800 (PST)
-Message-ID: <fa686aa40801182259k22663ca9s74b109f0f15d11fd@mail.gmail.com>
-Date: Fri, 18 Jan 2008 23:59:13 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Rigby" <jrigby@freescale.com>
-Subject: Re: [Add mpc5121 support PATCH v3 7/8] Factor out 52xx dependencies
-	from 52xx psc driver
-In-Reply-To: <fa686aa40801182258r5a3b6465kf0e7918e0e56e0c4@mail.gmail.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 128A9DDDE9
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 23:21:29 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/7] [POWERPC] Get rid of conditional includes of board
+	specific setup
+Date: Sat, 19 Jan 2008 13:21:18 +0100
+References: <4790B891.3050106@scram.de>
+In-Reply-To: <4790B891.3050106@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1200614738-25654-1-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-2-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-3-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-4-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-5-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-6-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-7-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-8-git-send-email-jrigby@freescale.com>
-	<fa686aa40801182258r5a3b6465kf0e7918e0e56e0c4@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801191321.19320.arnd@arndb.de>
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,23 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/18/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 1/17/08, John Rigby <jrigby@freescale.com> wrote:
-> > PSCs change from 5200 to 5121
-> > this patch localizes the differences in
-> > preparation for adding 5121 support
-> >
-> > Signed-off-by: John Rigby <jrigby@freescale.com>
->
-> This patch breaks the serial console on my Efika.
+On Friday 18 January 2008, Jochen Friedrich wrote:
+> Directly include mpc885ads.h from mpc885ads_setup.c. Now we can get rid
+> of the arch dependent includes in mpc8xx.h.
 
-Er, more specifically, I get console output, but I get no output from
-the init process (like when I add "init=/bin/sh" to the kernel
-parameters).
+Ah, very nice. How close are we to enabling an 8xx multiplatform
+build after this?
 
-Cheers,
-g.
+> =A0#ifdef CONFIG_8xx
+> =A0
+> =A0extern void mpc8xx_restart(char *cmd);
+> @@ -18,22 +20,9 @@ extern void mpc8xx_get_rtc_time(struct rtc_time *tm);
+> =A0extern void mpc8xx_pics_init(void);
+> =A0extern unsigned int mpc8xx_get_irq(void);
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+>=20
+>  #ifdef CONFIG_PCMCIA_M8XX
+>  extern struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
+>  #endif
+=20
+> =A0#endif /* CONFIG_8xx */
+> =A0#endif /* __CONFIG_8xx_DEFS */
+
+You can also kill the #ifdef CONFIG_8xx  and the #ifdef CONFIG_PCMCIA_M8XX,
+there is no point hiding extern declarations behind an #ifdef, but it
+has the disadvantage of causing unnecessary rebuilds if the configuration
+symbols change.
+
+	Arnd <><
