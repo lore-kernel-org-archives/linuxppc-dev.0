@@ -1,22 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 27A2BDDDEE
+Return-Path: <vbendeb@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
+	by ozlabs.org (Postfix) with ESMTP id 57F6EDDDEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 20 Jan 2008 03:19:22 +1100 (EST)
-Message-Id: <823F3BC7-FF4E-4DA7-B000-9C128016ACB3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: vb <vb@vsbe.com>
-In-Reply-To: <f608b67d0801181044j352ee94dl50ea291164f4cb17@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: MPIC ISU
-Date: Sat, 19 Jan 2008 10:19:12 -0600
+	Mon, 21 Jan 2008 07:32:54 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so2375978pyg.27
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 20 Jan 2008 12:32:53 -0800 (PST)
+Message-ID: <f608b67d0801201232x1f48496gda475143e9da3c76@mail.gmail.com>
+Date: Sun, 20 Jan 2008 12:32:52 -0800
+From: vb <vb@vsbe.com>
+Sender: vbendeb@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: Fwd: MPIC ISU
+In-Reply-To: <f608b67d0801201216o60be67a1w3ead9714c3bba5aa@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <f608b67d0801152203j523ebdeavbab4412121a31a7@mail.gmail.com>
 	<57351E05-13DE-48F0-B0E5-28AADEF288A1@kernel.crashing.org>
 	<f608b67d0801181044j352ee94dl50ea291164f4cb17@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	<823F3BC7-FF4E-4DA7-B000-9C128016ACB3@kernel.crashing.org>
+	<f608b67d0801201216o60be67a1w3ead9714c3bba5aa@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,32 +30,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+[add linuxppc-embedded@ozlabs.org,]
 
-On Jan 18, 2008, at 12:44 PM, vb wrote:
-
-> Kumar,
+On Jan 19, 2008 8:19 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
 >
-> thank you for your reply!
+
+> >
+> > what platform is linkstation and what kernel version can I find it in?
 >
-> On Jan 18, 2008 7:54 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
->>
->>>
->>> What is it, at the very least - what does ISU stand for?
->>>
->>> I would really appreciate any hints,
->>
->> Interrupt service unit.  I believe its an IBM concept.
->>
->> For 8245 can you look at what the linkstation port is doing and mimic
->> that.  I believe its an 8245 or 8241 so it should be close to what  
->> you
->> need.
->>
+> arch/powerpc/platforms/embedded6xx/linkstation.c
 >
-> what platform is linkstation and what kernel version can I find it in?
+> you should be able to find it 2.6.23 or newer.
+>
 
-arch/powerpc/platforms/embedded6xx/linkstation.c
+Kumar, thank you for this clarification, I see this file in the latest kernel.
 
-you should be able to find it 2.6.23 or newer.
+One more question, just out of curiosity - why is it in
+platforms/embedded6xx and not in platforms/82xx - is there any
+explicit reason for this distinction?
 
-- k
+TIA,
+/vb
+
+> - k
+>
+>
