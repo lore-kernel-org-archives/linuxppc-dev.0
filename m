@@ -1,32 +1,18 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
-	by ozlabs.org (Postfix) with ESMTP id 2A008DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jan 2008 14:33:38 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1298737rvf.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2008 19:33:35 -0800 (PST)
-Message-ID: <4b73d43f0801191933u75205b43iae141db0dd9e121e@mail.gmail.com>
-Date: Sat, 19 Jan 2008 20:33:35 -0700
-From: "John Rigby" <jrigby@freescale.com>
-Sender: jcrigby@gmail.com
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [Add mpc5121 support PATCH v3 7/8] Factor out 52xx dependencies
-	from 52xx psc driver
-In-Reply-To: <fa686aa40801182259k22663ca9s74b109f0f15d11fd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_7654_9765117.1200800015077"
-References: <1200614738-25654-1-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-2-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-3-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-4-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-5-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-6-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-7-git-send-email-jrigby@freescale.com>
-	<1200614738-25654-8-git-send-email-jrigby@freescale.com>
-	<fa686aa40801182258r5a3b6465kf0e7918e0e56e0c4@mail.gmail.com>
-	<fa686aa40801182259k22663ca9s74b109f0f15d11fd@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: jcrigby@gmail.com
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-100-sunday.nerim.net [62.4.16.100])
+	by ozlabs.org (Postfix) with ESMTP id 61AB6DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jan 2008 22:07:33 +1100 (EST)
+Date: Sun, 20 Jan 2008 12:07:30 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [i2c] [PATCH 19 3/5] Clean up error returns
+Message-ID: <20080120120730.06dd8a7f@hyperion.delvare>
+In-Reply-To: <20080112024743.7023.23630.stgit@terra.home>
+References: <20080112024737.7023.61680.stgit@terra.home>
+	<20080112024743.7023.23630.stgit@terra.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,52 +22,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_7654_9765117.1200800015077
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Jon,
 
-Do you get a "Can't open initial console" message or just no output?
+On Fri, 11 Jan 2008 21:47:43 -0500, Jon Smirl wrote:
+> Return errors that were being ignored in the mpc-i2c driver
 
-On Jan 18, 2008 11:59 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+This wording is a bit excessive. The errors were not being ignored,
+only the error code was replaced with a less informative -1. Still,
+that's a good fix, although totally unrelated with the patch set it was
+hiding into. The only question I have is:
 
-> On 1/18/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > On 1/17/08, John Rigby <jrigby@freescale.com> wrote:
-> > > PSCs change from 5200 to 5121
-> > > this patch localizes the differences in
-> > > preparation for adding 5121 support
-> > >
-> > > Signed-off-by: John Rigby <jrigby@freescale.com>
-> >
-> > This patch breaks the serial console on my Efika.
->
-> Er, more specifically, I get console output, but I get no output from
-> the init process (like when I add "init=/bin/sh" to the kernel
-> parameters).
->
-> Cheers,
-> g.
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+> 
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> ---
+> 
+>  drivers/i2c/busses/i2c-mpc.c |   30 +++++++++++++++++-------------
+>  1 files changed, 17 insertions(+), 13 deletions(-)
+> 
+> 
+> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> index d8de4ac..7c35a8f 100644
+> --- a/drivers/i2c/busses/i2c-mpc.c
+> +++ b/drivers/i2c/busses/i2c-mpc.c
+> @@ -180,7 +180,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
+>  static int mpc_write(struct mpc_i2c *i2c, int target,
+>  		     const u8 * data, int length, int restart)
+>  {
+> -	int i;
+> +	int i, result;
+>  	unsigned timeout = i2c->adap.timeout;
+>  	u32 flags = restart ? CCR_RSTA : 0;
+>  
+> @@ -192,15 +192,17 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
+>  	/* Write target byte */
+>  	writeb((target << 1), i2c->base + MPC_I2C_DR);
+>  
+> -	if (i2c_wait(i2c, timeout, 1) < 0)
+> -		return -1;
+> +	result = i2c_wait(i2c, timeout, 1);
+> +	if (result < 0)
+> +		return result;
+>  
+>  	for (i = 0; i < length; i++) {
+>  		/* Write data byte */
+>  		writeb(data[i], i2c->base + MPC_I2C_DR);
+>  
+> -		if (i2c_wait(i2c, timeout, 1) < 0)
+> -			return -1;
+> +		result = i2c_wait(i2c, timeout, 1);
+> +		if (result < 0)
+> +			return result;
+>  	}
+>  
+>  	return 0;
+> @@ -210,7 +212,7 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+>  		    u8 * data, int length, int restart)
+>  {
+>  	unsigned timeout = i2c->adap.timeout;
+> -	int i;
+> +	int i, result;
+>  	u32 flags = restart ? CCR_RSTA : 0;
+>  
+>  	/* Start with MEN */
+> @@ -221,8 +223,9 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+>  	/* Write target address byte - this time with the read flag set */
+>  	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
+>  
+> -	if (i2c_wait(i2c, timeout, 1) < 0)
+> -		return -1;
+> +	result = i2c_wait(i2c, timeout, 1);
+> +	if (result < 0)
+> +		return result;
+>  
+>  	if (length) {
+>  		if (length == 1)
+> @@ -234,8 +237,9 @@ static int mpc_read(struct mpc_i2c *i2c, int target,
+>  	}
+>  
+>  	for (i = 0; i < length; i++) {
+> -		if (i2c_wait(i2c, timeout, 0) < 0)
+> -			return -1;
+> +		result = i2c_wait(i2c, timeout, 0);
+> +		if (result < 0)
+> +			return result;
+>  
+>  		/* Generate txack on next to last byte */
+>  		if (i == length - 2)
+> @@ -321,9 +325,9 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+>  
+>  	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+>  
+> -	if (!(i2c = kzalloc(sizeof(*i2c), GFP_KERNEL))) {
+> +	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+> +	if (!i2c)
+>  		return -ENOMEM;
+> -	}
+>  
+>  	i2c->irq = platform_get_irq(pdev, 0);
+>  	if (i2c->irq < 0) {
+> @@ -381,7 +385,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
+>  	i2c_del_adapter(&i2c->adap);
+>  	platform_set_drvdata(pdev, NULL);
+>  
+> -	if (i2c->irq != 0)
+> +	if (i2c->irq != NO_IRQ)
+>  		free_irq(i2c->irq, i2c);
+>  
+>  	iounmap(i2c->base);
+> 
+> 
 
-------=_Part_7654_9765117.1200800015077
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Is this last chunk a cleanup or a bugfix? It seems that NO_IRQ can have
+value 0 or -1 depending on the architecture, so your change is real on
+some architectures.
 
-Do you get a &quot;Can&#39;t open initial console&quot; message or just no output?<br><br><div class="gmail_quote">On Jan 18, 2008 11:59 PM, Grant Likely &lt;<a href="mailto:grant.likely@secretlab.ca">grant.likely@secretlab.ca
-</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class="Ih2E3d">On 1/18/08, Grant Likely &lt;<a href="mailto:grant.likely@secretlab.ca">
-grant.likely@secretlab.ca</a>&gt; wrote:<br>&gt; On 1/17/08, John Rigby &lt;<a href="mailto:jrigby@freescale.com">jrigby@freescale.com</a>&gt; wrote:<br>&gt; &gt; PSCs change from 5200 to 5121<br>&gt; &gt; this patch localizes the differences in
-<br>&gt; &gt; preparation for adding 5121 support<br>&gt; &gt;<br>&gt; &gt; Signed-off-by: John Rigby &lt;<a href="mailto:jrigby@freescale.com">jrigby@freescale.com</a>&gt;<br>&gt;<br>&gt; This patch breaks the serial console on my Efika.
-<br><br></div>Er, more specifically, I get console output, but I get no output from<br>the init process (like when I add &quot;init=/bin/sh&quot; to the kernel<br>parameters).<br><br>Cheers,<br><div><div></div><div class="Wj3C7c">
-g.<br><br>--<br>Grant Likely, B.Sc., P.Eng.<br>Secret Lab Technologies Ltd.<br>_______________________________________________<br>Linuxppc-dev mailing list<br><a href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org
-</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br></div></div></blockquote></div><br>
+I have to admit that I'm a bit confused by the way IRQs are handled by
+this driver. On the one hand, there is code to handle polled-mode:
 
-------=_Part_7654_9765117.1200800015077--
+static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+{
+	(...)
+	if (i2c->irq == 0)
+	{
+		(...)
+	} else {
+		/* Interrupt mode */
+
+But on the other hand the initialization code bails out if the platform
+device doesn't provide an IRQ:
+
+static int fsl_i2c_probe(struct platform_device *pdev)
+{
+	(...)
+	i2c->irq = platform_get_irq(pdev, 0);
+	if (i2c->irq < 0) {
+		result = -ENXIO;
+		goto fail_get_irq;
+	}
+
+So it seems to me like the polling mode code is never actually used?
+Unless some platforms include an "empty" IRQ in their device
+definition. Which indeed seems to be the case... but then they set the
+IRQ to 0, NOT to NO_IRQ, so I'm wondering if the change you propose is
+really correct.
+
+Either way, there are more places in the driver where the IRQ is
+compared to 0, so if your change is correct, it should be applied
+consistently. Thus I will revert this part for the time being, if any
+change is really needed with regards to interrupts in this driver,
+please send a separate patch. But please double-check first, as I said
+above it's trickier than it looks.
+
+-- 
+Jean Delvare
