@@ -1,21 +1,23 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 76337DDDE9
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 02:19:01 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3154343wag.13
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jan 2008 07:19:00 -0800 (PST)
-Message-ID: <9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
-Date: Sun, 20 Jan 2008 10:18:59 -0500
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id B2B3FDDDF4
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 02:39:44 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3163978wag.13
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jan 2008 07:39:43 -0800 (PST)
+Message-ID: <9e4733910801200739x502d5407x85f0d950ace80bee@mail.gmail.com>
+Date: Sun, 20 Jan 2008 10:39:43 -0500
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Jean Delvare" <khali@linux-fr.org>,
 	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 Subject: Re: [i2c] [PATCH 19 3/5] Clean up error returns
-In-Reply-To: <20080120120730.06dd8a7f@hyperion.delvare>
+In-Reply-To: <9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/mixed;
+	boundary="----=_Part_12166_26664924.1200843583547"
 References: <20080112024737.7023.61680.stgit@terra.home>
 	<20080112024743.7023.23630.stgit@terra.home>
 	<20080120120730.06dd8a7f@hyperion.delvare>
+	<9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,93 +28,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/20/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > @@ -381,7 +385,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
-> >       i2c_del_adapter(&i2c->adap);
-> >       platform_set_drvdata(pdev, NULL);
-> >
-> > -     if (i2c->irq != 0)
-> > +     if (i2c->irq != NO_IRQ)
-> >               free_irq(i2c->irq, i2c);
-> >
-> >       iounmap(i2c->base);
-> >
-> >
->
-> Is this last chunk a cleanup or a bugfix? It seems that NO_IRQ can have
-> value 0 or -1 depending on the architecture, so your change is real on
-> some architectures.
+------=_Part_12166_26664924.1200843583547
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I was confused by this too. Search the ppc list archives and there is
-a thread about it where BenH tries to explain the correct way of
-fixing it to me.
-
-This is part of the ppc to powerpc conversion that has not been
-completely cleaned up in this driver. NO_IRQ = -1 is ppc and NO_IRQ =
-0 is powerpc. Since this driver didn't originally use the NO_IRQ
-define it didn't get automatically converted. We need to identify the
-right places where NO_IRQ should have been used.
-
->
-> I have to admit that I'm a bit confused by the way IRQs are handled by
-> this driver. On the one hand, there is code to handle polled-mode:
->
-> static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
-> {
->         (...)
->         if (i2c->irq == 0)
-
-I missed this one, it should have been NO_IRQ.
-
->         {
->                 (...)
->         } else {
->                 /* Interrupt mode */
->
-> But on the other hand the initialization code bails out if the platform
-> device doesn't provide an IRQ:
-
->
-> static int fsl_i2c_probe(struct platform_device *pdev)
-> {
->         (...)
->         i2c->irq = platform_get_irq(pdev, 0);
->         if (i2c->irq < 0) {
->                 result = -ENXIO;
->                 goto fail_get_irq;
-
-It is only bailing out on an error, not the NO_IRQ case. But maybe the
-comparison needs to be with NO_IRQ instead of zero.
-
-
-
->         }
->
-> So it seems to me like the polling mode code is never actually used?
-> Unless some platforms include an "empty" IRQ in their device
-> definition. Which indeed seems to be the case... but then they set the
-> IRQ to 0, NOT to NO_IRQ, so I'm wondering if the change you propose is
-> really correct.
-
-All of this is very confusing to me, There are physical IRQs and
-virtual IRQs. Apparently zero is a legal physical IRQ but it is not a
-legal virtual IRQ. We only get virtual IRQs in this code. We need to
-get BenH to give us the right answer on these two cases.
-
-
->
-> Either way, there are more places in the driver where the IRQ is
-> compared to 0, so if your change is correct, it should be applied
-> consistently. Thus I will revert this part for the time being, if any
-> change is really needed with regards to interrupts in this driver,
-> please send a separate patch. But please double-check first, as I said
-> above it's trickier than it looks.
->
-> --
-> Jean Delvare
->
-
+Here' s a version with the compares to zero switched to NO_IRQ. If I
+understand how NO_IRQ works it is the correct change. My understanding
+is that under ppc IRQ zero was legal and NO_IRQ was -1. But then the
+whole kernel switched to NO_IRQ = zero. Powerpc updated to NO_IRQ=0
+and used virtual IRQs to move a physical IRQ 0 to another IRQ number.
+ppc was not changed. This driver does not appear to have been updated
+to track this global change since it didn't initially use the NO_IRQ
+define everywhere.
 
 -- 
 Jon Smirl
 jonsmirl@gmail.com
+
+------=_Part_12166_26664924.1200843583547
+Content-Type: application/octet-stream; name=jds-fix-err-returns
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fbnr7wjm
+Content-Disposition: attachment; filename=jds-fix-err-returns
+
+Q2xlYW4gdXAgZXJyb3IgcmV0dXJucwoKUmV0dXJuIGVycm9ycyB0aGF0IHdlcmUgYmVpbmcgaWdu
+b3JlZCBpbiB0aGUgbXBjLWkyYyBkcml2ZXIKClNpZ25lZC1vZmYtYnk6IEpvbiBTbWlybCA8am9u
+c21pcmxAZ21haWwuY29tPgotLS0KCiBkcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jIHwgICAz
+OCArKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLQogMSBmaWxlcyBjaGFuZ2Vk
+LCAyMSBpbnNlcnRpb25zKCspLCAxNyBkZWxldGlvbnMoLSkKCgpkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy9pMmMvYnVzc2VzL2kyYy1tcGMuYyBiL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtbXBjLmMKaW5k
+ZXggZDhkZTRhYy4uYTc3NGNkZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1t
+cGMuYworKysgYi9kcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jCkBAIC05OSw3ICs5OSw3IEBA
+IHN0YXRpYyBpbnQgaTJjX3dhaXQoc3RydWN0IG1wY19pMmMgKmkyYywgdW5zaWduZWQgdGltZW91
+dCwgaW50IHdyaXRpbmcpCiAJdTMyIHg7CiAJaW50IHJlc3VsdCA9IDA7CiAKLQlpZiAoaTJjLT5p
+cnEgPT0gMCkKKwlpZiAoaTJjLT5pcnEgPT0gTk9fSVJRKQogCXsKIAkJd2hpbGUgKCEocmVhZGIo
+aTJjLT5iYXNlICsgTVBDX0kyQ19TUikgJiBDU1JfTUlGKSkgewogCQkJc2NoZWR1bGUoKTsKQEAg
+LTE4MCw3ICsxODAsNyBAQCBzdGF0aWMgdm9pZCBtcGNfaTJjX3N0b3Aoc3RydWN0IG1wY19pMmMg
+KmkyYykKIHN0YXRpYyBpbnQgbXBjX3dyaXRlKHN0cnVjdCBtcGNfaTJjICppMmMsIGludCB0YXJn
+ZXQsCiAJCSAgICAgY29uc3QgdTggKiBkYXRhLCBpbnQgbGVuZ3RoLCBpbnQgcmVzdGFydCkKIHsK
+LQlpbnQgaTsKKwlpbnQgaSwgcmVzdWx0OwogCXVuc2lnbmVkIHRpbWVvdXQgPSBpMmMtPmFkYXAu
+dGltZW91dDsKIAl1MzIgZmxhZ3MgPSByZXN0YXJ0ID8gQ0NSX1JTVEEgOiAwOwogCkBAIC0xOTIs
+MTUgKzE5MiwxNyBAQCBzdGF0aWMgaW50IG1wY193cml0ZShzdHJ1Y3QgbXBjX2kyYyAqaTJjLCBp
+bnQgdGFyZ2V0LAogCS8qIFdyaXRlIHRhcmdldCBieXRlICovCiAJd3JpdGViKCh0YXJnZXQgPDwg
+MSksIGkyYy0+YmFzZSArIE1QQ19JMkNfRFIpOwogCi0JaWYgKGkyY193YWl0KGkyYywgdGltZW91
+dCwgMSkgPCAwKQotCQlyZXR1cm4gLTE7CisJcmVzdWx0ID0gaTJjX3dhaXQoaTJjLCB0aW1lb3V0
+LCAxKTsKKwlpZiAocmVzdWx0IDwgMCkKKwkJcmV0dXJuIHJlc3VsdDsKIAogCWZvciAoaSA9IDA7
+IGkgPCBsZW5ndGg7IGkrKykgewogCQkvKiBXcml0ZSBkYXRhIGJ5dGUgKi8KIAkJd3JpdGViKGRh
+dGFbaV0sIGkyYy0+YmFzZSArIE1QQ19JMkNfRFIpOwogCi0JCWlmIChpMmNfd2FpdChpMmMsIHRp
+bWVvdXQsIDEpIDwgMCkKLQkJCXJldHVybiAtMTsKKwkJcmVzdWx0ID0gaTJjX3dhaXQoaTJjLCB0
+aW1lb3V0LCAxKTsKKwkJaWYgKHJlc3VsdCA8IDApCisJCQlyZXR1cm4gcmVzdWx0OwogCX0KIAog
+CXJldHVybiAwOwpAQCAtMjEwLDcgKzIxMiw3IEBAIHN0YXRpYyBpbnQgbXBjX3JlYWQoc3RydWN0
+IG1wY19pMmMgKmkyYywgaW50IHRhcmdldCwKIAkJICAgIHU4ICogZGF0YSwgaW50IGxlbmd0aCwg
+aW50IHJlc3RhcnQpCiB7CiAJdW5zaWduZWQgdGltZW91dCA9IGkyYy0+YWRhcC50aW1lb3V0Owot
+CWludCBpOworCWludCBpLCByZXN1bHQ7CiAJdTMyIGZsYWdzID0gcmVzdGFydCA/IENDUl9SU1RB
+IDogMDsKIAogCS8qIFN0YXJ0IHdpdGggTUVOICovCkBAIC0yMjEsOCArMjIzLDkgQEAgc3RhdGlj
+IGludCBtcGNfcmVhZChzdHJ1Y3QgbXBjX2kyYyAqaTJjLCBpbnQgdGFyZ2V0LAogCS8qIFdyaXRl
+IHRhcmdldCBhZGRyZXNzIGJ5dGUgLSB0aGlzIHRpbWUgd2l0aCB0aGUgcmVhZCBmbGFnIHNldCAq
+LwogCXdyaXRlYigodGFyZ2V0IDw8IDEpIHwgMSwgaTJjLT5iYXNlICsgTVBDX0kyQ19EUik7CiAK
+LQlpZiAoaTJjX3dhaXQoaTJjLCB0aW1lb3V0LCAxKSA8IDApCi0JCXJldHVybiAtMTsKKwlyZXN1
+bHQgPSBpMmNfd2FpdChpMmMsIHRpbWVvdXQsIDEpOworCWlmIChyZXN1bHQgPCAwKQorCQlyZXR1
+cm4gcmVzdWx0OwogCiAJaWYgKGxlbmd0aCkgewogCQlpZiAobGVuZ3RoID09IDEpCkBAIC0yMzQs
+OCArMjM3LDkgQEAgc3RhdGljIGludCBtcGNfcmVhZChzdHJ1Y3QgbXBjX2kyYyAqaTJjLCBpbnQg
+dGFyZ2V0LAogCX0KIAogCWZvciAoaSA9IDA7IGkgPCBsZW5ndGg7IGkrKykgewotCQlpZiAoaTJj
+X3dhaXQoaTJjLCB0aW1lb3V0LCAwKSA8IDApCi0JCQlyZXR1cm4gLTE7CisJCXJlc3VsdCA9IGky
+Y193YWl0KGkyYywgdGltZW91dCwgMCk7CisJCWlmIChyZXN1bHQgPCAwKQorCQkJcmV0dXJuIHJl
+c3VsdDsKIAogCQkvKiBHZW5lcmF0ZSB0eGFjayBvbiBuZXh0IHRvIGxhc3QgYnl0ZSAqLwogCQlp
+ZiAoaSA9PSBsZW5ndGggLSAyKQpAQCAtMzIxLDEyICszMjUsMTIgQEAgc3RhdGljIGludCBmc2xf
+aTJjX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAKIAlwZGF0YSA9IChzdHJ1
+Y3QgZnNsX2kyY19wbGF0Zm9ybV9kYXRhICopIHBkZXYtPmRldi5wbGF0Zm9ybV9kYXRhOwogCi0J
+aWYgKCEoaTJjID0ga3phbGxvYyhzaXplb2YoKmkyYyksIEdGUF9LRVJORUwpKSkgeworCWkyYyA9
+IGt6YWxsb2Moc2l6ZW9mKCppMmMpLCBHRlBfS0VSTkVMKTsKKwlpZiAoIWkyYykKIAkJcmV0dXJu
+IC1FTk9NRU07Ci0JfQogCiAJaTJjLT5pcnEgPSBwbGF0Zm9ybV9nZXRfaXJxKHBkZXYsIDApOwot
+CWlmIChpMmMtPmlycSA8IDApIHsKKwlpZiAoaTJjLT5pcnEgPCBOT19JUlEpIHsKIAkJcmVzdWx0
+ID0gLUVOWElPOwogCQlnb3RvIGZhaWxfZ2V0X2lycTsKIAl9CkBAIC0zNDEsNyArMzQ1LDcgQEAg
+c3RhdGljIGludCBmc2xfaTJjX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAJ
+CWdvdG8gZmFpbF9tYXA7CiAJfQogCi0JaWYgKGkyYy0+aXJxICE9IDApCisJaWYgKGkyYy0+aXJx
+ICE9IE5PX0lSUSkKIAkJaWYgKChyZXN1bHQgPSByZXF1ZXN0X2lycShpMmMtPmlycSwgbXBjX2ky
+Y19pc3IsCiAJCQkJCSAgSVJRRl9TSEFSRUQsICJpMmMtbXBjIiwgaTJjKSkgPCAwKSB7CiAJCQlw
+cmludGsoS0VSTl9FUlIKQEAgLTM2NCw3ICszNjgsNyBAQCBzdGF0aWMgaW50IGZzbF9pMmNfcHJv
+YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKIAlyZXR1cm4gcmVzdWx0OwogCiAgICAg
+ICBmYWlsX2FkZDoKLQlpZiAoaTJjLT5pcnEgIT0gMCkKKwlpZiAoaTJjLT5pcnEgIT0gTk9fSVJR
+KQogCQlmcmVlX2lycShpMmMtPmlycSwgaTJjKTsKICAgICAgIGZhaWxfaXJxOgogCWlvdW5tYXAo
+aTJjLT5iYXNlKTsKQEAgLTM4MSw3ICszODUsNyBAQCBzdGF0aWMgaW50IGZzbF9pMmNfcmVtb3Zl
+KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAJaTJjX2RlbF9hZGFwdGVyKCZpMmMtPmFk
+YXApOwogCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYsIE5VTEwpOwogCi0JaWYgKGkyYy0+aXJx
+ICE9IDApCisJaWYgKGkyYy0+aXJxICE9IE5PX0lSUSkKIAkJZnJlZV9pcnEoaTJjLT5pcnEsIGky
+Yyk7CiAKIAlpb3VubWFwKGkyYy0+YmFzZSk7Cg==
+------=_Part_12166_26664924.1200843583547--
