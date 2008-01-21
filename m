@@ -1,21 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C836BDDEC3
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 07:50:03 +1100 (EST)
-Date: Mon, 21 Jan 2008 23:49:53 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure (was:
-	Re: fixed phy support (warning related to FIXED_MII_100_FDX))
-Message-ID: <20080121204953.GA11384@localhost.localdomain>
-References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Eugene Konev <ejka@imfi.kspu.ru>, Jeff Garzik <jeff@garzik.org>,
-	netdev@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <david-b@pacbell.net>
+Received: from smtp117.sbc.mail.sp1.yahoo.com (smtp117.sbc.mail.sp1.yahoo.com
+	[69.147.64.90]) by ozlabs.org (Postfix) with SMTP id 6E640DDECE
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 07:51:05 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
+Date: Mon, 21 Jan 2008 12:51:02 -0800
+References: <20080121103434.397382000@sunsite.dk>
+	<fa686aa40801210911q4ce90816tebafa46e68a3f980@mail.gmail.com>
+	<87zluz0w9g.fsf@macbook.be.48ers.dk>
+In-Reply-To: <87zluz0w9g.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200801211251.02288.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,165 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 21, 2008 at 01:19:41PM -0600, Kumar Gala wrote:
-> Anton,
-> 
-> it looks like the "TI AR7 CPMAC Ethernet support" uses FIXED_PHY and  
-> was selecting FIXED_MII_100_FDX which is gone.
-> 
-> Can you look into this.  I get the following warning now:
-> 
-> scripts/kconfig/conf -s arch/powerpc/Kconfig
-> drivers/net/Kconfig:1713:warning: 'select' used by config symbol  
-> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+On Monday 21 January 2008, Peter Korsgaard wrote:
+> Sure, http://peter.korsgaard.com/c67x00-v3-v4.patch (not posting as
+> it's more than 100k)
 
-Wow. I thought there were no Fixed PHY users. :-)
+I like this bit:
 
-Jeff, as you've already Acked Fixed PHY rework to go through powerpc
-tree, would you please Ack this patch in addition? I hope cpmac
-maintainer will fix remaining issues as time goes by.
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3832,6 +3832,12 @@ L:      linux-usb@vger.kernel.org
+>  S:     Maintained
+>  W:     http://www.kroah.com/linux-usb/
+>
+> +USB CYPRESS C67X00 DRIVER
+> +P:     Peter Korsgaard
+> +M:     jacmet@sunsite.dk
+> +L:     linux-usb@vger.kernel.org
+> +S:     Maintained
+> +
+>  USB DAVICOM DM9601 DRIVER
+>  P:     Peter Korsgaard
+>  M:     jacmet@sunsite.dk
 
-Thanks!
+:)
 
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
+Grant, please let us know if you see anything to object to in
+this "v4" patch (parts 1..3 only).  At a quick glance, I didn't
+see any ... other than stuff associated with peripheral mode
+support, which isn't yet proposed for merging.  So for the
+moment it looks like v4 is the one to review (and maybe merge).
 
-This patch converts cpmac to the new Fixed PHY infrastructure, though it
-doesn't fix all the problems with that driver. I didn't even bother to
-test this patch to compile, because cpmac driver is broken in several ways:
-
-1. This driver won't compile by itself because lack of its header describing
-   platform data;
-2. It assumes that fixed PHYs should be created by the ethernet driver.
-   It is wrong assumption: fixed PHYs creation is platform code authority,
-   driver must blindly accept bus_id and phy_id platform data variables
-   instead.
-
-Also, it seem that that driver doesn't have actual in-tree users, so
-nothing to fix further.
-
-The main purpose of that patch is to get rid of the following Kconfig
-warning:
-
-scripts/kconfig/conf -s arch/powerpc/Kconfig
-drivers/net/Kconfig:1713:warning: 'select' used by config symbol
-'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/Kconfig |    4 +--
- drivers/net/cpmac.c |   55 ++++++++++++++++----------------------------------
- 2 files changed, 19 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 114771a..5380ff9 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -1707,10 +1707,8 @@ config SC92031
- 
- config CPMAC
- 	tristate "TI AR7 CPMAC Ethernet support (EXPERIMENTAL)"
--	depends on NET_ETHERNET && EXPERIMENTAL && AR7
-+	depends on NET_ETHERNET && EXPERIMENTAL && AR7 && BROKEN
- 	select PHYLIB
--	select FIXED_PHY
--	select FIXED_MII_100_FDX
- 	help
- 	  TI AR7 CPMAC Ethernet support
- 
-diff --git a/drivers/net/cpmac.c b/drivers/net/cpmac.c
-index 6fd95a2..88eeb1d 100644
---- a/drivers/net/cpmac.c
-+++ b/drivers/net/cpmac.c
-@@ -848,15 +848,6 @@ static void cpmac_adjust_link(struct net_device *dev)
- 	spin_unlock(&priv->lock);
- }
- 
--static int cpmac_link_update(struct net_device *dev,
--			     struct fixed_phy_status *status)
--{
--	status->link = 1;
--	status->speed = 100;
--	status->duplex = 1;
--	return 0;
--}
--
- static int cpmac_open(struct net_device *dev)
- {
- 	int i, size, res;
-@@ -999,11 +990,11 @@ static int external_switch;
- static int __devinit cpmac_probe(struct platform_device *pdev)
- {
- 	int rc, phy_id, i;
-+	int mdio_bus_id = cpmac_mii.id;
- 	struct resource *mem;
- 	struct cpmac_priv *priv;
- 	struct net_device *dev;
- 	struct plat_cpmac_data *pdata;
--	struct fixed_info *fixed_phy;
- 	DECLARE_MAC_BUF(mac);
- 
- 	pdata = pdev->dev.platform_data;
-@@ -1017,9 +1008,23 @@ static int __devinit cpmac_probe(struct platform_device *pdev)
- 	}
- 
- 	if (phy_id == PHY_MAX_ADDR) {
--		if (external_switch || dumb_switch)
-+		if (external_switch || dumb_switch) {
-+			struct fixed_phy_status status = {};
-+
-+			mdio_bus_id = 0;
-+
-+			/*
-+			 * FIXME: this should be in the platform code!
-+			 * Since there is not platform code at all (that is,
-+			 * no mainline users of that driver), place it here
-+			 * for now.
-+			 */
- 			phy_id = 0;
--		else {
-+			status.link = 1;
-+			status.duplex = 1;
-+			status.speed = 100;
-+			fixed_phy_add(PHY_POLL, phy_id, &status);
-+		} else {
- 			printk(KERN_ERR "cpmac: no PHY present\n");
- 			return -ENODEV;
- 		}
-@@ -1063,32 +1068,8 @@ static int __devinit cpmac_probe(struct platform_device *pdev)
- 	priv->msg_enable = netif_msg_init(debug_level, 0xff);
- 	memcpy(dev->dev_addr, pdata->dev_addr, sizeof(dev->dev_addr));
- 
--	if (phy_id == 31) {
--		snprintf(priv->phy_name, BUS_ID_SIZE, PHY_ID_FMT, cpmac_mii.id,
--			 phy_id);
--	} else {
--		/* Let's try to get a free fixed phy... */
--		for (i = 0; i < MAX_PHY_AMNT; i++) {
--			fixed_phy = fixed_mdio_get_phydev(i);
--			if (!fixed_phy)
--				continue;
--			if (!fixed_phy->phydev->attached_dev) {
--				strncpy(priv->phy_name,
--					fixed_phy->phydev->dev.bus_id,
--					BUS_ID_SIZE);
--				fixed_mdio_set_link_update(fixed_phy->phydev,
--							   &cpmac_link_update);
--				goto phy_found;
--			}
--		}
--		if (netif_msg_drv(priv))
--			printk(KERN_ERR "%s: Could not find fixed PHY\n",
--			       dev->name);
--		rc = -ENODEV;
--		goto fail;
--	}
-+	snprintf(priv->phy_name, BUS_ID_SIZE, PHY_ID_FMT, mdio_bus_id, phy_id);
- 
--phy_found:
- 	priv->phy = phy_connect(dev, priv->phy_name, &cpmac_adjust_link, 0,
- 				PHY_INTERFACE_MODE_MII);
- 	if (IS_ERR(priv->phy)) {
--- 
-1.5.2.2
+- Dave
