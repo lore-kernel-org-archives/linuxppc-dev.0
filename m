@@ -1,22 +1,16 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [213.144.29.131])
-	by ozlabs.org (Postfix) with ESMTP id 34C32DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 02:28:35 +1100 (EST)
-Received: from ares.ids.de (ares.ids.de [127.0.0.1])
-	by ares.ids.de (PGP Universal) with ESMTP id D3A90F4901A
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 16:28:32 +0100 (CET)
-Subject: Re: [PATCH 2/2] mpc82xx: Embedded Planet EP8248E support
-From: Sergej Stepanov <Sergej.Stepanov@ids.de>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080118160303.GC15620@ld0162-tx32.am.freescale.net>
-References: <20080117223205.GB17300@loki.buserror.net>
-	<1200654427.3204.4.camel@p60365-ste>
-	<20080118160303.GC15620@ld0162-tx32.am.freescale.net>
-Date: Mon, 21 Jan 2008 16:28:32 +0100
-Message-Id: <1200929312.3242.6.camel@p60365-ste>
-Mime-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4788CDDE22
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 02:28:40 +1100 (EST)
+Date: Mon, 21 Jan 2008 16:29:00 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] autodetect serial console on efika
+Message-ID: <20080121152900.GA8664@aepfle.de>
+References: <20070331150823.GA25421@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070331150823.GA25421@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +21,84 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Am Freitag, den 18.01.2008, 10:03 -0600 schrieb Scott Wood:
-> On Fri, Jan 18, 2008 at 12:07:07PM +0100, Sergej Stepanov wrote:
-> > 
-> > > +			/* "Serial" port/SCC1 */
-> > > +			scc1: serial@11a00 {
-> > > +				device_type = "serial";
-> > > +				compatible = "fsl,mpc8248-scc-uart",
-> > > +				             "fsl,cpm2-scc-uart";
-> > > +				reg = <0x11a00 0x20 0x8000 0x100>;
-> > > +				interrupts = <40 8>;
-> > are you sure with 40 as interrupt? has not it be "28"(hex) here?
-> 
-> This is a version 1 dts file -- the default base is decimal.
-> 
-> -Scott
-yes, you are right, sorry.
+Efika boards have to be booted with console=ttyPSC0 unless there is a
+graphics card plugged in. Detect if the firmware stdout is the serial
+connector.
+
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+---
+ arch/powerpc/platforms/52xx/efika.c |   50 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+
+--- a/arch/powerpc/platforms/52xx/efika.c
++++ b/arch/powerpc/platforms/52xx/efika.c
+@@ -13,6 +13,7 @@
+ #include <linux/utsrelease.h>
+ #include <linux/pci.h>
+ #include <linux/of.h>
++#include <linux/console.h>
+ #include <asm/prom.h>
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -208,12 +209,61 @@ static int __init efika_probe(void)
+ 	return 1;
+ }
+ 
++/*
++ * Per default, input/output-device points to keyboard/screen
++ * If no card is installed, the built-in serial port is used as a fallback.
++ * But unfortunately, the firmware does not connect /chosen/{stdin,stdout}
++ * the the built-in serial node. Instead, a /failsafe node is created.
++ * More advanced hardware configurations cant be detected,
++ * boot with console=xyz123 to point the kernel to the correct device
++ */
++static void __init efika_init_early(void)
++{
++#ifdef CONFIG_SERIAL_MPC52xx
++	struct device_node *stdout_node;
++	const char *property;
++
++	if (strstr(cmd_line, "console="))
++		return;
++	/* find the boot console from /chosen/stdout */
++	if (!of_chosen)
++		return;
++	property = of_get_property(of_chosen, "linux,stdout-path", NULL);
++	if (!property)
++		return;
++	stdout_node = of_find_node_by_path(property);
++	if (!stdout_node)
++		return;
++	property = of_get_property(stdout_node, "device_type", NULL);
++	if (property && strcmp(property, "serial") == 0) {
++		/*
++		 * The 9pin connector is either /failsafe or /builtin/serial.
++		 * The optional graphics card has also type 'serial' in VGA mode.
++		 */
++		property = of_get_property(stdout_node, "name", NULL);
++		if (property) {
++			if (strcmp(property, "failsafe") == 0)
++				add_preferred_console("ttyPSC", 0, NULL);
++			else {
++				if (strcmp(property, "serial") == 0) {
++					property = of_get_property(stdout_node, "model", NULL);
++					if (property && strcmp(property, "mpc5200-serial") == 0)
++						add_preferred_console("ttyPSC", 0, NULL);
++				}
++			}
++		}
++	}
++	of_node_put(stdout_node);
++#endif
++}
++
+ define_machine(efika)
+ {
+ 	.name			= EFIKA_PLATFORM_NAME,
+ 	.probe			= efika_probe,
+ 	.setup_arch		= efika_setup_arch,
+ 	.init			= mpc52xx_declare_of_platform_devices,
++	.init_early		= efika_init_early,
+ 	.show_cpuinfo		= efika_show_cpuinfo,
+ 	.init_IRQ		= mpc52xx_init_irq,
+ 	.get_irq		= mpc52xx_get_irq,
