@@ -1,22 +1,21 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00E84DDE1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 04:09:24 +1100 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 21 Jan 2008 17:28:22 +0100
-References: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1BE@SRVEXC01.sts.saurer.vpn>
-	<200801210957.57761.jbe@pengutronix.de>
-	<FACFFB02D783C64FB2CEF2D6825F6FC206EEF1C0@SRVEXC01.sts.saurer.vpn>
-In-Reply-To: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1C0@SRVEXC01.sts.saurer.vpn>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 6E901DDE41
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 04:11:19 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so492158anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 09:11:18 -0800 (PST)
+Message-ID: <fa686aa40801210911q4ce90816tebafa46e68a3f980@mail.gmail.com>
+Date: Mon, 21 Jan 2008 10:11:18 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
+In-Reply-To: <20080121103434.397382000@sunsite.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801211728.22817.jbe@pengutronix.de>
-Subject: Re: [MPC5200] problem running FEC and ATA
-Cc: "Mehlan, Markus \(Ritter Elektronik\)" <markus.mehlan@ritter-elektronik.de>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080121103434.397382000@sunsite.dk>
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 21 January 2008 14:01, Mehlan, Markus (Ritter Elektronik) wrote:
-> > -----Urspr=FCngliche Nachricht-----
-> > Von: Juergen Beisert [mailto:jbe@pengutronix.de]
-> > Gesendet: Montag, 21. Januar 2008 09:58
-> > An: linuxppc-dev@ozlabs.org
-> > Cc: Mehlan, Markus (Ritter Elektronik)
-> > Betreff: Re: [MPC5200] problem running FEC and ATA
-> >
-> > Markus,
-> >
-> > On Monday 21 January 2008 08:10, Mehlan, Markus (Ritter
-> >
-> > Elektronik) wrote:
-> > > i have the same problem with the fec driver. See my posting at
-> >
-> > http://ozlabs.org/pipermail/linuxppc-embedded/2008-January/029466.html
-> >
-> > > Arnon, have you already fixed the FEC problem?
-> >
-> > Can you check this?
-> >
-> > http://ozlabs.org/pipermail/linuxppc-embedded/2007-May/027046.html
+On 1/21/08, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+> The Cypress c67x00 (EZ-Host/EZ-OTG) controllers are multi-role low/fullspeed
+> USB controllers. This patch series implements a HCD driver and shows the
+> work-in-progress status of a gadget driver.
 >
-> I have checked the article. To set the BSDIS bit in the XLB config regist=
-er
-> during initialization fixes my problem:
+> I believe patch 1..3 are ready, and I would like to see queued up for 2.6.25.
 >
-> xlb =3D (struct mpc52xx_xlb *)MPC5xxx_XLB;
-> out_be32(&xlb->config,  in_be32(&xlb->config) |
-> MPC52xx_XLB_CFG_BSDIS);
+> Changes since v3:
+> - Lots of cleanups: checkpatch, interrupt handling, c67x00_ prefixes, ..
+> - The dummy platform_device's created per serial engine are gone.
+> - Gadget driver (WIP)
 
-Is anybody out there with more MPC5200B experience? Can someone tell me why=
-=20
-some MPC5200B are need this patch and others not? We have two different=20
-systems here (cards from different vendors) with the same processor, one=20
-needs this BSDIS-patch and the other not. ???????????????
+Can you please post/publish the diff between v3 and this series?
 
-Juergen
+Thanks,
+g.
 
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
