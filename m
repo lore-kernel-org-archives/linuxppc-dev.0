@@ -1,30 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 82E7ADDD0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 01:04:52 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0LE4leh015969
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 09:04:47 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0LE4f09092716
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 07:04:42 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0LE4dQU032046
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 07:04:40 -0700
-Date: Mon, 21 Jan 2008 08:01:57 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Warp Watchdog
-Message-ID: <20080121080157.0b66c7fc@zod.rchland.ibm.com>
-In-Reply-To: <478FB93A.7040505@pikatech.com>
-References: <478FB93A.7040505@pikatech.com>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id 34C32DDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 02:28:35 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id D3A90F4901A
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 16:28:32 +0100 (CET)
+Subject: Re: [PATCH 2/2] mpc82xx: Embedded Planet EP8248E support
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080118160303.GC15620@ld0162-tx32.am.freescale.net>
+References: <20080117223205.GB17300@loki.buserror.net>
+	<1200654427.3204.4.camel@p60365-ste>
+	<20080118160303.GC15620@ld0162-tx32.am.freescale.net>
+Date: Mon, 21 Jan 2008 16:28:32 +0100
+Message-Id: <1200929312.3242.6.camel@p60365-ste>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,33 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 17 Jan 2008 15:23:22 -0500
-Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-> The taco, er warp, has a watchdog timer built into the fpga. The 
-> watchdog is very trivial and very tied to the warp. I have put it has 
-> part of the platform code rather than a standalone module.
+Am Freitag, den 18.01.2008, 10:03 -0600 schrieb Scott Wood:
+> On Fri, Jan 18, 2008 at 12:07:07PM +0100, Sergej Stepanov wrote:
+> > 
+> > > +			/* "Serial" port/SCC1 */
+> > > +			scc1: serial@11a00 {
+> > > +				device_type = "serial";
+> > > +				compatible = "fsl,mpc8248-scc-uart",
+> > > +				             "fsl,cpm2-scc-uart";
+> > > +				reg = <0x11a00 0x20 0x8000 0x100>;
+> > > +				interrupts = <40 8>;
+> > are you sure with 40 as interrupt? has not it be "28"(hex) here?
 > 
-> Two reasons for this: one, once started it can't be stopped. A module 
-> unload would be fatal ;) Two, it is so closely tied to the taco that it 
-> really has no use otherwise.
-
-The first isn't much of a reason.  The watchdog on the 44x and FSL
-Book-E cores have the same behavior.
-
-> The platform always starts the watchdog, assuming you asked for the 
-> watchdog, but does not enable it until hit from user mode.
+> This is a version 1 dts file -- the default base is decimal.
 > 
-> What is the general feeling about this implementation? I am not 
-> submitting this for inclusion in the kernel right now, just feeling out 
-> what others think.
-
-I'm not thrilled with it being in the platform file itself.  It should
-really go into drivers/watchdog.  It's OK that the watchdog is tied to
-Warp, that really isn't an issue.  Just make it depend on Warp in the
-Kconfig file.  And you can select it in your board config so that it's
-built in-kernel and not as a module.
-
-The code itself looks pretty clean.
-
-josh
+> -Scott
+yes, you are right, sorry.
