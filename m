@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <0a87a8672c76341044ebb0231ff0c1fba4e82c36.1200894155.git.michael@ellerman.id.au>
+Message-Id: <e9ff0b0489aa17d36387d252811c2846976684fd.1200894155.git.michael@ellerman.id.au>
 In-Reply-To: <2949748ba6ad7e14f0768ac3889267e42c050d7a.1200894155.git.michael@ellerman.id.au>
 References: <2949748ba6ad7e14f0768ac3889267e42c050d7a.1200894155.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 4/7] Have cell use its own dma_direct_offset variable
-Date: Mon, 21 Jan 2008 16:42:45 +1100 (EST)
+Subject: [PATCH 5/7] Have celleb use its own dma_direct_offset variable
+Date: Mon, 21 Jan 2008 16:42:46 +1100 (EST)
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,61 +16,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rather than using the global variable, have cell use its own variable to
+Rather than using the global variable, have celleb use its own variable to
 store the direct DMA offset.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/iommu.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/celleb/iommu.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 9682b63..7f45d59 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -490,6 +490,8 @@ static struct cbe_iommu *cell_iommu_for_node(int nid)
- 	return NULL;
- }
- 
-+static unsigned long cell_dma_direct_offset;
-+
- static void cell_dma_dev_setup(struct device *dev)
- {
- 	struct iommu_window *window;
-@@ -497,7 +499,7 @@ static void cell_dma_dev_setup(struct device *dev)
- 	struct dev_archdata *archdata = &dev->archdata;
- 
- 	if (get_pci_dma_ops() == &dma_direct_ops) {
--		archdata->dma_data = (void *)dma_direct_offset;
-+		archdata->dma_data = (void *)cell_dma_direct_offset;
- 		return;
- 	}
- 
-@@ -655,7 +657,7 @@ static int __init cell_iommu_init_disabled(void)
- 
- 	/* If we have no Axon, we set up the spider DMA magic offset */
- 	if (of_find_node_by_name(NULL, "axon") == NULL)
--		dma_direct_offset = SPIDER_DMA_OFFSET;
-+		cell_dma_direct_offset = SPIDER_DMA_OFFSET;
- 
- 	/* Now we need to check to see where the memory is mapped
- 	 * in PCI space. We assume that all busses use the same dma
-@@ -689,13 +691,13 @@ static int __init cell_iommu_init_disabled(void)
- 		return -ENODEV;
- 	}
- 
--	dma_direct_offset += base;
-+	cell_dma_direct_offset += base;
- 
--	if (dma_direct_offset != 0)
-+	if (cell_dma_direct_offset != 0)
- 		ppc_md.pci_dma_dev_setup = cell_pci_dma_dev_setup;
- 
- 	printk("iommu: disabled, direct DMA offset is 0x%lx\n",
--	       dma_direct_offset);
-+	       cell_dma_direct_offset);
- 
+diff --git a/arch/powerpc/platforms/celleb/iommu.c b/arch/powerpc/platforms/celleb/iommu.c
+index 843a66f..93b0efd 100644
+--- a/arch/powerpc/platforms/celleb/iommu.c
++++ b/arch/powerpc/platforms/celleb/iommu.c
+@@ -52,6 +52,8 @@ static int __init find_dma_window(u64 *io_space_id, u64 *ioid,
  	return 0;
  }
+ 
++static unsigned long celleb_dma_direct_offset;
++
+ static void __init celleb_init_direct_mapping(void)
+ {
+ 	u64 lpar_addr, io_addr;
+@@ -69,13 +71,13 @@ static void __init celleb_init_direct_mapping(void)
+ 				     ioid, DMA_FLAGS);
+ 	}
+ 
+-	dma_direct_offset = dma_base;
++	celleb_dma_direct_offset = dma_base;
+ }
+ 
+ static void celleb_dma_dev_setup(struct device *dev)
+ {
+ 	dev->archdata.dma_ops = get_pci_dma_ops();
+-	dev->archdata.dma_data = (void *)dma_direct_offset;
++	dev->archdata.dma_data = (void *)celleb_dma_direct_offset;
+ }
+ 
+ static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
 -- 
 1.5.2.rc1.1884.g59b20
