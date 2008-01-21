@@ -2,16 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58AABDDE2C
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 06:19:45 +1100 (EST)
-Message-Id: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 0C097DDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 06:27:37 +1100 (EST)
+Message-Id: <6FA7C7C0-172D-4AD4-BDAF-A1E3845A63FE@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080121185812.13486.68032.stgit@trillian.secretlab.ca>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: fixed phy support (warning related to FIXED_MII_100_FDX)
-Date: Mon, 21 Jan 2008 13:19:41 -0600
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 2/2] [POWERPC] 8xxx and embedded6xx: Use
+	machine_*_initcall() hooks in platform code
+Date: Mon, 21 Jan 2008 13:27:30 -0600
+References: <20080121185806.13486.56429.stgit@trillian.secretlab.ca>
+	<20080121185812.13486.68032.stgit@trillian.secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,15 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton,
 
-it looks like the "TI AR7 CPMAC Ethernet support" uses FIXED_PHY and  
-was selecting FIXED_MII_100_FDX which is gone.
+On Jan 21, 2008, at 12:58 PM, Grant Likely wrote:
 
-Can you look into this.  I get the following warning now:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> arch/powerpc/platforms/82xx/mpc8272_ads.c    |    5 +----
+> arch/powerpc/platforms/82xx/pq2fads.c        |    5 +----
+> arch/powerpc/platforms/83xx/mpc832x_mds.c    |    5 +----
+> arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   11 ++---------
+> arch/powerpc/platforms/83xx/mpc834x_mds.c    |    5 +----
+> arch/powerpc/platforms/83xx/mpc836x_mds.c    |    5 +----
+> arch/powerpc/platforms/83xx/mpc837x_mds.c    |    5 +----
+> arch/powerpc/platforms/85xx/mpc85xx_ads.c    |    5 +----
+> arch/powerpc/platforms/85xx/mpc85xx_cds.c    |    6 +-----
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c    |    5 +----
+> arch/powerpc/platforms/embedded6xx/ls_uart.c |    5 +----
 
-scripts/kconfig/conf -s arch/powerpc/Kconfig
-drivers/net/Kconfig:1713:warning: 'select' used by config symbol  
-'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+I believe I got the 83xx and 85xx already.   look at my tree.
 
 - k
