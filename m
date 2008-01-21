@@ -1,19 +1,16 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 89B03DDDF2
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s34.bay0.hotmail.com (bay0-omc2-s34.bay0.hotmail.com
+	[65.54.246.170]) by ozlabs.org (Postfix) with ESMTP id 93764DDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Jan 2008 18:22:35 +1100 (EST)
-In-Reply-To: <478FD442.8060902@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Endian problem when accessing internel regs on 8347
+	Mon, 21 Jan 2008 18:36:59 +1100 (EST)
+Message-ID: <BAY115-W17ECE16AB6FA79B2D4DBBDB23D0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_"
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Xilinx XPS_LL_TEMAC vs PLB_TEMAC
+Date: Mon, 21 Jan 2008 07:36:58 +0000
 MIME-Version: 1.0
-Message-ID: <OFE90E4633.93F2906B-ON882573D7.002448B6-882573D7.00287256@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Sun, 20 Jan 2008 23:21:48 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,60 +21,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> >>> __asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync" : "=r" 
-(ret) 
-> > : 
-> >>> "m" (*addr));
-> >> They allow the compiler to use update and/or index mode for the 
-memory 
-> >> operand.
-> > 
-> > Well that makes sense, U for update and X for index, but I'm not sure 
-> > they're applicable to this particular instruction and I'm not sure 
-that 
-> > the memory operand makes sense for PowerPC.
-> 
-> Why not?
+--_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Okay, after much digging and experimenting, I'll agree that the memory 
-operand makes sense.  When I first said that I was thinking of direct 
-manipulation of memory, which the PPC doesn't support.  (Don't ask, my 
-brain sometimes goes off into la-la land without me :-> )  Also, update 
-mode is applicable and makes sense.  But I do still have a problem with 
-the index mode, though it could be compiler magic.  Here's why: the index 
-mode of the 'lwz' instruction requires three operands, i.e., 'lwzx 
-rD,rA,rB', and there's only place holders for two operands.  Is the 
-compiler smart enough to add the third operand for the index mode?  If so, 
-what does it put for the third operand?
 
-Another question is how does the compiler know which mode to pick?  And 
-what is the significance of the trailing number?  Some places in the code 
-have %U1%X1 and others have %U2%X2?  I've found documentation for the # 
-and ## tokens, but I can't find anything for the %U or %X tokens.
+Hi All,
 
-Now this has all been very interesting to learn but doesn't solve my 
-underlying problem which I've finally drilled down to.  At first I thought 
-in_be32() might be broken because I wasn't getting back the value I knew 
-to be in the internal register.  I knew I had the address and the mapping 
-to kernel space correct because I could use in_le32 and get the right 
-value though it was byte swapped.  The value in the register was 
-0xFFFFFFE7 but what I was getting from in_be32 was 0xFFFFFFFF.  Then I 
-started playing and here's what I found:
+As you know Xilinx PLB TEMAC is a module which connects Hard TEMAC in Virte=
+x-4 FX devices to PLB bus,
+now, in the new release of EDK , EDK 9.2 Xilinx has added a new interface c=
+ore , which is called XPS_LL_TEMAC and has a different structure than norma=
+l PLB TEMAC. spacially it has some additional data transfer buses.=20
 
-Register value  in_be32 value
-0x12345678              0x1234567
-0xff345678              0xff345678
-0xffff5678              0xffff5678
-0xfffff678              0xfffff678
-0xfffffe78              0xffffffff
-0xffffff78              0xffffffff
+Now the question is,... is there any linux driver available for this new co=
+re?
 
-This isn't an exhastive list but I tried about twenty values and pretty 
-much what I found was that if bits 0 through 22 are set to 1 then in_be32 
-reads 0xffffffff.  I've also tried it at a variety of addresses and the 
-behaviour is the same.  in_le32 works fine as does in_be16.  I've got no 
-ideas as to what may be wrong.  I don't want to just arbitrarily point to 
-that %U1%X1 parameter list, but I get compiler errors if I try to remove 
-them so I can't prove or disprove it and I can't find any documentation on 
-it I can't even form a theroy.  Has anyone ever seen anything like this? 
-Can't anyone suggest anything I can try?
+thanks
+
+
+_________________________________________________________________
+
+
+--_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+Hi All,<br><br>As you know Xilinx PLB TEMAC is a module which connects Hard=
+ TEMAC in Virtex-4 FX devices to PLB bus,<br>now, in the new release of EDK=
+ , EDK 9.2 Xilinx has added a new interface core , which is called XPS_LL_T=
+EMAC and has a different structure than normal PLB TEMAC. spacially it has =
+some additional data transfer buses. <br><br>Now the question is,... is the=
+re any linux driver available for this new core?<br><br>thanks<br><br><br /=
+><hr /> <a href=3D'' target=3D'_new'></a></body>
+</html>=
+
+--_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_--
