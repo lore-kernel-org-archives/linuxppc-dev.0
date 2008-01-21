@@ -1,22 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.248])
-	by ozlabs.org (Postfix) with ESMTP id EC63DDDE06
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:57:28 +1100 (EST)
-Received: by hs-out-2122.google.com with SMTP id x43so2242755hsb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 08:57:23 -0800 (PST)
-Message-ID: <9e4733910801210850j39b9d51fy706b58ca15805f35@mail.gmail.com>
-Date: Mon, 21 Jan 2008 11:50:13 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH 2/3] i2c: Convert all new-style drivers to use module
-	aliasing
-In-Reply-To: <20080121114139.3aaa111a@hyperion.delvare>
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 00E84DDE1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 04:09:24 +1100 (EST)
+From: Juergen Beisert <jbe@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Date: Mon, 21 Jan 2008 17:28:22 +0100
+References: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1BE@SRVEXC01.sts.saurer.vpn>
+	<200801210957.57761.jbe@pengutronix.de>
+	<FACFFB02D783C64FB2CEF2D6825F6FC206EEF1C0@SRVEXC01.sts.saurer.vpn>
+In-Reply-To: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1C0@SRVEXC01.sts.saurer.vpn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080121112517.6fe35a89@hyperion.delvare>
-	<20080121114139.3aaa111a@hyperion.delvare>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Linux I2C <i2c@lm-sensors.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801211728.22817.jbe@pengutronix.de>
+Subject: Re: [MPC5200] problem running FEC and ATA
+Cc: "Mehlan, Markus \(Ritter Elektronik\)" <markus.mehlan@ritter-elektronik.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In my version of these patches new style drivers could be loaded with
-both the driver_name/name scheme and the modalias. In these patches
-new style drivers can only be loaded via modalias. Is that what you
-intended? I'm all for making new style driver only use the modalias
-scheme.
+On Monday 21 January 2008 14:01, Mehlan, Markus (Ritter Elektronik) wrote:
+> > -----Urspr=FCngliche Nachricht-----
+> > Von: Juergen Beisert [mailto:jbe@pengutronix.de]
+> > Gesendet: Montag, 21. Januar 2008 09:58
+> > An: linuxppc-dev@ozlabs.org
+> > Cc: Mehlan, Markus (Ritter Elektronik)
+> > Betreff: Re: [MPC5200] problem running FEC and ATA
+> >
+> > Markus,
+> >
+> > On Monday 21 January 2008 08:10, Mehlan, Markus (Ritter
+> >
+> > Elektronik) wrote:
+> > > i have the same problem with the fec driver. See my posting at
+> >
+> > http://ozlabs.org/pipermail/linuxppc-embedded/2008-January/029466.html
+> >
+> > > Arnon, have you already fixed the FEC problem?
+> >
+> > Can you check this?
+> >
+> > http://ozlabs.org/pipermail/linuxppc-embedded/2007-May/027046.html
+>
+> I have checked the article. To set the BSDIS bit in the XLB config regist=
+er
+> during initialization fixes my problem:
+>
+> xlb =3D (struct mpc52xx_xlb *)MPC5xxx_XLB;
+> out_be32(&xlb->config,  in_be32(&xlb->config) |
+> MPC52xx_XLB_CFG_BSDIS);
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Is anybody out there with more MPC5200B experience? Can someone tell me why=
+=20
+some MPC5200B are need this patch and others not? We have two different=20
+systems here (cards from different vendors) with the same processor, one=20
+needs this BSDIS-patch and the other not. ???????????????
+
+Juergen
+
+=2D-=20
+Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
+=A0Pengutronix - Linux Solutions for Science and Industry
+=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
+=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
+   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
