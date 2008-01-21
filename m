@@ -2,15 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22696DDDFA
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:23:09 +1100 (EST)
-Date: Mon, 21 Jan 2008 10:20:29 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id 14202DDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:24:23 +1100 (EST)
+Date: Mon, 21 Jan 2008 10:21:22 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] 8xx: Analogue & Micro Adder875 board support.
-In-Reply-To: <20080117223140.GA17300@loki.buserror.net>
-Message-ID: <Pine.LNX.4.64.0801211020120.14453@blarg.am.freescale.net>
-References: <20080117223140.GA17300@loki.buserror.net>
+Subject: Re: [PATCH 1/3] mpc8313erdb: Add NAND to device tree, and call
+	of_platform_bus_probe().
+In-Reply-To: <20080117223750.GA20697@loki.buserror.net>
+Message-ID: <Pine.LNX.4.64.0801211021120.14453@blarg.am.freescale.net>
+References: <20080117223750.GA20697@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -27,32 +28,11 @@ On Thu, 17 Jan 2008, Scott Wood wrote:
 
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
 > ---
-> Removed const/initdata combo, added simple-bus to cpm node,
-> and used simple-bus for probing.
+> Please apply this series for 2.6.25.
 >
-> Please apply for 2.6.25.
->
->  arch/powerpc/Kconfig                            |    3 +
->  arch/powerpc/boot/.gitignore                    |    1 +
->  arch/powerpc/boot/Makefile                      |    6 +-
->  arch/powerpc/boot/dts/adder875-redboot.dts      |  184 ++++++
->  arch/powerpc/boot/dts/adder875-uboot.dts        |  183 ++++++
->  arch/powerpc/boot/redboot-8xx.c                 |   58 ++
->  arch/powerpc/boot/redboot.h                     |   56 ++
->  arch/powerpc/boot/wrapper                       |    2 +-
->  arch/powerpc/configs/adder875-redboot_defconfig |  798 +++++++++++++++++++++++
->  arch/powerpc/configs/adder875-uboot_defconfig   |  798 +++++++++++++++++++++++
->  arch/powerpc/platforms/8xx/Kconfig              |    9 +
->  arch/powerpc/platforms/8xx/Makefile             |    1 +
->  arch/powerpc/platforms/8xx/adder875.c           |  118 ++++
->  13 files changed, 2215 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/adder875-redboot.dts
->  create mode 100644 arch/powerpc/boot/dts/adder875-uboot.dts
->  create mode 100644 arch/powerpc/boot/redboot-8xx.c
->  create mode 100644 arch/powerpc/boot/redboot.h
->  create mode 100644 arch/powerpc/configs/adder875-redboot_defconfig
->  create mode 100644 arch/powerpc/configs/adder875-uboot_defconfig
->  create mode 100644 arch/powerpc/platforms/8xx/adder875.c
+>  arch/powerpc/boot/dts/mpc8313erdb.dts     |   39 +++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/83xx/mpc8313_rdb.c |   13 +++++++++
+>  2 files changed, 52 insertions(+), 0 deletions(-)
 >
 
 applied.
