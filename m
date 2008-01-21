@@ -1,13 +1,13 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/7] Set archdata.dma_data for direct DMA in
-	cell_dma_dev_setup()
+Subject: Re: [PATCH 2/7] Add celleb_dma_dev_setup()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <2949748ba6ad7e14f0768ac3889267e42c050d7a.1200894155.git.michael@ellerman.id.au>
+In-Reply-To: <4bdf881cfc1386c5167495a5e64bdb9dc3ca90d5.1200894155.git.michael@ellerman.id.au>
 References: <2949748ba6ad7e14f0768ac3889267e42c050d7a.1200894155.git.michael@ellerman.id.au>
+	<4bdf881cfc1386c5167495a5e64bdb9dc3ca90d5.1200894155.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Mon, 21 Jan 2008 17:20:01 +1100
-Message-Id: <1200896401.7222.103.camel@pasglop>
+Date: Mon, 21 Jan 2008 17:20:38 +1100
+Message-Id: <1200896438.7222.105.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
 	cbe-oss-dev@ozlabs.org
@@ -23,44 +23,55 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 On Mon, 2008-01-21 at 16:42 +1100, Michael Ellerman wrote:
-> Store the direct_dma_offset in each device's dma_data in the case
-> where we're using the direct DMA ops.
+> Celleb always uses dma_direct_ops, and sets dma_direct_offset, so it too
+> should set dma_data to dma_direct_offset.
 > 
-> We need to make sure we setup the ppc_md.pci_dma_dev_setup() callback
-> if we're using a non-zero offset.
+> Currently there's no pci_dma_dev_setup() routine for Celleb so add one.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/platforms/cell/iommu.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
+>  arch/powerpc/platforms/celleb/iommu.c |   14 +++++++++++++-
+>  1 files changed, 13 insertions(+), 1 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-> index bceb5e1..9682b63 100644
-> --- a/arch/powerpc/platforms/cell/iommu.c
-> +++ b/arch/powerpc/platforms/cell/iommu.c
-> @@ -496,9 +496,10 @@ static void cell_dma_dev_setup(struct device *dev)
->  	struct cbe_iommu *iommu;
->  	struct dev_archdata *archdata = &dev->archdata;
+> diff --git a/arch/powerpc/platforms/celleb/iommu.c b/arch/powerpc/platforms/celleb/iommu.c
+> index 41e1e6f..843a66f 100644
+> --- a/arch/powerpc/platforms/celleb/iommu.c
+> +++ b/arch/powerpc/platforms/celleb/iommu.c
+> @@ -72,6 +72,17 @@ static void __init celleb_init_direct_mapping(void)
+>  	dma_direct_offset = dma_base;
+>  }
 >  
-> -	/* If we run without iommu, no need to do anything */
-> -	if (get_pci_dma_ops() == &dma_direct_ops)
-> +	if (get_pci_dma_ops() == &dma_direct_ops) {
-> +		archdata->dma_data = (void *)dma_direct_offset;
->  		return;
-> +	}
->  
->  	/* Current implementation uses the first window available in that
->  	 * node's iommu. We -might- do something smarter later though it may
-> @@ -690,6 +691,9 @@ static int __init cell_iommu_init_disabled(void)
->  
->  	dma_direct_offset += base;
->  
-> +	if (dma_direct_offset != 0)
-> +		ppc_md.pci_dma_dev_setup = cell_pci_dma_dev_setup;
+> +static void celleb_dma_dev_setup(struct device *dev)
+> +{
+> +	dev->archdata.dma_ops = get_pci_dma_ops();
+> +	dev->archdata.dma_data = (void *)dma_direct_offset;
+> +}
 > +
->  	printk("iommu: disabled, direct DMA offset is 0x%lx\n",
->  	       dma_direct_offset);
+> +static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
+> +{
+> +	celleb_dma_dev_setup(&pdev->dev);
+> +}
+> +
+>  static int celleb_of_bus_notify(struct notifier_block *nb,
+>  				unsigned long action, void *data)
+>  {
+> @@ -81,7 +92,7 @@ static int celleb_of_bus_notify(struct notifier_block *nb,
+>  	if (action != BUS_NOTIFY_ADD_DEVICE)
+>  		return 0;
 >  
+> -	dev->archdata.dma_ops = get_pci_dma_ops();
+> +	celleb_dma_dev_setup(dev);
+>  
+>  	return 0;
+>  }
+> @@ -94,6 +105,7 @@ static int __init celleb_init_iommu(void)
+>  {
+>  	celleb_init_direct_mapping();
+>  	set_pci_dma_ops(&dma_direct_ops);
+> +	ppc_md.pci_dma_dev_setup = celleb_pci_dma_dev_setup;
+>  	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
+>  
+>  	return 0;
