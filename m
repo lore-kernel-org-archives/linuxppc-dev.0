@@ -1,16 +1,20 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s34.bay0.hotmail.com (bay0-omc2-s34.bay0.hotmail.com
-	[65.54.246.170]) by ozlabs.org (Postfix) with ESMTP id 93764DDDF4
+Return-Path: <dhbaird@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 54FAEDDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Jan 2008 18:36:59 +1100 (EST)
-Message-ID: <BAY115-W17ECE16AB6FA79B2D4DBBDB23D0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_"
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Xilinx XPS_LL_TEMAC vs PLB_TEMAC
-Date: Mon, 21 Jan 2008 07:36:58 +0000
+	Mon, 21 Jan 2008 18:55:20 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3645180wag.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 20 Jan 2008 23:55:19 -0800 (PST)
+Message-ID: <440abda90801202355m1f1ccdafw9c2f1333498fa48c@mail.gmail.com>
+Date: Mon, 21 Jan 2008 00:55:18 -0700
+From: "David Baird" <dhbaird@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Xilinx XPS_LL_TEMAC vs PLB_TEMAC
+In-Reply-To: <BAY115-W17ECE16AB6FA79B2D4DBBDB23D0@phx.gbl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <BAY115-W17ECE16AB6FA79B2D4DBBDB23D0@phx.gbl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,55 +25,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Jan 21, 2008 12:36 AM, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+> As you know Xilinx PLB TEMAC is a module which connects Hard TEMAC in
+> Virtex-4 FX devices to PLB bus,
+> now, in the new release of EDK , EDK 9.2 Xilinx has added a new interface
+> core , which is called XPS_LL_TEMAC and has a different structure than
+> normal PLB TEMAC. spacially it has some additional data transfer buses.
+>
+> Now the question is,... is there any linux driver available for this new
+> core?
 
+Yes there is, but I had to use the git sources at:
 
-Hi All,
-
-As you know Xilinx PLB TEMAC is a module which connects Hard TEMAC in Virte=
-x-4 FX devices to PLB bus,
-now, in the new release of EDK , EDK 9.2 Xilinx has added a new interface c=
-ore , which is called XPS_LL_TEMAC and has a different structure than norma=
-l PLB TEMAC. spacially it has some additional data transfer buses.=20
-
-Now the question is,... is there any linux driver available for this new co=
-re?
-
-thanks
-
-
-_________________________________________________________________
-
-
---_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 10pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class=3D'hmmessage'>
-Hi All,<br><br>As you know Xilinx PLB TEMAC is a module which connects Hard=
- TEMAC in Virtex-4 FX devices to PLB bus,<br>now, in the new release of EDK=
- , EDK 9.2 Xilinx has added a new interface core , which is called XPS_LL_T=
-EMAC and has a different structure than normal PLB TEMAC. spacially it has =
-some additional data transfer buses. <br><br>Now the question is,... is the=
-re any linux driver available for this new core?<br><br>thanks<br><br><br /=
-><hr /> <a href=3D'' target=3D'_new'></a></body>
-</html>=
-
---_6cbc30b0-bc10-4a8a-8ebe-254415f3d8f3_--
+git.xilinx.com
