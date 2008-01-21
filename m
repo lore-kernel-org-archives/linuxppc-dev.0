@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id 6E901DDE41
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 04:11:19 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so492158anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 09:11:18 -0800 (PST)
-Message-ID: <fa686aa40801210911q4ce90816tebafa46e68a3f980@mail.gmail.com>
-Date: Mon, 21 Jan 2008 10:11:18 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
-In-Reply-To: <20080121103434.397382000@sunsite.dk>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A801ADDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 04:45:10 +1100 (EST)
+Message-ID: <4794D9FE.60209@scram.de>
+Date: Mon, 21 Jan 2008 18:44:30 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080121103434.397382000@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	linux-usb@vger.kernel.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: patches for 2.6.25
+References: <Pine.LNX.4.64.0801211041100.14676@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0801211041100.14676@blarg.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/21/08, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> The Cypress c67x00 (EZ-Host/EZ-OTG) controllers are multi-role low/fullspeed
-> USB controllers. This patch series implements a HCD driver and shows the
-> work-in-progress status of a gadget driver.
->
-> I believe patch 1..3 are ready, and I would like to see queued up for 2.6.25.
->
-> Changes since v3:
-> - Lots of cleanups: checkpatch, interrupt handling, c67x00_ prefixes, ..
-> - The dummy platform_device's created per serial engine are gone.
-> - Gadget driver (WIP)
+Hi Kumar,
 
-Can you please post/publish the diff between v3 and this series?
+> I'm sure I missed some patches for 2.6.25, so please point any out that
+> people would like to see get in.
+
+What about this one, now that the fixed phy parts are in:
+
+http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=15654
 
 Thanks,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Jochen
