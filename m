@@ -1,22 +1,18 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id C2669DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 08:08:09 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so959876uge.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 13:08:08 -0800 (PST)
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
-References: <20080121103434.397382000@sunsite.dk>
-	<200801211201.41142.david-b@pacbell.net>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 21 Jan 2008 22:08:04 +0100
-In-Reply-To: <200801211201.41142.david-b@pacbell.net> (David Brownell's
-	message of "Mon\, 21 Jan 2008 12\:01\:40 -0800")
-Message-ID: <87fxwq28gb.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Return-Path: <jonsmirl@gmail.com>
+Received: from vms173001pub.verizon.net (vms173001pub.verizon.net
+	[206.46.173.1]) by ozlabs.org (Postfix) with ESMTP id 00340DDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 08:09:08 +1100 (EST)
+Received: from terra.home ([96.233.72.204]) by vms173001.mailsrvcs.net
+	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
+	with ESMTPA id <0JV000D5OFCYIWW0@vms173001.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Mon, 21 Jan 2008 13:55:46 -0600 (CST)
+Date: Mon, 21 Jan 2008 15:07:40 -0500
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Message-id: <20080121200740.13800.20524.stgit@terra.home>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David Brownell <david-b@pacbell.net> writes:
+Alter the mpc i2c driver to use the NO_IRQ symbol instead of the constant zero when checking for valid interrupts. NO_IRQ=-1 on ppc and NO_IRQ=0 on powerpc so the checks against zero are not correct.
 
-Hi,
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+---
 
- David> How does this relate to the "v3" patches posted 8-Jan by Grant Likely?
- David> Is that the "v3" you were referring to?
+ drivers/i2c/busses/i2c-mpc.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Yes - Sorry, I should have been more clear about that.
 
- David> It's confusing to see two different people submit two sets of
- David> patches for the same driver, without any evident
- David> coordination...
-
-True. The story behind it is that I posted the original patch series
-back in Spring '06, but real life got in way of me following up on
-pushing it to mainline (some development was still done on it, and
-we've shipped it in products).
-
-Then Grant picked it up (which I'm grateful for) and posted his v1..v3
-series. I have now taken his v3 series and merged it with my
-development.
-
--- 
-Bye, Peter Korsgaard
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index bbe787b..d20959d 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -99,7 +99,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+ 	u32 x;
+ 	int result = 0;
+ 
+-	if (i2c->irq == 0)
++	if (i2c->irq == NO_IRQ)
+ 	{
+ 		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+ 			schedule();
+@@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	i2c->irq = platform_get_irq(pdev, 0);
+-	if (i2c->irq < 0) {
++	if (i2c->irq < NO_IRQ) {
+ 		result = -ENXIO;
+ 		goto fail_get_irq;
+ 	}
+@@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 		goto fail_map;
+ 	}
+ 
+-	if (i2c->irq != 0)
++	if (i2c->irq != NO_IRQ)
+ 		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+ 					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+ 			printk(KERN_ERR
+@@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 	return result;
+ 
+       fail_add:
+-	if (i2c->irq != 0)
++	if (i2c->irq != NO_IRQ)
+ 		free_irq(i2c->irq, i2c);
+       fail_irq:
+ 	iounmap(i2c->base);
+@@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
+ 	i2c_del_adapter(&i2c->adap);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-	if (i2c->irq != 0)
++	if (i2c->irq != NO_IRQ)
+ 		free_irq(i2c->irq, i2c);
+ 
+ 	iounmap(i2c->base);
