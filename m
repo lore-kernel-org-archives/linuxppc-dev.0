@@ -1,21 +1,21 @@
-Return-Path: <r.marek@assembler.cz>
-Received: from ms.trustica.cz (ms.trustica.cz [82.208.32.68])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ms.trustica.cz", Issuer "www.trustica.cz" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 11702DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 22:17:00 +1100 (EST)
-Message-ID: <479478C7.5060807@assembler.cz>
-Date: Mon, 21 Jan 2008 11:49:43 +0100
-From: Rudolf Marek <r.marek@assembler.cz>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 493DBDDE35
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 05:45:35 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so499484anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 10:45:34 -0800 (PST)
+Message-ID: <fa686aa40801211045w7644cfc5tf11024bd0010b308@mail.gmail.com>
+Date: Mon, 21 Jan 2008 11:45:34 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: [PATCH] autodetect serial console on efika
+In-Reply-To: <20080121152900.GA8664@aepfle.de>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [i2c] [PATCH 0/3] i2c: Use the standard, alias-based device/driver
-	matching scheme
-References: <20080121112517.6fe35a89@hyperion.delvare>
-In-Reply-To: <20080121112517.6fe35a89@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Linux I2C <i2c@lm-sensors.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070331150823.GA25421@aepfle.de>
+	<20080121152900.GA8664@aepfle.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jean,
+On 1/21/08, Olaf Hering <olaf@aepfle.de> wrote:
+>
+> Efika boards have to be booted with console=ttyPSC0 unless there is a
+> graphics card plugged in. Detect if the firmware stdout is the serial
+> connector.
+>
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-> Note: all the arm and powerpc stuff is untested.
+Hrrrum; I think this is a good idea, but I'm not thrilled with the
+approach.  Here are my concerns:
 
-We at http://sysgo.com have some demo server, where you can access embedded 
-systems remotely (via VNC to a server with cross tools (ELinOS)  + serial console),
-there is 2.6.22 kernel, but I think the i2c core can be replaced. I think some 
-PPC and ARMs are connected there. I will ask if you can get access to it if you 
-are interested.
+- Determining that linux,stdout-path points to a PSC should should be
+done in common code.  It's useful for all 5200 boards, not just the
+Efika.  (However, if 'failsafe' processing is efika specific, then it
+can stay in efika.c).  This might be best done within the PSC driver
+itself, but I'm not sure.
+- Recognizing a psc node should be done by inspecting the compatible
+property, not by device_type and model properties.
 
 Thanks,
+g.
 
-Rudolf
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
