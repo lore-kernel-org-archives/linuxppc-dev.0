@@ -1,23 +1,19 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id C545BDDE00
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 07:16:50 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so951239uge.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 12:16:48 -0800 (PST)
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
-References: <20080121103434.397382000@sunsite.dk>
-	<fa686aa40801210911q4ce90816tebafa46e68a3f980@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 21 Jan 2008 21:16:43 +0100
-In-Reply-To: <fa686aa40801210911q4ce90816tebafa46e68a3f980@mail.gmail.com>
-	(Grant Likely's message of "Mon\, 21 Jan 2008 10\:11\:18 -0700")
-Message-ID: <87zluz0w9g.fsf@macbook.be.48ers.dk>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 801A9DDE34
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 07:34:38 +1100 (EST)
+Date: Mon, 21 Jan 2008 21:34:59 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] autodetect serial console on efika
+Message-ID: <20080121203459.GA9967@aepfle.de>
+References: <20070331150823.GA25421@aepfle.de>
+	<20080121152900.GA8664@aepfle.de>
+	<fa686aa40801211045w7644cfc5tf11024bd0010b308@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <fa686aa40801211045w7644cfc5tf11024bd0010b308@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+On Mon, Jan 21, Grant Likely wrote:
 
-Hi,
+> On 1/21/08, Olaf Hering <olaf@aepfle.de> wrote:
+> >
+> > Efika boards have to be booted with console=ttyPSC0 unless there is a
+> > graphics card plugged in. Detect if the firmware stdout is the serial
+> > connector.
+> >
+> > Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> 
+> Hrrrum; I think this is a good idea, but I'm not thrilled with the
+> approach.  Here are my concerns:
+> 
+> - Determining that linux,stdout-path points to a PSC should should be
+> done in common code.  It's useful for all 5200 boards, not just the
+> Efika.  (However, if 'failsafe' processing is efika specific, then it
+> can stay in efika.c).  This might be best done within the PSC driver
+> itself, but I'm not sure.
+> - Recognizing a psc node should be done by inspecting the compatible
+> property, not by device_type and model properties.
 
- >> Changes since v3:
- >> - Lots of cleanups: checkpatch, interrupt handling, c67x00_ prefixes, ..
- >> - The dummy platform_device's created per serial engine are gone.
- >> - Gadget driver (WIP)
-
- Grant> Can you please post/publish the diff between v3 and this series?
-
-Sure, http://peter.korsgaard.com/c67x00-v3-v4.patch (not posting as
-it's more than 100k)
-
--- 
-Bye, Peter Korsgaard
+I dont have any other 5200 hardware to test a different patch.
+Please improve my version and submit it for inclusion.
