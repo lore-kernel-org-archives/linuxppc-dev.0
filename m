@@ -1,21 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1198DDDE20
+Return-Path: <biggerbadderben@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id F13CFDDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Jan 2008 00:05:44 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JGwLM-00032x-Q4
-	for linuxppc-embedded@ozlabs.org; Mon, 21 Jan 2008 05:05:40 -0800
-Message-ID: <14997109.post@talk.nabble.com>
-Date: Mon, 21 Jan 2008 05:05:40 -0800 (PST)
-From: greenlean <jmgomez@atc.ugr.es>
-To: linuxppc-embedded@ozlabs.org
-Subject: Generated xilinx linux 2.6  image sections
+	Tue, 22 Jan 2008 02:16:06 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so482743anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Jan 2008 07:16:05 -0800 (PST)
+Message-ID: <4794B732.1080207@gmail.com>
+Date: Mon, 21 Jan 2008 10:16:02 -0500
+From: Ben Warren <biggerbadderben@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bruce_Leonard@selinc.com
+Subject: Re: Endian problem when accessing internel regs on 8347
+References: <OFE90E4633.93F2906B-ON882573D7.002448B6-882573D7.00287256@selinc.com>
+In-Reply-To: <OFE90E4633.93F2906B-ON882573D7.002448B6-882573D7.00287256@selinc.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,66 +26,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hey Bruce,
 
-Hi all, 
+Bruce_Leonard@selinc.com wrote:
+>>>>> __asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync" : "=r" 
+>>>>>           
+> (ret) 
+>   
+>>> : 
+>>>       
+>>>>> "m" (*addr));
+>>>>>           
+>>>> They allow the compiler to use update and/or index mode for the 
+>>>>         
+> memory 
+>   
+>>>> operand.
+>>>>         
+>>> Well that makes sense, U for update and X for index, but I'm not sure 
+>>> they're applicable to this particular instruction and I'm not sure 
+>>>       
+> that 
+>   
+>>> the memory operand makes sense for PowerPC.
+>>>       
+>> Why not?
+>>     
+>
+> Okay, after much digging and experimenting, I'll agree that the memory 
+> operand makes sense.  When I first said that I was thinking of direct 
+> manipulation of memory, which the PPC doesn't support.  (Don't ask, my 
+> brain sometimes goes off into la-la land without me :-> )  Also, update 
+> mode is applicable and makes sense.  But I do still have a problem with 
+> the index mode, though it could be compiler magic.  Here's why: the index 
+> mode of the 'lwz' instruction requires three operands, i.e., 'lwzx 
+> rD,rA,rB', and there's only place holders for two operands.  Is the 
+> compiler smart enough to add the third operand for the index mode?  If so, 
+> what does it put for the third operand?
+>
+> Another question is how does the compiler know which mode to pick?  And 
+> what is the significance of the trailing number?  Some places in the code 
+> have %U1%X1 and others have %U2%X2?  I've found documentation for the # 
+> and ## tokens, but I can't find anything for the %U or %X tokens.
+>
+> Now this has all been very interesting to learn but doesn't solve my 
+> underlying problem which I've finally drilled down to.  At first I thought 
+> in_be32() might be broken because I wasn't getting back the value I knew 
+> to be in the internal register.  I knew I had the address and the mapping 
+> to kernel space correct because I could use in_le32 and get the right 
+> value though it was byte swapped.  The value in the register was 
+> 0xFFFFFFE7 but what I was getting from in_be32 was 0xFFFFFFFF.  Then I 
+> started playing and here's what I found:
+>
+> Register value  in_be32 value
+> 0x12345678              0x1234567
+> 0xff345678              0xff345678
+> 0xffff5678              0xffff5678
+> 0xfffff678              0xfffff678
+> 0xfffffe78              0xffffffff
+> 0xffffff78              0xffffffff
+>
+> This isn't an exhastive list but I tried about twenty values and pretty 
+> much what I found was that if bits 0 through 22 are set to 1 then in_be32 
+> reads 0xffffffff.  I've also tried it at a variety of addresses and the 
+> behaviour is the same.  in_le32 works fine as does in_be16.  I've got no 
+> ideas as to what may be wrong.  I don't want to just arbitrarily point to 
+> that %U1%X1 parameter list, but I get compiler errors if I try to remove 
+> them so I can't prove or disprove it and I can't find any documentation on 
+> it I can't even form a theroy.  Has anyone ever seen anything like this? 
+> Can't anyone suggest anything I can try?
+>   
+Are you sure that all the bits are configured as GPIO? Almost every 
+peripheral pin on these chips is muxed at least two ways. Maybe some of 
+the bits that you think are GPIO are configured as some other bus, 
+possibly explaining goofy behavior and perceived volatility of data. 
+This is pretty well-vetted code on a reasonably mature product, and in 
+my experience it's very rarely the tools ...
 
-I'm trying to boot the 2.6 xilinx kernel downloaded from their git server in
-the XUPV2P board I'm really having troubles (I can't see anything in the
-minicom console terminal). I'm not seeing anything, neither the ucompressing
-kernel string nor the prompt with the memory addresses that kernel prompt at
-first time, so I have started to distrust of anything. 
+Just a thought.
 
-When I download the kernel using xmd, I see:
-
-XMD% dow imagen_UART16550_ml300.elf
-        section, .text: 0x00400000-0x0040387b
-        section, .data: 0x00404000-0x004e6fff
-        section, .bss: 0x004e7000-0x004e919f
-Downloaded Program imagen_UART16550_ml300.elf
-Setting PC with Program Start Address 0x00400000
-
-and when I download some of the TestApp generated by EDK I see:
-
-XMD% dow perif.elf
-        section, .vectors: 0xfffe0000-0xfffe20c3
-        section, .text: 0x10000000-0x10003b7b
-        section, .init: 0x10003b7c-0x10003b9f
-        section, .fini: 0x10003ba0-0x10003bbf
-        section, .boot0: 0xfffe20c4-0xfffe20d3
-        section, .boot: 0xfffffffc-0xffffffff
-        section, .rodata: 0x10003bc0-0x10004111
-        section, .sdata2: 0x10004114-0x10004113
-        section, .sbss2: 0x10004114-0x10004113
-        section, .data: 0x10004114-0x10004243
-        section, .got: 0x10004244-0x10004243
-        section, .got1: 0x10004244-0x10004243
-        section, .got2: 0x10004244-0x1000425f
-        section, .ctors: 0x10004260-0x10004267
-        section, .dtors: 0x10004268-0x1000426f
-        section, .fixup: 0x10004270-0x1000426f
-        section, .eh_frame: 0x10004270-0x10004277
-        section, .jcr: 0x10004278-0x1000427b
-        section, .gcc_except_table: 0x1000427c-0x100042
-        section, .sdata: 0x1000427c-0x10004293
-        section, .sbss: 0x10004294-0x100042a3
-        section, .bss: 0x100042a4-0x10004473
-        section, .stack: 0x10004474-0x1000647f
-        section, .heap: 0x10006480-0x1000847f
-Downloaded Program perif.elf
-Setting PC with Program Start Address 0xfffffffc
-
-Does anybody know why the kernel elf don't have a boot section like the
-TestApp generated by EDK?
-
-I suppossed this is because the image kernel is compressed, but despite
-beeing compressed it should have a boot section or something similar ??? 
-It's right that the kernel start address is set to the 0x00400000??
-
-Or does the section .text  contains all the kernel code to uncompresse the
-code of the kernel??
-
-
-
--- 
-View this message in context: http://www.nabble.com/Generated-xilinx-linux-2.6--image-sections-tp14997109p14997109.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+regards,
+Ben
