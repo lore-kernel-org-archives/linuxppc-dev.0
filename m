@@ -1,23 +1,22 @@
 Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Received: from outbound10-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2CF03DDE11
+	by ozlabs.org (Postfix) with ESMTP id 89B29DDE2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Jan 2008 05:42:35 +1100 (EST)
+	Tue, 22 Jan 2008 05:46:17 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: Xilinx XPS_LL_TEMAC vs PLB_TEMAC
-Date: Mon, 21 Jan 2008 10:42:23 -0800
-In-Reply-To: <BAY115-W344A18C61627B3075C6281B23D0@phx.gbl>
-References: <BAY115-W17ECE16AB6FA79B2D4DBBDB23D0@phx.gbl><440abda90801202354l5a0ce4caq382af5991e36f775@mail.gmail.com>
-	<BAY115-W344A18C61627B3075C6281B23D0@phx.gbl>
+Subject: RE: Generated xilinx linux 2.6  image sections
+Date: Mon, 21 Jan 2008 10:45:48 -0800
+In-Reply-To: <14997109.post@talk.nabble.com>
+References: <14997109.post@talk.nabble.com>
 From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>,
-	"David Baird" <dhbaird@gmail.com>, <linuxppc-embedded@ozlabs.org>
-Message-Id: <20080121184228.931C2F4005D@mail122-dub.bigfish.com>
+To: "greenlean" <jmgomez@atc.ugr.es>,
+	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20080121184553.569BF179805C@mail212-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,82 +27,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Basically, git.xilinx.com has a tree with most of the xilinx-related
-support already integrated and ported forward to a current kernel.  It
-also includes ongoing work to unify microblaze and powerpc device
-drivers through flat device trees.
+The testapps are generated using a different linker script.
 
-See:
-http://www.mail-archive.com/linuxppc-embedded@ozlabs.org/msg28690.html
-
-To use the git.xilinx.com tree you should *not* generate the driver code
-directly into the Linux tree.  Instead, you should generate the driver
-code in a dummy directory and copy
-arch/ppc/platforms/4xx/xparameters_ml*.h into the kernel tree.
-
-The BSP generation process is designed older 2.6.10-era kernels and will
-not work with recent kernels. =20
+Based on what you sent out, it looks like your EDK design has a memory
+at 0x10000000, but this is
+not reflected in the linux image you've generated.  This makes me
+suspect that you haven't generated the BSP and copied the appropriate
+xparameters file over xparameters_xup.h (assuming you are using
+CONFIG_XILINX_XUPV2P).
 
 Steve
 
 > -----Original Message-----
 > From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
 [mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Mohammad
-Sadegh Sadri
-> Sent: Monday, January 21, 2008 12:54 AM
-> To: David Baird; linuxppc-embedded@ozlabs.org
-> Subject: RE: Xilinx XPS_LL_TEMAC vs PLB_TEMAC
->=20
-> thanks for you reply david,
->=20
-> As far as I know the Linux driver for Xilinx PLB TEMAC was two parts :
-1- adapter.c and 2- the rest
-> of the driver files
->=20
-> Only adapter.c was really a linux related file and the rest of the
-files were Xilinx generic driver
-> code for PLB TEMAC.
->=20
-> correct?
->=20
-> then now, I know EDK 9.2 generates the needed Linux support package
-and needed related files, so if
-> this is the case can we use these files as the needed driver in our
-linux kernel?
->=20
-> by the way, i did never hear about this git repository before...can
-you describe us, where is it and
-> how we can access it and which projects are now hosted by it?
+> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of greenlean
+> Sent: Monday, January 21, 2008 5:06 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Generated xilinx linux 2.6 image sections
 >=20
 >=20
-> thanks
+> Hi all,
+>=20
+> I'm trying to boot the 2.6 xilinx kernel downloaded from their git
+server in
+> the XUPV2P board I'm really having troubles (I can't see anything in
+the
+> minicom console terminal). I'm not seeing anything, neither the
+ucompressing
+> kernel string nor the prompt with the memory addresses that kernel
+prompt at
+> first time, so I have started to distrust of anything.
+>=20
+> When I download the kernel using xmd, I see:
+>=20
+> XMD% dow imagen_UART16550_ml300.elf
+>         section, .text: 0x00400000-0x0040387b
+>         section, .data: 0x00404000-0x004e6fff
+>         section, .bss: 0x004e7000-0x004e919f
+> Downloaded Program imagen_UART16550_ml300.elf
+> Setting PC with Program Start Address 0x00400000
+>=20
+> and when I download some of the TestApp generated by EDK I see:
+>=20
+> XMD% dow perif.elf
+>         section, .vectors: 0xfffe0000-0xfffe20c3
+>         section, .text: 0x10000000-0x10003b7b
+>         section, .init: 0x10003b7c-0x10003b9f
+>         section, .fini: 0x10003ba0-0x10003bbf
+>         section, .boot0: 0xfffe20c4-0xfffe20d3
+>         section, .boot: 0xfffffffc-0xffffffff
+>         section, .rodata: 0x10003bc0-0x10004111
+>         section, .sdata2: 0x10004114-0x10004113
+>         section, .sbss2: 0x10004114-0x10004113
+>         section, .data: 0x10004114-0x10004243
+>         section, .got: 0x10004244-0x10004243
+>         section, .got1: 0x10004244-0x10004243
+>         section, .got2: 0x10004244-0x1000425f
+>         section, .ctors: 0x10004260-0x10004267
+>         section, .dtors: 0x10004268-0x1000426f
+>         section, .fixup: 0x10004270-0x1000426f
+>         section, .eh_frame: 0x10004270-0x10004277
+>         section, .jcr: 0x10004278-0x1000427b
+>         section, .gcc_except_table: 0x1000427c-0x100042
+>         section, .sdata: 0x1000427c-0x10004293
+>         section, .sbss: 0x10004294-0x100042a3
+>         section, .bss: 0x100042a4-0x10004473
+>         section, .stack: 0x10004474-0x1000647f
+>         section, .heap: 0x10006480-0x1000847f
+> Downloaded Program perif.elf
+> Setting PC with Program Start Address 0xfffffffc
+>=20
+> Does anybody know why the kernel elf don't have a boot section like
+the
+> TestApp generated by EDK?
+>=20
+> I suppossed this is because the image kernel is compressed, but
+despite
+> beeing compressed it should have a boot section or something similar
+???
+> It's right that the kernel start address is set to the 0x00400000??
+>=20
+> Or does the section .text  contains all the kernel code to uncompresse
+the
+> code of the kernel??
 >=20
 >=20
-> > Date: Mon, 21 Jan 2008 00:54:30 -0700
-> > From: dhbaird@gmail.com
-> > To: mamsadegh@hotmail.com
-> > Subject: Re: Xilinx XPS_LL_TEMAC vs PLB_TEMAC
-> >
-> > On Jan 21, 2008 12:36 AM, Mohammad Sadegh Sadri
-<mamsadegh@hotmail.com> wrote:
-> > > As you know Xilinx PLB TEMAC is a module which connects Hard TEMAC
-in
-> > > Virtex-4 FX devices to PLB bus,
-> > > now, in the new release of EDK , EDK 9.2 Xilinx has added a new
-interface
-> > > core , which is called XPS_LL_TEMAC and has a different structure
-than
-> > > normal PLB TEMAC. spacially it has some additional data transfer
-buses.
-> > >
-> > > Now the question is,... is there any linux driver available for
-this new
-> > > core?
-> >
-> > Yes there is, but I had to use the git sources at:
-> >
-> > git.xilinx.com
 >=20
+> --
+> View this message in context:
+http://www.nabble.com/Generated-xilinx-linux-2.6--image-sections-
+> tp14997109p14997109.html
+> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
 >=20
-> ________________________________
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
