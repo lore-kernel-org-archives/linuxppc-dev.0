@@ -6,8 +6,8 @@ In-Reply-To: <0a87a8672c76341044ebb0231ff0c1fba4e82c36.1200894155.git.michael@el
 References: <2949748ba6ad7e14f0768ac3889267e42c050d7a.1200894155.git.michael@ellerman.id.au>
 	<0a87a8672c76341044ebb0231ff0c1fba4e82c36.1200894155.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Mon, 21 Jan 2008 17:21:19 +1100
-Message-Id: <1200896479.7222.109.camel@pasglop>
+Date: Mon, 21 Jan 2008 17:21:36 +1100
+Message-Id: <1200896496.7222.111.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
 	cbe-oss-dev@ozlabs.org
@@ -27,6 +27,8 @@ On Mon, 2008-01-21 at 16:42 +1100, Michael Ellerman wrote:
 > store the direct DMA offset.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
 >  arch/powerpc/platforms/cell/iommu.c |   12 +++++++-----
