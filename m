@@ -1,21 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7DE99DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:10:18 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] autodetect serial console on efika
-References: <20070331150823.GA25421@aepfle.de>
-	<20080121152900.GA8664@aepfle.de>
-Date: Mon, 21 Jan 2008 17:09:45 +0100
-In-Reply-To: <20080121152900.GA8664@aepfle.de> (Olaf Hering's message of "Mon\,
-	21 Jan 2008 16\:29\:00 +0100")
-Message-ID: <jelk6jp3cm.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-107-backup.nerim.net [62.4.16.107])
+	by ozlabs.org (Postfix) with ESMTP id A44A9DDE2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:10:27 +1100 (EST)
+Date: Mon, 21 Jan 2008 17:10:25 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [i2c] [PATCH 19 3/5] Clean up error returns
+Message-ID: <20080121171025.524dc465@hyperion.delvare>
+In-Reply-To: <9e4733910801200739x502d5407x85f0d950ace80bee@mail.gmail.com>
+References: <20080112024737.7023.61680.stgit@terra.home>
+	<20080112024743.7023.23630.stgit@terra.home>
+	<20080120120730.06dd8a7f@hyperion.delvare>
+	<9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
+	<9e4733910801200739x502d5407x85f0d950ace80bee@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering <olaf@aepfle.de> writes:
+Hi Jon,
 
-> +/*
-> + * Per default, input/output-device points to keyboard/screen
-> + * If no card is installed, the built-in serial port is used as a fallback.
-> + * But unfortunately, the firmware does not connect /chosen/{stdin,stdout}
-> + * the the built-in serial node. Instead, a /failsafe node is created.
+On Sun, 20 Jan 2008 10:39:43 -0500, Jon Smirl wrote:
+> Here' s a version with the compares to zero switched to NO_IRQ. If I
+> understand how NO_IRQ works it is the correct change. My understanding
+> is that under ppc IRQ zero was legal and NO_IRQ was -1. But then the
+> whole kernel switched to NO_IRQ = zero. Powerpc updated to NO_IRQ=0
+> and used virtual IRQs to move a physical IRQ 0 to another IRQ number.
+> ppc was not changed. This driver does not appear to have been updated
+> to track this global change since it didn't initially use the NO_IRQ
+> define everywhere.
 
-s/the the/to the/
+As I have already applied the part of this patch that preserves error
+values in error paths, can you please send an incremental patch that
+only fixes the IRQ issues? These are separate issues so it's better to
+have separate patches anyway.
 
-Andreas.
-
+Thanks,
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Jean Delvare
