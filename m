@@ -1,21 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-107-backup.nerim.net [62.4.16.107])
-	by ozlabs.org (Postfix) with ESMTP id A44A9DDE2B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:10:27 +1100 (EST)
-Date: Mon, 21 Jan 2008 17:10:25 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [i2c] [PATCH 19 3/5] Clean up error returns
-Message-ID: <20080121171025.524dc465@hyperion.delvare>
-In-Reply-To: <9e4733910801200739x502d5407x85f0d950ace80bee@mail.gmail.com>
-References: <20080112024737.7023.61680.stgit@terra.home>
-	<20080112024743.7023.23630.stgit@terra.home>
-	<20080120120730.06dd8a7f@hyperion.delvare>
-	<9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
-	<9e4733910801200739x502d5407x85f0d950ace80bee@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 859EBDDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 03:22:27 +1100 (EST)
+Date: Mon, 21 Jan 2008 10:19:54 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH 05/10] powerpc: Add crash kernel support for 85xx
+In-Reply-To: <20071122154619.GA26471@xyzzy.farnsworth.org>
+Message-ID: <Pine.LNX.4.64.0801211018540.14428@blarg.am.freescale.net>
+References: <20071122154619.GA26471@xyzzy.farnsworth.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+On Thu, 22 Nov 2007, Dale Farnsworth wrote:
 
-On Sun, 20 Jan 2008 10:39:43 -0500, Jon Smirl wrote:
-> Here' s a version with the compares to zero switched to NO_IRQ. If I
-> understand how NO_IRQ works it is the correct change. My understanding
-> is that under ppc IRQ zero was legal and NO_IRQ was -1. But then the
-> whole kernel switched to NO_IRQ = zero. Powerpc updated to NO_IRQ=0
-> and used virtual IRQs to move a physical IRQ 0 to another IRQ number.
-> ppc was not changed. This driver does not appear to have been updated
-> to track this global change since it didn't initially use the NO_IRQ
-> define everywhere.
+> Add the ability to build a ppc_85xx kernel to run at a physical
+> address of 32MB.
+>
+> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> ---
+>  arch/powerpc/Kconfig                 |    2 +-
+>  arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++++++++++++++-----
+>  arch/powerpc/mm/fsl_booke_mmu.c      |    6 +++---
+>  3 files changed, 22 insertions(+), 9 deletions(-)
+>
 
-As I have already applied the part of this patch that preserves error
-values in error paths, can you please send an incremental patch that
-only fixes the IRQ issues? These are separate issues so it's better to
-have separate patches anyway.
+applied. (w/o Kconfig since this is useful for other purposes).
 
-Thanks,
--- 
-Jean Delvare
+-k
