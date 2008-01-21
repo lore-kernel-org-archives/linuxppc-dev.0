@@ -1,21 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <r.marek@assembler.cz>
+Received: from ms.trustica.cz (ms.trustica.cz [82.208.32.68])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BD8D0DDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 05:05:27 +1100 (EST)
-Date: Mon, 21 Jan 2008 12:04:52 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches for 2.6.25
-Message-ID: <20080121180452.GA4289@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0801211041100.14676@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0801211041100.14676@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "ms.trustica.cz", Issuer "www.trustica.cz" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 11702DDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jan 2008 22:17:00 +1100 (EST)
+Message-ID: <479478C7.5060807@assembler.cz>
+Date: Mon, 21 Jan 2008 11:49:43 +0100
+From: Rudolf Marek <r.marek@assembler.cz>
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [i2c] [PATCH 0/3] i2c: Use the standard, alias-based device/driver
+	matching scheme
+References: <20080121112517.6fe35a89@hyperion.delvare>
+In-Reply-To: <20080121112517.6fe35a89@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,11 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 21, 2008 at 10:43:11AM -0600, Kumar Gala wrote:
-> I'm sure I missed some patches for 2.6.25, so please point any out that
-> people would like to see get in.
+Hi Jean,
 
-How about Jochen Friedrich's 8xx cleanup patches that were posted
-recently?
+> Note: all the arm and powerpc stuff is untested.
 
--Scott
+We at http://sysgo.com have some demo server, where you can access embedded 
+systems remotely (via VNC to a server with cross tools (ELinOS)  + serial console),
+there is 2.6.22 kernel, but I think the i2c core can be replaced. I think some 
+PPC and ARMs are connected there. I will ask if you can get access to it if you 
+are interested.
+
+Thanks,
+
+Rudolf
