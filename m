@@ -1,21 +1,10 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
-	[62.4.17.102]) by ozlabs.org (Postfix) with ESMTP id 86EC2DDDF4
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 21:09:55 +1100 (EST)
-Date: Tue, 22 Jan 2008 11:09:51 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 2/3] i2c: Convert all new-style drivers to use module
-	aliasing
-Message-ID: <20080122110951.6d896b2b@hyperion.delvare>
-In-Reply-To: <9e4733910801210850j39b9d51fy706b58ca15805f35@mail.gmail.com>
-References: <20080121112517.6fe35a89@hyperion.delvare>
-	<20080121114139.3aaa111a@hyperion.delvare>
-	<9e4733910801210850j39b9d51fy706b58ca15805f35@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Linux I2C <i2c@lm-sensors.org>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1200999872.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/4] Search for and publish cell OF platform devices earlier
+Date: Tue, 22 Jan 2008 22:04:39 +1100 (EST)
+Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +14,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+Currently cell publishes OF devices at device_initcall() time, which
+means the earliest a driver can bind to a device is also device_initcall()
+time. We have a driver we want to register before other devices, so
+publish the devices at subsys_initcall() time.
 
-On Mon, 21 Jan 2008 11:50:13 -0500, Jon Smirl wrote:
-> In my version of these patches new style drivers could be loaded with
-> both the driver_name/name scheme and the modalias. In these patches
-> new style drivers can only be loaded via modalias. Is that what you
-> intended? I'm all for making new style driver only use the modalias
-> scheme.
+This should not cause any behaviour change for existing drivers, as they
+are still bound at device_initcall() time.
 
-Yes, this is what I intended. I see no point in having two ways to
-achieve the same result, it makes things more complex, more costly and
-possibly confusing.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/setup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I would reconsider if someone points out a very good reason to keep both
-schemes in parallel.
-
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index e6534b5..a7f609b 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -98,7 +98,7 @@ static int __init cell_publish_devices(void)
+ 	}
+ 	return 0;
+ }
+-machine_device_initcall(cell, cell_publish_devices);
++machine_subsys_initcall(cell, cell_publish_devices);
+ 
+ static void cell_mpic_cascade(unsigned int irq, struct irq_desc *desc)
+ {
 -- 
-Jean Delvare
+1.5.2.rc1.1884.g59b20
