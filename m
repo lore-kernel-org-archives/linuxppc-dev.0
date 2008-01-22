@@ -1,19 +1,21 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 90B81DDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:01:48 +1100 (EST)
-Date: Tue, 22 Jan 2008 16:12:39 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Masakazu Mokuno <mokuno@sm.sony.co.jp>
-Subject: Re: [PATCH 0/6] PS3: gelic: gelic updates for 2.6.25
-Message-ID: <20080122211239.GC3206@tuxdriver.com>
-References: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>
-Cc: netdev@vger.kernel.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 1A236DDF60
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:02:42 +1100 (EST)
+Message-Id: <FE3EA513-0531-422C-B35D-918E5EBD93EB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <4796605B.2000807@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] Add docs for Freescale DMA & DMA channel device
+	tree nodes
+Date: Tue, 22 Jan 2008 16:02:22 -0600
+References: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
+	<4796605B.2000807@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 13, 2007 at 07:38:28PM +0900, Masakazu Mokuno wrote:
 
-> Here is a set of updates for PS3 gelic network driver.
-> This patch set requires other patches which were already submitted by
-> Geert (http://marc.info/?l=linux-kernel&m=119626095605487).
-> 
-> 	[1] PS3: gelic: Fix the wrong dev_id passed
-> 	[2] PS3: gelic: Add endianness macros
-> 	[3] PS3: gelic: Code cleanup
-> 	[4] PS3: gelic: Remove duplicated ethtool handers
-> 	[5] PS3: gelic: Add support for port link status
-> 	[6] PS3: gelic: Add support for dual network interface
-> 
-> This is also a set of prerequisite for new wireless driver for PS3, which
-> I'll submit later. 
+On Jan 22, 2008, at 3:30 PM, Timur Tabi wrote:
 
-These seem to not have been applied, but I couldn't find any stated
-reason.  Did they just get lost?  Withdrawn?
+> Kumar Gala wrote:
+>> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+>> Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> Guys please review and make sure I got all your previous comments  
+>> fixed
+>> up.  I've added cell-index. and the examples should represent real  
+>> HW.
+>> Documentation/powerpc/booting-without-of.txt |  128 ++++++++++++++++ 
+>> ++++++++++
+>> 1 files changed, 128 insertions(+), 0 deletions(-)
+>> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+>> Documentation/powerpc/booting-without-of.txt
+>> index da98154..3584c33 100644
+>> --- a/Documentation/powerpc/booting-without-of.txt
+>> +++ b/Documentation/powerpc/booting-without-of.txt
+>> @@ -2615,6 +2615,134 @@ platforms are moved over to use the  
+>> flattened-device-tree model.
+>>        - clock-frequency  : The frequency of the input clock, which  
+>> typically
+>>                             comes from an on-board dedicated  
+>> oscillator.
+>> +    * Freescale 83xx DMA Controller
+>> +
+>> +    Freescale PowerPC 83xx have on chip general purpose DMA  
+>> controllers.
+>> +
+>> +    Required properties:
+>> +
+>> +    - compatible        : compatible list, contains 2 entries,  
+>> first is
+>> +			 "fsl,CHIP-dma", where CHIP is the processor
+>> +			 (mpc8349, mpc8360, etc.) and the second is
+>> +			 "fsl,elo-dma"
+>> +    - reg               : <registers mapping for DMA general  
+>> status reg>
+>> +    - ranges 		: Should be defined as specified in 1) to describe  
+>> the
+>> +			  DMA controller channels.
+>
+> What does "Should be defined as specified in 1)" mean?
 
-Will these be applied?  There is a wireless patch that depends on them.
-If not, will the wireless portion be refactored to not require these
-patches?
+Its referring to section 1 of the doc on ranges.  Other nodes use this  
+description for ranges. (soc, muram)
 
-Thanks,
+>> +    - cell-index        : controller index.  0 for controller @  
+>> 0x8100
+>
+> This should be more generic.  I believe for each of our SoCs, we  
+> designation one DMA controller to be "DMA Controller 1", and that  
+> one should have a cell-index of "0".
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+Ok, on 83xx that controller is always at offset 0x8100.
+
+- k
