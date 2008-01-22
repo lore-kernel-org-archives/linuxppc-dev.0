@@ -1,33 +1,20 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F4D8DDE24
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:11:03 +1100 (EST)
-Date: Tue, 22 Jan 2008 23:10:58 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080122231058.GB866@csn.ul.ie>
-References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de>
-	<20080122195448.GA15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-	<20080122212654.GB15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
-	<20080122225046.GA866@csn.ul.ie>
-	<Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E9A7ADDE1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:11:34 +1100 (EST)
+Date: Wed, 23 Jan 2008 10:11:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [PATCH] [POWERPC]: constify function pointer tables
+Message-Id: <20080123101118.fcb2136b.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0801222042360.5722@fbirervta.pbzchgretzou.qr>
+References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
+	<Pine.LNX.4.64.0801222042360.5722@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,69 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (22/01/08 14:57), Christoph Lameter didst pronounce:
-> On Tue, 22 Jan 2008, Mel Gorman wrote:
-> 
-> > > > Whatever this was a problem fixed in the past or not, it's broken again now
-> > > > :( . It's possible that there is a __GFP_THISNODE that can be dropped early
-> > > > at boot-time that would also fix this problem in a way that doesn't
-> > > > affect runtime (like altering cache_grow in my patch does).
-> > > 
-> > > The dropping of GFP_THISNODE has the same effect as your patch. 
-> > 
-> > The dropping of it totally? If so, this patch might fix a boot but it'll
-> > potentially be a performance regression on NUMA machines that only have
-> > nodes with memory, right?
-> 
-> No the dropping during early allocations.,
-> 
+--Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We can live with that if the machine otherwise survives during tests.
-They are kicked off at the moment with CONFIG_SLAB_DEBUG set but the point
-is moot if the patch doesn't work for Olaf. Am still waiting to hear if
-the two patches in combination work for him.
+Hi Jan,
 
-> > o 0
-> > o 2
-> > Nodes with regular memory
-> > o 2
-> > Current running CPU 0 is associated with node 0
-> > Current node is 0
-> > 
-> > So node 2 has regular memory but it's trying to use node 0 at a glance.
-> > I've attached the patch I used against 2.6.24-rc8. It includes the revert.
-> 
-> We need the current processor to be attached to a node that has 
-> memory. We cannot fall back that early because the structures for the 
-> other nodes do not exist yet.
-> 
+Good idea ... but ...
 
-Or bodge it early in the boot process so that a node with memory is
-always used.
+On Tue, 22 Jan 2008 20:43:09 +0100 (CET) Jan Engelhardt <jengelh@computergm=
+bh.de> wrote:
+>
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/set=
+up-common.c
+> index 2de00f8..57d4f28 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -296,7 +296,7 @@ static void c_stop(struct seq_file *m, void *v)
+>  {
+>  }
+> =20
+> -struct seq_operations cpuinfo_op =3D {
+> +const struct seq_operations cpuinfo_op =3D {
 
-> > Online nodes
-> > o 0
-> > o 2
-> > Nodes with regular memory
-> > o 2
-> > Current running CPU 0 is associated with node 0
-> > Current node is 0
-> >  o kmem_list3_init
-> 
-> This needs to be node 2.
-> 
+This is declared non const in fs/proc/proc_misc.c (one of the reasons why
+it should be decalred in a header file ...)
 
-Rather it should be 2. I'll admit the physical setup of this machine is
-.... less than ideal but clearly it's something that can happen even if
-it's a bad idea.
+The others look good, though.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> > [c0000000005c3b40] c0000000000dadec .cache_grow+0x7c/0x338
-> > [c0000000005c3c00] c0000000000db54c .fallback_alloc+0x1c0/0x224
-> 
-> Fallback during bootstrap.
-> 
+--Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD
+Content-Type: application/pgp-signature
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHlngjTgG2atn1QN8RApPEAJ4wxQD+BeKGt/R1vMRvzajrwCguJQCeIn3X
+9JxPM+zUmOmdBl4jI3xBcXs=
+=st+D
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD--
