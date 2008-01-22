@@ -1,30 +1,30 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E4975DDF18
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 05:46:13 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0MIk9HC027640
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 13:46:09 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0MIk7DY045284
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 11:46:08 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0MIk4GP012074
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 11:46:04 -0700
-Message-ID: <479639EA.9050409@austin.ibm.com>
-Date: Tue, 22 Jan 2008 12:46:02 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 57E0EDDE3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 06:09:15 +1100 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 47C10213573
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 20:11:31 +0100 (CET)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id 88376902EC
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 20:09:13 +0100 (CET)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id 5VMbM06M9ANW for <linuxppc-dev@ozlabs.org>;
+	Tue, 22 Jan 2008 20:09:12 +0100 (CET)
+Received: from ibook.aepfle.de (DSL01.83.171.173.38.ip-pool.NEFkom.net
+	[83.171.173.38]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 20:09:12 +0100 (CET)
+Date: Tue, 22 Jan 2008 20:09:39 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3] create modalias file in sysfs for bus of_platform
+Message-ID: <20080122190939.GA14124@aepfle.de>
+References: <20080122142109.GA12967@aepfle.de>
+	<20080122144053.GA13019@aepfle.de>
 MIME-Version: 1.0
-To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
-Subject: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
-	Michael Strosaker <strosake@us.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080122144053.GA13019@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,17 +34,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following series of patches implement a basic framework
-for hypervisor-assisted dump. The very first patch provides 
-documentation explaining what this is   :-)  . Yes, its supposed
-to be an improvement over kdump.
 
-A list of open issues / todo list is included in the documentation.
-It also appears that the not-yet-released firmware versions this was tested 
-on are still, ahem, incomplete; this work is also pending.
+Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
+of modules. modalias files are already present for many other bus types.
 
-I have included most of the changes requested. Although, I did find
-one or two, fixed in a later patch file rather than the first location
-they appeared at.
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
--- Manish & Linas.
+---
+ drivers/of/device.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -86,7 +86,20 @@ static ssize_t dev_show_devspec(struct d
+ 	return sprintf(buf, "%s", ofdev->node->full_name);
+ }
+ 
++static ssize_t dev_show_modalias(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct of_device *ofdev = to_of_device(dev);
++	ssize_t len = 0;
++
++	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE - 2);
++	buf[len] = '\n';
++	buf[len+1] = 0;
++	return len+1;
++}
++
+ static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
++static DEVICE_ATTR(modalias, S_IRUGO, dev_show_modalias, NULL);
+ 
+ /**
+  * of_release_dev - free an of device structure when all users of it are finished.
+@@ -116,6 +129,11 @@ int of_device_register(struct of_device 
+ 		return rc;
+ 
+ 	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
++	if (rc) {
++		device_unregister(&ofdev->dev);
++		return rc;
++	}
++	rc = device_create_file(&ofdev->dev, &dev_attr_modalias);
+ 	if (rc)
+ 		device_unregister(&ofdev->dev);
+ 
+@@ -126,6 +144,7 @@ EXPORT_SYMBOL(of_device_register);
+ void of_device_unregister(struct of_device *ofdev)
+ {
+ 	device_remove_file(&ofdev->dev, &dev_attr_devspec);
++	device_remove_file(&ofdev->dev, &dev_attr_modalias);
+ 	device_unregister(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_unregister);
