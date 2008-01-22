@@ -1,32 +1,31 @@
 Return-Path: <ahuja@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C1692DDE18
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 06:27:04 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0MJR1oi028398
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:27:01 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0MJR13b148648
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:27:01 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0MJR0Sn015549
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:27:01 -0500
-Message-ID: <47964382.1030305@austin.ibm.com>
-Date: Tue, 22 Jan 2008 13:26:58 -0600
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9F485DDEBC
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 06:33:38 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0MJZQ3e027531
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:35:26 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0MJXZtq221152
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:33:35 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0MJXY7I014939
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:33:35 -0500
+Message-ID: <4796450C.2000704@austin.ibm.com>
+Date: Tue, 22 Jan 2008 13:33:32 -0600
 From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
 To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>,
 	linasvepstas@gmail.com
-Subject: [PATCH 1/8] pseries: phyp dump: Docmentation
+Subject: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
 References: <4796401D.5010907@austin.ibm.com>
 In-Reply-To: <4796401D.5010907@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Larry Kessler <lkessler@us.ibm.com>,
-	Michael Strosaker <strosake@us.ibm.com>
+Cc: lkessler@us.ibm.com, strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,146 +35,160 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Basic documentation for hypervisor-assisted dump.
+
+Check to see if there actually is data from a previously
+crashed kernel waiting. If so, Allow user-sapce tools to
+grab the data (by reading /proc/kcore). When user-space 
+finishes dumping a section, it must release that memory
+by writing to sysfs. For example,
+
+  echo "0x40000000 0x10000000" > /sys/kernel/release_region
+
+will release 256MB starting at the 1GB.  The released memory
+becomes free for general use.
 
 Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
-Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
 
-----
- Documentation/powerpc/phyp-assisted-dump.txt |  129 +++++++++++++++++++++++++++
- 1 file changed, 129 insertions(+)
+------
+ arch/powerpc/platforms/pseries/phyp_dump.c |  102 +++++++++++++++++++++++++++--
+ 1 file changed, 96 insertions(+), 6 deletions(-)
 
-Index: 2.6.24-rc5/Documentation/powerpc/phyp-assisted-dump.txt
+Index: 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6.24-rc5/Documentation/powerpc/phyp-assisted-dump.txt	2008-01-07 18:05:46.000000000 -0600
-@@ -0,0 +1,129 @@
+--- 2.6.24-rc5.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-01-18 07:37:33.000000000 -0600
++++ 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c	2008-01-18 22:43:00.000000000 -0600
+@@ -12,17 +12,24 @@
+  */
+ 
+ #include <linux/init.h>
++#include <linux/kobject.h>
+ #include <linux/mm.h>
++#include <linux/of.h>
+ #include <linux/pfn.h>
+ #include <linux/swap.h>
++#include <linux/sysfs.h>
+ 
+ #include <asm/page.h>
+ #include <asm/phyp_dump.h>
++#include <asm/rtas.h>
+ 
+ /* Global, used to communicate data between early boot and late boot */
+ static struct phyp_dump phyp_dump_global;
+ struct phyp_dump *phyp_dump_info = &phyp_dump_global;
+ 
++static int ibm_configure_kernel_dump;
 +
-+                   Hypervisor-Assisted Dump
-+                   ------------------------
-+                       November 2007
++/* ------------------------------------------------- */
+ /**
+  * release_memory_range -- release memory previously lmb_reserved
+  * @start_pfn: starting physical frame number
+@@ -52,20 +59,103 @@ release_memory_range(unsigned long start
+ 	}
+ }
+ 
+-static int __init phyp_dump_setup(void)
++/* ------------------------------------------------- */
++/**
++ * sysfs_release_region -- sysfs interface to release memory range.
++ *
++ * Usage:
++ *   "echo <start addr> <length> > /sys/kernel/release_region"
++ *
++ * Example:
++ *   "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
++ *
++ * will release 256MB starting at 1GB.
++ */
++static ssize_t
++store_release_region(struct kset *kset, const char *buf, size_t count)
+ {
++	unsigned long start_addr, length, end_addr;
+ 	unsigned long start_pfn, nr_pages;
++	ssize_t ret;
+ 
+-	/* If no memory was reserved in early boot, there is nothing to do */
+-	if (phyp_dump_info->init_reserve_size == 0)
+-		return 0;
++	ret = sscanf(buf, "%lx %lx", &start_addr, &length);
++	if (ret != 2)
++		return -EINVAL;
 +
-+The goal of hypervisor-assisted dump is to enable the dump of
-+a crashed system, and to do so from a fully-reset system, and
-+to minimize the total elapsed time until the system is back
-+in production use.
++	/* Range-check - don't free any reserved memory that
++	 * wasn't reserved for phyp-dump */
++	if (start_addr < phyp_dump_info->init_reserve_start)
++		start_addr = phyp_dump_info->init_reserve_start;
 +
-+As compared to kdump or other strategies, hypervisor-assisted
-+dump offers several strong, practical advantages:
++	end_addr = phyp_dump_info->init_reserve_start +
++			phyp_dump_info->init_reserve_size;
++	if (start_addr+length > end_addr)
++		length = end_addr - start_addr;
 +
-+-- Unlike kdump, the system has been reset, and loaded
-+   with a fresh copy of the kernel.  In particular,
-+   PCI and I/O devices have been reinitialized and are
-+   in a clean, consistent state.
-+-- As the dump is performed, the dumped memory becomes
-+   immediately available to the system for normal use.
-+-- After the dump is completed, no further reboots are
-+   required; the system will be fully usable, and running
-+   in it's normal, production mode on it normal kernel.
++	/* Release the region of memory assed in by user */
++	start_pfn = PFN_DOWN(start_addr);
++	nr_pages = PFN_DOWN(length);
++	release_memory_range (start_pfn, nr_pages);
+ 
+-	/* Release memory that was reserved in early boot */
++	return count;
++}
 +
-+The above can only be accomplished by coordination with,
-+and assistance from the hypervisor. The procedure is
-+as follows:
++static ssize_t
++show_release_region(struct kset * kset, char *buf)
++{
++	return sprintf(buf, "ola\n");
++}
 +
-+-- When a system crashes, the hypervisor will save
-+   the low 256MB of RAM to a previously registered
-+   save region. It will also save system state, system
-+   registers, and hardware PTE's.
++static struct subsys_attribute rr = __ATTR(release_region, 0600,
++					 show_release_region,
++					 store_release_region);
 +
-+-- After the low 256MB area has been saved, the
-+   hypervisor will reset PCI and other hardware state.
-+   It will *not* clear RAM. It will then launch the
-+   bootloader, as normal.
++/* ------------------------------------------------- */
 +
-+-- The freshly booted kernel will notice that there
-+   is a new node (ibm,dump-kernel) in the device tree,
-+   indicating that there is crash data available from
-+   a previous boot. It will boot into only 256MB of RAM,
-+   reserving the rest of system memory.
++static void release_all (void)
++{
++	unsigned long start_pfn, nr_pages;
 +
-+-- Userspace tools will parse /sys/kernel/release_region
-+   and read /proc/vmcore to obtain the contents of memory,
-+   which holds the previous crashed kernel. The userspace
-+   tools may copy this info to disk, or network, nas, san,
-+   iscsi, etc. as desired.
++	/* Release all memory that was reserved in early boot */
+ 	start_pfn = PFN_DOWN(phyp_dump_info->init_reserve_start);
+ 	nr_pages = PFN_DOWN(phyp_dump_info->init_reserve_size);
+ 	release_memory_range(start_pfn, nr_pages);
++}
 +
-+   For Example: the values in /sys/kernel/release-region
-+   would look something like this (address-range pairs).
-+   CPU:0x177fee000-0x10000: HPTE:0x177ffe020-0x1000: /
-+   DUMP:0x177fff020-0x10000000, 0x10000000-0x16F1D370A
++static int __init phyp_dump_setup(void)
++{
++	struct device_node *rtas;
++	const int *dump_header;
++	int header_len = 0;
++	int rc;
 +
-+-- As the userspace tools complete saving a portion of
-+   dump, they echo an offset and size to
-+   /sys/kernel/release_region to release the reserved
-+   memory back to general use.
++	/* If no memory was reserved in early boot, there is nothing to do */
++	if (phyp_dump_info->init_reserve_size == 0)
++		return 0;
 +
-+   An example of this is:
-+     "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
-+   which will release 256MB at the 1GB boundary.
++	/* Return if phyp dump not supported */
++	ibm_configure_kernel_dump = rtas_token("ibm,configure-kernel-dump");
++	if (ibm_configure_kernel_dump == RTAS_UNKNOWN_SERVICE) {
++		release_all();
++		return -ENOSYS;
++	}
 +
-+Please note that the hypervisor-assisted dump feature
-+is only available on Power6-based systems with recent
-+firmware versions.
++	/* Is there dump data waiting for us? */
++	rtas = of_find_node_by_path("/rtas");
++	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
++	if (dump_header == NULL) {
++		release_all();
++		return 0;
++	}
 +
-+Implementation details:
-+----------------------
-+In order for this scheme to work, memory needs to be reserved
-+quite early in the boot cycle. However, access to the device
-+tree this early in the boot cycle is difficult, and device-tree
-+access is needed to determine if there is a crash data waiting.
-+To work around this problem, all but 256MB of RAM is reserved
-+during early boot. A short while later in boot, a check is made
-+to determine if there is dump data waiting. If there isn't,
-+then the reserved memory is released to general kernel use.
-+If there is dump data, then the /sys/kernel/release_region
-+file is created, and the reserved memory is held.
-+
-+If there is no waiting dump data, then all but 256MB of the
-+reserved ram will be released for general kernel use. The
-+highest 256 MB of RAM will *not* be released: this region
-+will be kept permanently reserved, so that it can act as
-+a receptacle for a copy of the low 256MB in the case a crash
-+does occur. See, however, "open issues" below, as to whether
-+such a reserved region is really needed.
-+
-+Currently the dump will be copied from /proc/vmcore to a
-+a new file upon user intervention. The starting address
-+to be read and the range for each data point in provided
-+in /sys/kernel/release_region.
-+
-+The tools to examine the dump will be same as the ones
-+used for kdump.
-+
-+
-+General notes:
-+--------------
-+Security: please note that there are potential security issues
-+with any sort of dump mechanism. In particular, plaintext
-+(unencrypted) data, and possibly passwords, may be present in
-+the dump data. Userspace tools must take adequate precautions to
-+preserve security.
-+
-+Open issues/ToDo:
-+------------
-+ o The various code paths that tell the hypervisor that a crash
-+   occurred, vs. it simply being a normal reboot, should be
-+   reviewed, and possibly clarified/fixed.
-+
-+ o Instead of using /sys/kernel, should there be a /sys/dump
-+   instead? There is a dump_subsys being created by the s390 code,
-+   perhaps the pseries code should use a similar layout as well.
-+
-+ o Is reserving a 256MB region really required? The goal of
-+   reserving a 256MB scratch area is to make sure that no
-+   important crash data is clobbered when the hypervisor
-+   save low mem to the scratch area. But, if one could assure
-+   that nothing important is located in some 256MB area, then
-+   it would not need to be reserved. Something that can be
-+   improved in subsequent versions.
-+
-+ o Still working the kdump team to integrate this with kdump,
-+   some work remains but this would not affect the current
-+   patches.
-+
-+ o Still need to write a shell script, to copy the dump away.
-+   Currently I am parsing it manually.
++	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
++	rc = subsys_create_file(&kernel_subsys, &rr);
++	if (rc) {
++		printk (KERN_ERR "phyp-dump: unable to create sysfs file (%d)\n", rc);
++		release_all();
++		return 0;
++	}
+ 
+ 	return 0;
+ }
+-
+ subsys_initcall(phyp_dump_setup);
