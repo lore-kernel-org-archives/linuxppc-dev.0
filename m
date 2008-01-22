@@ -1,27 +1,19 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1D4B7DDDEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 19:33:07 +1100 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 2552B227BA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 09:35:22 +0100 (CET)
-Received: from localhost (unknown [192.168.1.157])
-	by mail.m-online.net (Postfix) with ESMTP id 0184590259
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 09:33:04 +0100 (CET)
-Received: from localhost ([192.168.3.149])
-	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
-	port 10024) with ESMTP id lgLuUXDhZlWL for <linuxppc-dev@ozlabs.org>;
-	Tue, 22 Jan 2008 09:33:04 +0100 (CET)
-Received: from ibook.aepfle.de (DSL01.83.171.173.38.ip-pool.NEFkom.net
-	[83.171.173.38]) by mail.mnet-online.de (Postfix) with ESMTP
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 09:33:04 +0100 (CET)
-Date: Tue, 22 Jan 2008 09:33:28 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] create modalias file in sysfs for bus vio
-Message-ID: <20080122083328.GA11928@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 07D4EDDDDB
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 20:57:43 +1100 (EST)
+Date: Tue, 22 Jan 2008 20:57:35 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] 8xx: Analogue & Micro Adder875 board support.
+Message-Id: <20080122205735.a9db7507.sfr@canb.auug.org.au>
+In-Reply-To: <20080117223140.GA17300@loki.buserror.net>
+References: <20080117223140.GA17300@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__22_Jan_2008_20_57_35_+1100_B/H_f3px8OTkX21g"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,39 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__22_Jan_2008_20_57_35_+1100_B/H_f3px8OTkX21g
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Create /sys/bus/vio/devices/*/modalias file to allow autoloading
-of modules. modalias files are already present for many other bus types.
+Hi Scott,
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
----
- arch/powerpc/kernel/vio.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Just one small thing.
 
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -296,9 +296,24 @@ static ssize_t devspec_show(struct devic
- 	return sprintf(buf, "%s\n", of_node ? of_node->full_name : "none");
- }
- 
-+static ssize_t modalias_show (struct device *dev, struct device_attribute *attr,
-+			      char *buf)
-+{
-+	struct device_node *of_node = dev->archdata.of_node;
-+	const char *compat;
-+	int i = 0;
-+
-+	if (of_node) {
-+		compat = of_get_property(of_node, "compatible", &i);
-+		i = sprintf (buf, "vio:T%sS%s\n", of_node->type, compat ? compat : "");
-+	}
-+	return i;
-+}
-+
- static struct device_attribute vio_dev_attrs[] = {
- 	__ATTR_RO(name),
- 	__ATTR_RO(devspec),
-+	__ATTR_RO(modalias),
- 	__ATTR_NULL
- };
- 
+On Thu, 17 Jan 2008 16:31:40 -0600 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> +static __initdata struct of_device_id __initdata of_bus_ids[] =3D {
+
+You don't need to mark it __initdata twice ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__22_Jan_2008_20_57_35_+1100_B/H_f3px8OTkX21g
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHlb4VTgG2atn1QN8RAojnAJsHjLhb2Q6Iq8QU0PsPG/zXzEhfTwCdGQ14
+Izsl/yJtFJj5UJuWQcfI4Gc=
+=hJl7
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__22_Jan_2008_20_57_35_+1100_B/H_f3px8OTkX21g--
