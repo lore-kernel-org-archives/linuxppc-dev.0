@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 59B8BDDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:48:06 +1100 (EST)
-Message-ID: <479664AE.9060107@freescale.com>
-Date: Tue, 22 Jan 2008 15:48:30 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] [POWERPC] Add docs for Freescale DMA & DMA channel device
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 3E869DDE3E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:54:04 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so604990anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 13:54:03 -0800 (PST)
+Message-ID: <fa686aa40801221354i53b5e8ebn8fc547b8eea75ebe@mail.gmail.com>
+Date: Tue, 22 Jan 2008 14:54:03 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Add docs for Freescale PowerQUICC SATA device
 	tree nodes
-References: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
-	<4796605B.2000807@freescale.com>
-In-Reply-To: <4796605B.2000807@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.64.0801221536430.25559@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.64.0801221536430.25559@blarg.am.freescale.net>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> On 83xx, all DMA channels share the same interrupt?
+On 1/22/08, Kumar Gala <galak@kernel.crashing.org> wrote:
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |   30 ++++++++++++++++++++++++++
+>  1 files changed, 30 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index 3584c33..387310a 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -2743,6 +2743,36 @@ platforms are moved over to use the flattened-device-tree model.
+>                 };
+>         };
+>
+> +    * Freescale 8xxx/3.0 Gb/s SATA nodes
+> +
+> +    SATA nodes are defined to describe on-chip Serial ATA controllers.
+> +    Each SATA port should have its own node.
+> +
+> +    Required properties:
+> +    - compatible        : compatible list, contains 2 entries, first is
+> +                        "fsl,CHIP-sata", where CHIP is the processor
+> +                        (mpc8315, mpc8379, etc.) and the second is
+> +                        "fsl,pq-sata"
 
-Yes.
+As discussed on IRC, I don't like the approach of trying to define
+generic names for these ip cores.  Too much can change in the future
+to make the definition of the generic type drift over time.  Better to
+always refer to exact chip variants.
 
-> Couldn't we just 
-> specify the same IRQ in each channel's node, so that they look the same 
-> across 83xx, 85xx, and 86xx?
+ie.  Assuming mpc8315 was the first part to contain the sata core; the
+dts should claim "fsl,CHIP-sata","fsl,mpc8315-sata" instead of
+"fsl,CHIP-sata","fsl,pq-sata".
 
-The consensus that I thought we had reached was to let 83xx specify the 
-interrupt in the controller node (to make things simple for a driver 
-using the shared summary register rather than registering four handlers 
-for the same IRQ), but require that it also be in the channel node, and 
-that if there is an interrupt in the controller node, that it be the 
-same as in all the channels.
+It ends up being the same amount of work to support, but it doesn't
+fall into the trap of making stuff up.
 
-> My sound driver doesn't use Extended Mode, 
-> but it does check for "fsl,8610-dma-channel".  I'm thinking that maybe I 
-> should change to to look for "elo" or "eloplus", but it would be nice if 
-> we could make the DMA node for an 86xx SoC compatible with a driver that 
-> expects "fsl,elo-dma-channel".
+Another example; when describing serial ports, we still use an
+*ancient* device to claim compatibility with: "ns16550".  ns16550 is
+specific, not generic, yet everyone still knows what it means.
 
-Sure it'd be nice, but it's not possible without going back in time and 
-convincing the hardware people to make them 100% compatible.
+Cheers,
+g.
 
--Scott
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
