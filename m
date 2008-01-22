@@ -1,19 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0266BDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:51:17 +1100 (EST)
-Date: Wed, 23 Jan 2008 10:51:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 2/3 v3] Add initial iomega StorCenter board port.
-Message-Id: <20080123105111.125f075d.sfr@canb.auug.org.au>
-In-Reply-To: <E1JHRkl-0005e5-RX@jdl.com>
-References: <E1JHRkl-0005e5-RX@jdl.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 743B5DDDF4
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 11:00:15 +1100 (EST)
+Subject: Re: [PATCH] ppc: fix #ifdef-s in mediabay driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <200801230012.38516.bzolnier@gmail.com>
+References: <200801230012.38516.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 10:59:54 +1100
+Message-Id: <1201046394.6807.49.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__23_Jan_2008_10_51_11_+1100_vSYcB7aOiI6_=eS3"
-Cc: linuxppc-dev@ozlabs.org
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__23_Jan_2008_10_51_11_+1100_vSYcB7aOiI6_=eS3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Jon,
+On Wed, 2008-01-23 at 00:12 +0100, Bartlomiej Zolnierkiewicz wrote:
+> * Replace incorrect CONFIG_BLK_DEV_IDE #ifdef in
+>   check_media_bay() by CONFIG_MAC_FLOPPY one.
+> 
+> * Replace incorrect CONFIG_BLK_DEV_IDE #ifdef-s by
+>   CONFIG_BLK_DEV_IDE_PMAC ones.
+> 
+> * check_media_bay() is used only by drivers/block/swim3.c
+>   so make this function available only if CONFIG_MAC_FLOPPY
+>   is defined.
+> 
+> * check_media_bay_by_base() and media_bay_set_ide_infos()
+>   are used only by drivers/ide/ppc/pmac.c so so make these
+>   functions available only if CONFIG_MAC_FLOPPY is defined.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> Ben, IMO this patch is safe for 2.6.24 (assuming that it builds fine :),
+> otherwise I would like to ask for permission to merge it through IDE
+> tree since I have other pending IDE patches depending on this one.
 
-On Tue, 22 Jan 2008 16:37:59 -0600 Jon Loeliger <jdl@jdl.com> wrote:
->
-> +++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
+I'd rather avoid touching 2.6.24 unless it actually fixes a bug or
+regression...
 
-> +extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
+I'm tempted to actually remove all ifdef's ... if you have a media-bay,
+then there are about 99% chances it contains an IDE device, with the
+remaining percent being split with putting a floppy or a battery in. I
+doubt anybody will care building a kernel without the support for these
+and with the mediabay support, and still want to save a handful of bytes
+in that driver.
 
-This clearly needs to be decalred in some header file.  (I know you did
-not introduce it.)  In arch/ppc, it was declared in asm/system.h (but I
-don't know if that is appropriate for arch/powerpc).  Maybe you could do
-a preceeding patch that does this and fixes the other user.
-
-> +static void __init storcenter_init_IRQ(void)
-> +{
-> +	struct mpic *mpic;
-> +	struct device_node *dnp;
-> +	const void *prop;
-> +	int size;
-> +	phys_addr_t paddr;
-> +
-> +	dnp =3D of_find_node_by_type(NULL, "open-pic");
-> +	if (dnp =3D=3D NULL)
-> +		return;
-> +
-> +	prop =3D of_get_property(dnp, "reg", &size);
-> +	paddr =3D (phys_addr_t)of_translate_address(dnp, prop);
-
-What happens of "prop" is NULL?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__23_Jan_2008_10_51_11_+1100_vSYcB7aOiI6_=eS3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHloFzTgG2atn1QN8RAp49AJ9NScaZsdCSCEj7hsV/vHKxFK8kxACeOL76
-esghekdHbjdqIUpyTXJil34=
-=sqYy
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Jan_2008_10_51_11_+1100_vSYcB7aOiI6_=eS3--
+Ben.
