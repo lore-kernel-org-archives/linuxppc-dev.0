@@ -1,18 +1,21 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id C165BDDE3D
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:59:59 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so15857uge.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:59:55 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] ppc: fix #ifdef-s in mediabay driver
-Date: Wed, 23 Jan 2008 00:12:38 +0100
-MIME-Version: 1.0
-Message-Id: <200801230012.38516.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 9D84ADDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:03:48 +1100 (EST)
+Date: Wed, 23 Jan 2008 10:03:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH v3] create modalias file in sysfs for bus of_platform
+Message-Id: <20080123100341.1494e9e7.sfr@canb.auug.org.au>
+In-Reply-To: <20080122190939.GA14124@aepfle.de>
+References: <20080122142109.GA12967@aepfle.de>
+	<20080122144053.GA13019@aepfle.de>
+	<20080122190939.GA14124@aepfle.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__23_Jan_2008_10_03_41_+1100_kqj9WHqoUTdeuOqs"
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,231 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__23_Jan_2008_10_03_41_+1100_kqj9WHqoUTdeuOqs
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Replace incorrect CONFIG_BLK_DEV_IDE #ifdef in
-  check_media_bay() by CONFIG_MAC_FLOPPY one.
+[Adding sparclinux cc]
 
-* Replace incorrect CONFIG_BLK_DEV_IDE #ifdef-s by
-  CONFIG_BLK_DEV_IDE_PMAC ones.
+I withdraw the comment about drivers/macintosh/macio_sysfs.c, I didn't
+realise that it was a whole other bus.
 
-* check_media_bay() is used only by drivers/block/swim3.c
-  so make this function available only if CONFIG_MAC_FLOPPY
-  is defined.
+On Tue, 22 Jan 2008 20:09:39 +0100 Olaf Hering <olaf@aepfle.de> wrote:
+>
+> Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
+> of modules. modalias files are already present for many other bus types.
+>=20
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+>=20
+> ---
+>  drivers/of/device.c |   19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>=20
+> --- a/drivers/of/device.c
+> +++ b/drivers/of/device.c
+> @@ -86,7 +86,20 @@ static ssize_t dev_show_devspec(struct d
+>  	return sprintf(buf, "%s", ofdev->node->full_name);
+>  }
+> =20
+> +static ssize_t dev_show_modalias(struct device *dev,
+> +				struct device_attribute *attr, char *buf)
+> +{
+> +	struct of_device *ofdev =3D to_of_device(dev);
+> +	ssize_t len =3D 0;
+> +
+> +	len =3D of_device_get_modalias(ofdev, buf, PAGE_SIZE - 2);
+> +	buf[len] =3D '\n';
+> +	buf[len+1] =3D 0;
+> +	return len+1;
+> +}
+> +
+>  static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
+> +static DEVICE_ATTR(modalias, S_IRUGO, dev_show_modalias, NULL);
+> =20
+>  /**
+>   * of_release_dev - free an of device structure when all users of it are=
+ finished.
+> @@ -116,6 +129,11 @@ int of_device_register(struct of_device=20
+>  		return rc;
+> =20
+>  	rc =3D device_create_file(&ofdev->dev, &dev_attr_devspec);
+> +	if (rc) {
+> +		device_unregister(&ofdev->dev);
+> +		return rc;
+> +	}
+> +	rc =3D device_create_file(&ofdev->dev, &dev_attr_modalias);
+>  	if (rc)
+>  		device_unregister(&ofdev->dev);
+> =20
+> @@ -126,6 +144,7 @@ EXPORT_SYMBOL(of_device_register);
+>  void of_device_unregister(struct of_device *ofdev)
+>  {
+>  	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+> +	device_remove_file(&ofdev->dev, &dev_attr_modalias);
+>  	device_unregister(&ofdev->dev);
+>  }
+>  EXPORT_SYMBOL(of_device_unregister);
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-* check_media_bay_by_base() and media_bay_set_ide_infos()
-  are used only by drivers/ide/ppc/pmac.c so so make these
-  functions available only if CONFIG_MAC_FLOPPY is defined.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-Ben, IMO this patch is safe for 2.6.24 (assuming that it builds fine :),
-otherwise I would like to ask for permission to merge it through IDE
-tree since I have other pending IDE patches depending on this one.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- drivers/macintosh/mediabay.c   |   46 ++++++++++++++++++-----------------------
- include/asm-powerpc/mediabay.h |   13 ++++++++---
- 2 files changed, 30 insertions(+), 29 deletions(-)
+--Signature=_Wed__23_Jan_2008_10_03_41_+1100_kqj9WHqoUTdeuOqs
+Content-Type: application/pgp-signature
 
-Index: b/drivers/macintosh/mediabay.c
-===================================================================
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -78,12 +78,14 @@ struct media_bay_info {
- 	int				cached_gpio;
- 	int				sleeping;
- 	struct semaphore		lock;
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- 	void __iomem			*cd_base;
--	int 				cd_index;
- 	int				cd_irq;
- 	int				cd_retry;
- #endif
-+#if defined(CONFIG_BLK_DEV_IDE_PMAC) || defined(CONFIG_MAC_FLOPPY)
-+	int 				cd_index;
-+#endif
- };
- 
- #define MAX_BAYS	2
-@@ -91,7 +93,7 @@ struct media_bay_info {
- static struct media_bay_info media_bays[MAX_BAYS];
- int media_bay_count = 0;
- 
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- /* check the busy bit in the media-bay ide interface
-    (assumes the media-bay contains an ide device) */
- #define MB_IDE_READY(i)	((readb(media_bays[i].cd_base + 0x70) & 0x80) == 0)
-@@ -401,7 +403,7 @@ static void poll_media_bay(struct media_
- 				set_mb_power(bay, id != MB_NO);
- 				bay->content_id = id;
- 				if (id == MB_NO) {
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- 					bay->cd_retry = 0;
- #endif
- 					printk(KERN_INFO "media bay %d is empty\n", bay->index);
-@@ -414,9 +416,9 @@ static void poll_media_bay(struct media_
- 	}
- }
- 
-+#ifdef CONFIG_MAC_FLOPPY
- int check_media_bay(struct device_node *which_bay, int what)
- {
--#ifdef CONFIG_BLK_DEV_IDE
- 	int	i;
- 
- 	for (i=0; i<media_bay_count; i++)
-@@ -426,14 +428,14 @@ int check_media_bay(struct device_node *
- 			media_bays[i].cd_index = -1;
- 			return -EINVAL;
- 		}
--#endif /* CONFIG_BLK_DEV_IDE */
- 	return -ENODEV;
- }
- EXPORT_SYMBOL(check_media_bay);
-+#endif /* CONFIG_MAC_FLOPPY */
- 
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- int check_media_bay_by_base(unsigned long base, int what)
- {
--#ifdef CONFIG_BLK_DEV_IDE
- 	int	i;
- 
- 	for (i=0; i<media_bay_count; i++)
-@@ -443,15 +445,13 @@ int check_media_bay_by_base(unsigned lon
- 			media_bays[i].cd_index = -1;
- 			return -EINVAL;
- 		} 
--#endif
--	
-+
- 	return -ENODEV;
- }
- 
- int media_bay_set_ide_infos(struct device_node* which_bay, unsigned long base,
--	int irq, int index)
-+			    int irq, int index)
- {
--#ifdef CONFIG_BLK_DEV_IDE
- 	int	i;
- 
- 	for (i=0; i<media_bay_count; i++) {
-@@ -483,10 +483,10 @@ int media_bay_set_ide_infos(struct devic
- 			return -ENODEV;
- 		}
- 	}
--#endif /* CONFIG_BLK_DEV_IDE */
--	
-+
- 	return -ENODEV;
- }
-+#endif /* CONFIG_BLK_DEV_IDE_PMAC */
- 
- static void media_bay_step(int i)
- {
-@@ -521,14 +521,13 @@ static void media_bay_step(int i)
- 	    	bay->state = mb_resetting;
- 		MBDBG("mediabay%d: waiting reset (kind:%d)\n", i, bay->content_id);
- 	    	break;
--	    
- 	case mb_resetting:
- 		if (bay->content_id != MB_CD) {
- 			MBDBG("mediabay%d: bay is up (kind:%d)\n", i, bay->content_id);
- 			bay->state = mb_up;
- 			break;
- 	    	}
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- 		MBDBG("mediabay%d: waiting IDE reset (kind:%d)\n", i, bay->content_id);
- 		bay->ops->un_reset_ide(bay);
- 	    	bay->timer = msecs_to_jiffies(MB_IDE_WAIT);
-@@ -536,16 +535,14 @@ static void media_bay_step(int i)
- #else
- 		printk(KERN_DEBUG "media-bay %d is ide (not compiled in kernel)\n", i);
- 		set_mb_power(bay, 0);
--#endif /* CONFIG_BLK_DEV_IDE */
-+#endif /* CONFIG_BLK_DEV_IDE_PMAC */
- 	    	break;
--	    
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- 	case mb_ide_resetting:
- 	    	bay->timer = msecs_to_jiffies(MB_IDE_TIMEOUT);
- 	    	bay->state = mb_ide_waiting;
- 		MBDBG("mediabay%d: waiting IDE ready (kind:%d)\n", i, bay->content_id);
- 	    	break;
--	    
- 	case mb_ide_waiting:
- 		if (bay->cd_base == NULL) {
- 			bay->timer = 0;
-@@ -587,11 +584,10 @@ static void media_bay_step(int i)
- 			bay->timer = 0;
- 	    	}
- 		break;
--#endif /* CONFIG_BLK_DEV_IDE */
--
-+#endif /* CONFIG_BLK_DEV_IDE_PMAC */
- 	case mb_powering_down:
- 	    	bay->state = mb_empty;
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
-     	        if (bay->cd_index >= 0) {
- 			printk(KERN_DEBUG "Unregistering mb %d ide, index:%d\n", i,
- 			       bay->cd_index);
-@@ -607,7 +603,7 @@ static void media_bay_step(int i)
- 				bay->content_id = MB_NO;
- 			}
- 	    	}
--#endif /* CONFIG_BLK_DEV_IDE */    
-+#endif /* CONFIG_BLK_DEV_IDE_PMAC */
- 		MBDBG("mediabay%d: end of power down\n", i);
- 	    	break;
- 	}
-@@ -745,7 +741,7 @@ static int media_bay_resume(struct macio
- 	       	bay->last_value = bay->content_id;
- 	       	bay->value_count = msecs_to_jiffies(MB_STABLE_DELAY);
- 	       	bay->timer = msecs_to_jiffies(MB_POWER_DELAY);
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- 	       	bay->cd_retry = 0;
- #endif
- 	       	do {
-@@ -835,7 +831,7 @@ static int __init media_bay_init(void)
- 	for (i=0; i<MAX_BAYS; i++) {
- 		memset((char *)&media_bays[i], 0, sizeof(struct media_bay_info));
- 		media_bays[i].content_id	= -1;
--#ifdef CONFIG_BLK_DEV_IDE
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- 		media_bays[i].cd_index		= -1;
- #endif
- 	}
-Index: b/include/asm-powerpc/mediabay.h
-===================================================================
---- a/include/asm-powerpc/mediabay.h
-+++ b/include/asm-powerpc/mediabay.h
-@@ -17,15 +17,20 @@
- #define MB_POWER	6	/* media bay contains a Power device (???) */
- #define MB_NO		7	/* media bay contains nothing */
- 
-+#idef CONFIG_MAC_FLOPPY
- int check_media_bay(struct device_node *which_bay, int what);
--int check_media_bay_by_base(unsigned long base, int what);
-+#endif
-+
- 
- /* Number of bays in the machine or 0 */
- extern int media_bay_count;
- 
--/* called by pmac-ide.c to register IDE controller for media bay */
--extern int media_bay_set_ide_infos(struct device_node* which_bay,
--			unsigned long base, int irq, int index);
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
-+int check_media_bay_by_base(unsigned long base, int what);
-+/* called by IDE PMAC host driver to register IDE controller for media bay */
-+int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
-+			    int irq, int index);
-+#endif
- 
- #endif /* __KERNEL__ */
- #endif /* _PPC_MEDIABAY_H */
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHlnZTTgG2atn1QN8RAlWjAJ4mTiPpembguHobChG4tsP6hVsWdACeL9r2
+RYasIbd6DFEKUioppah05Q4=
+=cUTz
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Jan_2008_10_03_41_+1100_kqj9WHqoUTdeuOqs--
