@@ -1,27 +1,17 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7C0F2DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 01:20:46 +1100 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id CA52D227B6E
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:23:01 +0100 (CET)
-Received: from localhost (unknown [192.168.1.157])
-	by mail.m-online.net (Postfix) with ESMTP id 5CA699018E
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:20:44 +0100 (CET)
-Received: from localhost ([192.168.3.149])
-	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
-	port 10024) with ESMTP id Dgrzlbds1ad2 for <linuxppc-dev@ozlabs.org>;
-	Tue, 22 Jan 2008 15:20:43 +0100 (CET)
-Received: from ibook.aepfle.de (DSL01.83.171.173.38.ip-pool.NEFkom.net
-	[83.171.173.38]) by mail.mnet-online.de (Postfix) with ESMTP
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:20:43 +0100 (CET)
-Date: Tue, 22 Jan 2008 15:21:09 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] create modalias file in sysfs for bus of_platform
-Message-ID: <20080122142109.GA12967@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 23 Jan 2008 01:34:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/4] Create and hook up of_platform_device_shutdown
+Message-Id: <20080123013404.d8445270.sfr@canb.auug.org.au>
+In-Reply-To: <bb8d7cc1a060af291ef6efb0f4222f81fa91f417.1200999872.git.michael@ellerman.id.au>
+References: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1200999872.git.michael@ellerman.id.au>
+	<bb8d7cc1a060af291ef6efb0f4222f81fa91f417.1200999872.git.michael@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__23_Jan_2008_01_34_04_+1100_tjovSH=pW2WkiWrm"
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,55 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__23_Jan_2008_01_34_04_+1100_tjovSH=pW2WkiWrm
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
-of modules. modalias files are already present for many other bus types.
+Hi Michael,
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+Just a couple of things.
 
----
- drivers/of/device.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+On Tue, 22 Jan 2008 22:04:40 +1100 (EST) Michael Ellerman <michael@ellerman=
+.id.au> wrote:
+>
+> +static void of_platform_device_shutdown(struct device * dev)
+                                                          ^
+No space, please.
 
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -86,7 +86,19 @@ static ssize_t dev_show_devspec(struct d
- 	return sprintf(buf, "%s", ofdev->node->full_name);
- }
- 
-+static ssize_t dev_show_modalias(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct of_device *ofdev = to_of_device(dev);
-+	ssize_t len = 0;
-+
-+	if (ofdev)
-+		len = of_device_get_modalias(ofdev, buf, PAGE_SIZE);
-+	return len;
-+}
-+
- static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
-+static DEVICE_ATTR(modalias, S_IRUGO, dev_show_modalias, NULL);
- 
- /**
-  * of_release_dev - free an of device structure when all users of it are finished.
-@@ -116,6 +128,11 @@ int of_device_register(struct of_device 
- 		return rc;
- 
- 	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
-+	if (rc) {
-+		device_unregister(&ofdev->dev);
-+		return rc;
-+	}
-+	rc = device_create_file(&ofdev->dev, &dev_attr_modalias);
- 	if (rc)
- 		device_unregister(&ofdev->dev);
- 
-@@ -126,6 +143,7 @@ EXPORT_SYMBOL(of_device_register);
- void of_device_unregister(struct of_device *ofdev)
- {
- 	device_remove_file(&ofdev->dev, &dev_attr_devspec);
-+	device_remove_file(&ofdev->dev, &dev_attr_modalias);
- 	device_unregister(&ofdev->dev);
- }
- EXPORT_SYMBOL(of_device_unregister);
+Also, I wonder if we should check that the drivers that already have
+specified a shutdown routine (drivers/input/misc/sparcspkr.c,
+drivers/usb/host/ohci-ppc-of.c and drivers/watchdog/mpc5200_wdt.c) are
+actually ok if it actually gets called.  :-)
+
+Also, patches like this should be cc'd to (at least) the sparc guys
+(sparclinux@vger.kernel.org) since they share this stuff with us, now.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__23_Jan_2008_01_34_04_+1100_tjovSH=pW2WkiWrm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHlf7hTgG2atn1QN8RAom3AJ0a+jXFFTxp/aopWgRq8vX5ohbONgCeJJwJ
+cCRsTjZlt73f4uV1OUpWNhE=
+=nVxm
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Jan_2008_01_34_04_+1100_tjovSH=pW2WkiWrm--
