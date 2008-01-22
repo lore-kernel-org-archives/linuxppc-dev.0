@@ -2,17 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 018B0DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 03:51:19 +1100 (EST)
-Message-Id: <24D901DC-8F2B-42A5-88B5-E360C44092C9@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id A6EDFDDE42
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 03:52:14 +1100 (EST)
+Message-Id: <834ADDC8-2689-4936-BA0B-768D68288EC9@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Wade Farnsworth <wfarnsworth@mvista.com>
-In-Reply-To: <1201020432.5716.159.camel@rhino>
+In-Reply-To: <1201020463.5716.161.camel@rhino>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/2] MPC8641 HPCN: publish all soc and flash devices
-Date: Tue, 22 Jan 2008 10:50:51 -0600
-References: <1201019917.5716.154.camel@rhino> <1201020432.5716.159.camel@rhino>
+Subject: Re: [PATCH 1/2] Add flash node to mpc8641_hpcn.dts
+Date: Tue, 22 Jan 2008 10:49:10 -0600
+References: <1201019917.5716.154.camel@rhino>
+	<06AA1424-0697-4AF8-B843-945211A5B54A@kernel.crashing.org>
+	<1201020463.5716.161.camel@rhino>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,67 +28,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Jan 22, 2008, at 10:47 AM, Wade Farnsworth wrote:
 
-> Publish all soc and flash devices from the device tree, similar to  
-> what
-> is done for other boards.
+> On Tue, 2008-01-22 at 10:44 -0600, Kumar Gala wrote:
+>> On Jan 22, 2008, at 10:38 AM, Wade Farnsworth wrote:
+>>
+>>> Add flash and partition information to mpc8641_hpcn.dts
+>>>
+>>> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
+>>>
+>>> ---
+>>> arch/powerpc/boot/dts/mpc8641_hpcn.dts |   27 +++++++++++++++++++++ 
+>>> ++
+>>> 1 file changed, 27 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/
+>>> boot/dts/mpc8641_hpcn.dts
+>>> index a719179..679e857 100644
+>>> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+>>> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+>>> @@ -457,4 +457,31 @@
+>>> 				  0 00100000>;
+>>> 		};
+>>> 	};
+>>
+>> This really should be under a localbus node.
+>>
+>> - k
+>>
 >
-> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
->
-> ---
-> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   16 ++++++++++++++++
-> 1 file changed, 16 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
-> powerpc/platforms/86xx/mpc86xx_hpcn.c
-> index 14f4e52..f266264 100644
-> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> @@ -18,6 +18,7 @@
-> #include <linux/kdev_t.h>
-> #include <linux/delay.h>
-> #include <linux/seq_file.h>
-> +#include <linux/of_platform.h>
->
-> #include <asm/system.h>
-> #include <asm/time.h>
-> @@ -212,6 +213,21 @@ mpc86xx_time_init(void)
-> 	return 0;
-> }
->
-> +static struct of_device_id mpc86xx_ids[] = {
-> +	{ .type = "soc", },
-> +	{ .compatible = "soc", },
-> +	{ .compatible = "cfi-flash", },
-> +	{},
-> +};
-> +
-> +static int __init mpc86xx_publish_devices(void)
-> +{
-> +	of_platform_bus_probe(NULL, mpc86xx_ids, NULL);
-> +
-> +	return 0;
-> +}
-> +device_initcall(mpc86xx_publish_devices);
-> +
+> Ok. I'll fix it up and resend.
 
-this should look more like:
+look at the mpc8313erdb.dts (in my tree, as an example).
 
-+static struct of_device_id __initdata of_bus_ids[] = {
-+       { .compatible = "simple-bus" },
-+       {},
-+};
-+
-+static int __init declare_of_platform_devices(void)
-+{
-+       of_platform_bus_probe(NULL, of_bus_ids, NULL);
-+       return 0;
-+}
-+machine_device_initcall(mpc86xx_hpcn, mpc86xx_publish_devices);
-+
-
-
->
-> define_machine(mpc86xx_hpcn) {
-> 	.name			= "MPC86xx HPCN",
-> 	.probe			= mpc86xx_hpcn_probe,
->
+- k
