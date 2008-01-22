@@ -1,33 +1,22 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86BFADDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:27:01 +1100 (EST)
-Date: Tue, 22 Jan 2008 21:26:54 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080122212654.GB15567@csn.ul.ie>
-References: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-	<20080117181222.GA24411@aepfle.de>
-	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
-	<20080117211511.GA25320@aepfle.de>
-	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de>
-	<20080122195448.GA15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4CA67DDE43
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:30:28 +1100 (EST)
+Message-ID: <4796605B.2000807@freescale.com>
+Date: Tue, 22 Jan 2008 15:30:03 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Add docs for Freescale DMA & DMA channel device
+	tree nodes
+References: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,64 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (22/01/08 12:11), Christoph Lameter didst pronounce:
-> On Tue, 22 Jan 2008, Mel Gorman wrote:
+Kumar Gala wrote:
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
 > 
-> > Christoph/Pekka, this patch is papering over the problem and something
-> > more fundamental may be going wrong. The crash occurs because l3 is NULL
-> > and the cache is kmem_cache so this is early in the boot process. It is
-> > selecting l3 based on node 2 which is correct in terms of available memory
-> > but it initialises the lists on node 0 because that is the node the CPUs are
-> > located. Hence later it uses an uninitialised nodelists and BLAM. Relevant
-> > parts of the log for seeing the memoryless nodes in relation to CPUs is;
+> Guys please review and make sure I got all your previous comments fixed
+> up.  I've added cell-index. and the examples should represent real HW.
 > 
-> Would it be possible to run the bootstrap on a cpu that has a 
-> node with memory associated to it?
-
-Not in the way the machine is currently configured. All the CPUs appear to
-be on a node with no memory. It's best to assume I cannot get the machine
-reconfigured (which just hides the bug anyway). Physically, it's thousands
-of miles away so I can't do the work. I can get lab support to do the job
-but that will take a fair while and at the end of the day, it doesn't tell
-us a lot. We know that other PPC64 machines work so it's not a general problem.
-
-> I believe we had the same situation 
-> last year when GFP_THISNODE was introduced?
+>  Documentation/powerpc/booting-without-of.txt |  128 ++++++++++++++++++++++++++
+>  1 files changed, 128 insertions(+), 0 deletions(-)
 > 
-
-It feels vaguely familiar but I don't recall the details in sufficient detail
-to recognise if this is the same problem or not.
-
-> After you reverted the slab memoryless node patch there should be per node 
-> structures created for node 0 unless the node is marked offline. Is it? If 
-> so then you are booting a cpu that is associated with an offline node. 
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index da98154..3584c33 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -2615,6 +2615,134 @@ platforms are moved over to use the flattened-device-tree model.
+>         - clock-frequency  : The frequency of the input clock, which typically
+>                              comes from an on-board dedicated oscillator.
 > 
+> +    * Freescale 83xx DMA Controller
+> +
+> +    Freescale PowerPC 83xx have on chip general purpose DMA controllers.
+> +
+> +    Required properties:
+> +
+> +    - compatible        : compatible list, contains 2 entries, first is
+> +			 "fsl,CHIP-dma", where CHIP is the processor
+> +			 (mpc8349, mpc8360, etc.) and the second is
+> +			 "fsl,elo-dma"
+> +    - reg               : <registers mapping for DMA general status reg>
+> +    - ranges 		: Should be defined as specified in 1) to describe the
+> +			  DMA controller channels.
 
-I'll roll a patch that prints out the online states before startup and
-see what it looks like.
+What does "Should be defined as specified in 1)" mean?
 
-> > Can you see a better solution than this?
-> 
-> Well this means that bootstrap will work by introducing foreign objects 
-> into the per cpu queue (should only hold per cpu objects). They will 
-> later be consumed and then the queues will contain the right objects so 
-> the effect of the patch is minimal.
-> 
+> +    - cell-index        : controller index.  0 for controller @ 0x8100
 
-By minimal, do you mean that you expect it to break in some other
-respect later or minimal as in "this is bad but should not have no
-adverse impact".
+This should be more generic.  I believe for each of our SoCs, we designation one 
+DMA controller to be "DMA Controller 1", and that one should have a cell-index 
+of "0".
 
-> I thought we fixed the similar situation last year by dropping 
-> GFP_THISNODE for some allocations?
-> 
+> +    - interrupts        : <interrupt mapping for DMA IRQ>
+> +    - interrupt-parent  : optional, if needed for interrupt mapping
 
-Whatever this was a problem fixed in the past or not, it's broken again now
-:( . It's possible that there is a __GFP_THISNODE that can be dropped early
-at boot-time that would also fix this problem in a way that doesn't
-affect runtime (like altering cache_grow in my patch does).
+On 83xx, all DMA channels share the same interrupt?  Couldn't we just specify 
+the same IRQ in each channel's node, so that they look the same across 83xx, 
+85xx, and 86xx?  My sound driver doesn't use Extended Mode, but it does check 
+for "fsl,8610-dma-channel".  I'm thinking that maybe I should change to to look 
+for "elo" or "eloplus", but it would be nice if we could make the DMA node for 
+an 86xx SoC compatible with a driver that expects "fsl,elo-dma-channel".
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Timur Tabi
+Linux kernel developer at Freescale
