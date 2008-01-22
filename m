@@ -1,21 +1,14 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3E9A5DDE9E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 07:42:12 +1100 (EST)
-Message-ID: <47965506.9070305@freescale.com>
-Date: Tue, 22 Jan 2008 14:41:42 -0600
-From: Jon Loeliger <jdl@freescale.com>
-MIME-Version: 1.0
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Subject: Re: [PATCH v2 1/2] Add localbus and flash nodes to mpc8641_hpcn.dts
-References: <1201019917.5716.154.camel@rhino> <1201032819.5716.170.camel@rhino>
-In-Reply-To: <1201032819.5716.170.camel@rhino>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <afleming@freescale.com>
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D701494071@corpexc01.corp.networkrobots.com>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D701494071@corpexc01.corp.networkrobots.com>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <35376E92-5F62-4CFD-8B50-3B687EC774B0@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: Trying 10/HALF
+Date: Tue, 22 Jan 2008 14:55:31 -0600
+To: Siva Prasad <sprasad@bivio.net>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wade Farnsworth wrote:
 
-> +
-> +		ranges = <0 0 ff800000 00800000
-> +			  1 0 fe000000 01000000
-> +			  2 0 f8200000 00100000
-> +			  3 0 f8100000 00100000>;
-> +
+On Jan 9, 2008, at 13:35, Siva Prasad wrote:
 
-I think you want just:
+> Hi,
+>
+>
+>
+> After booting, my MPC8641 based board keeps printing =93Trying 10/=20
+> HALF=94 for ever. I am unable to use the Ethernet, even though there =20=
 
-    ranges = <0 0 f8000000 8000000>
+> are interrupts occuring. Based on /proc/interrupts, both tx and rx =20
+> interrupt count is increasing, and zero count for enet_error =20
+> interrupt.
+>
+>
+>
+> I think this is coming from drivers/net/phy/phy.c during =20
+> autonegotiation. However, I am not sure how to take care of this. =20
+> Appreciate some pointers.
+>
 
-right?  And is it really on CS 0?
 
-jdl
+Hm.  That's a bit strange.  What kind of PHY are you using?  The PHY =20
+layer acts like that if auto-negotiation fails and it couldn't =20
+establish a link using any other method.
+
+Some things to double-check:
+
+* Are your etsec interrupts correct in your dts.  Shouldn't be an =20
+issue, but if you copied them from the wrong place, or used an out-of-=20=
+
+date dts, the numbers could be wrong
+
+* Are your PHY interrupts correct in your dts.  If the PHY interrupts =20=
+
+are wrong, the PHY Lib might never discover that a link was established
+
+Andy=
