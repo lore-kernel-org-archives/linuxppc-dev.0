@@ -1,31 +1,18 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
-	by ozlabs.org (Postfix) with ESMTP id 08C9ADDE46
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:34:16 +1100 (EST)
-Date: Tue, 22 Jan 2008 13:34:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080122212654.GB15567@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-	<20080117181222.GA24411@aepfle.de>
-	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
-	<20080117211511.GA25320@aepfle.de>
-	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-	<20080122212654.GB15567@csn.ul.ie>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7013EDDE44
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:39:45 +1100 (EST)
+Date: Tue, 22 Jan 2008 15:37:15 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Add docs for Freescale PowerQUICC SATA device tree
+	nodes
+Message-ID: <Pine.LNX.4.64.0801221536430.25559@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Scott Wood <scottwood@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,42 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 22 Jan 2008, Mel Gorman wrote:
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ Documentation/powerpc/booting-without-of.txt |   30 ++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-> > After you reverted the slab memoryless node patch there should be per node 
-> > structures created for node 0 unless the node is marked offline. Is it? If 
-> > so then you are booting a cpu that is associated with an offline node. 
-> > 
-> 
-> I'll roll a patch that prints out the online states before startup and
-> see what it looks like.
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 3584c33..387310a 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2743,6 +2743,36 @@ platforms are moved over to use the flattened-device-tree model.
+ 		};
+ 	};
 
-Ok. Great.
++    * Freescale 8xxx/3.0 Gb/s SATA nodes
++
++    SATA nodes are defined to describe on-chip Serial ATA controllers.
++    Each SATA port should have its own node.
++
++    Required properties:
++    - compatible        : compatible list, contains 2 entries, first is
++			 "fsl,CHIP-sata", where CHIP is the processor
++			 (mpc8315, mpc8379, etc.) and the second is
++			 "fsl,pq-sata"
++    - interrupts        : <interrupt mapping for SATA IRQ>
++    - cell-index        : controller index.
++                              1 for controller @ 0x18000
++                              2 for controller @ 0x19000
++                              3 for controller @ 0x1a000
++                              4 for controller @ 0x1b000
++
++    Optional properties:
++    - interrupt-parent  : optional, if needed for interrupt mapping
++    - reg               : <registers mapping>
++
++   Example:
++
++	sata@18000 {
++		compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
++		reg = <0x18000 0x1000>;
++		cell-index = <1>;
++		interrupts = <2c 8>;
++		interrupt-parent = < &ipic >;
++        };
 
-> 
-> > > Can you see a better solution than this?
-> > 
-> > Well this means that bootstrap will work by introducing foreign objects 
-> > into the per cpu queue (should only hold per cpu objects). They will 
-> > later be consumed and then the queues will contain the right objects so 
-> > the effect of the patch is minimal.
-> > 
-> 
-> By minimal, do you mean that you expect it to break in some other
-> respect later or minimal as in "this is bad but should not have no
-> adverse impact".
+    More devices will be defined as this spec matures.
 
-Should not have any adverse impact after the objects from the cpu queue 
-have been consumed. If the cache_reaper tries to shift objects back 
-from the per cpu queue into slabs then BUG_ONs may be triggered. Make sure 
-you run the tests with full debugging please.
-
-> Whatever this was a problem fixed in the past or not, it's broken again now
-> :( . It's possible that there is a __GFP_THISNODE that can be dropped early
-> at boot-time that would also fix this problem in a way that doesn't
-> affect runtime (like altering cache_grow in my patch does).
-
-The dropping of GFP_THISNODE has the same effect as your patch. 
-Objects from another node get into the per cpu queue. And on free we 
-assume that per cpu queue objects are from the local node. If debug is on 
-then we check that with BUG_ONs.
+-- 
+1.5.3.7
