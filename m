@@ -1,32 +1,19 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id 0FA2CDDE0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:18:53 +1100 (EST)
-Date: Tue, 22 Jan 2008 15:18:52 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <Pine.LNX.4.64.0801221501240.2565@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0801221517260.2871@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
-	<20080117211511.GA25320@aepfle.de>
-	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-	<20080122212654.GB15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
-	<20080122225046.GA866@csn.ul.ie> <47967560.8080101@cs.helsinki.fi>
-	<Pine.LNX.4.64.0801221501240.2565@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id CEF35DDDF4
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:26:21 +1100 (EST)
+Date: Wed, 23 Jan 2008 10:26:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+Subject: Re: [PATCH 2/2] MPC8641 HPCN: publish all soc and flash devices
+Message-Id: <20080123102615.539388d0.sfr@canb.auug.org.au>
+In-Reply-To: <1201020432.5716.159.camel@rhino>
+References: <1201019917.5716.154.camel@rhino> <1201020432.5716.159.camel@rhino>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__23_Jan_2008_10_26_15_+1100_ljF8Ci78E8M402uR"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,12 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 22 Jan 2008, Christoph Lameter wrote:
+--Signature=_Wed__23_Jan_2008_10_26_15_+1100_ljF8Ci78E8M402uR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> But I doubt that this is it. The fallback logic was added later and it 
-> worked fine.
+Hi Wade,
 
-My patch is useless (fascinating history of the changelog there through). 
-fallback_alloc calls kmem_getpages without GFP_THISNODE. This means that 
-alloc_pages_node() will try to allocate on the current node but fallback 
-to neighboring node if nothing is there....
+On Tue, 22 Jan 2008 09:47:12 -0700 Wade Farnsworth <wfarnsworth@mvista.com>=
+ wrote:
+>
+> +static struct of_device_id mpc86xx_ids[] =3D {
+
+__initdata, please.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__23_Jan_2008_10_26_15_+1100_ljF8Ci78E8M402uR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHlnubTgG2atn1QN8RAnDAAKCIdMH6ZMy07Httkf7uaDM/M2/KCACcCb2o
+v+zVM53j6EIObGPY7AXsf7o=
+=pCXY
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__23_Jan_2008_10_26_15_+1100_ljF8Ci78E8M402uR--
