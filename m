@@ -1,20 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B951FDE2A0
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:07:51 +1100 (EST)
-Message-Id: <65C80AAA-CC92-41BC-86FC-D74A2C7D5059@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <47965506.9070305@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH v2 1/2] Add localbus and flash nodes to mpc8641_hpcn.dts
-Date: Tue, 22 Jan 2008 15:07:16 -0600
-References: <1201019917.5716.154.camel@rhino> <1201032819.5716.170.camel@rhino>
-	<47965506.9070305@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3B9E3DDE48
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:09:16 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0ML9DRh010136
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:09:13 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0ML9DZv165008
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:09:13 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0ML9CBb031592
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:09:13 -0500
+Message-ID: <47965B76.9030900@austin.ibm.com>
+Date: Tue, 22 Jan 2008 15:09:10 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
+Subject: [PATCH 8/8] pseries: phyp dump: config file
+References: <4796401D.5010907@austin.ibm.com>
+In-Reply-To: <4796401D.5010907@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
+	strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+To: linuxppc-dev@ozlabs.org
 
-On Jan 22, 2008, at 2:41 PM, Jon Loeliger wrote:
 
-> Wade Farnsworth wrote:
->
->> +
->> +		ranges = <0 0 ff800000 00800000
->> +			  1 0 fe000000 01000000
->> +			  2 0 f8200000 00100000
->> +			  3 0 f8100000 00100000>;
->> +
->
-> I think you want just:
->
->   ranges = <0 0 f8000000 8000000>
->
-> right?  And is it really on CS 0?
+Add hypervisor-assisted dump to kernel config
 
-I'm assuming he's listed CS1, CS2, and CS3 even though we don't have a  
-children yet.  (second flash chip, CF, and pixis).
+Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
 
-- k
+-----
+ arch/powerpc/Kconfig |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+Index: linux-2.6.24-rc2-git4/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.24-rc2-git4.orig/arch/powerpc/Kconfig	2007-11-14 16:39:20.000000000 -0600
++++ linux-2.6.24-rc2-git4/arch/powerpc/Kconfig	2007-11-15 14:27:33.000000000 -0600
+@@ -261,6 +261,17 @@ config CRASH_DUMP
+ 
+ 	  Don't change this unless you know what you are doing.
+ 
++config PHYP_DUMP
++	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
++	depends on PPC_PSERIES && EXPERIMENTAL
++	default y
++	help
++	  Hypervisor-assisted dump is meant to be a kdump replacement
++	  offering robustness and speed not possible without system
++	  hypervisor assistence.
++
++	  If unsure, say "Y"
++
+ config PPCBUG_NVRAM
+ 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
+ 	default y if PPC_PREP
