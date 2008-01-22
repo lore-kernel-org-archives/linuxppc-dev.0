@@ -1,31 +1,22 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
-	by ozlabs.org (Postfix) with ESMTP id 251ECDDE0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:14:18 +1100 (EST)
-Date: Tue, 22 Jan 2008 15:14:16 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080122231058.GB866@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801221513100.2565@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-	<20080122212654.GB15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
-	<20080122225046.GA866@csn.ul.ie>
-	<Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
-	<20080122231058.GB866@csn.ul.ie>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 80ED8DDE1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:16:37 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so611647anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:16:35 -0800 (PST)
+Message-ID: <fa686aa40801221516o27154589w20fabe3e365230c0@mail.gmail.com>
+Date: Tue, 22 Jan 2008 16:16:35 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Loeliger" <jdl@freescale.com>
+Subject: Re: [PATCH 1/3 v3] Add StorCenter DTS first draft.
+In-Reply-To: <47967436.9070704@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <E1JHRkS-0005du-O1@jdl.com>
+	<fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
+	<47967436.9070704@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,13 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 22 Jan 2008, Mel Gorman wrote:
+On 1/22/08, Jon Loeliger <jdl@freescale.com> wrote:
+> Grant Likely wrote:
+> > On 1/22/08, Jon Loeliger <jdl@jdl.com> wrote:
+> >> Based on the Kurobox DTS files.
+> >>
+> >> Signed-off-by: Andy Wilcox <andy@protium.com>
+> >> Signed-off-by: Jon Loeliger <jdl@jdl.com>
+> >
+> > Comments below
+> >
+> >> +
+> >> +/ {
+> >> +       model = "StorCenter";
+> >> +       compatible = "storcenter";
+> >
+> > Be specific!  "iomega,storcenter".  Even better if you put in the model number.
+>
+> As I mentioned vefore, there is no further model number.
+> That _is_ the model name.
 
-> Rather it should be 2. I'll admit the physical setup of this machine is
-> .... less than ideal but clearly it's something that can happen even if
-> it's a bad idea.
+/me has a short memory.
 
-Ok. Lets hope that Pekka's find does the trick. But this would mean that 
-fallback gets memory from node 2 for the page allocator. Then fallback 
-alloc is going to try to insert it into the l3 of node 2 which is not 
-there yet. So another ooops. Sigh.
+> >> +               compatible = "fsl,mpc8241", "mpc10x";
+> >
+> > fsl,mpc8241-immr would be better; this node describes the internally
+> > memory mapped registers; not the entire soc.
+>
+> Uh, whatever? :-)  'Cuz how many other DTS files say that?
+
+True, we haven't been doing this until recently; but we've also been
+stumbling about over the last 2 years figuring out how best to use
+this fancy device tree thing in embedded systems effectively.  Best
+practices are starting to emerge (wadda you know, the open firmware
+recommended practices actually have good thought behind them) and
+being specific with the compatible property is one aspect.  I'm moving
+the 5200 over to specifying -immr and some of the other soc ports are
+doing so also.  Chat with Scott Wood.
+
+> >> +               linux,stdout-path = "/soc/serial@4500";
+> >
+> > /soc@fc000000/ perhaps?
+>
+> Not really necessary to specify the unit number.
+
+Okay, I wasn't sure if we could get away with that with the fdt.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
