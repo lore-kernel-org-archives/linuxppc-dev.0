@@ -1,29 +1,19 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 59DA3DDE35
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 01:40:30 +1100 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 08CBB227BD0
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:42:46 +0100 (CET)
-Received: from localhost (unknown [192.168.1.157])
-	by mail.m-online.net (Postfix) with ESMTP id 89DEA9019B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:40:28 +0100 (CET)
-Received: from localhost ([192.168.3.149])
-	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
-	port 10024) with ESMTP id Vb79n4jpXCe8 for <linuxppc-dev@ozlabs.org>;
-	Tue, 22 Jan 2008 15:40:27 +0100 (CET)
-Received: from ibook.aepfle.de (DSL01.83.171.173.38.ip-pool.NEFkom.net
-	[83.171.173.38]) by mail.mnet-online.de (Postfix) with ESMTP
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:40:27 +0100 (CET)
-Date: Tue, 22 Jan 2008 15:40:53 +0100
-From: Olaf Hering <olaf@aepfle.de>
+Return-Path: <michel@tungstengraphics.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
+	by ozlabs.org (Postfix) with ESMTP id 6B881DDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 01:56:32 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so1807018fgg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 06:56:30 -0800 (PST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] create modalias file in sysfs for bus of_platform
-Message-ID: <20080122144053.GA13019@aepfle.de>
-References: <20080122142109.GA12967@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080122142109.GA12967@aepfle.de>
+In-Reply-To: <1200659696.23161.81.camel@thor.sulgenrain.local>
+References: <1200659696.23161.81.camel@thor.sulgenrain.local>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 22 Jan 2008 15:56:26 +0100
+Message-Id: <1201013786.4726.28.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,55 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
-of modules. modalias files are already present for many other bus types.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+On Fri, 2008-01-18 at 13:34 +0100, Michel Dänzer wrote:
+> This is on a PowerBook5,8.
+> 
+> In a nutshell, things seem more sluggish in general than with 2.6.23.
+> But in particular, processes running at nice levels >0 can get most of
+> the CPU cycles available, slowing down processes running at nice level
+> 0.
 
----
- drivers/of/device.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+The canonical test case I've come up with is to run an infinite loop
+with
 
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -86,7 +86,20 @@ static ssize_t dev_show_devspec(struct d
- 	return sprintf(buf, "%s", ofdev->node->full_name);
- }
- 
-+static ssize_t dev_show_modalias(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct of_device *ofdev = to_of_device(dev);
-+	ssize_t len = 0;
-+
-+	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE);
-+	buf[len] = '\n';
-+	buf[len+1] = 0;
-+	return len+1;
-+}
-+
- static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
-+static DEVICE_ATTR(modalias, S_IRUGO, dev_show_modalias, NULL);
- 
- /**
-  * of_release_dev - free an of device structure when all users of it are finished.
-@@ -116,6 +129,11 @@ int of_device_register(struct of_device 
- 		return rc;
- 
- 	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
-+	if (rc) {
-+		device_unregister(&ofdev->dev);
-+		return rc;
-+	}
-+	rc = device_create_file(&ofdev->dev, &dev_attr_modalias);
- 	if (rc)
- 		device_unregister(&ofdev->dev);
- 
-@@ -126,6 +144,7 @@ EXPORT_SYMBOL(of_device_register);
- void of_device_unregister(struct of_device *ofdev)
- {
- 	device_remove_file(&ofdev->dev, &dev_attr_devspec);
-+	device_remove_file(&ofdev->dev, &dev_attr_modalias);
- 	device_unregister(&ofdev->dev);
- }
- EXPORT_SYMBOL(of_device_unregister);
+sudo -u nobody nice -n 19 sh -c 'while true; do true; done'
+
+This makes my X session (X server running at nice level -1, clients at
+0) unusably sluggish (it can even take several seconds to process ctrl-c
+to interrupt the infinite loop) with 2.6.24-rc but works as expected
+with 2.6.23.
+
+Anybody else seeing this?
+
+
+> I've seen this since .24-rc5 (the first .24-rc I tried), and it's still
+> there with -rc8. I'd be surprised if this kind of behaviour remained
+> unfixed for that long if it affected x86, so  I presume it's powerpc
+> specific.
+
+Or maybe not... I've bisected this down to the scheduler changes between
+df3d80f5a5c74168be42788364d13cf6c83c7b9c/23fd50450a34f2558070ceabb0bfebc1c9604af5 and b5869ce7f68b233ceb81465a7644be0d9a5f3dbb . I'll try and bisect it further, but this is my main work machine, so I can't reboot it too often. I'm CC'ing Ingo in case he has any ideas offhand.
+
+
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
