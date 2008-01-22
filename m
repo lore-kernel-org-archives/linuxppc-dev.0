@@ -1,18 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0D490DDDDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 03:44:47 +1100 (EST)
-Message-Id: <06AA1424-0697-4AF8-B843-945211A5B54A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
+Return-Path: <wfarnsworth@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 30796DDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 03:47:13 +1100 (EST)
+Subject: [PATCH 2/2] MPC8641 HPCN: publish all soc and flash devices
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <1201019917.5716.154.camel@rhino>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 1/2] Add flash node to mpc8641_hpcn.dts
-Date: Tue, 22 Jan 2008 10:44:15 -0600
 References: <1201019917.5716.154.camel@rhino>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 09:47:12 -0700
+Message-Id: <1201020432.5716.159.camel@rhino>
+Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,58 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Publish all soc and flash devices from the device tree, similar to what
+is done for other boards.
 
-On Jan 22, 2008, at 10:38 AM, Wade Farnsworth wrote:
+Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
 
-> Add flash and partition information to mpc8641_hpcn.dts
->
-> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
->
-> ---
-> arch/powerpc/boot/dts/mpc8641_hpcn.dts |   27 +++++++++++++++++++++++
-> 1 file changed, 27 insertions(+)
->
-> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/ 
-> boot/dts/mpc8641_hpcn.dts
-> index a719179..679e857 100644
-> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -457,4 +457,31 @@
-> 				  0 00100000>;
-> 		};
-> 	};
+---
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-This really should be under a localbus node.
-
-- k
-
->
-> +
-> +	flash@ff800000 {
-> +		compatible = "cfi-flash";
-> +		reg = <ff800000 00800000>;
-> +		bank-width = <2>;
-> +		device-width = <2>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		partition@0 {
-> +			label = "kernel";
-> +			reg = <00000000 00300000>;
-> +		};
-> +		partition@300000 {
-> +			label = "firmware b";
-> +			reg = <00300000 00100000>;
-> +			read-only;
-> +		};
-> +		partition@400000 {
-> +			label = "fs";
-> +			reg = <00400000 00300000>;
-> +		};
-> +		partition@700000 {
-> +			label = "firmware a";
-> +			reg = <00700000 00100000>;
-> +			read-only;
-> +		};
-> +	};
-> };
->
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 14f4e52..f266264 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -18,6 +18,7 @@
+ #include <linux/kdev_t.h>
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/system.h>
+ #include <asm/time.h>
+@@ -212,6 +213,21 @@ mpc86xx_time_init(void)
+ 	return 0;
+ }
+ 
++static struct of_device_id mpc86xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{ .compatible = "cfi-flash", },
++	{},
++};
++
++static int __init mpc86xx_publish_devices(void)
++{
++	of_platform_bus_probe(NULL, mpc86xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc86xx_publish_devices);
++
+ define_machine(mpc86xx_hpcn) {
+ 	.name			= "MPC86xx HPCN",
+ 	.probe			= mpc86xx_hpcn_probe,
