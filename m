@@ -1,31 +1,18 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3B9E3DDE48
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:09:16 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0ML9DRh010136
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:09:13 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0ML9DZv165008
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:09:13 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0ML9CBb031592
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:09:13 -0500
-Message-ID: <47965B76.9030900@austin.ibm.com>
-Date: Tue, 22 Jan 2008 15:09:10 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 06EF6DDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:16:03 +1100 (EST)
+Date: Tue, 22 Jan 2008 15:13:08 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>, Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] [POWERPC] Add docs for Freescale DMA & DMA channel device
+	tree nodes
+Message-ID: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
-Subject: [PATCH 8/8] pseries: phyp dump: config file
-References: <4796401D.5010907@austin.ibm.com>
-In-Reply-To: <4796401D.5010907@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
-	strosake@us.ibm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,36 +22,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To: linuxppc-dev@ozlabs.org
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
+Guys please review and make sure I got all your previous comments fixed
+up.  I've added cell-index. and the examples should represent real HW.
 
-Add hypervisor-assisted dump to kernel config
+ Documentation/powerpc/booting-without-of.txt |  128 ++++++++++++++++++++++++++
+ 1 files changed, 128 insertions(+), 0 deletions(-)
 
-Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index da98154..3584c33 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2615,6 +2615,134 @@ platforms are moved over to use the flattened-device-tree model.
+        - clock-frequency  : The frequency of the input clock, which typically
+                             comes from an on-board dedicated oscillator.
 
------
- arch/powerpc/Kconfig |   11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-Index: linux-2.6.24-rc2-git4/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.24-rc2-git4.orig/arch/powerpc/Kconfig	2007-11-14 16:39:20.000000000 -0600
-+++ linux-2.6.24-rc2-git4/arch/powerpc/Kconfig	2007-11-15 14:27:33.000000000 -0600
-@@ -261,6 +261,17 @@ config CRASH_DUMP
- 
- 	  Don't change this unless you know what you are doing.
- 
-+config PHYP_DUMP
-+	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
-+	depends on PPC_PSERIES && EXPERIMENTAL
-+	default y
-+	help
-+	  Hypervisor-assisted dump is meant to be a kdump replacement
-+	  offering robustness and speed not possible without system
-+	  hypervisor assistence.
++    * Freescale 83xx DMA Controller
 +
-+	  If unsure, say "Y"
++    Freescale PowerPC 83xx have on chip general purpose DMA controllers.
 +
- config PPCBUG_NVRAM
- 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
- 	default y if PPC_PREP
++    Required properties:
++
++    - compatible        : compatible list, contains 2 entries, first is
++			 "fsl,CHIP-dma", where CHIP is the processor
++			 (mpc8349, mpc8360, etc.) and the second is
++			 "fsl,elo-dma"
++    - reg               : <registers mapping for DMA general status reg>
++    - ranges 		: Should be defined as specified in 1) to describe the
++			  DMA controller channels.
++    - cell-index        : controller index.  0 for controller @ 0x8100
++    - interrupts        : <interrupt mapping for DMA IRQ>
++    - interrupt-parent  : optional, if needed for interrupt mapping
++
++
++    - DMA channel nodes:
++	    - compatible        : compatible list, contains 2 entries, first is
++				 "fsl,CHIP-dma-channel", where CHIP is the processor
++				 (mpc8349, mpc8350, etc.) and the second is
++				 "fsl,elo-dma-channel"
++	    - reg               : <registers mapping for channel>
++	    - cell-index        : dma channel index starts at 0.
++
++    Optional properties:
++	    - interrupts        : <interrupt mapping for DMA channel IRQ>
++				  (on 83xx this is expected to be identical to
++				   the interrupts property of the parent node)
++	    - interrupt-parent  : optional, if needed for interrupt mapping
++
++  Example:
++	dma@82a8 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8349-dma", "fsl,elo-dma";
++		reg = <82a8 4>;
++		ranges = <0 8100 1a4>;
++		interrupt-parent = <&ipic>;
++		interrupts = <47 8>;
++		cell-index = <0>;
++		dma-channel@0 {
++			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
++			cell-index = <0>;
++			reg = <0 80>;
++		};
++		dma-channel@80 {
++			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
++			cell-index = <1>;
++			reg = <80 80>;
++		};
++		dma-channel@100 {
++			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
++			cell-index = <2>;
++			reg = <100 80>;
++		};
++		dma-channel@180 {
++			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
++			cell-index = <3>;
++			reg = <180 80>;
++		};
++	};
++
++   * Freescale 85xx/86xx DMA Controller
++
++    Freescale PowerPC 85xx/86xx have on chip general purpose DMA controllers.
++
++    Required properties:
++
++    - compatible        : compatible list, contains 2 entries, first is
++			 "fsl,CHIP-dma", where CHIP is the processor
++			 (mpc8540, mpc8540, etc.) and the second is
++			 "fsl,eloplus-dma"
++    - reg               : <registers mapping for DMA general status reg>
++    - cell-index        : controller index.  0 for controller @ 0x21000,
++                                             1 for controller @ 0xc000
++    - ranges 		: Should be defined as specified in 1) to describe the
++			  DMA controller channels.
++
++    - DMA channel nodes:
++	    - compatible        : compatible list, contains 2 entries, first is
++				 "fsl,CHIP-dma-channel", where CHIP is the processor
++				 (mpc8540, mpc8560, etc.) and the second is
++				 "fsl,eloplus-dma-channel"
++	    - cell-index        : dma channel index starts at 0.
++	    - reg               : <registers mapping for channel>
++	    - interrupts        : <interrupt mapping for DMA channel IRQ>
++	    - interrupt-parent  : optional, if needed for interrupt mapping
++
++  Example:
++	dma@21300 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
++		reg = <21300 4>;
++		ranges = <0 21100 200>;
++		cell-index = <0>;
++		dma-channel@0 {
++			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
++			reg = <0 80>;
++			cell-index = <0>;
++			interrupt-parent = <&mpic>;
++			interrupts = <14 2>;
++		};
++		dma-channel@80 {
++			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
++			reg = <80 80>;
++			cell-index = <1>;
++			interrupt-parent = <&mpic>;
++			interrupts = <15 2>;
++		};
++		dma-channel@100 {
++			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
++			reg = <100 80>;
++			cell-index = <2>;
++			interrupt-parent = <&mpic>;
++			interrupts = <16 2>;
++		};
++		dma-channel@180 {
++			compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
++			reg = <180 80>;
++			cell-index = <3>;
++			interrupt-parent = <&mpic>;
++			interrupts = <17 2>;
++		};
++	};
++
+
+    More devices will be defined as this spec matures.
+
+-- 
+1.5.3.7
