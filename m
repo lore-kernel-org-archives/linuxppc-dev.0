@@ -1,31 +1,29 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9C42DDE49
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 04:11:02 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0MHAwlc006933
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 12:10:58 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0MHAnsg921702
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 12:10:49 -0500
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0MHAd87028577
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 10:10:39 -0700
-Date: Tue, 22 Jan 2008 11:10:38 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joshua Williams <joshua.williams@qlogic.com>
-Subject: Re: [PATCH] Various new ibm405 DCRN #defines
-Message-ID: <20080122111038.1072dac4@weaponx>
-In-Reply-To: <47962316.8040709@qlogic.com>
-References: <47952018.7050702@qlogic.com> <1200956274.6807.12.camel@pasglop>
-	<47962316.8040709@qlogic.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd3mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 8FC47DDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 05:23:37 +1100 (EST)
+Received: from pd2mr2so.prod.shaw.ca
+	(pd2mr2so-qfe3.prod.shaw.ca [10.0.141.109]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JV20011W5Q52940@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 22 Jan 2008 11:22:53 -0700 (MST)
+Received: from pn2ml2so.prod.shaw.ca ([10.0.121.146])
+	by pd2mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JV200MV15Q3XYJ7@pd2mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Tue, 22 Jan 2008 11:22:53 -0700 (MST)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
+	2006))
+	with ESMTP id <0JV200H5S5Q2RV30@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 22 Jan 2008 11:22:51 -0700 (MST)
+Date: Tue, 22 Jan 2008 11:22:22 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] [POWERPC] mpc52xx: clean up Kconfig
+To: linuxppc-dev@ozlabs.org
+Message-id: <20080122182222.7748.46082.stgit@trillian.secretlab.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,25 +33,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 22 Jan 2008 11:08:38 -0600
-Joshua Williams <joshua.williams@qlogic.com> wrote:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> Benjamin Herrenschmidt wrote:
-> > On Mon, 2008-01-21 at 16:43 -0600, Joshua Williams wrote:
-> >> Various new ibm405 DCRN #defines.
-> >>
-> >>      Signed-off-by: Joshua Williams <joshua.williams@qlogic.com>
-> > 
-> > May I ask what for ? :-) Also, it's all arch/ppc, not arch/powerpc...
-> > nothing we want to improve to much on at this stage unless there's a
-> > really good reason.
-> 
-> The 405x #defines were incomplete and this was meant to
-> make them a bit tighter.  Since arch/ppc is in life support
-> mode this can wait until the 405x stuff gets moved over to
-> arch/powerpc.
+Put all the mpc5200 board config option behind a menu item to get them
+out of the top level of the platform support list
 
-Which 405x stuff?  Walnut is moved over already.  Other boards will
-need to be ported by people that have those boards.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-josh
+ arch/powerpc/platforms/52xx/Kconfig |   41 +++++++++++++----------------------
+ 1 files changed, 15 insertions(+), 26 deletions(-)
+
+diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
+index 733a806..515f244 100644
+--- a/arch/powerpc/platforms/52xx/Kconfig
++++ b/arch/powerpc/platforms/52xx/Kconfig
+@@ -1,31 +1,14 @@
+ config PPC_MPC52xx
+-	bool
++	bool "52xx-based boards"
++	depends on PPC_MULTIPLATFORM && PPC32
+ 	select FSL_SOC
+ 	select PPC_CLOCK
+-	default n
+-
+-config PPC_MPC5200
+-	bool
+-	select PPC_MPC52xx
+-	default n
+-
+-config PPC_MPC5200_BUGFIX
+-	bool "MPC5200 (L25R) bugfix support"
+-	depends on PPC_MPC5200
+-	default n
+-	help
+-	  Enable workarounds for original MPC5200 errata.  This is not required
+-	  for MPC5200B based boards.
+-
+-	  It is safe to say 'Y' here
+ 
+ config PPC_MPC5200_SIMPLE
+ 	bool "Generic support for simple MPC5200 based boards"
+-	depends on PPC_MULTIPLATFORM && PPC32
+-	select PPC_MPC5200
++	depends on PPC_MPC52xx
+ 	select DEFAULT_UIMAGE
+ 	select WANT_DEVICE_TREE
+-	default n
+ 	help
+ 	  This option enables support for a simple MPC52xx based boards which
+ 	  do not need a custom platform specific setup. Such boards are
+@@ -43,17 +26,23 @@ config PPC_MPC5200_SIMPLE
+ 
+ config PPC_EFIKA
+ 	bool "bPlan Efika 5k2. MPC5200B based computer"
+-	depends on PPC_MULTIPLATFORM && PPC32
++	depends on PPC_MPC52xx
+ 	select PPC_RTAS
+ 	select RTAS_PROC
+-	select PPC_MPC52xx
+ 	select PPC_NATIVE
+-	default n
+ 
+ config PPC_LITE5200
+ 	bool "Freescale Lite5200 Eval Board"
+-	depends on PPC_MULTIPLATFORM && PPC32
+-	select PPC_MPC5200
++	depends on PPC_MPC52xx
+ 	select DEFAULT_UIMAGE
+ 	select WANT_DEVICE_TREE
+-	default n
++
++config PPC_MPC5200_BUGFIX
++	bool "MPC5200 (L25R) bugfix support"
++	depends on PPC_MPC52xx
++	help
++	  Enable workarounds for original MPC5200 errata.  This is not required
++	  for MPC5200B based boards.
++
++	  It is safe to say 'Y' here
++
