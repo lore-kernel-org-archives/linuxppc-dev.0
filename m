@@ -1,22 +1,31 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C148DDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:55:10 +1100 (EST)
-Message-ID: <47967436.9070704@freescale.com>
-Date: Tue, 22 Jan 2008 16:54:46 -0600
-From: Jon Loeliger <jdl@freescale.com>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
+	by ozlabs.org (Postfix) with ESMTP id 06E3EDDE27
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:57:25 +1100 (EST)
+Date: Tue, 22 Jan 2008 14:57:22 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080122225046.GA866@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	<20080117211511.GA25320@aepfle.de>
+	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+	<20080118213011.GC10491@csn.ul.ie>
+	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
+	<20080122212654.GB15567@csn.ul.ie>
+	<Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
+	<20080122225046.GA866@csn.ul.ie>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3 v3] Add StorCenter DTS first draft.
-References: <E1JHRkS-0005du-O1@jdl.com>
-	<fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
-In-Reply-To: <fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
+	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 1/22/08, Jon Loeliger <jdl@jdl.com> wrote:
->> Based on the Kurobox DTS files.
->>
->> Signed-off-by: Andy Wilcox <andy@protium.com>
->> Signed-off-by: Jon Loeliger <jdl@jdl.com>
+On Tue, 22 Jan 2008, Mel Gorman wrote:
+
+> > > Whatever this was a problem fixed in the past or not, it's broken again now
+> > > :( . It's possible that there is a __GFP_THISNODE that can be dropped early
+> > > at boot-time that would also fix this problem in a way that doesn't
+> > > affect runtime (like altering cache_grow in my patch does).
+> > 
+> > The dropping of GFP_THISNODE has the same effect as your patch. 
 > 
-> Comments below
+> The dropping of it totally? If so, this patch might fix a boot but it'll
+> potentially be a performance regression on NUMA machines that only have
+> nodes with memory, right?
+
+No the dropping during early allocations.,
+
+> o 0
+> o 2
+> Nodes with regular memory
+> o 2
+> Current running CPU 0 is associated with node 0
+> Current node is 0
 > 
->> +
->> +/ {
->> +       model = "StorCenter";
->> +       compatible = "storcenter";
-> 
-> Be specific!  "iomega,storcenter".  Even better if you put in the model number.
+> So node 2 has regular memory but it's trying to use node 0 at a glance.
+> I've attached the patch I used against 2.6.24-rc8. It includes the revert.
 
-As I mentioned vefore, there is no further model number.
-That _is_ the model name.
+We need the current processor to be attached to a node that has 
+memory. We cannot fall back that early because the structures for the 
+other nodes do not exist yet.
 
->> +
->> +       soc@fc000000 {
->> +               #address-cells = <1>;
->> +               #size-cells = <1>;
->> +               device_type = "soc";
-> 
-> device_type should be dropped (but I know that requires changes to the
-> existing mpc82xx support code).
+> Online nodes
+> o 0
+> o 2
+> Nodes with regular memory
+> o 2
+> Current running CPU 0 is associated with node 0
+> Current node is 0
+>  o kmem_list3_init
 
-And when the code is fixed, we can fix the DTS too... :-)
+This needs to be node 2.
 
->> +               compatible = "fsl,mpc8241", "mpc10x";
-> 
-> fsl,mpc8241-immr would be better; this node describes the internally
-> memory mapped registers; not the entire soc.
+> [c0000000005c3b40] c0000000000dadec .cache_grow+0x7c/0x338
+> [c0000000005c3c00] c0000000000db54c .fallback_alloc+0x1c0/0x224
 
-Uh, whatever? :-)  'Cuz how many other DTS files say that?
-
->> +
->> +               mpic: interrupt-controller@40000 {
->> +                       #interrupt-cells = <2>;
->> +                       #address-cells = <0>;
-> 
-> Is #address-cells needed?  There are no child nodes.
-
-I thought so.  Could be wrong.
-
->> +       chosen {
->> +               linux,stdout-path = "/soc/serial@4500";
-> 
-> /soc@fc000000/ perhaps?
-
-Not really necessary to specify the unit number.
-
-jdl
+Fallback during bootstrap.
