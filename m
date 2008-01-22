@@ -1,17 +1,29 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 23 Jan 2008 01:38:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/4] Convert axon_msi to an of_platform driver
-Message-Id: <20080123013817.38db9ac6.sfr@canb.auug.org.au>
-In-Reply-To: <c04b1ca531fcd78c42c5a13802c1c331f9b4c8a7.1200999872.git.michael@ellerman.id.au>
-References: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1200999872.git.michael@ellerman.id.au>
-	<c04b1ca531fcd78c42c5a13802c1c331f9b4c8a7.1200999872.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__23_Jan_2008_01_38_17_+1100_4epogkACdbO77CJ2"
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 59DA3DDE35
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 01:40:30 +1100 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 08CBB227BD0
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:42:46 +0100 (CET)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id 89DEA9019B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:40:28 +0100 (CET)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id Vb79n4jpXCe8 for <linuxppc-dev@ozlabs.org>;
+	Tue, 22 Jan 2008 15:40:27 +0100 (CET)
+Received: from ibook.aepfle.de (DSL01.83.171.173.38.ip-pool.NEFkom.net
+	[83.171.173.38]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 15:40:27 +0100 (CET)
+Date: Tue, 22 Jan 2008 15:40:53 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] create modalias file in sysfs for bus of_platform
+Message-ID: <20080122144053.GA13019@aepfle.de>
+References: <20080122142109.GA12967@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080122142109.GA12967@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,38 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__23_Jan_2008_01_38_17_+1100_4epogkACdbO77CJ2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
+of modules. modalias files are already present for many other bus types.
 
-Hi Michael,
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-On Tue, 22 Jan 2008 22:04:40 +1100 (EST) Michael Ellerman <michael@ellerman=
-.id.au> wrote:
->
-> +#include <asm/of_platform.h>
+---
+ drivers/of/device.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-You must have missed the lectures :-) Please use linux/of_platform.h
-
-> +static struct of_device_id axon_msi_device_id[] =3D {
-
-const, please.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__23_Jan_2008_01_38_17_+1100_4epogkACdbO77CJ2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHlf/eTgG2atn1QN8RAoTcAJ4qQeo2lXFkUPL83s1lKt5WZAzSZwCdGT80
-ox5w1GrNQGgzd0spiTVEgmU=
-=1tC7
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Jan_2008_01_38_17_+1100_4epogkACdbO77CJ2--
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -86,7 +86,20 @@ static ssize_t dev_show_devspec(struct d
+ 	return sprintf(buf, "%s", ofdev->node->full_name);
+ }
+ 
++static ssize_t dev_show_modalias(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct of_device *ofdev = to_of_device(dev);
++	ssize_t len = 0;
++
++	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE);
++	buf[len] = '\n';
++	buf[len+1] = 0;
++	return len+1;
++}
++
+ static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
++static DEVICE_ATTR(modalias, S_IRUGO, dev_show_modalias, NULL);
+ 
+ /**
+  * of_release_dev - free an of device structure when all users of it are finished.
+@@ -116,6 +129,11 @@ int of_device_register(struct of_device 
+ 		return rc;
+ 
+ 	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
++	if (rc) {
++		device_unregister(&ofdev->dev);
++		return rc;
++	}
++	rc = device_create_file(&ofdev->dev, &dev_attr_modalias);
+ 	if (rc)
+ 		device_unregister(&ofdev->dev);
+ 
+@@ -126,6 +144,7 @@ EXPORT_SYMBOL(of_device_register);
+ void of_device_unregister(struct of_device *ofdev)
+ {
+ 	device_remove_file(&ofdev->dev, &dev_attr_devspec);
++	device_remove_file(&ofdev->dev, &dev_attr_modalias);
+ 	device_unregister(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_unregister);
