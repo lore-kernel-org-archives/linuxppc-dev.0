@@ -1,14 +1,30 @@
-Return-Path: <afleming@freescale.com>
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D701494071@corpexc01.corp.networkrobots.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D701494071@corpexc01.corp.networkrobots.com>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <35376E92-5F62-4CFD-8B50-3B687EC774B0@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: Trying 10/HALF
-Date: Tue, 22 Jan 2008 14:55:31 -0600
-To: Siva Prasad <sprasad@bivio.net>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 704F1DDEC4
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:00:50 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0ML0lcG023554
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:00:47 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0ML0lqA160826
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:00:47 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0ML0lvH019836
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:00:47 -0500
+Message-ID: <4796597C.1080705@austin.ibm.com>
+Date: Tue, 22 Jan 2008 15:00:44 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>,
+	linasvepstas@gmail.com
+Subject: Re: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
+References: <4796401D.5010907@austin.ibm.com> <47964422.7080505@austin.ibm.com>
+In-Reply-To: <47964422.7080505@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,41 +34,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Reposted this one. I got the email id wrong in this one.
 
-On Jan 9, 2008, at 13:35, Siva Prasad wrote:
+Sorry about that. 
 
-> Hi,
->
->
->
-> After booting, my MPC8641 based board keeps printing =93Trying 10/=20
-> HALF=94 for ever. I am unable to use the Ethernet, even though there =20=
-
-> are interrupts occuring. Based on /proc/interrupts, both tx and rx =20
-> interrupt count is increasing, and zero count for enet_error =20
-> interrupt.
->
->
->
-> I think this is coming from drivers/net/phy/phy.c during =20
-> autonegotiation. However, I am not sure how to take care of this. =20
-> Appreciate some pointers.
->
-
-
-Hm.  That's a bit strange.  What kind of PHY are you using?  The PHY =20
-layer acts like that if auto-negotiation fails and it couldn't =20
-establish a link using any other method.
-
-Some things to double-check:
-
-* Are your etsec interrupts correct in your dts.  Shouldn't be an =20
-issue, but if you copied them from the wrong place, or used an out-of-=20=
-
-date dts, the numbers could be wrong
-
-* Are your PHY interrupts correct in your dts.  If the PHY interrupts =20=
-
-are wrong, the PHY Lib might never discover that a link was established
-
-Andy=
+Manish
