@@ -1,22 +1,31 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4CA67DDE43
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:30:28 +1100 (EST)
-Message-ID: <4796605B.2000807@freescale.com>
-Date: Tue, 22 Jan 2008 15:30:03 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 08C9ADDE46
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:34:16 +1100 (EST)
+Date: Tue, 22 Jan 2008 13:34:14 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080122212654.GB15567@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+	<20080117181222.GA24411@aepfle.de>
+	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	<20080117211511.GA25320@aepfle.de>
+	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+	<20080118213011.GC10491@csn.ul.ie>
+	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
+	<20080122212654.GB15567@csn.ul.ie>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Add docs for Freescale DMA & DMA channel device
-	tree nodes
-References: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0801221511540.24873@blarg.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
+	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
+On Tue, 22 Jan 2008, Mel Gorman wrote:
+
+> > After you reverted the slab memoryless node patch there should be per node 
+> > structures created for node 0 unless the node is marked offline. Is it? If 
+> > so then you are booting a cpu that is associated with an offline node. 
+> > 
 > 
-> Guys please review and make sure I got all your previous comments fixed
-> up.  I've added cell-index. and the examples should represent real HW.
+> I'll roll a patch that prints out the online states before startup and
+> see what it looks like.
+
+Ok. Great.
+
 > 
->  Documentation/powerpc/booting-without-of.txt |  128 ++++++++++++++++++++++++++
->  1 files changed, 128 insertions(+), 0 deletions(-)
+> > > Can you see a better solution than this?
+> > 
+> > Well this means that bootstrap will work by introducing foreign objects 
+> > into the per cpu queue (should only hold per cpu objects). They will 
+> > later be consumed and then the queues will contain the right objects so 
+> > the effect of the patch is minimal.
+> > 
 > 
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> index da98154..3584c33 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -2615,6 +2615,134 @@ platforms are moved over to use the flattened-device-tree model.
->         - clock-frequency  : The frequency of the input clock, which typically
->                              comes from an on-board dedicated oscillator.
-> 
-> +    * Freescale 83xx DMA Controller
-> +
-> +    Freescale PowerPC 83xx have on chip general purpose DMA controllers.
-> +
-> +    Required properties:
-> +
-> +    - compatible        : compatible list, contains 2 entries, first is
-> +			 "fsl,CHIP-dma", where CHIP is the processor
-> +			 (mpc8349, mpc8360, etc.) and the second is
-> +			 "fsl,elo-dma"
-> +    - reg               : <registers mapping for DMA general status reg>
-> +    - ranges 		: Should be defined as specified in 1) to describe the
-> +			  DMA controller channels.
+> By minimal, do you mean that you expect it to break in some other
+> respect later or minimal as in "this is bad but should not have no
+> adverse impact".
 
-What does "Should be defined as specified in 1)" mean?
+Should not have any adverse impact after the objects from the cpu queue 
+have been consumed. If the cache_reaper tries to shift objects back 
+from the per cpu queue into slabs then BUG_ONs may be triggered. Make sure 
+you run the tests with full debugging please.
 
-> +    - cell-index        : controller index.  0 for controller @ 0x8100
+> Whatever this was a problem fixed in the past or not, it's broken again now
+> :( . It's possible that there is a __GFP_THISNODE that can be dropped early
+> at boot-time that would also fix this problem in a way that doesn't
+> affect runtime (like altering cache_grow in my patch does).
 
-This should be more generic.  I believe for each of our SoCs, we designation one 
-DMA controller to be "DMA Controller 1", and that one should have a cell-index 
-of "0".
-
-> +    - interrupts        : <interrupt mapping for DMA IRQ>
-> +    - interrupt-parent  : optional, if needed for interrupt mapping
-
-On 83xx, all DMA channels share the same interrupt?  Couldn't we just specify 
-the same IRQ in each channel's node, so that they look the same across 83xx, 
-85xx, and 86xx?  My sound driver doesn't use Extended Mode, but it does check 
-for "fsl,8610-dma-channel".  I'm thinking that maybe I should change to to look 
-for "elo" or "eloplus", but it would be nice if we could make the DMA node for 
-an 86xx SoC compatible with a driver that expects "fsl,elo-dma-channel".
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+The dropping of GFP_THISNODE has the same effect as your patch. 
+Objects from another node get into the per cpu queue. And on free we 
+assume that per cpu queue objects are from the local node. If debug is on 
+then we check that with BUG_ONs.
