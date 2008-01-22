@@ -1,23 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AECEDDDF0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 05:44:49 +1100 (EST)
-Message-ID: <479639B9.8080205@freescale.com>
-Date: Tue, 22 Jan 2008 12:45:13 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E4975DDF18
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 05:46:13 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0MIk9HC027640
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 13:46:09 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0MIk7DY045284
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 11:46:08 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0MIk4GP012074
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 11:46:04 -0700
+Message-ID: <479639EA.9050409@austin.ibm.com>
+Date: Tue, 22 Jan 2008 12:46:02 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] adder875: Fix flash bus-width and remove
-	duplicate	__initdata.
-References: <20080122183141.GB17036@loki.buserror.net>
-	<D6E6BC8F-1BDE-4752-950C-FBD609FD4EFD@kernel.crashing.org>
-In-Reply-To: <D6E6BC8F-1BDE-4752-950C-FBD609FD4EFD@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>
+Subject: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
+	Michael Strosaker <strosake@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Jan 22, 2008, at 12:31 PM, Scott Wood wrote:
-> 
->> Signed-off-by: Scott Wood <scottwood@freescale.com>
->> ---
->> arch/powerpc/boot/dts/adder875-redboot.dts |    2 +-
->> arch/powerpc/boot/dts/adder875-uboot.dts   |    2 +-
->> arch/powerpc/platforms/8xx/adder875.c      |    2 +-
->> 3 files changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts b/arch/ 
->> powerpc/boot/dts/adder875-redboot.dts
->> index 8f7a79f..930bfb3 100644
->> --- a/arch/powerpc/boot/dts/adder875-redboot.dts
->> +++ b/arch/powerpc/boot/dts/adder875-redboot.dts
->> @@ -62,7 +62,7 @@
->> 		flash@0,0 {
->> 			compatible = "cfi-flash";
->> 			reg = <0 0 0x800000>;
->> -			bank-width = <4>;
->> +			bank-width = <2>;
->> 			device-width = <2>;
->> 		};
->> 	};
-> 
-> I'm assuming the bank-width was just wrong before?
+The following series of patches implement a basic framework
+for hypervisor-assisted dump. The very first patch provides 
+documentation explaining what this is   :-)  . Yes, its supposed
+to be an improvement over kdump.
 
-Yes, I got a bug report (off-list) about it today.  I thought I had 
-tested it a while back; maybe the dts got reverted to an older version 
-somewhere along the way.
+A list of open issues / todo list is included in the documentation.
+It also appears that the not-yet-released firmware versions this was tested 
+on are still, ahem, incomplete; this work is also pending.
 
--Scott
+I have included most of the changes requested. Although, I did find
+one or two, fixed in a later patch file rather than the first location
+they appeared at.
+
+-- Manish & Linas.
