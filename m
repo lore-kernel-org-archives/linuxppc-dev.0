@@ -1,20 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E9A7ADDE1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:11:34 +1100 (EST)
-Date: Wed, 23 Jan 2008 10:11:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [PATCH] [POWERPC]: constify function pointer tables
-Message-Id: <20080123101118.fcb2136b.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0801222042360.5722@fbirervta.pbzchgretzou.qr>
-References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
-	<Pine.LNX.4.64.0801222042360.5722@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 448B8DDEA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 10:12:29 +1100 (EST)
+Date: Tue, 22 Jan 2008 15:12:20 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <47967560.8080101@cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0801221501240.2565@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	<20080117211511.GA25320@aepfle.de>
+	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+	<20080118213011.GC10491@csn.ul.ie>
+	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
+	<20080122212654.GB15567@csn.ul.ie>
+	<Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
+	<20080122225046.GA866@csn.ul.ie> <47967560.8080101@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
+	Linux MM <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 23 Jan 2008, Pekka Enberg wrote:
 
-Hi Jan,
+> When we call fallback_alloc() because the current node has ->nodelists set to
+> NULL, we end up calling kmem_getpages() with -1 as the node id which is then
+> translated to numa_node_id() by alloc_pages_node. But the reason we called
+> fallback_alloc() in the first place is because numa_node_id() doesn't have a
+> ->nodelist which makes cache_grow() oops.
 
-Good idea ... but ...
+Right, if nodeid == -1 then we need to call alloc_pages... 
+Essentiall a revert of 50c85a19e7b3928b5b5188524c44ffcbacdd4e35 from 2005.
 
-On Tue, 22 Jan 2008 20:43:09 +0100 (CET) Jan Engelhardt <jengelh@computergm=
-bh.de> wrote:
->
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/set=
-up-common.c
-> index 2de00f8..57d4f28 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -296,7 +296,7 @@ static void c_stop(struct seq_file *m, void *v)
->  {
->  }
-> =20
-> -struct seq_operations cpuinfo_op =3D {
-> +const struct seq_operations cpuinfo_op =3D {
+But I doubt that this is it. The fallback logic was added later and it 
+worked fine.
 
-This is declared non const in fs/proc/proc_misc.c (one of the reasons why
-it should be decalred in a header file ...)
 
-The others look good, though.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+---
+ mm/slab.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHlngjTgG2atn1QN8RApPEAJ4wxQD+BeKGt/R1vMRvzajrwCguJQCeIn3X
-9JxPM+zUmOmdBl4jI3xBcXs=
-=st+D
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Jan_2008_10_11_18_+1100_1vURmLZq4+bae4TD--
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c	2008-01-22 15:05:26.185452369 -0800
++++ linux-2.6/mm/slab.c	2008-01-22 15:05:59.301637009 -0800
+@@ -1668,7 +1668,11 @@ static void *kmem_getpages(struct kmem_c
+ 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
+ 		flags |= __GFP_RECLAIMABLE;
+ 
+-	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
++	if (nodeid == -1)
++		page = alloc_pages(flags, cachep->gfporder);
++	else
++		page = alloc_pages_node(nodeid, flags, cachep->gfporder);
++
+ 	if (!page)
+ 		return NULL;
+ 
