@@ -1,22 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E6AF6DDE4A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:06:02 +1100 (EST)
-Message-Id: <D2BA9CA7-96CF-40B8-8AE2-DC70A0955321@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40801221354i53b5e8ebn8fc547b8eea75ebe@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [POWERPC] Add docs for Freescale PowerQUICC SATA device
-	tree nodes
-Date: Tue, 22 Jan 2008 16:05:37 -0600
-References: <Pine.LNX.4.64.0801221536430.25559@blarg.am.freescale.net>
-	<fa686aa40801221354i53b5e8ebn8fc547b8eea75ebe@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <nish.aravamudan@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.184])
+	by ozlabs.org (Postfix) with ESMTP id 093B8DDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:12:10 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w8so2192251mue.1
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 14:12:07 -0800 (PST)
+Message-ID: <29495f1d0801221412s2642a24u6cb2ea8c9340aed2@mail.gmail.com>
+Date: Tue, 22 Jan 2008 14:12:06 -0800
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080122214505.GA15674@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+	<20080117181222.GA24411@aepfle.de>
+	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	<20080117211511.GA25320@aepfle.de>
+	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+	<20080118213011.GC10491@csn.ul.ie>
+	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+	<20080122214505.GA15674@aepfle.de>
+Cc: lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,60 +37,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 22, 2008, at 3:54 PM, Grant Likely wrote:
-
-> On 1/22/08, Kumar Gala <galak@kernel.crashing.org> wrote:
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> Documentation/powerpc/booting-without-of.txt |   30 ++++++++++++++++ 
->> ++++++++++
->> 1 files changed, 30 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
->> Documentation/powerpc/booting-without-of.txt
->> index 3584c33..387310a 100644
->> --- a/Documentation/powerpc/booting-without-of.txt
->> +++ b/Documentation/powerpc/booting-without-of.txt
->> @@ -2743,6 +2743,36 @@ platforms are moved over to use the  
->> flattened-device-tree model.
->>                };
->>        };
->>
->> +    * Freescale 8xxx/3.0 Gb/s SATA nodes
->> +
->> +    SATA nodes are defined to describe on-chip Serial ATA  
->> controllers.
->> +    Each SATA port should have its own node.
->> +
->> +    Required properties:
->> +    - compatible        : compatible list, contains 2 entries,  
->> first is
->> +                        "fsl,CHIP-sata", where CHIP is the processor
->> +                        (mpc8315, mpc8379, etc.) and the second is
->> +                        "fsl,pq-sata"
+On 1/22/08, Olaf Hering <olaf@aepfle.de> wrote:
+> On Tue, Jan 22, Mel Gorman wrote:
 >
-> As discussed on IRC, I don't like the approach of trying to define
-> generic names for these ip cores.  Too much can change in the future
-> to make the definition of the generic type drift over time.  Better to
-> always refer to exact chip variants.
+> > http://www.csn.ul.ie/~mel/postings/slab-20080122/partial-revert-slab-changes.patch
+> > .. Can you please check on your machine if it fixes your problem?
 >
-> ie.  Assuming mpc8315 was the first part to contain the sata core; the
-> dts should claim "fsl,CHIP-sata","fsl,mpc8315-sata" instead of
-> "fsl,CHIP-sata","fsl,pq-sata".
+> It does not fix or change the nature of the crash.
 >
-> It ends up being the same amount of work to support, but it doesn't
-> fall into the trap of making stuff up.
+> > Olaf, please confirm whether you need the patch below as well as the
+> > revert to make your machine boot.
 >
-> Another example; when describing serial ports, we still use an
-> *ancient* device to claim compatibility with: "ns16550".  ns16550 is
-> specific, not generic, yet everyone still knows what it means.
+> It crashes now in a different way if the patch below is applied:
 
-Think of the 'specific' name as 'fsl,pq-sata'.  Just like ns16550  
-there are lot of variants that do slightly different things which is  
-captured by the even more specific 'fsl,mpc8313-sata' name.
+Was this with the revert Mel mentioned applied as well? I get the
+feeling both patches are needed to fix up the memoryless SLAB issue.
 
-I note your disagreement. :)
+> Linux version 2.6.24-rc8-ppc64 (olaf@lingonberry) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #43 SMP Tue Jan 22 22:39:05 CET 2008
 
-- k
+<snip>
+
+> early_node_map[1] active PFN ranges
+>     1:        0 ->   892928
+
+<snip>
+
+> Unable to handle kernel paging request for data at address 0x00000058
+> Faulting instruction address: 0xc0000000000fe018
+> cpu 0x0: Vector: 300 (Data Access) at [c00000000075bac0]
+>     pc: c0000000000fe018: .setup_cpu_cache+0x184/0x1f4
+>     lr: c0000000000fdfa8: .setup_cpu_cache+0x114/0x1f4
+>     sp: c00000000075bd40
+>    msr: 8000000000009032
+>    dar: 58
+>  dsisr: 42000000
+>   current = 0xc000000000665a50
+>   paca    = 0xc000000000666380
+>     pid   = 0, comm = swapper
+> enter ? for help
+> [c00000000075bd40] c0000000000fb368 .kmem_cache_create+0x3c0/0x478 (unreliable)
+> [c00000000075be20] c0000000005e6780 .kmem_cache_init+0x284/0x4f4
+> [c00000000075bee0] c0000000005bf8ec .start_kernel+0x2f8/0x3fc
+> [c00000000075bf90] c000000000008590 .start_here_common+0x60/0xd0
+> 0:mon>
+>
+> 0xc0000000000fe018 is in setup_cpu_cache (/home/olaf/kernel/git/linux-2.6-numa/mm/slab.c:2111).
+> 2106                                    BUG_ON(!cachep->nodelists[node]);
+> 2107                                    kmem_list3_init(cachep->nodelists[node]);
+
+I might be barking up the wrong tree, but this block above is supposed
+to set up the cachep->nodeslists[*] that are used immediately below.
+But if the loop wasn't changed from N_NORMAL_MEMORY to N_ONLINE or
+whatever, you might get a bad access right below for node 0 that has
+no memory, if that's the node we're running on...
+
+> 2108                            }
+> 2109                    }
+> 2110            }
+> 2111            cachep->nodelists[numa_node_id()]->next_reap =
+> 2112                            jiffies + REAPTIMEOUT_LIST3 +
+> 2113                            ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+> 2114
+> 2115            cpu_cache_get(cachep)->avail = 0;
+
+Thanks,
+Nish
