@@ -2,15 +2,16 @@ Return-Path: <mel@csn.ul.ie>
 Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E685FDDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 00:41:55 +1100 (EST)
-Date: Wed, 23 Jan 2008 13:41:48 +0000
+	by ozlabs.org (Postfix) with ESMTP id E5588DDEE0
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 00:55:19 +1100 (EST)
+Date: Wed, 23 Jan 2008 13:55:14 +0000
 From: Mel Gorman <mel@csn.ul.ie>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080123134147.GA12503@csn.ul.ie>
-References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
+To: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH] Fix boot problem in situations where the boot CPU is running
+	on a memoryless node
+Message-ID: <20080123135513.GA14175@csn.ul.ie>
+References: <20080118213011.GC10491@csn.ul.ie>
 	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
 	<20080118225713.GA31128@aepfle.de>
 	<20080122195448.GA15567@csn.ul.ie>
@@ -19,16 +20,16 @@ References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
 	<20080123075821.GA17713@aepfle.de>
 	<20080123105044.GD21455@csn.ul.ie>
 	<20080123121459.GA18631@aepfle.de>
+	<20080123125236.GA18876@aepfle.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080123121459.GA18631@aepfle.de>
-Cc: lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
+In-Reply-To: <20080123125236.GA18876@aepfle.de>
+Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
+	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
 	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Christoph Lameter <clameter@sgi.com>
+	hanth Aravamudan <nacc@us.ibm.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,57 +39,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (23/01/08 13:14), Olaf Hering didst pronounce:
-> On Wed, Jan 23, Mel Gorman wrote:
-> 
-> > Sorry this is dragging out. Can you post the full dmesg with loglevel=8 of the
-> > following patch against 2.6.24-rc8 please? It contains the debug information
-> > that helped me figure out what was going wrong on the PPC64 machine here,
-> > the revert and the !l3 checks (i.e. the two patches that made machines I
-> > have access to work). Thanks
-> 
-> It boots with your change.
-> 
+This patch in combination with a partial revert of commit
+04231b3002ac53f8a64a7bd142fde3fa4b6808c6 fixes a regression between 2.6.23
+and 2.6.24-rc8 where a PPC64 machine with all CPUS on a memoryless node fails
+to boot. If approved by the SLAB maintainers, it should be merged for 2.6.24.
 
-....... Nice one! As the only addition here is debugging output, I can
-only assume that the two patches were being booted in isolation instead
-of combination earlier. The two threads have been a little confused with
-hand waving so that can easily happen.
+With memoryless-node configurations, it is possible that all the CPUs are
+associated with a node with no memory. Early in the boot process, nodelists
+are not setup that allow fallback_alloc to work, an Oops occurs and the
+machine fails to boot.
 
-Looking at your log;
+This patch adds the necessary checks to make sure a kmem_list3 exists for
+the preferred node used when growing the cache. If the preferred node has
+no nodelist then the currently running node is used instead. This
+problem only affects the SLAB allocator, SLUB appears to work fine.
 
-> early_node_map[1] active PFN ranges
->     1:        0 ->   892928
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-All memory on node 1
+---
+ mm/slab.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-> Online nodes
-> o 0
-> o 1
-> Nodes with regular memory
-> o 1
-> Current running CPU 0 is associated with node 0
-> Current node is 0
-
-Running CPU associated with node 0 so other than being node 1 instead of
-node 2, your machine is similar to the one I had the problem on in terms
-of memoryless nodes and CPU configuration.
-
-> VFS: Cannot open root device "<NULL>" or unknown-block(0,0)
-> Please append a correct "root=" boot option; here are the available partitions:
-> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
-> Rebooting in 1 seconds..    
-> 
-
-I see it failed to complete boot but I'm going to assume this is a relatively
-normal commane-line, .config or initrd problem and not a regression of
-some type.
-
-I'll post a patch suitable for pick-up shortly. The two patches ran in
-combination with CONFIG_DEBUG_SLAB a compile-based stress tests without
-difficulty so hopefully there is not new surprises hiding in the corners.
-
-Thanks Olaf.
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc8-005-revert-memoryless-slab/mm/slab.c linux-2.6.24-rc8-010_handle_missing_l3/mm/slab.c
+--- linux-2.6.24-rc8-005-revert-memoryless-slab/mm/slab.c	2008-01-22 17:46:32.000000000 +0000
++++ linux-2.6.24-rc8-010_handle_missing_l3/mm/slab.c	2008-01-22 18:42:53.000000000 +0000
+@@ -2775,6 +2775,11 @@ static int cache_grow(struct kmem_cache 
+ 	/* Take the l3 list lock to change the colour_next on this node */
+ 	check_irq_off();
+ 	l3 = cachep->nodelists[nodeid];
++	if (!l3) {
++		nodeid = numa_node_id();
++		l3 = cachep->nodelists[nodeid];
++	}
++	BUG_ON(!l3);
+ 	spin_lock(&l3->list_lock);
+ 
+ 	/* Get colour for the slab, and cal the next value. */
+@@ -3317,6 +3322,10 @@ static void *____cache_alloc_node(struct
+ 	int x;
+ 
+ 	l3 = cachep->nodelists[nodeid];
++	if (!l3) {
++		nodeid = numa_node_id();
++		l3 = cachep->nodelists[nodeid];
++	}
+ 	BUG_ON(!l3);
+ 
+ retry:
 
 -- 
 Mel Gorman
