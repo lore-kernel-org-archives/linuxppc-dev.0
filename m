@@ -1,22 +1,22 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 90A8BDDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 11:46:26 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so30478uge.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 16:46:24 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] ppc: fix #ifdef-s in mediabay driver
-Date: Wed, 23 Jan 2008 01:58:41 +0100
-References: <200801230012.38516.bzolnier@gmail.com>
-	<1201046394.6807.49.camel@pasglop>
-In-Reply-To: <1201046394.6807.49.camel@pasglop>
+Return-Path: <linville@tuxdriver.com>
+Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A5FF6DDDF5
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 12:01:59 +1100 (EST)
+Date: Tue, 22 Jan 2008 19:58:45 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/6] PS3: gelic: gelic updates for 2.6.25
+Message-ID: <20080123005845.GE3206@tuxdriver.com>
+References: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>
+	<20080122211239.GC3206@tuxdriver.com>
+	<1201048834.6807.55.camel@pasglop>
 MIME-Version: 1.0
-Message-Id: <200801230158.42017.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1201048834.6807.55.camel@pasglop>
+Cc: "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+	netdev@vger.kernel.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Hi,
-
-On Wednesday 23 January 2008, Benjamin Herrenschmidt wrote:
+On Wed, Jan 23, 2008 at 11:40:34AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> On Wed, 2008-01-23 at 00:12 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > * Replace incorrect CONFIG_BLK_DEV_IDE #ifdef in
-> >   check_media_bay() by CONFIG_MAC_FLOPPY one.
+> On Tue, 2008-01-22 at 16:12 -0500, John W. Linville wrote:
+> > On Thu, Dec 13, 2007 at 07:38:28PM +0900, Masakazu Mokuno wrote:
 > > 
-> > * Replace incorrect CONFIG_BLK_DEV_IDE #ifdef-s by
-> >   CONFIG_BLK_DEV_IDE_PMAC ones.
+> > > Here is a set of updates for PS3 gelic network driver.
+> > > This patch set requires other patches which were already submitted by
+> > > Geert (http://marc.info/?l=linux-kernel&m=119626095605487).
+> > > 
+> > > 	[1] PS3: gelic: Fix the wrong dev_id passed
+> > > 	[2] PS3: gelic: Add endianness macros
+> > > 	[3] PS3: gelic: Code cleanup
+> > > 	[4] PS3: gelic: Remove duplicated ethtool handers
+> > > 	[5] PS3: gelic: Add support for port link status
+> > > 	[6] PS3: gelic: Add support for dual network interface
+> > > 
+> > > This is also a set of prerequisite for new wireless driver for PS3, which
+> > > I'll submit later. 
 > > 
-> > * check_media_bay() is used only by drivers/block/swim3.c
-> >   so make this function available only if CONFIG_MAC_FLOPPY
-> >   is defined.
+> > These seem to not have been applied, but I couldn't find any stated
+> > reason.  Did they just get lost?  Withdrawn?
 > > 
-> > * check_media_bay_by_base() and media_bay_set_ide_infos()
-> >   are used only by drivers/ide/ppc/pmac.c so so make these
-> >   functions available only if CONFIG_MAC_FLOPPY is defined.
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> > Ben, IMO this patch is safe for 2.6.24 (assuming that it builds fine :),
-> > otherwise I would like to ask for permission to merge it through IDE
-> > tree since I have other pending IDE patches depending on this one.
+> > Will these be applied?  There is a wireless patch that depends on them.
+> > If not, will the wireless portion be refactored to not require these
+> > patches?
 > 
-> I'd rather avoid touching 2.6.24 unless it actually fixes a bug or
-> regression...
+> The list of 6 patches above are the patches that Masakazu Mukono is
+> submitting, the pre-reqs are different patches (see the linked URL),
+> though I can't see them in either (they should probably go through
+> paulus for-2.6.25). Geert, what's up with these ?
 
-Well, it is a bugfix for PMAC_MEDIABAY=y && BLK_DEV_IDE=n && MAC_FLOPPY=y. :)
+The wireless patch depends on the patches 1-6, which then depend on
+Geert's patches.
 
-> I'm tempted to actually remove all ifdef's ... if you have a media-bay,
-> then there are about 99% chances it contains an IDE device, with the
-> remaining percent being split with putting a floppy or a battery in. I
-> doubt anybody will care building a kernel without the support for these
-> and with the mediabay support, and still want to save a handful of bytes
-> in that driver.
+I thought Geert's had been applied, but I guess I was looking at
+it wrong.  Is there a powerpc tree that has them?  Perhaps 1-6 above
+and the wireless patch should just be applied to that tree (if there
+is one) and all merged together?
 
-I'm more worried about breaking automatic build checking (make randconfig)
-than a few extra bytes so if you remove all #ifdefs you'll have to either
-make BLK_DEV_IDE_PMAC select PMAC_MEDIABAY or make PMAC_MEDIABAY depend
-on BLK_DEV_IDE_PMAC (otherwise BLK_DEV_IDE=n && PMAC_MEDIABAY=y will fail
-since mediabay.c is referencing IDE code).
-
-Thanks,
-Bart
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
