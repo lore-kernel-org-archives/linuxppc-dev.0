@@ -1,18 +1,17 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id ADD6DDDEF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:53:57 +1100 (EST)
-Received: from ravnborg.org (0x535d98d8.vgnxx8.adsl-dhcp.tele.dk
-	[83.93.152.216])
-	by pasmtpA.tele.dk (Postfix) with ESMTP id 1EE9C1840B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 19:53:54 +0100 (CET)
-Date: Wed, 23 Jan 2008 19:54:05 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Section mismatch warnings om powerpc defconfig build:wq
-Message-ID: <20080123185405.GA23693@uranus.ravnborg.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 2915ADDE07
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 06:37:27 +1100 (EST)
+Date: Wed, 23 Jan 2008 22:37:12 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: mpc8568e-mds: pci-e is broken
+Message-ID: <20080123193712.GA12037@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,64 +21,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Powerpc.
+Hello Benjamin, Kumar,
 
-Just a heads up.
-When building the provided defconfig for powerpc I get the following bunch
-of section mismatch warnings:
+Using galak/powerpc.git's e4a0d8a1f7e6a9741ec46 head, MPC8568E-MDS
+is oopsing during PCI-E probe, like this:
 
-WARNING: vmlinux.o(.text+0x83c0): Section mismatch: reference to .devinit.text:.start_secondary in '.start_secondary_prolog'
-WARNING: vmlinux.o(.text+0xe878): Section mismatch: reference to .init.text:.find_symbol64 in '.vdso_do_func_patch64'
-WARNING: vmlinux.o(.text+0xe8a4): Section mismatch: reference to .init.text:.find_symbol64 in '.vdso_do_func_patch64'
-WARNING: vmlinux.o(.text+0xe944): Section mismatch: reference to .init.text:.find_symbol32 in '.vdso_do_func_patch32'
-WARNING: vmlinux.o(.text+0xe970): Section mismatch: reference to .init.text:.find_symbol32 in '.vdso_do_func_patch32'
-WARNING: vmlinux.o(.text+0x25b10): Section mismatch: reference to .init.text:.lmb_alloc_base in '.move_device_tree'
-WARNING: vmlinux.o(.text+0x2bc98): Section mismatch: reference to .devinit.text:.fixup_resource in '.pci_parse_of_addrs'
-WARNING: vmlinux.o(.text+0x2c428): Section mismatch: reference to .devinit.text:.update_dn_pci_info in '.pci_dn_reconfig_notifier'
-WARNING: vmlinux.o(.text+0x2c9ec): Section mismatch: reference to .devinit.text:.pci_setup_pci_controller in '.pcibios_alloc_controller'
-WARNING: vmlinux.o(.text+0x4db6c): Section mismatch: reference to .devinit.text:.pcibios_setup_new_device in '.pcibios_fixup_new_pci_devices'
-WARNING: vmlinux.o(.text+0x4db84): Section mismatch: reference to .devinit.text:.pcibios_fixup_device_resources in '.pcibios_fixup_new_pci_devices'
-WARNING: vmlinux.o(.text+0x4de28): Section mismatch: reference to .devinit.text:.of_scan_bus in '.pcibios_add_pci_devices'
-WARNING: vmlinux.o(.text+0x55474): Section mismatch: reference to .init.text:.free_property in '.free_node'
-WARNING: vmlinux.o(.text+0x559d0): Section mismatch: reference to .devinit.text:.vio_register_device_node in '.vio_create_viodasd'
-WARNING: vmlinux.o(.text+0xe73c0): Section mismatch: reference to .init.text:.__alloc_bootmem_node in '.sparse_early_usemap_alloc'
-WARNING: vmlinux.o(.text+0xe74b4): Section mismatch: reference to .meminit.text:.sparse_index_init in '.sparse_add_one_section'
-WARNING: vmlinux.o(.text+0xe74d4): Section mismatch: reference to .meminit.text:.sparse_mem_map_populate in '.sparse_add_one_section'
-WARNING: vmlinux.o(.text+0xe7548): Section mismatch: reference to .meminit.text:.sparse_init_one_section in '.sparse_add_one_section'
-WARNING: vmlinux.o(.text+0xf1c90): Section mismatch: reference to .devinit.text:.arch_add_memory in '.add_memory'
-WARNING: vmlinux.o(.text+0xf1eac): Section mismatch: reference to .meminit.text:.init_currently_empty_zone in '.__add_zone'
-WARNING: vmlinux.o(.text+0xf1ee0): Section mismatch: reference to .meminit.text:.memmap_init_zone in '.__add_zone'
-WARNING: vmlinux.o(.text+0x279f08): Section mismatch: reference to .devinit.text:.pci_alloc_child_bus in '.pci_add_new_bus'
-WARNING: vmlinux.o(.text+0x27a95c): Section mismatch: reference to .devinit.text:.pci_scan_device in '.pci_scan_single_device'
-WARNING: vmlinux.o(.text+0x27af44): Section mismatch: reference to .devinit.text:.pcibios_fixup_bus in '.pci_scan_child_bus'
-WARNING: vmlinux.o(.text+0x2849a4): Section mismatch: reference to .devinit.text:.pci_setup_bridge in '.pci_bus_assign_resources'
-WARNING: vmlinux.o(.text+0x284ca8): Section mismatch: reference to .devinit.text:.pci_bus_size_cardbus in '.pci_bus_size_bridges'
-WARNING: vmlinux.o(.text+0x2f649c): Section mismatch: reference to .devinit.text:.hvc_alloc in '.hvc_rtas_init'
-WARNING: vmlinux.o(.text+0x30d99c): Section mismatch: reference to .cpuinit.text:.cpu_up in '.store_online'
-WARNING: vmlinux.o(.text+0x38c724): Section mismatch: reference to .devinit.text:.olympic_init in '.olympic_open'
-WARNING: vmlinux.o(.text+0x3b5630): Section mismatch: reference to .init.text:.pmac_ide_setup_dma in '.pmac_ide_setup_device'
-WARNING: vmlinux.o(.text+0x3daa04): Section mismatch: reference to .devexit.text:.sym2_remove in '.sym2_io_error_detected'
-WARNING: vmlinux.o(.text+0x4da38c): Section mismatch: reference to .cpuinit.text:.register_cpu_notifier in '.cpufreq_register_driver'
-  AS      .tmp_kallsyms2.o
-  LD      vmlinux
-  SYSMAP  System.map
-  SYSMAP  .tmp_System.map
-  Building modules, stage 2.
-  WRAP    arch/powerpc/boot/zImage.pseries
-  WRAP    arch/powerpc/boot/zImage.pmac
-powerpc64-unknown-linux-gnu-strip -s -R .comment vmlinux -o arch/powerpc/boot/zImage.iseries
-  MODPOST 263 modules
-WARNING: drivers/cdrom/viocd.o(.text+0x504): Section mismatch: reference to .init.text:.find_capability in '.viocd_probe'
-WARNING: drivers/net/iseries_veth.o(.text+0x113c): Section mismatch: reference to .init.text:.veth_probe_one in '.veth_probe'
+- - - -
+Found FSL PCI host bridge at 0x00000000e0008000. Firmware bus number: 0->255
+PCI host bridge /pci@e0008000 (primary) ranges:
+ MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
+  IO 0x00000000e2000000..0x00000000e27fffff -> 0x0000000000000000
+Found FSL PCI host bridge at 0x00000000e000a000. Firmware bus number: 0->255
+PCI host bridge /pcie@e000a000  ranges:
+ MEM 0x00000000a0000000..0x00000000afffffff -> 0x00000000a0000000
+  IO 0x00000000e2800000..0x00000000e2ffffff -> 0x0000000000000000
 
-Some of these are powerpc specific and you ought to take a look at these.
-It is planned to let section mismatches become fatal in the build process during 2.6.25
-so now is a good time to fix them.
+[...]
 
-The above list is generatd from kbuild.git which is included in -mm.
-So some warnings may already be fixed and you will need -mm to get the full list.
+PCI: Probing PCI hardware
+PCI: 0001:01:00.0: class b20 doesn't match header type 01. Ignoring class.
+PCI: Closing bogus Apple Firmware region 1 on bus 0x02
+PCI: Closing bogus Apple Firmware region 2 on bus 0x02
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc0142760
+Oops: Kernel access of bad area, sig: 11 [#1]
+MPC85xx MDS
+Modules linked in:
+NIP: c0142760 LR: c01427a8 CTR: 00000000
+REGS: df823dc0 TRAP: 0300   Not tainted  (2.6.24-rc8-g146f2dc2-dirty)
+MSR: 00029000 <EE,ME>  CR: 42044082  XER: 00000000
+DEAR: 00000000, ESR: 00000000
+TASK = df820000[1] 'swapper' THREAD: df822000
+GPR00: 00000000 df823e70 df820000 df800380 000000d0 00000200 00000004 c028aa6c
+GPR08: df81c200 00000007 00000000 df809a44 22044024 48fdafc9 1fff4e00 c02276ec
+GPR16: c0227760 df823f98 c0227748 c0284efc c0227774 c0227788 c023e5b0 c02a9200
+GPR24: df8098d8 df823eac df809800 b6db6db7 00000000 00000008 00000000 df8098e0
+Call Trace:
+[df823e70] [c01427a8]  (unreliable)
+[df823ea0] [c0143c9c]
+[df823f00] [c027a338]
+[df823f20] [c026e38c]
+[df823f30] [c026df08]
+[df823f60] [c02641ec]
+[df823ff0] [c000dc08]
+Instruction dump:
+39290001 2f9d0006 7d4a4f5e 7f3ccb78 48000020 812b0004 800b0000 39290001
+7c004850 7f805040 419c0044 7fdcf378 <83dc0000> 38000000 2f9e0000 41beffe8
+---[ end trace 8640abe69a316dee ]---
+Kernel panic - not syncing: Attempted to kill init!
+Rebooting in 180 seconds..
+- - - -
 
-Another note - I build with 'make KCFLAGS=-fno-inline-functions-called-once'
-which triggers a few more warnings than normal with gcc > 3.4.
 
-	Sam
+It seems like be8cbcd8896670a01ead7a29e33ff is at "fault".
+
+static void __devinit __pcibios_fixup_bus(struct pci_bus *bus)
+{
+...
+		if (i >= 3 && bus->self->transparent)
+			continue;
+...
+}
+
+That new check doesn't work, here bus->self->transparent == 0.
+Could it be that the message below is the root cause?
+
+PCI: 0001:01:00.0: class b20 doesn't match header type 01. Ignoring class.
+
+I.e. drivers/pci/probe.c just don't setting transparent flag.
+I wonder if we need use quirk_transparent_bridge() here or
+we can fix it other way?
+
+Just in case, I'm observing that message for a long long time, and
+it didn't tell upon any functionality till now.
+
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
