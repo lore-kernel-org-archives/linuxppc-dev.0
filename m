@@ -1,46 +1,21 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ED53BDDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 08:36:45 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0NLadGG014332
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 16:36:39 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0NLacn2320766
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 16:36:38 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0NLabET029093
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 16:36:38 -0500
-Date: Wed, 23 Jan 2008 13:36:37 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
-	running on a memoryless node
-Message-ID: <20080123213637.GE3848@us.ibm.com>
-References: <20080123125236.GA18876@aepfle.de>
-	<20080123135513.GA14175@csn.ul.ie>
-	<Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
-	<20080123155655.GB20156@csn.ul.ie>
-	<Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
-	<20080123195220.GB3848@us.ibm.com>
-	<84144f020801231302g2cafdda9kf7f916121dc56aa5@mail.gmail.com>
-	<Pine.LNX.4.64.0801231312580.15681@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0801231312580.15681@schroedinger.engr.sgi.com>
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 29528DDE34
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 09:04:14 +1100 (EST)
+Message-Id: <B4582CB3-2065-40D5-9C16-B0EE1943D83A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20080123195022.GA21157@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: mpc8568e-mds: pci-e is broken
+Date: Wed, 23 Jan 2008 16:04:05 -0600
+References: <20080123193712.GA12037@localhost.localdomain>
+	<6785FDE5-FEBA-4FE2-A94C-85FCE299D1CC@kernel.crashing.org>
+	<20080123195022.GA21157@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -50,28 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 23.01.2008 [13:14:26 -0800], Christoph Lameter wrote:
-> On Wed, 23 Jan 2008, Pekka Enberg wrote:
-> 
-> > I think Mel said that their configuration did work with 2.6.23
-> > although I also wonder how that's possible. AFAIK there has been some
-> > changes in the page allocator that might explain this. That is, if
-> > kmem_getpages() returned pages for memoryless node before, bootstrap
-> > would have worked.
-> 
-> Regular kmem_getpages is called with GFP_THISNODE set. There was some
-> breakage in 2.6.22 and before with GFP_THISNODE returning pages from
-> the wrong node if a node had no memory. So it may have worked
-> accidentally and in an unsafe manner because the pages would have been
-> associated with the wrong node which could trigger bug ons and locking
-> troubles.
 
-Right, so it might have functioned before, but the correctness was
-wobbly at best... Certainly the memoryless patch series has tightened
-that up, but we missed these SLAB issues.
+On Jan 23, 2008, at 1:50 PM, Anton Vorontsov wrote:
 
-I see that your patch fixed Olaf's machine, Pekka. Nice work on
-everyone's part tracking this stuff down.
+> On Wed, Jan 23, 2008 at 01:42:56PM -0600, Kumar Gala wrote:
+> [...]
+>>> PCI: Probing PCI hardware
+>>> PCI: 0001:01:00.0: class b20 doesn't match header type 01. Ignoring
+>>> class.
+>>> PCI: Closing bogus Apple Firmware region 1 on bus 0x02
+>>> PCI: Closing bogus Apple Firmware region 2 on bus 0x02
+>>
+>> odd, you shouldn't see these anymore w/my git tree.
+>
+> Yup, I noticed few commits that are trying to fix this. And these
+> fixes do work for PCI, but not for PCI-E...
 
-Thanks,
-Nish
+I see these now.. I think I'm too lazy to think of a way to fix this.
+
+> [...]
+>>> static void __devinit __pcibios_fixup_bus(struct pci_bus *bus)
+>>> {
+>>> ...
+>>> 		if (i >= 3 && bus->self->transparent)
+>>> 			continue;
+>>> ...
+>>> }
+>>>
+>>> That new check doesn't work, here bus->self->transparent == 0.
+>>> Could it be that the message below is the root cause?
+>>>
+>>> PCI: 0001:01:00.0: class b20 doesn't match header type 01. Ignoring
+>>> class.
+>>
+>> this is expected but of how FSL hw reports itself.
+>
+> Well. I see only two places were transparent flag is applied:
+> drivers/pci/quirks.c:quirk_transparent_bridge()
+> and
+> drivers/pci/probe.c:pci_setup_device() in the PCI_HEADER_TYPE_BRIDGE.
+>
+> So, obviously probe.c is skipping our PCI-E, thus not setting
+> transparent flag, no?
+>
+>>> I.e. drivers/pci/probe.c just don't setting transparent flag.
+>>> I wonder if we need use quirk_transparent_bridge() here or
+>>> we can fix it other way?
+>>>
+>>> Just in case, I'm observing that message for a long long time, and
+>>> it didn't tell upon any functionality till now.
+>>
+>>
+>> Is this with the 8568 MDS in standalone or plugged into the back  
+>> pane?
+>
+> This is standalone setup.
+
+do you have a card plugged in?
+
+- k
