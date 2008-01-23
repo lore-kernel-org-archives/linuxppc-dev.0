@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 129DFDDDF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 11:20:42 +1100 (EST)
-To: Juergen Beisert <jbe@pengutronix.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [MPC5200] problem running FEC and ATA
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 21 Jan 2008 17:28:22 +0100."
-	<200801211728.22817.jbe@pengutronix.de>
-Date: Wed, 23 Jan 2008 01:20:40 +0100
-Sender: wd@denx.de
-Message-Id: <20080123002040.5049F24781@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, "Mehlan,
-	Markus \(Ritter Elektronik\)" <markus.mehlan@ritter-elektronik.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F3B89DDDEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 11:33:39 +1100 (EST)
+Subject: Re: [PATCH 1/3 v3] Add StorCenter DTS first draft.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
+References: <E1JHRkS-0005du-O1@jdl.com>
+	<fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 11:33:16 +1100
+Message-Id: <1201048396.6807.52.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <200801211728.22817.jbe@pengutronix.de> you wrote:
->
-> Is anybody out there with more MPC5200B experience? Can someone tell me why
-> some MPC5200B are need this patch and others not? We have two different
-> systems here (cards from different vendors) with the same processor, one
-> needs this BSDIS-patch and the other not. ???????????????
 
-Is it really exactly the same CPU revision? My guess is that one is
-rev. B and the other one is older...
+> > +
+> > +               mpic: interrupt-controller@40000 {
+> > +                       #interrupt-cells = <2>;
+> > +                       #address-cells = <0>;
+> 
+> Is #address-cells needed?  There are no child nodes.
 
-Best regards,
+It's preferrable for interrupt controllers as #address-cells of the
+parent interrupt controller defines the size of the interrupt unit
+specifier in the child in the interrupt tree.
 
-Wolfgang Denk
+I think there's an ongoing argument as to whether the absence of
+#address-cells should be the same as #address-cells = 0 in that specific
+case but I'm not sure the code does the right thing so let's have it
+explicit.
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It would be illogical to assume that all conditions remain stable
-	-- Spock, "The Enterprise" Incident", stardate 5027.3
+Ben.
