@@ -1,30 +1,18 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
-	by ozlabs.org (Postfix) with ESMTP id 0232FDE038
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:42:01 +1100 (EST)
-Date: Wed, 23 Jan 2008 10:41:59 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
-	running on a memoryless node
-In-Reply-To: <20080123135513.GA14175@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801231040160.11430@schroedinger.engr.sgi.com>
-References: <20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
-	<20080122214505.GA15674@aepfle.de>
-	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-	<20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
-	<20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
-	<20080123135513.GA14175@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D8447DE1E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:42:11 +1100 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1JHkY3-00010P-V2
+	for linuxppc-dev@ozlabs.org; Wed, 23 Jan 2008 12:42:08 -0600
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4 v4] POWERPC: Add _nmask_and_or_msr() declartion to
+	asm-powerpc/system.h
+Date: Wed, 23 Jan 2008 12:42:07 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JHkY3-00010P-V2@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,15 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Jan 2008, Mel Gorman wrote:
 
-> This patch adds the necessary checks to make sure a kmem_list3 exists for
-> the preferred node used when growing the cache. If the preferred node has
-> no nodelist then the currently running node is used instead. This
-> problem only affects the SLAB allocator, SLUB appears to work fine.
+Prevents miscellaneous users from declaring it locally.
 
-That is a dangerous thing to do. SLAB per cpu queues will contain foreign 
-objects which may cause troubles when pushing the objects back. I think we 
-may be lucky that these objects are consumed at boot. If all of the 
-foreign objects are consumed at boot then we are fine. At least an 
-explanation as to this issue should be added to the patch.
+Signed-off-by: Jon Loeliger <jdl@freecale.com>
+---
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    2 --
+ include/asm-powerpc/system.h                      |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+index a2c04b9..d4f8bf5 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -53,8 +53,6 @@
+ 
+ #define MPC7448HPC2_PCI_CFG_PHYS 0xfb000000
+ 
+-extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
+-
+ int mpc7448_hpc2_exclude_device(struct pci_controller *hose,
+ 				u_char bus, u_char devfn)
+ {
+diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
+index 87be8c3..bc9739d 100644
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -169,6 +169,8 @@ extern int do_page_fault(struct pt_regs *, unsigned long, unsigned long);
+ extern void bad_page_fault(struct pt_regs *, unsigned long, int);
+ extern int die(const char *, struct pt_regs *, long);
+ extern void _exception(int, struct pt_regs *, int, unsigned long);
++extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
++
+ #ifdef CONFIG_BOOKE_WDT
+ extern u32 booke_wdt_enabled;
+ extern u32 booke_wdt_period;
+-- 
+1.5.4.rc0
