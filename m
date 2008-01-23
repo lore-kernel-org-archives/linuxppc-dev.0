@@ -1,22 +1,35 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id C25FEDDEFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 01:40:39 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5204525wag.13
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 06:40:38 -0800 (PST)
-Message-ID: <9e4733910801230640u6e02ed07r476c201895d46d9f@mail.gmail.com>
-Date: Wed, 23 Jan 2008 09:40:38 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jon Loeliger" <jdl@jdl.com>
-Subject: Re: [PATCH 2/3] Convert PowerPC MPC i2c to of_platform_driver from
-	platform_driver
-In-Reply-To: <E1JHgdB-0002zV-F4@jdl.com>
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FAB3DDE20
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 01:42:29 +1100 (EST)
+Date: Wed, 23 Jan 2008 14:42:23 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+	running on a memoryless node
+Message-ID: <20080123144222.GA20156@csn.ul.ie>
+References: <20080118225713.GA31128@aepfle.de>
+	<20080122195448.GA15567@csn.ul.ie>
+	<20080122214505.GA15674@aepfle.de>
+	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+	<20080123075821.GA17713@aepfle.de>
+	<20080123105044.GD21455@csn.ul.ie>
+	<20080123121459.GA18631@aepfle.de>
+	<20080123125236.GA18876@aepfle.de>
+	<20080123135513.GA14175@csn.ul.ie>
+	<20080123142759.GB19161@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080123020912.31675.48787.stgit@terra.home>
-	<20080123020914.31675.35659.stgit@terra.home>
-	<E1JHgdB-0002zV-F4@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20080123142759.GB19161@aepfle.de>
+Cc: lee.schermerhorn@hp.com, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, Linux MM <linux-mm@kvack.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/23/08, Jon Loeliger <jdl@jdl.com> wrote:
-> So, like, the other day Jon Smirl mumbled:
-> > Convert MPC i2c driver from a platform_driver to a
-> > of_platform_driver. Add the ability to dynamically load i2c drivers
-> > based on device tree names. Routine names were changed from fsl_ to
-> > mpc_ to make them match the file name. Common code moved to
-> > powerpc-common.* Orginal ppc driver left intact for deletion when ppc
-> > arch is removed.
->
-> This seems backwards to me.  I was under the impression
-> that our trend was _toward_ "Freescale" and "fsl" names...?
-> And aren't the drivers also already using "fsl-i2c" in the
-> DTS files as called out in the b-w-o.txt too?
+On (23/01/08 15:27), Olaf Hering didst pronounce:
+> On Wed, Jan 23, Mel Gorman wrote:
+> 
+> > This patch in combination with a partial revert of commit
+> > 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 fixes a regression between 2.6.23
+> > and 2.6.24-rc8 where a PPC64 machine with all CPUS on a memoryless node fails
+> > to boot. If approved by the SLAB maintainers, it should be merged for 2.6.24.
+> 
+> This change alone does not help, its not the version I tested.
+> Will all the changes below go into 2.6.24 as well, in a seperate patch?
+> 
+> -       for_each_node_state(node, N_NORMAL_MEMORY) {
+> +       for_each_online_node(node) {
 
-The routine names should match the file name which then determines the
-module name. I didn't want to change the module name so I made the
-routines names match the module name.
-
->
-> Grumble long lines not hard-limited to 70-ish columns,
-> yes, even in log messages... :-)
->
-> jdl
->
-
+Those changes are already in a separate patch and have been sent. I don't
+see it in git yet but it should be on the way.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
