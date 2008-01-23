@@ -1,20 +1,22 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp117.sbc.mail.sp1.yahoo.com (smtp117.sbc.mail.sp1.yahoo.com
-	[69.147.64.90]) by ozlabs.org (Postfix) with SMTP id AEED8DDF6C
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 04:53:09 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
-Date: Wed, 23 Jan 2008 09:53:05 -0800
-References: <20080121103434.397382000@sunsite.dk>
-	<87sl0qzxos.fsf@macbook.be.48ers.dk>
-	<fa686aa40801230912m2314209fp2545898949ed3b24@mail.gmail.com>
-In-Reply-To: <fa686aa40801230912m2314209fp2545898949ed3b24@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801230953.05921.david-b@pacbell.net>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 697EEDDECF
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:00:05 +1100 (EST)
+Date: Wed, 23 Jan 2008 19:00:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCHv2 0/8] [POWERPC] 8xx cleanups
+Message-ID: <20080123180012.GA23313@uranus.ravnborg.org>
+References: <4797641F.4000902@scram.de>
+	<CA8FFE19-B84A-426B-9B1C-EF0F7C87AE47@kernel.crashing.org>
+	<20080123171252.GA22967@uranus.ravnborg.org>
+	<47977A02.40506@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47977A02.40506@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 23 January 2008, Grant Likely wrote:
-> The question is about the device structure which used to be provided
-> by the platform device instances and now there just uses the c67x00's
-> device struct.  I was under the impression that each USB HCD needs to
-> have it's own struct device.  I take it that's not true?
+On Wed, Jan 23, 2008 at 11:31:46AM -0600, Jon Loeliger wrote:
+> Sam Ravnborg wrote:
+> >>What impact do the have on boards in arch/ppc being able to build?
+> >
+> >Byt the way what are the plans for powerpc?
+> >We have:
+> >arch/ppc
+> >arch/ppc64
+> >arch/powerpc
+> >
+> >It was my understanding that arch/powerpc was supposed
+> >to be the future unified powerpc architecture but it
+> >does not even provide a defconfig.
+> >
+> >And I do not see too much happening to do so - but that maybe
+> >because I looked at a wrong place.
+> 
+> You must have looked in the wrong place. :-)
+> 
+> arch/ppc is scheduled for removal from mainline in June.
+Good to hear.
 
-Each root hub necessarily is a unique device, representing a set
-of downstream links.  Unless Peter didn't test something relevant,
-it would seem we have observational proof that two root hubs can
-share the same device node for an upstream link.
+> arch/powerpc is under significant development, with lots
+> of defconfigs in arch/powerpc/configs.
+Double checked - it was my build script that used ARCH=ppc
+Now I just need to build another toolchain as the ppc750 could not build
+the defconfig. crosstool is my friend here.
 
-I can't think of a reason to demand multiple upstream links, though
-sharing them between root hubs like that isn't a common structure.  
-
-- Dave
+	Sam
