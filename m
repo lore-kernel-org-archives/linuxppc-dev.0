@@ -1,22 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2B5EBDDF8A
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:04:43 +1100 (EST)
-Date: Wed, 23 Jan 2008 17:02:10 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: mpc8568e-mds: pci-e is broken
-In-Reply-To: <B4582CB3-2065-40D5-9C16-B0EE1943D83A@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0801231701110.1762@blarg.am.freescale.net>
-References: <20080123193712.GA12037@localhost.localdomain>
-	<6785FDE5-FEBA-4FE2-A94C-85FCE299D1CC@kernel.crashing.org>
-	<20080123195022.GA21157@localhost.localdomain>
-	<B4582CB3-2065-40D5-9C16-B0EE1943D83A@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (136-022.dsl.labridge.com [206.117.136.22])
+	by ozlabs.org (Postfix) with ESMTP id C26BEDDDF2
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:34:26 +1100 (EST)
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+From: Joe Perches <joe@perches.com>
+To: Roel Kluin <12o3l@tiscali.nl>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <4797C1AD.3040307@tiscali.nl>
+References: <4797C1AD.3040307@tiscali.nl>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 15:05:27 -0800
+Message-Id: <1201129527.4988.69.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton,
+On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+> index ebf9e21..dcfb459 100644
+> --- a/arch/powerpc/boot/4xx.c
+> +++ b/arch/powerpc/boot/4xx.c
+> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+>  	cs = 0;
+>  	while (val) {
+> -		if (val && 0x1)
+> +		if (val & 0x1)
+>  			cs++;
+>  		val = val >> 1;
 
-Can you try this patch and see if it resolves the issue for you.. (You'll
-still get the Apple FW messages)
+I think this pattern should be added to checkpatch
 
-- k
+Signed-off-by: Joe Perches <joe@perches.com>
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4005739..bf13c21 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -133,22 +133,23 @@ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
- 	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
- 	int i;
-
--	/* deal with bogus pci_bus when we don't have anything connected on PCIe */
--	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
--		if (bus->parent) {
--			for (i = 0; i < 4; ++i)
--				bus->resource[i] = bus->parent->resource[i];
--		}
--	}
--
--	if (fsl_pcie_bus_fixup &&
--	    (bus->parent == hose->bus) &&
--	     early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
-+	if ((bus->parent == hose->bus) &&
-+	    ((fsl_pcie_bus_fixup &&
-+	      early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) ||
-+	     (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)))
-+	{
- 		for (i = 0; i < 4; ++i) {
--			if (bus->resource[i] && bus->parent->resource[i]) {
--				bus->resource[i]->start = bus->parent->resource[i]->start;
--				bus->resource[i]->end = bus->parent->resource[i]->end;
--				bus->resource[i]->flags = bus->parent->resource[i]->flags;
-+			struct resource *res = bus->resource[i];
-+			struct resource *par = bus->parent->resource[i];
-+			if (res) {
-+				res->start = 0;
-+				res->end   = 0;
-+				res->flags = 0;
-+			}
-+			if (res && par) {
-+				res->start = par->start;
-+				res->end   = par->end;
-+				res->flags = par->flags;
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 579f50f..147e573 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1337,6 +1337,11 @@ sub process {
  			}
  		}
- 	}
+ 
++# Check for bitwise tests written as boolean
++		if ($line =~ /\&\&\s*0[xX]/) {
++			WARN("boolean test with hexadecimal, perhaps just 1 \&?\n" . $herecurr);
++		}
++
+ # if and else should not have general statements after it
+ 		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
+ 		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
