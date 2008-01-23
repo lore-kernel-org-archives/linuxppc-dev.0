@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3B89DDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 11:33:39 +1100 (EST)
-Subject: Re: [PATCH 1/3 v3] Add StorCenter DTS first draft.
+	by ozlabs.org (Postfix) with ESMTP id 462BBDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 11:40:57 +1100 (EST)
+Subject: Re: [PATCH 0/6] PS3: gelic: gelic updates for 2.6.25
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
-References: <E1JHRkS-0005du-O1@jdl.com>
-	<fa686aa40801221449p28889ea5r68bd726726558dc0@mail.gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <20080122211239.GC3206@tuxdriver.com>
+References: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>
+	<20080122211239.GC3206@tuxdriver.com>
 Content-Type: text/plain
-Date: Wed, 23 Jan 2008 11:33:16 +1100
-Message-Id: <1201048396.6807.52.camel@pasglop>
+Date: Wed, 23 Jan 2008 11:40:34 +1100
+Message-Id: <1201048834.6807.55.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Cc: "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+	netdev@vger.kernel.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,20 +27,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > +
-> > +               mpic: interrupt-controller@40000 {
-> > +                       #interrupt-cells = <2>;
-> > +                       #address-cells = <0>;
+On Tue, 2008-01-22 at 16:12 -0500, John W. Linville wrote:
+> On Thu, Dec 13, 2007 at 07:38:28PM +0900, Masakazu Mokuno wrote:
 > 
-> Is #address-cells needed?  There are no child nodes.
+> > Here is a set of updates for PS3 gelic network driver.
+> > This patch set requires other patches which were already submitted by
+> > Geert (http://marc.info/?l=linux-kernel&m=119626095605487).
+> > 
+> > 	[1] PS3: gelic: Fix the wrong dev_id passed
+> > 	[2] PS3: gelic: Add endianness macros
+> > 	[3] PS3: gelic: Code cleanup
+> > 	[4] PS3: gelic: Remove duplicated ethtool handers
+> > 	[5] PS3: gelic: Add support for port link status
+> > 	[6] PS3: gelic: Add support for dual network interface
+> > 
+> > This is also a set of prerequisite for new wireless driver for PS3, which
+> > I'll submit later. 
+> 
+> These seem to not have been applied, but I couldn't find any stated
+> reason.  Did they just get lost?  Withdrawn?
+> 
+> Will these be applied?  There is a wireless patch that depends on them.
+> If not, will the wireless portion be refactored to not require these
+> patches?
 
-It's preferrable for interrupt controllers as #address-cells of the
-parent interrupt controller defines the size of the interrupt unit
-specifier in the child in the interrupt tree.
+The list of 6 patches above are the patches that Masakazu Mukono is
+submitting, the pre-reqs are different patches (see the linked URL),
+though I can't see them in either (they should probably go through
+paulus for-2.6.25). Geert, what's up with these ?
 
-I think there's an ongoing argument as to whether the absence of
-#address-cells should be the same as #address-cells = 0 in that specific
-case but I'm not sure the code does the right thing so let's have it
-explicit.
-
+Cheers,
 Ben.
