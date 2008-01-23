@@ -1,22 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 23813DDE09
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 09:57:52 +1100 (EST)
-Date: Thu, 24 Jan 2008 09:57:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCHv2 7/8] [POWERPC] Rename commproc to cpm1 and
-	cpm2_common.c to cpm2.c
-Message-Id: <20080124095743.09a442ad.sfr@canb.auug.org.au>
-In-Reply-To: <479764F5.1000105@scram.de>
-References: <479764F5.1000105@scram.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__24_Jan_2008_09_57_43_+1100_Md2WAUlKrbxk8=fR"
-Cc: Scott Wood <scottwood@freescale.com>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 6787FDDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 09:58:46 +1100 (EST)
+To: "Mehlan, Markus (Ritter Elektronik)" <markus.mehlan@ritter-elektronik.de>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [MPC5200] problem running FEC and ATA
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 23 Jan 2008 07:53:14 +0100."
+	<FACFFB02D783C64FB2CEF2D6825F6FC206EEF1CF@SRVEXC01.sts.saurer.vpn>
+Date: Wed, 23 Jan 2008 23:58:43 +0100
+Sender: wd@denx.de
+Message-Id: <20080123225843.EC3E7247A1@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__24_Jan_2008_09_57_43_+1100_Md2WAUlKrbxk8=fR
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In message <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1CF@SRVEXC01.sts.saurer.vpn> you wrote:
+> 
+> > Is it really exactly the same CPU revision? My guess is that
+> > one is rev. B and the other one is older...
+> 
+> The processor on my board which needs the BSDIS-patch has following
+> label:
+> MPC5200CVR400B
 
-Hi Jochen,
+And the one which doesn't need it is a ...?
 
-On Wed, 23 Jan 2008 17:01:57 +0100 Jochen Friedrich <jochen@scram.de> wrote:
->
-> +++ b/arch/powerpc/platforms/8xx/ep88xc.c
-> @@ -15,7 +15,7 @@
->   #include <asm/machdep.h>
->   #include <asm/io.h>
->   #include <asm/udbg.h>
-> -#include <asm/commproc.h>
-> +#include <asm/cpm1.h>
->   #include <asm/mpc8xx.h>
+Best regards,
 
-Something has whitespace damaged this patch.
+Wolfgang Denk
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__24_Jan_2008_09_57_43_+1100_Md2WAUlKrbxk8=fR
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHl8ZtTgG2atn1QN8RAohaAJ9IGF3klbf3wGbuMgTYOeh9RavcDQCdF2Ob
-EziIj8DMpQmNEt2Ue+80m4k=
-=qrsT
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_Jan_2008_09_57_43_+1100_Md2WAUlKrbxk8=fR--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I'd rather be led to hell than managed to heaven.
