@@ -1,24 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id E6880DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 03:27:23 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so680748anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 08:27:15 -0800 (PST)
-Message-ID: <fa686aa40801230827s5a7b3ea9s770abaf0ad2838b8@mail.gmail.com>
-Date: Wed, 23 Jan 2008 09:27:15 -0700
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id EA887DDEEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 04:12:55 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so685151anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 09:12:54 -0800 (PST)
+Message-ID: <fa686aa40801230912m2314209fp2545898949ed3b24@mail.gmail.com>
+Date: Wed, 23 Jan 2008 10:12:53 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: [PATCH] [POWERPC] Update TQM5200,
-	CM5200 and Motion-PRO _defconfig and .dts files
-In-Reply-To: <20080123125413.EB56924344@gemini.denx.de>
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
+In-Reply-To: <87sl0qzxos.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <479725A4.2020401@semihalf.com>
-	<20080123125413.EB56924344@gemini.denx.de>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	tech-denx@semihalf.com, Detlev Zundel <dzu@denx.de>,
-	Marian Balakowicz <m8@semihalf.com>
+References: <20080121103434.397382000@sunsite.dk>
+	<200801211201.41142.david-b@pacbell.net>
+	<fa686aa40801211214u31581036m2ea2cf11d82c3f75@mail.gmail.com>
+	<87sl0qzxos.fsf@macbook.be.48ers.dk>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,44 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/23/08, Wolfgang Denk <wd@denx.de> wrote:
-> In message <479725A4.2020401@semihalf.com> you wrote:
-> > Olof Johansson wrote:
-> > ...
-> > >
-> > > I disagree, I have one defconfig for all our boards to date. It means I
-> > > only have one kernel to build to test on all boards, instead of having
-> > > to build a number of different kernels. Keeping it fairly generic also
-> > > means a customer can start out using the generic kernel in case they
-> > > want to, and later on add their own drivers and prune out what is not
-> > > needed.
-> >
-> > Well, I just prefer separate defconfigs but I can live with the common
-> > one as well, feel free to merge it as you see it fit.
+On 1/21/08, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 >
-> Well, it may make sense to use common defconfig files for  boards  of
-> the same breed (different configurations of one board family from one
-> vendor  for  example).  But  please  note  that  TQM5200,  CM5200 and
-> Motion-PRO are boards from 3 different  vendors,  used  by  different
-> projects  with  differing  needs.  IMO  it  makes  very much sense to
-> provide 3 separate default configurations  that  match  the  specific
-> requirements of each of these boards.
+>  Grant> Personally, I'd prefer to see the v3 series picked up now (as I
+>  Grant> believe all outstanding comments from the list have been addressed)
+>  Grant> and have new patches build on top of that, but that's just my
+>  Grant> preference.
 >
-> In this case I vote for separate defconfig files, please.
+> Here's the v3->v4 without gadget diff:
 
-I think I'm going to go with a single defconfig for all 5200 boards
-for the time being.  We can revisit later if it turns out not to be
-working.  Here are my reasons:
+Okay, I've had a chance to read through this.  I haven't tested it,
+but I don't see anything I strongly disagree with.  I've just got a
+few editorial comments below and a question.
 
-- mpc5200 is intended to be multiplatform.  Using a common defconfig
-increases the likelyhood that a kernel with support for all 5200
-platforms will actually get tested.
-- Reduces the time cost required to build all powerpc defconfigs (only
-1 needed instead of 5 and growing)
-- defconfigs are intended to be the known working configuration; not
-necessarily an optimized for deployment configuration.  The
-system/kernel engineer is still responsible to tailor the
-configuration for a shippable distribution.
+The question is about the device structure which used to be provided
+by the platform device instances and now there just uses the c67x00's
+device struct.  I was under the impression that each USB HCD needs to
+have it's own struct device.  I take it that's not true?
+
+Otherwise:
+
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+Cheers,
+g.
+>
+> diff --git a/drivers/usb/c67x00/c67x00-drv.c b/drivers/usb/c67x00/c67x00-drv.c
+> index 0f0720a..c2ea3b6 100644
+> --- a/drivers/usb/c67x00/c67x00-drv.c
+> +++ b/drivers/usb/c67x00/c67x00-drv.c
+> @@ -203,19 +175,19 @@ static int __devinit c67x00_drv_probe(struct platform_device *pdev)
+>         }
+>
+>         for (i = 0; i < C67X00_SIES; i++)
+> -               c67x00_probe_sie(&c67x00->sie[i]);
+> +               c67x00_probe_sie(&c67x00->sie[i], c67x00, i);
+>
+>         platform_set_drvdata(pdev, c67x00);
+>
+>         return 0;
+>
+> - reset_failed:
+> +reset_failed:
+>         free_irq(res2->start, c67x00);
+> - request_irq_failed:
+> +request_irq_failed:
+>         iounmap(c67x00->hpi.base);
+> - map_failed:
+> +map_failed:
+>         release_mem_region(res->start, res->end - res->start + 1);
+> - request_mem_failed:
+> +request_mem_failed:
+
+A single space should be preserved in front of the labels.  Doing so
+means that git-diff picks up the function name instead of the label
+when generating output.
+
+> diff --git a/drivers/usb/c67x00/c67x00-hcd.c b/drivers/usb/c67x00/c67x00-hcd.c
+> index 3d0b77e..4afb291 100644
+> --- a/drivers/usb/c67x00/c67x00-hcd.c
+> +++ b/drivers/usb/c67x00/c67x00-hcd.c
+> @@ -368,23 +383,26 @@ int c67x00_hcd_probe(struct c67x00_sie *sie)
+>                 goto err2;
+>         }
+>
+> +       spin_lock_irqsave(&sie->lock, flags);
+> +       sie->private_data = c67x00;
+> +       sie->irq = c67x00_hcd_irq;
+> +       spin_unlock_irqrestore(&sie->lock, flags);
+> +
+>         return retval;
+> - err2:
+> +err2:
+>         c67x00_sched_stop_scheduler(c67x00);
+> - err1:
+> +err1:
+>         usb_put_hcd(hcd);
+> - err0:
+> +err0:
+
+Ditto on the labels
+
+> diff --git a/drivers/usb/c67x00/c67x00-hcd.h b/drivers/usb/c67x00/c67x00-hcd.h
+> index 5b35f01..daee4cd 100644
+> --- a/drivers/usb/c67x00/c67x00-hcd.h
+> +++ b/drivers/usb/c67x00/c67x00-hcd.h
+> @@ -132,6 +147,6 @@ void c67x00_sched_kick(struct c67x00_hcd *c67x00);
+>  int c67x00_sched_start_scheduler(struct c67x00_hcd *c67x00);
+>  void c67x00_sched_stop_scheduler(struct c67x00_hcd *c67x00);
+>
+> -#define c67x00_hcd_dev(x)      (c67x00_hcd_to_hcd(x)->self.controller)
+> +#define c67x00_dev(x)  (c67x00_hcd_to_hcd(x)->self.controller)
+
+Can the name c67x00_hcd_dev() be used instead?  This macro is used
+with 'struct c67x00_hcd', not 'struct c67x00' and I find the code less
+confusing if the macro name reflects that.
+
+>
+>  #endif                         /* _USB_C67X00_HCD_H */
+> diff --git a/drivers/usb/c67x00/c67x00-sched.c b/drivers/usb/c67x00/c67x00-sched.c
+> index 35d7318..3140d89 100644
+> --- a/drivers/usb/c67x00/c67x00-sched.c
+> +++ b/drivers/usb/c67x00/c67x00-sched.c
+> -       /* Something went wrong; unwind the allocations */
+> - err_epdata:
+> +err_epdata:
+>         kfree(urbp);
+> - err_urbp:
+> +err_urbp:
+>         usb_hcd_unlink_urb_from_ep(hcd, urb);
+> - err_not_linked:
+> +err_not_linked:
+
+ditto
 
 Cheers,
 g.
