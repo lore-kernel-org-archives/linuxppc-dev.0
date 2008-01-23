@@ -1,21 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 305C5DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 14:11:36 +1100 (EST)
-Date: Wed, 23 Jan 2008 14:11:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH 2/3] Convert PowerPC MPC i2c to of_platform_driver from
-	platform_driver
-Message-Id: <20080123141121.02c69526.sfr@canb.auug.org.au>
-In-Reply-To: <20080123020914.31675.35659.stgit@terra.home>
-References: <20080123020912.31675.48787.stgit@terra.home>
-	<20080123020914.31675.35659.stgit@terra.home>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__23_Jan_2008_14_11_21_+1100_h4GJT6VfBaCy5jA9"
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D7DB7DDDF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 14:12:54 +1100 (EST)
+Message-ID: <4796B0AC.5060205@am.sony.com>
+Date: Tue, 22 Jan 2008 19:12:44 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 0/6] PS3: gelic: gelic updates for 2.6.25
+References: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>	<20080122211239.GC3206@tuxdriver.com>	<1201048834.6807.55.camel@pasglop>
+	<20080123005845.GE3206@tuxdriver.com>
+In-Reply-To: <20080123005845.GE3206@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,58 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__23_Jan_2008_14_11_21_+1100_h4GJT6VfBaCy5jA9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 01/22/2008 04:58 PM, John W. Linville wrote:
+> On Wed, Jan 23, 2008 at 11:40:34AM +1100, Benjamin Herrenschmidt wrote:
+>> 
+>> On Tue, 2008-01-22 at 16:12 -0500, John W. Linville wrote:
+>> > On Thu, Dec 13, 2007 at 07:38:28PM +0900, Masakazu Mokuno wrote:
+>> > 
+>> > > Here is a set of updates for PS3 gelic network driver.
+>> > > This patch set requires other patches which were already submitted by
+>> > > Geert (http://marc.info/?l=linux-kernel&m=119626095605487).
+>> > > 
+>> > > 	[1] PS3: gelic: Fix the wrong dev_id passed
+>> > > 	[2] PS3: gelic: Add endianness macros
+>> > > 	[3] PS3: gelic: Code cleanup
+>> > > 	[4] PS3: gelic: Remove duplicated ethtool handers
+>> > > 	[5] PS3: gelic: Add support for port link status
+>> > > 	[6] PS3: gelic: Add support for dual network interface
+>> > > 
+>> > > This is also a set of prerequisite for new wireless driver for PS3, which
+>> > > I'll submit later. 
+>> > 
+>> > These seem to not have been applied, but I couldn't find any stated
+>> > reason.  Did they just get lost?  Withdrawn?
+>> > 
+>> > Will these be applied?  There is a wireless patch that depends on them.
+>> > If not, will the wireless portion be refactored to not require these
+>> > patches?
+>> 
+>> The list of 6 patches above are the patches that Masakazu Mukono is
+>> submitting, the pre-reqs are different patches (see the linked URL),
+>> though I can't see them in either (they should probably go through
+>> paulus for-2.6.25). Geert, what's up with these ?
+> 
+> The wireless patch depends on the patches 1-6, which then depend on
+> Geert's patches.
+> 
+> I thought Geert's had been applied, but I guess I was looking at
+> it wrong.  Is there a powerpc tree that has them?
 
-On Tue, 22 Jan 2008 21:09:14 -0500 Jon Smirl <jonsmirl@gmail.com> wrote:
->
-> +static struct of_device_id mpc_i2c_of_match[] =3D {
+Not yet, they are now only in ps3-linux.git.  I sent them out to
+Paul last Friday the 18th for inclusion in 2.6.25.  Here is a link
+to the message:
 
-(sfr winds up his broken record :-))  const, please.
+  http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050213.html
 
-> +#else
-> +
->  static int fsl_i2c_probe(struct platform_device *pdev)
+> Perhaps 1-6 above
+> and the wireless patch should just be applied to that tree (if there
+> is one) and all merged together?
 
-While this code is still here, you should still explicitly include
-<linux/platform.h>
+I think Paul will accept them if they have the Sign-off-by's of
+the proper network maintainers.
 
-> -      fail_add:
-> +fail_add:
-
-If you are going to move labels, many people leave a single space in
-front of them so that "diff -p" picks up the function name instead of the
-label name.
-
-> +void of_register_i2c_devices(struct i2c_adapter *adap, struct device_nod=
-e *adap_node)
-
-> +		compatible =3D of_get_property(node, "compatible", &len);
-
-You can specify NULL instead of &len since you don't use the returned value.
-
-> +		if (!compatible) {
-> +			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing compatible attribu=
-te\n");
-
-Some of these printk lines are a bit long.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__23_Jan_2008_14_11_21_+1100_h4GJT6VfBaCy5jA9
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHlrBdTgG2atn1QN8RAgluAJ0dgJHkgENGQtD+Udhh/xm3a+r18QCgjc4n
-jCTKu89FeANYXB07ChDVUKU=
-=6TQZ
------END PGP SIGNATURE-----
-
---Signature=_Wed__23_Jan_2008_14_11_21_+1100_h4GJT6VfBaCy5jA9--
+-Geoff
