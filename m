@@ -1,20 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B0C94DDE38
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 23:54:15 +1100 (EST)
-To: Marian Balakowicz <m8@semihalf.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] [POWERPC] Update TQM5200,
-	CM5200 and Motion-PRO _defconfig and .dts files
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 23 Jan 2008 12:31:48 +0100."
-	<479725A4.2020401@semihalf.com>
-Date: Wed, 23 Jan 2008 13:54:13 +0100
-Sender: wd@denx.de
-Message-Id: <20080123125413.EB56924344@gemini.denx.de>
-Cc: Olof Johansson <olof@lixom.net>, tech-denx@semihalf.com,
-	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from mallaury.nerim.net (smtp-103-wednesday.noc.nerim.net
+	[62.4.17.103]) by ozlabs.org (Postfix) with ESMTP id 4582DDDE30
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 00:02:38 +1100 (EST)
+Date: Wed, 23 Jan 2008 14:02:32 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCHv2] i2c: adds support for i2c bus on Frescale CPM1/CPM2
+	controllers
+Message-ID: <20080123140232.67273b22@hyperion.delvare>
+In-Reply-To: <479723CE.5020609@scram.de>
+References: <477BEB60.4070703@scram.de>
+	<20080103104121.58697148.sfr@canb.auug.org.au>
+	<20080123112941.23250948@hyperion.delvare>
+	<479723CE.5020609@scram.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Linux I2C <i2c@lm-sensors.org>,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <479725A4.2020401@semihalf.com> you wrote:
-> Olof Johansson wrote:
-> ...
-> > 
-> > I disagree, I have one defconfig for all our boards to date. It means I
-> > only have one kernel to build to test on all boards, instead of having
-> > to build a number of different kernels. Keeping it fairly generic also
-> > means a customer can start out using the generic kernel in case they
-> > want to, and later on add their own drivers and prune out what is not
-> > needed.
+Hallo Jochen,
+
+On Wed, 23 Jan 2008 12:23:58 +0100, Jochen Friedrich wrote:
+> Hi Jean,
 > 
-> Well, I just prefer separate defconfigs but I can live with the common
-> one as well, feel free to merge it as you see it fit.
+> > Do you have an updated patch addressing Stephen's comment?
+> > 
+> > Note: you'd rather send updates of this patch to the i2c list rather
+> > than LKML.
+> 
+> I'm currently looking at that last patches from Jon and try to make this
+> driver fit in there (+ the class override stuff).
 
-Well, it may make sense to use common defconfig files for  boards  of
-the same breed (different configurations of one board family from one
-vendor  for  example).  But  please  note  that  TQM5200,  CM5200 and
-Motion-PRO are boards from 3 different  vendors,  used  by  different
-projects  with  differing  needs.  IMO  it  makes  very much sense to
-provide 3 separate default configurations  that  match  the  specific
-requirements of each of these boards.
+I'm not sure what patches exactly you're talking about, but the
+aliasing stuff Jon and myself have been working on are still under
+debate. Your patch shouldn't assume that any of these patches will go
+upstream immediately, so your patch adding the i2c-cpm driver can
+ignore them. I'll update the patches before merging them as needed, do
+not worry too much about that.
 
-In this case I vote for separate defconfig files, please.
+> Note: will do. I just subscribed to this list.
 
-Best regards,
-
-Wolfgang Denk
+Note hat you do not need to be subscribed to post to the i2c list (but
+of course, if you have some interest in Linux i2c development,
+subscribing was a good idea anyway.)
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Be careful what you wish for. You never know who will be listening.
-                                      - Terry Pratchett, _Soul Music_
+Jean Delvare
