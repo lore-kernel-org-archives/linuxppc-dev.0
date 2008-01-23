@@ -1,22 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id B8D8CDDDF7
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 15:18:48 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so4907400wag.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 20:18:47 -0800 (PST)
-Message-ID: <9e4733910801222018m3b5b648ak90c4ee0a624a6d84@mail.gmail.com>
-Date: Tue, 22 Jan 2008 23:18:46 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 2/3] Convert PowerPC MPC i2c to of_platform_driver from
-	platform_driver
-In-Reply-To: <20080123141121.02c69526.sfr@canb.auug.org.au>
+Return-Path: <markus.mehlan@ritter-elektronik.de>
+Received: from mail.textile.saurer.com (mail.textile.saurer.com
+	[193.158.88.134]) by ozlabs.org (Postfix) with ESMTP id 6B73EDDDF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 17:53:17 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080123020912.31675.48787.stgit@terra.home>
-	<20080123020914.31675.35659.stgit@terra.home>
-	<20080123141121.02c69526.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: [MPC5200] problem running FEC and ATA
+Date: Wed, 23 Jan 2008 07:53:14 +0100
+Message-ID: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1CF@SRVEXC01.sts.saurer.vpn>
+In-Reply-To: <20080123002040.5049F24781@gemini.denx.de>
+References: Your message of "Mon, 21 Jan 2008 17:28:22 +0100."
+	<200801211728.22817.jbe@pengutronix.de>
+	<20080123002040.5049F24781@gemini.denx.de>
+From: "Mehlan, Markus (Ritter Elektronik)" <markus.mehlan@ritter-elektronik.de>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,61 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/22/08, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> On Tue, 22 Jan 2008 21:09:14 -0500 Jon Smirl <jonsmirl@gmail.com> wrote:
+Hello Wolfgang,
+
+> -----Urspr=FCngliche Nachricht-----
+> Von: wd@denx.de [mailto:wd@denx.de]=20
+> Gesendet: Mittwoch, 23. Januar 2008 01:21
+> An: Juergen Beisert
+> Cc: linuxppc-dev@ozlabs.org; Mehlan, Markus (Ritter Elektronik)
+> Betreff: Re: [MPC5200] problem running FEC and ATA
+>=20
+> In message <200801211728.22817.jbe@pengutronix.de> you wrote:
 > >
-> > +static struct of_device_id mpc_i2c_of_match[] = {
->
-> (sfr winds up his broken record :-))  const, please.
+> > Is anybody out there with more MPC5200B experience? Can=20
+> someone tell=20
+> > me why some MPC5200B are need this patch and others not? We=20
+> have two=20
+> > different systems here (cards from different vendors) with the same=20
+> > processor, one needs this BSDIS-patch and the other not.=20
+> ???????????????
+>=20
+> Is it really exactly the same CPU revision? My guess is that=20
+> one is rev. B and the other one is older...
+>=20
+The processor on my board which needs the BSDIS-patch has following
+label:
 
-Fixed this
+MPC5200CVR400B
+M62C
+REV 1
+QAZ0637J
 
->
-> > +#else
-> > +
-> >  static int fsl_i2c_probe(struct platform_device *pdev)
->
-> While this code is still here, you should still explicitly include
-> <linux/platform.h>
-
-Fixed this
-
->
-> > -      fail_add:
-> > +fail_add:
->
-> If you are going to move labels, many people leave a single space in
-> front of them so that "diff -p" picks up the function name instead of the
-> label name.
-
-checkpatch told me to get rid of the spaces.
-
->
-> > +void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node)
->
-> > +             compatible = of_get_property(node, "compatible", &len);
->
-> You can specify NULL instead of &len since you don't use the returned value.
-
-fixed
-
->
-> > +             if (!compatible) {
-> > +                     printk(KERN_ERR "i2c-mpc.c: invalid entry, missing compatible attribute\n");
->
-> Some of these printk lines are a bit long.
-
-i got rid of "invalid entry,"
-
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Best regards,
+Markus
