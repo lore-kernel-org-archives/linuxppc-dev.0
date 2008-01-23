@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29528DDE34
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 09:04:14 +1100 (EST)
-Message-Id: <B4582CB3-2065-40D5-9C16-B0EE1943D83A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080123195022.GA21157@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: mpc8568e-mds: pci-e is broken
-Date: Wed, 23 Jan 2008 16:04:05 -0600
-References: <20080123193712.GA12037@localhost.localdomain>
-	<6785FDE5-FEBA-4FE2-A94C-85FCE299D1CC@kernel.crashing.org>
-	<20080123195022.GA21157@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id AA72CDDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 09:34:57 +1100 (EST)
+Date: Thu, 24 Jan 2008 09:34:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH v6] [POWERPC] Add LED driver for Promess Motion-PRO board.
+Message-Id: <20080124093452.bc555fc1.sfr@canb.auug.org.au>
+In-Reply-To: <20080123121159.21197.37027.stgit@zion.izotz.org>
+References: <20080123121159.21197.37027.stgit@zion.izotz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__24_Jan_2008_09_34_52_+1100_NnpH/E.pjhimfBY."
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,62 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__24_Jan_2008_09_34_52_+1100_NnpH/E.pjhimfBY.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Jan 23, 2008, at 1:50 PM, Anton Vorontsov wrote:
+Hi Marian,
 
-> On Wed, Jan 23, 2008 at 01:42:56PM -0600, Kumar Gala wrote:
-> [...]
->>> PCI: Probing PCI hardware
->>> PCI: 0001:01:00.0: class b20 doesn't match header type 01. Ignoring
->>> class.
->>> PCI: Closing bogus Apple Firmware region 1 on bus 0x02
->>> PCI: Closing bogus Apple Firmware region 2 on bus 0x02
->>
->> odd, you shouldn't see these anymore w/my git tree.
+On Wed, 23 Jan 2008 13:12:19 +0100 Marian Balakowicz <m8@semihalf.com> wrot=
+e:
 >
-> Yup, I noticed few commits that are trying to fix this. And these
-> fixes do work for PCI, but not for PCI-E...
+> +	label =3D of_get_property(op->node, "label", NULL);
+> +	if (label =3D=3D NULL) {
+> +		printk(KERN_ERR __FILE__ ": "
+> +			"No label property provided for LED %s\n",
+> +			op->node->full_name);
+> +		err =3D -EINVAL;
+> +		goto err_free;
 
-I see these now.. I think I'm too lazy to think of a way to fix this.
+You need an iounmap(mpled->gpt) here - or preferably jump to the one in
+the error path below.
 
-> [...]
->>> static void __devinit __pcibios_fixup_bus(struct pci_bus *bus)
->>> {
->>> ...
->>> 		if (i >= 3 && bus->self->transparent)
->>> 			continue;
->>> ...
->>> }
->>>
->>> That new check doesn't work, here bus->self->transparent == 0.
->>> Could it be that the message below is the root cause?
->>>
->>> PCI: 0001:01:00.0: class b20 doesn't match header type 01. Ignoring
->>> class.
->>
->> this is expected but of how FSL hw reports itself.
->
-> Well. I see only two places were transparent flag is applied:
-> drivers/pci/quirks.c:quirk_transparent_bridge()
-> and
-> drivers/pci/probe.c:pci_setup_device() in the PCI_HEADER_TYPE_BRIDGE.
->
-> So, obviously probe.c is skipping our PCI-E, thus not setting
-> transparent flag, no?
->
->>> I.e. drivers/pci/probe.c just don't setting transparent flag.
->>> I wonder if we need use quirk_transparent_bridge() here or
->>> we can fix it other way?
->>>
->>> Just in case, I'm observing that message for a long long time, and
->>> it didn't tell upon any functionality till now.
->>
->>
->> Is this with the 8568 MDS in standalone or plugged into the back  
->> pane?
->
-> This is standalone setup.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-do you have a card plugged in?
+--Signature=_Thu__24_Jan_2008_09_34_52_+1100_NnpH/E.pjhimfBY.
+Content-Type: application/pgp-signature
 
-- k
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHl8EQTgG2atn1QN8RAuufAJ0dL6JpNi0Jfim4s/hBHnakAY1UdgCfWRgW
+jTSo4U0FvZyfHETMuVX6Ui4=
+=3HQK
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__24_Jan_2008_09_34_52_+1100_NnpH/E.pjhimfBY.--
