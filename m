@@ -1,35 +1,22 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E5588DDEE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 00:55:19 +1100 (EST)
-Date: Wed, 23 Jan 2008 13:55:14 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] Fix boot problem in situations where the boot CPU is running
-	on a memoryless node
-Message-ID: <20080123135513.GA14175@csn.ul.ie>
-References: <20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de>
-	<20080122195448.GA15567@csn.ul.ie>
-	<20080122214505.GA15674@aepfle.de>
-	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-	<20080123075821.GA17713@aepfle.de>
-	<20080123105044.GD21455@csn.ul.ie>
-	<20080123121459.GA18631@aepfle.de>
-	<20080123125236.GA18876@aepfle.de>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A90EDDF1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 01:06:21 +1100 (EST)
+Message-ID: <4797499A.3020506@freescale.com>
+Date: Wed, 23 Jan 2008 08:05:14 -0600
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080123125236.GA18876@aepfle.de>
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 2/3 v3] Add initial iomega StorCenter board port.
+References: <E1JHRkl-0005e5-RX@jdl.com>
+	<20080123105111.125f075d.sfr@canb.auug.org.au>
+In-Reply-To: <20080123105111.125f075d.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,55 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch in combination with a partial revert of commit
-04231b3002ac53f8a64a7bd142fde3fa4b6808c6 fixes a regression between 2.6.23
-and 2.6.24-rc8 where a PPC64 machine with all CPUS on a memoryless node fails
-to boot. If approved by the SLAB maintainers, it should be merged for 2.6.24.
+Stephen Rothwell wrote:
+> Hi Jon,
+> 
+> On Tue, 22 Jan 2008 16:37:59 -0600 Jon Loeliger <jdl@jdl.com> wrote:
+>> +++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
+> 
+>> +extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
+> 
+> This clearly needs to be decalred in some header file.  (I know you did
+> not introduce it.)  In arch/ppc, it was declared in asm/system.h (but I
+> don't know if that is appropriate for arch/powerpc).  Maybe you could do
+> a preceeding patch that does this and fixes the other user.
 
-With memoryless-node configurations, it is possible that all the CPUs are
-associated with a node with no memory. Early in the boot process, nodelists
-are not setup that allow fallback_alloc to work, an Oops occurs and the
-machine fails to boot.
-
-This patch adds the necessary checks to make sure a kmem_list3 exists for
-the preferred node used when growing the cache. If the preferred node has
-no nodelist then the currently running node is used instead. This
-problem only affects the SLAB allocator, SLUB appears to work fine.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
----
- mm/slab.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc8-005-revert-memoryless-slab/mm/slab.c linux-2.6.24-rc8-010_handle_missing_l3/mm/slab.c
---- linux-2.6.24-rc8-005-revert-memoryless-slab/mm/slab.c	2008-01-22 17:46:32.000000000 +0000
-+++ linux-2.6.24-rc8-010_handle_missing_l3/mm/slab.c	2008-01-22 18:42:53.000000000 +0000
-@@ -2775,6 +2775,11 @@ static int cache_grow(struct kmem_cache 
- 	/* Take the l3 list lock to change the colour_next on this node */
- 	check_irq_off();
- 	l3 = cachep->nodelists[nodeid];
-+	if (!l3) {
-+		nodeid = numa_node_id();
-+		l3 = cachep->nodelists[nodeid];
-+	}
-+	BUG_ON(!l3);
- 	spin_lock(&l3->list_lock);
+I hear my Janitorial Karmic Duty calling.
  
- 	/* Get colour for the slab, and cal the next value. */
-@@ -3317,6 +3322,10 @@ static void *____cache_alloc_node(struct
- 	int x;
- 
- 	l3 = cachep->nodelists[nodeid];
-+	if (!l3) {
-+		nodeid = numa_node_id();
-+		l3 = cachep->nodelists[nodeid];
-+	}
- 	BUG_ON(!l3);
- 
- retry:
+>> +static void __init storcenter_init_IRQ(void)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+>> +	prop = of_get_property(dnp, "reg", &size);
+>> +	paddr = (phys_addr_t)of_translate_address(dnp, prop);
+> 
+> What happens of "prop" is NULL?
+
+Someone should fix that case too. :-)
+
+Kumar,
+
+I'll respin this trio for you.
+
+jdl
