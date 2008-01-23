@@ -1,17 +1,20 @@
-Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out1.tiscali.nl (smtp-out1.tiscali.nl [195.241.79.176])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2B566DDF4F
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:01:44 +1100 (EST)
-Message-ID: <4797C1AD.3040307@tiscali.nl>
-Date: Wed, 23 Jan 2008 23:37:33 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-MIME-Version: 1.0
-To: jwboyer@linux.vnet.ibm.com, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 4295DDDEC8
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:03:21 +1100 (EST)
+Message-Id: <175876A0-9BC1-40D8-B204-93725BF45E1D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080124094017.8afc5077.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] Move RapidIO support code from arch/ppc
+Date: Wed, 23 Jan 2008 17:00:41 -0600
+References: <Pine.LNX.4.64.0801230637510.4478@blarg.am.freescale.net>
+	<20080124094017.8afc5077.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, Wei.Zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-logical/bitand typo
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index ebf9e21..dcfb459 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
- 	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
- 	cs = 0;
- 	while (val) {
--		if (val && 0x1)
-+		if (val & 0x1)
- 			cs++;
- 		val = val >> 1;
- 	}
+On Jan 23, 2008, at 4:40 PM, Stephen Rothwell wrote:
+
+> Hi Kumar,
+>
+> On Wed, 23 Jan 2008 06:38:29 -0600 (CST) Kumar Gala <galak@kernel.crashing.org 
+> > wrote:
+>>
+>> +++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
+>> @@ -190,6 +188,7 @@ mpc85xx_exclude_device(u_char bus, u_char devfn)
+>> #endif /* CONFIG_PCI */
+>>
+>> #ifdef CONFIG_RAPIDIO
+>> +extern void mpc85xx_rio_setup(int law_start, int law_size);
+>
+> Ooops! This should be in a header file, of course.
+>
+>> +++ b/arch/ppc/platforms/85xx/stx_gp3.c
+>> @@ -270,6 +269,7 @@ int mpc85xx_exclude_device(u_char bus, u_char  
+>> devfn)
+>> #endif /* CONFIG_PCI */
+>>
+>> #ifdef CONFIG_RAPIDIO
+>> +extern void mpc85xx_rio_setup(int law_start, int law_size);
+>
+> And again.
+>
+> I guess this is just temporary in which case we can probably live with
+> it.  But do not forget to fix it up.
+>
+>> +++ b/arch/ppc/platforms/85xx/tqm85xx.c
+>> @@ -309,6 +308,7 @@ int mpc85xx_exclude_device(u_char bus, u_char  
+>> devfn)
+>> #endif /* CONFIG_PCI */
+>>
+>> #ifdef CONFIG_RAPIDIO
+>> +extern void mpc85xx_rio_setup(int law_start, int law_size);
+>
+> Third time lucky?   :-)
+
+They were in a header file, however in moving the code over the header  
+ends up in arch/powerpc/sysdev/fsl_rio.h.  I don't think there is a  
+simple way to include that in arch/ppc code today (and I don't want to  
+invent one).
+
+My goal is to just kill 85xx for arch/ppc.
+
+- k
