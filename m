@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 772C1DDE2C
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:01:01 +1100 (EST)
-To: Juergen Beisert <jbe@pengutronix.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [MPC5200] problem running FEC and ATA
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 23 Jan 2008 10:03:14 +0100."
-	<200801231003.15045.jbe@pengutronix.de>
-Date: Thu, 24 Jan 2008 00:01:00 +0100
-Sender: wd@denx.de
-Message-Id: <20080123230100.0CEE9247A1@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, "Mehlan,
-	Markus \(Ritter Elektronik\)" <markus.mehlan@ritter-elektronik.de>
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out1.tiscali.nl (smtp-out1.tiscali.nl [195.241.79.176])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B566DDF4F
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:01:44 +1100 (EST)
+Message-ID: <4797C1AD.3040307@tiscali.nl>
+Date: Wed, 23 Jan 2008 23:37:33 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+MIME-Version: 1.0
+To: jwboyer@linux.vnet.ibm.com, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <200801231003.15045.jbe@pengutronix.de> you wrote:
-> 
-> The one who needs this patch (CPU card vendor 1):
-> 
-> MPC5200CVR400B, M62C REV 1, QCW0723T
-> 
-> The CPUs who do not need this patch (CPU card vendor 2):
-> 
-> SPC5200CBV400B, M62C REV 1, QAG0610C
-> MPC5200CVR400B, M62C REV 1, QAJ0613F
+logical/bitand typo
 
-This is all Rev. B stuff, and the patch should be applied  to  all  of
-them (actually the patch can always be applied - it will be activated
-depending on the PVR reading).
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It is impractical for  the  standard  to  attempt  to  constrain  the
-behavior  of code that does not obey the constraints of the standard.
-                                                          - Doug Gwyn
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+index ebf9e21..dcfb459 100644
+--- a/arch/powerpc/boot/4xx.c
++++ b/arch/powerpc/boot/4xx.c
+@@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+ 	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+ 	cs = 0;
+ 	while (val) {
+-		if (val && 0x1)
++		if (val & 0x1)
+ 			cs++;
+ 		val = val >> 1;
+ 	}
