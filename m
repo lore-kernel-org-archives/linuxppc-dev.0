@@ -1,33 +1,17 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id 31D4EDDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:36:26 +1100 (EST)
-Date: Wed, 23 Jan 2008 10:36:25 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
-	running on a memoryless node
-In-Reply-To: <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0801231035470.11430@schroedinger.engr.sgi.com>
-References: <20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
-	<20080122214505.GA15674@aepfle.de>
-	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-	<20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
-	<20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
-	<20080123135513.GA14175@csn.ul.ie>
-	<Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D2FCADDDED
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:41:53 +1100 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1JHkXl-00010I-DV
+	for linuxppc-dev@ozlabs.org; Wed, 23 Jan 2008 12:41:50 -0600
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/4 v4] Add StorCenter port
+Date: Wed, 23 Jan 2008 12:41:49 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JHkXl-00010I-DV@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,13 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Jan 2008, Pekka J Enberg wrote:
+Kumar,
 
-> Furthermore, don't let kmem_getpages() call alloc_pages_node() if nodeid passed
-> to it is -1 as the latter will always translate that to numa_node_id() which
-> might not have ->nodelist that caused the invocation of fallback_alloc() in the
-> first place (for example, during bootstrap).
+Here is the StorCenter port with the MTD partitions
+re-written to be hard-coded PHYSMAP partitions for now.
 
-kmem_getpages is called without GFP_THISNODE. This 
-alloc_pages_node(numa_node_id(), ...) will fall back to the next node with 
-memory.
+Addressed list and private commentary as well.
+
+Janitorial Karma has now caussed it to be 4 patches
+instead of the original 3.
+
+Please pick up for 2.6.25!
+
+Thanks,
+jdl
