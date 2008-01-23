@@ -1,21 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id A6FAEDDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 13:50:15 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so4868239wag.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 18:50:13 -0800 (PST)
-Message-ID: <9e4733910801221850k406f0985jd072876b681299da@mail.gmail.com>
-Date: Tue, 22 Jan 2008 21:50:13 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 2DF44DDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 14:02:14 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so627547anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jan 2008 19:02:13 -0800 (PST)
+Message-ID: <fa686aa40801221902u21856724ob146bf5ff8de8f78@mail.gmail.com>
+Date: Tue, 22 Jan 2008 20:02:13 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
 Subject: Re: [PATCH 1/3] Rename i2c-mpc to i2c-mpc-drv in preparation for
 	breaking out common code.
-In-Reply-To: <20080123134654.cb5e249d.sfr@canb.auug.org.au>
+In-Reply-To: <9e4733910801221850k406f0985jd072876b681299da@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <20080123020912.31675.48787.stgit@terra.home>
 	<20080123134654.cb5e249d.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+	<9e4733910801221850k406f0985jd072876b681299da@mail.gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, i2c@lm-sensors.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/22/08, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Jon,
+On 1/22/08, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 1/22/08, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > Adding -M or -C to the "git diff" should identify renames and
+> > makes this sort of patch much easier to review.
 >
-> On Tue, 22 Jan 2008 21:09:12 -0500 Jon Smirl <jonsmirl@gmail.com> wrote:
-> >
-> > Rename i2c-mpc to i2c-mpc-drv in preparation for breaking out common code.
-> >
-> > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> > ---
-> >
-> >  drivers/i2c/busses/Makefile      |    2
-> >  drivers/i2c/busses/i2c-mpc-drv.c |  421 ++++++++++++++++++++++++++++++++++++++
-> >  drivers/i2c/busses/i2c-mpc.c     |  421 --------------------------------------
-> >  3 files changed, 423 insertions(+), 421 deletions(-)
-> >  create mode 100644 drivers/i2c/busses/i2c-mpc-drv.c
-> >  delete mode 100644 drivers/i2c/busses/i2c-mpc.c
->
-> Adding -M or -C to the "git diff" should identify renames and
-> makes this sort of patch much easier to review.
+> I use stgit, I'll ask them how to generate rename patches. The actual
+> git diff is buried inside stgit somewhere.
 
-I use stgit, I'll ask them how to generate rename patches. The actual
-git diff is buried inside stgit somewhere.
+>From the "stg mail --help" output:
 
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
->
+  -O DIFF_OPTS, --diff-opts=DIFF_OPTS
+                        options to pass to git-diff
 
+g.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
