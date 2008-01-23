@@ -1,22 +1,20 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from vms046pub.verizon.net (vms046pub.verizon.net [206.46.252.46])
-	by ozlabs.org (Postfix) with ESMTP id 0ABB9DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 13:09:39 +1100 (EST)
+Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
+	by ozlabs.org (Postfix) with ESMTP id 58EFEDDDFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 13:09:41 +1100 (EST)
 Received: from terra.home ([96.233.72.204])
-	by vms046.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
+	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
 	(built Apr
-	3 2006)) with ESMTPA id <0JV200HLMRBNGXB2@vms046.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Tue, 22 Jan 2008 20:09:24 -0600 (CST)
-Date: Tue, 22 Jan 2008 21:09:14 -0500
+	3 2006)) with ESMTPA id <0JV200BXPREIDY97@vms040.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Tue, 22 Jan 2008 20:11:07 -0600 (CST)
+Date: Tue, 22 Jan 2008 21:09:12 -0500
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH 2/3] Convert PowerPC MPC i2c to of_platform_driver from
-	platform_driver
-In-reply-to: <20080123020912.31675.48787.stgit@terra.home>
+Subject: [PATCH 1/3] Rename i2c-mpc to i2c-mpc-drv in preparation for breaking
+	out common code.
 To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Message-id: <20080123020914.31675.35659.stgit@terra.home>
+Message-id: <20080123020912.31675.48787.stgit@terra.home>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
-References: <20080123020912.31675.48787.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,558 +24,883 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert MPC i2c driver from a platform_driver to a of_platform_driver. Add the ability to dynamically load i2c drivers based on device tree names. Routine names were changed from fsl_ to mpc_ to make them match the file name. Common code moved to powerpc-common.* Orginal ppc driver left intact for deletion when ppc arch is removed.
+Rename i2c-mpc to i2c-mpc-drv in preparation for breaking out common code.
 
 Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
 
- arch/powerpc/sysdev/fsl_soc.c       |  125 ---------------------------
- drivers/i2c/busses/Makefile         |    2 
- drivers/i2c/busses/i2c-mpc-drv.c    |  165 ++++++++++++++++++++++++++++++++---
- drivers/i2c/busses/powerpc-common.c |   81 +++++++++++++++++
- drivers/i2c/busses/powerpc-common.h |   23 +++++
- include/linux/mod_devicetable.h     |    9 ++
- 6 files changed, 263 insertions(+), 142 deletions(-)
- create mode 100644 drivers/i2c/busses/powerpc-common.c
- create mode 100644 drivers/i2c/busses/powerpc-common.h
+ drivers/i2c/busses/Makefile      |    2 
+ drivers/i2c/busses/i2c-mpc-drv.c |  421 ++++++++++++++++++++++++++++++++++++++
+ drivers/i2c/busses/i2c-mpc.c     |  421 --------------------------------------
+ 3 files changed, 423 insertions(+), 421 deletions(-)
+ create mode 100644 drivers/i2c/busses/i2c-mpc-drv.c
+ delete mode 100644 drivers/i2c/busses/i2c-mpc.c
 
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index e4b14a5..d6ef264 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -318,131 +318,6 @@ err:
- 
- arch_initcall(gfar_of_init);
- 
--#ifdef CONFIG_I2C_BOARDINFO
--#include <linux/i2c.h>
--struct i2c_driver_device {
--	char	*of_device;
--	char	*i2c_type;
--};
--
--static struct i2c_driver_device i2c_devices[] __initdata = {
--	{"ricoh,rs5c372a", "rs5c372a",},
--	{"ricoh,rs5c372b", "rs5c372b",},
--	{"ricoh,rv5c386",  "rv5c386",},
--	{"ricoh,rv5c387a", "rv5c387a",},
--	{"dallas,ds1307",  "ds1307",},
--	{"dallas,ds1337",  "ds1337",},
--	{"dallas,ds1338",  "ds1338",},
--	{"dallas,ds1339",  "ds1339",},
--	{"dallas,ds1340",  "ds1340",},
--	{"stm,m41t00",     "m41t00"},
--	{"dallas,ds1374",  "rtc-ds1374",},
--};
--
--static int __init of_find_i2c_driver(struct device_node *node,
--				     struct i2c_board_info *info)
--{
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
--		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
--			continue;
--		if (strlcpy(info->type, i2c_devices[i].i2c_type,
--			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--			return -ENOMEM;
--		return 0;
--	}
--	return -ENODEV;
--}
--
--static void __init of_register_i2c_devices(struct device_node *adap_node,
--					   int bus_num)
--{
--	struct device_node *node = NULL;
--
--	while ((node = of_get_next_child(adap_node, node))) {
--		struct i2c_board_info info = {};
--		const u32 *addr;
--		int len;
--
--		addr = of_get_property(node, "reg", &len);
--		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
--			printk(KERN_WARNING "fsl_soc.c: invalid i2c device entry\n");
--			continue;
--		}
--
--		info.irq = irq_of_parse_and_map(node, 0);
--		if (info.irq == NO_IRQ)
--			info.irq = -1;
--
--		if (of_find_i2c_driver(node, &info) < 0)
--			continue;
--
--		info.addr = *addr;
--
--		i2c_register_board_info(bus_num, &info, 1);
--	}
--}
--
--static int __init fsl_i2c_of_init(void)
--{
--	struct device_node *np;
--	unsigned int i;
--	struct platform_device *i2c_dev;
--	int ret;
--
--	for (np = NULL, i = 0;
--	     (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL;
--	     i++) {
--		struct resource r[2];
--		struct fsl_i2c_platform_data i2c_data;
--		const unsigned char *flags = NULL;
--
--		memset(&r, 0, sizeof(r));
--		memset(&i2c_data, 0, sizeof(i2c_data));
--
--		ret = of_address_to_resource(np, 0, &r[0]);
--		if (ret)
--			goto err;
--
--		of_irq_to_resource(np, 0, &r[1]);
--
--		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
--		if (IS_ERR(i2c_dev)) {
--			ret = PTR_ERR(i2c_dev);
--			goto err;
--		}
--
--		i2c_data.device_flags = 0;
--		flags = of_get_property(np, "dfsrr", NULL);
--		if (flags)
--			i2c_data.device_flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
--
--		flags = of_get_property(np, "fsl5200-clocking", NULL);
--		if (flags)
--			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
--
--		ret =
--		    platform_device_add_data(i2c_dev, &i2c_data,
--					     sizeof(struct
--						    fsl_i2c_platform_data));
--		if (ret)
--			goto unreg;
--
--		of_register_i2c_devices(np, i);
--	}
--
--	return 0;
--
--unreg:
--	platform_device_unregister(i2c_dev);
--err:
--	return ret;
--}
--
--arch_initcall(fsl_i2c_of_init);
--#endif
--
- #ifdef CONFIG_PPC_83xx
- static int __init mpc83xx_wdt_init(void)
- {
 diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
-index 171800d..e94241f 100644
+index ea7068f..171800d 100644
 --- a/drivers/i2c/busses/Makefile
 +++ b/drivers/i2c/busses/Makefile
-@@ -2,7 +2,7 @@
+@@ -2,6 +2,8 @@
  # Makefile for the i2c bus drivers.
  #
  
--i2c-mpc-objs	:= i2c-mpc-drv.o
-+i2c-mpc-objs	:= i2c-mpc-drv.o powerpc-common.o
- 
++i2c-mpc-objs	:= i2c-mpc-drv.o
++
  obj-$(CONFIG_I2C_ALI1535)	+= i2c-ali1535.o
  obj-$(CONFIG_I2C_ALI1563)	+= i2c-ali1563.o
+ obj-$(CONFIG_I2C_ALI15X3)	+= i2c-ali15x3.o
 diff --git a/drivers/i2c/busses/i2c-mpc-drv.c b/drivers/i2c/busses/i2c-mpc-drv.c
-index d20959d..fd66814 100644
---- a/drivers/i2c/busses/i2c-mpc-drv.c
+new file mode 100644
+index 0000000..d20959d
+--- /dev/null
 +++ b/drivers/i2c/busses/i2c-mpc-drv.c
-@@ -17,7 +17,7 @@
- #include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/init.h>
--#include <linux/platform_device.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/io.h>
- #include <linux/fsl_devices.h>
-@@ -25,13 +25,15 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- 
--#define MPC_I2C_ADDR  0x00
-+#include "powerpc-common.h"
+@@ -0,0 +1,421 @@
++/*
++ * (C) Copyright 2003-2004
++ * Humboldt Solutions Ltd, adrian@humboldt.co.uk.
 +
-+#define DRV_NAME "mpc-i2c"
++ * This is a combined i2c adapter and algorithm driver for the
++ * MPC107/Tsi107 PowerPC northbridge and processors that include
++ * the same I2C unit (8240, 8245, 85xx).
++ *
++ * Release 0.8
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2. This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
 +
- #define MPC_I2C_FDR 	0x04
- #define MPC_I2C_CR	0x08
- #define MPC_I2C_SR	0x0c
- #define MPC_I2C_DR	0x10
- #define MPC_I2C_DFSRR 0x14
--#define MPC_I2C_REGION 0x20
- 
- #define CCR_MEN  0x80
- #define CCR_MIEN 0x40
-@@ -57,7 +59,7 @@ struct mpc_i2c {
- 	u32 flags;
- };
- 
--static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
-+static inline void writeccr(struct mpc_i2c *i2c, u32 x)
- {
- 	writeb(x, i2c->base + MPC_I2C_CR);
- }
-@@ -99,8 +101,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
- 	u32 x;
- 	int result = 0;
- 
--	if (i2c->irq == NO_IRQ)
--	{
-+	if (i2c->irq == NO_IRQ) {
- 		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
- 			schedule();
- 			if (time_after(jiffies, orig_jiffies + timeout)) {
-@@ -178,7 +179,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
- }
- 
- static int mpc_write(struct mpc_i2c *i2c, int target,
--		     const u8 * data, int length, int restart)
-+		     const u8 *data, int length, int restart)
- {
- 	int i, result;
- 	unsigned timeout = i2c->adap.timeout;
-@@ -209,7 +210,7 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
- }
- 
- static int mpc_read(struct mpc_i2c *i2c, int target,
--		    u8 * data, int length, int restart)
-+		    u8 *data, int length, int restart)
- {
- 	unsigned timeout = i2c->adap.timeout;
- 	int i, result;
-@@ -315,6 +316,137 @@ static struct i2c_adapter mpc_ops = {
- 	.timeout = 1,
- };
- 
-+#ifdef CONFIG_PPC_MERGE
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
 +
-+struct i2c_driver_device {
-+	char	*of_device;
-+	char	*i2c_driver;
-+	char	*i2c_type;
++#include <asm/io.h>
++#include <linux/fsl_devices.h>
++#include <linux/i2c.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++
++#define MPC_I2C_ADDR  0x00
++#define MPC_I2C_FDR 	0x04
++#define MPC_I2C_CR	0x08
++#define MPC_I2C_SR	0x0c
++#define MPC_I2C_DR	0x10
++#define MPC_I2C_DFSRR 0x14
++#define MPC_I2C_REGION 0x20
++
++#define CCR_MEN  0x80
++#define CCR_MIEN 0x40
++#define CCR_MSTA 0x20
++#define CCR_MTX  0x10
++#define CCR_TXAK 0x08
++#define CCR_RSTA 0x04
++
++#define CSR_MCF  0x80
++#define CSR_MAAS 0x40
++#define CSR_MBB  0x20
++#define CSR_MAL  0x10
++#define CSR_SRW  0x04
++#define CSR_MIF  0x02
++#define CSR_RXAK 0x01
++
++struct mpc_i2c {
++	void __iomem *base;
++	u32 interrupt;
++	wait_queue_head_t queue;
++	struct i2c_adapter adap;
++	int irq;
++	u32 flags;
 +};
 +
-+static int mpc_i2c_probe(struct of_device *op, const struct of_device_id *match)
++static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
++{
++	writeb(x, i2c->base + MPC_I2C_CR);
++}
++
++static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
++{
++	struct mpc_i2c *i2c = dev_id;
++	if (readb(i2c->base + MPC_I2C_SR) & CSR_MIF) {
++		/* Read again to allow register to stabilise */
++		i2c->interrupt = readb(i2c->base + MPC_I2C_SR);
++		writeb(0, i2c->base + MPC_I2C_SR);
++		wake_up_interruptible(&i2c->queue);
++	}
++	return IRQ_HANDLED;
++}
++
++/* Sometimes 9th clock pulse isn't generated, and slave doesn't release
++ * the bus, because it wants to send ACK.
++ * Following sequence of enabling/disabling and sending start/stop generates
++ * the pulse, so it's all OK.
++ */
++static void mpc_i2c_fixup(struct mpc_i2c *i2c)
++{
++	writeccr(i2c, 0);
++	udelay(30);
++	writeccr(i2c, CCR_MEN);
++	udelay(30);
++	writeccr(i2c, CCR_MSTA | CCR_MTX);
++	udelay(30);
++	writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
++	udelay(30);
++	writeccr(i2c, CCR_MEN);
++	udelay(30);
++}
++
++static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
++{
++	unsigned long orig_jiffies = jiffies;
++	u32 x;
++	int result = 0;
++
++	if (i2c->irq == NO_IRQ)
++	{
++		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
++			schedule();
++			if (time_after(jiffies, orig_jiffies + timeout)) {
++				pr_debug("I2C: timeout\n");
++				writeccr(i2c, 0);
++				result = -EIO;
++				break;
++			}
++		}
++		x = readb(i2c->base + MPC_I2C_SR);
++		writeb(0, i2c->base + MPC_I2C_SR);
++	} else {
++		/* Interrupt mode */
++		result = wait_event_interruptible_timeout(i2c->queue,
++			(i2c->interrupt & CSR_MIF), timeout * HZ);
++
++		if (unlikely(result < 0)) {
++			pr_debug("I2C: wait interrupted\n");
++			writeccr(i2c, 0);
++		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
++			pr_debug("I2C: wait timeout\n");
++			writeccr(i2c, 0);
++			result = -ETIMEDOUT;
++		}
++
++		x = i2c->interrupt;
++		i2c->interrupt = 0;
++	}
++
++	if (result < 0)
++		return result;
++
++	if (!(x & CSR_MCF)) {
++		pr_debug("I2C: unfinished\n");
++		return -EIO;
++	}
++
++	if (x & CSR_MAL) {
++		pr_debug("I2C: MAL\n");
++		return -EIO;
++	}
++
++	if (writing && (x & CSR_RXAK)) {
++		pr_debug("I2C: No RXAK\n");
++		/* generate stop */
++		writeccr(i2c, CCR_MEN);
++		return -EIO;
++	}
++	return 0;
++}
++
++static void mpc_i2c_setclock(struct mpc_i2c *i2c)
++{
++	/* Set clock and filters */
++	if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
++		writeb(0x31, i2c->base + MPC_I2C_FDR);
++		writeb(0x10, i2c->base + MPC_I2C_DFSRR);
++	} else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
++		writeb(0x3f, i2c->base + MPC_I2C_FDR);
++	else
++		writel(0x1031, i2c->base + MPC_I2C_FDR);
++}
++
++static void mpc_i2c_start(struct mpc_i2c *i2c)
++{
++	/* Clear arbitration */
++	writeb(0, i2c->base + MPC_I2C_SR);
++	/* Start with MEN */
++	writeccr(i2c, CCR_MEN);
++}
++
++static void mpc_i2c_stop(struct mpc_i2c *i2c)
++{
++	writeccr(i2c, CCR_MEN);
++}
++
++static int mpc_write(struct mpc_i2c *i2c, int target,
++		     const u8 * data, int length, int restart)
++{
++	int i, result;
++	unsigned timeout = i2c->adap.timeout;
++	u32 flags = restart ? CCR_RSTA : 0;
++
++	/* Start with MEN */
++	if (!restart)
++		writeccr(i2c, CCR_MEN);
++	/* Start as master */
++	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
++	/* Write target byte */
++	writeb((target << 1), i2c->base + MPC_I2C_DR);
++
++	result = i2c_wait(i2c, timeout, 1);
++	if (result < 0)
++		return result;
++
++	for (i = 0; i < length; i++) {
++		/* Write data byte */
++		writeb(data[i], i2c->base + MPC_I2C_DR);
++
++		result = i2c_wait(i2c, timeout, 1);
++		if (result < 0)
++			return result;
++	}
++
++	return 0;
++}
++
++static int mpc_read(struct mpc_i2c *i2c, int target,
++		    u8 * data, int length, int restart)
++{
++	unsigned timeout = i2c->adap.timeout;
++	int i, result;
++	u32 flags = restart ? CCR_RSTA : 0;
++
++	/* Start with MEN */
++	if (!restart)
++		writeccr(i2c, CCR_MEN);
++	/* Switch to read - restart */
++	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
++	/* Write target address byte - this time with the read flag set */
++	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
++
++	result = i2c_wait(i2c, timeout, 1);
++	if (result < 0)
++		return result;
++
++	if (length) {
++		if (length == 1)
++			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_TXAK);
++		else
++			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA);
++		/* Dummy read */
++		readb(i2c->base + MPC_I2C_DR);
++	}
++
++	for (i = 0; i < length; i++) {
++		result = i2c_wait(i2c, timeout, 0);
++		if (result < 0)
++			return result;
++
++		/* Generate txack on next to last byte */
++		if (i == length - 2)
++			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_TXAK);
++		/* Generate stop on last byte */
++		if (i == length - 1)
++			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
++		data[i] = readb(i2c->base + MPC_I2C_DR);
++	}
++
++	return length;
++}
++
++static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
++{
++	struct i2c_msg *pmsg;
++	int i;
++	int ret = 0;
++	unsigned long orig_jiffies = jiffies;
++	struct mpc_i2c *i2c = i2c_get_adapdata(adap);
++
++	mpc_i2c_start(i2c);
++
++	/* Allow bus up to 1s to become not busy */
++	while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
++		if (signal_pending(current)) {
++			pr_debug("I2C: Interrupted\n");
++			writeccr(i2c, 0);
++			return -EINTR;
++		}
++		if (time_after(jiffies, orig_jiffies + HZ)) {
++			pr_debug("I2C: timeout\n");
++			if (readb(i2c->base + MPC_I2C_SR) ==
++			    (CSR_MCF | CSR_MBB | CSR_RXAK))
++				mpc_i2c_fixup(i2c);
++			return -EIO;
++		}
++		schedule();
++	}
++
++	for (i = 0; ret >= 0 && i < num; i++) {
++		pmsg = &msgs[i];
++		pr_debug("Doing %s %d bytes to 0x%02x - %d of %d messages\n",
++			 pmsg->flags & I2C_M_RD ? "read" : "write",
++			 pmsg->len, pmsg->addr, i + 1, num);
++		if (pmsg->flags & I2C_M_RD)
++			ret =
++			    mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
++		else
++			ret =
++			    mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
++	}
++	mpc_i2c_stop(i2c);
++	return (ret < 0) ? ret : num;
++}
++
++static u32 mpc_functionality(struct i2c_adapter *adap)
++{
++	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL;
++}
++
++static const struct i2c_algorithm mpc_algo = {
++	.master_xfer = mpc_xfer,
++	.functionality = mpc_functionality,
++};
++
++static struct i2c_adapter mpc_ops = {
++	.owner = THIS_MODULE,
++	.name = "MPC adapter",
++	.id = I2C_HW_MPC107,
++	.algo = &mpc_algo,
++	.class = I2C_CLASS_HWMON,
++	.timeout = 1,
++};
++
++static int fsl_i2c_probe(struct platform_device *pdev)
 +{
 +	int result = 0;
 +	struct mpc_i2c *i2c;
++	struct fsl_i2c_platform_data *pdata;
++	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
 +
 +	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
 +	if (!i2c)
 +		return -ENOMEM;
 +
-+	if (of_get_property(op->node, "dfsrr", NULL))
-+		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
-+
-+	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
-+		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
-+
++	i2c->irq = platform_get_irq(pdev, 0);
++	if (i2c->irq < NO_IRQ) {
++		result = -ENXIO;
++		goto fail_get_irq;
++	}
++	i2c->flags = pdata->device_flags;
 +	init_waitqueue_head(&i2c->queue);
 +
-+	i2c->base = of_iomap(op->node, 0);
++	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
++
 +	if (!i2c->base) {
 +		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
 +		result = -ENOMEM;
 +		goto fail_map;
 +	}
 +
-+	i2c->irq = irq_of_parse_and_map(op->node, 0);
-+	if (i2c->irq == NO_IRQ) {
-+		result = -ENXIO;
-+		goto fail_irq;
-+	}
-+
-+	result = request_irq(i2c->irq, mpc_i2c_isr,
-+						IRQF_SHARED, "i2c-mpc", i2c);
-+	if (result < 0) {
-+		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
-+		goto fail_request;
-+	}
++	if (i2c->irq != NO_IRQ)
++		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
++					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
++			printk(KERN_ERR
++			       "i2c-mpc - failed to attach interrupt\n");
++			goto fail_irq;
++		}
 +
 +	mpc_i2c_setclock(i2c);
-+
-+	dev_set_drvdata(&op->dev, i2c);
++	platform_set_drvdata(pdev, i2c);
 +
 +	i2c->adap = mpc_ops;
++	i2c->adap.nr = pdev->id;
 +	i2c_set_adapdata(&i2c->adap, i2c);
-+	i2c->adap.dev.parent = &op->dev;
-+
-+	result = i2c_add_adapter(&i2c->adap);
-+	if (result < 0) {
++	i2c->adap.dev.parent = &pdev->dev;
++	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
 +		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
 +		goto fail_add;
 +	}
 +
-+	of_register_i2c_devices(&i2c->adap, op->node);
-+
 +	return result;
 +
-+fail_add:
-+	dev_set_drvdata(&op->dev, NULL);
-+	free_irq(i2c->irq, i2c);
-+fail_request:
-+	irq_dispose_mapping(i2c->irq);
-+fail_irq:
++      fail_add:
++	if (i2c->irq != NO_IRQ)
++		free_irq(i2c->irq, i2c);
++      fail_irq:
 +	iounmap(i2c->base);
-+fail_map:
++      fail_map:
++      fail_get_irq:
 +	kfree(i2c);
 +	return result;
 +};
 +
-+static int mpc_i2c_remove(struct of_device *op)
++static int fsl_i2c_remove(struct platform_device *pdev)
 +{
-+	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
++	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
 +
 +	i2c_del_adapter(&i2c->adap);
-+	dev_set_drvdata(&op->dev, NULL);
++	platform_set_drvdata(pdev, NULL);
 +
 +	if (i2c->irq != NO_IRQ)
 +		free_irq(i2c->irq, i2c);
 +
-+	irq_dispose_mapping(i2c->irq);
 +	iounmap(i2c->base);
 +	kfree(i2c);
 +	return 0;
 +};
 +
-+static struct of_device_id mpc_i2c_of_match[] = {
-+	{
-+		.compatible	= "fsl-i2c",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
-+
-+
 +/* Structure for a device driver */
-+static struct of_platform_driver mpc_i2c_driver = {
-+	.match_table	= mpc_i2c_of_match,
-+	.probe		= mpc_i2c_probe,
-+	.remove		= __devexit_p(mpc_i2c_remove),
-+	.driver		= {
-+		.owner	= THIS_MODULE,
-+		.name	= DRV_NAME,
++static struct platform_driver fsl_i2c_driver = {
++	.probe = fsl_i2c_probe,
++	.remove = fsl_i2c_remove,
++	.driver	= {
++		.owner = THIS_MODULE,
++		.name = "fsl-i2c",
 +	},
 +};
 +
-+static int __init mpc_i2c_init(void)
++static int __init fsl_i2c_init(void)
 +{
-+	int rv;
-+
-+	rv = of_register_platform_driver(&mpc_i2c_driver);
-+	if (rv)
-+		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
-+	return rv;
++	return platform_driver_register(&fsl_i2c_driver);
 +}
 +
-+static void __exit mpc_i2c_exit(void)
++static void __exit fsl_i2c_exit(void)
 +{
-+	of_unregister_platform_driver(&mpc_i2c_driver);
++	platform_driver_unregister(&fsl_i2c_driver);
 +}
 +
-+module_init(mpc_i2c_init);
-+module_exit(mpc_i2c_exit);
++module_init(fsl_i2c_init);
++module_exit(fsl_i2c_exit);
 +
-+#else
-+
- static int fsl_i2c_probe(struct platform_device *pdev)
- {
- 	int result = 0;
-@@ -345,8 +477,8 @@ static int fsl_i2c_probe(struct platform_device *pdev)
- 	}
- 
- 	if (i2c->irq != NO_IRQ)
++MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
++MODULE_DESCRIPTION
++    ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+deleted file mode 100644
+index d20959d..0000000
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ /dev/null
+@@ -1,421 +0,0 @@
+-/*
+- * (C) Copyright 2003-2004
+- * Humboldt Solutions Ltd, adrian@humboldt.co.uk.
+-
+- * This is a combined i2c adapter and algorithm driver for the
+- * MPC107/Tsi107 PowerPC northbridge and processors that include
+- * the same I2C unit (8240, 8245, 85xx).
+- *
+- * Release 0.8
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2. This program is licensed "as is" without any
+- * warranty of any kind, whether express or implied.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/sched.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+-
+-#include <asm/io.h>
+-#include <linux/fsl_devices.h>
+-#include <linux/i2c.h>
+-#include <linux/interrupt.h>
+-#include <linux/delay.h>
+-
+-#define MPC_I2C_ADDR  0x00
+-#define MPC_I2C_FDR 	0x04
+-#define MPC_I2C_CR	0x08
+-#define MPC_I2C_SR	0x0c
+-#define MPC_I2C_DR	0x10
+-#define MPC_I2C_DFSRR 0x14
+-#define MPC_I2C_REGION 0x20
+-
+-#define CCR_MEN  0x80
+-#define CCR_MIEN 0x40
+-#define CCR_MSTA 0x20
+-#define CCR_MTX  0x10
+-#define CCR_TXAK 0x08
+-#define CCR_RSTA 0x04
+-
+-#define CSR_MCF  0x80
+-#define CSR_MAAS 0x40
+-#define CSR_MBB  0x20
+-#define CSR_MAL  0x10
+-#define CSR_SRW  0x04
+-#define CSR_MIF  0x02
+-#define CSR_RXAK 0x01
+-
+-struct mpc_i2c {
+-	void __iomem *base;
+-	u32 interrupt;
+-	wait_queue_head_t queue;
+-	struct i2c_adapter adap;
+-	int irq;
+-	u32 flags;
+-};
+-
+-static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
+-{
+-	writeb(x, i2c->base + MPC_I2C_CR);
+-}
+-
+-static irqreturn_t mpc_i2c_isr(int irq, void *dev_id)
+-{
+-	struct mpc_i2c *i2c = dev_id;
+-	if (readb(i2c->base + MPC_I2C_SR) & CSR_MIF) {
+-		/* Read again to allow register to stabilise */
+-		i2c->interrupt = readb(i2c->base + MPC_I2C_SR);
+-		writeb(0, i2c->base + MPC_I2C_SR);
+-		wake_up_interruptible(&i2c->queue);
+-	}
+-	return IRQ_HANDLED;
+-}
+-
+-/* Sometimes 9th clock pulse isn't generated, and slave doesn't release
+- * the bus, because it wants to send ACK.
+- * Following sequence of enabling/disabling and sending start/stop generates
+- * the pulse, so it's all OK.
+- */
+-static void mpc_i2c_fixup(struct mpc_i2c *i2c)
+-{
+-	writeccr(i2c, 0);
+-	udelay(30);
+-	writeccr(i2c, CCR_MEN);
+-	udelay(30);
+-	writeccr(i2c, CCR_MSTA | CCR_MTX);
+-	udelay(30);
+-	writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
+-	udelay(30);
+-	writeccr(i2c, CCR_MEN);
+-	udelay(30);
+-}
+-
+-static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+-{
+-	unsigned long orig_jiffies = jiffies;
+-	u32 x;
+-	int result = 0;
+-
+-	if (i2c->irq == NO_IRQ)
+-	{
+-		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+-			schedule();
+-			if (time_after(jiffies, orig_jiffies + timeout)) {
+-				pr_debug("I2C: timeout\n");
+-				writeccr(i2c, 0);
+-				result = -EIO;
+-				break;
+-			}
+-		}
+-		x = readb(i2c->base + MPC_I2C_SR);
+-		writeb(0, i2c->base + MPC_I2C_SR);
+-	} else {
+-		/* Interrupt mode */
+-		result = wait_event_interruptible_timeout(i2c->queue,
+-			(i2c->interrupt & CSR_MIF), timeout * HZ);
+-
+-		if (unlikely(result < 0)) {
+-			pr_debug("I2C: wait interrupted\n");
+-			writeccr(i2c, 0);
+-		} else if (unlikely(!(i2c->interrupt & CSR_MIF))) {
+-			pr_debug("I2C: wait timeout\n");
+-			writeccr(i2c, 0);
+-			result = -ETIMEDOUT;
+-		}
+-
+-		x = i2c->interrupt;
+-		i2c->interrupt = 0;
+-	}
+-
+-	if (result < 0)
+-		return result;
+-
+-	if (!(x & CSR_MCF)) {
+-		pr_debug("I2C: unfinished\n");
+-		return -EIO;
+-	}
+-
+-	if (x & CSR_MAL) {
+-		pr_debug("I2C: MAL\n");
+-		return -EIO;
+-	}
+-
+-	if (writing && (x & CSR_RXAK)) {
+-		pr_debug("I2C: No RXAK\n");
+-		/* generate stop */
+-		writeccr(i2c, CCR_MEN);
+-		return -EIO;
+-	}
+-	return 0;
+-}
+-
+-static void mpc_i2c_setclock(struct mpc_i2c *i2c)
+-{
+-	/* Set clock and filters */
+-	if (i2c->flags & FSL_I2C_DEV_SEPARATE_DFSRR) {
+-		writeb(0x31, i2c->base + MPC_I2C_FDR);
+-		writeb(0x10, i2c->base + MPC_I2C_DFSRR);
+-	} else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
+-		writeb(0x3f, i2c->base + MPC_I2C_FDR);
+-	else
+-		writel(0x1031, i2c->base + MPC_I2C_FDR);
+-}
+-
+-static void mpc_i2c_start(struct mpc_i2c *i2c)
+-{
+-	/* Clear arbitration */
+-	writeb(0, i2c->base + MPC_I2C_SR);
+-	/* Start with MEN */
+-	writeccr(i2c, CCR_MEN);
+-}
+-
+-static void mpc_i2c_stop(struct mpc_i2c *i2c)
+-{
+-	writeccr(i2c, CCR_MEN);
+-}
+-
+-static int mpc_write(struct mpc_i2c *i2c, int target,
+-		     const u8 * data, int length, int restart)
+-{
+-	int i, result;
+-	unsigned timeout = i2c->adap.timeout;
+-	u32 flags = restart ? CCR_RSTA : 0;
+-
+-	/* Start with MEN */
+-	if (!restart)
+-		writeccr(i2c, CCR_MEN);
+-	/* Start as master */
+-	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
+-	/* Write target byte */
+-	writeb((target << 1), i2c->base + MPC_I2C_DR);
+-
+-	result = i2c_wait(i2c, timeout, 1);
+-	if (result < 0)
+-		return result;
+-
+-	for (i = 0; i < length; i++) {
+-		/* Write data byte */
+-		writeb(data[i], i2c->base + MPC_I2C_DR);
+-
+-		result = i2c_wait(i2c, timeout, 1);
+-		if (result < 0)
+-			return result;
+-	}
+-
+-	return 0;
+-}
+-
+-static int mpc_read(struct mpc_i2c *i2c, int target,
+-		    u8 * data, int length, int restart)
+-{
+-	unsigned timeout = i2c->adap.timeout;
+-	int i, result;
+-	u32 flags = restart ? CCR_RSTA : 0;
+-
+-	/* Start with MEN */
+-	if (!restart)
+-		writeccr(i2c, CCR_MEN);
+-	/* Switch to read - restart */
+-	writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_MTX | flags);
+-	/* Write target address byte - this time with the read flag set */
+-	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
+-
+-	result = i2c_wait(i2c, timeout, 1);
+-	if (result < 0)
+-		return result;
+-
+-	if (length) {
+-		if (length == 1)
+-			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_TXAK);
+-		else
+-			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA);
+-		/* Dummy read */
+-		readb(i2c->base + MPC_I2C_DR);
+-	}
+-
+-	for (i = 0; i < length; i++) {
+-		result = i2c_wait(i2c, timeout, 0);
+-		if (result < 0)
+-			return result;
+-
+-		/* Generate txack on next to last byte */
+-		if (i == length - 2)
+-			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_MSTA | CCR_TXAK);
+-		/* Generate stop on last byte */
+-		if (i == length - 1)
+-			writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
+-		data[i] = readb(i2c->base + MPC_I2C_DR);
+-	}
+-
+-	return length;
+-}
+-
+-static int mpc_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+-{
+-	struct i2c_msg *pmsg;
+-	int i;
+-	int ret = 0;
+-	unsigned long orig_jiffies = jiffies;
+-	struct mpc_i2c *i2c = i2c_get_adapdata(adap);
+-
+-	mpc_i2c_start(i2c);
+-
+-	/* Allow bus up to 1s to become not busy */
+-	while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
+-		if (signal_pending(current)) {
+-			pr_debug("I2C: Interrupted\n");
+-			writeccr(i2c, 0);
+-			return -EINTR;
+-		}
+-		if (time_after(jiffies, orig_jiffies + HZ)) {
+-			pr_debug("I2C: timeout\n");
+-			if (readb(i2c->base + MPC_I2C_SR) ==
+-			    (CSR_MCF | CSR_MBB | CSR_RXAK))
+-				mpc_i2c_fixup(i2c);
+-			return -EIO;
+-		}
+-		schedule();
+-	}
+-
+-	for (i = 0; ret >= 0 && i < num; i++) {
+-		pmsg = &msgs[i];
+-		pr_debug("Doing %s %d bytes to 0x%02x - %d of %d messages\n",
+-			 pmsg->flags & I2C_M_RD ? "read" : "write",
+-			 pmsg->len, pmsg->addr, i + 1, num);
+-		if (pmsg->flags & I2C_M_RD)
+-			ret =
+-			    mpc_read(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
+-		else
+-			ret =
+-			    mpc_write(i2c, pmsg->addr, pmsg->buf, pmsg->len, i);
+-	}
+-	mpc_i2c_stop(i2c);
+-	return (ret < 0) ? ret : num;
+-}
+-
+-static u32 mpc_functionality(struct i2c_adapter *adap)
+-{
+-	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL;
+-}
+-
+-static const struct i2c_algorithm mpc_algo = {
+-	.master_xfer = mpc_xfer,
+-	.functionality = mpc_functionality,
+-};
+-
+-static struct i2c_adapter mpc_ops = {
+-	.owner = THIS_MODULE,
+-	.name = "MPC adapter",
+-	.id = I2C_HW_MPC107,
+-	.algo = &mpc_algo,
+-	.class = I2C_CLASS_HWMON,
+-	.timeout = 1,
+-};
+-
+-static int fsl_i2c_probe(struct platform_device *pdev)
+-{
+-	int result = 0;
+-	struct mpc_i2c *i2c;
+-	struct fsl_i2c_platform_data *pdata;
+-	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-
+-	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+-
+-	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+-	if (!i2c)
+-		return -ENOMEM;
+-
+-	i2c->irq = platform_get_irq(pdev, 0);
+-	if (i2c->irq < NO_IRQ) {
+-		result = -ENXIO;
+-		goto fail_get_irq;
+-	}
+-	i2c->flags = pdata->device_flags;
+-	init_waitqueue_head(&i2c->queue);
+-
+-	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
+-
+-	if (!i2c->base) {
+-		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+-		result = -ENOMEM;
+-		goto fail_map;
+-	}
+-
+-	if (i2c->irq != NO_IRQ)
 -		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
 -					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
-+		result = request_irq(i2c->irq, mpc_i2c_isr, IRQF_SHARED, "i2c-mpc", i2c);
-+		if (result < 0) {
- 			printk(KERN_ERR
- 			       "i2c-mpc - failed to attach interrupt\n");
- 			goto fail_irq;
-@@ -359,20 +491,21 @@ static int fsl_i2c_probe(struct platform_device *pdev)
- 	i2c->adap.nr = pdev->id;
- 	i2c_set_adapdata(&i2c->adap, i2c);
- 	i2c->adap.dev.parent = &pdev->dev;
+-			printk(KERN_ERR
+-			       "i2c-mpc - failed to attach interrupt\n");
+-			goto fail_irq;
+-		}
+-
+-	mpc_i2c_setclock(i2c);
+-	platform_set_drvdata(pdev, i2c);
+-
+-	i2c->adap = mpc_ops;
+-	i2c->adap.nr = pdev->id;
+-	i2c_set_adapdata(&i2c->adap, i2c);
+-	i2c->adap.dev.parent = &pdev->dev;
 -	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
-+	result = i2c_add_numbered_adapter(&i2c->adap);
-+	if (result < 0) {
- 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
- 		goto fail_add;
- 	}
- 
- 	return result;
- 
+-		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+-		goto fail_add;
+-	}
+-
+-	return result;
+-
 -      fail_add:
-+fail_add:
- 	if (i2c->irq != NO_IRQ)
- 		free_irq(i2c->irq, i2c);
+-	if (i2c->irq != NO_IRQ)
+-		free_irq(i2c->irq, i2c);
 -      fail_irq:
-+fail_irq:
- 	iounmap(i2c->base);
+-	iounmap(i2c->base);
 -      fail_map:
 -      fail_get_irq:
-+fail_map:
-+fail_get_irq:
- 	kfree(i2c);
- 	return result;
- };
-@@ -415,6 +548,8 @@ static void __exit fsl_i2c_exit(void)
- module_init(fsl_i2c_init);
- module_exit(fsl_i2c_exit);
- 
-+#endif
-+
- MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
- MODULE_DESCRIPTION
-     ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
-diff --git a/drivers/i2c/busses/powerpc-common.c b/drivers/i2c/busses/powerpc-common.c
-new file mode 100644
-index 0000000..833131b
---- /dev/null
-+++ b/drivers/i2c/busses/powerpc-common.c
-@@ -0,0 +1,81 @@
-+/*
-+ * powerpc-common.c - routines common to device tree parsing for all
-+ *                    powerpc based i2c hosts
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ * (C) Copyright 2008 Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/i2c.h>
-+#include <linux/of_platform.h>
-+
-+#include "powerpc-common.h"
-+
-+#ifdef CONFIG_PPC_MERGE
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node)
-+{
-+	void *result;
-+	struct device_node *node = NULL;
-+
-+	while ((node = of_get_next_child(adap_node, node))) {
-+		struct i2c_board_info info;
-+		const u32 *addr;
-+		const char *compatible;
-+		int len;
-+
-+		compatible = of_get_property(node, "compatible", &len);
-+		if (!compatible) {
-+			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing compatible attribute\n");
-+			continue;
-+		}
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_ERR "i2c-mpc.c: invalid entry, missing reg attribute for %s\n", compatible);
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq < NO_IRQ) {
-+			printk(KERN_ERR "i2c-mpc.c: invalid irq attribute for %s\n", compatible);
-+			continue;
-+		}
-+
-+		/* need full alias i2c:OF,vendor,device */
-+		strcpy(info.type, I2C_OF_MODULE_PREFIX);
-+		strncat(info.type, compatible, sizeof(info.type));
-+		request_module(info.type);
-+
-+		/* need module alias OF,vendor,device */
-+		strcpy(info.type, OF_PREFIX);
-+		strncat(info.type, compatible, sizeof(info.type));
-+
-+		info.platform_data = NULL;
-+		info.addr = *addr;
-+
-+		result = PTR_ERR(i2c_new_device(adap, &info));
-+		if (result == NULL) {
-+			printk(KERN_ERR "i2c-mpc.c: Failed to load driver for %s, err %d\n", compatible);
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+	}
-+}
-+
-+#endif
-diff --git a/drivers/i2c/busses/powerpc-common.h b/drivers/i2c/busses/powerpc-common.h
-new file mode 100644
-index 0000000..95f1347
---- /dev/null
-+++ b/drivers/i2c/busses/powerpc-common.h
-@@ -0,0 +1,23 @@
-+/*
-+ * powerpc-common.h - routines common to device tree parsing for all
-+ *                    powerpc based i2c hosts
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ * (C) Copyright 2008 Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ */
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node);
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index d1488a0..2e53b39 100644
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -371,8 +371,15 @@ struct virtio_device_id {
- 
- /* These defines are used to separate PowerPC open firmware
-  * drivers into their own namespace */
--#define I2C_NAME_SIZE	20
-+#define I2C_NAME_SIZE	48  /* Needs to be large enough to hold device tree style names */
- #define I2C_MODULE_PREFIX "i2c:"
-+#ifdef CONFIG_OF
-+#define OF_PREFIX "OF," /* Used to put OF device tree names into their own namespace */
-+#define I2C_OF_MODULE_PREFIX I2C_MODULE_PREFIX OF_PREFIX
-+#define OF_ID(s, d) { OF_PREFIX s, (d) },
-+#else
-+#define OF_ID(s, d)
-+#endif
- 
- struct i2c_device_id {
- 	char name[I2C_NAME_SIZE];
+-	kfree(i2c);
+-	return result;
+-};
+-
+-static int fsl_i2c_remove(struct platform_device *pdev)
+-{
+-	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
+-
+-	i2c_del_adapter(&i2c->adap);
+-	platform_set_drvdata(pdev, NULL);
+-
+-	if (i2c->irq != NO_IRQ)
+-		free_irq(i2c->irq, i2c);
+-
+-	iounmap(i2c->base);
+-	kfree(i2c);
+-	return 0;
+-};
+-
+-/* Structure for a device driver */
+-static struct platform_driver fsl_i2c_driver = {
+-	.probe = fsl_i2c_probe,
+-	.remove = fsl_i2c_remove,
+-	.driver	= {
+-		.owner = THIS_MODULE,
+-		.name = "fsl-i2c",
+-	},
+-};
+-
+-static int __init fsl_i2c_init(void)
+-{
+-	return platform_driver_register(&fsl_i2c_driver);
+-}
+-
+-static void __exit fsl_i2c_exit(void)
+-{
+-	platform_driver_unregister(&fsl_i2c_driver);
+-}
+-
+-module_init(fsl_i2c_init);
+-module_exit(fsl_i2c_exit);
+-
+-MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+-MODULE_DESCRIPTION
+-    ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
+-MODULE_LICENSE("GPL");
