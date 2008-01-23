@@ -1,19 +1,31 @@
-Return-Path: <markus.mehlan@ritter-elektronik.de>
-Received: from mail.textile.saurer.com (mail.textile.saurer.com
-	[193.158.88.134]) by ozlabs.org (Postfix) with ESMTP id 6B73EDDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 17:53:17 +1100 (EST)
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9862FDDDF4
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 18:57:59 +1100 (EST)
+Date: Wed, 23 Jan 2008 08:58:21 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: crash in kmem_cache_init
+Message-ID: <20080123075821.GA17713@aepfle.de>
+References: <20080117181222.GA24411@aepfle.de>
+	<Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	<20080117211511.GA25320@aepfle.de>
+	<Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+	<20080118213011.GC10491@csn.ul.ie>
+	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	<20080118225713.GA31128@aepfle.de>
+	<20080122195448.GA15567@csn.ul.ie>
+	<20080122214505.GA15674@aepfle.de>
+	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: [MPC5200] problem running FEC and ATA
-Date: Wed, 23 Jan 2008 07:53:14 +0100
-Message-ID: <FACFFB02D783C64FB2CEF2D6825F6FC206EEF1CF@SRVEXC01.sts.saurer.vpn>
-In-Reply-To: <20080123002040.5049F24781@gemini.denx.de>
-References: Your message of "Mon, 21 Jan 2008 17:28:22 +0100."
-	<200801211728.22817.jbe@pengutronix.de>
-	<20080123002040.5049F24781@gemini.denx.de>
-From: "Mehlan, Markus (Ritter Elektronik)" <markus.mehlan@ritter-elektronik.de>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+Cc: lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +35,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Wolfgang,
+On Tue, Jan 22, Christoph Lameter wrote:
 
-> -----Urspr=FCngliche Nachricht-----
-> Von: wd@denx.de [mailto:wd@denx.de]=20
-> Gesendet: Mittwoch, 23. Januar 2008 01:21
-> An: Juergen Beisert
-> Cc: linuxppc-dev@ozlabs.org; Mehlan, Markus (Ritter Elektronik)
-> Betreff: Re: [MPC5200] problem running FEC and ATA
->=20
-> In message <200801211728.22817.jbe@pengutronix.de> you wrote:
-> >
-> > Is anybody out there with more MPC5200B experience? Can=20
-> someone tell=20
-> > me why some MPC5200B are need this patch and others not? We=20
-> have two=20
-> > different systems here (cards from different vendors) with the same=20
-> > processor, one needs this BSDIS-patch and the other not.=20
-> ???????????????
->=20
-> Is it really exactly the same CPU revision? My guess is that=20
-> one is rev. B and the other one is older...
->=20
-The processor on my board which needs the BSDIS-patch has following
-label:
+> > 0xc0000000000fe018 is in setup_cpu_cache (/home/olaf/kernel/git/linux-2.6-numa/mm/slab.c:2111).
+> > 2106                                    BUG_ON(!cachep->nodelists[node]);
+> > 2107                                    kmem_list3_init(cachep->nodelists[node]);
+> > 2108                            }
+> > 2109                    }
+> > 2110            }
+> 
+> if (cachep->nodelists[numa_node_id()])
+> 	return;
 
-MPC5200CVR400B
-M62C
-REV 1
-QAZ0637J
+Does not help.
 
-Best regards,
-Markus
+
+Linux version 2.6.24-rc8-ppc64 (olaf@lingonberry) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #48 SMP Wed Jan 23 08:54:23 CET 2008
+[boot]0012 Setup Arch
+EEH: PCI Enhanced I/O Error Handling Enabled
+PPC64 nvram contains 8192 bytes
+Zone PFN ranges:
+  DMA             0 ->   892928
+  Normal     892928 ->   892928
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    1:        0 ->   892928
+Could not find start_pfn for node 0
+[boot]0015 Setup Done
+Built 2 zonelists in Node order, mobility grouping on.  Total pages: 880720
+Policy zone: DMA
+Kernel command line: debug xmon=on panic=1  
+[boot]0020 XICS Init
+xics: no ISA interrupt controller
+[boot]0021 XICS Done
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+time_init: decrementer frequency = 275.070000 MHz
+time_init: processor frequency   = 2197.800000 MHz
+clocksource: timebase mult[e8ab05] shift[22] registered
+clockevent: decrementer mult[466a] shift[16] cpu[0]
+Console: colour dummy device 80x25
+console handover: boot [udbg-1] -> real [hvc0]
+Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+freeing bootmem node 1
+Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
+Kernel panic - not syncing: kmem_cache_create(): failed to create slab `size-32(DMA)'
+
+Rebooting in 1 seconds..
+
+---
+ mm/slab.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1590,7 +1590,7 @@ void __init kmem_cache_init(void)
+ 		/* Replace the static kmem_list3 structures for the boot cpu */
+ 		init_list(&cache_cache, &initkmem_list3[CACHE_CACHE], node);
+ 
+-		for_each_node_state(nid, N_NORMAL_MEMORY) {
++		for_each_online_node(nid) {
+ 			init_list(malloc_sizes[INDEX_AC].cs_cachep,
+ 				  &initkmem_list3[SIZE_AC + nid], nid);
+ 
+@@ -1968,7 +1968,7 @@ static void __init set_up_list3s(struct 
+ {
+ 	int node;
+ 
+-	for_each_node_state(node, N_NORMAL_MEMORY) {
++	for_each_online_node(node) {
+ 		cachep->nodelists[node] = &initkmem_list3[index + node];
+ 		cachep->nodelists[node]->next_reap = jiffies +
+ 		    REAPTIMEOUT_LIST3 +
+@@ -2108,6 +2108,8 @@ static int __init_refok setup_cpu_cache(
+ 			}
+ 		}
+ 	}
++	if (!cachep->nodelists[numa_node_id()])
++		return -ENODEV;
+ 	cachep->nodelists[numa_node_id()]->next_reap =
+ 			jiffies + REAPTIMEOUT_LIST3 +
+ 			((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+@@ -2775,6 +2777,11 @@ static int cache_grow(struct kmem_cache 
+ 	/* Take the l3 list lock to change the colour_next on this node */
+ 	check_irq_off();
+ 	l3 = cachep->nodelists[nodeid];
++	if (!l3) {
++		nodeid = numa_node_id();
++		l3 = cachep->nodelists[nodeid];
++	}
++	BUG_ON(!l3);
+ 	spin_lock(&l3->list_lock);
+ 
+ 	/* Get colour for the slab, and cal the next value. */
+@@ -3317,6 +3324,10 @@ static void *____cache_alloc_node(struct
+ 	int x;
+ 
+ 	l3 = cachep->nodelists[nodeid];
++	if (!l3) {
++		nodeid = numa_node_id();
++		l3 = cachep->nodelists[nodeid];
++	}
+ 	BUG_ON(!l3);
+ 
+ retry:
+@@ -3815,7 +3826,7 @@ static int alloc_kmemlist(struct kmem_ca
+ 	struct array_cache *new_shared;
+ 	struct array_cache **new_alien = NULL;
+ 
+-	for_each_node_state(node, N_NORMAL_MEMORY) {
++	for_each_online_node(node) {
+ 
+                 if (use_alien_caches) {
+                         new_alien = alloc_alien_cache(node, cachep->limit);
