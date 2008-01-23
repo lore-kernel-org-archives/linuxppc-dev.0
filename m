@@ -1,22 +1,33 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <penberg@cs.helsinki.fi>
+Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8A90EDDF1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 01:06:21 +1100 (EST)
-Message-ID: <4797499A.3020506@freescale.com>
-Date: Wed, 23 Jan 2008 08:05:14 -0600
-From: Jon Loeliger <jdl@freescale.com>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 2/3 v3] Add initial iomega StorCenter board port.
-References: <E1JHRkl-0005e5-RX@jdl.com>
-	<20080123105111.125f075d.sfr@canb.auug.org.au>
-In-Reply-To: <20080123105111.125f075d.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E1BF3DDECD
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 01:18:24 +1100 (EST)
+Date: Wed, 23 Jan 2008 16:18:19 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+	running on a memoryless node
+In-Reply-To: <20080123135513.GA14175@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+References: <20080118213011.GC10491@csn.ul.ie>
+	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	<20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+	<20080122214505.GA15674@aepfle.de>
+	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+	<20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
+	<20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
+	<20080123135513.GA14175@csn.ul.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
+	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> Hi Jon,
-> 
-> On Tue, 22 Jan 2008 16:37:59 -0600 Jon Loeliger <jdl@jdl.com> wrote:
->> +++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
-> 
->> +extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
-> 
-> This clearly needs to be decalred in some header file.  (I know you did
-> not introduce it.)  In arch/ppc, it was declared in asm/system.h (but I
-> don't know if that is appropriate for arch/powerpc).  Maybe you could do
-> a preceeding patch that does this and fixes the other user.
+Hi Mel,
 
-I hear my Janitorial Karmic Duty calling.
- 
->> +static void __init storcenter_init_IRQ(void)
+On Wed, 23 Jan 2008, Mel Gorman wrote:
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc8-005-revert-memoryless-slab/mm/slab.c linux-2.6.24-rc8-010_handle_missing_l3/mm/slab.c
+> --- linux-2.6.24-rc8-005-revert-memoryless-slab/mm/slab.c	2008-01-22 17:46:32.000000000 +0000
+> +++ linux-2.6.24-rc8-010_handle_missing_l3/mm/slab.c	2008-01-22 18:42:53.000000000 +0000
+> @@ -2775,6 +2775,11 @@ static int cache_grow(struct kmem_cache 
+>  	/* Take the l3 list lock to change the colour_next on this node */
+>  	check_irq_off();
+>  	l3 = cachep->nodelists[nodeid];
+> +	if (!l3) {
+> +		nodeid = numa_node_id();
+> +		l3 = cachep->nodelists[nodeid];
+> +	}
+> +	BUG_ON(!l3);
+>  	spin_lock(&l3->list_lock);
+>  
+>  	/* Get colour for the slab, and cal the next value. */
+> @@ -3317,6 +3322,10 @@ static void *____cache_alloc_node(struct
+>  	int x;
+>  
+>  	l3 = cachep->nodelists[nodeid];
+> +	if (!l3) {
+> +		nodeid = numa_node_id();
+> +		l3 = cachep->nodelists[nodeid];
+> +	}
 
->> +	prop = of_get_property(dnp, "reg", &size);
->> +	paddr = (phys_addr_t)of_translate_address(dnp, prop);
-> 
-> What happens of "prop" is NULL?
+What guarantees that current node ->nodelists is never NULL?
 
-Someone should fix that case too. :-)
+I still think Christoph's kmem_getpages() patch is correct (to fix 
+cache_grow() oops) but I overlooked the fact that none the callers of 
+____cache_alloc_node() deal with bootstrapping (with the exception of 
+__cache_alloc_node() that even has a comment about it).
 
-Kumar,
+But what I am really wondering about is, why wasn't the 
+N_NORMAL_MEMORY revert enough? I assume this used to work before so what 
+more do we need to revert for 2.6.24?
 
-I'll respin this trio for you.
-
-jdl
+			Pekka
