@@ -1,32 +1,18 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
-	by ozlabs.org (Postfix) with ESMTP id 58DAADDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:51:33 +1100 (EST)
-Date: Wed, 23 Jan 2008 10:51:32 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
-	running on a memoryless node
-In-Reply-To: <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0801231036440.11430@schroedinger.engr.sgi.com>
-References: <20080122214505.GA15674@aepfle.de>
-	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-	<20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
-	<20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
-	<20080123135513.GA14175@csn.ul.ie>
-	<Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
-	<20080123155655.GB20156@csn.ul.ie>
-	<Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
-	Linux MM <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id ADD6DDDEF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 05:53:57 +1100 (EST)
+Received: from ravnborg.org (0x535d98d8.vgnxx8.adsl-dhcp.tele.dk
+	[83.93.152.216])
+	by pasmtpA.tele.dk (Postfix) with ESMTP id 1EE9C1840B
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 19:53:54 +0100 (CET)
+Date: Wed, 23 Jan 2008 19:54:05 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Section mismatch warnings om powerpc defconfig build:wq
+Message-ID: <20080123185405.GA23693@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,31 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Jan 2008, Pekka J Enberg wrote:
+Hi Powerpc.
 
-> Fine. But, why are we hitting fallback_alloc() in the first place? It's 
-> definitely not because of missing ->nodelists as we do:
-> 
->         cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE];
-> 
-> before attempting to set up kmalloc caches. Now, if I understood 
-> correctly, we're booting off a memoryless node so kmem_getpages() will 
-> return NULL thus forcing us to fallback_alloc() which is unavailable at 
-> this point.
-> 
-> As far as I can tell, there are two ways to fix this:
-> 
->   (1) don't boot off a memoryless node (why are we doing this in the first 
->       place?)
+Just a heads up.
+When building the provided defconfig for powerpc I get the following bunch
+of section mismatch warnings:
 
-Right. That is the solution that I would prefer.
+WARNING: vmlinux.o(.text+0x83c0): Section mismatch: reference to .devinit.text:.start_secondary in '.start_secondary_prolog'
+WARNING: vmlinux.o(.text+0xe878): Section mismatch: reference to .init.text:.find_symbol64 in '.vdso_do_func_patch64'
+WARNING: vmlinux.o(.text+0xe8a4): Section mismatch: reference to .init.text:.find_symbol64 in '.vdso_do_func_patch64'
+WARNING: vmlinux.o(.text+0xe944): Section mismatch: reference to .init.text:.find_symbol32 in '.vdso_do_func_patch32'
+WARNING: vmlinux.o(.text+0xe970): Section mismatch: reference to .init.text:.find_symbol32 in '.vdso_do_func_patch32'
+WARNING: vmlinux.o(.text+0x25b10): Section mismatch: reference to .init.text:.lmb_alloc_base in '.move_device_tree'
+WARNING: vmlinux.o(.text+0x2bc98): Section mismatch: reference to .devinit.text:.fixup_resource in '.pci_parse_of_addrs'
+WARNING: vmlinux.o(.text+0x2c428): Section mismatch: reference to .devinit.text:.update_dn_pci_info in '.pci_dn_reconfig_notifier'
+WARNING: vmlinux.o(.text+0x2c9ec): Section mismatch: reference to .devinit.text:.pci_setup_pci_controller in '.pcibios_alloc_controller'
+WARNING: vmlinux.o(.text+0x4db6c): Section mismatch: reference to .devinit.text:.pcibios_setup_new_device in '.pcibios_fixup_new_pci_devices'
+WARNING: vmlinux.o(.text+0x4db84): Section mismatch: reference to .devinit.text:.pcibios_fixup_device_resources in '.pcibios_fixup_new_pci_devices'
+WARNING: vmlinux.o(.text+0x4de28): Section mismatch: reference to .devinit.text:.of_scan_bus in '.pcibios_add_pci_devices'
+WARNING: vmlinux.o(.text+0x55474): Section mismatch: reference to .init.text:.free_property in '.free_node'
+WARNING: vmlinux.o(.text+0x559d0): Section mismatch: reference to .devinit.text:.vio_register_device_node in '.vio_create_viodasd'
+WARNING: vmlinux.o(.text+0xe73c0): Section mismatch: reference to .init.text:.__alloc_bootmem_node in '.sparse_early_usemap_alloc'
+WARNING: vmlinux.o(.text+0xe74b4): Section mismatch: reference to .meminit.text:.sparse_index_init in '.sparse_add_one_section'
+WARNING: vmlinux.o(.text+0xe74d4): Section mismatch: reference to .meminit.text:.sparse_mem_map_populate in '.sparse_add_one_section'
+WARNING: vmlinux.o(.text+0xe7548): Section mismatch: reference to .meminit.text:.sparse_init_one_section in '.sparse_add_one_section'
+WARNING: vmlinux.o(.text+0xf1c90): Section mismatch: reference to .devinit.text:.arch_add_memory in '.add_memory'
+WARNING: vmlinux.o(.text+0xf1eac): Section mismatch: reference to .meminit.text:.init_currently_empty_zone in '.__add_zone'
+WARNING: vmlinux.o(.text+0xf1ee0): Section mismatch: reference to .meminit.text:.memmap_init_zone in '.__add_zone'
+WARNING: vmlinux.o(.text+0x279f08): Section mismatch: reference to .devinit.text:.pci_alloc_child_bus in '.pci_add_new_bus'
+WARNING: vmlinux.o(.text+0x27a95c): Section mismatch: reference to .devinit.text:.pci_scan_device in '.pci_scan_single_device'
+WARNING: vmlinux.o(.text+0x27af44): Section mismatch: reference to .devinit.text:.pcibios_fixup_bus in '.pci_scan_child_bus'
+WARNING: vmlinux.o(.text+0x2849a4): Section mismatch: reference to .devinit.text:.pci_setup_bridge in '.pci_bus_assign_resources'
+WARNING: vmlinux.o(.text+0x284ca8): Section mismatch: reference to .devinit.text:.pci_bus_size_cardbus in '.pci_bus_size_bridges'
+WARNING: vmlinux.o(.text+0x2f649c): Section mismatch: reference to .devinit.text:.hvc_alloc in '.hvc_rtas_init'
+WARNING: vmlinux.o(.text+0x30d99c): Section mismatch: reference to .cpuinit.text:.cpu_up in '.store_online'
+WARNING: vmlinux.o(.text+0x38c724): Section mismatch: reference to .devinit.text:.olympic_init in '.olympic_open'
+WARNING: vmlinux.o(.text+0x3b5630): Section mismatch: reference to .init.text:.pmac_ide_setup_dma in '.pmac_ide_setup_device'
+WARNING: vmlinux.o(.text+0x3daa04): Section mismatch: reference to .devexit.text:.sym2_remove in '.sym2_io_error_detected'
+WARNING: vmlinux.o(.text+0x4da38c): Section mismatch: reference to .cpuinit.text:.register_cpu_notifier in '.cpufreq_register_driver'
+  AS      .tmp_kallsyms2.o
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  Building modules, stage 2.
+  WRAP    arch/powerpc/boot/zImage.pseries
+  WRAP    arch/powerpc/boot/zImage.pmac
+powerpc64-unknown-linux-gnu-strip -s -R .comment vmlinux -o arch/powerpc/boot/zImage.iseries
+  MODPOST 263 modules
+WARNING: drivers/cdrom/viocd.o(.text+0x504): Section mismatch: reference to .init.text:.find_capability in '.viocd_probe'
+WARNING: drivers/net/iseries_veth.o(.text+0x113c): Section mismatch: reference to .init.text:.veth_probe_one in '.veth_probe'
 
->   (2) initialize cache_cache.nodelists with initmem_list3 equivalents
->       for *each node hat has normal memory*
+Some of these are powerpc specific and you ought to take a look at these.
+It is planned to let section mismatches become fatal in the build process during 2.6.25
+so now is a good time to fix them.
 
-Or simply do it for all. SLAB bootstrap is very complex thing though.
+The above list is generatd from kbuild.git which is included in -mm.
+So some warnings may already be fixed and you will need -mm to get the full list.
 
-> 
-> I am still wondering why this worked before, though.
+Another note - I build with 'make KCFLAGS=-fno-inline-functions-called-once'
+which triggers a few more warnings than normal with gcc > 3.4.
 
-I doubt it did ever work for SLAB.
+	Sam
