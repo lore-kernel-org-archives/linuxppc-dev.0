@@ -1,20 +1,20 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED4AADDE00
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 20:03:27 +1100 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Wed, 23 Jan 2008 10:03:14 +0100
-References: <20080123002040.5049F24781@gemini.denx.de>
-In-Reply-To: <20080123002040.5049F24781@gemini.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801231003.15045.jbe@pengutronix.de>
-Subject: Re: [MPC5200] problem running FEC and ATA
-Cc: "Mehlan, Markus \(Ritter Elektronik\)" <markus.mehlan@ritter-elektronik.de>
+Return-Path: <khali@linux-fr.org>
+Received: from mallaury.nerim.net (smtp-103-wednesday.noc.nerim.net
+	[62.4.17.103]) by ozlabs.org (Postfix) with ESMTP id E680BDDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 21:24:04 +1100 (EST)
+Date: Wed, 23 Jan 2008 11:23:50 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale
+	CPM1/CPM2 controllers
+Message-ID: <20080123112350.629ee615@hyperion.delvare>
+In-Reply-To: <20071222001112.691b80c8@kernel.crashing.org>
+References: <476C15BC.3090807@scram.de>
+	<20071222001112.691b80c8@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang,
+On Sat, 22 Dec 2007 00:11:12 +0300, Vitaly Bordug wrote:
+> On Fri, 21 Dec 2007 20:36:28 +0100
+> Jochen Friedrich wrote:
+> 
+> > Using the port of 2.4 code from Vitaly Bordug
+> > <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
+> > driver of the DBox code on cvs.tuxboc.org from Tmbinc, Gillem
+> > (htoa@gmx.net). Renamed i2c-rpx.c and i2c-algo-8xx.c to i2c-cpm.c and
+> > converted the driver to an of_platform_driver.
+> > 
+> 
+> I had an attempt a while ago to do this but haven't had enough time to get it completed, so
+> I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
+> addressed but  something not, please
+> check: http://lkml.org/lkml/2007/5/8/45
+> 
+> (for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail) 
+> 
+> Also, why this was directed to Scott? This is lm-sensors stuff and is
+> Jean Delvare <khali@linux-fr.org> material...
 
-On Wednesday 23 January 2008 01:20, Wolfgang Denk wrote:
-> In message <200801211728.22817.jbe@pengutronix.de> you wrote:
-> > Is anybody out there with more MPC5200B experience? Can someone tell me
-> > why some MPC5200B are need this patch and others not? We have two
-> > different systems here (cards from different vendors) with the same
-> > processor, one needs this BSDIS-patch and the other not. ???????????????
->
-> Is it really exactly the same CPU revision? My guess is that one is
-> rev. B and the other one is older...
+This is _i2c_ stuff and doesn't have _anything_ to do with lm-sensors.
+(Don't let the i2c list address fool you.)
 
-The one who needs this patch (CPU card vendor 1):
+As the i2c subsystem maintainer, I am very pleased when contributors
+get their patches reviewed and tested by people with the knowledge and
+access to the target architecture and hardware. So Jochen did the right
+thing by sending this patch to Scott at first.
 
-MPC5200CVR400B, M62C REV 1, QCW0723T
-
-The CPUs who do not need this patch (CPU card vendor 2):
-
-SPC5200CBV400B, M62C REV 1, QAG0610C
-MPC5200CVR400B, M62C REV 1, QAJ0613F
-
-
-Best regards
-Juergen Beisert
-
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+-- 
+Jean Delvare
