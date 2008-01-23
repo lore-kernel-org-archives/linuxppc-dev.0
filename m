@@ -1,23 +1,22 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-103-wednesday.noc.nerim.net
-	[62.4.17.103]) by ozlabs.org (Postfix) with ESMTP id 4582DDDE30
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 00:02:38 +1100 (EST)
-Date: Wed, 23 Jan 2008 14:02:32 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCHv2] i2c: adds support for i2c bus on Frescale CPM1/CPM2
-	controllers
-Message-ID: <20080123140232.67273b22@hyperion.delvare>
-In-Reply-To: <479723CE.5020609@scram.de>
-References: <477BEB60.4070703@scram.de>
-	<20080103104121.58697148.sfr@canb.auug.org.au>
-	<20080123112941.23250948@hyperion.delvare>
-	<479723CE.5020609@scram.de>
+Return-Path: <michel@tungstengraphics.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id 1E5D3DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 00:14:21 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so2048675fgg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 05:14:19 -0800 (PST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1201091798.6341.49.camel@lappy>
+References: <1200659696.23161.81.camel@thor.sulgenrain.local>
+	<1201013786.4726.28.camel@thor.sulgenrain.local>
+	<1201090699.9052.39.camel@thor.sulgenrain.local>
+	<1201091798.6341.49.camel@lappy>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 23 Jan 2008 14:14:16 +0100
+Message-Id: <1201094056.9052.52.camel@thor.sulgenrain.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Linux I2C <i2c@lm-sensors.org>,
-	Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hallo Jochen,
 
-On Wed, 23 Jan 2008 12:23:58 +0100, Jochen Friedrich wrote:
-> Hi Jean,
-> 
-> > Do you have an updated patch addressing Stephen's comment?
+On Wed, 2008-01-23 at 13:36 +0100, Peter Zijlstra wrote:
+> On Wed, 2008-01-23 at 13:18 +0100, Michel Dänzer wrote:
 > > 
-> > Note: you'd rather send updates of this patch to the i2c list rather
-> > than LKML.
+> > 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8 is first bad commit
+> > commit 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8
+> > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date:   Mon Oct 15 17:00:14 2007 +0200
+> > 
+> >     sched: another wakeup_granularity fix
+> >     
+> >     unit mis-match: wakeup_gran was used against a vruntime
+> >     
+> >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > :040000 040000 61242d589b0082a417657807ed6329321340f7f3 bff39e49275324e15f37d2163157733580b7df1a M      kernel
+> > 
+> > 
+> > Unfortunately, I don't understand how that can cause the misbehaviour
+> > described above, and 2.6.24-rc8
+> > (667984d9e481e43a930a478c588dced98cb61fea) with the patch below still
+> > shows the problem. Any ideas Peter or Ingo (or anyone, really :)?
+> > 
+> > 
+> > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> > index da7c061..a7cc22a 100644
+> > --- a/kernel/sched_fair.c
+> > +++ b/kernel/sched_fair.c
+> > @@ -843,7 +843,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+> >  	struct task_struct *curr = rq->curr;
+> >  	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+> >  	struct sched_entity *se = &curr->se, *pse = &p->se;
+> > -	unsigned long gran;
+> >  
+> >  	if (unlikely(rt_prio(p->prio))) {
+> >  		update_rq_clock(rq);
+> > @@ -866,11 +865,8 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+> >  		pse = parent_entity(pse);
+> >  	}
+> >  
+> > -	gran = sysctl_sched_wakeup_granularity;
+> > -	if (unlikely(se->load.weight != NICE_0_LOAD))
+> > -		gran = calc_delta_fair(gran, &se->load);
+> >  
+> > -	if (pse->vruntime + gran < se->vruntime)
+> > +	if (pse->vruntime + sysctl_sched_wakeup_granularity < se->vruntime)
+> >  		resched_task(curr);
+> >  }
+> >  
 > 
-> I'm currently looking at that last patches from Jon and try to make this
-> driver fit in there (+ the class override stuff).
+> Most curious; are you sure its not a bisection problem?
 
-I'm not sure what patches exactly you're talking about, but the
-aliasing stuff Jon and myself have been working on are still under
-debate. Your patch shouldn't assume that any of these patches will go
-upstream immediately, so your patch adding the i2c-cpm driver can
-ignore them. I'll update the patches before merging them as needed, do
-not worry too much about that.
+Quite sure.
 
-> Note: will do. I just subscribed to this list.
+> Does ppc32 (or your instance thereof) have a high resolution
+> sched_clock()?
 
-Note hat you do not need to be subscribed to post to the i2c list (but
-of course, if you have some interest in Linux i2c development,
-subscribing was a good idea anyway.)
+I'm not sure (FWIW, we did get support for NO_HZ and HIGH_RES_TIMERS in
+2.6.24-rc as well, but playing with these config options and even
+reverting the code didn't seem to have any effect), can someone from the
+linuxppc-dev list answer this?
+
+
+> Another question, do you have:
+>   CONFIG_FAIR_GROUP_SCHED=y
+> 
+> if so, does flipping that off have any effect?
+
+I tried both, no difference that I could tell.
+
+
+Is there any debugging information I could provide from running the test
+on kernels built from at and before the change in question?
+
+
+Thanks,
+
 
 -- 
-Jean Delvare
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
