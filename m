@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4295DDDEC8
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 10:03:21 +1100 (EST)
-Message-Id: <175876A0-9BC1-40D8-B204-93725BF45E1D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080124094017.8afc5077.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [POWERPC] Move RapidIO support code from arch/ppc
-Date: Wed, 23 Jan 2008 17:00:41 -0600
-References: <Pine.LNX.4.64.0801230637510.4478@blarg.am.freescale.net>
-	<20080124094017.8afc5077.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Wei.Zhang@freescale.com
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18327.51186.788355.453524@cargo.ozlabs.ibm.com>
+Date: Thu, 24 Jan 2008 10:04:18 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] Fix handling of memreserve if the range lands in
+	highmem
+In-Reply-To: <Pine.LNX.4.64.0801100120290.13810@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0801100120290.13810@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala writes:
 
-On Jan 23, 2008, at 4:40 PM, Stephen Rothwell wrote:
+> There were several issues if a memreserve range existed and happened
+> to be in highmem:
+> 
+> * The bootmem allocator is only aware of lowmem so calling
+>   reserve_bootmem with a highmem address would cause a BUG_ON
+> * All highmem pages were provided to the buddy allocator
+> 
+> Added a lmb_is_reserved() api that we now use to determine if a highem
+> page should continue to be PageReserved or provided to the buddy
+> allocator.
+> 
+> Also, we incorrectly reported the amount of pages reserved since all
+> highmem pages are initally marked reserved and we clear the
+> PageReserved flag as we "free" up the highmem pages.
 
-> Hi Kumar,
->
-> On Wed, 23 Jan 2008 06:38:29 -0600 (CST) Kumar Gala <galak@kernel.crashing.org 
-> > wrote:
->>
->> +++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
->> @@ -190,6 +188,7 @@ mpc85xx_exclude_device(u_char bus, u_char devfn)
->> #endif /* CONFIG_PCI */
->>
->> #ifdef CONFIG_RAPIDIO
->> +extern void mpc85xx_rio_setup(int law_start, int law_size);
->
-> Ooops! This should be in a header file, of course.
->
->> +++ b/arch/ppc/platforms/85xx/stx_gp3.c
->> @@ -270,6 +269,7 @@ int mpc85xx_exclude_device(u_char bus, u_char  
->> devfn)
->> #endif /* CONFIG_PCI */
->>
->> #ifdef CONFIG_RAPIDIO
->> +extern void mpc85xx_rio_setup(int law_start, int law_size);
->
-> And again.
->
-> I guess this is just temporary in which case we can probably live with
-> it.  But do not forget to fix it up.
->
->> +++ b/arch/ppc/platforms/85xx/tqm85xx.c
->> @@ -309,6 +308,7 @@ int mpc85xx_exclude_device(u_char bus, u_char  
->> devfn)
->> #endif /* CONFIG_PCI */
->>
->> #ifdef CONFIG_RAPIDIO
->> +extern void mpc85xx_rio_setup(int law_start, int law_size);
->
-> Third time lucky?   :-)
+This patch breaks all the 64-bit configs since 64-bit doesn't have
+total_lowmem.  The extra complexity is only needed in the
+CONFIG_HIGHMEM case, so an ifdef would be one solution, though an ugly
+one.  We do already have an ifdef just above the place you changed in
+arch/powerpc/mm/mem.c which you could just enlarge rather than adding
+a new ifdef.
 
-They were in a header file, however in moving the code over the header  
-ends up in arch/powerpc/sysdev/fsl_rio.h.  I don't think there is a  
-simple way to include that in arch/ppc code today (and I don't want to  
-invent one).
+And clearly I can't pull your tree until this is sorted somehow...
 
-My goal is to just kill 85xx for arch/ppc.
-
-- k
+Paul.
