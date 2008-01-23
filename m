@@ -1,31 +1,20 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E5769DDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 19:39:54 +1100 (EST)
-Date: Wed, 23 Jan 2008 09:40:16 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080123084016.GA17911@aepfle.de>
-References: <20080118225713.GA31128@aepfle.de>
-	<20080122195448.GA15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-	<20080122212654.GB15567@csn.ul.ie>
-	<Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
-	<20080122225046.GA866@csn.ul.ie> <47967560.8080101@cs.helsinki.fi>
-	<Pine.LNX.4.64.0801221501240.2565@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0801221517260.2871@schroedinger.engr.sgi.com>
-	<84144f020801230019i5ac6c8b1lfa5364672988b0c4@mail.gmail.com>
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ED4AADDE00
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 20:03:27 +1100 (EST)
+From: Juergen Beisert <jbe@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Date: Wed, 23 Jan 2008 10:03:14 +0100
+References: <20080123002040.5049F24781@gemini.denx.de>
+In-Reply-To: <20080123002040.5049F24781@gemini.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <84144f020801230019i5ac6c8b1lfa5364672988b0c4@mail.gmail.com>
-Cc: lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Christoph Lameter <clameter@sgi.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801231003.15045.jbe@pengutronix.de>
+Subject: Re: [MPC5200] problem running FEC and ATA
+Cc: "Mehlan, Markus \(Ritter Elektronik\)" <markus.mehlan@ritter-elektronik.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,17 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 23, Pekka Enberg wrote:
+Wolfgang,
 
-> Hi Christoph,
-> 
-> On Jan 23, 2008 1:18 AM, Christoph Lameter <clameter@sgi.com> wrote:
-> > My patch is useless (fascinating history of the changelog there through).
-> > fallback_alloc calls kmem_getpages without GFP_THISNODE. This means that
-> > alloc_pages_node() will try to allocate on the current node but fallback
-> > to neighboring node if nothing is there....
-> 
-> Sure, but I was referring to the scenario where current node _has_
-> pages available but no ->nodelists. Olaf, did you try it?
+On Wednesday 23 January 2008 01:20, Wolfgang Denk wrote:
+> In message <200801211728.22817.jbe@pengutronix.de> you wrote:
+> > Is anybody out there with more MPC5200B experience? Can someone tell me
+> > why some MPC5200B are need this patch and others not? We have two
+> > different systems here (cards from different vendors) with the same
+> > processor, one needs this BSDIS-patch and the other not. ???????????????
+>
+> Is it really exactly the same CPU revision? My guess is that one is
+> rev. B and the other one is older...
 
-Does not help.
+The one who needs this patch (CPU card vendor 1):
+
+MPC5200CVR400B, M62C REV 1, QCW0723T
+
+The CPUs who do not need this patch (CPU card vendor 2):
+
+SPC5200CBV400B, M62C REV 1, QAG0610C
+MPC5200CVR400B, M62C REV 1, QAJ0613F
+
+
+Best regards
+Juergen Beisert
+
+=2D-=20
+Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
+=A0Pengutronix - Linux Solutions for Science and Industry
+=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
+=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
+   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
