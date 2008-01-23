@@ -1,32 +1,20 @@
-Return-Path: <olaf@aepfle.de>
+Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 11B36DDE2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 23:52:09 +1100 (EST)
-Date: Wed, 23 Jan 2008 13:52:36 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080123125236.GA18876@aepfle.de>
-References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
-	<20080118213011.GC10491@csn.ul.ie>
-	<Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-	<20080118225713.GA31128@aepfle.de>
-	<20080122195448.GA15567@csn.ul.ie>
-	<20080122214505.GA15674@aepfle.de>
-	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-	<20080123075821.GA17713@aepfle.de>
-	<20080123105044.GD21455@csn.ul.ie>
-	<20080123121459.GA18631@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080123121459.GA18631@aepfle.de>
-Cc: lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Christoph Lameter <clameter@sgi.com>
+	by ozlabs.org (Postfix) with ESMTP id B0C94DDE38
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 23:54:15 +1100 (EST)
+To: Marian Balakowicz <m8@semihalf.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH] [POWERPC] Update TQM5200,
+	CM5200 and Motion-PRO _defconfig and .dts files
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 23 Jan 2008 12:31:48 +0100."
+	<479725A4.2020401@semihalf.com>
+Date: Wed, 23 Jan 2008 13:54:13 +0100
+Sender: wd@denx.de
+Message-Id: <20080123125413.EB56924344@gemini.denx.de>
+Cc: Olof Johansson <olof@lixom.net>, tech-denx@semihalf.com,
+	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,83 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 23, Olaf Hering wrote:
-
-> On Wed, Jan 23, Mel Gorman wrote:
+In message <479725A4.2020401@semihalf.com> you wrote:
+> Olof Johansson wrote:
+> ...
+> > 
+> > I disagree, I have one defconfig for all our boards to date. It means I
+> > only have one kernel to build to test on all boards, instead of having
+> > to build a number of different kernels. Keeping it fairly generic also
+> > means a customer can start out using the generic kernel in case they
+> > want to, and later on add their own drivers and prune out what is not
+> > needed.
 > 
-> > Sorry this is dragging out. Can you post the full dmesg with loglevel=8 of the
-> > following patch against 2.6.24-rc8 please? It contains the debug information
-> > that helped me figure out what was going wrong on the PPC64 machine here,
-> > the revert and the !l3 checks (i.e. the two patches that made machines I
-> > have access to work). Thanks
-> 
-> It boots with your change.
+> Well, I just prefer separate defconfigs but I can live with the common
+> one as well, feel free to merge it as you see it fit.
 
-This version of the patch boots ok for me:
-Maybe I made a mistake with earlier patches, no idea.
+Well, it may make sense to use common defconfig files for  boards  of
+the same breed (different configurations of one board family from one
+vendor  for  example).  But  please  note  that  TQM5200,  CM5200 and
+Motion-PRO are boards from 3 different  vendors,  used  by  different
+projects  with  differing  needs.  IMO  it  makes  very much sense to
+provide 3 separate default configurations  that  match  the  specific
+requirements of each of these boards.
 
----
- mm/slab.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+In this case I vote for separate defconfig files, please.
 
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1590,7 +1590,7 @@ void __init kmem_cache_init(void)
- 		/* Replace the static kmem_list3 structures for the boot cpu */
- 		init_list(&cache_cache, &initkmem_list3[CACHE_CACHE], node);
- 
--		for_each_node_state(nid, N_NORMAL_MEMORY) {
-+		for_each_online_node(nid) {
- 			init_list(malloc_sizes[INDEX_AC].cs_cachep,
- 				  &initkmem_list3[SIZE_AC + nid], nid);
- 
-@@ -1968,7 +1968,7 @@ static void __init set_up_list3s(struct 
- {
- 	int node;
- 
--	for_each_node_state(node, N_NORMAL_MEMORY) {
-+	for_each_online_node(node) {
- 		cachep->nodelists[node] = &initkmem_list3[index + node];
- 		cachep->nodelists[node]->next_reap = jiffies +
- 		    REAPTIMEOUT_LIST3 +
-@@ -2099,7 +2099,7 @@ static int __init_refok setup_cpu_cache(
- 			g_cpucache_up = PARTIAL_L3;
- 		} else {
- 			int node;
--			for_each_node_state(node, N_NORMAL_MEMORY) {
-+			for_each_online_node(node) {
- 				cachep->nodelists[node] =
- 				    kmalloc_node(sizeof(struct kmem_list3),
- 						GFP_KERNEL, node);
-@@ -2775,6 +2775,11 @@ static int cache_grow(struct kmem_cache 
- 	/* Take the l3 list lock to change the colour_next on this node */
- 	check_irq_off();
- 	l3 = cachep->nodelists[nodeid];
-+	if (!l3) {
-+		nodeid = numa_node_id();
-+		l3 = cachep->nodelists[nodeid];
-+	}
-+	BUG_ON(!l3);
- 	spin_lock(&l3->list_lock);
- 
- 	/* Get colour for the slab, and cal the next value. */
-@@ -3317,6 +3322,10 @@ static void *____cache_alloc_node(struct
- 	int x;
- 
- 	l3 = cachep->nodelists[nodeid];
-+	if (!l3) {
-+		nodeid = numa_node_id();
-+		l3 = cachep->nodelists[nodeid];
-+	}
- 	BUG_ON(!l3);
- 
- retry:
-@@ -3815,7 +3824,7 @@ static int alloc_kmemlist(struct kmem_ca
- 	struct array_cache *new_shared;
- 	struct array_cache **new_alien = NULL;
- 
--	for_each_node_state(node, N_NORMAL_MEMORY) {
-+	for_each_online_node(node) {
- 
-                 if (use_alien_caches) {
-                         new_alien = alloc_alien_cache(node, cachep->limit);
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Be careful what you wish for. You never know who will be listening.
+                                      - Terry Pratchett, _Soul Music_
