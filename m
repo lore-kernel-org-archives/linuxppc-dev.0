@@ -1,23 +1,15 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4A305DDE29
+Return-Path: <vancasperz@yahoo.com.cn>
+Received: from web15616.mail.cnb.yahoo.com (web15601.mail.cnb.yahoo.com
+	[202.165.102.55]) by ozlabs.org (Postfix) with SMTP id CC1B2DDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jan 2008 04:40:35 +1100 (EST)
+	Wed, 23 Jan 2008 12:56:46 +1100 (EST)
+Date: Wed, 23 Jan 2008 09:50:04 +0800 (CST)
+From: Zhou Rui <vancasperz@yahoo.com.cn>
+Subject: BDI Problems
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Generated xilinx linux 2.6  image sections
-Date: Tue, 22 Jan 2008 09:40:29 -0800
-In-Reply-To: <15018508.post@talk.nabble.com>
-References: <14997109.post@talk.nabble.com><20080121184553.569BF179805C@mail212-sin.bigfish.com><15015244.post@talk.nabble.com>
-	<15018508.post@talk.nabble.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "greenlean" <jmgomez@atc.ugr.es>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080122174031.27E821470057@mail50-sin.bigfish.com>
+Content-Type: text/plain; charset=gb2312
+Message-ID: <986902.37818.qm@web15601.mail.cnb.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,91 +20,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi, all:
+I am using BDI2000 with PowerPC. Sometimes, when I try
+to change configuration of BDI2000 for different
+PowerPC boards, the configuring procedure may meet the
+following errors:
 
-That would do it!
-What's strange is that the testapps linked into the second bank by
-default, which *happened* to work.
+root@laz:/home/zhour/bdi2000sw/bdisetup2007#
+./bdisetup -v -p/dev/ttyS0 -b115
+Connecting to BDI loader failed (-1201)
 
-Steve
+I also have tried /dev/ttyS1 and got the same result,
+and I am sure there is not any other programs
+occupying the serial ports. So would anyone give me
+some advice about this?
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of greenlean
-> Sent: Tuesday, January 22, 2008 5:29 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: RE: Generated xilinx linux 2.6 image sections
->=20
->=20
-> Now It's running the problem was the DDR controller I was including
-the 512
-> one but I'm working with a 256 DDR module .......
->=20
-> Thanks for the orientation, really usefull.
->=20
-> Bye.
->=20
->=20
-> Stephen Neuendorffer wrote:
-> >
-> > The testapps are generated using a different linker script.
-> >
-> > Based on what you sent out, it looks like your EDK design has a
-memory
-> > at 0x10000000, but this is
-> > not reflected in the linux image you've generated.  This makes me
-> > suspect that you haven't generated the BSP and copied the
-appropriate
-> > xparameters file over xparameters_xup.h (assuming you are using
-> > CONFIG_XILINX_XUPV2P).
-> >
-> > Steve
-> >
-> >> -----Original Message-----
-> >> From:
-linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-> > [mailto:linuxppc-embedded-
-> >> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of
-greenlean
-> >> Sent: Monday, January 21, 2008 5:06 AM
-> >> To: linuxppc-embedded@ozlabs.org
-> >> Subject: Generated xilinx linux 2.6 image sections
-> >>
-> >>
-> >> Hi all,
-> >>
-> >> I'm trying to boot the 2.6 xilinx kernel downloaded from their git
-> > server in
-> >> the XUPV2P board I'm really having troubles (I can't see anything
-in
-> > the
-> >> minicom console terminal). I'm not seeing anything, neither the
-> > ucompressing
-> >> kernel string nor the prompt with the memory addresses that kernel
-> > prompt at
-> >> first time, so I have started to distrust of anything.
-> >>
-> >>
-> >> Linuxppc-embedded@ozlabs.org
-> >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
->=20
->=20
->=20
-> --
-> View this message in context:
-http://www.nabble.com/Generated-xilinx-linux-2.6--image-sections-
-> tp14997109p15018508.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Another problem is "PPC: JTAG instruction stuff
+overrun" during debugging. For this error, I found an
+explanation (http://www.ultsol.com/faq_p202.htm):
+"When in debug mode the PPC4xx fetches normal PPC
+instructions from the JTAG port. The error "# PPC:
+JTAG instruction stuff overrun" is raised when the
+processor stops fetching from the JTAG port, possibly
+because the processor hangs at an un-terminated memory
+transfer." The proposed resolution is based on the
+modification of configuration file. However, I have
+tried that but it seems to have no effect.
+
+Best wishes
+
+Best wishes
+
+Zhou Rui
+Distributed and Embedded System Lab
+Room 532, Information Building
+School of Information Science
+Lanzhou University, P. R. China
+Tel: 86-0931-8912025
+Zip Code: 730000
+
+
+      ___________________________________________________________ 
+ÑÅ»¢ÓÊÏä´«µÝÐÂÄê×£¸££¬¸öÐÔºØ¿¨ËÍÇ×Åó£¡ 
+http://cn.mail.yahoo.com/gc/index.html?entry=5&souce=mail_mailletter_tagline
