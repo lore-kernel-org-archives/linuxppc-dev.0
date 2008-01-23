@@ -1,24 +1,35 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <penberg@cs.helsinki.fi>
+Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2F25DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 04:31:55 +1100 (EST)
-Message-ID: <47977A02.40506@freescale.com>
-Date: Wed, 23 Jan 2008 11:31:46 -0600
-From: Jon Loeliger <jdl@freescale.com>
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCHv2 0/8] [POWERPC] 8xx cleanups
-References: <4797641F.4000902@scram.de>	<CA8FFE19-B84A-426B-9B1C-EF0F7C87AE47@kernel.crashing.org>
-	<20080123171252.GA22967@uranus.ravnborg.org>
-In-Reply-To: <20080123171252.GA22967@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84D4EDDE2B
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 04:42:15 +1100 (EST)
+Date: Wed, 23 Jan 2008 19:42:11 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+	running on a memoryless node
+In-Reply-To: <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0801231941220.3647@sbz-30.cs.Helsinki.FI>
+References: <20080122214505.GA15674@aepfle.de>
+	<Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+	<20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
+	<20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
+	<20080123135513.GA14175@csn.ul.ie>
+	<Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+	<Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
+	<Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+	<20080123155655.GB20156@csn.ul.ie>
+	<Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: lee.schermerhorn@hp.com, Olaf Hering <olaf@aepfle.de>,
+	Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	hanth Aravamudan <nacc@us.ibm.com>, akpm@linux-foundation.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +39,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sam Ravnborg wrote:
->> What impact do the have on boards in arch/ppc being able to build?
-> 
-> Byt the way what are the plans for powerpc?
-> We have:
-> arch/ppc
-> arch/ppc64
-> arch/powerpc
-> 
-> It was my understanding that arch/powerpc was supposed
-> to be the future unified powerpc architecture but it
-> does not even provide a defconfig.
-> 
-> And I do not see too much happening to do so - but that maybe
-> because I looked at a wrong place.
+On Wed, 23 Jan 2008, Pekka J Enberg wrote:
+> As far as I can tell, there are two ways to fix this:
 
-You must have looked in the wrong place. :-)
+[snip]
+ 
+>   (2) initialize cache_cache.nodelists with initmem_list3 equivalents
+>       for *each node hat has normal memory*
 
-arch/ppc is scheduled for removal from mainline in June.
+An untested patch follows:
 
-arch/powerpc is under significant development, with lots
-of defconfigs in arch/powerpc/configs.
+---
+ mm/slab.c |   39 ++++++++++++++++++++-------------------
+ 1 file changed, 20 insertions(+), 19 deletions(-)
 
-arch/ppc64 is long dead.
-
-jdl
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -304,11 +304,11 @@ struct kmem_list3 {
+ /*
+  * Need this for bootstrapping a per node allocator.
+  */
+-#define NUM_INIT_LISTS (2 * MAX_NUMNODES + 1)
++#define NUM_INIT_LISTS (3 * MAX_NUMNODES)
+ struct kmem_list3 __initdata initkmem_list3[NUM_INIT_LISTS];
+ #define	CACHE_CACHE 0
+-#define	SIZE_AC 1
+-#define	SIZE_L3 (1 + MAX_NUMNODES)
++#define	SIZE_AC MAX_NUMNODES
++#define	SIZE_L3 (2 * MAX_NUMNODES)
+ 
+ static int drain_freelist(struct kmem_cache *cache,
+ 			struct kmem_list3 *l3, int tofree);
+@@ -1410,6 +1410,22 @@ static void init_list(struct kmem_cache 
+ }
+ 
+ /*
++ * For setting up all the kmem_list3s for cache whose buffer_size is same as
++ * size of kmem_list3.
++ */
++static void __init set_up_list3s(struct kmem_cache *cachep, int index)
++{
++	int node;
++
++	for_each_node_state(node, N_NORMAL_MEMORY) {
++		cachep->nodelists[node] = &initkmem_list3[index + node];
++		cachep->nodelists[node]->next_reap = jiffies +
++		    REAPTIMEOUT_LIST3 +
++		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
++	}
++}
++
++/*
+  * Initialisation.  Called after the page allocator have been initialised and
+  * before smp_init().
+  */
+@@ -1432,6 +1448,7 @@ void __init kmem_cache_init(void)
+ 		if (i < MAX_NUMNODES)
+ 			cache_cache.nodelists[i] = NULL;
+ 	}
++	set_up_list3s(&cache_cache, CACHE_CACHE);
+ 
+ 	/*
+ 	 * Fragmentation resistance on low memory - only use bigger
+@@ -1964,22 +1981,6 @@ static void slab_destroy(struct kmem_cac
+ 	}
+ }
+ 
+-/*
+- * For setting up all the kmem_list3s for cache whose buffer_size is same as
+- * size of kmem_list3.
+- */
+-static void __init set_up_list3s(struct kmem_cache *cachep, int index)
+-{
+-	int node;
+-
+-	for_each_node_state(node, N_NORMAL_MEMORY) {
+-		cachep->nodelists[node] = &initkmem_list3[index + node];
+-		cachep->nodelists[node]->next_reap = jiffies +
+-		    REAPTIMEOUT_LIST3 +
+-		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+-	}
+-}
+-
+ static void __kmem_cache_destroy(struct kmem_cache *cachep)
+ {
+ 	int i;
