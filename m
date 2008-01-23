@@ -1,15 +1,22 @@
-Return-Path: <vancasperz@yahoo.com.cn>
-Received: from web15616.mail.cnb.yahoo.com (web15601.mail.cnb.yahoo.com
-	[202.165.102.55]) by ozlabs.org (Postfix) with SMTP id CC1B2DDDF0
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 4461DDDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Jan 2008 12:56:46 +1100 (EST)
-Date: Wed, 23 Jan 2008 09:50:04 +0800 (CST)
-From: Zhou Rui <vancasperz@yahoo.com.cn>
-Subject: BDI Problems
-To: linuxppc-embedded@ozlabs.org
+	Wed, 23 Jan 2008 13:59:29 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so627384anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Jan 2008 18:59:27 -0800 (PST)
+Message-ID: <fa686aa40801221859l5422523cq6f5a49226312041b@mail.gmail.com>
+Date: Tue, 22 Jan 2008 19:59:27 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Zhou Rui" <vancasperz@yahoo.com.cn>
+Subject: Re: BDI Problems
+In-Reply-To: <986902.37818.qm@web15601.mail.cnb.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Message-ID: <986902.37818.qm@web15601.mail.cnb.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <986902.37818.qm@web15601.mail.cnb.yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,46 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, all:
-I am using BDI2000 with PowerPC. Sometimes, when I try
-to change configuration of BDI2000 for different
-PowerPC boards, the configuring procedure may meet the
-following errors:
+On 1/22/08, Zhou Rui <vancasperz@yahoo.com.cn> wrote:
+> Hi, all:
+> I am using BDI2000 with PowerPC. Sometimes, when I try
+> to change configuration of BDI2000 for different
+> PowerPC boards, the configuring procedure may meet the
+> following errors:
 
-root@laz:/home/zhour/bdi2000sw/bdisetup2007#
-./bdisetup -v -p/dev/ttyS0 -b115
-Connecting to BDI loader failed (-1201)
+These questions are off-topic for this list.  You'd be better off
+contacting Abatron technical support.
 
-I also have tried /dev/ttyS1 and got the same result,
-and I am sure there is not any other programs
-occupying the serial ports. So would anyone give me
-some advice about this?
+Cheers,
+g.
 
-Another problem is "PPC: JTAG instruction stuff
-overrun" during debugging. For this error, I found an
-explanation (http://www.ultsol.com/faq_p202.htm):
-"When in debug mode the PPC4xx fetches normal PPC
-instructions from the JTAG port. The error "# PPC:
-JTAG instruction stuff overrun" is raised when the
-processor stops fetching from the JTAG port, possibly
-because the processor hangs at an un-terminated memory
-transfer." The proposed resolution is based on the
-modification of configuration file. However, I have
-tried that but it seems to have no effect.
-
-Best wishes
-
-Best wishes
-
-Zhou Rui
-Distributed and Embedded System Lab
-Room 532, Information Building
-School of Information Science
-Lanzhou University, P. R. China
-Tel: 86-0931-8912025
-Zip Code: 730000
-
-
-      ___________________________________________________________ 
-ÑÅ»¢ÓÊÏä´«µÝÐÂÄê×£¸££¬¸öÐÔºØ¿¨ËÍÇ×Åó£¡ 
-http://cn.mail.yahoo.com/gc/index.html?entry=5&souce=mail_mailletter_tagline
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
