@@ -1,19 +1,23 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id EB570DDE45
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E62F5DDDED
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jan 2008 09:36:20 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Failed to mount rootfs
-Date: Thu, 24 Jan 2008 14:25:27 -0800
-Message-ID: <F795765B112E7344AF36AA911279641502D1A9F6@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <47990D51.9080803@scram.de>
+	Fri, 25 Jan 2008 10:40:12 +1100 (EST)
+In-Reply-To: <F795765B112E7344AF36AA911279641502D1A9F6@xmb-sjc-212.amer.cisco.com>
 References: <F795765B112E7344AF36AA911279641502D1A9F4@xmb-sjc-212.amer.cisco.com>
 	<47990D51.9080803@scram.de>
-From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-To: "Jochen Friedrich" <jochen@scram.de>
+	<F795765B112E7344AF36AA911279641502D1A9F6@xmb-sjc-212.amer.cisco.com>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <389A2D5D-C1D1-469A-9436-969005D7071A@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: Failed to mount rootfs
+Date: Thu, 24 Jan 2008 17:39:15 -0600
+To: Bizhan Gholikhamseh (bgholikh) <bgholikh@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,37 +29,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Jochen,=20
-
->=20
-> > device-tree: Duplicate name in /, renamed to "chosen#1"
->=20
-> > And here is the device tree:
-> >     chosen {
-> >         linux,stdout-path =3D "/soc8541@e0000000/serial@4600";
-> >     };
-> >     chosen {
-> >         name =3D "chosen";
-> >         bootargs =3D "root=3D/dev/ram rw console=3DttyS1,115200";
-> >         linux,platform =3D <600>;
-> >         linux,initrd-start =3D <1ef33000>;
-> >         linux,initrd-end =3D <1fe190aa>;
-> >         linux,stdout-path =3D "/soc8541@e0000000/serial@4600";
-> >     };
->=20
-> you can't have two chosen nodes. Linux renames the second one=20
-> to chosen#1 and thus can't find the kernel arguments.
+>>
+> I do not know why it is creating two chosen node. In my dts file I  
+> have
+> placed one empty chosen node:
+> chosen{
+> 	};
+> If I do not do this,  I get the following error during boot process:
 >
-I do not know why it is creating two chosen node. In my dts file I have
-placed one empty chosen node:=20
-chosen{
-	};
-If I do not do this,  I get the following error during boot process:
+> libfdt: FDT_ERR_TRUNCATED
+> Failed creating the /chosen node (0x00C00000), aborting.
+>
+> Any reason??
 
-libfdt: FDT_ERR_TRUNCATED
-Failed creating the /chosen node (0x00C00000), aborting.
+Are you adding padding to your dtb?
 
-Any reason??
-=20
-Thanks,
-Bizhan
+Try adding "-p 1024" to your dtc command line
+
+Andy
