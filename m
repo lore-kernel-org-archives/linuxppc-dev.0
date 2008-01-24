@@ -1,21 +1,19 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F362DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 20:25:53 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] sysctl:  Kill binary sysctl KERN_PPC_L2CR
-References: <20080123140352.e19900d7.akpm@linux-foundation.org>
-Date: Thu, 24 Jan 2008 02:18:34 -0700
-In-Reply-To: <20080123140352.e19900d7.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 23 Jan 2008 14:03:52 -0800")
-Message-ID: <m1sl0ninth.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id F4000DDE0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 20:30:25 +1100 (EST)
+Message-Id: <9C12D718-CEE4-4533-BD88-F3F8A4CA0BE9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+In-Reply-To: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 0/7] Powerpc support for SBC8560 board
+Date: Thu, 24 Jan 2008 03:30:15 -0600
+References: <11997159321859-git-send-email-paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +24,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> From: Stefan Roese <sr@denx.de>
-> Subject: ppc: 4xx: sysctl table check failed: /kernel/l2cr .1.31 Missing strategy
+On Jan 7, 2008, at 8:25 AM, Paul Gortmaker wrote:
+
 >
-> I'm seeing this error message when booting an recent arch/ppc kernel on
-> 4xx platforms (tested on Ocotea and other 4xx platforms). Booting NFS
-> rootfs still works fine, but this message kind of makes me "nervous".
-> This is not seen on 4xx arch/powerpc platforms. Here the bootlog:
+> This is a respin of the sbc8560 patches, incorporating the feedback  
+> and
+> suggested changes from everyone.  Changes include:
+>
+> -coding style and missing of_put (Stephen Rothwell)
+>
+> -minor dtc cleanups for gianfar, mdio, mpic etc. (David Gibson /  
+> Kumar Gala)
+>
+> -use for_each macros in legacy_serial to improve readability, and as
+> groundwork for next change (me)
+>
+> -convert dtc "duart" + "device-type="soc" thing to be an epld entry
+> listed as compatible with "localbus" -- plus add localbus as an  
+> acceptable
+> parent in legacy_serial (David Gibson / Scott Wood)
+>
+> -rtc is now a child of the epld/localbus and does not use device_type
+> in the dtc, nor in the platform detection code (David Gibson)
+>
+> -add CPM2 data to dts for FCC ports (on optional daughterboard) based
+> on the MPC8560ADS dts (me)
+>
+> -add dts aliases, conversion to dts-v1 (Kumar)
+>
+> Patches are as follows:
+>
+> 1  powerpc-use-for_each-in-legacy_serial.txt
+> 2  powerpc-allow-localbus-compatible-serial-ports-for-console- 
+> device.txt
+> 3  sbc8560-add-support-for-Wind-River-SBC8560-in-arch-powerpc.txt
+> 4  sbc8560-Add-device-tree-source-for-Wind-River-SBC8560-board.txt
+> 5  sbc8560-Convert-WRS-SBC8560-device-tree-to-v1-format.txt
+> 6  CPM2-Make-support-for-the-CPM2-optional-on-8560-based-boards.txt
+> 7  sbc8560-Add-default-.config-file-for-Wind-River-SBC8560.txt
+>
+> Thanks again to all those who provided feedback.
 
-Because the data field was never filled and a binary sysctl handler
-was never written this sysctl has never been usable through the
-sys_sysctl interface.  So just remove the binary sysctl number.
-Making the kernel sanity checks happy.
+Have we closed on these patches?
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/ppc/kernel/ppc_htab.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+the sbc8560 is the last board that we need to close on for me to kill  
+85xx in arch/ppc.
 
-diff --git a/arch/ppc/kernel/ppc_htab.c b/arch/ppc/kernel/ppc_htab.c
-index aa07b63..9ed36dd 100644
---- a/arch/ppc/kernel/ppc_htab.c
-+++ b/arch/ppc/kernel/ppc_htab.c
-@@ -436,7 +436,6 @@ int proc_dol2crvec(ctl_table *table, int write, struct file *filp,
-  */
- static ctl_table htab_ctl_table[]={
- 	{
--		.ctl_name	= KERN_PPC_L2CR,
- 		.procname	= "l2cr",
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dol2crvec,
--- 
-1.5.3.rc6.17.g1911
+- k
