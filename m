@@ -1,28 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 26275DDF2D
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 04:23:42 +1100 (EST)
-Date: Thu, 24 Jan 2008 20:23:27 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB399DDFBA
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 04:25:42 +1100 (EST)
+Message-ID: <4798BDEB.2010501@freescale.com>
+Date: Thu, 24 Jan 2008 10:33:47 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
 Subject: Re: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM driver
 	for MPC8323eRDB. Also includes related QE changes and dts entries.
-Message-ID: <20080124172327.GA6786@localhost.localdomain>
 References: <Pine.LNX.4.64.0801241553270.4984@linux121>
 	<20080124154804.GA22178@localhost.localdomain>
 	<4798B4F3.2010101@freescale.com>
 	<20080124162345.GA27359@localhost.localdomain>
-	<4798BDEB.2010501@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4798BDEB.2010501@freescale.com>
+In-Reply-To: <20080124162345.GA27359@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Poonam_Aggrwal-b10812 <b10812@freescale.com>,
 	michael.barkowski@freescale.com, netdev@vger.kernel.org,
 	kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
 	rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
 	ashish.kalra@freescale.com, rich.cutler@freescale.com,
 	akpm@linux-foundation.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,59 +34,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 24, 2008 at 10:33:47AM -0600, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> >Are you saying that TDM is sharing same pins with the other QE device,
-> >and we can choose to use/not use some device depending on which driver
-> >is loaded?
-> 
-> No.  I'd have to closely examine the DTS, but I don't think that UCC 
-> devices share pins at all.  But that isn't my point.
-> 
-> >In that particular case UCC configuration is static, for every UCC.
-> >So, we can set up all pins in the firmware/board file.
-> 
-> Yes, but deciding what the UCC does might not be static.  At what point do 
-> we declare, "UCC5 is for eth0 and eth0 only"?
-> 
-> The advantage of putting the pin configurations in the device tree is that 
-> they now become configurable.  I can envision a scenario where UCC5 could 
-> be either an Ethernet or a UART, depending on the setting of some jumpers 
-> on the board. That's what the QE was designed for: any UCC can do any task, 
-> and you can even have a UCC change its purpose while the system is running. 
-> So I don't want the pin configurations hard-coded into the kernel.  Having 
-> them in the device tree gives me some flexibility.
+Anton Vorontsov wrote:
 
-If hardware configuration is selected at the bootup time, by jumpers
-or switches, it's even easier to do it right. Without pio-map.
+> Are you saying that TDM is sharing same pins with the other QE device,
+> and we can choose to use/not use some device depending on which driver
+> is loaded?
 
-> For instance, I have a plan (that I keep postponing) to introduce a new 
-> feature in U-Boot where U-Boot can determine the settings of some board 
-> jumpers and modify the device tree accordingly. The instructions on how to 
-> modify the device tree would be embedded in the tree itself.
+No.  I'd have to closely examine the DTS, but I don't think that UCC devices 
+share pins at all.  But that isn't my point.
 
-Why you need to modify the device tree for that? Let the U-Boot simply
-setup pins for the kernel. Regarding kernel overwriting pins
-configuration...
+> In that particular case UCC configuration is static, for every UCC.
+> So, we can set up all pins in the firmware/board file.
 
-> I can't 
-> support this feature if the kernel calls par_io_config_pin() regardless of 
-> what's in the device tree.
+Yes, but deciding what the UCC does might not be static.  At what point do we 
+declare, "UCC5 is for eth0 and eth0 only"?
 
-What I've understood from the previous debates, is that ideally kernel
-should not touch pins' configuration. Today we're using pio-map solely
-to fix up some old firmware misconfiguration. And we can do this in the
-board file still. To determine if we need to fixup the firmware or not,
-we can use some device tree property instead (firmware version?).
+The advantage of putting the pin configurations in the device tree is that they 
+now become configurable.  I can envision a scenario where UCC5 could be either 
+an Ethernet or a UART, depending on the setting of some jumpers on the board. 
+That's what the QE was designed for: any UCC can do any task, and you can even 
+have a UCC change its purpose while the system is running.  So I don't want the 
+pin configurations hard-coded into the kernel.  Having them in the device tree 
+gives me some flexibility.
 
-p.s.
-I'm neither for pio-map nor against. I just want some consequence
-regarding this. Last thread ended with consequence that pio-map is a
-bad thing to use...
+For instance, I have a plan (that I keep postponing) to introduce a new feature 
+in U-Boot where U-Boot can determine the settings of some board jumpers and 
+modify the device tree accordingly.  The instructions on how to modify the 
+device tree would be embedded in the tree itself.  I can't support this feature 
+if the kernel calls par_io_config_pin() regardless of what's in the device tree.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Timur Tabi
+Linux kernel developer at Freescale
