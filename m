@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B7C1ADE450
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:19:06 +1100 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 3D4CC8810
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 20:19:14 +0400 (SAMT)
-Date: Thu, 24 Jan 2008 18:18:50 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 0/5] device_type/compatible cleanups
-Message-ID: <20080124151850.GA15190@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8CA15DEFAA
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:19:16 +1100 (EST)
+Message-ID: <4798AC65.9000203@scram.de>
+Date: Thu, 24 Jan 2008 16:19:01 +0100
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCHv3 5/7] [POWERPC] Get rid of conditional includes of board
+	specific setup
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Directly include mpc885ads.h from mpc885ads_setup.c. Now we can get rid
+of the arch dependent includes in mpc8xx.h.
 
-This is v5. It's tested on MPC8360E-RDK and MPC8568E-MDS.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/platforms/8xx/m8xx_setup.c      |    3 +--
+ arch/powerpc/platforms/8xx/mpc885ads_setup.c |    1 +
+ include/asm-powerpc/mpc8xx.h                 |   20 --------------------
+ 3 files changed, 2 insertions(+), 22 deletions(-)
 
-Here is diffstat summary:
-
- Documentation/powerpc/booting-without-of.txt   |   26 +--
- arch/powerpc/boot/dts/mpc832x_mds.dts          |   11 -
- arch/powerpc/boot/dts/mpc832x_rdb.dts          |   11 -
- arch/powerpc/boot/dts/mpc836x_mds.dts          |   11 -
- arch/powerpc/boot/dts/mpc836x_rdk.dts          |   10 -
- arch/powerpc/boot/dts/mpc8568mds.dts           |   10 -
- arch/powerpc/sysdev/fsl_soc.c                  |  191 +++++++++++++++----------
- b/Documentation/powerpc/booting-without-of.txt |   11 -
- b/arch/powerpc/boot/dts/mpc8313erdb.dts        |    4
- b/arch/powerpc/boot/dts/mpc832x_mds.dts        |    9 -
- b/arch/powerpc/boot/dts/mpc832x_rdb.dts        |   10 -
- b/arch/powerpc/boot/dts/mpc8349emitx.dts       |    4
- b/arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    4
- b/arch/powerpc/boot/dts/mpc834x_mds.dts        |    4
- b/arch/powerpc/boot/dts/mpc836x_mds.dts        |   10 -
- b/arch/powerpc/boot/dts/mpc836x_rdk.dts        |    1
- b/arch/powerpc/boot/dts/mpc8568mds.dts         |   10 -
- b/arch/powerpc/kernel/legacy_serial.c          |    3
- b/arch/powerpc/platforms/83xx/mpc832x_mds.c    |   11 -
- b/arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   11 -
- b/arch/powerpc/platforms/83xx/mpc836x_mds.c    |   11 -
- b/arch/powerpc/platforms/85xx/mpc85xx_mds.c    |   32 ++--
- b/arch/powerpc/sysdev/fsl_soc.c                |    5
- b/arch/powerpc/sysdev/qe_lib/qe.c              |   64 +++++---
- b/drivers/net/ucc_geth_mii.c                   |    4
- b/drivers/spi/spi_mpc83xx.c                    |   10 -
- 26 files changed, 284 insertions(+), 204 deletions(-)
-
-
-Changes since v4:
-- Now I'm not removing device_type = "qe", because I realized that there
-  was a period of time (month or so?) where libfdt-enabled u-boots were
-  searching for it;
-- new patch that prepares the code for device_type = "soc" removal
-  from the device trees. We can't remove it now, because of backward
-  compatibility. Though, MPC8360E-RDK is exception here.
-
-Changes since v3:
-- Thanks to reviewers, few glitches found and fixed;
-- New conversion: device_type = "qeic" to compatible = "fsl,qe-ic";
-- Documentation updated.
-
-Changes since v2:
-- SPI conversion fixed and actually tested on MPC8323E-RDB to not
-  break anything;
-- Few more users of device_type = "qe" converted to
-  compatible = "fsl,qe";
-- Got Ack on SPI part from David Brownell.
-
-Changes since v1:
-- Device tree lookup changes should be backward compatible with
-  older dtbs;
-- Few of_put_node() cleanups;
-- cell-index property added to spi nodes;
-- cpm-muram{,-data} added as an addition to qe-muram{,-data}.
-
-
-Thanks,
-
+diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
+index 1867a07..184f998 100644
+--- a/arch/powerpc/platforms/8xx/m8xx_setup.c
++++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
+@@ -16,6 +16,7 @@
+ #include <linux/init.h>
+ #include <linux/time.h>
+ #include <linux/rtc.h>
++#include <linux/fsl_devices.h>
+ 
+ #include <asm/io.h>
+ #include <asm/mpc8xx.h>
+@@ -28,9 +29,7 @@
+ 
+ #include "mpc8xx.h"
+ 
+-#ifdef CONFIG_PCMCIA_M8XX
+ struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
+-#endif
+ 
+ extern int cpm_pic_init(void);
+ extern int cpm_get_irq(void);
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+index bdceb57..3be115e 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+@@ -40,6 +40,7 @@
+ #include <asm/fs_pd.h>
+ #include <asm/udbg.h>
+ 
++#include "mpc885ads.h"
+ #include "mpc8xx.h"
+ 
+ static u32 __iomem *bcsr, *bcsr5;
+diff --git a/include/asm-powerpc/mpc8xx.h b/include/asm-powerpc/mpc8xx.h
+index 2be014b..98f3c4f 100644
+--- a/include/asm-powerpc/mpc8xx.h
++++ b/include/asm-powerpc/mpc8xx.h
+@@ -4,29 +4,9 @@
+  * file that has to include MPC8xx configuration, they all include
+  * this one and the configuration switching is done here.
+  */
+-#ifdef __KERNEL__
+ #ifndef __CONFIG_8xx_DEFS
+ #define __CONFIG_8xx_DEFS
+ 
+-
+-#ifdef CONFIG_8xx
+-
+-#ifdef CONFIG_FADS
+-#include <platforms/fads.h>
+-#endif
+-
+-#if defined(CONFIG_MPC86XADS)
+-#include <platforms/8xx/mpc86xads.h>
+-#endif
+-
+-#if defined(CONFIG_MPC885ADS)
+-#include <platforms/8xx/mpc885ads.h>
+-#endif
+-
+-#ifdef CONFIG_PCMCIA_M8XX
+ extern struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
+-#endif
+ 
+-#endif /* CONFIG_8xx */
+ #endif /* __CONFIG_8xx_DEFS */
+-#endif /* __KERNEL__ */
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+1.5.3.8
