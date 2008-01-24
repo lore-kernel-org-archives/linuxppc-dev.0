@@ -1,19 +1,20 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C92A1DE10A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:20:21 +1100 (EST)
-Message-ID: <4798ACA5.5050106@scram.de>
-Date: Thu, 24 Jan 2008 16:20:05 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCHv3 7/7] [POWERPC] Move definition of buffer descriptor to cpm.h
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 06D1DDDF74
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:40:14 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id E8F318810
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 20:40:22 +0400 (SAMT)
+Date: Thu, 24 Jan 2008 18:39:59 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/5] [POWERPC] qe_lib and users: get rid of most device_types
+	and model
+Message-ID: <20080124153959.GA23246@localhost.localdomain>
+References: <20080124151850.GA15190@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080124151850.GA15190@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,292 +24,516 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Buffer descriptors are used by both CPM1 and CPM2. Move the definitions
-from the cpm dependent include file to common cpm.h
+Now we're searching for "fsl,qe", "fsl,qe-muram", "fsl,qe-muram-data"
+and "fsl,qe-ic".
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Unfortunately it's still impossible to remove device_type = "qe"
+from the existing device trees (except for MPC8360E-RDK), because
+older u-boots are looking for it.
+
+Per http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048388.html
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- include/asm-powerpc/cpm.h  |   73 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/cpm1.h |   65 ---------------------------------------
- include/asm-powerpc/cpm2.h |   64 --------------------------------------
- 3 files changed, 73 insertions(+), 129 deletions(-)
+ Documentation/powerpc/booting-without-of.txt |   11 +++--
+ arch/powerpc/boot/dts/mpc832x_mds.dts        |    9 ++--
+ arch/powerpc/boot/dts/mpc832x_rdb.dts        |   10 +++--
+ arch/powerpc/boot/dts/mpc836x_mds.dts        |   10 +++--
+ arch/powerpc/boot/dts/mpc836x_rdk.dts        |    1 -
+ arch/powerpc/boot/dts/mpc8568mds.dts         |   10 +++--
+ arch/powerpc/platforms/83xx/mpc832x_mds.c    |   11 +++--
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   11 +++--
+ arch/powerpc/platforms/83xx/mpc836x_mds.c    |   11 +++--
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c    |   32 ++++++++-----
+ arch/powerpc/sysdev/fsl_soc.c                |    5 ++-
+ arch/powerpc/sysdev/qe_lib/qe.c              |   63 ++++++++++++++++++--------
+ 12 files changed, 117 insertions(+), 67 deletions(-)
 
-diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
-index fae83b1..77e39da 100644
---- a/include/asm-powerpc/cpm.h
-+++ b/include/asm-powerpc/cpm.h
-@@ -4,6 +4,79 @@
- #include <linux/compiler.h>
- #include <linux/types.h>
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index da98154..f9545b0 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1543,7 +1543,7 @@ platforms are moved over to use the flattened-device-tree model.
+    i) Root QE device
  
-+/* Buffer descriptors used by many of the CPM protocols. */
-+typedef struct cpm_buf_desc {
-+	ushort	cbd_sc;		/* Status and Control */
-+	ushort	cbd_datlen;	/* Data length in buffer */
-+	uint	cbd_bufaddr;	/* Buffer address in host memory */
-+} cbd_t;
+    Required properties:
+-   - device_type : should be "qe";
++   - compatible : should be "fsl,qe";
+    - model : precise model of the QE, Can be "QE", "CPM", or "CPM2"
+    - reg : offset and length of the device registers.
+    - bus-frequency : the clock frequency for QUICC Engine.
+@@ -1557,8 +1557,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+-		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+@@ -1781,7 +1780,7 @@ platforms are moved over to use the flattened-device-tree model.
+    vii) Multi-User RAM (MURAM)
+ 
+    Required properties:
+-   - device_type : should be "muram".
++   - compatible : should be "fsl,qe-muram", "fsl,cpm-muram".
+    - mode : the could be "host" or "slave".
+    - ranges : Should be defined as specified in 1) to describe the
+       translation of MURAM addresses.
+@@ -1791,10 +1790,12 @@ platforms are moved over to use the flattened-device-tree model.
+    Example:
+ 
+ 	muram@10000 {
+-		device_type = "muram";
++		compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 		ranges = <0 00010000 0000c000>;
+ 
+ 		data-only@0{
++			compatible = "fsl,qe-muram-data",
++				     "fsl,cpm-muram-data";
+ 			reg = <0 c000>;
+ 		};
+ 	};
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index 6902524..e300df4 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -206,17 +206,18 @@
+ 		#size-cells = <1>;
+ 		device_type = "qe";
+ 		compatible = "fsl,qe";
+-		model = "QE";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <BCD3D80>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 00004000>;
+ 
+ 			data-only@0 {
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 4000>;
+ 			};
+ 		};
+@@ -320,9 +321,9 @@
+ 			};
+ 		};
+ 
+-		qeic: qeic@80 {
++		qeic: interrupt-controller@80 {
+ 			interrupt-controller;
+-			device_type = "qeic";
++			compatible = "fsl,qe-ic";
+ 			#address-cells = <0>;
+ 			#interrupt-cells = <1>;
+ 			reg = <80 80>;
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index 10ff7aa..4d5cfd3 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -166,17 +166,19 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <BCD3D80>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 00004000>;
+ 
+ 			data-only@0 {
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 4000>;
+ 			};
+ 		};
+@@ -252,9 +254,9 @@
+ 			};
+ 		};
+ 
+-		qeic:qeic@80 {
++		qeic:interrupt-controller@80 {
+ 			interrupt-controller;
+-			device_type = "qeic";
++			compatible = "fsl,qe-ic";
+ 			#address-cells = <0>;
+ 			#interrupt-cells = <1>;
+ 			reg = <80 80>;
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index 2181d2c..9a2581b 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -207,17 +207,19 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0100000 00100000>;
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <179A7B00>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 0000c000>;
+ 
+ 			data-only@0{
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 c000>;
+ 			};
+ 		};
+@@ -303,9 +305,9 @@
+ 			};
+ 		};
+ 
+-		qeic: qeic@80 {
++		qeic: interrupt-controller@80 {
+ 			interrupt-controller;
+-			device_type = "qeic";
++			compatible = "fsl,qe-ic";
+ 			#address-cells = <0>;
+ 			#interrupt-cells = <1>;
+ 			reg = <80 80>;
+diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+index b8f87ac..e244619 100644
+--- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
++++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+@@ -145,7 +145,6 @@
+ 	qe@e0100000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "qe";
+ 		compatible = "fsl,qe";
+ 		ranges = <0 0xe0100000 0x100000>;
+ 		reg = <0xe0100000 0x480>;
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 5818a7c..04f5c6f 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -284,17 +284,19 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "qe";
+-		model = "QE";
++		compatible = "fsl,qe";
+ 		ranges = <0 e0080000 00040000>;
+ 		reg = <e0080000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <179A7B00>;
+ 
+ 		muram@10000 {
+-			device_type = "muram";
++			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+ 			ranges = <0 00010000 0000c000>;
+ 
+ 			data-only@0{
++				compatible = "fsl,qe-muram-data",
++					     "fsl,cpm-muram-data";
+ 				reg = <0 c000>;
+ 			};
+ 		};
+@@ -385,9 +387,9 @@
+ 			};
+ 		};
+ 
+-		qeic: qeic@80 {
++		qeic: interrupt-controller@80 {
+ 			interrupt-controller;
+-			device_type = "qeic";
++			compatible = "fsl,qe-ic";
+ 			#address-cells = <0>;
+ 			#interrupt-cells = <1>;
+ 			reg = <80 80>;
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+index dbdd4ad..6dbc6ea 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -105,6 +105,7 @@ static struct of_device_id mpc832x_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "qe", },
++	{ .compatible = "fsl,qe", },
+ 	{},
+ };
+ 
+@@ -134,10 +135,12 @@ static void __init mpc832x_sys_init_IRQ(void)
+ 	of_node_put(np);
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_node_by_type(NULL, "qeic");
+-	if (!np)
+-		return;
+-
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (!np) {
++		np = of_find_node_by_type(NULL, "qeic");
++		if (!np)
++			return;
++	}
+ 	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
+ 	of_node_put(np);
+ #endif				/* CONFIG_QUICC_ENGINE */
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index 5fddd22..9f0fd88 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -115,6 +115,7 @@ static struct of_device_id mpc832x_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "qe", },
++	{ .compatible = "fsl,qe", },
+ 	{},
+ };
+ 
+@@ -145,10 +146,12 @@ void __init mpc832x_rdb_init_IRQ(void)
+ 	of_node_put(np);
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_node_by_type(NULL, "qeic");
+-	if (!np)
+-		return;
+-
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (!np) {
++		np = of_find_node_by_type(NULL, "qeic");
++		if (!np)
++			return;
++	}
+ 	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
+ 	of_node_put(np);
+ #endif				/* CONFIG_QUICC_ENGINE */
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index db491ec..c2e5de6 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -136,6 +136,7 @@ static struct of_device_id mpc836x_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "qe", },
++	{ .compatible = "fsl,qe", },
+ 	{},
+ };
+ 
+@@ -165,10 +166,12 @@ static void __init mpc836x_mds_init_IRQ(void)
+ 	of_node_put(np);
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_node_by_type(NULL, "qeic");
+-	if (!np)
+-		return;
+-
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (!np) {
++		np = of_find_node_by_type(NULL, "qeic");
++		if (!np)
++			return;
++	}
+ 	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
+ 	of_node_put(np);
+ #endif				/* CONFIG_QUICC_ENGINE */
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 4fdf5ab..25f8bc7 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -94,21 +94,25 @@ static void __init mpc85xx_mds_setup_arch(void)
+ #endif
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-	if ((np = of_find_node_by_name(NULL, "qe")) != NULL) {
+-		qe_reset();
+-		of_node_put(np);
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np) {
++		np = of_find_node_by_name(NULL, "qe");
++		if (!np)
++			return;
+ 	}
+ 
+-	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
+-		struct device_node *ucc = NULL;
++	qe_reset();
++	of_node_put(np);
 +
-+/* Buffer descriptor control/status used by serial
-+ */
++	np = of_find_node_by_name(NULL, "par_io");
++	if (np) {
++		struct device_node *ucc;
+ 
+ 		par_io_init(np);
+ 		of_node_put(np);
+ 
+-		for ( ;(ucc = of_find_node_by_name(ucc, "ucc")) != NULL;)
++		for_each_node_by_name(ucc, "ucc")
+ 			par_io_of_config(ucc);
+-
+-		of_node_put(ucc);
+ 	}
+ 
+ 	if (bcsr_regs) {
+@@ -131,7 +135,6 @@ static void __init mpc85xx_mds_setup_arch(void)
+ 
+ 		iounmap(bcsr_regs);
+ 	}
+-
+ #endif	/* CONFIG_QUICC_ENGINE */
+ }
+ 
+@@ -139,6 +142,7 @@ static struct of_device_id mpc85xx_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "qe", },
++	{ .compatible = "fsl,qe", },
+ 	{},
+ };
+ 
+@@ -176,10 +180,12 @@ static void __init mpc85xx_mds_pic_init(void)
+ 	mpic_init(mpic);
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-	np = of_find_node_by_type(NULL, "qeic");
+-	if (!np)
+-		return;
+-
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (!np) {
++		np = of_find_node_by_type(NULL, "qeic");
++		if (!np)
++			return;
++	}
+ 	qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
+ 	of_node_put(np);
+ #endif				/* CONFIG_QUICC_ENGINE */
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index f2c0988..26f7d83 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -1276,7 +1276,10 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
+ 	const u32 *sysclk;
+ 
+ 	/* SPI controller is either clocked from QE or SoC clock */
+-	np = of_find_node_by_type(NULL, "qe");
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!np)
++		np = of_find_node_by_type(NULL, "qe");
 +
-+#define BD_SC_EMPTY	(0x8000)	/* Receive is empty */
-+#define BD_SC_READY	(0x8000)	/* Transmit is ready */
-+#define BD_SC_WRAP	(0x2000)	/* Last buffer descriptor */
-+#define BD_SC_INTRPT	(0x1000)	/* Interrupt on change */
-+#define BD_SC_LAST	(0x0800)	/* Last buffer in frame */
-+#define BD_SC_TC	(0x0400)	/* Transmit CRC */
-+#define BD_SC_CM	(0x0200)	/* Continous mode */
-+#define BD_SC_ID	(0x0100)	/* Rec'd too many idles */
-+#define BD_SC_P		(0x0100)	/* xmt preamble */
-+#define BD_SC_BR	(0x0020)	/* Break received */
-+#define BD_SC_FR	(0x0010)	/* Framing error */
-+#define BD_SC_PR	(0x0008)	/* Parity error */
-+#define BD_SC_NAK	(0x0004)	/* NAK - did not respond */
-+#define BD_SC_OV	(0x0002)	/* Overrun */
-+#define BD_SC_UN	(0x0002)	/* Underrun */
-+#define BD_SC_CD	(0x0001)	/* */
-+#define BD_SC_CL	(0x0001)	/* Collision */
+ 	if (!np)
+ 		np = of_find_node_by_type(NULL, "soc");
+ 
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 3925eae..5ef844d 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -65,17 +65,22 @@ static phys_addr_t qebase = -1;
+ phys_addr_t get_qe_base(void)
+ {
+ 	struct device_node *qe;
++	unsigned int size;
++	const void *prop;
+ 
+ 	if (qebase != -1)
+ 		return qebase;
+ 
+-	qe = of_find_node_by_type(NULL, "qe");
+-	if (qe) {
+-		unsigned int size;
+-		const void *prop = of_get_property(qe, "reg", &size);
+-		qebase = of_translate_address(qe, prop);
+-		of_node_put(qe);
+-	};
++	qe = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!qe) {
++		qe = of_find_node_by_type(NULL, "qe");
++		if (!qe)
++			return qebase;
++	}
 +
-+/* Buffer descriptor control/status used by Ethernet receive.
-+ * Common to SCC and FCC.
-+ */
-+#define BD_ENET_RX_EMPTY	(0x8000)
-+#define BD_ENET_RX_WRAP		(0x2000)
-+#define BD_ENET_RX_INTR		(0x1000)
-+#define BD_ENET_RX_LAST		(0x0800)
-+#define BD_ENET_RX_FIRST	(0x0400)
-+#define BD_ENET_RX_MISS		(0x0100)
-+#define BD_ENET_RX_BC		(0x0080)	/* FCC Only */
-+#define BD_ENET_RX_MC		(0x0040)	/* FCC Only */
-+#define BD_ENET_RX_LG		(0x0020)
-+#define BD_ENET_RX_NO		(0x0010)
-+#define BD_ENET_RX_SH		(0x0008)
-+#define BD_ENET_RX_CR		(0x0004)
-+#define BD_ENET_RX_OV		(0x0002)
-+#define BD_ENET_RX_CL		(0x0001)
-+#define BD_ENET_RX_STATS	(0x01ff)	/* All status bits */
++	prop = of_get_property(qe, "reg", &size);
++	qebase = of_translate_address(qe, prop);
++	of_node_put(qe);
+ 
+ 	return qebase;
+ }
+@@ -153,16 +158,26 @@ static unsigned int brg_clk = 0;
+ unsigned int get_brg_clk(void)
+ {
+ 	struct device_node *qe;
++	unsigned int size;
++	const u32 *prop;
 +
-+/* Buffer descriptor control/status used by Ethernet transmit.
-+ * Common to SCC and FCC.
-+ */
-+#define BD_ENET_TX_READY	(0x8000)
-+#define BD_ENET_TX_PAD		(0x4000)
-+#define BD_ENET_TX_WRAP		(0x2000)
-+#define BD_ENET_TX_INTR		(0x1000)
-+#define BD_ENET_TX_LAST		(0x0800)
-+#define BD_ENET_TX_TC		(0x0400)
-+#define BD_ENET_TX_DEF		(0x0200)
-+#define BD_ENET_TX_HB		(0x0100)
-+#define BD_ENET_TX_LC		(0x0080)
-+#define BD_ENET_TX_RL		(0x0040)
-+#define BD_ENET_TX_RCMASK	(0x003c)
-+#define BD_ENET_TX_UN		(0x0002)
-+#define BD_ENET_TX_CSL		(0x0001)
-+#define BD_ENET_TX_STATS	(0x03ff)	/* All status bits */
+ 	if (brg_clk)
+ 		return brg_clk;
+ 
+-	qe = of_find_node_by_type(NULL, "qe");
+-	if (qe) {
+-		unsigned int size;
+-		const u32 *prop = of_get_property(qe, "brg-frequency", &size);
+-		brg_clk = *prop;
+-		of_node_put(qe);
+-	};
++	qe = of_find_compatible_node(NULL, NULL, "fsl,qe");
++	if (!qe) {
++		qe = of_find_node_by_type(NULL, "qe");
++		if (!qe)
++			return brg_clk;
++	}
 +
-+/* Buffer descriptor control/status used by Transparent mode SCC.
-+ */
-+#define BD_SCC_TX_LAST		(0x0800)
++	prop = of_get_property(qe, "brg-frequency", &size);
++	if (!prop || size != sizeof(*prop))
++		return brg_clk;
 +
-+/* Buffer descriptor control/status used by I2C.
-+ */
-+#define BD_I2C_START		(0x0400)
++	brg_clk = *prop;
++	of_node_put(qe);
 +
- int cpm_muram_init(void);
- unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
- int cpm_muram_free(unsigned long offset);
-diff --git a/include/asm-powerpc/cpm1.h b/include/asm-powerpc/cpm1.h
-index 901a00b..b2ebd6a 100644
---- a/include/asm-powerpc/cpm1.h
-+++ b/include/asm-powerpc/cpm1.h
-@@ -91,32 +91,6 @@ extern void cpm_load_patch(cpm8xx_t *cp);
+ 	return brg_clk;
+ }
  
- extern void cpm_reset(void);
+@@ -322,7 +337,7 @@ static rh_info_t qe_muram_info;
+ static void qe_muram_init(void)
+ {
+ 	struct device_node *np;
+-	u32 address;
++	const u32 *address;
+ 	u64 size;
+ 	unsigned int flags;
  
--/* Buffer descriptors used by many of the CPM protocols.
--*/
--typedef struct cpm_buf_desc {
--	ushort	cbd_sc;		/* Status and Control */
--	ushort	cbd_datlen;	/* Data length in buffer */
--	uint	cbd_bufaddr;	/* Buffer address in host memory */
--} cbd_t;
--
--#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
--#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
--#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
--#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
--#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
--#define BD_SC_TC	((ushort)0x0400)	/* Transmit CRC */
--#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
--#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
--#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
--#define BD_SC_BR	((ushort)0x0020)	/* Break received */
--#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
--#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
--#define BD_SC_NAK	((ushort)0x0004)	/* NAK - did not respond */
--#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
--#define BD_SC_UN	((ushort)0x0002)	/* Underrun */
--#define BD_SC_CD	((ushort)0x0001)	/* ?? */
--#define BD_SC_CL	((ushort)0x0001)	/* Collision */
--
- /* Parameter RAM offsets.
- */
- #define PROFF_SCC1	((uint)0x0000)
-@@ -446,41 +420,6 @@ typedef struct scc_enet {
- #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
- #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
+@@ -335,11 +350,21 @@ static void qe_muram_init(void)
+ 	/* XXX: This is a subset of the available muram. It
+ 	 * varies with the processor and the microcode patches activated.
+ 	 */
+-	if ((np = of_find_node_by_name(NULL, "data-only")) != NULL) {
+-		address = *of_get_address(np, 0, &size, &flags);
+-		of_node_put(np);
+-		rh_attach_region(&qe_muram_info, address, (int) size);
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
++	if (!np) {
++		np = of_find_node_by_name(NULL, "data-only");
++		if (!np) {
++			WARN_ON(1);
++			return;
++		}
+ 	}
++
++	address = of_get_address(np, 0, &size, &flags);
++	WARN_ON(!address);
++
++	of_node_put(np);
++	if (address)
++		rh_attach_region(&qe_muram_info, *address, (int)size);
+ }
  
--/* Buffer descriptor control/status used by Ethernet receive.
--*/
--#define BD_ENET_RX_EMPTY	((ushort)0x8000)
--#define BD_ENET_RX_WRAP		((ushort)0x2000)
--#define BD_ENET_RX_INTR		((ushort)0x1000)
--#define BD_ENET_RX_LAST		((ushort)0x0800)
--#define BD_ENET_RX_FIRST	((ushort)0x0400)
--#define BD_ENET_RX_MISS		((ushort)0x0100)
--#define BD_ENET_RX_LG		((ushort)0x0020)
--#define BD_ENET_RX_NO		((ushort)0x0010)
--#define BD_ENET_RX_SH		((ushort)0x0008)
--#define BD_ENET_RX_CR		((ushort)0x0004)
--#define BD_ENET_RX_OV		((ushort)0x0002)
--#define BD_ENET_RX_CL		((ushort)0x0001)
--#define BD_ENET_RX_BC		((ushort)0x0080)	/* DA is Broadcast */
--#define BD_ENET_RX_MC		((ushort)0x0040)	/* DA is Multicast */
--#define BD_ENET_RX_STATS	((ushort)0x013f)	/* All status bits */
--
--/* Buffer descriptor control/status used by Ethernet transmit.
--*/
--#define BD_ENET_TX_READY	((ushort)0x8000)
--#define BD_ENET_TX_PAD		((ushort)0x4000)
--#define BD_ENET_TX_WRAP		((ushort)0x2000)
--#define BD_ENET_TX_INTR		((ushort)0x1000)
--#define BD_ENET_TX_LAST		((ushort)0x0800)
--#define BD_ENET_TX_TC		((ushort)0x0400)
--#define BD_ENET_TX_DEF		((ushort)0x0200)
--#define BD_ENET_TX_HB		((ushort)0x0100)
--#define BD_ENET_TX_LC		((ushort)0x0080)
--#define BD_ENET_TX_RL		((ushort)0x0040)
--#define BD_ENET_TX_RCMASK	((ushort)0x003c)
--#define BD_ENET_TX_UN		((ushort)0x0002)
--#define BD_ENET_TX_CSL		((ushort)0x0001)
--#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
--
- /* SCC as UART
- */
- typedef struct scc_uart {
-@@ -549,8 +488,6 @@ typedef struct scc_trans {
- 	uint	st_cmask;	/* Constant mask for CRC */
- } scc_trans_t;
- 
--#define BD_SCC_TX_LAST		((ushort)0x0800)
--
- /* IIC parameter RAM.
- */
- typedef struct iic {
-@@ -574,8 +511,6 @@ typedef struct iic {
- 	char	res2[2];	/* Reserved */
- } iic_t;
- 
--#define BD_IIC_START		((ushort)0x0400)
--
- /* SPI parameter RAM.
- */
- typedef struct spi {
-diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
-index f1112c1..b93a53e 100644
---- a/include/asm-powerpc/cpm2.h
-+++ b/include/asm-powerpc/cpm2.h
-@@ -132,29 +132,6 @@ extern void cpm_setbrg(uint brg, uint rate);
- extern void cpm2_fastbrg(uint brg, uint rate, int div16);
- extern void cpm2_reset(void);
- 
--
--/* Buffer descriptors used by many of the CPM protocols.
--*/
--typedef struct cpm_buf_desc {
--	ushort	cbd_sc;		/* Status and Control */
--	ushort	cbd_datlen;	/* Data length in buffer */
--	uint	cbd_bufaddr;	/* Buffer address in host memory */
--} cbd_t;
--
--#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
--#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
--#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
--#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
--#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
--#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
--#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
--#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
--#define BD_SC_BR	((ushort)0x0020)	/* Break received */
--#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
--#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
--#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
--#define BD_SC_CD	((ushort)0x0001)	/* ?? */
--
- /* Function code bits, usually generic to devices.
- */
- #define CPMFCR_GBL	((u_char)0x20)	/* Set memory snooping */
-@@ -456,43 +433,6 @@ typedef struct scc_enet {
- #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
- #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
- 
--/* Buffer descriptor control/status used by Ethernet receive.
-- * Common to SCC and FCC.
-- */
--#define BD_ENET_RX_EMPTY	((ushort)0x8000)
--#define BD_ENET_RX_WRAP		((ushort)0x2000)
--#define BD_ENET_RX_INTR		((ushort)0x1000)
--#define BD_ENET_RX_LAST		((ushort)0x0800)
--#define BD_ENET_RX_FIRST	((ushort)0x0400)
--#define BD_ENET_RX_MISS		((ushort)0x0100)
--#define BD_ENET_RX_BC		((ushort)0x0080)	/* FCC Only */
--#define BD_ENET_RX_MC		((ushort)0x0040)	/* FCC Only */
--#define BD_ENET_RX_LG		((ushort)0x0020)
--#define BD_ENET_RX_NO		((ushort)0x0010)
--#define BD_ENET_RX_SH		((ushort)0x0008)
--#define BD_ENET_RX_CR		((ushort)0x0004)
--#define BD_ENET_RX_OV		((ushort)0x0002)
--#define BD_ENET_RX_CL		((ushort)0x0001)
--#define BD_ENET_RX_STATS	((ushort)0x01ff)	/* All status bits */
--
--/* Buffer descriptor control/status used by Ethernet transmit.
-- * Common to SCC and FCC.
-- */
--#define BD_ENET_TX_READY	((ushort)0x8000)
--#define BD_ENET_TX_PAD		((ushort)0x4000)
--#define BD_ENET_TX_WRAP		((ushort)0x2000)
--#define BD_ENET_TX_INTR		((ushort)0x1000)
--#define BD_ENET_TX_LAST		((ushort)0x0800)
--#define BD_ENET_TX_TC		((ushort)0x0400)
--#define BD_ENET_TX_DEF		((ushort)0x0200)
--#define BD_ENET_TX_HB		((ushort)0x0100)
--#define BD_ENET_TX_LC		((ushort)0x0080)
--#define BD_ENET_TX_RL		((ushort)0x0040)
--#define BD_ENET_TX_RCMASK	((ushort)0x003c)
--#define BD_ENET_TX_UN		((ushort)0x0002)
--#define BD_ENET_TX_CSL		((ushort)0x0001)
--#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
--
- /* SCC as UART
- */
- typedef struct scc_uart {
-@@ -562,8 +502,6 @@ typedef struct scc_trans {
- 	uint	st_cmask;	/* Constant mask for CRC */
- } scc_trans_t;
- 
--#define BD_SCC_TX_LAST		((ushort)0x0800)
--
- /* How about some FCCs.....
- */
- #define FCC_GFMR_DIAG_NORM	((uint)0x00000000)
-@@ -769,8 +707,6 @@ typedef struct spi {
- 
- #define SPI_EB		((u_char)0x10)		/* big endian byte order */
- 
--#define BD_IIC_START		((ushort)0x0400)
--
- /* IDMA parameter RAM
- */
- typedef struct idma {
+ /* This function returns an index into the MURAM area.
 -- 
-1.5.3.8
+1.5.2.2
