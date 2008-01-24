@@ -1,31 +1,14 @@
-Return-Path: <Poonam.Aggrwal@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A8FD6DDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 21:37:03 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m0OAZow3016992
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 03:36:49 -0700 (MST)
-Received: from zin33exm22.fsl.freescale.net (zin33exm22.ap.freescale.net
-	[10.232.192.20])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0OAZlXf021842
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 04:35:48 -0600 (CST)
-Date: Thu, 24 Jan 2008 16:05:37 +0530 (IST)
-From: Poonam_Aggrwal-b10812 <b10812@freescale.com>
-To: kumar.gala@freescale.com, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	rubini@vision.unipv.it, linuxppc-dev@ozlabs.org
-Subject: [PATCH UCC TDM 2/3 ]Updated: UCC TDM driver for QE based MPC83xx
-	platforms.
-Message-ID: <Pine.LNX.4.64.0801241600110.4984@linux121>
+Return-Path: <hans.lehmann@ritter-elektronik.de>
+Received: from mail.textile.saurer.com (mail.schlafhorst.de [193.158.88.134])
+	by ozlabs.org (Postfix) with ESMTP id B0C3FDDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 00:19:29 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: michael.barkowski@freescale.com, rich.cutler@freescale.com,
-	ashish.kalra@freescale.com, b10812@freescale.com, timur@freescale.com
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C85E8A.0B5CC506"
+Subject: Reboot at insmod of cf card driver
+Date: Thu, 24 Jan 2008 14:07:16 +0100
+Message-ID: <D75C3E75C6176746B68E0EF7245F616F611B10@SRVEXC01.sts.saurer.vpn>
+From: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,1360 +18,350 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Incorporated Stephen's comments.
+This is a multi-part message in MIME format.
 
-From: Poonam Agarwal-b10812 <b10812@freescale.com>
+------_=_NextPart_001_01C85E8A.0B5CC506
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-The UCC TDM driver basically multiplexes and demultiplexes data from
-different channels. It can interface with for example SLIC kind of devices
-to receive TDM data  demultiplex it and send to upper modules. At the
-transmit end it receives data for different channels multiplexes it and
-sends them on the TDM channel. It internally uses TSA( Time Slot Assigner)
-which does multiplexing and demultiplexing, UCC to perform SDMA between
-host buffers and the TSA, CMX to connect TSA to UCC.
+Hi at all,
 
-It can be used by a kernel module which can call tdm_register_client to
-get access to a TDM device.
+i have strange problems with my cf_card driver on our MPC5200b board. =
+Because of our board schematic the cf card is mapped to memory space.=20
+The interrupt is routed to IRQ1. IRQ1 is rising edge sensitive.
+First the driver was written for Kernel 2.6.14 with device_driver =
+structure and run pretty. Now i have ported it to Kernel 2.6.23 with =
+of_platform_driver structure to get indepent of ppc.=20
 
-The driver is right now a misc driver with no subsystem as such.
-There can be a platform independent TDM layer which is planned to be
-done after this. TDM bus sort of thing.
+Now my problem:
 
-The dts file keeps a track of the TDM devices present on the board.
-Depending on them the TDM driver initializes those many driver instances
-while coming up.
+After I load my modul, the kernel start to reboot at command =
+probe_hwif_init.
+The failure occurs exatly in function "actual_try_to_identify" in =
+ide-probe.c when kernel send the identify command to status/command =
+register of ide device "(hwif->outb(cmd, DIE_COMMAND_REG);". =20
+By accident I figured out that no reboot occurs when I change interrupt =
+behauviour (level sensitive). But then several errors occured as =
+followed:
 
-The driver on the upper level can plug to more than one tdm clients
-depending on the availablity of TDM devices. At every new request of a TDM
-client to bind with a TDM device, a free driver instance is allocated to
-the client.
+root@RITTER_EL392:/lib/modules> insmod el392_cf_disk_drv.ko
+[   72.306114] IDE: EL392 IDE/ATA driver
+[   72.397169] Base address: d0000000, IO Size: 00020000
+[   72.413994] Memory remapped: 0xd0000000 -> 0xc5040000
+[   72.666923] cmd: 0x0ec , Adresse IDE_REG_COMMAND: 0xc5041006
+[   72.804238] hda: ELITE PRO CF CARD 1GB, CFA DISK drive
+[   73.126941] cmd: 0x0a1 , Adresse IDE_REG_COMMAND: 0xc5041006
+[   73.313920] cmd: 0x0a1 , Adresse IDE_REG_COMMAND: 0xc5041006
+[   73.503065] ide0 at 0xc5041008-0xc504100f,0xc504100f on irq 70
+[   73.521193] ------------[ cut here ]------------
+[   73.530365] Badness at c0105298 [verbose debug info unavailable]
+[   73.542244] NIP: c0105298 LR: c0104260 CTR: 00000000
+[   73.552071] REGS: c374dc30 TRAP: 0700   Not tainted  =
+(2.6.23.1-rt5-pcm030-1trunk)
+[   73.566867] MSR: 00029032 <EE,ME,IR,DR>  CR: 84004484  XER: 00000000
+[   73.579487] TASK =3D c36d6000[231] 'insmod' THREAD: c374c000
+[   73.589988] GPR00: 00000001 c374dce0 c36d6000 c02c0ab0 c02396c4 =
+c02bf9b4 c02395ec 00000242
+[   73.606564] GPR08: c36d6000 00000002 00000001 c02c05dc 84004484 =
+100decc4 c50235a8 c3d0c280
+[   73.623139] GPR16: c5022e6c c5022e94 00000000 00000035 00000124 =
+00000000 c5022ac4 c5022ebc
+[   73.639713] GPR24: c0048214 c02c0544 00000015 c028c49c c0240000 =
+c0200000 00000000 c02c0a98
+[   73.656636] NIP [c0105298] kref_get+0xc/0x24
+[   73.665152] LR [c0104260] kobject_get+0x20/0x38
+[   73.674125] Call Trace:
+[   73.678955] [c374dce0] [c02c0428] 0xc02c0428 (unreliable)
+[   73.689660] [c374dcf0] [c01280b4] get_device+0x20/0x38
+[   73.699858] [c374dd00] [c0128f14] device_add+0x6c/0x518
+[   73.710214] [c374dd40] [c0144130] =
+probe_hwif_init_with_fixup+0x80/0xb0
+[   73.723171] [c374dd60] [c5025304] el392_ata_probe+0x210/0x258 =
+[el392_cf_disk_drv]
+[   73.738017] [c374dda0] [c015fc18] of_platform_device_probe+0x58/0x80
+[   73.750632] [c374ddc0] [c012b9ac] driver_probe_device+0xb8/0x1ec
+[   73.762543] [c374dde0] [c012bb64] __driver_attach+0x84/0x88
+[   73.773584] [c374de00] [c012ac88] bus_for_each_dev+0x58/0x94
+[   73.784798] [c374de30] [c012b7bc] driver_attach+0x24/0x34
+[   73.795495] [c374de40] [c012b0e4] bus_add_driver+0x98/0x1d8
+[   73.806536] [c374de60] [c012bd0c] driver_register+0x58/0xa0
+[   73.817577] [c374de70] [c000a0e0] =
+of_register_platform_driver+0x28/0x38
+[   73.830709] [c374de80] [c5028024] el392_ata_init+0x24/0x78 =
+[el392_cf_disk_drv]
+[   73.845022] [c374de90] [c0049550] sys_init_module+0x16c/0x14b0
+[   73.856604] [c374df40] [c000f670] ret_from_syscall+0x0/0x38
+[   73.867662] --- Exception: c01 at 0xff26d98
+[   73.875941]     LR =3D 0x1002ebdc
+[   73.882143] Instruction dump:
+[   73.888009] 409e0010 7c8903a6 4e800421 38000001 7c030378 80010014 =
+38210010 7c0803a6
+[   73.903381] 4e800020 80030000 7c000034 5400d97e <0f000000> 7d201828 =
+31290001 7d20192d
+[   73.923415] Unable to handle kernel paging request for data at =
+address 0x00000024
+[   73.945442] Faulting instruction address: 0xc00b8d08
+[   73.960258] stopped custom tracer.
+[   73.970940] Oops: Kernel access of bad area, sig: 11 [#1]
+[   73.981635] PREEMPT ritter_el392
+[   73.988015] Modules linked in: el392_cf_disk_drv
+[   73.997165] NIP: c00b8d08 LR: c00b8d04 CTR: 00000000
+[   74.006990] REGS: c374dbc0 TRAP: 0300   Not tainted  =
+(2.6.23.1-rt5-pcm030-1trunk)
+[   74.021787] MSR: 00009032 <EE,ME,IR,DR>  CR: 24004442  XER: 00000000
+[   74.034404] DAR: 00000024, DSISR: 20000000
+[   74.042501] TASK =3D c36d6000[231] 'insmod' THREAD: c374c000
+[   74.053003] GPR00: c00b8d04 c374dc70 c36d6000 c029b248 00000004 =
+00000000 00000000 00000380
+[   74.069578] GPR08: c36d6000 c02b0000 00000000 00000000 24004488 =
+100decc4 c50235a8 c3d0c280
+[   74.086154] GPR16: c5022e6c c5022e94 00000000 00000035 00000124 =
+00000000 c5022ac4 c5022ebc
+[   74.102730] GPR24: c0048214 c02c0544 c374dcc8 c374dc98 c02c04f0 =
+00000000 c029b248 c374dc98
+[   74.119654] NIP [c00b8d08] sysfs_addrm_start+0x40/0xcc
+[   74.129883] LR [c00b8d04] sysfs_addrm_start+0x3c/0xcc
+[   74.139887] Call Trace:
+[   74.144717] [c374dc70] [c00b8d04] sysfs_addrm_start+0x3c/0xcc =
+(unreliable)
+[   74.158347] [c374dc90] [c00b956c] create_dir+0x50/0xd8
+[   74.168530] [c374dcc0] [c00b962c] sysfs_create_dir+0x38/0x9c
+[   74.179739] [c374dce0] [c01044ac] kobject_shadow_add+0xb0/0x1c0
+[   74.191504] [c374dd00] [c0128f60] device_add+0xb8/0x518
+[   74.201874] [c374dd40] [c0144130] =
+probe_hwif_init_with_fixup+0x80/0xb0
+[   74.214831] [c374dd60] [c5025304] el392_ata_probe+0x210/0x258 =
+[el392_cf_disk_drv]
+[   74.229679] [c374dda0] [c015fc18] of_platform_device_probe+0x58/0x80
+[   74.242300] [c374ddc0] [c012b9ac] driver_probe_device+0xb8/0x1ec
+[   74.254211] [c374dde0] [c012bb64] __driver_attach+0x84/0x88
+[   74.265252] [c374de00] [c012ac88] bus_for_each_dev+0x58/0x94
+[   74.276466] [c374de30] [c012b7bc] driver_attach+0x24/0x34
+[   74.287164] [c374de40] [c012b0e4] bus_add_driver+0x98/0x1d8
+[   74.298205] [c374de60] [c012bd0c] driver_register+0x58/0xa0
+[   74.309247] [c374de70] [c000a0e0] =
+of_register_platform_driver+0x28/0x38
+[   74.322380] [c374de80] [c5028024] el392_ata_init+0x24/0x78 =
+[el392_cf_disk_drv]
+[   74.336693] [c374de90] [c0049550] sys_init_module+0x16c/0x14b0
+[   74.348276] [c374df40] [c000f670] ret_from_syscall+0x0/0x38
+[   74.359334] --- Exception: c01 at 0xff26d98
+[   74.367612]     LR =3D 0x1002ebdc
+[   74.373816] Instruction dump:
+[   74.379683] 7c7f1b78 3bc9b248 90010024 38000000 7c9d2378 9003000c =
+90030004 90030008
+[   74.395056] 7fc3f378 909f0000 4813b041 3d20c02b <809d0024> 3ca0c00c =
+8069f5a4 38a5897c
+Segmentation fault
+root@RITTER_EL392:/lib/modules>
 
-The interface can be described as follows.
+Thanks anybody for help.
 
-tdm_register_client(struct tdm_client *)
-       This API returns a pointer to the structure tdm_client which is of
-type
-      struct tdm_client {
-               u32 client_id;
-               u32 (*tdm_read)(u32 client_id, short chn_id, short
-*pcm_buffer, short len);
-               u32 (*tdm_write)(u32 client_id, short chn_id, short
-*pcm_buffer, short len);
-               wait_queue_head_t *wakeup_event;
-       }
 
-It consists of:
-  - client_id: It is basically to identify the particular TDM
-device/driver instance.
-  - tdm_read: It is a function pointer returned by the TDM driver to be
-used to read TDM data from a particular TDM channel.
-  - tdm_write: It is a function pointer returned by the TDM driver to be
-used to write TDM data to a particular TDM channel.
-  - wakeup_event: It is address of a wait_queue event on which the client
-keeps on sleeping, and the TDM driver wakes it up periodically. The driver
-is configured to
-wake up the client after every 10ms.
 
-Once the TDM client gets registered to a TDM driver instance and a TDM
-device, it interfaces with the driver using tdm_read, tdm_write and
-wakeup_event.
 
-This driver will run on MPC8323E-RDB platforms.
+=20
 
-Signed-off-by: Poonam Aggrwal <b10812@freescale.com>
-Signed-off-by: Ashish Kalra <ashish.kalra@freescale.com>
-Signed-off-by: Kim Phillips <Kim.Phillips@freescale.com>
-Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
----
- drivers/misc/Kconfig   |   14 +
- drivers/misc/Makefile  |    1 +
- drivers/misc/ucc_tdm.c | 1017 ++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/misc/ucc_tdm.h |  221 +++++++++++
- 4 files changed, 1253 insertions(+), 0 deletions(-)
- create mode 100644 drivers/misc/ucc_tdm.c
- create mode 100644 drivers/misc/ucc_tdm.h
+=20
+Mit freundlichen Gr=FC=DFen
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index b5e67c0..628b14b 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -232,4 +232,18 @@ config ATMEL_SSC
- 
- 	  If unsure, say N.
- 
-+config UCC_TDM
-+	bool "Freescale UCC  TDM Driver"
-+	depends on QUICC_ENGINE && UCC_FAST
-+	default n
-+	---help---
-+	  The TDM driver is for UCC based TDM devices for example, TDM device on
-+	  MPC832x RDB. Select it to run PowerVoIP on MPC832x RDB board.
-+	  The TDM driver can interface with SLIC kind of devices to transmit
-+	  and receive TDM samples. The TDM driver receives Time Division
-+	  multiplexed samples(for different channels) from the SLIC device,
-+	  demutiplexes them and sends them to the upper layers. At the transmit
-+	  end the TDM drivers receives samples for different channels, it
-+	  multiplexes them and sends them to the SLIC device.
-+
- endif # MISC_DEVICES
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 87f2685..6f0c49d 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -17,3 +17,4 @@ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
- obj-$(CONFIG_THINKPAD_ACPI)	+= thinkpad_acpi.o
- obj-$(CONFIG_FUJITSU_LAPTOP)	+= fujitsu-laptop.o
- obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
-+obj-$(CONFIG_UCC_TDM)		+= ucc_tdm.o
-diff --git a/drivers/misc/ucc_tdm.c b/drivers/misc/ucc_tdm.c
-new file mode 100644
-index 0000000..2181132
---- /dev/null
-+++ b/drivers/misc/ucc_tdm.c
-@@ -0,0 +1,1017 @@
-+/*
-+ * drivers/misc/ucc_tdm.c
-+ *
-+ * UCC Based Linux TDM Driver
-+ * This driver is designed to support UCC based TDM for PowerPC processors.
-+ * This driver can interface with SLIC device to run VOIP kind of
-+ * applications.
-+ *
-+ * Author: Ashish Kalra & Poonam Aggrwal
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/autoconf.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/errno.h>
-+#include <linux/types.h>
-+#include <linux/interrupt.h>
-+#include <linux/time.h>
-+#include <linux/skbuff.h>
-+#include <linux/proc_fs.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/string.h>
-+#include <linux/irq.h>
-+#include <linux/of_platform.h>
-+#include <linux/io.h>
-+#include <linux/wait.h>
-+#include <linux/timer.h>
-+
-+#include <asm/immap_qe.h>
-+#include <asm/qe.h>
-+#include <asm/ucc.h>
-+#include <asm/ucc_fast.h>
-+#include <asm/ucc_slow.h>
-+
-+#include "ucc_tdm.h"
-+#define DRV_DESC "Freescale QE UCC TDM Driver"
-+#define DRV_NAME "ucc_tdm"
-+
-+
-+/*
-+ * define the following #define if snooping or hardware-based cache coherency
-+ * is disabled on the UCC transparent controller.This flag enables
-+ * software-based cache-coherency support by explicitly flushing data cache
-+ * contents after setting up the TDM output buffer(s) and invalidating the
-+ * data cache contents before the TDM input buffer(s) are read.
-+ */
-+#undef UCC_CACHE_SNOOPING_DISABLED
-+
-+#define MAX_NUM_TDM_DEVICES 8
-+
-+static struct tdm_ctrl *tdm_ctrl[MAX_NUM_TDM_DEVICES];
-+
-+static int num_tdm_devices;
-+static int num_tdm_clients;
-+
-+static struct ucc_tdm_info utdm_primary_info = {
-+	.uf_info = {
-+		.tsa = 1,
-+		.cdp = 1,
-+		.cds = 1,
-+		.ctsp = 1,
-+		.ctss = 1,
-+		.revd = 1,
-+		.urfs = 0x128,
-+		.utfs = 0x128,
-+		.utfet = 0,
-+		.utftt = 0x128,
-+		.ufpt = 256,
-+		.ttx_trx = UCC_FAST_GUMR_TRANSPARENT_TTX_TRX_TRANSPARENT,
-+		.tenc = UCC_FAST_TX_ENCODING_NRZ,
-+		.renc = UCC_FAST_RX_ENCODING_NRZ,
-+		.tcrc = UCC_FAST_16_BIT_CRC,
-+		.synl = UCC_FAST_SYNC_LEN_NOT_USED,
-+	},
-+	.ucc_busy = 0,
-+};
-+
-+static struct ucc_tdm_info utdm_info[8];
-+
-+static void dump_siram(struct tdm_ctrl *tdm_c)
-+{
-+#ifdef DEBUG
-+	int i;
-+	u16 phy_num_ts;
-+
-+	phy_num_ts = tdm_c->physical_num_ts;
-+
-+	pr_debug("SI TxRAM dump\n");
-+	/* each slot entry in SI RAM is of 2 bytes */
-+	for (i = 0; i < phy_num_ts * 2; i++)
-+		pr_debug("%x ", in_8(&qe_immr->sir.tx[i]));
-+	pr_debug("\nSI RxRAM dump\n");
-+	for (i = 0; i < phy_num_ts * 2; i++)
-+		pr_debug("%x ", in_8(&qe_immr->sir.rx[i]));
-+	pr_debug("\n");
-+#endif
-+}
-+
-+static void dump_ucc(struct tdm_ctrl *tdm_c)
-+{
-+#ifdef DEBUG
-+	struct ucc_transparent_pram *ucc_pram;
-+
-+	ucc_pram = tdm_c->ucc_pram;
-+
-+	pr_debug("%s Dumping UCC Registers\n", __FUNCTION__);
-+	ucc_fast_dump_regs(tdm_c->uf_private);
-+	pr_debug("%s Dumping UCC Parameter RAM\n", __FUNCTION__);
-+	pr_debug("rbase = 0x%x\n", in_be32(&ucc_pram->rbase));
-+	pr_debug("rbptr = 0x%x\n", in_be32(&ucc_pram->rbptr));
-+	pr_debug("mrblr = 0x%x\n", in_be16(&ucc_pram->mrblr));
-+	pr_debug("rbdlen = 0x%x\n", in_be16(&ucc_pram->rbdlen));
-+	pr_debug("rbdstat = 0x%x\n", in_be16(&ucc_pram->rbdstat));
-+	pr_debug("rstate = 0x%x\n", in_be32(&ucc_pram->rstate));
-+	pr_debug("rdptr = 0x%x\n", in_be32(&ucc_pram->rdptr));
-+	pr_debug("tbase = 0x%x\n", in_be32(&ucc_pram->tbase));
-+	pr_debug("tbptr = 0x%x\n", in_be32(&ucc_pram->tbptr));
-+	pr_debug("tbdlen = 0x%x\n", in_be16(&ucc_pram->tbdlen));
-+	pr_debug("tbdstat = 0x%x\n", in_be16(&ucc_pram->tbdstat));
-+	pr_debug("tstate = 0x%x\n", in_be32(&ucc_pram->tstate));
-+	pr_debug("tdptr = 0x%x\n", in_be32(&ucc_pram->tdptr));
-+#endif
-+}
-+
-+/*
-+ * For use when a framing bit is not present
-+ * Program current-route SI ram
-+ * Set SIxRAM TDMx
-+ * Entries must be in units of 8.
-+ * SIR_UCC -> Channel Select
-+ * SIR_CNT -> Number of bits or bytes
-+ * SIR_BYTE -> Byte or Bit resolution
-+ * SIR_LAST -> Indicates last entry in SIxRAM
-+ * SIR_IDLE -> The Tx data pin is Tri-stated and the Rx data pin is
-+ * 		ignored
-+ */
-+static void set_siram(struct tdm_ctrl *tdm_c, enum comm_dir dir)
-+{
-+	const u16 *mask;
-+	u16 temp_mask = 1;
-+	u16 siram_code = 0;
-+	u32 i, j, k;
-+	u32 ucc;
-+	u32 phy_num_ts;
-+
-+	phy_num_ts = tdm_c->physical_num_ts;
-+	ucc = tdm_c->ut_info->uf_info.ucc_num;
-+
-+	if (dir == COMM_DIR_RX)
-+		mask = tdm_c->rx_mask;
-+	else
-+		mask = tdm_c->tx_mask;
-+	k = 0;
-+	j = 0;
-+	for (i = 0; i < phy_num_ts; i++) {
-+		if ((mask[k] & temp_mask) == temp_mask)
-+			siram_code = SIR_UCC(ucc) | SIR_CNT(0) | SIR_BYTE;
-+		else
-+			siram_code = SIR_IDLE | SIR_CNT(0) | SIR_BYTE;
-+		if (dir == COMM_DIR_RX)
-+			out_be16((u16 *)&qe_immr->sir.rx[i * 2], siram_code);
-+		else
-+			out_be16((u16 *)&qe_immr->sir.tx[i * 2], siram_code);
-+		temp_mask = temp_mask << 1;
-+		j++;
-+		if (j >= 16) {
-+			j = 0;
-+			temp_mask = 0x0001;
-+			k++;
-+		}
-+	}
-+	siram_code = siram_code | SIR_LAST;
-+
-+	if (dir == COMM_DIR_RX)
-+		out_be16((u16 *)&qe_immr->sir.rx[(phy_num_ts - 1) * 2],
-+								siram_code);
-+	else
-+		out_be16((u16 *)&qe_immr->sir.tx[(phy_num_ts - 1) * 2],
-+								siram_code);
-+}
-+
-+static void config_si(struct tdm_ctrl *tdm_c)
-+{
-+	u8 rxsyncdelay, txsyncdelay, tdm_port;
-+	u16 sixmr_val = 0;
-+	u32 tdma_mode_off;
-+	u16 *si1_tdm_mode_reg;
-+
-+	tdm_port = tdm_c->tdm_port;
-+
-+	set_siram(tdm_c, COMM_DIR_RX);
-+
-+	set_siram(tdm_c, COMM_DIR_TX);
-+
-+	rxsyncdelay = tdm_c->cfg_ctrl.rx_fr_sync_delay;
-+	txsyncdelay = tdm_c->cfg_ctrl.tx_fr_sync_delay;
-+	if (tdm_c->cfg_ctrl.com_pin)
-+		sixmr_val |= SIMODE_CRT;
-+	if (tdm_c->cfg_ctrl.fr_sync_level == 1)
-+		sixmr_val |= SIMODE_SL;
-+	if (tdm_c->cfg_ctrl.clk_edge == 1)
-+		sixmr_val |= SIMODE_CE;
-+	if (tdm_c->cfg_ctrl.fr_sync_edge == 1)
-+		sixmr_val |= SIMODE_FE;
-+	sixmr_val |= (SIMODE_TFSD(txsyncdelay) | SIMODE_RFSD(rxsyncdelay));
-+
-+	tdma_mode_off = SI_TDM_MODE_REGISTER_OFFSET * tdm_c->tdm_port;
-+
-+	si1_tdm_mode_reg = (u8 *)&qe_immr->si1 + tdma_mode_off;
-+	out_be16(si1_tdm_mode_reg, sixmr_val);
-+
-+	dump_siram(tdm_c);
-+}
-+
-+static int tdm_init(struct tdm_ctrl *tdm_c)
-+{
-+	u32 tdm_port, ucc, act_num_ts;
-+	int ret, i, err;
-+	u32 cecr_subblock;
-+	u32 pram_offset;
-+	u32 rxbdt_offset;
-+	u32 txbdt_offset;
-+	u32 rx_ucode_buf_offset, tx_ucode_buf_offset;
-+	u16 bd_status, bd_len;
-+	enum qe_clock clock;
-+	struct qe_bd __iomem *rx_bd, *tx_bd;
-+
-+	tdm_port = tdm_c->tdm_port;
-+	ucc = tdm_c->ut_info->uf_info.ucc_num;
-+	act_num_ts = tdm_c->cfg_ctrl.active_num_ts;
-+
-+	/*
-+	 * TDM Tx and Rx CLKs = 2048 KHz.
-+	 */
-+	if (strstr(tdm_c->ut_info->uf_info.tdm_tx_clk, "BRG")) {
-+		clock = qe_clock_source(tdm_c->ut_info->uf_info.tdm_tx_clk);
-+		err = qe_setbrg(clock, 2048000, 1);
-+		if (err < 0) {
-+			printk(KERN_ERR "%s: Failed to set %s\n", __FUNCTION__,
-+				tdm_c->ut_info->uf_info.tdm_tx_clk);
-+			return err;
-+		}
-+	}
-+	if (strstr(tdm_c->ut_info->uf_info.tdm_rx_clk, "BRG")) {
-+		clock = qe_clock_source(tdm_c->ut_info->uf_info.tdm_rx_clk);
-+		err = qe_setbrg(clock, 2048000, 1);
-+		if (err < 0) {
-+			printk(KERN_ERR "%s: Failed to set %s\n", __FUNCTION__,
-+				tdm_c->ut_info->uf_info.tdm_rx_clk);
-+			return err;
-+		}
-+	}
-+	/*
-+	 * TDM FSyncs = 4 KHz.
-+	 */
-+	if (strstr(tdm_c->ut_info->uf_info.tdm_tx_sync, "BRG")) {
-+		clock = qe_clock_source(tdm_c->ut_info->uf_info.tdm_tx_sync);
-+		err = qe_setbrg(clock, 4000, 1);
-+		if (err < 0) {
-+			printk(KERN_ERR "%s: Failed to set %s\n", __FUNCTION__,
-+				tdm_c->ut_info->uf_info.tdm_tx_sync);
-+			return err;
-+		}
-+	}
-+	if (strstr(tdm_c->ut_info->uf_info.tdm_rx_sync, "BRG")) {
-+		clock = qe_clock_source(tdm_c->ut_info->uf_info.tdm_rx_sync);
-+		err = qe_setbrg(clock, 4000, 1);
-+		if (err < 0) {
-+			printk(KERN_ERR "%s: Failed to set %s\n", __FUNCTION__,
-+				tdm_c->ut_info->uf_info.tdm_rx_sync);
-+			return err;
-+		}
-+	}
-+
-+	tdm_c->ut_info->uf_info.uccm_mask = (u32)
-+			((UCC_TRANS_UCCE_RXB | UCC_TRANS_UCCE_BSY) << 16);
-+
-+	if (ucc_fast_init(&(tdm_c->ut_info->uf_info), &tdm_c->uf_private)) {
-+		printk(KERN_ERR "%s: Failed to init uccf\n", __FUNCTION__);
-+		return -ENOMEM;
-+	}
-+
-+	ucc_fast_disable(tdm_c->uf_private, COMM_DIR_RX | COMM_DIR_TX);
-+
-+	/* Write to QE CECR, UCCx channel to Stop Transmission */
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(ucc);
-+	qe_issue_cmd(QE_STOP_TX, cecr_subblock,
-+		(u8) QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	pram_offset = qe_muram_alloc(UCC_TRANSPARENT_PRAM_SIZE,
-+					ALIGNMENT_OF_UCC_SLOW_PRAM);
-+	if (IS_ERR_VALUE(pram_offset)) {
-+		printk(KERN_ERR "%s: Cannot allocate MURAM memory for"
-+			" transparent UCC\n", __FUNCTION__);
-+		ret = -ENOMEM;
-+		goto pram_alloc_error;
-+	}
-+
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(ucc);
-+	qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, cecr_subblock,
-+			QE_CR_PROTOCOL_UNSPECIFIED, pram_offset);
-+
-+	tdm_c->ucc_pram = qe_muram_addr(pram_offset);
-+	tdm_c->ucc_pram_offset = pram_offset;
-+
-+	/*
-+	 * zero-out pram, this will also ensure RSTATE, TSTATE are cleared, also
-+	 * DISFC & CRCEC counters will be initialized.
-+	 */
-+	memset(tdm_c->ucc_pram, 0, sizeof(struct ucc_transparent_pram));
-+
-+	/* rbase, tbase alignment is 8. */
-+	rxbdt_offset = qe_muram_alloc(NR_BUFS * sizeof(struct qe_bd),
-+					QE_ALIGNMENT_OF_BD);
-+	if (IS_ERR_VALUE(rxbdt_offset)) {
-+		printk(KERN_ERR "%s: Cannot allocate MURAM memory for RxBDs\n",
-+				__FUNCTION__);
-+		ret = -ENOMEM;
-+		goto rxbd_alloc_error;
-+	}
-+	txbdt_offset = qe_muram_alloc(NR_BUFS * sizeof(struct qe_bd),
-+				QE_ALIGNMENT_OF_BD);
-+	if (IS_ERR_VALUE(txbdt_offset)) {
-+		printk(KERN_ERR "%s: Cannot allocate MURAM memory for TxBDs\n",
-+				__FUNCTION__);
-+		ret = -ENOMEM;
-+		goto txbd_alloc_error;
-+	}
-+	tdm_c->tx_bd = qe_muram_addr(txbdt_offset);
-+	tdm_c->rx_bd = qe_muram_addr(rxbdt_offset);
-+
-+	tdm_c->tx_bd_offset = txbdt_offset;
-+	tdm_c->rx_bd_offset = rxbdt_offset;
-+
-+	rx_bd = tdm_c->rx_bd;
-+	tx_bd = tdm_c->tx_bd;
-+
-+	out_be32(&tdm_c->ucc_pram->rbase, (u32) immrbar_virt_to_phys(rx_bd));
-+	out_be32(&tdm_c->ucc_pram->tbase, (u32) immrbar_virt_to_phys(tx_bd));
-+
-+	for (i = 0; i < NR_BUFS - 1; i++) {
-+		bd_status = (u16) ((R_E | R_CM | R_I) >> 16);
-+		bd_len = 0;
-+		out_be16(&rx_bd->length, bd_len);
-+		out_be16(&rx_bd->status, bd_status);
-+		out_be32(&rx_bd->buf,
-+			 tdm_c->dma_input_addr + i * SAMPLE_DEPTH * act_num_ts);
-+		rx_bd += 1;
-+
-+		bd_status = (u16) ((T_R | T_CM) >> 16);
-+		bd_len =  SAMPLE_DEPTH * act_num_ts;
-+		out_be16(&tx_bd->length, bd_len);
-+		out_be16(&tx_bd->status, bd_status);
-+		out_be32(&tx_bd->buf,
-+			tdm_c->dma_output_addr + i * SAMPLE_DEPTH * act_num_ts);
-+		tx_bd += 1;
-+	}
-+
-+	bd_status = (u16) ((R_E | R_CM | R_I | R_W) >> 16);
-+	bd_len = 0;
-+	out_be16(&rx_bd->length, bd_len);
-+	out_be16(&rx_bd->status, bd_status);
-+	out_be32(&rx_bd->buf,
-+		 tdm_c->dma_input_addr + i * SAMPLE_DEPTH * act_num_ts);
-+
-+	bd_status = (u16) ((T_R | T_CM | T_W) >> 16);
-+	bd_len =  SAMPLE_DEPTH * act_num_ts;
-+	out_be16(&tx_bd->length, bd_len);
-+	out_be16(&tx_bd->status, bd_status);
-+	out_be32(&tx_bd->buf,
-+		 tdm_c->dma_output_addr + i * SAMPLE_DEPTH * act_num_ts);
-+
-+	config_si(tdm_c);
-+
-+	setbits32(&qe_immr->ic.qimr, (0x80000000UL >> ucc));
-+
-+	rx_ucode_buf_offset = qe_muram_alloc(32, 32);
-+	if (IS_ERR_VALUE(rx_ucode_buf_offset)) {
-+		printk(KERN_ERR "%s: Cannot allocate MURAM mem for Rx"
-+			 " ucode buf\n", __FUNCTION__);
-+		ret = -ENOMEM;
-+		goto rxucode_buf_alloc_error;
-+	}
-+
-+	tx_ucode_buf_offset = qe_muram_alloc(32, 32);
-+	if (IS_ERR_VALUE(tx_ucode_buf_offset)) {
-+		printk(KERN_ERR "%s: Cannot allocate MURAM mem for Tx"
-+			 " ucode buf\n", __FUNCTION__);
-+		ret = -ENOMEM;
-+		goto txucode_buf_alloc_error;
-+	}
-+	out_be16(&tdm_c->ucc_pram->riptr, (u16) rx_ucode_buf_offset);
-+	out_be16(&tdm_c->ucc_pram->tiptr, (u16) tx_ucode_buf_offset);
-+
-+	tdm_c->rx_ucode_buf_offset = rx_ucode_buf_offset;
-+	tdm_c->tx_ucode_buf_offset = tx_ucode_buf_offset;
-+
-+	/*
-+	 * set the receive buffer descriptor maximum size to be
-+	 * SAMPLE_DEPTH * number of active RX channels
-+	 */
-+	out_be16(&tdm_c->ucc_pram->mrblr, (u16) SAMPLE_DEPTH * act_num_ts);
-+
-+	/*
-+	 * enable snooping and BE byte ordering on the UCC pram's
-+	 * tstate & rstate registers.
-+	 */
-+	out_be32(&tdm_c->ucc_pram->tstate, 0x30000000UL);
-+	out_be32(&tdm_c->ucc_pram->rstate, 0x30000000UL);
-+
-+	/*Put UCC transparent controller into serial interface mode.  */
-+	out_be32(&tdm_c->uf_regs->upsmr, 0);
-+
-+	/* Reset TX and RX for UCCx */
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(ucc);
-+	qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
-+			(u8) QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	return 0;
-+
-+txucode_buf_alloc_error:
-+	qe_muram_free(rx_ucode_buf_offset);
-+rxucode_buf_alloc_error:
-+	qe_muram_free(txbdt_offset);
-+txbd_alloc_error:
-+	qe_muram_free(rxbdt_offset);
-+rxbd_alloc_error:
-+	qe_muram_free(pram_offset);
-+pram_alloc_error:
-+	ucc_fast_free(tdm_c->uf_private);
-+	return ret;
-+}
-+
-+static void tdm_deinit(struct tdm_ctrl *tdm_c)
-+{
-+	qe_muram_free(tdm_c->rx_ucode_buf_offset);
-+	qe_muram_free(tdm_c->tx_ucode_buf_offset);
-+
-+	if (tdm_c->rx_bd_offset) {
-+		qe_muram_free(tdm_c->rx_bd_offset);
-+		tdm_c->rx_bd = NULL;
-+		tdm_c->rx_bd_offset = 0;
-+	}
-+	if (tdm_c->tx_bd_offset) {
-+		qe_muram_free(tdm_c->tx_bd_offset);
-+		tdm_c->tx_bd = NULL;
-+		tdm_c->tx_bd_offset = 0;
-+	}
-+	if (tdm_c->ucc_pram_offset) {
-+		qe_muram_free(tdm_c->ucc_pram_offset);
-+		tdm_c->ucc_pram = NULL;
-+		tdm_c->ucc_pram_offset = 0;
-+	}
-+}
-+
-+
-+static irqreturn_t tdm_isr(int irq, void *dev_id)
-+{
-+	u8 *input_tdm_buffer, *output_tdm_buffer;
-+	u32 txb, rxb;
-+	u32 ucc;
-+	register u32 ucce = 0;
-+	struct tdm_ctrl *tdm_c;
-+	tdm_c = (struct tdm_ctrl *)dev_id;
-+
-+	tdm_c->tdm_icnt++;
-+	ucc = tdm_c->ut_info->uf_info.ucc_num;
-+	input_tdm_buffer = tdm_c->tdm_input_data;
-+	output_tdm_buffer = tdm_c->tdm_output_data;
-+
-+	if (in_be32(tdm_c->uf_private->p_ucce) &
-+						(UCC_TRANS_UCCE_BSY << 16)) {
-+		out_be32(tdm_c->uf_private->p_ucce,
-+					(UCC_TRANS_UCCE_BSY << 16));
-+		pr_info("%s: From tdm isr busy interrupt\n",
-+			__FUNCTION__);
-+		dump_ucc(tdm_c);
-+
-+		return IRQ_HANDLED;
-+	}
-+
-+	if (tdm_c->tdm_flag == 1) {
-+		/* track phases for Rx/Tx */
-+		tdm_c->phase_rx += 1;
-+		if (tdm_c->phase_rx == MAX_PHASE)
-+			tdm_c->phase_rx = 0;
-+
-+		tdm_c->phase_tx += 1;
-+		if (tdm_c->phase_tx == MAX_PHASE)
-+			tdm_c->phase_tx = 0;
-+
-+#ifdef CONFIG_TDM_HW_LB_TSA_SLIC
-+		{
-+			u32 temp_rx, temp_tx, phase_tx, phase_rx;
-+			int i;
-+			phase_rx = tdm_c->phase_rx;
-+			phase_tx = tdm_c->phase_tx;
-+			if (phase_rx == 0)
-+				phase_rx = MAX_PHASE;
-+			else
-+				phase_rx -= 1;
-+			if (phase_tx == 0)
-+				phase_tx = MAX_PHASE;
-+			else
-+				phase_tx -= 1;
-+			temp_rx = phase_rx * SAMPLE_DEPTH * ACTIVE_CH;
-+			temp_tx = phase_tx * SAMPLE_DEPTH * ACTIVE_CH;
-+
-+			/*check if loopback received data on TS0 is correct. */
-+			pr_debug("%s: check if loopback received data on TS0"
-+				 " is correct\n", __FUNCTION__);
-+			pr_debug("%d,%d ", phase_rx, phase_tx);
-+			for (i = 0; i < 8; i++)
-+				pr_debug("%1d,%1d ",
-+					 input_tdm_buffer[temp_rx + i],
-+					 output_tdm_buffer[temp_tx + i]);
-+			pr_debug("\n");
-+		}
-+#endif
-+
-+		/* schedule BH */
-+		wake_up_interruptible(&tdm_c->wakeup_event);
-+	} else {
-+		if (tdm_c->tdm_icnt == STUTTER_INT_CNT) {
-+			txb = in_be32(&tdm_c->ucc_pram->tbptr) -
-+				in_be32(&tdm_c->ucc_pram->tbase);
-+			rxb = in_be32(&tdm_c->ucc_pram->rbptr) -
-+				in_be32(&tdm_c->ucc_pram->rbase);
-+			tdm_c->phase_tx = txb / sizeof(struct qe_bd);
-+			tdm_c->phase_rx = rxb / sizeof(struct qe_bd);
-+
-+#ifdef CONFIG_TDM_HW_LB_TSA_SLIC
-+			tdm_c->phase_tx = tdm_c->phase_rx;
-+#endif
-+
-+			/* signal "stuttering" period is over */
-+			tdm_c->tdm_flag = 1;
-+
-+			pr_debug("%s: stuttering period is over\n",
-+				 __FUNCTION__);
-+
-+			if (in_be32(tdm_c->uf_private->p_ucce) &
-+						 (UCC_TRANS_UCCE_TXE << 16)) {
-+				u32 cecr_subblock;
-+				out_be32(tdm_c->uf_private->p_ucce,
-+						(UCC_TRANS_UCCE_TXE << 16));
-+				pr_debug("%s: From tdm isr txe interrupt\n",
-+					 __FUNCTION__);
-+
-+				cecr_subblock =
-+					ucc_fast_get_qe_cr_subblock(ucc);
-+				qe_issue_cmd(QE_RESTART_TX, cecr_subblock,
-+					(u8) QE_CR_PROTOCOL_UNSPECIFIED,
-+					0);
-+			}
-+		}
-+	}
-+
-+	ucce = (in_be32(tdm_c->uf_private->p_ucce)
-+			& in_be32(tdm_c->uf_private->p_uccm));
-+
-+	out_be32(tdm_c->uf_private->p_ucce, ucce);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int tdm_start(struct tdm_ctrl *tdm_c)
-+{
-+	if (request_irq(tdm_c->ut_info->uf_info.irq, tdm_isr,
-+					0, "tdm", tdm_c)) {
-+		printk(KERN_ERR "%s: request_irq for tdm_isr failed\n",
-+			__FUNCTION__);
-+		return -ENODEV;
-+	}
-+
-+	ucc_fast_enable(tdm_c->uf_private, COMM_DIR_RX | COMM_DIR_TX);
-+
-+	pr_info("%s 16-bit linear pcm mode active with"
-+		" slots 0 & 2\n", __FUNCTION__);
-+
-+	dump_siram(tdm_c);
-+	dump_ucc(tdm_c);
-+
-+	setbits8(&(qe_immr->si1.siglmr1_h), (0x1 << tdm_c->tdm_port));
-+	pr_info("%s UCC based TDM enabled\n", __FUNCTION__);
-+
-+	return 0;
-+}
-+
-+static void tdm_stop(struct tdm_ctrl *tdm_c)
-+{
-+	u32 port, si;
-+	u32 ucc;
-+	u32 cecr_subblock;
-+
-+	port = tdm_c->tdm_port;
-+	si = tdm_c->si;
-+	ucc = tdm_c->ut_info->uf_info.ucc_num;
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(ucc);
-+
-+	qe_issue_cmd(QE_GRACEFUL_STOP_TX, cecr_subblock,
-+			(u8) QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+	qe_issue_cmd(QE_CLOSE_RX_BD, cecr_subblock,
-+			(u8) QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	clrbits8(&qe_immr->si1.siglmr1_h, (0x1 << port));
-+	ucc_fast_disable(tdm_c->uf_private, COMM_DIR_RX);
-+	ucc_fast_disable(tdm_c->uf_private, COMM_DIR_TX);
-+	free_irq(tdm_c->ut_info->uf_info.irq, tdm_c);
-+}
-+
-+
-+static void config_tdm(struct tdm_ctrl *tdm_c)
-+{
-+	u32 i, j, k;
-+
-+	j = 0;
-+	k = 0;
-+
-+	/* Set Mask Bits */
-+	for (i = 0; i < ACTIVE_CH; i++) {
-+		tdm_c->tx_mask[k] |= (1 << j);
-+		tdm_c->rx_mask[k] |= (1 << j);
-+		j++;
-+		if (j >= 16) {
-+			j = 0;
-+			k++;
-+		}
-+	}
-+	/* physical number of slots in a frame */
-+	tdm_c->physical_num_ts = NUM_TS;
-+
-+	/* common receive and transmit pins */
-+	tdm_c->cfg_ctrl.com_pin = 1;
-+
-+	/* L1R/TSYNC active logic "1" */
-+	tdm_c->cfg_ctrl.fr_sync_level = 0;
-+
-+	/*
-+	 * TX data on rising edge of clock
-+	 * RX data on falling edge
-+	 */
-+	tdm_c->cfg_ctrl.clk_edge = 0;
-+
-+	/* Frame sync sampled on falling edge */
-+	tdm_c->cfg_ctrl.fr_sync_edge = 0;
-+
-+	/* no bit delay */
-+	tdm_c->cfg_ctrl.rx_fr_sync_delay = 0;
-+
-+	/* no bit delay */
-+	tdm_c->cfg_ctrl.tx_fr_sync_delay = 0;
-+
-+#ifndef CONFIG_TDM_HW_LB_TSA_SLIC
-+	if (tdm_c->leg_slic) {
-+		/* Need 1 bit delay for Legrity SLIC */
-+		tdm_c->cfg_ctrl.rx_fr_sync_delay = 1;
-+		tdm_c->cfg_ctrl.tx_fr_sync_delay = 1;
-+		pr_info("%s Delay for Legerity!\n", __FUNCTION__);
-+	}
-+#endif
-+
-+	tdm_c->cfg_ctrl.active_num_ts = ACTIVE_CH;
-+}
-+
-+static void tdm_read(u32 client_id, short chn_id, short *pcm_buffer,
-+								short len)
-+{
-+	int i;
-+	u32 phase_rx;
-+	/* point to where to start for the current phase data processing */
-+	u32 temp_rx;
-+
-+	struct tdm_ctrl *tdm_c = tdm_ctrl[client_id];
-+
-+	u16 *input_tdm_buffer =
-+		(u16 *)tdm_c->tdm_input_data;
-+
-+	phase_rx = tdm_c->phase_rx;
-+	if (phase_rx == 0)
-+		phase_rx = MAX_PHASE;
-+	else
-+		phase_rx -= 1;
-+
-+	temp_rx = phase_rx * SAMPLE_DEPTH * EFF_ACTIVE_CH;
-+
-+#ifdef UCC_CACHE_SNOOPING_DISABLED
-+	flush_dcache_range((size_t) &input_tdm_buffer[temp_rx],
-+				(size_t) &input_tdm_buffer[temp_rx +
-+						SAMPLE_DEPTH * ACTIVE_CH]);
-+#endif
-+	for (i = 0; i < len; i++)
-+		pcm_buffer[i] =
-+			input_tdm_buffer[i * EFF_ACTIVE_CH + temp_rx + chn_id];
-+
-+}
-+
-+static void tdm_write(u32 client_id, short chn_id, short *pcm_buffer,
-+								short len)
-+{
-+	int i;
-+	int phase_tx;
-+	u32 txb;
-+	/* point to where to start for the current phase data processing */
-+	int temp_tx;
-+	struct tdm_ctrl *tdm_c = tdm_ctrl[client_id];
-+
-+	u16 *output_tdm_buffer;
-+	output_tdm_buffer = (u16 *)tdm_c->tdm_output_data;
-+	txb = in_be32(&tdm_c->ucc_pram->tbptr) -
-+			in_be32(&tdm_c->ucc_pram->tbase);
-+	phase_tx = txb / sizeof(struct qe_bd);
-+
-+	if (phase_tx == 0)
-+		phase_tx = MAX_PHASE;
-+	else
-+		phase_tx -= 1;
-+
-+	temp_tx = phase_tx * SAMPLE_DEPTH * EFF_ACTIVE_CH;
-+
-+	for (i = 0; i < len; i++)
-+		output_tdm_buffer[i * EFF_ACTIVE_CH + temp_tx + chn_id] =
-+			pcm_buffer[i];
-+
-+#ifdef UCC_CACHE_SNOOPING_DISABLED
-+	flush_dcache_range((size_t) &output_tdm_buffer[temp_tx],
-+		(size_t) &output_tdm_buffer[temp_tx + SAMPLE_DEPTH *
-+							ACTIVE_CH]);
-+#endif
-+}
-+
-+
-+static int tdm_register_client(struct tdm_client *tdm_client)
-+{
-+	u32 i;
-+	if (num_tdm_clients == num_tdm_devices) {
-+		printk(KERN_ERR "all TDM devices busy\n");
-+		return -EBUSY;
-+	}
-+
-+	for (i = 0; i < num_tdm_devices; i++) {
-+		if (!tdm_ctrl[i]->device_busy) {
-+			tdm_ctrl[i]->device_busy = 1;
-+			break;
-+		}
-+	}
-+	num_tdm_clients++;
-+	tdm_client->client_id = i;
-+	tdm_client->tdm_read = tdm_read;
-+	tdm_client->tdm_write = tdm_write;
-+	tdm_client->wakeup_event =
-+			&(tdm_ctrl[i]->wakeup_event);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tdm_register_client);
-+
-+static int tdm_deregister_client(struct tdm_client *tdm_client)
-+{
-+	num_tdm_clients--;
-+	tdm_ctrl[tdm_client->client_id]->device_busy = 0;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tdm_deregister_client);
-+
-+static int ucc_tdm_probe(struct of_device *ofdev,
-+			 const struct of_device_id *match)
-+{
-+	struct device_node *np = ofdev->node;
-+	struct resource res;
-+	const unsigned int *prop;
-+	u32 ucc_num, device_num, err, ret = 0;
-+	struct device_node *np_tmp;
-+	dma_addr_t physaddr;
-+	void *tdm_buff;
-+	struct ucc_tdm_info *ut_info;
-+
-+	prop = of_get_property(np, "device-id", NULL);
-+	if (prop == NULL) {
-+		printk(KERN_ERR "ucc_tdm: device-id missing\n");
-+		return -ENODEV;
-+	}
-+
-+	ucc_num = *prop - 1;
-+	if ((ucc_num < 0) || (ucc_num > 7))
-+		return -ENODEV;
-+
-+	ut_info = &utdm_info[ucc_num];
-+	if (ut_info->ucc_busy) {
-+		printk(KERN_ERR "ucc_tdm: UCC in use by another TDM driver"
-+			"instance\n");
-+		return -EBUSY;
-+	}
-+	if (num_tdm_devices == MAX_NUM_TDM_DEVICES) {
-+		printk(KERN_ERR "ucc_tdm: All TDM devices already"
-+				" initialized\n");
-+		return -ENODEV;
-+	}
-+
-+	ut_info->ucc_busy = 1;
-+	tdm_ctrl[num_tdm_devices++] =
-+		kzalloc(sizeof(struct tdm_ctrl), GFP_KERNEL);
-+	if (!tdm_ctrl[num_tdm_devices - 1]) {
-+		printk(KERN_ERR "ucc_tdm: no memory to allocate for"
-+			" tdm control structure\n");
-+		num_tdm_devices--;
-+		return -ENOMEM;
-+	}
-+	device_num = num_tdm_devices - 1;
-+
-+	tdm_ctrl[device_num]->device = &ofdev->dev;
-+	tdm_ctrl[device_num]->ut_info = ut_info;
-+
-+	tdm_ctrl[device_num]->ut_info->uf_info.ucc_num = ucc_num;
-+
-+	prop = of_get_property(np, "fsl,tdm-num", NULL);
-+	if (prop == NULL) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	tdm_ctrl[device_num]->tdm_port = *prop - 1;
-+
-+	if (tdm_ctrl[device_num]->tdm_port > 3) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	prop = of_get_property(np, "fsl,si-num", NULL);
-+	if (prop == NULL) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	tdm_ctrl[device_num]->si = *prop - 1;
-+
-+	tdm_ctrl[device_num]->ut_info->uf_info.tdm_tx_clk =
-+			of_get_property(np, "fsl,tdm-tx-clk", NULL);
-+	if (tdm_ctrl[device_num]->ut_info->uf_info.tdm_tx_clk == NULL) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	tdm_ctrl[device_num]->ut_info->uf_info.tdm_rx_clk =
-+			of_get_property(np, "fsl,tdm-rx-clk", NULL);
-+	if (tdm_ctrl[device_num]->ut_info->uf_info.tdm_rx_clk == NULL) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	tdm_ctrl[device_num]->ut_info->uf_info.tdm_tx_sync =
-+			of_get_property(np, "fsl,tdm-tx-sync", NULL);
-+	if (tdm_ctrl[device_num]->ut_info->uf_info.tdm_tx_sync == NULL) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	tdm_ctrl[device_num]->ut_info->uf_info.tdm_rx_sync =
-+			of_get_property(np, "fsl,tdm-rx-sync", NULL);
-+	if (tdm_ctrl[device_num]->ut_info->uf_info.tdm_rx_sync == NULL) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+
-+	tdm_ctrl[device_num]->ut_info->uf_info.irq =
-+					irq_of_parse_and_map(np, 0);
-+	err = of_address_to_resource(np, 0, &res);
-+	if (err) {
-+		ret = -EINVAL;
-+		goto get_property_error;
-+	}
-+	tdm_ctrl[device_num]->ut_info->uf_info.regs = res.start;
-+	tdm_ctrl[device_num]->uf_regs = of_iomap(np, 0);
-+
-+	np_tmp = NULL;
-+	np_tmp = of_find_compatible_node(np_tmp, "slic", "legerity-slic");
-+	if (np_tmp != NULL) {
-+		tdm_ctrl[device_num]->leg_slic = 1;
-+		of_node_put(np_tmp);
-+	} else
-+		tdm_ctrl[device_num]->leg_slic = 0;
-+
-+	config_tdm(tdm_ctrl[device_num]);
-+
-+	tdm_buff = dma_alloc_coherent(NULL, 2 * NR_BUFS * SAMPLE_DEPTH *
-+				tdm_ctrl[device_num]->cfg_ctrl.active_num_ts,
-+					&physaddr, GFP_KERNEL);
-+	if (!tdm_buff) {
-+		printk(KERN_ERR "ucc-tdm: could not allocate buffer"
-+					"descriptors\n");
-+		ret = -ENOMEM;
-+		goto alloc_error;
-+	}
-+
-+	tdm_ctrl[device_num]->tdm_input_data = tdm_buff;
-+	tdm_ctrl[device_num]->dma_input_addr = physaddr;
-+
-+	tdm_ctrl[device_num]->tdm_output_data = tdm_buff + NR_BUFS *
-+		SAMPLE_DEPTH * tdm_ctrl[device_num]->cfg_ctrl.active_num_ts;
-+	tdm_ctrl[device_num]->dma_output_addr = physaddr + NR_BUFS *
-+		SAMPLE_DEPTH * tdm_ctrl[device_num]->cfg_ctrl.active_num_ts;
-+
-+	init_waitqueue_head(&(tdm_ctrl[device_num]->wakeup_event));
-+
-+	ret = tdm_init(tdm_ctrl[device_num]);
-+	if (ret != 0)
-+		goto tdm_init_error;
-+
-+	ret = tdm_start(tdm_ctrl[device_num]);
-+	if (ret != 0)
-+		goto tdm_start_error;
-+
-+	dev_set_drvdata(&(ofdev->dev), tdm_ctrl[device_num]);
-+
-+	pr_info("%s UCC based tdm module installed\n", __FUNCTION__);
-+	return 0;
-+
-+tdm_start_error:
-+	tdm_deinit(tdm_ctrl[device_num]);
-+tdm_init_error:
-+	dma_free_coherent(NULL, 2 * NR_BUFS * SAMPLE_DEPTH *
-+				tdm_ctrl[device_num]->cfg_ctrl.active_num_ts,
-+				tdm_ctrl[device_num]->tdm_input_data,
-+				tdm_ctrl[device_num]->dma_input_addr);
-+
-+alloc_error:
-+	irq_dispose_mapping(tdm_ctrl[device_num]->ut_info->uf_info.irq);
-+	iounmap(tdm_ctrl[device_num]->uf_regs);
-+
-+get_property_error:
-+	num_tdm_devices--;
-+	kfree(tdm_ctrl[device_num]);
-+	ut_info->ucc_busy = 0;
-+	return ret;
-+}
-+
-+static int ucc_tdm_remove(struct of_device *ofdev)
-+{
-+	struct tdm_ctrl *tdm_c;
-+	struct ucc_tdm_info *ut_info;
-+	u32 ucc_num;
-+
-+	tdm_c = dev_get_drvdata(&(ofdev->dev));
-+	dev_set_drvdata(&(ofdev->dev), NULL);
-+	ucc_num = tdm_c->ut_info->uf_info.ucc_num;
-+	ut_info = &utdm_info[ucc_num];
-+	tdm_stop(tdm_c);
-+	tdm_deinit(tdm_c);
-+
-+	ucc_fast_free(tdm_c->uf_private);
-+
-+	dma_free_coherent(NULL, 2 * NR_BUFS * SAMPLE_DEPTH *
-+				tdm_c->cfg_ctrl.active_num_ts,
-+				tdm_c->tdm_input_data,
-+				tdm_c->dma_input_addr);
-+
-+	irq_dispose_mapping(tdm_c->ut_info->uf_info.irq);
-+	iounmap(tdm_c->uf_regs);
-+
-+	num_tdm_devices--;
-+	kfree(tdm_c);
-+
-+	ut_info->ucc_busy = 0;
-+
-+	pr_info("%s UCC based tdm module uninstalled\n", __FUNCTION__);
-+	return 0;
-+}
-+
-+const struct of_device_id ucc_tdm_match[] = {
-+	{ .type = "tdm", .compatible = "fsl,ucc-tdm", },
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, ucc_tdm_match);
-+
-+static struct of_platform_driver ucc_tdm_driver = {
-+	.name = DRV_NAME,
-+	.match_table = ucc_tdm_match,
-+	.probe = ucc_tdm_probe,
-+	.remove = ucc_tdm_remove,
-+	.driver		= {
-+		.name	= DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init ucc_tdm_init(void)
-+{
-+	u32 i;
-+
-+	pr_info("ucc_tdm: " DRV_DESC "\n");
-+	for (i = 0; i < 8; i++)
-+		memcpy(&(utdm_info[i]), &utdm_primary_info,
-+			sizeof(utdm_primary_info));
-+
-+	return of_register_platform_driver(&ucc_tdm_driver);
-+}
-+
-+static void __exit ucc_tdm_exit(void)
-+{
-+	of_unregister_platform_driver(&ucc_tdm_driver);
-+}
-+
-+module_init(ucc_tdm_init);
-+module_exit(ucc_tdm_exit);
-+MODULE_AUTHOR("Freescale Semiconductor, Inc");
-+MODULE_DESCRIPTION(DRV_DESC);
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/misc/ucc_tdm.h b/drivers/misc/ucc_tdm.h
-new file mode 100644
-index 0000000..eaf2848
---- /dev/null
-+++ b/drivers/misc/ucc_tdm.h
-@@ -0,0 +1,221 @@
-+/*
-+ * drivers/misc/ucc_tdm.h
-+ *
-+ * UCC Based Linux TDM Driver
-+ * This driver is designed to support UCC based TDM for PowerPC processors.
-+ * This driver can interface with SLIC device to run VOIP kind of
-+ * applications.
-+ *
-+ * Author: Ashish Kalra & Poonam Aggrwal
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifndef TDM_H
-+#define TDM_H
-+
-+#define NUM_TS 8
-+#define ACTIVE_CH 8
-+
-+/*  SAMPLE_DEPTH is the sample depth is the number of frames before
-+ * an interrupt.  Must be a multiple of 4
-+ */
-+#define SAMPLE_DEPTH 80
-+
-+/* define the number of Rx interrupts to go by for initial stuttering */
-+#define STUTTER_INT_CNT 1
-+
-+/* BMRx Field Descriptions to specify tstate and rstate in UCC parameter RAM*/
-+#define EN_BUS_SNOOPING 0x20
-+#define BE_BO		0x10
-+
-+/* UPSMR Register for Transparent UCC controller Bit definitions*/
-+#define NBO	0x00000000	/* Normal Mode 1 bit of data per clock */
-+
-+/* SI Mode register bit definitions */
-+#define NORMAL_OPERATION	0x0000
-+#define AUTO_ECHO		0x0400
-+#define INTERNAL_LB		0x0800
-+#define CONTROL_LB		0x0c00
-+#define SIMODE_CRT (0x8000 >> 9)
-+#define SIMODE_SL (0x8000 >> 10)
-+#define SIMODE_CE (0x8000 >> 11)
-+#define SIMODE_FE (0x8000 >> 12)
-+#define SIMODE_GM (0x8000 >> 13)
-+#define SIMODE_TFSD(val) (val)
-+#define SIMODE_RFSD(val) ((val) << 8)
-+
-+#define SI_TDM_MODE_REGISTER_OFFSET	0
-+
-+#define R_CM			0x02000000
-+#define T_CM			0x02000000
-+
-+#define SET_RX_SI_RAM(n, val)		\
-+		out_be16((u16 *)&qe_immr->sir.rx[(n)*2], (u16)(val))
-+
-+#define SET_TX_SI_RAM(n, val)		\
-+		out_be16((u16 *)&qe_immr->sir.tx[(n)*2], (u16)(val))
-+
-+/* SI RAM entries */
-+#define SIR_LAST 0x0001
-+#define SIR_CNT(n) ((n) << 2)
-+#define SIR_BYTE 0x0002
-+#define SIR_BIT  0x0000
-+#define SIR_IDLE  0
-+#define SIR_UCC(uccx)	(((uccx+9)) << 5)
-+
-+/* BRGC Register Bit definitions */
-+#define BRGC_RESET	(0x1<<17)
-+#define BRGC_EN		(0x1<<16)
-+#define BRGC_EXTC_QE	(0x00<<14)
-+#define BRGC_EXTC_CLK3	(0x01<<14)
-+#define BRGC_EXTC_CLK5	(0x01<<15)
-+#define BRGC_EXTC_CLK9	(0x01<<14)
-+#define BRGC_EXTC_CLK11	(0x01<<14)
-+#define BRGC_EXTC_CLK13	(0x01<<14)
-+#define BRGC_EXTC_CLK15	(0x01<<15)
-+#define BRGC_ATB	(0x1<<13)
-+#define BRGC_DIV16	(0x1)
-+
-+/* structure representing UCC transparent parameter RAM */
-+struct ucc_transparent_pram {
-+	__be16 riptr;
-+	__be16 tiptr;
-+	__be16 res0;
-+	__be16 mrblr;
-+	__be32 rstate;
-+	__be32 rbase;
-+	__be16 rbdstat;
-+	__be16 rbdlen;
-+	__be32 rdptr;
-+	__be32 tstate;
-+	__be32 tbase;
-+	__be16 tbdstat;
-+	__be16 tbdlen;
-+	__be32 tdptr;
-+	__be32 rbptr;
-+	__be32 tbptr;
-+	__be32 rcrc;
-+	__be32 res1;
-+	__be32 tcrc;
-+	__be32 res2;
-+	__be32 res3;
-+	__be32 c_mask;
-+	__be32 c_pres;
-+	__be16 disfc;
-+	__be16 crcec;
-+	__be32 res4[4];
-+	__be16 ts_tmp;
-+	__be16 tmp_mb;
-+};
-+
-+#define UCC_TRANSPARENT_PRAM_SIZE	0x100
-+
-+struct tdm_cfg {
-+	u8 com_pin;		/* Common receive and transmit pins
-+				 * 0 = separate pins
-+				 * 1 = common pins
-+				 */
-+
-+	u8 fr_sync_level;	/* SLx bit Frame Sync Polarity
-+				 * 0 = L1R/TSYNC active logic "1"
-+				 * 1 = L1R/TSYNC active logic "0"
-+				 */
-+
-+	u8 clk_edge;		/* CEx bit Tx Rx Clock Edge
-+				 * 0 = TX data on rising edge of clock
-+				 * RX data on falling edge
-+				 * 1 = TX data on falling edge of clock
-+				 * RX data on rising edge
-+				 */
-+
-+	u8 fr_sync_edge;	/* FEx bit Frame sync edge
-+				 * Determine when the sync pulses are sampled
-+				 * 0 = Falling edge
-+				 * 1 = Rising edge
-+				 */
-+
-+	u8 rx_fr_sync_delay;	/* TFSDx/RFSDx bits Frame Sync Delay
-+				 * 00 = no bit delay
-+				 * 01 = 1 bit delay
-+				 * 10 = 2 bit delay
-+				 * 11 = 3 bit delay
-+				 */
-+
-+	u8 tx_fr_sync_delay;	/* TFSDx/RFSDx bits Frame Sync Delay
-+				 * 00 = no bit delay
-+				 * 01 = 1 bit delay
-+				 * 10 = 2 bit delay
-+				 * 11 = 3 bit delay
-+				 */
-+
-+	u8 active_num_ts;	/* Number of active time slots in TDM
-+				 * assume same active Rx/Tx time slots
-+				 */
-+};
-+
-+struct ucc_tdm_info {
-+	struct ucc_fast_info uf_info;
-+	u32	ucc_busy;
-+};
-+
-+struct tdm_ctrl {
-+	u32	device_busy;
-+	struct device *device;
-+	struct ucc_fast_private *uf_private;
-+	struct ucc_tdm_info *ut_info;
-+	u32 tdm_port;		/* port for this tdm:TDMA,TDMB,TDMC,TDMD */
-+	u32 si;			/* serial interface: 0 or 1 */
-+	struct ucc_fast __iomem *uf_regs;	/* UCC Fast registers */
-+	u16 rx_mask[8];		/* Active Receive channels LSB is ch0 */
-+	u16 tx_mask[8];		/* Active Transmit channels LSB is ch0 */
-+	/* Only channels less than the number of FRAME_SIZE are implemented */
-+	struct tdm_cfg cfg_ctrl;	/* Signaling controls configuration */
-+	u8 *tdm_input_data;     /* buffer used for Rx by the tdm */
-+	u8 *tdm_output_data;    /* buffer used for Tx by the tdm */
-+
-+	dma_addr_t dma_input_addr; /* dma mapped buffer for TDM Rx */
-+	dma_addr_t dma_output_addr; /* dma mapped buffer for TDM Tx */
-+	u16 physical_num_ts;	/* physical number of timeslots in the tdm
-+				   frame */
-+	u32 phase_rx;		/* cycles through 0, 1, 2 */
-+	u32 phase_tx;		/* cycles through 0, 1, 2 */
-+	/*
-+	 * the following two variables are for dealing with "stutter" problem
-+	 * "stutter" period is about 20 frames or so, varies depending active
-+	 * channel num depending on the sample depth, the code should let a
-+	 * few Rx interrupts go by
-+	 */
-+	u32 tdm_icnt;
-+	u32 tdm_flag;
-+	struct ucc_transparent_pram __iomem *ucc_pram;
-+	struct qe_bd __iomem *tx_bd;
-+	struct qe_bd __iomem *rx_bd;
-+	u32 ucc_pram_offset;
-+	u32 tx_bd_offset;
-+	u32 rx_bd_offset;
-+	u32 rx_ucode_buf_offset;
-+	u32 tx_ucode_buf_offset;
-+	bool leg_slic;
-+	wait_queue_head_t wakeup_event;
-+};
-+
-+struct tdm_client {
-+		u32 client_id;
-+		void (*tdm_read)(u32 client_id, short chn_id,
-+					short *pcm_buffer, short len);
-+		void (*tdm_write)(u32 client_id, short chn_id,
-+					short *pcm_buffer, short len);
-+		wait_queue_head_t *wakeup_event;
-+	};
-+
-+#define MAX_PHASE 1
-+#define NR_BUFS	2
-+#define EFF_ACTIVE_CH ACTIVE_CH / 2
-+
-+#endif
--- 
-1.5.2.4
+Hans Lehmann
+Dipl.-Ing. Elektrotechnik
+
+=20
+
+RITTER Elektronik GmbH
+Leverkuser Strasse 65
+D-42897 Remscheid
+
+Tel.	+49 (0) 2191 - 67 32 40
+Fax 	+49 (0) 2191 - 67 14 29
+Email 	hans.lehmann@ritter-elektronik.de
+Homepage  www.ritter-elektronik.de
+
+Gesch=E4ftsf=FChrer: Manfred A. Wagner, Dr. Uwe Baader
+Sitz der Gesellschaft: Oberhausen
+HRB 17168 Duisburg    USt-ID DE 814009849
+
+
+ <<el392_cf_disk_drv.h>>  <<el392_cf_disk_drv.c>>=20
+
+------_=_NextPart_001_01C85E8A.0B5CC506
+Content-Type: application/octet-stream;
+	name="el392_cf_disk_drv.h"
+Content-Transfer-Encoding: base64
+Content-Description: el392_cf_disk_drv.h
+Content-Disposition: attachment;
+	filename="el392_cf_disk_drv.h"
+
+LyoNCiAqIGRyaXZlci9pZGUvZWwzOTJfY2ZfZGlzay5oDQogKg0KICogRGVmaW5pdGlvbnMgZm9y
+IFJJVFRFUiBFbGVrdHJvbmlrIEVMMzkyX2NmX2Rpc2sgZHJpdmVyLiANCiAqIA0KICogTWFpbnRh
+aW5lciA6IEhhbnMgTGVobWFubiA8aGFucy5sZWhtYW5uQHJpdHRlci1lbGVrdHJvbmlrLmRlPg0K
+ICoNCiAqIENvcHlyaWdodCAyMDA3LTIwMDggUklUVEVSLUVsZWt0cm9uaWsgPHd3dy5yaXR0ZXIt
+ZWxla3Ryb25pay5kZT4NCiAqDQogKiBUaGlzIGZpbGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIHRl
+cm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQ0KICogdmVyc2lvbiAyLiBUaGlz
+IHByb2dyYW0gaXMgbGljZW5zZWQgImFzIGlzIiB3aXRob3V0IGFueSB3YXJyYW50eSBvZiBhbnkN
+CiAqIGtpbmQsIHdoZXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLg0KICovDQoNCg0KI2RlZmluZQlE
+QVRBCQkJMHgxMDA4DQojZGVmaW5lCUVSUk9SCQkJMHgxMDAwDQojZGVmaW5lCVNFQ1RPUl9DTlQJ
+CTB4MTAwMw0KI2RlZmluZQlTRUNUT1JfTk8JCTB4MTAwMg0KI2RlZmluZSBDWUxfTE9XCQkJMHgx
+MDA1DQojZGVmaW5lIENZTF9ISUdICQkweDEwMDQNCiNkZWZpbmUJU0VMRUNUCQkJMHgxMDA3DQoj
+ZGVmaW5lCVNUQVRVUwkJCTB4MTAwNg0KI2RlZmluZQlBTFRTVEFUX0NUTAkJMHgxMDBGDQoNCiNk
+ZWZpbmUgRFJJVkVSX05BTUUJCSJlbDM5Ml9pZGUiDQoNCiNkZWZpbmUgTVBDNTJ4eF9DUklUX0lS
+UV9OVU0JNA0KI2RlZmluZSBNUEM1Mnh4X01BSU5fSVJRX05VTQkxNw0KI2RlZmluZSBNUEM1Mnh4
+X1NETUFfSVJRX05VTQkxNw0KI2RlZmluZSBNUEM1Mnh4X1BFUlBfSVJRX05VTQkyMw0KDQojZGVm
+aW5lIE1QQzUyeHhfQ1JJVF9JUlFfQkFTRQkxDQojZGVmaW5lIE1QQzUyeHhfTUFJTl9JUlFfQkFT
+RQkoTVBDNTJ4eF9DUklUX0lSUV9CQVNFICsgTVBDNTJ4eF9DUklUX0lSUV9OVU0pDQojZGVmaW5l
+IE1QQzUyeHhfU0RNQV9JUlFfQkFTRQkoTVBDNTJ4eF9NQUlOX0lSUV9CQVNFICsgTVBDNTJ4eF9N
+QUlOX0lSUV9OVU0pDQojZGVmaW5lIE1QQzUyeHhfUEVSUF9JUlFfQkFTRQkoTVBDNTJ4eF9TRE1B
+X0lSUV9CQVNFICsgTVBDNTJ4eF9TRE1BX0lSUV9OVU0pDQoNCiNkZWZpbmUgTVBDNTJ4eF9JUlEw
+CQkJKE1QQzUyeHhfQ1JJVF9JUlFfQkFTRSArIDApDQojZGVmaW5lIE1QQzUyeHhfU0xJQ0VfVElN
+RVJfMF9JUlEJKE1QQzUyeHhfQ1JJVF9JUlFfQkFTRSArIDEpDQojZGVmaW5lIE1QQzUyeHhfSElf
+SU5UX0lSUQkJKE1QQzUyeHhfQ1JJVF9JUlFfQkFTRSArIDIpDQojZGVmaW5lIE1QQzUyeHhfQ0NT
+X0lSUQkJCShNUEM1Mnh4X0NSSVRfSVJRX0JBU0UgKyAzKQ0KDQojZGVmaW5lIE1QQzUyeHhfSVJR
+MQkJCShNUEM1Mnh4X01BSU5fSVJRX0JBU0UgKyAxKQ0KI2RlZmluZSBNUEM1Mnh4X0lSUTIJCQko
+TVBDNTJ4eF9NQUlOX0lSUV9CQVNFICsgMikNCiNkZWZpbmUgTVBDNTJ4eF9JUlEzCQkJKE1QQzUy
+eHhfTUFJTl9JUlFfQkFTRSArIDMpDQoNCiNkZWZpbmUgTVBDNTJ4eF9TRE1BX0lSUQkJKE1QQzUy
+eHhfUEVSUF9JUlFfQkFTRSArIDApDQojZGVmaW5lIE1QQzUyeHhfUFNDMV9JUlEJCShNUEM1Mnh4
+X1BFUlBfSVJRX0JBU0UgKyAxKQ0KI2RlZmluZSBNUEM1Mnh4X1BTQzJfSVJRCQkoTVBDNTJ4eF9Q
+RVJQX0lSUV9CQVNFICsgMikNCiNkZWZpbmUgTVBDNTJ4eF9QU0MzX0lSUQkJKE1QQzUyeHhfUEVS
+UF9JUlFfQkFTRSArIDMpDQojZGVmaW5lIE1QQzUyeHhfUFNDNl9JUlEJCShNUEM1Mnh4X1BFUlBf
+SVJRX0JBU0UgKyA0KQ0KI2RlZmluZSBNUEM1Mnh4X0lSREFfSVJRCQkoTVBDNTJ4eF9QRVJQX0lS
+UV9CQVNFICsgNCkNCiNkZWZpbmUgTVBDNTJ4eF9GRUNfSVJRCQkJKE1QQzUyeHhfUEVSUF9JUlFf
+QkFTRSArIDUpDQojZGVmaW5lIE1QQzUyeHhfVVNCX0lSUQkJCShNUEM1Mnh4X1BFUlBfSVJRX0JB
+U0UgKyA2KQ0KI2RlZmluZSBNUEM1Mnh4X0FUQV9JUlEJCQkoTVBDNTJ4eF9QRVJQX0lSUV9CQVNF
+ICsgNykNCiNkZWZpbmUgTVBDNTJ4eF9QQ0lfQ05UUkxfSVJRCQkoTVBDNTJ4eF9QRVJQX0lSUV9C
+QVNFICsgOCkNCiNkZWZpbmUgTVBDNTJ4eF9QQ0lfU0NJUlhfSVJRCQkoTVBDNTJ4eF9QRVJQX0lS
+UV9CQVNFICsgOSkNCiNkZWZpbmUgTVBDNTJ4eF9QQ0lfU0NJVFhfSVJRCQkoTVBDNTJ4eF9QRVJQ
+X0lSUV9CQVNFICsgMTApDQojZGVmaW5lIE1QQzUyeHhfUFNDNF9JUlEJCShNUEM1Mnh4X1BFUlBf
+SVJRX0JBU0UgKyAxMSkNCiNkZWZpbmUgTVBDNTJ4eF9QU0M1X0lSUQkJKE1QQzUyeHhfUEVSUF9J
+UlFfQkFTRSArIDEyKQ0KI2RlZmluZSBNUEM1Mnh4X1NQSV9NT0RGX0lSUQkJKE1QQzUyeHhfUEVS
+UF9JUlFfQkFTRSArIDEzKQ0KI2RlZmluZSBNUEM1Mnh4X1NQSV9TUElGX0lSUQkJKE1QQzUyeHhf
+UEVSUF9JUlFfQkFTRSArIDE0KQ0KI2RlZmluZSBNUEM1Mnh4X0kyQzFfSVJRCQkoTVBDNTJ4eF9Q
+RVJQX0lSUV9CQVNFICsgMTUpDQojZGVmaW5lIE1QQzUyeHhfSTJDMl9JUlEJCShNUEM1Mnh4X1BF
+UlBfSVJRX0JBU0UgKyAxNikNCiNkZWZpbmUgTVBDNTJ4eF9NU0NBTjFfSVJRCQkoTVBDNTJ4eF9Q
+RVJQX0lSUV9CQVNFICsgMTcpDQojZGVmaW5lIE1QQzUyeHhfTVNDQU4yX0lSUQkJKE1QQzUyeHhf
+UEVSUF9JUlFfQkFTRSArIDE4KQ0KI2RlZmluZSBNUEM1Mnh4X0lSX1JYX0lSUQkJKE1QQzUyeHhf
+UEVSUF9JUlFfQkFTRSArIDE5KQ0KI2RlZmluZSBNUEM1Mnh4X0lSX1RYX0lSUQkJKE1QQzUyeHhf
+UEVSUF9JUlFfQkFTRSArIDIwKQ0KI2RlZmluZSBNUEM1Mnh4X1hMQl9BUkJfSVJRCQkoTVBDNTJ4
+eF9QRVJQX0lSUV9CQVNFICsgMjEpDQojZGVmaW5lIE1QQzUyeHhfQkRMQ19JUlEJCShNUEM1Mnh4
+X1BFUlBfSVJRX0JBU0UgKyAyMikNCg0KDQpzdGF0aWMgaW50IF9fZGV2aW5pdCBlbDM5Ml9hdGFf
+cHJvYmUoc3RydWN0IG9mX2RldmljZSAqb3AsIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgKm1h
+dGNoKTsNCnN0YXRpYyBpbnQgX19kZXZleGl0IGVsMzkyX2F0YV9yZW1vdmUoc3RydWN0IG9mX2Rl
+dmljZSAqb3ApOw0KDQoNCnN0YXRpYyBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGVsMzkyX2lkZV9vZl9t
+YXRjaFtdID0gew0KCXsNCgkJLm5hbWUgPSAiYXRhIiwNCgkJLmNvbXBhdGlibGUgPSAiZWwzOTJf
+aWRlIiwNCgl9LA0KLyoJew0KCQkubmFtZSA9ICJhdGEiLA0KCQkuY29tcGF0aWJsZSA9ICJlbDM5
+Ml9hdGEiLA0KCX0sKi8NCgl7fSwNCn07DQoNCg0Kc3RhdGljIHN0cnVjdCBvZl9wbGF0Zm9ybV9k
+cml2ZXIgZWwzOTJfaWRlX29mX3BsYXRmb3JtX2RyaXZlciA9IHsNCgkubmFtZQkJPSAiZWwzOTJf
+aWRlIiwNCgkubWF0Y2hfdGFibGUJPSBlbDM5Ml9pZGVfb2ZfbWF0Y2gsDQoJLnByb2JlICAgICAg
+ICAgID0gZWwzOTJfYXRhX3Byb2JlLA0KICAgICAgICAucmVtb3ZlICAgICAgICAgPSBlbDM5Ml9h
+dGFfcmVtb3ZlLA0KCS5kcml2ZXIJCT0gew0KCS4JbmFtZQk9ICJlbDM5Ml9pZGUiLA0KCS4Jb3du
+ZXIJPSBUSElTX01PRFVMRSwNCgl9LA0KfTsNCg0KDQoNCg==
+
+------_=_NextPart_001_01C85E8A.0B5CC506
+Content-Type: application/octet-stream;
+	name="el392_cf_disk_drv.c"
+Content-Transfer-Encoding: base64
+Content-Description: el392_cf_disk_drv.c
+Content-Disposition: attachment;
+	filename="el392_cf_disk_drv.c"
+
+LyogDQogKiBkcml2ZXJzL2lkZS9lbDM5Ml9jZl9kaXNrLmMNCiAqDQogKiBCYXNlZCB1cG9uIGNv
+ZGUgd3JpdHRlbiBieSBCZW5lZGlrdCBTcHJhbmdlciwgKDIwMDUpTGludXRyb25peA0KICoNCiAq
+IE1haW50YWluZXIgOiBIYW5zIExlaG1hbm4gPGhhbnMubGVobWFubkByaXR0ZXItZWxla3Ryb25p
+ay5kZT4NCiAqDQogKiBDb3B5cmlnaHQgMjAwNy0yMDA4IFJJVFRFUi1FbGVrdHJvbmlrIDx3d3cu
+cml0dGVyLWVsZWt0cm9uaWsuZGU+DQogKg0KICogVGhpcyBmaWxlIGlzIGxpY2Vuc2VkIHVuZGVy
+IHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UNCiAqIHZlcnNpb24g
+Mi4gVGhpcyBwcm9ncmFtIGlzIGxpY2Vuc2VkICJhcyBpcyIgd2l0aG91dCBhbnkgd2FycmFudHkg
+b2YgYW55DQogKiBraW5kLCB3aGV0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4NCiovDQoNCiNpbmNs
+dWRlIDxsaW51eC9rZXJuZWwuaD4NCiNpbmNsdWRlIDxsaW51eC9zbGFiLmg+DQojaW5jbHVkZSA8
+bGludXgvZGVsYXkuaD4NCiNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4NCiNpbmNsdWRlIDxs
+aW51eC90eXBlcy5oPg0KI2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+DQojaW5jbHVkZSA8bGludXgv
+aW5pdC5oPg0KI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KI2luY2x1ZGUgPGFzbS9pby5oPg0K
+I2luY2x1ZGUgPGFzbS9wcm9tLmg+DQojaW5jbHVkZSA8bGludXgvaWRlLmg+DQojaW5jbHVkZSA8
+YXNtL29mX2RldmljZS5oPg0KI2luY2x1ZGUgPGFzbS9vZl9wbGF0Zm9ybS5oPg0KI2luY2x1ZGUg
+PGFzbS9tcGM1Mnh4Lmg+DQoNCiNpbmNsdWRlICJlbDM5Ml9jZl9kaXNrX2Rydi5oIg0KI2luY2x1
+ZGUgInJpdHRlcl9lbDM5MmEuaCINCg0KDQp2b2lkIGVsMzkyX2lkZV9zZXR1cF9wb3J0cyhpZGVf
+aHdpZl90ICpod2lmLCB2b2lkICppb2FkZHIpDQp7DQoJaHdpZi0+aHcuaW9fcG9ydHNbSURFX0RB
+VEFfT0ZGU0VUXSA9ICh1bnNpZ25lZCBsb25nKSBpb2FkZHIgKyBEQVRBOw0KCWh3aWYtPmh3Lmlv
+X3BvcnRzW0lERV9FUlJPUl9PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcpIGlvYWRkciArIEVSUk9S
+Ow0KCWh3aWYtPmh3LmlvX3BvcnRzW0lERV9OU0VDVE9SX09GRlNFVF0gPSAodW5zaWduZWQgbG9u
+ZykgaW9hZGRyICsgU0VDVE9SX0NOVDsNCglod2lmLT5ody5pb19wb3J0c1tJREVfU0VDVE9SX09G
+RlNFVF0gPSAodW5zaWduZWQgbG9uZykgaW9hZGRyICsgU0VDVE9SX05POw0KCWh3aWYtPmh3Lmlv
+X3BvcnRzW0lERV9MQ1lMX09GRlNFVF0gPSAodW5zaWduZWQgbG9uZykgaW9hZGRyICsgQ1lMX0xP
+VzsNCglod2lmLT5ody5pb19wb3J0c1tJREVfSENZTF9PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcp
+IGlvYWRkciArIENZTF9ISUdIOw0KCWh3aWYtPmh3LmlvX3BvcnRzW0lERV9TRUxFQ1RfT0ZGU0VU
+XSA9ICh1bnNpZ25lZCBsb25nKSBpb2FkZHIgKyBTRUxFQ1Q7DQoJaHdpZi0+aHcuaW9fcG9ydHNb
+SURFX1NUQVRVU19PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcpIGlvYWRkciArIFNUQVRVUzsNCglo
+d2lmLT5ody5pb19wb3J0c1tJREVfQ09OVFJPTF9PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcpIGlv
+YWRkciArIEFMVFNUQVRfQ1RMOw0KfQ0KDQpzdGF0aWMgaW50IF9fZGV2aW5pdCBlbDM5Ml9hdGFf
+cHJvYmUoc3RydWN0IG9mX2RldmljZSAqb3AsIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgKm1h
+dGNoKQ0Kew0KCWludCByZXQgPSAtRU5PREVWOw0KCWludCBpID0gMDsNCgl1bnNpZ25lZCBsb25n
+IHJlc19zdGFydCwgcmVzX2xlbmd0aDsNCgl2b2lkICppb2FkZHI7DQoJaWRlX2h3aWZfdCAqaHdp
+ZjsNCglpbnQgYXRhX2lycSA9IE5PX0lSUTsNCg0KCXN0cnVjdCByZXNvdXJjZSByZXNfbWVtOw0K
+DQoJaWYgKChyZXQgPSBvZl9hZGRyZXNzX3RvX3Jlc291cmNlKG9wLT5ub2RlLCAwLCAmcmVzX21l
+bSkpICE9IDApDQoJew0KCQlwcmludGsoS0VSTl9FUlIgIkVMMzkyX0FUQTogQ2FuIG5vdCBmaW5k
+IElPIG1lbSFcbiIpOw0KCQlnb3RvIG91dDsNCgl9DQoNCglyZXNfc3RhcnQgPSByZXNfbWVtLnN0
+YXJ0Ow0KCXJlc19sZW5ndGggID0gcmVzX21lbS5lbmQgLSByZXNfbWVtLnN0YXJ0ICsgMTsNCgkN
+CglpZiAoIXJlcXVlc3RfbWVtX3JlZ2lvbihyZXNfc3RhcnQsIHJlc19sZW5ndGgsIERSSVZFUl9O
+QU1FKSkgew0KICAgICAgICAgICAgICAgIHByaW50ayhLRVJOX0VSUiJkZXZpY2UgYnVzeS5cbiIp
+Ow0KICAgICAgICAgICAgICAgIHJldCA9IC1FQlVTWTsNCiAgICAgICAgICAgICAgICBnb3RvIG91
+dDsNCiAgICAgICAgfQ0KDQoJcHJpbnRrKCJCYXNlIGFkZHJlc3M6ICUwOGx4LCBJTyBTaXplOiAl
+MDhseFxuIixyZXNfc3RhcnQsIHJlc19sZW5ndGgpOyAJDQoJDQoJaW9hZGRyID0gaW9yZW1hcChy
+ZXNfc3RhcnQsIHJlc19sZW5ndGgpOw0KCWlmICghaW9hZGRyKSB7DQogICAgICAgICAgICAgICAg
+cHJpbnRrKEtFUk5fRVJSICJFTDM5Ml9BVEE6IGlvcmVtYXAgZmFpbGVkLlxuIik7DQoJCXJldCA9
+IC1FTk9NRU07DQoJCWdvdG8gbm9fbWVtOw0KICAgICAgICB9DQoJcHJpbnRrICgiTWVtb3J5IHJl
+bWFwcGVkOiAweCUwOGx4IC0+IDB4JTA4eFxuIiwgcmVzX3N0YXJ0LCAodW5zaWduZWQgaW50KWlv
+YWRkcik7DQoNCgl3aGlsZSAoaSA8IE1BWF9IV0lGUyAmJiAoaWRlX2h3aWZzW2ldLnByZXNlbnQp
+KQ0KCQkrK2k7DQoJaWYgKGkgPj0gTUFYX0hXSUZTKSB7DQoJCXByaW50ayhLRVJOX0VSUiAiRUwz
+OTJfQVRBOiBObyBJREUtc2xvdCBmcmVlXG4iKTsNCgkJcmV0dXJuIC1FTk9ERVY7DQoJCWdvdG8g
+bm9faWRlOw0KCX0NCgkNCglod2lmID0gJmlkZV9od2lmc1tpXTsNCg0KCWVsMzkyX2lkZV9zZXR1
+cF9wb3J0cyhod2lmLCBpb2FkZHIpOw0KDQoJbWVtY3B5KGh3aWYtPmlvX3BvcnRzLCBod2lmLT5o
+dy5pb19wb3J0cywgc2l6ZW9mKGh3aWYtPmh3LmlvX3BvcnRzKSk7DQoNCglhdGFfaXJxID0gaXJx
+X29mX3BhcnNlX2FuZF9tYXAob3AtPm5vZGUsIDApOw0KCWlmIChhdGFfaXJxID09IE5PX0lSUSkg
+ew0KCQlwcmludGsoS0VSTl9FUlIgIm1wYzUyeHgtaWRlOiBJbnZhbGlkIElSUSFcbiIpOw0KCQly
+ZXR1cm4gLUVJTlZBTDsNCgl9DQoNCglod2lmLT5kcml2ZXNbMF0uYXV0b3R1bmUgPSBJREVfVFVO
+RV9OT0FVVE87DQoJaHdpZi0+ZHJpdmVzWzFdLmF1dG90dW5lID0gSURFX1RVTkVfTk9BVVRPOw0K
+CWh3aWYtPmRyaXZlc1swXS51bm1hc2sgPSAxOw0KCWh3aWYtPmRyaXZlc1swXS5hdXRvZG1hID0g
+aHdpZi0+YXV0b2RtYTsNCglod2lmLT5kcml2ZXNbMF0ubm9faW9fMzJiaXQgPSAxOw0KCQ0KCWh3
+aWYtPmlycSA9IGF0YV9pcnE7DQoJaHdpZi0+bW1pbyA9IDA7DQoJaHdpZi0+bm9faW9fMzJiaXQg
+PSAxOw0KCWh3aWYtPmF0YXBpX2RtYSA9IDA7DQoJaHdpZi0+dWx0cmFfbWFzayA9IDB4MDA7DQoJ
+aHdpZi0+bXdkbWFfbWFzayA9IDB4MDA7DQoJaHdpZi0+c3dkbWFfbWFzayA9IDB4MDA7DQoJaHdp
+Zi0+cHJlc2VudCA9IDE7DQoJaHdpZi0+bm9wcm9iZSA9IDA7DQoJaHdpZi0+c2hhcmluZ19pcnEg
+PSAwOw0KCWh3aWYtPm5vX2xiYTQ4ID0gMTsNCglod2lmLT5ub19sYmE0OF9kbWEgPSAxOw0KCWh3
+aWYtPmNoaXBzZXQgPSBpZGVfZm9yY2VkOwkNCgkJDQoJZGVmYXVsdF9od2lmX21taW9wcyhod2lm
+KTsNCgkNCglkZXZfc2V0X2RydmRhdGEoJm9wLT5kZXYsIGh3aWYpOwkNCgkJDQoJcHJvYmVfaHdp
+Zl9pbml0KGh3aWYpOw0KCXByaW50aygiV2F0IGRlbm4gaGllciBsb3NlXG4iKTsNCgkNCi8qCWlm
+IChpID09IC0xKSB7DQoJCXByaW50ayhLRVJOX0lORk8gIkVMMzkyX0FUQTogUmVnaXN0ZXJpbmcg
+SURFIGZhaWxlZFxuIik7DQoJCXJldCA9IC1FSU87DQoJCWdvdG8gbm9faWRlOw0KCX0qLw0KCQ0K
+Ly8JaWRlX3Byb2NfcmVnaXN0ZXJfcG9ydChod2lmKTsNCgkNCglwcmludGsoS0VSTl9JTkZPDQoJ
+ICAiRUwzOTJfSURFOiBTZXR1cCBzdWNjZXNzZnVsIGZvciAlcyAobWVtPSUwOGx4LSUwOGx4IGly
+cT0lZCksIGkgPSAlZFxuIiwNCgkgIGh3aWYtPm5hbWUsICh1bnNpZ25lZCBsb25nKSByZXNfbWVt
+LnN0YXJ0LCAodW5zaWduZWQgbG9uZykgcmVzX21lbS5lbmQsIGh3aWYtPmlycSwgaSk7DQoNCgly
+ZXQgPSAwOw0KCWdvdG8gb3V0Ow0KDQpub19pZGU6DQoJaW91bm1hcChpb2FkZHIpOw0Kbm9fbWVt
+Og0KCXJlbGVhc2VfbWVtX3JlZ2lvbihyZXNfc3RhcnQsIHJlc19sZW5ndGgpOw0Kb3V0Og0KCXJl
+dHVybiAwOw0KfQ0KDQpzdGF0aWMgaW50IF9fZGV2ZXhpdCBlbDM5Ml9hdGFfcmVtb3ZlKHN0cnVj
+dCBvZl9kZXZpY2UgKm9wKQ0Kew0KCXVuc2lnbmVkIGxvbmcgcmVzX3N0YXJ0Ow0KCXVuc2lnbmVk
+IGxvbmcgcmVzX2xlbmd0aDsNCg0KCWlkZV9od2lmX3QgKmh3aWYgPSBkZXZfZ2V0X2RydmRhdGEo
+Jm9wLT5kZXYpOw0KDQoJc3RydWN0IHJlc291cmNlIHJlc19tZW07DQoNCglpZiAob2ZfYWRkcmVz
+c190b19yZXNvdXJjZShvcC0+bm9kZSwgMCwgJnJlc19tZW0pICE9IDApDQoJew0KCQlwcmludGso
+S0VSTl9FUlIgIkVMMzkyX0FUQTogQ2FuIG5vdCBmaW5kIElPIG1lbSFcbiIpOw0KCQlyZXR1cm4g
+LUVJTzsNCgl9DQoNCglpZiAoIWh3aWYpIHsNCgkJcHJpbnRrKEtFUk5fRVJSICIlczogVW5hYmxl
+IHRvIHJlbW92ZSBkZXZpY2UsIHBsZWFzZSByZXBvcnQuXG4iLCBEUklWRVJfTkFNRSk7DQoJCXJl
+dHVybiAtRUlPOw0KCX0NCgkNCglpZGVfdW5yZWdpc3Rlcihod2lmLT5pbmRleCk7DQoNCglpb3Vu
+bWFwKCh2b2lkKilod2lmLT5ody5pb19wb3J0c1swXSk7DQoNCiAgICAgICAgcmVzX3N0YXJ0ID0g
+cmVzX21lbS5zdGFydDsNCiAgICAgICAgcmVzX2xlbmd0aCAgID0gcmVzX21lbS5lbmQgLSByZXNf
+bWVtLnN0YXJ0Ow0KCQ0KCXJlbGVhc2VfbWVtX3JlZ2lvbihyZXNfc3RhcnQsIHJlc19sZW5ndGgp
+Ow0KCQ0KCXJldHVybiAwOw0KfQ0KDQoNCnN0YXRpYyBpbnQgX19pbml0IGVsMzkyX2F0YV9pbml0
+KHZvaWQpDQp7DQoJcHJpbnRrKEtFUk5fSU5GTyAiSURFOiBFTDM5MiBJREUvQVRBIGRyaXZlclxu
+Iik7DQoJcmV0dXJuIG9mX3JlZ2lzdGVyX3BsYXRmb3JtX2RyaXZlcigmZWwzOTJfaWRlX29mX3Bs
+YXRmb3JtX2RyaXZlcik7DQp9DQoNCg0KDQpzdGF0aWMgdm9pZCBfX2V4aXQgZWwzOTJfYXRhX2V4
+aXQodm9pZCkNCnsNCglvZl91bnJlZ2lzdGVyX3BsYXRmb3JtX2RyaXZlcigmZWwzOTJfaWRlX29m
+X3BsYXRmb3JtX2RyaXZlcik7DQoJcHJpbnRrKCBLRVJOX0RFQlVHICJNb2R1bGUgRUwzOTJfQ0Zf
+RElTSyBleGl0XG4iICk7DQp9DQoNCm1vZHVsZV9pbml0KGVsMzkyX2F0YV9pbml0KTsNCm1vZHVs
+ZV9leGl0KGVsMzkyX2F0YV9leGl0KTsNCg0KTU9EVUxFX0RFU0NSSVBUSU9OKCJFTDM5MiBDRl9D
+YXJkIEtlcm5lbCBkcml2ZXIiKTsNCk1PRFVMRV9BVVRIT1IoIkhhbnMgTGVobWFubiAoaGFucy5s
+ZWhtYW5uQHJpdHRlci1lbGVrdHJvbmlrLmRlKSIpOw0KTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOw0K
+DQo=
+
+------_=_NextPart_001_01C85E8A.0B5CC506--
