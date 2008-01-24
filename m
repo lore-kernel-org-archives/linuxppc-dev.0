@@ -1,16 +1,19 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 36A7BDDE04
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 10:41:35 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D0F56DDE09
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 10:41:36 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/10] sbc8560: add support for Wind River SBC8560 in
-	arch/powerpc
-Date: Thu, 24 Jan 2008 18:41:23 -0500
-Message-Id: <12012180943940-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <12012180922447-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 2/10] sbc8560: Add v1 device tree source for Wind River
+	SBC8560 board
+Date: Thu, 24 Jan 2008 18:41:24 -0500
+Message-Id: <12012180944056-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <12012180943940-git-send-email-paul.gortmaker@windriver.com>
 References: <12012180922447-git-send-email-paul.gortmaker@windriver.com>
-Message-Id: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
+	<12012180943940-git-send-email-paul.gortmaker@windriver.com>
+Message-Id: <7107e511a0f989ad55335855fa0f241f09eff52f.1201217172.git.paul.gortmaker@windriver.com>
+In-Reply-To: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
+References: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,72 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds support for the Wind River SBC8560 board, implemented as
-powerpc.  It closely follows the implementation of the MPC8560ADS.
+This adds a v1 device tree source for the Wind River SBC8560 board.  The
+biggest difference between this and the MPC8560ADS reference platform
+dts is the use of an external 16550 compatible UART instead of the CPM2.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig   |   11 +-
- arch/powerpc/platforms/85xx/Makefile  |    1 +
- arch/powerpc/platforms/85xx/sbc8560.c |  285 +++++++++++++++++++++++++++++++++
- 3 files changed, 295 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/sbc8560.dts |  330 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 330 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 7748a3a..0eb497b 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -38,6 +38,13 @@ config MPC85xx_DS
- 	help
- 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
- 
-+config SBC8560
-+	bool "Wind River SBC8560"
-+	select DEFAULT_UIMAGE
-+	select PPC_CPM_NEW_BINDING
-+	help
-+	  This option enables support for the Wind River SBC8560 board
-+
- endchoice
- 
- config MPC8540
-@@ -49,7 +56,7 @@ config MPC8540
- config MPC8560
- 	bool
- 	select CPM2
--	default y if MPC8560_ADS
-+	default y if MPC8560_ADS || SBC8560
- 
- config MPC85xx
- 	bool
-@@ -59,4 +66,4 @@ config MPC85xx
- 	select FSL_PCI if PCI
- 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
- 	default y if MPC8540_ADS || MPC85xx_CDS || MPC8560_ADS \
--		|| MPC85xx_MDS || MPC85xx_DS
-+		|| MPC85xx_MDS || MPC85xx_DS || SBC8560
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 5eca920..c3f4d01 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
- obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o
- obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
-+obj-$(CONFIG_SBC8560) += sbc8560.o
-diff --git a/arch/powerpc/platforms/85xx/sbc8560.c b/arch/powerpc/platforms/85xx/sbc8560.c
+diff --git a/arch/powerpc/boot/dts/sbc8560.dts b/arch/powerpc/boot/dts/sbc8560.dts
 new file mode 100644
-index 0000000..e2bc368
+index 0000000..0476802
 --- /dev/null
-+++ b/arch/powerpc/platforms/85xx/sbc8560.c
-@@ -0,0 +1,285 @@
++++ b/arch/powerpc/boot/dts/sbc8560.dts
+@@ -0,0 +1,330 @@
 +/*
-+ * Wind River SBC8560 setup and early boot code.
++ * SBC8560 Device Tree Source
 + *
 + * Copyright 2007 Wind River Systems Inc.
 + *
-+ * By Paul Gortmaker (see MAINTAINERS for contact information)
-+ *
-+ * Based largely on the MPC8560ADS support - Copyright 2005 Freescale Inc.
++ * Paul Gortmaker (see MAINTAINERS for contact information)
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -94,275 +52,322 @@ index 0000000..e2bc368
 + * option) any later version.
 + */
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/of_platform.h>
++/dts-v1/;
 +
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/mpic.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/udbg.h>
++/ {
++	model = "SBC8560";
++	compatible = "SBC8560";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		ethernet2 = &enet2;
++		ethernet3 = &enet3;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++	};
 +
-+#ifdef CONFIG_CPM2
-+#include <asm/cpm2.h>
-+#include <sysdev/cpm2_pic.h>
-+#endif
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#ifdef CONFIG_CPM2
++		PowerPC,8560@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <0x20>;	// 32 bytes
++			i-cache-line-size = <0x20>;	// 32 bytes
++			d-cache-size = <0x8000>;	// L1, 32K
++			i-cache-size = <0x8000>;	// L1, 32K
++			timebase-frequency = <0>;	// From uboot
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++		};
++	};
 +
-+static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	int cascade_irq;
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x20000000>;
++	};
 +
-+	while ((cascade_irq = cpm2_get_irq()) >= 0)
-+		generic_handle_irq(cascade_irq);
++	soc@ff700000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <0x0 0xff700000 0x00100000>;
++		reg = <0xff700000 0x00100000>;
++		clock-frequency = <0>;
 +
-+	desc->chip->eoi(irq);
-+}
++		memory-controller@2000 {
++			compatible = "fsl,8560-memory-controller";
++			reg = <0x2000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <0x12 0x2>;
++		};
 +
-+#endif /* CONFIG_CPM2 */
++		l2-cache-controller@20000 {
++			compatible = "fsl,8560-l2-cache-controller";
++			reg = <0x20000 0x1000>;
++			cache-line-size = <0x20>;	// 32 bytes
++			cache-size = <0x40000>;		// L2, 256K
++			interrupt-parent = <&mpic>;
++			interrupts = <0x10 0x2>;
++		};
 +
-+static void __init sbc8560_pic_init(void)
-+{
-+	struct mpic *mpic;
-+	struct resource r;
-+	struct device_node *np = NULL;
-+#ifdef CONFIG_CPM2
-+	int irq;
-+#endif
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <0x2b 0x2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
 +
-+	np = of_find_node_by_type(np, "open-pic");
-+	if (!np) {
-+		printk(KERN_ERR "Could not find open-pic node\n");
-+		return;
-+	}
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <0x2b 0x2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
 +
-+	if (of_address_to_resource(np, 0, &r)) {
-+		printk(KERN_ERR "Could not map mpic register space\n");
-+		of_node_put(np);
-+		return;
-+	}
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,gianfar-mdio";
++			reg = <0x24520 0x20>;
++			phy0: ethernet-phy@19 {
++				interrupt-parent = <&mpic>;
++				interrupts = <0x6 0x1>;
++				reg = <0x19>;
++				device_type = "ethernet-phy";
++			};
++			phy1: ethernet-phy@1a {
++				interrupt-parent = <&mpic>;
++				interrupts = <0x7 0x1>;
++				reg = <0x1a>;
++				device_type = "ethernet-phy";
++			};
++			phy2: ethernet-phy@1b {
++				interrupt-parent = <&mpic>;
++				interrupts = <0x8 0x1>;
++				reg = <0x1b>;
++				device_type = "ethernet-phy";
++			};
++			phy3: ethernet-phy@1c {
++				interrupt-parent = <&mpic>;
++				interrupts = <0x8 0x1>;
++				reg = <0x1c>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+	mpic = mpic_alloc(np, r.start,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			0, 256, " OpenPIC  ");
-+	BUG_ON(mpic == NULL);
-+	of_node_put(np);
++		enet0: ethernet@24000 {
++			cell-index = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <0x1d 0x2 0x1e 0x2 0x22 0x2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy0>;
++		};
 +
-+	mpic_init(mpic);
++		enet1: ethernet@25000 {
++			cell-index = <1>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <0x23 0x2 0x24 0x2 0x28 0x2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy1>;
++		};
 +
-+#ifdef CONFIG_CPM2
-+	/* Setup CPM2 PIC */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pic");
-+	if (np == NULL) {
-+		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
-+		return;
-+	}
-+	irq = irq_of_parse_and_map(np, 0);
++		mpic: pic@40000 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			device_type = "open-pic";
++		};
 +
-+	cpm2_pic_init(np);
-+	of_node_put(np);
-+	set_irq_chained_handler(irq, cpm2_cascade);
-+#endif
-+}
++		cpm@919c0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8560-cpm", "fsl,cpm2";
++			reg = <0x919c0 0x30>;
++			ranges;
 +
-+/*
-+ * Setup the architecture
-+ */
-+#ifdef CONFIG_CPM2
-+struct cpm_pin {
-+	int port, pin, flags;
-+};
++			muram@80000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				ranges = <0x0 0x80000 0x10000>;
 +
-+static const struct cpm_pin sbc8560_pins[] = {
-+	/* SCC1 */
-+	{3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++				data@0 {
++					compatible = "fsl,cpm-muram-data";
++					reg = <0x0 0x4000 0x9000 0x2000>;
++				};
++			};
 +
-+	/* SCC2 */
-+	{3, 26, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 27, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++			brg@919f0 {
++				compatible = "fsl,mpc8560-brg",
++				             "fsl,cpm2-brg",
++				             "fsl,cpm-brg";
++				reg = <0x919f0 0x10 0x915f0 0x10>;
++				clock-frequency = <165000000>;
++			};
 +
-+	/* FCC2 */
-+	{1, 18, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 19, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 20, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 21, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 22, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 23, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 24, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 25, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 26, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 27, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{1, 30, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{2, 18, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK14 */
-+	{2, 19, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK13 */
++			cpmpic: pic@90c00 {
++				interrupt-controller;
++				#address-cells = <0>;
++				#interrupt-cells = <2>;
++				interrupts = <0x2e 0x2>;
++				interrupt-parent = <&mpic>;
++				reg = <0x90c00 0x80>;
++				compatible = "fsl,mpc8560-cpm-pic", "fsl,cpm2-pic";
++			};
 +
-+	/* FCC3 */
-+	{1, 4, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 5, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 6, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 7, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 8, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 9, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 10, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 11, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 12, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 13, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 14, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 15, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{1, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{2, 16, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* CLK16 */
-+	{2, 17, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* CLK15 */
-+};
++			enet2: ethernet@91320 {
++				device_type = "network";
++				compatible = "fsl,mpc8560-fcc-enet",
++				             "fsl,cpm2-fcc-enet";
++				reg = <0x91320 0x20 0x88500 0x100 0x913b0 0x1>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++				fsl,cpm-command = <0x16200300>;
++				interrupts = <0x21 0x8>;
++				interrupt-parent = <&cpmpic>;
++				phy-handle = <&phy2>;
++			};
 +
-+static void __init init_ioports(void)
-+{
-+	int i;
++			enet3: ethernet@91340 {
++				device_type = "network";
++				compatible = "fsl,mpc8560-fcc-enet",
++				             "fsl,cpm2-fcc-enet";
++				reg = <0x91340 0x20 0x88600 0x100 0x913d0 0x1>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++				fsl,cpm-command = <0x1a400300>;
++				interrupts = <0x22 0x8>;
++				interrupt-parent = <&cpmpic>;
++				phy-handle = <&phy3>;
++			};
++		};
 +
-+	for (i = 0; i < ARRAY_SIZE(sbc8560_pins); i++) {
-+		struct cpm_pin *pin = &sbc8560_pins[i];
-+		cpm2_set_pin(pin->port, pin->pin, pin->flags);
-+	}
++		global-utilities@e0000 {
++			compatible = "fsl,mpc8560-guts";
++			reg = <0xe0000 0x1000>;
++			fsl,has-rstcr;
++		};
++	};
 +
-+	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK13, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK14, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_FCC3, CPM_CLK15, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_FCC3, CPM_CLK16, CPM_CLK_TX);
-+}
-+#endif
++	pci0: pci@ff708000 {
++		cell-index = <0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
++		device_type = "pci";
++		reg = <0xff708000 0x1000>;
++		clock-frequency = <66666666>;
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
 +
-+static void __init sbc8560_setup_arch(void)
-+{
-+#ifdef CONFIG_PCI
-+	struct device_node *np;
-+#endif
++			/* IDSEL 0x02 */
++			0x1000 0x0 0x0 0x1 &mpic 0x2 0x1
++			0x1000 0x0 0x0 0x2 &mpic 0x3 0x1
++			0x1000 0x0 0x0 0x3 &mpic 0x4 0x1
++			0x1000 0x0 0x0 0x4 &mpic 0x5 0x1>;
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("sbc8560_setup_arch()", 0);
++		interrupt-parent = <&mpic>;
++		interrupts = <0x18 0x2>;
++		bus-range = <0x0 0x0>;
++		ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0 0x20000000
++			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
++	};
 +
-+#ifdef CONFIG_CPM2
-+	cpm2_reset();
-+	init_ioports();
-+#endif
++	localbus@ff705000 {
++		compatible = "fsl,mpc8560-localbus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		reg = <0xff705000 0x100>;	// BRx, ORx, etc.
 +
-+#ifdef CONFIG_PCI
-+	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
-+		fsl_add_bridge(np, 1);
-+#endif
-+}
++		ranges = <
++			0x0 0x0 0xff800000 0x0800000	// 8MB boot flash
++			0x1 0x0 0xe4000000 0x4000000	// 64MB flash
++			0x3 0x0 0x20000000 0x4000000	// 64MB SDRAM
++			0x4 0x0 0x24000000 0x4000000	// 64MB SDRAM
++			0x5 0x0 0xfc000000 0x0c00000	// EPLD
++			0x6 0x0 0xe0000000 0x4000000	// 64MB flash
++			0x7 0x0 0x80000000 0x0200000	// ATM1,2
++		>;
 +
-+static void sbc8560_show_cpuinfo(struct seq_file *m)
-+{
-+	uint pvid, svid, phid1;
-+	uint memsize = total_memory;
++		epld@5,0 {
++			compatible = "wrs,epld-localbus";
++			#address-cells = <2>;
++			#size-cells = <1>;
++			reg = <0x5 0x0 0xc00000>;
++			ranges = <
++				0x0 0x0 0x5 0x000000 0x1fff	// LED disp.
++				0x1 0x0 0x5 0x100000 0x1fff	// switches
++				0x2 0x0 0x5 0x200000 0x1fff	// ID reg.
++				0x3 0x0 0x5 0x300000 0x1fff	// status reg.
++				0x4 0x0 0x5 0x400000 0x1fff	// reset reg.
++				0x5 0x0 0x5 0x500000 0x1fff	// Wind port
++				0x7 0x0 0x5 0x700000 0x1fff	// UART #1
++				0x8 0x0 0x5 0x800000 0x1fff	// UART #2
++				0x9 0x0 0x5 0x900000 0x1fff	// RTC
++				0xb 0x0 0x5 0xb00000 0x1fff	// EEPROM
++			>;
 +
-+	pvid = mfspr(SPRN_PVR);
-+	svid = mfspr(SPRN_SVR);
++			bidr@2,0 {
++				compatible = "wrs,sbc8560-bidr";
++				reg = <0x2 0x0 0x10>;
++			};
 +
-+	seq_printf(m, "Vendor\t\t: Wind River\n");
-+	seq_printf(m, "Machine\t\t: SBC8560\n");
-+	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
++			bcsr@3,0 {
++				compatible = "wrs,sbc8560-bcsr";
++				reg = <0x3 0x0 0x10>;
++			};
 +
-+	/* Display cpu Pll setting */
-+	phid1 = mfspr(SPRN_HID1);
-+	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
++			brstcr@4,0 {
++				compatible = "wrs,sbc8560-brstcr";
++				reg = <0x4 0x0 0x10>;
++			};
 +
-+	/* Display the amount of memory */
-+	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-+}
++			serial0: serial@7,0 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0x7 0x0 0x100>;
++				clock-frequency = <1843200>;
++				interrupts = <0x9 0x2>;
++				interrupt-parent = <&mpic>;
++			};
 +
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{ .type = "soc", },
-+	{ .name = "cpm", },
-+	{ .name = "localbus", },
-+	{},
-+};
++			serial1: serial@8,0 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <0x8 0x0 0x100>;
++				clock-frequency = <1843200>;
++				interrupts = <0xa 0x2>;
++				interrupt-parent = <&mpic>;
++			};
 +
-+static int __init declare_of_platform_devices(void)
-+{
-+	if (!machine_is(sbc8560))
-+		return 0;
-+
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
-+	return 0;
-+}
-+device_initcall(declare_of_platform_devices);
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init sbc8560_probe(void)
-+{
-+        unsigned long root = of_get_flat_dt_root();
-+
-+        return of_flat_dt_is_compatible(root, "SBC8560");
-+}
-+
-+#ifdef CONFIG_RTC_DRV_M48T59
-+static int __init sbc8560_rtc_init(void)
-+{
-+	struct device_node *np;
-+	struct resource res;
-+	struct platform_device *rtc_dev;
-+
-+	np = of_find_compatible_node(NULL, NULL, "m48t59");
-+	if (np == NULL) {
-+		printk("No RTC in DTB. Has it been eaten by wild dogs?\n");
-+		return -ENODEV;
-+	}
-+
-+	of_address_to_resource(np, 0, &res);
-+	of_node_put(np);
-+
-+	printk("Found RTC (m48t59) at i/o 0x%x\n", res.start);
-+
-+	rtc_dev = platform_device_register_simple("rtc-m48t59", 0, &res, 1);
-+
-+	if (IS_ERR(rtc_dev)) {
-+		printk("Registering sbc8560 RTC device failed\n");
-+		return PTR_ERR(rtc_dev);
-+	}
-+
-+	return 0;
-+}
-+
-+arch_initcall(sbc8560_rtc_init);
-+
-+#endif	/* M48T59 */
-+
-+define_machine(sbc8560) {
-+	.name			= "SBC8560",
-+	.probe			= sbc8560_probe,
-+	.setup_arch		= sbc8560_setup_arch,
-+	.init_IRQ		= sbc8560_pic_init,
-+	.show_cpuinfo		= sbc8560_show_cpuinfo,
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
++			rtc@9,0 {
++				compatible = "m48t59";
++				reg = <0x9 0x0 0x1fff>;
++			};
++		};
++	};
 +};
 -- 
 1.5.0.rc1.gf4b6c
