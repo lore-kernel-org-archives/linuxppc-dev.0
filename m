@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7A335DDE02
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 13:22:10 +1100 (EST)
-Date: Thu, 24 Jan 2008 13:22:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: device tree, board file and
-	defconfig
-Message-Id: <20080124132201.c3086756.sfr@canb.auug.org.au>
-In-Reply-To: <20080123204507.GA12973@localhost.localdomain>
-References: <20080123204507.GA12973@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__24_Jan_2008_13_22_01_+1100_TZA=5qBsZ9LVumt_"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <linville@tuxdriver.com>
+Received: from ra.tuxdriver.com (ra.tuxdriver.com [70.61.120.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C177FDDD0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 14:02:08 +1100 (EST)
+Date: Wed, 23 Jan 2008 21:36:17 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 0/6] PS3: gelic: gelic updates for 2.6.25
+Message-ID: <20080124023617.GC3134@tuxdriver.com>
+References: <20071213181146.BF69.MOKUNO@sm.sony.co.jp>
+	<20080122211239.GC3206@tuxdriver.com>
+	<1201048834.6807.55.camel@pasglop>
+	<20080123005845.GE3206@tuxdriver.com>
+	<4796B0AC.5060205@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4796B0AC.5060205@am.sony.com>
+Cc: "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,62 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__24_Jan_2008_13_22_01_+1100_TZA=5qBsZ9LVumt_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jan 22, 2008 at 07:12:44PM -0800, Geoff Levand wrote:
+> On 01/22/2008 04:58 PM, John W. Linville wrote:
 
-On Wed, 23 Jan 2008 23:45:07 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
->
-> +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> +static int __init mpc836x_rdk_declare_of_platform_devices(void)
-> +{
-> +	const struct of_device_id mpc836x_rdk_ids[] =3D {
+> > I thought Geert's had been applied, but I guess I was looking at
+> > it wrong.  Is there a powerpc tree that has them?
+> 
+> Not yet, they are now only in ps3-linux.git.  I sent them out to
+> Paul last Friday the 18th for inclusion in 2.6.25.  Here is a link
+> to the message:
+> 
+>   http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050213.html
+> 
+> > Perhaps 1-6 above
+> > and the wireless patch should just be applied to that tree (if there
+> > is one) and all merged together?
+> 
+> I think Paul will accept them if they have the Sign-off-by's of
+> the proper network maintainers.
 
-Please change this to static, __initdata and not const, thanks.  These
-arrays are usually defined outside a function, but that is not really a
-problem.
+Feel free to add:
 
-> +static void __init mpc836x_rdk_setup_arch(void)
-> +{
-> +	struct device_node *np;
+	Signed-off-by: John W. Linville <linville@tuxdriver.com>
 
-!defined(CONFIG_PCI) && !defined(CONFIG_QUICC_ENGINE) will produce a
-warning here.
+(Or Acked-by if you would prefer) to the wireless bits.  FWIW, the
+wired bits seemed OK to me as well, but I didn't look too closely...
 
-> +	if (ppc_md.progress)
-> +		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
-> +
-> +#ifdef CONFIG_PCI
-> +	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
-> +		mpc83xx_add_bridge(np);
-> +#endif
-> +
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	qe_reset();
-> +
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-pario");
-> +	if (!np) {
-> +		pr_warning("QE PIO not initialized!\n");
-> +		return;
+Thanks,
 
-You need an of_node_put(np) before the return.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__24_Jan_2008_13_22_01_+1100_TZA=5qBsZ9LVumt_
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHl/ZNTgG2atn1QN8RAmp9AJ470ZvpD3RD6TKKVOGMES2C7cRjBACfbPg2
-01qzJIyOBxyFy/QFUHCnjB8=
-=kYXN
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_Jan_2008_13_22_01_+1100_TZA=5qBsZ9LVumt_--
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
