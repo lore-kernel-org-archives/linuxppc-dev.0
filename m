@@ -1,18 +1,20 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 80E46DDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 00:29:17 +1100 (EST)
-Date: Thu, 24 Jan 2008 16:29:01 +0300
+	by ozlabs.org (Postfix) with ESMTP id 772AFDDE03
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 01:00:28 +1100 (EST)
+Date: Thu, 24 Jan 2008 17:00:12 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: device tree,
-	board file and defconfig
-Message-ID: <20080124132900.GA25982@localhost.localdomain>
-References: <20080123204507.GA12973@localhost.localdomain>
-	<20080124132201.c3086756.sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: mpc8568e-mds: pci-e is broken
+Message-ID: <20080124140012.GA19781@localhost.localdomain>
+References: <20080123193712.GA12037@localhost.localdomain>
+	<6785FDE5-FEBA-4FE2-A94C-85FCE299D1CC@kernel.crashing.org>
+	<20080123195022.GA21157@localhost.localdomain>
+	<B4582CB3-2065-40D5-9C16-B0EE1943D83A@kernel.crashing.org>
+	<Pine.LNX.4.64.0801231701110.1762@blarg.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080124132201.c3086756.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0801231701110.1762@blarg.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,51 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 24, 2008 at 01:22:01PM +1100, Stephen Rothwell wrote:
-> On Wed, 23 Jan 2008 23:45:07 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> >
-> > +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> > +static int __init mpc836x_rdk_declare_of_platform_devices(void)
-> > +{
-> > +	const struct of_device_id mpc836x_rdk_ids[] = {
+On Wed, Jan 23, 2008 at 05:02:10PM -0600, Kumar Gala wrote:
+> Anton,
 > 
-> Please change this to static, __initdata and not const, thanks. These
-> arrays are usually defined outside a function, but that is not really a
-> problem.
+> Can you try this patch and see if it resolves the issue for you.. (You'll
+> still get the Apple FW messages)
 
-Pity... we don't need these _ids anywhere outside that function. But
-looking into objdump output I see the problem now.
+Yup, that patch fixes it.
 
-Will change this back, thanks.
+Thanks,
 
-> > +static void __init mpc836x_rdk_setup_arch(void)
-> > +{
-> > +	struct device_node *np;
+> - k
 > 
-> !defined(CONFIG_PCI) && !defined(CONFIG_QUICC_ENGINE) will produce a
-> warning here.
-
-Good catch, thanks.
-
-> > +	if (ppc_md.progress)
-> > +		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
-> > +
-> > +#ifdef CONFIG_PCI
-> > +	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
-> > +		mpc83xx_add_bridge(np);
-> > +#endif
-> > +
-> > +#ifdef CONFIG_QUICC_ENGINE
-> > +	qe_reset();
-> > +
-> > +	np = of_find_compatible_node(NULL, NULL, "fsl,qe-pario");
-> > +	if (!np) {
-> > +		pr_warning("QE PIO not initialized!\n");
-> > +		return;
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 4005739..bf13c21 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -133,22 +133,23 @@ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+>  	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
+>  	int i;
 > 
-> You need an of_node_put(np) before the return.
-
-Hm, really? I think I don't. But if you insist... :-)
+> -	/* deal with bogus pci_bus when we don't have anything connected on PCIe */
+> -	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
+> -		if (bus->parent) {
+> -			for (i = 0; i < 4; ++i)
+> -				bus->resource[i] = bus->parent->resource[i];
+> -		}
+> -	}
+> -
+> -	if (fsl_pcie_bus_fixup &&
+> -	    (bus->parent == hose->bus) &&
+> -	     early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+> +	if ((bus->parent == hose->bus) &&
+> +	    ((fsl_pcie_bus_fixup &&
+> +	      early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) ||
+> +	     (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)))
+> +	{
+>  		for (i = 0; i < 4; ++i) {
+> -			if (bus->resource[i] && bus->parent->resource[i]) {
+> -				bus->resource[i]->start = bus->parent->resource[i]->start;
+> -				bus->resource[i]->end = bus->parent->resource[i]->end;
+> -				bus->resource[i]->flags = bus->parent->resource[i]->flags;
+> +			struct resource *res = bus->resource[i];
+> +			struct resource *par = bus->parent->resource[i];
+> +			if (res) {
+> +				res->start = 0;
+> +				res->end   = 0;
+> +				res->flags = 0;
+> +			}
+> +			if (res && par) {
+> +				res->start = par->start;
+> +				res->end   = par->end;
+> +				res->flags = par->flags;
+>  			}
+>  		}
+>  	}
+> 
 
 -- 
 Anton Vorontsov
