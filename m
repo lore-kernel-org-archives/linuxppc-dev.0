@@ -1,19 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EA5D2DDDF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 11:50:33 +1100 (EST)
-Date: Thu, 24 Jan 2008 11:50:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 3/4 v4] POWERPC: Add initial iomega StorCenter board port.
-Message-Id: <20080124115018.69551acf.sfr@canb.auug.org.au>
-In-Reply-To: <E1JHkYk-00010g-M2@jdl.com>
-References: <E1JHkYk-00010g-M2@jdl.com>
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (136-022.dsl.labridge.com [206.117.136.22])
+	by ozlabs.org (Postfix) with ESMTP id 59DD8DDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 11:57:54 +1100 (EST)
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+From: Joe Perches <joe@perches.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+In-Reply-To: <4797D968.1030101@tiscali.nl>
+References: <4797C1AD.3040307@tiscali.nl>
+	<1201129527.4988.69.camel@localhost>  <4797D968.1030101@tiscali.nl>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 16:39:36 -0800
+Message-Id: <1201135176.4988.80.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__24_Jan_2008_11_50_18_+1100_EjLBUqgGLuc+Ji_1"
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__24_Jan_2008_11_50_18_+1100_EjLBUqgGLuc+Ji_1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Jon,
-
-On Wed, 23 Jan 2008 12:42:50 -0600 Jon Loeliger <jdl@jdl.com> wrote:
->
-> +++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
-> +static void __init storcenter_init_IRQ(void)
-> +{
-> +	struct mpic *mpic;
-> +	struct device_node *dnp;
-> +	const void *prop;
-> +	int size;
-> +	phys_addr_t paddr;
+On Thu, 2008-01-24 at 01:18 +0100, Roel Kluin wrote:
+> when you use git-grep -n "\(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)",
+> (with s="[[:space:]]*") there will be false positives []
+> so i'd propose to change that to
+> +# Check for bitwise tests written as boolean
+> +		if ($line =~ /(?:(?:\(|\&\&|\|\|)\s*0[xX]\s*(?:&&|\|\|)|
+> +				(?:\&\&|\|\|)\s*0[xX]\s*(?:\)|&&|\|\|))/) {
+> +			WARN("boolean test with hexadecimal, perhaps just 1 \& or \|?\n" . $herecurr);
+> +		}
 > +
-> +	dnp =3D of_find_node_by_type(NULL, "open-pic");
-> +	if (dnp =3D=3D NULL)
-> +		return;
-> +
-> +	prop =3D of_get_property(dnp, "reg", &size);
-> +	if (prop =3D=3D NULL)
-> +		return;
 
-You need an of_node_put(dnp) before you return.
+All 13 false positives are "hex_constant logical_test variable".
+I think that Linus would say that they are all poor style.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__24_Jan_2008_11_50_18_+1100_EjLBUqgGLuc+Ji_1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHl+DRTgG2atn1QN8RAoeCAJsHKAq3ZjHNkPzeEdUXAyRSzw0cSQCeI5P/
-+MqoNtC2HNu9+CqmsMwNMFU=
-=i1Tb
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_Jan_2008_11_50_18_+1100_EjLBUqgGLuc+Ji_1--
+Still, fine by me.  cheers, Joe
