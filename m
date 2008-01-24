@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 93DE0DDE3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 09:47:01 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0OMkuAl015614
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 16:46:56 -0600
-Date: Thu, 24 Jan 2008 16:44:33 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Add a cuboot wrapper for 85xx w/CPM2
-Message-ID: <Pine.LNX.4.64.0801241644140.17716@blarg.am.freescale.net>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id 7FF5CDDE01
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 10:07:40 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so664519wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 15:07:39 -0800 (PST)
+Message-ID: <9e4733910801241507t214561a4sb70bbb375b1f60a9@mail.gmail.com>
+Date: Thu, 24 Jan 2008 18:07:38 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: [i2c] [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
+In-Reply-To: <1201214138.6815.107.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080121200740.13800.20524.stgit@terra.home>
+	<9e4733910801241432r4424d41ayd5e41e57bc3e052b@mail.gmail.com>
+	<1201214138.6815.107.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,104 +25,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bd info struct changes if we have CPM2 enabled in u-boot.
+On 1/24/08, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Thu, 2008-01-24 at 17:32 -0500, Jon Smirl wrote:
+> > Ben, do you approve of this? How should error be checked for, is
+> > <NO_IRQ right? The current code in the kernel looks to be broken
+> > because of these checks, the ppc build is wrong and powerpc polled
+> > mode doesn't work.
+>
+>  == 0 should work on powerpc since NO_IRQ is defined to be 0 there no ?
 
----
- arch/powerpc/boot/Makefile           |    6 +++-
- arch/powerpc/boot/cuboot-85xx-cpm2.c |   61 ++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/cuboot-85xx-cpm2.c
+The driver being patched is used in both the powerpc and ppc builds.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 1e20aca..1a42970 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -62,7 +62,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c \
- 		fixed-head.S ep88xc.c cuboot-hpc2.c ep405.c cuboot-taishan.c \
--		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c
-+		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
-+		cuboot-85xx-cpm2.c
- src-boot := $(src-wlib) $(src-plat) empty.c
+>
+> Anyway, using the symbolic constant is always nicer I suppose.
+>
+> Ben.
+>
+> > On 1/21/08, Jon Smirl <jonsmirl@gmail.com> wrote:
+> > > Alter the mpc i2c driver to use the NO_IRQ symbol instead of the constant zero when checking for valid interrupts. NO_IRQ=-1 on ppc and NO_IRQ=0 on powerpc so the checks against zero are not correct.
+> > >
+> > > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> > > ---
+> > >
+> > >  drivers/i2c/busses/i2c-mpc.c |   10 +++++-----
+> > >  1 files changed, 5 insertions(+), 5 deletions(-)
+> > >
+> > >
+> > > diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> > > index bbe787b..d20959d 100644
+> > > --- a/drivers/i2c/busses/i2c-mpc.c
+> > > +++ b/drivers/i2c/busses/i2c-mpc.c
+> > > @@ -99,7 +99,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+> > >         u32 x;
+> > >         int result = 0;
+> > >
+> > > -       if (i2c->irq == 0)
+> > > +       if (i2c->irq == NO_IRQ)
+> > >         {
+> > >                 while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+> > >                         schedule();
+> > > @@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+> > >                 return -ENOMEM;
+> > >
+> > >         i2c->irq = platform_get_irq(pdev, 0);
+> > > -       if (i2c->irq < 0) {
+> > > +       if (i2c->irq < NO_IRQ) {
+> > >                 result = -ENXIO;
+> > >                 goto fail_get_irq;
+> > >         }
+> > > @@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+> > >                 goto fail_map;
+> > >         }
+> > >
+> > > -       if (i2c->irq != 0)
+> > > +       if (i2c->irq != NO_IRQ)
+> > >                 if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+> > >                                           IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+> > >                         printk(KERN_ERR
+> > > @@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+> > >         return result;
+> > >
+> > >        fail_add:
+> > > -       if (i2c->irq != 0)
+> > > +       if (i2c->irq != NO_IRQ)
+> > >                 free_irq(i2c->irq, i2c);
+> > >        fail_irq:
+> > >         iounmap(i2c->base);
+> > > @@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
+> > >         i2c_del_adapter(&i2c->adap);
+> > >         platform_set_drvdata(pdev, NULL);
+> > >
+> > > -       if (i2c->irq != 0)
+> > > +       if (i2c->irq != NO_IRQ)
+> > >                 free_irq(i2c->irq, i2c);
+> > >
+> > >         iounmap(i2c->base);
+> > >
+> > >
+> > > _______________________________________________
+> > > i2c mailing list
+> > > i2c@lm-sensors.org
+> > > http://lists.lm-sensors.org/mailman/listinfo/i2c
+> > >
+> >
+> >
+>
+>
 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -200,6 +201,9 @@ image-$(CONFIG_PPC_MPC52xx)		+= cuImage.52xx
- image-$(CONFIG_STORCENTER)		+= cuImage.824x
- image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
- image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
-+ifeq ($(CONFIG_CPM2),y)
-+image-$(CONFIG_PPC_85xx)		+= cuImage.85xx-cpm2
-+endif
- image-$(CONFIG_MPC7448HPC2)		+= cuImage.hpc2
- image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
- image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
-diff --git a/arch/powerpc/boot/cuboot-85xx-cpm2.c b/arch/powerpc/boot/cuboot-85xx-cpm2.c
-new file mode 100644
-index 0000000..e2616f2
---- /dev/null
-+++ b/arch/powerpc/boot/cuboot-85xx-cpm2.c
-@@ -0,0 +1,61 @@
-+/*
-+ * Old U-boot compatibility for 85xx
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "stdio.h"
-+#include "cuboot.h"
-+
-+#define TARGET_85xx
-+#define TARGET_CPM2
-+#include "ppcboot.h"
-+
-+static bd_t bd;
-+
-+static void platform_fixups(void)
-+{
-+	void *soc;
-+
-+	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
-+	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
-+	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
-+	dt_fixup_mac_address_by_alias("ethernet2", bd.bi_enet2addr);
-+	dt_fixup_cpu_clocks(bd.bi_intfreq, bd.bi_busfreq / 8, bd.bi_busfreq);
-+
-+	/* Unfortunately, the specific model number is encoded in the
-+	 * soc node name in existing dts files -- once that is fixed,
-+	 * this can do a simple path lookup.
-+	 */
-+	soc = find_node_by_devtype(NULL, "soc");
-+	if (soc) {
-+		void *serial = NULL;
-+
-+		setprop(soc, "bus-frequency", &bd.bi_busfreq,
-+		        sizeof(bd.bi_busfreq));
-+
-+		while ((serial = find_node_by_devtype(serial, "serial"))) {
-+			if (get_parent(serial) != soc)
-+				continue;
-+
-+			setprop(serial, "clock-frequency", &bd.bi_busfreq,
-+			        sizeof(bd.bi_busfreq));
-+		}
-+	}
-+}
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+                   unsigned long r6, unsigned long r7)
-+{
-+	CUBOOT_INIT();
-+	fdt_init(_dtb_start);
-+	serial_console_init();
-+	platform_ops.fixups = platform_fixups;
-+}
+
 -- 
-1.5.3.7
+Jon Smirl
+jonsmirl@gmail.com
