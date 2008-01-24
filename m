@@ -1,22 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CDCD6DDED0
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 07:58:30 +1100 (EST)
-Date: Fri, 25 Jan 2008 07:58:20 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: device tree, board file and
-	defconfig
-Message-Id: <20080125075820.f85a4c97.sfr@canb.auug.org.au>
-In-Reply-To: <20080124132900.GA25982@localhost.localdomain>
-References: <20080123204507.GA12973@localhost.localdomain>
-	<20080124132201.c3086756.sfr@canb.auug.org.au>
-	<20080124132900.GA25982@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__25_Jan_2008_07_58_20_+1100_3xA+kkZTYv=AwZ=F"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 09D4DDDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 09:32:09 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so648308wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 14:32:08 -0800 (PST)
+Message-ID: <9e4733910801241432r4424d41ayd5e41e57bc3e052b@mail.gmail.com>
+Date: Thu, 24 Jan 2008 17:32:07 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Subject: Re: [i2c] [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
+In-Reply-To: <20080121200740.13800.20524.stgit@terra.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080121200740.13800.20524.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,79 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__25_Jan_2008_07_58_20_+1100_3xA+kkZTYv=AwZ=F
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ben, do you approve of this? How should error be checked for, is
+<NO_IRQ right? The current code in the kernel looks to be broken
+because of these checks, the ppc build is wrong and powerpc polled
+mode doesn't work.
 
-Hi Anton,
-
-On Thu, 24 Jan 2008 16:29:01 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
+On 1/21/08, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Alter the mpc i2c driver to use the NO_IRQ symbol instead of the constant zero when checking for valid interrupts. NO_IRQ=-1 on ppc and NO_IRQ=0 on powerpc so the checks against zero are not correct.
 >
-> On Thu, Jan 24, 2008 at 01:22:01PM +1100, Stephen Rothwell wrote:
-> > On Wed, 23 Jan 2008 23:45:07 +0300 Anton Vorontsov <avorontsov@ru.mvist=
-a.com> wrote:
-> > >
-> > > +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-> > > +static int __init mpc836x_rdk_declare_of_platform_devices(void)
-> > > +{
-> > > +	const struct of_device_id mpc836x_rdk_ids[] =3D {
-> >=20
-> > Please change this to static, __initdata and not const, thanks. These
-> > arrays are usually defined outside a function, but that is not really a
-> > problem.
->=20
-> Pity... we don't need these _ids anywhere outside that function. But
-> looking into objdump output I see the problem now.
->=20
-> Will change this back, thanks.
->=20
-> > > +static void __init mpc836x_rdk_setup_arch(void)
-> > > +{
-> > > +	struct device_node *np;
-> >=20
-> > !defined(CONFIG_PCI) && !defined(CONFIG_QUICC_ENGINE) will produce a
-> > warning here.
->=20
-> Good catch, thanks.
->=20
-> > > +	if (ppc_md.progress)
-> > > +		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
-> > > +
-> > > +#ifdef CONFIG_PCI
-> > > +	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
-> > > +		mpc83xx_add_bridge(np);
-> > > +#endif
-> > > +
-> > > +#ifdef CONFIG_QUICC_ENGINE
-> > > +	qe_reset();
-> > > +
-> > > +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-pario");
-> > > +	if (!np) {
-> > > +		pr_warning("QE PIO not initialized!\n");
-> > > +		return;
-> >=20
-> > You need an of_node_put(np) before the return.
->=20
-> Hm, really? I think I don't. But if you insist... :-)
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> ---
+>
+>  drivers/i2c/busses/i2c-mpc.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+>
+>
+> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> index bbe787b..d20959d 100644
+> --- a/drivers/i2c/busses/i2c-mpc.c
+> +++ b/drivers/i2c/busses/i2c-mpc.c
+> @@ -99,7 +99,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+>         u32 x;
+>         int result = 0;
+>
+> -       if (i2c->irq == 0)
+> +       if (i2c->irq == NO_IRQ)
+>         {
+>                 while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+>                         schedule();
+> @@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+>                 return -ENOMEM;
+>
+>         i2c->irq = platform_get_irq(pdev, 0);
+> -       if (i2c->irq < 0) {
+> +       if (i2c->irq < NO_IRQ) {
+>                 result = -ENXIO;
+>                 goto fail_get_irq;
+>         }
+> @@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+>                 goto fail_map;
+>         }
+>
+> -       if (i2c->irq != 0)
+> +       if (i2c->irq != NO_IRQ)
+>                 if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+>                                           IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+>                         printk(KERN_ERR
+> @@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+>         return result;
+>
+>        fail_add:
+> -       if (i2c->irq != 0)
+> +       if (i2c->irq != NO_IRQ)
+>                 free_irq(i2c->irq, i2c);
+>        fail_irq:
+>         iounmap(i2c->base);
+> @@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
+>         i2c_del_adapter(&i2c->adap);
+>         platform_set_drvdata(pdev, NULL);
+>
+> -       if (i2c->irq != 0)
+> +       if (i2c->irq != NO_IRQ)
+>                 free_irq(i2c->irq, i2c);
+>
+>         iounmap(i2c->base);
+>
+>
+> _______________________________________________
+> i2c mailing list
+> i2c@lm-sensors.org
+> http://lists.lm-sensors.org/mailman/listinfo/i2c
+>
 
-Sorry, I don't know what I was thinking - of course you don't need it.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__25_Jan_2008_07_58_20_+1100_3xA+kkZTYv=AwZ=F
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHmPvyTgG2atn1QN8RAuKfAJ9ygfMkFVwq4SDS21P/4deojaX+igCgkVrQ
-XAQh/G0PH6760BsxJhhBLsA=
-=HvsP
------END PGP SIGNATURE-----
-
---Signature=_Fri__25_Jan_2008_07_58_20_+1100_3xA+kkZTYv=AwZ=F--
+-- 
+Jon Smirl
+jonsmirl@gmail.com
