@@ -1,30 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB399DDFBA
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 04:25:42 +1100 (EST)
-Message-ID: <4798BDEB.2010501@freescale.com>
-Date: Thu, 24 Jan 2008 10:33:47 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM driver
-	for MPC8323eRDB. Also includes related QE changes and dts entries.
-References: <Pine.LNX.4.64.0801241553270.4984@linux121>
-	<20080124154804.GA22178@localhost.localdomain>
-	<4798B4F3.2010101@freescale.com>
-	<20080124162345.GA27359@localhost.localdomain>
-In-Reply-To: <20080124162345.GA27359@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Poonam_Aggrwal-b10812 <b10812@freescale.com>,
-	michael.barkowski@freescale.com, netdev@vger.kernel.org,
-	kumar.gala@freescale.com, linux-kernel@vger.kernel.org,
-	rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
-	ashish.kalra@freescale.com, rich.cutler@freescale.com,
-	akpm@linux-foundation.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 350FCDDF3F
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 04:35:27 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 61F4C8810
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 22:35:35 +0400 (SAMT)
+Date: Thu, 24 Jan 2008 20:35:11 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v5 0/5] device_type/compatible cleanups
+Message-ID: <20080124173511.GA16288@localhost.localdomain>
+References: <20080124151850.GA15190@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080124151850.GA15190@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,35 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+On Thu, Jan 24, 2008 at 06:18:50PM +0300, Anton Vorontsov wrote:
+[..]
+>  Documentation/powerpc/booting-without-of.txt   |   26 +--
+>  arch/powerpc/boot/dts/mpc832x_mds.dts          |   11 -
+>  arch/powerpc/boot/dts/mpc832x_rdb.dts          |   11 -
+>  arch/powerpc/boot/dts/mpc836x_mds.dts          |   11 -
+>  arch/powerpc/boot/dts/mpc836x_rdk.dts          |   10 -
+>  arch/powerpc/boot/dts/mpc8568mds.dts           |   10 -
+>  arch/powerpc/sysdev/fsl_soc.c                  |  191 +++++++++++++++----------
+>  b/Documentation/powerpc/booting-without-of.txt |   11 -
+>  b/arch/powerpc/boot/dts/mpc8313erdb.dts        |    4
+>  b/arch/powerpc/boot/dts/mpc832x_mds.dts        |    9 -
+>  b/arch/powerpc/boot/dts/mpc832x_rdb.dts        |   10 -
+>  b/arch/powerpc/boot/dts/mpc8349emitx.dts       |    4
+>  b/arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    4
+>  b/arch/powerpc/boot/dts/mpc834x_mds.dts        |    4
+>  b/arch/powerpc/boot/dts/mpc836x_mds.dts        |   10 -
+>  b/arch/powerpc/boot/dts/mpc836x_rdk.dts        |    1
+>  b/arch/powerpc/boot/dts/mpc8568mds.dts         |   10 -
+>  b/arch/powerpc/kernel/legacy_serial.c          |    3
+>  b/arch/powerpc/platforms/83xx/mpc832x_mds.c    |   11 -
+>  b/arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   11 -
+>  b/arch/powerpc/platforms/83xx/mpc836x_mds.c    |   11 -
+>  b/arch/powerpc/platforms/85xx/mpc85xx_mds.c    |   32 ++--
+>  b/arch/powerpc/sysdev/fsl_soc.c                |    5
+>  b/arch/powerpc/sysdev/qe_lib/qe.c              |   64 +++++---
+>  b/drivers/net/ucc_geth_mii.c                   |    4
+>  b/drivers/spi/spi_mpc83xx.c                    |   10 -
+>  26 files changed, 284 insertions(+), 204 deletions(-)
 
-> Are you saying that TDM is sharing same pins with the other QE device,
-> and we can choose to use/not use some device depending on which driver
-> is loaded?
+Heh. `git-format-patch --stdout -5 | diffstat` doesn't work correctly.
+Once I've already stumbled against this, but obviously forgot.
 
-No.  I'd have to closely examine the DTS, but I don't think that UCC devices 
-share pins at all.  But that isn't my point.
+Here is correct diffstat summary:
 
-> In that particular case UCC configuration is static, for every UCC.
-> So, we can set up all pins in the firmware/board file.
-
-Yes, but deciding what the UCC does might not be static.  At what point do we 
-declare, "UCC5 is for eth0 and eth0 only"?
-
-The advantage of putting the pin configurations in the device tree is that they 
-now become configurable.  I can envision a scenario where UCC5 could be either 
-an Ethernet or a UART, depending on the setting of some jumpers on the board. 
-That's what the QE was designed for: any UCC can do any task, and you can even 
-have a UCC change its purpose while the system is running.  So I don't want the 
-pin configurations hard-coded into the kernel.  Having them in the device tree 
-gives me some flexibility.
-
-For instance, I have a plan (that I keep postponing) to introduce a new feature 
-in U-Boot where U-Boot can determine the settings of some board jumpers and 
-modify the device tree accordingly.  The instructions on how to modify the 
-device tree would be embedded in the tree itself.  I can't support this feature 
-if the kernel calls par_io_config_pin() regardless of what's in the device tree.
+ Documentation/powerpc/booting-without-of.txt |   37 +++----
+ arch/powerpc/boot/dts/mpc8313erdb.dts        |    4
+ arch/powerpc/boot/dts/mpc832x_mds.dts        |   20 +--
+ arch/powerpc/boot/dts/mpc832x_rdb.dts        |   21 ++-
+ arch/powerpc/boot/dts/mpc8349emitx.dts       |    4
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts     |    4
+ arch/powerpc/boot/dts/mpc834x_mds.dts        |    4
+ arch/powerpc/boot/dts/mpc836x_mds.dts        |   21 ++-
+ arch/powerpc/boot/dts/mpc836x_rdk.dts        |   11 --
+ arch/powerpc/boot/dts/mpc8568mds.dts         |   20 ++-
+ arch/powerpc/kernel/legacy_serial.c          |    3
+ arch/powerpc/platforms/83xx/mpc832x_mds.c    |   11 +-
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   11 +-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c    |   11 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c    |   32 +++---
+ arch/powerpc/sysdev/fsl_soc.c                |  142 ++++++++++++++++++---------
+ arch/powerpc/sysdev/qe_lib/qe.c              |   63 ++++++++---
+ drivers/net/ucc_geth_mii.c                   |    3
+ drivers/spi/spi_mpc83xx.c                    |    6 -
+ 19 files changed, 258 insertions(+), 170 deletions(-)
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
