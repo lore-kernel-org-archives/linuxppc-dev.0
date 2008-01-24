@@ -1,19 +1,19 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [209.5.119.169])
-	by ozlabs.org (Postfix) with ESMTP id 6D5BDDDE9E
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 09:40:46 +1100 (EST)
-Date: Thu, 24 Jan 2008 17:40:44 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 93DE0DDE3B
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 09:47:01 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0OMkuAl015614
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 16:46:56 -0600
+Date: Thu, 24 Jan 2008 16:44:33 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: reduce code duplication in legacy_serial, add
-	UART parent types
-Message-ID: <20080124224043.GA418@windriver.com>
-References: <200801172335.48817.arnd@arndb.de>
-	<12011947821738-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH] [POWERPC] Add a cuboot wrapper for 85xx w/CPM2
+Message-ID: <Pine.LNX.4.64.0801241644140.17716@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <12011947821738-git-send-email-paul.gortmaker@windriver.com>
-Cc: scottwood@freescale.com, arnd@arndb.de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,121 +23,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message: [PATCH] powerpc: reduce code duplication in legacy_serial, add UART parent types
-on 24/01/2008 Paul Gortmaker wrote:
-
-> @@ -31,6 +32,15 @@ static struct legacy_serial_info {
->  	int				irq_check_parent;
->  	phys_addr_t			taddr;
->  } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
-> +
-> +static struct __init of_device_id parents[] = {
-
-Oops, that should have been __initdata to be 100% correct...
-
-P.
+The bd info struct changes if we have CPM2 enabled in u-boot.
 
 ---
+ arch/powerpc/boot/Makefile           |    6 +++-
+ arch/powerpc/boot/cuboot-85xx-cpm2.c |   61 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 66 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/cuboot-85xx-cpm2.c
 
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 1e20aca..1a42970 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -62,7 +62,8 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+ 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c \
+ 		fixed-head.S ep88xc.c cuboot-hpc2.c ep405.c cuboot-taishan.c \
+-		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c
++		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
++		cuboot-85xx-cpm2.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
 
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Thu, 24 Jan 2008 11:59:12 -0500
-Subject: [PATCH] powerpc: reduce code duplication in legacy_serial, add UART parent types
-
-The legacy_serial was treating each UART parent in a separate code block.
-Rather than continue this trend for the new parent IDs, this condenses
-all (soc, tsi, opb, plus two more new types) into one of_device_id array.
-The new types are wrs,epld-localbus for the Wind River sbc8560, and a
-more generic "simple-bus" as requested by Scott Wood.
-
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/kernel/legacy_serial.c |   45 +++++++++++++---------------------
- 1 files changed, 17 insertions(+), 28 deletions(-)
-
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 4bfff88..76b862b 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -4,6 +4,7 @@
- #include <linux/serial_core.h>
- #include <linux/console.h>
- #include <linux/pci.h>
-+#include <linux/of_device.h>
- #include <asm/io.h>
- #include <asm/mmu.h>
- #include <asm/prom.h>
-@@ -31,6 +32,15 @@ static struct legacy_serial_info {
- 	int				irq_check_parent;
- 	phys_addr_t			taddr;
- } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -200,6 +201,9 @@ image-$(CONFIG_PPC_MPC52xx)		+= cuImage.52xx
+ image-$(CONFIG_STORCENTER)		+= cuImage.824x
+ image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
+ image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
++ifeq ($(CONFIG_CPM2),y)
++image-$(CONFIG_PPC_85xx)		+= cuImage.85xx-cpm2
++endif
+ image-$(CONFIG_MPC7448HPC2)		+= cuImage.hpc2
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+ image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
+diff --git a/arch/powerpc/boot/cuboot-85xx-cpm2.c b/arch/powerpc/boot/cuboot-85xx-cpm2.c
+new file mode 100644
+index 0000000..e2616f2
+--- /dev/null
++++ b/arch/powerpc/boot/cuboot-85xx-cpm2.c
+@@ -0,0 +1,61 @@
++/*
++ * Old U-boot compatibility for 85xx
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
 +
-+static struct __initdata of_device_id parents[] = {
-+	{.type = "soc",},
-+	{.type = "tsi-bridge",},
-+	{.type = "opb", .compatible = "ibm,opb",},
-+	{.compatible = "simple-bus",},
-+	{.compatible = "wrs,epld-localbus",},
-+};
++#include "ops.h"
++#include "stdio.h"
++#include "cuboot.h"
 +
- static unsigned int legacy_serial_count;
- static int legacy_serial_console = -1;
- 
-@@ -306,18 +316,20 @@ void __init find_legacy_serial_ports(void)
- 		DBG(" no linux,stdout-path !\n");
- 	}
- 
--	/* First fill our array with SOC ports */
-+	/* Iterate over all the 16550 ports, looking for known parents */
- 	for_each_compatible_node(np, "serial", "ns16550") {
--		struct device_node *soc = of_get_parent(np);
--		if (soc && !strcmp(soc->type, "soc")) {
-+		struct device_node *parent = of_get_parent(np);
-+		if (!parent)
-+			continue;
-+		if (of_match_node(parents, parent) != NULL) {
- 			index = add_legacy_soc_port(np, np);
- 			if (index >= 0 && np == stdout)
- 				legacy_serial_console = index;
- 		}
--		of_node_put(soc);
-+		of_node_put(parent);
- 	}
- 
--	/* First fill our array with ISA ports */
-+	/* Next, fill our array with ISA ports */
- 	for_each_node_by_type(np, "serial") {
- 		struct device_node *isa = of_get_parent(np);
- 		if (isa && !strcmp(isa->name, "isa")) {
-@@ -328,29 +340,6 @@ void __init find_legacy_serial_ports(void)
- 		of_node_put(isa);
- 	}
- 
--	/* First fill our array with tsi-bridge ports */
--	for_each_compatible_node(np, "serial", "ns16550") {
--		struct device_node *tsi = of_get_parent(np);
--		if (tsi && !strcmp(tsi->type, "tsi-bridge")) {
--			index = add_legacy_soc_port(np, np);
--			if (index >= 0 && np == stdout)
--				legacy_serial_console = index;
--		}
--		of_node_put(tsi);
--	}
--
--	/* First fill our array with opb bus ports */
--	for_each_compatible_node(np, "serial", "ns16550") {
--		struct device_node *opb = of_get_parent(np);
--		if (opb && (!strcmp(opb->type, "opb") ||
--			    of_device_is_compatible(opb, "ibm,opb"))) {
--			index = add_legacy_soc_port(np, np);
--			if (index >= 0 && np == stdout)
--				legacy_serial_console = index;
--		}
--		of_node_put(opb);
--	}
--
- #ifdef CONFIG_PCI
- 	/* Next, try to locate PCI ports */
- 	for (np = NULL; (np = of_find_all_nodes(np));) {
++#define TARGET_85xx
++#define TARGET_CPM2
++#include "ppcboot.h"
++
++static bd_t bd;
++
++static void platform_fixups(void)
++{
++	void *soc;
++
++	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
++	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
++	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
++	dt_fixup_mac_address_by_alias("ethernet2", bd.bi_enet2addr);
++	dt_fixup_cpu_clocks(bd.bi_intfreq, bd.bi_busfreq / 8, bd.bi_busfreq);
++
++	/* Unfortunately, the specific model number is encoded in the
++	 * soc node name in existing dts files -- once that is fixed,
++	 * this can do a simple path lookup.
++	 */
++	soc = find_node_by_devtype(NULL, "soc");
++	if (soc) {
++		void *serial = NULL;
++
++		setprop(soc, "bus-frequency", &bd.bi_busfreq,
++		        sizeof(bd.bi_busfreq));
++
++		while ((serial = find_node_by_devtype(serial, "serial"))) {
++			if (get_parent(serial) != soc)
++				continue;
++
++			setprop(serial, "clock-frequency", &bd.bi_busfreq,
++			        sizeof(bd.bi_busfreq));
++		}
++	}
++}
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++                   unsigned long r6, unsigned long r7)
++{
++	CUBOOT_INIT();
++	fdt_init(_dtb_start);
++	serial_console_init();
++	platform_ops.fixups = platform_fixups;
++}
 -- 
-1.5.0.rc1.gf4b6c
+1.5.3.7
