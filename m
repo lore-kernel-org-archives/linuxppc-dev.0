@@ -1,14 +1,20 @@
-Return-Path: <hans.lehmann@ritter-elektronik.de>
-Received: from mail.textile.saurer.com (mail.schlafhorst.de [193.158.88.134])
-	by ozlabs.org (Postfix) with ESMTP id B0C3FDDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 00:19:29 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C85E8A.0B5CC506"
-Subject: Reboot at insmod of cf card driver
-Date: Thu, 24 Jan 2008 14:07:16 +0100
-Message-ID: <D75C3E75C6176746B68E0EF7245F616F611B10@SRVEXC01.sts.saurer.vpn>
-From: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 80E46DDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 00:29:17 +1100 (EST)
+Date: Thu, 24 Jan 2008 16:29:01 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] MPC8360E-RDK: device tree,
+	board file and defconfig
+Message-ID: <20080124132900.GA25982@localhost.localdomain>
+References: <20080123204507.GA12973@localhost.localdomain>
+	<20080124132201.c3086756.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080124132201.c3086756.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,350 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Thu, Jan 24, 2008 at 01:22:01PM +1100, Stephen Rothwell wrote:
+> On Wed, 23 Jan 2008 23:45:07 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> >
+> > +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+> > +static int __init mpc836x_rdk_declare_of_platform_devices(void)
+> > +{
+> > +	const struct of_device_id mpc836x_rdk_ids[] = {
+> 
+> Please change this to static, __initdata and not const, thanks. These
+> arrays are usually defined outside a function, but that is not really a
+> problem.
 
-------_=_NextPart_001_01C85E8A.0B5CC506
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Pity... we don't need these _ids anywhere outside that function. But
+looking into objdump output I see the problem now.
 
-Hi at all,
+Will change this back, thanks.
 
-i have strange problems with my cf_card driver on our MPC5200b board. =
-Because of our board schematic the cf card is mapped to memory space.=20
-The interrupt is routed to IRQ1. IRQ1 is rising edge sensitive.
-First the driver was written for Kernel 2.6.14 with device_driver =
-structure and run pretty. Now i have ported it to Kernel 2.6.23 with =
-of_platform_driver structure to get indepent of ppc.=20
+> > +static void __init mpc836x_rdk_setup_arch(void)
+> > +{
+> > +	struct device_node *np;
+> 
+> !defined(CONFIG_PCI) && !defined(CONFIG_QUICC_ENGINE) will produce a
+> warning here.
 
-Now my problem:
+Good catch, thanks.
 
-After I load my modul, the kernel start to reboot at command =
-probe_hwif_init.
-The failure occurs exatly in function "actual_try_to_identify" in =
-ide-probe.c when kernel send the identify command to status/command =
-register of ide device "(hwif->outb(cmd, DIE_COMMAND_REG);". =20
-By accident I figured out that no reboot occurs when I change interrupt =
-behauviour (level sensitive). But then several errors occured as =
-followed:
+> > +	if (ppc_md.progress)
+> > +		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
+> > +
+> > +#ifdef CONFIG_PCI
+> > +	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
+> > +		mpc83xx_add_bridge(np);
+> > +#endif
+> > +
+> > +#ifdef CONFIG_QUICC_ENGINE
+> > +	qe_reset();
+> > +
+> > +	np = of_find_compatible_node(NULL, NULL, "fsl,qe-pario");
+> > +	if (!np) {
+> > +		pr_warning("QE PIO not initialized!\n");
+> > +		return;
+> 
+> You need an of_node_put(np) before the return.
 
-root@RITTER_EL392:/lib/modules> insmod el392_cf_disk_drv.ko
-[   72.306114] IDE: EL392 IDE/ATA driver
-[   72.397169] Base address: d0000000, IO Size: 00020000
-[   72.413994] Memory remapped: 0xd0000000 -> 0xc5040000
-[   72.666923] cmd: 0x0ec , Adresse IDE_REG_COMMAND: 0xc5041006
-[   72.804238] hda: ELITE PRO CF CARD 1GB, CFA DISK drive
-[   73.126941] cmd: 0x0a1 , Adresse IDE_REG_COMMAND: 0xc5041006
-[   73.313920] cmd: 0x0a1 , Adresse IDE_REG_COMMAND: 0xc5041006
-[   73.503065] ide0 at 0xc5041008-0xc504100f,0xc504100f on irq 70
-[   73.521193] ------------[ cut here ]------------
-[   73.530365] Badness at c0105298 [verbose debug info unavailable]
-[   73.542244] NIP: c0105298 LR: c0104260 CTR: 00000000
-[   73.552071] REGS: c374dc30 TRAP: 0700   Not tainted  =
-(2.6.23.1-rt5-pcm030-1trunk)
-[   73.566867] MSR: 00029032 <EE,ME,IR,DR>  CR: 84004484  XER: 00000000
-[   73.579487] TASK =3D c36d6000[231] 'insmod' THREAD: c374c000
-[   73.589988] GPR00: 00000001 c374dce0 c36d6000 c02c0ab0 c02396c4 =
-c02bf9b4 c02395ec 00000242
-[   73.606564] GPR08: c36d6000 00000002 00000001 c02c05dc 84004484 =
-100decc4 c50235a8 c3d0c280
-[   73.623139] GPR16: c5022e6c c5022e94 00000000 00000035 00000124 =
-00000000 c5022ac4 c5022ebc
-[   73.639713] GPR24: c0048214 c02c0544 00000015 c028c49c c0240000 =
-c0200000 00000000 c02c0a98
-[   73.656636] NIP [c0105298] kref_get+0xc/0x24
-[   73.665152] LR [c0104260] kobject_get+0x20/0x38
-[   73.674125] Call Trace:
-[   73.678955] [c374dce0] [c02c0428] 0xc02c0428 (unreliable)
-[   73.689660] [c374dcf0] [c01280b4] get_device+0x20/0x38
-[   73.699858] [c374dd00] [c0128f14] device_add+0x6c/0x518
-[   73.710214] [c374dd40] [c0144130] =
-probe_hwif_init_with_fixup+0x80/0xb0
-[   73.723171] [c374dd60] [c5025304] el392_ata_probe+0x210/0x258 =
-[el392_cf_disk_drv]
-[   73.738017] [c374dda0] [c015fc18] of_platform_device_probe+0x58/0x80
-[   73.750632] [c374ddc0] [c012b9ac] driver_probe_device+0xb8/0x1ec
-[   73.762543] [c374dde0] [c012bb64] __driver_attach+0x84/0x88
-[   73.773584] [c374de00] [c012ac88] bus_for_each_dev+0x58/0x94
-[   73.784798] [c374de30] [c012b7bc] driver_attach+0x24/0x34
-[   73.795495] [c374de40] [c012b0e4] bus_add_driver+0x98/0x1d8
-[   73.806536] [c374de60] [c012bd0c] driver_register+0x58/0xa0
-[   73.817577] [c374de70] [c000a0e0] =
-of_register_platform_driver+0x28/0x38
-[   73.830709] [c374de80] [c5028024] el392_ata_init+0x24/0x78 =
-[el392_cf_disk_drv]
-[   73.845022] [c374de90] [c0049550] sys_init_module+0x16c/0x14b0
-[   73.856604] [c374df40] [c000f670] ret_from_syscall+0x0/0x38
-[   73.867662] --- Exception: c01 at 0xff26d98
-[   73.875941]     LR =3D 0x1002ebdc
-[   73.882143] Instruction dump:
-[   73.888009] 409e0010 7c8903a6 4e800421 38000001 7c030378 80010014 =
-38210010 7c0803a6
-[   73.903381] 4e800020 80030000 7c000034 5400d97e <0f000000> 7d201828 =
-31290001 7d20192d
-[   73.923415] Unable to handle kernel paging request for data at =
-address 0x00000024
-[   73.945442] Faulting instruction address: 0xc00b8d08
-[   73.960258] stopped custom tracer.
-[   73.970940] Oops: Kernel access of bad area, sig: 11 [#1]
-[   73.981635] PREEMPT ritter_el392
-[   73.988015] Modules linked in: el392_cf_disk_drv
-[   73.997165] NIP: c00b8d08 LR: c00b8d04 CTR: 00000000
-[   74.006990] REGS: c374dbc0 TRAP: 0300   Not tainted  =
-(2.6.23.1-rt5-pcm030-1trunk)
-[   74.021787] MSR: 00009032 <EE,ME,IR,DR>  CR: 24004442  XER: 00000000
-[   74.034404] DAR: 00000024, DSISR: 20000000
-[   74.042501] TASK =3D c36d6000[231] 'insmod' THREAD: c374c000
-[   74.053003] GPR00: c00b8d04 c374dc70 c36d6000 c029b248 00000004 =
-00000000 00000000 00000380
-[   74.069578] GPR08: c36d6000 c02b0000 00000000 00000000 24004488 =
-100decc4 c50235a8 c3d0c280
-[   74.086154] GPR16: c5022e6c c5022e94 00000000 00000035 00000124 =
-00000000 c5022ac4 c5022ebc
-[   74.102730] GPR24: c0048214 c02c0544 c374dcc8 c374dc98 c02c04f0 =
-00000000 c029b248 c374dc98
-[   74.119654] NIP [c00b8d08] sysfs_addrm_start+0x40/0xcc
-[   74.129883] LR [c00b8d04] sysfs_addrm_start+0x3c/0xcc
-[   74.139887] Call Trace:
-[   74.144717] [c374dc70] [c00b8d04] sysfs_addrm_start+0x3c/0xcc =
-(unreliable)
-[   74.158347] [c374dc90] [c00b956c] create_dir+0x50/0xd8
-[   74.168530] [c374dcc0] [c00b962c] sysfs_create_dir+0x38/0x9c
-[   74.179739] [c374dce0] [c01044ac] kobject_shadow_add+0xb0/0x1c0
-[   74.191504] [c374dd00] [c0128f60] device_add+0xb8/0x518
-[   74.201874] [c374dd40] [c0144130] =
-probe_hwif_init_with_fixup+0x80/0xb0
-[   74.214831] [c374dd60] [c5025304] el392_ata_probe+0x210/0x258 =
-[el392_cf_disk_drv]
-[   74.229679] [c374dda0] [c015fc18] of_platform_device_probe+0x58/0x80
-[   74.242300] [c374ddc0] [c012b9ac] driver_probe_device+0xb8/0x1ec
-[   74.254211] [c374dde0] [c012bb64] __driver_attach+0x84/0x88
-[   74.265252] [c374de00] [c012ac88] bus_for_each_dev+0x58/0x94
-[   74.276466] [c374de30] [c012b7bc] driver_attach+0x24/0x34
-[   74.287164] [c374de40] [c012b0e4] bus_add_driver+0x98/0x1d8
-[   74.298205] [c374de60] [c012bd0c] driver_register+0x58/0xa0
-[   74.309247] [c374de70] [c000a0e0] =
-of_register_platform_driver+0x28/0x38
-[   74.322380] [c374de80] [c5028024] el392_ata_init+0x24/0x78 =
-[el392_cf_disk_drv]
-[   74.336693] [c374de90] [c0049550] sys_init_module+0x16c/0x14b0
-[   74.348276] [c374df40] [c000f670] ret_from_syscall+0x0/0x38
-[   74.359334] --- Exception: c01 at 0xff26d98
-[   74.367612]     LR =3D 0x1002ebdc
-[   74.373816] Instruction dump:
-[   74.379683] 7c7f1b78 3bc9b248 90010024 38000000 7c9d2378 9003000c =
-90030004 90030008
-[   74.395056] 7fc3f378 909f0000 4813b041 3d20c02b <809d0024> 3ca0c00c =
-8069f5a4 38a5897c
-Segmentation fault
-root@RITTER_EL392:/lib/modules>
+Hm, really? I think I don't. But if you insist... :-)
 
-Thanks anybody for help.
-
-
-
-
-=20
-
-=20
-Mit freundlichen Gr=FC=DFen
-
-Hans Lehmann
-Dipl.-Ing. Elektrotechnik
-
-=20
-
-RITTER Elektronik GmbH
-Leverkuser Strasse 65
-D-42897 Remscheid
-
-Tel.	+49 (0) 2191 - 67 32 40
-Fax 	+49 (0) 2191 - 67 14 29
-Email 	hans.lehmann@ritter-elektronik.de
-Homepage  www.ritter-elektronik.de
-
-Gesch=E4ftsf=FChrer: Manfred A. Wagner, Dr. Uwe Baader
-Sitz der Gesellschaft: Oberhausen
-HRB 17168 Duisburg    USt-ID DE 814009849
-
-
- <<el392_cf_disk_drv.h>>  <<el392_cf_disk_drv.c>>=20
-
-------_=_NextPart_001_01C85E8A.0B5CC506
-Content-Type: application/octet-stream;
-	name="el392_cf_disk_drv.h"
-Content-Transfer-Encoding: base64
-Content-Description: el392_cf_disk_drv.h
-Content-Disposition: attachment;
-	filename="el392_cf_disk_drv.h"
-
-LyoNCiAqIGRyaXZlci9pZGUvZWwzOTJfY2ZfZGlzay5oDQogKg0KICogRGVmaW5pdGlvbnMgZm9y
-IFJJVFRFUiBFbGVrdHJvbmlrIEVMMzkyX2NmX2Rpc2sgZHJpdmVyLiANCiAqIA0KICogTWFpbnRh
-aW5lciA6IEhhbnMgTGVobWFubiA8aGFucy5sZWhtYW5uQHJpdHRlci1lbGVrdHJvbmlrLmRlPg0K
-ICoNCiAqIENvcHlyaWdodCAyMDA3LTIwMDggUklUVEVSLUVsZWt0cm9uaWsgPHd3dy5yaXR0ZXIt
-ZWxla3Ryb25pay5kZT4NCiAqDQogKiBUaGlzIGZpbGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIHRl
-cm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQ0KICogdmVyc2lvbiAyLiBUaGlz
-IHByb2dyYW0gaXMgbGljZW5zZWQgImFzIGlzIiB3aXRob3V0IGFueSB3YXJyYW50eSBvZiBhbnkN
-CiAqIGtpbmQsIHdoZXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLg0KICovDQoNCg0KI2RlZmluZQlE
-QVRBCQkJMHgxMDA4DQojZGVmaW5lCUVSUk9SCQkJMHgxMDAwDQojZGVmaW5lCVNFQ1RPUl9DTlQJ
-CTB4MTAwMw0KI2RlZmluZQlTRUNUT1JfTk8JCTB4MTAwMg0KI2RlZmluZSBDWUxfTE9XCQkJMHgx
-MDA1DQojZGVmaW5lIENZTF9ISUdICQkweDEwMDQNCiNkZWZpbmUJU0VMRUNUCQkJMHgxMDA3DQoj
-ZGVmaW5lCVNUQVRVUwkJCTB4MTAwNg0KI2RlZmluZQlBTFRTVEFUX0NUTAkJMHgxMDBGDQoNCiNk
-ZWZpbmUgRFJJVkVSX05BTUUJCSJlbDM5Ml9pZGUiDQoNCiNkZWZpbmUgTVBDNTJ4eF9DUklUX0lS
-UV9OVU0JNA0KI2RlZmluZSBNUEM1Mnh4X01BSU5fSVJRX05VTQkxNw0KI2RlZmluZSBNUEM1Mnh4
-X1NETUFfSVJRX05VTQkxNw0KI2RlZmluZSBNUEM1Mnh4X1BFUlBfSVJRX05VTQkyMw0KDQojZGVm
-aW5lIE1QQzUyeHhfQ1JJVF9JUlFfQkFTRQkxDQojZGVmaW5lIE1QQzUyeHhfTUFJTl9JUlFfQkFT
-RQkoTVBDNTJ4eF9DUklUX0lSUV9CQVNFICsgTVBDNTJ4eF9DUklUX0lSUV9OVU0pDQojZGVmaW5l
-IE1QQzUyeHhfU0RNQV9JUlFfQkFTRQkoTVBDNTJ4eF9NQUlOX0lSUV9CQVNFICsgTVBDNTJ4eF9N
-QUlOX0lSUV9OVU0pDQojZGVmaW5lIE1QQzUyeHhfUEVSUF9JUlFfQkFTRQkoTVBDNTJ4eF9TRE1B
-X0lSUV9CQVNFICsgTVBDNTJ4eF9TRE1BX0lSUV9OVU0pDQoNCiNkZWZpbmUgTVBDNTJ4eF9JUlEw
-CQkJKE1QQzUyeHhfQ1JJVF9JUlFfQkFTRSArIDApDQojZGVmaW5lIE1QQzUyeHhfU0xJQ0VfVElN
-RVJfMF9JUlEJKE1QQzUyeHhfQ1JJVF9JUlFfQkFTRSArIDEpDQojZGVmaW5lIE1QQzUyeHhfSElf
-SU5UX0lSUQkJKE1QQzUyeHhfQ1JJVF9JUlFfQkFTRSArIDIpDQojZGVmaW5lIE1QQzUyeHhfQ0NT
-X0lSUQkJCShNUEM1Mnh4X0NSSVRfSVJRX0JBU0UgKyAzKQ0KDQojZGVmaW5lIE1QQzUyeHhfSVJR
-MQkJCShNUEM1Mnh4X01BSU5fSVJRX0JBU0UgKyAxKQ0KI2RlZmluZSBNUEM1Mnh4X0lSUTIJCQko
-TVBDNTJ4eF9NQUlOX0lSUV9CQVNFICsgMikNCiNkZWZpbmUgTVBDNTJ4eF9JUlEzCQkJKE1QQzUy
-eHhfTUFJTl9JUlFfQkFTRSArIDMpDQoNCiNkZWZpbmUgTVBDNTJ4eF9TRE1BX0lSUQkJKE1QQzUy
-eHhfUEVSUF9JUlFfQkFTRSArIDApDQojZGVmaW5lIE1QQzUyeHhfUFNDMV9JUlEJCShNUEM1Mnh4
-X1BFUlBfSVJRX0JBU0UgKyAxKQ0KI2RlZmluZSBNUEM1Mnh4X1BTQzJfSVJRCQkoTVBDNTJ4eF9Q
-RVJQX0lSUV9CQVNFICsgMikNCiNkZWZpbmUgTVBDNTJ4eF9QU0MzX0lSUQkJKE1QQzUyeHhfUEVS
-UF9JUlFfQkFTRSArIDMpDQojZGVmaW5lIE1QQzUyeHhfUFNDNl9JUlEJCShNUEM1Mnh4X1BFUlBf
-SVJRX0JBU0UgKyA0KQ0KI2RlZmluZSBNUEM1Mnh4X0lSREFfSVJRCQkoTVBDNTJ4eF9QRVJQX0lS
-UV9CQVNFICsgNCkNCiNkZWZpbmUgTVBDNTJ4eF9GRUNfSVJRCQkJKE1QQzUyeHhfUEVSUF9JUlFf
-QkFTRSArIDUpDQojZGVmaW5lIE1QQzUyeHhfVVNCX0lSUQkJCShNUEM1Mnh4X1BFUlBfSVJRX0JB
-U0UgKyA2KQ0KI2RlZmluZSBNUEM1Mnh4X0FUQV9JUlEJCQkoTVBDNTJ4eF9QRVJQX0lSUV9CQVNF
-ICsgNykNCiNkZWZpbmUgTVBDNTJ4eF9QQ0lfQ05UUkxfSVJRCQkoTVBDNTJ4eF9QRVJQX0lSUV9C
-QVNFICsgOCkNCiNkZWZpbmUgTVBDNTJ4eF9QQ0lfU0NJUlhfSVJRCQkoTVBDNTJ4eF9QRVJQX0lS
-UV9CQVNFICsgOSkNCiNkZWZpbmUgTVBDNTJ4eF9QQ0lfU0NJVFhfSVJRCQkoTVBDNTJ4eF9QRVJQ
-X0lSUV9CQVNFICsgMTApDQojZGVmaW5lIE1QQzUyeHhfUFNDNF9JUlEJCShNUEM1Mnh4X1BFUlBf
-SVJRX0JBU0UgKyAxMSkNCiNkZWZpbmUgTVBDNTJ4eF9QU0M1X0lSUQkJKE1QQzUyeHhfUEVSUF9J
-UlFfQkFTRSArIDEyKQ0KI2RlZmluZSBNUEM1Mnh4X1NQSV9NT0RGX0lSUQkJKE1QQzUyeHhfUEVS
-UF9JUlFfQkFTRSArIDEzKQ0KI2RlZmluZSBNUEM1Mnh4X1NQSV9TUElGX0lSUQkJKE1QQzUyeHhf
-UEVSUF9JUlFfQkFTRSArIDE0KQ0KI2RlZmluZSBNUEM1Mnh4X0kyQzFfSVJRCQkoTVBDNTJ4eF9Q
-RVJQX0lSUV9CQVNFICsgMTUpDQojZGVmaW5lIE1QQzUyeHhfSTJDMl9JUlEJCShNUEM1Mnh4X1BF
-UlBfSVJRX0JBU0UgKyAxNikNCiNkZWZpbmUgTVBDNTJ4eF9NU0NBTjFfSVJRCQkoTVBDNTJ4eF9Q
-RVJQX0lSUV9CQVNFICsgMTcpDQojZGVmaW5lIE1QQzUyeHhfTVNDQU4yX0lSUQkJKE1QQzUyeHhf
-UEVSUF9JUlFfQkFTRSArIDE4KQ0KI2RlZmluZSBNUEM1Mnh4X0lSX1JYX0lSUQkJKE1QQzUyeHhf
-UEVSUF9JUlFfQkFTRSArIDE5KQ0KI2RlZmluZSBNUEM1Mnh4X0lSX1RYX0lSUQkJKE1QQzUyeHhf
-UEVSUF9JUlFfQkFTRSArIDIwKQ0KI2RlZmluZSBNUEM1Mnh4X1hMQl9BUkJfSVJRCQkoTVBDNTJ4
-eF9QRVJQX0lSUV9CQVNFICsgMjEpDQojZGVmaW5lIE1QQzUyeHhfQkRMQ19JUlEJCShNUEM1Mnh4
-X1BFUlBfSVJRX0JBU0UgKyAyMikNCg0KDQpzdGF0aWMgaW50IF9fZGV2aW5pdCBlbDM5Ml9hdGFf
-cHJvYmUoc3RydWN0IG9mX2RldmljZSAqb3AsIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgKm1h
-dGNoKTsNCnN0YXRpYyBpbnQgX19kZXZleGl0IGVsMzkyX2F0YV9yZW1vdmUoc3RydWN0IG9mX2Rl
-dmljZSAqb3ApOw0KDQoNCnN0YXRpYyBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGVsMzkyX2lkZV9vZl9t
-YXRjaFtdID0gew0KCXsNCgkJLm5hbWUgPSAiYXRhIiwNCgkJLmNvbXBhdGlibGUgPSAiZWwzOTJf
-aWRlIiwNCgl9LA0KLyoJew0KCQkubmFtZSA9ICJhdGEiLA0KCQkuY29tcGF0aWJsZSA9ICJlbDM5
-Ml9hdGEiLA0KCX0sKi8NCgl7fSwNCn07DQoNCg0Kc3RhdGljIHN0cnVjdCBvZl9wbGF0Zm9ybV9k
-cml2ZXIgZWwzOTJfaWRlX29mX3BsYXRmb3JtX2RyaXZlciA9IHsNCgkubmFtZQkJPSAiZWwzOTJf
-aWRlIiwNCgkubWF0Y2hfdGFibGUJPSBlbDM5Ml9pZGVfb2ZfbWF0Y2gsDQoJLnByb2JlICAgICAg
-ICAgID0gZWwzOTJfYXRhX3Byb2JlLA0KICAgICAgICAucmVtb3ZlICAgICAgICAgPSBlbDM5Ml9h
-dGFfcmVtb3ZlLA0KCS5kcml2ZXIJCT0gew0KCS4JbmFtZQk9ICJlbDM5Ml9pZGUiLA0KCS4Jb3du
-ZXIJPSBUSElTX01PRFVMRSwNCgl9LA0KfTsNCg0KDQoNCg==
-
-------_=_NextPart_001_01C85E8A.0B5CC506
-Content-Type: application/octet-stream;
-	name="el392_cf_disk_drv.c"
-Content-Transfer-Encoding: base64
-Content-Description: el392_cf_disk_drv.c
-Content-Disposition: attachment;
-	filename="el392_cf_disk_drv.c"
-
-LyogDQogKiBkcml2ZXJzL2lkZS9lbDM5Ml9jZl9kaXNrLmMNCiAqDQogKiBCYXNlZCB1cG9uIGNv
-ZGUgd3JpdHRlbiBieSBCZW5lZGlrdCBTcHJhbmdlciwgKDIwMDUpTGludXRyb25peA0KICoNCiAq
-IE1haW50YWluZXIgOiBIYW5zIExlaG1hbm4gPGhhbnMubGVobWFubkByaXR0ZXItZWxla3Ryb25p
-ay5kZT4NCiAqDQogKiBDb3B5cmlnaHQgMjAwNy0yMDA4IFJJVFRFUi1FbGVrdHJvbmlrIDx3d3cu
-cml0dGVyLWVsZWt0cm9uaWsuZGU+DQogKg0KICogVGhpcyBmaWxlIGlzIGxpY2Vuc2VkIHVuZGVy
-IHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UNCiAqIHZlcnNpb24g
-Mi4gVGhpcyBwcm9ncmFtIGlzIGxpY2Vuc2VkICJhcyBpcyIgd2l0aG91dCBhbnkgd2FycmFudHkg
-b2YgYW55DQogKiBraW5kLCB3aGV0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4NCiovDQoNCiNpbmNs
-dWRlIDxsaW51eC9rZXJuZWwuaD4NCiNpbmNsdWRlIDxsaW51eC9zbGFiLmg+DQojaW5jbHVkZSA8
-bGludXgvZGVsYXkuaD4NCiNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4NCiNpbmNsdWRlIDxs
-aW51eC90eXBlcy5oPg0KI2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+DQojaW5jbHVkZSA8bGludXgv
-aW5pdC5oPg0KI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KI2luY2x1ZGUgPGFzbS9pby5oPg0K
-I2luY2x1ZGUgPGFzbS9wcm9tLmg+DQojaW5jbHVkZSA8bGludXgvaWRlLmg+DQojaW5jbHVkZSA8
-YXNtL29mX2RldmljZS5oPg0KI2luY2x1ZGUgPGFzbS9vZl9wbGF0Zm9ybS5oPg0KI2luY2x1ZGUg
-PGFzbS9tcGM1Mnh4Lmg+DQoNCiNpbmNsdWRlICJlbDM5Ml9jZl9kaXNrX2Rydi5oIg0KI2luY2x1
-ZGUgInJpdHRlcl9lbDM5MmEuaCINCg0KDQp2b2lkIGVsMzkyX2lkZV9zZXR1cF9wb3J0cyhpZGVf
-aHdpZl90ICpod2lmLCB2b2lkICppb2FkZHIpDQp7DQoJaHdpZi0+aHcuaW9fcG9ydHNbSURFX0RB
-VEFfT0ZGU0VUXSA9ICh1bnNpZ25lZCBsb25nKSBpb2FkZHIgKyBEQVRBOw0KCWh3aWYtPmh3Lmlv
-X3BvcnRzW0lERV9FUlJPUl9PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcpIGlvYWRkciArIEVSUk9S
-Ow0KCWh3aWYtPmh3LmlvX3BvcnRzW0lERV9OU0VDVE9SX09GRlNFVF0gPSAodW5zaWduZWQgbG9u
-ZykgaW9hZGRyICsgU0VDVE9SX0NOVDsNCglod2lmLT5ody5pb19wb3J0c1tJREVfU0VDVE9SX09G
-RlNFVF0gPSAodW5zaWduZWQgbG9uZykgaW9hZGRyICsgU0VDVE9SX05POw0KCWh3aWYtPmh3Lmlv
-X3BvcnRzW0lERV9MQ1lMX09GRlNFVF0gPSAodW5zaWduZWQgbG9uZykgaW9hZGRyICsgQ1lMX0xP
-VzsNCglod2lmLT5ody5pb19wb3J0c1tJREVfSENZTF9PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcp
-IGlvYWRkciArIENZTF9ISUdIOw0KCWh3aWYtPmh3LmlvX3BvcnRzW0lERV9TRUxFQ1RfT0ZGU0VU
-XSA9ICh1bnNpZ25lZCBsb25nKSBpb2FkZHIgKyBTRUxFQ1Q7DQoJaHdpZi0+aHcuaW9fcG9ydHNb
-SURFX1NUQVRVU19PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcpIGlvYWRkciArIFNUQVRVUzsNCglo
-d2lmLT5ody5pb19wb3J0c1tJREVfQ09OVFJPTF9PRkZTRVRdID0gKHVuc2lnbmVkIGxvbmcpIGlv
-YWRkciArIEFMVFNUQVRfQ1RMOw0KfQ0KDQpzdGF0aWMgaW50IF9fZGV2aW5pdCBlbDM5Ml9hdGFf
-cHJvYmUoc3RydWN0IG9mX2RldmljZSAqb3AsIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgKm1h
-dGNoKQ0Kew0KCWludCByZXQgPSAtRU5PREVWOw0KCWludCBpID0gMDsNCgl1bnNpZ25lZCBsb25n
-IHJlc19zdGFydCwgcmVzX2xlbmd0aDsNCgl2b2lkICppb2FkZHI7DQoJaWRlX2h3aWZfdCAqaHdp
-ZjsNCglpbnQgYXRhX2lycSA9IE5PX0lSUTsNCg0KCXN0cnVjdCByZXNvdXJjZSByZXNfbWVtOw0K
-DQoJaWYgKChyZXQgPSBvZl9hZGRyZXNzX3RvX3Jlc291cmNlKG9wLT5ub2RlLCAwLCAmcmVzX21l
-bSkpICE9IDApDQoJew0KCQlwcmludGsoS0VSTl9FUlIgIkVMMzkyX0FUQTogQ2FuIG5vdCBmaW5k
-IElPIG1lbSFcbiIpOw0KCQlnb3RvIG91dDsNCgl9DQoNCglyZXNfc3RhcnQgPSByZXNfbWVtLnN0
-YXJ0Ow0KCXJlc19sZW5ndGggID0gcmVzX21lbS5lbmQgLSByZXNfbWVtLnN0YXJ0ICsgMTsNCgkN
-CglpZiAoIXJlcXVlc3RfbWVtX3JlZ2lvbihyZXNfc3RhcnQsIHJlc19sZW5ndGgsIERSSVZFUl9O
-QU1FKSkgew0KICAgICAgICAgICAgICAgIHByaW50ayhLRVJOX0VSUiJkZXZpY2UgYnVzeS5cbiIp
-Ow0KICAgICAgICAgICAgICAgIHJldCA9IC1FQlVTWTsNCiAgICAgICAgICAgICAgICBnb3RvIG91
-dDsNCiAgICAgICAgfQ0KDQoJcHJpbnRrKCJCYXNlIGFkZHJlc3M6ICUwOGx4LCBJTyBTaXplOiAl
-MDhseFxuIixyZXNfc3RhcnQsIHJlc19sZW5ndGgpOyAJDQoJDQoJaW9hZGRyID0gaW9yZW1hcChy
-ZXNfc3RhcnQsIHJlc19sZW5ndGgpOw0KCWlmICghaW9hZGRyKSB7DQogICAgICAgICAgICAgICAg
-cHJpbnRrKEtFUk5fRVJSICJFTDM5Ml9BVEE6IGlvcmVtYXAgZmFpbGVkLlxuIik7DQoJCXJldCA9
-IC1FTk9NRU07DQoJCWdvdG8gbm9fbWVtOw0KICAgICAgICB9DQoJcHJpbnRrICgiTWVtb3J5IHJl
-bWFwcGVkOiAweCUwOGx4IC0+IDB4JTA4eFxuIiwgcmVzX3N0YXJ0LCAodW5zaWduZWQgaW50KWlv
-YWRkcik7DQoNCgl3aGlsZSAoaSA8IE1BWF9IV0lGUyAmJiAoaWRlX2h3aWZzW2ldLnByZXNlbnQp
-KQ0KCQkrK2k7DQoJaWYgKGkgPj0gTUFYX0hXSUZTKSB7DQoJCXByaW50ayhLRVJOX0VSUiAiRUwz
-OTJfQVRBOiBObyBJREUtc2xvdCBmcmVlXG4iKTsNCgkJcmV0dXJuIC1FTk9ERVY7DQoJCWdvdG8g
-bm9faWRlOw0KCX0NCgkNCglod2lmID0gJmlkZV9od2lmc1tpXTsNCg0KCWVsMzkyX2lkZV9zZXR1
-cF9wb3J0cyhod2lmLCBpb2FkZHIpOw0KDQoJbWVtY3B5KGh3aWYtPmlvX3BvcnRzLCBod2lmLT5o
-dy5pb19wb3J0cywgc2l6ZW9mKGh3aWYtPmh3LmlvX3BvcnRzKSk7DQoNCglhdGFfaXJxID0gaXJx
-X29mX3BhcnNlX2FuZF9tYXAob3AtPm5vZGUsIDApOw0KCWlmIChhdGFfaXJxID09IE5PX0lSUSkg
-ew0KCQlwcmludGsoS0VSTl9FUlIgIm1wYzUyeHgtaWRlOiBJbnZhbGlkIElSUSFcbiIpOw0KCQly
-ZXR1cm4gLUVJTlZBTDsNCgl9DQoNCglod2lmLT5kcml2ZXNbMF0uYXV0b3R1bmUgPSBJREVfVFVO
-RV9OT0FVVE87DQoJaHdpZi0+ZHJpdmVzWzFdLmF1dG90dW5lID0gSURFX1RVTkVfTk9BVVRPOw0K
-CWh3aWYtPmRyaXZlc1swXS51bm1hc2sgPSAxOw0KCWh3aWYtPmRyaXZlc1swXS5hdXRvZG1hID0g
-aHdpZi0+YXV0b2RtYTsNCglod2lmLT5kcml2ZXNbMF0ubm9faW9fMzJiaXQgPSAxOw0KCQ0KCWh3
-aWYtPmlycSA9IGF0YV9pcnE7DQoJaHdpZi0+bW1pbyA9IDA7DQoJaHdpZi0+bm9faW9fMzJiaXQg
-PSAxOw0KCWh3aWYtPmF0YXBpX2RtYSA9IDA7DQoJaHdpZi0+dWx0cmFfbWFzayA9IDB4MDA7DQoJ
-aHdpZi0+bXdkbWFfbWFzayA9IDB4MDA7DQoJaHdpZi0+c3dkbWFfbWFzayA9IDB4MDA7DQoJaHdp
-Zi0+cHJlc2VudCA9IDE7DQoJaHdpZi0+bm9wcm9iZSA9IDA7DQoJaHdpZi0+c2hhcmluZ19pcnEg
-PSAwOw0KCWh3aWYtPm5vX2xiYTQ4ID0gMTsNCglod2lmLT5ub19sYmE0OF9kbWEgPSAxOw0KCWh3
-aWYtPmNoaXBzZXQgPSBpZGVfZm9yY2VkOwkNCgkJDQoJZGVmYXVsdF9od2lmX21taW9wcyhod2lm
-KTsNCgkNCglkZXZfc2V0X2RydmRhdGEoJm9wLT5kZXYsIGh3aWYpOwkNCgkJDQoJcHJvYmVfaHdp
-Zl9pbml0KGh3aWYpOw0KCXByaW50aygiV2F0IGRlbm4gaGllciBsb3NlXG4iKTsNCgkNCi8qCWlm
-IChpID09IC0xKSB7DQoJCXByaW50ayhLRVJOX0lORk8gIkVMMzkyX0FUQTogUmVnaXN0ZXJpbmcg
-SURFIGZhaWxlZFxuIik7DQoJCXJldCA9IC1FSU87DQoJCWdvdG8gbm9faWRlOw0KCX0qLw0KCQ0K
-Ly8JaWRlX3Byb2NfcmVnaXN0ZXJfcG9ydChod2lmKTsNCgkNCglwcmludGsoS0VSTl9JTkZPDQoJ
-ICAiRUwzOTJfSURFOiBTZXR1cCBzdWNjZXNzZnVsIGZvciAlcyAobWVtPSUwOGx4LSUwOGx4IGly
-cT0lZCksIGkgPSAlZFxuIiwNCgkgIGh3aWYtPm5hbWUsICh1bnNpZ25lZCBsb25nKSByZXNfbWVt
-LnN0YXJ0LCAodW5zaWduZWQgbG9uZykgcmVzX21lbS5lbmQsIGh3aWYtPmlycSwgaSk7DQoNCgly
-ZXQgPSAwOw0KCWdvdG8gb3V0Ow0KDQpub19pZGU6DQoJaW91bm1hcChpb2FkZHIpOw0Kbm9fbWVt
-Og0KCXJlbGVhc2VfbWVtX3JlZ2lvbihyZXNfc3RhcnQsIHJlc19sZW5ndGgpOw0Kb3V0Og0KCXJl
-dHVybiAwOw0KfQ0KDQpzdGF0aWMgaW50IF9fZGV2ZXhpdCBlbDM5Ml9hdGFfcmVtb3ZlKHN0cnVj
-dCBvZl9kZXZpY2UgKm9wKQ0Kew0KCXVuc2lnbmVkIGxvbmcgcmVzX3N0YXJ0Ow0KCXVuc2lnbmVk
-IGxvbmcgcmVzX2xlbmd0aDsNCg0KCWlkZV9od2lmX3QgKmh3aWYgPSBkZXZfZ2V0X2RydmRhdGEo
-Jm9wLT5kZXYpOw0KDQoJc3RydWN0IHJlc291cmNlIHJlc19tZW07DQoNCglpZiAob2ZfYWRkcmVz
-c190b19yZXNvdXJjZShvcC0+bm9kZSwgMCwgJnJlc19tZW0pICE9IDApDQoJew0KCQlwcmludGso
-S0VSTl9FUlIgIkVMMzkyX0FUQTogQ2FuIG5vdCBmaW5kIElPIG1lbSFcbiIpOw0KCQlyZXR1cm4g
-LUVJTzsNCgl9DQoNCglpZiAoIWh3aWYpIHsNCgkJcHJpbnRrKEtFUk5fRVJSICIlczogVW5hYmxl
-IHRvIHJlbW92ZSBkZXZpY2UsIHBsZWFzZSByZXBvcnQuXG4iLCBEUklWRVJfTkFNRSk7DQoJCXJl
-dHVybiAtRUlPOw0KCX0NCgkNCglpZGVfdW5yZWdpc3Rlcihod2lmLT5pbmRleCk7DQoNCglpb3Vu
-bWFwKCh2b2lkKilod2lmLT5ody5pb19wb3J0c1swXSk7DQoNCiAgICAgICAgcmVzX3N0YXJ0ID0g
-cmVzX21lbS5zdGFydDsNCiAgICAgICAgcmVzX2xlbmd0aCAgID0gcmVzX21lbS5lbmQgLSByZXNf
-bWVtLnN0YXJ0Ow0KCQ0KCXJlbGVhc2VfbWVtX3JlZ2lvbihyZXNfc3RhcnQsIHJlc19sZW5ndGgp
-Ow0KCQ0KCXJldHVybiAwOw0KfQ0KDQoNCnN0YXRpYyBpbnQgX19pbml0IGVsMzkyX2F0YV9pbml0
-KHZvaWQpDQp7DQoJcHJpbnRrKEtFUk5fSU5GTyAiSURFOiBFTDM5MiBJREUvQVRBIGRyaXZlclxu
-Iik7DQoJcmV0dXJuIG9mX3JlZ2lzdGVyX3BsYXRmb3JtX2RyaXZlcigmZWwzOTJfaWRlX29mX3Bs
-YXRmb3JtX2RyaXZlcik7DQp9DQoNCg0KDQpzdGF0aWMgdm9pZCBfX2V4aXQgZWwzOTJfYXRhX2V4
-aXQodm9pZCkNCnsNCglvZl91bnJlZ2lzdGVyX3BsYXRmb3JtX2RyaXZlcigmZWwzOTJfaWRlX29m
-X3BsYXRmb3JtX2RyaXZlcik7DQoJcHJpbnRrKCBLRVJOX0RFQlVHICJNb2R1bGUgRUwzOTJfQ0Zf
-RElTSyBleGl0XG4iICk7DQp9DQoNCm1vZHVsZV9pbml0KGVsMzkyX2F0YV9pbml0KTsNCm1vZHVs
-ZV9leGl0KGVsMzkyX2F0YV9leGl0KTsNCg0KTU9EVUxFX0RFU0NSSVBUSU9OKCJFTDM5MiBDRl9D
-YXJkIEtlcm5lbCBkcml2ZXIiKTsNCk1PRFVMRV9BVVRIT1IoIkhhbnMgTGVobWFubiAoaGFucy5s
-ZWhtYW5uQHJpdHRlci1lbGVrdHJvbmlrLmRlKSIpOw0KTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOw0K
-DQo=
-
-------_=_NextPart_001_01C85E8A.0B5CC506--
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
