@@ -1,30 +1,29 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <Yu.Liu@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1E4A4DDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 12:20:19 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0O1KGFt021146
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 20:20:16 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0O1KGGR162642
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 20:20:16 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0O1KGZV019758
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 20:20:16 -0500
-Date: Wed, 23 Jan 2008 19:17:04 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-Message-ID: <20080123191704.2d74073a@zod.rchland.ibm.com>
-In-Reply-To: <4797C1AD.3040307@tiscali.nl>
-References: <4797C1AD.3040307@tiscali.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, lkml <linux-kernel@vger.kernel.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 18701DDD0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 12:51:43 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	m0O1pbch023099
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 18:51:38 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0O1paYD007693
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2008 19:51:36 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: patches for 2.6.25
+Date: Thu, 24 Jan 2008 09:51:35 +0800
+Message-ID: <6EBEC19BF4A8F843BCD6B9155BBE2515D52D1A@zch01exm26.fsl.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0801211041100.14676@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0801211041100.14676@blarg.am.freescale.net>
+From: "Liu Yu" <Yu.Liu@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,29 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Jan 2008 23:37:33 +0100
-Roel Kluin <12o3l@tiscali.nl> wrote:
 
-> logical/bitand typo
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-> index ebf9e21..dcfb459 100644
-> --- a/arch/powerpc/boot/4xx.c
-> +++ b/arch/powerpc/boot/4xx.c
-> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
->  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
->  	cs = 0;
->  	while (val) {
-> -		if (val && 0x1)
-> +		if (val & 0x1)
->  			cs++;
->  		val = val >> 1;
->  	}
+How about this one?
+http://patchwork.ozlabs.org/linuxppc/patch?id=3D15942
+=20
 
-Hm, good catch.
-
-Stefan, have you had problems with this code at all?
-
-josh
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b13201=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+b13201=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of Kumar Gala
+> Sent: Tuesday, January 22, 2008 12:43 AM
+> To: linuxppc-dev@ozlabs.org
+> Subject: patches for 2.6.25
+>=20
+> I'm sure I missed some patches for 2.6.25, so please point=20
+> any out that people would like to see get in.
+>=20
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
