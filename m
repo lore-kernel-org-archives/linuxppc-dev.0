@@ -1,14 +1,14 @@
 Return-Path: <jacmet@sunsite.dk>
 Received: from nanv.dk (vps.korsgaard.com [64.79.194.204])
-	by ozlabs.org (Postfix) with ESMTP id E694DDE06A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:11:01 +1100 (EST)
-Message-Id: <20080124145335.379056000@sunsite.dk>
+	by ozlabs.org (Postfix) with ESMTP id 19F6DDDF7C
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:12:04 +1100 (EST)
+Message-Id: <20080124145335.648017000@sunsite.dk>
 References: <20080124144706.041042000@sunsite.dk>
-Date: Thu, 24 Jan 2008 15:47:09 +0100
+Date: Thu, 24 Jan 2008 15:47:10 +0100
 From: Peter Korsgaard <jacmet@sunsite.dk>
 To: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, grant.likely@secretlab.ca
-Subject: [patch v5 3/4] USB: add Cypress c67x00 OTG controller HCD driver
+Subject: [patch v5 4/4] USB: add Cypress c67x00 OTG controller gadget driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,32 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds HCD support for the Cypress c67x00 family of devices.
+This patch adds USB gadget support for the Cypress c67x00 family of devices.
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+This is work in progress and not ready to be committed yet. I'm posting this
+to show how it fits with the rest of the driver and to collect feedback.
+
+The driver works good enought to use g_serial, but there are still issues
+to be solved. The biggest issue is that endpoint 0 is currently handled by
+the BIOS inside the c67x00, so the gadget stack never sees the data.
+The BIOS also has other deficiencies, E.G. see the patching done in
+c67x00_ll_susb_init().
 ---
+ drivers/usb/Kconfig                |    2 
  drivers/usb/Makefile               |    2 
- drivers/usb/c67x00/Makefile        |   11 
- drivers/usb/c67x00/c67x00-drv.c    |   13 
- drivers/usb/c67x00/c67x00-hcd.c    |  410 ++++++++++++
- drivers/usb/c67x00/c67x00-hcd.h    |  152 ++++
- drivers/usb/c67x00/c67x00-ll-hpi.c |   75 ++
- drivers/usb/c67x00/c67x00-sched.c  | 1194 +++++++++++++++++++++++++++++++++++++
- drivers/usb/c67x00/c67x00.h        |    9 
+ drivers/usb/c67x00/Kconfig         |   21 
+ drivers/usb/c67x00/Makefile        |    7 
+ drivers/usb/c67x00/c67x00-drv.c    |   11 
+ drivers/usb/c67x00/c67x00-ll-hpi.c |  201 ++++++++
+ drivers/usb/c67x00/c67x00-udc.c    |  905 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/c67x00/c67x00-udc.h    |   50 ++
+ drivers/usb/c67x00/c67x00.h        |   21 
+ drivers/usb/gadget/Kconfig         |    7 
+ drivers/usb/gadget/gadget_chips.h  |    8 
  drivers/usb/host/Kconfig           |   12 
- 9 files changed, 1878 insertions(+)
+ 12 files changed, 1232 insertions(+), 15 deletions(-)
 
-Index: linux-2.6/drivers/usb/c67x00/c67x00-hcd.c
+Index: linux-2.6/drivers/usb/c67x00/c67x00-udc.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/usb/c67x00/c67x00-hcd.c
-@@ -0,0 +1,410 @@
++++ linux-2.6/drivers/usb/c67x00/c67x00-udc.c
+@@ -0,0 +1,905 @@
 +/*
-+ * c67x00-hcd.c: Cypress C67X00 USB Host Controller Driver
++ * c67x00-udc.c: Cypress C67X00 USB device controller
 + *
 + * Copyright (C) 2006-2008 Barco N.V.
 + *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
-+ *    based on multiple host controller drivers inside the linux kernel.
++ *    based on multiple device controller drivers inside the linux kernel.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -62,403 +72,898 @@ Index: linux-2.6/drivers/usb/c67x00/c67x00-hcd.c
 + */
 +
 +#include <linux/device.h>
-+#include <linux/platform_device.h>
 +#include <linux/usb.h>
++#include <linux/usb/c67x00.h>
++#include <linux/usb/gadget.h>
++#include <linux/usb/ch9.h>
 +
 +#include "c67x00.h"
-+#include "c67x00-hcd.h"
++#include "c67x00-udc.h"
 +
-+/* --------------------------------------------------------------------------
-+ * Root Hub Support
-+ */
++/* Defined in DEVICE n ENDPOINT STATUS REGISTERS */
++#define OVERFLOW_FLG		0x0800	/* Receive overflow */
++#define UNDERFLOW_FLG		0x0400	/* Receive underflow */
++#define OUT_EXCEPTION_FLG	0x0200	/* OUT received when armed for IN */
++#define IN_EXCEPTION_FLG	0x0100	/* IN received when armed for OUT */
++#define STALL_FLG		0x0080	/* Stall sent */
++#define NAK_FLG			0x0040	/* NAK sent */
++#define LENGTH_EXCEPT_FLG	0x0020	/* Overflow or Underflow occured */
++#define SETUP_FLG		0x0010	/* SETUP packet received */
++#define SEQ_STAT		0x0008	/* Last Data Toggle Sequence bit sent
++						or received */
++#define TIMEOUT_FLG		0x0004	/* Last transmission timed out */
++#define ERROR_FLG		0x0002	/* CRC Err detected in last
++						reception*/
++#define ACK_FLG			0x0001	/* Last transaction ACK'D (sent
++						or received) */
 +
-+static __u8 c67x00_hub_des[] = {
-+	0x09,			/*  __u8  bLength; */
-+	0x29,			/*  __u8  bDescriptorType; Hub-descriptor */
-+	0x02,			/*  __u8  bNbrPorts; */
-+	0x00,			/* __u16  wHubCharacteristics; */
-+	0x00,			/*   (per-port OC, no power switching) */
-+	0x32,			/*  __u8  bPwrOn2pwrGood; 2ms */
-+	0x00,			/*  __u8  bHubContrCurrent; 0 mA */
-+	0x00,			/*  __u8  DeviceRemovable; ** 7 Ports max ** */
-+	0xff,			/*  __u8  PortPwrCtrlMask; ** 7 ports max ** */
++/* Defined in DEVICE n ENDPOINT CONTROL REGISTERS */
++#define DIR_SEL_IN	0x0004	/* Last transmission timed out */
++#define EP_ENABLE	0x0002	/* Enable Endpoint */
++
++
++
++struct c67x00_request {
++	struct usb_request req;
++	struct list_head queue;
 +};
 +
-+static void c67x00_hub_reset_host_port(struct c67x00_sie *sie, int port)
++
++
++struct c67x00_udc_ep {
++	struct usb_ep ep;
++	struct c67x00_udc *udc;
++
++	struct list_head queue;
++	int ep_num;
++	int is_ep_in;
++	int enable;
++	int stopped;
++	int start_io;
++};
++
++#define C67X00_MAX_NB_END_POINTS 8
++
++struct c67x00_udc {
++	spinlock_t lock;
++	struct c67x00_sie *sie;
++	struct usb_gadget gadget;
++	struct usb_gadget_driver *driver;
++	struct c67x00_udc_ep ep[C67X00_MAX_NB_END_POINTS];
++	struct work_struct io_work;
++	int config_nr;
++	/* The highest string descriptor entry
++	   (used to retrieve descriptors from gadget driver) */
++	int top_str_id;
++	u16 string_desc_addr;
++};
++
++const static unsigned char get_descriptor_device[] = {
++	USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE,
++	USB_REQ_GET_DESCRIPTOR,
++	0x00,
++	USB_DT_DEVICE,
++	0x00,
++	0x00,
++	0x12,
++	0x00
++};
++
++const static unsigned char get_descriptor_config[] = {
++	USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE,
++	USB_REQ_GET_DESCRIPTOR,
++	0x00,
++	USB_DT_CONFIG,
++	0x00,
++	0x00,
++	0x40,
++	0x00
++};
++
++static unsigned char get_descriptor_string[] = {
++	USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE,
++	USB_REQ_GET_DESCRIPTOR,
++	0x00,
++	USB_DT_STRING,
++	0x00,
++	0x00,
++	0xFF,
++	0x00
++};
++
++#define SIEx_DEV_DESC_LOC(x)	((x) ? (CY_UDC_DESC_BASE_ADDRESS + 0x200) \
++				 : CY_UDC_DESC_BASE_ADDRESS)
++#define SIEx_CONF_DESC_LOC(x)	(SIEx_DEV_DESC_LOC(x) + 32)
++
++/* ------------------------------------------------------------------------- */
++/* gadget ops */
++
++static int c67x00_get_frame(struct usb_gadget *_gadget)
 +{
-+	struct c67x00_hcd *c67x00 = sie->private_data;
-+	unsigned long flags;
-+
-+	c67x00_ll_husb_reset(sie, port);
-+
-+	spin_lock_irqsave(&c67x00->lock, flags);
-+	c67x00_ll_husb_reset_port(sie, port);
-+	spin_unlock_irqrestore(&c67x00->lock, flags);
-+
-+	c67x00_ll_set_husb_eot(sie->dev, DEFAULT_EOT);
++	printk(KERN_DEBUG "c67x00-udc : c67x00_get_frame\n");
++	return -ENODEV;
 +}
 +
-+static int c67x00_hub_status_data(struct usb_hcd *hcd, char *buf)
++static int c67x00_wakeup(struct usb_gadget *_gadget)
 +{
-+	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
-+	struct c67x00_sie *sie = c67x00->sie;
-+	u16 status;
-+	int i;
-+
-+	*buf = 0;
-+	status = c67x00_ll_usb_get_status(sie);
-+	for (i = 0; i < C67X00_PORTS; i++)
-+		if (status & PORT_CONNECT_CHANGE(i))
-+			*buf |= (1 << i);
-+
-+	/* bit 0 denotes hub change, b1..n port change */
-+	*buf <<= 1;
-+
-+	return !!*buf;
++	printk(KERN_DEBUG "c67x00-udc : c67x00_wakeup\n");
++	return -ENODEV;
 +}
 +
-+static int c67x00_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
-+			      u16 wIndex, char *buf, u16 wLength)
++static int c67x00_selfpowered(struct usb_gadget *_gadget,
++			      int is_selfpowered)
 +{
-+	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
-+	struct c67x00_sie *sie = c67x00->sie;
-+	u16 status, usb_status;
-+	int len = 0;
-+	unsigned int port = wIndex-1;
-+	u16 wPortChange, wPortStatus;
++	printk(KERN_DEBUG "c67x00-udc : c67x00_selfpowered\n");
++	return -ENODEV;
++}
 +
-+	switch (typeReq) {
++static int c67x00_vbus_session(struct usb_gadget *_gadget, int is_active)
++{
++	printk(KERN_DEBUG "c67x00-udc : c67x00_vbus_session\n");
++	return -ENODEV;
++}
 +
-+	case GetHubStatus:
-+		*(__le32 *) buf = cpu_to_le32(0);
-+		len = 4;		/* hub power */
++static int c67x00_pullup(struct usb_gadget *_gadget, int is_on)
++{
++	printk(KERN_DEBUG "c67x00-udc : c67x00_pullup\n");
++	return -ENODEV;
++}
++
++
++static const struct usb_gadget_ops c67x00_udc_ops = {
++	.get_frame = c67x00_get_frame,
++	.wakeup = c67x00_wakeup,
++	.set_selfpowered = c67x00_selfpowered,
++	.vbus_session = c67x00_vbus_session,
++	.pullup = c67x00_pullup
++};
++
++
++
++/*
++ * the sie and gadget_driver get probed/registered from 2 totally independant
++ * places, this datastructure binds them together
++ */
++static struct c67x00_udc controller = {
++	.gadget = {
++		.ops = &c67x00_udc_ops,
++		.name = "c67x00_udc",
++		.speed = USB_SPEED_FULL,
++		.is_dualspeed = 1,
++		.is_a_peripheral = 1,
++		.dev = {
++			.bus_id = "gadget",
++		},
++	},
++};
++
++
++/*----------------------------------------------------------------------------*/
++
++static void c67x00_udc_set_configuration(struct c67x00_sie *sie, u16 config)
++{
++	struct usb_ctrlrequest request;
++	struct c67x00_udc *udc = sie->private_data;
++
++	dev_dbg(sie_dev(sie), "set configuration %d\n", config);
++
++	request.bRequest = USB_REQ_SET_CONFIGURATION;
++	request.bRequestType = 0;
++	request.wValue = cpu_to_le16(config);
++	udc->driver->setup(&udc->gadget, &request);
++}
++
++static int c67x00_udc_parse_descriptor(struct c67x00_udc *udc,
++				       struct c67x00_request *req)
++{
++	int retval = 0;
++	u8 *buf = req->req.buf;
++
++	if (req->req.length < 2)
++		return 0;
++
++	switch (buf[1]) {
++	case USB_DT_DEVICE: {
++		struct usb_device_descriptor *desc = req->req.buf;
++
++		/* Look for the highest stringIndex */
++		if (desc->iManufacturer > udc->top_str_id)
++			udc->top_str_id = desc->iManufacturer;
++		if (desc->iProduct > udc->top_str_id)
++			udc->top_str_id = desc->iProduct;
++		if (desc->iSerialNumber > udc->top_str_id)
++			udc->top_str_id = desc->iSerialNumber;
++
++		/* Write descriptor to C67x00 memory */
++		c67x00_ll_write_mem_le16(udc->sie->dev,
++					 SIEx_DEV_DESC_LOC(udc->sie->sie_num),
++					 req->req.buf, req->req.length);
++
++		/* Write vector address to c67x00 */
++		c67x00_ll_set_device_descriptor_location(
++			udc->sie, SIEx_DEV_DESC_LOC(udc->sie->sie_num));
++
++		retval = 1;
 +		break;
-+
-+	case GetPortStatus:
-+		if (wIndex > C67X00_PORTS)
-+			return -EPIPE;
-+
-+		status = c67x00_ll_usb_get_status(sie);
-+		usb_status = c67x00_ll_get_usb_ctl(sie);
-+
-+		wPortChange = 0;
-+		if (status & PORT_CONNECT_CHANGE(port))
-+			wPortChange |= USB_PORT_STAT_C_CONNECTION;
-+
-+		wPortStatus = USB_PORT_STAT_POWER;
-+		if (!(status & PORT_SE0_STATUS(port)))
-+			wPortStatus |= USB_PORT_STAT_CONNECTION;
-+		if (usb_status & LOW_SPEED_PORT(port)) {
-+			wPortStatus |= USB_PORT_STAT_LOW_SPEED;
-+			c67x00->low_speed_ports |= (1 << port);
-+		} else
-+			c67x00->low_speed_ports &= ~(1 << port);
-+
-+		if (usb_status & SOF_EOP_EN(port))
-+			wPortStatus |= USB_PORT_STAT_ENABLE;
-+
-+		*(__le16 *) buf = cpu_to_le16(wPortStatus);
-+		*(__le16 *) (buf + 2) = cpu_to_le16(wPortChange);
-+		len = 4;
-+		break;
-+
-+	case SetHubFeature:	/* We don't implement these */
-+	case ClearHubFeature:
-+		switch (wValue) {
-+		case C_HUB_OVER_CURRENT:
-+		case C_HUB_LOCAL_POWER:
-+			len = 0;
-+			break;
-+
-+		default:
-+			return -EPIPE;
-+		}
-+		break;
-+
-+	case SetPortFeature:
-+		if (wIndex > C67X00_PORTS)
-+			return -EPIPE;
-+
-+		switch (wValue) {
-+		case USB_PORT_FEAT_SUSPEND:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"SetPortFeature %d (SUSPEND)\n", port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_RESET:
-+			c67x00_hub_reset_host_port(sie, port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_POWER:
-+			/* Power always enabled */
-+			len = 0;
-+			break;
-+
-+		default:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"%s: SetPortFeature %d (0x%04x) Error!\n",
-+				__FUNCTION__, port, wValue);
-+			return -EPIPE;
-+		}
-+		break;
-+
-+	case ClearPortFeature:
-+		if (wIndex > C67X00_PORTS)
-+			return -EPIPE;
-+
-+		switch (wValue) {
-+		case USB_PORT_FEAT_ENABLE:
-+			/* Reset the port so that the c67x00 also notices the
-+			 * disconnect */
-+			c67x00_hub_reset_host_port(sie, port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_C_ENABLE:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"ClearPortFeature (%d): C_ENABLE\n", port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_SUSPEND:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"ClearPortFeature (%d): SUSPEND\n", port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_C_SUSPEND:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"ClearPortFeature (%d): C_SUSPEND\n", port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_POWER:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"ClearPortFeature (%d): POWER\n", port);
-+			return -EPIPE;
-+
-+		case USB_PORT_FEAT_C_CONNECTION:
-+			c67x00_ll_usb_clear_status(sie,
-+						   PORT_CONNECT_CHANGE(port));
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_C_OVER_CURRENT:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"ClearPortFeature (%d): OVER_CURRENT\n", port);
-+			len = 0;
-+			break;
-+
-+		case USB_PORT_FEAT_C_RESET:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"ClearPortFeature (%d): C_RESET\n", port);
-+			len = 0;
-+			break;
-+
-+		default:
-+			dev_dbg(c67x00_hcd_dev(c67x00),
-+				"%s: ClearPortFeature %d (0x%04x) Error!\n",
-+				__FUNCTION__, port, wValue);
-+			return -EPIPE;
-+		}
-+		break;
-+
-+	case GetHubDescriptor:
-+		len = min_t(unsigned int, sizeof(c67x00_hub_des), wLength);
-+		memcpy(buf, c67x00_hub_des, len);
-+		break;
-+
-+	default:
-+		dev_dbg(c67x00_hcd_dev(c67x00), "%s: unknown\n", __FUNCTION__);
-+		return -EPIPE;
 +	}
++
++	case USB_DT_CONFIG: {
++		struct usb_config_descriptor *desc = req->req.buf;
++		int offset;
++		u16 length;
++
++		/* store config number to pass to the gadget driver,
++		   once the c67x00 is configured */
++		udc->config_nr = desc->bConfigurationValue;
++
++		length = le16_to_cpu(desc->wTotalLength);
++
++		if (desc->iConfiguration > udc->top_str_id)
++			udc->top_str_id = desc->iConfiguration;
++
++		offset = desc->bLength;
++
++		while (offset < length) {
++			if (buf[offset + 1] == USB_DT_INTERFACE) {
++				struct usb_interface_descriptor *if_desc =
++					(struct usb_interface_descriptor *)
++					(buf + offset);
++
++				if (if_desc->iInterface > udc->top_str_id)
++					udc->top_str_id = if_desc->iInterface;
++			}
++
++			offset += buf[offset];
++		}
++
++		if ((length % 8) == 0) {
++			/* BIOS can't handle descriptors with size multiple
++			   of xfer size */
++			length += 1;
++			/* desc->wTotalLength = cpu_to_le16(length); */
++		}
++
++		/* BIOS can only handle configuration 1,
++		   so make sure the config nr is 1 */
++		desc->bConfigurationValue = 1;
++
++		c67x00_ll_write_mem_le16(udc->sie->dev,
++					 SIEx_CONF_DESC_LOC(udc->sie->sie_num),
++					 req->req.buf, length);
++
++		/* Write vector address to SW interrupt */
++		c67x00_ll_set_configuration_descriptor_location(
++			udc->sie, SIEx_CONF_DESC_LOC(udc->sie->sie_num));
++
++		/* String descriptors start behind configuration descriptor */
++		udc->string_desc_addr =
++			SIEx_CONF_DESC_LOC(udc->sie->sie_num) + length;
++
++		/* Make sure the address is even */
++		if (udc->string_desc_addr & 0x01)
++			udc->string_desc_addr++;
++
++		/* Write string descriptor vector address */
++		c67x00_ll_set_string_descriptor_location(
++			udc->sie, udc->string_desc_addr);
++
++		retval = 1;
++		break;
++	}
++
++	case USB_DT_STRING:
++		/* Write string descriptor */
++		c67x00_ll_write_mem_le16(udc->sie->dev, udc->string_desc_addr,
++					 req->req.buf, req->req.length);
++
++		/* set address to end of this descriptor */
++		udc->string_desc_addr += req->req.length;
++
++		retval = 1;
++		break;
++	}
++
++	return retval;
++}
++
++/*
++ * done - retire a request; caller blocked irqs
++ */
++static void c67x00_udc_done(struct c67x00_udc_ep *ep,
++			    struct c67x00_request *req, int status)
++{
++	int stopped = ep->stopped;
++
++	list_del_init(&req->queue);
++
++	if (likely(req->req.status == -EINPROGRESS))
++		req->req.status = status;
++	else
++		status = req->req.status;
++/*
++	if (status && status != -ESHUTDOWN)
++		DBG(DBG_VERBOSE, "complete %s req %p stat %d len %u/%u\n",
++			ep->ep.name, &req->req, status,
++			req->req.actual, req->req.length);
++*/
++
++	/* don't modify queue heads during completion callback */
++	ep->stopped = 1;
++	req->req.complete(&ep->ep, &req->req);
++	ep->stopped = stopped;
++}
++
++/*----------- UDC send/receive functions -------------------------------------*/
++
++static void c67x00_udc_start_io_irq(struct c67x00_udc_ep *ep)
++{
++	struct c67x00_sie *sie = ep->udc->sie;
++	struct c67x00_request *req =
++		list_entry(ep->queue.next, struct c67x00_request, queue);
++
++	if (ep->is_ep_in)
++		c67x00_ll_susb_start_send(sie, ep->ep_num,
++					  req->req.buf, req->req.length);
++	else
++		c67x00_ll_susb_start_receive(sie, ep->ep_num, req->req.length);
++}
++
++static void c67x00_udc_io_work(struct work_struct *_udc)
++{
++	int i = 0;
++	struct c67x00_udc *udc =
++	    container_of(_udc, struct c67x00_udc, io_work);
++
++	for (i = 0; i < C67X00_MAX_NB_END_POINTS; i++) {
++		struct c67x00_udc_ep *ep = &udc->ep[i];
++		if (ep->start_io) {
++			ep->start_io = 0;
++			c67x00_udc_start_io_irq(ep);
++		}
++	}
++}
++
++static void c67x00_udc_schedule_io_irq(struct c67x00_udc_ep *ep)
++{
++	ep->start_io = 1;
++
++	/* start work queue */
++	schedule_work(&ep->udc->io_work);
++}
++
++static void c67x00_udc_done_irq(struct c67x00_udc_ep *ep, int status)
++{
++	struct c67x00_request *req;
++	struct c67x00_sie *sie = ep->udc->sie;
++	int result;
++
++	result = c67x00_ll_susb_get_transfer_status(sie, ep->ep_num);
++	if (result < 0) {
++		dev_err(sie_dev(sie), "udc_done_irq error (%d)\n", result);
++		return;
++	}
++
++	if (unlikely(list_empty(&ep->queue)))
++		return;
++
++	req = list_entry(ep->queue.next, struct c67x00_request, queue);
++
++	req->req.actual = req->req.length - result;
++
++	if (!ep->is_ep_in && ep->ep_num != 0)
++		c67x00_ll_susb_receive(sie, ep->ep_num,
++				       req->req.buf, req->req.actual);
++
++	c67x00_udc_done(ep, req, 0);
++	if (!list_empty(&ep->queue) && !ep->stopped)
++		/* restart io req */
++		c67x00_udc_schedule_io_irq(ep);
++}
++
++/* -------------------------------------------------------------------------- */
++/* endpoints */
++
++static const char *c67x00_ep_name[C67X00_MAX_NB_END_POINTS] = {
++	"ep0", "ep1out-bulk", "ep2in-bulk", "ep3", "ep4", "ep5", "ep6", "ep7"
++};
++
++
++/* -------------------------------------------------------------------------- */
++/* ep opts */
++
++/*
++ * empties entire endpoint queue
++ */
++static void c67x00_nuke_ep(struct c67x00_udc_ep *ep, int status)
++{
++	ep->stopped = 1;
++
++	while (!list_empty(&ep->queue)) {
++		struct c67x00_request *req =
++			list_entry(ep->queue.next, struct c67x00_request,
++				   queue);
++		c67x00_udc_done(ep, req, status);
++	}
++}
++
++static int c67x00_ep_enable(struct usb_ep *_ep,
++			    const struct usb_endpoint_descriptor *desc)
++{
++	struct c67x00_udc_ep *ep;
++	struct c67x00_sie *sie;
++	u16 maxpacket;
++
++	ep = container_of(_ep, struct c67x00_udc_ep, ep);
++	sie = ep->udc->sie;
++
++	maxpacket = le16_to_cpu(desc->wMaxPacketSize);
++
++	c67x00_ll_set_device_ep_status(sie, ep->ep_num, 0x0000);
++
++	if (desc->bEndpointAddress & USB_DIR_IN) {
++		ep->is_ep_in = 1;
++		c67x00_ll_set_ep_ctrl_reg(sie, ep->ep_num,
++					  EP_ENABLE | DIR_SEL_IN);
++		c67x00_ll_set_ep_packet_size_reg(sie, ep->ep_num, maxpacket);
++	} else {
++		ep->is_ep_in = 0;
++		c67x00_ll_set_ep_ctrl_reg(sie, ep->ep_num, EP_ENABLE);
++		c67x00_ll_set_ep_packet_size_reg(sie, ep->ep_num, maxpacket);
++	}
++
++	ep->enable = 1;
++	ep->stopped = 0;
++	ep->ep.maxpacket = maxpacket;
 +
 +	return 0;
 +}
 +
-+/* ---------------------------------------------------------------------
-+ * Main part of host controller driver
-+ */
++static int c67x00_ep_disable(struct usb_ep *_ep)
++{
++	unsigned long flags;
++	struct c67x00_udc_ep *ep;
 +
-+/**
-+ * c67x00_hcd_irq
-+ *
++	ep = container_of(_ep, struct c67x00_udc_ep, ep);
++
++	dev_dbg(sie_dev(ep->udc->sie), "ep_disable %s\n", _ep->name);
++
++	spin_lock_irqsave(&ep->udc->lock, flags);
++
++	ep->enable = 0;
++	ep->stopped = 1;
++
++	c67x00_nuke_ep(ep, -ESHUTDOWN);
++
++	spin_unlock_irqrestore(&ep->udc->lock, flags);
++
++	return 0;
++}
++
++
++struct usb_request *c67x00_ep_alloc_request(struct usb_ep *_ep,
++					    gfp_t gfp_flags)
++{
++	struct c67x00_request *req;
++
++	req = kzalloc(sizeof(struct c67x00_request), gfp_flags);
++	if (!req)
++		return NULL;
++
++	INIT_LIST_HEAD(&req->queue);
++	return &req->req;
++}
++
++static void c67x00_ep_free_request(struct usb_ep *_ep,
++				   struct usb_request *_req)
++{
++	struct c67x00_request *req = NULL;
++	struct c67x00_udc_ep *ep;
++
++	ep = container_of(_ep, struct c67x00_udc_ep, ep);
++	dev_dbg(sie_dev(ep->udc->sie), "free_request %s\n", _ep->name);
++
++	req = container_of(_req, struct c67x00_request, req);
++
++	if (_req)
++		kfree(req);
++}
++
++static int c67x00_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
++			   gfp_t gfp_flags)
++{
++	struct c67x00_udc_ep *ep;
++	struct c67x00_request *req;
++	unsigned long flags;
++	int request = 0;
++	struct c67x00_udc *dev;
++
++	req = container_of(_req, struct c67x00_request, req);
++	if (unlikely
++	    (!_req || !_req->complete || !_req->buf
++	     || !list_empty(&req->queue))) {
++		printk(KERN_WARNING "bad params\n");
++		return -EINVAL;
++	}
++
++	ep = container_of(_ep, struct c67x00_udc_ep, ep);
++	if (unlikely(!_ep)) {
++		dev_warn(sie_dev(ep->udc->sie), "bad ep\n");
++		return -EINVAL;
++	}
++
++	dev = ep->udc;
++	if (unlikely
++	    (!dev->driver || dev->gadget.speed == USB_SPEED_UNKNOWN)) {
++		dev_warn(sie_dev(ep->udc->sie), "bogus device state\n");
++		return -ESHUTDOWN;
++	}
++
++	if (ep->ep_num == 0) {
++		/* The gadget driver returns the descriptors through this way */
++		if (!c67x00_udc_parse_descriptor(dev, req)) {
++			req->req.actual = req->req.length;
++			return -EINVAL;
++		} else {
++			req->req.status = 0;
++			req->req.actual = req->req.length;
++			req->req.complete(&ep->ep, &req->req);
++			return 0;
++		}
++
++	}
++
++	spin_lock_irqsave(&dev->lock, flags);
++
++	_req->status = -EINPROGRESS;
++	_req->actual = 0;
++
++	/* Start I/O queue if the list was empty */
++	if (list_empty(&ep->queue) && !ep->stopped)
++		request = 1;
++
++	/* Add the request to the queue of the endpoint */
++	list_add_tail(&req->queue, &ep->queue);
++
++	if (request)
++		c67x00_udc_schedule_io_irq(ep);
++
++	spin_unlock_irqrestore(&dev->lock, flags);
++
++	return 0;
++}
++
++
++static int c67x00_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
++{
++	struct c67x00_udc_ep *ep;
++	struct c67x00_request *req;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct c67x00_udc_ep, ep);
++	if (!_ep || ep->ep_num == 0)
++		return -EINVAL;
++
++	dev_dbg(sie_dev(ep->udc->sie), "dequeue %s\n", _ep->name);
++
++	spin_lock_irqsave(&ep->udc->lock, flags);
++
++	/* make sure it's actually queued on this endpoint */
++	list_for_each_entry(req, &ep->queue, queue) {
++		if (&req->req == _req)
++			break;
++	}
++	if (&req->req != _req) {
++		spin_unlock_irqrestore(&ep->udc->lock, flags);
++		return -EINVAL;
++	}
++
++	c67x00_udc_done(ep, req, -ECONNRESET);
++
++	spin_unlock_irqrestore(&ep->udc->lock, flags);
++	return 0;
++}
++
++
++
++static int c67x00_ep_set_halt(struct usb_ep *_ep, int value)
++{
++	printk(KERN_WARNING "c67x00-udc : ep set_halt %s\n", _ep->name);
++	return -ENODEV;
++}
++
++static void c67x00_ep_fifo_flush(struct usb_ep *_ep)
++{
++	printk(KERN_WARNING "c67x00-udc : ep fifo_flush %s\n", _ep->name);
++}
++
++
++static const struct usb_ep_ops c67x00_ep_ops = {
++	.enable = c67x00_ep_enable,
++	.disable = c67x00_ep_disable,
++
++	.alloc_request = c67x00_ep_alloc_request,
++	.free_request = c67x00_ep_free_request,
++
++	.queue = c67x00_ep_queue,
++	.dequeue = c67x00_ep_dequeue,
++
++	.set_halt = c67x00_ep_set_halt,
++	.fifo_flush = c67x00_ep_fifo_flush,
++};
++
++/* -------------------------------------------------------------------------- */
++
++void c67x00_udc_msg_received(struct c67x00_sie *sie, u16 msg)
++{
++	struct c67x00_udc *udc = sie->private_data;
++	u16 EPx_msg_mask = /*SUSB_EP0_MSG | */ SUSB_EP1_MSG
++		| SUSB_EP2_MSG
++		| SUSB_EP3_MSG
++		| SUSB_EP4_MSG
++		| SUSB_EP5_MSG
++		| SUSB_EP6_MSG
++		| SUSB_EP7_MSG;
++
++	if ((msg & EPx_msg_mask) != 0) {
++		int i, mask = 0x01;
++
++		for (i = 0; i < C67X00_MAX_NB_END_POINTS; i++, mask <<= 1)
++			if (msg & mask)
++				c67x00_udc_done_irq(&udc->ep[i], 0);
++	}
++
++	if (msg & SUSB_RST_MSG) {
++		int i;
++		dev_dbg(sie_dev(sie),
++			 "udc_msg_rec (0x%04X) : SUSB_RST_MSG\n", msg);
++
++		for (i = 0; i < C67X00_MAX_NB_END_POINTS; i++) {
++			struct c67x00_udc_ep *ep = &udc->ep[i];
++			if (i != 0 && ep->enable) {
++				ep->stopped = 1;
++				c67x00_nuke_ep(ep, -ESHUTDOWN);
++			}
++		}
++		if (udc->driver && udc->driver->disconnect)
++			udc->driver->disconnect(&udc->gadget);
++	}
++
++	if (msg & SUSB_SOF_MSG) {
++		dev_dbg(sie_dev(sie),
++			 "udc_msg_rec (0x%04X) : SUSB_SOF_MSG\n", msg);
++	}
++
++	if (msg & SUSB_CFG_MSG) {
++		dev_dbg(sie_dev(sie),
++			 "udc_msg_rec (0x%04X) : SUSB_CFG_MSG\n", msg);
++		/* the c67x00 BIOS only supports 1 configuration,
++		   so it must be configuration 1 */
++		c67x00_udc_set_configuration(sie, udc->config_nr);
++	}
++
++	if (msg & SUSB_SUS_MSG) {
++		dev_dbg(sie_dev(sie),
++			 "udc_msg_rec (0x%04X) : SUSB_SUS_MSG\n", msg);
++	}
++
++	if (msg & SUSB_ID_MSG) {
++		dev_dbg(sie_dev(sie),
++			 "udc_msg_rec (0x%04X) : SUSB_ID_MSG\n", msg);
++	}
++
++	if (msg & SUSB_VBUS_MSG) {
++		dev_dbg(sie_dev(sie),
++			 "udc_msg_rec (0x%04X) : SUSB_VBUS_MSG\n", msg);
++	}
++}
++
++
++/*
 + * This function is called from the interrupt handler in c67x00-drv.c
 + */
-+static void c67x00_hcd_irq(struct c67x00_sie *sie, u16 int_status, u16 msg)
++static void c67x00_udc_irq(struct c67x00_sie *sie, u16 int_status, u16 msg)
 +{
-+	struct c67x00_hcd *c67x00 = sie->private_data;
-+	struct usb_hcd *hcd = c67x00_hcd_to_hcd(c67x00);
++	u16 device_status;
 +
-+	/* Handle sie message flags */
-+	if (msg) {
-+		if (msg & HUSB_TDListDone)
-+			c67x00_sched_kick(c67x00);
-+		else
-+			dev_warn(c67x00_hcd_dev(c67x00),
-+				 "Unknown SIE msg flag(s): 0x%04x\n", msg);
-+	}
++	if (msg)
++		c67x00_udc_msg_received(sie, msg);
 +
-+	if (unlikely(hcd->state == HC_STATE_HALT))
-+		return;
++	device_status = c67x00_ll_usb_get_status(sie);
 +
-+	if (!test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags))
-+		return;
-+
-+	/* Handle Start of frame events */
-+	if (int_status & SOFEOP_FLG(sie->sie_num)) {
++	if (int_status & SOFEOP_FLG(sie->sie_num))
 +		c67x00_ll_usb_clear_status(sie, SOF_EOP_IRQ_FLG);
-+		c67x00_sched_kick(c67x00);
-+		set_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
++
++	if (int_status & RESET_FLG(sie->sie_num)) {
++		dev_info(sie_dev(sie), "sie%d : reset IRQ\n",
++			 sie->sie_num);
++
++		/* Handle reset here */
++		c67x00_ll_usb_clear_status(sie, RESET_IRQ_FLG);
 +	}
++
++	if (int_status & DONE_FLG(sie->sie_num))
++		dev_info(sie_dev(sie), "sie%d : done IRQ -> "
++			 "device status 0x%04X\n",
++			 sie->sie_num, device_status);
 +}
 +
-+/**
-+ * c67x00_hcd_start: Host controller start hook
-+ */
-+static int c67x00_hcd_start(struct usb_hcd *hcd)
++
++int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 +{
-+	hcd->uses_new_polling = 1;
-+	hcd->state = HC_STATE_RUNNING;
-+	hcd->poll_rh = 1;
++	struct c67x00_udc *udc = &controller;
++	int i, retval;
++
++	if (!driver
++/*		|| driver->speed < USB_SPEED_FULL*/
++	    || !driver->bind || !driver->setup) {
++
++		printk(KERN_ERR
++		       "c67x00 : invalid gadget driver provided\n");
++		return -EINVAL;
++	}
++
++
++	spin_lock(&udc->lock);
++	if (!udc->sie || udc->driver) {
++		spin_unlock(&udc->lock);
++		return -EBUSY;
++	}
++
++	udc->driver = driver;
++	udc->gadget.dev.driver = &driver->driver;
++	udc->config_nr = 1;
++	udc->top_str_id = 0;
++	device_add(&udc->gadget.dev);
++
++	driver->driver.bus = NULL;
++
++	dev_dbg(sie_dev(udc->sie), "Binding %s to SIE%d\n",
++		 driver->function, udc->sie->sie_num);
++
++	retval = driver->bind(&udc->gadget);
++	if (retval) {
++		dev_warn(sie_dev(udc->sie), "Driver bind failed\n");
++		goto error;
++	}
++
++	/* retrieve descriptors from gadget and program them in device */
++	udc->driver->setup(&udc->gadget,
++			   (struct usb_ctrlrequest *)
++			   get_descriptor_device);
++	udc->driver->setup(&udc->gadget,
++			   (struct usb_ctrlrequest *)
++			   get_descriptor_config);
++
++	for (i = 0; i <= udc->top_str_id; i++) {
++		get_descriptor_string[2] = i;
++		udc->driver->setup(&udc->gadget,
++				   (struct usb_ctrlrequest *)
++				   get_descriptor_string);
++	}
++
++	spin_unlock(&udc->lock);
++
++	/* enable device */
++	c67x00_ll_susb_init(udc->sie);
++
++	return 0;
++
++error :
++	udc->driver = NULL;
++	udc->gadget.dev.driver = NULL;
++	device_del(&udc->gadget.dev);
++
++	spin_unlock(&udc->lock);
++
++	return retval;
++}
++EXPORT_SYMBOL(usb_gadget_register_driver);
++
++int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
++{
++	struct c67x00_udc *udc = &controller;
++
++	printk(KERN_WARNING "c67x00-udc : usb_gadget_unregister_driver\n");
++
++	spin_lock(&udc->lock);
++	if (udc->driver != driver) {
++		spin_unlock(&udc->lock);
++		return -EINVAL;
++	}
++
++	udc->driver = NULL;
++
++	driver->unbind(&udc->gadget);
++	device_del(&udc->gadget.dev);
++
++	c67x00_ll_susb_disable(udc->sie);
++
++	spin_unlock(&udc->lock);
++	return 0;
++}
++EXPORT_SYMBOL(usb_gadget_unregister_driver);
++
++/* -------------------------------------------------------------------------- */
++
++int c67x00_udc_probe(struct c67x00_sie *sie)
++{
++	struct c67x00_udc *udc = &controller;
++	unsigned long flags;
++	int i;
++
++	if (udc->sie) {
++		dev_err(sie_dev(sie),
++			"Only 1 peripheral port supported, check sie_config\n");
++		return -EBUSY;
++	}
++
++	spin_lock_init(&udc->lock);
++	INIT_WORK(&udc->io_work, c67x00_udc_io_work);
++	INIT_LIST_HEAD(&udc->gadget.ep_list);
++
++	udc->gadget.ep0 = &udc->ep[0].ep;
++	INIT_LIST_HEAD(&udc->gadget.ep0->ep_list);
++	for (i = 0; i < C67X00_MAX_NB_END_POINTS; i++) {
++		struct c67x00_udc_ep *ep = &udc->ep[i];
++		if (i != 0) {
++			INIT_LIST_HEAD(&udc->ep[i].ep.ep_list);
++			list_add_tail(&udc->ep[i].ep.ep_list,
++				      &udc->gadget.ep_list);
++		}
++		ep->ep.name = c67x00_ep_name[i];
++		ep->ep.ops = &c67x00_ep_ops;
++		ep->enable = 0;
++		ep->start_io = 0;
++		if (i == 0)
++			ep->ep.maxpacket = 8;
++		else
++			/* Size is set when endpoint is enabled */
++			ep->ep.maxpacket = 512;
++		ep->ep_num = i;
++		ep->udc = udc;
++		INIT_LIST_HEAD(&ep->queue);
++	}
++
++	udc->sie = sie;
++	udc->gadget.dev.parent = &sie->dev->pdev->dev;
++	device_initialize(&udc->gadget.dev);
++
++	spin_lock_irqsave(&sie->lock, flags);
++	sie->private_data = udc;
++	sie->irq = c67x00_udc_irq;
++	spin_unlock_irqrestore(&sie->lock, flags);
 +
 +	return 0;
 +}
 +
-+/**
-+ * c67x00_hcd_stop: Host controller stop hook
-+ */
-+static void c67x00_hcd_stop(struct usb_hcd *hcd)
++void c67x00_udc_remove(struct c67x00_sie *sie)
 +{
-+	/* Nothing to do */
-+}
++	struct c67x00_udc *udc = sie->private_data;
 +
-+static int c67x00_hcd_get_frame(struct usb_hcd *hcd)
-+{
-+	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
-+	u16 temp_val;
-+
-+	dev_dbg(c67x00_hcd_dev(c67x00), "%s\n", __FUNCTION__);
-+	temp_val = c67x00_ll_husb_get_frame(c67x00->sie);
-+	temp_val &= HOST_FRAME_MASK;
-+	return temp_val ? (temp_val - 1) : HOST_FRAME_MASK;
-+}
-+
-+static struct hc_driver c67x00_hc_driver = {
-+	.description	= "c67x00-hcd",
-+	.product_desc	= "Cypress C67X00 Host Controller",
-+	.hcd_priv_size	= sizeof(struct c67x00_hcd),
-+	.flags		= HCD_USB11 | HCD_MEMORY,
-+
-+	/*
-+	 * basic lifecycle operations
-+	 */
-+	.start		= c67x00_hcd_start,
-+	.stop		= c67x00_hcd_stop,
-+
-+	/*
-+	 * managing i/o requests and associated device resources
-+	 */
-+	.urb_enqueue	= c67x00_urb_enqueue,
-+	.urb_dequeue	= c67x00_urb_dequeue,
-+	.endpoint_disable = c67x00_endpoint_disable,
-+
-+	/*
-+	 * scheduling support
-+	 */
-+	.get_frame_number = c67x00_hcd_get_frame,
-+
-+	/*
-+	 * root hub support
-+	 */
-+	.hub_status_data = c67x00_hub_status_data,
-+	.hub_control	= c67x00_hub_control,
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * Setup/Teardown routines
-+ */
-+
-+int c67x00_hcd_probe(struct c67x00_sie *sie)
-+{
-+	struct c67x00_hcd *c67x00;
-+	struct usb_hcd *hcd;
-+	unsigned long flags;
-+	int retval;
-+
-+	hcd = usb_create_hcd(&c67x00_hc_driver, sie_dev(sie), "c67x00_sie");
-+	if (!hcd) {
-+		retval = -ENOMEM;
-+		goto err0;
-+	}
-+	c67x00 = hcd_to_c67x00_hcd(hcd);
-+
-+	spin_lock_init(&c67x00->lock);
-+	c67x00->sie = sie;
-+
-+	INIT_LIST_HEAD(&c67x00->list[PIPE_ISOCHRONOUS]);
-+	INIT_LIST_HEAD(&c67x00->list[PIPE_INTERRUPT]);
-+	INIT_LIST_HEAD(&c67x00->list[PIPE_CONTROL]);
-+	INIT_LIST_HEAD(&c67x00->list[PIPE_BULK]);
-+	c67x00->urb_count = 0;
-+	INIT_LIST_HEAD(&c67x00->td_list);
-+	INIT_LIST_HEAD(&c67x00->done_list);
-+	c67x00->td_base_addr = CY_HCD_BUF_ADDR + SIE_TD_OFFSET(sie->sie_num);
-+	c67x00->buf_base_addr = CY_HCD_BUF_ADDR + SIE_BUF_OFFSET(sie->sie_num);
-+	c67x00->max_frame_bw = MAX_FRAME_BW_STD;
-+
-+	c67x00_ll_husb_init_host_port(sie);
-+
-+	init_completion(&c67x00->endpoint_disable);
-+	retval = c67x00_sched_start_scheduler(c67x00);
-+	if (retval)
-+		goto err1;
-+
-+	retval = usb_add_hcd(hcd, 0, 0);
-+	if (retval) {
-+		dev_dbg(sie_dev(sie), "%s: usb_add_hcd returned %d\n",
-+			__FUNCTION__, retval);
-+		goto err2;
++	if (!udc) {
++		dev_err(sie_dev(sie), "No udc found!\n");
++		return;
 +	}
 +
-+	spin_lock_irqsave(&sie->lock, flags);
-+	sie->private_data = c67x00;
-+	sie->irq = c67x00_hcd_irq;
-+	spin_unlock_irqrestore(&sie->lock, flags);
++	/* gadget driver must not be registered */
++	BUG_ON(udc->driver != NULL);
 +
-+	return retval;
-+
-+ err2:
-+	c67x00_sched_stop_scheduler(c67x00);
-+ err1:
-+	usb_put_hcd(hcd);
-+ err0:
-+	return retval;
++	spin_lock(&udc->lock);
++	sie->private_data = NULL;
++	udc->sie = NULL;
++	spin_unlock(&udc->lock);
 +}
-+
-+/* may be called with controller, bus, and devices active */
-+void c67x00_hcd_remove(struct c67x00_sie *sie)
-+{
-+	struct c67x00_hcd *c67x00 = sie->private_data;
-+	struct usb_hcd *hcd = c67x00_hcd_to_hcd(c67x00);
-+
-+	c67x00_sched_stop_scheduler(c67x00);
-+	usb_remove_hcd(hcd);
-+	usb_put_hcd(hcd);
-+}
-Index: linux-2.6/drivers/usb/c67x00/c67x00-hcd.h
+Index: linux-2.6/drivers/usb/c67x00/c67x00-udc.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/usb/c67x00/c67x00-hcd.h
-@@ -0,0 +1,152 @@
++++ linux-2.6/drivers/usb/c67x00/c67x00-udc.h
+@@ -0,0 +1,50 @@
 +/*
-+ * c67x00-hcd.h: Cypress C67X00 USB HCD
++ * c67x00-udc.h: Cypress C67X00 USB device controller
 + *
 + * Copyright (C) 2006-2008 Barco N.V.
 + *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
-+ *    based on multiple host controller drivers inside the linux kernel.
++ *    based on multiple device controller drivers inside the linux kernel.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -476,1527 +981,444 @@ Index: linux-2.6/drivers/usb/c67x00/c67x00-hcd.h
 + * MA  02110-1301  USA.
 + */
 +
-+#ifndef _USB_C67X00_HCD_H
-+#define _USB_C67X00_HCD_H
++#ifndef _USB_C67X00_UDC_H
++#define _USB_C67X00_UDC_H
 +
 +#include <linux/kernel.h>
-+#include <linux/spinlock.h>
-+#include <linux/list.h>
-+#include <linux/usb.h>
-+#include "../core/hcd.h"
++
 +#include "c67x00.h"
 +
-+/*
-+ * The following parameters depend on the CPU speed, bus speed, ...
-+ * These can be tuned for specific use cases, e.g. if isochronous transfers
-+ * are very important, bandwith can be sacrificed to guarantee that the
-+ * 1ms deadline will be met.
-+ * If bulk transfers are important, the MAX_FRAME_BW can be increased,
-+ * but some (or many) isochronous deadlines might not be met.
-+ *
-+ * The values are specified in bittime.
-+ */
-+
-+/*
-+ * The current implementation switches between _STD (default) and _ISO (when
-+ * isochronous transfers are scheduled), in order to optimize the throughput
-+ * in normal cicrumstances, but also provide good isochronous behaviour.
-+ *
-+ * Bandwidth is described in bit time so with a 12MHz USB clock and 1ms
-+ * frames; there are 12000 bit times per frame.
-+ */
-+
-+#define TOTAL_FRAME_BW		12000
-+#define DEFAULT_EOT		2250
-+
-+#define MAX_FRAME_BW_STD	(TOTAL_FRAME_BW - DEFAULT_EOT)
-+#define MAX_FRAME_BW_ISO	2400
-+
-+/*
-+ * Periodic transfers may only use 90% of the full frame, but as
-+ * we currently don't even use 90% of the full frame, we may
-+ * use the full usable time for periodic transfers.
-+ */
-+#define MAX_PERIODIC_BW(full_bw)	full_bw
-+
-+/* -------------------------------------------------------------------------- */
-+
-+struct c67x00_hcd {
-+	spinlock_t lock;
-+	struct c67x00_sie *sie;
-+	unsigned int low_speed_ports;	/* bitmask of low speed ports */
-+	unsigned int urb_count;
-+	unsigned int urb_iso_count;
-+
-+	struct list_head list[4];	/* iso, int, ctrl, bulk */
-+#if PIPE_BULK != 3
-+#error "Sanity check failed, this code presumes PIPE_... to range from 0 to 3"
-+#endif
-+
-+	/* USB bandwidth allocated to td_list */
-+	int bandwidth_allocated;
-+	/* USB bandwidth allocated for isoc/int transfer */
-+	int periodic_bw_allocated;
-+	struct list_head td_list;
-+	struct list_head done_list;
-+	int max_frame_bw;
-+
-+	u16 td_base_addr;
-+	u16 buf_base_addr;
-+	u16 next_td_addr;
-+	u16 next_buf_addr;
-+
-+	struct tasklet_struct tasklet;
-+	struct tasklet_struct done_tasklet;
-+
-+	struct completion endpoint_disable;
-+
-+	u16 current_frame;
-+	u16 last_frame;
-+};
-+
-+static inline struct c67x00_hcd *hcd_to_c67x00_hcd(struct usb_hcd *hcd)
-+{
-+	return (struct c67x00_hcd *)(hcd->hcd_priv);
-+}
-+
-+static inline struct usb_hcd *c67x00_hcd_to_hcd(struct c67x00_hcd *c67x00)
-+{
-+	return container_of((void *)c67x00, struct usb_hcd, hcd_priv);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+#ifdef CONFIG_USB_C67X00_HCD
++#ifdef CONFIG_USB_GADGET_C67X00
 +/* Functions used by drv */
-+int c67x00_hcd_probe(struct c67x00_sie *sie);
-+void c67x00_hcd_remove(struct c67x00_sie *sie);
++int c67x00_udc_probe(struct c67x00_sie *sie);
++void c67x00_udc_remove(struct c67x00_sie *sie);
++
 +#else
-+static inline int c67x00_hcd_probe(struct c67x00_sie *sie)
++static inline int c67x00_udc_probe(struct c67x00_sie *sie)
 +{
-+	printk(KERN_ERR "hcd requested but CONFIG_USB_C67X00_HCD "
++	printk(KERN_ERR "udc requested but CONFIG_USB_GADGET_C67X00 "
 +	       "not enabled!\n");
 +	return -ENODEV;
 +}
 +
-+static inline void c67x00_hcd_remove(struct c67x00_sie *sie)
++static inline void c67x00_udc_remove(struct c67x00_sie *sie)
 +{
 +}
 +
-+static int usb_disabled(void)
-+{
-+	return 0;
-+}
-+#endif				/* CONFIG_USB_C67X00_HCD */
++#endif				/* CONFIG_USB_GADGET_C67X00 */
 +
-+/* ---------------------------------------------------------------------
-+ * Transfer Descriptor scheduling functions
-+ */
-+int c67x00_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flags);
-+int c67x00_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status);
-+void c67x00_endpoint_disable(struct usb_hcd *hcd,
-+			     struct usb_host_endpoint *ep);
-+
-+void c67x00_hcd_msg_received(struct c67x00_sie *sie, u16 msg);
-+void c67x00_sched_kick(struct c67x00_hcd *c67x00);
-+int c67x00_sched_start_scheduler(struct c67x00_hcd *c67x00);
-+void c67x00_sched_stop_scheduler(struct c67x00_hcd *c67x00);
-+
-+#define c67x00_hcd_dev(x)	(c67x00_hcd_to_hcd(x)->self.controller)
-+
-+#endif				/* _USB_C67X00_HCD_H */
-Index: linux-2.6/drivers/usb/c67x00/c67x00-sched.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/usb/c67x00/c67x00-sched.c
-@@ -0,0 +1,1194 @@
-+/*
-+ * c67x00-sched.c: Cypress C67X00 USB Host Controller Driver - TD scheduling
-+ *
-+ * Copyright (C) 2006-2008 Barco N.V.
-+ *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
-+ *    based on multiple host controller drivers inside the linux kernel.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-+ * MA  02110-1301  USA.
-+ */
-+
-+#include <linux/kthread.h>
-+
-+#include "c67x00.h"
-+#include "c67x00-hcd.h"
-+
-+/*
-+ * These are the stages for a control urb, they are kept
-+ * in both urb->interval and td->privdata.
-+ */
-+#define SETUP_STAGE		0
-+#define DATA_STAGE		1
-+#define STATUS_STAGE		2
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/**
-+ * struct c67x00_ep_data: Host endpoint data structure
-+ */
-+struct c67x00_ep_data {
-+	struct list_head queue;
-+	struct list_head node;
-+	struct usb_host_endpoint *hep;
-+	struct usb_device *dev;
-+	u16 next_frame;		/* For int/isoc transactions */
-+};
-+
-+/**
-+ * struct c67x00_td
-+ *
-+ * Hardware parts are little endiannes, SW in CPU endianess.
-+ */
-+struct c67x00_td {
-+	/* HW specific part */
-+	__le16 ly_base_addr;	/* Bytes 0-1 */
-+	__le16 port_length;	/* Bytes 2-3 */
-+	u8 pid_ep;		/* Byte 4 */
-+	u8 dev_addr;		/* Byte 5 */
-+	u8 ctrl_reg;		/* Byte 6 */
-+	u8 status;		/* Byte 7 */
-+	u8 retry_cnt;		/* Byte 8 */
-+#define TT_OFFSET		2
-+#define TT_CONTROL		0
-+#define TT_ISOCHRONOUS		1
-+#define TT_BULK			2
-+#define TT_INTERRUPT		3
-+	u8 residue;		/* Byte 9 */
-+	__le16 next_td_addr;	/* Bytes 10-11 */
-+	/* SW part */
-+	struct list_head td_list;
-+	u16 td_addr;
-+	void *data;
-+	struct urb *urb;
-+	unsigned long privdata;
-+
-+	/* These are needed for handling the toggle bits:
-+	 * an urb can be dequeued while a td is in progress
-+	 * after checking the td, the toggle bit might need to
-+	 * be fixed */
-+	struct c67x00_ep_data *ep_data;
-+	unsigned int pipe;
-+};
-+
-+struct c67x00_urb_priv {
-+	struct list_head hep_node;
-+	struct urb *urb;
-+	int port;
-+	int cnt;		/* packet number for isoc */
-+	int status;
-+	struct c67x00_ep_data *ep_data;
-+};
-+
-+#define td_udev(td)	((td)->ep_data->dev)
-+
-+#define CY_TD_SIZE		12
-+
-+#define TD_PIDEP_OFFSET		0x04
-+#define TD_PIDEPMASK_PID	0xF0
-+#define TD_PIDEPMASK_EP		0x0F
-+#define TD_PORTLENMASK_DL	0x02FF
-+#define TD_PORTLENMASK_PN	0xC000
-+
-+#define TD_STATUS_OFFSET	0x07
-+#define TD_STATUSMASK_ACK	0x01
-+#define TD_STATUSMASK_ERR	0x02
-+#define TD_STATUSMASK_TMOUT	0x04
-+#define TD_STATUSMASK_SEQ	0x08
-+#define TD_STATUSMASK_SETUP	0x10
-+#define TD_STATUSMASK_OVF	0x20
-+#define TD_STATUSMASK_NAK	0x40
-+#define TD_STATUSMASK_STALL	0x80
-+
-+#define TD_ERROR_MASK		(TD_STATUSMASK_ERR | TD_STATUSMASK_TMOUT | \
-+				 TD_STATUSMASK_STALL)
-+
-+#define TD_RETRYCNT_OFFSET	0x08
-+#define TD_RETRYCNTMASK_ACT_FLG	0x10
-+#define TD_RETRYCNTMASK_TX_TYPE	0x0C
-+#define TD_RETRYCNTMASK_RTY_CNT	0x03
-+
-+#define TD_RESIDUE_OVERFLOW	0x80
-+
-+#define TD_PID_IN		0x90
-+
-+/* Residue: signed 8bits, neg -> OVERFLOW, pos -> UNDERFLOW */
-+#define td_residue(td)		((__s8)(td->residue))
-+#define td_ly_base_addr(td)	(__le16_to_cpu((td)->ly_base_addr))
-+#define td_port_length(td)	(__le16_to_cpu((td)->port_length))
-+#define td_next_td_addr(td)	(__le16_to_cpu((td)->next_td_addr))
-+
-+#define td_active(td)		((td)->retry_cnt & TD_RETRYCNTMASK_ACT_FLG)
-+#define td_length(td)		(td_port_length(td) & TD_PORTLENMASK_DL)
-+
-+#define td_sequence_ok(td)	(!td->status || \
-+				 (!(td->status & TD_STATUSMASK_SEQ) ==	\
-+				  !(td->ctrl_reg & SEQ_SEL)))
-+
-+#define td_acked(td)		(!td->status || \
-+				 (td->status & TD_STATUSMASK_ACK))
-+#define td_actual_bytes(td)	(td_length(td) - td_residue(td))
-+
-+/* -------------------------------------------------------------------------- */
-+
-+#ifdef DEBUG
-+
-+/**
-+ * dbg_td - Dump the contents of the TD
-+ */
-+static void dbg_td(struct c67x00_hcd *c67x00, struct c67x00_td *td, char *msg)
-+{
-+	struct device *dev = c67x00_hcd_dev(c67x00);
-+
-+	dev_dbg(dev, "### %s at 0x%04x\n", msg, td->td_addr);
-+	dev_dbg(dev, "urb:      0x%p\n", td->urb);
-+	dev_dbg(dev, "endpoint:   %4d\n", usb_pipeendpoint(td->pipe));
-+	dev_dbg(dev, "pipeout:    %4d\n", usb_pipeout(td->pipe));
-+	dev_dbg(dev, "ly_base_addr: 0x%04x\n", td_ly_base_addr(td));
-+	dev_dbg(dev, "port_length:  0x%04x\n", td_port_length(td));
-+	dev_dbg(dev, "pid_ep:         0x%02x\n", td->pid_ep);
-+	dev_dbg(dev, "dev_addr:       0x%02x\n", td->dev_addr);
-+	dev_dbg(dev, "ctrl_reg:       0x%02x\n", td->ctrl_reg);
-+	dev_dbg(dev, "status:         0x%02x\n", td->status);
-+	dev_dbg(dev, "retry_cnt:      0x%02x\n", td->retry_cnt);
-+	dev_dbg(dev, "residue:        0x%02x\n", td->residue);
-+	dev_dbg(dev, "next_td_addr: 0x%04x\n", td_next_td_addr(td));
-+	dev_dbg(dev, "data:");
-+	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1,
-+		       td->data, td_length(td), 1);
-+}
-+#else				/* DEBUG */
-+
-+static inline void
-+dbg_td(struct c67x00_hcd *c67x00, struct c67x00_td *td, char *msg) { }
-+
-+#endif				/* DEBUG */
-+
-+/* -------------------------------------------------------------------------- */
-+/* Helper functions */
-+
-+static inline u16 c67x00_get_current_frame_number(struct c67x00_hcd *c67x00)
-+{
-+	u16 temp_val;
-+	temp_val = c67x00_ll_husb_get_frame(c67x00->sie);
-+	temp_val &= HOST_FRAME_MASK;
-+	return temp_val;
-+}
-+
-+/**
-+ * frame_add
-+ * Software wraparound for framenumbers.
-+ */
-+static inline u16 frame_add(u16 a, u16 b)
-+{
-+	return (a + b) & HOST_FRAME_MASK;
-+}
-+
-+/**
-+ * frame_after - is frame a after frame b
-+ */
-+static inline int frame_after(u16 a, u16 b)
-+{
-+	return ((HOST_FRAME_MASK + a - b) & HOST_FRAME_MASK) <
-+	    (HOST_FRAME_MASK / 2);
-+}
-+
-+/**
-+ * frame_after_eq - is frame a after or equal to frame b
-+ */
-+static inline int frame_after_eq(u16 a, u16 b)
-+{
-+	return ((HOST_FRAME_MASK + 1 + a - b) & HOST_FRAME_MASK) <
-+	    (HOST_FRAME_MASK / 2);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/**
-+ * c67x00_release_urb - remove link from all tds to this urb
-+ * Disconnects the urb from it's tds, so that it can be given back.
-+ * pre: urb->hcpriv != NULL
-+ */
-+static void c67x00_release_urb(struct c67x00_hcd *c67x00, struct urb *urb)
-+{
-+	struct c67x00_td *td;
-+	struct c67x00_urb_priv *urbp;
-+
-+	BUG_ON(!urb);
-+
-+	c67x00->urb_count--;
-+
-+	if (usb_pipetype(urb->pipe) == PIPE_ISOCHRONOUS) {
-+		c67x00->urb_iso_count--;
-+		if (c67x00->urb_iso_count == 0)
-+			c67x00->max_frame_bw = MAX_FRAME_BW_STD;
-+	}
-+
-+	/* TODO this might be not so efficient when we've got many urbs!
-+	 * Alternatives:
-+	 *   * only clear when needed
-+	 *   * keep a list of tds with earch urbp
-+	 */
-+	list_for_each_entry(td, &c67x00->td_list, td_list)
-+		if (urb == td->urb)
-+			td->urb = NULL;
-+
-+	urbp = urb->hcpriv;
-+	urb->hcpriv = NULL;
-+	list_del(&urbp->hep_node);
-+	kfree(urbp);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static struct c67x00_ep_data *
-+c67x00_ep_data_alloc(struct c67x00_hcd *c67x00, struct urb *urb)
-+{
-+	struct usb_host_endpoint *hep = urb->ep;
-+	struct c67x00_ep_data *ep_data;
-+	int type;
-+
-+	c67x00->current_frame = c67x00_get_current_frame_number(c67x00);
-+
-+	/* Check if endpoint already has a c67x00_ep_data struct allocated */
-+	if (hep->hcpriv) {
-+		ep_data = hep->hcpriv;
-+		if (frame_after(c67x00->current_frame, ep_data->next_frame))
-+			ep_data->next_frame =
-+			    frame_add(c67x00->current_frame, 1);
-+		return hep->hcpriv;
-+	}
-+
-+	/* Allocate and initialize a new c67x00 endpoint data structure */
-+	ep_data = kzalloc(sizeof(*ep_data), GFP_ATOMIC);
-+	if (!ep_data)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&ep_data->queue);
-+	INIT_LIST_HEAD(&ep_data->node);
-+	ep_data->hep = hep;
-+
-+	/* hold a reference to udev as long as this endpoint lives,
-+	 * this is needed to possibly fix the data toggle */
-+	ep_data->dev = usb_get_dev(urb->dev);
-+	hep->hcpriv = ep_data;
-+
-+	/* For ISOC and INT endpoints, start ASAP: */
-+	ep_data->next_frame = frame_add(c67x00->current_frame, 1);
-+
-+	/* Add the endpoint data to one of the pipe lists; must be added
-+	   in order of endpoint address */
-+	type = usb_pipetype(urb->pipe);
-+	if (list_empty(&ep_data->node)) {
-+		list_add(&ep_data->node, &c67x00->list[type]);
-+	} else {
-+		struct c67x00_ep_data *prev;
-+
-+		list_for_each_entry(prev, &c67x00->list[type], node) {
-+			if (prev->hep->desc.bEndpointAddress >
-+			    hep->desc.bEndpointAddress) {
-+				list_add(&ep_data->node, prev->node.prev);
-+				break;
-+			}
-+		}
-+	}
-+
-+	return ep_data;
-+}
-+
-+static int c67x00_ep_data_free(struct usb_host_endpoint *hep)
-+{
-+	struct c67x00_ep_data *ep_data = hep->hcpriv;
-+
-+	if (!ep_data)
-+		return 0;
-+
-+	if (!list_empty(&ep_data->queue))
-+		return -EBUSY;
-+
-+	usb_put_dev(ep_data->dev);
-+	list_del(&ep_data->queue);
-+	list_del(&ep_data->node);
-+
-+	kfree(ep_data);
-+	hep->hcpriv = NULL;
-+
-+	return 0;
-+}
-+
-+void c67x00_endpoint_disable(struct usb_hcd *hcd, struct usb_host_endpoint *ep)
-+{
-+	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
-+	unsigned long flags;
-+
-+	if (!list_empty(&ep->urb_list))
-+		dev_warn(c67x00_hcd_dev(c67x00), "error: urb list not empty\n");
-+
-+	spin_lock_irqsave(&c67x00->lock, flags);
-+
-+	/* loop waiting for all transfers in the endpoint queue to complete */
-+	while (c67x00_ep_data_free(ep)) {
-+		/* Drop the lock so we can sleep waiting for the hardware */
-+		spin_unlock_irqrestore(&c67x00->lock, flags);
-+
-+		/* it could happen that we reinitialize this completion, while
-+		 * somebody was waiting for that completion.  The timeout and
-+		 * while loop handle such cases, but this might be improved */
-+		INIT_COMPLETION(c67x00->endpoint_disable);
-+		c67x00_sched_kick(c67x00);
-+		wait_for_completion_timeout(&c67x00->endpoint_disable, 1 * HZ);
-+
-+		spin_lock_irqsave(&c67x00->lock, flags);
-+	}
-+
-+	spin_unlock_irqrestore(&c67x00->lock, flags);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static inline int get_root_port(struct usb_device *dev)
-+{
-+	while (dev->parent->parent)
-+		dev = dev->parent;
-+	return dev->portnum;
-+}
-+
-+int c67x00_urb_enqueue(struct usb_hcd *hcd,
-+		       struct urb *urb, gfp_t mem_flags)
-+{
-+	int ret;
-+	unsigned long flags;
-+	struct c67x00_urb_priv *urbp;
-+	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
-+	int port = get_root_port(urb->dev)-1;
-+
-+	spin_lock_irqsave(&c67x00->lock, flags);
-+
-+	/* Make sure host controller is running */
-+	if (!HC_IS_RUNNING(hcd->state)) {
-+		ret = -ENODEV;
-+		goto err_not_linked;
-+	}
-+
-+	ret = usb_hcd_link_urb_to_ep(hcd, urb);
-+	if (ret)
-+		goto err_not_linked;
-+
-+	/* Allocate and initialize urb private data */
-+	urbp = kzalloc(sizeof(*urbp), mem_flags);
-+	if (!urbp) {
-+		ret = -ENOMEM;
-+		goto err_urbp;
-+	}
-+
-+	INIT_LIST_HEAD(&urbp->hep_node);
-+	urbp->urb = urb;
-+	urbp->port = port;
-+
-+	urbp->ep_data = c67x00_ep_data_alloc(c67x00, urb);
-+
-+	if (!urbp->ep_data) {
-+		ret = -ENOMEM;
-+		goto err_epdata;
-+	}
-+
-+	/* TODO claim bandwidth with usb_claim_bandwidth?
-+	 * also release it somewhere! */
-+
-+	urb->hcpriv = urbp;
-+
-+	urb->actual_length = 0;	/* Nothing received/transmitted yet */
-+
-+	switch (usb_pipetype(urb->pipe)) {
-+	case PIPE_CONTROL:
-+		urb->interval = SETUP_STAGE;
-+		break;
-+	case PIPE_INTERRUPT:
-+		break;
-+	case PIPE_BULK:
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		if (c67x00->urb_iso_count == 0)
-+			c67x00->max_frame_bw = MAX_FRAME_BW_ISO;
-+		c67x00->urb_iso_count++;
-+		/* Assume always URB_ISO_ASAP, FIXME */
-+		if (list_empty(&urbp->ep_data->queue))
-+			urb->start_frame = urbp->ep_data->next_frame;
-+		else {
-+			/* Go right after the last one */
-+			struct urb *last_urb;
-+
-+			last_urb = list_entry(urbp->ep_data->queue.prev,
-+					      struct c67x00_urb_priv,
-+					      hep_node)->urb;
-+			urb->start_frame =
-+			    frame_add(last_urb->start_frame,
-+				      last_urb->number_of_packets *
-+				      last_urb->interval);
-+		}
-+		urbp->cnt = 0;
-+		break;
-+	}
-+
-+	/* Add the URB to the endpoint queue */
-+	list_add_tail(&urbp->hep_node, &urbp->ep_data->queue);
-+
-+	/* If this is the only URB, kick start the controller */
-+	if (!c67x00->urb_count++)
-+		c67x00_ll_hpi_enable_sofeop(c67x00->sie);
-+
-+	c67x00_sched_kick(c67x00);
-+	spin_unlock_irqrestore(&c67x00->lock, flags);
-+
-+	return 0;
-+
-+err_epdata:
-+	kfree(urbp);
-+err_urbp:
-+	usb_hcd_unlink_urb_from_ep(hcd, urb);
-+err_not_linked:
-+	spin_unlock_irqrestore(&c67x00->lock, flags);
-+
-+	return ret;
-+}
-+
-+int c67x00_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
-+{
-+	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
-+	unsigned long flags;
-+	int rc;
-+
-+	spin_lock_irqsave(&c67x00->lock, flags);
-+	rc = usb_hcd_check_unlink_urb(hcd, urb, status);
-+	if (rc)
-+		goto done;
-+
-+	c67x00_release_urb(c67x00, urb);
-+	usb_hcd_unlink_urb_from_ep(hcd, urb);
-+	spin_unlock_irqrestore(&c67x00->lock, flags);
-+
-+	usb_hcd_giveback_urb(hcd, urb, status);
-+
-+	return 0;
-+
-+ done:
-+	spin_unlock_irqrestore(&c67x00->lock, flags);
-+	return rc;
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/*
-+ * pre: urb != NULL and c67x00 locked, urb unlocked
-+ */
-+static inline void
-+c67x00_giveback_urb(struct c67x00_hcd *c67x00, struct urb *urb, int status)
-+{
-+	struct c67x00_urb_priv *urbp;
-+
-+	if (!urb)
-+		return;
-+
-+	urbp = urb->hcpriv;
-+	urbp->status = status;
-+
-+	list_del_init(&urbp->hep_node);
-+	list_add_tail(&urbp->hep_node, &c67x00->done_list);
-+	tasklet_schedule(&c67x00->done_tasklet);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static int c67x00_claim_frame_bw(struct c67x00_hcd *c67x00, struct urb *urb,
-+				 int len, int periodic)
-+{
-+	struct c67x00_urb_priv *urbp = urb->hcpriv;
-+	int bit_time;
-+
-+	/* According to the C67x00 BIOS user manual, page 3-18,19, the
-+	 * following calculations provide the full speed bit times for
-+	 * a transaction.
-+	 *
-+	 * FS(in)	= 112.5 +  9.36*BC + HOST_DELAY
-+	 * FS(in,iso)	=  90.5 +  9.36*BC + HOST_DELAY
-+	 * FS(out)	= 112.5 +  9.36*BC + HOST_DELAY
-+	 * FS(out,iso)	=  78.4 +  9.36*BC + HOST_DELAY
-+	 * LS(in)	= 802.4 + 75.78*BC + HOST_DELAY
-+	 * LS(out)	= 802.6 + 74.67*BC + HOST_DELAY
-+	 *
-+	 * HOST_DELAY == 106 for the c67200 and c67300.
-+	 */
-+
-+	/* make calculations in 1/100 bit times to maintain resolution */
-+	if (urbp->ep_data->dev->speed == USB_SPEED_LOW) {
-+		/* Low speed pipe */
-+		if (usb_pipein(urb->pipe))
-+			bit_time = 80240 + 7578*len;
-+		else
-+			bit_time = 80260 + 7467*len;
-+	} else {
-+		/* FS pipes */
-+		if (usb_pipeisoc(urb->pipe))
-+			bit_time = usb_pipein(urb->pipe) ? 9050 : 7840;
-+		else
-+			bit_time = 11250;
-+		bit_time += 936*len;
-+	}
-+
-+	/* Scale back down to integer bit times.  Use a host delay of 106.
-+	 * (this is the only place it is used) */
-+	bit_time = ((bit_time+50) / 100) + 106;
-+
-+	if (unlikely(bit_time + c67x00->bandwidth_allocated >=
-+		     c67x00->max_frame_bw))
-+		return -EMSGSIZE;
-+
-+	if (unlikely(c67x00->next_td_addr + CY_TD_SIZE >=
-+		     c67x00->td_base_addr + SIE_TD_SIZE))
-+		return -EMSGSIZE;
-+
-+	if (unlikely(c67x00->next_buf_addr + len >=
-+		     c67x00->buf_base_addr + SIE_TD_BUF_SIZE))
-+		return -EMSGSIZE;
-+
-+	if (periodic) {
-+		if (unlikely(bit_time + c67x00->periodic_bw_allocated >=
-+			     MAX_PERIODIC_BW(c67x00->max_frame_bw)))
-+			return -EMSGSIZE;
-+		c67x00->periodic_bw_allocated += bit_time;
-+	}
-+
-+	c67x00->bandwidth_allocated += bit_time;
-+	return 0;
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/**
-+ * td_addr and buf_addr must be word aligned
-+ */
-+static int c67x00_create_td(struct c67x00_hcd *c67x00, struct urb *urb,
-+			    void *data, int len, int pid, int toggle,
-+			    unsigned long privdata)
-+{
-+	struct c67x00_td *td;
-+	struct c67x00_urb_priv *urbp = urb->hcpriv;
-+	const __u8 active_flag = 1, retry_cnt = 1;
-+	__u8 cmd = 0;
-+	int tt = 0;
-+
-+	if (c67x00_claim_frame_bw(c67x00, urb, len, usb_pipeisoc(urb->pipe)
-+				  || usb_pipeint(urb->pipe)))
-+		return -EMSGSIZE;	/* Not really an error, but expected */
-+
-+	td = kzalloc(sizeof(*td), GFP_ATOMIC);
-+	if (!td)
-+		return -ENOMEM;
-+
-+	td->pipe = urb->pipe;
-+	td->ep_data = urbp->ep_data;
-+
-+	if ((td_udev(td)->speed == USB_SPEED_LOW) &&
-+	    !(c67x00->low_speed_ports & (1 << urbp->port)))
-+		cmd |= PREAMBLE_EN;
-+
-+	switch (usb_pipetype(td->pipe)) {
-+	case PIPE_ISOCHRONOUS:
-+		tt = TT_ISOCHRONOUS;
-+		cmd |= ISO_EN;
-+		break;
-+	case PIPE_CONTROL:
-+		tt = TT_CONTROL;
-+		break;
-+	case PIPE_BULK:
-+		tt = TT_BULK;
-+		break;
-+	case PIPE_INTERRUPT:
-+		tt = TT_INTERRUPT;
-+		break;
-+	}
-+
-+	if (toggle)
-+		cmd |= SEQ_SEL;
-+
-+	cmd |= ARM_EN;
-+
-+	/* SW part */
-+	td->td_addr = c67x00->next_td_addr;
-+	c67x00->next_td_addr = c67x00->next_td_addr + CY_TD_SIZE;
-+
-+	/* HW part */
-+	td->ly_base_addr = __cpu_to_le16(c67x00->next_buf_addr);
-+	td->port_length = __cpu_to_le16((c67x00->sie->sie_num << 15) |
-+					(urbp->port << 14) | (len & 0x3FF));
-+	td->pid_ep = ((pid & 0xF) << TD_PIDEP_OFFSET) |
-+	    (usb_pipeendpoint(td->pipe) & 0xF);
-+	td->dev_addr = usb_pipedevice(td->pipe) & 0x7F;
-+	td->ctrl_reg = cmd;
-+	td->status = 0;
-+	td->retry_cnt = (tt << TT_OFFSET) | (active_flag << 4) | retry_cnt;
-+	td->residue = 0;
-+	td->next_td_addr = __cpu_to_le16(c67x00->next_td_addr);
-+
-+	/* SW part */
-+	td->data = data;
-+	td->urb = urb;
-+	td->privdata = privdata;
-+
-+	c67x00->next_buf_addr += (len + 1) & ~0x01;	/* properly align */
-+
-+	list_add_tail(&td->td_list, &c67x00->td_list);
-+	return 0;
-+}
-+
-+static inline void c67x00_release_td(struct c67x00_td *td)
-+{
-+	list_del_init(&td->td_list);
-+	kfree(td);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static int c67x00_add_data_urb(struct c67x00_hcd *c67x00, struct urb *urb)
-+{
-+	int remaining;
-+	int toggle;
-+	int pid;
-+	int ret = 0;
-+	int maxps;
-+	int need_empty;
-+
-+	toggle = usb_gettoggle(urb->dev, usb_pipeendpoint(urb->pipe),
-+			       usb_pipeout(urb->pipe));
-+	remaining = urb->transfer_buffer_length - urb->actual_length;
-+
-+	maxps = usb_maxpacket(urb->dev, urb->pipe, usb_pipeout(urb->pipe));
-+
-+	need_empty = (urb->transfer_flags & URB_ZERO_PACKET) &&
-+	    usb_pipeout(urb->pipe) && !(remaining % maxps);
-+
-+	while (remaining || need_empty) {
-+		int len;
-+		char *td_buf;
-+
-+		len = (remaining > maxps) ? maxps : remaining;
-+		if (!len)
-+			need_empty = 0;
-+
-+		pid = usb_pipeout(urb->pipe) ? USB_PID_OUT : USB_PID_IN;
-+		td_buf = urb->transfer_buffer + urb->transfer_buffer_length -
-+		    remaining;
-+		ret = c67x00_create_td(c67x00, urb, td_buf, len, pid, toggle,
-+				       DATA_STAGE);
-+		if (ret)
-+			return ret;	/* td wasn't created */
-+
-+		toggle ^= 1;
-+		remaining -= len;
-+		if (usb_pipecontrol(urb->pipe))
-+			break;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * return 0 in case more bandwidth is available, else errorcode
-+ */
-+static int c67x00_add_ctrl_urb(struct c67x00_hcd *c67x00, struct urb *urb)
-+{
-+	int ret;
-+	int pid;
-+
-+	switch (urb->interval) {
-+	default:
-+	case SETUP_STAGE:
-+		ret = c67x00_create_td(c67x00, urb, urb->setup_packet,
-+				       8, USB_PID_SETUP, 0, SETUP_STAGE);
-+		if (ret)
-+			return ret;
-+		urb->interval = SETUP_STAGE;
-+		usb_settoggle(urb->dev, usb_pipeendpoint(urb->pipe),
-+			      usb_pipeout(urb->pipe), 1);
-+		break;
-+	case DATA_STAGE:
-+		if (urb->transfer_buffer_length) {
-+			ret = c67x00_add_data_urb(c67x00, urb);
-+			if (ret)
-+				return ret;
-+			break;
-+		}		/* else fallthrough */
-+	case STATUS_STAGE:
-+		pid = !usb_pipeout(urb->pipe) ? USB_PID_OUT : USB_PID_IN;
-+		ret = c67x00_create_td(c67x00, urb, NULL, 0, pid, 1,
-+				       STATUS_STAGE);
-+		if (ret)
-+			return ret;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * return 0 in case more bandwidth is available, else errorcode
-+ */
-+static int c67x00_add_int_urb(struct c67x00_hcd *c67x00, struct urb *urb)
-+{
-+	struct c67x00_urb_priv *urbp = urb->hcpriv;
-+
-+	if (frame_after_eq(c67x00->current_frame, urbp->ep_data->next_frame)) {
-+		urbp->ep_data->next_frame =
-+		    frame_add(urbp->ep_data->next_frame, urb->interval);
-+		return c67x00_add_data_urb(c67x00, urb);
-+	}
-+	return 0;
-+}
-+
-+static int c67x00_add_iso_urb(struct c67x00_hcd *c67x00, struct urb *urb)
-+{
-+	struct c67x00_urb_priv *urbp = urb->hcpriv;
-+
-+	if (frame_after_eq(c67x00->current_frame, urbp->ep_data->next_frame)) {
-+		char *td_buf;
-+		int len, pid, ret;
-+
-+		BUG_ON(urbp->cnt >= urb->number_of_packets);
-+
-+		td_buf = urb->transfer_buffer +
-+		    urb->iso_frame_desc[urbp->cnt].offset;
-+		len = urb->iso_frame_desc[urbp->cnt].length;
-+		pid = usb_pipeout(urb->pipe) ? USB_PID_OUT : USB_PID_IN;
-+
-+		ret = c67x00_create_td(c67x00, urb, td_buf, len, pid, 0,
-+				       urbp->cnt);
-+		if (ret) {
-+			printk(KERN_DEBUG "create failed: %d\n", ret);
-+			urb->iso_frame_desc[urbp->cnt].actual_length = 0;
-+			urb->iso_frame_desc[urbp->cnt].status = ret;
-+			if (urbp->cnt + 1 == urb->number_of_packets)
-+				c67x00_giveback_urb(c67x00, urb, 0);
-+		}
-+
-+		urbp->ep_data->next_frame =
-+		    frame_add(urbp->ep_data->next_frame, urb->interval);
-+		urbp->cnt++;
-+	}
-+	return 0;
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static void c67x00_fill_from_list(struct c67x00_hcd *c67x00, int type,
-+				  int (*add)(struct c67x00_hcd *, struct urb *))
-+{
-+	struct c67x00_ep_data *ep_data;
-+	struct urb *urb;
-+
-+	/* traverse every endpoint on the list */
-+	list_for_each_entry(ep_data, &c67x00->list[type], node) {
-+		if (!list_empty(&ep_data->queue)) {
-+			/* and add the first urb */
-+			/* isochronous transfer rely on this */
-+			urb = list_entry(ep_data->queue.next,
-+					 struct c67x00_urb_priv,
-+					 hep_node)->urb;
-+			add(c67x00, urb);
-+		}
-+	}
-+}
-+
-+static void c67x00_fill_frame(struct c67x00_hcd *c67x00)
-+{
-+	struct c67x00_td *td, *ttd;
-+
-+	/* Check if we can proceed */
-+	if (!list_empty(&c67x00->td_list)) {
-+		dev_warn(c67x00_hcd_dev(c67x00),
-+			 "TD list not empty! This should not happen!\n");
-+		list_for_each_entry_safe(td, ttd, &c67x00->td_list, td_list) {
-+			dbg_td(c67x00, td, "Unprocessed td");
-+			c67x00_release_td(td);
-+		}
-+	}
-+
-+	/* Reinitialize variables */
-+	c67x00->bandwidth_allocated = 0;
-+	c67x00->periodic_bw_allocated = 0;
-+
-+	c67x00->next_td_addr = c67x00->td_base_addr;
-+	c67x00->next_buf_addr = c67x00->buf_base_addr;
-+
-+	/* Fill the list */
-+	c67x00_fill_from_list(c67x00, PIPE_ISOCHRONOUS, c67x00_add_iso_urb);
-+	c67x00_fill_from_list(c67x00, PIPE_INTERRUPT, c67x00_add_int_urb);
-+	c67x00_fill_from_list(c67x00, PIPE_CONTROL, c67x00_add_ctrl_urb);
-+	c67x00_fill_from_list(c67x00, PIPE_BULK, c67x00_add_data_urb);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/**
-+ * Get TD from C67X00
-+ */
-+static inline void
-+c67x00_parse_td(struct c67x00_hcd *c67x00, struct c67x00_td *td)
-+{
-+	c67x00_ll_read_mem_le16(c67x00->sie->dev,
-+				td->td_addr, td, CY_TD_SIZE);
-+
-+	if (usb_pipein(td->pipe) && td_actual_bytes(td))
-+		c67x00_ll_read_mem_le16(c67x00->sie->dev, td_ly_base_addr(td),
-+					td->data, td_actual_bytes(td));
-+}
-+
-+static int c67x00_td_to_error(struct c67x00_hcd *c67x00, struct c67x00_td *td)
-+{
-+	if (td->status & TD_STATUSMASK_ERR) {
-+		dbg_td(c67x00, td, "ERROR_FLAG");
-+		return -EILSEQ;
-+	}
-+	if (td->status & TD_STATUSMASK_STALL) {
-+		/* dbg_td(c67x00, td, "STALL"); */
-+		return -EPIPE;
-+	}
-+	if (td->status & TD_STATUSMASK_TMOUT) {
-+		dbg_td(c67x00, td, "TIMEOUT");
-+		return -ETIMEDOUT;
-+	}
-+
-+	return 0;
-+}
-+
-+static inline int c67x00_end_of_data(struct c67x00_td *td)
-+{
-+	int maxps, need_empty, remaining;
-+	struct urb *urb = td->urb;
-+	int act_bytes;
-+
-+	act_bytes = td_actual_bytes(td);
-+
-+	if (unlikely(!act_bytes))
-+		return 1;	/* This was an empty packet */
-+
-+	maxps = usb_maxpacket(td_udev(td), td->pipe, usb_pipeout(td->pipe));
-+
-+	if (unlikely(act_bytes < maxps))
-+		return 1;	/* Smaller then full packet */
-+
-+	remaining = urb->transfer_buffer_length - urb->actual_length;
-+	need_empty = (urb->transfer_flags & URB_ZERO_PACKET) &&
-+	    usb_pipeout(urb->pipe) && !(remaining % maxps);
-+
-+	if (unlikely(!remaining && !need_empty))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/* Remove all td's from the list which come
-+ * after last_td and are meant for the same pipe.
-+ * This is used when a short packet has occured */
-+static inline void c67x00_clear_pipe(struct c67x00_hcd *c67x00,
-+				     struct c67x00_td *last_td)
-+{
-+	struct c67x00_td *td, *tmp;
-+	td = last_td;
-+	tmp = last_td;
-+	while (td->td_list.next != &c67x00->td_list) {
-+		td = list_entry(td->td_list.next, struct c67x00_td, td_list);
-+		if (td->pipe == last_td->pipe) {
-+			c67x00_release_td(td);
-+			td = tmp;
-+		}
-+		tmp = td;
-+	}
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static void c67x00_handle_successful_td(struct c67x00_hcd *c67x00,
-+					struct c67x00_td *td)
-+{
-+	struct urb *urb = td->urb;
-+
-+	if (!urb)
-+		return;
-+
-+	urb->actual_length += td_actual_bytes(td);
-+
-+	switch (usb_pipetype(td->pipe)) {
-+		/* isochronous tds are handled separately */
-+	case PIPE_CONTROL:
-+		switch (td->privdata) {
-+		case SETUP_STAGE:
-+			urb->interval =
-+			    urb->transfer_buffer_length ?
-+			    DATA_STAGE : STATUS_STAGE;
-+			/* Don't count setup_packet with normal data: */
-+			urb->actual_length = 0;
-+			break;
-+
-+		case DATA_STAGE:
-+			if (c67x00_end_of_data(td)) {
-+				urb->interval = STATUS_STAGE;
-+				c67x00_clear_pipe(c67x00, td);
-+			}
-+			break;
-+
-+		case STATUS_STAGE:
-+			urb->interval = 0;
-+			c67x00_giveback_urb(c67x00, urb, 0);
-+			break;
-+		}
-+		break;
-+
-+	case PIPE_INTERRUPT:
-+	case PIPE_BULK:
-+		if (unlikely(c67x00_end_of_data(td))) {
-+			c67x00_clear_pipe(c67x00, td);
-+			c67x00_giveback_urb(c67x00, urb, 0);
-+		}
-+		break;
-+	}
-+}
-+
-+static void c67x00_handle_isoc(struct c67x00_hcd *c67x00, struct c67x00_td *td)
-+{
-+	struct urb *urb = td->urb;
-+	struct c67x00_urb_priv *urbp;
-+	int cnt;
-+
-+	if (!urb)
-+		return;
-+
-+	urbp = urb->hcpriv;
-+	cnt = td->privdata;
-+
-+	if (td->status & TD_ERROR_MASK)
-+		urb->error_count++;
-+
-+	urb->iso_frame_desc[cnt].actual_length = td_actual_bytes(td);
-+	urb->iso_frame_desc[cnt].status = c67x00_td_to_error(c67x00, td);
-+	if (cnt + 1 == urb->number_of_packets)	/* Last packet */
-+		c67x00_giveback_urb(c67x00, urb, 0);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/**
-+ * c67x00_check_td_list - handle tds which have been processed by the c67x00
-+ * pre: current_td == 0
-+ */
-+static inline void c67x00_check_td_list(struct c67x00_hcd *c67x00)
-+{
-+	struct c67x00_td *td, *tmp;
-+	struct urb *urb;
-+	int ack_ok;
-+	int clear_endpoint;
-+
-+	list_for_each_entry_safe(td, tmp, &c67x00->td_list, td_list) {
-+		/* get the TD */
-+		c67x00_parse_td(c67x00, td);
-+		urb = td->urb;	/* urb can be NULL! */
-+		ack_ok = 0;
-+		clear_endpoint = 1;
-+
-+		/* Handle isochronous transfers separately */
-+		if (usb_pipeisoc(td->pipe)) {
-+			clear_endpoint = 0;
-+			c67x00_handle_isoc(c67x00, td);
-+			goto cont;
-+		}
-+
-+		/* When an error occurs, all td's for that pipe go into an
-+		 * inactive state. This state matches successful transfers so
-+		 * we must make sure not to service them. */
-+		if (td->status & TD_ERROR_MASK) {
-+			c67x00_giveback_urb(c67x00, urb,
-+					    c67x00_td_to_error(c67x00, td));
-+			goto cont;
-+		}
-+
-+		if ((td->status & TD_STATUSMASK_NAK) || !td_sequence_ok(td) ||
-+		    !td_acked(td))
-+			goto cont;
-+
-+		/* Sequence ok and acked, don't need to fix toggle */
-+		ack_ok = 1;
-+
-+		if (unlikely(td->status & TD_STATUSMASK_OVF)) {
-+			if (td_residue(td) & TD_RESIDUE_OVERFLOW) {
-+				/* Overflow */
-+				c67x00_giveback_urb(c67x00, urb, -EOVERFLOW);
-+				goto cont;
-+			}
-+		}
-+
-+		clear_endpoint = 0;
-+		c67x00_handle_successful_td(c67x00, td);
-+
-+	cont:
-+		if (clear_endpoint)
-+			c67x00_clear_pipe(c67x00, td);
-+		if (ack_ok)
-+			usb_settoggle(td_udev(td), usb_pipeendpoint(td->pipe),
-+				      usb_pipeout(td->pipe),
-+				      !(td->ctrl_reg & SEQ_SEL));
-+		/* next in list could have been removed, due to clear_pipe! */
-+		tmp = list_entry(td->td_list.next, typeof(*td), td_list);
-+		c67x00_release_td(td);
-+	}
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static inline int c67x00_all_tds_processed(struct c67x00_hcd *c67x00)
-+{
-+	/* If all tds are processed, we can check the previous frame (if
-+	 * there was any) and start our next frame.
-+	 */
-+	return !c67x00_ll_husb_get_current_td(c67x00->sie);
-+}
-+
-+/**
-+ * Send td to C67X00
-+ */
-+static void c67x00_send_td(struct c67x00_hcd *c67x00, struct c67x00_td *td)
-+{
-+	int len = td_length(td);
-+
-+	if (len && ((td->pid_ep & TD_PIDEPMASK_PID) != TD_PID_IN))
-+		c67x00_ll_write_mem_le16(c67x00->sie->dev, td_ly_base_addr(td),
-+					 td->data, len);
-+
-+	c67x00_ll_write_mem_le16(c67x00->sie->dev,
-+				 td->td_addr, td, CY_TD_SIZE);
-+}
-+
-+static void c67x00_send_frame(struct c67x00_hcd *c67x00)
-+{
-+	struct c67x00_td *td;
-+
-+	if (list_empty(&c67x00->td_list))
-+		dev_warn(c67x00_hcd_dev(c67x00),
-+			 "%s: td list should not be empty here!\n",
-+			 __FUNCTION__);
-+
-+	list_for_each_entry(td, &c67x00->td_list, td_list) {
-+		if (td->td_list.next == &c67x00->td_list)
-+			td->next_td_addr = 0;	/* Last td in list */
-+
-+		c67x00_send_td(c67x00, td);
-+	}
-+
-+	c67x00_ll_husb_set_current_td(c67x00->sie, c67x00->td_base_addr);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+/**
-+ * c67x00_do_work - Schedulers state machine
-+ */
-+static void c67x00_do_work(struct c67x00_hcd *c67x00)
-+{
-+	spin_lock(&c67x00->lock);
-+	/* Make sure all tds are processed */
-+	if (!c67x00_all_tds_processed(c67x00))
-+		goto out;
-+
-+	c67x00_check_td_list(c67x00);
-+
-+	/* no td's are being processed (current == 0)
-+	 * and all have been "checked" */
-+	complete(&c67x00->endpoint_disable);
-+
-+	if (!list_empty(&c67x00->td_list))
-+		goto out;
-+
-+	c67x00->current_frame = c67x00_get_current_frame_number(c67x00);
-+	if (c67x00->current_frame == c67x00->last_frame)
-+		goto out;	/* Don't send tds in same frame */
-+	c67x00->last_frame = c67x00->current_frame;
-+
-+	/* If no urbs are scheduled, our work is done */
-+	if (!c67x00->urb_count) {
-+		c67x00_ll_hpi_disable_sofeop(c67x00->sie);
-+		goto out;
-+	}
-+
-+	c67x00_fill_frame(c67x00);
-+	if (!list_empty(&c67x00->td_list))
-+		/* TD's have been added to the frame */
-+		c67x00_send_frame(c67x00);
-+
-+ out:
-+	spin_unlock(&c67x00->lock);
-+}
-+
-+/* -------------------------------------------------------------------------- */
-+
-+static void c67x00_sched_tasklet(unsigned long __c67x00)
-+{
-+	struct c67x00_hcd *c67x00 = (struct c67x00_hcd *)__c67x00;
-+	c67x00_do_work(c67x00);
-+}
-+
-+static void c67x00_sched_done(unsigned long __c67x00)
-+{
-+	struct c67x00_hcd *c67x00 = (struct c67x00_hcd *)__c67x00;
-+	struct c67x00_urb_priv *urbp, *tmp;
-+	struct urb *urb;
-+
-+	spin_lock(&c67x00->lock);
-+
-+	/* Loop over the done list and give back all the urbs */
-+	list_for_each_entry_safe(urbp, tmp, &c67x00->done_list, hep_node) {
-+		urb = urbp->urb;
-+		c67x00_release_urb(c67x00, urb);
-+		if (!usb_hcd_check_unlink_urb(c67x00_hcd_to_hcd(c67x00),
-+					      urb, urbp->status)) {
-+			usb_hcd_unlink_urb_from_ep(c67x00_hcd_to_hcd(c67x00),
-+						   urb);
-+			spin_unlock(&c67x00->lock);
-+			usb_hcd_giveback_urb(c67x00_hcd_to_hcd(c67x00), urb,
-+					     urbp->status);
-+			spin_lock(&c67x00->lock);
-+		}
-+	}
-+	spin_unlock(&c67x00->lock);
-+}
-+
-+void c67x00_sched_kick(struct c67x00_hcd *c67x00)
-+{
-+	tasklet_hi_schedule(&c67x00->tasklet);
-+}
-+
-+int c67x00_sched_start_scheduler(struct c67x00_hcd *c67x00)
-+{
-+	tasklet_init(&c67x00->tasklet, c67x00_sched_tasklet,
-+		     (unsigned long)c67x00);
-+	tasklet_init(&c67x00->done_tasklet, c67x00_sched_done,
-+		     (unsigned long)c67x00);
-+	return 0;
-+}
-+
-+void c67x00_sched_stop_scheduler(struct c67x00_hcd *c67x00)
-+{
-+	tasklet_kill(&c67x00->tasklet);
-+	tasklet_kill(&c67x00->done_tasklet);
-+}
-Index: linux-2.6/drivers/usb/c67x00/Makefile
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/usb/c67x00/Makefile
-@@ -0,0 +1,11 @@
-+#
-+# Makefile for Cypress C67X00 USB Controller
-+#
-+
-+ifeq ($(CONFIG_USB_DEBUG),y)
-+	EXTRA_CFLAGS		+= -DDEBUG
-+endif
-+
-+obj-$(CONFIG_USB_C67X00_HCD)	+= c67x00.o
-+
-+c67x00-objs := c67x00-drv.o c67x00-ll-hpi.o c67x00-hcd.o c67x00-sched.o
-Index: linux-2.6/drivers/usb/Makefile
-===================================================================
---- linux-2.6.orig/drivers/usb/Makefile
-+++ linux-2.6/drivers/usb/Makefile
-@@ -17,6 +17,8 @@
- obj-$(CONFIG_USB_U132_HCD)	+= host/
- obj-$(CONFIG_USB_R8A66597_HCD)	+= host/
- 
-+obj-$(CONFIG_USB_C67X00_HCD)	+= c67x00/
-+
- obj-$(CONFIG_USB_ACM)		+= class/
- obj-$(CONFIG_USB_PRINTER)	+= class/
- 
++#endif				/* _USB_C67X00_UDC_H */
 Index: linux-2.6/drivers/usb/c67x00/c67x00-drv.c
 ===================================================================
 --- linux-2.6.orig/drivers/usb/c67x00/c67x00-drv.c
 +++ linux-2.6/drivers/usb/c67x00/c67x00-drv.c
-@@ -41,6 +41,7 @@
- #include <asm/io.h>
+@@ -42,6 +42,7 @@
  
  #include "c67x00.h"
-+#include "c67x00-hcd.h"
+ #include "c67x00-hcd.h"
++#include "c67x00-udc.h"
  
  static void c67x00_probe_sie(struct c67x00_sie *sie,
  			     struct c67x00_device *dev, int sie_num)
-@@ -51,6 +52,10 @@
- 	sie->mode = c67x00_sie_config(dev->pdata->sie_config, sie_num);
+@@ -56,6 +57,11 @@
+ 		c67x00_hcd_probe(sie);
+ 		break;
  
- 	switch (sie->mode) {
-+	case C67X00_SIE_HOST:
-+		c67x00_hcd_probe(sie);
++	case C67X00_SIE_PERIPHERAL_A:
++	case C67X00_SIE_PERIPHERAL_B:
++		c67x00_udc_probe(sie);
 +		break;
 +
  	case C67X00_SIE_UNUSED:
  		dev_info(sie_dev(sie),
  			 "Not using SIE %d as requested\n", sie->sie_num);
-@@ -66,6 +71,14 @@
+@@ -76,6 +82,11 @@
+ 		c67x00_hcd_remove(sie);
+ 		break;
  
- static void c67x00_remove_sie(struct c67x00_sie *sie)
- {
-+	switch (sie->mode) {
-+	case C67X00_SIE_HOST:
-+		c67x00_hcd_remove(sie);
++	case C67X00_SIE_PERIPHERAL_A:
++	case C67X00_SIE_PERIPHERAL_B:
++		c67x00_udc_remove(sie);
 +		break;
 +
-+	default:
-+		break;
-+	}
- }
- 
- 
-Index: linux-2.6/drivers/usb/c67x00/c67x00.h
-===================================================================
---- linux-2.6.orig/drivers/usb/c67x00/c67x00.h
-+++ linux-2.6/drivers/usb/c67x00/c67x00.h
-@@ -275,6 +275,15 @@
- void c67x00_ll_read_mem_le16(struct c67x00_device *dev, u16 addr,
- 			     void *data, int len);
- 
-+/* Host specific functions */
-+void c67x00_ll_set_husb_eot(struct c67x00_device *dev, u16 value);
-+void c67x00_ll_husb_reset(struct c67x00_sie *sie, int port);
-+void c67x00_ll_husb_set_current_td(struct c67x00_sie *sie, u16 addr);
-+u16 c67x00_ll_husb_get_current_td(struct c67x00_sie *sie);
-+u16 c67x00_ll_husb_get_frame(struct c67x00_sie *sie);
-+void c67x00_ll_husb_init_host_port(struct c67x00_sie *sie);
-+void c67x00_ll_husb_reset_port(struct c67x00_sie *sie, int port);
-+
- /* Called by c67x00_irq to handle lcp interrupts */
- void c67x00_ll_irq(struct c67x00_device *dev, u16 int_status);
- 
+ 	default:
+ 		break;
+ 	}
 Index: linux-2.6/drivers/usb/c67x00/c67x00-ll-hpi.c
 ===================================================================
 --- linux-2.6.orig/drivers/usb/c67x00/c67x00-ll-hpi.c
 +++ linux-2.6/drivers/usb/c67x00/c67x00-ll-hpi.c
-@@ -301,6 +301,81 @@
+@@ -376,6 +376,207 @@
  }
  
  /* -------------------------------------------------------------------------- */
-+/* Host specific functions */
-+
-+void c67x00_ll_set_husb_eot(struct c67x00_device *dev, u16 value)
-+{
-+	mutex_lock(&dev->hpi.lcp.mutex);
-+	hpi_write_word(dev, HUSB_pEOT, value);
-+	mutex_unlock(&dev->hpi.lcp.mutex);
-+}
-+
-+static inline void c67x00_ll_husb_sie_init(struct c67x00_sie *sie)
++void c67x00_ll_susb_init(struct c67x00_sie *sie)
 +{
 +	struct c67x00_device *dev = sie->dev;
 +	struct c67x00_lcp_int_data data;
++	u16 addr;
 +	int rc;
 +
-+	rc = c67x00_comm_exec_int(dev, HUSB_SIE_INIT_INT(sie->sie_num), &data);
-+	BUG_ON(rc); /* No return path for error code; crash spectacularly */
-+}
++	/* The BIOS SUSB_INIT_INT handler for some reason is hardcoded to only
++	   enable peripheral support for port A. Relocate the routine to RAM
++	   and patch out that instruction (mov [r10-0xe],[r8]) */
++	addr = hpi_read_word(dev, SUSB_INIT_INT_LOC);
 +
-+void c67x00_ll_husb_reset(struct c67x00_sie *sie, int port)
-+{
-+	struct c67x00_device *dev = sie->dev;
-+	struct c67x00_lcp_int_data data;
-+	int rc;
++	/* already patched? */
++	if (addr != CY_UDC_BIOS_REPLACE_BASE) {
++		u16 buf[64]; /* should be plenty for the handler */
++		int i;
 +
-+	data.regs[0] = 50;	/* Reset USB port for 50ms */
-+	data.regs[1] = port | (sie->sie_num << 1);
-+	rc = c67x00_comm_exec_int(dev, HUSB_RESET_INT, &data);
-+	BUG_ON(rc); /* No return path for error code; crash spectacularly */
-+}
++		c67x00_ll_read_mem_le16(dev, addr, buf, sizeof(buf));
 +
-+void c67x00_ll_husb_set_current_td(struct c67x00_sie *sie, u16 addr)
-+{
-+	hpi_write_word(sie->dev, HUSB_SIE_pCurrentTDPtr(sie->sie_num), addr);
-+}
++		/* patch it */
++		for (i = 0; i < (ARRAY_SIZE(buf)-1); i++) {
++			if ((buf[i] == cpu_to_le16(0x0432))
++			    && (buf[i+1] == cpu_to_le16(0xfff2))) {
++				buf[i] = buf[i+1] = 0; /* nop */
++				break;
++			}
++		}
 +
-+u16 c67x00_ll_husb_get_current_td(struct c67x00_sie *sie)
-+{
-+	return hpi_read_word(sie->dev, HUSB_SIE_pCurrentTDPtr(sie->sie_num));
-+}
++		if (i >= ARRAY_SIZE(buf))
++			dev_warn(sie_dev(sie), "BIOS code not recognized, "
++				 "port B may not be available\n");
 +
-+u16 c67x00_ll_husb_get_frame(struct c67x00_sie *sie)
-+{
-+	return hpi_read_word(sie->dev, HOST_FRAME_REG(sie->sie_num));
-+}
++		c67x00_ll_write_mem_le16(dev, CY_UDC_BIOS_REPLACE_BASE,
++					 buf, sizeof(buf));
++		hpi_write_word(dev, SUSB_INIT_INT_LOC,
++			       CY_UDC_BIOS_REPLACE_BASE);
++	}
 +
-+void c67x00_ll_husb_init_host_port(struct c67x00_sie *sie)
-+{
-+	/* Set port into host mode */
-+	hpi_set_bits(sie->dev, USB_CTL_REG(sie->sie_num), HOST_MODE);
-+	c67x00_ll_husb_sie_init(sie);
-+	/* Clear interrupts */
-+	c67x00_ll_usb_clear_status(sie, HOST_STAT_MASK);
-+	/* Check */
-+	if (!(hpi_read_word(sie->dev, USB_CTL_REG(sie->sie_num)) & HOST_MODE))
++	hpi_clear_bits(dev, HPI_IRQ_ROUTING_REG,
++		       SOFEOP_TO_HPI_EN(sie->sie_num));
++	hpi_set_bits(dev,
++		     HPI_IRQ_ROUTING_REG,
++		     SOFEOP_TO_CPU_EN(sie->sie_num)
++		     | RESUME_TO_HPI_ENABLE(sie->sie_num)
++		     | ID_TO_HPI_ENABLE | VBUS_TO_HPI_ENABLE);
++
++	hpi_set_bits(dev,
++		     DEVICE_N_IRQ_EN_REG(sie->sie_num),
++		     SOF_EOP_TMOUT_IRQ_EN | ID_IRQ_EN | VBUS_IRQ_EN);
++
++	hpi_clear_bits(dev,
++		       USB_CTL_REG(sie->sie_num),
++		       SOF_EOP_EN(0) | SOF_EOP_EN(1));
++
++	if (sie->mode == C67X00_SIE_PERIPHERAL_A)
++		hpi_write_word(dev, DEVICE_N_PORT_SEL(sie->sie_num),  0x0000);
++	else
++		hpi_write_word(dev, DEVICE_N_PORT_SEL(sie->sie_num),  0x4000);
++
++	data.regs[1] = 0; /* full speed */
++	data.regs[2] = sie->sie_num + 1;
++	rc = c67x00_comm_exec_int(dev, SUSB_INIT_INT, &data);
++
++	if ((hpi_read_word(sie->dev, USB_CTL_REG(sie->sie_num)) & HOST_MODE))
 +		dev_warn(sie_dev(sie),
-+			 "SIE %d not set to host mode\n", sie->sie_num);
++			 "SIE %d not set to peri mode\n", sie->sie_num);
++
++	BUG_ON(rc); /* No return path for error code; crash spectacularly */
++
++	hpi_set_bits(dev,
++		     DEVICE_N_IRQ_EN_REG(sie->sie_num),
++		     SOF_EOP_TMOUT_IRQ_EN | ID_IRQ_EN | VBUS_IRQ_EN);
++
++	dev_info(sie_dev(sie),
++		 "Peripheral USB device setup on SIE%d\n",
++		 sie->sie_num);
 +}
 +
-+void c67x00_ll_husb_reset_port(struct c67x00_sie *sie, int port)
++void c67x00_ll_susb_disable(struct c67x00_sie *sie)
 +{
-+	/* Clear connect change */
-+	c67x00_ll_usb_clear_status(sie, PORT_CONNECT_CHANGE(port));
++	hpi_write_word(sie->dev, DEVICE_N_IRQ_EN_REG(sie->sie_num), 0);
++	hpi_write_word(sie->dev, USB_CTL_REG(sie->sie_num),  0x0000);
++}
 +
-+	/* Enable interrupts */
-+	hpi_set_bits(sie->dev, HPI_IRQ_ROUTING_REG,
-+		     SOFEOP_TO_CPU_EN(sie->sie_num));
-+	hpi_set_bits(sie->dev, HOST_IRQ_EN_REG(sie->sie_num),
-+		     SOF_EOP_IRQ_EN | DONE_IRQ_EN);
++void c67x00_ll_set_ep_ctrl_reg(struct c67x00_sie *sie, int ep_num, u16 val)
++{
++	hpi_write_word(sie->dev,
++		       DEVICE_N_ENDPOINT_N_CTL_REG(sie->sie_num, ep_num), val);
++}
 +
-+	/* Enable pull down transistors */
-+	hpi_set_bits(sie->dev, USB_CTL_REG(sie->sie_num), PORT_RES_EN(port));
++void c67x00_ll_set_ep_packet_size_reg(struct c67x00_sie *sie, int ep_num,
++				      u16 val)
++{
++	/* This undocumented register needs to be set to the packet size
++	   Normally the BIOS sets this correctly when it is able to parse
++	   the configuration descriptor correctly */
++	hpi_write_word(sie->dev,
++		       (DEVICE_N_ENDPOINT_N_CTL_REG(sie->sie_num, ep_num)
++			+ 0x0A), val);
++}
++
++u16 c67x00_ll_get_device_ep_status(struct c67x00_sie *sie, int ep)
++{
++	return hpi_read_word(sie->dev,
++			     DEVICE_N_ENDPOINT_N_STAT_REG(sie->sie_num, ep));
++}
++
++void c67x00_ll_set_device_ep_status(struct c67x00_sie *sie,
++				    int ep, u16 value)
++{
++	hpi_write_word(sie->dev,
++		       DEVICE_N_ENDPOINT_N_STAT_REG(sie->sie_num, ep),
++		       value);
++}
++
++void c67x00_ll_set_device_descriptor_location(struct c67x00_sie *sie,
++					      u16 address)
++{
++	hpi_write_word(sie->dev, SUSBx_DEV_DESC_VEC(sie->sie_num), address);
++}
++
++void c67x00_ll_set_configuration_descriptor_location(struct c67x00_sie *sie,
++						     u16 address)
++{
++	hpi_write_word(sie->dev, SUSBx_CONF_DESC_VEC(sie->sie_num), address);
++}
++
++void c67x00_ll_set_string_descriptor_location(struct c67x00_sie *sie,
++					      u16 address)
++{
++	hpi_write_word(sie->dev, SUSBx_STRING_DESC_VEC(sie->sie_num), address);
++}
++
++int c67x00_ll_susb_start_send(struct c67x00_sie *sie, int ep,
++			      void *data, int len)
++{
++	u16 header[4];
++	struct c67x00_lcp_int_data regs;
++
++	c67x00_ll_write_mem_le16(sie->dev, CY_UDC_REQ_BUFFER_ADDR(ep),
++				 data, len);
++
++	header[0] = 0;
++	header[1] = cpu_to_le16(CY_UDC_REQ_BUFFER_ADDR(ep));
++	header[2] = cpu_to_le16(len);
++	header[3] = 0;
++
++	c67x00_ll_write_mem_le16(sie->dev, CY_UDC_REQ_HEADER_ADDR(ep), header,
++				 sizeof(header));
++
++	regs.regs[0] = 0;
++	regs.regs[1] = ep;
++	regs.regs[8] = CY_UDC_REQ_HEADER_ADDR(ep);
++
++	return c67x00_comm_exec_int(sie->dev, SUSBx_SEND_INT(sie->sie_num),
++				    &regs);
++}
++
++int c67x00_ll_susb_start_receive(struct c67x00_sie *sie, int ep, int len)
++{
++	u16 header[4];
++	struct c67x00_lcp_int_data regs;
++
++	header[0] = 0;
++	header[1] = cpu_to_le16(CY_UDC_REQ_BUFFER_ADDR(ep));
++	header[2] = cpu_to_le16(len);
++	header[3] = 0;
++
++	c67x00_ll_write_mem_le16(sie->dev, CY_UDC_REQ_HEADER_ADDR(ep), header,
++				 sizeof(header));
++
++	regs.regs[0] = 0;
++	regs.regs[1] = ep;
++	regs.regs[8] = CY_UDC_REQ_HEADER_ADDR(ep);
++
++	return c67x00_comm_exec_int(sie->dev, SUSBx_RECEIVE_INT(sie->sie_num),
++				    &regs);
++}
++
++int c67x00_ll_susb_get_transfer_status(struct c67x00_sie *sie, int ep)
++{
++	u16 header[4];
++	u16 result = c67x00_get_comm_reg(sie->dev, 0);
++
++	if (result)
++		return -result;
++
++	c67x00_ll_read_mem_le16(sie->dev, CY_UDC_REQ_HEADER_ADDR(ep),
++				header, sizeof(header));
++	/* nr of bytes not transferred */
++	return le16_to_cpu(header[2]);
++}
++
++void c67x00_ll_susb_receive(struct c67x00_sie *sie, int ep,
++			    void *data, int len)
++{
++	c67x00_ll_read_mem_le16(sie->dev, CY_UDC_REQ_BUFFER_ADDR(ep),
++				data, len);
 +}
 +
 +/* -------------------------------------------------------------------------- */
  
  void c67x00_ll_irq(struct c67x00_device *dev, u16 int_status)
  {
+Index: linux-2.6/drivers/usb/c67x00/c67x00.h
+===================================================================
+--- linux-2.6.orig/drivers/usb/c67x00/c67x00.h
++++ linux-2.6/drivers/usb/c67x00/c67x00.h
+@@ -284,6 +284,27 @@
+ void c67x00_ll_husb_init_host_port(struct c67x00_sie *sie);
+ void c67x00_ll_husb_reset_port(struct c67x00_sie *sie, int port);
+ 
++/* Slave specific functions */
++void c67x00_ll_susb_init(struct c67x00_sie *sie);
++void c67x00_ll_susb_disable(struct c67x00_sie *sie);
++void c67x00_ll_set_ep_ctrl_reg(struct c67x00_sie *sie, int ep_num, u16 val);
++void c67x00_ll_set_ep_packet_size_reg(struct c67x00_sie *sie, int ep_num,
++				      u16 val);
++u16 c67x00_ll_get_device_ep_status(struct c67x00_sie *sie, int ep);
++void c67x00_ll_set_device_ep_status(struct c67x00_sie *sie, int ep, u16 value);
++void c67x00_ll_set_device_descriptor_location(struct c67x00_sie *sie,
++					      u16 address);
++void c67x00_ll_set_configuration_descriptor_location(struct c67x00_sie *sie,
++						     u16 address);
++void c67x00_ll_set_string_descriptor_location(struct c67x00_sie *sie,
++					      u16 address);
++int c67x00_ll_susb_start_send(struct c67x00_sie *sie, int ep,
++			      void *data, int len);
++int c67x00_ll_susb_start_receive(struct c67x00_sie *sie, int ep, int len);
++int c67x00_ll_susb_get_transfer_status(struct c67x00_sie *sie, int ep);
++void c67x00_ll_susb_receive(struct c67x00_sie *sie, int ep,
++			    void *data, int len);
++
+ /* Called by c67x00_irq to handle lcp interrupts */
+ void c67x00_ll_irq(struct c67x00_device *dev, u16 int_status);
+ 
+Index: linux-2.6/drivers/usb/c67x00/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/usb/c67x00/Makefile
++++ linux-2.6/drivers/usb/c67x00/Makefile
+@@ -6,6 +6,9 @@
+ 	EXTRA_CFLAGS		+= -DDEBUG
+ endif
+ 
+-obj-$(CONFIG_USB_C67X00_HCD)	+= c67x00.o
++obj-$(CONFIG_USB_C67X00_DRV)	+= c67x00.o
+ 
+-c67x00-objs := c67x00-drv.o c67x00-ll-hpi.o c67x00-hcd.o c67x00-sched.o
++c67x00-y			+= c67x00-drv.o c67x00-ll-hpi.o
++
++c67x00-$(CONFIG_USB_C67X00_HCD) += c67x00-hcd.o c67x00-sched.o
++c67x00-$(CONFIG_USB_GADGET_C67X00)	+= c67x00-udc.o
+Index: linux-2.6/drivers/usb/gadget/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/usb/gadget/Kconfig
++++ linux-2.6/drivers/usb/gadget/Kconfig
+@@ -324,6 +324,13 @@
+ 	depends on USB_GADGET_AT91
+ 	default USB_GADGET
+ 
++config USB_GADGET_C67X00
++	boolean "Cypress C67X00 Gadget support"
++	depends on USB_C67X00_DRV
++	select USB_GADGET_SELECTED
++	help
++	  This enables the gadget functionality of the Cypress C67X00.
++
+ config USB_GADGET_DUMMY_HCD
+ 	boolean "Dummy HCD (DEVELOPMENT)"
+ 	depends on (USB=y || (USB=m && USB_GADGET=m)) && EXPERIMENTAL
+Index: linux-2.6/drivers/usb/gadget/gadget_chips.h
+===================================================================
+--- linux-2.6.orig/drivers/usb/gadget/gadget_chips.h
++++ linux-2.6/drivers/usb/gadget/gadget_chips.h
+@@ -147,6 +147,12 @@
+ #define	gadget_is_m66592(g)	0
+ #endif
+ 
++#ifdef CONFIG_USB_GADGET_C67X00
++#define	gadget_is_c67x00(g)	!strcmp("c67x00_udc", (g)->name)
++#else
++#define	gadget_is_c67x00(g)	0
++#endif
++
+ 
+ // CONFIG_USB_GADGET_SX2
+ // CONFIG_USB_GADGET_AU1X00
+@@ -212,5 +218,7 @@
+ 		return 0x20;
+ 	else if (gadget_is_m66592(gadget))
+ 		return 0x21;
++	else if (gadget_is_c67x00(gadget))
++		return 0x22;
+ 	return -ENOENT;
+ }
 Index: linux-2.6/drivers/usb/host/Kconfig
 ===================================================================
 --- linux-2.6.orig/drivers/usb/host/Kconfig
 +++ linux-2.6/drivers/usb/host/Kconfig
-@@ -261,3 +261,15 @@
+@@ -261,15 +261,3 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called r8a66597-hcd.
  
-+config USB_C67X00_HCD
-+	tristate "Cypress C67x00 HCD support"
-+	depends on USB
+-config USB_C67X00_HCD
+-	tristate "Cypress C67x00 HCD support"
+-	depends on USB
+-	help
+-	  The Cypress C67x00 (EZ-Host/EZ-OTG) chips are dual-role
+-	  host/peripheral/OTG USB controllers.
+-
+-	  Enable this option to support this chip in host controller mode.
+-	  If unsure, say N.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called c67x00.
+Index: linux-2.6/drivers/usb/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/usb/Makefile
++++ linux-2.6/drivers/usb/Makefile
+@@ -17,7 +17,7 @@
+ obj-$(CONFIG_USB_U132_HCD)	+= host/
+ obj-$(CONFIG_USB_R8A66597_HCD)	+= host/
+ 
+-obj-$(CONFIG_USB_C67X00_HCD)	+= c67x00/
++obj-$(CONFIG_USB_C67X00_DRV)	+= c67x00/
+ 
+ obj-$(CONFIG_USB_ACM)		+= class/
+ obj-$(CONFIG_USB_PRINTER)	+= class/
+Index: linux-2.6/drivers/usb/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/usb/Kconfig
++++ linux-2.6/drivers/usb/Kconfig
+@@ -91,6 +91,8 @@
+ 
+ source "drivers/usb/host/Kconfig"
+ 
++source "drivers/usb/c67x00/Kconfig"
++
+ source "drivers/usb/class/Kconfig"
+ 
+ source "drivers/usb/storage/Kconfig"
+Index: linux-2.6/drivers/usb/c67x00/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/usb/c67x00/Kconfig
+@@ -0,0 +1,21 @@
++#
++# Cypress C67x00 USB controller
++#
++config USB_C67X00_DRV
++	tristate "Cypress C67x00 support"
++	# only allowed to be =y if both USB!=m and USB_GADGET!=m
++	depends on (!USB && USB_GADGET) || (!USB_GADGET && USB) || (USB && USB_GADGET)
 +	help
 +	  The Cypress C67x00 (EZ-Host/EZ-OTG) chips are dual-role
-+	  host/peripheral/OTG USB controllers.
-+
-+	  Enable this option to support this chip in host controller mode.
-+	  If unsure, say N.
++	  host/peripheral USB controllers.
 +
 +	  To compile this driver as a module, choose M here: the
 +	  module will be called c67x00.
++
++config USB_C67X00_HCD
++	bool "Cypress C67X00 HCD support"
++	depends on USB && USB_C67X00_DRV
++	default y
++	help
++	  Enable this option to support the Cypress C67x00 in host
++	  controller mode.
 
 --
 Bye, Peter Korsgaard
