@@ -1,24 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14DF7DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 19:46:46 +1100 (EST)
-Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1201091798.6341.49.camel@lappy>
-References: <1200659696.23161.81.camel@thor.sulgenrain.local>
-	<1201013786.4726.28.camel@thor.sulgenrain.local>
-	<1201090699.9052.39.camel@thor.sulgenrain.local>
-	<1201091798.6341.49.camel@lappy>
-Content-Type: text/plain
-Date: Thu, 24 Jan 2008 19:46:12 +1100
-Message-Id: <1201164372.6815.55.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id 9F362DDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 20:25:53 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sysctl:  Kill binary sysctl KERN_PPC_L2CR
+References: <20080123140352.e19900d7.akpm@linux-foundation.org>
+Date: Thu, 24 Jan 2008 02:18:34 -0700
+In-Reply-To: <20080123140352.e19900d7.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 23 Jan 2008 14:03:52 -0800")
+Message-ID: <m1sl0ninth.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,7 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Could the fact that our sched_clock() returns utter crap if called
-before time_init() explain the problem ? If yes, that's an easy fix.
 
-Ben.
+> From: Stefan Roese <sr@denx.de>
+> Subject: ppc: 4xx: sysctl table check failed: /kernel/l2cr .1.31 Missing strategy
+>
+> I'm seeing this error message when booting an recent arch/ppc kernel on
+> 4xx platforms (tested on Ocotea and other 4xx platforms). Booting NFS
+> rootfs still works fine, but this message kind of makes me "nervous".
+> This is not seen on 4xx arch/powerpc platforms. Here the bootlog:
+
+Because the data field was never filled and a binary sysctl handler
+was never written this sysctl has never been usable through the
+sys_sysctl interface.  So just remove the binary sysctl number.
+Making the kernel sanity checks happy.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/ppc/kernel/ppc_htab.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ppc/kernel/ppc_htab.c b/arch/ppc/kernel/ppc_htab.c
+index aa07b63..9ed36dd 100644
+--- a/arch/ppc/kernel/ppc_htab.c
++++ b/arch/ppc/kernel/ppc_htab.c
+@@ -436,7 +436,6 @@ int proc_dol2crvec(ctl_table *table, int write, struct file *filp,
+  */
+ static ctl_table htab_ctl_table[]={
+ 	{
+-		.ctl_name	= KERN_PPC_L2CR,
+ 		.procname	= "l2cr",
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dol2crvec,
+-- 
+1.5.3.rc6.17.g1911
