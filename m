@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8650FDDEFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 09:36:40 +1100 (EST)
-Subject: Re: [i2c] [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-In-Reply-To: <9e4733910801241432r4424d41ayd5e41e57bc3e052b@mail.gmail.com>
-References: <20080121200740.13800.20524.stgit@terra.home>
-	<9e4733910801241432r4424d41ayd5e41e57bc3e052b@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 25 Jan 2008 09:35:38 +1100
-Message-Id: <1201214138.6815.107.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [209.5.119.169])
+	by ozlabs.org (Postfix) with ESMTP id 6D5BDDDE9E
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 09:40:46 +1100 (EST)
+Date: Thu, 24 Jan 2008 17:40:44 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: reduce code duplication in legacy_serial, add
+	UART parent types
+Message-ID: <20080124224043.GA418@windriver.com>
+References: <200801172335.48817.arnd@arndb.de>
+	<12011947821738-git-send-email-paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <12011947821738-git-send-email-paul.gortmaker@windriver.com>
+Cc: scottwood@freescale.com, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,84 +23,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message: [PATCH] powerpc: reduce code duplication in legacy_serial, add UART parent types
+on 24/01/2008 Paul Gortmaker wrote:
 
-On Thu, 2008-01-24 at 17:32 -0500, Jon Smirl wrote:
-> Ben, do you approve of this? How should error be checked for, is
-> <NO_IRQ right? The current code in the kernel looks to be broken
-> because of these checks, the ppc build is wrong and powerpc polled
-> mode doesn't work.
+> @@ -31,6 +32,15 @@ static struct legacy_serial_info {
+>  	int				irq_check_parent;
+>  	phys_addr_t			taddr;
+>  } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
+> +
+> +static struct __init of_device_id parents[] = {
 
- == 0 should work on powerpc since NO_IRQ is defined to be 0 there no ?
+Oops, that should have been __initdata to be 100% correct...
 
-Anyway, using the symbolic constant is always nicer I suppose.
+P.
 
-Ben.
+---
 
-> On 1/21/08, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > Alter the mpc i2c driver to use the NO_IRQ symbol instead of the constant zero when checking for valid interrupts. NO_IRQ=-1 on ppc and NO_IRQ=0 on powerpc so the checks against zero are not correct.
-> >
-> > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> > ---
-> >
-> >  drivers/i2c/busses/i2c-mpc.c |   10 +++++-----
-> >  1 files changed, 5 insertions(+), 5 deletions(-)
-> >
-> >
-> > diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> > index bbe787b..d20959d 100644
-> > --- a/drivers/i2c/busses/i2c-mpc.c
-> > +++ b/drivers/i2c/busses/i2c-mpc.c
-> > @@ -99,7 +99,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
-> >         u32 x;
-> >         int result = 0;
-> >
-> > -       if (i2c->irq == 0)
-> > +       if (i2c->irq == NO_IRQ)
-> >         {
-> >                 while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
-> >                         schedule();
-> > @@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
-> >                 return -ENOMEM;
-> >
-> >         i2c->irq = platform_get_irq(pdev, 0);
-> > -       if (i2c->irq < 0) {
-> > +       if (i2c->irq < NO_IRQ) {
-> >                 result = -ENXIO;
-> >                 goto fail_get_irq;
-> >         }
-> > @@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
-> >                 goto fail_map;
-> >         }
-> >
-> > -       if (i2c->irq != 0)
-> > +       if (i2c->irq != NO_IRQ)
-> >                 if ((result = request_irq(i2c->irq, mpc_i2c_isr,
-> >                                           IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
-> >                         printk(KERN_ERR
-> > @@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
-> >         return result;
-> >
-> >        fail_add:
-> > -       if (i2c->irq != 0)
-> > +       if (i2c->irq != NO_IRQ)
-> >                 free_irq(i2c->irq, i2c);
-> >        fail_irq:
-> >         iounmap(i2c->base);
-> > @@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
-> >         i2c_del_adapter(&i2c->adap);
-> >         platform_set_drvdata(pdev, NULL);
-> >
-> > -       if (i2c->irq != 0)
-> > +       if (i2c->irq != NO_IRQ)
-> >                 free_irq(i2c->irq, i2c);
-> >
-> >         iounmap(i2c->base);
-> >
-> >
-> > _______________________________________________
-> > i2c mailing list
-> > i2c@lm-sensors.org
-> > http://lists.lm-sensors.org/mailman/listinfo/i2c
-> >
-> 
-> 
+
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Thu, 24 Jan 2008 11:59:12 -0500
+Subject: [PATCH] powerpc: reduce code duplication in legacy_serial, add UART parent types
+
+The legacy_serial was treating each UART parent in a separate code block.
+Rather than continue this trend for the new parent IDs, this condenses
+all (soc, tsi, opb, plus two more new types) into one of_device_id array.
+The new types are wrs,epld-localbus for the Wind River sbc8560, and a
+more generic "simple-bus" as requested by Scott Wood.
+
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/kernel/legacy_serial.c |   45 +++++++++++++---------------------
+ 1 files changed, 17 insertions(+), 28 deletions(-)
+
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 4bfff88..76b862b 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -4,6 +4,7 @@
+ #include <linux/serial_core.h>
+ #include <linux/console.h>
+ #include <linux/pci.h>
++#include <linux/of_device.h>
+ #include <asm/io.h>
+ #include <asm/mmu.h>
+ #include <asm/prom.h>
+@@ -31,6 +32,15 @@ static struct legacy_serial_info {
+ 	int				irq_check_parent;
+ 	phys_addr_t			taddr;
+ } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
++
++static struct __initdata of_device_id parents[] = {
++	{.type = "soc",},
++	{.type = "tsi-bridge",},
++	{.type = "opb", .compatible = "ibm,opb",},
++	{.compatible = "simple-bus",},
++	{.compatible = "wrs,epld-localbus",},
++};
++
+ static unsigned int legacy_serial_count;
+ static int legacy_serial_console = -1;
+ 
+@@ -306,18 +316,20 @@ void __init find_legacy_serial_ports(void)
+ 		DBG(" no linux,stdout-path !\n");
+ 	}
+ 
+-	/* First fill our array with SOC ports */
++	/* Iterate over all the 16550 ports, looking for known parents */
+ 	for_each_compatible_node(np, "serial", "ns16550") {
+-		struct device_node *soc = of_get_parent(np);
+-		if (soc && !strcmp(soc->type, "soc")) {
++		struct device_node *parent = of_get_parent(np);
++		if (!parent)
++			continue;
++		if (of_match_node(parents, parent) != NULL) {
+ 			index = add_legacy_soc_port(np, np);
+ 			if (index >= 0 && np == stdout)
+ 				legacy_serial_console = index;
+ 		}
+-		of_node_put(soc);
++		of_node_put(parent);
+ 	}
+ 
+-	/* First fill our array with ISA ports */
++	/* Next, fill our array with ISA ports */
+ 	for_each_node_by_type(np, "serial") {
+ 		struct device_node *isa = of_get_parent(np);
+ 		if (isa && !strcmp(isa->name, "isa")) {
+@@ -328,29 +340,6 @@ void __init find_legacy_serial_ports(void)
+ 		of_node_put(isa);
+ 	}
+ 
+-	/* First fill our array with tsi-bridge ports */
+-	for_each_compatible_node(np, "serial", "ns16550") {
+-		struct device_node *tsi = of_get_parent(np);
+-		if (tsi && !strcmp(tsi->type, "tsi-bridge")) {
+-			index = add_legacy_soc_port(np, np);
+-			if (index >= 0 && np == stdout)
+-				legacy_serial_console = index;
+-		}
+-		of_node_put(tsi);
+-	}
+-
+-	/* First fill our array with opb bus ports */
+-	for_each_compatible_node(np, "serial", "ns16550") {
+-		struct device_node *opb = of_get_parent(np);
+-		if (opb && (!strcmp(opb->type, "opb") ||
+-			    of_device_is_compatible(opb, "ibm,opb"))) {
+-			index = add_legacy_soc_port(np, np);
+-			if (index >= 0 && np == stdout)
+-				legacy_serial_console = index;
+-		}
+-		of_node_put(opb);
+-	}
+-
+ #ifdef CONFIG_PCI
+ 	/* Next, try to locate PCI ports */
+ 	for (np = NULL; (np = of_find_all_nodes(np));) {
+-- 
+1.5.0.rc1.gf4b6c
