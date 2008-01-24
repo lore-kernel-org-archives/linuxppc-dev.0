@@ -1,20 +1,15 @@
-Return-Path: <chengk_thomson@sina.com>
-Received: from smtp.sina.com.cn (smtp.sina.com.cn [202.108.3.233])
-	by ozlabs.org (Postfix) with ESMTP id BD749DDE11
+Return-Path: <s104259@yahoo.it>
+Received: from web23107.mail.ird.yahoo.com (web23107.mail.ird.yahoo.com
+	[217.146.189.47]) by ozlabs.org (Postfix) with SMTP id B1C9ADDE0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jan 2008 00:45:31 +1100 (EST)
-Received: from imageasus (unknown [219.142.185.7])
-	by smtp.sina.com.cn (SINAMAIL) with ESMTP id C8F625DD008
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Jan 2008 21:45:25 +0800 (CST)
-Date: Thu, 24 Jan 2008 21:45:26 +0800
-From: "chengk_thomson" <chengk_thomson@sina.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: mpc8247 porting problem
-Message-ID: <200801242144198436268@sina.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon863156158505_====="
+	Fri, 25 Jan 2008 01:27:14 +1100 (EST)
+Date: Thu, 24 Jan 2008 15:27:12 +0100 (CET)
+From: Angelo <s104259@yahoo.it>
+Subject: framebuffer swap endianess
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1829058211-1201184832=:24232"
+Message-ID: <217742.24232.qm@web23107.mail.ird.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,69 +20,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-1829058211-1201184832=:24232
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-This is a multi-part message in MIME format.
+Hello all, 
 
---=====003_Dragon863156158505_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+many thanks for your answer.
 
-Hello:
-I'm porting linux 2.6.18 to a MPC8247 platform. 
-now I encounter a strange situation. kernel enter a dead loop in __div64_32() which is called by time_init() in start_kernel().
-I have modify the dtb file according the customer's board.
-does anybody has any idea?
+Modify the X server is a good idea.
+I'd just tried to understand the exact place to make changes. Adding many "printf" to understand it.
+But it's very complex.
 
-BR
-2008-01-24 
+>We modified the X Server and swapped when transferring from the shadow
+>buffer to the video buffer. That cured all our problems. 
+
+Could you tell me where is the exact place to do this? in some files like fbdev.c or other?
+
+>This was on the 2.4.25 from DENX and with Xfree86.
+
+Sorry but i don't understand this sentence.
+
+Anyway many thanks.
+
+
+       
+---------------------------------
+
+---------------------------------
+L'email della prossima generazione? Puoi averla con la nuova Yahoo! Mail
+--0-1829058211-1201184832=:24232
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hello all, <br><br>many thanks for your answer.<br><br>Modify the X server is a good idea.<br>I'd just tried to understand the exact place to make changes. Adding many "printf" to understand it.<br>But it's very complex.<br><br>&gt;We modified the X Server and swapped when transferring from the shadow<br>&gt;buffer to the video buffer. That cured all our problems. <br><br>Could you tell me where is the exact place to do this? in some files like fbdev.c or other?<br><br>&gt;This was on the 2.4.25 from DENX and with Xfree86.<br><br>Sorry but i don't understand this sentence.<br><br>Anyway many thanks.<BR><BR><p>&#32;
 
 
 
-chengk_thomson 
-
---=====003_Dragon863156158505_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=gb2312">
-<META content="MSHTML 6.00.2900.3243" name=GENERATOR>
-<STYLE>BLOCKQUOTE {
-	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px; MARGIN-LEFT: 2em
-}
-OL {
-	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
-}
-UL {
-	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
-}
-</STYLE>
-</HEAD>
-<BODY style="FONT-SIZE: 10pt; FONT-FAMILY: verdana">
-<DIV><FONT face=Verdana size=2>Hello:</FONT></DIV>
-<DIV style="TEXT-INDENT: 2em">I'm porting linux 2.6.18 to a MPC8247 platform. 
-</DIV>
-<DIV style="TEXT-INDENT: 2em">now&nbsp;I&nbsp;encounter a strange situation. 
-<FONT color=navy><SPAN style="COLOR: navy">kernel enter a dead loop in 
-__div64_32() which is called by time_init() in 
-start_kernel().</SPAN></FONT></DIV>
-<DIV style="TEXT-INDENT: 2em"><FONT color=navy><SPAN 
-style="COLOR: navy"></SPAN></FONT><FONT color=#0aceda size=2><SPAN lang=EN-US 
-style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Verdana">I have modify the dtb 
-file according the customer's board.</SPAN></FONT></DIV>
-<DIV style="TEXT-INDENT: 2em"><FONT color=#0aceda size=2><SPAN lang=EN-US 
-style="FONT-SIZE: 10pt; COLOR: navy; FONT-FAMILY: Verdana">does anybody has any 
-idea?</SPAN></FONT><FONTSIZE=2 face="Verdana"></FONT></DIV>
-<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
-<DIV>BR</DIV>
-<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2008-01-24 
-</FONT></DIV><FONT face=Verdana size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
-
-<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>chengk_thomson</SPAN> 
-</FONT></DIV></FONT></BODY></HTML>
-
---=====003_Dragon863156158505_=====--
+      <hr size=1><font face="Arial" size="2"><hr size=1><font face="Arial" size="2">L'email della prossima generazione? Puoi averla con la <a href="http://us.rd.yahoo.com/mail/it/taglines/hotmail/nowyoucan/nextgen/*http://it.docs.yahoo.com/nowyoucan.html">nuova Yahoo! Mail</a></font>
+--0-1829058211-1201184832=:24232--
