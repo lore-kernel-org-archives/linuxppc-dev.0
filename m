@@ -1,21 +1,19 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011-1.exch011.intermedia.net
-	(mis011-1.exch011.intermedia.net [64.78.21.128])
-	by ozlabs.org (Postfix) with ESMTP id 5CCE9DDDF6
+Return-Path: <vinay453.techie@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id A9E7EDDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Jan 2008 12:35:32 +1100 (EST)
+	Fri, 25 Jan 2008 00:14:00 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so46017anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 24 Jan 2008 05:13:59 -0800 (PST)
+Message-ID: <e8e184520801240513x4420c32dhc4f4560b24197cfb@mail.gmail.com>
+Date: Thu, 24 Jan 2008 18:43:59 +0530
+From: "vinay kumar" <vinay453.techie@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: checking installed Linux kernel header files... TOO OLD!
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: USB device for ppc440epx
-Date: Wed, 23 Jan 2008 17:34:33 -0800
-Message-ID: <406A31B117F2734987636D6CCC93EE3C02CEE295@ehost011-3.exch011.intermedia.net>
-In-reply-to: <20080123192003.03f4fa0b@zod.rchland.ibm.com>
-References: <BAY115-W17ECE16AB6FA79B2D4DBBDB23D0@phx.gbl><440abda90801202354l5a0ce4caq382af5991e36f775@mail.gmail.com><BAY115-W344A18C61627B3075C6281B23D0@phx.gbl><EDAE140DF1B2FC42B5867C22CA0B333F0A5952@XMBIL132.northgrum.com><BAY115-W415137ADEA0BE4A33D2BAEB23F0@phx.gbl><EDAE140DF1B2FC42B5867C22CA0B333F0A5959@XMBIL132.northgrum.com><BAY115-W393608FBCB3E1070428538B23F0@phx.gbl><20080123193557.AF0C8670018@mail194-sin.bigfish.com><406A31B117F2734987636D6CCC93EE3C02CEE287@ehost011-3.exch011.intermedia.net>
-	<20080123192003.03f4fa0b@zod.rchland.ibm.com>
-From: "Leonid" <Leonid@a-k-a.net>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11088_7508652.1201180439239"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,50 +24,171 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Josh:
+------=_Part_11088_7508652.1201180439239
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Ooops, I didn't notice I have hijacked someone's thread, I thought I
-created a new one. I am very sorry if I have done so, I'll be more
-careful.
+Hi All gurus,
+I need help.
+While installing glibc , i encountered some errors. Kindly guide me of how
+to deal with it.
 
-Regarding USB Mass Storage there are device drivers (Host side) of
-course. However I am asking regarding USB device implementation itself.
-Can you point me to source files where this implementation is present
-for 440ep/epx?
+#../glibc-2.3.2/configure --prefix=/opt/buckeye/powerpc-linux
+--target=powerpc-linux --host=powerpc-linux  --enable-add-ons=linuxthreads
+--with-headers=/root/Desktop/systemsim/include/
+--with-binutils=/opt/buckeye/powerpc-linux/powerpc-linux/bin
+--disable-sanity-checks
 
-Linux has several examples of devices (like Zero Gadget) and I have used
-it with ARM CPUs. But I am not sure it is working on 440epx also.
+configure: WARNING: If you wanted to set the --build type, don't use --host.
+    If a cross compiler is detected then cross compile mode will be used.
+checking build system type... i686-pc-linux-gnu
+checking host system type... powerpc-unknown-linux-gnu
+checking sysdep dirs... sysdeps/powerpc/powerpc32/elf sysdeps/powerpc/elf
+linuxthreads/sysdeps/unix/sysv/linux/powerpc/powerpc32
+linuxthreads/sysdeps/unix/sysv/linux/powerpc
+linuxthreads/sysdeps/unix/sysv/linux linuxthreads/sysdeps/pthread
+sysdeps/pthread linuxthreads/sysdeps/unix/sysv linuxthreads/sysdeps/unix
+linuxthreads/sysdeps/powerpc/powerpc32 linuxthreads/sysdeps/powerpc
+sysdeps/unix/sysv/linux/powerpc/powerpc32 sysdeps/unix/sysv/linux/powerpc
+sysdeps/unix/sysv/linux sysdeps/gnu sysdeps/unix/common sysdeps/unix/mman
+sysdeps/unix/inet sysdeps/unix/sysv sysdeps/unix/powerpc sysdeps/unix
+sysdeps/posix sysdeps/powerpc/powerpc32/fpu sysdeps/powerpc/powerpc32
+sysdeps/wordsize-32 sysdeps/powerpc/soft-fp sysdeps/powerpc/fpu
+sysdeps/powerpc sysdeps/ieee754/flt-32 sysdeps/ieee754/dbl-64
+sysdeps/ieee754 sysdeps/generic/elf sysdeps/generic
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether ln -s works... yes
+checking for pwd... /bin/pwd
+checking for powerpc-linux-gcc... powerpc-linux-gcc
+checking version of powerpc-linux-gcc... 3.3.2, ok
+checking for gnumake... no
+checking for gmake... gmake
+checking version of gmake... 3.80, ok
+checking for gnumsgfmt... no
+checking for gmsgfmt... no
+checking for msgfmt... msgfmt
+checking version of msgfmt... 0.14.1, ok
+checking for makeinfo... makeinfo
+checking version of makeinfo... 4.7, ok
+checking for sed... sed
+checking version of sed... 4.1.2, ok
+checking for powerpc-linux-gcc... (cached) powerpc-linux-gcc
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether powerpc-linux-gcc accepts -g... yes
+checking for powerpc-linux-gcc option to accept ANSI C... none needed
+checking for gcc... gcc
+checking how to run the C preprocessor... powerpc-linux-gcc -E
+checking whether /opt/buckeye/powerpc-linux/powerpc-linux/bin/as is GNU
+as... yes
+checking whether /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld is GNU
+ld... yes
+checking for /opt/buckeye/powerpc-linux/powerpc-linux/bin/as...
+/opt/buckeye/powerpc-linux/powerpc-linux/bin/as
+checking version of /opt/buckeye/powerpc-linux/powerpc-linux/bin/as... 2.14,
+ok
+checking for /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld...
+/opt/buckeye/powerpc-linux/powerpc-linux/bin/ld
+checking version of /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld... 2.14,
+ok
+checking whether ranlib is necessary... no
+checking LD_LIBRARY_PATH variable... ok
+checking whether GCC supports -static-libgcc... -static-libgcc
+checking for bash... /bin/sh
+checking for gawk... gawk
+checking for perl... /usr/bin/perl
+checking for install-info... /sbin/install-info
+checking for old Debian install-info... no
+checking for bison... /usr/bin/bison
+checking for signed size_t type... no
+checking for libc-friendly stddef.h... yes
+checking whether we need to use -P to assemble .S files... no
+checking whether .text pseudo-op must be used... yes
+checking for assembler global-symbol directive... .globl
+checking for .set assembler directive... no
+checking for assembler .type directive prefix... @
+checking for .symver assembler directive... yes
+checking for ld --version-script... yes
+checking for .previous assembler directive... yes
+checking for .protected and .hidden assembler directive... yes
+checking whether __attribute__((visibility())) is supported... yes
+checking for broken __attribute__((visibility()))... no
+checking for broken __attribute__((alias()))... no
+checking whether to put _rtld_local into .sdata section... yes
+checking for .preinit_array/.init_array/.fini_array support... yes
+checking for -z nodelete option... yes
+checking for -z nodlopen option... yes
+checking for -z initfirst option... yes
+checking for -Bgroup option... yes
+checking for -z combreloc... yes
+checking whether cc puts quotes around section names... no
+checking for assembler .weak directive... yes
+checking for ld --no-whole-archive... yes
+checking for gcc -fexceptions... yes
+checking whether clobbering cr0 causes problems... no
+checking for DWARF2 unwind info support... yes
+checking for __builtin_expect... yes
+checking for __builtin_memset... no
+checking for local label subtraction... yes
+checking for __thread... no
+checking for libgd... no
+checking for egrep... grep -E
+checking for ANSI C header files... no
+checking for sys/types.h... no
+checking for sys/stat.h... no
+checking for stdlib.h... no
+checking for string.h... no
+checking for memory.h... no
+checking for strings.h... no
+checking for inttypes.h... no
+checking for stdint.h... no
+checking for unistd.h... no
+checking for long double... no
+checking size of long double... 0
+running configure fragment for ../glibc-2.3.2/sysdeps/pthread
+running configure fragment for ../glibc-2.3.2/sysdeps/unix/sysv/linux
+checking for egrep... (cached) grep -E
+*checking installed Linux kernel header files... TOO OLD!
+configure: error: GNU libc requires kernel header files from
+Linux 2.0.10 or later to be installed before configuring.
+The kernel header files are found usually in /usr/include/asm and
+/usr/include/linux; make sure these directories use files from
+Linux 2.0.10 or later.  This check uses <linux/version.h>, so
+make sure that file was built correctly when installing the kernel header
+files.  To use kernel headers not from /usr/include/linux, use the
+configure option --with-headers.*
 
-Thanks,
+Thanks and regards.
+Vinay
 
-Leonid.=20
+------=_Part_11088_7508652.1201180439239
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
------Original Message-----
-From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]=20
-Sent: Wednesday, January 23, 2008 5:20 PM
-To: Leonid
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: USB device for ppc440epx
+Hi All gurus,<br>I need help.<br>While installing glibc , i encountered some errors. Kindly guide me of how to deal with it.<br><br>#../glibc-2.3.2/configure --prefix=/opt/buckeye/powerpc-linux --target=powerpc-linux --host=powerpc-linux&nbsp; --enable-add-ons=linuxthreads --with-headers=/root/Desktop/systemsim/include/ --with-binutils=/opt/buckeye/powerpc-linux/powerpc-linux/bin --disable-sanity-checks
+<br><br>configure: WARNING: If you wanted to set the --build type, don&#39;t use --host.<br>&nbsp;&nbsp;&nbsp; If a cross compiler is detected then cross compile mode will be used.<br>checking build system type... i686-pc-linux-gnu<br>checking host system type... powerpc-unknown-linux-gnu
+<br>checking sysdep dirs... sysdeps/powerpc/powerpc32/elf sysdeps/powerpc/elf linuxthreads/sysdeps/unix/sysv/linux/powerpc/powerpc32 linuxthreads/sysdeps/unix/sysv/linux/powerpc linuxthreads/sysdeps/unix/sysv/linux linuxthreads/sysdeps/pthread sysdeps/pthread linuxthreads/sysdeps/unix/sysv linuxthreads/sysdeps/unix linuxthreads/sysdeps/powerpc/powerpc32 linuxthreads/sysdeps/powerpc sysdeps/unix/sysv/linux/powerpc/powerpc32 sysdeps/unix/sysv/linux/powerpc sysdeps/unix/sysv/linux sysdeps/gnu sysdeps/unix/common sysdeps/unix/mman sysdeps/unix/inet sysdeps/unix/sysv sysdeps/unix/powerpc sysdeps/unix sysdeps/posix sysdeps/powerpc/powerpc32/fpu sysdeps/powerpc/powerpc32 sysdeps/wordsize-32 sysdeps/powerpc/soft-fp sysdeps/powerpc/fpu sysdeps/powerpc sysdeps/ieee754/flt-32 sysdeps/ieee754/dbl-64 sysdeps/ieee754 sysdeps/generic/elf sysdeps/generic
+<br>checking for a BSD-compatible install... /usr/bin/install -c<br>checking whether ln -s works... yes<br>checking for pwd... /bin/pwd<br>checking for powerpc-linux-gcc... powerpc-linux-gcc<br>checking version of powerpc-linux-gcc... 
+3.3.2, ok<br>checking for gnumake... no<br>checking for gmake... gmake<br>checking version of gmake... 3.80, ok<br>checking for gnumsgfmt... no<br>checking for gmsgfmt... no<br>checking for msgfmt... msgfmt<br>checking version of msgfmt... 
+0.14.1, ok<br>checking for makeinfo... makeinfo<br>checking version of makeinfo... 4.7, ok<br>checking for sed... sed<br>checking version of sed... 4.1.2, ok<br>checking for powerpc-linux-gcc... (cached) powerpc-linux-gcc
+<br>checking for suffix of object files... o<br>checking whether we are using the GNU C compiler... yes<br>checking whether powerpc-linux-gcc accepts -g... yes<br>checking for powerpc-linux-gcc option to accept ANSI C... none needed
+<br>checking for gcc... gcc<br>checking how to run the C preprocessor... powerpc-linux-gcc -E<br>checking whether /opt/buckeye/powerpc-linux/powerpc-linux/bin/as is GNU as... yes<br>checking whether /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld is GNU ld... yes
+<br>checking for /opt/buckeye/powerpc-linux/powerpc-linux/bin/as... /opt/buckeye/powerpc-linux/powerpc-linux/bin/as<br>checking version of /opt/buckeye/powerpc-linux/powerpc-linux/bin/as... 2.14, ok<br>checking for /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld... /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld
+<br>checking version of /opt/buckeye/powerpc-linux/powerpc-linux/bin/ld... 2.14, ok<br>checking whether ranlib is necessary... no<br>checking LD_LIBRARY_PATH variable... ok<br>checking whether GCC supports -static-libgcc... -static-libgcc
+<br>checking for bash... /bin/sh<br>checking for gawk... gawk<br>checking for perl... /usr/bin/perl<br>checking for install-info... /sbin/install-info<br>checking for old Debian install-info... no<br>checking for bison... /usr/bin/bison
+<br>checking for signed size_t type... no<br>checking for libc-friendly stddef.h... yes<br>checking whether we need to use -P to assemble .S files... no<br>checking whether .text pseudo-op must be used... yes<br>checking for assembler global-symbol directive... .globl
+<br>checking for .set assembler directive... no<br>checking for assembler .type directive prefix... @<br>checking for .symver assembler directive... yes<br>checking for ld --version-script... yes<br>checking for .previous assembler directive... yes
+<br>checking for .protected and .hidden assembler directive... yes<br>checking whether __attribute__((visibility())) is supported... yes<br>checking for broken __attribute__((visibility()))... no<br>checking for broken __attribute__((alias()))... no
+<br>checking whether to put _rtld_local into .sdata section... yes<br>checking for .preinit_array/.init_array/.fini_array support... yes<br>checking for -z nodelete option... yes<br>checking for -z nodlopen option... yes<br>
+checking for -z initfirst option... yes<br>checking for -Bgroup option... yes<br>checking for -z combreloc... yes<br>checking whether cc puts quotes around section names... no<br>checking for assembler .weak directive... yes
+<br>checking for ld --no-whole-archive... yes<br>checking for gcc -fexceptions... yes<br>checking whether clobbering cr0 causes problems... no<br>checking for DWARF2 unwind info support... yes<br>checking for __builtin_expect... yes
+<br>checking for __builtin_memset... no<br>checking for local label subtraction... yes<br>checking for __thread... no<br>checking for libgd... no<br>checking for egrep... grep -E<br>checking for ANSI C header files... no<br>
+checking for sys/types.h... no<br>checking for sys/stat.h... no<br>checking for stdlib.h... no<br>checking for string.h... no<br>checking for memory.h... no<br>checking for strings.h... no<br>checking for inttypes.h... no
+<br>checking for stdint.h... no<br>checking for unistd.h... no<br>checking for long double... no<br>checking size of long double... 0<br>running configure fragment for ../glibc-2.3.2/sysdeps/pthread<br>running configure fragment for ../glibc-
+2.3.2/sysdeps/unix/sysv/linux<br>checking for egrep... (cached) grep -E<br><b>checking installed Linux kernel header files... TOO OLD!<br>configure: error: GNU libc requires kernel header files from<br>Linux 2.0.10 or later to be installed before configuring.
+<br>The kernel header files are found usually in /usr/include/asm and<br>/usr/include/linux; make sure these directories use files from<br>Linux 2.0.10 or later.&nbsp; This check uses &lt;linux/version.h&gt;, so<br>make sure that file was built correctly when installing the kernel header
+<br>files.&nbsp; To use kernel headers not from /usr/include/linux, use the<br>configure option --with-headers.</b><br><br>Thanks and regards.<br>Vinay<br>
 
-On Wed, 23 Jan 2008 17:01:02 -0800
-"Leonid" <Leonid@a-k-a.net> wrote:
-
-> Hi:
->=20
-> does somebody have code example for USB 2.0 device implementation for=20
-> ppc440epx, preferably Mass Storage device, but any will do.
->=20
-> If not for ppc440epx (Sequoia board), ppc440ep (Yosemite) code will=20
-> also help (according to CPU user manual USB device interface is=20
-> practically the same).
->=20
-> If this is already present in Linux kernel tree (from what version?),=20
-> where it is located?
-
-USB mass storage works on 440EP already.  It'll be in 2.6.25 in
-arch/powerpc.  I would suspect 440EPx works as well.
-
-BTW, it's considered impolite to hijack a thread to ask a completely
-unrelated question.
-
-josh
+------=_Part_11088_7508652.1201180439239--
