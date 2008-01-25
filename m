@@ -1,37 +1,40 @@
 Return-Path: <Poonam.Aggrwal@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C8109DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 14:58:30 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m0P3wNX8007827
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 20:58:23 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id C2520DDDFB
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 15:09:27 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m0P498MH004065
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 21:09:08 -0700 (MST)
 Received: from zin33exm24.fsl.freescale.net (zin33exm24.ap.freescale.net
 	[10.232.192.24])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m0P3wLHX010980
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 21:58:22 -0600 (CST)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0P496Z9007017
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 22:09:07 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: RE: [PATCH UCC TDM 3/3 ] Modified Documentation to explain dtsentries
-	for TDM driver
-Date: Fri, 25 Jan 2008 09:28:19 +0530
-Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C279AFF5@zin33exm24.fsl.freescale.net>
-In-Reply-To: <20080124201226.GA3926@loki.buserror.net>
-References: <Pine.LNX.4.64.0801241022070.27491@linux121>
-	<20080124201226.GA3926@loki.buserror.net>
+Subject: RE: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM driver
+	for MPC8323eRDB. Also includes related QE changes and dts entries.
+Date: Fri, 25 Jan 2008 09:39:05 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C279AFF8@zin33exm24.fsl.freescale.net>
+In-Reply-To: <20080124172327.GA6786@localhost.localdomain>
+References: <Pine.LNX.4.64.0801241553270.4984@linux121>
+	<20080124154804.GA22178@localhost.localdomain>
+	<4798B4F3.2010101@freescale.com>
+	<20080124162345.GA27359@localhost.localdomain>
+	<4798BDEB.2010501@freescale.com>
+	<20080124172327.GA6786@localhost.localdomain>
 From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
-To: "Wood Scott" <scottwood@freescale.com>
+To: <avorontsov@ru.mvista.com>, "Tabi Timur" <timur@freescale.com>
 Cc: Barkowski Michael <Michael.Barkowski@freescale.com>, netdev@vger.kernel.org,
 	Gala Kumar <kumar.gala@freescale.com>,
 	linux-kernel@vger.kernel.org, rubini@vision.unipv.it,
 	linuxppc-dev@ozlabs.org, Kalra Ashish <ashish.kalra@freescale.com>,
-	Cutler Richard <Rich.Cutler@freescale.com>,
-	akpm@linux-foundation.org, Tabi Timur <timur@freescale.com>
+	Cutler Richard <Rich.Cutler@freescale.com>, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,42 +44,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott
+Hello Anton/Tabi
 
-The device tree already has a brg-frequency  property in qe node which
-is the value of BRGCLK. The function get_brg_clk uses this property to
-find the value of BRGCLK.
-In case this value is 0(some older u-boots populate bus-frequency
-property of qe and not the brg-frequency), get_brg_clk  uses
-bus-frequency/2 as BRGCLK.
+I am not sure which is the best place to configure the pins. Because
+some drivers do it in one way and some in the other.
+I actually tried to make the driver similar to ucc_geth because it is a
+QE driver. The driver has no platform code in the platform files similar
+to ucc_geth. It is probed along with all the QE devices thorugh
+of_platform_bus_probe.
+And the pins are configured for all the QE devices using  par_io_init.
+I thought this to be the most consistent way at that time.
 
+How should we close this point?
+Can we go ahead with the pio-map?
 
-With Regards
-Poonam=20
-=20
-=20
+Infact the discussion in this thread was very good and I got to know a
+lot of rationales behind this.
 
------Original Message-----
-From: Wood Scott=20
-Sent: Friday, January 25, 2008 1:42 AM
-To: Aggrwal Poonam
-Cc: Gala Kumar; akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
-netdev@vger.kernel.org; rubini@vision.unipv.it; linuxppc-dev@ozlabs.org;
-Barkowski Michael; Cutler Richard; Tabi Timur; Kalra Ashish
-Subject: Re: [PATCH UCC TDM 3/3 ] Modified Documentation to explain
-dtsentries for TDM driver
+Please suggest.
 
-On Thu, Jan 24, 2008 at 10:24:13AM +0530, Poonam_Aggrwal-b10812 wrote:
-> +  ix) Baud Rate Generator (BRG)
-> +
-> +  Required properties:
-> +  - compatible : shpuld be "fsl,cpm-brg"
-> +  - fsl,brg-sources : define the input clock for all 16 BRGs. The
-input
-> +    clock source could be 1 to 24 for CLK1 to CLK24. Zero means that
-the
-> +    particular BRG will be driven by QE clock(BRGCLK).
+Thanks and Regards
+Poonam
 
-Should also have a clock-frequency property to specify what BRGCLK is.
+From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]=20
+Sent: Thursday, January 24, 2008 10:53 PM
+To: Tabi Timur
+Cc: Aggrwal Poonam; Gala Kumar; akpm@linux-foundation.org;
+linux-kernel@vger.kernel.org; netdev@vger.kernel.org;
+rubini@vision.unipv.it; linuxppc-dev@ozlabs.org; Barkowski Michael;
+Cutler Richard; Kalra Ashish
+Subject: Re: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM
+driver for MPC8323eRDB. Also includes related QE changes and dts
+entries.
 
--Scott
+On Thu, Jan 24, 2008 at 10:33:47AM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
+>=20
+> >Are you saying that TDM is sharing same pins with the other QE=20
+> >device, and we can choose to use/not use some device depending on=20
+> >which driver is loaded?
+>=20
+> No.  I'd have to closely examine the DTS, but I don't think that UCC=20
+> devices share pins at all.  But that isn't my point.
+>=20
+> >In that particular case UCC configuration is static, for every UCC.
+> >So, we can set up all pins in the firmware/board file.
+>=20
+> Yes, but deciding what the UCC does might not be static.  At what=20
+> point do we declare, "UCC5 is for eth0 and eth0 only"?
+>=20
+> The advantage of putting the pin configurations in the device tree is=20
+> that they now become configurable.  I can envision a scenario where=20
+> UCC5 could be either an Ethernet or a UART, depending on the setting=20
+> of some jumpers on the board. That's what the QE was designed for: any
+
+> UCC can do any task, and you can even have a UCC change its purpose
+while the system is running.
+> So I don't want the pin configurations hard-coded into the kernel. =20
+> Having them in the device tree gives me some flexibility.
+
+If hardware configuration is selected at the bootup time, by jumpers or
+switches, it's even easier to do it right. Without pio-map.
+
+> For instance, I have a plan (that I keep postponing) to introduce a=20
+> new feature in U-Boot where U-Boot can determine the settings of some=20
+> board jumpers and modify the device tree accordingly. The instructions
+
+> on how to modify the device tree would be embedded in the tree itself.
+
+Why you need to modify the device tree for that? Let the U-Boot simply
+setup pins for the kernel. Regarding kernel overwriting pins
+configuration...
+
+> I can't
+> support this feature if the kernel calls par_io_config_pin()=20
+> regardless of what's in the device tree.
+
+What I've understood from the previous debates, is that ideally kernel
+should not touch pins' configuration. Today we're using pio-map solely
+to fix up some old firmware misconfiguration. And we can do this in the
+board file still. To determine if we need to fixup the firmware or not,
+we can use some device tree property instead (firmware version?).
+
+p.s.
+I'm neither for pio-map nor against. I just want some consequence
+regarding this. Last thread ended with consequence that pio-map is a bad
+thing to use...
+
+--
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
