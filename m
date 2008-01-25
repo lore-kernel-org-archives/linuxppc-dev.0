@@ -1,23 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 2AF6ADDEB9
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id ADDF4DDF7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Jan 2008 02:17:39 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so184914anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jan 2008 07:17:37 -0800 (PST)
-Message-ID: <fa686aa40801250717o342a0b3aga71829b7735f21c0@mail.gmail.com>
-Date: Fri, 25 Jan 2008 08:17:37 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: greenlean <jmgomez@atc.ugr.es>
-Subject: Re: ml310 kernel2.6 booting problems
-In-Reply-To: <15087192.post@talk.nabble.com>
+	Sat, 26 Jan 2008 11:00:05 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <537566320@web.de>
-	<fa686aa40801160650u6c5f35d9m325a87bc8482475f@mail.gmail.com>
-	<15087192.post@talk.nabble.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Failed to mount rootfs
+Date: Fri, 25 Jan 2008 08:47:12 -0800
+Message-ID: <F795765B112E7344AF36AA911279641502D1A9FA@xmb-sjc-212.amer.cisco.com>
+In-Reply-To: <47998D8B.8050100@denx.de>
+References: <mailman.1307.1201212280.6908.linuxppc-embedded@ozlabs.org>
+	<47998D8B.8050100@denx.de>
+From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+To: <hs@denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,136 +25,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/25/08, greenlean <jmgomez@atc.ugr.es> wrote:
->
-> I'm also having some problem with my systemace file system. I'm working with
-> secretlab git, and I try to mount the CF card with xsysace and with xsa, but
-> in both cases it can't mount the rootfs:
->
-> Linux/PPC load: console=ttyS0,9600 root=/dev/xsa3 rw
-> :
-> :
-> :
-> [    2.777706] xsysace xsysace.0: Xilinx SystemACE revision 1.0.12
-> [    2.849967] xsysace xsysace.0: capacity: 986320 sectors
-> [    2.913383]  xsa: unknown partition table
+=20
+Hi Heiko,=20
+> "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com> wrote:
+> > Our custom board is leveraged from MPC8541cds from freescale.
+> > We have been running Linux 2.6.11 on it recently I have=20
+> tried to boot=20
+> > the system with the latest Linux 2.6.22-rc4 from PowerPC git tree.
+> > =20
+> > I did ported the libfdt to our older version of the uboot and were=20
+> > able to
+>=20
+> Hmm... why you didnt use actual code?
+>=20
+> [...]
+> >     chosen {
+> >         linux,stdout-path =3D "/soc8541@e0000000/serial@4600";
+> >     };
+> >     chosen {
+> >         name =3D "chosen";
+> >         bootargs =3D "root=3D/dev/ram rw console=3DttyS1,115200";
+> >         linux,platform =3D <600>;
+> >         linux,initrd-start =3D <1ef33000>;
+> >         linux,initrd-end =3D <1fe190aa>;
+> >         linux,stdout-path =3D "/soc8541@e0000000/serial@4600";
+> >     };
+> > };
+>=20
+> Here is your problem, you have 2 choosen nodes:
+>=20
+> 64k data, 108k bss, 116k init) Mount-cache hash table entries: 512
+> device-tree: Duplicate name in /, renamed to "chosen#1"
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> -> Linux didnt find your commandline ...
+>=20
+> Hmm... do you have CONFIG_OF_FLAT_TREE and CONFIG_OF_LIBFDT defined?
+> If so, this would explain, why you have 2 choosen nodes.
 
-You're definitely not having a filesystem problem; it's a partition
-table problem.  Either the partition table is corrupt or the kernel
-doesn't understand the type of partition table, or the system ace
-isn't able to read the CF correctly (hardware problem).
+Yes I do have both CONFIG_OF_FLAT_TREE and CONFIG_OF_LIBFDT defined. Is
+there a document to tell more about these options please?
 
-g.
-
-> :
-> :
-> [    3.398810] Please append a correct "root=" boot option; here are the
-> availa:
-> [    3.499476] fe00     493160 xsa (driver?)
-> [    3.547926] Kernel panic - not syncing: VFS: Unable to mount root fs on
-> unkn)
->
-> Does this mean that I have configured incorrectly the file system options in
-> the kernel??
-> I have read that the solution to this is to change the DOS/FAT/NT Filesystem
-> option to the below configuration:
->
->       <*> Second extended fs support
-> DOS/FAT/NT Filesystems
->        < > MSDOS fs support
->        < > VFAT (Windows-95) fs support
->        < > NTFS file system support
->   [*] Advanced partition selection
->          [*]   PC BIOS (MSDOS partition tables) support
-> I've already tested this configuration:
->
->       <*> Second extended fs support
-> DOS/FAT/NT Filesystems
->        <*> MSDOS fs support
->        <*> VFAT (Windows-95) fs support
->        < > NTFS file system support
->   [] Advanced partition selection
->
->
-> My CF card has the following structure:
->
-> Disco /dev/sdc: 521 MB, 521773056 bytes
-> 16 cabezas, 63 sectores/pistas, 1011 cilindros
-> Unidades = cilindros de 1008 * 512 = 516096 bytes
-> Disk identifier: 0x00000000
->
-> Disposit. Inicio    Comienzo      Fin      Bloques  Id  Sistema
-> /dev/sdc1               1         400      201568+   6  FAT16
-> /dev/sdc2             401         500       50400   82  Linux swap / Solaris
-> /dev/sdc3             501        1011      257544   83  Linux
->
-> I'm also wondering if I should use xsysace or xsa, because I have search in
-> the file xsysace.c for the name of the device and It is named as xsysace. Am
-> I right, and should I use xsysace? Or this name isn't related with the /dev
-> file??
-> $ grep xsysace xsysace.c
->
->         .name = "xsysace",
->         ace_major = register_blkdev(ace_major, "xsysace");
->                 printk(KERN_WARNING "xsysace: register_blkdev() failed\n");
->         unregister_blkdev(ace_major, "xsysace");
->
-> I'm going to reformat my CF card and test it,maybe the partition table is
-> corrupted, but fdisk is not saying anything at all.
->
-> Thanks
->
->
-> Grant Likely-2 wrote:
-> >
-> > On 1/16/08, Joachim Meyer <Jogi95@web.de> wrote:
-> >> Hi
-> >>
-> >> I made an Ace file with my Kernel and load it with the Flash Card.
-> >> I made the Initial release CF image on the card and copied my ace file in
-> >> an folder, from which I boot with the DIP-Switch.
-> >> If I used
-> >> "console=ttyUL0 ,9600 root=/dev/xsysace/disc0/part2 rw "
-> >
-> > try root=/dev/xsa2
-> > Also, the ',9600' is unnecessary with the uartlite.
-> >
-> >>
-> >> I tried to use this:
-> >> "console=ttyUL0 ,9600 root=fe02 rw"
-> >> and with this, after making ace-file etc. I get:
-> >> [   12.862678] EXT3 FS on xsa2, internal journal
-> >> [   12.899229] EXT3-fs: recovery complete.
-> >> [   12.982635] EXT3-fs: mounted filesystem with ordered data mode.
-> >> [   13.038505] VFS: Mounted root (ext3 filesystem).
-> >> [   13.094113] Freeing unused kernel memory: 96k init
-> >> [   13.159079] Warning: unable to open an initial console.
-> >
-> > You're probably missing the /dev/console device file
-> >
-> > g.
-> >
-> > --
-> > Grant Likely, B.Sc., P.Eng.
-> > Secret Lab Technologies Ltd.
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
->
-> --
-> View this message in context: http://www.nabble.com/ml310-kernel2.6-booting-problems-tp14881983p15087192.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+Bizhan
