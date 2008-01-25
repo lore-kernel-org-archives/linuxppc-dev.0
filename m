@@ -1,12 +1,12 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20080125153107.177014292@vixen.sonytel.be>
+Message-Id: <20080125153107.116974131@vixen.sonytel.be>
 References: <20080125150623.202631389@vixen.sonytel.be>
-Date: Fri, 25 Jan 2008 16:06:27 +0100
+Date: Fri, 25 Jan 2008 16:06:26 +0100
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	linux-fbdev-devel@lists.sourceforge.net
-Subject: [patch 04/11] ps3fb: Inline macros that are used only once
+Subject: [patch 03/11] ps3fb: Kill PS3FB_FULL_MODE_BIT
 Sender: geert <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
@@ -21,44 +21,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
-as they're used in one place only
+ps3fb: Kill PS3FB_FULL_MODE_BIT, use PS3AV_MODE_FULL instead
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/video/ps3fb.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -287,15 +287,8 @@ static const struct fb_videomode ps3fb_m
- #define HEAD_A
- #define HEAD_B
+@@ -57,8 +57,6 @@
+ #define GPU_ALIGN_UP(x)				_ALIGN_UP((x), 64)
+ #define GPU_MAX_LINE_LENGTH			(65536 - 64)
  
--#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
--#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
--#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
--#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
- #define BPP		4			/* number of bytes per pixel */
- 
--/* Start of the virtual frame buffer (relative to fullscreen ) */
--#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
+-#define PS3FB_FULL_MODE_BIT			0x80
 -
+ #define GPU_INTR_STATUS_VSYNC_0			0	/* vsync on head A */
+ #define GPU_INTR_STATUS_VSYNC_1			1	/* vsync on head B */
+ #define GPU_INTR_STATUS_FLIP_0			3	/* flip head A */
+@@ -310,7 +308,7 @@ static int ps3fb_get_res_table(u32 xres,
+ 	unsigned int i;
+ 	u32 x, y, f;
  
- static int ps3fb_mode;
- module_param(ps3fb_mode, int, 0);
-@@ -611,7 +604,10 @@ static int ps3fb_set_par(struct fb_info 
+-	full_mode = (mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
++	full_mode = (mode & PS3AV_MODE_FULL) ? PS3FB_RES_FULL : 0;
+ 	for (i = 0;; i++) {
+ 		x = ps3fb_res[i].xres;
+ 		y = ps3fb_res[i].yres;
+@@ -373,7 +371,7 @@ found:
+ 	/* Full broadcast modes have the full mode bit set */
+ 	mode = i+1;
+ 	if (mode > PS3AV_MODE_WUXGA)
+-		mode = (mode - PS3AV_MODE_WUXGA) | PS3FB_FULL_MODE_BIT;
++		mode = (mode - PS3AV_MODE_WUXGA) | PS3AV_MODE_FULL;
  
- 	par->width = info->var.xres;
- 	par->height = info->var.yres;
--	offset = VP_OFF(i);
-+
-+	/* Start of the virtual frame buffer (relative to fullscreen) */
-+	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
-+
- 	par->fb_offset = GPU_ALIGN_UP(offset);
- 	par->full_offset = par->fb_offset - offset;
- 	par->pan_offset = info->var.yoffset * xdr_line_length +
+ 	pr_debug("ps3fb_find_mode: mode %u\n", mode);
+ 
+@@ -390,7 +388,7 @@ static const struct fb_videomode *ps3fb_
+ 
+ 	flags = id & ~PS3AV_MODE_MASK;
+ 
+-	if (mode <= PS3AV_MODE_1080P50 && flags & PS3FB_FULL_MODE_BIT) {
++	if (mode <= PS3AV_MODE_1080P50 && flags & PS3AV_MODE_FULL) {
+ 		/* Full broadcast mode */
+ 		return &ps3fb_modedb[mode + PS3AV_MODE_WUXGA - 1];
+ 	}
 
 -- 
 With kind regards,
