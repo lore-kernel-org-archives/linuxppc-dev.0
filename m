@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35111DDE16
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 19:53:31 +1100 (EST)
-Date: Fri, 25 Jan 2008 02:50:20 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id E8B9ADDE18
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 20:01:17 +1100 (EST)
+Message-Id: <F4B3DC7D-AC57-4C37-8708-5A3E73F5F97C@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCHv3 0/7] [POWERPC] 8xx cleanups
-In-Reply-To: <4798AB95.8040405@scram.de>
-Message-ID: <Pine.LNX.4.64.0801250249170.11624@blarg.am.freescale.net>
-References: <4798AB95.8040405@scram.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>,
+In-Reply-To: <4798AC8B.9090400@scram.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCHv3 6/7] [POWERPC] Rename commproc to cpm1 and cpm2_common.c
+	to cpm2.c
+Date: Fri, 25 Jan 2008 03:00:52 -0600
+References: <4798AC8B.9090400@scram.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,40 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 24 Jan 2008, Jochen Friedrich wrote:
 
-> Hi,
+On Jan 24, 2008, at 9:19 AM, Jochen Friedrich wrote:
+
+> Rename commproc.[ch] to cpm1.[ch] to be more consistent with cpm2.  
+> Also
+> rename cpm2_common.c to cpm2.c as suggested by Scott Wood. Adjust the
+> includes accordingly.
 >
-> this is a series against paulus for-2.6.25 tree to clean up various 8xx
-> related stuff.
-> The series can be pulled from git://git.bocc.de/dbox2.git cleanup.
-> Old patches 2+4 have been merged into Patch 2. Patch 4 has been modified to
-> move the
-> prototypes into a new platforms/8xx/mpc8xx.h. Patch 5 leaves the PCMCIA bits
-> in
-> asm-powerpc/mpc8xx.h as this driver needs to be fixed first (unfortunately, i
-> don't
-> have an 8xx board with PCMCIA). I would suggest removing asm-powerpc/mpc8xx.h
-> after
-> ARCH=ppc is gone to avoid adding #ifdefs to all shared drivers.
->
-> I also modified an option in Thunderbird so i hope whitespaces are OK now :-/
->
-> [POWERPC] Remove unused m8xx_cpm_hostalloc/free/dump()
-> [POWERPC] Rename m8xx_pic_init to mpc8xx_pics_init
-> [POWERPC] Remove unneeded and misspelled prototype m8xx_calibrate_decr
-> [POWERPC] Remove sysdev/commproc.h
-> [POWERPC] Get rid of conditional includes of board specific setup
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+> arch/powerpc/platforms/8xx/ep88xc.c           |    1 +
+> arch/powerpc/platforms/8xx/mpc86xads_setup.c  |    2 +-
+> arch/powerpc/platforms/8xx/mpc885ads_setup.c  |    2 +-
+> arch/powerpc/sysdev/Makefile                  |    4 ++--
+> arch/powerpc/sysdev/{commproc.c => cpm1.c}    |    4 ++--
+> arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} |    3 +--
+> arch/powerpc/sysdev/micropatch.c              |    2 +-
+> arch/ppc/8260_io/enet.c                       |    2 +-
+> arch/ppc/8xx_io/commproc.c                    |    2 +-
+> arch/ppc/8xx_io/enet.c                        |    6 +++---
+> arch/ppc/8xx_io/fec.c                         |    2 +-
+> arch/ppc/8xx_io/micropatch.c                  |    2 +-
+> arch/ppc/boot/simple/iic.c                    |    2 +-
+> arch/ppc/boot/simple/m8xx_tty.c               |    2 +-
+> arch/ppc/kernel/ppc_ksyms.c                   |    2 +-
+> arch/ppc/platforms/mpc866ads_setup.c          |    2 +-
+> arch/ppc/platforms/mpc885ads_setup.c          |    2 +-
+> arch/ppc/syslib/mpc8xx_devices.c              |    2 +-
+> arch/ppc/xmon/start_8xx.c                     |    2 +-
 
-I've applied the above patches.
+All of these files seem reasonable.
 
-> [POWERPC] Rename commproc to cpm1 and cpm2_common.c to cpm2.c
+> drivers/net/fec.c                             |    8 --------
+> drivers/net/fec.h                             |    2 +-
 
-I'm a bit concerned this patch is touching too many files.. or ones that
-it never should have.
+asm-m68knommu/commproc.h ?? these are only built on coldfire.
 
-> [POWERPC] Move definition of buffer descriptor to cpm.h
+> drivers/net/fec_8xx/fec_8xx-netta.c           |    2 +-
+> drivers/net/fec_8xx/fec_main.c                |    2 +-
+> drivers/net/fec_8xx/fec_mii.c                 |    2 +-
+> drivers/net/fs_enet/fs_enet.h                 |    2 +-
+> drivers/net/fs_enet/mac-fec.c                 |    2 +-
+> drivers/net/fs_enet/mac-scc.c                 |    2 +-
 
-I'm assmuing this patch depends on the previous one.
+these seem ok.
+
+> drivers/serial/68360serial.c                  |    2 +-
+
+I think this is using asm-m68knommu/commproc.h
+
+> drivers/serial/cpm_uart/cpm_uart_cpm1.h       |    2 +-
+> include/asm-powerpc/{commproc.h => cpm1.h}    |    8 ++++----
+> include/asm-ppc/{commproc.h => cpm1.h}        |    8 ++++----
+> 31 files changed, 40 insertions(+), 48 deletions(-)
+> rename arch/powerpc/sysdev/{commproc.c => cpm1.c} (99%)
+> rename arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} (99%)
+> rename include/asm-powerpc/{commproc.h => cpm1.h} (99%)
+> rename include/asm-ppc/{commproc.h => cpm1.h} (99%)
+
+Also, CC jgarizk since we will be touching netdev drivers.  We've been  
+pushing such updates via the powerpc tree's but its good that Jeff's  
+aware.
 
 - k
