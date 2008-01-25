@@ -1,30 +1,20 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id BA89BDDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 16:24:34 +1100 (EST)
-Received: from pd3mr5so.prod.shaw.ca (pd3mr5so-qfe3.prod.shaw.ca [10.0.141.12])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JV600D6PPNZEOC0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Thu, 24 Jan 2008 22:23:59 -0700 (MST)
-Received: from pn2ml3so.prod.shaw.ca ([10.0.121.147])
-	by pd3mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JV600D7OPNZ8Y60@pd3mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Thu, 24 Jan 2008 22:24:00 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
-	2006))
-	with ESMTP id <0JV600HL0PNXVI10@l-daemon> for linuxppc-dev@ozlabs.org;
-	Thu, 24 Jan 2008 22:23:58 -0700 (MST)
-Date: Thu, 24 Jan 2008 22:23:24 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] 82xx and embedded6xx: Use machine_*_initcall()	hooks
-	in platform code
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Message-id: <20080125052324.8405.99760.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id BA79EDDDED
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 16:44:21 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so129994anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 21:44:19 -0800 (PST)
+Message-ID: <fa686aa40801242144w7855e057s371fcf986f09730e@mail.gmail.com>
+Date: Thu, 24 Jan 2008 22:44:18 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kim Phillips" <kim.phillips@freescale.com>
+Subject: Re: [PATCH 8/9] powerpc: add the mpc837[789]_rdb dts files
+In-Reply-To: <20080124204718.33a30ab5.kim.phillips@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080124204718.33a30ab5.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Joe D'Abbraccio <ljd015@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,73 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On 1/24/08, Kim Phillips <kim.phillips@freescale.com> wrote:
+> Add the dts files for the MPC838xE Reference Development Board (RDB).
+>
+> The board is a mini-ITX reference board with 256M DDR2, 8M flash,
+> 32M NAND, USB, PCI, gigabit ethernet, SATA, and serial.
+>
+> the difference among the three files is the 8377 has two, the 8378
+> none, and the 8379 has four sata controllers.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+All who want to see macro support in dts please raise your hands....
 
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    5 +----
- arch/powerpc/platforms/82xx/pq2fads.c        |    5 +----
- arch/powerpc/platforms/embedded6xx/ls_uart.c |    5 +----
- 3 files changed, 3 insertions(+), 12 deletions(-)
+Now we just need to find someone with the time to code it.  :-)
 
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index fd83440..3fce6b3 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -165,14 +165,11 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
--	if (!machine_is(mpc8272_ads))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 	return 0;
- }
--device_initcall(declare_of_platform_devices);
-+machine_device_initcall(mpc8272_ads, declare_of_platform_devices);
- 
- /*
-  * Called very early, device-tree isn't unflattened
-diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
-index 1be5005..68196e3 100644
---- a/arch/powerpc/platforms/82xx/pq2fads.c
-+++ b/arch/powerpc/platforms/82xx/pq2fads.c
-@@ -176,14 +176,11 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 
- static int __init declare_of_platform_devices(void)
- {
--	if (!machine_is(pq2fads))
--		return 0;
--
- 	/* Publish the QE devices */
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
- 	return 0;
- }
--device_initcall(declare_of_platform_devices);
-+machine_device_initcall(pq2fads, declare_of_platform_devices);
- 
- define_machine(pq2fads)
- {
-diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-index c99264c..9d891bd 100644
---- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
-+++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
-@@ -117,9 +117,6 @@ static int __init ls_uarts_init(void)
- 	phys_addr_t phys_addr;
- 	int len;
- 
--	if (!machine_is(linkstation))
--		return 0;
--
- 	avr = of_find_node_by_path("/soc10x/serial@80004500");
- 	if (!avr)
- 		return -EINVAL;
-@@ -142,4 +139,4 @@ static int __init ls_uarts_init(void)
- 	return 0;
- }
- 
--late_initcall(ls_uarts_init);
-+machine_late_initcall(linkstation, ls_uarts_init);
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
