@@ -1,24 +1,13 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
-	by ozlabs.org (Postfix) with ESMTP id DFCDCDDEDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 02:04:51 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so603024fgg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 07:04:50 -0800 (PST)
-Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1201260867.6293.38.camel@thor.sulgenrain.local>
-References: <1200659696.23161.81.camel@thor.sulgenrain.local>
-	<1201013786.4726.28.camel@thor.sulgenrain.local>
-	<1201090699.9052.39.camel@thor.sulgenrain.local>
-	<1201092131.6341.51.camel@lappy>  <1201244082.6815.128.camel@pasglop>
-	<1201260867.6293.38.camel@thor.sulgenrain.local>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 25 Jan 2008 16:04:43 +0100
-Message-Id: <1201273484.6090.12.camel@thor.sulgenrain.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, vatsa <vatsa@linux.vnet.ibm.com>
+Return-Path: <geert@sonycom.com>
+Message-Id: <20080125150623.202631389@vixen.sonytel.be>
+Date: Fri, 25 Jan 2008 16:06:23 +0100
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-fbdev-devel@lists.sourceforge.net
+Subject: [patch 00/11] ps3av/3fb patches for 2.6.25
+Sender: geert <geert@sonycom.com>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+	Hi Tony, Andrew,
 
-On Fri, 2008-01-25 at 12:34 +0100, Michel Dänzer wrote:
-> On Fri, 2008-01-25 at 17:54 +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2008-01-23 at 13:42 +0100, Peter Zijlstra wrote:
-> > > Another question, do you have:
-> > >   CONFIG_FAIR_GROUP_SCHED=y
-> > > 
-> > > if so, does flipping that off have any effect?
-> > 
-> > Yes.
-> > 
-> > Here, I do the test of running 4 times the repro-case provided by Michel
-> > with nice 19 and a dd eating CPU with nice 0.
-> > 
-> > Without this option, I get the dd at 100% and the nice 19 shells down
-> > below it with whatever is left of the CPUs.
-> > 
-> > With this option, dd gets about 50% of one CPU and the niced processes
-> > still get most of the time.
-> 
-> Hmm, interesting. As I said before, I thought I had tested with this
-> disabled and not seen a difference, but I'll try again to confirm.
+Hare are the ps3av/fb patches for 2.6.25:
+  [1] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused
+  [2] ps3: Use symbolic names for video modes
+  [3] ps3fb: Kill PS3FB_FULL_MODE_BIT
+  [4] ps3fb: Inline macros that are used only once
+  [5] ps3fb: Kill ps3fb_res[]
+  [6] ps3fb: Make frame buffer offsets unsigned int
+  [7] ps3fb: Add support for configurable black borders
+  [8] ps3fb: Reorganize modedb handling
+  [9] ps3fb: Round up video modes
+  [10] ps3fb: Cleanup sweep
+  [11] ps3fb: Fix modedb typos
 
-So, 2.6.24 final is indeed much better with this disabled, but still not
-as good as 2.6.23: While I can reliably move a window again while the
-infinite loop is running, it still stutters badly every couple of
-seconds. With 2.6.23 this is smooth all the time.
+Patches 1-9 have been sent for review on Mon, 26 Nov 2007. They haven't
+changed in the mean time, except for rebasing and minor editing of patch
+descriptions.
+Patches 10-11 are new, but not very complex, and tested in ps3-linux.git since
+a while.
 
+Please apply for 2.6.25. Thanks a lot!
 
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
