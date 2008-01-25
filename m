@@ -1,25 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BD48FDE00C
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 10:57:09 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m0PMdSkt016965
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 15:39:28 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m0PMdRpM007328
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 16:39:28 -0600 (CST)
-Message-ID: <479A651F.2070109@freescale.com>
-Date: Fri, 25 Jan 2008 16:39:27 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: drivers/char/hvc_* and /Documentation/powerpc/hvcs.txt
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	by ozlabs.org (Postfix) with ESMTP id 2EC26DDE11
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:04:33 +1100 (EST)
+Date: Fri, 25 Jan 2008 11:45:50 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 7/9] powerpc: add MPC837x RDB platform support
+Message-Id: <20080125114550.661c3cf6.kim.phillips@freescale.com>
+In-Reply-To: <ED723035-5E14-44B5-B35C-B94133561D78@kernel.crashing.org>
+References: <20080124204711.02ba14f0.kim.phillips@freescale.com>
+	<ED723035-5E14-44B5-B35C-B94133561D78@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Jerry, Huang <Chang-Ming.Huang@freescale.com>,
+	Joe D'Abbraccio <ljd015@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 25 Jan 2008 10:17:14 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-I'm working on a console driver for the Freescale hypervisor.  I notice a bunch 
-of hvc_* files in the drivers/char directory.  I also noticed 
-/Documentation/powerpc/hvcs.txt.
+> 
+> On Jan 24, 2008, at 8:47 PM, Kim Phillips wrote:
+> 
+> > primarily based on mpc837x mds code.
+> >
+> > Signed-off-by: Joe D'Abbraccio <ljd015@freescale.com>
+> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> > ---
+> 
+> Who's the actual other of these patches?  (all 9 of them).
 
-My guess is that hvcs.txt talks about drivers/char/hvcs.c, which is a console 
-driver specific to some IBM hypervisor.  The hvc_*.c files are based on that 
-code but they're more generic and allow people to write console drivers for 
-other hypervisors easliy.  Am I right?
+I took Joe's 837x from:
 
-If so, does this mean that I can take hvc_beat.c, modify it to make Freescale 
-hypervisor calls instead, and presto, I'm done?
+http://ozlabs.org/pipermail/linuxppc-embedded/2007-September/028460.html
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+and updated them.
+
+831x I took from Jerry Huang's tree and updated them.
+
+Kim
