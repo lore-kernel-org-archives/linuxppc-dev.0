@@ -1,11 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>, <cbe-oss-dev@ozlabs.org>
-Message-Id: <9ce4678eef9e50908969eb1ef8470e307f3076ff.1201257905.git.michael@ellerman.id.au>
-In-Reply-To: <edf2d9650b044e2bc21e9b74ad1044f4e5b6615c.1201257905.git.michael@ellerman.id.au>
-References: <edf2d9650b044e2bc21e9b74ad1044f4e5b6615c.1201257905.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/3] Cell IOMMU static mapping support
-Date: Fri, 25 Jan 2008 21:45:07 +1100 (EST)
+Return-Path: <michel@tungstengraphics.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.157])
+	by ozlabs.org (Postfix) with ESMTP id 3C8FADDE18
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 21:57:08 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so542018fgg.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 02:57:06 -0800 (PST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1201164372.6815.55.camel@pasglop>
+References: <1200659696.23161.81.camel@thor.sulgenrain.local>
+	<1201013786.4726.28.camel@thor.sulgenrain.local>
+	<1201090699.9052.39.camel@thor.sulgenrain.local>
+	<1201091798.6341.49.camel@lappy>  <1201164372.6815.55.camel@pasglop>
+Content-Type: multipart/mixed; boundary="=-/wAgnnZ9I3bYUPj04iwm"
+Date: Fri, 25 Jan 2008 11:57:02 +0100
+Message-Id: <1201258622.6293.34.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,456 +27,672 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Citing "release early release often", I'm posting this now as a mega-patch
-to get people looking at it. I'll try to split it up and make it look a
-little prettier before submitting it.
 
-The intent of this patch is to setup (on certain machines) a "static" IOMMU
-mapping of all of memory, to reduce the overhead of the IOMMU. If anyone has
-a better name than "static" I'm all ears.
+--=-/wAgnnZ9I3bYUPj04iwm
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-So instead of having an IOMMU window that we use to temporarily map things
-in and out of DMA'able space, at boot we create a 1:1 mapping for all of
-memory. This obviously only works for devices that can do 64-bit DMA.
+On Thu, 2008-01-24 at 19:46 +1100, Benjamin Herrenschmidt wrote:
+> Could the fact that our sched_clock() returns utter crap if called
+> before time_init() explain the problem ?
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/cell/iommu.c |  318 ++++++++++++++++++++++++++++++++---
- 1 files changed, 295 insertions(+), 23 deletions(-)
+I don't think so. I've confirmed that it gets called exactly once before
+time_init(), but it just returns 0 then, which I don't think should be a
+problem.
 
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 9223559..935d4e6 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -147,6 +147,10 @@ struct cbe_iommu {
- static struct cbe_iommu iommus[NR_IOMMUS];
- static int cbe_nr_iommus;
+
+Also, I'm attaching two copies of /proc/sched_debug obtained with
+
+        sudo -b -u nobody nice -n 19 sh -c 'while true; do true; done'
+        && cat /proc/sched_debug >/tmp/sched_debug.before && sleep 20 &&
+        cat /proc/sched_debug >/tmp/sched_debug.after && sudo -u nobody
+        killall sh
+
+Looking at the diff below, the clock appears quite accurate.
+
+
+Peter or Ingo, maybe you notice something else odd with these or have
+other ideas for what conditions could cause niced processes to have such
+an impact on interactivity?
+
+
+--- /home/michdaen/sched_debug.before	2008-01-25 09:40:34.000000000 +0100
++++ /home/michdaen/sched_debug.after	2008-01-25 09:40:34.000000000 +0100
+@@ -1,5 +1,5 @@
+ Sched Debug Version: v0.07, 2.6.24-rc8 #4
+-now at 204890.233650 msecs
++now at 224908.343840 msecs
+   .sysctl_sched_latency                    : 20.000000
+   .sysctl_sched_min_granularity            : 4.000000
+   .sysctl_sched_wakeup_granularity         : 10.000000
+@@ -8,56 +8,56 @@ now at 204890.233650 msecs
+   .sysctl_sched_features                   : 7
  
-+static unsigned long cell_dma_direct_offset;
-+struct dma_mapping_ops cell_dma_static_ops;
-+static unsigned long cell_dma_static_base;
-+
- static void invalidate_tce_cache(struct cbe_iommu *iommu, unsigned long *pte,
- 		long n_ptes)
- {
-@@ -306,22 +310,64 @@ static int cell_iommu_find_ioc(int nid, unsigned long *base)
- 	return -ENODEV;
- }
+ cpu#0
+-  .nr_running                    : 6
+-  .load                          : 9971
+-  .nr_switches                   : 133199
+-  .nr_load_updates               : 80363
+-  .nr_uninterruptible            : 2
+-  .jiffies                       : 4294872186
++  .nr_running                    : 5
++  .load                          : 4364
++  .nr_switches                   : 142978
++  .nr_load_updates               : 100239
++  .nr_uninterruptible            : 0
++  .jiffies                       : 4294892204
+   .next_balance                  : 0.000000
+-  .curr->pid                     : 4736
+-  .clock                         : 80363.072863
++  .curr->pid                     : 4746
++  .clock                         : 100239.072955
+   .idle_clock                    : 0.000000
+-  .prev_clock_raw                : 204876.445696
++  .prev_clock_raw                : 224892.259968
+   .clock_warps                   : 0
+-  .clock_overflows               : 114542
++  .clock_overflows               : 119985
+   .clock_deep_idle_events        : 0
+   .clock_max_delta               : 0.999936
+-  .cpu_load[0]                   : 9971
+-  .cpu_load[1]                   : 9948
+-  .cpu_load[2]                   : 9733
+-  .cpu_load[3]                   : 8396
+-  .cpu_load[4]                   : 5996
++  .cpu_load[0]                   : 4364
++  .cpu_load[1]                   : 3979
++  .cpu_load[2]                   : 3443
++  .cpu_load[3]                   : 3331
++  .cpu_load[4]                   : 3268
  
--static void cell_iommu_setup_hardware(struct cbe_iommu *iommu, unsigned long size)
-+static void cell_iommu_setup_static_ptab(struct cbe_iommu *iommu,
-+	struct device_node *np, unsigned long dbase, unsigned long dsize,
-+	unsigned long sbase, unsigned long ssize)
-+{
-+	unsigned long ioid, prot, base_pte, uaddr, *io_pte;
-+	const unsigned int *p;
-+	int i;
-+
-+	cell_dma_static_base = sbase;
-+
-+	p = of_get_property(np, "ioid", NULL);
-+	ioid = p ? *p : 0;
-+
-+	prot = 0xc48UL << (52 + 4 * DMA_BIDIRECTIONAL);
-+
-+	base_pte = (prot & (IOPTE_PP_W | IOPTE_PP_R))
-+		    | IOPTE_M | IOPTE_SO_RW | (ioid & IOPTE_IOID_Mask);
-+
-+	/* convert from bytes into ptab indices */
-+	dbase = dbase >> IOMMU_PAGE_SHIFT;
-+	dsize = dsize >> IOMMU_PAGE_SHIFT;
-+	sbase = sbase >> IOMMU_PAGE_SHIFT;
-+	ssize = ssize >> IOMMU_PAGE_SHIFT;
-+
-+	io_pte = iommu->ptab;
-+
-+	pr_debug("iommu: mapping 0x%lx pages from 0x%lx\n", ssize, sbase);
-+
-+	uaddr = 0;
-+	for (i = sbase; i < sbase + ssize; i++, uaddr += IOMMU_PAGE_SIZE) {
-+		/* Don't touch the dynamic region */
-+		if (i >= dbase && i < (dbase + dsize)) {
-+			pr_debug("iommu: static/dynamic overlap, skipping\n");
-+			continue;
-+		}
-+		io_pte[i] = base_pte | (__pa(uaddr) & IOPTE_RPN_Mask);
-+	}
-+
-+	mb();
-+}
-+
-+static void cell_iommu_setup_page_tables(struct cbe_iommu *iommu,
-+		unsigned long dbase, unsigned long dsize,
-+		unsigned long sbase, unsigned long ssize)
- {
--	struct page *page;
--	int ret, i;
- 	unsigned long reg, segments, pages_per_segment, ptab_size, stab_size,
--		      n_pte_pages, xlate_base;
--	unsigned int virq;
-+		      n_pte_pages, end, base, size, offset;
-+	struct page *page;
-+	int i;
+ cfs_rq
+-  .exec_clock                    : 60747.682602
+-  .MIN_vruntime                  : 35455.964402
+-  .min_vruntime                  : 35455.964402
+-  .max_vruntime                  : 35455.964402
+-  .spread                        : 0.000000
++  .exec_clock                    : 80597.780820
++  .MIN_vruntime                  : 54813.436178
++  .min_vruntime                  : 54813.436178
++  .max_vruntime                  : 54818.646546
++  .spread                        : 5.210368
+   .spread0                       : 0.000000
+-  .nr_running                    : 2
+-  .load                          : 3072
++  .nr_running                    : 3
++  .load                          : 4096
+   .bkl_count                     : 0
+   .nr_spread_over                : 0
  
--	if (cell_iommu_find_ioc(iommu->nid, &xlate_base))
--		panic("%s: missing IOC register mappings for node %d\n",
--		      __FUNCTION__, iommu->nid);
-+	end = max(dbase + dsize, sbase + ssize);
-+	base = dbase;
-+	if (ssize != 0)
-+		base = min(sbase, dbase);
+ cfs_rq
+-  .exec_clock                    : 1.407424
+-  .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
+-  .max_vruntime                  : 0.000001
++  .exec_clock                    : 19353.983950
++  .MIN_vruntime                  : 1362837.967264
++  .min_vruntime                  : 54813.436178
++  .max_vruntime                  : 1362837.967264
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+-  .nr_running                    : 0
+-  .load                          : 0
++  .nr_running                    : 1
++  .load                          : 15
+   .bkl_count                     : 0
+   .nr_spread_over                : 0
  
--	iommu->xlate_regs = ioremap(xlate_base, IOC_Reg_Size);
--	iommu->cmd_regs = iommu->xlate_regs + IOC_IOCmd_Offset;
-+	size = end - base;
+ cfs_rq
+-  .exec_clock                    : 9247.295261
+-  .MIN_vruntime                  : 41795.173040
+-  .min_vruntime                  : 35455.964402
+-  .max_vruntime                  : 41795.173040
++  .exec_clock                    : 9397.906333
++  .MIN_vruntime                  : 41843.822192
++  .min_vruntime                  : 54813.436178
++  .max_vruntime                  : 41843.822192
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+   .nr_running                    : 2
+@@ -68,7 +68,7 @@ cfs_rq
+ cfs_rq
+   .exec_clock                    : 0.997824
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -78,9 +78,9 @@ cfs_rq
+   .nr_spread_over                : 0
  
--	segments = size >> IO_SEGMENT_SHIFT;
-+	segments = end >> IO_SEGMENT_SHIFT;
- 	pages_per_segment = 1ull << IO_PAGENO_BITS;
+ cfs_rq
+-  .exec_clock                    : 84.409635
++  .exec_clock                    : 85.106979
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -90,9 +90,9 @@ cfs_rq
+   .nr_spread_over                : 0
  
- 	pr_debug("%s: iommu[%d]: segments: %lu, pages per segment: %lu\n",
-@@ -372,12 +418,29 @@ static void cell_iommu_setup_hardware(struct cbe_iommu *iommu, unsigned long siz
- 		__unknown_page_size_error();
- 	}
+ cfs_rq
+-  .exec_clock                    : 93.714624
++  .exec_clock                    : 94.005568
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -104,7 +104,7 @@ cfs_rq
+ cfs_rq
+   .exec_clock                    : 76.941956
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -114,9 +114,9 @@ cfs_rq
+   .nr_spread_over                : 0
  
-+	pr_debug("iommu: stab init i = 0x%lx end = 0x%lx\n",
-+		 base >> IO_SEGMENT_SHIFT, end >> IO_SEGMENT_SHIFT);
-+
- 	pr_debug("Setting up IOMMU stab:\n");
--	for (i = 0; i * (1ul << IO_SEGMENT_SHIFT) < size; i++) {
--		iommu->stab[i] = reg |
--			(__pa(iommu->ptab) + n_pte_pages * IOMMU_PAGE_SIZE * i);
--		pr_debug("\t[%d] 0x%016lx\n", i, iommu->stab[i]);
-+	for (i = base >> IO_SEGMENT_SHIFT; i < segments; i++) {
-+		offset = n_pte_pages * IOMMU_PAGE_SIZE * i;
-+		iommu->stab[i] = reg | (__pa(iommu->ptab) + offset);
-+		pr_debug("\t[%d] 0x%016lx (offset %lx)\n", i, iommu->stab[i], offset);
- 	}
-+}
-+
-+static void cell_iommu_enable_hardware(struct cbe_iommu *iommu)
-+{
-+	int ret;
-+	unsigned long reg, xlate_base;
-+	unsigned int virq;
-+
-+	if (cell_iommu_find_ioc(iommu->nid, &xlate_base))
-+		panic("%s: missing IOC register mappings for node %d\n",
-+		      __FUNCTION__, iommu->nid);
-+
-+	iommu->xlate_regs = ioremap(xlate_base, IOC_Reg_Size);
-+	iommu->cmd_regs = iommu->xlate_regs + IOC_IOCmd_Offset;
+ cfs_rq
+-  .exec_clock                    : 489.676070
++  .exec_clock                    : 496.666022
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -126,9 +126,9 @@ cfs_rq
+   .nr_spread_over                : 0
  
- 	/* ensure that the STEs have updated */
- 	mb();
-@@ -407,6 +470,13 @@ static void cell_iommu_setup_hardware(struct cbe_iommu *iommu, unsigned long siz
- 	out_be64(iommu->cmd_regs + IOC_IOCmd_Cfg, reg);
- }
+ cfs_rq
+-  .exec_clock                    : 6.610804
++  .exec_clock                    : 7.357556
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -140,7 +140,7 @@ cfs_rq
+ cfs_rq
+   .exec_clock                    : 9.548608
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -152,7 +152,7 @@ cfs_rq
+ cfs_rq
+   .exec_clock                    : 130.004741
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -164,7 +164,7 @@ cfs_rq
+ cfs_rq
+   .exec_clock                    : 5.477635
+   .MIN_vruntime                  : 0.000001
+-  .min_vruntime                  : 35455.964402
++  .min_vruntime                  : 54813.436178
+   .max_vruntime                  : 0.000001
+   .spread                        : 0.000000
+   .spread0                       : 0.000000
+@@ -174,24 +174,23 @@ cfs_rq
+   .nr_spread_over                : 0
  
-+static void cell_iommu_setup_hardware(struct cbe_iommu *iommu,
-+	unsigned long base, unsigned long size)
-+{
-+	cell_iommu_setup_page_tables(iommu, base, size, 0, 0);
-+	cell_iommu_enable_hardware(iommu);
-+}
-+
- #if 0/* Unused for now */
- static struct iommu_window *find_window(struct cbe_iommu *iommu,
- 		unsigned long offset, unsigned long size)
-@@ -491,7 +561,60 @@ static struct cbe_iommu *cell_iommu_for_node(int nid)
- 	return NULL;
- }
+ cfs_rq
+-  .exec_clock                    : 47873.754074
+-  .MIN_vruntime                  : 41804.982498
+-  .min_vruntime                  : 35455.964402
+-  .max_vruntime                  : 41827.144008
+-  .spread                        : 22.161510
++  .exec_clock                    : 48211.939702
++  .MIN_vruntime                  : 42001.676760
++  .min_vruntime                  : 54813.436178
++  .max_vruntime                  : 42013.220923
++  .spread                        : 11.544163
+   .spread0                       : 0.000000
+-  .nr_running                    : 4
+-  .load                          : 7923
++  .nr_running                    : 2
++  .load                          : 2301
+   .bkl_count                     : 0
+   .nr_spread_over                : 8
  
--static unsigned long cell_dma_direct_offset;
-+u64 cell_iommu_get_static_address(struct device *dev)
-+{
-+	struct device_node *tmp, *np = dev->archdata.of_node;
-+	const u32 *ranges = NULL;
-+	int i, len, best;
-+	u32 pci_space;
-+	u64 pci_addr, parent_addr, cpu_addr, size, best_size;
-+
-+	of_node_get(np);
-+	ranges = of_get_property(np, "dma-ranges", &len);
-+	while (!ranges && np) {
-+		tmp = of_get_parent(np);
-+		of_node_put(np);
-+		np = tmp;
-+		ranges = of_get_property(np, "dma-ranges", &len);
-+	}
-+
-+	if (!ranges) {
-+		pr_debug("iommu: no dma-ranges\n");
-+		pci_addr = OF_BAD_ADDR;
-+		goto out;
-+	}
-+
-+	len /= 4;
-+	best = -1;
-+	best_size = 0;
-+	i = 0;
-+	while (i < len) {
-+		pci_space = ranges[i];
-+		pci_addr = of_read_number(ranges + i + 1, 2);
-+		parent_addr = of_read_number(ranges + i + 3, 2);
-+		size = of_read_number(ranges + i + 5, 2);
-+		cpu_addr = of_translate_dma_address(np, ranges + i + 3);
-+
-+		if (cpu_addr == 0 && size > best_size) {
-+			best = i;
-+			best_size = size;
-+		}
-+
-+		i += 7;
-+	}
-+
-+	if (best == -1) {
-+		pr_debug("iommu: no suitable range found!\n");
-+		pci_addr = OF_BAD_ADDR;
-+	} else {
-+		pr_debug("iommu: passthrough range is %d\n", best);
-+		pci_addr = of_read_number(ranges + best + 1, 2);
-+	}
-+
-+out:
-+	of_node_put(np);
-+	return pci_addr;
-+}
- 
- static void cell_dma_dev_setup(struct device *dev)
- {
-@@ -499,9 +622,16 @@ static void cell_dma_dev_setup(struct device *dev)
- 	struct cbe_iommu *iommu;
- 	struct dev_archdata *archdata = &dev->archdata;
- 
--	if (get_pci_dma_ops() == &dma_direct_ops) {
-+	if (get_dma_ops(dev) == &dma_direct_ops) {
- 		archdata->dma_data = (void *)cell_dma_direct_offset;
- 		return;
-+	} else if (get_dma_ops(dev) == &cell_dma_static_ops) {
-+		u64 addr;
-+		addr  = cell_iommu_get_static_address(dev);
-+		addr += cell_dma_static_base;
-+		pr_debug("iommu: addr = %lx\n", addr);
-+		archdata->dma_data = (void *)addr;
-+		return;
- 	}
- 
- 	/* Current implementation uses the first window available in that
-@@ -565,10 +695,9 @@ static int __init cell_iommu_get_window(struct device_node *np,
- 	return 0;
- }
- 
--static void __init cell_iommu_init_one(struct device_node *np, unsigned long offset)
-+static struct cbe_iommu *cell_iommu_alloc(struct device_node *np)
- {
- 	struct cbe_iommu *iommu;
--	unsigned long base, size;
- 	int nid, i;
- 
- 	/* Get node ID */
-@@ -576,7 +705,7 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
- 	if (nid < 0) {
- 		printk(KERN_ERR "iommu: failed to get node for %s\n",
- 		       np->full_name);
--		return;
-+		return NULL;
- 	}
- 	pr_debug("iommu: setting up iommu for node %d (%s)\n",
- 		 nid, np->full_name);
-@@ -588,11 +717,10 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
- 	 * ignore that for now. We might want to completely get rid of the
- 	 * multiple window support since the cell iommu supports per-page ioids
- 	 */
--
- 	if (cbe_nr_iommus >= NR_IOMMUS) {
- 		printk(KERN_ERR "iommu: too many IOMMUs detected ! (%s)\n",
- 		       np->full_name);
--		return;
-+		return NULL;
- 	}
- 
- 	/* Init base fields */
-@@ -603,6 +731,16 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
- 	snprintf(iommu->name, sizeof(iommu->name), "iommu%d", i);
- 	INIT_LIST_HEAD(&iommu->windows);
- 
-+	return iommu;
-+}
-+
-+static void __init cell_iommu_init_one(struct device_node *np, unsigned long offset)
-+{
-+	struct cbe_iommu *iommu;
-+	unsigned long base, size;
-+
-+	iommu = cell_iommu_alloc(np);
-+
- 	/* Obtain a window for it */
- 	cell_iommu_get_window(np, &base, &size);
- 
-@@ -610,7 +748,7 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
- 		 base, base + size - 1);
- 
- 	/* Initialize the hardware */
--	cell_iommu_setup_hardware(iommu, size);
-+	cell_iommu_setup_hardware(iommu, base, size);
- 
- 	/* Setup the iommu_table */
- 	cell_iommu_setup_window(iommu, np, base, size,
-@@ -643,6 +781,14 @@ static void __init cell_disable_iommus(void)
- 
- 		iounmap(xregs);
- 	}
-+
-+#if 0
-+	for (i = 0; i < cbe_nr_iommus; i++) {
-+		/* todo free stuff */
-+	}
-+#endif
-+
-+	cbe_nr_iommus = 0;
- }
- 
- static int __init cell_iommu_init_disabled(void)
-@@ -703,6 +849,129 @@ static int __init cell_iommu_init_disabled(void)
- 	return 0;
- }
- 
-+static int cell_dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
-+{
-+	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
-+		return -EIO;
-+
-+	if (dma_mask == DMA_BIT_MASK(64)) {
-+		if (cell_iommu_get_static_address(dev) == OF_BAD_ADDR)
-+			dev_dbg(dev, "iommu: 64-bit OK, but bad addr\n");
-+		else {
-+			dev_dbg(dev, "iommu: 64-bit OK, using direct ops\n");
-+			set_dma_ops(dev, &cell_dma_static_ops);
-+			cell_dma_dev_setup(dev);
-+		}
-+	} else {
-+		dev_dbg(dev, "iommu: < 64-bit, using default ops\n");
-+		set_dma_ops(dev, get_pci_dma_ops());
-+	}
-+
-+	*dev->dma_mask = dma_mask;
-+
-+	return 0;
-+}
-+
-+static int __init cell_iommu_static_init(void)
-+{
-+	unsigned long dbase, dsize, sbase, ssize, hbase, hend;
-+	struct cbe_iommu *iommu;
-+	struct device_node *np;
-+
-+	/* The static mapping is only supported on axon machines */
-+	np = of_find_node_by_name(NULL, "axon");
-+	if (!np) {
-+		pr_debug("iommu: static mapping disabled, no axons found\n");
-+		return -1;
-+	}
-+
-+	/* The default setup is to have the static mapping sit after the
-+	 * dynamic region, so find the top of the largest IOMMU window
-+	 * on any axon, then add the size of RAM and that's our max value.
-+	 * If that is > 32GB we have to do other shennanigans.
-+	 */
-+	sbase = 0;
-+	for_each_node_by_name(np, "axon") {
-+		cell_iommu_get_window(np, &dbase, &dsize);
-+		sbase = max(sbase, dbase + dsize);
-+	}
-+
-+	sbase = _ALIGN_UP(sbase, 1 << IO_SEGMENT_SHIFT);
-+	ssize = lmb_phys_mem_size();
-+
-+	if ((sbase + ssize) <= 0x800000000)
-+		hbase = 0; /* use the device tree window */
-+	else {
-+		/* If we're over 32 GB we need to cheat. We can't map all of
-+		 * RAM with the static mapping, and also fit the dynamic
-+		 * region. So try to place the dynamic region where the hash
-+		 * table sits, drivers never need to DMA to it, we don't
-+		 * need a static mapping for that area.
-+		 */
-+		if (!htab_address) {
-+			pr_debug("iommu: htab is NULL, on LPAR? Huh?\n");
-+			return -1;
-+		}
-+		hbase = __pa(htab_address);
-+		hend  = hbase + htab_size_bytes;
-+
-+		/* The window must start and end on a segment boundary */
-+		if ((hbase != _ALIGN_UP(hbase, 1 << IO_SEGMENT_SHIFT)) ||
-+		    (hend != _ALIGN_UP(hend, 1 << IO_SEGMENT_SHIFT))) {
-+			pr_debug("iommu: hash window not segment aligned\n");
-+			return -1;
-+		}
-+
-+		/* Check the hash window fits inside the real DMA window */
-+		for_each_node_by_name(np, "axon") {
-+			cell_iommu_get_window(np, &dbase, &dsize);
-+
-+			if (hbase < dbase || (hend > (dbase + dsize))) {
-+				pr_debug("iommu: hash window doesn't fit in"
-+					 "real DMA window\n");
-+				return -1;
-+			}
-+		}
-+
-+		sbase = 0;
-+	}
-+
-+	/* Setup the dynamic regions */
-+	for_each_node_by_name(np, "axon") {
-+		iommu = cell_iommu_alloc(np);
-+		if (!iommu) {
-+			pr_debug("iommu: couldn't allocate iommu\n");
-+			cell_disable_iommus();
-+			return -1;
-+		}
-+
-+		if (hbase == 0)
-+			cell_iommu_get_window(np, &dbase, &dsize);
-+		else {
-+			dbase = hbase;
-+			dsize = htab_size_bytes;
-+		}
-+
-+		pr_debug("iommu: setting up %d, dynamic window %lx-%lx " \
-+			 "static window %lx-%lx\n", iommu->nid, dbase,
-+			 dbase + dsize, sbase, sbase + ssize);
-+
-+		cell_iommu_setup_page_tables(iommu, dbase, dsize, sbase, ssize);
-+		cell_iommu_setup_static_ptab(iommu, np, dbase, dsize,
-+					     sbase, ssize);
-+		cell_iommu_enable_hardware(iommu);
-+		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
-+	}
-+
-+	cell_dma_static_ops = dma_direct_ops;
-+	cell_dma_static_ops.set_dma_mask = cell_dma_set_mask_and_switch;
-+
-+	dma_iommu_ops.set_dma_mask = cell_dma_set_mask_and_switch;
-+	set_pci_dma_ops(&dma_iommu_ops);
-+
-+	return 0;
-+}
-+
- static int __init cell_iommu_init(void)
- {
- 	struct device_node *np;
-@@ -722,6 +991,9 @@ static int __init cell_iommu_init(void)
- 	ppc_md.tce_build = tce_build_cell;
- 	ppc_md.tce_free = tce_free_cell;
- 
-+	if (cell_iommu_static_init() == 0)
-+		goto bail;
-+
- 	/* Create an iommu for each /axon node.  */
- 	for_each_node_by_name(np, "axon") {
- 		if (np->parent == NULL || np->parent->parent != NULL)
+ runnable tasks:
+             task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+ ----------------------------------------------------------------------------------------------------------
+-       kblockd/0    61     41804.982498      5110   115     41804.982498        24.883015     78433.943969
+-           udevd  1304     41827.144008       686   116     41827.144008       425.666176     63782.106879
+-      pbbuttonsd  3878     41805.034397     20351   120     41805.034397       453.425277     41231.848603
+-            Xorg  4574     41824.962717     12488   119     41824.962717      4933.764004     24971.603455
+-             zsh  4675     41795.173040       631   120     41795.173040       301.572431     24901.348163
+-R            cat  4736     41787.850967         0   120     41787.850967         3.696000         0.000000
++      pbbuttonsd  3878     42001.676760     22659   120     42001.676760       506.463055     52940.745088
++            Xorg  4574     42013.220923     15439   119     42013.220923      5168.535269     27513.009418
++             zsh  4675     41843.822192       634   120     41843.822192       302.744207     44763.221535
++              sh  4734   1362837.967264      2791   139   1362837.967264     19352.994638        47.795532
++R            cat  4746     41816.398384         0   120     41816.398384         2.149568         0.000000
+
+
+
 -- 
-1.5.2.rc1.1884.g59b20
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
+
+--=-/wAgnnZ9I3bYUPj04iwm
+Content-Disposition: attachment; filename=sched_debug.after
+Content-Type: text/plain; name=sched_debug.after; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Sched Debug Version: v0.07, 2.6.24-rc8 #4
+now at 224908.343840 msecs
+  .sysctl_sched_latency                    : 20.000000
+  .sysctl_sched_min_granularity            : 4.000000
+  .sysctl_sched_wakeup_granularity         : 10.000000
+  .sysctl_sched_batch_wakeup_granularity   : 10.000000
+  .sysctl_sched_child_runs_first           : 0.000001
+  .sysctl_sched_features                   : 7
+
+cpu#0
+  .nr_running                    : 5
+  .load                          : 4364
+  .nr_switches                   : 142978
+  .nr_load_updates               : 100239
+  .nr_uninterruptible            : 0
+  .jiffies                       : 4294892204
+  .next_balance                  : 0.000000
+  .curr->pid                     : 4746
+  .clock                         : 100239.072955
+  .idle_clock                    : 0.000000
+  .prev_clock_raw                : 224892.259968
+  .clock_warps                   : 0
+  .clock_overflows               : 119985
+  .clock_deep_idle_events        : 0
+  .clock_max_delta               : 0.999936
+  .cpu_load[0]                   : 4364
+  .cpu_load[1]                   : 3979
+  .cpu_load[2]                   : 3443
+  .cpu_load[3]                   : 3331
+  .cpu_load[4]                   : 3268
+
+cfs_rq
+  .exec_clock                    : 80597.780820
+  .MIN_vruntime                  : 54813.436178
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 54818.646546
+  .spread                        : 5.210368
+  .spread0                       : 0.000000
+  .nr_running                    : 3
+  .load                          : 4096
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 19353.983950
+  .MIN_vruntime                  : 1362837.967264
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 1362837.967264
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 1
+  .load                          : 15
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 9397.906333
+  .MIN_vruntime                  : 41843.822192
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 41843.822192
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 2
+  .load                          : 2048
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 0.997824
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 85.106979
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 94.005568
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 76.941956
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 496.666022
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 7.357556
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 9.548608
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 130.004741
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 5.477635
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 48211.939702
+  .MIN_vruntime                  : 42001.676760
+  .min_vruntime                  : 54813.436178
+  .max_vruntime                  : 42013.220923
+  .spread                        : 11.544163
+  .spread0                       : 0.000000
+  .nr_running                    : 2
+  .load                          : 2301
+  .bkl_count                     : 0
+  .nr_spread_over                : 8
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+      pbbuttonsd  3878     42001.676760     22659   120     42001.676760       506.463055     52940.745088
+            Xorg  4574     42013.220923     15439   119     42013.220923      5168.535269     27513.009418
+             zsh  4675     41843.822192       634   120     41843.822192       302.744207     44763.221535
+              sh  4734   1362837.967264      2791   139   1362837.967264     19352.994638        47.795532
+R            cat  4746     41816.398384         0   120     41816.398384         2.149568         0.000000
+
+
+--=-/wAgnnZ9I3bYUPj04iwm
+Content-Disposition: attachment; filename=sched_debug.before
+Content-Type: text/plain; name=sched_debug.before; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Sched Debug Version: v0.07, 2.6.24-rc8 #4
+now at 204890.233650 msecs
+  .sysctl_sched_latency                    : 20.000000
+  .sysctl_sched_min_granularity            : 4.000000
+  .sysctl_sched_wakeup_granularity         : 10.000000
+  .sysctl_sched_batch_wakeup_granularity   : 10.000000
+  .sysctl_sched_child_runs_first           : 0.000001
+  .sysctl_sched_features                   : 7
+
+cpu#0
+  .nr_running                    : 6
+  .load                          : 9971
+  .nr_switches                   : 133199
+  .nr_load_updates               : 80363
+  .nr_uninterruptible            : 2
+  .jiffies                       : 4294872186
+  .next_balance                  : 0.000000
+  .curr->pid                     : 4736
+  .clock                         : 80363.072863
+  .idle_clock                    : 0.000000
+  .prev_clock_raw                : 204876.445696
+  .clock_warps                   : 0
+  .clock_overflows               : 114542
+  .clock_deep_idle_events        : 0
+  .clock_max_delta               : 0.999936
+  .cpu_load[0]                   : 9971
+  .cpu_load[1]                   : 9948
+  .cpu_load[2]                   : 9733
+  .cpu_load[3]                   : 8396
+  .cpu_load[4]                   : 5996
+
+cfs_rq
+  .exec_clock                    : 60747.682602
+  .MIN_vruntime                  : 35455.964402
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 35455.964402
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 2
+  .load                          : 3072
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 1.407424
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 9247.295261
+  .MIN_vruntime                  : 41795.173040
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 41795.173040
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 2
+  .load                          : 2048
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 0.997824
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 84.409635
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 93.714624
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 76.941956
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 489.676070
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 6.610804
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 9.548608
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 130.004741
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 5.477635
+  .MIN_vruntime                  : 0.000001
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 0.000001
+  .spread                        : 0.000000
+  .spread0                       : 0.000000
+  .nr_running                    : 0
+  .load                          : 0
+  .bkl_count                     : 0
+  .nr_spread_over                : 0
+
+cfs_rq
+  .exec_clock                    : 47873.754074
+  .MIN_vruntime                  : 41804.982498
+  .min_vruntime                  : 35455.964402
+  .max_vruntime                  : 41827.144008
+  .spread                        : 22.161510
+  .spread0                       : 0.000000
+  .nr_running                    : 4
+  .load                          : 7923
+  .bkl_count                     : 0
+  .nr_spread_over                : 8
+
+runnable tasks:
+            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
+----------------------------------------------------------------------------------------------------------
+       kblockd/0    61     41804.982498      5110   115     41804.982498        24.883015     78433.943969
+           udevd  1304     41827.144008       686   116     41827.144008       425.666176     63782.106879
+      pbbuttonsd  3878     41805.034397     20351   120     41805.034397       453.425277     41231.848603
+            Xorg  4574     41824.962717     12488   119     41824.962717      4933.764004     24971.603455
+             zsh  4675     41795.173040       631   120     41795.173040       301.572431     24901.348163
+R            cat  4736     41787.850967         0   120     41787.850967         3.696000         0.000000
+
+
+--=-/wAgnnZ9I3bYUPj04iwm--
