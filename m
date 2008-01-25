@@ -4,14 +4,13 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37D2CDDE18
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 13:46:07 +1100 (EST)
-Date: Thu, 24 Jan 2008 20:46:00 -0600
+	by ozlabs.org (Postfix) with ESMTP id 0515EDDE11
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 13:46:14 +1100 (EST)
+Date: Thu, 24 Jan 2008 20:46:06 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/9] powerpc: add base platform support for the mpc8315 rdb
-	board
-Message-Id: <20080124204600.d16c5142.kim.phillips@freescale.com>
+Subject: [PATCH 3/9] powerpc: Add the MPC8315E RDB dts
+Message-Id: <20080124204606.53bd2a1b.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,40 +22,310 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-mpc8315 identical to mpc8313 here, just check compatible.
+Add the dts for the MPC8315E Reference Development Board (RDB).
 
+The board is a mini-ITX reference board with 128M DDR2, 8M flash,
+32M NAND, USB, PCI, gigabit ethernet, SATA, and serial.
+
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
- arch/powerpc/platforms/83xx/Kconfig       |    2 +-
- arch/powerpc/platforms/83xx/mpc831x_rdb.c |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/mpc8315erdb.dts |  287 +++++++++++++++++++++++++++++++++
+ 1 files changed, 287 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8315erdb.dts
 
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index faaa651..b478312 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -7,7 +7,7 @@ config MPC831x_RDB
- 	bool "Freescale MPC831x RDB"
- 	select DEFAULT_UIMAGE
- 	help
--	  This option enables support for the MPC8313 RDB board.
-+	  This option enables support for the MPC8313 RDB and MPC8315 RDB boards.
- 
- config MPC832x_MDS
- 	bool "Freescale MPC832x MDS"
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index b484b2b..c4db517 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -64,7 +64,8 @@ static int __init mpc831x_rdb_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	return of_flat_dt_is_compatible(root, "MPC8313ERDB");
-+	return of_flat_dt_is_compatible(root, "MPC8313ERDB") ||
-+	       of_flat_dt_is_compatible(root, "fsl,mpc8315erdb");
- }
- 
- static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+new file mode 100644
+index 0000000..05c972a
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -0,0 +1,287 @@
++/*
++ * MPC8315E RDB Device Tree Source
++ *
++ * Copyright 2007 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	compatible = "fsl,mpc8315erdb";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8315@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <16384>;
++			i-cache-size = <16384>;
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>;	// 128MB at 0
++	};
++
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8315-elbc", "fsl,elbc", "simple-bus";
++		reg = <0xe0005000 0x1000>;
++		interrupts = <77 8>;
++		interrupt-parent = <&ipic>;
++
++		// CS0 and CS1 are swapped when
++		// booting from nand, but the
++		// addresses are the same.
++		ranges = <0 0 0xfe000000 0x00800000
++		          1 0 0xe0600000 0x00002000
++		          2 0 0xf0000000 0x00020000
++		          3 0 0xfa000000 0x00008000>;
++
++		flash@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0 0 0x800000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		nand@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8315-fcm-nand",
++			             "fsl,elbc-fcm-nand";
++			reg = <1 0 0x2000>;
++
++			u-boot@0 {
++				reg = <0x0 0x100000>;
++				read-only;
++			};
++
++			kernel@100000 {
++				reg = <0x100000 0x300000>;
++			};
++			fs@400000 {
++				reg = <0x400000 0x1c00000>;
++			};
++		};
++	};
++
++	immr@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "simple-bus";
++		ranges = <0 0xe0000000 0x00100000>;
++		reg = <0xe0000000 0x00000200>;
++		bus-frequency = <0>;
++
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <0x200 0x100>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <14 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++			rtc@68 {
++				device_type = "rtc";
++				compatible = "dallas,ds1339";
++				reg = <0x68>;
++			};
++		};
++
++		spi@7000 {
++			device_type = "spi";
++			compatible = "fsl_spi";
++			reg = <0x7000 0x1000>;
++			interrupts = <16 8>;
++			interrupt-parent = < &ipic >;
++			mode = "cpu";
++		};
++
++		usb@23000 {
++			compatible = "fsl-usb2-dr";
++			reg = <0x23000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = < &ipic >;
++			interrupts = <38 8>;
++			phy_type = "utmi";
++		};
++
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,gianfar-mdio";
++			reg = <0x24520 0x20>;
++			phy0: ethernet-phy@0 {
++				interrupt-parent = < &ipic >;
++				interrupts = <20 8>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			phy1: ethernet-phy@1 {
++				interrupt-parent = < &ipic >;
++				interrupts = <19 8>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		enet0: ethernet@24000 {
++			cell-index = <0>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <32 8 33 8 34 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy0 >;
++		};
++
++		enet1: ethernet@25000 {
++			cell-index = <1>;
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <35 8 36 8 37 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy1 >;
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <9 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <10 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		crypto@30000 {
++			model = "SEC3";
++			device_type = "crypto";
++			compatible = "talitos";
++			reg = <0x30000 0x10000>;
++			interrupts = <11 8>;
++			interrupt-parent = < &ipic >;
++			/* Rev. 3.0 geometry */
++			num-channels = <4>;
++			channel-fifo-len = <24>;
++			exec-units-mask = <0x000001fe>;
++			descriptor-types-mask = <0x03ab0ebf>;
++		};
++
++		sata@18000 {
++			compatible = "fsl,mpc8315-sata", "fsl,pq-sata";
++			reg = <0x18000 0x1000>;
++			cell-index = <1>;
++			interrupts = <44 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		sata@19000 {
++			compatible = "fsl,mpc8315-sata", "fsl,pq-sata";
++			reg = <0x19000 0x1000>;
++			cell-index = <2>;
++			interrupts = <45 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense values match linux IORESOURCE_IRQ_* defines:
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		ipic: interrupt-controller@700 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x700 0x100>;
++			device_type = "ipic";
++		};
++	};
++
++	pci0: pci@e0008500 {
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++				/* IDSEL 0x0E -mini PCI */
++				 0x7000 0 0 1 &ipic 18 8
++				 0x7000 0 0 2 &ipic 18 8
++				 0x7000 0 0 3 &ipic 18 8
++				 0x7000 0 0 4 &ipic 18 8
++
++				/* IDSEL 0x0F -mini PCI */
++				 0x7800 0 0 1 &ipic 17 8
++				 0x7800 0 0 2 &ipic 17 8
++				 0x7800 0 0 3 &ipic 17 8
++				 0x7800 0 0 4 &ipic 17 8
++
++				/* IDSEL 0x10 - PCI slot */
++				 0x8000 0 0 1 &ipic 48 8
++				 0x8000 0 0 2 &ipic 17 8
++				 0x8000 0 0 3 &ipic 48 8
++				 0x8000 0 0 4 &ipic 17 8>;
++		interrupt-parent = < &ipic >;
++		interrupts = <66 8>;
++		bus-range = <0 0>;
++		ranges = <0x02000000 0 0x90000000 0x90000000 0 0x10000000
++			  0x42000000 0 0x80000000 0x80000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xe0300000 0 0x00100000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xe0008500 0x100>;
++		compatible = "fsl,mpc8349-pci";
++		device_type = "pci";
++	};
++};
 -- 
 1.5.2.2
