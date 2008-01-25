@@ -1,21 +1,35 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate8.uk.ibm.com (mtagate8.uk.ibm.com [195.212.29.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A31CDDE13A
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 03:08:47 +1100 (EST)
-Date: Fri, 25 Jan 2008 10:08:20 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] [POWERPC] 85xx: Port STX GP3 board over from arch/ppc
-Message-ID: <20080125160820.GA7750@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0801242245390.22024@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0801242245390.22024@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mtagate8.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B0865DDE2A
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 10:50:21 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate8.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m0PKBGnR089238
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 20:11:16 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m0PKBGgr5058596
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 20:11:16 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m0PKBCXm007706
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 20:11:13 GMT
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 0/2] IB/ehca: PMA support and a minor fix
+MIME-Version: 1.0
+Date: Fri, 25 Jan 2008 21:11:11 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801252111.11915.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 24, 2008 at 10:47:21PM -0600, Kumar Gala wrote:
-> +	soc8560@fdf00000 {
+This patchset will fix a minor issue and then add support for Performance
+MADs, which redirects all PMA queries to the actual PMA QP.
 
-soc@fdf00000
+[1/2] adds a missing query_pma_attr()
+[2/2] adds PMA redirection code
 
--Scott
-> +		cpm@919c0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,mpc8560-cpm", "fsl,cpm2";
+The patches will apply, in order, on top of Roland's for-2.6.25 branch.
+Please review them and apply for 2.6.25 if you think they're okay.
 
-This is also a simple-bus.
+Thanks and regards,
+  Joachim
 
-> +static struct of_device_id __initdata of_bus_ids[] = {
-> +	{ .name = "soc", },
-> +	{ .type = "soc", },
-> +	{ .name = "cpm", },
-> +	{ .name = "localbus", },
-> +	{ .compatible = "simple-bus", },
-> +	{},
-> +};
-
-You should be able to get rid of the others besides simple-bus (there may
-have been some confusion in what you asked over IRC yesterday -- I
-thought you were talking about compatible in the device tree, not here).
-
--Scott
+-- 
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com
