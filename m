@@ -1,21 +1,19 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C92BEDDED6
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 01:34:35 +1100 (EST)
-Message-ID: <4799F349.9090102@scram.de>
-Date: Fri, 25 Jan 2008 15:33:45 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: "Garzik, Jeff" <jgarzik@pobox.com>
-Subject: [PATCH] [NET]: Remove PowerPC code from fec.c
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linux-m68k@vger.kernel.org, "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	Scott Wood <scottwood@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8B8B0DDE06
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 01:37:18 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 5C5468810
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 19:37:26 +0400 (SAMT)
+Date: Fri, 25 Jan 2008 17:37:00 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 6/5] [POWERPC] get rid of `model = "UCC"' in the ucc nodes
+Message-ID: <20080125143700.GA24027@localhost.localdomain>
+References: <20080124151850.GA15190@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080124151850.GA15190@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,196 +23,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-fec.c is only used on M68k Coldfire CPUs. Remove leftover
-PowerPC code from this driver.
+It isn't used anywhere, so remove it. If we'll ever need something
+like this, we'll use compatible property instead.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/fec.c |  136 +---------------------------------------------------
- 1 files changed, 3 insertions(+), 133 deletions(-)
 
-diff --git a/drivers/net/fec.c b/drivers/net/fec.c
-index 0fbf1bb..0499cbb 100644
---- a/drivers/net/fec.c
-+++ b/drivers/net/fec.c
-@@ -23,6 +23,9 @@
-  *
-  * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
-  * Copyright (c) 2004-2006 Macq Electronique SA.
-+ *
-+ * This driver is now only used on ColdFire processors. Remove conditional
-+ * Powerpc code.
-  */
- 
- #include <linux/module.h>
-@@ -49,17 +52,9 @@
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
- 
--#if defined(CONFIG_M523x) || defined(CONFIG_M527x) || \
--    defined(CONFIG_M5272) || defined(CONFIG_M528x) || \
--    defined(CONFIG_M520x) || defined(CONFIG_M532x)
- #include <asm/coldfire.h>
- #include <asm/mcfsim.h>
- #include "fec.h"
--#else
--#include <asm/8xx_immap.h>
--#include <asm/mpc8xx.h>
--#include "commproc.h"
--#endif
- 
- #if defined(CONFIG_FEC2)
- #define	FEC_MAX_PORTS	2
-@@ -1223,14 +1218,9 @@ static phy_info_t const * const phy_info[] = {
- 
- /* ------------------------------------------------------------------------- */
- #if !defined(CONFIG_M532x)
--#ifdef CONFIG_RPXCLASSIC
--static void
--mii_link_interrupt(void *dev_id);
--#else
- static irqreturn_t
- mii_link_interrupt(int irq, void * dev_id);
- #endif
--#endif
- 
- #if defined(CONFIG_M5272)
- /*
-@@ -1800,121 +1790,6 @@ static void __inline__ fec_uncache(unsigned long addr)
- /* ------------------------------------------------------------------------- */
- 
- 
--#else
--
--/*
-- *	Code specific to the MPC860T setup.
-- */
--static void __inline__ fec_request_intrs(struct net_device *dev)
--{
--	volatile immap_t *immap;
--
--	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
--
--	if (request_8xxirq(FEC_INTERRUPT, fec_enet_interrupt, 0, "fec", dev) != 0)
--		panic("Could not allocate FEC IRQ!");
--
--#ifdef CONFIG_RPXCLASSIC
--	/* Make Port C, bit 15 an input that causes interrupts.
--	*/
--	immap->im_ioport.iop_pcpar &= ~0x0001;
--	immap->im_ioport.iop_pcdir &= ~0x0001;
--	immap->im_ioport.iop_pcso &= ~0x0001;
--	immap->im_ioport.iop_pcint |= 0x0001;
--	cpm_install_handler(CPMVEC_PIO_PC15, mii_link_interrupt, dev);
--
--	/* Make LEDS reflect Link status.
--	*/
--	*((uint *) RPX_CSR_ADDR) &= ~BCSR2_FETHLEDMODE;
--#endif
--#ifdef CONFIG_FADS
--	if (request_8xxirq(SIU_IRQ2, mii_link_interrupt, 0, "mii", dev) != 0)
--		panic("Could not allocate MII IRQ!");
--#endif
--}
--
--static void __inline__ fec_get_mac(struct net_device *dev)
--{
--	bd_t *bd;
--
--	bd = (bd_t *)__res;
--	memcpy(dev->dev_addr, bd->bi_enetaddr, ETH_ALEN);
--
--#ifdef CONFIG_RPXCLASSIC
--	/* The Embedded Planet boards have only one MAC address in
--	 * the EEPROM, but can have two Ethernet ports.  For the
--	 * FEC port, we create another address by setting one of
--	 * the address bits above something that would have (up to
--	 * now) been allocated.
--	 */
--	dev->dev_adrd[3] |= 0x80;
--#endif
--}
--
--static void __inline__ fec_set_mii(struct net_device *dev, struct fec_enet_private *fep)
--{
--	extern uint _get_IMMR(void);
--	volatile immap_t *immap;
--	volatile fec_t *fecp;
--
--	fecp = fep->hwp;
--	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
--
--	/* Configure all of port D for MII.
--	*/
--	immap->im_ioport.iop_pdpar = 0x1fff;
--
--	/* Bits moved from Rev. D onward.
--	*/
--	if ((_get_IMMR() & 0xffff) < 0x0501)
--		immap->im_ioport.iop_pddir = 0x1c58;	/* Pre rev. D */
--	else
--		immap->im_ioport.iop_pddir = 0x1fff;	/* Rev. D and later */
--
--	/* Set MII speed to 2.5 MHz
--	*/
--	fecp->fec_mii_speed = fep->phy_speed =
--		((bd->bi_busfreq * 1000000) / 2500000) & 0x7e;
--}
--
--static void __inline__ fec_enable_phy_intr(void)
--{
--	volatile fec_t *fecp;
--
--	fecp = fep->hwp;
--
--	/* Enable MII command finished interrupt
--	*/
--	fecp->fec_ivec = (FEC_INTERRUPT/2) << 29;
--}
--
--static void __inline__ fec_disable_phy_intr(void)
--{
--}
--
--static void __inline__ fec_phy_ack_intr(void)
--{
--}
--
--static void __inline__ fec_localhw_setup(void)
--{
--	volatile fec_t *fecp;
--
--	fecp = fep->hwp;
--	fecp->fec_r_hash = PKT_MAXBUF_SIZE;
--	/* Enable big endian and don't care about SDMA FC.
--	*/
--	fecp->fec_fun_code = 0x78000000;
--}
--
--static void __inline__ fec_uncache(unsigned long addr)
--{
--	pte_t *pte;
--	pte = va_to_pte(mem_addr);
--	pte_val(*pte) |= _PAGE_NO_CACHE;
--	flush_tlb_page(init_mm.mmap, mem_addr);
--}
--
- #endif
- 
- /* ------------------------------------------------------------------------- */
-@@ -2126,13 +2001,8 @@ mii_discover_phy(uint mii_reg, struct net_device *dev)
- 
- /* This interrupt occurs when the PHY detects a link change.
- */
--#ifdef CONFIG_RPXCLASSIC
--static void
--mii_link_interrupt(void *dev_id)
--#else
- static irqreturn_t
- mii_link_interrupt(int irq, void * dev_id)
--#endif
- {
- 	struct	net_device *dev = dev_id;
- 	struct fec_enet_private *fep = netdev_priv(dev);
+New cleanup in this series...
+
+ Documentation/powerpc/booting-without-of.txt |    1 -
+ arch/powerpc/boot/dts/mpc832x_mds.dts        |    3 ---
+ arch/powerpc/boot/dts/mpc832x_rdb.dts        |    2 --
+ arch/powerpc/boot/dts/mpc836x_mds.dts        |    2 --
+ arch/powerpc/boot/dts/mpc8568mds.dts         |    2 --
+ 5 files changed, 0 insertions(+), 10 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index a3b6e2a..ab9f0bf 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1675,7 +1675,6 @@ platforms are moved over to use the flattened-device-tree model.
+ 	ucc@2000 {
+ 		device_type = "network";
+ 		compatible = "ucc_geth";
+-		model = "UCC";
+ 		device-id = <1>;
+ 		reg = <2000 200>;
+ 		interrupts = <a0 0>;
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index 15bb345..c60ebf7 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -251,7 +251,6 @@
+ 		enet0: ucc@2200 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <3>;
+ 			device-id = <3>;
+ 			reg = <2200 200>;
+@@ -267,7 +266,6 @@
+ 		enet1: ucc@3200 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <4>;
+ 			device-id = <4>;
+ 			reg = <3200 200>;
+@@ -283,7 +281,6 @@
+ 		ucc@2400 {
+ 			device_type = "serial";
+ 			compatible = "ucc_uart";
+-			model = "UCC";
+ 			device-id = <5>;	/* The UCC number, 1-7*/
+ 			port-number = <0>;	/* Which ttyQEx device */
+ 			soft-uart;		/* We need Soft-UART */
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index f086fac..60461be 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -204,7 +204,6 @@
+ 		enet0: ucc@3000 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <2>;
+ 			device-id = <2>;
+ 			reg = <3000 200>;
+@@ -220,7 +219,6 @@
+ 		enet1: ucc@2200 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <3>;
+ 			device-id = <3>;
+ 			reg = <2200 200>;
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index d3b8262..e2b20f7 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -253,7 +253,6 @@
+ 		enet0: ucc@2000 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <1>;
+ 			device-id = <1>;
+ 			reg = <2000 200>;
+@@ -270,7 +269,6 @@
+ 		enet1: ucc@3000 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <2>;
+ 			device-id = <2>;
+ 			reg = <3000 200>;
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index c929fba..e136410 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -322,7 +322,6 @@
+ 		enet2: ucc@2000 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <1>;
+ 			device-id = <1>;
+ 			reg = <2000 200>;
+@@ -339,7 +338,6 @@
+ 		enet3: ucc@3000 {
+ 			device_type = "network";
+ 			compatible = "ucc_geth";
+-			model = "UCC";
+ 			cell-index = <2>;
+ 			device-id = <2>;
+ 			reg = <3000 200>;
 -- 
-1.5.3.8
+1.5.2.2
