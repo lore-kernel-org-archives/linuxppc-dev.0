@@ -2,15 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 71E78DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:45:53 +1100 (EST)
-Date: Fri, 25 Jan 2008 15:22:12 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id 1BFDADDE2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:45:54 +1100 (EST)
+Date: Fri, 25 Jan 2008 15:20:38 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 3/9] powerpc: Add the MPC8315E RDB dts
-In-Reply-To: <20080124204606.53bd2a1b.kim.phillips@freescale.com>
-Message-ID: <Pine.LNX.4.64.0801251521590.20972@blarg.am.freescale.net>
-References: <20080124204606.53bd2a1b.kim.phillips@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 3/5] [POWERPC][SPI] use brg-frequency for SPI in QE
+In-Reply-To: <20080124154003.GC23246@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0801251520260.20972@blarg.am.freescale.net>
+References: <20080124151850.GA15190@localhost.localdomain>
+	<20080124154003.GC23246@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -23,21 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 24 Jan 2008, Kim Phillips wrote:
+On Thu, 24 Jan 2008, Anton Vorontsov wrote:
 
-> Add the dts for the MPC8315E Reference Development Board (RDB).
+> In case of QE we can use brg-frequency (which is qeclk/2).
+> Thus no need to divide sysclk in the spi_mpc83xx.
 >
-> The board is a mini-ITX reference board with 128M DDR2, 8M flash,
-> 32M NAND, USB, PCI, gigabit ethernet, SATA, and serial.
+> This patch also adds code to use get_brgfreq() on QE chips.
 >
-> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 > ---
->  arch/powerpc/boot/dts/mpc8315erdb.dts |  287 +++++++++++++++++++++++++++++++++
->  1 files changed, 287 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/mpc8315erdb.dts
+>  arch/powerpc/sysdev/fsl_soc.c |   44 ++++++++++++++++++++++++++++------------
+>  drivers/spi/spi_mpc83xx.c     |    6 +----
+>  2 files changed, 32 insertions(+), 18 deletions(-)
 >
 
-applied.  fixed up spi node
+applied
 
 - k
