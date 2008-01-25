@@ -1,22 +1,10 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 7B4B7DDDFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 16:51:11 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so130322anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2008 21:51:10 -0800 (PST)
-Message-ID: <fa686aa40801242151g303ab96dhbcb295ed14e13f52@mail.gmail.com>
-Date: Thu, 24 Jan 2008 22:51:10 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, scottwood@freescale.com,
-	david@gibson.dropbear.id.au, "Kumar Gala" <galak@kernel.crashing.org>,
-	"Jon Loeliger" <jdl@jdl.com>
-Subject: Re: [PATCH/RFC] [POWERPC] Allow multiple images to be built when
-	CONFIG_DEFAULT_UIMAGE set
-In-Reply-To: <20080119035528.4286.67752.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080119035528.4286.67752.stgit@trillian.secretlab.ca>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1201240265.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/4] Search for and publish cell OF platform devices earlier
+Date: Fri, 25 Jan 2008 16:59:12 +1100 (EST)
+Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,70 +14,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anybody have comments/concerns on this one?
+Currently cell publishes OF devices at device_initcall() time, which
+means the earliest a driver can bind to a device is also device_initcall()
+time. We have a driver we want to register before other devices, so
+publish the devices at subsys_initcall() time.
 
-Cheers,
-g.
+This should not cause any behaviour change for existing drivers, as they
+are still bound at device_initcall() time.
 
-On 1/18/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> Most of the embedded board ports select CONFIG_DEFAULT_UIMAGE so that
-> uImage files get built by default.  However, the current code casues
-> the arch/powerpc/boot/Makefile to be called with the 'uImage' target
-> and adds 'uImage' to the 'image-y' make variable.  If CONFIG_DEFAULT_UIMAGE
-> is not set, then the boot makefile is called with target 'zImage'.
->
-> However, the zImage target already automatically causes all targets
-> listed in 'image-y' to be built, which includes uImage.
->
-> This patch makes the default build target alwasy call the boot makefile
-> using the 'zImage' target, regardless of if CONFIG_DEFAULT_UIMAGE is set.
-> Making this change allows multiple boot images to be built from a single
-> kernel compile.  An example of where this is useful is with the Efika
-> and lite5200 boards.  Both boards can use the same kernel image (vmlinux),
-> but they use different boot image files (zImage.chrp vs. uImage).  By
-> making this change, the boot makefile now builds both by default so a
-> single defconfig can be used for testing both platforms.
->
-> This patch also eliminates the BOOTIMAGE variable because it doesn't
-> appear to be used anywhere.  (Someone please correct me if I'm wrong)
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
->  arch/powerpc/Makefile |    7 ++-----
->  1 files changed, 2 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index f70df9b..6451c2f 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -151,10 +151,7 @@ core-$(CONFIG_XMON)                += arch/powerpc/xmon/
->  drivers-$(CONFIG_OPROFILE)     += arch/powerpc/oprofile/
->
->  # Default to zImage, override when needed
-> -defaultimage-y                 := zImage
-> -defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
-> -KBUILD_IMAGE := $(defaultimage-y)
-> -all: $(KBUILD_IMAGE)
-> +all: zImage
->
->  CPPFLAGS_vmlinux.lds   := -Upowerpc
->
-> @@ -180,7 +177,7 @@ define archhelp
->  endef
->
->  install: vdso_install
-> -       $(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
-> +       $(Q)$(MAKE) $(build)=$(boot) install
->
->  vdso_install:
->  ifeq ($(CONFIG_PPC64),y)
->
->
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/setup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index e6534b5..a7f609b 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -98,7 +98,7 @@ static int __init cell_publish_devices(void)
+ 	}
+ 	return 0;
+ }
+-machine_device_initcall(cell, cell_publish_devices);
++machine_subsys_initcall(cell, cell_publish_devices);
+ 
+ static void cell_mpic_cascade(unsigned int irq, struct irq_desc *desc)
+ {
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+1.5.2.rc1.1884.g59b20
