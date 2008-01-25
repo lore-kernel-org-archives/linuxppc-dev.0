@@ -1,23 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3DE0DE20E
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:46:24 +1100 (EST)
-Message-Id: <9C11FC54-29CF-4027-97C3-FEB1EBA2D78B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080124154010.GE23246@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6D855DE328
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:46:34 +1100 (EST)
+Date: Fri, 25 Jan 2008 22:18:15 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 5/5] [POWERPC] fsl_soc,
 	legacy_serial: add support for "soc" compatible matching
-Date: Fri, 25 Jan 2008 10:35:06 -0600
+Message-ID: <20080125191815.GA22717@localhost.localdomain>
 References: <20080124151850.GA15190@localhost.localdomain>
 	<20080124154010.GE23246@localhost.localdomain>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	<9C11FC54-29CF-4027-97C3-FEB1EBA2D78B@kernel.crashing.org>
+	<20080125171355.GA9879@localhost.localdomain>
+	<479A27AF.5080701@freescale.com>
+	<20080125185341.GA13450@localhost.localdomain>
+	<479A3280.5070401@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <479A3280.5070401@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Yoder Stuart <stuart.yoder@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Jan 25, 2008 at 01:03:28PM -0600, Scott Wood wrote:
+> Anton Vorontsov wrote:
+> >$ grep qe@ arch/powerpc/boot/dts/*
+> >arch/powerpc/boot/dts/mpc832x_mds.dts:  qe@e0100000 {
+> >arch/powerpc/boot/dts/mpc832x_rdb.dts:  qe@e0100000 {
+> >arch/powerpc/boot/dts/mpc836x_mds.dts:  qe@e0100000 {
+> >arch/powerpc/boot/dts/mpc8568mds.dts:   qe@e0080000 {
+> >
+> >^^^ if the practice is wrong, then we should fix it, and then
+> >-immr would be the good name indeed (just as I've said previously).
+> 
+> It's wrong, and we should fix it.
 
-On Jan 24, 2008, at 9:40 AM, Anton Vorontsov wrote:
+Ok, good. I'll fix that for at least new RDK board. Though, fixing
+other boards would be not trivial because of backward compatibility
+and such. I'll also use -immr for RDK.
 
-> We'll match on "soc" compatible for generic code, and "fsl,soc"
-> for fsl specific code.
->
-> Unfortunately it's still impossible to remove device_type = "soc"
-> from the existing device tree, because older u-boots are looking for
-> it.
->
-> Neither we can remove model number from the soc name to heal
-> arch/powerpc/boot/cuboot-85xx.c, because then dts'es will be
-> incompatible with older u-boots again.
->
-> So, just one machine converted so far: MPC8360E-RDK. It's new machine
-> so we don't care about backward compatibility yet.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->
-> I know, this patch will conflict with the legacy serial rework[1].
-> It's okay though, if [1] will hit galak/powerpc.git first, I'll
-> simply rebase that patch.
->
-> [1] http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050096.html
->
-> Documentation/powerpc/booting-without-of.txt |   18 ++++------
-> arch/powerpc/boot/dts/mpc836x_rdk.dts        |    1 -
-> arch/powerpc/kernel/legacy_serial.c          |    3 +-
-> arch/powerpc/sysdev/fsl_soc.c                |   51 ++++++++++++++ 
-> +-----------
-> 4 files changed, 39 insertions(+), 34 deletions(-)
+> It would make sense if the QE block 
+> were relocatable separately from IMMR (but even if it were, the QE 
+> compatible should be fsl,xxxx-qe or similar, so no conflict with 
+> fsl,xxxx-immr) -- but it isn't, at least on the 8323 and 8360 (I don't 
+> have an 8568 manual handy).
 
-this needs a bit more discussion.  "fsl,soc" is terrible describe.  I  
-think we want some generic for the compat that implies 'soc register  
-space'.
+Nobody have an MPC8568E manual handy. :-P I've just looked there..
+no QE isn't relocatable.
 
-- k
+Oh, and I lied regarding CPM being relocatable. It isn't,
+at least CPM2 and at least on MPC8555E. What a pity.
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
