@@ -1,23 +1,17 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id 5ACE2DDE36
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 22:34:35 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so551756fgg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 03:34:34 -0800 (PST)
-Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1201244082.6815.128.camel@pasglop>
-References: <1200659696.23161.81.camel@thor.sulgenrain.local>
-	<1201013786.4726.28.camel@thor.sulgenrain.local>
-	<1201090699.9052.39.camel@thor.sulgenrain.local>
-	<1201092131.6341.51.camel@lappy>  <1201244082.6815.128.camel@pasglop>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 25 Jan 2008 12:34:27 +0100
-Message-Id: <1201260867.6293.38.camel@thor.sulgenrain.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Fri, 25 Jan 2008 14:12:44 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [PATCH 3/3] Cell IOMMU static mapping support
+In-Reply-To: <9ce4678eef9e50908969eb1ef8470e307f3076ff.1201257905.git.michael@ellerman.id.au>
+Message-ID: <Pine.LNX.4.64.0801251409500.15977@vixen.sonytel.be>
+References: <edf2d9650b044e2bc21e9b74ad1044f4e5b6615c.1201257905.git.michael@ellerman.id.au>
+	<9ce4678eef9e50908969eb1ef8470e307f3076ff.1201257905.git.michael@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-1818273090-1201266764=:15977"
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Fri, 2008-01-25 at 17:54 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-01-23 at 13:42 +0100, Peter Zijlstra wrote:
-> > Another question, do you have:
-> >   CONFIG_FAIR_GROUP_SCHED=y
-> > 
-> > if so, does flipping that off have any effect?
-> 
-> Yes.
-> 
-> Here, I do the test of running 4 times the repro-case provided by Michel
-> with nice 19 and a dd eating CPU with nice 0.
-> 
-> Without this option, I get the dd at 100% and the nice 19 shells down
-> below it with whatever is left of the CPUs.
-> 
-> With this option, dd gets about 50% of one CPU and the niced processes
-> still get most of the time.
+---584349381-1818273090-1201266764=:15977
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Hmm, interesting. As I said before, I thought I had tested with this
-disabled and not seen a difference, but I'll try again to confirm.
+On Fri, 25 Jan 2008, Michael Ellerman wrote:
+> Citing "release early release often", I'm posting this now as a mega-patch
+> to get people looking at it. I'll try to split it up and make it look a
+> little prettier before submitting it.
+> 
+> The intent of this patch is to setup (on certain machines) a "static" IOMMU
+> mapping of all of memory, to reduce the overhead of the IOMMU. If anyone has
+> a better name than "static" I'm all ears.
 
+Early mapping?
+Premapping?
 
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-1818273090-1201266764=:15977--
