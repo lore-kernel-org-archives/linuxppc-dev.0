@@ -1,23 +1,26 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2EC26DDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:04:33 +1100 (EST)
-Date: Fri, 25 Jan 2008 11:45:50 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 7/9] powerpc: add MPC837x RDB platform support
-Message-Id: <20080125114550.661c3cf6.kim.phillips@freescale.com>
-In-Reply-To: <ED723035-5E14-44B5-B35C-B94133561D78@kernel.crashing.org>
-References: <20080124204711.02ba14f0.kim.phillips@freescale.com>
-	<ED723035-5E14-44B5-B35C-B94133561D78@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Jerry, Huang <Chang-Ming.Huang@freescale.com>,
-	Joe D'Abbraccio <ljd015@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 50B08DDE1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 11:12:34 +1100 (EST)
+Message-ID: <479A27AF.5080701@freescale.com>
+Date: Fri, 25 Jan 2008 12:17:19 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 5/5] [POWERPC] fsl_soc, legacy_serial: add support for
+	"soc" compatible matching
+References: <20080124151850.GA15190@localhost.localdomain>
+	<20080124154010.GE23246@localhost.localdomain>
+	<9C11FC54-29CF-4027-97C3-FEB1EBA2D78B@kernel.crashing.org>
+	<20080125171355.GA9879@localhost.localdomain>
+In-Reply-To: <20080125171355.GA9879@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Yoder Stuart <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 25 Jan 2008 10:17:14 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
+Anton Vorontsov wrote:
+> Freescale soc register space: "fsl,soc"
+> generic soc device: "soc" (or maybe "linux,soc" better?)
 > 
-> On Jan 24, 2008, at 8:47 PM, Kim Phillips wrote:
-> 
-> > primarily based on mpc837x mds code.
-> >
-> > Signed-off-by: Joe D'Abbraccio <ljd015@freescale.com>
-> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> > ---
-> 
-> Who's the actual other of these patches?  (all 9 of them).
+> I know, Scott Wood is pushing "xxxx-immr" thing forward... but
+> I don't like that name because SOC isn't only device with the
+> Internal Memory Mapped Registers. 
 
-I took Joe's 837x from:
+If you look in the manual for xxxx, you'll find something called 
+"Internal Memory Mapped Registers".  Thus, the name xxxx-immr.
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2007-September/028460.html
+>(Think of QE placed outside of "soc"/"immr" node).
 
-and updated them.
+When is the QE ever placed outside the soc/immr/ccsr node?
+The QE registers are part of the IMMR/CCSR.
 
-831x I took from Jerry Huang's tree and updated them.
-
-Kim
+-Scott
