@@ -1,24 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0032DDDE0E
+Return-Path: <roman.fietze@telemotive.de>
+Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
+	by ozlabs.org (Postfix) with ESMTP id 9E316DDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jan 2008 11:24:33 +1100 (EST)
-Message-ID: <47992C24.3000306@freescale.com>
-Date: Thu, 24 Jan 2008 18:24:04 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Fri, 25 Jan 2008 17:47:41 +1100 (EST)
+Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
+	[192.168.5.33])
+	by alderan.mit.telemotive.de (Postfix) with ESMTP id 1A1F653C75
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 25 Jan 2008 07:47:36 +0100 (CET)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: framebuffer swap endianess
+References: <217742.24232.qm@web23107.mail.ird.yahoo.com>
+In-Reply-To: <217742.24232.qm@web23107.mail.ird.yahoo.com>
 MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: Failed to mount rootfs
-References: <F795765B112E7344AF36AA911279641502D1A9F4@xmb-sjc-212.amer.cisco.com>	<47990D51.9080803@scram.de>	<F795765B112E7344AF36AA911279641502D1A9F6@xmb-sjc-212.amer.cisco.com>
-	<389A2D5D-C1D1-469A-9436-969005D7071A@freescale.com>
-In-Reply-To: <389A2D5D-C1D1-469A-9436-969005D7071A@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>,
-	linuxppc-embedded@ozlabs.org
+Message-ID: <200801250747.35787.roman.fietze@telemotive.de>
+Date: Fri, 25 Jan 2008 07:47:35 +0100
+Content-Type: text/plain;
+  charset="iso-8859-15"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,24 +28,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
->> I do not know why it is creating two chosen node. In my dts file I  
->> have
->> placed one empty chosen node:
->> chosen{
->> 	};
->> If I do not do this,  I get the following error during boot process:
->>
->> libfdt: FDT_ERR_TRUNCATED
->> Failed creating the /chosen node (0x00C00000), aborting.
->>
->> Any reason??
-> 
-> Are you adding padding to your dtb?
-> 
-> Try adding "-p 1024" to your dtc command line
+Hello Angelo,
 
-I was going to ask that, but was confused by the fact that the error was 
-FDT_ERR_TRUNCATED, not FDT_ERR_NOSPACE.
+Question to the mailing list readers: is it ok to post an xfree86 or
+xorg patch in this mailing list (about 9KiB), or would it be better to
+mail that patch to Angelo directly? Thanks.
 
--Scott
+
+On Thursday 24 January 2008 15:27:12 Angelo wrote:
+
+> Modify the X server is a good idea.
+
+Sure, if you know where. It took us some time to find "the" correct
+place. But see below. :)
+
+> Could you tell me where is the exact place to do this? in some files like
+> fbdev.c or other?
+
+The major changes are inside programs/Xserver/miext/shadow/shpacked.c
+of either the xorg or xfree86 version of the X server. The swap is
+done when copying the data from the shadow buffer to the video memory.
+
+Another place is programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,
+but here we just setup the Screen correctly, so our new swapping
+shadow buffer update route will be used.
+
+> >This was on the 2.4.25 from DENX and with Xfree86.
+>
+> Sorry but i don't understand this sentence.
+
+We were using Linux 2.4.25 for the PowerPC from DENX and the XFree86 X
+Server. The kernel version shouldn't be a problem at all, and I think
+the patches should work on either X Server version, Xorg or Xfree86.
+
+
+Roman
+
+=2D-=20
+Roman Fietze Telemotive AG B=FCro M=FChlhausen
