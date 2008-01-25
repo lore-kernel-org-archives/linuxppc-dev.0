@@ -1,26 +1,24 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from yorgi.telenet-ops.be (yorgi.telenet-ops.be [195.130.133.69])
-	by ozlabs.org (Postfix) with ESMTP id 946F5DDE04
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 01:56:59 +1100 (EST)
-Received: from monty.telenet-ops.be (monty.telenet-ops.be [195.130.132.56])
-	by yorgi.telenet-ops.be (Postfix) with ESMTP id 1A0456827DC
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 15:46:29 +0100 (CET)
-Date: Fri, 25 Jan 2008 15:46:24 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
-In-Reply-To: <4799F349.9090102@scram.de>
-Message-ID: <Pine.LNX.4.64.0801251544480.13060@anakin>
-References: <4799F349.9090102@scram.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-m68k@vger.kernel.org, uClinux list <uclinux-dev@uclinux.org>,
-	Greg Ungerer <gerg@uclinux.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	Scott Wood <scottwood@freescale.com>, "Garzik, Jeff" <jgarzik@pobox.com>
+Return-Path: <michel@tungstengraphics.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id DFCDCDDEDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 02:04:51 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so603024fgg.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 07:04:50 -0800 (PST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1201260867.6293.38.camel@thor.sulgenrain.local>
+References: <1200659696.23161.81.camel@thor.sulgenrain.local>
+	<1201013786.4726.28.camel@thor.sulgenrain.local>
+	<1201090699.9052.39.camel@thor.sulgenrain.local>
+	<1201092131.6341.51.camel@lappy>  <1201244082.6815.128.camel@pasglop>
+	<1201260867.6293.38.camel@thor.sulgenrain.local>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 25 Jan 2008 16:04:43 +0100
+Message-Id: <1201273484.6090.12.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, vatsa <vatsa@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,26 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 25 Jan 2008, Jochen Friedrich wrote:
-> fec.c is only used on M68k Coldfire CPUs. Remove leftover
-> PowerPC code from this driver.
 
-As per MAINTAINERS, m68knommu is handled by:
+On Fri, 2008-01-25 at 12:34 +0100, Michel Dänzer wrote:
+> On Fri, 2008-01-25 at 17:54 +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2008-01-23 at 13:42 +0100, Peter Zijlstra wrote:
+> > > Another question, do you have:
+> > >   CONFIG_FAIR_GROUP_SCHED=y
+> > > 
+> > > if so, does flipping that off have any effect?
+> > 
+> > Yes.
+> > 
+> > Here, I do the test of running 4 times the repro-case provided by Michel
+> > with nice 19 and a dd eating CPU with nice 0.
+> > 
+> > Without this option, I get the dd at 100% and the nice 19 shells down
+> > below it with whatever is left of the CPUs.
+> > 
+> > With this option, dd gets about 50% of one CPU and the niced processes
+> > still get most of the time.
+> 
+> Hmm, interesting. As I said before, I thought I had tested with this
+> disabled and not seen a difference, but I'll try again to confirm.
 
-UCLINUX (AND M68KNOMMU)
-P:	Greg Ungerer
-M:	gerg@uclinux.org
-L:	uclinux-dev@uclinux.org  (subscribers-only)
+So, 2.6.24 final is indeed much better with this disabled, but still not
+as good as 2.6.23: While I can reliably move a window again while the
+infinite loop is running, it still stutters badly every couple of
+seconds. With 2.6.23 this is smooth all the time.
 
-I already forwarded a copy of your email to Greg.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
