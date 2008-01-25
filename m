@@ -1,23 +1,19 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
-	by ozlabs.org (Postfix) with ESMTP id 9E316DDDF4
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0B9CEDDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jan 2008 17:47:41 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 1A1F653C75
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Jan 2008 07:47:36 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: framebuffer swap endianess
-References: <217742.24232.qm@web23107.mail.ird.yahoo.com>
-In-Reply-To: <217742.24232.qm@web23107.mail.ird.yahoo.com>
+	Fri, 25 Jan 2008 18:36:33 +1100 (EST)
+Message-ID: <47998D8B.8050100@denx.de>
+Date: Fri, 25 Jan 2008 08:19:39 +0100
+From: Heiko Schocher <hs@denx.de>
 MIME-Version: 1.0
-Message-ID: <200801250747.35787.roman.fietze@telemotive.de>
-Date: Fri, 25 Jan 2008 07:47:35 +0100
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+Subject: Re: Failed to mount rootfs
+References: <mailman.1307.1201212280.6908.linuxppc-embedded@ozlabs.org>
+In-Reply-To: <mailman.1307.1201212280.6908.linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,41 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Angelo,
+Hello Bizhan,
 
-Question to the mailing list readers: is it ok to post an xfree86 or
-xorg patch in this mailing list (about 9KiB), or would it be better to
-mail that patch to Angelo directly? Thanks.
+"Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com> wrote:
+> Our custom board is leveraged from MPC8541cds from freescale.
+> We have been running Linux 2.6.11 on it recently I have tried to boot
+> the system with the latest Linux 2.6.22-rc4 from PowerPC git tree.
+>  
+> I did ported the libfdt to our older version of the uboot and were able
+> to
 
+Hmm... why you didnt use actual code?
 
-On Thursday 24 January 2008 15:27:12 Angelo wrote:
+[...]
+>     chosen {
+>         linux,stdout-path = "/soc8541@e0000000/serial@4600";
+>     };
+>     chosen {
+>         name = "chosen";
+>         bootargs = "root=/dev/ram rw console=ttyS1,115200";
+>         linux,platform = <600>;
+>         linux,initrd-start = <1ef33000>;
+>         linux,initrd-end = <1fe190aa>;
+>         linux,stdout-path = "/soc8541@e0000000/serial@4600";
+>     };
+> };
 
-> Modify the X server is a good idea.
+Here is your problem, you have 2 choosen nodes:
 
-Sure, if you know where. It took us some time to find "the" correct
-place. But see below. :)
+64k data, 108k bss, 116k init) Mount-cache hash table entries: 512
+device-tree: Duplicate name in /, renamed to "chosen#1"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-> Linux didnt find your commandline ...
 
-> Could you tell me where is the exact place to do this? in some files like
-> fbdev.c or other?
+Hmm... do you have CONFIG_OF_FLAT_TREE and CONFIG_OF_LIBFDT defined?
+If so, this would explain, why you have 2 choosen nodes.
 
-The major changes are inside programs/Xserver/miext/shadow/shpacked.c
-of either the xorg or xfree86 version of the X server. The swap is
-done when copying the data from the shadow buffer to the video memory.
-
-Another place is programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,
-but here we just setup the Screen correctly, so our new swapping
-shadow buffer update route will be used.
-
-> >This was on the 2.4.25 from DENX and with Xfree86.
->
-> Sorry but i don't understand this sentence.
-
-We were using Linux 2.4.25 for the PowerPC from DENX and the XFree86 X
-Server. The kernel version shouldn't be a problem at all, and I think
-the patches should work on either X Server version, Xorg or Xfree86.
-
-
-Roman
-
-=2D-=20
-Roman Fietze Telemotive AG B=FCro M=FChlhausen
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
