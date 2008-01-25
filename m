@@ -1,25 +1,21 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 16636DDE04
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 19:50:14 +1100 (EST)
-Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: benh@kernel.crashing.org
-In-Reply-To: <1201245901.6815.133.camel@pasglop>
-References: <1200659696.23161.81.camel@thor.sulgenrain.local>
-	<1201013786.4726.28.camel@thor.sulgenrain.local>
-	<1201090699.9052.39.camel@thor.sulgenrain.local>
-	<1201092131.6341.51.camel@lappy>  <1201244082.6815.128.camel@pasglop>
-	<1201244618.6815.130.camel@pasglop> <1201245901.6815.133.camel@pasglop>
-Content-Type: text/plain
-Date: Fri, 25 Jan 2008 09:50:00 +0100
-Message-Id: <1201251000.6341.108.camel@lappy>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>,
-	vatsa <vatsa@linux.vnet.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 35111DDE16
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 19:53:31 +1100 (EST)
+Date: Fri, 25 Jan 2008 02:50:20 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCHv3 0/7] [POWERPC] 8xx cleanups
+In-Reply-To: <4798AB95.8040405@scram.de>
+Message-ID: <Pine.LNX.4.64.0801250249170.11624@blarg.am.freescale.net>
+References: <4798AB95.8040405@scram.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,29 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 24 Jan 2008, Jochen Friedrich wrote:
 
-On Fri, 2008-01-25 at 18:25 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-01-25 at 18:03 +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2008-01-25 at 17:54 +1100, Benjamin Herrenschmidt wrote:
-> > > 
-> > > Here, I do the test of running 4 times the repro-case provided by Michel
-> > > with nice 19 and a dd eating CPU with nice 0.
-> > > 
-> > > Without this option, I get the dd at 100% and the nice 19 shells down
-> > > below it with whatever is left of the CPUs.
-> > > 
-> > > With this option, dd gets about 50% of one CPU and the niced processes
-> > > still get most of the time.
-> > 
-> > FYI. This is a 4 way G5 (ppc64)
-> 
-> I also tested responsiveness of X running with or without that option
-> and with niced CPU eaters in the background (still 4 of them, one per
-> CPU), and I can confirm Michel observations, it gets very sluggish
-> (maybe not -as- bad as his but still pretty annoying) with the fair
-> group scheduler enabled.
-> 
-> Here, X is running with nice=0
+> Hi,
+>
+> this is a series against paulus for-2.6.25 tree to clean up various 8xx
+> related stuff.
+> The series can be pulled from git://git.bocc.de/dbox2.git cleanup.
+> Old patches 2+4 have been merged into Patch 2. Patch 4 has been modified to
+> move the
+> prototypes into a new platforms/8xx/mpc8xx.h. Patch 5 leaves the PCMCIA bits
+> in
+> asm-powerpc/mpc8xx.h as this driver needs to be fixed first (unfortunately, i
+> don't
+> have an 8xx board with PCMCIA). I would suggest removing asm-powerpc/mpc8xx.h
+> after
+> ARCH=ppc is gone to avoid adding #ifdefs to all shared drivers.
+>
+> I also modified an option in Thunderbird so i hope whitespaces are OK now :-/
+>
+> [POWERPC] Remove unused m8xx_cpm_hostalloc/free/dump()
+> [POWERPC] Rename m8xx_pic_init to mpc8xx_pics_init
+> [POWERPC] Remove unneeded and misspelled prototype m8xx_calibrate_decr
+> [POWERPC] Remove sysdev/commproc.h
+> [POWERPC] Get rid of conditional includes of board specific setup
 
-Curious, sounds like an issue with the group load balancer, vatsa, any
-ideas?
+I've applied the above patches.
+
+> [POWERPC] Rename commproc to cpm1 and cpm2_common.c to cpm2.c
+
+I'm a bit concerned this patch is touching too many files.. or ones that
+it never should have.
+
+> [POWERPC] Move definition of buffer descriptor to cpm.h
+
+I'm assmuing this patch depends on the previous one.
+
+- k
