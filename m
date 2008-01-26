@@ -1,15 +1,21 @@
-Return-Path: <olof@lixom.net>
-Date: Fri, 25 Jan 2008 20:51:17 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/3] Cell IOMMU static mapping support
-Message-ID: <20080126025117.GA28066@lixom.net>
-References: <edf2d9650b044e2bc21e9b74ad1044f4e5b6615c.1201257905.git.michael@ellerman.id.au>
-	<9ce4678eef9e50908969eb1ef8470e307f3076ff.1201257905.git.michael@ellerman.id.au>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 98679DDDF9
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 14:07:59 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so242572anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2008 19:07:58 -0800 (PST)
+Message-ID: <fa686aa40801251907x710f1916y1fa8d8ac6913aae@mail.gmail.com>
+Date: Fri, 25 Jan 2008 20:07:57 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: Reminder: removal of arch/ppc
+In-Reply-To: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9ce4678eef9e50908969eb1ef8470e307f3076ff.1201257905.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,20 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 25, 2008 at 09:45:07PM +1100, Michael Ellerman wrote:
-> Citing "release early release often", I'm posting this now as a mega-patch
-> to get people looking at it. I'll try to split it up and make it look a
-> little prettier before submitting it.
-> 
-> The intent of this patch is to setup (on certain machines) a "static" IOMMU
-> mapping of all of memory, to reduce the overhead of the IOMMU. If anyone has
-> a better name than "static" I'm all ears.
-> 
-> So instead of having an IOMMU window that we use to temporarily map things
-> in and out of DMA'able space, at boot we create a 1:1 mapping for all of
-> memory. This obviously only works for devices that can do 64-bit DMA.
+On 1/25/08, Kumar Gala <galak@kernel.crashing.org> wrote:
+> Just a reminder that the plan is to remove arch/ppc this summer (June
+> 2008).
 
-I don't get it. Why not disable the iommu instead?
+I strongly recommend that we delay removal by about a month...
+somewhere around July 23-26... so we can have a great big "ding, dong,
+arch/ppc is dead" party at OLS.
 
+:-D
 
--Olof
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
