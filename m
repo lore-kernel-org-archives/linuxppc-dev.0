@@ -1,23 +1,20 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 021F8DDDEB
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 07:46:47 +1100 (EST)
-Date: Sat, 26 Jan 2008 12:45:14 -0800
-From: Greg KH <greg@kroah.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUILD FAILURE]2.6.24-git{1,2} kernel powerpc linkage failure
-Message-ID: <20080126204514.GB30867@kroah.com>
-References: <479B3453.3030105@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id C1A5DDDDF6
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 10:09:57 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so290537anc.78
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 15:09:56 -0800 (PST)
+Message-ID: <fa686aa40801261509o2f6fd195h2f2662e67c022ec@mail.gmail.com>
+Date: Sat, 26 Jan 2008 16:09:55 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: Patches added to for-2.6.25/master branches of powerpc.git
+In-Reply-To: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <479B3453.3030105@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 26, 2008 at 06:53:31PM +0530, Kamalesh Babulal wrote:
-> Hi,
-> 
-> The 2.6.24-git2 kernel build fails on the power boxes with following build failure
-> 
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/powerpc/kernel/built-in.o: In function `fphalf':
-> arch/powerpc/kernel/vector.S:(.toc+0x1428): undefined reference to `devices_subsys'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> This built-failure was seen in the mm broken-out-2007-11-06-02-32, I have tested 
-> the patch posted to lkml at http://lkml.org/lkml/2007/11/6/208 fixes this issue.
+Paul, please pull the following mpc52xx changes.
 
-And that patch is wrong, see my post on lkml about this yesterday.
+Also, I'd like to have the following patch picked up, but I'm a bit
+nervous about it.  Kumar has said it looks good, but I'm still not
+100% sure about eliminating the KBUILD_IMAGE and BOOTIMAGE variables.
+I *think* it's safe, but I'm not a build system expert.
 
-Paul is working on a "correct" patch, and if I get some time this
-afternoon, I'll do one too.
+http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=16264
 
-thanks,
+Cheers,
+g.
 
-greg k-h
+The following changes since commit 55852bed57a97b08ab56028f1054d48d45de3aec:
+  Paul Mackerras (1):
+        Revert "[POWERPC] Fake NUMA emulation for PowerPC"
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git for-2.6.25
+
+Grant Likely (6):
+      [POWERPC] mpc52xx: clean up Kconfig
+      [POWERPC] mpc5200: normalize compatible property bindings
+      [POWERPC] mpc5200: make dts files conform to generic names
+recommended practice
+      [POWERPC] Efika: prune fixups and make them more carefull
+      [POWERPC] Add common clock setting routine mpc52xx_psc_set_clkdiv()
+      [POWERPC] mpc52xx_psc_spi device driver must not touch port_config and cdm
+
+Paul Gortmaker (1):
+      [POWERPC] mpc5200: add #address-cells and #size-cells to soc node.
+
+ arch/powerpc/boot/dts/cm5200.dts             |   60 +++++------
+ arch/powerpc/boot/dts/lite5200.dts           |   96 +++++++----------
+ arch/powerpc/boot/dts/lite5200b.dts          |   93 +++++++---------
+ arch/powerpc/boot/dts/motionpro.dts          |   68 +++++-------
+ arch/powerpc/boot/dts/tqm5200.dts            |   45 ++++-----
+ arch/powerpc/boot/serial.c                   |    2 +-
+ arch/powerpc/kernel/prom_init.c              |  149 ++++++++++++++------------
+ arch/powerpc/platforms/52xx/Kconfig          |   41 +++-----
+ arch/powerpc/platforms/52xx/efika.c          |    3 +
+ arch/powerpc/platforms/52xx/lite5200.c       |   28 ++++--
+ arch/powerpc/platforms/52xx/lite5200_pm.c    |    9 ++-
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |    6 +-
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |  117 ++++++++++++++++-----
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c    |   10 ++-
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c    |   16 +++-
+ arch/powerpc/platforms/52xx/mpc52xx_pm.c     |    9 ++-
+ arch/powerpc/sysdev/bestcomm/bestcomm.c      |   16 ++-
+ arch/ppc/syslib/mpc52xx_setup.c              |   36 ++++++
+ drivers/ata/pata_mpc52xx.c                   |    6 +-
+ drivers/net/fec_mpc52xx.c                    |    6 +-
+ drivers/net/fec_mpc52xx_phy.c                |    8 +-
+ drivers/serial/mpc52xx_uart.c                |    4 +-
+ drivers/spi/mpc52xx_psc_spi.c                |   82 +-------------
+ drivers/usb/host/ohci-ppc-of.c               |    2 +
+ include/asm-powerpc/mpc52xx.h                |    9 +-
+ 25 files changed, 478 insertions(+), 443 deletions(-)
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
