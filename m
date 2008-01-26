@@ -1,20 +1,31 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 001DCDDF77
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 04:24:13 +1100 (EST)
-Date: Sat, 26 Jan 2008 11:36:12 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 063/196] kset: convert /sys/devices to use kset_create
-Message-ID: <20080126173612.GB29143@lixom.net>
-References: <20080125071127.GA4860@kroah.com>
-	<1201245134-4876-63-git-send-email-gregkh@suse.de>
-	<20080126034055.GA28786@lixom.net> <20080126052454.GA27403@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080126052454.GA27403@suse.de>
-Cc: linuxppc-dev@ozlabs.org, Kay Sievers <kay.sievers@vrfy.org>,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D4139DDE36
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 04:30:08 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0QHU5LB012102
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 12:30:05 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0QHU4xc089760
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 10:30:04 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0QHU4R6008270
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 10:30:04 -0700
+Date: Sat, 26 Jan 2008 11:29:34 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Patches added to for-2.6.25/master branches of powerpc.git
+Message-ID: <20080126112934.54815ecb@zod.rchland.ibm.com>
+In-Reply-To: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
+References: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 25, 2008 at 09:24:54PM -0800, Greg KH wrote:
-> On Fri, Jan 25, 2008 at 09:40:55PM -0600, Olof Johansson wrote:
-> > On Thu, Jan 24, 2008 at 11:10:01PM -0800, Greg Kroah-Hartman wrote:
-> > > Dynamically create the kset instead of declaring it statically.  We also
-> > > rename devices_subsys to devices_kset to catch all users of the
-> > > variable.
-> > 
-> > Guess what, you broke powerpc again!
+On Sat, 26 Jan 2008 17:16:38 +1100
+Paul Mackerras <paulus@samba.org> wrote:
+
+> This includes commits pulled from Josh Boyer, Kumar Gala, Grant
+> Likely, and Olof Johansson.  I reverted the "Fake NUMA emulation for
+> PowerPC" commit because it changed behaviour even when the fake numa
+> command-line option wasn't given.
 > 
-> I did this ON PURPOSE!!!
-> 
-> The linux-kernel archives hold the details, and I was told by the PPC64
-> IBM people that they would fix this properly for 2.6.25, and not to hold
-> back on my changes.  This has been known for many months now.
+> I'll be asking Linus to pull within the next few days, so please
+> remind me about anything else that should go in 2.6.25.
 
-Yeah, my bad. :( I thought this was new, but it was just not exposed by
-my scripts because of the EHEA build errors (they were actual compile
-errors, while this was a link error, so it never go this far). That's
-why I didn't see it in -rc8-mm1 and thought it was new.
+I have a couple patches that depend on the netdev and USB
+trees being merged first.  And I'm sure we'll have some bug fix patches
+at some point to deal with the clash-o-git trees that seems to be
+coming.
 
-> > -extern struct kset devices_subsys; /* needed for vio_find_name() */
-> > +extern struct kset *devices_kset; /* needed for vio_find_name() */
-> 
-> No, this just papers over the real problem here.  For some reason, the
-> vio code thinks it is acceptable to walk the whole device tree and match
-> by a name and just assume that they got the correct device.  You call
-> this "enterprise grade"?  :)
->
-> You need to just put your device on a real bus, and then just walk the
-> bus.  That's the ONLY way you can guarantee the proper name will return
-> what you want, and you get the pointer that you really think you are
-> getting.
-
-Hmm, they are already on a bus. Odd, must be done like this for legacy
-reasons.
-
-[...]
-
-> So no, I'm going to leave the build broken for this code, because that
-> is what it really is.
-> 
-> Please fix it correctly.
-
-Alright, I'll leave that to people who care about vio and can test the
-proper fix. After a quick glance it looks like it should be easy to use
-bus_find_device() for it instead.
-
-
--Olof
+josh
