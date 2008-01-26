@@ -1,34 +1,20 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CC2C7DDE10
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 18:13:41 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m0Q7DAou015600
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 18:13:10 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0Q7HH59279972
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 18:17:17 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0Q7De5o007969
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 18:13:40 +1100
-Date: Sat, 26 Jan 2008 12:43:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-Message-ID: <20080126071339.GA25328@balbir.in.ibm.com>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-	<1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
-	<1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E69CADDE09
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 21:03:52 +1100 (EST)
+Date: Sat, 26 Jan 2008 11:04:27 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v4] create modalias file in sysfs for bus of_platform
+Message-ID: <20080126100427.GA1162@aepfle.de>
+References: <20080122142109.GA12967@aepfle.de>
+	<20080122144053.GA13019@aepfle.de>
+	<20080122190939.GA14124@aepfle.de>
+	<18330.32110.449914.354218@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <18330.32110.449914.354218@cargo.ozlabs.ibm.com>
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,76 +24,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Michael Ellerman <michael@ellerman.id.au> [2008-01-18 16:44:58]:
+Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
+of modules. modalias files are already present for many other bus types.
 
-> 
-> This fixes it, although I'm a little worried about some of the
-> removals/movings of node_set_online() in the patch.
-> 
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 1666e7d..dcedc26 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -49,7 +49,6 @@ static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
->  	static unsigned int fake_nid = 0;
->  	static unsigned long long curr_boundary = 0;
->  
-> -	*nid = fake_nid;
->  	if (!p)
->  		return 0;
->  
-> @@ -60,6 +59,7 @@ static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
->  	if (mem < curr_boundary)
->  		return 0;
->  
-> +	*nid = fake_nid;
->  	curr_boundary = mem;
->  
->  	if ((end_pfn << PAGE_SHIFT) > mem) {
-> 
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-Hi, Michael,
-
-Here's a better and more complete fix for the problem. Could you
-please see if it works for you? I tested it on a real NUMA box and it
-seemed to work fine there.
-
-Description
------------
-
-This patch provides a fix for the problem found by
-Michael Ellerman <michael@ellerman.id.au> while using fake NUMA nodes
-on a cell box. The code modifies node id iff (as in if and only if)
-fake NUMA nodes are created.
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
+ drivers/of/device.c   |   33 ++++++++++++++++++---------------
+ drivers/of/platform.c |    3 +++
+ 2 files changed, 21 insertions(+), 15 deletions(-)
 
- arch/powerpc/mm/numa.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff -puN arch/powerpc/mm/numa.c~fix-fake-numa-nid-on-numa arch/powerpc/mm/numa.c
---- linux-2.6.24-rc8/arch/powerpc/mm/numa.c~fix-fake-numa-nid-on-numa	2008-01-26 12:20:29.000000000 +0530
-+++ linux-2.6.24-rc8-balbir/arch/powerpc/mm/numa.c	2008-01-26 12:27:53.000000000 +0530
-@@ -49,7 +49,12 @@ static int __cpuinit fake_numa_create_ne
- 	static unsigned int fake_nid = 0;
- 	static unsigned long long curr_boundary = 0;
+Index: linux-2.6/drivers/of/device.c
+===================================================================
+--- linux-2.6.orig/drivers/of/device.c
++++ linux-2.6/drivers/of/device.c
+@@ -77,7 +77,7 @@ void of_dev_put(struct of_device *dev)
+ }
+ EXPORT_SYMBOL(of_dev_put);
  
--	*nid = fake_nid;
-+	/*
-+	 * If we did enable fake nodes and cross a node,
-+	 * remember the last node and start from there.
-+	 */
-+	if (fake_nid)
-+		*nid = fake_nid;
- 	if (!p)
- 		return 0;
+-static ssize_t dev_show_devspec(struct device *dev,
++static ssize_t devspec_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+ 	struct of_device *ofdev;
+@@ -86,7 +86,22 @@ static ssize_t dev_show_devspec(struct d
+ 	return sprintf(buf, "%s", ofdev->node->full_name);
+ }
  
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+-static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
++static ssize_t modalias_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	ssize_t len;
++
++	len = of_device_get_modalias(to_of_device(dev), buf, PAGE_SIZE - 2);
++	buf[len] = '\n';
++	buf[len+1] = 0;
++	return len+1;
++}
++
++struct device_attribute of_platform_device_attrs[] = {
++	__ATTR_RO(devspec),
++	__ATTR_RO(modalias),
++	__ATTR_NULL
++};
+ 
+ /**
+  * of_release_dev - free an of device structure when all users of it are finished.
+@@ -107,25 +122,13 @@ EXPORT_SYMBOL(of_release_dev);
+ 
+ int of_device_register(struct of_device *ofdev)
+ {
+-	int rc;
+-
+ 	BUG_ON(ofdev->node == NULL);
+-
+-	rc = device_register(&ofdev->dev);
+-	if (rc)
+-		return rc;
+-
+-	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
+-	if (rc)
+-		device_unregister(&ofdev->dev);
+-
+-	return rc;
++	return device_register(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_register);
+ 
+ void of_device_unregister(struct of_device *ofdev)
+ {
+-	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+ 	device_unregister(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_unregister);
+Index: linux-2.6/drivers/of/platform.c
+===================================================================
+--- linux-2.6.orig/drivers/of/platform.c
++++ linux-2.6/drivers/of/platform.c
+@@ -17,6 +17,8 @@
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+ 
++extern struct device_attribute of_platform_device_attrs[];
++
+ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct of_device *of_dev = to_of_device(dev);
+@@ -93,6 +95,7 @@ int of_bus_type_init(struct bus_type *bu
+ 	bus->remove = of_platform_device_remove;
+ 	bus->suspend = of_platform_device_suspend;
+ 	bus->resume = of_platform_device_resume;
++	bus->dev_attrs = of_platform_device_attrs;
+ 	return bus_register(bus);
+ }
+ 
