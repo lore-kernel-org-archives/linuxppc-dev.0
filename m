@@ -1,18 +1,16 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id ED51BDDDFC
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 12:56:32 +1100 (EST)
-Date: Fri, 25 Jan 2008 18:09:14 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] create modalias file in sysfs for bus vio
-Message-ID: <20080125170914.GA29887@aepfle.de>
-References: <20080122083328.GA11928@aepfle.de>
-	<20080123010505.d812129e.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080123010505.d812129e.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Fri, 25 Jan 2008 20:20:34 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: Reminder: removal of arch/ppc
+Message-ID: <20080125202034.43556262@zod.rchland.ibm.com>
+In-Reply-To: <adahch1jruv.fsf@cisco.com>
+References: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
+	<20080125192150.4cde6fac@zod.rchland.ibm.com>
+	<adahch1jruv.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,10 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 23, Stephen Rothwell wrote:
+On Fri, 25 Jan 2008 17:30:32 -0800
+Roland Dreier <rdreier@cisco.com> wrote:
 
-> It would be nice if we could factor out the "vio:T%sS%s" string as it is
-> also used in vio_hotplug().
+>  > > 	YUCCA
+>  > 
+>  > Yucca was what again?  440spe?
+> 
+> Yes, it was the first 440SPe eval board; since replaced by Katmai.
+> 
+> I have a Yucca and can at least test thing; if no one else gets to it,
+> I may try to port it to arch/powerpc for 2.6.26.
 
-What exactly do you have in mind?
-Creating a tempstring seems to make things more complicated.
+Hm.  Katmai is already in-tree.  Theoretically I should be able to get
+the HW docs and do a new DTS and have it mostly "just work".  Perhaps
+I'll give that a shot and have you give it a quick spin.
+
+josh
