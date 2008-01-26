@@ -1,13 +1,13 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C1785DDDFD
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 16:39:41 +1100 (EST)
-Message-ID: <479AC79B.8090006@pikatech.com>
-Date: Sat, 26 Jan 2008 00:39:39 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 752D4DDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 16:44:20 +1100 (EST)
+Message-ID: <479AC8B3.4010200@pikatech.com>
+Date: Sat, 26 Jan 2008 00:44:19 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH]warp.c
+Subject: i2c-ibm_iic.c fix
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,26 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While merging, I found a small bug that I forgot to send. I add an 
-offset to a value twice.
+If anybody is following this patch it needs to be updated. It was 
+recommended that the device_type be removed from the dts files. But the 
+table matches the type, so I changed the table to only match the 
+compatibility. I can give people a full blown patch if they want it. But 
+basically the table should look like follows:
 
-It is much easier to diff if it doesn't show the entire file as new.
+static const struct of_device_id ibm_iic_match[] =
+{
+	{ .compatible = "ibm,iic-405ex", },
+	{ .compatible = "ibm,iic-405gp", },
+	{ .compatible = "ibm,iic-440gp", },
+	{ .compatible = "ibm,iic-440gpx", },
+	{ .compatible = "ibm,iic-440grx", },
+	{}
+};
+
+
 
 Cheers,
-   Sean MacLennan
-
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
----
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index 8f01563..da5b7b7 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -137,7 +137,7 @@ static int __init pika_dtm_start(void)
- 	}
- 	of_node_put(np);
- 
--	fpga = ioremap(res.start + 0x20, 4);
-+	fpga = ioremap(res.start, 0x24);
- 	if (fpga == NULL)
- 		return -ENOENT;
- 
+   Sean
