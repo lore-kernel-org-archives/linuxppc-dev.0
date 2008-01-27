@@ -1,13 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id E340CDDE03
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 11:48:33 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2052740wag.13
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jan 2008 16:48:32 -0800 (PST)
+Message-ID: <9e4733910801261648v55ca0015v606ce80a05738a2@mail.gmail.com>
+Date: Sat, 26 Jan 2008 19:48:32 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: Patches added to for-2.6.25/master branches of powerpc.git
+In-Reply-To: <fa686aa40801261509o2f6fd195h2f2662e67c022ec@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
-Date: Sun, 27 Jan 2008 11:45:30 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix powerpc vio_find_name to not use devices_subsys
-Cc: sfr@canb.auug.org.au
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
+	<fa686aa40801261509o2f6fd195h2f2662e67c022ec@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,62 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes vio_find_name() in arch/powerpc/kernel/vio.c, which is
-currently broken because it tries to use devices_subsys.  That is bad
-for two reasons: (1) it's doing (or trying to do) a scan of all
-devices when it should only be scanning those on the vio bus, and
-(2) devices_subsys was an internal symbol of the device system code
-which was never meant for external use and has now gone away, and
-thus the kernel fails to compile on pSeries.
+On 1/26/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Grant Likely (6):
+>       [POWERPC] mpc52xx: clean up Kconfig
+>       [POWERPC] mpc5200: normalize compatible property bindings
+>       [POWERPC] mpc5200: make dts files conform to generic names
+> recommended practice
+>       [POWERPC] Efika: prune fixups and make them more carefull
+>       [POWERPC] Add common clock setting routine mpc52xx_psc_set_clkdiv()
+>       [POWERPC] mpc52xx_psc_spi device driver must not touch port_config and cdm
 
-The new version uses bus_find_device() on the vio bus (vio_bus_type).
+Does this fix these warnings...
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Greg, do you want to send this to Linus or will I do that?  Or do you
-have a better version? :)
+  CC      drivers/spi/mpc52xx_psc_spi.o
+drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_activate_cs':
+drivers/spi/mpc52xx_psc_spi.c:110: warning: passing argument 1 of
+'in_be16' from incompatible pointer type
+drivers/spi/mpc52xx_psc_spi.c:116: warning: passing argument 1 of
+'out_be16' from incompatible pointer type
+drivers/spi/mpc52xx_psc_spi.c: In function 'mpc52xx_psc_spi_port_config':
+drivers/spi/mpc52xx_psc_spi.c:417: warning: passing argument 1 of
+'out_be16' from incompatible pointer type
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 19a5656..b179b7e 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -37,8 +37,6 @@
- #include <asm/iseries/hv_call_xm.h>
- #include <asm/iseries/iommu.h>
- 
--extern struct kset devices_subsys; /* needed for vio_find_name() */
--
- static struct bus_type vio_bus_type;
- 
- static struct vio_dev vio_bus_device  = { /* fake "parent" device */
-@@ -361,19 +359,23 @@ EXPORT_SYMBOL(vio_get_attribute);
- #ifdef CONFIG_PPC_PSERIES
- /* vio_find_name() - internal because only vio.c knows how we formatted the
-  * kobject name
-- * XXX once vio_bus_type.devices is actually used as a kset in
-- * drivers/base/bus.c, this function should be removed in favor of
-- * "device_find(kobj_name, &vio_bus_type)"
-  */
--static struct vio_dev *vio_find_name(const char *kobj_name)
-+static int name_cmp(struct device *dev, void *data)
-+{
-+	const char *name = data;
-+
-+	return !strcmp(name, dev->bus_id);
-+}
-+
-+static struct vio_dev *vio_find_name(const char *name)
- {
--	struct kobject *found;
-+	struct device *found;
- 
--	found = kset_find_obj(&devices_subsys, kobj_name);
-+	found = bus_find_device(&vio_bus_type, NULL, (void *)name, name_cmp);
- 	if (!found)
- 		return NULL;
- 
--	return to_vio_dev(container_of(found, struct device, kobj));
-+	return to_vio_dev(found);
- }
- 
- /**
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
