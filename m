@@ -1,23 +1,20 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 09C77DDE4A
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 04:21:38 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so826960uge.0
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 09:21:36 -0800 (PST)
-Date: Sun, 27 Jan 2008 19:08:18 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH 3/3] [POWERPC] QE: implement GPIO LIB API
-Message-ID: <20080127160818.GA25859@zarina>
-References: <20080108184341.GA29753@localhost.localdomain>
-	<20080108184525.GC18445@localhost.localdomain>
-	<479C8A34.2000701@scram.de>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
+	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id 52107DDE24
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 05:51:00 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH 2/3] i2c: Convert all new-style drivers to use module
+	aliasing
+Date: Sun, 27 Jan 2008 10:40:19 -0800
+References: <20080121112517.6fe35a89@hyperion.delvare>
+	<20080121114139.3aaa111a@hyperion.delvare>
+In-Reply-To: <20080121114139.3aaa111a@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <479C8A34.2000701@scram.de>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	David Gibson <david@gibson.dropbear.id.au>
-Reply-To: cbouatmailru@gmail.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200801271040.20248.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 27, 2008 at 02:42:12PM +0100, Jochen Friedrich wrote:
-> Hi Anton,
-> 
-> > +static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-> > +{
-> > +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-> > +	struct port_regs *regs = mm_gc->regs;
-> > +	u32 pin_mask;
-> > +	u32 tmp_val;
-> > +
-> > +	/* calculate pin location */
-> > +	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - gpio));
-> > +
-> > +	tmp_val = in_be32(&regs->cpdata);
-> > +
-> > +	if (val == 0)
-> > +		out_be32(&regs->cpdata, ~pin_mask & tmp_val);
-> > +	else
-> > +		out_be32(&regs->cpdata, pin_mask | tmp_val);
-> > +}
-> 
-> I see a possible problem with this (and in the corresponding call in CPM1, as well):
-> 
-> if there is a pin configured as open drain, you might accidently switch this pin to 0
-> while switching a different pin, if an external device is pulling the pin to 0.
+General comment:  if you're going to index arrays by enum
+values, it's best to initialize them that way too.  Else
+you're expecting a particular optional policy for how the
+enums get grown...
 
-Unfortunately I can't think out any workaround for this, except
-implementing generic gpio_bank_{,un}lock(gpio_pin_on_the_bank), and
-start using it in the drivers that might care about this issue. Though,
-looking into i2c-gpio.c I don't clearly see were we can insert these
-locks, there should be "start/end transaction" handlers or something,
-but it seems that it's in the bitbanging code, not in the i2c-gpio
-driver..
+- Dave
 
-Actually, I see this as a hardware limitation. For example, on ARMs
-PXA2xx, there are separate, per bank, read/set/clear GPIO registers,
-not all-in-one data register.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+On Monday 21 January 2008, Jean Delvare wrote:
+> --- linux-2.6.24-rc8.orig/drivers/rtc/rtc-ds1307.c	2008-01-20 17:26:58.000000000 +0100
+> +++ linux-2.6.24-rc8/drivers/rtc/rtc-ds1307.c	2008-01-20 19:03:48.000000000 +0100
+> @@ -102,42 +102,36 @@ struct chip_desc {
+>  	char			name[9];
+>  	unsigned		nvram56:1;
+>  	unsigned		alarm:1;
+> -	enum ds_type		type;
+>  };
+>  
+>  static const struct chip_desc chips[] = { {
+>  	.name		= "ds1307",
+> -	.type		= ds_1307,
+>  	.nvram56	= 1,
+>  }, {
+
+So tables like this would become
+
+	[ds1307] = { ... },
+	[ds1337] = { ... },
+
+>  	.name		= "ds1337",
+> -	.type		= ds_1337,
+>  	.alarm		= 1,
+>  }, {
+>  	.name		= "ds1338",
+> -	.type		= ds_1338,
+>  	.nvram56	= 1,
+>  }, {
+>  	.name		= "ds1339",
+> -	.type		= ds_1339,
+>  	.alarm		= 1,
+>  }, {
+>  	.name		= "ds1340",
+> -	.type		= ds_1340,
+>  }, {
+>  	.name		= "m41t00",
+> -	.type		= m41t00,
+>  }, };
+>  
+> -static inline const struct chip_desc *find_chip(const char *s)
+> -{
+> -	unsigned i;
+> -
+> -	for (i = 0; i < ARRAY_SIZE(chips); i++)
+> -		if (strnicmp(s, chips[i].name, sizeof chips[i].name) == 0)
+> -			return &chips[i];
+> -	return NULL;
+> -}
+> +static const struct i2c_device_id ds1307_id[] = {
+> +	{ "ds1307", ds_1307 },
+> +	{ "ds1337", ds_1337 },
+> +	{ "ds1338", ds_1338 },
+> +	{ "ds1339", ds_1339 },
+> +	{ "ds1340", ds_1340 },
+> +	{ "m41t00", m41t00 },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(i2c, ds1307_id);
+>  
+>  static int ds1307_get_time(struct device *dev, struct rtc_time *t)
+>  {
+> @@ -335,12 +329,7 @@ static int __devinit ds1307_probe(struct
+>  	const struct chip_desc	*chip;
+>  	struct i2c_adapter	*adapter = to_i2c_adapter(client->dev.parent);
+>  
+> -	chip = find_chip(client->name);
+> -	if (!chip) {
+> -		dev_err(&client->dev, "unknown chip type '%s'\n",
+> -				client->name);
+> -		return -ENODEV;
+> -	}
+> +	chip = &chips[id->driver_data];
+
+... and that would *ensure* such lines always work right,
+no matter how the enum values grow.
+
+>  
+>  	if (!i2c_check_functionality(adapter,
+>  			I2C_FUNC_I2C | I2C_FUNC_SMBUS_WRITE_BYTE_DATA))
