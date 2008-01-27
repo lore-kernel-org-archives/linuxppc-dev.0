@@ -1,35 +1,28 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 08C86DDDEB
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:38:13 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id m0RFd5Ps030582
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:39:05 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0RFfoeU290938
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:41:50 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0RFcEtX009820
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:38:14 +1100
-Date: Sun, 27 Jan 2008 20:31:47 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-Message-ID: <20080127150147.GA10914@balbir.in.ibm.com>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-	<1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
-	<1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
-	<20080126071339.GA25328@balbir.in.ibm.com>
-	<18332.28991.658933.763115@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <18332.28991.658933.763115@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Reply-To: balbir@linux.vnet.ibm.com
+Return-Path: <michel@tungstengraphics.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.157])
+	by ozlabs.org (Postfix) with ESMTP id ABF09DDE02
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 03:13:48 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so1209738fgg.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 08:13:33 -0800 (PST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: vatsa@linux.vnet.ibm.com
+In-Reply-To: <20080126050757.GB14177@linux.vnet.ibm.com>
+References: <1200659696.23161.81.camel@thor.sulgenrain.local>
+	<1201013786.4726.28.camel@thor.sulgenrain.local>
+	<1201090699.9052.39.camel@thor.sulgenrain.local>
+	<1201092131.6341.51.camel@lappy> <1201244082.6815.128.camel@pasglop>
+	<1201244618.6815.130.camel@pasglop> <1201245901.6815.133.camel@pasglop>
+	<1201251000.6341.108.camel@lappy>
+	<20080126040734.GA21365@linux.vnet.ibm.com>
+	<1201320834.6815.160.camel@pasglop>
+	<20080126050757.GB14177@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 27 Jan 2008 17:13:29 +0100
+Message-Id: <1201450409.1931.23.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,41 +32,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Paul Mackerras <paulus@samba.org> [2008-01-27 22:55:43]:
 
-> Balbir Singh writes:
+On Sat, 2008-01-26 at 10:39 +0530, Srivatsa Vaddagiri wrote:
+> On Sat, Jan 26, 2008 at 03:13:54PM +1100, Benjamin Herrenschmidt wrote:
 > 
-> > Here's a better and more complete fix for the problem. Could you
-> > please see if it works for you? I tested it on a real NUMA box and it
-> > seemed to work fine there.
-> 
-> There are a couple of other changes in behaviour that your patch
-> introduces, and I'd like to understand them better before taking the
-> patch.  First, with your patch we don't set nodes online if they end
-> up having no memory in them because of the memory limit, whereas
-> previously we did.  Secondly, in the case where we don't have NUMA
-> information, we now set node 0 online after adding each LMB, whereas
-> previously we only set it online once.
-> 
-> If in fact these changes are benign, then your patch description
-> should mention them and explain why they are benign.
->
+> > > Also were the dd process and the niced processes running under 
+> > > different user ids? If so, that is expected behavior, that we divide 
+> > > CPU equally among users first and then among the processes within each user.
 
-Yes, they are. I'll try and justify the changes with a good detailed
-changelog. If people prefer it, I can hide fake NUMA nodes under a
-config option, so that it does not come enabled by default.
+Note that in my test case, the niced infinite loop constantly burns
+significantly more than 50% of the cycles; X and its clients never need
+more than 20% (high estimate) each to move windows smoothly. So even
+under the premise above, it should be possible to have smooth
+interaction with X while there is a CPU hog in another group, shouldn't
+it?
 
-Thanks for keeping me honest.
+
+> > Not that it seems that Michel reported far worse behaviour than what I
+> > saw, including pretty hickup'ish X behaviour even without the fair group
+> > scheduler compared to 2.6.23. It might be because he's running X niced
+> > to -1 (I leave X at 0 and let the scheduler deal with it in general)
+> > though.
+> 
+> Hmm ..with X niced to -1, it should get more cpu power leading to a
+> better desktop experience.
+
+FWIW, -1 or 0 for X doesn't seem to make any difference for this
+problem.
+
+(I've had X at -1 because a long time ago, when it was at 0 some 3D
+games could starve it to the point that their input would be delayed)
+
+
+> Michel,
+> 	You had reported that commit 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8 
+> was the cause for this bad behavior. 
+
+Well, it may not be the cause, but that's where the hickups with
+CONFIG_FAIR_USER_SCHED disabled first manifest themselves, yes.
+
+> Do you see behavior change (from good->bad) immediately after applying that patch 
+> during your bisect process?
+
+Yes, confirmed by trying that commit and its parent again.
+
+
+> > > 1. Run niced tasks as root. This would bring X and niced tasks in the
+> > > same "scheduler group" domain, which would give X much more CPU power
+> > > when compared to niced tasks.
+
+Running the niced CPU hog as root or my user instead of as nobody didn't
+seem to make a difference, maybe because the X session requires
+interaction between processes having different uids, and disturbing
+either is sufficient.
+
+> > > 2. Keep the niced tasks running under a non-root uid, but increase root users 
+> > >    cpu share.
+> > >         # echo 8192 > /sys/kernel/uids/0/cpu_share
+> > > 
+> > >    This should bump up root user's priority for running on CPU and also 
+> > >    give a better desktop experience.
+
+I didn't try 8192, but bumping the shares of root and my user up to 4096
+didn't seem to help much if at all. Decreasing the share of the user
+running the niced CPU hog to 1 resulted in more or less the same
+behaviour as  with CONFIG_FAIR_USER_SCHED disabled.
+
+> > > The group scheduler's SMP-load balance in 2.6.24 is not the best it
+> > > could be. sched-devel has a better load balancer, which I am presuming
+> > > will go into 2.6.25 soon.
+
+FWIW, the scheduler changes merged after 2.6.24 don't seem to help at
+all for my test:
+
+With CONFIG_FAIR_USER_SCHED enabled, X still becomes unusable.
+
+With CONFIG_FAIR_USER_SCHED disabled, X remains mostly usable, but there
+are still hickups that weren't there with 2.6.23. (BTW, the hickups seem
+related to top running in the terminal window I'm trying to move;
+without top running, there are no hickups when moving the window. With
+2.6.23, there are no hickups even with top running)
+
+Note that my test case is an exaggerated example constructed from worse
+(than with 2.6.23) interactive behaviour I've been seeing with my
+day-to-day X session. This isn't just a theoretical problem.
+
+
+> > > In this case, I suspect that's not the issue.  If X and the niced processes are 
+> > > running under different uids, this (niced processes getting more cpu power) is 
+> > > on expected lines. Will wait for Ben to confirm this. 
+> > 
+> > I would suggest turning the fair group scheduler to default n in stable
+> > for now.
+> 
+> I would prefer to have CONFIG_FAIR_GROUP_SCHED +
+> CONFIG_FAIR_CGROUP_SCHED on by default. Can you pls let me know how you
+> think is the desktop experience with that combination?
+
+Seems to be the same as with CONFIG_FAIR_GROUP_SCHED disabled
+completely.
+
+
+In summary, there are two separate problems with similar symptoms, which
+had me confused at times:
+
+      * With CONFIG_FAIR_USER_SCHED disabled, there are severe
+        interactivity hickups with a niced CPU hog and top running. This
+        started with commit 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8. 
+      * With CONFIG_FAIR_USER_SCHED enabled, X becomes basically
+        unusable with a niced CPU hog, with or without top running. I
+        don't know when this started, possibly when this option was
+        first introduced.
+
+I don't personally care too much about the latter problem - I can live
+well without that option. But it would be nice if the former problem
+could be fixed (and the default changed from  CONFIG_FAIR_USER_SCHED to
+CONFIG_FAIR_CGROUP_SCHED) in 2.6.24.x.
+
+FWIW, the patch below (which reverts commit
+810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8) restores 2.6.24 interactivity
+to the same level as 2.6.23 here with CONFIG_FAIR_USER_SCHED disabled
+(my previous report to the contrary was with CONFIG_FAIR_USER_SCHED
+enabled because I didn't yet realize the difference it makes), but I
+don't know if that's the real fix.
+
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index da7c061..a7cc22a 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -843,7 +843,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+ 	struct task_struct *curr = rq->curr;
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+ 	struct sched_entity *se = &curr->se, *pse = &p->se;
+-	unsigned long gran;
  
-> Paul.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+ 	if (unlikely(rt_prio(p->prio))) {
+ 		update_rq_clock(rq);
+@@ -866,11 +865,8 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+ 		pse = parent_entity(pse);
+ 	}
+ 
+-	gran = sysctl_sched_wakeup_granularity;
+-	if (unlikely(se->load.weight != NICE_0_LOAD))
+-		gran = calc_delta_fair(gran, &se->load);
+ 
+-	if (pse->vruntime + gran < se->vruntime)
++	if (pse->vruntime + sysctl_sched_wakeup_granularity < se->vruntime)
+ 		resched_task(curr);
+ }
+ 
+
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
