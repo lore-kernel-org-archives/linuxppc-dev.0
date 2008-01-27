@@ -1,20 +1,17 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B002DDD04
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 16:31:51 +1100 (EST)
-Date: Sat, 26 Jan 2008 21:36:06 -0800
-From: Greg KH <greg@kroah.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Fix powerpc vio_find_name to not use devices_subsys
-Message-ID: <20080127053606.GA24306@kroah.com>
-References: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Return-Path: <akpm@linux-foundation.org>
+Date: Sat, 26 Jan 2008 22:01:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 04/11] ps3fb: Inline macros that are used only once
+Message-Id: <20080126220133.eb99e5c4.akpm@linux-foundation.org>
+In-Reply-To: <20080125153107.177014292@vixen.sonytel.be>
+References: <20080125150623.202631389@vixen.sonytel.be>
+	<20080125153107.177014292@vixen.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org,
+	linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+	adaplas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 27, 2008 at 11:45:30AM +1100, Paul Mackerras wrote:
-> This fixes vio_find_name() in arch/powerpc/kernel/vio.c, which is
-> currently broken because it tries to use devices_subsys.  That is bad
-> for two reasons: (1) it's doing (or trying to do) a scan of all
-> devices when it should only be scanning those on the vio bus, and
-> (2) devices_subsys was an internal symbol of the device system code
-> which was never meant for external use and has now gone away, and
-> thus the kernel fails to compile on pSeries.
+> On Fri, 25 Jan 2008 16:06:27 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > 
-> The new version uses bus_find_device() on the vio bus (vio_bus_type).
+> ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
+> as they're used in one place only
 > 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> Greg, do you want to send this to Linus or will I do that?  Or do you
-> have a better version? :)
 
-I'll send it to him, with a minor change (I'm going to make this a core
-function, as others also use the same functionality, no need for
-everyone to re-invent the wheel all the time.
+I think the term "open-code" would be more suitable here.  "inlining" means
+"make it an inline function".  I'll update the changelog.
 
-I also have some other patches to send him to fix up the fall-out of
-these driver core changes :)
-
-thanks,
-
-greg k-h
+> -#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
+> -#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
+> -#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
+> -#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
+>  #define BPP		4			/* number of bytes per pixel */
+>  
+> -/* Start of the virtual frame buffer (relative to fullscreen ) */
+> -#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
+> -
+>  
+>  static int ps3fb_mode;
+>  module_param(ps3fb_mode, int, 0);
+> @@ -611,7 +604,10 @@ static int ps3fb_set_par(struct fb_info 
+>  
+>  	par->width = info->var.xres;
+>  	par->height = info->var.yres;
+> -	offset = VP_OFF(i);
+> +
+> +	/* Start of the virtual frame buffer (relative to fullscreen) */
+> +	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
+> +
