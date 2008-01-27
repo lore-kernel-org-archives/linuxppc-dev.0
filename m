@@ -1,28 +1,35 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id D55B5DDE00
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 00:43:17 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so323158anc.78
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 05:43:15 -0800 (PST)
-Date: Sun, 27 Jan 2008 07:42:30 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 00/11] ps3av/3fb patches for 2.6.25
-Message-ID: <20080127074230.00adf79d@zod.rchland.ibm.com>
-In-Reply-To: <Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
-References: <20080125150623.202631389@vixen.sonytel.be>
-	<20080126220139.5385f2c7.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0801271041160.10193@vixen.sonytel.be>
-	<20080127021659.fb6c72a1.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	Antonino Daplas <adaplas@gmail.com>, Cell,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Development <cbe-oss-dev@ozlabs.org>
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 08C86DDDEB
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:38:13 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id m0RFd5Ps030582
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:39:05 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0RFfoeU290938
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:41:50 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0RFcEtX009820
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 02:38:14 +1100
+Date: Sun, 27 Jan 2008 20:31:47 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
+Message-ID: <20080127150147.GA10914@balbir.in.ibm.com>
+References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
+	<1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
+	<1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
+	<20080126071339.GA25328@balbir.in.ibm.com>
+	<18332.28991.658933.763115@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <18332.28991.658933.763115@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,38 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 27 Jan 2008 12:15:28 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+* Paul Mackerras <paulus@samba.org> [2008-01-27 22:55:43]:
 
-> 	Hi Andrew,
+> Balbir Singh writes:
 > 
-> On Sun, 27 Jan 2008, Andrew Morton wrote:
-> > > On Sun, 27 Jan 2008 10:44:40 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > > On Sat, 26 Jan 2008, Andrew Morton wrote:
-> > > > > On Fri, 25 Jan 2008 16:06:23 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > > > > Hare are the ps3av/fb patches for 2.6.25:
-> > > > 
-> > > > I would have to say: it's a bit late to be submitting things of this nature
-> > > > for 2.6.25.  Given the mess everyone has made of everything there's little
-> > > > chance that I'll be able to do a 2.6.24-mm1 so this stuff basically goes
-> > > > into mainline without public testing.
-> > > 
-> > > I beg to disagree (of course :-)
-> > > 
-> > > I posted these patches before, about 2 months ago. Unfortunately I didn't CC
-> > > you at that time, so they slipped under your radar.
-> > > But the patches did receive public testing even before that, when they entered
-> > > Geoff's ps3-linux.git tree.
-> > 
-> > Should that git tree be in the -mm lineup?
+> > Here's a better and more complete fix for the problem. Could you
+> > please see if it works for you? I tested it on a real NUMA box and it
+> > seemed to work fine there.
 > 
-> That may be a good idea! Geoff?
+> There are a couple of other changes in behaviour that your patch
+> introduces, and I'd like to understand them better before taking the
+> patch.  First, with your patch we don't set nodes online if they end
+> up having no memory in them because of the memory limit, whereas
+> previously we did.  Secondly, in the case where we don't have NUMA
+> information, we now set node 0 online after adding each LMB, whereas
+> previously we only set it online once.
+> 
+> If in fact these changes are benign, then your patch description
+> should mention them and explain why they are benign.
+>
 
-There are lots of powerpc sub-trees.  Kumar's, Geoff's, mine, Olof's,
-Grant's, Vitaly's are just the ones I can think of the top of my head.
+Yes, they are. I'll try and justify the changes with a good detailed
+changelog. If people prefer it, I can hide fake NUMA nodes under a
+config option, so that it does not come enabled by default.
 
-Shouldn't we just ask Paul to sync up more often rather than have
-Andrew track X number of trees that eventually all merge into Paul's
-anyway?
+Thanks for keeping me honest.
+ 
+> Paul.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
-josh
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
