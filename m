@@ -1,17 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B5A14DDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 00:40:40 +1100 (EST)
+Message-ID: <479C8A34.2000701@scram.de>
+Date: Sun, 27 Jan 2008 14:42:12 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18332.28991.658933.763115@cargo.ozlabs.ibm.com>
-Date: Sun, 27 Jan 2008 22:55:43 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-In-Reply-To: <20080126071339.GA25328@balbir.in.ibm.com>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-	<1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
-	<1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
-	<20080126071339.GA25328@balbir.in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 3/3] [POWERPC] QE: implement GPIO LIB API
+References: <20080108184341.GA29753@localhost.localdomain>
+	<20080108184525.GC18445@localhost.localdomain>
+In-Reply-To: <20080108184525.GC18445@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Balbir Singh writes:
+Hi Anton,
 
-> Here's a better and more complete fix for the problem. Could you
-> please see if it works for you? I tested it on a real NUMA box and it
-> seemed to work fine there.
+> +static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+> +{
+> +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+> +	struct port_regs *regs = mm_gc->regs;
+> +	u32 pin_mask;
+> +	u32 tmp_val;
+> +
+> +	/* calculate pin location */
+> +	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - gpio));
+> +
+> +	tmp_val = in_be32(&regs->cpdata);
+> +
+> +	if (val == 0)
+> +		out_be32(&regs->cpdata, ~pin_mask & tmp_val);
+> +	else
+> +		out_be32(&regs->cpdata, pin_mask | tmp_val);
+> +}
 
-There are a couple of other changes in behaviour that your patch
-introduces, and I'd like to understand them better before taking the
-patch.  First, with your patch we don't set nodes online if they end
-up having no memory in them because of the memory limit, whereas
-previously we did.  Secondly, in the case where we don't have NUMA
-information, we now set node 0 online after adding each LMB, whereas
-previously we only set it online once.
+I see a possible problem with this (and in the corresponding call in CPM1, as well):
 
-If in fact these changes are benign, then your patch description
-should mention them and explain why they are benign.
+if there is a pin configured as open drain, you might accidently switch this pin to 0
+while switching a different pin, if an external device is pulling the pin to 0.
 
-Paul.
+i2c-gpio.c and w1-gpio.c (in -mm) are examples of drivers which use open drain pins
+and which would fail if another pin on the same port would be set during a transfer.
+
+Thanks,
+Jochen
