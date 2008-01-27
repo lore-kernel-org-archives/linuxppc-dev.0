@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id BF87EDDE9D
+Return-Path: <sheflin@newagemicro.com>
+Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
+	[66.129.110.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1F50ADDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Jan 2008 08:15:57 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so344006anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Jan 2008 13:15:56 -0800 (PST)
-Message-ID: <fa686aa40801271315m5ba4ea08p913fd6235eb1d240@mail.gmail.com>
-Date: Sun, 27 Jan 2008 14:15:56 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Ricardo Severo" <severo.ricardo@gmail.com>
-Subject: Re: Linux boot on a ppc 405
-In-Reply-To: <479CAF56.30306@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <479CAF56.30306@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 28 Jan 2008 10:12:13 +1100 (EST)
+Date: Sun, 27 Jan 2008 18:05:06 -0500
+To: linuxppc-embedded@ozlabs.org
+From: Steve Heflin <sheflin@newagemicro.com>
+Subject: Re: Reminder: removal of arch/ppc - (Sequoia)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <20080127231214.1F50ADDDE9@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,29 +23,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/27/08, Ricardo Severo <severo.ricardo@gmail.com> wrote:
-> Hi all,
+The Sequoia board (AMCC-440EPx processor) is missing from the new 
+arch/powerpc. The Sequoia board is also missing from arch/ppc , but 
+there is support for integrated devices on the AMCC part inside 
+arch/ppc that needs to be incorporated into arch/powerpc. In 
+addition, there needs to be a "sequoia.c" file added to the 
+arch/powerpc/44x directory.  I have a good start on the missing 
+pieces and a test platform, is this contribution desired?
+
+- Steve Heflin
+   New Age Micro
+   CEO & Software Engineer
+
+At 11:55 AM 1/25/2008, you wrote:
+>Just a reminder that the plan is to remove arch/ppc this summer (June
+>2008).  The following boards still existing over in arch/ppc.  Some of
+>them have been ported over to arch/powerpc.  If you care about one of
+>these boards and its not ported speak up (it helps if you have access
+>to the board).  Also, if you know a given board is free to die of
+>bitrot let us know so we know not to worry about it:
 >
-> I am working with a Xilinx Virtex II Pro  evaluation board, wich has two
-> PowerPC 405 and I'm trying to boot a vanilla linux kernel 2.6.23.14.
-> Until now I've manged to make it uncompress the kernel, but it doesn't boot.
-> My question is how the initial execution (the one who uncompresses the
-> kernel image) transfers the processor to the kernel itself. I've looked
-> in the arch/ppc/boot/simple/relocate.S code and it jumps to the position
-> 0x0 after uncompressing, is it right? The kernel is uncompressed at that
-> position?
-
-Post your output log please.
-
-If your getting a message that the kernel is uncompressing, but you
-don't have any output beyond that then most likely your console is not
-setup correctly.  If you've got a debugger, look at memory at the
-__log_buf location to see if there are any boot logs there.
-
-Cheers,
-g.
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+>         PREP
+>         PQ2ADS
+>         TQM8260
+>         CPCI690
+>         EV64260
+>         CHESTNUT
+>         LOPEC
+>         KATANA
+>         HDPU
+>         MVME5100
+>         PAL4
+>         POWERPMC250
+>         PPLUS
+>         PRPMC750
+>         PRPMC800
+>         RADSTONE_PPC7D
+>         SANDPOINT
+>         SBC82xx
+>         SPRUCE
+>         LITE5200
+>         EV64360
+>         MPC86XADS
+>         MPC885ADS
+>         ADS8272
+>
+>4xx:
+>         BAMBOO
+>         CPCI405
+>         EBONY
+>         EP405
+>         BUBINGA
+>         LUAN
+>         YUCCA
+>         OCOTEA
+>         REDWOOD_5
+>         REDWOOD_6
+>         SYCAMORE
+>         TAISHAN
+>         WALNUT
+>         XILINX_ML300
+>         XILINX_ML403
+>
+>- k
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
