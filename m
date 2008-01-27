@@ -1,17 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Patches added to for-2.6.25/master branches of powerpc.git
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <greg@kroah.com>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3B002DDD04
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 16:31:51 +1100 (EST)
+Date: Sat, 26 Jan 2008 21:36:06 -0800
+From: Greg KH <greg@kroah.com>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
-References: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-lO8gAKY8AsccRZv31SBm"
-Date: Sun, 27 Jan 2008 11:49:48 +1100
-Message-Id: <1201394998.6659.3.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Subject: Re: [PATCH] Fix powerpc vio_find_name to not use devices_subsys
+Message-ID: <20080127053606.GA24306@kroah.com>
+References: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,49 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Jan 27, 2008 at 11:45:30AM +1100, Paul Mackerras wrote:
+> This fixes vio_find_name() in arch/powerpc/kernel/vio.c, which is
+> currently broken because it tries to use devices_subsys.  That is bad
+> for two reasons: (1) it's doing (or trying to do) a scan of all
+> devices when it should only be scanning those on the vio bus, and
+> (2) devices_subsys was an internal symbol of the device system code
+> which was never meant for external use and has now gone away, and
+> thus the kernel fails to compile on pSeries.
+> 
+> The new version uses bus_find_device() on the vio bus (vio_bus_type).
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> Greg, do you want to send this to Linus or will I do that?  Or do you
+> have a better version? :)
 
---=-lO8gAKY8AsccRZv31SBm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'll send it to him, with a minor change (I'm going to make this a core
+function, as others also use the same functionality, no need for
+everyone to re-invent the wheel all the time.
 
-On Sat, 2008-01-26 at 17:16 +1100, Paul Mackerras wrote:
-> This includes commits pulled from Josh Boyer, Kumar Gala, Grant
-> Likely, and Olof Johansson.  I reverted the "Fake NUMA emulation for
-> PowerPC" commit because it changed behaviour even when the fake numa
-> command-line option wasn't given.
->=20
-> I'll be asking Linus to pull within the next few days, so please
-> remind me about anything else that should go in 2.6.25.
+I also have some other patches to send him to fix up the fall-out of
+these driver core changes :)
 
-Can you grab these four assuming there's no objections in the meantime.
+thanks,
 
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16430
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16433
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16434
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16437
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-lO8gAKY8AsccRZv31SBm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHm9UsdSjSd0sB4dIRAn49AKDKqxfwcwyic+3k4XW7k66K1l8lnwCgrnBJ
-ho/mmx8a1Z4TBQ2abssazW8=
-=a112
------END PGP SIGNATURE-----
-
---=-lO8gAKY8AsccRZv31SBm--
+greg k-h
