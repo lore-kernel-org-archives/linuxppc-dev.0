@@ -1,21 +1,28 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B5A14DDD0C
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 00:40:40 +1100 (EST)
-Message-ID: <479C8A34.2000701@scram.de>
-Date: Sun, 27 Jan 2008 14:42:12 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] [POWERPC] QE: implement GPIO LIB API
-References: <20080108184341.GA29753@localhost.localdomain>
-	<20080108184525.GC18445@localhost.localdomain>
-In-Reply-To: <20080108184525.GC18445@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id D55B5DDE00
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 00:43:17 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so323158anc.78
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jan 2008 05:43:15 -0800 (PST)
+Date: Sun, 27 Jan 2008 07:42:30 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 00/11] ps3av/3fb patches for 2.6.25
+Message-ID: <20080127074230.00adf79d@zod.rchland.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
+References: <20080125150623.202631389@vixen.sonytel.be>
+	<20080126220139.5385f2c7.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0801271041160.10193@vixen.sonytel.be>
+	<20080127021659.fb6c72a1.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Antonino Daplas <adaplas@gmail.com>, Cell,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Anton,
+On Sun, 27 Jan 2008 12:15:28 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-> +static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-> +{
-> +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-> +	struct port_regs *regs = mm_gc->regs;
-> +	u32 pin_mask;
-> +	u32 tmp_val;
-> +
-> +	/* calculate pin location */
-> +	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - gpio));
-> +
-> +	tmp_val = in_be32(&regs->cpdata);
-> +
-> +	if (val == 0)
-> +		out_be32(&regs->cpdata, ~pin_mask & tmp_val);
-> +	else
-> +		out_be32(&regs->cpdata, pin_mask | tmp_val);
-> +}
+> 	Hi Andrew,
+> 
+> On Sun, 27 Jan 2008, Andrew Morton wrote:
+> > > On Sun, 27 Jan 2008 10:44:40 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > On Sat, 26 Jan 2008, Andrew Morton wrote:
+> > > > > On Fri, 25 Jan 2008 16:06:23 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > > > Hare are the ps3av/fb patches for 2.6.25:
+> > > > 
+> > > > I would have to say: it's a bit late to be submitting things of this nature
+> > > > for 2.6.25.  Given the mess everyone has made of everything there's little
+> > > > chance that I'll be able to do a 2.6.24-mm1 so this stuff basically goes
+> > > > into mainline without public testing.
+> > > 
+> > > I beg to disagree (of course :-)
+> > > 
+> > > I posted these patches before, about 2 months ago. Unfortunately I didn't CC
+> > > you at that time, so they slipped under your radar.
+> > > But the patches did receive public testing even before that, when they entered
+> > > Geoff's ps3-linux.git tree.
+> > 
+> > Should that git tree be in the -mm lineup?
+> 
+> That may be a good idea! Geoff?
 
-I see a possible problem with this (and in the corresponding call in CPM1, as well):
+There are lots of powerpc sub-trees.  Kumar's, Geoff's, mine, Olof's,
+Grant's, Vitaly's are just the ones I can think of the top of my head.
 
-if there is a pin configured as open drain, you might accidently switch this pin to 0
-while switching a different pin, if an external device is pulling the pin to 0.
+Shouldn't we just ask Paul to sync up more often rather than have
+Andrew track X number of trees that eventually all merge into Paul's
+anyway?
 
-i2c-gpio.c and w1-gpio.c (in -mm) are examples of drivers which use open drain pins
-and which would fail if another pin on the same port would be set during a transfer.
-
-Thanks,
-Jochen
+josh
