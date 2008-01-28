@@ -4,19 +4,20 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 58C38DDF8A
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 04:30:47 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 33DC7DDF83
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 04:30:17 +1100 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m0SHSwhE006194
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 10:28:59 -0700 (MST)
+	m0SHSxGm006206
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 10:29:00 -0700 (MST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [Add mpc5121 support PATCH v4 1/4] Basic Freescale MPC512x support
-Date: Mon, 28 Jan 2008 10:28:53 -0700
-Message-Id: <1201541336-28676-2-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1201541336-28676-1-git-send-email-jrigby@freescale.com>
+Subject: [Add mpc5121 support PATCH v4 2/4] Device tree for MPC5121 ADS
+Date: Mon, 28 Jan 2008 10:28:54 -0700
+Message-Id: <1201541336-28676-3-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1201541336-28676-2-git-send-email-jrigby@freescale.com>
 References: <1201541336-28676-1-git-send-email-jrigby@freescale.com>
+	<1201541336-28676-2-git-send-email-jrigby@freescale.com>
 Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,281 +28,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-512x is very similar to 83xx and most
-of this is patterned after code from 83xx.
+Minimal /dts-v1/ device tree for mpc5121 ads.
 
-New platform:
-    changed:
-	arch/powerpc/Kconfig
-	arch/powerpc/platforms/Kconfig
-	arch/powerpc/platforms/Kconfig.cputype
-	arch/powerpc/platforms/Makefile
-    new:
-	arch/powerpc/platforms/512x/*
-	include/asm-powerpc/mpc512x.h
+port-number property in uart nodes
+will go away after the driver learns to use aliases
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
-Conflicts:
-
-	arch/powerpc/Kconfig
 ---
- arch/powerpc/Kconfig                      |    2 +-
- arch/powerpc/platforms/512x/Kconfig       |   20 ++++++
- arch/powerpc/platforms/512x/Makefile      |    4 +
- arch/powerpc/platforms/512x/mpc5121_ads.c |  104 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig            |    1 +
- arch/powerpc/platforms/Kconfig.cputype    |    6 +-
- arch/powerpc/platforms/Makefile           |    1 +
- include/asm-powerpc/mpc512x.h             |   22 ++++++
- 8 files changed, 156 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/platforms/512x/Kconfig
- create mode 100644 arch/powerpc/platforms/512x/Makefile
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.c
- create mode 100644 include/asm-powerpc/mpc512x.h
+ arch/powerpc/boot/dts/mpc5121ads.dts |  122 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 122 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc5121ads.dts
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5e10838..12c5cde 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -481,7 +481,7 @@ config PCI
- 	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
- 		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
- 		|| PPC_PS3 || 44x
--	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
-+	default y if !40x && !CPM2 && !8xx && !PPC_MPC512x && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
 new file mode 100644
-index 0000000..c6fa49e
+index 0000000..94ad7b2
 --- /dev/null
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -0,0 +1,20 @@
-+config PPC_MPC512x
-+	bool
-+	select FSL_SOC
-+	select IPIC
-+	default n
-+
-+config PPC_MPC5121
-+	bool
-+	select PPC_MPC512x
-+	default n
-+
-+config MPC5121_ADS
-+	bool "Freescale MPC5121E ADS"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select DEFAULT_UIMAGE
-+	select WANT_DEVICE_TREE
-+	select PPC_MPC5121
-+	help
-+	  This option enables support for the MPC5121E ADS board.
-+	default n
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-new file mode 100644
-index 0000000..232c89f
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -0,0 +1,4 @@
-+#
-+# Makefile for the Freescale PowerPC 512x linux kernel.
-+#
-+obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-new file mode 100644
-index 0000000..50bd3a3
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -0,0 +1,104 @@
++++ b/arch/powerpc/boot/dts/mpc5121ads.dts
+@@ -0,0 +1,122 @@
 +/*
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ * MPC5121E MDS Device Tree Source
 + *
-+ * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
++ * Copyright 2007 Freescale Semiconductor Inc.
 + *
-+ * Description:
-+ * MPC5121 ADS board setup
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/of_platform.h>
++/dts-v1/;
 +
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
++/ {
++	model = "mpc5121ads";
++	compatible = "fsl,mpc5121ads";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+/**
-+ * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
-+ * 	@node:	device node
-+ *
-+ * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
-+ */
-+unsigned long
-+mpc512x_find_ips_freq(struct device_node *node)
-+{
-+	struct device_node *np;
-+	const unsigned int *p_ips_freq = NULL;
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	of_node_get(node);
-+	while (node) {
-+		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
-+		if (p_ips_freq)
-+			break;
++		PowerPC,5121@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <0x20>;	// 32 bytes
++			i-cache-line-size = <0x20>;	// 32 bytes
++			d-cache-size = <0x8000>;	// L1, 32K
++			i-cache-size = <0x8000>;	// L1, 32K
++			timebase-frequency = <49500000>;// 49.5 MHz (csb/4)
++			bus-frequency = <198000000>;	// 198 MHz csb bus
++			clock-frequency = <396000000>;	// 396 MHz ppc core
++		};
++	};
 +
-+		np = of_get_parent(node);
-+		of_node_put(node);
-+		node = np;
-+	}
-+	if (node)
-+		of_node_put(node);
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;	// 256MB at 0
++	};
 +
-+	return p_ips_freq ? *p_ips_freq : 0;
-+}
-+EXPORT_SYMBOL(mpc512x_find_ips_freq);
++	localbus@80000020 {
++		compatible = "fsl,mpc5121ads-localbus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		reg = <0x80000020 0x40>;
 +
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{ .name = "localbus", },
-+	{},
++		ranges = <0x0 0x0 0xfc000000 0x04000000
++			  0x2 0x0 0x82000000 0x00008000>;
++
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0x0 0x4000000>;
++			bank-width = <4>;
++			device-width = <1>;
++		};
++
++		board-control@2,0 {
++			compatible = "fsl,mpc5121ads-cpld";
++			reg = <0x2 0x0 0x8000>;
++		};
++	};
++
++	soc@80000000 {
++		compatible = "fsl,mpc5121-immr";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		ranges = <0x0 0x80000000 0x400000>;
++		reg = <0x80000000 0x400000>;
++		bus-frequency = <66000000>;	// 66 MHz ips bus
++
++
++		// IPIC
++		// interrupts cell = <intr #, sense>
++		// sense values match linux IORESOURCE_IRQ_* defines:
++		// sense == 8: Level, low assertion
++		// sense == 2: Edge, high-to-low change
++		//
++		ipic: interrupt-controller@c00 {
++			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0xc00 0x100>;
++		};
++
++		// 512x PSCs are not 52xx PSCs compatible
++		// PSC3 serial port A aka ttyPSC0
++		serial@11300 {
++			device_type = "serial";
++			compatible = "fsl,mpc5121-psc-uart";
++			// Logical port assignment needed until driver
++			// learns to use aliases
++			port-number = <0>;
++			cell-index = <3>;
++			reg = <0x11300 0x100>;
++			interrupts = <0x28 0x8>; // actually the fifo irq
++			interrupt-parent = < &ipic >;
++		};
++
++		// PSC4 serial port B aka ttyPSC1
++		serial@11400 {
++			device_type = "serial";
++			compatible = "fsl,mpc5121-psc-uart";
++			// Logical port assignment needed until driver
++			// learns to use aliases
++			port-number = <1>;
++			cell-index = <4>;
++			reg = <0x11400 0x100>;
++			interrupts = <0x28 0x8>; // actually the fifo irq
++			interrupt-parent = < &ipic >;
++		};
++
++		pscsfifo@11f00 {
++			compatible = "fsl,mpc5121-psc-fifo";
++			reg = <0x11f00 0x100>;
++			interrupts = <0x28 0x8>;
++			interrupt-parent = < &ipic >;
++		};
++	};
 +};
-+
-+static void __init mpc5121_ads_declare_of_platform_devices(void)
-+{
-+	/* Find every child of the SOC node and add it to of_platform */
-+	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while probing of_platform bus\n");
-+}
-+
-+static void __init mpc5121_ads_init_IRQ(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
-+	if (!np)
-+		return;
-+
-+	ipic_init(np, 0);
-+	of_node_put(np);
-+
-+	/*
-+	 * Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
-+	 */
-+	ipic_set_default_priority();
-+}
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init mpc5121_ads_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
-+}
-+
-+define_machine(mpc5121_ads) {
-+	.name			= "MPC5121 ADS",
-+	.probe			= mpc5121_ads_probe,
-+	.init			= mpc5121_ads_declare_of_platform_devices,
-+	.init_IRQ		= mpc5121_ads_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.calibrate_decr		= generic_calibrate_decr,
-+};
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 4286664..d0606a9 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -41,6 +41,7 @@ config CLASSIC32
- source "arch/powerpc/platforms/pseries/Kconfig"
- source "arch/powerpc/platforms/iseries/Kconfig"
- source "arch/powerpc/platforms/chrp/Kconfig"
-+source "arch/powerpc/platforms/512x/Kconfig"
- source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/powermac/Kconfig"
- source "arch/powerpc/platforms/prep/Kconfig"
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index c3ee0b5..fb86300 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -14,7 +14,7 @@ choice
- 	  There are five families of 32 bit PowerPC chips supported.
- 	  The most common ones are the desktop and server CPUs (601, 603,
- 	  604, 740, 750, 74xx) CPUs from Freescale and IBM, with their
--	  embedded 52xx/82xx/83xx/86xx counterparts.
-+	  embedded 512x/52xx/82xx/83xx/86xx counterparts.
- 	  The other embeeded parts, namely 4xx, 8xx, e200 (55xx) and e500
- 	  (85xx) each form a family of their own that is not compatible
- 	  with the others.
-@@ -22,7 +22,7 @@ choice
- 	  If unsure, select 52xx/6xx/7xx/74xx/82xx/83xx/86xx.
- 
- config 6xx
--	bool "52xx/6xx/7xx/74xx/82xx/83xx/86xx"
-+	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
- 	select PPC_FPU
- 
- config PPC_85xx
-@@ -229,7 +229,7 @@ config NR_CPUS
- 
- config NOT_COHERENT_CACHE
- 	bool
--	depends on 4xx || 8xx || E200
-+	depends on 4xx || 8xx || E200 || PPC_MPC512x
- 	default y
- 
- config CHECK_CACHE_COHERENCY
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
-index 6d9079d..a984894 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -11,6 +11,7 @@ endif
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
- obj-$(CONFIG_40x)		+= 40x/
- obj-$(CONFIG_44x)		+= 44x/
-+obj-$(CONFIG_PPC_MPC512x)	+= 512x/
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
- obj-$(CONFIG_PPC_8xx)		+= 8xx/
- obj-$(CONFIG_PPC_82xx)		+= 82xx/
-diff --git a/include/asm-powerpc/mpc512x.h b/include/asm-powerpc/mpc512x.h
-new file mode 100644
-index 0000000..c48a165
---- /dev/null
-+++ b/include/asm-powerpc/mpc512x.h
-@@ -0,0 +1,22 @@
-+/*
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * Author: John Rigby, <jrigby@freescale.com>, Friday Apr 13 2007
-+ *
-+ * Description:
-+ * MPC5121 Prototypes and definitions
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#ifndef __ASM_POWERPC_MPC512x_H__
-+#define __ASM_POWERPC_MPC512x_H__
-+
-+extern unsigned long mpc512x_find_ips_freq(struct device_node *node);
-+
-+#endif /* __ASM_POWERPC_MPC512x_H__ */
-+
 -- 
 1.5.3.8
