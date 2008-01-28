@@ -1,22 +1,26 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id F13FDDDE98
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 08:01:34 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
-Date: Mon, 28 Jan 2008 22:01:17 +0100
-References: <4799F349.9090102@scram.de> <E1JIQpQ-0006Xj-RR@faramir.fjphome.nl>
-	<479A087F.5010305@scram.de>
-In-Reply-To: <479A087F.5010305@scram.de>
+Return-Path: <jacmet@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.191])
+	by ozlabs.org (Postfix) with ESMTP id 7B1E4DDF02
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 08:01:36 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w8so1050237mue.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 13:01:33 -0800 (PST)
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [patch v4 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
+References: <20080121103434.397382000@sunsite.dk>
+	<87sl0qzxos.fsf@macbook.be.48ers.dk>
+	<fa686aa40801230912m2314209fp2545898949ed3b24@mail.gmail.com>
+	<200801230953.05921.david-b@pacbell.net>
+	<fa686aa40801281240s5af3272bg7953e6a3d6022531@mail.gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 28 Jan 2008 22:01:30 +0100
+In-Reply-To: <fa686aa40801281240s5af3272bg7953e6a3d6022531@mail.gmail.com>
+	(Grant Likely's message of "Mon\, 28 Jan 2008 13\:40\:25 -0700")
+Message-ID: <87ir1dfyvp.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801282201.18658.arnd@arndb.de>
-Cc: linux-m68k@vger.kernel.org, netdev@vger.kernel.org,
-	Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-	geert@linux-m68k.org, gerg@uclinux.org, scottwood@freescale.com,
-	jgarzik@pobox.com
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 25 January 2008, Jochen Friedrich wrote:
-> Maybe the wording should be changed to:
-> 
-> This driver is now only used on ColdFire (m68knommu) processors. Conditional
-> PowerPC code has been removed.
-> 
+>>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-How about adding a pointer to the driver that is now used on powerpc,
-for the people that are looking in here?
+Hi,
 
-	Arnd <><
+ Grant> I've now merged the driver into my tree and tested it.
+
+ Grant> The good news is that using only one device node is absolutely
+ Grant> no problem.  It works without error or complaint and sysfs
+ Grant> looks sane.
+
+Great.
+
+ Grant> The bad news is that I discovered a race condition on
+ Grant> initialization.  The problem is that IRQs are enabled before
+ Grant> the SIEs are configured.  The interrupt handler is firing
+ Grant> immediately and tries to get the status of each SIE.  Since
+ Grant> the SIE probe has not yet occured, sie->dev is NULL and we get
+ Grant> a kernel oops when c67x00_ll_get_siemsg() tries to dereference
+ Grant> it.
+
+Not so great. I unfortunately don't see it here.
+
+ Grant> However, register_irq() cannot be easily moved to after the
+ Grant> SIE probe because the current probe code depends on interrupts
+ Grant> being enabled.  Below is an ugly workaround that solves the
+ Grant> problem to me, but there is probably a better solution.
+
+Wouldn't it be simpler to just add a if (sie->dev) check to
+_ll_get_siemsg()? Or doesn't the hcd init properly reinitialize the
+device?
+
+-- 
+Bye, Peter Korsgaard
