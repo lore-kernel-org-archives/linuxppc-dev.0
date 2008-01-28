@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5DF65DDF06
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 03:09:54 +1100 (EST)
-Message-Id: <54AD0075-E36B-4A95-BFD9-C750E590513F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <479DFA0A.1060706@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 0/9] 83xx DTS fixes and v1 conversions
-Date: Mon, 28 Jan 2008 10:09:43 -0600
-References: <1201505279-25847-1-git-send-email-paul.gortmaker@windriver.com>
-	<Pine.LNX.4.64.0801280904310.19922@blarg.am.freescale.net>
-	<479DFA0A.1060706@windriver.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Dag.K.Rognlien@sintef.no>
+Received: from smtpb.sintef.no (smtpb.sintef.no [129.241.253.24])
+	by ozlabs.org (Postfix) with ESMTP id 8896DDDE21
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 00:55:49 +1100 (EST)
+Received: from sintefav1.sintef.no (sintefav1.sintef.no [129.241.253.14])
+	by smtpb.sintef.no (Postfix) with ESMTP id CCC5572279
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 14:28:43 +0100 (CET)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C861B1.B69366EA"
+Subject: request_irq() for external interrupt pin on MPC875 (A&M adder MPC
+	875)
+Date: Mon, 28 Jan 2008 14:28:48 +0100
+Message-ID: <39417DF3286A66428FA558987839F44F03FC914F@SINTEFXCH01.sintef.no>
+From: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
+To: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,58 +23,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Jan 28, 2008, at 9:51 AM, Paul Gortmaker wrote:
+------_=_NextPart_001_01C861B1.B69366EA
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> Kumar Gala wrote:
->> On Mon, 28 Jan 2008, Paul Gortmaker wrote:
->>
->>
->>> This series incorporates my earlier qe/muram fix before converting
->>> the existing mpc83xx DTS files to v1 format.  I've also redone the
->>> mpc834x_mds with the IRQs as decimal as per Kumar's comments and
->>> re-included that too.  I've kept each board as a separate commit
->>> in case one of them conflicts with what someone else is working on.
->>>
->>> Boards covered are: 8349mds, 8349mitx, 8349mitx-gp, 836x_mds,
->>> 8323_mds, 8323_rdb, and the 8313_rdb.  Plus a small tweak to the
->>> sbc8349 (it was already v1 -- but IRQs were in hex.)
->>>
->>> I've fed all the files to DTC before and after to ensure the
->>> output is the same after the conversion.
->>>
->>> I'm not aware of any explicit rules for what is hex vs decimal.
->>> I've tried to keep things that are usually discussed in decimal
->>> as decimal quantities (i.e. cache size, IRQ, counts, indicies)
->>> and all other data that you'd normally expect in hex (addresses,
->>> IRQ flags, masks) as hex -- including prefixing 0x on values from
->>> zero to 10 where it tends to make rows of numbers (e.g. ranges)
->>> align for better readability, even though it isn't required.
->>>
->>>
->>
->> Can you regen these patches (2..9) againast my latest tree.  Also, a
->> single patch that cleans up all the boards is sufficient.
->>
->
-> The patches should be current to your tree still as of today; they  
-> are based on:
->
-> f09f415ea23272ae68f9322f90246680d46f4868        not-for-merge
-> branch 'for-2.6.25' of git://git.kernel.org/pub/scm/linux/kernel/git/ 
-> galak/powerpc
->
-> My patch #1 with all four qe/muram boards was posted earlier here:
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050767.html
->
-> Let me know what you need them based against and I can respin
-> as required.
+With kernel 2.6.13 we used=20
+=20
+request_irq (use_irq, irq_handler, SA_INTERRUPT|SA_SHIRQ, DEVICE_NAME,
+dev)
+=20
+where use_irq is 12 to use the external IRQ6 pin.
+=20
+We are now trying to get this driver to work with the 2.6.25 pull from
+powerpc.git.
+=20
+request_irq (use_irq, irq_handler, IRQF_SHARED, DEVICE_NAME, dev);
+=20
+returns -ENOSYS on the newer kernel.
+=20
+Have the IRQ mappings for the external IRQX pins been moved in the later
+kernels?
+=20
+-
+Dag K. W. Rognlien
+Research Scientist
+SINTEF ICT Communication Systems
 
-I've pushed out a bunch of stuff today.
+=20
+=20
 
-commit 390167efa329d11099957108fc23d1ad15c3f37e
+------_=_NextPart_001_01C861B1.B69366EA
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I'm expect a respin since the patches don't currently apply to my tree.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii=
+">
+<META content=3D"MSHTML 6.00.2900.3243" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>With=
+ kernel 2.6.13=20
+we used </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>reques=
+t_irq=20
+(use_irq, irq_handler, SA_INTERRUPT|SA_SHIRQ, DEVICE_NAME,=20
+dev)</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>where=
+ use_irq is 12=20
+to use the external IRQ6 pin.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>We are=
+ now trying to=20
+get this driver to work with the 2.6.25 pull from=20
+powerpc.git.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>reques=
+t_irq=20
+(use_irq, irq_handler, IRQF_SHARED, DEVICE_NAME, dev);</SPAN></FONT></DI=
+V>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>return=
+s -ENOSYS on=20
+the newer kernel.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>Have=
+ the IRQ=20
+mappings for the external IRQX pins been moved in the later=20
+kernels?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008>-</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Dag K. W. Rognlien</FONT><=
+/DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Research Scientist</FONT><=
+/DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>SINTEF ICT Communication=20
+Systems</FONT></DIV></DIV>
+<DIV><BR></DIV></SPAN></FONT>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
 
-- k
+------_=_NextPart_001_01C861B1.B69366EA--
