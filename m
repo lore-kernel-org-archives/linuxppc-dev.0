@@ -1,19 +1,19 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CA945DDEEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 06:01:03 +1100 (EST)
-Date: Mon, 28 Jan 2008 13:00:37 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: fix typo in mpc837x compatible entries
-Message-Id: <20080128130037.db88184d.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5FF49DDED4
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 06:26:41 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0SJQZCE029786
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 13:26:36 -0600
+Date: Mon, 28 Jan 2008 13:24:08 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 85xx: Only invalidate TLB0 and TLB1
+Message-ID: <Pine.LNX.4.64.0801281323530.25254@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/boot/dts/mpc8377_rdb.dts |    2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts |    2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+All current 85xx/e500 implementations only have two TLB
+arrays.  We are wasting cycles by invalidating TLB2 and TLB3.
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 8fe02cc..cd60005 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -12,7 +12,7 @@
- /dts-v1/;
- 
- / {
--	compatible = "fsl,mpc8377erdb";
-+	compatible = "fsl,mpc8377rdb";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 33d490b..03831a1 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -12,7 +12,7 @@
- /dts-v1/;
- 
- / {
--	compatible = "fsl,mpc8378erdb";
-+	compatible = "fsl,mpc8378rdb";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index a81e916..255d2e4 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -12,7 +12,7 @@
- /dts-v1/;
- 
- / {
--	compatible = "fsl,mpc8379erdb";
-+	compatible = "fsl,mpc8379rdb";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
+---
+ arch/powerpc/kernel/misc_32.S |   10 ----------
+ 1 files changed, 0 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index be09f0d..5c2e253 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -275,12 +275,6 @@ _GLOBAL(_tlbia)
+ 	/* Invalidate all entries in TLB1 */
+ 	li	r3, 0x0c
+ 	tlbivax	0,3
+-	/* Invalidate all entries in TLB2 */
+-	li	r3, 0x14
+-	tlbivax	0,3
+-	/* Invalidate all entries in TLB3 */
+-	li	r3, 0x1c
+-	tlbivax	0,3
+ 	msync
+ #ifdef CONFIG_SMP
+ 	tlbsync
+@@ -375,12 +369,8 @@ _GLOBAL(_tlbie)
+ #elif defined(CONFIG_FSL_BOOKE)
+ 	rlwinm	r4, r3, 0, 0, 19
+ 	ori	r5, r4, 0x08	/* TLBSEL = 1 */
+-	ori	r6, r4, 0x10	/* TLBSEL = 2 */
+-	ori	r7, r4, 0x18	/* TLBSEL = 3 */
+ 	tlbivax	0, r4
+ 	tlbivax	0, r5
+-	tlbivax	0, r6
+-	tlbivax	0, r7
+ 	msync
+ #if defined(CONFIG_SMP)
+ 	tlbsync
 -- 
-1.5.2.2
+1.5.3.7
