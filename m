@@ -1,17 +1,20 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F31FDDF2F
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 02:29:14 +1100 (EST)
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 86xx: Remove unused IRQ defines 
-In-Reply-To: Your message of "Mon, 28 Jan 2008 09:20:00 CST."
-	<Pine.LNX.4.64.0801280919410.22627@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0801280919410.22627@blarg.am.freescale.net> 
-Date: Mon, 28 Jan 2008 09:29:09 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JJVv3-0005WM-Ik@jdl.com>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 77224DDEE8
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 02:50:20 +1100 (EST)
+Date: Mon, 28 Jan 2008 09:50:12 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: "Bryan O'Donoghue" <bodonoghue@codehermit.ie>
+Subject: Re: PATCH[1/1] 8xx: Add clock-frequency to .dts brg entries
+Message-ID: <20080128155012.GA27054@ld0162-tx32.am.freescale.net>
+References: <1201485191.5537.55.camel@neuromancer.mindspace>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1201485191.5537.55.camel@neuromancer.mindspace>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,13 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Kumar Gala mumbled:
-> 86xx uses the flat device tree for all its needs so we dont need explicit
-> IRQ info. Its not clear why this code existed since 86xx never existed in
-> arch/ppc.
+On Mon, Jan 28, 2008 at 01:53:11AM +0000, Bryan O'Donoghue wrote:
+> cpm_uart_core has a dependency on fsl,cpm-brg/clock-frequency, this
+> means that a .dts that uses the cpm uart driver needs to supply a
+> clock-frequency entry for get_brgfreq to return a meaningful number.
+> 
+> Included is a patchset which adds the correct brgclk to the adder port -
+> @ 50Mhz and also adds an entry for mpc885ads - which I've noticed is
+> missing a clock-frequency entry.
 
-Sorry, my fault.
+It's not missing -- it's added by the bootwrapper.
 
-If you Sign-off-by: that patch, a maintainer can apply it! :-)
-
-jdl
+-Scott
