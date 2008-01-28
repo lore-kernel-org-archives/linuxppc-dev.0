@@ -1,22 +1,22 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3D040DDE23
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 04:18:50 +1100 (EST)
-Subject: Re: [PATCH 3/3] Add device tree compatible aliases to i2c drivers
-From: Jon Loeliger <jdl@freescale.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-In-Reply-To: <20080128144209.8410.37884.stgit@terra.home>
-References: <20080128144202.8410.14647.stgit@terra.home>
-	<20080128144209.8410.37884.stgit@terra.home>
-Content-Type: text/plain
-Message-Id: <1201540252.24073.6.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Mon, 28 Jan 2008 11:10:55 -0600
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+	by ozlabs.org (Postfix) with ESMTP id 83FAEDDED6
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 04:19:48 +1100 (EST)
+Message-ID: <479E0EC4.5070707@freescale.com>
+Date: Mon, 28 Jan 2008 11:20:04 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
+Subject: Re: request_irq() for external interrupt pin on MPC875 (A&M adder
+	MPC 	875)
+References: <39417DF3286A66428FA558987839F44F03FC914F@SINTEFXCH01.sintef.no>
+In-Reply-To: <39417DF3286A66428FA558987839F44F03FC914F@SINTEFXCH01.sintef.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-01-28 at 08:42, Jon Smirl wrote:
-> PowerPC device trees use a different naming convention than the Linux kernel.  Provide alias names for i2c drivers in order to allow them to be loaded by device tree name. The OF_ID macro ensures that the aliases are only present in powerpc builds and separated into their own namespace.
-> 
-> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> ---
+Rognlien Dag Kristian wrote:
+> With kernel 2.6.13 we used
+>  
+> request_irq (use_irq, irq_handler, SA_INTERRUPT|SA_SHIRQ, DEVICE_NAME, dev)
+>  
+> where use_irq is 12 to use the external IRQ6 pin.
+>  
+> We are now trying to get this driver to work with the 2.6.25 pull from 
+> powerpc.git.
+>  
+> request_irq (use_irq, irq_handler, IRQF_SHARED, DEVICE_NAME, dev);
+>  
+> returns -ENOSYS on the newer kernel.
+>  
+> Have the IRQ mappings for the external IRQX pins been moved in the later 
+> kernels?
 
-Hi Jon,
+Yes, you need to use the result of irq_create_mapping() or 
+irq_of_parse_and_map().
 
-Any chance we can have hard 70-ish column limited
-log messages, please?
-
-Thanks,
-jdl
+-Scott
