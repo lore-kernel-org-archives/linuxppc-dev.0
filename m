@@ -1,14 +1,30 @@
-Return-Path: <bodonoghue@codehermit.ie>
-Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
-	by ozlabs.org (Postfix) with ESMTP id 3D815DDDE9
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 12:53:24 +1100 (EST)
-Subject: PATCH[1/1] 8xx: Add clock-frequency to .dts brg entries
-From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-To: linuxppc-dev@ozlabs.org, scottwood@freescale.com
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 01:53:11 +0000
-Message-Id: <1201485191.5537.55.camel@neuromancer.mindspace>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16DFBDDDE9
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 15:26:19 +1100 (EST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+In-Reply-To: <1201450409.1931.23.camel@thor.sulgenrain.local>
+References: <1200659696.23161.81.camel@thor.sulgenrain.local>
+	<1201013786.4726.28.camel@thor.sulgenrain.local>
+	<1201090699.9052.39.camel@thor.sulgenrain.local>
+	<1201092131.6341.51.camel@lappy> <1201244082.6815.128.camel@pasglop>
+	<1201244618.6815.130.camel@pasglop> <1201245901.6815.133.camel@pasglop>
+	<1201251000.6341.108.camel@lappy>
+	<20080126040734.GA21365@linux.vnet.ibm.com>
+	<1201320834.6815.160.camel@pasglop>
+	<20080126050757.GB14177@linux.vnet.ibm.com>
+	<1201450409.1931.23.camel@thor.sulgenrain.local>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 28 Jan 2008 15:25:24 +1100
+Message-Id: <1201494324.6815.171.camel@pasglop>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	vatsa@linux.vnet.ibm.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,55 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cpm_uart_core has a dependency on fsl,cpm-brg/clock-frequency, this
-means that a .dts that uses the cpm uart driver needs to supply a
-clock-frequency entry for get_brgfreq to return a meaningful number.
 
-Included is a patchset which adds the correct brgclk to the adder port -
-@ 50Mhz and also adds an entry for mpc885ads - which I've noticed is
-missing a clock-frequency entry.
+On Sun, 2008-01-27 at 17:13 +0100, Michel Dänzer wrote:
+> 
+> > Do you see behavior change (from good->bad) immediately after
+> applying that patch 
+> > during your bisect process?
+> 
+> Yes, confirmed by trying that commit and its parent again.
 
-Without an entry for clock-frequency in the .dts you'd get -1 as the
-return value brgclk !
+Just to be paranoid... can you try with a different gcc version in case
+something gets miscompiled ?
 
-Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
----
-
-diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts
-b/arch/powerpc/boot/dts/adder875-redboot.dts
-index 7c25d96..975f3d4 100644
---- a/arch/powerpc/boot/dts/adder875-redboot.dts
-+++ b/arch/powerpc/boot/dts/adder875-redboot.dts
-@@ -149,6 +149,7 @@
-                                compatible = "fsl,mpc875-brg",
-                                             "fsl,cpm1-brg",
-                                             "fsl,cpm-brg";
-+                               clock-frequency = <0x2faf080>;
-                                reg = <0x9f0 0x10>;
-                        };
- 
-diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts
-b/arch/powerpc/boot/dts/adder875-uboot.dts
-index 605202f..18d6dd6 100644
---- a/arch/powerpc/boot/dts/adder875-uboot.dts
-+++ b/arch/powerpc/boot/dts/adder875-uboot.dts
-@@ -148,6 +148,7 @@
-                                compatible = "fsl,mpc875-brg",
-                                             "fsl,cpm1-brg",
-                                             "fsl,cpm-brg";
-+                               clock-frequency = <0x2faf080>;
-                               reg = <0x9f0 0x10>;
-                        };
- 
-diff --git a/arch/powerpc/boot/dts/mpc885ads.dts
-b/arch/powerpc/boot/dts/mpc885ads.dts
-index 8848e63..f2a437b 100644
---- a/arch/powerpc/boot/dts/mpc885ads.dts
-+++ b/arch/powerpc/boot/dts/mpc885ads.dts
-@@ -166,6 +166,7 @@
-                                compatible = "fsl,mpc885-brg",
-                                             "fsl,cpm1-brg",
-                                             "fsl,cpm-brg";
-+                               clock-frequency = <0>;
-                                reg = <9f0 10>;
-                        };
+Ben.
