@@ -1,19 +1,20 @@
-Return-Path: <jsamch@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id A5238DDD0A
+Return-Path: <tlopez@aotek.es>
+Received: from smtp-out1b.sarenet.es (smtp-out1b.sarenet.es [194.30.18.11])
+	by ozlabs.org (Postfix) with ESMTP id B4C5DDDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Jan 2008 16:55:04 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2824500wag.13
+	Mon, 28 Jan 2008 20:07:29 +1100 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by smtp-out1b.sarenet.es (Postfix) with ESMTP id 66E716D483
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Jan 2008 21:55:03 -0800 (PST)
-Message-ID: <169c03cb0801272155m2b1c8b64qbaa25568b510ea6d@mail.gmail.com>
-Date: Mon, 28 Jan 2008 00:55:01 -0500
-From: "Jean-Samuel Chenard" <jsamch@macs.ece.mcgill.ca>
-Sender: jsamch@gmail.com
-To: linuxppc-embedded@ozlabs.org
-Subject: xsysace.c driver oops on reboot (PPC405 on Virtex-II pro)
+	Mon, 28 Jan 2008 09:37:59 +0100 (CET)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset=iso-8859-1
+Subject: RE: MPC5200B SPI codec error when there is a heavy ethernet
+Date: Mon, 28 Jan 2008 09:37:54 +0100
+Message-ID: <918EB199DDDFFA42BEA2EB3A1C6021F3020BEB4D@CORREO>
+From: "TXEMA LOPEZ" <tlopez@aotek.es>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,78 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGksCgpJIGFtIHVzaW5nIGEgWGlsaW54IE1MLTMxMCBib2FyZCBhbmQgYSBCRUUyIGRldmVsb3Bt
-ZW50IHN5c3RlbSBhbmQKYm90aCBjb25maWd1cmF0aW9ucyBzaG93IHRoZSBzYW1lIHByb2JsZW0u
-ICBJIHVzZSB0aGUgU3lzdGVtIEFDRSBJUApjb3JlIChvcGJfc3lzYWNlIHZlcnNpb24gMS4wMC5j
-IG9uIEVESzkuMS4wMmkpLiAgSWYgSSBjb21waWxlIG15Cmtlcm5lbCAyLjYuMjQtcmMzIChJIHVz
-ZSBhIHZlcnkgcmVjZW50IHB1bGwgZnJvbSBnaXQuc2VjcmV0bGFiLmNhKQp3aXRoIHRoZSAib2xk
-IFN5c3RlbSBBQ0UiIGRyaXZlciBmcm9tIFhpbGlueCwgSSBjYW4gaXNzdWUgdGhlIHJlYm9vdApj
-b21tYW5kIG9uIGJ1c3lib3ggYW5kIEkgZ2V0IGEgcHJvcGVyIHJlYm9vdC4KCklmIEkgY29tcGls
-ZSBteSBrZXJuZWwgd2l0aCB0aGUgbmV3IFN5c3RlbUFDRSBkcml2ZXIKKGRyaXZlcnMvYmxvY2sv
-eHN5c2FjZS5jKSwgdGhlIGRyaXZlciB3b3JrcyBncmVhdCBhbmQgSSBjYW4gcmVhZC93cml0ZQp0
-byB0aGUgQ29tcGFjdEZsYXNoIGNhcmQgd2l0aG91dCBwcm9ibGVtcy4gICBIb3dldmVyLCB3aGVu
-IEkgaXNzdWUgdGhlCnJlYm9vdCBjb21tYW5kLCBJIGdldCBhIGtlcm5lbCBvb3BzLiAgU3RyYW5n
-ZWx5LCB0aGUgb29wcyBkb2VzIG5vdApoYXBwZW4gd2hlbiBJIGRvIGEgc2h1dGRvd24gY29tbWFu
-ZCAoa2VybmVsIGhhbHQpLiAgSSBmdXJ0aGVyCmludmVzdGlnYXRlZCB0aGUgaXNzdWUgYnkgYnVp
-bGRpbmcgYSBSQU0gZmlsZXN5c3RlbSBhbmQgYnVpbGRpbmcgYm90aApzeXN0ZW0gQUNFIGRyaXZl
-cnMgYXMgbG9hZGFibGUgbW9kdWxlcy4KCklmIEkgZG9uJ3QgbG9hZCBhbnkgc3lzdGVtQUNFIG1v
-ZHVsZSBhbmQgY2FsbCByZWJvb3QgPT4gSSBnZXQgdGhlIG9vcHMgbWVzc2FnZS4KSWYgSSBsb2Fk
-IHRoZSBuZXcgc3lzdGVtQUNFIG1vZHVsZSBhbmQgY2FsbCByZWJvb3QgPT4gSSBnZXQgdGhlIG9v
-cHMgbWVzc2FnZS4KSWYgSSBsb2FkIHRoZSAiT2xkIFN5c3RlbUFjZSIgbW9kdWxlIGFuZCBjYWxs
-IHJlYm9vdCA9PiBUaGUgcHJvY2Vzc29yCnJlYm9vdHMgcHJvcGVybHkgLSBHT09ECklmIEkgbG9h
-ZCB0aGUgIk9sZCBTeXN0ZW1BY2UiIG1vZHVsZSwgdW5sb2FkIGl0IGFuZCB0aGVuIGNhbGwgcmVi
-b290Cj0+IEkgZ2V0IHRoZSBvb3BzIG1lc3NhZ2UKClNvIHRoZXJlIGlzIHNvbWUgY29kZSB0aGF0
-IGdldHMgY2FsbGVkIHdpdGggdGhlIE9sZCBTeXN0ZW1BQ0UgZHJpdmVyCndoaWNoIG1ha2VzIGl0
-IGhhbmRsZSB0aGUgcmVib290IGNvcnJlY3RseSB0aGF0IHNlZW1zIHRvIGJlIG1pc3NpbmcKZnJv
-bSB0aGUgbmV3IHN5c3RlbUFDRSBkcml2ZXIuICBUaGUgaGFyZHdhcmUgSVAgbWF5IGJlIG1pc2Jl
-aGF2aW5nCmxpa2Ugc2VuZGluZyBhbiBpbnRlcnJ1cHQgb3Igc29tZXRoaW5nIGxpa2UgdGhhdCBh
-dCBzb21lIHBvaW50IHdoZW4KdGhlIHByb2Nlc3NvciBpcyBnb2luZyBmb3IgcmVib290IGFuZCB1
-bmFibGUgdG8gaGFuZGxlIGl0LiAgVGhlIFhpbGlueAoob2xkKSBkcml2ZXIgc2VlbXMgdG8gcGx1
-ZyB1cCB0aGlzIHByb2JsZW0gc29tZWhvdy4uLgoKTm90ZSB0aGF0IEkgZGlkIGhhdmUgdG8gdHdl
-YWsgdGhlIG5ldyBzeXN0ZW1BQ0UgZHJpdmVyIHNsaWdodGx5IHRvCm1ha2UgaXQgd29yayBvbiB0
-aGUgTUwtMzEwIChiZWNhdXNlIG9mIHRoZSA4LWJpdCBidXMgb2YgdGhlClN5c3RlbUFDRSk6CkBA
-IC0xMTI2LDcgKzExMjYsNyBAQCBzdGF0aWMgdm9pZCBfX2RldmV4aXQgYWNlX2ZyZWUoc3RydWN0
-IGRldmljZSAqZGV2KQogc3RhdGljIGludCBfX2RldmluaXQgYWNlX3Byb2JlKHN0cnVjdCBwbGF0
-Zm9ybV9kZXZpY2UgKmRldikKIHsKICAgICAgICB1bnNpZ25lZCBsb25nIHBoeXNhZGRyID0gMDsK
-LSAgICAgICBpbnQgYnVzX3dpZHRoID0gQUNFX0JVU19XSURUSF8xNjsgLyogRklYTUU6IHNob3Vs
-ZCBub3QgYmUgaGFyZCBjb2RlZCAqLworICAgICAgIGludCBidXNfd2lkdGggPSBBQ0VfQlVTX1dJ
-RFRIXzg7IC8qIEZJWE1FOiBzaG91bGQgbm90IGJlIGhhcmQgY29kZWQgKi8KICAgICAgICBpbnQg
-aWQgPSBkZXYtPmlkOwogICAgICAgIGludCBpcnEgPSBOT19JUlE7CgpIZXJlIGlzIGFuIG9vcHMg
-dHJhY2UgdGhhdCBJIGdvdCB3aGVuIEkgZG9uJ3QgbG9hZCBhbnkgc3lzdGVtQUNFCmRyaXZlciAo
-SSBzaG93IGEgZmV3IG9mIHRoZSBsYXN0IGNvbnNvbGUgbWVzc2FnZXMgYmVmb3JlIHRoZSBvb3Bz
-KS4gIEkKZ290IHRoaXMgbWVzc2FnZSBmcm9tIG15IE1MLTMxMCBib2FyZCwgYnV0IHRoZSBzYW1l
-IGhhcHBlbnMgb24gdGhlCkJFRTI6Cj09ClRoZSBzeXN0ZW0gaXMgZ29pbmcgZG93biBOT1chClNl
-bmRpbmcgU0lHVEVSTSB0byBhbGwgcHJvY2Vzc2VzClJlcXVlc3Rpbmcgc3lzdGVtIHJlYm9vdApb
-ICAgMjUuODYyNDQwXSBSZXN0YXJ0aW5nIHN5c3RlbS4KWyAgIDI1Ljjvv71bICAgMjUuODY2NDY3
-XSBPb3BzOiBFeGNlcHRpb24gaW4ga2VybmVsIG1vZGUsIHNpZzogOCBbIzFdClsgICAyNS44NzAz
-ODJdIE5JUDogYzdkMjFlMDAgTFI6IGM3ZDIxZGYwIENUUjogMDAwMDAwMDEKWyAgIDI1Ljg3NTMx
-Ml0gUkVHUzogYzdkMjFkNDAgVFJBUDogMjAwMWRmMCAgIE5vdCB0YWludGVkCigyLjYuMjQtcmMz
-LWpzYy1zZWNsYWItTkVUV09SSy1nNTk1NThkYzEtZGlydHkpClsgICAyNS44ODQ2MzBdIE1TUjog
-YzAwZTg3M2MgPEVFLElSLERSPiAgQ1I6IDAwMDAwMDEwICBYRVI6IDAwMTIwMGQyClsgICAyNS44
-OTA2ODRdIFRBU0sgPSBjN2MzN2JhMFsxNDldICdsaW51eHJjJyBUSFJFQUQ6IGM3ZDIwMDAwClsg
-ICAyNS44OTYwMzRdIEdQUjAwOiAzYzMwM2U1YiAyMDIwMjAzMiAzNTJlMzgzNiAzMjM0MzQzMCA1
-ZDIwMDBhMApjMDBmNTg1OCAwMDAwMDcwMCA3ZmI3OGYwYwpbICAgMjUuOTA0MzI3XSBHUFIwODog
-MDAwMDAwMDAgZmVlMWRlYWQgMjgxMjE5NjkgMDAwMDAwMDAgYzdkMjFkZjAKYzAwMWYxNTAgMDdm
-ZmRkYTggMDAwMDAwMDAKWyAgIDI1LjkxMjYyMF0gR1BSMTY6IDAwMDAwMDAxIDAwMDAwMDAwIGMw
-MTkwMDAwIGMwM2NmY2ZjIGMwMDBiNTRjCjAwMDAwY2IyIDAwMDAwMDAwIDAwMDAwMDAwClsgICAy
-NS45MjA5MTRdIEdQUjI0OiAwMDAwMDAwMCBmZmZmZmZmZiAwMDAwMDAwMCAwMDAyZDAzMCAwMDAw
-MDAwMQpjMDAyZGM1NCBjN2QyMWU4NCBjN2QyMWU2MApbICAgMjUuOTI5MzgxXSBOSVAgW2M3ZDIx
-ZTAwXSAweGM3ZDIxZTAwClsgICAyNS45MzMwMDldIExSIFtjN2QyMWRmMF0gMHhjN2QyMWRmMApb
-ICAgMjUuOTM2NTUwXSBDYWxsIFRyYWNlOgpbICAgMjUuOTM4OTcxXSBJbnN0cnVjdGlvbiBkdW1w
-OgpbICAgMjUuOTQxOTA4XSBYWFhYWFhYWCBYWFhYWFhYWCBYWFhYWFhYWCBYWFhYWFhYWCBYWFhY
-WFhYWCBYWFhYWFhYWApYWFhYWFhYWCBYWFhYWFhYWApbICAgMjUuOTQ5NTk1XSBYWFhYWFhYWCBY
-WFhYWFhYWCBYWFhYWFhYWCBYWFhYWFhYWCBYWFhYWFhYWCBYWFhYWFhYWApYWFhYWFhYWCBYWFhY
-WFhYWAo9PQoKTm90ZSB0aGF0IEkgaGF2ZSBlbmFibGVkIENPTkZJR19ERUJVR19CVUdWRVJCT1NF
-LCBDT05GSUdfREVCVUdfSU5GTwphbmQgQ09ORklHX0RFQlVHX0tFUk5FTC4gIEhvd2V2ZXIsIHRo
-b3NlIGFkZHJlc3NlcyBnaXZlbiBhdCBOSVAgZG9uJ3QKc2VlbSB0byBtYXRjaCBhbnl0aGluZyBp
-biBteSBrZXJuZWwgbWVtb3J5IG1hcC4KCkkgYW0gYSBiaXQgZ3JlZW4gdG8gZW1iZWRkZWQgbGlu
-dXggYW5kIGVzcGVjaWFsbHkgdGhlIGRlYnVnZ2luZyBvZgprZXJuZWwgZXJyb3JzLi4uICBEaWQg
-YW55IG90aGVyIE1MLTMxMCB1c2VycyBlbmNvdW50ZXIgdGhpcyBwcm9ibGVtCmJlZm9yZSA/CgpU
-aGUgZWFzeSBmaXggaXMganVzdCB0byB1c2UgdGhlIG9sZCBkcml2ZXIgZnJvbSBYaWxpbngsIGJ1
-dCB0aGUgbmV3CmRyaXZlciBzZWVtcyBmYXN0ZXIgYW5kIGlzIG5vdyBwYXJ0IG9mIHRoZSBtYWlu
-bGluZSB0cmVlLi4uCgpMZXQgbWUga25vdyBpZiB5b3Uga25vdyBzb21lIHRyaWNrcyBvbiBob3cg
-SSBjb3VsZCBkZWJ1ZyB0aGlzIHByb2JsZW0uCiBOb3RlIHRoYXQgYXQgdGhpcyB0aW1lLCBJIGRv
-bid0IGhhdmUgYSBkZWJ1Z2dpbmcgY2FibGUgZm9yIG15IE1MLTMxMCwKc28gSSByZWx5IG9uIHBy
-aW50aW5nIGZvciBkZWJ1Z2dpbmcuCgpUaGFua3MsCgpKZWFuLVNhbXVlbAotLSAKSW50ZWdyYXRl
-ZCBNaWNyb3N5c3RlbXMgTGFib3JhdG9yeQpNY0dpbGwgVW5pdmVyc2l0eSwgTW9udHLDqWFsLCBR
-QywgQ0FOQURBCldlYiBQYWdlOiBodHRwOi8vY2hhb3MuZWNlLm1jZ2lsbC5jYQo=
+
+Hi all,=20
+
+The engineers of Freescale have recognized a problem in the PSC SPI =
+Slave Select signal when there is a heavy ethernet loading. Textually =
+they say:
+
+" I have tested the MPC5200B FEC and PSC6 SPI.=20
+You are right. If there is heavy Ethernet loading, the PSC SPI can stop =
+during transmission with SS goes high.
+Use a general-purpose output as SPI slave select signal instead PSC SPI =
+SS signal.
+Factory is informed about similar incorrect behaviour of the PSC SPI =
+slave select."
+
+We have repeated the error in three scenarios:
+	In our MPC5200B custom board with a Denx 2.4.25 kernel.
+	In a Lite5200B with a Denx 2.4.25 kernel.
+	In a Lite5200B with the freescale bsp: =
+mpc5200_lite5200b_20070203_ltib-rc4. It's a 2.6.16 kernel version.
+
+We have checked the PSC3 and PSC6 and the behaviour is the same.
+
+So, it seems is a chip's bug and we must avoid to use the SS signal with =
+the PSC SPI if we want to communicate by ethernet. I think it's a =
+probabilistic error and in case there is some traffic in ethernet and a =
+transmission by SPI at the same time it could happen.
+
+
+Best regards,
+Txema L=F3pez.
+
+=09
+=09
+=09
