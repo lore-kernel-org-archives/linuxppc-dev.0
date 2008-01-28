@@ -1,23 +1,25 @@
-Return-Path: <sheflin@newagemicro.com>
-Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
-	[66.129.110.196])
+Return-Path: <yeduj@ece.pdx.edu>
+Received: from ehlo.cat.pdx.edu (ehlo.cat.pdx.edu [131.252.208.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 13852DDDDB
+	(Client CN "mailhost.cecs.pdx.edu",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2611ADDD0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Jan 2008 14:38:03 +1100 (EST)
-Date: Sun, 27 Jan 2008 22:37:36 -0500
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,linuxppc-embedded@ozlabs.org
-From: Steve Heflin <sheflin@newagemicro.com>
-Subject: Re: Reminder: removal of arch/ppc - (Sequoia)
-In-Reply-To: <20080127200044.148982a6@zod.rchland.ibm.com>
-References: <20080127231214.1F50ADDDE9@ozlabs.org>
-	<20080127233923.GA5550@lixom.net>
-	<20080127233751.A6F9EDDDF0@ozlabs.org>
-	<20080127200044.148982a6@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Message-Id: <20080128033804.13852DDDDB@ozlabs.org>
+	Mon, 28 Jan 2008 15:25:11 +1100 (EST)
+Message-ID: <20080127202502.zte3h0yr4s44ooc8@webmail.cecs.pdx.edu>
+Date: Sun, 27 Jan 2008 20:25:02 -0800
+From: Yedu Jathavedan <yeduj@ece.pdx.edu>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Load Kernel 2.6 using U-boot on ML403
+References: <20080126231047.y3lm7epb0gw4cog8@webmail.cecs.pdx.edu>
+	<fa686aa40801271313y4370ac3dmd4460d79362f10c4@mail.gmail.com>
+In-Reply-To: <fa686aa40801271313y4370ac3dmd4460d79362f10c4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,28 +30,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-At 09:00 PM 1/27/2008, Josh wrote:
->On Sun, 27 Jan 2008 18:37:22 -0500
->Steve Heflin <sheflin@newagemicro.com> wrote:
->
-> > Hello!
-> >
-> > Yes! I'm looking at 2.6.23.14 as I thought that was the newest
-> > version. I completely missed seeing the 2.6.24 kit, thank you so much!!
->
->FYI, 2.6.24 is considered fairly old relatively speaking.  With so much
->activity going on for the embedded boards for arch/powerpc, you're sort
->of missing out if you aren't running from the latest git trees.
->
->Yes, I realize how ridiculous it sounds to say a kernel that was just
->released 3 days ago is old, but that's reality.
->
->josh
 
-Hey Josh, thank you so much for the pointer to the git trees. I've 
-been using Linus' kernel.org tree, as that's where I was pointed to 
-by the powerpc web site about 2 months ago. I sure do appreciate your 
-updated pointer to the git tree, I will now locate it and stay tuned 
-and participate.
+>
+> Looking at your bootlog, it doesn't look like you've got the systemace
+> driver built into the kernel.
+>
+>
+Grant,
 
-steve
+Yes, the systemace was not built into the kernel. It is successfully  
+booting the kernel now.
+Trying to bring up the Ethernet interface. Any pointers?
+
+Thank you,
+Yedu
