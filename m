@@ -1,23 +1,19 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B899CDE15D
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 05:46:35 +1100 (EST)
-Message-ID: <479E22E0.9010105@scram.de>
-Date: Mon, 28 Jan 2008 19:45:52 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Bryan Wu <cooloney.lkml@gmail.com>
-Subject: Re: [PATCHv3 2.6.25] i2c: adds support for i2c bus on Freescale
-	CPM1/CPM2 controllers
-References: <479A185D.6010406@scram.de>
-	<386072610801280921q3e96bfc1v40ad09660c0f7ad8@mail.gmail.com>
-In-Reply-To: <386072610801280921q3e96bfc1v40ad09660c0f7ad8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>,
-	Linux I2C <i2c@lm-sensors.org>, Scott Wood <scottwood@freescale.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CA945DDEEA
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 06:01:03 +1100 (EST)
+Date: Mon, 28 Jan 2008 13:00:37 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc: fix typo in mpc837x compatible entries
+Message-Id: <20080128130037.db88184d.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Bryan,
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8377_rdb.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts |    2 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
->> +
->> +       /* register new adapter to i2c module... */
->> +
->> +       result = i2c_add_adapter(&cpm->adap);
-> 
-> As I was pointed before, please use the new style i2c driver interface:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=991dee591a99d035796a8c194eb1796cc020e142
-
-AFAIK, the device tree currently doesn't provide an adapter id. If we're going to add this property, this would be
-needed on other of_platform i2c drivers, as well.
-
-Thanks,
-Jochen
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 8fe02cc..cd60005 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -12,7 +12,7 @@
+ /dts-v1/;
+ 
+ / {
+-	compatible = "fsl,mpc8377erdb";
++	compatible = "fsl,mpc8377rdb";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 33d490b..03831a1 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -12,7 +12,7 @@
+ /dts-v1/;
+ 
+ / {
+-	compatible = "fsl,mpc8378erdb";
++	compatible = "fsl,mpc8378rdb";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index a81e916..255d2e4 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -12,7 +12,7 @@
+ /dts-v1/;
+ 
+ / {
+-	compatible = "fsl,mpc8379erdb";
++	compatible = "fsl,mpc8379rdb";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+-- 
+1.5.2.2
