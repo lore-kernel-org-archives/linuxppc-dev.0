@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 3/3] Cell IOMMU static mapping support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20080128214813.GA24416@lixom.net>
-References: <edf2d9650b044e2bc21e9b74ad1044f4e5b6615c.1201257905.git.michael@ellerman.id.au>
-	<9ce4678eef9e50908969eb1ef8470e307f3076ff.1201257905.git.michael@ellerman.id.au>
-	<20080126025117.GA28066@lixom.net> <200801281241.49059.arnd@arndb.de>
-	<20080128162343.GA19859@lixom.net> <1201554977.6815.189.camel@pasglop>
-	<20080128214813.GA24416@lixom.net>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 08:37:57 +1100
-Message-Id: <1201556277.6815.194.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Patches added to for-2.6.25/master branches of powerpc.git
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200801282119.41403.arnd@arndb.de>
+References: <18330.53318.857148.409675@cargo.ozlabs.ibm.com>
+	<1201394998.6659.3.camel@concordia> <200801282119.41403.arnd@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-t/ty3qcRA57xxClankzJ"
+Date: Tue, 29 Jan 2008 09:08:20 +1100
+Message-Id: <1201558100.17702.0.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>,
-	Arnd Bergmann <arnd@arndb.de>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2008-01-28 at 15:48 -0600, Olof Johansson wrote:
-> > > Does the cell I/O bridge reflect out accesses to 2-4GB on the bus
-> > > again? If not, that could be another place to stick the dynamic range
-> > > for large config machines.
-> > 
-> > On the PCI bus itself, 2-4GB is where MMIO sits.
-> 
-> Depending on the implementation, 2-4GB accesses _from_ PCI could mean
-> something else. 
+--=-t/ty3qcRA57xxClankzJ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Not on PCI / PCI-X no. Maybe PCI-E could do that sort of ugly hacks but
-that wouldn't be within specs I believe.
+On Mon, 2008-01-28 at 21:19 +0100, Arnd Bergmann wrote:
+> On Sunday 27 January 2008, Michael Ellerman wrote:
+> > Can you grab these four assuming there's no objections in the meantime.
+> >=20
+> > http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16430
+> > http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16433
+> > http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16434
+> > http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D16437
+> >=20
+>=20
+> Yes, they all look good to me, you can add an
+> 'Acked-by: Arnd Bergmann <arnd@arndb.de>' if you like.
+>=20
+> What about your other series that adds the linear iommu mapping
+> for cell blades? Are you still waiting for more feedback and
+> testing on that, or can it also go in?
 
-> But for most machines it doesn't, and I'm guessing cell
-> is one of those.
+I'd like to clean it up a bit, split the big patch up a bit. I'll try to
+do that today or tomorrow. And more testing would definitely be good,
+but that's a little tricky from LCA :)
 
-Ben.
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-t/ty3qcRA57xxClankzJ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHnlJUdSjSd0sB4dIRAuZqAKCDQN/rCO8+6fIwtX2QTKUQ5idZHACgtxYW
+SsWDHWHTgYTNiLoBvToVd5g=
+=CiHW
+-----END PGP SIGNATURE-----
+
+--=-t/ty3qcRA57xxClankzJ--
