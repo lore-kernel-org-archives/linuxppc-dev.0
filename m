@@ -1,19 +1,19 @@
-Return-Path: <Dag.K.Rognlien@sintef.no>
-Received: from smtpb.sintef.no (smtpb.sintef.no [129.241.253.24])
-	by ozlabs.org (Postfix) with ESMTP id 8896DDDE21
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 00:55:49 +1100 (EST)
-Received: from sintefav1.sintef.no (sintefav1.sintef.no [129.241.253.14])
-	by smtpb.sintef.no (Postfix) with ESMTP id CCC5572279
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 14:28:43 +0100 (CET)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C861B1.B69366EA"
-Subject: request_irq() for external interrupt pin on MPC875 (A&M adder MPC
-	875)
-Date: Mon, 28 Jan 2008 14:28:48 +0100
-Message-ID: <39417DF3286A66428FA558987839F44F03FC914F@SINTEFXCH01.sintef.no>
-From: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 62F1EDDED5
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 03:28:45 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0SGSAgG019318
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 10:28:11 -0600
+Date: Mon, 28 Jan 2008 10:25:43 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 85xx: rework platform Kconfig
+Message-ID: <Pine.LNX.4.64.0801281024570.11773@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,99 +23,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+* Allow multiple boards to be selected in a single build
+* Removed Kconfig option '85xx' which existed only for compat with arch/ppc
+* Added a multiplatform 85xx defconfig (mpc85xx_defconfig). This builds
+  all 85xx boards except sbc8560 and stx_gp3 since these to boards have
+  board specific ifdef in driver code that may break all other boards
 
-------_=_NextPart_001_01C861B1.B69366EA
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+---
 
-With kernel 2.6.13 we used=20
-=20
-request_irq (use_irq, irq_handler, SA_INTERRUPT|SA_SHIRQ, DEVICE_NAME,
-dev)
-=20
-where use_irq is 12 to use the external IRQ6 pin.
-=20
-We are now trying to get this driver to work with the 2.6.25 pull from
-powerpc.git.
-=20
-request_irq (use_irq, irq_handler, IRQF_SHARED, DEVICE_NAME, dev);
-=20
-returns -ENOSYS on the newer kernel.
-=20
-Have the IRQ mappings for the external IRQX pins been moved in the later
-kernels?
-=20
+* removed defconfig from patch.
+
+ arch/powerpc/configs/mpc85xx_defconfig | 1521 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig    |   32 +-
+ arch/powerpc/platforms/Kconfig.cputype |    6 +-
+ 3 files changed, 1533 insertions(+), 26 deletions(-)
+ create mode 100644 arch/powerpc/configs/mpc85xx_defconfig
+
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 74779b9..7e76ddb 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -1,7 +1,14 @@
+-choice
+-	prompt "Machine Type"
++menuconfig MPC85xx
++	bool "Machine Type"
+ 	depends on PPC_85xx
+-	default MPC8540_ADS
++	select PPC_UDBG_16550
++	select PPC_INDIRECT_PCI if PCI
++	select MPIC
++	select FSL_PCI if PCI
++	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
++	default y
++
++if MPC85xx
+
+ config MPC8540_ADS
+ 	bool "Freescale MPC8540 ADS"
+@@ -96,24 +103,7 @@ config SBC8560
+ 	help
+ 	  This option enables support for the Wind River SBC8560 board
+
+-endchoice
++endif # MPC85xx
+
+ config TQM85xx
+ 	bool
+-	select MPC85xx
 -
-Dag K. W. Rognlien
-Research Scientist
-SINTEF ICT Communication Systems
+-config MPC8540
+-	bool
+-	select PPC_UDBG_16550
+-	select PPC_INDIRECT_PCI
+-	default y if MPC8540_ADS || MPC85xx_CDS || SBC8548
+-
+-config MPC85xx
+-	bool
+-	select PPC_UDBG_16550
+-	select PPC_INDIRECT_PCI if PCI
+-	select MPIC
+-	select FSL_PCI if PCI
+-	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
+-	default y if MPC8540_ADS || MPC85xx_CDS || MPC8560_ADS \
+-		|| MPC85xx_MDS || MPC85xx_DS || STX_GP3 || SBC8560 || SBC8548
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index c3ee0b5..f6bf025 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -29,8 +29,8 @@ config PPC_85xx
+ 	bool "Freescale 85xx"
+ 	select E500
+ 	select FSL_SOC
+-	select 85xx
+ 	select WANT_DEVICE_TREE
++	select MPC85xx
 
-=20
-=20
+ config PPC_8xx
+ 	bool "Freescale 8xx"
+@@ -97,10 +97,6 @@ config 8xx
+ config 83xx
+ 	bool
 
-------_=_NextPart_001_01C861B1.B69366EA
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+-# this is temp to handle compat with arch=ppc
+-config 85xx
+-	bool
+-
+ config E500
+ 	bool
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii=
-">
-<META content=3D"MSHTML 6.00.2900.3243" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>With=
- kernel 2.6.13=20
-we used </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>reques=
-t_irq=20
-(use_irq, irq_handler, SA_INTERRUPT|SA_SHIRQ, DEVICE_NAME,=20
-dev)</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>where=
- use_irq is 12=20
-to use the external IRQ6 pin.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>We are=
- now trying to=20
-get this driver to work with the 2.6.25 pull from=20
-powerpc.git.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>reques=
-t_irq=20
-(use_irq, irq_handler, IRQF_SHARED, DEVICE_NAME, dev);</SPAN></FONT></DI=
-V>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>return=
-s -ENOSYS on=20
-the newer kernel.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>Have=
- the IRQ=20
-mappings for the external IRQX pins been moved in the later=20
-kernels?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008>-</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D583401913-28012008>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Dag K. W. Rognlien</FONT><=
-/DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Research Scientist</FONT><=
-/DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>SINTEF ICT Communication=20
-Systems</FONT></DIV></DIV>
-<DIV><BR></DIV></SPAN></FONT>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D583401913-28012008></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
-
-------_=_NextPart_001_01C861B1.B69366EA--
+-- 
+1.5.3.7
