@@ -1,18 +1,22 @@
-Return-Path: <bodonoghue@codehermit.ie>
-Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
-	by ozlabs.org (Postfix) with ESMTP id 84191DDE9A
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 10:55:36 +1100 (EST)
-Subject: Re: PATCH[1/1] 8xx: Add clock-frequency to .dts brg entries
-From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080128155012.GA27054@ld0162-tx32.am.freescale.net>
-References: <1201485191.5537.55.camel@neuromancer.mindspace>
-	<20080128155012.GA27054@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 23:55:20 +0000
-Message-Id: <1201564520.3912.29.camel@neuromancer.mindspace>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gerg@snapgear.com>
+Received: from hosted07.westnet.com.au (hosted07.westnet.com.au [203.10.1.223])
+	by ozlabs.org (Postfix) with ESMTP id AC0DADDE02
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 10:59:06 +1100 (EST)
+Message-ID: <479E6C3A.4070401@snapgear.com>
+Date: Tue, 29 Jan 2008 09:58:50 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
+References: <4799F349.9090102@scram.de>
+	<Pine.LNX.4.64.0801251544480.13060@anakin>
+In-Reply-To: <Pine.LNX.4.64.0801251544480.13060@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-m68k@vger.kernel.org, uClinux list <uclinux-dev@uclinux.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Scott Wood <scottwood@freescale.com>, "Garzik, Jeff" <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +26,239 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-01-28 at 09:50 -0600, Scott Wood wrote:
-> On Mon, Jan 28, 2008 at 01:53:11AM +0000, Bryan O'Donoghue wrote:
-> > cpm_uart_core has a dependency on fsl,cpm-brg/clock-frequency, this
-> > means that a .dts that uses the cpm uart driver needs to supply a
-> > clock-frequency entry for get_brgfreq to return a meaningful number.
-> > 
-> > Included is a patchset which adds the correct brgclk to the adder port -
-> > @ 50Mhz and also adds an entry for mpc885ads - which I've noticed is
-> > missing a clock-frequency entry.
-> 
-> It's not missing -- it's added by the bootwrapper.
-> 
-> -Scott
 
-Hmm..
+ > ---------- Forwarded message ----------
+ > Date: Fri, 25 Jan 2008 15:33:45 +0100
+ > From: Jochen Friedrich <jochen@scram.de>
+ > To: "Garzik, Jeff" <jgarzik@pobox.com>
+ > Cc: Vitaly Bordug <vitb@kernel.crashing.org>,
+ >     Scott Wood <scottwood@freescale.com>,
+ >     Kumar Gala <galak@kernel.crashing.org>,
+ >     Geert Uytterhoeven <geert@linux-m68k.org>,
+ >     "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+ >     "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ >     linuxppc-dev list <linuxppc-dev@ozlabs.org>, 
+linux-m68k@vger.kernel.org
+ > Subject: [PATCH] [NET]: Remove PowerPC code from fec.c
+ >
+ > fec.c is only used on M68k Coldfire CPUs. Remove leftover
+ > PowerPC code from this driver.
 
-You mean that arch/powerpc/boot/mpc8xx.c mpc8xx_set_clocks is supposed
-to be adding this field ? 
+I was always hoping that this driver would be supported on both
+architectures. After all the underlying eth device is essentially
+the same on both.
 
-I see arch/powerpc/boot/wrapper.a has a reference to the function but -
-and this time I've checked all documentation - there's no mention of how
-to use this library at all... it _looks_ to me like this isn't being
-linked in any way.
+Anyway... I don't have a problem with this patch, looks ok
+the me.
 
-It for sure is nowhere in the uImage - and I've taken the preferred
-route of making a uImage with .dtb - genreated from adder875-uboot.dts
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
-dtc -O -o adder875-uboot.dtb arch/powerpc/boot/dts/adder875-uboot.dtb
+Regards
+Greg
 
 
-cpm_uart depends on "fsl,cpm-brg" and a field called "clock-frequency"
 
-as I understand it that's
 
-fsl,cpm-brg
-	|_clock-frequency
+ > Signed-off-by: Jochen Friedrich <jochen@scram.de>
+ > ---
+ >  drivers/net/fec.c |  136 
++---------------------------------------------------
+ >  1 files changed, 3 insertions(+), 133 deletions(-)
+ >
+ > diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+ > index 0fbf1bb..0499cbb 100644
+ > --- a/drivers/net/fec.c
+ > +++ b/drivers/net/fec.c
+ > @@ -23,6 +23,9 @@
+ >   *
+ >   * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
+ >   * Copyright (c) 2004-2006 Macq Electronique SA.
+ > + *
+ > + * This driver is now only used on ColdFire processors. Remove 
+conditional
+ > + * Powerpc code.
+ >   */
+ >
+ >  #include <linux/module.h>
+ > @@ -49,17 +52,9 @@
+ >  #include <asm/pgtable.h>
+ >  #include <asm/cacheflush.h>
+ >
+ > -#if defined(CONFIG_M523x) || defined(CONFIG_M527x) || \
+ > -    defined(CONFIG_M5272) || defined(CONFIG_M528x) || \
+ > -    defined(CONFIG_M520x) || defined(CONFIG_M532x)
+ >  #include <asm/coldfire.h>
+ >  #include <asm/mcfsim.h>
+ >  #include "fec.h"
+ > -#else
+ > -#include <asm/8xx_immap.h>
+ > -#include <asm/mpc8xx.h>
+ > -#include "commproc.h"
+ > -#endif
+ >
+ >  #if defined(CONFIG_FEC2)
+ >  #define	FEC_MAX_PORTS	2
+ > @@ -1223,14 +1218,9 @@ static phy_info_t const * const phy_info[] = {
+ >
+ >  /* 
+------------------------------------------------------------------------- */
+ >  #if !defined(CONFIG_M532x)
+ > -#ifdef CONFIG_RPXCLASSIC
+ > -static void
+ > -mii_link_interrupt(void *dev_id);
+ > -#else
+ >  static irqreturn_t
+ >  mii_link_interrupt(int irq, void * dev_id);
+ >  #endif
+ > -#endif
+ >
+ >  #if defined(CONFIG_M5272)
+ >  /*
+ > @@ -1800,121 +1790,6 @@ static void __inline__ fec_uncache(unsigned 
+long addr)
+ >  /* 
+------------------------------------------------------------------------- */
+ >
+ >
+ > -#else
+ > -
+ > -/*
+ > - *	Code specific to the MPC860T setup.
+ > - */
+ > -static void __inline__ fec_request_intrs(struct net_device *dev)
+ > -{
+ > -	volatile immap_t *immap;
+ > -
+ > -	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
+ > -
+ > -	if (request_8xxirq(FEC_INTERRUPT, fec_enet_interrupt, 0, "fec", 
+dev) != 0)
+ > -		panic("Could not allocate FEC IRQ!");
+ > -
+ > -#ifdef CONFIG_RPXCLASSIC
+ > -	/* Make Port C, bit 15 an input that causes interrupts.
+ > -	*/
+ > -	immap->im_ioport.iop_pcpar &= ~0x0001;
+ > -	immap->im_ioport.iop_pcdir &= ~0x0001;
+ > -	immap->im_ioport.iop_pcso &= ~0x0001;
+ > -	immap->im_ioport.iop_pcint |= 0x0001;
+ > -	cpm_install_handler(CPMVEC_PIO_PC15, mii_link_interrupt, dev);
+ > -
+ > -	/* Make LEDS reflect Link status.
+ > -	*/
+ > -	*((uint *) RPX_CSR_ADDR) &= ~BCSR2_FETHLEDMODE;
+ > -#endif
+ > -#ifdef CONFIG_FADS
+ > -	if (request_8xxirq(SIU_IRQ2, mii_link_interrupt, 0, "mii", dev) != 0)
+ > -		panic("Could not allocate MII IRQ!");
+ > -#endif
+ > -}
+ > -
+ > -static void __inline__ fec_get_mac(struct net_device *dev)
+ > -{
+ > -	bd_t *bd;
+ > -
+ > -	bd = (bd_t *)__res;
+ > -	memcpy(dev->dev_addr, bd->bi_enetaddr, ETH_ALEN);
+ > -
+ > -#ifdef CONFIG_RPXCLASSIC
+ > -	/* The Embedded Planet boards have only one MAC address in
+ > -	 * the EEPROM, but can have two Ethernet ports.  For the
+ > -	 * FEC port, we create another address by setting one of
+ > -	 * the address bits above something that would have (up to
+ > -	 * now) been allocated.
+ > -	 */
+ > -	dev->dev_adrd[3] |= 0x80;
+ > -#endif
+ > -}
+ > -
+ > -static void __inline__ fec_set_mii(struct net_device *dev, struct 
+fec_enet_private *fep)
+ > -{
+ > -	extern uint _get_IMMR(void);
+ > -	volatile immap_t *immap;
+ > -	volatile fec_t *fecp;
+ > -
+ > -	fecp = fep->hwp;
+ > -	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
+ > -
+ > -	/* Configure all of port D for MII.
+ > -	*/
+ > -	immap->im_ioport.iop_pdpar = 0x1fff;
+ > -
+ > -	/* Bits moved from Rev. D onward.
+ > -	*/
+ > -	if ((_get_IMMR() & 0xffff) < 0x0501)
+ > -		immap->im_ioport.iop_pddir = 0x1c58;	/* Pre rev. D */
+ > -	else
+ > -		immap->im_ioport.iop_pddir = 0x1fff;	/* Rev. D and later */
+ > -
+ > -	/* Set MII speed to 2.5 MHz
+ > -	*/
+ > -	fecp->fec_mii_speed = fep->phy_speed =
+ > -		((bd->bi_busfreq * 1000000) / 2500000) & 0x7e;
+ > -}
+ > -
+ > -static void __inline__ fec_enable_phy_intr(void)
+ > -{
+ > -	volatile fec_t *fecp;
+ > -
+ > -	fecp = fep->hwp;
+ > -
+ > -	/* Enable MII command finished interrupt
+ > -	*/
+ > -	fecp->fec_ivec = (FEC_INTERRUPT/2) << 29;
+ > -}
+ > -
+ > -static void __inline__ fec_disable_phy_intr(void)
+ > -{
+ > -}
+ > -
+ > -static void __inline__ fec_phy_ack_intr(void)
+ > -{
+ > -}
+ > -
+ > -static void __inline__ fec_localhw_setup(void)
+ > -{
+ > -	volatile fec_t *fecp;
+ > -
+ > -	fecp = fep->hwp;
+ > -	fecp->fec_r_hash = PKT_MAXBUF_SIZE;
+ > -	/* Enable big endian and don't care about SDMA FC.
+ > -	*/
+ > -	fecp->fec_fun_code = 0x78000000;
+ > -}
+ > -
+ > -static void __inline__ fec_uncache(unsigned long addr)
+ > -{
+ > -	pte_t *pte;
+ > -	pte = va_to_pte(mem_addr);
+ > -	pte_val(*pte) |= _PAGE_NO_CACHE;
+ > -	flush_tlb_page(init_mm.mmap, mem_addr);
+ > -}
+ > -
+ >  #endif
+ >
+ >  /* 
+------------------------------------------------------------------------- */
+ > @@ -2126,13 +2001,8 @@ mii_discover_phy(uint mii_reg, struct 
+net_device *dev)
+ >
+ >  /* This interrupt occurs when the PHY detects a link change.
+ >  */
+ > -#ifdef CONFIG_RPXCLASSIC
+ > -static void
+ > -mii_link_interrupt(void *dev_id)
+ > -#else
+ >  static irqreturn_t
+ >  mii_link_interrupt(int irq, void * dev_id)
+ > -#endif
+ >  {
+ >  	struct	net_device *dev = dev_id;
+ >  	struct fec_enet_private *fep = netdev_priv(dev);
 
-whereas mpc8xx_set_clocks seems to add
-
-/soc/cpm/brg
-	|_clock-frequency
-
-So unless I'm not understanding the structure of the tree - possible - I
-don't see how /soc/cpm/brg => clock-frequency could /possibly/ satisfy
-get_brgfreq in fsl_soc.c
-
-If there's something other then making a uImage and dtb and booting
-these from u-boot that I'm supposed to be doing here ... it'd help if
-you could say..
-
-Otherwise in order to get the UART working using a uImage + dbt I've
-found it necessary to add this field to the .dts....
-
-mpc866ads.dts - also has a "fsl,cpm-brg" => clock-frequency entry in 
-
-linux/arch/powerpc/boot/dts/mpc866ads.dts - and to me this looks like
-the correct approach for get_brgfreq to function properly...
-
-What do you think ?
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
