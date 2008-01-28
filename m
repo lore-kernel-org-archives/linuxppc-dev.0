@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6516EDDEBF
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 01:41:39 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0SEfYd0013112
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 08:41:34 -0600
-Date: Mon, 28 Jan 2008 08:39:07 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [PPC] Remove 83xx from arch/ppc
-Message-ID: <Pine.LNX.4.64.0801280838490.19709@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <jonsmirl@gmail.com>
+Received: from vms173003pub.verizon.net (vms173003pub.verizon.net
+	[206.46.173.3]) by ozlabs.org (Postfix) with ESMTP id 35133DDEEC
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 01:42:30 +1100 (EST)
+Received: from terra.home ([96.233.72.204]) by vms173003.mailsrvcs.net
+	(Sun Java System Messaging Server 6.2-6.01 (built Apr  3 2006))
+	with ESMTPA id <0JVC00DKNZDQ3P02@vms173003.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Mon, 28 Jan 2008 08:39:28 -0600 (CST)
+Date: Mon, 28 Jan 2008 09:42:07 -0500
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH 2/3] Convert PowerPC MPC i2c to of_platform_driver from
+	platform_driver
+In-reply-to: <20080128144202.8410.14647.stgit@terra.home>
+To: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Message-id: <20080128144206.8410.2505.stgit@terra.home>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20080128144202.8410.14647.stgit@terra.home>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,314 +25,557 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-83xx exists in arch/powerpc as well as cuImage support to boot from
-a u-boot that doesn't support device trees.
+Convert MPC i2c driver from a platform_driver to a of_platform_driver. Add the ability to dynamically load i2c drivers based on device tree names. Routine names were changed from fsl_ to mpc_ to make them match the file name. Common code moved to powerpc-common.* Orginal ppc driver left intact for deletion when ppc arch is removed.
 
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 ---
- arch/ppc/Kconfig                       |   46 +--
- arch/ppc/Makefile                      |    1 -
- arch/ppc/configs/mpc834x_sys_defconfig |  844 --------------------------------
- arch/ppc/kernel/ppc_ksyms.c            |    3 +-
- arch/ppc/kernel/setup.c                |    2 +-
- arch/ppc/mm/mmu_context.c              |    2 +-
- arch/ppc/mm/ppc_mmu.c                  |    2 +-
- arch/ppc/platforms/83xx/Makefile       |    4 -
- arch/ppc/platforms/83xx/mpc834x_sys.c  |  346 -------------
- arch/ppc/platforms/83xx/mpc834x_sys.h  |   54 --
- arch/ppc/syslib/Makefile               |    5 -
- arch/ppc/syslib/ipic.c                 |  646 ------------------------
- arch/ppc/syslib/ipic.h                 |   47 --
- arch/ppc/syslib/mpc83xx_devices.c      |  251 ----------
- arch/ppc/syslib/mpc83xx_sys.c          |  122 -----
- arch/ppc/syslib/ppc83xx_pci.h          |  151 ------
- arch/ppc/syslib/ppc83xx_setup.c        |  410 ----------------
- arch/ppc/syslib/ppc83xx_setup.h        |   55 --
- include/asm-powerpc/irq.h              |    5 -
- include/asm-ppc/mpc83xx.h              |  107 ----
- include/asm-ppc/ppc_sys.h              |    2 -
- include/asm-ppc/ppcboot.h              |    5 +-
- include/asm-ppc/serial.h               |    2 -
- 23 files changed, 15 insertions(+), 3097 deletions(-)
- delete mode 100644 arch/ppc/configs/mpc834x_sys_defconfig
- delete mode 100644 arch/ppc/platforms/83xx/Makefile
- delete mode 100644 arch/ppc/platforms/83xx/mpc834x_sys.c
- delete mode 100644 arch/ppc/platforms/83xx/mpc834x_sys.h
- delete mode 100644 arch/ppc/syslib/ipic.c
- delete mode 100644 arch/ppc/syslib/ipic.h
- delete mode 100644 arch/ppc/syslib/mpc83xx_devices.c
- delete mode 100644 arch/ppc/syslib/mpc83xx_sys.c
- delete mode 100644 arch/ppc/syslib/ppc83xx_pci.h
- delete mode 100644 arch/ppc/syslib/ppc83xx_setup.c
- delete mode 100644 arch/ppc/syslib/ppc83xx_setup.h
- delete mode 100644 include/asm-ppc/mpc83xx.h
 
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
-index 6473fa7..08e083d 100644
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -78,18 +78,18 @@ choice
- 	default 6xx
+ arch/powerpc/sysdev/fsl_soc.c       |  125 ---------------------------
+ drivers/i2c/busses/Makefile         |    2 
+ drivers/i2c/busses/i2c-mpc-drv.c    |  164 ++++++++++++++++++++++++++++++++---
+ drivers/i2c/busses/powerpc-common.c |   81 +++++++++++++++++
+ drivers/i2c/busses/powerpc-common.h |   23 +++++
+ include/linux/mod_devicetable.h     |    9 ++
+ 6 files changed, 263 insertions(+), 141 deletions(-)
+ create mode 100644 drivers/i2c/busses/powerpc-common.c
+ create mode 100644 drivers/i2c/busses/powerpc-common.h
 
- config 6xx
--	bool "6xx/7xx/74xx/52xx/82xx/83xx"
-+	bool "6xx/7xx/74xx/52xx/82xx"
- 	select PPC_FPU
- 	help
- 	  There are four types of PowerPC chips supported.  The more common
- 	  types (601, 603, 604, 740, 750, 7400), the older Freescale
- 	  (formerly Motorola) embedded versions (821, 823, 850, 855, 860,
--	  52xx, 82xx, 83xx), the IBM embedded versions (403 and 405) and
-+	  52xx, 82xx), the IBM embedded versions (403 and 405) and
- 	  the Book E embedded processors from IBM (44x) and Freescale (85xx).
- 	  For support for 64-bit processors, set ARCH=powerpc.
- 	  Unless you are building a kernel for one of the embedded processor
- 	  systems, choose 6xx.
--	  Also note that because the 52xx, 82xx, & 83xx family have a 603e
-+	  Also note that because the 52xx, 82xx family have a 603e
- 	  core, specific support for that chipset is asked later on.
 
- config 40x
-@@ -153,7 +153,7 @@ config PHYS_64BIT
- config ALTIVEC
- 	bool "AltiVec Support"
- 	depends on 6xx
--	depends on !8260 && !83xx
-+	depends on !8260
- 	---help---
- 	  This option enables kernel support for the Altivec extensions to the
- 	  PowerPC processor. The kernel currently supports saving and restoring
-@@ -184,7 +184,7 @@ config SPE
-
- config TAU
- 	bool "Thermal Management Support"
--	depends on 6xx && !8260 && !83xx
-+	depends on 6xx && !8260
- 	help
- 	  G3 and G4 processors have an on-chip temperature sensor called the
- 	  'Thermal Assist Unit (TAU)', which, in theory, can measure the on-die
-@@ -721,16 +721,6 @@ config LITE5200B
- 	  Support for the LITE5200B dev board for the MPC5200 from Freescale.
- 	  This is the new board with 2 PCI slots.
-
--config MPC834x_SYS
--	bool "Freescale MPC834x SYS"
--	help
--	  This option enables support for the MPC 834x SYS evaluation board.
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index e4b14a5..d6ef264 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -318,131 +318,6 @@ err:
+ 
+ arch_initcall(gfar_of_init);
+ 
+-#ifdef CONFIG_I2C_BOARDINFO
+-#include <linux/i2c.h>
+-struct i2c_driver_device {
+-	char	*of_device;
+-	char	*i2c_type;
+-};
 -
--	  Be aware that PCI buses can only function when SYS board is plugged
--	  into the PIB (Platform IO Board) board from Freescale which provide
--	  3 PCI slots.  The PIBs PCI initialization is the bootloader's
--	  responsibility.
+-static struct i2c_driver_device i2c_devices[] __initdata = {
+-	{"ricoh,rs5c372a", "rs5c372a",},
+-	{"ricoh,rs5c372b", "rs5c372b",},
+-	{"ricoh,rv5c386",  "rv5c386",},
+-	{"ricoh,rv5c387a", "rv5c387a",},
+-	{"dallas,ds1307",  "ds1307",},
+-	{"dallas,ds1337",  "ds1337",},
+-	{"dallas,ds1338",  "ds1338",},
+-	{"dallas,ds1339",  "ds1339",},
+-	{"dallas,ds1340",  "ds1340",},
+-	{"stm,m41t00",     "m41t00"},
+-	{"dallas,ds1374",  "rtc-ds1374",},
+-};
 -
- config EV64360
- 	bool "Marvell-EV64360BP"
- 	help
-@@ -774,18 +764,6 @@ config 8272
- 	  The MPC8272 CPM has a different internal dpram setup than other CPM2
- 	  devices
-
--config 83xx
--	bool
--	default y if MPC834x_SYS
+-static int __init of_find_i2c_driver(struct device_node *node,
+-				     struct i2c_board_info *info)
+-{
+-	int i;
 -
--config MPC834x
--	bool
--	default y if MPC834x_SYS
+-	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+-		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+-			continue;
+-		if (strlcpy(info->type, i2c_devices[i].i2c_type,
+-			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+-			return -ENOMEM;
+-		return 0;
+-	}
+-	return -ENODEV;
+-}
 -
--config PPC_83xx
--	bool
--	default y if 83xx
+-static void __init of_register_i2c_devices(struct device_node *adap_node,
+-					   int bus_num)
+-{
+-	struct device_node *node = NULL;
 -
- config CPM1
- 	bool
- 	depends on 8xx
-@@ -811,8 +789,7 @@ config PPC_GEN550
- 	bool
- 	depends on SANDPOINT || SPRUCE || PPLUS || \
- 		PRPMC750 || PRPMC800 || LOPEC || \
--		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D || \
--		83xx
-+		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D
- 	default y
-
- config FORCE
-@@ -1074,7 +1051,7 @@ config PPC_I8259
- config PPC_INDIRECT_PCI
- 	bool
- 	depends on PCI
--	default y if 40x || 44x || 85xx || 83xx || PPC_PREP
-+	default y if 40x || 44x || 85xx || PPC_PREP
- 	default n
-
- config EISA
-@@ -1091,8 +1068,8 @@ config MCA
- 	bool
-
- config PCI
--	bool "PCI support" if 40x || CPM2 || 83xx || 85xx || PPC_MPC52xx
--	default y if !40x && !CPM2 && !8xx && !83xx && !85xx
-+	bool "PCI support" if 40x || CPM2 || 85xx || PPC_MPC52xx
-+	default y if !40x && !CPM2 && !8xx && !85xx
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
- 	help
- 	  Find out whether your system includes a PCI bus. PCI is the name of
-@@ -1106,11 +1083,6 @@ config PCI_DOMAINS
- config PCI_SYSCALL
- 	def_bool PCI
-
--config MPC83xx_PCI2
--	bool "Support for 2nd PCI host controller"
--	depends on PCI && MPC834x
--	default y if MPC834x_SYS
+-	while ((node = of_get_next_child(adap_node, node))) {
+-		struct i2c_board_info info = {};
+-		const u32 *addr;
+-		int len;
 -
- config PCI_QSPAN
- 	bool "QSpan PCI"
- 	depends on !4xx && !CPM2 && 8xx
-diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
-index 95894ef..a4fef18 100644
---- a/arch/ppc/Makefile
-+++ b/arch/ppc/Makefile
-@@ -65,7 +65,6 @@ core-y				+= arch/ppc/kernel/ arch/powerpc/kernel/ \
- 				   arch/ppc/syslib/ arch/powerpc/sysdev/ \
- 				   arch/powerpc/lib/
- core-$(CONFIG_4xx)		+= arch/ppc/platforms/4xx/
--core-$(CONFIG_83xx)		+= arch/ppc/platforms/83xx/
- core-$(CONFIG_85xx)		+= arch/ppc/platforms/85xx/
- core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
- core-$(CONFIG_XMON)		+= arch/ppc/xmon/
-diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
-index 0d53dc3..ba729ce 100644
---- a/arch/ppc/kernel/ppc_ksyms.c
-+++ b/arch/ppc/kernel/ppc_ksyms.c
-@@ -244,8 +244,7 @@ EXPORT_SYMBOL(debugger_fault_handler);
- EXPORT_SYMBOL(cpm_install_handler);
- EXPORT_SYMBOL(cpm_free_handler);
- #endif /* CONFIG_8xx */
--#if defined(CONFIG_8xx) || defined(CONFIG_40x) || defined(CONFIG_85xx) ||\
--	defined(CONFIG_83xx)
-+#if defined(CONFIG_8xx) || defined(CONFIG_40x) || defined(CONFIG_85xx)
- EXPORT_SYMBOL(__res);
- #endif
-
-diff --git a/arch/ppc/kernel/setup.c b/arch/ppc/kernel/setup.c
-index 3c45302..5888ae6 100644
---- a/arch/ppc/kernel/setup.c
-+++ b/arch/ppc/kernel/setup.c
-@@ -38,7 +38,7 @@
- #include <asm/xmon.h>
- #include <asm/ocp.h>
-
--#define USES_PPC_SYS (defined(CONFIG_85xx) || defined(CONFIG_83xx) || \
-+#define USES_PPC_SYS (defined(CONFIG_85xx) || \
- 		      defined(CONFIG_MPC10X_BRIDGE) || defined(CONFIG_8260) || \
- 		      defined(CONFIG_PPC_MPC52xx))
-
-diff --git a/arch/ppc/mm/mmu_context.c b/arch/ppc/mm/mmu_context.c
-index 85afa7f..dacf45c 100644
---- a/arch/ppc/mm/mmu_context.c
-+++ b/arch/ppc/mm/mmu_context.c
+-		addr = of_get_property(node, "reg", &len);
+-		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+-			printk(KERN_WARNING "fsl_soc.c: invalid i2c device entry\n");
+-			continue;
+-		}
+-
+-		info.irq = irq_of_parse_and_map(node, 0);
+-		if (info.irq == NO_IRQ)
+-			info.irq = -1;
+-
+-		if (of_find_i2c_driver(node, &info) < 0)
+-			continue;
+-
+-		info.addr = *addr;
+-
+-		i2c_register_board_info(bus_num, &info, 1);
+-	}
+-}
+-
+-static int __init fsl_i2c_of_init(void)
+-{
+-	struct device_node *np;
+-	unsigned int i;
+-	struct platform_device *i2c_dev;
+-	int ret;
+-
+-	for (np = NULL, i = 0;
+-	     (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL;
+-	     i++) {
+-		struct resource r[2];
+-		struct fsl_i2c_platform_data i2c_data;
+-		const unsigned char *flags = NULL;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&i2c_data, 0, sizeof(i2c_data));
+-
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
+-		if (IS_ERR(i2c_dev)) {
+-			ret = PTR_ERR(i2c_dev);
+-			goto err;
+-		}
+-
+-		i2c_data.device_flags = 0;
+-		flags = of_get_property(np, "dfsrr", NULL);
+-		if (flags)
+-			i2c_data.device_flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+-
+-		flags = of_get_property(np, "fsl5200-clocking", NULL);
+-		if (flags)
+-			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
+-
+-		ret =
+-		    platform_device_add_data(i2c_dev, &i2c_data,
+-					     sizeof(struct
+-						    fsl_i2c_platform_data));
+-		if (ret)
+-			goto unreg;
+-
+-		of_register_i2c_devices(np, i);
+-	}
+-
+-	return 0;
+-
+-unreg:
+-	platform_device_unregister(i2c_dev);
+-err:
+-	return ret;
+-}
+-
+-arch_initcall(fsl_i2c_of_init);
+-#endif
+-
+ #ifdef CONFIG_PPC_83xx
+ static int __init mpc83xx_wdt_init(void)
+ {
+diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+index 171800d..e94241f 100644
+--- a/drivers/i2c/busses/Makefile
++++ b/drivers/i2c/busses/Makefile
 @@ -2,7 +2,7 @@
-  * This file contains the routines for handling the MMU on those
-  * PowerPC implementations where the MMU substantially follows the
-  * architecture specification.  This includes the 6xx, 7xx, 7xxx,
-- * 8260, and 83xx implementations but excludes the 8xx and 4xx.
-+ * and 8260 implementations but excludes the 8xx and 4xx.
-  *  -- paulus
-  *
-  *  Derived from arch/ppc/mm/init.c:
-diff --git a/arch/ppc/mm/ppc_mmu.c b/arch/ppc/mm/ppc_mmu.c
-index 973f1e6..0c1dc15 100644
---- a/arch/ppc/mm/ppc_mmu.c
-+++ b/arch/ppc/mm/ppc_mmu.c
-@@ -2,7 +2,7 @@
-  * This file contains the routines for handling the MMU on those
-  * PowerPC implementations where the MMU substantially follows the
-  * architecture specification.  This includes the 6xx, 7xx, 7xxx,
-- * 8260, and 83xx implementations but excludes the 8xx and 4xx.
-+ * and 8260 implementations but excludes the 8xx and 4xx.
-  *  -- paulus
-  *
-  *  Derived from arch/ppc/mm/init.c:
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
-index 5e16228..4d158f3 100644
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -93,11 +93,6 @@ obj-$(CONFIG_85xx)		+= open_pic.o ppc85xx_common.o ppc85xx_setup.o \
- ifeq ($(CONFIG_85xx),y)
- obj-$(CONFIG_PCI)		+= pci_auto.o
- endif
--obj-$(CONFIG_83xx)		+= ppc83xx_setup.o ppc_sys.o \
--					mpc83xx_sys.o mpc83xx_devices.o ipic.o
--ifeq ($(CONFIG_83xx),y)
--obj-$(CONFIG_PCI)		+= pci_auto.o
--endif
- obj-$(CONFIG_MPC8548_CDS)	+= todc_time.o
- obj-$(CONFIG_MPC8555_CDS)	+= todc_time.o
- obj-$(CONFIG_PPC_MPC52xx)	+= mpc52xx_setup.o mpc52xx_pic.o \
-diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
-index 1392db4..4a015da 100644
---- a/include/asm-powerpc/irq.h
-+++ b/include/asm-powerpc/irq.h
-@@ -483,11 +483,6 @@ static __inline__ int irq_canonicalize(int irq)
-  */
- #define	mk_int_int_mask(IL) (1 << (7 - (IL/2)))
-
--#elif defined(CONFIG_83xx)
--#include <asm/mpc83xx.h>
--
--#define	NR_IRQS	(NR_IPIC_INTS)
--
- #elif defined(CONFIG_85xx)
- /* Now include the board configuration specific associations.
- */
-diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
-index de99e92..80c5851 100644
---- a/include/asm-ppc/ppc_sys.h
-+++ b/include/asm-ppc/ppc_sys.h
-@@ -23,8 +23,6 @@
-
- #if defined(CONFIG_8260)
- #include <asm/mpc8260.h>
--#elif defined(CONFIG_83xx)
--#include <asm/mpc83xx.h>
- #elif defined(CONFIG_85xx)
- #include <asm/mpc85xx.h>
- #elif defined(CONFIG_8xx)
-diff --git a/include/asm-ppc/ppcboot.h b/include/asm-ppc/ppcboot.h
-index 6b7b63f..18d04e8 100644
---- a/include/asm-ppc/ppcboot.h
-+++ b/include/asm-ppc/ppcboot.h
-@@ -38,8 +38,7 @@ typedef struct bd_info {
- 	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
- 	unsigned long	bi_sramstart;	/* start of SRAM memory */
- 	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
--#if defined(CONFIG_8xx) || defined(CONFIG_CPM2) || defined(CONFIG_85xx) ||\
--	defined(CONFIG_83xx)
-+#if defined(CONFIG_8xx) || defined(CONFIG_CPM2) || defined(CONFIG_85xx)
- 	unsigned long	bi_immr_base;	/* base of IMMR register */
- #endif
- #if defined(CONFIG_PPC_MPC52xx)
-@@ -74,7 +73,7 @@ typedef struct bd_info {
- 	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
- #endif
- #if defined(CONFIG_EVB64260) || defined(CONFIG_405EP) || defined(CONFIG_44x) || \
--	defined(CONFIG_85xx) ||	defined(CONFIG_83xx)
-+	defined(CONFIG_85xx)
- 	/* second onboard ethernet port */
- 	unsigned char	bi_enet1addr[6];
- #endif
-diff --git a/include/asm-ppc/serial.h b/include/asm-ppc/serial.h
-index 8fc1b54..6220ef9 100644
---- a/include/asm-ppc/serial.h
-+++ b/include/asm-ppc/serial.h
-@@ -29,8 +29,6 @@
- #include <platforms/spruce.h>
- #elif defined(CONFIG_4xx)
- #include <asm/ibm4xx.h>
--#elif defined(CONFIG_83xx)
--#include <asm/mpc83xx.h>
- #elif defined(CONFIG_85xx)
- #include <asm/mpc85xx.h>
- #elif defined(CONFIG_RADSTONE_PPC7D)
--- 
-1.5.3.7
+ # Makefile for the i2c bus drivers.
+ #
+ 
+-i2c-mpc-objs	:= i2c-mpc-drv.o
++i2c-mpc-objs	:= i2c-mpc-drv.o powerpc-common.o
+ 
+ obj-$(CONFIG_I2C_ALI1535)	+= i2c-ali1535.o
+ obj-$(CONFIG_I2C_ALI1563)	+= i2c-ali1563.o
+diff --git a/drivers/i2c/busses/i2c-mpc-drv.c b/drivers/i2c/busses/i2c-mpc-drv.c
+index d20959d..ac1febf 100644
+--- a/drivers/i2c/busses/i2c-mpc-drv.c
++++ b/drivers/i2c/busses/i2c-mpc-drv.c
+@@ -18,6 +18,7 @@
+ #include <linux/sched.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/io.h>
+ #include <linux/fsl_devices.h>
+@@ -25,13 +26,15 @@
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ 
+-#define MPC_I2C_ADDR  0x00
++#include "powerpc-common.h"
++
++#define DRV_NAME "mpc-i2c"
++
+ #define MPC_I2C_FDR 	0x04
+ #define MPC_I2C_CR	0x08
+ #define MPC_I2C_SR	0x0c
+ #define MPC_I2C_DR	0x10
+ #define MPC_I2C_DFSRR 0x14
+-#define MPC_I2C_REGION 0x20
+ 
+ #define CCR_MEN  0x80
+ #define CCR_MIEN 0x40
+@@ -57,7 +60,7 @@ struct mpc_i2c {
+ 	u32 flags;
+ };
+ 
+-static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
++static inline void writeccr(struct mpc_i2c *i2c, u32 x)
+ {
+ 	writeb(x, i2c->base + MPC_I2C_CR);
+ }
+@@ -99,8 +102,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+ 	u32 x;
+ 	int result = 0;
+ 
+-	if (i2c->irq == NO_IRQ)
+-	{
++	if (i2c->irq == NO_IRQ) {
+ 		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+ 			schedule();
+ 			if (time_after(jiffies, orig_jiffies + timeout)) {
+@@ -178,7 +180,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
+ }
+ 
+ static int mpc_write(struct mpc_i2c *i2c, int target,
+-		     const u8 * data, int length, int restart)
++		     const u8 *data, int length, int restart)
+ {
+ 	int i, result;
+ 	unsigned timeout = i2c->adap.timeout;
+@@ -209,7 +211,7 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
+ }
+ 
+ static int mpc_read(struct mpc_i2c *i2c, int target,
+-		    u8 * data, int length, int restart)
++		    u8 *data, int length, int restart)
+ {
+ 	unsigned timeout = i2c->adap.timeout;
+ 	int i, result;
+@@ -315,6 +317,137 @@ static struct i2c_adapter mpc_ops = {
+ 	.timeout = 1,
+ };
+ 
++#ifdef CONFIG_PPC_MERGE
++
++struct i2c_driver_device {
++	char	*of_device;
++	char	*i2c_driver;
++	char	*i2c_type;
++};
++
++static int mpc_i2c_probe(struct of_device *op, const struct of_device_id *match)
++{
++	int result = 0;
++	struct mpc_i2c *i2c;
++
++	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
++	if (!i2c)
++		return -ENOMEM;
++
++	if (of_get_property(op->node, "dfsrr", NULL))
++		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
++
++	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
++		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
++
++	init_waitqueue_head(&i2c->queue);
++
++	i2c->base = of_iomap(op->node, 0);
++	if (!i2c->base) {
++		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
++		result = -ENOMEM;
++		goto fail_map;
++	}
++
++	i2c->irq = irq_of_parse_and_map(op->node, 0);
++	if (i2c->irq == NO_IRQ) {
++		result = -ENXIO;
++		goto fail_irq;
++	}
++
++	result = request_irq(i2c->irq, mpc_i2c_isr,
++						IRQF_SHARED, "i2c-mpc", i2c);
++	if (result < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
++		goto fail_request;
++	}
++
++	mpc_i2c_setclock(i2c);
++
++	dev_set_drvdata(&op->dev, i2c);
++
++	i2c->adap = mpc_ops;
++	i2c_set_adapdata(&i2c->adap, i2c);
++	i2c->adap.dev.parent = &op->dev;
++
++	result = i2c_add_adapter(&i2c->adap);
++	if (result < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
++		goto fail_add;
++	}
++
++	of_register_i2c_devices(&i2c->adap, op->node);
++
++	return result;
++
++ fail_add:
++	dev_set_drvdata(&op->dev, NULL);
++	free_irq(i2c->irq, i2c);
++ fail_request:
++	irq_dispose_mapping(i2c->irq);
++ fail_irq:
++	iounmap(i2c->base);
++ fail_map:
++	kfree(i2c);
++	return result;
++};
++
++static int mpc_i2c_remove(struct of_device *op)
++{
++	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
++
++	i2c_del_adapter(&i2c->adap);
++	dev_set_drvdata(&op->dev, NULL);
++
++	if (i2c->irq != NO_IRQ)
++		free_irq(i2c->irq, i2c);
++
++	irq_dispose_mapping(i2c->irq);
++	iounmap(i2c->base);
++	kfree(i2c);
++	return 0;
++};
++
++static const struct of_device_id mpc_i2c_of_match[] = {
++	{
++		.compatible	= "fsl-i2c",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
++
++
++/* Structure for a device driver */
++static struct of_platform_driver mpc_i2c_driver = {
++	.match_table	= mpc_i2c_of_match,
++	.probe		= mpc_i2c_probe,
++	.remove		= __devexit_p(mpc_i2c_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= DRV_NAME,
++	},
++};
++
++static int __init mpc_i2c_init(void)
++{
++	int rv;
++
++	rv = of_register_platform_driver(&mpc_i2c_driver);
++	if (rv)
++		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
++	return rv;
++}
++
++static void __exit mpc_i2c_exit(void)
++{
++	of_unregister_platform_driver(&mpc_i2c_driver);
++}
++
++module_init(mpc_i2c_init);
++module_exit(mpc_i2c_exit);
++
++#else
++
+ static int fsl_i2c_probe(struct platform_device *pdev)
+ {
+ 	int result = 0;
+@@ -345,8 +478,8 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (i2c->irq != NO_IRQ)
+-		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+-					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
++		result = request_irq(i2c->irq, mpc_i2c_isr, IRQF_SHARED, "i2c-mpc", i2c);
++		if (result < 0) {
+ 			printk(KERN_ERR
+ 			       "i2c-mpc - failed to attach interrupt\n");
+ 			goto fail_irq;
+@@ -359,20 +492,21 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+ 	i2c->adap.nr = pdev->id;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+ 	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
++	result = i2c_add_numbered_adapter(&i2c->adap);
++	if (result < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
+ 
+ 	return result;
+ 
+-      fail_add:
++ fail_add:
+ 	if (i2c->irq != NO_IRQ)
+ 		free_irq(i2c->irq, i2c);
+-      fail_irq:
++ fail_irq:
+ 	iounmap(i2c->base);
+-      fail_map:
+-      fail_get_irq:
++ fail_map:
++ fail_get_irq:
+ 	kfree(i2c);
+ 	return result;
+ };
+@@ -415,6 +549,8 @@ static void __exit fsl_i2c_exit(void)
+ module_init(fsl_i2c_init);
+ module_exit(fsl_i2c_exit);
+ 
++#endif
++
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+ MODULE_DESCRIPTION
+     ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
+diff --git a/drivers/i2c/busses/powerpc-common.c b/drivers/i2c/busses/powerpc-common.c
+new file mode 100644
+index 0000000..51b039f
+--- /dev/null
++++ b/drivers/i2c/busses/powerpc-common.c
+@@ -0,0 +1,81 @@
++/*
++ * powerpc-common.c - routines common to device tree parsing for all
++ *                    powerpc based i2c hosts
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * (C) Copyright 2008 Jon Smirl <jonsmirl@gmail.com>
++ *
++ */
++
++#include <linux/interrupt.h>
++#include <linux/i2c.h>
++#include <linux/of_platform.h>
++
++#include "powerpc-common.h"
++
++#ifdef CONFIG_PPC_MERGE
++
++void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node)
++{
++	void *result;
++	struct device_node *node = NULL;
++
++	while ((node = of_get_next_child(adap_node, node))) {
++		struct i2c_board_info info;
++		const u32 *addr;
++		const char *compatible;
++		int len;
++
++		compatible = of_get_property(node, "compatible", NULL);
++		if (!compatible) {
++			printk(KERN_ERR "i2c-mpc.c: missing compatible attribute\n");
++			continue;
++		}
++
++		addr = of_get_property(node, "reg", &len);
++		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
++			printk(KERN_ERR "i2c-mpc.c: missing reg attribute for %s\n", compatible);
++			continue;
++		}
++
++		info.irq = irq_of_parse_and_map(node, 0);
++		if (info.irq < NO_IRQ) {
++			printk(KERN_ERR "i2c-mpc.c: invalid irq attribute for %s\n", compatible);
++			continue;
++		}
++
++		/* need full alias i2c:OF,vendor,device */
++		strcpy(info.type, I2C_OF_MODULE_PREFIX);
++		strncat(info.type, compatible, sizeof(info.type));
++		request_module(info.type);
++
++		/* need module alias OF,vendor,device */
++		strcpy(info.type, OF_PREFIX);
++		strncat(info.type, compatible, sizeof(info.type));
++
++		info.platform_data = NULL;
++		info.addr = *addr;
++
++		result = PTR_ERR(i2c_new_device(adap, &info));
++		if (result == NULL) {
++			printk(KERN_ERR "i2c-mpc.c: Failed to load driver for %s, err %d\n", compatible);
++			irq_dispose_mapping(info.irq);
++			continue;
++		}
++	}
++}
++
++#endif
+diff --git a/drivers/i2c/busses/powerpc-common.h b/drivers/i2c/busses/powerpc-common.h
+new file mode 100644
+index 0000000..95f1347
+--- /dev/null
++++ b/drivers/i2c/busses/powerpc-common.h
+@@ -0,0 +1,23 @@
++/*
++ * powerpc-common.h - routines common to device tree parsing for all
++ *                    powerpc based i2c hosts
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * (C) Copyright 2008 Jon Smirl <jonsmirl@gmail.com>
++ *
++ */
++
++void of_register_i2c_devices(struct i2c_adapter *adap, struct device_node *adap_node);
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index d1488a0..2e53b39 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -371,8 +371,15 @@ struct virtio_device_id {
+ 
+ /* These defines are used to separate PowerPC open firmware
+  * drivers into their own namespace */
+-#define I2C_NAME_SIZE	20
++#define I2C_NAME_SIZE	48  /* Needs to be large enough to hold device tree style names */
+ #define I2C_MODULE_PREFIX "i2c:"
++#ifdef CONFIG_OF
++#define OF_PREFIX "OF," /* Used to put OF device tree names into their own namespace */
++#define I2C_OF_MODULE_PREFIX I2C_MODULE_PREFIX OF_PREFIX
++#define OF_ID(s, d) { OF_PREFIX s, (d) },
++#else
++#define OF_ID(s, d)
++#endif
+ 
+ struct i2c_device_id {
+ 	char name[I2C_NAME_SIZE];
