@@ -1,34 +1,28 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [59.145.155.1])
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C771BDDDF9
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 23:52:30 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28smtp01.in.ibm.com (8.13.1/8.13.1) with ESMTP id m0SCqMk5001970
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 18:22:22 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0SCqMsN602122
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 18:22:22 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m0SCqPrZ022345
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 12:52:26 GMT
-Date: Mon, 28 Jan 2008 18:22:06 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH powerpc] Fake NUMA emulation for PowerPC (Take 3)
-Message-ID: <20080128125206.GC4330@balbir.in.ibm.com>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-	<1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
-	<1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
-	<20080126071339.GA25328@balbir.in.ibm.com>
-	<18332.28991.658933.763115@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <18332.28991.658933.763115@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Reply-To: balbir@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9406ADDE45
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 23:53:30 +1100 (EST)
+Subject: Re: ppc32: Weird process scheduling behaviour with 2.6.24-rc
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080128123253.GA32496@elte.hu>
+References: <1201092131.6341.51.camel@lappy>
+	<1201244082.6815.128.camel@pasglop> <1201244618.6815.130.camel@pasglop>
+	<1201245901.6815.133.camel@pasglop> <1201251000.6341.108.camel@lappy>
+	<20080126040734.GA21365@linux.vnet.ibm.com>
+	<1201320834.6815.160.camel@pasglop>
+	<20080126050757.GB14177@linux.vnet.ibm.com>
+	<1201450409.1931.23.camel@thor.sulgenrain.local>
+	<1201510236.6149.24.camel@lappy>  <20080128123253.GA32496@elte.hu>
+Content-Type: text/plain
+Date: Mon, 28 Jan 2008 13:53:16 +0100
+Message-Id: <1201524796.28547.5.camel@lappy>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org,
+	Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>,
+	vatsa@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,196 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Paul Mackerras <paulus@samba.org> [2008-01-27 22:55:43]:
 
-> Balbir Singh writes:
+On Mon, 2008-01-28 at 13:32 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> > Here's a better and more complete fix for the problem. Could you
-> > please see if it works for you? I tested it on a real NUMA box and it
-> > seemed to work fine there.
+> > >       * With CONFIG_FAIR_USER_SCHED disabled, there are severe
+> > >         interactivity hickups with a niced CPU hog and top running. This
+> > >         started with commit 810e95ccd58d91369191aa4ecc9e6d4a10d8d0c8. 
+> > 
+> > The revert at the bottom causes the wakeup granularity to shrink for + 
+> > nice and to grow for - nice. That is, it becomes easier to preempt a + 
+> > nice task, and harder to preempt a - nice task.
 > 
-> There are a couple of other changes in behaviour that your patch
-> introduces, and I'd like to understand them better before taking the
-> patch.  First, with your patch we don't set nodes online if they end
-> up having no memory in them because of the memory limit, whereas
-> previously we did.  Secondly, in the case where we don't have NUMA
-> information, we now set node 0 online after adding each LMB, whereas
-> previously we only set it online once.
-> 
-> If in fact these changes are benign, then your patch description
-> should mention them and explain why they are benign.
-> 
-> Paul.
->
+> i think it would be OK to do half of this: make it easier to preempt a 
+> +nice task. Michel, do you really need the -nice portion as well? It's 
+> not a problem to super-preempt positively reniced tasks, but it can be 
+> quite annoying if negatively reniced tasks have super-slices.
 
-Hi, Paul,
+This should do that (unless I need a stronger cup of tea).
 
-Here's version 3 of the patch. I've commented the side-effect of
-repeatedly setting node 0 online (as to why that is done) and I've
-removed the side effect of not creating memory less nodes
-(when we hit the memory limit).
-
-I've described all my tests below
- 
-Changelog v3
-1. Remove the side-effect of not setting nodes online if they end
-   up having no memory in them because of the memory limit.
-
-Changelog v2
-
-1. Get rid of the constant 5 (based on comments from
-                                Geert.Uytterhoeven@sonycom.com)
-2. Implement suggestions from Olof Johannson
-3. Check if cmdline is NULL in fake_numa_create_new_node()
-
-Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
-NUMA nodes can be specified using the following command line option
-
-numa=fake=<node range>
-
-node range is of the format <range1>,<range2>,...<rangeN>
-
-Each of the rangeX parameters is passed using memparse(). I find the patch
-useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
-on a numa box with the following arguments
-
-numa=fake=512M
-numa=fake=512M,768M
-numa=fake=256M,512M mem=512M
-numa=fake=1G mem=768M
-numa=fake=
-without any numa= argument
-
-The other side-effect introduced by this patch is that; in the case where we
-don't have NUMA information, we now set a node online after adding each LMB.
-This node could very well be node 0, but in the case that we enable fake
-NUMA nodes, when we cross node boundaries, we need to set the new node online.
-
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
-
- arch/powerpc/mm/numa.c |   60 ++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 57 insertions(+), 3 deletions(-)
-
-diff -puN arch/powerpc/mm/numa.c~fakenumappc arch/powerpc/mm/numa.c
---- linux-2.6.24-rc8/arch/powerpc/mm/numa.c~fakenumappc	2008-01-28 17:05:34.000000000 +0530
-+++ linux-2.6.24-rc8-balbir/arch/powerpc/mm/numa.c	2008-01-28 18:15:41.000000000 +0530
-@@ -24,6 +24,8 @@
- 
- static int numa_enabled = 1;
- 
-+static char *cmdline __initdata;
-+
- static int numa_debug;
- #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
- 
-@@ -39,6 +41,47 @@ static bootmem_data_t __initdata plat_no
- static int min_common_depth;
- static int n_mem_addr_cells, n_mem_size_cells;
- 
-+static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
-+						unsigned int *nid)
-+{
-+	unsigned long long mem;
-+	char *p = cmdline;
-+	static unsigned int fake_nid;
-+	static unsigned long long curr_boundary;
-+
-+	/*
-+	 * Modify node id, iff we started creating NUMA nodes
-+	 */
-+	if (fake_nid)
-+		*nid = fake_nid;
-+	if (!p)
-+		return 0;
-+
-+	mem = memparse(p, &p);
-+	if (!mem)
-+		return 0;
-+
-+	if (mem < curr_boundary)
-+		return 0;
-+
-+	curr_boundary = mem;
-+
-+	if ((end_pfn << PAGE_SHIFT) > mem) {
-+		/*
-+		 * Skip commas and spaces
-+		 */
-+		while (*p == ',' || *p == ' ' || *p == '\t')
-+			p++;
-+
-+		cmdline = p;
-+		fake_nid++;
-+		*nid = fake_nid;
-+		dbg("created new fake_node with id %d\n", fake_nid);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
- static void __cpuinit map_cpu_to_node(int cpu, int node)
- {
- 	numa_cpu_lookup_table[cpu] = node;
-@@ -344,6 +387,9 @@ static void __init parse_drconf_memory(s
- 			if (nid == 0xffff || nid >= MAX_NUMNODES)
- 				nid = default_nid;
- 		}
-+
-+		fake_numa_create_new_node(((start + lmb_size) >> PAGE_SHIFT),
-+						&nid);
- 		node_set_online(nid);
- 
- 		size = numa_enforce_memory_limit(start, lmb_size);
-@@ -429,6 +475,8 @@ new_range:
- 		nid = of_node_to_nid_single(memory);
- 		if (nid < 0)
- 			nid = default_nid;
-+
-+		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
- 		node_set_online(nid);
- 
- 		if (!(size = numa_enforce_memory_limit(start, size))) {
-@@ -461,7 +509,7 @@ static void __init setup_nonnuma(void)
- 	unsigned long top_of_ram = lmb_end_of_DRAM();
- 	unsigned long total_ram = lmb_phys_mem_size();
- 	unsigned long start_pfn, end_pfn;
--	unsigned int i;
-+	unsigned int i, nid = 0;
- 
- 	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
- 	       top_of_ram, total_ram);
-@@ -471,9 +519,11 @@ static void __init setup_nonnuma(void)
- 	for (i = 0; i < lmb.memory.cnt; ++i) {
- 		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
- 		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
--		add_active_range(0, start_pfn, end_pfn);
-+
-+		fake_numa_create_new_node(end_pfn, &nid);
-+		add_active_range(nid, start_pfn, end_pfn);
-+		node_set_online(nid);
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -1106,7 +1106,11 @@ static void check_preempt_wakeup(struct 
  	}
--	node_set_online(0);
- }
  
- void __init dump_numa_cpu_topology(void)
-@@ -702,6 +752,10 @@ static int __init early_numa(char *p)
- 	if (strstr(p, "debug"))
- 		numa_debug = 1;
+ 	gran = sysctl_sched_wakeup_granularity;
+-	if (unlikely(se->load.weight != NICE_0_LOAD))
++	/*
++	 * More easily preempt - nice tasks, while not making
++	 * it harder for + nice tasks.
++	 */
++	if (unlikely(se->load.weight > NICE_0_LOAD))
+ 		gran = calc_delta_fair(gran, &se->load);
  
-+	p = strstr(p, "fake=");
-+	if (p)
-+		cmdline = p + strlen("fake=");
-+
- 	return 0;
- }
- early_param("numa", early_numa);
-_
- 
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+ 	if (pse->vruntime + gran < se->vruntime)
