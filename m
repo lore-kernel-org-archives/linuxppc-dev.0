@@ -1,19 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5FF49DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 06:26:41 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id m0SJQZCE029786
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 13:26:36 -0600
-Date: Mon, 28 Jan 2008 13:24:08 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id E9801DDED5
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 07:14:45 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 85xx: Only invalidate TLB0 and TLB1
-Message-ID: <Pine.LNX.4.64.0801281323530.25254@blarg.am.freescale.net>
+Subject: Re: [PATCH] hide kernel only code in asm-powerpc/elf.h
+Date: Mon, 28 Jan 2008 21:14:30 +0100
+References: <20080125180841.GA30091@aepfle.de>
+In-Reply-To: <20080125180841.GA30091@aepfle.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801282114.31421.arnd@arndb.de>
+Cc: Olaf Hering <olaf@aepfle.de>, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All current 85xx/e500 implementations only have two TLB
-arrays.  We are wasting cycles by invalidating TLB2 and TLB3.
+On Friday 25 January 2008, Olaf Hering wrote:
+> stuff inside CONFIG_* should not be exported via make headers-install
+> 
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> 
 
----
- arch/powerpc/kernel/misc_32.S |   10 ----------
- 1 files changed, 0 insertions(+), 10 deletions(-)
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index be09f0d..5c2e253 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -275,12 +275,6 @@ _GLOBAL(_tlbia)
- 	/* Invalidate all entries in TLB1 */
- 	li	r3, 0x0c
- 	tlbivax	0,3
--	/* Invalidate all entries in TLB2 */
--	li	r3, 0x14
--	tlbivax	0,3
--	/* Invalidate all entries in TLB3 */
--	li	r3, 0x1c
--	tlbivax	0,3
- 	msync
- #ifdef CONFIG_SMP
- 	tlbsync
-@@ -375,12 +369,8 @@ _GLOBAL(_tlbie)
- #elif defined(CONFIG_FSL_BOOKE)
- 	rlwinm	r4, r3, 0, 0, 19
- 	ori	r5, r4, 0x08	/* TLBSEL = 1 */
--	ori	r6, r4, 0x10	/* TLBSEL = 2 */
--	ori	r7, r4, 0x18	/* TLBSEL = 3 */
- 	tlbivax	0, r4
- 	tlbivax	0, r5
--	tlbivax	0, r6
--	tlbivax	0, r7
- 	msync
- #if defined(CONFIG_SMP)
- 	tlbsync
--- 
-1.5.3.7
+I think at some point I even had a script to automatically check
+for this kind of bug. Using any #ifdef CONFIG_* in an exported
+header is guaranteed to be a bug, because we don't export
+config.h.
+
+	Arnd <><
