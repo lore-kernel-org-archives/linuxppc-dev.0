@@ -1,22 +1,29 @@
-Return-Path: <gerg@snapgear.com>
-Received: from hosted07.westnet.com.au (hosted07.westnet.com.au [203.10.1.223])
-	by ozlabs.org (Postfix) with ESMTP id AC0DADDE02
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 10:59:06 +1100 (EST)
-Message-ID: <479E6C3A.4070401@snapgear.com>
-Date: Tue, 29 Jan 2008 09:58:50 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
-References: <4799F349.9090102@scram.de>
-	<Pine.LNX.4.64.0801251544480.13060@anakin>
-In-Reply-To: <Pine.LNX.4.64.0801251544480.13060@anakin>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-m68k@vger.kernel.org, uClinux list <uclinux-dev@uclinux.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	Scott Wood <scottwood@freescale.com>, "Garzik, Jeff" <jgarzik@pobox.com>
+Return-Path: <pbadari@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CA696DDECC
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 11:28:42 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0T0Sdsf004724
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 19:28:39 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0T0Sc0G106572
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 17:28:38 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0T0ScJn011164
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jan 2008 17:28:38 -0700
+Subject: [-mm PATCH] updates for hotplug memory remove
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 28 Jan 2008 16:31:22 -0800
+Message-Id: <1201566682.29357.15.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linux-mm <linux-mm@kvack.org>, pbadari@us.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,239 +33,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Andrew,
 
- > ---------- Forwarded message ----------
- > Date: Fri, 25 Jan 2008 15:33:45 +0100
- > From: Jochen Friedrich <jochen@scram.de>
- > To: "Garzik, Jeff" <jgarzik@pobox.com>
- > Cc: Vitaly Bordug <vitb@kernel.crashing.org>,
- >     Scott Wood <scottwood@freescale.com>,
- >     Kumar Gala <galak@kernel.crashing.org>,
- >     Geert Uytterhoeven <geert@linux-m68k.org>,
- >     "Kernel, Linux" <linux-kernel@vger.kernel.org>,
- >     "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- >     linuxppc-dev list <linuxppc-dev@ozlabs.org>, 
-linux-m68k@vger.kernel.org
- > Subject: [PATCH] [NET]: Remove PowerPC code from fec.c
- >
- > fec.c is only used on M68k Coldfire CPUs. Remove leftover
- > PowerPC code from this driver.
+Here are the updates for hotplug memory remove code currently in -mm.
 
-I was always hoping that this driver would be supported on both
-architectures. After all the underlying eth device is essentially
-the same on both.
+1) Please don't push this patch to mainline (for the merge window).
 
-Anyway... I don't have a problem with this patch, looks ok
-the me.
+memory-hotplug-add-removable-to-sysfs-to-show-memblock-removability.patch
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+I didn't find this consistently useful - even though memory is marked
+removable, I found cases where I can't move it. When we get it right,
+we can push it at that time. Please leave this in -mm.
 
-Regards
-Greg
+2) Can you replace the following patch with this ?
 
+add-remove_memory-for-ppc64-2.patch
 
+I found that, I do need arch-specific hooks to get the memory remove
+working on ppc64 LPAR. Earlier, I tried to make remove_memory() arch
+neutral, but we do need arch specific hooks.
 
+Thanks,
+Badari
 
- > Signed-off-by: Jochen Friedrich <jochen@scram.de>
- > ---
- >  drivers/net/fec.c |  136 
-+---------------------------------------------------
- >  1 files changed, 3 insertions(+), 133 deletions(-)
- >
- > diff --git a/drivers/net/fec.c b/drivers/net/fec.c
- > index 0fbf1bb..0499cbb 100644
- > --- a/drivers/net/fec.c
- > +++ b/drivers/net/fec.c
- > @@ -23,6 +23,9 @@
- >   *
- >   * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
- >   * Copyright (c) 2004-2006 Macq Electronique SA.
- > + *
- > + * This driver is now only used on ColdFire processors. Remove 
-conditional
- > + * Powerpc code.
- >   */
- >
- >  #include <linux/module.h>
- > @@ -49,17 +52,9 @@
- >  #include <asm/pgtable.h>
- >  #include <asm/cacheflush.h>
- >
- > -#if defined(CONFIG_M523x) || defined(CONFIG_M527x) || \
- > -    defined(CONFIG_M5272) || defined(CONFIG_M528x) || \
- > -    defined(CONFIG_M520x) || defined(CONFIG_M532x)
- >  #include <asm/coldfire.h>
- >  #include <asm/mcfsim.h>
- >  #include "fec.h"
- > -#else
- > -#include <asm/8xx_immap.h>
- > -#include <asm/mpc8xx.h>
- > -#include "commproc.h"
- > -#endif
- >
- >  #if defined(CONFIG_FEC2)
- >  #define	FEC_MAX_PORTS	2
- > @@ -1223,14 +1218,9 @@ static phy_info_t const * const phy_info[] = {
- >
- >  /* 
-------------------------------------------------------------------------- */
- >  #if !defined(CONFIG_M532x)
- > -#ifdef CONFIG_RPXCLASSIC
- > -static void
- > -mii_link_interrupt(void *dev_id);
- > -#else
- >  static irqreturn_t
- >  mii_link_interrupt(int irq, void * dev_id);
- >  #endif
- > -#endif
- >
- >  #if defined(CONFIG_M5272)
- >  /*
- > @@ -1800,121 +1790,6 @@ static void __inline__ fec_uncache(unsigned 
-long addr)
- >  /* 
-------------------------------------------------------------------------- */
- >
- >
- > -#else
- > -
- > -/*
- > - *	Code specific to the MPC860T setup.
- > - */
- > -static void __inline__ fec_request_intrs(struct net_device *dev)
- > -{
- > -	volatile immap_t *immap;
- > -
- > -	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
- > -
- > -	if (request_8xxirq(FEC_INTERRUPT, fec_enet_interrupt, 0, "fec", 
-dev) != 0)
- > -		panic("Could not allocate FEC IRQ!");
- > -
- > -#ifdef CONFIG_RPXCLASSIC
- > -	/* Make Port C, bit 15 an input that causes interrupts.
- > -	*/
- > -	immap->im_ioport.iop_pcpar &= ~0x0001;
- > -	immap->im_ioport.iop_pcdir &= ~0x0001;
- > -	immap->im_ioport.iop_pcso &= ~0x0001;
- > -	immap->im_ioport.iop_pcint |= 0x0001;
- > -	cpm_install_handler(CPMVEC_PIO_PC15, mii_link_interrupt, dev);
- > -
- > -	/* Make LEDS reflect Link status.
- > -	*/
- > -	*((uint *) RPX_CSR_ADDR) &= ~BCSR2_FETHLEDMODE;
- > -#endif
- > -#ifdef CONFIG_FADS
- > -	if (request_8xxirq(SIU_IRQ2, mii_link_interrupt, 0, "mii", dev) != 0)
- > -		panic("Could not allocate MII IRQ!");
- > -#endif
- > -}
- > -
- > -static void __inline__ fec_get_mac(struct net_device *dev)
- > -{
- > -	bd_t *bd;
- > -
- > -	bd = (bd_t *)__res;
- > -	memcpy(dev->dev_addr, bd->bi_enetaddr, ETH_ALEN);
- > -
- > -#ifdef CONFIG_RPXCLASSIC
- > -	/* The Embedded Planet boards have only one MAC address in
- > -	 * the EEPROM, but can have two Ethernet ports.  For the
- > -	 * FEC port, we create another address by setting one of
- > -	 * the address bits above something that would have (up to
- > -	 * now) been allocated.
- > -	 */
- > -	dev->dev_adrd[3] |= 0x80;
- > -#endif
- > -}
- > -
- > -static void __inline__ fec_set_mii(struct net_device *dev, struct 
-fec_enet_private *fep)
- > -{
- > -	extern uint _get_IMMR(void);
- > -	volatile immap_t *immap;
- > -	volatile fec_t *fecp;
- > -
- > -	fecp = fep->hwp;
- > -	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
- > -
- > -	/* Configure all of port D for MII.
- > -	*/
- > -	immap->im_ioport.iop_pdpar = 0x1fff;
- > -
- > -	/* Bits moved from Rev. D onward.
- > -	*/
- > -	if ((_get_IMMR() & 0xffff) < 0x0501)
- > -		immap->im_ioport.iop_pddir = 0x1c58;	/* Pre rev. D */
- > -	else
- > -		immap->im_ioport.iop_pddir = 0x1fff;	/* Rev. D and later */
- > -
- > -	/* Set MII speed to 2.5 MHz
- > -	*/
- > -	fecp->fec_mii_speed = fep->phy_speed =
- > -		((bd->bi_busfreq * 1000000) / 2500000) & 0x7e;
- > -}
- > -
- > -static void __inline__ fec_enable_phy_intr(void)
- > -{
- > -	volatile fec_t *fecp;
- > -
- > -	fecp = fep->hwp;
- > -
- > -	/* Enable MII command finished interrupt
- > -	*/
- > -	fecp->fec_ivec = (FEC_INTERRUPT/2) << 29;
- > -}
- > -
- > -static void __inline__ fec_disable_phy_intr(void)
- > -{
- > -}
- > -
- > -static void __inline__ fec_phy_ack_intr(void)
- > -{
- > -}
- > -
- > -static void __inline__ fec_localhw_setup(void)
- > -{
- > -	volatile fec_t *fecp;
- > -
- > -	fecp = fep->hwp;
- > -	fecp->fec_r_hash = PKT_MAXBUF_SIZE;
- > -	/* Enable big endian and don't care about SDMA FC.
- > -	*/
- > -	fecp->fec_fun_code = 0x78000000;
- > -}
- > -
- > -static void __inline__ fec_uncache(unsigned long addr)
- > -{
- > -	pte_t *pte;
- > -	pte = va_to_pte(mem_addr);
- > -	pte_val(*pte) |= _PAGE_NO_CACHE;
- > -	flush_tlb_page(init_mm.mmap, mem_addr);
- > -}
- > -
- >  #endif
- >
- >  /* 
-------------------------------------------------------------------------- */
- > @@ -2126,13 +2001,8 @@ mii_discover_phy(uint mii_reg, struct 
-net_device *dev)
- >
- >  /* This interrupt occurs when the PHY detects a link change.
- >  */
- > -#ifdef CONFIG_RPXCLASSIC
- > -static void
- > -mii_link_interrupt(void *dev_id)
- > -#else
- >  static irqreturn_t
- >  mii_link_interrupt(int irq, void * dev_id)
- > -#endif
- >  {
- >  	struct	net_device *dev = dev_id;
- >  	struct fec_enet_private *fep = netdev_priv(dev);
+Supply ppc64 remove_memory() function. Arch specific is still
+being reviewed by Paul Mackerras.
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+From: Badari Pulavarty <pbadari@us.ibm.com>
+---
+ arch/powerpc/mm/mem.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+Index: linux-2.6.24-rc8/arch/powerpc/mm/mem.c
+===================================================================
+--- linux-2.6.24-rc8.orig/arch/powerpc/mm/mem.c	2008-01-25 08:04:32.000000000 -0800
++++ linux-2.6.24-rc8/arch/powerpc/mm/mem.c	2008-01-25 08:16:37.000000000 -0800
+@@ -145,6 +145,22 @@ walk_memory_resource(unsigned long start
+ 	return  (*func)(start_pfn, nr_pages, arg);
+ }
+ 
++#ifdef CONFIG_MEMORY_HOTREMOVE
++int remove_memory(u64 start, u64 size)
++{
++	unsigned long start_pfn, end_pfn;
++	int ret;
++
++	start_pfn = start >> PAGE_SHIFT;
++	end_pfn = start_pfn + (size >> PAGE_SHIFT);
++	ret = offline_pages(start_pfn, end_pfn, 120 * HZ);
++	if (ret)
++		goto out;
++	/* Arch-specific calls go here - next patch */
++out:
++	return ret;
++}
++#endif /* CONFIG_MEMORY_HOTREMOVE */
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ void show_mem(void)
