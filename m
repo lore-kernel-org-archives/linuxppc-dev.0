@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <76b4bd4757ab67f814f6a298a3935fa0042cd656.1201616038.git.michael@ellerman.id.au>
+Message-Id: <b328031747602deeac6827c054b7986734a9c322.1201616038.git.michael@ellerman.id.au>
 In-Reply-To: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
 References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 4/8] Split cell_iommu_setup_hardware() into two parts
-Date: Wed, 30 Jan 2008 01:14:00 +1100 (EST)
+Subject: [PATCH 5/8] Split out the IOMMU logic from cell_dma_dev_setup()
+Date: Wed, 30 Jan 2008 01:14:01 +1100 (EST)
 Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,87 +16,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Split cell_iommu_setup_hardware() into two parts. Split the page table
-setup into cell_iommu_setup_page_tables() and the bits that kick the
-hardware into cell_iommu_enable_hardware().
+Split the IOMMU logic out from cell_dma_dev_setup() into a separate
+function. If we're not using dma_direct_ops or dma_iommu_ops we don't
+know what the hell's going on, so BUG.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/iommu.c |   38 +++++++++++++++++++++++-----------
- 1 files changed, 26 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 4f1ca43..a86e5bb 100644
+index a86e5bb..e9769fc 100644
 --- a/arch/powerpc/platforms/cell/iommu.c
 +++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -306,20 +306,13 @@ static int cell_iommu_find_ioc(int nid, unsigned long *base)
- 	return -ENODEV;
- }
+@@ -507,17 +507,12 @@ static struct cbe_iommu *cell_iommu_for_node(int nid)
  
--static void cell_iommu_setup_hardware(struct cbe_iommu *iommu, unsigned long size)
-+static void cell_iommu_setup_page_tables(struct cbe_iommu *iommu,
-+					 unsigned long base, unsigned long size)
+ static unsigned long cell_dma_direct_offset;
+ 
+-static void cell_dma_dev_setup(struct device *dev)
++static void cell_dma_dev_setup_iommu(struct device *dev)
  {
- 	struct page *page;
--	int ret, i;
-+	int i;
- 	unsigned long reg, segments, pages_per_segment, ptab_size, stab_size,
--		      n_pte_pages, xlate_base;
--	unsigned int virq;
--
--	if (cell_iommu_find_ioc(iommu->nid, &xlate_base))
--		panic("%s: missing IOC register mappings for node %d\n",
--		      __FUNCTION__, iommu->nid);
--
--	iommu->xlate_regs = ioremap(xlate_base, IOC_Reg_Size);
--	iommu->cmd_regs = iommu->xlate_regs + IOC_IOCmd_Offset;
-+		      n_pte_pages;
+ 	struct iommu_window *window;
+ 	struct cbe_iommu *iommu;
+ 	struct dev_archdata *archdata = &dev->archdata;
  
- 	segments = size >> IO_SEGMENT_SHIFT;
- 	pages_per_segment = 1ull << IO_PAGENO_BITS;
-@@ -378,6 +371,20 @@ static void cell_iommu_setup_hardware(struct cbe_iommu *iommu, unsigned long siz
- 			(__pa(iommu->ptab) + n_pte_pages * IOMMU_PAGE_SIZE * i);
- 		pr_debug("\t[%d] 0x%016lx\n", i, iommu->stab[i]);
- 	}
-+}
-+
-+static void cell_iommu_enable_hardware(struct cbe_iommu *iommu)
-+{
-+	int ret;
-+	unsigned long reg, xlate_base;
-+	unsigned int virq;
-+
-+	if (cell_iommu_find_ioc(iommu->nid, &xlate_base))
-+		panic("%s: missing IOC register mappings for node %d\n",
-+		      __FUNCTION__, iommu->nid);
-+
-+	iommu->xlate_regs = ioremap(xlate_base, IOC_Reg_Size);
-+	iommu->cmd_regs = iommu->xlate_regs + IOC_IOCmd_Offset;
- 
- 	/* ensure that the STEs have updated */
- 	mb();
-@@ -407,6 +414,13 @@ static void cell_iommu_setup_hardware(struct cbe_iommu *iommu, unsigned long siz
- 	out_be64(iommu->cmd_regs + IOC_IOCmd_Cfg, reg);
+-	if (get_pci_dma_ops() == &dma_direct_ops) {
+-		archdata->dma_data = (void *)cell_dma_direct_offset;
+-		return;
+-	}
+-
+ 	/* Current implementation uses the first window available in that
+ 	 * node's iommu. We -might- do something smarter later though it may
+ 	 * never be necessary
+@@ -534,6 +529,18 @@ static void cell_dma_dev_setup(struct device *dev)
+ 	archdata->dma_data = &window->table;
  }
  
-+static void cell_iommu_setup_hardware(struct cbe_iommu *iommu,
-+	unsigned long base, unsigned long size)
++static void cell_dma_dev_setup(struct device *dev)
 +{
-+	cell_iommu_setup_page_tables(iommu, base, size);
-+	cell_iommu_enable_hardware(iommu);
++	struct dev_archdata *archdata = &dev->archdata;
++
++	if (get_pci_dma_ops() == &dma_iommu_ops)
++		cell_dma_dev_setup_iommu(dev);
++	else if (get_pci_dma_ops() == &dma_direct_ops)
++		archdata->dma_data = (void *)cell_dma_direct_offset;
++	else
++		BUG();
 +}
 +
- #if 0/* Unused for now */
- static struct iommu_window *find_window(struct cbe_iommu *iommu,
- 		unsigned long offset, unsigned long size)
-@@ -622,7 +636,7 @@ static void __init cell_iommu_init_one(struct device_node *np,
- 		 base, base + size - 1);
- 
- 	/* Initialize the hardware */
--	cell_iommu_setup_hardware(iommu, size);
-+	cell_iommu_setup_hardware(iommu, base, size);
- 
- 	/* Setup the iommu_table */
- 	cell_iommu_setup_window(iommu, np, base, size,
+ static void cell_pci_dma_dev_setup(struct pci_dev *dev)
+ {
+ 	cell_dma_dev_setup(&dev->dev);
 -- 
 1.5.3.7.1.g4e596e
