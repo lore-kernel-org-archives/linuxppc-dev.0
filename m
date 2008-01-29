@@ -1,22 +1,23 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 620E0DDEF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 06:26:10 +1100 (EST)
-Message-ID: <479F7DC8.5010402@freescale.com>
-Date: Tue, 29 Jan 2008 13:26:00 -0600
-From: Jon Loeliger <jdl@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 1B4BDDDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 06:31:18 +1100 (EST)
+Date: Tue, 29 Jan 2008 13:31:38 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH 4/4] 82xx: MGCOGE support
+Message-ID: <20080129193138.GA4304@loki.buserror.net>
+References: <mailman.813.1200609119.6908.linuxppc-dev@ozlabs.org>
+	<479EFE7F.4000104@denx.de>
+	<20080129192454.GC4051@loki.buserror.net>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4] 82xx: MGCOGE support
-References: <mailman.813.1200609119.6908.linuxppc-dev@ozlabs.org>	<479EFE71.5090201@denx.de>
-	<20080129192033.GB4051@loki.buserror.net>
-In-Reply-To: <20080129192033.GB4051@loki.buserror.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Heiko Schocher <hs@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080129192454.GC4051@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-
->> +		// Temporary -- will go away once kernel uses ranges for get_immrbase().
->> +		reg = <0xf0000000 0x00053000>;
+On Tue, Jan 29, 2008 at 01:24:54PM -0600, Scott Wood wrote:
+> On Tue, Jan 29, 2008 at 11:22:55AM +0100, Heiko Schocher wrote:
+> > +		*pram_base = res.start;
 > 
-> The patch to use ranges for get_immrbase() just went in, so we can drop this
-> now.
+> First of all, use out_be32() rather than direct dereferencing.
 
-Most excellent.
+Err, I meant out_be16() of course. :-P
 
-Time for YARDS -- Yet Another Rounds of DTS Scrubbing.
-
-jdl
+-Scott
