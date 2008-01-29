@@ -1,17 +1,18 @@
-Return-Path: <olof@lixom.net>
-Date: Tue, 29 Jan 2008 09:50:48 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 8/8] Cell IOMMU fixed mapping support
-Message-ID: <20080129155048.GA19822@lixom.net>
-References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
-	<1cbc0deea968ece13756e3c86ec3af0b7586b80b.1201616038.git.michael@ellerman.id.au>
-	<20080129151511.GA18975@lixom.net>
-	<1201619625.10012.19.camel@concordia>
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp01.msg.oleane.net (smtp01.msg.oleane.net [62.161.4.1])
+	by ozlabs.org (Postfix) with ESMTP id 82104DDF40
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 01:26:15 +1100 (EST)
+Received: from GEGE6600V ([194.3.133.184]) (authenticated)
+	by smtp01.msg.oleane.net (MTA) with ESMTP id m0TE4QcS003758
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 15:04:27 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: PCI configuration with multiple PCI controllers
+Date: Tue, 29 Jan 2008 15:20:50 +0100
+Message-ID: <000501c86282$2a5ba9e0$a501a8c0@GEGE6600V>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1201619625.10012.19.camel@concordia>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 30, 2008 at 02:13:45AM +1100, Michael Ellerman wrote:
-> On Tue, 2008-01-29 at 09:15 -0600, Olof Johansson wrote:
-> > On Wed, Jan 30, 2008 at 01:14:03AM +1100, Michael Ellerman wrote:
-> > 
-> > > For example a machine with 4GB of memory would end up with the normal
-> > > IOMMU window from 0-2GB and the fixed mapping window from 2GB to 6GB. In
-> > > this case a 64-bit device wishing to DMA to 1GB would be told to DMA to
-> > > 3GB, plus any offset required by firmware. The firmware offset is encoded
-> > > in the "dma-ranges" property.
-> > 
-> > Shouldn't the fixed mapping be between 4G and 8G (and the offset for 1G
-> > is at 5G), to account for the MMIO range at 2-4G?
-> 
-> I don't think so, ie. it works setup like that, but I'm not entirely
-> sure why. Presumably the 2-4GB for MMIO is only for cycles heading out
-> of the CPU.
+Hello,
 
-Ben denied that being so yesterday. :-)
+I have a MPC8641 based board. I try to use the two PCIe controllers. My
+firmware configures (physically) the PCI buses as follow:
 
-If that's the case, then you can stick the dynamic range there for >32GB
-configs, since it's still addressable with 32 bits.
+------------------+
+MPC8641 PCIe 1	|	bus 1		+--------------+
+			| --------------> | PCI device 0 |
+	BUS 0		|			+--------------+
+- - - - - - - - - +
+MPC8641 PCIe 2	|	bus 3		+--------------+
+			| --------------> | PCI device 1 |
+	BUS 2		|			+--------------+
+------------------+
 
+I launch the Linux image (2.6.23.9). During the Kernel PCI configuration,
+buses behind the 2nd MPC8641 PCIe are skipped because its primary bus don't
+start at bus number 0. The kernel reconfigure the primary bus number of the
+MPC8641 PCIe 2 controller from 2 to 0.
 
--Olof
+I can patch the kernel to work with my firmware but I don't know if my PCI
+configuration is the good one.
+
+What is the common way to configure the PCI for Linux when a new controller
+is found: start the bus number to 0 or to the last bus number + 1?
+
+Regards
