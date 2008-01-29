@@ -1,23 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5B3CDDDE17
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id E48AEDDE28
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 10:16:02 +1100 (EST)
-Message-ID: <479FB3CC.1010708@freescale.com>
-Date: Tue, 29 Jan 2008 17:16:28 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Wed, 30 Jan 2008 10:22:54 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id b2so679ana.81
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Jan 2008 15:22:53 -0800 (PST)
+Message-ID: <fa686aa40801291522y49c1b7e7n83c035f80fef1a12@mail.gmail.com>
+Date: Tue, 29 Jan 2008 16:22:52 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] 4xx: Clone haleakala_defconfig from kilauea_defconfig
+In-Reply-To: <20080129165941.1681842f@zod.rchland.ibm.com>
 MIME-Version: 1.0
-To: rmcguire@videopresence.com
-Subject: Re: SET_NETDEV_DEV -> 83xx HDLC Driver??
-References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>	<000601c85fc5$41e48330$6405a8c0@absolut>	<D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
-	<002301c862cb$54f73770$6405a8c0@absolut>
-In-Reply-To: <002301c862cb$54f73770$6405a8c0@absolut>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080129160924.6186b6a1@zod.rchland.ibm.com>
+	<C3C4ED97.D197%gerickson@nuovations.com>
+	<20080129165941.1681842f@zod.rchland.ibm.com>
+Cc: Stefan@ozlabs.org, Roese <sr@denx.de>,
+	Grant Erickson <gerickson@nuovations.com>,
+	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,15 +31,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Russell McGuire wrote:
-> Andy,
-> 
-> /drivers/net/fec_8xx
-> 
-> Doesn't use the call, though I imagine it is legacy or only for older
-> boards.
+On 1/29/08, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Tue, 29 Jan 2008 14:49:59 -0800
+> Grant Erickson <gerickson@nuovations.com> wrote:
+>
+> > On 1/29/08 2:09 PM, Josh Boyer wrote:
+> > > On Tue, 29 Jan 2008 14:05:41 -0800
+> > > Grant Erickson <gerickson@nuovations.com> wrote:
+> > >
+> > >> Is there a patch pending to for 'arch/powerpc/configs/haleakala_defconfig'?
+> > >
+> > > Not to my knowledge.
+> > >
+> > >> I did not see one in either of:
+> > >>
+> > >>     git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+> > >>     git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+> > >>
+> > >> If no patch is pending, to whom do I submit such a patch? It'll simply be a
+> > >> near clone of 'kilauea_defconfig', save the "CONFIG_DEVICE_TREE" entry.
+> > >
+> > > Send one to me.  CC Stefan Roese please.
+> > >
+> > > josh
+> >
+> > * Allow for 'make haleakala_defconfig' by providing a default configuration
+> >   for the AMCC PowerPC 405EXr "Haleakala" board.
+> >
+>
+> As silly as it sounds, I need a Signed-off-by for this.  Could you read
+> Documentation/SubmittingPatches section 12 and just reply to this with
+> a Signed-off-by line?
 
-I don't think it's used on anything, actually.  drivers/net/fs_enet is 
-the driver for 8xx fec.
+Rather than adding more defconfigs, can we have a single defconfig for
+440 and another one for 405?  The configs directory is getting a bit
+silly.
 
--Scott
+I've consolidated the defconfigs for 5200 and Kumar is doing the same
+for 8xxx.  All the pasemi platforms have used a single defconfig for a
+while now.
+
+Cheers,
+g.
+
+>
+> josh
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
