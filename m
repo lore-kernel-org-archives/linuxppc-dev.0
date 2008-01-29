@@ -1,12 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <75f9137843ca0bcb81df8274c98a2a21777a35bf.1201616038.git.michael@ellerman.id.au>
+Message-Id: <aa11f5302486ba8b922828b78af1f124b38c9671.1201616038.git.michael@ellerman.id.au>
 In-Reply-To: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
 References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 6/8] Add support to cell_iommu_setup_page_tables() for
-	multiple windows
-Date: Wed, 30 Jan 2008 01:14:01 +1100 (EST)
+Subject: [PATCH 7/8] Split out the ioid fetching/checking logic
+Date: Wed, 30 Jan 2008 01:14:02 +1100 (EST)
 Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,62 +16,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add support to cell_iommu_setup_page_tables() for handling two windows,
-the dynamic window and the fixed window. A fixed window size of 0
-indicates that there is no fixed window at all.
-
-Currently there are no callers who pass a non-zero fixed window, but the
-upcoming fixed IOMMU mapping patch will change that.
+Split out the ioid fetching and checking logic so we can use it elsewhere
+in a subsequent patch.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/iommu.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |   23 +++++++++++++++++------
+ 1 files changed, 17 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index e9769fc..7779dbf 100644
+index 7779dbf..3baade1 100644
 --- a/arch/powerpc/platforms/cell/iommu.c
 +++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -307,14 +307,19 @@ static int cell_iommu_find_ioc(int nid, unsigned long *base)
+@@ -443,25 +443,36 @@ static struct iommu_window *find_window(struct cbe_iommu *iommu,
  }
+ #endif
  
- static void cell_iommu_setup_page_tables(struct cbe_iommu *iommu,
--					 unsigned long base, unsigned long size)
-+				unsigned long dbase, unsigned long dsize,
-+				unsigned long fbase, unsigned long fsize)
- {
- 	struct page *page;
- 	int i;
- 	unsigned long reg, segments, pages_per_segment, ptab_size, stab_size,
--		      n_pte_pages;
-+		      n_pte_pages, base;
- 
--	segments = size >> IO_SEGMENT_SHIFT;
-+	base = dbase;
-+	if (fsize != 0)
-+		base = min(fbase, dbase);
++static inline u32 cell_iommu_get_ioid(struct device_node *np)
++{
++	const u32 *ioid;
 +
-+	segments = max(dbase + dsize, fbase + fsize) >> IO_SEGMENT_SHIFT;
- 	pages_per_segment = 1ull << IO_PAGENO_BITS;
- 
- 	pr_debug("%s: iommu[%d]: segments: %lu, pages per segment: %lu\n",
-@@ -366,7 +371,7 @@ static void cell_iommu_setup_page_tables(struct cbe_iommu *iommu,
- 	}
- 
- 	pr_debug("Setting up IOMMU stab:\n");
--	for (i = 0; i * (1ul << IO_SEGMENT_SHIFT) < size; i++) {
-+	for (i = base >> IO_SEGMENT_SHIFT; i < segments; i++) {
- 		iommu->stab[i] = reg |
- 			(__pa(iommu->ptab) + n_pte_pages * IOMMU_PAGE_SIZE * i);
- 		pr_debug("\t[%d] 0x%016lx\n", i, iommu->stab[i]);
-@@ -417,7 +422,7 @@ static void cell_iommu_enable_hardware(struct cbe_iommu *iommu)
- static void cell_iommu_setup_hardware(struct cbe_iommu *iommu,
- 	unsigned long base, unsigned long size)
++	ioid = of_get_property(np, "ioid", NULL);
++	if (ioid == NULL) {
++		printk(KERN_WARNING "iommu: missing ioid for %s using 0\n",
++		       np->full_name);
++		return 0;
++	}
++
++	return *ioid;
++}
++
+ static struct iommu_window * __init
+ cell_iommu_setup_window(struct cbe_iommu *iommu, struct device_node *np,
+ 			unsigned long offset, unsigned long size,
+ 			unsigned long pte_offset)
  {
--	cell_iommu_setup_page_tables(iommu, base, size);
-+	cell_iommu_setup_page_tables(iommu, base, size, 0, 0);
- 	cell_iommu_enable_hardware(iommu);
- }
+ 	struct iommu_window *window;
+-	const unsigned int *ioid;
++	u32 ioid;
+ 
+-	ioid = of_get_property(np, "ioid", NULL);
+-	if (ioid == NULL)
+-		printk(KERN_WARNING "iommu: missing ioid for %s using 0\n",
+-		       np->full_name);
++	ioid = cell_iommu_get_ioid(np);
+ 
+ 	window = kmalloc_node(sizeof(*window), GFP_KERNEL, iommu->nid);
+ 	BUG_ON(window == NULL);
+ 
+ 	window->offset = offset;
+ 	window->size = size;
+-	window->ioid = ioid ? *ioid : 0;
++	window->ioid = ioid;
+ 	window->iommu = iommu;
+ 	window->pte_offset = pte_offset;
  
 -- 
 1.5.3.7.1.g4e596e
