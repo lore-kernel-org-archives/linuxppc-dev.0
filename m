@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <e18b818b9c7205e8a9daa6c089fb8e45176a44a4.1201616038.git.michael@ellerman.id.au>
+Message-Id: <7bef68137a3a6f5e75b0b54db4b8af8705344f42.1201616038.git.michael@ellerman.id.au>
 In-Reply-To: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
 References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/8] Allocate the hash table under 1G on cell
+Subject: [PATCH 3/8] Split out the logic that allocates struct iommus
 Date: Wed, 30 Jan 2008 01:13:59 +1100 (EST)
 Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,46 +16,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In order to support the fixed IOMMU mapping (in a subsequent patch), we
-need the hash table to be inside the IOMMUs DMA window. This is usually 2G,
-but let's make sure the hash table is under 1G as that will satisfy the
-IOMMU requirements and also means the hash table will be on node 0.
+Split out the logic that allocates a struct iommu into a separate
+function. This can fail however the calling code has never cared - so
+just return if we can't allocate an iommu.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/mm/hash_utils_64.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 9326a69..487c5e2 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -471,7 +471,7 @@ void __init htab_initialize(void)
- 	unsigned long table;
- 	unsigned long pteg_count;
- 	unsigned long mode_rw;
--	unsigned long base = 0, size = 0;
-+	unsigned long base = 0, size = 0, limit;
- 	int i;
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 9223559..4f1ca43 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -565,10 +565,9 @@ static int __init cell_iommu_get_window(struct device_node *np,
+ 	return 0;
+ }
  
- 	extern unsigned long tce_alloc_start, tce_alloc_end;
-@@ -505,9 +505,15 @@ void __init htab_initialize(void)
- 		_SDR1 = 0; 
- 	} else {
- 		/* Find storage for the HPT.  Must be contiguous in
--		 * the absolute address space.
-+		 * the absolute address space. On cell we want it to be
-+		 * in the first 1 Gig.
- 		 */
--		table = lmb_alloc(htab_size_bytes, htab_size_bytes);
-+		if (machine_is(cell))
-+			limit = 0x40000000;
-+		else
-+			limit = 0;
+-static void __init cell_iommu_init_one(struct device_node *np, unsigned long offset)
++static struct cbe_iommu * __init cell_iommu_alloc(struct device_node *np)
+ {
+ 	struct cbe_iommu *iommu;
+-	unsigned long base, size;
+ 	int nid, i;
+ 
+ 	/* Get node ID */
+@@ -576,7 +575,7 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
+ 	if (nid < 0) {
+ 		printk(KERN_ERR "iommu: failed to get node for %s\n",
+ 		       np->full_name);
+-		return;
++		return NULL;
+ 	}
+ 	pr_debug("iommu: setting up iommu for node %d (%s)\n",
+ 		 nid, np->full_name);
+@@ -592,7 +591,7 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
+ 	if (cbe_nr_iommus >= NR_IOMMUS) {
+ 		printk(KERN_ERR "iommu: too many IOMMUs detected ! (%s)\n",
+ 		       np->full_name);
+-		return;
++		return NULL;
+ 	}
+ 
+ 	/* Init base fields */
+@@ -603,6 +602,19 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
+ 	snprintf(iommu->name, sizeof(iommu->name), "iommu%d", i);
+ 	INIT_LIST_HEAD(&iommu->windows);
+ 
++	return iommu;
++}
 +
-+		table = lmb_alloc_base(htab_size_bytes, htab_size_bytes, limit);
++static void __init cell_iommu_init_one(struct device_node *np,
++				       unsigned long offset)
++{
++	struct cbe_iommu *iommu;
++	unsigned long base, size;
++
++	iommu = cell_iommu_alloc(np);
++	if (!iommu)
++		return;
++
+ 	/* Obtain a window for it */
+ 	cell_iommu_get_window(np, &base, &size);
  
- 		DBG("Hash table allocated at %lx, size: %lx\n", table,
- 		    htab_size_bytes);
 -- 
 1.5.3.7.1.g4e596e
