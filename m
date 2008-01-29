@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F3EDDDEE9
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 678F8DDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 09:10:40 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0TMCU3E028493
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 17:12:30 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0TMAcMQ269088
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 17:10:38 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0TMAbKL032503
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 17:10:38 -0500
-Date: Tue, 29 Jan 2008 16:09:24 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Erickson <gerickson@nuovations.com>
-Subject: Re: Haleakala Defconfg
-Message-ID: <20080129160924.6186b6a1@zod.rchland.ibm.com>
-In-Reply-To: <C3C4E335.D193%gerickson@nuovations.com>
-References: <C3C4E335.D193%gerickson@nuovations.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Wed, 30 Jan 2008 09:33:25 +1100 (EST)
+In-Reply-To: <000601c85fc5$41e48330$6405a8c0@absolut>
+References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>
+	<000601c85fc5$41e48330$6405a8c0@absolut>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: SET_NETDEV_DEV -> 83xx HDLC Driver??
+Date: Tue, 29 Jan 2008 16:32:49 -0600
+To: rmcguire@videopresence.com
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,21 +28,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 29 Jan 2008 14:05:41 -0800
-Grant Erickson <gerickson@nuovations.com> wrote:
 
-> Is there a patch pending to for 'arch/powerpc/configs/haleakala_defconfig'?
+On Jan 25, 2008, at 20:43, Russell McGuire wrote:
 
-Not to my knowledge.
+> All,
+>
+> I am partly done porting a combination of the 83xx ATM driver and  
+> dscc4 HDLC
+> driver into a 83xx HDLC driver.
+>
+> However, encounter a call I don't truly understand.
+>
+> SET_NETDEV_DEV(dev, pointer_to_some_handle);
+>
+> I can see plenty of examples of this registering some kind of PCI  
+> device
+> handle, however in this case I am not using a PCI device. So what  
+> should the
+> pointer be? Or can this call be ignored, and if so what are the
+> consequences?
+>
+> I see the some of the Freescale Ethernet devices don't use this call.
+>
+> Anyway, can somebody shed some light on if I am going to need this,  
+> or a way
+> to get it to work, without creating a PCI device?
 
-> I did not see one in either of:
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
->     git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-> 
-> If no patch is pending, to whom do I submit such a patch? It'll simply be a
-> near clone of 'kilauea_defconfig', save the "CONFIG_DEVICE_TREE" entry.
 
-Send one to me.  CC Stefan Roese please.
+Look at gianfar.c (which uses a platform_device) or ucc_geth (which  
+uses an of_device).  Which freescale devices don't use that call?   
+We'll fix them.
 
-josh
+Andy
