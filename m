@@ -1,33 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9D45DDE06
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpout09.prod.mesa1.secureserver.net
+	(smtpout09-04.prod.mesa1.secureserver.net [64.202.165.17])
+	by ozlabs.org (Postfix) with SMTP id C75B1DDD0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 10:00:58 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0TN0tIY018450
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 18:00:55 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0TN0tGw278446
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 18:00:55 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0TN0sSa032360
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 18:00:55 -0500
-Date: Tue, 29 Jan 2008 16:59:41 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Erickson <gerickson@nuovations.com>
-Subject: Re: [PATCH] 4xx: Clone haleakala_defconfig from kilauea_defconfig
-Message-ID: <20080129165941.1681842f@zod.rchland.ibm.com>
-In-Reply-To: <C3C4ED97.D197%gerickson@nuovations.com>
-References: <20080129160924.6186b6a1@zod.rchland.ibm.com>
-	<C3C4ED97.D197%gerickson@nuovations.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Roese <sr@denx.de>, Stefan,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Wed, 30 Jan 2008 10:05:30 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: "'Andy Fleming'" <afleming@freescale.com>
+References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>
+	<000601c85fc5$41e48330$6405a8c0@absolut>
+	<D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+Subject: RE: SET_NETDEV_DEV -> 83xx HDLC Driver??
+Date: Tue, 29 Jan 2008 15:04:41 -0800
+Message-ID: <002301c862cb$54f73770$6405a8c0@absolut>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,35 +28,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 29 Jan 2008 14:49:59 -0800
-Grant Erickson <gerickson@nuovations.com> wrote:
+Andy,
 
-> On 1/29/08 2:09 PM, Josh Boyer wrote:
-> > On Tue, 29 Jan 2008 14:05:41 -0800
-> > Grant Erickson <gerickson@nuovations.com> wrote:
-> > 
-> >> Is there a patch pending to for 'arch/powerpc/configs/haleakala_defconfig'?
-> > 
-> > Not to my knowledge.
-> > 
-> >> I did not see one in either of:
-> >> 
-> >>     git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
-> >>     git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-> >> 
-> >> If no patch is pending, to whom do I submit such a patch? It'll simply be a
-> >> near clone of 'kilauea_defconfig', save the "CONFIG_DEVICE_TREE" entry.
-> > 
-> > Send one to me.  CC Stefan Roese please.
-> > 
-> > josh
+/drivers/net/fec_8xx
+
+Doesn't use the call, though I imagine it is legacy or only for older
+boards.
+
+Thanks for pointing me at the newer stuff, guess I had a brain cramp and
+didn't think to look there. Also makes much more sense now that the 
+pdev->dev is not a PCI device but a Platform device.
+
+One question, since you've probably got more experience with this than I do.
+
+The gianfar, and ucc_geth drivers are not modules. Is there a problem with
+using these driver _probe_ functions in a module style driver? OR should I
+just change my driver over to be a platform style?
+
+As far as I can tell the HDLC driver I am trying to create for the 83xx is
+going to be somewhat similar to the Ethernet driver. Only I don't want it
+loaded as part of the kernel.
+
+-Russ
+
+> -----Original Message-----
+> From: Andy Fleming [mailto:afleming@freescale.com]
+> Sent: Tuesday, January 29, 2008 2:33 PM
+> To: rmcguire@videopresence.com
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: SET_NETDEV_DEV -> 83xx HDLC Driver??
 > 
-> * Allow for 'make haleakala_defconfig' by providing a default configuration
->   for the AMCC PowerPC 405EXr "Haleakala" board.
 > 
-
-As silly as it sounds, I need a Signed-off-by for this.  Could you read
-Documentation/SubmittingPatches section 12 and just reply to this with
-a Signed-off-by line?
-
-josh
+> On Jan 25, 2008, at 20:43, Russell McGuire wrote:
+> 
+> > All,
+> >
+> > I am partly done porting a combination of the 83xx ATM driver and
+> > dscc4 HDLC
+> > driver into a 83xx HDLC driver.
+> >
+> > However, encounter a call I don't truly understand.
+> >
+> > SET_NETDEV_DEV(dev, pointer_to_some_handle);
+> >
+> > I can see plenty of examples of this registering some kind of PCI
+> > device
+> > handle, however in this case I am not using a PCI device. So what
+> > should the
+> > pointer be? Or can this call be ignored, and if so what are the
+> > consequences?
+> >
+> > I see the some of the Freescale Ethernet devices don't use this call.
+> >
+> > Anyway, can somebody shed some light on if I am going to need this,
+> > or a way
+> > to get it to work, without creating a PCI device?
+> 
+> 
+> Look at gianfar.c (which uses a platform_device) or ucc_geth (which
+> uses an of_device).  Which freescale devices don't use that call?
+> We'll fix them.
+> 
+> Andy
