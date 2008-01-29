@@ -1,27 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 98672DDECD
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 511D7DDE48
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jan 2008 10:04:48 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so471541anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Jan 2008 15:04:47 -0800 (PST)
-Message-ID: <fa686aa40801281504ob920311h25c0b913c4d519d7@mail.gmail.com>
-Date: Mon, 28 Jan 2008 16:04:46 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Ricardo Ayres Severo" <severo.ricardo@gmail.com>
-Subject: Re: Linux boot on a ppc 405
-In-Reply-To: <5ee408090801281500q467fe03anf00a5a31a5473846@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <479CAF56.30306@gmail.com>
-	<fa686aa40801271315m5ba4ea08p913fd6235eb1d240@mail.gmail.com>
-	<5ee408090801281453l3e6fe3e5x2f8f1b0b130ad163@mail.gmail.com>
-	<20080128225505.22226C20071@mail131-dub.bigfish.com>
-	<5ee408090801281500q467fe03anf00a5a31a5473846@mail.gmail.com>
-Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-	linuxppc-embedded@ozlabs.org
+	Tue, 29 Jan 2008 12:44:59 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0T1its6028923
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Jan 2008 20:44:55 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m0T1itNR115660
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Jan 2008 18:44:55 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m0T1iscr015567
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Jan 2008 18:44:54 -0700
+Date: Mon, 28 Jan 2008 19:43:52 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Steve Heflin <sheflin@newagemicro.com>
+Subject: Re: Preferred GIT URL for arch/powerpc, and BINUTILS
+Message-ID: <20080128194352.206f3ead@zod.rchland.ibm.com>
+In-Reply-To: <20080128224710.9C1C4DDEE1@ozlabs.org>
+References: <20080128224710.9C1C4DDEE1@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,22 +37,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/28/08, Ricardo Ayres Severo <severo.ricardo@gmail.com> wrote:
-> Steve,
->
-> I tried that, but the System.map is not the real memory address, it's
-> processed by the mmu isn't it?
->
-> This is my System.map: c01e0cc4 b __log_buf
-> when I try to look at the position 0xc01e0cc4 the debugger returns:
-> Error: Cannot access memory at address 0xc01e0cc4
+On Mon, 28 Jan 2008 17:46:47 -0500
+Steve Heflin <sheflin@newagemicro.com> wrote:
 
-Drop the kernel offset of 0xc0000000
+> At 02:30 PM 1/28/2008, Steve Heflin wrote:
+> >Josh, you're a life saver!!  Your GIT tree is exactly what I've been
+> >looking for. I have an AMCC440EPx based product that makes heavy use
+> >of all the devices embedded in the microcontroller. I'll be able to
+> >give that platform a very good testing.
+> >
+> >Now can you help me with BINUTILS?  What version do you use and can
+> >you point me to a decent GIT tree for it?  I tried to use version
+> >2.18 and the build blows up because it tries to "strip" a script file
+> >"embedspu".
+> 
+> Whoa! I spoke too soon.  Upon attempting a "make menuconfig" on the 
+> 2.6.24-rc8 which I cloned from your git tree, I don't even SEE the 
+> powerpc architecture appearing!  What's up?
 
-So; 0xc01e0cc4 becomes 0x001e0cc4 after reset.
+I dunno.  I never use make menuconfig.  I typically do:
 
-g.
+make ARCH=powerpc sequoia_defconfig
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+or something similar if I'm cross-building from x86.  Otherwise if I'm
+on the G5, it's just:
+
+make sequoia_defconfig
+
+josh
