@@ -3,13 +3,13 @@ Received: from willy.enoyolf.org (willy.enoyolf.org [24.173.215.188])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "willy.enoyolf.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6DC2EDDF02
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 18:48:47 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1FCFFDDFAC
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2008 18:48:49 +1100 (EST)
 From: Doug Maxey <dwm@austin.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5] ehea: fix main checkpatch complaints
-Date: Tue, 29 Jan 2008 00:50:57 -0600
-Message-Id: <1201589459-30598-4-git-send-email-dwm@austin.ibm.com>
+Subject: [PATCH 4/5] ehea: fix phyp checkpatch complaints
+Date: Tue, 29 Jan 2008 00:50:58 -0600
+Message-Id: <1201589459-30598-5-git-send-email-dwm@austin.ibm.com>
 In-Reply-To: <1201589459-30598-1-git-send-email-dwm@austin.ibm.com>
 References: <1201589459-30598-1-git-send-email-dwm@austin.ibm.com>
 Cc: Jan-Bernd Themann <themann@de.ibm.com>
@@ -25,13 +25,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Cc: Jan-Bernd Themann <themann@de.ibm.com>
 Signed-off-by: Doug Maxey <dwm@austin.ibm.com>
 ---
- drivers/net/ehea/ehea_main.c |   87 ++++++++++++++++++++++--------------------
- 1 files changed, 46 insertions(+), 41 deletions(-)
+ drivers/net/ehea/ehea_phyp.c |  158 +++++++++++++++++++++---------------------
+ drivers/net/ehea/ehea_phyp.h |   22 +++---
+ 2 files changed, 90 insertions(+), 90 deletions(-)
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 869e160..99ea46a 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
+diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
+index 95c4a7f..156eb63 100644
+--- a/drivers/net/ehea/ehea_phyp.c
++++ b/drivers/net/ehea/ehea_phyp.c
 @@ -6,9 +6,9 @@
   *  (C) Copyright IBM Corp. 2006
   *
@@ -45,288 +46,322 @@ index 869e160..99ea46a 100644
   *
   *
   * This program is free software; you can redistribute it and/or modify
-@@ -54,11 +54,11 @@ static int rq1_entries = EHEA_DEF_ENTRIES_RQ1;
- static int rq2_entries = EHEA_DEF_ENTRIES_RQ2;
- static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
- static int sq_entries = EHEA_DEF_ENTRIES_SQ;
--static int use_mcs = 0;
--static int use_lro = 0;
-+static int use_mcs;
-+static int use_lro;
- static int lro_max_aggr = EHEA_LRO_MAX_AGGR;
- static int num_tx_qps = EHEA_NUM_TX_QP;
--static int prop_carrier_state = 0;
-+static int prop_carrier_state;
- 
- module_param(msg_level, int, 0);
- module_param(rq1_entries, int, 0);
-@@ -94,9 +94,9 @@ MODULE_PARM_DESC(lro_max_aggr, " LRO: Max packets to be aggregated. Default = "
- MODULE_PARM_DESC(use_lro, " Large Receive Offload, 1: enable, 0: disable, "
- 		 "Default = 0");
- 
--static int port_name_cnt = 0;
-+static int port_name_cnt;
- static LIST_HEAD(adapter_list);
--u64 ehea_driver_flags = 0;
-+u64 ehea_driver_flags;
- struct work_struct ehea_rereg_mr_task;
- 
- struct semaphore dlpar_mem_lock;
-@@ -121,12 +121,13 @@ static struct of_platform_driver ehea_driver = {
- 	.remove = ehea_remove,
- };
- 
--void ehea_dump(void *adr, int len, char *msg) {
-+void ehea_dump(void *adr, int len, char *msg)
-+{
- 	int x;
- 	unsigned char *deb = adr;
- 	for (x = 0; x < len; x += 16) {
- 		printk(DRV_NAME " %s adr=%p ofs=%04x %016lx %016lx\n", msg,
--			  deb, x, *((u64*)&deb[0]), *((u64*)&deb[8]));
-+			  deb, x, *((u64 *)&deb[0]), *((u64 *)&deb[8]));
- 		deb += 16;
- 	}
+@@ -38,11 +38,11 @@ static inline u16 get_order_of_qentries(u16 queue_entries)
  }
-@@ -518,7 +519,8 @@ static int ehea_proc_rwqes(struct net_device *dev,
- 		last_wqe_index = wqe_index;
- 		rmb();
- 		if (!ehea_check_cqe(cqe, &rq)) {
--			if (rq == 1) {	/* LL RQ1 */
-+			if (rq == 1) {
-+				/* LL RQ1 */
- 				skb = get_skb_by_index_ll(skb_arr_rq1,
- 							  skb_arr_rq1_len,
- 							  wqe_index);
-@@ -531,10 +533,11 @@ static int ehea_proc_rwqes(struct net_device *dev,
- 					if (!skb)
- 						break;
- 				}
--				skb_copy_to_linear_data(skb, ((char*)cqe) + 64,
-+				skb_copy_to_linear_data(skb, ((char *)cqe) + 64,
- 						 cqe->num_bytes_transfered - 4);
- 				ehea_fill_skb(dev, skb, cqe);
--			} else if (rq == 2) {  /* RQ2 */
-+			} else if (rq == 2) {
-+				/* RQ2 */
- 				skb = get_skb_by_index(skb_arr_rq2,
- 						       skb_arr_rq2_len, cqe);
- 				if (unlikely(!skb)) {
-@@ -544,7 +547,8 @@ static int ehea_proc_rwqes(struct net_device *dev,
- 				}
- 				ehea_fill_skb(dev, skb, cqe);
- 				processed_rq2++;
--			} else {  /* RQ3 */
-+			} else {
-+				/* RQ3 */
- 				skb = get_skb_by_index(skb_arr_rq3,
- 						       skb_arr_rq3_len, cqe);
- 				if (unlikely(!skb)) {
-@@ -592,7 +596,7 @@ static struct ehea_cqe *ehea_proc_cqes(struct ehea_port_res *pr, int my_quota)
- 	unsigned long flags;
  
- 	cqe = ehea_poll_cq(send_cq);
--	while(cqe && (quota > 0)) {
-+	while (cqe && (quota > 0)) {
- 		ehea_inc_cq(send_cq);
+ /* Defines for H_CALL H_ALLOC_RESOURCE */
+-#define H_ALL_RES_TYPE_QP        1
+-#define H_ALL_RES_TYPE_CQ        2
+-#define H_ALL_RES_TYPE_EQ        3
+-#define H_ALL_RES_TYPE_MR        5
+-#define H_ALL_RES_TYPE_MW        6
++#define H_ALL_RES_TYPE_QP	 1
++#define H_ALL_RES_TYPE_CQ	 2
++#define H_ALL_RES_TYPE_EQ	 3
++#define H_ALL_RES_TYPE_MR	 5
++#define H_ALL_RES_TYPE_MW	 6
  
- 		cqe_counter++;
-@@ -643,7 +647,8 @@ static struct ehea_cqe *ehea_proc_cqes(struct ehea_port_res *pr, int my_quota)
- 
- static int ehea_poll(struct napi_struct *napi, int budget)
+ static long ehea_plpar_hcall_norets(unsigned long opcode,
+ 				    unsigned long arg1,
+@@ -137,77 +137,77 @@ u64 ehea_h_query_ehea_qp(const u64 adapter_handle, const u8 qp_category,
+ 			 const u64 qp_handle, const u64 sel_mask, void *cb_addr)
  {
--	struct ehea_port_res *pr = container_of(napi, struct ehea_port_res, napi);
-+	struct ehea_port_res *pr = container_of(napi, struct ehea_port_res,
-+						napi);
- 	struct net_device *dev = pr->port->netdev;
- 	struct ehea_cqe *cqe;
- 	struct ehea_cqe *cqe_skb = NULL;
-@@ -743,8 +748,9 @@ int ehea_sense_port_attr(struct ehea_port *port)
+ 	return ehea_plpar_hcall_norets(H_QUERY_HEA_QP,
+-				       adapter_handle,	        /* R4 */
+-				       qp_category,	        /* R5 */
+-				       qp_handle,               /* R6 */
+-				       sel_mask,                /* R7 */
++				       adapter_handle,		/* R4 */
++				       qp_category,		/* R5 */
++				       qp_handle,		/* R6 */
++				       sel_mask,		/* R7 */
+ 				       virt_to_abs(cb_addr),	/* R8 */
+ 				       0, 0);
+ }
+ 
+ /* input param R5 */
+-#define H_ALL_RES_QP_EQPO         EHEA_BMASK_IBM(9, 11)
+-#define H_ALL_RES_QP_QPP          EHEA_BMASK_IBM(12, 12)
+-#define H_ALL_RES_QP_RQR          EHEA_BMASK_IBM(13, 15)
+-#define H_ALL_RES_QP_EQEG         EHEA_BMASK_IBM(16, 16)
+-#define H_ALL_RES_QP_LL_QP        EHEA_BMASK_IBM(17, 17)
+-#define H_ALL_RES_QP_DMA128       EHEA_BMASK_IBM(19, 19)
+-#define H_ALL_RES_QP_HSM          EHEA_BMASK_IBM(20, 21)
+-#define H_ALL_RES_QP_SIGT         EHEA_BMASK_IBM(22, 23)
+-#define H_ALL_RES_QP_TENURE       EHEA_BMASK_IBM(48, 55)
+-#define H_ALL_RES_QP_RES_TYP      EHEA_BMASK_IBM(56, 63)
++#define H_ALL_RES_QP_EQPO	  EHEA_BMASK_IBM(9, 11)
++#define H_ALL_RES_QP_QPP	  EHEA_BMASK_IBM(12, 12)
++#define H_ALL_RES_QP_RQR	  EHEA_BMASK_IBM(13, 15)
++#define H_ALL_RES_QP_EQEG	  EHEA_BMASK_IBM(16, 16)
++#define H_ALL_RES_QP_LL_QP	  EHEA_BMASK_IBM(17, 17)
++#define H_ALL_RES_QP_DMA128	  EHEA_BMASK_IBM(19, 19)
++#define H_ALL_RES_QP_HSM	  EHEA_BMASK_IBM(20, 21)
++#define H_ALL_RES_QP_SIGT	  EHEA_BMASK_IBM(22, 23)
++#define H_ALL_RES_QP_TENURE	  EHEA_BMASK_IBM(48, 55)
++#define H_ALL_RES_QP_RES_TYP	  EHEA_BMASK_IBM(56, 63)
+ 
+ /* input param R9  */
+-#define H_ALL_RES_QP_TOKEN        EHEA_BMASK_IBM(0, 31)
+-#define H_ALL_RES_QP_PD           EHEA_BMASK_IBM(32,63)
++#define H_ALL_RES_QP_TOKEN	  EHEA_BMASK_IBM(0, 31)
++#define H_ALL_RES_QP_PD		  EHEA_BMASK_IBM(32, 63)
+ 
+ /* input param R10 */
+-#define H_ALL_RES_QP_MAX_SWQE     EHEA_BMASK_IBM(4, 7)
+-#define H_ALL_RES_QP_MAX_R1WQE    EHEA_BMASK_IBM(12, 15)
+-#define H_ALL_RES_QP_MAX_R2WQE    EHEA_BMASK_IBM(20, 23)
+-#define H_ALL_RES_QP_MAX_R3WQE    EHEA_BMASK_IBM(28, 31)
++#define H_ALL_RES_QP_MAX_SWQE	  EHEA_BMASK_IBM(4, 7)
++#define H_ALL_RES_QP_MAX_R1WQE	  EHEA_BMASK_IBM(12, 15)
++#define H_ALL_RES_QP_MAX_R2WQE	  EHEA_BMASK_IBM(20, 23)
++#define H_ALL_RES_QP_MAX_R3WQE	  EHEA_BMASK_IBM(28, 31)
+ /* Max Send Scatter Gather Elements */
+-#define H_ALL_RES_QP_MAX_SSGE     EHEA_BMASK_IBM(37, 39)
+-#define H_ALL_RES_QP_MAX_R1SGE    EHEA_BMASK_IBM(45, 47)
++#define H_ALL_RES_QP_MAX_SSGE	  EHEA_BMASK_IBM(37, 39)
++#define H_ALL_RES_QP_MAX_R1SGE	  EHEA_BMASK_IBM(45, 47)
+ /* Max Receive SG Elements RQ1 */
+-#define H_ALL_RES_QP_MAX_R2SGE    EHEA_BMASK_IBM(53, 55)
+-#define H_ALL_RES_QP_MAX_R3SGE    EHEA_BMASK_IBM(61, 63)
++#define H_ALL_RES_QP_MAX_R2SGE	  EHEA_BMASK_IBM(53, 55)
++#define H_ALL_RES_QP_MAX_R3SGE	  EHEA_BMASK_IBM(61, 63)
+ 
+ /* input param R11 */
+-#define H_ALL_RES_QP_SWQE_IDL     EHEA_BMASK_IBM(0, 7)
++#define H_ALL_RES_QP_SWQE_IDL	  EHEA_BMASK_IBM(0, 7)
+ /* max swqe immediate data length */
+-#define H_ALL_RES_QP_PORT_NUM     EHEA_BMASK_IBM(48, 63)
++#define H_ALL_RES_QP_PORT_NUM	  EHEA_BMASK_IBM(48, 63)
+ 
+ /* input param R12 */
+-#define H_ALL_RES_QP_TH_RQ2       EHEA_BMASK_IBM(0, 15)
++#define H_ALL_RES_QP_TH_RQ2	  EHEA_BMASK_IBM(0, 15)
+ /* Threshold RQ2 */
+-#define H_ALL_RES_QP_TH_RQ3       EHEA_BMASK_IBM(16, 31)
++#define H_ALL_RES_QP_TH_RQ3	  EHEA_BMASK_IBM(16, 31)
+ /* Threshold RQ3 */
+ 
+ /* output param R6 */
+-#define H_ALL_RES_QP_ACT_SWQE     EHEA_BMASK_IBM(0, 15)
+-#define H_ALL_RES_QP_ACT_R1WQE    EHEA_BMASK_IBM(16, 31)
+-#define H_ALL_RES_QP_ACT_R2WQE    EHEA_BMASK_IBM(32, 47)
+-#define H_ALL_RES_QP_ACT_R3WQE    EHEA_BMASK_IBM(48, 63)
++#define H_ALL_RES_QP_ACT_SWQE	  EHEA_BMASK_IBM(0, 15)
++#define H_ALL_RES_QP_ACT_R1WQE	  EHEA_BMASK_IBM(16, 31)
++#define H_ALL_RES_QP_ACT_R2WQE	  EHEA_BMASK_IBM(32, 47)
++#define H_ALL_RES_QP_ACT_R3WQE	  EHEA_BMASK_IBM(48, 63)
+ 
+ /* output param, R7 */
+-#define H_ALL_RES_QP_ACT_SSGE     EHEA_BMASK_IBM(0, 7)
+-#define H_ALL_RES_QP_ACT_R1SGE    EHEA_BMASK_IBM(8, 15)
+-#define H_ALL_RES_QP_ACT_R2SGE    EHEA_BMASK_IBM(16, 23)
+-#define H_ALL_RES_QP_ACT_R3SGE    EHEA_BMASK_IBM(24, 31)
++#define H_ALL_RES_QP_ACT_SSGE	  EHEA_BMASK_IBM(0, 7)
++#define H_ALL_RES_QP_ACT_R1SGE	  EHEA_BMASK_IBM(8, 15)
++#define H_ALL_RES_QP_ACT_R2SGE	  EHEA_BMASK_IBM(16, 23)
++#define H_ALL_RES_QP_ACT_R3SGE	  EHEA_BMASK_IBM(24, 31)
+ #define H_ALL_RES_QP_ACT_SWQE_IDL EHEA_BMASK_IBM(32, 39)
+ 
+ /* output param R8,R9 */
+-#define H_ALL_RES_QP_SIZE_SQ      EHEA_BMASK_IBM(0, 31)
+-#define H_ALL_RES_QP_SIZE_RQ1     EHEA_BMASK_IBM(32, 63)
+-#define H_ALL_RES_QP_SIZE_RQ2     EHEA_BMASK_IBM(0, 31)
+-#define H_ALL_RES_QP_SIZE_RQ3     EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_QP_SIZE_SQ	  EHEA_BMASK_IBM(0, 31)
++#define H_ALL_RES_QP_SIZE_RQ1	  EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_QP_SIZE_RQ2	  EHEA_BMASK_IBM(0, 31)
++#define H_ALL_RES_QP_SIZE_RQ3	  EHEA_BMASK_IBM(32, 63)
+ 
+ /* output param R11,R12 */
+-#define H_ALL_RES_QP_LIOBN_SQ     EHEA_BMASK_IBM(0, 31)
+-#define H_ALL_RES_QP_LIOBN_RQ1    EHEA_BMASK_IBM(32, 63)
+-#define H_ALL_RES_QP_LIOBN_RQ2    EHEA_BMASK_IBM(0, 31)
+-#define H_ALL_RES_QP_LIOBN_RQ3    EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_QP_LIOBN_SQ	  EHEA_BMASK_IBM(0, 31)
++#define H_ALL_RES_QP_LIOBN_RQ1	  EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_QP_LIOBN_RQ2	  EHEA_BMASK_IBM(0, 31)
++#define H_ALL_RES_QP_LIOBN_RQ3	  EHEA_BMASK_IBM(32, 63)
+ 
+ u64 ehea_h_alloc_resource_qp(const u64 adapter_handle,
+ 			     struct ehea_qp_init_attr *init_attr, const u32 pd,
+@@ -334,28 +334,28 @@ u64 ehea_h_alloc_resource_cq(const u64 adapter_handle,
+ }
+ 
+ /* Defines for H_CALL H_ALLOC_RESOURCE */
+-#define H_ALL_RES_TYPE_QP        1
+-#define H_ALL_RES_TYPE_CQ        2
+-#define H_ALL_RES_TYPE_EQ        3
+-#define H_ALL_RES_TYPE_MR        5
+-#define H_ALL_RES_TYPE_MW        6
++#define H_ALL_RES_TYPE_QP	 1
++#define H_ALL_RES_TYPE_CQ	 2
++#define H_ALL_RES_TYPE_EQ	 3
++#define H_ALL_RES_TYPE_MR	 5
++#define H_ALL_RES_TYPE_MW	 6
+ 
+ /*  input param R5 */
+-#define H_ALL_RES_EQ_NEQ             EHEA_BMASK_IBM(0, 0)
++#define H_ALL_RES_EQ_NEQ	     EHEA_BMASK_IBM(0, 0)
+ #define H_ALL_RES_EQ_NON_NEQ_ISN     EHEA_BMASK_IBM(6, 7)
+ #define H_ALL_RES_EQ_INH_EQE_GEN     EHEA_BMASK_IBM(16, 16)
+-#define H_ALL_RES_EQ_RES_TYPE        EHEA_BMASK_IBM(56, 63)
++#define H_ALL_RES_EQ_RES_TYPE	     EHEA_BMASK_IBM(56, 63)
+ /*  input param R6 */
+-#define H_ALL_RES_EQ_MAX_EQE         EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_EQ_MAX_EQE	     EHEA_BMASK_IBM(32, 63)
+ 
+ /*  output param R6 */
+-#define H_ALL_RES_EQ_LIOBN           EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_EQ_LIOBN	     EHEA_BMASK_IBM(32, 63)
+ 
+ /*  output param R7 */
+-#define H_ALL_RES_EQ_ACT_EQE         EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_EQ_ACT_EQE	     EHEA_BMASK_IBM(32, 63)
+ 
+ /*  output param R8 */
+-#define H_ALL_RES_EQ_ACT_PS          EHEA_BMASK_IBM(32, 63)
++#define H_ALL_RES_EQ_ACT_PS	     EHEA_BMASK_IBM(32, 63)
+ 
+ /*  output param R9 */
+ #define H_ALL_RES_EQ_ACT_EQ_IST_C    EHEA_BMASK_IBM(30, 31)
+@@ -453,12 +453,12 @@ u64 ehea_h_register_smr(const u64 adapter_handle, const u64 orig_mr_handle,
+ 
+ 	hret = ehea_plpar_hcall9(H_REGISTER_SMR,
+ 				 outs,
+-				 adapter_handle       ,        	 /* R4 */
+-				 orig_mr_handle,                 /* R5 */
+-				 vaddr_in,                       /* R6 */
+-				 (((u64)access_ctrl) << 32ULL),  /* R7 */
+-				 pd,                             /* R8 */
+-				 0, 0, 0, 0);	   		 /* R9-R12 */
++				 adapter_handle	      ,		 /* R4 */
++				 orig_mr_handle,		 /* R5 */
++				 vaddr_in,			 /* R6 */
++				 (((u64)access_ctrl) << 32ULL),	 /* R7 */
++				 pd,				 /* R8 */
++				 0, 0, 0, 0);			 /* R9-R12 */
+ 
+ 	mr->handle = outs[0];
+ 	mr->lkey = (u32)outs[2];
+@@ -471,11 +471,11 @@ u64 ehea_h_disable_and_get_hea(const u64 adapter_handle, const u64 qp_handle)
+ 	u64 outs[PLPAR_HCALL9_BUFSIZE];
+ 
+ 	return ehea_plpar_hcall9(H_DISABLE_AND_GET_HEA,
+-       				 outs,
++				 outs,
+ 				 adapter_handle,		/* R4 */
+ 				 H_DISABLE_GET_EHEA_WQE_P,	/* R5 */
+ 				 qp_handle,			/* R6 */
+-				 0, 0, 0, 0, 0, 0);             /* R7-R12 */
++				 0, 0, 0, 0, 0, 0);		/* R7-R12 */
+ }
+ 
+ u64 ehea_h_free_resource(const u64 adapter_handle, const u64 res_handle,
+@@ -483,9 +483,9 @@ u64 ehea_h_free_resource(const u64 adapter_handle, const u64 res_handle,
+ {
+ 	return ehea_plpar_hcall_norets(H_FREE_RESOURCE,
+ 				       adapter_handle,	   /* R4 */
+-				       res_handle,         /* R5 */
++				       res_handle,	   /* R5 */
+ 				       force_bit,
+-				       0, 0, 0, 0);        /* R7-R10 */
++				       0, 0, 0, 0);	   /* R7-R10 */
+ }
+ 
+ u64 ehea_h_alloc_resource_mr(const u64 adapter_handle, const u64 vaddr,
+@@ -493,13 +493,13 @@ u64 ehea_h_alloc_resource_mr(const u64 adapter_handle, const u64 vaddr,
+ 			     const u32 pd, u64 *mr_handle, u32 *lkey)
+ {
  	u64 hret;
- 	struct hcp_ehea_port_cb0 *cb0;
+- 	u64 outs[PLPAR_HCALL9_BUFSIZE];
++	u64 outs[PLPAR_HCALL9_BUFSIZE];
  
--	cb0 = kzalloc(PAGE_SIZE, GFP_ATOMIC);   /* May be called via */
--	if (!cb0) {                             /* ehea_neq_tasklet() */
-+	/* may be called via ehea_neq_tasklet() */
-+	cb0 = kzalloc(PAGE_SIZE, GFP_ATOMIC);
-+	if (!cb0) {
- 		ehea_error("no mem for cb0");
- 		ret = -ENOMEM;
- 		goto out;
-@@ -762,7 +768,7 @@ int ehea_sense_port_attr(struct ehea_port *port)
- 	/* MAC address */
- 	port->mac_addr = cb0->port_mac_addr << 16;
- 
--	if (!is_valid_ether_addr((u8*)&port->mac_addr)) {
-+	if (!is_valid_ether_addr((u8 *)&port->mac_addr)) {
- 		ret = -EADDRNOTAVAIL;
- 		goto out_free;
- 	}
-@@ -994,7 +1000,7 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
- 
- static void ehea_neq_tasklet(unsigned long data)
+ 	hret = ehea_plpar_hcall9(H_ALLOC_HEA_RESOURCE,
+ 				 outs,
+ 				 adapter_handle,		   /* R4 */
+ 				 5,				   /* R5 */
+-				 vaddr,			           /* R6 */
++				 vaddr,				   /* R6 */
+ 				 length,			   /* R7 */
+ 				 (((u64) access_ctrl) << 32ULL),   /* R8 */
+ 				 pd,				   /* R9 */
+@@ -619,8 +619,8 @@ u64 ehea_h_error_data(const u64 adapter_handle, const u64 ressource_handle,
+ 		      void *rblock)
  {
--	struct ehea_adapter *adapter = (struct ehea_adapter*)data;
-+	struct ehea_adapter *adapter = (struct ehea_adapter *)data;
- 	struct ehea_eqe *eqe;
- 	u64 event_mask;
- 
-@@ -1204,7 +1210,7 @@ int ehea_rem_smrs(struct ehea_port_res *pr)
- 
- static int ehea_init_q_skba(struct ehea_q_skb_arr *q_skba, int max_q_entries)
- {
--	int arr_size = sizeof(void*) * max_q_entries;
-+	int arr_size = sizeof(void *) * max_q_entries;
- 
- 	q_skba->arr = vmalloc(arr_size);
- 	if (!q_skba->arr)
-@@ -1489,7 +1495,7 @@ static inline void write_swqe2_data(struct sk_buff *skb, struct net_device *dev,
- 
- 	nfrags = skb_shinfo(skb)->nr_frags;
- 	sg1entry = &swqe->u.immdata_desc.sg_entry;
--	sg_list = (struct ehea_vsgentry*)&swqe->u.immdata_desc.sg_list;
-+	sg_list = (struct ehea_vsgentry *)&swqe->u.immdata_desc.sg_list;
- 	swqe->descriptors = 0;
- 	sg1entry_contains_frag_data = 0;
- 
-@@ -1542,7 +1548,7 @@ static int ehea_broadcast_reg_helper(struct ehea_port *port, u32 hcallid)
- 				     reg_type, port->mac_addr, 0, hcallid);
- 	if (hret != H_SUCCESS) {
- 		ehea_error("%sregistering bc address failed (tagged)",
--                           hcallid == H_REG_BCMC ? "" : "de");
-+			   hcallid == H_REG_BCMC ? "" : "de");
- 		ret = -EIO;
- 		goto out_herr;
- 	}
-@@ -1732,7 +1738,7 @@ static void ehea_allmulti(struct net_device *dev, int enable)
- 		}
+ 	return ehea_plpar_hcall_norets(H_ERROR_DATA,
+-				       adapter_handle,          /* R4 */
+-				       ressource_handle,        /* R5 */
+-				       virt_to_abs(rblock),     /* R6 */
+-				       0, 0, 0, 0);             /* R7-R12 */
++				       adapter_handle,		/* R4 */
++				       ressource_handle,	/* R5 */
++				       virt_to_abs(rblock),	/* R6 */
++				       0, 0, 0, 0);		/* R7-R12 */
  }
- 
--static void ehea_add_multicast_entry(struct ehea_port* port, u8* mc_mac_addr)
-+static void ehea_add_multicast_entry(struct ehea_port *port, u8 *mc_mac_addr)
+diff --git a/drivers/net/ehea/ehea_phyp.h b/drivers/net/ehea/ehea_phyp.h
+index faa191d..f3628c8 100644
+--- a/drivers/net/ehea/ehea_phyp.h
++++ b/drivers/net/ehea/ehea_phyp.h
+@@ -93,7 +93,7 @@ static inline void hcp_epas_ctor(struct h_epas *epas, u64 paddr_kernel,
+ static inline void hcp_epas_dtor(struct h_epas *epas)
  {
- 	struct ehea_mc_list *ehea_mcl_entry;
- 	u64 hret;
-@@ -1791,11 +1797,10 @@ static void ehea_set_multicast_list(struct net_device *dev)
- 			goto out;
- 		}
+ 	if (epas->kernel.addr)
+-		iounmap((void __iomem*)((u64)epas->kernel.addr & PAGE_MASK));
++		iounmap((void __iomem *)((u64)epas->kernel.addr & PAGE_MASK));
  
--		for (i = 0, k_mcl_entry = dev->mc_list;
--		     i < dev->mc_count;
--		     i++, k_mcl_entry = k_mcl_entry->next) {
-+		for (i = 0, k_mcl_entry = dev->mc_list; i < dev->mc_count; i++,
-+			     k_mcl_entry = k_mcl_entry->next)
- 			ehea_add_multicast_entry(port, k_mcl_entry->dmi_addr);
--		}
-+
- 	}
- out:
- 	return;
-@@ -1925,12 +1930,12 @@ static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
+ 	epas->user.addr = 0;
+ 	epas->kernel.addr = 0;
+@@ -388,23 +388,23 @@ u64 ehea_h_modify_ehea_qp(const u64 adapter_handle,
+ 			  const u64 qp_handle,
+ 			  const u64 sel_mask,
+ 			  void *cb_addr,
+-			  u64 * inv_attr_id,
+-			  u64 * proc_mask, u16 * out_swr, u16 * out_rwr);
++			  u64 *inv_attr_id,
++			  u64 *proc_mask, u16 *out_swr, u16 *out_rwr);
  
- 	if ((skb->protocol == htons(ETH_P_IP)) &&
- 	    (ip_hdr(skb)->protocol == IPPROTO_TCP)) {
--		tcp = (struct tcphdr*)(skb_network_header(skb) + (ip_hdr(skb)->ihl * 4));
-+		tcp = (struct tcphdr *)(skb_network_header(skb) +
-+					(ip_hdr(skb)->ihl * 4));
- 		tmp = (tcp->source + (tcp->dest << 16)) % 31;
- 		tmp += ip_hdr(skb)->daddr % 31;
- 		return tmp % num_qps;
--	}
--	else
-+	} else
- 		return 0;
- }
+ u64 ehea_h_alloc_resource_eq(const u64 adapter_handle,
+-			     struct ehea_eq_attr *eq_attr, u64 * eq_handle);
++			     struct ehea_eq_attr *eq_attr, u64 *eq_handle);
  
-@@ -2122,7 +2127,7 @@ int ehea_activate_qp(struct ehea_adapter *adapter, struct ehea_qp *qp)
- 	u64 hret;
- 	u16 dummy16 = 0;
- 	u64 dummy64 = 0;
--	struct hcp_modify_qp_cb0* cb0;
-+	struct hcp_modify_qp_cb0 *cb0;
+ u64 ehea_h_alloc_resource_cq(const u64 adapter_handle,
+ 			     struct ehea_cq_attr *cq_attr,
+-			     u64 * cq_handle, struct h_epas *epas);
++			     u64 *cq_handle, struct h_epas *epas);
  
- 	cb0 = kzalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!cb0) {
-@@ -2248,7 +2253,7 @@ static int ehea_clean_all_portres(struct ehea_port *port)
- 	int ret = 0;
- 	int i;
+ u64 ehea_h_alloc_resource_qp(const u64 adapter_handle,
+ 			     struct ehea_qp_init_attr *init_attr,
+ 			     const u32 pd,
+-			     u64 * qp_handle, struct h_epas *h_epas);
++			     u64 *qp_handle, struct h_epas *h_epas);
  
--	for(i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
-+	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
- 		ret |= ehea_clean_portres(port, &port->port_res[i]);
+-#define H_REG_RPAGE_PAGE_SIZE          EHEA_BMASK_IBM(48,55)
+-#define H_REG_RPAGE_QT                 EHEA_BMASK_IBM(62,63)
++#define H_REG_RPAGE_PAGE_SIZE          EHEA_BMASK_IBM(48, 55)
++#define H_REG_RPAGE_QT                 EHEA_BMASK_IBM(62, 63)
  
- 	ret |= ehea_destroy_eq(port->qp_eq);
-@@ -2300,7 +2305,7 @@ static int ehea_up(struct net_device *dev)
- 		goto out_clean_pr;
- 	}
+ u64 ehea_h_register_rpage(const u64 adapter_handle,
+ 			  const u8 pagesize,
+@@ -426,7 +426,7 @@ u64 ehea_h_free_resource(const u64 adapter_handle, const u64 res_handle,
  
--	for(i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
-+	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
- 		ret = ehea_activate_qp(port->adapter, port->port_res[i].qp);
- 		if (ret) {
- 			ehea_error("activate_qp failed");
-@@ -2308,7 +2313,7 @@ static int ehea_up(struct net_device *dev)
- 		}
- 	}
+ u64 ehea_h_alloc_resource_mr(const u64 adapter_handle, const u64 vaddr,
+ 			     const u64 length, const u32 access_ctrl,
+-			     const u32 pd, u64 * mr_handle, u32 * lkey);
++			     const u32 pd, u64 *mr_handle, u32 *lkey);
  
--	for(i = 0; i < port->num_def_qps; i++) {
-+	for (i = 0; i < port->num_def_qps; i++) {
- 		ret = ehea_fill_port_res(&port->port_res[i]);
- 		if (ret) {
- 			ehea_error("out_free_irqs");
-@@ -2425,7 +2430,7 @@ int ehea_stop_qps(struct net_device *dev)
- {
- 	struct ehea_port *port = netdev_priv(dev);
- 	struct ehea_adapter *adapter = port->adapter;
--	struct hcp_modify_qp_cb0* cb0;
-+	struct hcp_modify_qp_cb0 *cb0;
- 	int ret = -EIO;
- 	int dret;
- 	int i;
-@@ -2490,7 +2495,7 @@ out:
- 	return ret;
- }
+ u64 ehea_h_register_rpage_mr(const u64 adapter_handle, const u64 mr_handle,
+ 			     const u8 pagesize, const u8 queue_type,
+@@ -439,8 +439,8 @@ u64 ehea_h_register_smr(const u64 adapter_handle, const u64 orig_mr_handle,
+ u64 ehea_h_query_ehea(const u64 adapter_handle, void *cb_addr);
  
--void ehea_update_rqs(struct ehea_qp *orig_qp, struct ehea_port_res * pr)
-+void ehea_update_rqs(struct ehea_qp *orig_qp, struct ehea_port_res *pr)
- {
- 	struct ehea_qp qp = *orig_qp;
- 	struct ehea_qp_init_attr *init_attr = &qp.init_attr;
-@@ -2530,7 +2535,7 @@ int ehea_restart_qps(struct net_device *dev)
- 	int ret = 0;
- 	int i;
+ /* output param R5 */
+-#define H_MEHEAPORT_CAT		EHEA_BMASK_IBM(40,47)
+-#define H_MEHEAPORT_PN		EHEA_BMASK_IBM(48,63)
++#define H_MEHEAPORT_CAT		EHEA_BMASK_IBM(40, 47)
++#define H_MEHEAPORT_PN		EHEA_BMASK_IBM(48, 63)
  
--	struct hcp_modify_qp_cb0* cb0;
-+	struct hcp_modify_qp_cb0 *cb0;
- 	u64 hret;
- 	u64 dummy64 = 0;
- 	u16 dummy16 = 0;
-@@ -3109,7 +3114,7 @@ static ssize_t ehea_probe_port(struct device *dev,
- 	of_node_put(eth_dn);
- 
- 	if (port) {
--		for (i=0; i < EHEA_MAX_PORTS; i++)
-+		for (i = 0; i < EHEA_MAX_PORTS; i++)
- 			if (!adapter->port[i]) {
- 				adapter->port[i] = port;
- 				break;
-@@ -3144,7 +3149,7 @@ static ssize_t ehea_remove_port(struct device *dev,
- 
- 		ehea_shutdown_single_port(port);
- 
--		for (i=0; i < EHEA_MAX_PORTS; i++)
-+		for (i = 0; i < EHEA_MAX_PORTS; i++)
- 			if (adapter->port[i] == port) {
- 				adapter->port[i] = NULL;
- 				break;
-@@ -3313,7 +3318,7 @@ static int ehea_reboot_notifier(struct notifier_block *nb,
- }
- 
- static struct notifier_block ehea_reboot_nb = {
--        .notifier_call = ehea_reboot_notifier,
-+	.notifier_call = ehea_reboot_notifier,
- };
- 
- static int check_module_parm(void)
+ u64 ehea_h_query_ehea_port(const u64 adapter_handle, const u16 port_num,
+ 			   const u8 cb_cat, const u64 select_mask,
 -- 
 1.5.3.7
