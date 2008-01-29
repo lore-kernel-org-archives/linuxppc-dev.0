@@ -1,19 +1,23 @@
-Return-Path: <gerickson@nuovations.com>
-Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
-	by ozlabs.org (Postfix) with SMTP id 5BDA6DDDFB
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5B3CDDDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 10:10:48 +1100 (EST)
-Date: Tue, 29 Jan 2008 15:10:33 -0800
-Subject: Re: [PATCH] 4xx: Clone haleakala_defconfig from kilauea_defconfig
-From: Grant Erickson <gerickson@nuovations.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Message-ID: <C3C4F269.D19F%gerickson@nuovations.com>
-In-Reply-To: <20080129165941.1681842f@zod.rchland.ibm.com>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Cc: Stefan Roese <sr@denx.de>,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Wed, 30 Jan 2008 10:16:02 +1100 (EST)
+Message-ID: <479FB3CC.1010708@freescale.com>
+Date: Tue, 29 Jan 2008 17:16:28 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: rmcguire@videopresence.com
+Subject: Re: SET_NETDEV_DEV -> 83xx HDLC Driver??
+References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>	<000601c85fc5$41e48330$6405a8c0@absolut>	<D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+	<002301c862cb$54f73770$6405a8c0@absolut>
+In-Reply-To: <002301c862cb$54f73770$6405a8c0@absolut>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,18 +28,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/29/08 2:59 PM, Josh Boyer wrote:
->> * Allow for 'make haleakala_defconfig' by providing a default configuration
->>   for the AMCC PowerPC 405EXr "Haleakala" board.
->> 
+Russell McGuire wrote:
+> Andy,
 > 
-> As silly as it sounds, I need a Signed-off-by for this.  Could you read
-> Documentation/SubmittingPatches section 12 and just reply to this with
-> a Signed-off-by line?
+> /drivers/net/fec_8xx
+> 
+> Doesn't use the call, though I imagine it is legacy or only for older
+> boards.
 
-* Allow for 'make haleakala_defconfig' by providing a default configuration
-  for the AMCC PowerPC 405EXr "Haleakala" board.
+I don't think it's used on anything, actually.  drivers/net/fs_enet is 
+the driver for 8xx fec.
 
-Signed-off-by: Grant Erickson <gerickson@nuovations.com>
-
----
+-Scott
