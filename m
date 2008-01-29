@@ -1,20 +1,19 @@
-Return-Path: <bodonoghue@codehermit.ie>
-Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
-	by ozlabs.org (Postfix) with ESMTP id 65A8ADDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 07:20:05 +1100 (EST)
-Subject: Re: PATCH[1/1] 8xx: Add clock-frequency to .dts brg entries
-From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080129162611.GA4599@ld0162-tx32.am.freescale.net>
-References: <1201485191.5537.55.camel@neuromancer.mindspace>
-	<20080128155012.GA27054@ld0162-tx32.am.freescale.net>
-	<1201564520.3912.29.camel@neuromancer.mindspace>
-	<20080129162611.GA4599@ld0162-tx32.am.freescale.net>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 8/8] Cell IOMMU fixed mapping support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1201619625.10012.19.camel@concordia>
+References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
+	<1cbc0deea968ece13756e3c86ec3af0b7586b80b.1201616038.git.michael@ellerman.id.au>
+	<20080129151511.GA18975@lixom.net>
+	<1201619625.10012.19.camel@concordia>
 Content-Type: text/plain
-Date: Tue, 29 Jan 2008 20:18:46 +0000
-Message-Id: <1201637926.3565.18.camel@neuromancer.mindspace>
+Date: Wed, 30 Jan 2008 08:18:15 +1100
+Message-Id: <1201641495.6815.207.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,74 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-01-29 at 10:26 -0600, Scott Wood wrote:
-> On Mon, Jan 28, 2008 at 11:55:20PM +0000, Bryan O'Donoghue wrote:
-> > You mean that arch/powerpc/boot/mpc8xx.c mpc8xx_set_clocks is supposed
-> > to be adding this field ? 
-> 
-> Yes.  Or u-boot, if you're not using the bootwrapper/cuImage.
 
-Indeed - I have some patches to send to the u-boot mailing list to cover
-manipulation of the "fsl,cpm-brg" "clock-frequency" entry.
-
-The previously sent patch will allow Linux to print stuff out the UART
-will the default brgclk - from a uImage and is the field that a future
-u-boot patchset would want to manipulate in order to tell Linux about
-the brgclk it should have.
-
-I should be a bit clearer about that...
-
-> 
-> > I see arch/powerpc/boot/wrapper.a has a reference to the function but -
-> > and this time I've checked all documentation - there's no mention of how
-> > to use this library at all... it _looks_ to me like this isn't being
-> > linked in any way.
+On Wed, 2008-01-30 at 02:13 +1100, Michael Ellerman wrote:
+> On Tue, 2008-01-29 at 09:15 -0600, Olof Johansson wrote:
+> > On Wed, Jan 30, 2008 at 01:14:03AM +1100, Michael Ellerman wrote:
 > > 
-> > It for sure is nowhere in the uImage - and I've taken the preferred
-> > route of making a uImage with .dtb - genreated from adder875-uboot.dts
+> > > For example a machine with 4GB of memory would end up with the normal
+> > > IOMMU window from 0-2GB and the fixed mapping window from 2GB to 6GB. In
+> > > this case a 64-bit device wishing to DMA to 1GB would be told to DMA to
+> > > 3GB, plus any offset required by firmware. The firmware offset is encoded
+> > > in the "dma-ranges" property.
+> > 
+> > Shouldn't the fixed mapping be between 4G and 8G (and the offset for 1G
+> > is at 5G), to account for the MMIO range at 2-4G?
 > 
-> In that case, u-boot needs to add that property.
+> I don't think so, ie. it works setup like that, but I'm not entirely
+> sure why. Presumably the 2-4GB for MMIO is only for cycles heading out
+> of the CPU.
 
-See above.
+No no no... it's because on the PCI segment, it's all offset up
+remember ?
 
-> > dtc -O -o adder875-uboot.dtb arch/powerpc/boot/dts/adder875-uboot.dtb
-> 
-> You'll want to use the -p option to add some extra space for u-boot to
-> use.
+Basically, the PCI host bridge on these has 2 interesting windows for
+us:
 
-Interesting - the u-boot end of this patch is something I'm still
-messing about with ... but, the addition of the default brgclk to the
-Linux dts is a useful addition - and AFAICT will be needed to allow a
-bootloader to manipulate the dts so that Linux will get the right
-brgclk.
+0....2G			-> This goes up to memory @0 (via a couple of 
+                           layers)
 
-> > cpm_uart depends on "fsl,cpm-brg" and a field called "clock-frequency"
-> > 
-> > as I understand it that's
-> > 
-> > fsl,cpm-brg
-> > 	|_clock-frequency
-> > 
-> > whereas mpc8xx_set_clocks seems to add
-> > 
-> > /soc/cpm/brg
-> > 	|_clock-frequency
-> 
-> The fsl,cpm-brg refers to the compatible property, not the node name.
+0x80*....0xF*		-> This goes untranslated to the PLB5 which
+  			   drops the top bits and does some other 
+                           manipulations, which allows to access, among
+                           others the full 32GB of the cell inbound 
+                           range.
 
-Indeed and the get_brgclk does a find_compatible() lookup of some
-sort... so I think that means this is the right field to add to allow a
-bootloader to manipulate the brgclk ... it's what the other stuff in
-u-boot for the mpc8xxx stuff does, so it follows to do the same thing
-for 8xx too.
+The MMIO region of 2...4G is on the PCI (outbound from the Cell is yet
+another range of addresses with different constraints but that ends up
+generating cycles between 2 and 4G on the PCI segment).
 
-> > mpc866ads.dts - also has a "fsl,cpm-brg" => clock-frequency entry in 
-> > 
-> > linux/arch/powerpc/boot/dts/mpc866ads.dts - and to me this looks like
-> > the correct approach for get_brgfreq to function properly...
-> 
-> And it's zero, meaning that you still need u-boot or the bootwrapper to
-> fill in the correct value.
+If we had set the direct mapped region so that it uses 2G...N on PCI, we
+would indeed be toast. But instead, the addresses for direct DMA that we
+hand out to devices are in the 0x80* region and go hit the cell
+directly, they never match MMIO.
 
-Indeed - I'm hoping I won't have too much trouble getting those patches
-applied...
+ Ben.
+ 
