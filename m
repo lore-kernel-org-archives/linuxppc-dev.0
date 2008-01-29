@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/1][PPC] Test value, not 1 in print_insn_spu(),
-	arch/powerpc/xmon/spu-dis.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Roel Kluin <12o3l@tiscali.nl>
-In-Reply-To: <479DE26F.9050105@tiscali.nl>
-References: <479DE26F.9050105@tiscali.nl>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-U2oLK8QOOir0Q/fLR5IM"
-Date: Wed, 30 Jan 2008 00:24:12 +1100
-Message-Id: <1201613053.26410.23.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out1.tiscali.nl (smtp-out1.tiscali.nl [195.241.79.176])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5DE98DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 00:34:21 +1100 (EST)
+Message-ID: <479F2B52.7010004@tiscali.nl>
+Date: Tue, 29 Jan 2008 14:34:10 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+References: <4797C1AD.3040307@tiscali.nl> <1201129527.4988.69.camel@localhost>
+	<4797D968.1030101@tiscali.nl> <20080129105531.GA651@shadowen.org>
+In-Reply-To: <20080129105531.GA651@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Joe Perches <joe@perches.com>, linuxppc-dev@ozlabs.org,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,81 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>> On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
+>>>> -		if (val && 0x1)
+>>>> +		if (val & 0x1)
 
---=-U2oLK8QOOir0Q/fLR5IM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>> Joe Perches wrote:
+>>> I think this pattern should be added to checkpatch
+>>> +		if ($line =~ /\&\&\s*0[xX]/) {
 
-On Mon, 2008-01-28 at 15:10 +0100, Roel Kluin wrote:
-> untested, please confirm:
-> The '|| 1' does nothing, should this be corrected like my patch does?
-> --
-> Test value, not 1.
->=20
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/arch/powerpc/xmon/spu-dis.c b/arch/powerpc/xmon/spu-dis.c
-> index e5f8983..74d45fb 100644
-> --- a/arch/powerpc/xmon/spu-dis.c
-> +++ b/arch/powerpc/xmon/spu-dis.c
-> @@ -222,7 +222,7 @@ print_insn_spu (unsigned long insn, unsigned long mem=
-addr)
->  	      break;
->  	    case A_U18:
->  	      value =3D DECODE_INSN_U18 (insn);
-> -	      if (value =3D=3D 0 || 1)
-> +	      if (value =3D=3D 0 || value =3D=3D 1)
->  		{
->  		  hex_value =3D value;
->  		  printf("%u", value);
+> On Thu, Jan 24, 2008 at 01:18:48AM +0100, Roel Kluin wrote:
+>> I agree but there will be false positives, i'd propose to change that to
+>> +		if ($line =~ /(?:(?:\(|\&\&|\|\|)\s*0[xX]\s*(?:&&|\|\|)|
+>> +				(?:\&\&|\|\|)\s*0[xX]\s*(?:\)|&&|\|\|))/) {
 
-The original binutils code looks like:
+Andy Whitcroft wrote:
+> That one doesn't even match the original example.  Seems to be missing
+> some number matching.  The concept seems sound though.  Basically
+> looking for numbers which are definatly adjacent to a boolean or a brace
+> on both sides.
 
-            case A_U18:
-              value =3D DECODE_INSN_U18 (insn);
-              if (value =3D=3D 0 || !(*info->symbol_at_address_func)(0, inf=
-o))
-                {
-                  hex_value =3D value;
-                  (*info->fprintf_func) (info->stream, "%u", value);
-                }
-              else
-                (*info->print_address_func) (value, info);
-              break;
+You are right. here's a version that does work. It works the same as
+git-grep -E "((\(|&&|\|\|)[[:space:]]*(0[xX][0-9a-fA-F]+|[0-9]+)[[:space:]]*(&&|\|\|)|(&&|\|\|)[[:space:]]*(0[xX][0-9a-fA-F]+|[0-9]+)[[:space:]]*(\)|&&|\|\|))"
 
-We don't have a symbol_at_address_func() so we always guess there isn't
-a symbol at the address, as if the function had returned 0. Which gives
-us:
-              if (value =3D=3D 0 || !0)
-or
-              if (value =3D=3D 0 || 1)
-
-The reason I left it like that rather than removing the if, was to
-minimise the diff between the kernel version of spu-dis.c and the
-binutils version.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-U2oLK8QOOir0Q/fLR5IM
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHnyj8dSjSd0sB4dIRAnTSAJ0XaPvzp4MFbI3oQtS0lpjKYKPUJgCfVRJ0
-wATre0G2Mvr2N8Sg1bdc2HM=
-=ut+2
------END PGP SIGNATURE-----
-
---=-U2oLK8QOOir0Q/fLR5IM--
+---
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 579f50f..62276f7 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1337,6 +1337,11 @@ sub process {
+ 			}
+ 		}
+ 
++# Check for bitwise tests written as boolean
++		if ($line =~ /((\(|&&|\|\|)\s*(0[xX][0-9a-fA-F]+|[0-9]+)\s*(&&|\|\|)|(&&|\|\|)\s*(0[xX][0-9a-fA-F]+|[0-9]+)\s*(\)|&&|\|\|))/) {
++			WARN("boolean test with hexadecimal, perhaps just \'&\' or \'|\'?\n" . $herecurr);
++		}
++
+ # if and else should not have general statements after it
+ 		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
+ 		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
