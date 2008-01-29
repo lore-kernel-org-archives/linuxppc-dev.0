@@ -1,33 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C70CBDDECB
+Return-Path: <ssh@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 2B0F5DE008
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jan 2008 12:49:17 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0T1nESu030561
-	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Jan 2008 20:49:14 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0T1nEA4082318
-	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Jan 2008 18:49:14 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0T1nDPK026271
-	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Jan 2008 18:49:14 -0700
-Date: Mon, 28 Jan 2008 19:48:11 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Steve Heflin <sheflin@newagemicro.com>
-Subject: Re: Preferred GIT URL for arch/powerpc, and BINUTILS
-Message-ID: <20080128194811.6c7638e2@zod.rchland.ibm.com>
-In-Reply-To: <20080128194352.206f3ead@zod.rchland.ibm.com>
-References: <20080128224710.9C1C4DDEE1@ozlabs.org>
-	<20080128194352.206f3ead@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 30 Jan 2008 04:08:45 +1100 (EST)
+Received: from bryce.americas.sgi.com (bryce.americas.sgi.com [137.38.224.20])
+	by relay1.corp.sgi.com (Postfix) with ESMTP id A52A08F8087
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Jan 2008 09:08:43 -0800 (PST)
+Received: from [137.38.88.32] (lnx-ssh.americas.sgi.com [137.38.88.32])
+	by bryce.americas.sgi.com (Postfix) with ESMTP id 5856370008E3
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Jan 2008 11:08:43 -0600 (CST)
+Message-ID: <479F5D9B.8040403@sgi.com>
+Date: Tue, 29 Jan 2008 11:08:43 -0600
+From: Steven Hein <ssh@sgi.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Configuring Freecale ucc_geth without a PHY
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,37 +28,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 28 Jan 2008 19:43:52 -0600
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+Hi all,
 
-> On Mon, 28 Jan 2008 17:46:47 -0500
-> Steve Heflin <sheflin@newagemicro.com> wrote:
-> 
-> > At 02:30 PM 1/28/2008, Steve Heflin wrote:
-> > >Josh, you're a life saver!!  Your GIT tree is exactly what I've been
-> > >looking for. I have an AMCC440EPx based product that makes heavy use
-> > >of all the devices embedded in the microcontroller. I'll be able to
-> > >give that platform a very good testing.
-> > >
-> > >Now can you help me with BINUTILS?  What version do you use and can
-> > >you point me to a decent GIT tree for it?  I tried to use version
-> > >2.18 and the build blows up because it tries to "strip" a script file
-> > >"embedspu".
-> > 
-> > Whoa! I spoke too soon.  Upon attempting a "make menuconfig" on the 
-> > 2.6.24-rc8 which I cloned from your git tree, I don't even SEE the 
-> > powerpc architecture appearing!  What's up?
-> 
-> I dunno.  I never use make menuconfig.  I typically do:
-> 
-> make ARCH=powerpc sequoia_defconfig
-> 
-> or something similar if I'm cross-building from x86.  Otherwise if I'm
-> on the G5, it's just:
-> 
-> make sequoia_defconfig
+I have a custom board with an MPC8358 (our board is based
+off of the MPC8360E-MDS development board) that has its eth's
+directly connected (GMII) to a Broadcom network switch
+part on the same board, with no PHYs between them.
+We've have been using a 2.6.16.18 kernel (from TimeSys) up
+until now, and I hacked in some crude support for no-phy
+configs forced to 100Mbit and 1Gbit speeds.   Now I'm
+moving to 2.6.22 (with 8360 the patches from bitshrine.org),
+and I'm trying to understand how I should do this with
+device trees, the new PHY infrastructure, etc.   Has anyone
+else needed this support?   Does anyone have any suggestions
+as to how to tackle it?
 
-Oh, and that's on the for-2.6.25 branch of my tree.  I'll update the
-master soon-ish to match the powerpc git tree.
+Thanks,
+Steve
 
-josh
+-- 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
+Silicon Graphics, Inc.                          
+1168 Industrial Blvd.                 Phone: (715) 726-8410
+Chippewa Falls, WI 54729              Fax:   (715) 726-6715
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
