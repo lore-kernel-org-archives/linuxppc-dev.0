@@ -1,19 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 8/8] Cell IOMMU fixed mapping support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20080129151511.GA18975@lixom.net>
-References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
-	<1cbc0deea968ece13756e3c86ec3af0b7586b80b.1201616038.git.michael@ellerman.id.au>
-	<20080129151511.GA18975@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2W26lFmqaC5glXRnTnhH"
-Date: Wed, 30 Jan 2008 02:13:45 +1100
-Message-Id: <1201619625.10012.19.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <stern@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id 484ABDDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 02:27:49 +1100 (EST)
+Date: Tue, 29 Jan 2008 10:27:45 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [patch v6 3/4] USB: add Cypress c67x00 OTG controller HCD driver
+In-Reply-To: <20080129123120.113543000@sunsite.dk>
+Message-ID: <Pine.LNX.4.44L0.0801291016370.4083-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	USB list <linux-usb@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +21,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 29 Jan 2008, Peter Korsgaard wrote:
 
---=-2W26lFmqaC5glXRnTnhH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> This patch adds HCD support for the Cypress c67x00 family of devices.
 
-On Tue, 2008-01-29 at 09:15 -0600, Olof Johansson wrote:
-> On Wed, Jan 30, 2008 at 01:14:03AM +1100, Michael Ellerman wrote:
->=20
-> > For example a machine with 4GB of memory would end up with the normal
-> > IOMMU window from 0-2GB and the fixed mapping window from 2GB to 6GB. I=
-n
-> > this case a 64-bit device wishing to DMA to 1GB would be told to DMA to
-> > 3GB, plus any offset required by firmware. The firmware offset is encod=
-ed
-> > in the "dma-ranges" property.
->=20
-> Shouldn't the fixed mapping be between 4G and 8G (and the offset for 1G
-> is at 5G), to account for the MMIO range at 2-4G?
+> --- /dev/null
+> +++ linux-2.6/drivers/usb/c67x00/c67x00-hcd.c
 
-I don't think so, ie. it works setup like that, but I'm not entirely
-sure why. Presumably the 2-4GB for MMIO is only for cycles heading out
-of the CPU.
+> +int c67x00_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+> +{
+> +	struct c67x00_hcd *c67x00 = hcd_to_c67x00_hcd(hcd);
+> +	unsigned long flags;
+> +	int rc;
+> +
+> +	spin_lock_irqsave(&c67x00->lock, flags);
+> +	rc = usb_hcd_check_unlink_urb(hcd, urb, status);
+> +	if (rc)
+> +		goto done;
+> +
+> +	c67x00_release_urb(c67x00, urb);
+> +	usb_hcd_unlink_urb_from_ep(hcd, urb);
+> +	spin_unlock_irqrestore(&c67x00->lock, flags);
+> +
+> +	usb_hcd_giveback_urb(hcd, urb, status);
 
-cheers
+This is wrong.  usb_hcd_giveback_urb() must be called with local
+interrupts disabled.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+> +/*
+> + * pre: urb != NULL and c67x00 locked, urb unlocked
+> + */
+> +static inline void
+> +c67x00_giveback_urb(struct c67x00_hcd *c67x00, struct urb *urb, int status)
+> +{
+> +	struct c67x00_urb_priv *urbp;
+> +
+> +	if (!urb)
+> +		return;
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Since you have the documented precondition that urb != NULL, and since
+this routine is never called in a context where urb could be NULL,
+there's no need for this test.  Also, I doubt that this routine really
+needs to be inline (and besides, the compiler is better at making such
+decisions than we are).
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+> +static void c67x00_sched_done(unsigned long __c67x00)
+> +{
+> +	struct c67x00_hcd *c67x00 = (struct c67x00_hcd *)__c67x00;
+> +	struct c67x00_urb_priv *urbp, *tmp;
+> +	struct urb *urb;
+> +
+> +	spin_lock(&c67x00->lock);
+> +
+> +	/* Loop over the done list and give back all the urbs */
+> +	list_for_each_entry_safe(urbp, tmp, &c67x00->done_list, hep_node) {
+> +		urb = urbp->urb;
+> +		c67x00_release_urb(c67x00, urb);
+> +		if (!usb_hcd_check_unlink_urb(c67x00_hcd_to_hcd(c67x00),
+> +					      urb, urbp->status)) {
 
---=-2W26lFmqaC5glXRnTnhH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+The function call above is completely wrong.  It is meant to be used only
+from within the dequeue method.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> +			usb_hcd_unlink_urb_from_ep(c67x00_hcd_to_hcd(c67x00),
+> +						   urb);
+> +			spin_unlock(&c67x00->lock);
+> +			usb_hcd_giveback_urb(c67x00_hcd_to_hcd(c67x00), urb,
+> +					     urbp->status);
+> +			spin_lock(&c67x00->lock);
+> +		}
+> +	}
+> +	spin_unlock(&c67x00->lock);
+> +}
 
-iD8DBQBHn0KpdSjSd0sB4dIRAmmjAJ4kxtGaxFWKESkCDS5egT49gBypjQCgg9x4
-jMP15/GquFTMjXkGoiilQ0Y=
-=/Yld
------END PGP SIGNATURE-----
+Is there some reason this routine needs to run in a tasklet?  Why not
+just call it directly?
 
---=-2W26lFmqaC5glXRnTnhH--
+Also, the fact that it is in a tasklet means that it runs with
+interrupts enabled.  Hence your spin_lock() and spin_unlock() calls
+will not do the right thing.
+
+Alan Stern
