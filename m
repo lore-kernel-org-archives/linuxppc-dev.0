@@ -1,19 +1,15 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 65B28DDE1D
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 01:24:40 +1100 (EST)
-Message-ID: <479F36B9.2050308@ru.mvista.com>
-Date: Tue, 29 Jan 2008 17:22:49 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <olof@lixom.net>
+Date: Tue, 29 Jan 2008 09:15:11 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 8/8] Cell IOMMU fixed mapping support
+Message-ID: <20080129151511.GA18975@lixom.net>
+References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
+	<1cbc0deea968ece13756e3c86ec3af0b7586b80b.1201616038.git.michael@ellerman.id.au>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-References: <4797C1AD.3040307@tiscali.nl>
-	<20080123191704.2d74073a@zod.rchland.ibm.com>
-In-Reply-To: <20080123191704.2d74073a@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, Roel Kluin <12o3l@tiscali.nl>,
-	lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1cbc0deea968ece13756e3c86ec3af0b7586b80b.1201616038.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Wed, 23 Jan 2008 23:37:33 +0100
-> Roel Kluin <12o3l@tiscali.nl> wrote:
-> 
->> logical/bitand typo
->>
->> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->> ---
->> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
->> index ebf9e21..dcfb459 100644
->> --- a/arch/powerpc/boot/4xx.c
->> +++ b/arch/powerpc/boot/4xx.c
->> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
->>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
->>  	cs = 0;
->>  	while (val) {
->> -		if (val && 0x1)
->> +		if (val & 0x1)
->>  			cs++;
->>  		val = val >> 1;
->>  	}
-> 
-> Hm, good catch.
+On Wed, Jan 30, 2008 at 01:14:03AM +1100, Michael Ellerman wrote:
 
-Yes, thanks!
+> For example a machine with 4GB of memory would end up with the normal
+> IOMMU window from 0-2GB and the fixed mapping window from 2GB to 6GB. In
+> this case a 64-bit device wishing to DMA to 1GB would be told to DMA to
+> 3GB, plus any offset required by firmware. The firmware offset is encoded
+> in the "dma-ranges" property.
 
-Sequoia and Rainier are currently the only boards using denali 
-controller and have both chipselects enabled (val = 0x3).
-In this case the problem doesn't show up and we still get the right cs 
-value.
-Thanks,
-Valentine.
+Shouldn't the fixed mapping be between 4G and 8G (and the offset for 1G
+is at 5G), to account for the MMIO range at 2-4G?
 
-> 
-> Stefan, have you had problems with this code at all?
-> 
-> josh
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+-Olof
