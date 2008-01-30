@@ -1,24 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99804DDDF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 10:20:29 +1100 (EST)
-Subject: Re: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii
-	matching table
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200801300716.52463.sr@denx.de>
-References: <1200476230-14026-1-git-send-email-sr@denx.de>
-	<1200477239.6755.21.camel@pasglop>
-	<20080116090110.1b7b2f00@zod.rchland.ibm.com>
-	<200801300716.52463.sr@denx.de>
+Return-Path: <bodonoghue@codehermit.ie>
+Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
+	by ozlabs.org (Postfix) with ESMTP id 502A8DDE09
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 10:38:01 +1100 (EST)
+Subject: PATCH[1/1] 8xx: Add clock-frequency to Adder875 and mpc885ads
+	board ports
+From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+To: linuxppc-dev@ozlabs.org, scottwood@freescale.com
 Content-Type: text/plain
-Date: Thu, 31 Jan 2008 10:14:58 +1100
-Message-Id: <1201734898.8146.0.camel@pasglop>
+Date: Wed, 30 Jan 2008 23:34:48 +0000
+Message-Id: <1201736088.3466.3.camel@neuromancer.mindspace>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Redo the addition of the clock-frequency parameter to the Adder875 .dts
+so that the values are decimal rather then hex.
 
-On Wed, 2008-01-30 at 07:16 +0100, Stefan Roese wrote:
-> On Wednesday 16 January 2008, Josh Boyer wrote:
-> > On Wed, 16 Jan 2008 20:53:59 +1100
-> >
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > > On Wed, 2008-01-16 at 10:37 +0100, Stefan Roese wrote:
-> > > > With the removal the the "rgmii-interface" device_type property from
-> > > > the dts files, the newemac driver needs an update to only rely on
-> > > > compatible property.
-> > > >
-> > > > Signed-off-by: Stefan Roese <sr@denx.de>
-> > >
-> > > I need to test if it works on CAB, can't change the DT on those. I'll
-> > > let you know tomorrow.
-> >
-> > This should be fine on CAB.  The rgmii node has:
-> >
-> > compatible = "ibm,rgmii-axon", "ibm,rgmii"
-> >
-> > so the match should still catch on the latter.
-> 
-> How about this patch? Ben, if you think this is ok then we should make sure 
-> that it goes in in this merge-window, since the other dts patch relies on it.
 
-It's fine.
+Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+---
 
-Ben.
+diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts
+b/arch/powerpc/boot/dts/adder875-redboot.dts
+index 7c25d96..c508f3c 100644
+--- a/arch/powerpc/boot/dts/adder875-redboot.dts
++++ b/arch/powerpc/boot/dts/adder875-redboot.dts
+@@ -149,6 +149,7 @@
+                                compatible = "fsl,mpc875-brg",
+                                             "fsl,cpm1-brg",
+                                             "fsl,cpm-brg";
++                               clock-frequency = <50000000>;
+                                reg = <0x9f0 0x10>;
+                        };
+ 
+diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts
+b/arch/powerpc/boot/dts/adder875-uboot.dts
+index 605202f..d7ac416 100644
+--- a/arch/powerpc/boot/dts/adder875-uboot.dts
++++ b/arch/powerpc/boot/dts/adder875-uboot.dts
+@@ -148,6 +148,7 @@
+                                compatible = "fsl,mpc875-brg",
+                                             "fsl,cpm1-brg",
+                                             "fsl,cpm-brg";
++                               clock-frequency = <50000000>;
+                               reg = <0x9f0 0x10>;
+                        };
+ 
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts
+b/arch/powerpc/boot/dts/mpc885ads.dts
+index 8848e63..f2a437b 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -166,6 +166,7 @@
+                                compatible = "fsl,mpc885-brg",
+                                             "fsl,cpm1-brg",
+                                             "fsl,cpm-brg";
++                               clock-frequency = <0>;
+                                reg = <9f0 10>;
+                        };
