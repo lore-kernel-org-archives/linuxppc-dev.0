@@ -1,20 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1594EDDE9A
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 11:58:10 +1100 (EST)
-Date: Tue, 29 Jan 2008 18:58:10 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 8/8] Cell IOMMU fixed mapping support
-Message-ID: <20080130005810.GB32622@lixom.net>
-References: <56662c291890f09835ef7251f9b86f70fbee3ad2.1201616038.git.michael@ellerman.id.au>
-	<1201619625.10012.19.camel@concordia>
-	<20080129155048.GA19822@lixom.net>
-	<200801300154.02358.arnd@arndb.de>
+Return-Path: <y-goto@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+	by ozlabs.org (Postfix) with ESMTP id 35018DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 12:13:54 +1100 (EST)
+Date: Wed, 30 Jan 2008 10:13:05 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [-mm PATCH] updates for hotplug memory remove
+In-Reply-To: <1201653101.19684.6.camel@dyn9047017100.beaverton.ibm.com>
+References: <20080129120318.5BDF.Y-GOTO@jp.fujitsu.com>
+	<1201653101.19684.6.camel@dyn9047017100.beaverton.ibm.com>
+Message-Id: <20080130095002.4CCC.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200801300154.02358.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 30, 2008 at 01:54:01AM +0100, Arnd Bergmann wrote:
 
-> I don't see how it should be possible here to reuse the 2-4GB range
-> for anything else.
+> > Have you ever tested hotadd(probe) of the removed memory?
+> 
+> Yes. I did. In my touch testing, I was able to remove memory and add
+> it back to the system without any issues.
 
-Right, that was obvious after Ben's reply as well. Michael's description
-made me think the linear mapping was at bus address 2G when it wasn't.
+Oh, really!?
+
+> But again, I didn't force
+> the system to use that memory :(
+
+Ah..OK.
+
+> 
+> > I'm afraid there are some differences of the status between pre hot-add
+> > section and the removed section by this patch. I think the mem_section of
+> > removed memory should be invalidated at least.
+> 
+> I think its a generic issue. Nothing specific for ppc64. Isn't it ? 
+
+Right.
+Currently, our machine doesn't have real physical remove feature yet.
+(only add).
+So, I think testing is not enough around physical removing.
+Probably, your box will be first one which can remove physical memory
+with Linux. It is good for testing. 
+If you notice anything, please let me know. :-)
 
 
--Olof
+Bye.
+
+-- 
+Yasunori Goto 
