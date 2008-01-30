@@ -1,19 +1,23 @@
-Return-Path: <barisa.kisku@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
-	by ozlabs.org (Postfix) with ESMTP id 62F16DDD0B
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpauth12.prod.mesa1.secureserver.net
+	(smtpauth12.prod.mesa1.secureserver.net [64.202.165.35])
+	by ozlabs.org (Postfix) with SMTP id 46747DDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 14:42:51 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so98812wxd.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Jan 2008 19:42:49 -0800 (PST)
-Message-ID: <80bb1bc60801291942w7f1e3bb4g70142e78eadbce28@mail.gmail.com>
-Date: Wed, 30 Jan 2008 09:12:48 +0530
-From: "Barisa Kisku" <barisa.kisku@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: which data structure keep IO information.
+	Wed, 30 Jan 2008 16:10:52 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: "'Andy Fleming'" <afleming@freescale.com>
+References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>
+	<000601c85fc5$41e48330$6405a8c0@absolut>
+	<D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+Subject: 83xx HDLC Driver Dev - Multiple PHYs?
+Date: Tue, 29 Jan 2008 21:10:04 -0800
+Message-ID: <000001c862fe$5ff16550$6405a8c0@absolut>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_15320_29734066.1201664568710"
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +28,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_15320_29734066.1201664568710
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi,
-I have to port one customised layer 2 protocol stack and  read, write system
-call to access devices in linux-2.4.
-At the moment  this is ported in UNIX SVR2/4 operating system.this protocol
-uses some common data structure,
-i.e "user" in unix srv2/4, which keeps information such as
-      u_error = return errorn code
-      u_base = base address for I/O
-     u_count = bytes remaining for I/O
-     u_arg = argument to current system call etc.
+All,
 
-so i need to store these information in linux-2.4 implementation for
-implementing read/write system calls.so what is/are
-corresponding structure in linux-2.4.i went through task_struct, fs_struct,
-files_struct etc., but couldn't relate it properly.
+I have gotten my HDLC driver up to the point where it can register itself
+with the Linux kernel. However now I am faced with a dilemma and style
+question, that is probably best answered by you driver developers that have
+more experience.
 
-Please help me on this .
+I am putting support for multiple PHY's into the HDLC driver, but after
+converting it to use the of_device tree, and inserting a UCC@5000 for a
+single UCC HDLC driver, it occurred to me that if I insert more devices
+(UCC@6000, UCC@7000, UCC@8000) that the driver will attempt to load multiple
+times.
 
-thanks and regards,
-Barisa Kisku
+So here is the question.
 
-------=_Part_15320_29734066.1201664568710
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Solution 1:
+Should I develop the system to have a single ucc@xxxx entry in the
+platform.dts file and have a field(s) like phy-count=<4>, to support
+multiple devices? And have each instance of the module contain private data
+for one UCC, interrupt handling, etc...  
 
-Hi,<br>I have to port one customised layer 2 protocol stack and&nbsp; read, write system call to access devices in linux-2.4.<br>At the moment&nbsp; this is ported in UNIX SVR2/4 operating system.this protocol uses some common data structure, <br>
-i.e &quot;user&quot; in unix srv2/4, which keeps information such as <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u_error = return errorn code<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u_base = base address for I/O<br>&nbsp;&nbsp;&nbsp;&nbsp; u_count = bytes remaining for I/O<br>&nbsp;&nbsp;&nbsp;&nbsp; u_arg = argument to current system call etc.<br>
-<br>so i need to store these information in linux-2.4 implementation for implementing read/write system calls.so what is/are <br>corresponding structure in linux-2.4.i went through task_struct, fs_struct, files_struct etc., but couldn&#39;t relate it properly.<br>
-<br>Please help me on this .<br><br>thanks and regards,<br>Barisa Kisku<br><br><br><br><br>
+OR
 
-------=_Part_15320_29734066.1201664568710--
+Solution 2:
+Is there a way to have a module know if it has already been loaded, so it
+doesn't insert multiple times and then play the rest like Solution 3?
+
+OR
+
+Solution 3:
+Have phy-count=4; defined in the driver header, or a module parameter, and
+have a single module instance of the driver itself responsible for creating
+a single private data structure and setting up multiple UCC's and PHY's?
+
+This also feeds into a question on SET_NETDEV_DEV. How does it react to
+multiple net devices attached to a single base driver?
+
+-Russ
+
+> -----Original Message-----
+> From: Andy Fleming [mailto:afleming@freescale.com]
+> Sent: Tuesday, January 29, 2008 2:33 PM
+> To: rmcguire@videopresence.com
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: SET_NETDEV_DEV -> 83xx HDLC Driver??
+> 
+> 
+> On Jan 25, 2008, at 20:43, Russell McGuire wrote:
+> 
+> > All,
+> >
+> > I am partly done porting a combination of the 83xx ATM driver and
+> > dscc4 HDLC
+> > driver into a 83xx HDLC driver.
+> >
+> > However, encounter a call I don't truly understand.
+> >
+> > SET_NETDEV_DEV(dev, pointer_to_some_handle);
+> >
+> > I can see plenty of examples of this registering some kind of PCI
+> > device
+> > handle, however in this case I am not using a PCI device. So what
+> > should the
+> > pointer be? Or can this call be ignored, and if so what are the
+> > consequences?
+> >
+> > I see the some of the Freescale Ethernet devices don't use this call.
+> >
+> > Anyway, can somebody shed some light on if I am going to need this,
+> > or a way
+> > to get it to work, without creating a PCI device?
+> 
+> 
+> Look at gianfar.c (which uses a platform_device) or ucc_geth (which
+> uses an of_device).  Which freescale devices don't use that call?
+> We'll fix them.
+> 
+> Andy
