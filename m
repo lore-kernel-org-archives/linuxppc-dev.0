@@ -1,28 +1,20 @@
-Return-Path: <travis@sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id 96860DDF9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:41:29 +1100 (EST)
-Message-ID: <47A0C4D6.4000100@sgi.com>
-Date: Wed, 30 Jan 2008 10:41:26 -0800
-From: Mike Travis <travis@sgi.com>
-MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-References: <200801301414.m0UEEgCC006371@hera.kernel.org>
-	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
-	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-	<20080130180623.GA24881@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0FC7EDE14E
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:46:29 +1100 (EST)
+Date: Wed, 30 Jan 2008 12:46:19 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Kumar Gala
+	<galak@kernel.crashing.org>
+Subject: [PATCH v3] powerpc: configure USB clock for MPC8315E
+Message-Id: <20080130124619.32484395.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: olof@lixom.net, Jerry Huang <Chang-Ming.Huang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,45 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Luck, Tony wrote:
->> Could you check the patch below? With this applied to latest -git, ia64 
->> buils fine for me in a cross-compiling environment. (but i dont know 
->> whether it boots ...)
-> 
-> Uni-processor build still fails with this patch (config is arch/ia64/configs/tiger_defconfig
-> with CONFIG_SMP switched from =y to =n).
+SCCR USB bits are in a different location on the mpc8315.
 
-I'll add an ia64-nosmp config to our cross build test environment and fix this up...
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+changed to detect parent node compatibility with fsl,mpc8315-immr, and
+do a of_node_put when done.
 
-Thanks,
-Mike
+ arch/powerpc/boot/dts/mpc8315erdb.dts |    2 +-
+ arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
+ arch/powerpc/platforms/83xx/usb.c     |   17 +++++++++++++----
+ 3 files changed, 16 insertions(+), 5 deletions(-)
 
-> 
-> arch/ia64/kernel/built-in.o(.text+0x5012): In function `show_interrupts':
-> : relocation truncated to fit: IMM22 per_cpu__kstat
-> arch/ia64/kernel/built-in.o(.text+0x53e1): In function `__bind_irq_vector':
-> : relocation truncated to fit: IMM22 per_cpu__vector_irq
-> arch/ia64/kernel/built-in.o(.text+0x5612): In function `__clear_irq_vector':
-> : relocation truncated to fit: IMM22 per_cpu__vector_irq
-> arch/ia64/kernel/built-in.o(.text+0x5a81): In function `__setup_vector_irq':
-> : relocation truncated to fit: IMM22 per_cpu__vector_irq
-> arch/ia64/kernel/built-in.o(.text+0x6231): In function `ia64_handle_irq':
-> : relocation truncated to fit: IMM22 per_cpu____irq_regs
-> arch/ia64/kernel/built-in.o(.text+0x6272): In function `ia64_handle_irq':
-> : relocation truncated to fit: IMM22 per_cpu__vector_irq
-> arch/ia64/kernel/built-in.o(.text+0x7b81): In function `cpu_idle_wait':
-> : relocation truncated to fit: IMM22 .text
-> arch/ia64/kernel/built-in.o(.text+0x7e21): In function `cpu_idle':
-> : relocation truncated to fit: IMM22 .text
-> arch/ia64/kernel/built-in.o(.text+0x7fd1): In function `ia64_save_extra':
-> : relocation truncated to fit: IMM22 per_cpu__pfm_syst_info
-> arch/ia64/kernel/built-in.o(.text+0x8071): In function `ia64_load_extra':
-> : relocation truncated to fit: IMM22 per_cpu__pfm_syst_info
-> arch/ia64/kernel/built-in.o(.text+0x95c0): In function `pfm_write_ibr_dbr':
-> : additional relocation overflows omitted from the output
-> ld: final link failed: Nonrepresentable section on output
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> SMP build (config zx1_defconfig) builds ok and boots ok too.
-> 
-> -Tony
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index b582032..d7a1ece 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -96,7 +96,7 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+-		compatible = "simple-bus";
++		compatible = "fsl,mpc8315-immr", "simple-bus";
+ 		ranges = <0 0xe0000000 0x00100000>;
+ 		reg = <0xe0000000 0x00000200>;
+ 		bus-frequency = <0>;
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 88bb748..68065e6 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -14,6 +14,8 @@
+ #define MPC83XX_SCCR_USB_DRCM_11   0x00300000
+ #define MPC83XX_SCCR_USB_DRCM_01   0x00100000
+ #define MPC83XX_SCCR_USB_DRCM_10   0x00200000
++#define MPC8315_SCCR_USB_MASK      0x00c00000
++#define MPC8315_SCCR_USB_DRCM_11   0x00c00000
+ #define MPC837X_SCCR_USB_DRCM_11   0x00c00000
+ 
+ /* system i/o configuration register low */
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index 681230a..471fdd8 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -104,6 +104,7 @@ int mpc831x_usb_cfg(void)
+ 	u32 temp;
+ 	void __iomem *immap, *usb_regs;
+ 	struct device_node *np = NULL;
++	struct device_node *immr_node = NULL;
+ 	const void *prop;
+ 	struct resource res;
+ 	int ret = 0;
+@@ -124,10 +125,15 @@ int mpc831x_usb_cfg(void)
+ 	}
+ 
+ 	/* Configure clock */
+-	temp = in_be32(immap + MPC83XX_SCCR_OFFS);
+-	temp &= ~MPC83XX_SCCR_USB_MASK;
+-	temp |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
+-	out_be32(immap + MPC83XX_SCCR_OFFS, temp);
++	immr_node = of_get_parent(np);
++	if (immr_node && of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
++		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
++		                MPC8315_SCCR_USB_MASK,
++		                MPC8315_SCCR_USB_DRCM_11);
++	else
++		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
++		                MPC83XX_SCCR_USB_MASK,
++		                MPC83XX_SCCR_USB_DRCM_11);
+ 
+ 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
+ 	if (prop && !strcmp(prop, "ulpi")) {
+@@ -144,6 +150,9 @@ int mpc831x_usb_cfg(void)
+ 
+ 	iounmap(immap);
+ 
++	if (immr_node)
++		of_node_put(immr_node);
++
+ 	/* Map USB SOC space */
+ 	ret = of_address_to_resource(np, 0, &res);
+ 	if (ret) {
+-- 
+1.5.2.2
