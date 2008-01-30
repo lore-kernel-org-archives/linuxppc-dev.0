@@ -1,27 +1,33 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-va3-R.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7293ADDE00
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 08:18:49 +1100 (EST)
-Message-ID: <47A0E9B2.1010706@am.sony.com>
-Date: Wed, 30 Jan 2008 13:18:42 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB9A2DDE01
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 08:20:51 +1100 (EST)
+Date: Wed, 30 Jan 2008 22:20:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
 Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-References: <200801301414.m0UEEgCC006371@hera.kernel.org>	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>	<47A09F8A.3000309@sgi.com>
-	<20080130161036.GA12293@elte.hu>	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>	<20080130180623.GA24881@elte.hu>	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-	<20080130184920.GA32212@elte.hu>
-In-Reply-To: <20080130184920.GA32212@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+Message-ID: <20080130212030.GA12269@elte.hu>
+References: <20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+	<47A0CD4B.5040706@sgi.com>
+	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
+	<20080130194616.GA19426@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
+	<20080130200221.GA28073@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
+	<20080130205915.GA4562@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC758076@orsmsx424.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC758076@orsmsx424.amr.corp.intel.com>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
 	Linux Kernel Development <linux-kernel@vger.kernel.org>,
 	Mike Travis <travis@sgi.com>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
 	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,29 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ingo Molnar wrote:
-> * Luck, Tony <tony.luck@intel.com> wrote:
-> 
->> > Could you check the patch below? With this applied to latest -git, 
->> > ia64 buils fine for me in a cross-compiling environment. (but i dont 
->> > know whether it boots ...)
->> 
->> Uni-processor build still fails with this patch (config is 
->> arch/ia64/configs/tiger_defconfig with CONFIG_SMP switched from =y to 
->> =n).
-> 
-> could you try the full patchset that Travis has just sent and which i've 
-> put into x86.git, you can pull it from:
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-> 
-> it's a fixes only tree, ontop of Linus-very-latest. Head 4b9e425c25f84. 
-> [pull from ssh://master.kernel.org if it's not on git.kernel.org yet, 
-> uploaded it this very minute.]
 
-Just FYI, the following diff from the above tree applied to linux-2.6.git
-works with ps3_defconfig on the PS3 (powerpc):
+* Luck, Tony <tony.luck@intel.com> wrote:
 
-  git diff dd430ca20c40ecccd6954a7efd13d4398f507728..3823daf866c272c670dda7dc6179a647da64467f
+> I'll start digging on why this doesn't boot ... but you might as well 
+> send the fixes so far upstream to Linus so that the SMP fix is 
+> available (which is all anyone really cares about ... there are very, 
+> very few UP ia64 systems in existence).
+> 
+> Acked-by: Tony Luck <tony.luck@intel.com>
 
--Geoff
+thanks alot! Can i also add your Acked-by to this patch:
+
+  Subject: ia64: use generic percpu
+  From: travis@sgi.com
+
+it seems like a sensible cleanup to me.
+
+	Ingo
