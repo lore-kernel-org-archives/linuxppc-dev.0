@@ -1,22 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04706DDFEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:25:11 +1100 (EST)
-Message-Id: <02FAED2A-1154-4D8B-A245-4693BF283515@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <47A0AF56.3060804@garzik.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
-Date: Wed, 30 Jan 2008 11:24:54 -0600
-References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
-	<20080121204953.GA11384@localhost.localdomain>
-	<47A0AF56.3060804@garzik.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Eugene Konev <ejka@imfi.kspu.ru>, netdev@vger.kernel.org
+Return-Path: <tony.luck@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+	by ozlabs.org (Postfix) with ESMTP id 8BF14DDEF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:26:11 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Date: Wed, 30 Jan 2008 09:13:25 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080130161036.GA12293@elte.hu>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org>
+	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
+	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>,
+	"Mike Travis" <travis@sgi.com>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 30, 2008, at 11:09 AM, Jeff Garzik wrote:
-
-> Anton Vorontsov wrote:
->> On Mon, Jan 21, 2008 at 01:19:41PM -0600, Kumar Gala wrote:
->>> Anton,
->>>
->>> it looks like the "TI AR7 CPMAC Ethernet support" uses FIXED_PHY  
->>> and  was selecting FIXED_MII_100_FDX which is gone.
->>>
->>> Can you look into this.  I get the following warning now:
->>>
->>> scripts/kconfig/conf -s arch/powerpc/Kconfig
->>> drivers/net/Kconfig:1713:warning: 'select' used by config symbol   
->>> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
->> Wow. I thought there were no Fixed PHY users. :-)
->> Jeff, as you've already Acked Fixed PHY rework to go through powerpc
->> tree, would you please Ack this patch in addition? I hope cpmac
->> maintainer will fix remaining issues as time goes by.
->> Thanks!
->> - - - -
->> From: Anton Vorontsov <avorontsov@ru.mvista.com>
->> Subject: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
->> This patch converts cpmac to the new Fixed PHY infrastructure,  
->> though it
->> doesn't fix all the problems with that driver. I didn't even bother  
->> to
->> test this patch to compile, because cpmac driver is broken in  
->> several ways:
->> 1. This driver won't compile by itself because lack of its header  
->> describing
->>   platform data;
->> 2. It assumes that fixed PHYs should be created by the ethernet  
->> driver.
->>   It is wrong assumption: fixed PHYs creation is platform code  
->> authority,
->>   driver must blindly accept bus_id and phy_id platform data  
->> variables
->>   instead.
->> Also, it seem that that driver doesn't have actual in-tree users, so
->> nothing to fix further.
->> The main purpose of that patch is to get rid of the following Kconfig
->> warning:
->> scripts/kconfig/conf -s arch/powerpc/Kconfig
->> drivers/net/Kconfig:1713:warning: 'select' used by config symbol
->> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > This broke powerpc (and presumably ia64 and sparc64) in current=20
+> > > linux-2.6.git:
+> >=20
+> > I'm generating a "fixup patch" right now...
 >
-> ACK
+> thanks! Sorry about that: we cross-built on ARM but not on SMP non-x86 =
 
-Is this going through netdev or do you want me to pick it via the  
-powerpc route?
+> platforms so this dependency/breakage went unnoticed.
 
-- k
+Yes ... all ia64 builds (UP and SMP) are broken at the moment. Please
+Cc: me with the fixup patch.
+
+Thanks
+
+-Tony
