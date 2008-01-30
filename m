@@ -1,33 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <stcheng@celestica.com>
+Received: from mailgateway1.celestica.com (mx2.celestica.com [135.12.16.12])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6F5D8DDE0F
+	(Client CN "chqsmt01", Issuer "chqsmt01" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AB022DDD01
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 12:50:48 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m0U1oikA014716
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 20:50:44 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m0U1oik1175968
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 18:50:44 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m0U1oibt008410
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 18:50:44 -0700
-Date: Tue, 29 Jan 2008 19:49:42 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: jie han <jiehanca@yahoo.com.cn>
-Subject: Re: Help: I will port amcc yucca board to denx kernel ARCH=powepc
-	directory.How to config dts file?
-Message-ID: <20080129194942.3f9aaecd@zod.rchland.ibm.com>
-In-Reply-To: <593873.20606.qm@web15102.mail.cnb.yahoo.com>
-References: <593873.20606.qm@web15102.mail.cnb.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 30 Jan 2008 13:23:37 +1100 (EST)
+Received: from clsgw04.ca-chq.celestica.com ([10.39.8.68])
+	by mailgateway1.celestica.com (8.12.10/8.12.11) with ESMTP id
+	m0U253Ww020066
+	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Jan 2008 21:05:03 -0500
+Subject: Stephen Cheng is out of the office.
+From: Stephen Cheng <stcheng@celestica.com>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OFCB55C9ED.9601B2E7-ON482573E0.000B6160-482573E0.000B6160@celestica.com>
+Date: Wed, 30 Jan 2008 10:04:18 +0800
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,13 +26,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 29 Jan 2008 16:11:35 -0800 (PST)
-jie han <jiehanca@yahoo.com.cn> wrote:
+I will be out of the office starting  01/30/2008 and will not return until
+02/13/2008.
 
-> Hi all,
-> I want to port amcc yucca board denx linux kernel from ARCH=ppc to ARCH=powerpc. I used sequoia.dts for yucca baord demo device tree file.
-
-I would start with the Katmai DTS instead.  It's at least the same CPU
-type.
-
-josh
+This is the Chinese New Year Holiday. I will respond to your message when I
+return.
