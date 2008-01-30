@@ -1,22 +1,23 @@
-Return-Path: <SRS0=8N4g=SU=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 38C4DDDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 17:17:08 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org,
- benh@kernel.crashing.org
-Subject: Re: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii
-	matching table
-Date: Wed, 30 Jan 2008 07:16:52 +0100
-References: <1200476230-14026-1-git-send-email-sr@denx.de>
-	<1200477239.6755.21.camel@pasglop>
-	<20080116090110.1b7b2f00@zod.rchland.ibm.com>
-In-Reply-To: <20080116090110.1b7b2f00@zod.rchland.ibm.com>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 52110DDE09
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 19:41:35 +1100 (EST)
+Message-ID: <47A03830.7070907@pobox.com>
+Date: Wed, 30 Jan 2008 03:41:20 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801300716.52463.sr@denx.de>
-Cc: netdev@vger.kernel.org
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
+References: <4799F349.9090102@scram.de>
+In-Reply-To: <4799F349.9090102@scram.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linux-m68k@vger.kernel.org, "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 16 January 2008, Josh Boyer wrote:
-> On Wed, 16 Jan 2008 20:53:59 +1100
->
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > On Wed, 2008-01-16 at 10:37 +0100, Stefan Roese wrote:
-> > > With the removal the the "rgmii-interface" device_type property from
-> > > the dts files, the newemac driver needs an update to only rely on
-> > > compatible property.
-> > >
-> > > Signed-off-by: Stefan Roese <sr@denx.de>
-> >
-> > I need to test if it works on CAB, can't change the DT on those. I'll
-> > let you know tomorrow.
->
-> This should be fine on CAB.  The rgmii node has:
->
-> compatible = "ibm,rgmii-axon", "ibm,rgmii"
->
-> so the match should still catch on the latter.
+Jochen Friedrich wrote:
+> fec.c is only used on M68k Coldfire CPUs. Remove leftover
+> PowerPC code from this driver.
+> 
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  drivers/net/fec.c |  136 +---------------------------------------------------
+>  1 files changed, 3 insertions(+), 133 deletions(-)
 
-How about this patch? Ben, if you think this is ok then we should make sure 
-that it goes in in this merge-window, since the other dts patch relies on it.
+Seems OK to me, but I feel I don't have enough knowledge to ACK or NAK. 
+  Please pass through an arch tree, thanks.
 
-Thanks.
-
-Best regards,
-Stefan
+	Jeff
