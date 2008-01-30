@@ -1,20 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4A913DDF01
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:09:04 +1100 (EST)
-Date: Wed, 30 Jan 2008 11:08:57 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Kumar Gala
-	<galak@kernel.crashing.org>
-Subject: [PATCH v2] powerpc: configure USB clock for MPC8315E
-Message-Id: <20080130110857.c66f98fb.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 73667DDEE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:09:52 +1100 (EST)
+Message-ID: <47A0AF56.3060804@garzik.org>
+Date: Wed, 30 Jan 2008 12:09:42 -0500
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
+References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
+	<20080121204953.GA11384@localhost.localdomain>
+In-Reply-To: <20080121204953.GA11384@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Eugene Konev <ejka@imfi.kspu.ru>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,66 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SCCR USB bits are in a different location on the mpc8315.
+Anton Vorontsov wrote:
+> On Mon, Jan 21, 2008 at 01:19:41PM -0600, Kumar Gala wrote:
+>> Anton,
+>>
+>> it looks like the "TI AR7 CPMAC Ethernet support" uses FIXED_PHY and  
+>> was selecting FIXED_MII_100_FDX which is gone.
+>>
+>> Can you look into this.  I get the following warning now:
+>>
+>> scripts/kconfig/conf -s arch/powerpc/Kconfig
+>> drivers/net/Kconfig:1713:warning: 'select' used by config symbol  
+>> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+> 
+> Wow. I thought there were no Fixed PHY users. :-)
+> 
+> Jeff, as you've already Acked Fixed PHY rework to go through powerpc
+> tree, would you please Ack this patch in addition? I hope cpmac
+> maintainer will fix remaining issues as time goes by.
+> 
+> Thanks!
+> 
+> - - - -
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Subject: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
+> 
+> This patch converts cpmac to the new Fixed PHY infrastructure, though it
+> doesn't fix all the problems with that driver. I didn't even bother to
+> test this patch to compile, because cpmac driver is broken in several ways:
+> 
+> 1. This driver won't compile by itself because lack of its header describing
+>    platform data;
+> 2. It assumes that fixed PHYs should be created by the ethernet driver.
+>    It is wrong assumption: fixed PHYs creation is platform code authority,
+>    driver must blindly accept bus_id and phy_id platform data variables
+>    instead.
+> 
+> Also, it seem that that driver doesn't have actual in-tree users, so
+> nothing to fix further.
+> 
+> The main purpose of that patch is to get rid of the following Kconfig
+> warning:
+> 
+> scripts/kconfig/conf -s arch/powerpc/Kconfig
+> drivers/net/Kconfig:1713:warning: 'select' used by config symbol
+> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
-changed to match compatible on non-board specific "fsl,mpc8315-usb2-dr".
-
- arch/powerpc/boot/dts/mpc8315erdb.dts |    2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
- arch/powerpc/platforms/83xx/usb.c     |   12 ++++++++----
- 3 files changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index b582032..59b1f05 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -133,7 +133,7 @@
- 		};
- 
- 		usb@23000 {
--			compatible = "fsl-usb2-dr";
-+			compatible = "fsl-usb2-dr", "fsl,mpc8315-usb2-dr";
- 			reg = <0x23000 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index 88bb748..68065e6 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -14,6 +14,8 @@
- #define MPC83XX_SCCR_USB_DRCM_11   0x00300000
- #define MPC83XX_SCCR_USB_DRCM_01   0x00100000
- #define MPC83XX_SCCR_USB_DRCM_10   0x00200000
-+#define MPC8315_SCCR_USB_MASK      0x00c00000
-+#define MPC8315_SCCR_USB_DRCM_11   0x00c00000
- #define MPC837X_SCCR_USB_DRCM_11   0x00c00000
- 
- /* system i/o configuration register low */
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 681230a..14c83f1 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -124,10 +124,14 @@ int mpc831x_usb_cfg(void)
- 	}
- 
- 	/* Configure clock */
--	temp = in_be32(immap + MPC83XX_SCCR_OFFS);
--	temp &= ~MPC83XX_SCCR_USB_MASK;
--	temp |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
--	out_be32(immap + MPC83XX_SCCR_OFFS, temp);
-+	if (of_find_compatible_node(NULL, NULL, "fsl,mpc8315-usb2-dr"))
-+		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
-+		                MPC8315_SCCR_USB_MASK,
-+		                MPC8315_SCCR_USB_DRCM_11);
-+	else
-+		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
-+		                MPC83XX_SCCR_USB_MASK,
-+		                MPC83XX_SCCR_USB_DRCM_11);
- 
- 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
- 	if (prop && !strcmp(prop, "ulpi")) {
--- 
-1.5.2.2
+ACK
