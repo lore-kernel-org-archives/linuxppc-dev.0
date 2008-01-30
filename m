@@ -1,20 +1,30 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0FC7EDE14E
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:46:29 +1100 (EST)
-Date: Wed, 30 Jan 2008 12:46:19 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Kumar Gala
-	<galak@kernel.crashing.org>
-Subject: [PATCH v3] powerpc: configure USB clock for MPC8315E
-Message-Id: <20080130124619.32484395.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: olof@lixom.net, Jerry Huang <Chang-Ming.Huang@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 66BF9DDE43
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:49:44 +1100 (EST)
+Date: Wed, 30 Jan 2008 19:49:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130184920.GA32212@elte.hu>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org>
+	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
+	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+	<20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,86 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SCCR USB bits are in a different location on the mpc8315.
 
-Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
-changed to detect parent node compatibility with fsl,mpc8315-immr, and
-do a of_node_put when done.
+* Luck, Tony <tony.luck@intel.com> wrote:
 
- arch/powerpc/boot/dts/mpc8315erdb.dts |    2 +-
- arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
- arch/powerpc/platforms/83xx/usb.c     |   17 +++++++++++++----
- 3 files changed, 16 insertions(+), 5 deletions(-)
+> > Could you check the patch below? With this applied to latest -git, 
+> > ia64 buils fine for me in a cross-compiling environment. (but i dont 
+> > know whether it boots ...)
+> 
+> Uni-processor build still fails with this patch (config is 
+> arch/ia64/configs/tiger_defconfig with CONFIG_SMP switched from =y to 
+> =n).
 
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index b582032..d7a1ece 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -96,7 +96,7 @@
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		device_type = "soc";
--		compatible = "simple-bus";
-+		compatible = "fsl,mpc8315-immr", "simple-bus";
- 		ranges = <0 0xe0000000 0x00100000>;
- 		reg = <0xe0000000 0x00000200>;
- 		bus-frequency = <0>;
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index 88bb748..68065e6 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -14,6 +14,8 @@
- #define MPC83XX_SCCR_USB_DRCM_11   0x00300000
- #define MPC83XX_SCCR_USB_DRCM_01   0x00100000
- #define MPC83XX_SCCR_USB_DRCM_10   0x00200000
-+#define MPC8315_SCCR_USB_MASK      0x00c00000
-+#define MPC8315_SCCR_USB_DRCM_11   0x00c00000
- #define MPC837X_SCCR_USB_DRCM_11   0x00c00000
- 
- /* system i/o configuration register low */
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 681230a..471fdd8 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -104,6 +104,7 @@ int mpc831x_usb_cfg(void)
- 	u32 temp;
- 	void __iomem *immap, *usb_regs;
- 	struct device_node *np = NULL;
-+	struct device_node *immr_node = NULL;
- 	const void *prop;
- 	struct resource res;
- 	int ret = 0;
-@@ -124,10 +125,15 @@ int mpc831x_usb_cfg(void)
- 	}
- 
- 	/* Configure clock */
--	temp = in_be32(immap + MPC83XX_SCCR_OFFS);
--	temp &= ~MPC83XX_SCCR_USB_MASK;
--	temp |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
--	out_be32(immap + MPC83XX_SCCR_OFFS, temp);
-+	immr_node = of_get_parent(np);
-+	if (immr_node && of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
-+		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
-+		                MPC8315_SCCR_USB_MASK,
-+		                MPC8315_SCCR_USB_DRCM_11);
-+	else
-+		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
-+		                MPC83XX_SCCR_USB_MASK,
-+		                MPC83XX_SCCR_USB_DRCM_11);
- 
- 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
- 	if (prop && !strcmp(prop, "ulpi")) {
-@@ -144,6 +150,9 @@ int mpc831x_usb_cfg(void)
- 
- 	iounmap(immap);
- 
-+	if (immr_node)
-+		of_node_put(immr_node);
-+
- 	/* Map USB SOC space */
- 	ret = of_address_to_resource(np, 0, &res);
- 	if (ret) {
--- 
-1.5.2.2
+could you try the full patchset that Travis has just sent and which i've 
+put into x86.git, you can pull it from:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+
+it's a fixes only tree, ontop of Linus-very-latest. Head 4b9e425c25f84. 
+[pull from ssh://master.kernel.org if it's not on git.kernel.org yet, 
+uploaded it this very minute.]
+
+	Ingo
