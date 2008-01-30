@@ -1,33 +1,14 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 031BCDDFA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 06:49:43 +1100 (EST)
-Date: Wed, 30 Jan 2008 20:49:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130194921.GA19916@elte.hu>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org>
-	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
-	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-	<20080130180623.GA24881@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-	<47A0CD4B.5040706@sgi.com>
-	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-	<20080130194616.GA19426@elte.hu>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 65A07DE015
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 06:52:30 +1100 (EST)
+Message-ID: <47A0D57C.1000104@pikatech.com>
+Date: Wed, 30 Jan 2008 14:52:28 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080130194616.GA19426@elte.hu>
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Mike Travis <travis@sgi.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+To: linuxppc-dev@ozlabs.org
+Subject: ndfc ecc byte order
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+There seems to be a byte order conflict between the u-boot and Linux 
+ndfc drivers.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+u-boot has the following:
 
-> > Some place in there.  The CONFIG_SMP=n path in ia64 makes quite 
-> > radical changes ... rather than putting all the per-cpu stuff into 
-> > the top 64K of address space and providing a per-cpu TLB mapping for 
-> > that range to a different physical address ... it just makes all the 
-> > per-cpu stuff link as ordinary variables in .data.  The error 
-> > messages indicate that some of the new code is unaware of this.
-> 
-> ah, that was the vital clue. The patch below makes the small memory 
-> model only defined on SMP, and makes the config build/link fine here. 
-> Does this build and boot on your box?
+    /* The NDFC uses Smart Media (SMC) bytes order*/
+    ecc_code[0] = p[2];
+    ecc_code[1] = p[1];
+    ecc_code[2] = p[3];
 
-if this works for you then could you please send me your Acked-by as 
-well, for this and the other ia64 changes, so that we can send these to 
-Linus ASAP?
+the kernel has:
 
-	Ingo
+    ecc_code[0] = p[1];
+    ecc_code[1] = p[2];
+    ecc_code[2] = p[3];
+
+I think u-boot has it right since u-boot and kernel software calculated 
+ECCs agree. Anybody know a reason *not* to switch to the SMC byte order?
+
+Note that the kernel version will work if you are reading/writing from 
+the kernel since they agree on the wrong ECC :p
+
+Cheers,
+   Sean
