@@ -1,18 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7057FDDEF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:27:51 +1100 (EST)
-Date: Wed, 30 Jan 2008 11:27:57 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH v2] powerpc: configure USB clock for MPC8315E
-Message-ID: <20080130172757.GA18385@lixom.net>
-References: <20080130110857.c66f98fb.kim.phillips@freescale.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9E3BFDDF21
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:41:00 +1100 (EST)
+Message-ID: <47A0B6A6.5080903@garzik.org>
+Date: Wed, 30 Jan 2008 12:40:54 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080130110857.c66f98fb.kim.phillips@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Jerry Huang <Chang-Ming.Huang@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
+References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
+	<20080121204953.GA11384@localhost.localdomain>
+	<47A0AF56.3060804@garzik.org>
+	<02FAED2A-1154-4D8B-A245-4693BF283515@kernel.crashing.org>
+In-Reply-To: <02FAED2A-1154-4D8B-A245-4693BF283515@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Eugene Konev <ejka@imfi.kspu.ru>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Kumar Gala wrote:
+> 
+> On Jan 30, 2008, at 11:09 AM, Jeff Garzik wrote:
+> 
+>> Anton Vorontsov wrote:
+>>> On Mon, Jan 21, 2008 at 01:19:41PM -0600, Kumar Gala wrote:
+>>>> Anton,
+>>>>
+>>>> it looks like the "TI AR7 CPMAC Ethernet support" uses FIXED_PHY 
+>>>> and  was selecting FIXED_MII_100_FDX which is gone.
+>>>>
+>>>> Can you look into this.  I get the following warning now:
+>>>>
+>>>> scripts/kconfig/conf -s arch/powerpc/Kconfig
+>>>> drivers/net/Kconfig:1713:warning: 'select' used by config symbol  
+>>>> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+>>> Wow. I thought there were no Fixed PHY users. :-)
+>>> Jeff, as you've already Acked Fixed PHY rework to go through powerpc
+>>> tree, would you please Ack this patch in addition? I hope cpmac
+>>> maintainer will fix remaining issues as time goes by.
+>>> Thanks!
+>>> - - - -
+>>> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> Subject: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
+>>> This patch converts cpmac to the new Fixed PHY infrastructure, though it
+>>> doesn't fix all the problems with that driver. I didn't even bother to
+>>> test this patch to compile, because cpmac driver is broken in several 
+>>> ways:
+>>> 1. This driver won't compile by itself because lack of its header 
+>>> describing
+>>>   platform data;
+>>> 2. It assumes that fixed PHYs should be created by the ethernet driver.
+>>>   It is wrong assumption: fixed PHYs creation is platform code 
+>>> authority,
+>>>   driver must blindly accept bus_id and phy_id platform data variables
+>>>   instead.
+>>> Also, it seem that that driver doesn't have actual in-tree users, so
+>>> nothing to fix further.
+>>> The main purpose of that patch is to get rid of the following Kconfig
+>>> warning:
+>>> scripts/kconfig/conf -s arch/powerpc/Kconfig
+>>> drivers/net/Kconfig:1713:warning: 'select' used by config symbol
+>>> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>
+>> ACK
+> 
+> Is this going through netdev or do you want me to pick it via the 
+> powerpc route?
 
-On Wed, Jan 30, 2008 at 11:08:57AM -0600, Kim Phillips wrote:
-> diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-> index 681230a..14c83f1 100644
-> --- a/arch/powerpc/platforms/83xx/usb.c
-> +++ b/arch/powerpc/platforms/83xx/usb.c
-> @@ -124,10 +124,14 @@ int mpc831x_usb_cfg(void)
->  	}
->  
->  	/* Configure clock */
-> -	temp = in_be32(immap + MPC83XX_SCCR_OFFS);
-> -	temp &= ~MPC83XX_SCCR_USB_MASK;
-> -	temp |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
-> -	out_be32(immap + MPC83XX_SCCR_OFFS, temp);
-> +	if (of_find_compatible_node(NULL, NULL, "fsl,mpc8315-usb2-dr"))
-> +		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
-> +		                MPC8315_SCCR_USB_MASK,
-> +		                MPC8315_SCCR_USB_DRCM_11);
+Based on your comments I sorta assumed it was most convenient to lump in 
+with the rest of the powerpc changes...
 
-You need an of_node_put here.
-
-Also, it's weird to check for the global presence of a compatible
-device. You already have the device node pointer in the function, why
-don't you just check to see if that device is compatible instead?
-
-
--Olof
+	Jeff
