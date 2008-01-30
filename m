@@ -1,26 +1,27 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	by ozlabs.org (Postfix) with ESMTP id 07088DDE9D
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 06:22:15 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Wed, 30 Jan 2008 11:10:51 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC757EAF@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080130184920.GA32212@elte.hu>
+Return-Path: <mingo@elte.hu>
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6D79FDDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 06:31:17 +1100 (EST)
+Date: Wed, 30 Jan 2008 20:30:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130193039.GB11506@elte.hu>
 References: <200801301414.m0UEEgCC006371@hera.kernel.org>
 	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
 	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
 	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
 	<20080130180623.GA24881@elte.hu>
 	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-	<20080130184920.GA32212@elte.hu>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	<47A0CD4B.5040706@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47A0CD4B.5040706@sgi.com>
+Cc: sparclinux@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>,
+	linux-ia64@vger.kernel.org,
 	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Mike Travis <travis@sgi.com>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
@@ -34,19 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> could you try the full patchset that Travis has just sent and which =
-i've=20
-> put into x86.git, you can pull it from:
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
->
-> it's a fixes only tree, ontop of Linus-very-latest. Head =
-4b9e425c25f84.=20
-> [pull from ssh://master.kernel.org if it's not on git.kernel.org yet,=20
-> uploaded it this very minute.]
 
-Same build fail for CONFIG_SMP=3Dn.  The SMP=3Dy build is good (for =
-tiger_defconfig)
-and boots ok too.
+* Mike Travis <travis@sgi.com> wrote:
 
--Tony
+> Could this be a problem with:
+> 
+> #ifdef HAVE_MODEL_SMALL_ATTRIBUTE
+> # define PER_CPU_ATTRIBUTES     __attribute__((__model__ (__small__)))
+> #endif
+> 
+> This is only defined for !__ASSEMBLY__
+
+nope, moving that per the patch below did not resolve the link problems.
+
+	Ingo
+
+-------------->
+Subject: ia64: build fix #3
+From: Ingo Molnar <mingo@elte.hu>
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-ia64/percpu.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-x86.q/include/asm-ia64/percpu.h
+===================================================================
+--- linux-x86.q.orig/include/asm-ia64/percpu.h
++++ linux-x86.q/include/asm-ia64/percpu.h
+@@ -8,6 +8,10 @@
+ 
+ #define PERCPU_ENOUGH_ROOM PERCPU_PAGE_SIZE
+ 
++#ifdef HAVE_MODEL_SMALL_ATTRIBUTE
++# define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
++#endif
++
+ #ifdef __ASSEMBLY__
+ # define THIS_CPU(var)	(per_cpu__##var)  /* use this to mark accesses to per-CPU variables... */
+ #else /* !__ASSEMBLY__ */
+@@ -15,10 +19,6 @@
+ 
+ #include <linux/threads.h>
+ 
+-#ifdef HAVE_MODEL_SMALL_ATTRIBUTE
+-# define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
+-#endif
+-
+ #ifdef CONFIG_SMP
+ 
+ #define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
