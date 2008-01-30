@@ -4,21 +4,28 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8EBDCDE067
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 21:20:51 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 08C6ADE0CA
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 21:20:55 +1100 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m0UAK6dj016727
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 03:20:10 -0700 (MST)
+	m0UAKaX2017105
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 03:20:39 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m0UAK493009446
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 04:20:05 -0600 (CST)
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m0UAKZai009597
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 04:20:35 -0600 (CST)
 From: Zhang Wei <wei.zhang@freescale.com>
 To: mporter@kernel.crashing.org, galak@kernel.crashing.org
-Subject: [PATCH 1/6] Change RIO function mpc85xx_ to fsl_ .
-Date: Wed, 30 Jan 2008 18:30:48 +0800
-Message-Id: <1201689053956-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 6/6] Change the kernel configurated RapidIO system size to
+	auto-probing.
+Date: Wed, 30 Jan 2008 18:30:53 +0800
+Message-Id: <12016890873190-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <12016890832943-git-send-email-wei.zhang@freescale.com>
+References: <1201689053956-git-send-email-wei.zhang@freescale.com>
+	<12016890621727-git-send-email-wei.zhang@freescale.com>
+	<120168907160-git-send-email-wei.zhang@freescale.com>
+	<12016890773706-git-send-email-wei.zhang@freescale.com>
+	<12016890832943-git-send-email-wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,306 +36,353 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The driver is also fit for Freescale MPC8641 processor.
+The RapidIO system size will auto probe in RIO setup. The route
+table and rionet_active in rionet.c are changed to be allocated
+dynamically according the system size.
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_rio.c |   80 ++++++++++++++++++++--------------------
- 1 files changed, 40 insertions(+), 40 deletions(-)
+ arch/powerpc/sysdev/fsl_rio.c |    6 +++++
+ drivers/net/rionet.c          |   16 +++++++++++-
+ drivers/rapidio/Kconfig       |    8 ------
+ drivers/rapidio/rio-scan.c    |   51 +++++++++++++++++++++++++++++------------
+ drivers/rapidio/rio-sysfs.c   |    3 +-
+ drivers/rapidio/rio.c         |    2 +-
+ drivers/rapidio/rio.h         |    9 +-----
+ include/linux/rio.h           |   14 +++++-----
+ 8 files changed, 68 insertions(+), 41 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index af2425e..36c4be4 100644
+index 36b43ec..4877203 100644
 --- a/arch/powerpc/sysdev/fsl_rio.c
 +++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1,5 +1,5 @@
- /*
-- * MPC85xx RapidIO support
-+ * Freescale MPC85xx/MPC86xx RapidIO support
-  *
-  * Copyright 2005 MontaVista Software, Inc.
-  * Matt Porter <mporter@kernel.crashing.org>
-@@ -145,7 +145,7 @@ static struct rio_msg_rx_ring {
- } msg_rx_ring;
- 
- /**
-- * mpc85xx_rio_doorbell_send - Send a MPC85xx doorbell message
-+ * fsl_rio_doorbell_send - Send a MPC85xx doorbell message
-  * @index: ID of RapidIO interface
-  * @destid: Destination ID of target device
-  * @data: 16-bit info field of RapidIO doorbell message
-@@ -153,9 +153,9 @@ static struct rio_msg_rx_ring {
-  * Sends a MPC85xx doorbell message. Returns %0 on success or
-  * %-EINVAL on failure.
-  */
--static int mpc85xx_rio_doorbell_send(int index, u16 destid, u16 data)
-+static int fsl_rio_doorbell_send(int index, u16 destid, u16 data)
- {
--	pr_debug("mpc85xx_doorbell_send: index %d destid %4.4x data %4.4x\n",
-+	pr_debug("fsl_doorbell_send: index %d destid %4.4x data %4.4x\n",
- 		 index, destid, data);
- 	out_be32((void *)&dbell_atmu_regs->rowtar, destid << 22);
- 	out_be16((void *)(dbell_win), data);
-@@ -164,7 +164,7 @@ static int mpc85xx_rio_doorbell_send(int index, u16 destid, u16 data)
- }
- 
- /**
-- * mpc85xx_local_config_read - Generate a MPC85xx local config space read
-+ * fsl_local_config_read - Generate a MPC85xx local config space read
-  * @index: ID of RapdiIO interface
-  * @offset: Offset into configuration space
-  * @len: Length (in bytes) of the maintenance transaction
-@@ -173,9 +173,9 @@ static int mpc85xx_rio_doorbell_send(int index, u16 destid, u16 data)
-  * Generates a MPC85xx local configuration space read. Returns %0 on
-  * success or %-EINVAL on failure.
-  */
--static int mpc85xx_local_config_read(int index, u32 offset, int len, u32 * data)
-+static int fsl_local_config_read(int index, u32 offset, int len, u32 * data)
- {
--	pr_debug("mpc85xx_local_config_read: index %d offset %8.8x\n", index,
-+	pr_debug("fsl_local_config_read: index %d offset %8.8x\n", index,
- 		 offset);
- 	*data = in_be32((void *)(regs_win + offset));
- 
-@@ -183,7 +183,7 @@ static int mpc85xx_local_config_read(int index, u32 offset, int len, u32 * data)
- }
- 
- /**
-- * mpc85xx_local_config_write - Generate a MPC85xx local config space write
-+ * fsl_local_config_write - Generate a MPC85xx local config space write
-  * @index: ID of RapdiIO interface
-  * @offset: Offset into configuration space
-  * @len: Length (in bytes) of the maintenance transaction
-@@ -192,10 +192,10 @@ static int mpc85xx_local_config_read(int index, u32 offset, int len, u32 * data)
-  * Generates a MPC85xx local configuration space write. Returns %0 on
-  * success or %-EINVAL on failure.
-  */
--static int mpc85xx_local_config_write(int index, u32 offset, int len, u32 data)
-+static int fsl_local_config_write(int index, u32 offset, int len, u32 data)
- {
- 	pr_debug
--	    ("mpc85xx_local_config_write: index %d offset %8.8x data %8.8x\n",
-+	    ("fsl_local_config_write: index %d offset %8.8x data %8.8x\n",
- 	     index, offset, data);
- 	out_be32((void *)(regs_win + offset), data);
- 
-@@ -203,7 +203,7 @@ static int mpc85xx_local_config_write(int index, u32 offset, int len, u32 data)
- }
- 
- /**
-- * mpc85xx_rio_config_read - Generate a MPC85xx read maintenance transaction
-+ * fsl_rio_config_read - Generate a MPC85xx read maintenance transaction
-  * @index: ID of RapdiIO interface
-  * @destid: Destination ID of transaction
-  * @hopcount: Number of hops to target device
-@@ -215,13 +215,13 @@ static int mpc85xx_local_config_write(int index, u32 offset, int len, u32 data)
-  * success or %-EINVAL on failure.
-  */
- static int
--mpc85xx_rio_config_read(int index, u16 destid, u8 hopcount, u32 offset, int len,
-+fsl_rio_config_read(int index, u16 destid, u8 hopcount, u32 offset, int len,
- 			u32 * val)
- {
- 	u8 *data;
- 
- 	pr_debug
--	    ("mpc85xx_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
-+	    ("fsl_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
- 	     index, destid, hopcount, offset, len);
- 	out_be32((void *)&maint_atmu_regs->rowtar,
- 		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
-@@ -243,7 +243,7 @@ mpc85xx_rio_config_read(int index, u16 destid, u8 hopcount, u32 offset, int len,
- }
- 
- /**
-- * mpc85xx_rio_config_write - Generate a MPC85xx write maintenance transaction
-+ * fsl_rio_config_write - Generate a MPC85xx write maintenance transaction
-  * @index: ID of RapdiIO interface
-  * @destid: Destination ID of transaction
-  * @hopcount: Number of hops to target device
-@@ -255,12 +255,12 @@ mpc85xx_rio_config_read(int index, u16 destid, u8 hopcount, u32 offset, int len,
-  * success or %-EINVAL on failure.
-  */
- static int
--mpc85xx_rio_config_write(int index, u16 destid, u8 hopcount, u32 offset,
-+fsl_rio_config_write(int index, u16 destid, u8 hopcount, u32 offset,
- 			 int len, u32 val)
- {
- 	u8 *data;
- 	pr_debug
--	    ("mpc85xx_rio_config_write: index %d destid %d hopcount %d offset %8.8x len %d val %8.8x\n",
-+	    ("fsl_rio_config_write: index %d destid %d hopcount %d offset %8.8x len %d val %8.8x\n",
- 	     index, destid, hopcount, offset, len, val);
- 	out_be32((void *)&maint_atmu_regs->rowtar,
- 		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
-@@ -344,7 +344,7 @@ rio_hw_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
- EXPORT_SYMBOL_GPL(rio_hw_add_outb_message);
- 
- /**
-- * mpc85xx_rio_tx_handler - MPC85xx outbound message interrupt handler
-+ * fsl_rio_tx_handler - MPC85xx outbound message interrupt handler
-  * @irq: Linux interrupt number
-  * @dev_instance: Pointer to interrupt-specific data
-  *
-@@ -352,7 +352,7 @@ EXPORT_SYMBOL_GPL(rio_hw_add_outb_message);
-  * mailbox event handler and acks the interrupt occurrence.
-  */
- static irqreturn_t
--mpc85xx_rio_tx_handler(int irq, void *dev_instance)
-+fsl_rio_tx_handler(int irq, void *dev_instance)
- {
- 	int osr;
- 	struct rio_mport *port = (struct rio_mport *)dev_instance;
-@@ -452,7 +452,7 @@ int rio_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entr
- 
- 	/* Hook up outbound message handler */
- 	if ((rc =
--	     request_irq(MPC85xx_IRQ_RIO_TX, mpc85xx_rio_tx_handler, 0,
-+	     request_irq(MPC85xx_IRQ_RIO_TX, fsl_rio_tx_handler, 0,
- 			 "msg_tx", (void *)mport)) < 0)
- 		goto out_irq;
- 
-@@ -511,7 +511,7 @@ void rio_close_outb_mbox(struct rio_mport *mport, int mbox)
- }
- 
- /**
-- * mpc85xx_rio_rx_handler - MPC85xx inbound message interrupt handler
-+ * fsl_rio_rx_handler - MPC85xx inbound message interrupt handler
-  * @irq: Linux interrupt number
-  * @dev_instance: Pointer to interrupt-specific data
-  *
-@@ -519,7 +519,7 @@ void rio_close_outb_mbox(struct rio_mport *mport, int mbox)
-  * mailbox event handler and acks the interrupt occurrence.
-  */
- static irqreturn_t
--mpc85xx_rio_rx_handler(int irq, void *dev_instance)
-+fsl_rio_rx_handler(int irq, void *dev_instance)
- {
- 	int isr;
- 	struct rio_mport *port = (struct rio_mport *)dev_instance;
-@@ -597,7 +597,7 @@ int rio_open_inb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entri
- 
- 	/* Hook up inbound message handler */
- 	if ((rc =
--	     request_irq(MPC85xx_IRQ_RIO_RX, mpc85xx_rio_rx_handler, 0,
-+	     request_irq(MPC85xx_IRQ_RIO_RX, fsl_rio_rx_handler, 0,
- 			 "msg_rx", (void *)mport)) < 0) {
- 		dma_free_coherent(NULL, RIO_MSG_BUFFER_SIZE,
- 				  msg_tx_ring.virt_buffer[i],
-@@ -729,7 +729,7 @@ void *rio_hw_get_inb_message(struct rio_mport *mport, int mbox)
- EXPORT_SYMBOL_GPL(rio_hw_get_inb_message);
- 
- /**
-- * mpc85xx_rio_dbell_handler - MPC85xx doorbell interrupt handler
-+ * fsl_rio_dbell_handler - MPC85xx doorbell interrupt handler
-  * @irq: Linux interrupt number
-  * @dev_instance: Pointer to interrupt-specific data
-  *
-@@ -737,7 +737,7 @@ EXPORT_SYMBOL_GPL(rio_hw_get_inb_message);
-  * doorbell event handlers and executes a matching event handler.
-  */
- static irqreturn_t
--mpc85xx_rio_dbell_handler(int irq, void *dev_instance)
-+fsl_rio_dbell_handler(int irq, void *dev_instance)
- {
- 	int dsr;
- 	struct rio_mport *port = (struct rio_mport *)dev_instance;
-@@ -794,14 +794,14 @@ mpc85xx_rio_dbell_handler(int irq, void *dev_instance)
- }
- 
- /**
-- * mpc85xx_rio_doorbell_init - MPC85xx doorbell interface init
-+ * fsl_rio_doorbell_init - MPC85xx doorbell interface init
-  * @mport: Master port implementing the inbound doorbell unit
-  *
-  * Initializes doorbell unit hardware and inbound DMA buffer
-- * ring. Called from mpc85xx_rio_setup(). Returns %0 on success
-+ * ring. Called from fsl_rio_setup(). Returns %0 on success
-  * or %-ENOMEM on failure.
-  */
--static int mpc85xx_rio_doorbell_init(struct rio_mport *mport)
-+static int fsl_rio_doorbell_init(struct rio_mport *mport)
- {
- 	int rc = 0;
- 
-@@ -835,7 +835,7 @@ static int mpc85xx_rio_doorbell_init(struct rio_mport *mport)
- 
- 	/* Hook up doorbell handler */
- 	if ((rc =
--	     request_irq(MPC85xx_IRQ_RIO_BELL, mpc85xx_rio_dbell_handler, 0,
-+	     request_irq(MPC85xx_IRQ_RIO_BELL, fsl_rio_dbell_handler, 0,
- 			 "dbell_rx", (void *)mport) < 0)) {
- 		iounmap((void *)dbell_win);
- 		dma_free_coherent(NULL, 512 * DOORBELL_MESSAGE_SIZE,
-@@ -854,7 +854,7 @@ static int mpc85xx_rio_doorbell_init(struct rio_mport *mport)
- 
- static char *cmdline = NULL;
- 
--static int mpc85xx_rio_get_hdid(int index)
-+static int fsl_rio_get_hdid(int index)
- {
- 	/* XXX Need to parse multiple entries in some format */
- 	if (!cmdline)
-@@ -863,7 +863,7 @@ static int mpc85xx_rio_get_hdid(int index)
- 	return simple_strtol(cmdline, NULL, 0);
- }
- 
--static int mpc85xx_rio_get_cmdline(char *s)
-+static int fsl_rio_get_cmdline(char *s)
- {
- 	if (!s)
- 		return 0;
-@@ -872,10 +872,10 @@ static int mpc85xx_rio_get_cmdline(char *s)
- 	return 1;
- }
- 
--__setup("riohdid=", mpc85xx_rio_get_cmdline);
-+__setup("riohdid=", fsl_rio_get_cmdline);
- 
- /**
-- * mpc85xx_rio_setup - Setup MPC85xx RapidIO interface
-+ * fsl_rio_setup - Setup MPC85xx RapidIO interface
-  * @law_start: Starting physical address of RapidIO LAW
-  * @law_size: Size of RapidIO LAW
-  *
-@@ -883,17 +883,17 @@ __setup("riohdid=", mpc85xx_rio_get_cmdline);
-  * master port with system-specific info, and registers the
-  * master port with the RapidIO subsystem.
-  */
--void mpc85xx_rio_setup(int law_start, int law_size)
-+void fsl_rio_setup(int law_start, int law_size)
- {
- 	struct rio_ops *ops;
- 	struct rio_mport *port;
- 
- 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
--	ops->lcread = mpc85xx_local_config_read;
--	ops->lcwrite = mpc85xx_local_config_write;
--	ops->cread = mpc85xx_rio_config_read;
--	ops->cwrite = mpc85xx_rio_config_write;
--	ops->dsend = mpc85xx_rio_doorbell_send;
-+	ops->lcread = fsl_local_config_read;
-+	ops->lcwrite = fsl_local_config_write;
-+	ops->cread = fsl_rio_config_read;
-+	ops->cwrite = fsl_rio_config_write;
-+	ops->dsend = fsl_rio_doorbell_send;
- 
- 	port = kmalloc(sizeof(struct rio_mport), GFP_KERNEL);
- 	port->id = 0;
-@@ -909,7 +909,7 @@ void mpc85xx_rio_setup(int law_start, int law_size)
- 	strcpy(port->name, "RIO0 mport");
- 
- 	port->ops = ops;
--	port->host_deviceid = mpc85xx_rio_get_hdid(port->id);
-+	port->host_deviceid = fsl_rio_get_hdid(port->id);
- 
+@@ -1001,6 +1001,12 @@ int fsl_rio_setup(struct of_device *dev)
  	rio_register_mport(port);
  
-@@ -928,5 +928,5 @@ void mpc85xx_rio_setup(int law_start, int law_size)
- 	/* Configure outbound doorbell window */
- 	out_be32((void *)&dbell_atmu_regs->rowbar, 0x000c0400);
- 	out_be32((void *)&dbell_atmu_regs->rowar, 0x8004200b);
--	mpc85xx_rio_doorbell_init(port);
-+	fsl_rio_doorbell_init(port);
+ 	priv->regs_win = (u32) ioremap(regs.start, regs.end - regs.start + 1);
++
++	port->sys_size = (in_be32((priv->regs_win + RIO_PEF_CAR))
++					& RIO_PEF_CTLS) >> 4;
++	dev_info(&dev->dev, "RapidIO Common Transport System size: %d\n",
++			port->sys_size ? 65536 : 256);
++
+ 	priv->atmu_regs = (struct rio_atmu_regs *)(priv->regs_win
+ 					+ RIO_ATMU_REGS_OFFSET);
+ 	priv->maint_atmu_regs = priv->atmu_regs + 1;
+diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
+index e7fd08a..f2c103b 100644
+--- a/drivers/net/rionet.c
++++ b/drivers/net/rionet.c
+@@ -77,7 +77,7 @@ static int rionet_capable = 1;
+  * could be made into a hash table to save memory depending
+  * on system trade-offs.
+  */
+-static struct rio_dev *rionet_active[RIO_MAX_ROUTE_ENTRIES];
++static struct rio_dev **rionet_active;
+ 
+ #define is_rionet_capable(pef, src_ops, dst_ops)		\
+ 			((pef & RIO_PEF_INB_MBOX) &&		\
+@@ -195,7 +195,8 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 	}
+ 
+ 	if (eth->h_dest[0] & 0x01) {
+-		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES; i++)
++		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES(rnet->mport->syssize);
++				i++)
+ 			if (rionet_active[i])
+ 				rionet_queue_tx_msg(skb, ndev,
+ 						    rionet_active[i]);
+@@ -385,6 +386,8 @@ static void rionet_remove(struct rio_dev *rdev)
+ 	struct net_device *ndev = NULL;
+ 	struct rionet_peer *peer, *tmp;
+ 
++	free_pages((unsigned long)rionet_active, rdev->net->hport->sys_size ?
++					__ilog2(sizeof(void *)) + 4 : 0);
+ 	unregister_netdev(ndev);
+ 	kfree(ndev);
+ 
+@@ -443,6 +446,15 @@ static int rionet_setup_netdev(struct rio_mport *mport)
+ 		goto out;
+ 	}
+ 
++	if (!(rionet_active = (struct rio_dev **)__get_free_pages(GFP_KERNEL,
++				mport->sys_size ? __ilog2(sizeof(void *)) + 4
++				: 0))) {
++		rc = -ENOMEM;
++		goto out;
++	}
++	memset((void *)rionet_active, 0, sizeof(void *) *
++				RIO_MAX_ROUTE_ENTRIES(mport->sys_size));
++
+ 	/* Set up private area */
+ 	rnet = (struct rionet_private *)ndev->priv;
+ 	rnet->mport = mport;
+diff --git a/drivers/rapidio/Kconfig b/drivers/rapidio/Kconfig
+index 4142115..c32822a 100644
+--- a/drivers/rapidio/Kconfig
++++ b/drivers/rapidio/Kconfig
+@@ -1,14 +1,6 @@
+ #
+ # RapidIO configuration
+ #
+-config RAPIDIO_8_BIT_TRANSPORT
+-	bool "8-bit transport addressing"
+-	depends on RAPIDIO
+-	---help---
+-	  By default, the kernel assumes a 16-bit addressed RapidIO
+-	  network. By selecting this option, the kernel will support
+-	  an 8-bit addressed network.
+-
+ config RAPIDIO_DISC_TIMEOUT
+ 	int "Discovery timeout duration (seconds)"
+ 	depends on RAPIDIO
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 4442072..ca895d1 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -73,7 +73,7 @@ static u16 rio_get_device_id(struct rio_mport *port, u16 destid, u8 hopcount)
+ 
+ 	rio_mport_read_config_32(port, destid, hopcount, RIO_DID_CSR, &result);
+ 
+-	return RIO_GET_DID(result);
++	return RIO_GET_DID(port->sys_size, result);
  }
+ 
+ /**
+@@ -88,7 +88,7 @@ static u16 rio_get_device_id(struct rio_mport *port, u16 destid, u8 hopcount)
+ static void rio_set_device_id(struct rio_mport *port, u16 destid, u8 hopcount, u16 did)
+ {
+ 	rio_mport_write_config_32(port, destid, hopcount, RIO_DID_CSR,
+-				  RIO_SET_DID(did));
++				  RIO_SET_DID(port->sys_size, did));
+ }
+ 
+ /**
+@@ -100,7 +100,8 @@ static void rio_set_device_id(struct rio_mport *port, u16 destid, u8 hopcount, u
+  */
+ static void rio_local_set_device_id(struct rio_mport *port, u16 did)
+ {
+-	rio_local_write_config_32(port, RIO_DID_CSR, RIO_SET_DID(did));
++	rio_local_write_config_32(port, RIO_DID_CSR, RIO_SET_DID(port->sys_size,
++				did));
+ }
+ 
+ /**
+@@ -350,8 +351,17 @@ static struct rio_dev *rio_setup_device(struct rio_net *net,
+ 		rswitch->switchid = next_switchid;
+ 		rswitch->hopcount = hopcount;
+ 		rswitch->destid = destid;
++		if (!(rswitch->route_table = kzalloc(sizeof(u8)*
++					RIO_MAX_ROUTE_ENTRIES(port->sys_size),
++					GFP_KERNEL))) {
++			kfree(rdev);
++			rdev = NULL;
++			kfree(rswitch);
++			goto out;
++		}
+ 		/* Initialize switch route table */
+-		for (rdid = 0; rdid < RIO_MAX_ROUTE_ENTRIES; rdid++)
++		for (rdid = 0; rdid < RIO_MAX_ROUTE_ENTRIES(port->sys_size);
++				rdid++)
+ 			rswitch->route_table[rdid] = RIO_INVALID_ROUTE;
+ 		rdev->rswitch = rswitch;
+ 		sprintf(rio_name(rdev), "%02x:s:%04x", rdev->net->id,
+@@ -480,7 +490,7 @@ static u16 rio_get_host_deviceid_lock(struct rio_mport *port, u8 hopcount)
+ {
+ 	u32 result;
+ 
+-	rio_mport_read_config_32(port, RIO_ANY_DESTID, hopcount,
++	rio_mport_read_config_32(port, RIO_ANY_DESTID(port->sys_size), hopcount,
+ 				 RIO_HOST_DID_LOCK_CSR, &result);
+ 
+ 	return (u16) (result & 0xffff);
+@@ -571,14 +581,16 @@ static int rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 	}
+ 
+ 	/* Attempt to acquire device lock */
+-	rio_mport_write_config_32(port, RIO_ANY_DESTID, hopcount,
++	rio_mport_write_config_32(port, RIO_ANY_DESTID(port->sys_size),
++				  hopcount,
+ 				  RIO_HOST_DID_LOCK_CSR, port->host_deviceid);
+ 	while ((tmp = rio_get_host_deviceid_lock(port, hopcount))
+ 	       < port->host_deviceid) {
+ 		/* Delay a bit */
+ 		mdelay(1);
+ 		/* Attempt to acquire device lock again */
+-		rio_mport_write_config_32(port, RIO_ANY_DESTID, hopcount,
++		rio_mport_write_config_32(port, RIO_ANY_DESTID(port->sys_size),
++					  hopcount,
+ 					  RIO_HOST_DID_LOCK_CSR,
+ 					  port->host_deviceid);
+ 	}
+@@ -590,7 +602,8 @@ static int rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 	}
+ 
+ 	/* Setup new RIO device */
+-	if ((rdev = rio_setup_device(net, port, RIO_ANY_DESTID, hopcount, 1))) {
++	if ((rdev = rio_setup_device(net, port, RIO_ANY_DESTID(port->sys_size),
++					hopcount, 1))) {
+ 		/* Add device to the global and bus/net specific list. */
+ 		list_add_tail(&rdev->net_list, &net->devices);
+ 	} else
+@@ -598,7 +611,8 @@ static int rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 
+ 	if (rio_is_switch(rdev)) {
+ 		next_switchid++;
+-		sw_inport = rio_get_swpinfo_inport(port, RIO_ANY_DESTID, hopcount);
++		sw_inport = rio_get_swpinfo_inport(port,
++				RIO_ANY_DESTID(port->sys_size), hopcount);
+ 		rio_route_add_entry(port, rdev->rswitch, RIO_GLOBAL_TABLE,
+ 				    port->host_deviceid, sw_inport);
+ 		rdev->rswitch->route_table[port->host_deviceid] = sw_inport;
+@@ -612,7 +626,8 @@ static int rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 		}
+ 
+ 		num_ports =
+-		    rio_get_swpinfo_tports(port, RIO_ANY_DESTID, hopcount);
++		    rio_get_swpinfo_tports(port, RIO_ANY_DESTID(port->sys_size),
++						hopcount);
+ 		pr_debug(
+ 		    "RIO: found %s (vid %4.4x did %4.4x) with %d ports\n",
+ 		    rio_name(rdev), rdev->vid, rdev->did, num_ports);
+@@ -624,13 +639,15 @@ static int rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 			cur_destid = next_destid;
+ 
+ 			if (rio_sport_is_active
+-			    (port, RIO_ANY_DESTID, hopcount, port_num)) {
++			    (port, RIO_ANY_DESTID(port->sys_size), hopcount,
++			     port_num)) {
+ 				pr_debug(
+ 				    "RIO: scanning device on port %d\n",
+ 				    port_num);
+ 				rio_route_add_entry(port, rdev->rswitch,
+ 						    RIO_GLOBAL_TABLE,
+-						    RIO_ANY_DESTID, port_num);
++						    RIO_ANY_DESTID(port->sys_size),
++						    port_num);
+ 
+ 				if (rio_enum_peer(net, port, hopcount + 1) < 0)
+ 					return -1;
+@@ -735,7 +752,8 @@ rio_disc_peer(struct rio_net *net, struct rio_mport *port, u16 destid,
+ 				pr_debug(
+ 				    "RIO: scanning device on port %d\n",
+ 				    port_num);
+-				for (ndestid = 0; ndestid < RIO_ANY_DESTID;
++				for (ndestid = 0;
++				     ndestid < RIO_ANY_DESTID(port->sys_size);
+ 				     ndestid++) {
+ 					rio_route_get_entry(port, rdev->rswitch,
+ 							    RIO_GLOBAL_TABLE,
+@@ -917,7 +935,9 @@ static void rio_build_route_tables(void)
+ 
+ 	list_for_each_entry(rdev, &rio_devices, global_list)
+ 	    if (rio_is_switch(rdev))
+-		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES; i++) {
++		for (i = 0;
++		     i < RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size);
++		     i++) {
+ 			if (rio_route_get_entry
+ 			    (rdev->net->hport, rdev->rswitch, RIO_GLOBAL_TABLE,
+ 			     i, &sport) < 0)
+@@ -981,7 +1001,8 @@ int rio_disc_mport(struct rio_mport *mport)
+ 		del_timer_sync(&rio_enum_timer);
+ 
+ 		pr_debug("done\n");
+-		if (rio_disc_peer(net, mport, RIO_ANY_DESTID, 0) < 0) {
++		if (rio_disc_peer(net, mport, RIO_ANY_DESTID(mport->sys_size),
++					0) < 0) {
+ 			printk(KERN_INFO
+ 			       "RIO: master port %d device has failed discovery\n",
+ 			       mport->id);
+diff --git a/drivers/rapidio/rio-sysfs.c b/drivers/rapidio/rio-sysfs.c
+index 659e311..97a147f 100644
+--- a/drivers/rapidio/rio-sysfs.c
++++ b/drivers/rapidio/rio-sysfs.c
+@@ -43,7 +43,8 @@ static ssize_t routes_show(struct device *dev, struct device_attribute *attr, ch
+ 	if (!rdev->rswitch)
+ 		goto out;
+ 
+-	for (i = 0; i < RIO_MAX_ROUTE_ENTRIES; i++) {
++	for (i = 0; i < RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size);
++			i++) {
+ 		if (rdev->rswitch->route_table[i] == RIO_INVALID_ROUTE)
+ 			continue;
+ 		str +=
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index 80c5f1b..680661a 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -43,7 +43,7 @@ u16 rio_local_get_device_id(struct rio_mport *port)
+ 
+ 	rio_local_read_config_32(port, RIO_DID_CSR, &result);
+ 
+-	return (RIO_GET_DID(result));
++	return (RIO_GET_DID(port->sys_size, result));
+ }
+ 
+ /**
+diff --git a/drivers/rapidio/rio.h b/drivers/rapidio/rio.h
+index b242cee..7a3b62e 100644
+--- a/drivers/rapidio/rio.h
++++ b/drivers/rapidio/rio.h
+@@ -51,10 +51,5 @@ extern struct rio_route_ops __end_rio_route_ops[];
+ 	DECLARE_RIO_ROUTE_SECTION(.rio_route_ops,			\
+ 			vid, did, add_hook, get_hook)
+ 
+-#ifdef CONFIG_RAPIDIO_8_BIT_TRANSPORT
+-#define RIO_GET_DID(x)	((x & 0x00ff0000) >> 16)
+-#define RIO_SET_DID(x)	((x & 0x000000ff) << 16)
+-#else
+-#define RIO_GET_DID(x)	(x & 0xffff)
+-#define RIO_SET_DID(x)	(x & 0xffff)
+-#endif
++#define RIO_GET_DID(size, x)	(size ? (x & 0xffff) : ((x & 0x00ff0000) >> 16))
++#define RIO_SET_DID(size, x)	(size ? (x & 0xffff) : ((x & 0x000000ff) << 16))
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index 9ed78dc..4b0156d 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -23,7 +23,6 @@
+ #include <linux/device.h>
+ #include <linux/rio_regs.h>
+ 
+-#define RIO_ANY_DESTID		0xff
+ #define RIO_NO_HOPCOUNT		-1
+ #define RIO_INVALID_DESTID	0xffff
+ 
+@@ -39,11 +38,8 @@
+ 					   entry is invalid (no route
+ 					   exists for the device ID) */
+ 
+-#ifdef CONFIG_RAPIDIO_8_BIT_TRANSPORT
+-#define RIO_MAX_ROUTE_ENTRIES	(1 << 8)
+-#else
+-#define RIO_MAX_ROUTE_ENTRIES	(1 << 16)
+-#endif
++#define RIO_MAX_ROUTE_ENTRIES(size)	(size ? (1 << 16) : (1 << 8))
++#define RIO_ANY_DESTID(size)		(size ? 0xffff : 0xff)
+ 
+ #define RIO_MAX_MBOX		4
+ #define RIO_MAX_MSG_SIZE	0x1000
+@@ -178,6 +174,10 @@ struct rio_mport {
+ 	unsigned char id;	/* port ID, unique among all ports */
+ 	unsigned char index;	/* port index, unique among all port
+ 				   interfaces of the same type */
++	unsigned int sys_size;	/* RapidIO common transport system size.
++				 * 0 - Small size. 256 devices.
++				 * 1 - Large size, 65536 devices.
++				 */
+ 	unsigned char name[40];
+ 	void *priv;		/* Master port private data */
+ };
+@@ -213,7 +213,7 @@ struct rio_switch {
+ 	u16 switchid;
+ 	u16 hopcount;
+ 	u16 destid;
+-	u8 route_table[RIO_MAX_ROUTE_ENTRIES];
++	u8 *route_table;
+ 	int (*add_entry) (struct rio_mport * mport, u16 destid, u8 hopcount,
+ 			  u16 table, u16 route_destid, u8 route_port);
+ 	int (*get_entry) (struct rio_mport * mport, u16 destid, u8 hopcount,
 -- 
 1.5.2
