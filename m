@@ -2,21 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DBB16DDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:21:27 +1100 (EST)
-Message-Id: <AF5092BE-3384-44F8-A104-560DD4331726@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id DD6BFDDE0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:24:12 +1100 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Zhang Wei <wei.zhang@freescale.com>
-In-Reply-To: <120168907160-git-send-email-wei.zhang@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Laurent Lagrange <lagrange@fr.oleane.com>
+In-Reply-To: <000501c86282$2a5ba9e0$a501a8c0@GEGE6600V>
+Subject: Re: PCI configuration with multiple PCI controllers
+References: <000501c86282$2a5ba9e0$a501a8c0@GEGE6600V>
+Message-Id: <FBBAE39A-700D-4D15-B30D-94A317527BCA@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 3/6] Move include/asm-ppc/rio.h to
-	include/asm-powerpc/rio.h
-Date: Wed, 30 Jan 2008 08:20:48 -0600
-References: <1201689053956-git-send-email-wei.zhang@freescale.com>
-	<12016890621727-git-send-email-wei.zhang@freescale.com>
-	<120168907160-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: Wed, 30 Jan 2008 08:24:05 -0600
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +24,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 30, 2008, at 4:30 AM, Zhang Wei wrote:
+On Jan 29, 2008, at 8:20 AM, Laurent Lagrange wrote:
 
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> ---
-> include/asm-powerpc/rio.h |   18 ++++++++++++++++++
-> include/asm-ppc/rio.h     |   18 ------------------
-> 2 files changed, 18 insertions(+), 18 deletions(-)
-> create mode 100644 include/asm-powerpc/rio.h
-> delete mode 100644 include/asm-ppc/rio.h
+> Hello,
+>
+> I have a MPC8641 based board. I try to use the two PCIe controllers.  
+> My
+> firmware configures (physically) the PCI buses as follow:
+>
+> ------------------+
+> MPC8641 PCIe 1	|	bus 1		+--------------+
+> 			| --------------> | PCI device 0 |
+> 	BUS 0		|			+--------------+
+> - - - - - - - - - +
+> MPC8641 PCIe 2	|	bus 3		+--------------+
+> 			| --------------> | PCI device 1 |
+> 	BUS 2		|			+--------------+
+> ------------------+
+>
+> I launch the Linux image (2.6.23.9). During the Kernel PCI  
+> configuration,
+> buses behind the 2nd MPC8641 PCIe are skipped because its primary  
+> bus don't
+> start at bus number 0. The kernel reconfigure the primary bus number  
+> of the
+> MPC8641 PCIe 2 controller from 2 to 0.
+>
+> I can patch the kernel to work with my firmware but I don't know if  
+> my PCI
+> configuration is the good one.
+>
+> What is the common way to configure the PCI for Linux when a new  
+> controller
+> is found: start the bus number to 0 or to the last bus number + 1?
 
-it seems with OF we can just git rid of this?
+Linux now has the concept of PCI domains so each controller is a new  
+domain and thus the first bus should be 0 in each domain.  (at least  
+that's the "normal" way we handle things).
 
--k
+- k
