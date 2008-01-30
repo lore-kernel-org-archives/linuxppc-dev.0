@@ -1,16 +1,19 @@
-Return-Path: <hawk2010@163.com>
-Received: from m13-29.163.com (m13-29.163.com [220.181.13.29])
-	by ozlabs.org (Postfix) with SMTP id 77727DDE21
+Return-Path: <barisa.kisku@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
+	by ozlabs.org (Postfix) with ESMTP id 62F16DDD0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 13:52:45 +1100 (EST)
-Date: Wed, 30 Jan 2008 10:37:31 +0800 (CST)
-From: =?GBK?B?vvw=?= <hawk2010@163.com>
-To: xxx <linuxppc-embedded@ozlabs.org>
-Message-ID: <13443963.439561201660651961.JavaMail.coremail@bj163app29.163.com>
-Subject: Request help cross compiler problems
+	Wed, 30 Jan 2008 14:42:51 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so98812wxd.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 29 Jan 2008 19:42:49 -0800 (PST)
+Message-ID: <80bb1bc60801291942w7f1e3bb4g70142e78eadbce28@mail.gmail.com>
+Date: Wed, 30 Jan 2008 09:12:48 +0530
+From: "Barisa Kisku" <barisa.kisku@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: which data structure keep IO information.
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_116153_22862214.1201660651960"
+	boundary="----=_Part_15320_29734066.1201664568710"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,64 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_116153_22862214.1201660651960
-Content-Type: text/plain; charset=gbk
+------=_Part_15320_29734066.1201664568710
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi, all :
- 
- 
-    I would like to migrate to linux SBC a15b (men mikro, mpc8245), I know that the most appropriate kernel 2.4.18 is, I need to know can be used in cross-compiler and version. Such as: eldk 3.0, it may be compiled 2.4.18? ? 
-  
- 
-    Thank you!
- 
- 
-                                                                   gouxiaojun
-                                                                   2008.01.30
-------=_Part_116153_22862214.1201660651960
-Content-Type: text/html; charset=gbk
-Content-Transfer-Encoding: quoted-printable
+Hi,
+I have to port one customised layer 2 protocol stack and  read, write system
+call to access devices in linux-2.4.
+At the moment  this is ported in UNIX SVR2/4 operating system.this protocol
+uses some common data structure,
+i.e "user" in unix srv2/4, which keeps information such as
+      u_error = return errorn code
+      u_base = base address for I/O
+     u_count = bytes remaining for I/O
+     u_arg = argument to current system call etc.
 
-<DIV>Hi, all :</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>
-<DIV dir=3D"ltr">&nbsp;&nbsp;&nbsp; I would like to migrate to linux SBC a1=
-5b (men mikro, mpc8245), I know that the most appropriate kernel 2.4.18 is,=
- I need to know can be used in cross-compiler and version. Such as: eldk 3.=
-0, it may be compiled 2.4.18? ? <BR>&nbsp; </DIV>
-<DIV dir=3D"ltr">&nbsp;</DIV>
-<DIV dir=3D"ltr">&nbsp;&nbsp;&nbsp; Thank you!</DIV>
-<DIV dir=3D"ltr">&nbsp;</DIV>
-<DIV dir=3D"ltr">&nbsp;</DIV>
-<DIV dir=3D"ltr">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gouxiaojun</DIV>
-<DIV dir=3D"ltr">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;2008.01.30</DIV></DIV><br><!-- foote=
-r --><br>
-<hr>
-<table width=3D"100%%" border=3D"0" cellspacing=3D"0" cellpadding=3D"0">
-  <tr>
-    <td width=3D"50" height=3D"50"><img src=3D"http://proimg.163.com/channe=
-l6/003917/yili080116_5050.jpg" alt=3D"LOGO" width=3D"50" height=3D"50"></td=
->
-    <td style=3D"padding:5px;"><a style=3D"font-size:12px;color:black; line=
--height:20px;text-decoration:none;" href=3D"http://popme.163.com/link/00391=
-7_0115_1815.html">=D3=D6=B9=FD=C4=EA=C1=CB=A3=AC=C7=A7=CD=F2=B1=F0=CD=FC=C1=
-=CB=B0=D1=C4=E3=B5=C4=B0=AE=B4=F8=BB=D8=BC=D2</a><br /><a style=3D"font-siz=
-e:12px;line-height:20px; color:black; text-decoration:none;" href=3D"http:/=
-/popme.163.com/link/003917_0115_1815.html">=CE=AA=B0=AE=D5=E4=D1=A1=A3=AC=
-=CE=A8=D3=D0=BD=F0=B5=E4</a></td>
-  </tr>
-</table>
+so i need to store these information in linux-2.4 implementation for
+implementing read/write system calls.so what is/are
+corresponding structure in linux-2.4.i went through task_struct, fs_struct,
+files_struct etc., but couldn't relate it properly.
 
-------=_Part_116153_22862214.1201660651960--
+Please help me on this .
+
+thanks and regards,
+Barisa Kisku
+
+------=_Part_15320_29734066.1201664568710
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>I have to port one customised layer 2 protocol stack and&nbsp; read, write system call to access devices in linux-2.4.<br>At the moment&nbsp; this is ported in UNIX SVR2/4 operating system.this protocol uses some common data structure, <br>
+i.e &quot;user&quot; in unix srv2/4, which keeps information such as <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u_error = return errorn code<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u_base = base address for I/O<br>&nbsp;&nbsp;&nbsp;&nbsp; u_count = bytes remaining for I/O<br>&nbsp;&nbsp;&nbsp;&nbsp; u_arg = argument to current system call etc.<br>
+<br>so i need to store these information in linux-2.4 implementation for implementing read/write system calls.so what is/are <br>corresponding structure in linux-2.4.i went through task_struct, fs_struct, files_struct etc., but couldn&#39;t relate it properly.<br>
+<br>Please help me on this .<br><br>thanks and regards,<br>Barisa Kisku<br><br><br><br><br>
+
+------=_Part_15320_29734066.1201664568710--
