@@ -1,14 +1,12 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79259DDE39
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 06:05:44 +1100 (EST)
-Date: Wed, 30 Jan 2008 20:05:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 88C6EDDED3
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 06:12:55 +1100 (EST)
+Date: Wed, 30 Jan 2008 13:13:02 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130190527.GA3681@elte.hu>
+Message-ID: <20080130191302.GA20008@lixom.net>
 References: <200801301414.m0UEEgCC006371@hera.kernel.org>
 	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
 	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
@@ -19,12 +17,12 @@ References: <200801301414.m0UEEgCC006371@hera.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080130184920.GA32212@elte.hu>
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+Cc: "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
 	Linux Kernel Development <linux-kernel@vger.kernel.org>,
 	Mike Travis <travis@sgi.com>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
+	sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
 	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,57 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Uni-processor build still fails with this patch (config is 
-> > arch/ia64/configs/tiger_defconfig with CONFIG_SMP switched from =y 
-> > to =n).
+On Wed, Jan 30, 2008 at 07:49:20PM +0100, Ingo Molnar wrote:
 > 
-> could you try the full patchset that Travis has just sent and which 
-> i've put into x86.git, you can pull it from:
+> * Luck, Tony <tony.luck@intel.com> wrote:
+> 
+> > > Could you check the patch below? With this applied to latest -git, 
+> > > ia64 buils fine for me in a cross-compiling environment. (but i dont 
+> > > know whether it boots ...)
+> > 
+> > Uni-processor build still fails with this patch (config is 
+> > arch/ia64/configs/tiger_defconfig with CONFIG_SMP switched from =y to 
+> > =n).
+> 
+> could you try the full patchset that Travis has just sent and which i've 
+> put into x86.git, you can pull it from:
 
-btw., i needed the fix below to get DISCONTIGMEM + !NUMA to build. (this 
-is an ia64 build breakage independent of the x86.git merge)
+Looks ok for powerpc so far, I haven't gotten through all defconfigs yet
+but the first ones that failed before build now. pasemi_defconfig boots
+as well.
 
-	Ingo
 
--------------->
-Subject: ia64: build fix
-From: Ingo Molnar <mingo@elte.hu>
-
-DISCONTIGMEM does not build with NUMA disabled:
-
-include/linux/gfp.h: In function `alloc_pages_node':
-include/linux/gfp.h:189: error: implicit declaration of function `NODE_DATA'
-include/linux/gfp.h:189: error: invalid type argument of `->'
-In file included from include/asm/uaccess.h:39,
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/ia64/Kconfig |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux-x86.q/arch/ia64/Kconfig
-===================================================================
---- linux-x86.q.orig/arch/ia64/Kconfig
-+++ linux-x86.q/arch/ia64/Kconfig
-@@ -351,7 +351,8 @@ config ARCH_SELECT_MEMORY_MODEL
- 	def_bool y
- 
- config ARCH_DISCONTIGMEM_ENABLE
--	def_bool y
-+	def_bool n
-+	depends on NUMA
- 	help
- 	  Say Y to support efficient handling of discontiguous physical memory,
- 	  for architectures which are either NUMA (Non-Uniform Memory Access)
-@@ -372,7 +373,7 @@ config ARCH_DISCONTIGMEM_DEFAULT
- 
- config NUMA
- 	bool "NUMA support"
--	depends on !IA64_HP_SIM && !FLATMEM
-+	depends on !IA64_HP_SIM
- 	default y if IA64_SGI_SN2
- 	select ACPI_NUMA if ACPI
- 	help
+-Olof
