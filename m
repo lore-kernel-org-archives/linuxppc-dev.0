@@ -1,18 +1,34 @@
-Return-Path: <SRS0=8N4g=SU=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id D40FEDE272
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 08:01:27 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: ndfc ecc byte order
-Date: Wed, 30 Jan 2008 22:01:04 +0100
-References: <47A0D57C.1000104@pikatech.com>
-In-Reply-To: <47A0D57C.1000104@pikatech.com>
+Return-Path: <tony.luck@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id BF929DE19E
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 08:17:06 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801302201.04552.sr@denx.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+	charset="iso-8859-1"
+Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Date: Wed, 30 Jan 2008 13:15:21 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC758076@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080130205915.GA4562@elte.hu>
+References: <20080130161036.GA12293@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+	<20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+	<47A0CD4B.5040706@sgi.com>
+	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
+	<20080130194616.GA19426@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
+	<20080130200221.GA28073@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
+	<20080130205915.GA4562@elte.hu>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 30 January 2008, Sean MacLennan wrote:
-> There seems to be a byte order conflict between the u-boot and Linux
-> ndfc drivers.
->
-> u-boot has the following:
->
->     /* The NDFC uses Smart Media (SMC) bytes order*/
->     ecc_code[0] = p[2];
->     ecc_code[1] = p[1];
->     ecc_code[2] = p[3];
->
-> the kernel has:
->
->     ecc_code[0] = p[1];
->     ecc_code[1] = p[2];
->     ecc_code[2] = p[3];
->
-> I think u-boot has it right since u-boot and kernel software calculated
-> ECCs agree. Anybody know a reason *not* to switch to the SMC byte order?
+> this i believe builds an implicit dependency between the mca_asm.o=20
+> position within the image and the ia64_mca_data percpu variable it=20
+> accesses - it relies on the immediate 22 addressing mode that has 4MB =
+of=20
+> scope. Per chance, the .config you sent creates a 14MB image, and the=20
+> percpu variables moved too far away for the linker to be able to =
+fulfill=20
+> this constraint.
 
-Please take a look at Kconfig
+Sounds very plausible.
 
-config MTD_NAND_NDFC
-	tristate "NDFC NanD Flash Controller"
-	depends on 4xx && !PPC_MERGE
-	select MTD_NAND_ECC_SMC
+> The workaround is to define PER_CPU_ATTRIBUTES to link percpu =
+variables=20
+> back into the .percpu section on UP too - which ia64 links specially=20
+> into its vmlinux.lds. But ultimately i think the better solution would =
 
-So the SMC byte ordering is selected and it should match the version used in 
-U-Boot. In Linux the swapping is done in nand_ecc.c.
+> be to remove this dependency between arch/ia64/kernel/mca_asm.S and =
+the=20
+> position of the percpu data.
 
-So it should work correctly in the current configuration. At least I didn't 
-notice any problems on all the 4xx platforms I used till now.
+Yup.  That fixes the build ... the resulting binary doesn't boot though =
+:-(
+I just realized that it has been a while since I tried booting a UP
+kernel ... so the problem may be unrelated bitrot elsewhere.
 
-Best regards,
-Stefan
+Overall you are right that the mca_asm.S code should not be dependent on
+the relative location of the data objects.
+
+I'll start digging on why this doesn't boot ... but you might as well
+send the fixes so far upstream to Linus so that the SMP fix is available
+(which is all anyone really cares about ... there are very, very few
+UP ia64 systems in existence).
+
+Acked-by: Tony Luck <tony.luck@intel.com>
+
+
+-Tony
