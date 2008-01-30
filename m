@@ -1,19 +1,18 @@
-Return-Path: <y-goto@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id 35018DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 12:13:54 +1100 (EST)
-Date: Wed, 30 Jan 2008 10:13:05 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [-mm PATCH] updates for hotplug memory remove
-In-Reply-To: <1201653101.19684.6.camel@dyn9047017100.beaverton.ibm.com>
-References: <20080129120318.5BDF.Y-GOTO@jp.fujitsu.com>
-	<1201653101.19684.6.camel@dyn9047017100.beaverton.ibm.com>
-Message-Id: <20080130095002.4CCC.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: ppc64 vecemu compile failure
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20080130005607.GA32622@lixom.net>
+References: <20080130000337.GC25253@stro.at> <20080130005607.GA32622@lixom.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-0/pELYRWRAXITr0OeFbv"
+Date: Wed, 30 Jan 2008 12:39:25 +1100
+Message-Id: <1201657165.15799.0.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	maximilian attems <max@stro.at>, Paul Mackerras <paulus@au.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +23,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > Have you ever tested hotadd(probe) of the removed memory?
-> 
-> Yes. I did. In my touch testing, I was able to remove memory and add
-> it back to the system without any issues.
-
-Oh, really!?
-
-> But again, I didn't force
-> the system to use that memory :(
-
-Ah..OK.
-
-> 
-> > I'm afraid there are some differences of the status between pre hot-add
-> > section and the removed section by this patch. I think the mem_section of
-> > removed memory should be invalidated at least.
-> 
-> I think its a generic issue. Nothing specific for ppc64. Isn't it ? 
-
-Right.
-Currently, our machine doesn't have real physical remove feature yet.
-(only add).
-So, I think testing is not enough around physical removing.
-Probably, your box will be first one which can remove physical memory
-with Linux. It is good for testing. 
-If you notice anything, please let me know. :-)
+--=-0/pELYRWRAXITr0OeFbv
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
-Bye.
+On Tue, 2008-01-29 at 18:56 -0600, Olof Johansson wrote:
+> Hi,
+>=20
+> On Wed, Jan 30, 2008 at 01:03:37AM +0100, maximilian attems wrote:
+> > on latest git since driver subsys merge on powerpc64:
+> >=20
+> > arch/powerpc/kernel/built-in.o: In function `fphalf':
+> > vecemu.c:(.toc+0x1360): undefined reference to `devices_subsys'
+> > make[3]: *** [.tmp_vmlinux1] Error 1
 
--- 
-Yasunori Goto 
+> It's a known problem, fixed by:
+>=20
+> http://patchwork.ozlabs.org/linuxppc/patch?id=3D16491
+
+But begs the question, why is the linker lying to use about vecemu.c
+using devices_subsys?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-0/pELYRWRAXITr0OeFbv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHn9VNdSjSd0sB4dIRAkiTAKC+D0g6I+VjxDEAHfXX3FFgxu4CCgCfdnED
+jkFYWnRxNxUz+7hLWSHDBAc=
+=jK8s
+-----END PGP SIGNATURE-----
+
+--=-0/pELYRWRAXITr0OeFbv--
