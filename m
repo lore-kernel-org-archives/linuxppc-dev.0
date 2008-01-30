@@ -1,22 +1,19 @@
-Return-Path: <SRS0=8N4g=SU=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 9D546DDE25
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp03.msg.oleane.net (smtp03.msg.oleane.net [62.161.4.3])
+	by ozlabs.org (Postfix) with ESMTP id 06EA7DDE28
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 17:22:20 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] 4xx: Clone haleakala_defconfig from kilauea_defconfig
-Date: Wed, 30 Jan 2008 07:22:02 +0100
-References: <20080129160924.6186b6a1@zod.rchland.ibm.com>
-	<fa686aa40801291612m9408b24idda1feac911f593b@mail.gmail.com>
-	<20080129184016.423aed6a@zod.rchland.ibm.com>
-In-Reply-To: <20080129184016.423aed6a@zod.rchland.ibm.com>
+	Wed, 30 Jan 2008 19:54:48 +1100 (EST)
+Received: from GEGE6600V ([194.3.133.184]) (authenticated)
+	by smtp03.msg.oleane.net (MTA) with ESMTP id m0U8WqQk026615
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 09:32:53 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: PCI configuration with multiple PCI controllers
+Date: Wed, 30 Jan 2008 09:37:14 +0100
+Message-ID: <001f01c8631b$54872930$a501a8c0@GEGE6600V>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801300722.02966.sr@denx.de>
-Cc: Stefan@ozlabs.org, Grant Erickson <gerickson@nuovations.com>,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,27 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 30 January 2008, Josh Boyer wrote:
-> On Tue, 29 Jan 2008 17:12:09 -0700
->
-> "Grant Likely" <grant.likely@secretlab.ca> wrote:
-> > On 1/29/08, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > > On Tue, 29 Jan 2008 16:22:52 -0700
-> > >
-> > > "Grant Likely" <grant.likely@secretlab.ca> wrote:
-> > > > Rather than adding more defconfigs, can we have a single defconfig
-> > > > for 440 and another one for 405?  The configs directory is getting a
-> > > > bit silly.
-> > >
-> > > You mean mulitplatform kernels?  Or what do you mean?
-> >
-> > Yes, multiplatform kernels.
->
-> Per IRC, I need patches or time ;)
 
-As long as multiplatform is not available for 4xx I'm ok with this patch: 
+Hello,
 
-Acked-by: Stefan Roese <sr@denx.de>
+I have a MPC8641 based board. I try to use the two PCIe controllers. My
+firmware configures (physically) the PCI buses as follow:
 
-Best regards,
-Stefan
+------------------+
+MPC8641 PCIe 1	|	bus 1		+--------------+
+			| --------------> | PCI device 0 |
+	BUS 0		|			+--------------+
+- - - - - - - - - +
+MPC8641 PCIe 2	|	bus 3		+--------------+
+			| --------------> | PCI device 1 |
+	BUS 2		|			+--------------+
+------------------+
+
+I launch the Linux image (2.6.23.9). During the Kernel PCI configuration,
+buses behind the 2nd MPC8641 PCIe are skipped because its primary bus don't
+start at bus number 0. The kernel reconfigure the primary bus number of the
+MPC8641 PCIe 2 controller from 2 to 0.
+
+I can patch the kernel to work with my firmware but I don't know if my PCI
+configuration is the good one.
+
+What is the common way to configure the PCI for Linux when a new controller
+is found: start the bus number to 0 or to the last bus number + 1?
+
+Regards
+Laurent
