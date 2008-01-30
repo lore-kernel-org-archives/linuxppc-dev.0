@@ -1,20 +1,21 @@
 Return-Path: <travis@sgi.com>
-Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
-	by ozlabs.org (Postfix) with ESMTP id D6E11DDF11
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:09:44 +1100 (EST)
-Message-Id: <20080130180940.227087000@sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
+	by ozlabs.org (Postfix) with ESMTP id 33B99DDF0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:09:43 +1100 (EST)
+Message-Id: <20080130180940.369732000@sgi.com>
 References: <20080130180940.022172000@sgi.com>
-Date: Wed, 30 Jan 2008 10:09:41 -0800
+Date: Wed, 30 Jan 2008 10:09:42 -0800
 From: travis@sgi.com
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
 	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 1/6] modules: Fold percpu_modcopy into module.c linux-2.6.git
+Subject: [PATCH 2/6] percpu: Change Kconfig to HAVE_SETUP_PER_CPU_AREA
+	linux-2.6.git
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
 	Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-	Christoph Lameter <clameter@sgi.com>
+	linux-mm@kvack.org, Sam Ravnborg <sam@ravnborg.org>,
+	David Miller <davem@davemloft.net>, Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-percpu_modcopy() is defined multiple times in arch files. However, the only
-user is module.c. Put a static definition into module.c and remove
-the definitions from the arch files.
+Change:
+	config ARCH_SETS_UP_PER_CPU_AREA
+to:
+	config HAVE_SETUP_PER_CPU_AREA
 
 Based on latest linux-2.6.git
 
 Cc: Andi Kleen <ak@suse.de>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: David Miller <davem@davemloft.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: linuxppc-dev@ozlabs.org
@@ -42,86 +45,61 @@ Signed-off-by: Mike Travis <travis@sgi.com>
 ---
 linux-2.6.git:
   - added back in missing pieces from x86.git merge
----
- arch/ia64/kernel/module.c    |   11 -----------
- include/asm-ia64/percpu.h    |    5 -----
- include/asm-powerpc/percpu.h |    9 ---------
- include/asm-s390/percpu.h    |    9 ---------
- 4 files changed, 34 deletions(-)
 
---- a/arch/ia64/kernel/module.c
-+++ b/arch/ia64/kernel/module.c
-@@ -940,14 +940,3 @@ module_arch_cleanup (struct module *mod)
- 	if (mod->arch.core_unw_table)
- 		unw_remove_unwind_table(mod->arch.core_unw_table);
- }
--
--#ifdef CONFIG_SMP
--void
--percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
--{
--	unsigned int i;
--	for_each_possible_cpu(i) {
--		memcpy(pcpudst + per_cpu_offset(i), src, size);
--	}
--}
--#endif /* CONFIG_SMP */
---- a/include/asm-ia64/percpu.h
-+++ b/include/asm-ia64/percpu.h
-@@ -22,10 +22,6 @@
- #define DECLARE_PER_CPU(type, name)				\
- 	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+The change to using "select xxx" as suggested by Sam
+requires an addition to a non-existant file (arch/Kconfig)
+so I went back to using "config xxx" to introduce the flag.
+
+---
+ arch/ia64/Kconfig    |    2 +-
+ arch/powerpc/Kconfig |    2 +-
+ arch/sparc64/Kconfig |    2 +-
+ init/main.c          |    2 ++
+ 4 files changed, 5 insertions(+), 3 deletions(-)
+
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -80,7 +80,7 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
  
--/*
-- * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
-- * external routine, to avoid include-hell.
-- */
- #ifdef CONFIG_SMP
+-config ARCH_SETS_UP_PER_CPU_AREA
++config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
  
- extern unsigned long __per_cpu_offset[NR_CPUS];
-@@ -38,7 +34,6 @@ DECLARE_PER_CPU(unsigned long, local_per
- #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
- #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ config DMI
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -42,7 +42,7 @@ config GENERIC_HARDIRQS
+ 	bool
+ 	default y
  
--extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
- extern void setup_per_cpu_areas (void);
- extern void *per_cpu_init(void);
+-config ARCH_SETS_UP_PER_CPU_AREA
++config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
  
---- a/include/asm-powerpc/percpu.h
-+++ b/include/asm-powerpc/percpu.h
-@@ -21,15 +21,6 @@
- #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
- #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
+ config IRQ_PER_CPU
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -66,7 +66,7 @@ config AUDIT_ARCH
+ 	bool
+ 	default y
  
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset(__i),		\
--		       (src), (size));				\
--} while (0)
--
- extern void setup_per_cpu_areas(void);
+-config ARCH_SETS_UP_PER_CPU_AREA
++config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
  
- #else /* ! SMP */
---- a/include/asm-s390/percpu.h
-+++ b/include/asm-s390/percpu.h
-@@ -39,15 +39,6 @@ extern unsigned long __per_cpu_offset[NR
- #define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
- #define per_cpu_offset(x) (__per_cpu_offset[x])
+ config ARCH_NO_VIRT_TO_BUS
+--- a/init/main.c
++++ b/init/main.c
+@@ -380,6 +380,8 @@ static void __init setup_per_cpu_areas(v
  
--/* A macro to avoid #include hell... */
--#define percpu_modcopy(pcpudst, src, size)			\
--do {								\
--	unsigned int __i;					\
--	for_each_possible_cpu(__i)				\
--		memcpy((pcpudst)+__per_cpu_offset[__i],		\
--		       (src), (size));				\
--} while (0)
--
- #else /* ! SMP */
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
++	printk(KERN_INFO
++	    "PERCPU: Allocating %lu bytes of per cpu data (main)\n", size);
+ 	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
  
- #define __get_cpu_var(var) __reloc_hide(var,0)
+ 	for_each_possible_cpu(i) {
 
 -- 
