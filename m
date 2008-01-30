@@ -1,19 +1,19 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp03.msg.oleane.net (smtp03.msg.oleane.net [62.161.4.3])
-	by ozlabs.org (Postfix) with ESMTP id 06EA7DDE28
+Return-Path: <Jogi95@web.de>
+Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
+	by ozlabs.org (Postfix) with ESMTP id 2D050DDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Jan 2008 19:54:48 +1100 (EST)
-Received: from GEGE6600V ([194.3.133.184]) (authenticated)
-	by smtp03.msg.oleane.net (MTA) with ESMTP id m0U8WqQk026615
-	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 09:32:53 +0100
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: PCI configuration with multiple PCI controllers
-Date: Wed, 30 Jan 2008 09:37:14 +0100
-Message-ID: <001f01c8631b$54872930$a501a8c0@GEGE6600V>
+	Wed, 30 Jan 2008 21:03:57 +1100 (EST)
+Received: from web.de
+	by fmmailgate04.web.de (Postfix) with SMTP id 0121E44C9C03
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 Jan 2008 11:03:55 +0100 (CET)
+Date: Wed, 30 Jan 2008 11:03:54 +0100
+Message-Id: <568740669@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: Joachim Meyer <Jogi95@web.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: linux @ xup
+Content-Type: text/plain; charset=iso-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi
 
-Hello,
+I already succeded in setting up a Linux for the ml310. I'm trying to do it for the XUP Board now. The Problem I have is, that
+in every HowTo I read I should set at the EDK's software settings under Library/OS Parameters:
+Set PLB_CLOCK_FREQ_HZ to the PLB speed (usually 100000000)
 
-I have a MPC8641 based board. I try to use the two PCIe controllers. My
-firmware configures (physically) the PCI buses as follow:
+But I can't find where to set it. With the ml310 there was this option. I'm using the EDK Board Definition File (.xbd), Pcores & Drivers from Xilinx:
+http://www.xilinx.com/univ/xupv2p.html
+EDK Version 9.1 SP2
 
-------------------+
-MPC8641 PCIe 1	|	bus 1		+--------------+
-			| --------------> | PCI device 0 |
-	BUS 0		|			+--------------+
-- - - - - - - - - +
-MPC8641 PCIe 2	|	bus 3		+--------------+
-			| --------------> | PCI device 1 |
-	BUS 2		|			+--------------+
-------------------+
+If I ignore it and build the BSP there comes out an xparameters_ml300.h file which I copy to my Kernel sources.
+When I try to compile, I get errors that the PLB_CLOCK_FREQ_HZ isn't defined.
+Can I just add it to the xparameters_ml300.h file file (which I rename "xparameters_xupv2p.h") by Hand?
 
-I launch the Linux image (2.6.23.9). During the Kernel PCI configuration,
-buses behind the 2nd MPC8641 PCIe are skipped because its primary bus don't
-start at bus number 0. The kernel reconfigure the primary bus number of the
-MPC8641 PCIe 2 controller from 2 to 0.
-
-I can patch the kernel to work with my firmware but I don't know if my PCI
-configuration is the good one.
-
-What is the common way to configure the PCI for Linux when a new controller
-is found: start the bus number to 0 or to the last bus number + 1?
-
-Regards
-Laurent
+Greez and thx
+Joachim
+_________________________________________________________________________
+In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
