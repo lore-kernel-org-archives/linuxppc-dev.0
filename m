@@ -1,26 +1,18 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-	by ozlabs.org (Postfix) with ESMTP id 8BF14DDEF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:26:11 +1100 (EST)
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 7057FDDEF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 04:27:51 +1100 (EST)
+Date: Wed, 30 Jan 2008 11:27:57 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH v2] powerpc: configure USB clock for MPC8315E
+Message-ID: <20080130172757.GA18385@lixom.net>
+References: <20080130110857.c66f98fb.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Date: Wed, 30 Jan 2008 09:13:25 -0800
-Message-ID: <1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080130161036.GA12293@elte.hu>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org>
-	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
-	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-	"Mike Travis" <travis@sgi.com>
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080130110857.c66f98fb.kim.phillips@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Jerry Huang <Chang-Ming.Huang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > > This broke powerpc (and presumably ia64 and sparc64) in current=20
-> > > linux-2.6.git:
-> >=20
-> > I'm generating a "fixup patch" right now...
->
-> thanks! Sorry about that: we cross-built on ARM but not on SMP non-x86 =
+Hi,
 
-> platforms so this dependency/breakage went unnoticed.
+On Wed, Jan 30, 2008 at 11:08:57AM -0600, Kim Phillips wrote:
+> diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+> index 681230a..14c83f1 100644
+> --- a/arch/powerpc/platforms/83xx/usb.c
+> +++ b/arch/powerpc/platforms/83xx/usb.c
+> @@ -124,10 +124,14 @@ int mpc831x_usb_cfg(void)
+>  	}
+>  
+>  	/* Configure clock */
+> -	temp = in_be32(immap + MPC83XX_SCCR_OFFS);
+> -	temp &= ~MPC83XX_SCCR_USB_MASK;
+> -	temp |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
+> -	out_be32(immap + MPC83XX_SCCR_OFFS, temp);
+> +	if (of_find_compatible_node(NULL, NULL, "fsl,mpc8315-usb2-dr"))
+> +		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
+> +		                MPC8315_SCCR_USB_MASK,
+> +		                MPC8315_SCCR_USB_DRCM_11);
 
-Yes ... all ia64 builds (UP and SMP) are broken at the moment. Please
-Cc: me with the fixup patch.
+You need an of_node_put here.
 
-Thanks
+Also, it's weird to check for the global presence of a compatible
+device. You already have the device node pointer in the function, why
+don't you just check to see if that device is compatible instead?
 
--Tony
+
+-Olof
