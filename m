@@ -1,34 +1,18 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0DBD9DE253
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 07:59:34 +1100 (EST)
-Date: Wed, 30 Jan 2008 21:59:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130205915.GA4562@elte.hu>
-References: <20080130161036.GA12293@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-	<20080130180623.GA24881@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-	<47A0CD4B.5040706@sgi.com>
-	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-	<20080130194616.GA19426@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
-	<20080130200221.GA28073@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
+Return-Path: <SRS0=8N4g=SU=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id D40FEDE272
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 08:01:27 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: ndfc ecc byte order
+Date: Wed, 30 Jan 2008 22:01:04 +0100
+References: <47A0D57C.1000104@pikatech.com>
+In-Reply-To: <47A0D57C.1000104@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Mike Travis <travis@sgi.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200801302201.04552.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,92 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 30 January 2008, Sean MacLennan wrote:
+> There seems to be a byte order conflict between the u-boot and Linux
+> ndfc drivers.
+>
+> u-boot has the following:
+>
+>     /* The NDFC uses Smart Media (SMC) bytes order*/
+>     ecc_code[0] = p[2];
+>     ecc_code[1] = p[1];
+>     ecc_code[2] = p[3];
+>
+> the kernel has:
+>
+>     ecc_code[0] = p[1];
+>     ecc_code[1] = p[2];
+>     ecc_code[2] = p[3];
+>
+> I think u-boot has it right since u-boot and kernel software calculated
+> ECCs agree. Anybody know a reason *not* to switch to the SMC byte order?
 
-* Luck, Tony <tony.luck@intel.com> wrote:
+Please take a look at Kconfig
 
-> > could you send the .config you are using?
-> 
-> Ok.  Attached.
+config MTD_NAND_NDFC
+	tristate "NDFC NanD Flash Controller"
+	depends on 4xx && !PPC_MERGE
+	select MTD_NAND_ECC_SMC
 
-thanks a ton - this produced a link error here too.
+So the SMC byte ordering is selected and it should match the version used in 
+U-Boot. In Linux the swapping is done in nand_ecc.c.
 
-after half an hour of head scratching, the updated patch below solves 
-the build problem.
+So it should work correctly in the current configuration. At least I didn't 
+notice any problems on all the 4xx platforms I used till now.
 
-The problem i believe is this code in arch/ia64/kernel/mca_asm.S:
-
-#define GET_IA64_MCA_DATA(reg)                                          \
-        GET_THIS_PADDR(reg, ia64_mca_data)                              \
-        ;;                                                              \
-        ld8 reg=[reg]
-
-this i believe builds an implicit dependency between the mca_asm.o 
-position within the image and the ia64_mca_data percpu variable it 
-accesses - it relies on the immediate 22 addressing mode that has 4MB of 
-scope. Per chance, the .config you sent creates a 14MB image, and the 
-percpu variables moved too far away for the linker to be able to fulfill 
-this constraint.
-
-The workaround is to define PER_CPU_ATTRIBUTES to link percpu variables 
-back into the .percpu section on UP too - which ia64 links specially 
-into its vmlinux.lds. But ultimately i think the better solution would 
-be to remove this dependency between arch/ia64/kernel/mca_asm.S and the 
-position of the percpu data.
-
-Is my analysis correct? Do you like my fix and does the patch build and 
-boot on your system? Thanks,
-
-	Ingo
-
---------------->
-Subject: ia64: on UP percpu variables are not small memory model
-From: Ingo Molnar <mingo@elte.hu>
-
-Tony says:
-
-| The CONFIG_SMP=n path in ia64 makes quite radical changes ... rather
-| than putting all the per-cpu stuff into the top 64K of address space
-| and providing a per-cpu TLB mapping for that range to a different
-| physical address ... it just makes all the per-cpu stuff link as ordinary
-| variables in .data.
-
-the new generic percpu code got confused about this as PER_CPU_ATTRIBUTES
-was defined even on UP, so it picked up that small memory model - which
-was not possible to get linked. The right fix is to only define that
-on SMP. This resolved the build failures in my cross-compiling environment.
-
-also link these variables into the .percpu section - some assembly code 
-has offset dependencies.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/asm-ia64/percpu.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-x86.q/include/asm-ia64/percpu.h
-===================================================================
---- linux-x86.q.orig/include/asm-ia64/percpu.h
-+++ linux-x86.q/include/asm-ia64/percpu.h
-@@ -15,18 +15,20 @@
- 
- #include <linux/threads.h>
- 
-+#ifdef CONFIG_SMP
-+
- #ifdef HAVE_MODEL_SMALL_ATTRIBUTE
- # define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
- #endif
- 
--#ifdef CONFIG_SMP
--
- #define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
- 
- extern void *per_cpu_init(void);
- 
- #else /* ! SMP */
- 
-+#define PER_CPU_ATTRIBUTES	__attribute__((__section__(".data.percpu")))
-+
- #define per_cpu_init()				(__phys_per_cpu_start)
- 
- #endif	/* SMP */
+Best regards,
+Stefan
