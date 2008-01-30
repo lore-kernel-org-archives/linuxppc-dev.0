@@ -1,24 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F2B5DDE189
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:36:30 +1100 (EST)
-Message-Id: <91B98C74-9D40-4390-8953-12395C4D1743@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <47A0B6A6.5080903@garzik.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
-Date: Wed, 30 Jan 2008 12:36:11 -0600
-References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
-	<20080121204953.GA11384@localhost.localdomain>
-	<47A0AF56.3060804@garzik.org>
-	<02FAED2A-1154-4D8B-A245-4693BF283515@kernel.crashing.org>
-	<47A0B6A6.5080903@garzik.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Eugene Konev <ejka@imfi.kspu.ru>, netdev@vger.kernel.org
+Return-Path: <travis@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 96860DDF9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:41:29 +1100 (EST)
+Message-ID: <47A0C4D6.4000100@sgi.com>
+Date: Wed, 30 Jan 2008 10:41:26 -0800
+From: Mike Travis <travis@sgi.com>
+MIME-Version: 1.0
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+References: <200801301414.m0UEEgCC006371@hera.kernel.org>
+	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
+	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+	<20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,12 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Is this going through netdev or do you want me to pick it via the  
->>> powerpc route?
->
-> Based on your comments I sorta assumed it was most convenient to  
-> lump in with the rest of the powerpc changes...
+Luck, Tony wrote:
+>> Could you check the patch below? With this applied to latest -git, ia64 
+>> buils fine for me in a cross-compiling environment. (but i dont know 
+>> whether it boots ...)
+> 
+> Uni-processor build still fails with this patch (config is arch/ia64/configs/tiger_defconfig
+> with CONFIG_SMP switched from =y to =n).
 
-That's fine.  I'll push it via the powerpc trees.
+I'll add an ia64-nosmp config to our cross build test environment and fix this up...
 
-- k
+Thanks,
+Mike
+
+> 
+> arch/ia64/kernel/built-in.o(.text+0x5012): In function `show_interrupts':
+> : relocation truncated to fit: IMM22 per_cpu__kstat
+> arch/ia64/kernel/built-in.o(.text+0x53e1): In function `__bind_irq_vector':
+> : relocation truncated to fit: IMM22 per_cpu__vector_irq
+> arch/ia64/kernel/built-in.o(.text+0x5612): In function `__clear_irq_vector':
+> : relocation truncated to fit: IMM22 per_cpu__vector_irq
+> arch/ia64/kernel/built-in.o(.text+0x5a81): In function `__setup_vector_irq':
+> : relocation truncated to fit: IMM22 per_cpu__vector_irq
+> arch/ia64/kernel/built-in.o(.text+0x6231): In function `ia64_handle_irq':
+> : relocation truncated to fit: IMM22 per_cpu____irq_regs
+> arch/ia64/kernel/built-in.o(.text+0x6272): In function `ia64_handle_irq':
+> : relocation truncated to fit: IMM22 per_cpu__vector_irq
+> arch/ia64/kernel/built-in.o(.text+0x7b81): In function `cpu_idle_wait':
+> : relocation truncated to fit: IMM22 .text
+> arch/ia64/kernel/built-in.o(.text+0x7e21): In function `cpu_idle':
+> : relocation truncated to fit: IMM22 .text
+> arch/ia64/kernel/built-in.o(.text+0x7fd1): In function `ia64_save_extra':
+> : relocation truncated to fit: IMM22 per_cpu__pfm_syst_info
+> arch/ia64/kernel/built-in.o(.text+0x8071): In function `ia64_load_extra':
+> : relocation truncated to fit: IMM22 per_cpu__pfm_syst_info
+> arch/ia64/kernel/built-in.o(.text+0x95c0): In function `pfm_write_ibr_dbr':
+> : additional relocation overflows omitted from the output
+> ld: final link failed: Nonrepresentable section on output
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> SMP build (config zx1_defconfig) builds ok and boots ok too.
+> 
+> -Tony
