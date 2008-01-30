@@ -1,25 +1,18 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id BC9B9DDE20
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 00:45:07 +1100 (EST)
-Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
-	by nausicaa2.coritel.it (Postfix) with ESMTP id 6BF8B434004
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 14:24:53 +0100 (CET)
-Received: from nausicaa2.coritel.it ([127.0.0.1])
-	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id b2hOLdXKsqJP for <linuxppc-dev@ozlabs.org>;
-	Wed, 30 Jan 2008 14:24:52 +0100 (CET)
-Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
-	by nausicaa2.coritel.it (Postfix) with ESMTP id A2E1F434001
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 14:24:52 +0100 (CET)
-Message-ID: <47A07C20.4040704@coritel.it>
-Date: Wed, 30 Jan 2008 14:31:12 +0100
-From: Marco Stornelli <marco.stornelli@coritel.it>
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B9DF2DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:18:49 +1100 (EST)
+Message-ID: <47A08740.3020708@tiscali.nl>
+Date: Wed, 30 Jan 2008 15:18:40 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-To: LinuxPPC-Dev Mailing List <linuxppc-dev@ozlabs.org>
-Subject: External Interrupt
-Content-Type: text/plain; charset=ISO-8859-15
+To: tnt@246tNt.com, grant.likely@secretlab.ca
+Subject: [PATCH][drivers/net/fec_mpc52xx.c] duplicate NETIF_MSG_IFDOWN in
+	MPC52xx_MESSAGES_DEFAULT
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Untested patch below, please confirm it's the right fix.
+--
+duplicate NETIF_MSG_IFDOWN, 2nd should be NETIF_MSG_IFUP
 
-
-I used the linux kernel 2.6.10 with a processor MPC8548E. I wrote a
-driver for a device connected with the local bus. This device has an
-external interrupt. In the local bus driver I have used the macro
-MPC85xx_IRQ_EXT<X> to get the interrupt number and pass it to the driver
-and after that register the ISR. Now with a kernel 2.6.21 this macro
-isn't available because in the header file irq.h there is the option
-CONFIG_PPC_MERGE that disable those options. I think this problem is
-related to the migration of ppc code towards powerpc. I know that now
-there is the new device tree source file but I think in this file I
-should describe only the platform device, and this device is not a
-platform device. Then, how can I get now this value? Is there some
-function to call?
-
-Thanks in advance.
-
-Marco
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index f91ee70..ca3c3b3 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -55,7 +55,7 @@ module_param_array_named(mac, mpc52xx_fec_mac_addr, byte, NULL, 0);
+ MODULE_PARM_DESC(mac, "six hex digits, ie. 0x1,0x2,0xc0,0x01,0xba,0xbe");
+ 
+ #define MPC52xx_MESSAGES_DEFAULT ( NETIF_MSG_DRV | NETIF_MSG_PROBE | \
+-		NETIF_MSG_LINK | NETIF_MSG_IFDOWN | NETIF_MSG_IFDOWN )
++		NETIF_MSG_LINK | NETIF_MSG_IFDOWN | NETIF_MSG_IFUP)
+ static int debug = -1;	/* the above default */
+ module_param(debug, int, 0);
+ MODULE_PARM_DESC(debug, "debugging messages level");
