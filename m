@@ -1,15 +1,34 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 407E6DDF54
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 07:27:20 +1100 (EST)
-Date: Wed, 30 Jan 2008 22:03:10 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org
-Subject: [2.6 patch] powerpc: vdso_do_func_patch{32,64}() must be __init
-Message-ID: <20080130200310.GF29368@does.not.exist>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0DBD9DE253
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 07:59:34 +1100 (EST)
+Date: Wed, 30 Jan 2008 21:59:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130205915.GA4562@elte.hu>
+References: <20080130161036.GA12293@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+	<20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+	<47A0CD4B.5040706@sgi.com>
+	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
+	<20080130194616.GA19426@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
+	<20080130200221.GA28073@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,54 +38,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes the following section mismatches:
 
-<--  snip  -->
+* Luck, Tony <tony.luck@intel.com> wrote:
 
-...
-WARNING: vmlinux.o(.text+0xe49c): Section mismatch in reference from the function .vdso_do_func_patch64() to the function .init.text:.find_symbol64()
-WARNING: vmlinux.o(.text+0xe4d0): Section mismatch in reference from the function .vdso_do_func_patch64() to the function .init.text:.find_symbol64()
-WARNING: vmlinux.o(.text+0xe56c): Section mismatch in reference from the function .vdso_do_func_patch32() to the function .init.text:.find_symbol32()
-WARNING: vmlinux.o(.text+0xe5a0): Section mismatch in reference from the function .vdso_do_func_patch32() to the function .init.text:.find_symbol32()
-...
+> > could you send the .config you are using?
+> 
+> Ok.  Attached.
 
-<--  snip  -->
+thanks a ton - this produced a link error here too.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+after half an hour of head scratching, the updated patch below solves 
+the build problem.
 
+The problem i believe is this code in arch/ia64/kernel/mca_asm.S:
+
+#define GET_IA64_MCA_DATA(reg)                                          \
+        GET_THIS_PADDR(reg, ia64_mca_data)                              \
+        ;;                                                              \
+        ld8 reg=[reg]
+
+this i believe builds an implicit dependency between the mca_asm.o 
+position within the image and the ia64_mca_data percpu variable it 
+accesses - it relies on the immediate 22 addressing mode that has 4MB of 
+scope. Per chance, the .config you sent creates a 14MB image, and the 
+percpu variables moved too far away for the linker to be able to fulfill 
+this constraint.
+
+The workaround is to define PER_CPU_ATTRIBUTES to link percpu variables 
+back into the .percpu section on UP too - which ia64 links specially 
+into its vmlinux.lds. But ultimately i think the better solution would 
+be to remove this dependency between arch/ia64/kernel/mca_asm.S and the 
+position of the percpu data.
+
+Is my analysis correct? Do you like my fix and does the patch build and 
+boot on your system? Thanks,
+
+	Ingo
+
+--------------->
+Subject: ia64: on UP percpu variables are not small memory model
+From: Ingo Molnar <mingo@elte.hu>
+
+Tony says:
+
+| The CONFIG_SMP=n path in ia64 makes quite radical changes ... rather
+| than putting all the per-cpu stuff into the top 64K of address space
+| and providing a per-cpu TLB mapping for that range to a different
+| physical address ... it just makes all the per-cpu stuff link as ordinary
+| variables in .data.
+
+the new generic percpu code got confused about this as PER_CPU_ATTRIBUTES
+was defined even on UP, so it picked up that small memory model - which
+was not possible to get linked. The right fix is to only define that
+on SMP. This resolved the build failures in my cross-compiling environment.
+
+also link these variables into the .percpu section - some assembly code 
+has offset dependencies.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ include/asm-ia64/percpu.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
- arch/powerpc/kernel/vdso.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-1c52ed2049b82e8458d03e50633b01ac5e1dfa40 
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 3702df7..d3437c4 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -336,9 +336,9 @@ static unsigned long __init find_function32(struct lib32_elfinfo *lib,
- 	return sym->st_value - VDSO32_LBASE;
- }
+Index: linux-x86.q/include/asm-ia64/percpu.h
+===================================================================
+--- linux-x86.q.orig/include/asm-ia64/percpu.h
++++ linux-x86.q/include/asm-ia64/percpu.h
+@@ -15,18 +15,20 @@
  
--static int vdso_do_func_patch32(struct lib32_elfinfo *v32,
--				struct lib64_elfinfo *v64,
--				const char *orig, const char *fix)
-+static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
-+				       struct lib64_elfinfo *v64,
-+				       const char *orig, const char *fix)
- {
- 	Elf32_Sym *sym32_gen, *sym32_fix;
+ #include <linux/threads.h>
  
-@@ -433,9 +433,9 @@ static unsigned long __init find_function64(struct lib64_elfinfo *lib,
++#ifdef CONFIG_SMP
++
+ #ifdef HAVE_MODEL_SMALL_ATTRIBUTE
+ # define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
  #endif
- }
  
--static int vdso_do_func_patch64(struct lib32_elfinfo *v32,
--				struct lib64_elfinfo *v64,
--				const char *orig, const char *fix)
-+static int __init vdso_do_func_patch64(struct lib32_elfinfo *v32,
-+				       struct lib64_elfinfo *v64,
-+				       const char *orig, const char *fix)
- {
- 	Elf64_Sym *sym64_gen, *sym64_fix;
+-#ifdef CONFIG_SMP
+-
+ #define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
  
+ extern void *per_cpu_init(void);
+ 
+ #else /* ! SMP */
+ 
++#define PER_CPU_ATTRIBUTES	__attribute__((__section__(".data.percpu")))
++
+ #define per_cpu_init()				(__phys_per_cpu_start)
+ 
+ #endif	/* SMP */
