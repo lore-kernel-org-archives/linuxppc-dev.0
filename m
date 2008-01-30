@@ -1,27 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A9FCDDE179
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:35:42 +1100 (EST)
-Date: Wed, 30 Jan 2008 12:35:49 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080130183549.GA19395@lixom.net>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org>
-	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
-	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-	<20080130180623.GA24881@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080130180623.GA24881@elte.hu>
-Cc: "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Mike Travis <travis@sgi.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F2B5DDE189
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 05:36:30 +1100 (EST)
+Message-Id: <91B98C74-9D40-4390-8953-12395C4D1743@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <47A0B6A6.5080903@garzik.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
+Date: Wed, 30 Jan 2008 12:36:11 -0600
+References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
+	<20080121204953.GA11384@localhost.localdomain>
+	<47A0AF56.3060804@garzik.org>
+	<02FAED2A-1154-4D8B-A245-4693BF283515@kernel.crashing.org>
+	<47A0B6A6.5080903@garzik.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Eugene Konev <ejka@imfi.kspu.ru>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,55 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 30, 2008 at 07:06:23PM +0100, Ingo Molnar wrote:
-> 
-> * Luck, Tony <tony.luck@intel.com> wrote:
-> 
-> > > thanks! Sorry about that: we cross-built on ARM but not on SMP 
-> > > non-x86 platforms so this dependency/breakage went unnoticed.
-> > 
-> > Yes ... all ia64 builds (UP and SMP) are broken at the moment. Please 
-> > Cc: me with the fixup patch.
-> 
-> Could you check the patch below? With this applied to latest -git, ia64 
-> buils fine for me in a cross-compiling environment. (but i dont know 
-> whether it boots ...)
+>>> Is this going through netdev or do you want me to pick it via the  
+>>> powerpc route?
+>
+> Based on your comments I sorta assumed it was most convenient to  
+> lump in with the rest of the powerpc changes...
 
-powerpc (pasemi_defconfig) is broken in new ways from the original
-breakage by this patch:
+That's fine.  I'll push it via the powerpc trees.
 
-  CHK     include/linux/utsrelease.h
-In file included from include/asm/pgtable-ppc64.h:10,
-                 from include/asm/pgtable.h:13,
-                 from include/linux/mm.h:39,
-                 from include/linux/mman.h:14,
-                 from arch/powerpc/kernel/asm-offsets.c:22:
-include/asm/tlbflush.h: In function 'arch_enter_lazy_mmu_mode':
-include/asm/tlbflush.h:112: error: '__my_cpu_offset' undeclared (first
-use in this function)
-include/asm/tlbflush.h:112: error: (Each undeclared identifier is
-reported only once
-include/asm/tlbflush.h:112: error: for each function it appears in.)
-include/asm/tlbflush.h: In function 'arch_leave_lazy_mmu_mode':
-include/asm/tlbflush.h:119: error: '__my_cpu_offset' undeclared (first
-use in this function)
-In file included from include/linux/mm.h:535,
-                 from include/linux/mman.h:14,
-                 from arch/powerpc/kernel/asm-offsets.c:22:
-include/linux/vmstat.h: In function '__count_vm_event':
-include/linux/vmstat.h:62: error: '__my_cpu_offset' undeclared (first
-use in this function)
-include/linux/vmstat.h: In function 'count_vm_event':
-include/linux/vmstat.h:67: error: '__my_cpu_offset' undeclared (first
-use in this function)
-include/linux/vmstat.h: In function '__count_vm_events':
-include/linux/vmstat.h:73: error: '__my_cpu_offset' undeclared (first
-use in this function)
-include/linux/vmstat.h: In function 'count_vm_events':
-include/linux/vmstat.h:78: error: '__my_cpu_offset' undeclared (first
-use in this function)
-make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-
-
-
--Olof
+- k
