@@ -1,23 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id EF87BDDE03
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 05:19:35 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so193931anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 10:19:34 -0800 (PST)
-Message-ID: <fa686aa40801310922n6dec35eat92f0f27998a506bd@mail.gmail.com>
-Date: Thu, 31 Jan 2008 10:22:52 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [RFC] [POWERPC] bootwrapper: build multiple cuImages
-In-Reply-To: <20080131160042.GA24370@ld0162-tx32.am.freescale.net>
+Return-Path: <tony.luck@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+	by ozlabs.org (Postfix) with ESMTP id D1341DE128
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 05:34:49 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080131003347.5779.96112.stgit@trillian.secretlab.ca>
-	<20080131014952.83827290071@mail95-dub.bigfish.com>
-	<fa686aa40801301840k3d9a9ba2n251d2cdb9e659748@mail.gmail.com>
-	<20080131160042.GA24370@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Date: Thu, 31 Jan 2008 10:34:23 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC78C75A@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080131090642.GA5688@elte.hu>
+References: <20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+	<47A0CD4B.5040706@sgi.com>
+	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
+	<20080130194616.GA19426@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
+	<20080130200221.GA28073@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
+	<20080130205915.GA4562@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC78C219@orsmsx424.amr.corp.intel.com>
+	<20080131090642.GA5688@elte.hu>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/31/08, Scott Wood <scottwood@freescale.com> wrote:
-> On Wed, Jan 30, 2008 at 07:40:28PM -0700, Grant Likely wrote:
-> > mpc866ads, mpc885ads and ep88xc are oddities in that they build
-> > zImages with embedded device tree blobs.
->
-> What about ep8248e?  And the mpc8xxads boards use cuImage, not zImage.
+> hm, as far as i could check, on ia64 UP the .percpu section link=20
+> difference was the only ia64 difference i could find out of those=20
+> changes. Could you try to copy a 2.6.24 include/asm-generic/percpu.h,=20
+> include/asm-ia64.h and include/linux/percpu.h into your current tree,=20
+> and see whether that boots? If yes, then it's the percpu changes. The=20
+> patch below does this ontop of very latest -git - and it builds fine=20
+> with your UP config with a crosscompiler.
 
-Oops, those are just mistakes.  I can fix them
+Applied that patch and UP kernel built ok, and then crashed in the
+same place with the memset() to a user-looking address from =
+kmem_cache_alloc()
 
->
-> > One option would be to add two new targets: zImage.dtb.% and
-> > zImage.initrd.dtb.%, but I'm not sure if it is a good idea.
->
-> I'd much prefer that over having several lines per board in the makefile.
+So the percpu changes are innocent ... something else since 2.6.24 is
+to blame.  Only 5749 commits :-)  I'll start bisecting.
 
-Okay, I can change that.
-
-Another option is to modify the wrapper to specifically look for
-targets which need the dtb.  At the moment, that list includes ps3,
-ep8248e, mpc885ads and ep88xc.  All four could be using a common build
-target.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Tony
