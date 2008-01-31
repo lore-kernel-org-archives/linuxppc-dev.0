@@ -1,26 +1,29 @@
 Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E0C3ADDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 18:36:14 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m0V7ZoZl007703
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 00:36:05 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id 4A460DDDF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 18:36:51 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	m0V7aj1K029698
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 00:36:45 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0V7Zl3U010601
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:35:49 -0600 (CST)
-From: Zhang Wei <wei.zhang@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH 2/2] Add RapidIO node probing into MPC86xx_HPCN board id table.
-Date: Thu, 31 Jan 2008 15:46:43 +0800
-Message-Id: <12017656043538-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <12017656032841-git-send-email-wei.zhang@freescale.com>
-References: <12017656032841-git-send-email-wei.zhang@freescale.com>
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0V7ahhr016507
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:36:44 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
+Date: Thu, 31 Jan 2008 15:36:43 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD06CF@zch01exm26.fsl.freescale.net>
+In-Reply-To: <12017655292517-git-send-email-y>
+References: <12017655292517-git-send-email-y>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,22 +34,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
----
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Sorry for wrong sending name of this and next email.
 
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index cfbe8c5..4a3e421 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -215,6 +215,7 @@ mpc86xx_time_init(void)
- 
- static __initdata struct of_device_id of_bus_ids[] = {
- 	{ .compatible = "simple-bus", },
-+	{ .compatible = "fsl,rapidio-delta", },
- 	{},
- };
- 
--- 
-1.5.2
+Best Regards,
+Wei.=20
+
+> -----Original Message-----
+> From: y [mailto:y]=20
+> Sent: Thursday, January 31, 2008 3:45 PM
+> To: galak@kernel.crashing.org
+> Cc: linuxppc-dev@ozlabs.org; Zhang Wei
+> Subject: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
+>=20
+> From: Zhang Wei <wei.zhang@freescale.com>
+>=20
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8641_hpcn.dts |   13 +++++++++++++
+>  1 files changed, 13 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts=20
+> b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> index 556a9ca..1a0fce5 100644
+> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+> @@ -25,6 +25,7 @@
+>  		serial1 =3D &serial1;
+>  		pci0 =3D &pci0;
+>  		pci1 =3D &pci1;
+> +		rapidio0 =3D &rapidio0;
+>  	};
+> =20
+>  	cpus {
+> @@ -499,4 +500,16 @@
+>  				  0 00100000>;
+>  		};
+>  	};
+> +
+> +	rapidio0: rapidio@f80c0000 {
+> +		#address-cells =3D <2>;
+> +		#size-cells =3D <2>;
+> +		compatible =3D "fsl,rapidio-delta";
+> +		reg =3D <f80c0000 20000>;
+> +		ranges =3D <0 0 c0000000 0 20000000>;
+> +		interrupt-parent =3D <&mpic>;
+> +		/* err_irq bell_outb_irq bell_inb_irq
+> +			msg1_tx_irq msg1_rx_irq	msg2_tx_irq=20
+> msg2_rx_irq */
+> +		interrupts =3D <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
+> +	};
+>  };
+> --=20
+> 1.5.2
+>=20
+>=20
