@@ -1,18 +1,22 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A408ADDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 14:56:26 +1100 (EST)
-Message-ID: <47A13EEB.8030806@am.sony.com>
-Date: Wed, 30 Jan 2008 19:22:19 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id C83C8DDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 15:07:00 +1100 (EST)
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Prevent sending UD packets to QP0
+References: <200801241759.09065.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 30 Jan 2008 20:06:53 -0800
+In-Reply-To: <200801241759.09065.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Thu, 24 Jan 2008 17:59:08 +0100")
+Message-ID: <adaabmmabaa.fsf@cisco.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: build error with kdump shutdown hook support
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +26,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi.
-
-It seems something is missing in the current
-linux-2.6.git (8af03e782cae1e0a0f530ddd22301cdd12cf9dc0).
-
-  CC      arch/powerpc/kernel/crash.o
-arch/powerpc/kernel/crash.c: In function 'default_machine_crash_shutdown':
-arch/powerpc/kernel/crash.c:388: error: '__debugger_fault_handler' undeclared (first use in this function)
-arch/powerpc/kernel/crash.c:388: error: (Each undeclared identifier is reported only once
-arch/powerpc/kernel/crash.c:388: error: for each function it appears in.)
-
-
-commit 496b010e1e70a9b4286fa34f19523f24a194f119
-Author: Michael Neuling <mikey@neuling.org>
-Date:   Fri Jan 18 15:50:30 2008 +1100
-
-    [POWERPC] kdump shutdown hook support
-
-    This adds hooks into the default_machine_crash_shutdown so drivers can
-    register a function to be run in the first kernel before we hand off
-    to the second kernel.  This should only be used in exceptional
-    circumstances, like where the device can't be reset in the second
-    kernel alone (as is the case with eHEA).  To emphasize this, the
-    number of handles allowed to be registered is currently #def to 1.
-
-    This uses the setjmp/longjmp code around the call out to the
-    registered hooks, so any bogus exceptions we encounter will hopefully
-    be recoverable.
-
-    Tested with bogus data and instruction exceptions.
-
-    Signed-off-by: Michael Neuling <mikey@neuling.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+thanks, applied
