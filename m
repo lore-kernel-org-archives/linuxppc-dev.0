@@ -1,61 +1,73 @@
-Return-Path: <stefanr@s5r6.in-berlin.de>
-Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.vr.in-berlin.de",
-	Issuer "IN-Berlin Server CA (G2)" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id ED306DDE3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 22:53:50 +1100 (EST)
-Message-ID: <47C7F209.9030907@s5r6.in-berlin.de>
-Date: Fri, 29 Feb 2008 12:52:41 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-Path: <ssh@sgi.com>
+Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
+	by ozlabs.org (Postfix) with ESMTP id CA33FDDE38
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Feb 2008 00:38:13 +1100 (EST)
+Message-ID: <47A1CF43.8070107@sgi.com>
+Date: Thu, 31 Jan 2008 07:38:11 -0600
+From: Steven Hein <ssh@sgi.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-References: <20080220220326.GA22328@uranus.ravnborg.org>	<200802272221.38985.jwilson@redhat.com>	<1204179959.15052.372.camel@pasglop>	<200802281342.06493.jwilson@redhat.com>	<1204241162.15052.393.camel@pasglop>	<47C79CB1.6050104@redhat.com>
-	<18375.60394.166769.540668@cargo.ozlabs.ibm.com>
-In-Reply-To: <18375.60394.166769.540668@cargo.ozlabs.ibm.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: Configuring Freecale ucc_geth without a PHY
+References: <479F5D9B.8040403@sgi.com>
+	<20080129114310.3109caaa.kim.phillips@freescale.com>
+In-Reply-To: <20080129114310.3109caaa.kim.phillips@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Jarod Wilson <jwilson@redhat.com>, linux1394-devel@lists.sourceforge.net,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Cc: linuxppc-embedded@ozlabs.org
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Jarod Wilson writes:
->> I wonder how many people still actually 1) have a machine 
->> with this controller, 2) are running Linux on it and 3) use firewire 
->> devices with it. Both of you, please speak up, we're trying to help you! 
->> (if only out of morbid curiosity to see this mythical goofy controller).
-> 
-> I have a first-generation titanium powerbook that has this controller
-> (assuming we're talking about vendor/device id = 0x106b / 0x18), and
-> yes I run Linux (only) on it and use firewire disks. :)
+Kim Phillips wrote:
+> On Tue, 29 Jan 2008 11:08:43 -0600
+> Steven Hein <ssh@sgi.com> wrote:
+>
+>   
+>> Hi all,
+>>
+>> I have a custom board with an MPC8358 (our board is based
+>> off of the MPC8360E-MDS development board) that has its eth's
+>> directly connected (GMII) to a Broadcom network switch
+>> part on the same board, with no PHYs between them.
+>> We've have been using a 2.6.16.18 kernel (from TimeSys) up
+>> until now, and I hacked in some crude support for no-phy
+>> configs forced to 100Mbit and 1Gbit speeds.   Now I'm
+>> moving to 2.6.22 (with 8360 the patches from bitshrine.org),
+>> and I'm trying to understand how I should do this with
+>> device trees, the new PHY infrastructure, etc.   Has anyone
+>> else needed this support?   Does anyone have any suggestions
+>> as to how to tackle it?
+>>     
+>
+> check out the "fixed-link" property and associated code.  This
+> implementation came about after 2.6.22 though (it's commit-ish
+> v2.6.23-10096-ga21e282).
+>
+> Kim
+>   
+Thanks for the pointer Kim!     Using the "fixed-link" property
+code already in the tree, and adding the glue in ucc_geth.c to
+use it (modeled after the code in gianfar fix-link support
+in fsl_soc.c), I was able to get this working with me 8360 board.
 
-I actually have a TiBook 400 myself, but so far without Linux, and its 
-FireWire PHY is dead.  But I can use CardBus FireWire cards on it to do 
-basic testing on a big endian PC, and I can test the selfID 
-byte-swapping by the PHY-less onboard controller.
+Is there a document anywhere that describes how to submit
+patches for the powerpc kernel?    Or do I just create the patch
+(I'm learning about git right now...) again the paulus/powerpc.git
+tree, and send it to this list?
 
-I now started a Fedora 8 live CD (self-test says the medium is 
-corrupt... need to burn another one) and dmesg says:
-firewire_ohci: Added fw-ohci device 0002:24:0e.0, OHCI version 1.0
-firewire_ohci: recursive bus reset detected, discarding self ids
-[...]
+Thanks,
+Steve
 
-The second line looks like this is indeed one of those which needs the 
-header byte-swap workaround which ohci1394 has but firewire-ohci hasn't yet.
-
-On the weekend I'm going to attempt to put Linux on this PowerBook, at last.
 -- 
-Stefan Richter
--=====-==--- --=- ===-=
-http://arcgraph.de/sr/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
+Silicon Graphics, Inc.                          
+1168 Industrial Blvd.                 Phone: (715) 726-8410
+Chippewa Falls, WI 54729              Fax:   (715) 726-6715
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
