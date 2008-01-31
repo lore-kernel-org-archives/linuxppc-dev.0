@@ -1,23 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 299E8DDF51
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 07:55:15 +1100 (EST)
-Message-ID: <47A235AD.9050107@freescale.com>
-Date: Thu, 31 Jan 2008 14:55:09 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C78CEDE2E0
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 08:11:51 +1100 (EST)
+Date: Thu, 31 Jan 2008 14:11:41 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20080131211141.GA11658@farnsworth.org>
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: Kernel oops while duming user core.
-References: <DCEAAC0833DD314AB0B58112AD99B93B03EE46B8@ismail.innsys.innovsys.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B03EE47A4@ismail.innsys.innovsys.com>
-	<20080131201601.GA10501@loki.buserror.net>
-	<20080131204158.GV14201@localdomain>
-In-Reply-To: <20080131204158.GV14201@localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: [PATCH] [POWERPC] Remove dead code at KernelAltiVec
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,21 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch wrote:
-> I doubt the modules are the problem; there was a practically identical
-> report from someone with an untainted 2.6.24-rc kernel a few weeks ago
-> (see my first reply to Rune).
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+---
+This code doesn't seem to be referenced anywhere.
 
-I didn't think they were; I was just trying to eliminate the low hanging 
-fruit and get a simpler testcase. :-)
+ arch/powerpc/kernel/head_32.S |   17 -----------------
+ arch/ppc/kernel/head.S        |   17 -----------------
+ 2 files changed, 0 insertions(+), 34 deletions(-)
 
->> Do you have a simple test case that we could try to reproduce?  I tried a
->> simple core dump on an 8280, and it worked.
-> 
-> Is the crashing program multithreaded?  The first report had firefox
-> triggering the oops.
-
-OK, I've got a test program that triggers it now.  I'll see if I can 
-figure out what's going on.
-
--Scott
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 0f4fac5..c16d135 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -763,23 +763,6 @@ load_up_altivec:
+ 	b	fast_exception_return
+ 
+ /*
+- * AltiVec unavailable trap from kernel - print a message, but let
+- * the task use AltiVec in the kernel until it returns to user mode.
+- */
+-KernelAltiVec:
+-	lwz	r3,_MSR(r1)
+-	oris	r3,r3,MSR_VEC@h
+-	stw	r3,_MSR(r1)	/* enable use of AltiVec after return */
+-	lis	r3,87f@h
+-	ori	r3,r3,87f@l
+-	mr	r4,r2		/* current */
+-	lwz	r5,_NIP(r1)
+-	bl	printk
+-	b	ret_from_except
+-87:	.string	"AltiVec used in kernel  (task=%p, pc=%x)  \n"
+-	.align	4,0
+-
+-/*
+  * giveup_altivec(tsk)
+  * Disable AltiVec for the task given as the argument,
+  * and save the AltiVec registers in its thread_struct.
+diff --git a/arch/ppc/kernel/head.S b/arch/ppc/kernel/head.S
+index 1b0ec72..e7e642b 100644
+--- a/arch/ppc/kernel/head.S
++++ b/arch/ppc/kernel/head.S
+@@ -701,23 +701,6 @@ load_up_altivec:
+ 	b	fast_exception_return
+ 
+ /*
+- * AltiVec unavailable trap from kernel - print a message, but let
+- * the task use AltiVec in the kernel until it returns to user mode.
+- */
+-KernelAltiVec:
+-	lwz	r3,_MSR(r1)
+-	oris	r3,r3,MSR_VEC@h
+-	stw	r3,_MSR(r1)	/* enable use of AltiVec after return */
+-	lis	r3,87f@h
+-	ori	r3,r3,87f@l
+-	mr	r4,r2		/* current */
+-	lwz	r5,_NIP(r1)
+-	bl	printk
+-	b	ret_from_except
+-87:	.string	"AltiVec used in kernel  (task=%p, pc=%x)  \n"
+-	.align	4,0
+-
+-/*
+  * giveup_altivec(tsk)
+  * Disable AltiVec for the task given as the argument,
+  * and save the AltiVec registers in its thread_struct.
