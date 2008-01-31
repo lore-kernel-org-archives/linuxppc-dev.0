@@ -1,30 +1,34 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4A460DDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 18:36:51 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m0V7aj1K029698
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 00:36:45 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0V7ahhr016507
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:36:44 -0600 (CST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CC223DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 20:07:02 +1100 (EST)
+Date: Thu, 31 Jan 2008 10:06:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080131090642.GA5688@elte.hu>
+References: <20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+	<47A0CD4B.5040706@sgi.com>
+	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
+	<20080130194616.GA19426@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757F7C@orsmsx424.amr.corp.intel.com>
+	<20080130200221.GA28073@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757FC2@orsmsx424.amr.corp.intel.com>
+	<20080130205915.GA4562@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC78C219@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
-Date: Thu, 31 Jan 2008 15:36:43 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD06CF@zch01exm26.fsl.freescale.net>
-In-Reply-To: <12017655292517-git-send-email-y>
-References: <12017655292517-git-send-email-y>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC78C219@orsmsx424.amr.corp.intel.com>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,57 +38,276 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry for wrong sending name of this and next email.
 
-Best Regards,
-Wei.=20
+* Luck, Tony <tony.luck@intel.com> wrote:
 
-> -----Original Message-----
-> From: y [mailto:y]=20
-> Sent: Thursday, January 31, 2008 3:45 PM
-> To: galak@kernel.crashing.org
-> Cc: linuxppc-dev@ozlabs.org; Zhang Wei
-> Subject: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
->=20
-> From: Zhang Wei <wei.zhang@freescale.com>
->=20
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> ---
->  arch/powerpc/boot/dts/mpc8641_hpcn.dts |   13 +++++++++++++
->  1 files changed, 13 insertions(+), 0 deletions(-)
->=20
-> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts=20
-> b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> index 556a9ca..1a0fce5 100644
-> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -25,6 +25,7 @@
->  		serial1 =3D &serial1;
->  		pci0 =3D &pci0;
->  		pci1 =3D &pci1;
-> +		rapidio0 =3D &rapidio0;
->  	};
-> =20
->  	cpus {
-> @@ -499,4 +500,16 @@
->  				  0 00100000>;
->  		};
->  	};
-> +
-> +	rapidio0: rapidio@f80c0000 {
-> +		#address-cells =3D <2>;
-> +		#size-cells =3D <2>;
-> +		compatible =3D "fsl,rapidio-delta";
-> +		reg =3D <f80c0000 20000>;
-> +		ranges =3D <0 0 c0000000 0 20000000>;
-> +		interrupt-parent =3D <&mpic>;
-> +		/* err_irq bell_outb_irq bell_inb_irq
-> +			msg1_tx_irq msg1_rx_irq	msg2_tx_irq=20
-> msg2_rx_irq */
-> +		interrupts =3D <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
-> +	};
->  };
-> --=20
-> 1.5.2
->=20
->=20
+> > I'll start digging on why this doesn't boot ... but you might as well
+> > send the fixes so far upstream to Linus so that the SMP fix is available
+> 
+> Well a pure 2.6.24 version compiled with CONFIG_SMP=n booted just 
+> fine, so the breakage is recent ... and more than likely related to 
+> this change.
+> 
+> I've only had a casual dig at the failing case ... kernel dies in 
+> memset() as called from kmem_cache_alloc() with the address being 
+> written as 0x4000000000117b48 (which is off in the virtual address 
+> space range used by users ... not a kernel address).
+
+hm, as far as i could check, on ia64 UP the .percpu section link 
+difference was the only ia64 difference i could find out of those 
+changes. Could you try to copy a 2.6.24 include/asm-generic/percpu.h, 
+include/asm-ia64.h and include/linux/percpu.h into your current tree, 
+and see whether that boots? If yes, then it's the percpu changes. The 
+patch below does this ontop of very latest -git - and it builds fine 
+with your UP config with a crosscompiler.
+
+> I'll dig some more tomorrow.
+
+thanks.
+
+	Ingo
+
+---
+ include/asm-generic/percpu.h |   99 ++++++++++++++++---------------------------
+ include/asm-ia64/percpu.h    |   57 +++++++++++++++++++-----
+ include/linux/percpu.h       |   20 --------
+ 3 files changed, 82 insertions(+), 94 deletions(-)
+
+Index: linux-x86.q/include/asm-generic/percpu.h
+===================================================================
+--- linux-x86.q.orig/include/asm-generic/percpu.h
++++ linux-x86.q/include/asm-generic/percpu.h
+@@ -3,79 +3,54 @@
+ #include <linux/compiler.h>
+ #include <linux/threads.h>
+ 
+-/*
+- * Determine the real variable name from the name visible in the
+- * kernel sources.
+- */
+-#define per_cpu_var(var) per_cpu__##var
+-
++#define __GENERIC_PER_CPU
+ #ifdef CONFIG_SMP
+ 
+-/*
+- * per_cpu_offset() is the offset that has to be added to a
+- * percpu variable to get to the instance for a certain processor.
+- *
+- * Most arches use the __per_cpu_offset array for those offsets but
+- * some arches have their own ways of determining the offset (x86_64, s390).
+- */
+-#ifndef __per_cpu_offset
+ extern unsigned long __per_cpu_offset[NR_CPUS];
+ 
+ #define per_cpu_offset(x) (__per_cpu_offset[x])
+-#endif
+-
+-/*
+- * Determine the offset for the currently active processor.
+- * An arch may define __my_cpu_offset to provide a more effective
+- * means of obtaining the offset to the per cpu variables of the
+- * current processor.
+- */
+-#ifndef __my_cpu_offset
+-#define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
+-#define my_cpu_offset per_cpu_offset(smp_processor_id())
+-#else
+-#define my_cpu_offset __my_cpu_offset
+-#endif
+-
+-/*
+- * Add a offset to a pointer but keep the pointer as is.
+- *
+- * Only S390 provides its own means of moving the pointer.
+- */
+-#ifndef SHIFT_PERCPU_PTR
+-#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
+-#endif
+-
+-/*
+- * A percpu variable may point to a discarded regions. The following are
+- * established ways to produce a usable pointer from the percpu variable
+- * offset.
+- */
+-#define per_cpu(var, cpu) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
+-#define __raw_get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
+-
+-
+-#ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+-extern void setup_per_cpu_areas(void);
+-#endif
+ 
++/* Separate out the type, so (int[3], foo) works. */
++#define DEFINE_PER_CPU(type, name) \
++    __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
++
++#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		\
++    __attribute__((__section__(".data.percpu.shared_aligned"))) \
++    __typeof__(type) per_cpu__##name				\
++    ____cacheline_aligned_in_smp
++
++/* var is in discarded region: offset to particular copy we want */
++#define per_cpu(var, cpu) (*({				\
++	extern int simple_identifier_##var(void);	\
++	RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]); }))
++#define __get_cpu_var(var) per_cpu(var, smp_processor_id())
++#define __raw_get_cpu_var(var) per_cpu(var, raw_smp_processor_id())
++
++/* A macro to avoid #include hell... */
++#define percpu_modcopy(pcpudst, src, size)			\
++do {								\
++	unsigned int __i;					\
++	for_each_possible_cpu(__i)				\
++		memcpy((pcpudst)+__per_cpu_offset[__i],		\
++		       (src), (size));				\
++} while (0)
+ #else /* ! SMP */
+ 
+-#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
+-#define __get_cpu_var(var)			per_cpu_var(var)
+-#define __raw_get_cpu_var(var)			per_cpu_var(var)
++#define DEFINE_PER_CPU(type, name) \
++    __typeof__(type) per_cpu__##name
++
++#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)	\
++    DEFINE_PER_CPU(type, name)
++
++#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
++#define __get_cpu_var(var)			per_cpu__##var
++#define __raw_get_cpu_var(var)			per_cpu__##var
+ 
+ #endif	/* SMP */
+ 
+-#ifndef PER_CPU_ATTRIBUTES
+-#define PER_CPU_ATTRIBUTES
+-#endif
++#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
+ 
+-#define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
+-					__typeof__(type) per_cpu_var(name)
++#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
++#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
+ 
+ #endif /* _ASM_GENERIC_PERCPU_H_ */
+Index: linux-x86.q/include/asm-ia64/percpu.h
+===================================================================
+--- linux-x86.q.orig/include/asm-ia64/percpu.h
++++ linux-x86.q/include/asm-ia64/percpu.h
+@@ -15,36 +15,69 @@
+ 
+ #include <linux/threads.h>
+ 
+-#ifdef CONFIG_SMP
+-
+ #ifdef HAVE_MODEL_SMALL_ATTRIBUTE
+-# define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
++# define __SMALL_ADDR_AREA	__attribute__((__model__ (__small__)))
++#else
++# define __SMALL_ADDR_AREA
+ #endif
+ 
+-#define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
++#define DECLARE_PER_CPU(type, name)				\
++	extern __SMALL_ADDR_AREA __typeof__(type) per_cpu__##name
++
++/* Separate out the type, so (int[3], foo) works. */
++#define DEFINE_PER_CPU(type, name)				\
++	__attribute__((__section__(".data.percpu")))		\
++	__SMALL_ADDR_AREA __typeof__(type) per_cpu__##name
++
++#ifdef CONFIG_SMP
++#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
++	__attribute__((__section__(".data.percpu.shared_aligned")))	\
++	__SMALL_ADDR_AREA __typeof__(type) per_cpu__##name		\
++	____cacheline_aligned_in_smp
++#else
++#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)	\
++	DEFINE_PER_CPU(type, name)
++#endif
++
++/*
++ * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
++ * external routine, to avoid include-hell.
++ */
++#ifdef CONFIG_SMP
++
++extern unsigned long __per_cpu_offset[NR_CPUS];
++#define per_cpu_offset(x) (__per_cpu_offset[x])
+ 
++/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
++DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
++
++#define per_cpu(var, cpu)  (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))
++#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
++#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
++
++extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
++extern void setup_per_cpu_areas (void);
+ extern void *per_cpu_init(void);
+ 
+ #else /* ! SMP */
+ 
+-#define PER_CPU_ATTRIBUTES	__attribute__((__section__(".data.percpu")))
+-
++#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
++#define __get_cpu_var(var)			per_cpu__##var
++#define __raw_get_cpu_var(var)			per_cpu__##var
+ #define per_cpu_init()				(__phys_per_cpu_start)
+ 
+ #endif	/* SMP */
+ 
++#define EXPORT_PER_CPU_SYMBOL(var)		EXPORT_SYMBOL(per_cpu__##var)
++#define EXPORT_PER_CPU_SYMBOL_GPL(var)		EXPORT_SYMBOL_GPL(per_cpu__##var)
++
+ /*
+  * Be extremely careful when taking the address of this variable!  Due to virtual
+  * remapping, it is different from the canonical address returned by __get_cpu_var(var)!
+  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
+  * more efficient.
+  */
+-#define __ia64_per_cpu_var(var)	per_cpu__##var
+-
+-#include <asm-generic/percpu.h>
+-
+-/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
+-DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
++#define __ia64_per_cpu_var(var)	(per_cpu__##var)
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+Index: linux-x86.q/include/linux/percpu.h
+===================================================================
+--- linux-x86.q.orig/include/linux/percpu.h
++++ linux-x86.q/include/linux/percpu.h
+@@ -9,26 +9,6 @@
+ 
+ #include <asm/percpu.h>
+ 
+-#ifdef CONFIG_SMP
+-#define DEFINE_PER_CPU(type, name)					\
+-	__attribute__((__section__(".data.percpu")))			\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+-
+-#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
+-	__attribute__((__section__(".data.percpu.shared_aligned")))	\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
+-	____cacheline_aligned_in_smp
+-#else
+-#define DEFINE_PER_CPU(type, name)					\
+-	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+-
+-#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
+-	DEFINE_PER_CPU(type, name)
+-#endif
+-
+-#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
+-#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(per_cpu__##var)
+-
+ /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
+ #ifndef PERCPU_ENOUGH_ROOM
+ #ifdef CONFIG_MODULES
