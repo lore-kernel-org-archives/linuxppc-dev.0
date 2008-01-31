@@ -1,22 +1,18 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB9BEDDE47
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 03:00:55 +1100 (EST)
-Date: Thu, 31 Jan 2008 10:00:42 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] [POWERPC] bootwrapper: build multiple cuImages
-Message-ID: <20080131160042.GA24370@ld0162-tx32.am.freescale.net>
-References: <20080131003347.5779.96112.stgit@trillian.secretlab.ca>
-	<20080131014952.83827290071@mail95-dub.bigfish.com>
-	<fa686aa40801301840k3d9a9ba2n251d2cdb9e659748@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40801301840k3d9a9ba2n251d2cdb9e659748@mail.gmail.com>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id BB92DDDFD2
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 03:32:10 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Kernel oops while duming user core.
+Date: Thu, 31 Jan 2008 10:26:47 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03EE46B8@ismail.innsys.innovsys.com>
+In-Reply-To: <20080131161527.GT14201@localdomain>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03EE44A5@ismail.innsys.innovsys.com>
+	<20080131161527.GT14201@localdomain>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Nathan Lynch" <ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,15 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 30, 2008 at 07:40:28PM -0700, Grant Likely wrote:
-> mpc866ads, mpc885ads and ep88xc are oddities in that they build
-> zImages with embedded device tree blobs.  
+Nathan Lynch wrote:
+> Hmm, this is the second report of 2.6.24 crashing in
+> __flush_dcache_icache during a core dump; see:
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048662.html
+>=20
+> Is this easily recreatable?
 
-What about ep8248e?  And the mpc8xxads boards use cuImage, not zImage.
+Yes. I have a binary that will do this every time it is started (on this
+particular system),=20
+only takes about 10 seconds before it dumps.
 
-> One option would be to add two new targets: zImage.dtb.% and
-> zImage.initrd.dtb.%, but I'm not sure if it is a good idea.
+I was going to test HEAD of powerpc.git to see if it is still there.
+I cannot test any earlier versions as our board port was done on 2.6.24.
 
-I'd much prefer that over having several lines per board in the makefile.
+Our older kernel port is 2.6.18 on arch/ppc, and it works just fine.
 
--Scott
+
+One potential clue:
+> Unable to handle kernel paging request for data at address 0x48024000
+
+this adddress is beyond our physical memory. We have 1GB of mem=20
+(CONFIG_HIGH_MEM enabled) so 0x3fff_ffff is the last valid address.
+0x4000_0000 to 0x7fff_ffff are unused, 0x8000_0000 to 0x9fff_ffff is
+used by PCI.
