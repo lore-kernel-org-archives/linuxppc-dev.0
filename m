@@ -1,18 +1,30 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpout10.prod.mesa1.secureserver.net
-	(smtpout10-04.prod.mesa1.secureserver.net [64.202.165.238])
-	by ozlabs.org (Postfix) with SMTP id 58E5ADE203
+Return-Path: <lorenzo@alphagolf.com>
+Received: from fallback-mx1.atl.registeredsite.com
+	(fallback-mx1.atl.registeredsite.com [64.224.219.95])
+	by ozlabs.org (Postfix) with ESMTP id 8ADA5DDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Jan 2008 07:55:42 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Errors with compiling sethdlc 1.18
-Date: Wed, 30 Jan 2008 12:54:43 -0800
-Message-ID: <000801c86382$58bb3020$6405a8c0@absolut>
+	Thu, 31 Jan 2008 12:44:04 +1100 (EST)
+Received: from mail26.atl.registeredsite.com (mail26.atl.registeredsite.com
+	[216.247.37.21])
+	by fallback-mx1.atl.registeredsite.com (8.12.11.20060308/8.12.11) with
+	ESMTP id m0V15hfm006507
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 20:05:43 -0500
+Received: from imta06a2.registeredsite.com (imta06a2.registeredsite.com
+	[64.225.255.15])
+	by mail26.atl.registeredsite.com (8.12.11.20060308/8.12.11) with ESMTP
+	id m0V15Ukt016872
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 20:05:30 -0500
+Received: from [192.168.1.118] ([71.198.169.42])
+	by imta06a2.registeredsite.com with ESMTP id
+	<20080131010530.WVKP23784.imta06a2.registeredsite.com@[192.168.1.118]>
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 20:05:30 -0500
+Message-ID: <47A11DCD.208@alphagolf.com>
+Date: Wed, 30 Jan 2008 17:01:01 -0800
+From: "Lorenzo T. Flores" <lorenzo@alphagolf.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0009_01C8633F.4A97F020"
-Reply-To: rmcguire@videopresence.com
+To: linuxppc-embedded@ozlabs.org
+Subject: compilation errors...sorry, sigh...
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,81 +35,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hey all,
 
-------=_NextPart_000_0009_01C8633F.4A97F020
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+I was wondering if anyone could help me figure out what to do next as 
+far as some compilation errors are concerned.
 
-Anyone tried to compile sethdlc lately?
+I'm working with an Avnet 4vfx12ls eval board (has virtex-4 and PPC).
 
-Is there a patch for the kernel <2.6.20+> we're supposed to apply before
-compilation?
-I have tried it both for DENX and Standard Fedora Core 5, neither will
-compile due to errors 
-In the data structures, i.e. missing stuff.
+Now, I've generated BSP files using Xilinx XPS, and from past posts on 
+this forum found the Secret Lab's virtex 2.6 git tree (not sure if I'm 
+using proper terminology, feel free to correct me, please!)
 
--Russ
+Well, I copied in the BSP files into the distribution. Ran 'make 
+menuconfig' then 'make bzImage'
+
+Here's the errors I get:
+
+---------------------------------------------------------------------
+ GEN     .version
+  CHK     include/linux/compile.h
+dnsdomainname: Unknown host
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+kernel/built-in.o: In function `enable_all_kprobes':
+kernel/kprobes.c:926: undefined reference to `arch_arm_kprobe'
+kernel/built-in.o: In function `disable_all_kprobes':
+kernel/kprobes.c:957: undefined reference to `arch_disarm_kprobe'
+kernel/kprobes.c:956: undefined reference to `arch_trampoline_kprobe'
+kernel/built-in.o: In function `init_kprobes':
+kernel/kprobes.c:823: undefined reference to `arch_init_kprobes'
+kernel/built-in.o: In function `report_probe':
+kernel/kprobes.c:838: undefined reference to `setjmp_pre_handler'
+kernel/kprobes.c:838: undefined reference to `setjmp_pre_handler'
+kernel/built-in.o: In function `unregister_kprobe':
+kernel/kprobes.c:610: undefined reference to `arch_disarm_kprobe'
+kernel/kprobes.c:632: undefined reference to `arch_remove_kprobe'
+kernel/built-in.o: In function `pre_handler_kretprobe':
+kernel/kprobes.c:702: undefined reference to `arch_prepare_kretprobe'
+kernel/built-in.o: In function `in_kprobes_functions':
+kernel/kprobes.c:495: undefined reference to `__kprobes_text_start'
+kernel/kprobes.c:495: undefined reference to `__kprobes_text_start'
+kernel/kprobes.c:495: undefined reference to `__kprobes_text_end'
+kernel/kprobes.c:495: undefined reference to `__kprobes_text_end'
+kernel/built-in.o: In function `__register_kprobe':
+kernel/kprobes.c:556: undefined reference to `arch_prepare_kprobe'
+kernel/kprobes.c:565: undefined reference to `arch_arm_kprobe'
+kernel/built-in.o: In function `register_jprobe':
+kernel/kprobes.c:669: undefined reference to `setjmp_pre_handler'
+kernel/kprobes.c:669: undefined reference to `setjmp_pre_handler'
+kernel/kprobes.c:670: undefined reference to `longjmp_break_handler'
+kernel/kprobes.c:670: undefined reference to `longjmp_break_handler'
+kernel/built-in.o:(__ksymtab_gpl+0x398): undefined reference to 
+`jprobe_return'
+kernel/built-in.o:(.data+0x4a84): undefined reference to 
+`kprobe_exceptions_notify'
+make: *** [.tmp_vmlinux1] Error 1
+---------------------------------------------------------------------
+
+I'm using ELDK's ppc_4xx toolchain.
+
+Any info or links to relevant posts would be so much appreciated. I 
+looked through the archives and know my answers are probably in there 
+somewhere...I'm just not sure if I could distill the proper information.
+
+Thank you all for any input!
+
+best,
+Lorenzo Flores
 
 
-------=_NextPart_000_0009_01C8633F.4A97F020
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7036.0">
-<TITLE>Errors with compiling sethdlc 1.18</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
-SIZE=3D2 FACE=3D"Arial">Anyone tried to compile sethdlc =
-lately?</FONT></SPAN></P>
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">I</FONT><FONT SIZE=3D2 FACE=3D"Arial">s there a patch for =
-the kernel</FONT> <FONT SIZE=3D2 =
-FACE=3D"Arial">&lt;2.6.20+&gt;</FONT><FONT SIZE=3D2 =
-FACE=3D"Arial"></FONT> <FONT SIZE=3D2 =
-FACE=3D"Arial">we</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">&#8217;</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">re suppo</FONT><FONT SIZE=3D2 =
-FACE=3D"Arial">s</FONT><FONT SIZE=3D2 FACE=3D"Arial">ed to apply before =
-compilation</FONT><FONT SIZE=3D2 FACE=3D"Arial">?<BR>
-</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
-SIZE=3D2 FACE=3D"Arial">I</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"></FONT> <FONT SIZE=3D2 =
-FACE=3D"Arial">have tried it both for DENX and Standard Fedora Core =
-5</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
-SIZE=3D2 FACE=3D"Arial">,</FONT> <FONT SIZE=3D2 =
-FACE=3D"Arial">neither</FONT> <FONT SIZE=3D2 =
-FACE=3D"Arial">w</FONT><FONT SIZE=3D2 FACE=3D"Arial">i</FONT><FONT =
-SIZE=3D2 FACE=3D"Arial">ll compile due to errors </FONT></SPAN></P>
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">I</FONT><FONT SIZE=3D2 FACE=3D"Arial">n</FONT> <FONT =
-SIZE=3D2 FACE=3D"Arial">the data structures, i.e.</FONT> <FONT SIZE=3D2 =
-FACE=3D"Arial">missing stuff.</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN><A NAME=3D""><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">-</FONT><FONT SIZE=3D2 =
-FACE=3D"Arial">Russ</FONT></SPAN></A><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P DIR=3DLTR><SPAN LANG=3D"en-us"></SPAN></P>
-
-</BODY>
-</HTML>
-------=_NextPart_000_0009_01C8633F.4A97F020--
+-- 
+Embedded Systems Engineer
+Alpha Golf
+(510) 526-7443, ext. 07
+65 Franciscan Way
+Kensington, CA 94707
