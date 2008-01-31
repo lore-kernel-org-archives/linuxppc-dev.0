@@ -1,23 +1,12 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 689E9DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 15:09:06 +1100 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 2/2] IB/ehca: Add PMA support
-References: <200801252111.11915.fenkes@de.ibm.com>
-	<200801252118.28122.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 30 Jan 2008 20:09:05 -0800
-In-Reply-To: <200801252118.28122.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Fri, 25 Jan 2008 21:18:27 +0100")
-Message-ID: <ada63xaab6m.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <536700B1-3F16-4342-8A9D-E1843CF67BAF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: git tree rebased
+Date: Wed, 30 Jan 2008 22:22:27 -0600
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,4 +16,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied 1-2
+Now that all the changes I had in my tree are in Linus's tree I'm  
+rebasing the master branch of my git tree to match linus.
+
+git.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
+
+Anyone using my tree should do a git-pull -f.
+
+- k
