@@ -1,21 +1,21 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 71B83DDF6C
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 06:23:09 +1100 (EST)
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 67FE3DDDED
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 06:27:43 +1100 (EST)
+Message-ID: <47A21543.6060003@scram.de>
+Date: Thu, 31 Jan 2008 19:36:51 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Kernel oops while duming user core.
-Date: Thu, 31 Jan 2008 13:23:08 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03EE4869@ismail.innsys.innovsys.com>
-In-Reply-To: <504DF4A9-6ED5-4208-84B4-FECC3FC90C0D@kernel.crashing.org>
-References: <DCEAAC0833DD314AB0B58112AD99B93B03EE44A5@ismail.innsys.innovsys.com>
-	<20080131161527.GT14201@localdomain>
-	<DCEAAC0833DD314AB0B58112AD99B93B03EE46B8@ismail.innsys.innovsys.com>
-	<504DF4A9-6ED5-4208-84B4-FECC3FC90C0D@kernel.crashing.org>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
+To: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
+Subject: Re: build fails for adder875 for new pulls of powerpc.git
+References: <mailman.1812.1201784040.6908.linuxppc-dev@ozlabs.org>
+	<39417DF3286A66428FA558987839F44F0356C232@SINTEFXCH01.sintef.no>
+	<47A2118B.2060808@scram.de>
+In-Reply-To: <47A2118B.2060808@scram.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Can you git-bisect to narrow this down further.
+Hi Rognlien,
 
-Not easilly, as the board port to arch/powerpc was done on 2.6.24-rc7
-and up.
-Is there an somewhat esy way in git to apply the differences from master
-branch to our board branch to a branch created by bisect?
+> Hi Rognlien,
+> 
+>> The latest commits to powerpc.git removes commproc.h files used by arch/powerpc/platforms/8xx/adder875.c
+>>
+>> The kernel fails to build for the adder configs.
+> 
+> This should fix it:
+> 
+> diff --git a/arch/powerpc/platforms/8xx/adder875.c b/arch/powerpc/platforms/8xx/adder875.c
+> index c6bc078..b49d62a 100644
+> --- a/arch/powerpc/platforms/8xx/adder875.c
+> +++ b/arch/powerpc/platforms/8xx/adder875.c
+> @@ -15,12 +15,12 @@
+>  
+>  #include <asm/time.h>
+>  #include <asm/machdep.h>
+> -#include <asm/commproc.h>
+> +#include <asm/cpm1.h>
+>  #include <asm/fs_pd.h>
+>  #include <asm/udbg.h>
+>  #include <asm/prom.h>
+>  
+> -#include <sysdev/commproc.h>
+> +#include "mpc8xx.h"
+>  
+>  struct cpm_pin {
+>  	int port, pin, flags;
 
-And I don't even know where this started to happen.
-Would trying arch/ppc help any? I have our arch/ppc port in a
-semiworking state for kernels up to 2.6.23
+sorry, this fix was incomplete. Scott Wood just posted a correct fix.
+
+Thanks,
+Jochen
