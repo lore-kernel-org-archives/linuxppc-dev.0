@@ -1,17 +1,21 @@
-Return-Path: <ssh@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
-	by ozlabs.org (Postfix) with ESMTP id CA33FDDE38
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 309AADE06E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Feb 2008 00:38:13 +1100 (EST)
-Message-ID: <47A1CF43.8070107@sgi.com>
-Date: Thu, 31 Jan 2008 07:38:11 -0600
-From: Steven Hein <ssh@sgi.com>
+	Fri,  1 Feb 2008 03:52:27 +1100 (EST)
+Message-ID: <47A1FC89.7000307@freescale.com>
+Date: Thu, 31 Jan 2008 10:51:21 -0600
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
+To: Steven Hein <ssh@sgi.com>
 Subject: Re: Configuring Freecale ucc_geth without a PHY
-References: <479F5D9B.8040403@sgi.com>
-	<20080129114310.3109caaa.kim.phillips@freescale.com>
-In-Reply-To: <20080129114310.3109caaa.kim.phillips@freescale.com>
+References: <479F5D9B.8040403@sgi.com>	<20080129114310.3109caaa.kim.phillips@freescale.com>
+	<47A1CF43.8070107@sgi.com>
+In-Reply-To: <47A1CF43.8070107@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,50 +28,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips wrote:
-> On Tue, 29 Jan 2008 11:08:43 -0600
-> Steven Hein <ssh@sgi.com> wrote:
->
->   
->> Hi all,
->>
->> I have a custom board with an MPC8358 (our board is based
->> off of the MPC8360E-MDS development board) that has its eth's
->> directly connected (GMII) to a Broadcom network switch
->> part on the same board, with no PHYs between them.
->> We've have been using a 2.6.16.18 kernel (from TimeSys) up
->> until now, and I hacked in some crude support for no-phy
->> configs forced to 100Mbit and 1Gbit speeds.   Now I'm
->> moving to 2.6.22 (with 8360 the patches from bitshrine.org),
->> and I'm trying to understand how I should do this with
->> device trees, the new PHY infrastructure, etc.   Has anyone
->> else needed this support?   Does anyone have any suggestions
->> as to how to tackle it?
->>     
->
-> check out the "fixed-link" property and associated code.  This
-> implementation came about after 2.6.22 though (it's commit-ish
-> v2.6.23-10096-ga21e282).
->
-> Kim
->   
-Thanks for the pointer Kim!     Using the "fixed-link" property
-code already in the tree, and adding the glue in ucc_geth.c to
-use it (modeled after the code in gianfar fix-link support
-in fsl_soc.c), I was able to get this working with me 8360 board.
+Steven Hein wrote:
 
-Is there a document anywhere that describes how to submit
-patches for the powerpc kernel?    Or do I just create the patch
-(I'm learning about git right now...) again the paulus/powerpc.git
-tree, and send it to this list?
 
-Thanks,
-Steve
+> Is there a document anywhere that describes how to submit
+> patches for the powerpc kernel?    Or do I just create the patch
+> (I'm learning about git right now...) again the paulus/powerpc.git
+> tree, and send it to this list?
+> 
 
--- 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
-Silicon Graphics, Inc.                          
-1168 Industrial Blvd.                 Phone: (715) 726-8410
-Chippewa Falls, WI 54729              Fax:   (715) 726-6715
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Correct.  Don't just lean toward git, actually use it.
+And paulus/powerpc.git is the right basis.
+
+Send it to the linuxppc-dev@ozlabs.org list, not here.
+
+jdl
