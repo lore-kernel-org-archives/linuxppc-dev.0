@@ -1,20 +1,18 @@
-Return-Path: <SRS0=TP32=SW=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 7D067DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 21:19:23 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-Date: Fri, 1 Feb 2008 11:18:56 +0100
-References: <20071210063216.89DBBDDE1E@ozlabs.org>
-In-Reply-To: <20071210063216.89DBBDDE1E@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802011118.57610.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <greg@kroah.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2C35DDDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 23:25:40 +1100 (EST)
+Subject: [PATCH] fix comment for ppc_md enable/disable irq hooks
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 18:12:21 +0100
+Message-Id: <1201799541.4149.31.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 10 December 2007, Benjamin Herrenschmidt wrote:
-> The current pci_assign_unassigned_resources() code doesn't work properly
-> on 32 bits platforms with 64 bits resources. The main reason is the use
-> of unsigned long in various places instead of resource_size_t.
->
-> This fixes it, along with some tricks to avoid casting to 64 bits on
-> platforms that don't need it in every printk around.
->
-> This is a pre-requisite for making powerpc use the generic code instead of
-> its own half-useful implementation.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+When committing the patch "Implement arch disable/enable irq hooks" in
+commit 7ac5dde99eb9fefdb526973c600075b7c5703a86 you changed the code to
+always call the generic decrementer/interrupt enabling/disabling but
+forgot to update the comment, this fixes that.
 
-Checking Linus's latest git repository, it seems this patch (and the 2nd from 
-this series) hasn't been applied till now. This is just a reminder, that it 
-gets in in this merge-window.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+ include/asm/machdep.h |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Thanks.
-
-Best regards,
-Stefan
+--- linux-2.6-git.orig/include/asm/machdep.h	2008-01-31 18:02:54.113774156 +0100
++++ linux-2.6-git/include/asm/machdep.h	2008-01-31 18:04:18.125023706 +0100
+@@ -253,10 +253,11 @@ struct machdep_calls {
+ #endif /* CONFIG_KEXEC */
+ 
+ #ifdef CONFIG_SUSPEND
+-	/* These are called to disable and enable, respectively, IRQs when
+-	 * entering a suspend state.  If NULL, then the generic versions
+-	 * will be called.  The generic versions disable/enable the
+-	 * decrementer along with interrupts.
++	/*
++	 * These are called before disabling and after enabling, respectively,
++	 * IRQs when entering a suspend state. The generic code will always
++	 * make sure local interrupts and the decrementer are disabled/enabled
++	 * properly.
+ 	 */
+ 	void (*suspend_disable_irqs)(void);
+ 	void (*suspend_enable_irqs)(void);
