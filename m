@@ -1,20 +1,32 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id ABEB7DDDEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:40:04 +1100 (EST)
-Message-ID: <47A1A137.8020605@scram.de>
-Date: Thu, 31 Jan 2008 11:21:43 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <bunk@kernel.org>
+Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
+	by ozlabs.org (Postfix) with ESMTP id 88C45DDDFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:47:04 +1100 (EST)
+Date: Thu, 31 Jan 2008 12:47:38 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080131104738.GA30750@cs181133002.pp.htv.fi>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org>
+	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
+	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
+	<20080130180623.GA24881@elte.hu>
+	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
+	<47A0CD4B.5040706@sgi.com>
+	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] [POWERPC] bootwrapper: build multiple cuImages
-References: <20080131003347.5779.96112.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080131003347.5779.96112.stgit@trillian.secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
+Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Mike Travis <travis@sgi.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
-
-> Currently, the kernel uses CONFIG_DEVICE_TREE to wrap a kernel image
-> with a fdt blob which means for any given configuration only one dts
-> file can be selected and so support for only one board can be built
+On Wed, Jan 30, 2008 at 11:33:29AM -0800, Luck, Tony wrote:
+> > I'm having trouble replicating this error.  With the latest linux-2.6.git
+> > plus the patch I just sent, I get the following errors:
+> >
+> > drivers/input/mouse/psmouse-base.c:45: error: __param_proto causes a section type conflict
+> > drivers/md/md.c:5881: error: __param_start_ro causes a section type conflict
 > 
-> This patch moves the selection of the default .dts file out of the kernel
-> config and into the bootwrapper makefile.  The makefile chooses which
-> images to build based on the kernel config and the dts source file
-> name is taken directly from the image name.  For example "cuImage.ebony"
-> will use "ebony.dts" as the device tree source file.
+> Weird.  psmouse-base.c builds ok for me.  Perhaps there is a compiler
+> version difference?  I'm running a rather old 3.4.6 that came with
+> my RHEL 4.5 release.
+>...
 
-Cool stuff. This should be the last step to enable multiplatform builds on
-8xx etc. as Arndt asked a few days ago ;)
+It depends on the compiler version.
 
-Thanks,
-Jochen
+And you were in the Cc of Ivan's patch that fixes it... [1]
+
+> -Tony
+
+cu
+Adrian
+
+[1] http://lkml.org/lkml/2007/12/27/29
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
