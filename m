@@ -1,115 +1,71 @@
-Return-Path: <lorenzo@alphagolf.com>
-Received: from fallback-mx1.atl.registeredsite.com
-	(fallback-mx1.atl.registeredsite.com [64.224.219.95])
-	by ozlabs.org (Postfix) with ESMTP id 8ADA5DDDF7
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Jan 2008 12:44:04 +1100 (EST)
-Received: from mail26.atl.registeredsite.com (mail26.atl.registeredsite.com
-	[216.247.37.21])
-	by fallback-mx1.atl.registeredsite.com (8.12.11.20060308/8.12.11) with
-	ESMTP id m0V15hfm006507
-	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 20:05:43 -0500
-Received: from imta06a2.registeredsite.com (imta06a2.registeredsite.com
-	[64.225.255.15])
-	by mail26.atl.registeredsite.com (8.12.11.20060308/8.12.11) with ESMTP
-	id m0V15Ukt016872
-	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 20:05:30 -0500
-Received: from [192.168.1.118] ([71.198.169.42])
-	by imta06a2.registeredsite.com with ESMTP id
-	<20080131010530.WVKP23784.imta06a2.registeredsite.com@[192.168.1.118]>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Jan 2008 20:05:30 -0500
-Message-ID: <47A11DCD.208@alphagolf.com>
-Date: Wed, 30 Jan 2008 17:01:01 -0800
-From: "Lorenzo T. Flores" <lorenzo@alphagolf.com>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 59E27DDE3D
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 00:45:36 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: compilation errors...sorry, sigh...
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Kernel oops while duming user core.
+Date: Thu, 31 Jan 2008 07:45:33 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03EE44A5@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-dev@ozlabs.org>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hey all,
+Hi
 
-I was wondering if anyone could help me figure out what to do next as 
-far as some compilation errors are concerned.
+I get the following kernel core while a user program I have is dumping
+core.
+Any DIeas at what to look for? (this is runnign 2.6.24, arch/powerpc on
+a 8280)
+When runnign the program on 2.6.18 arch/ppc, the program gets a sig 11
+and dumps core.
+On 2.6.24, I ghet the kernel oops, and then the program hangs sround
+forever and is unkillable.
 
-I'm working with an Avnet 4vfx12ls eval board (has virtex-4 and PPC).
-
-Now, I've generated BSP files using Xilinx XPS, and from past posts on 
-this forum found the Secret Lab's virtex 2.6 git tree (not sure if I'm 
-using proper terminology, feel free to correct me, please!)
-
-Well, I copied in the BSP files into the distribution. Ran 'make 
-menuconfig' then 'make bzImage'
-
-Here's the errors I get:
-
----------------------------------------------------------------------
- GEN     .version
-  CHK     include/linux/compile.h
-dnsdomainname: Unknown host
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-kernel/built-in.o: In function `enable_all_kprobes':
-kernel/kprobes.c:926: undefined reference to `arch_arm_kprobe'
-kernel/built-in.o: In function `disable_all_kprobes':
-kernel/kprobes.c:957: undefined reference to `arch_disarm_kprobe'
-kernel/kprobes.c:956: undefined reference to `arch_trampoline_kprobe'
-kernel/built-in.o: In function `init_kprobes':
-kernel/kprobes.c:823: undefined reference to `arch_init_kprobes'
-kernel/built-in.o: In function `report_probe':
-kernel/kprobes.c:838: undefined reference to `setjmp_pre_handler'
-kernel/kprobes.c:838: undefined reference to `setjmp_pre_handler'
-kernel/built-in.o: In function `unregister_kprobe':
-kernel/kprobes.c:610: undefined reference to `arch_disarm_kprobe'
-kernel/kprobes.c:632: undefined reference to `arch_remove_kprobe'
-kernel/built-in.o: In function `pre_handler_kretprobe':
-kernel/kprobes.c:702: undefined reference to `arch_prepare_kretprobe'
-kernel/built-in.o: In function `in_kprobes_functions':
-kernel/kprobes.c:495: undefined reference to `__kprobes_text_start'
-kernel/kprobes.c:495: undefined reference to `__kprobes_text_start'
-kernel/kprobes.c:495: undefined reference to `__kprobes_text_end'
-kernel/kprobes.c:495: undefined reference to `__kprobes_text_end'
-kernel/built-in.o: In function `__register_kprobe':
-kernel/kprobes.c:556: undefined reference to `arch_prepare_kprobe'
-kernel/kprobes.c:565: undefined reference to `arch_arm_kprobe'
-kernel/built-in.o: In function `register_jprobe':
-kernel/kprobes.c:669: undefined reference to `setjmp_pre_handler'
-kernel/kprobes.c:669: undefined reference to `setjmp_pre_handler'
-kernel/kprobes.c:670: undefined reference to `longjmp_break_handler'
-kernel/kprobes.c:670: undefined reference to `longjmp_break_handler'
-kernel/built-in.o:(__ksymtab_gpl+0x398): undefined reference to 
-`jprobe_return'
-kernel/built-in.o:(.data+0x4a84): undefined reference to 
-`kprobe_exceptions_notify'
-make: *** [.tmp_vmlinux1] Error 1
----------------------------------------------------------------------
-
-I'm using ELDK's ppc_4xx toolchain.
-
-Any info or links to relevant posts would be so much appreciated. I 
-looked through the archives and know my answers are probably in there 
-somewhere...I'm just not sure if I could distill the proper information.
-
-Thank you all for any input!
-
-best,
-Lorenzo Flores
-
-
-
--- 
-Embedded Systems Engineer
-Alpha Golf
-(510) 526-7443, ext. 07
-65 Franciscan Way
-Kensington, CA 94707
+Unable to handle kernel paging request for data at address 0x48024000
+Faulting instruction address: 0xc000ef88
+Oops: Kernel access of bad area, sig: 11 [#1]
+PREEMPT Innovative Systems ApMax
+Modules linked in: drv_wd(P) drv_scc devcom drv_pcir tipc drv_ss7
+drv_auxcpu drv_leds(P) drv_ethsw proc_sysinfo(P) i2c_8266(P)
+NIP: c000ef88 LR: c0012180 CTR: 00000080
+REGS: eebc9b70 TRAP: 0300   Tainted: P         (2.6.24)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 24004442  XER: 00000000
+DAR: 48024000, DSISR: 20000000
+TASK =3D eebac3c0[3131] 'armd' THREAD: eebc8000
+GPR00: ee9b7d00 eebc9c20 eebac3c0 48024000 00000080 399a4181 48024000
+00000000
+GPR08: 399a4181 ee9b7d00 00000000 c2000000 44004422 10100f38 ee82fc00
+bfffffff
+GPR16: ef377060 00000030 ee9b7d00 00000000 eebc9cdc 00000011 eebc9cd8
+eeb96480
+GPR24: ee9b7d00 399a4181 48024000 eeb9a370 eeb9a370 399a4181 48024000
+c2733480
+NIP [c000ef88] __flush_dcache_icache+0x14/0x40
+LR [c0012180] update_mmu_cache+0x74/0x114
+Call Trace:
+[eebc9c20] [eebc8000] 0xeebc8000 (unreliable)
+[eebc9c40] [c005d060] handle_mm_fault+0x630/0xbc0
+[eebc9c80] [c005d9e4] get_user_pages+0x3f4/0x4fc
+[eebc9cd0] [c00aa7c4] elf_core_dump+0x9a4/0xc5c
+[eebc9d60] [c00779e4] do_coredump+0x6e0/0x748
+[eebc9e50] [c002a5b0] get_signal_to_deliver+0x40c/0x45c
+[eebc9e80] [c0008ce8] do_signal+0x50/0x294
+[eebc9f40] [c000fb98] do_user_signal+0x74/0xc4
+--- Exception: 300 at 0x10044efc
+    LR =3D 0x10044ec0
+Instruction dump:
+4d820020 7c8903a6 7c001bac 38630020 4200fff8 7c0004ac 4e800020 60000000
+54630026 38800080 7c8903a6 7c661b78 <7c00186c> 38630020 4200fff8
+7c0004ac
+---[ end trace 97db37eaf213da3c ]---
+note: armd[3131] exited with preempt_count 2
+=20
