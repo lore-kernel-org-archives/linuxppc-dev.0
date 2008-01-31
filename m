@@ -1,20 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5B0EADE20E
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 05:57:15 +1100 (EST)
-Date: Thu, 31 Jan 2008 12:56:58 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: correct 2nd pci controller interrupt value in
-	mpc834x_mds dts
-Message-Id: <20080131125658.c40b830f.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: peter.vanackeren@freescale.com
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 41C70DDFDC
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 06:09:28 +1100 (EST)
+Message-ID: <47A2118B.2060808@scram.de>
+Date: Thu, 31 Jan 2008 19:20:59 +0100
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
+Subject: Re: build fails for adder875 for new pulls of powerpc.git
+References: <mailman.1812.1201784040.6908.linuxppc-dev@ozlabs.org>
+	<39417DF3286A66428FA558987839F44F0356C232@SINTEFXCH01.sintef.no>
+In-Reply-To: <39417DF3286A66428FA558987839F44F0356C232@SINTEFXCH01.sintef.no>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-according to the 8349EA ref man, pci2 IRQ is 67.  Thanks to Peter
-Van Ackeren for finding this.
+Hi Rognlien,
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/boot/dts/mpc834x_mds.dts |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> The latest commits to powerpc.git removes commproc.h files used by arch/powerpc/platforms/8xx/adder875.c
+> 
+> The kernel fails to build for the adder configs.
 
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index 7480eda..0199c5c 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -332,7 +332,7 @@
- 				 0xc000 0x0 0x0 0x3 &ipic 23 0x8
- 				 0xc000 0x0 0x0 0x4 &ipic 20 0x8>;
- 		interrupt-parent = <&ipic>;
--		interrupts = <66 0x8>;
-+		interrupts = <67 0x8>;
- 		bus-range = <0 0>;
- 		ranges = <0x02000000 0x0 0xb0000000 0xb0000000 0x0 0x10000000
- 			  0x42000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
--- 
-1.5.2.2
+This should fix it:
+
+diff --git a/arch/powerpc/platforms/8xx/adder875.c b/arch/powerpc/platforms/8xx/adder875.c
+index c6bc078..b49d62a 100644
+--- a/arch/powerpc/platforms/8xx/adder875.c
++++ b/arch/powerpc/platforms/8xx/adder875.c
+@@ -15,12 +15,12 @@
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+ #include <asm/fs_pd.h>
+ #include <asm/udbg.h>
+ #include <asm/prom.h>
+ 
+-#include <sysdev/commproc.h>
++#include "mpc8xx.h"
+ 
+ struct cpm_pin {
+ 	int port, pin, flags;
+
+Thanks,
+Jochen
