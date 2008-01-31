@@ -1,18 +1,20 @@
-Return-Path: <linwoes@gmail.com>
-Received: from brick.irobot.com (smtp1.irobot.com [66.238.211.203])
-	by ozlabs.org (Postfix) with ESMTP id 56259DDE02
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 07:32:43 +1100 (EST)
-From: Brian Waite <linwoes@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Reminder: removal of arch/ppc
-Date: Thu, 31 Jan 2008 15:20:16 -0500
-References: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
-In-Reply-To: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 5DF56DDFAB
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 07:39:01 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200801311520.16544.linwoes@gmail.com>
-Reply-To: linwoes@gmail.com
+	charset="us-ascii"
+Subject: RE: Kernel oops while duming user core.
+Date: Thu, 31 Jan 2008 14:38:59 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03EE4977@ismail.innsys.innovsys.com>
+In-Reply-To: <20080131201601.GA10501@loki.buserror.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03EE46B8@ismail.innsys.innovsys.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B03EE47A4@ismail.innsys.innovsys.com>
+	<20080131201601.GA10501@loki.buserror.net>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +24,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 25 January 2008, Kumar Gala wrote:
-> Just a reminder that the plan is to remove arch/ppc this summer (June
-> 2008).  The following boards still existing over in arch/ppc.  Some of
-> them have been ported over to arch/powerpc.  If you care about one of
-> these boards and its not ported speak up (it helps if you have access
-> to the board).  Also, if you know a given board is free to die of
-> bitrot let us know so we know not to worry about it:
->
-> 	PREP
-> 	PQ2ADS
-> 	TQM8260
-> 	CPCI690
-> 	EV64260
-> 	CHESTNUT
-> 	LOPEC
-> 	KATANA
-> 	HDPU
-HDPU can die. The company is not maintaining the platform anymore.
+Scott Wood wrote:
+> Does it happen without preempt?
 
-
-Thanks
-Brian
+Yes
