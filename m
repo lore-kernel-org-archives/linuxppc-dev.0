@@ -1,23 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E72A5DDE44
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 15:31:15 +1100 (EST)
-Message-Id: <B4093288-C5F4-472D-BA13-EA83C616A0D6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080121204953.GA11384@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
-	(was: Re: fixed phy support (warning related to FIXED_MII_100_FDX))
-Date: Wed, 30 Jan 2008 22:30:38 -0600
-References: <416B8C5D-109C-4C03-807D-7EBB0AA9C366@kernel.crashing.org>
-	<20080121204953.GA11384@localhost.localdomain>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Eugene Konev <ejka@imfi.kspu.ru>, Jeff Garzik <jeff@garzik.org>,
-	netdev@vger.kernel.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BA339DDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 16:57:49 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m0V5vSPO023680
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 22:57:38 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m0V5vQJA023743
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2008 23:57:27 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 4/6] Add multi mport support.
+Date: Thu, 31 Jan 2008 13:57:25 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD0677@zch01exm26.fsl.freescale.net>
+In-Reply-To: <AF4B8466-C1CE-4FFB-8341-4BFC1CB76116@kernel.crashing.org>
+References: <1201689053956-git-send-email-wei.zhang@freescale.com>
+	<12016890621727-git-send-email-wei.zhang@freescale.com>
+	<120168907160-git-send-email-wei.zhang@freescale.com>
+	<12016890773706-git-send-email-wei.zhang@freescale.com>
+	<AF4B8466-C1CE-4FFB-8341-4BFC1CB76116@kernel.crashing.org>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> From: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Subject: [PATCH] [NET] cpmac: convert to new Fixed PHY infrastructure
->
-> This patch converts cpmac to the new Fixed PHY infrastructure,  
-> though it
-> doesn't fix all the problems with that driver. I didn't even bother to
-> test this patch to compile, because cpmac driver is broken in  
-> several ways:
->
-> 1. This driver won't compile by itself because lack of its header  
-> describing
->   platform data;
-> 2. It assumes that fixed PHYs should be created by the ethernet  
-> driver.
->   It is wrong assumption: fixed PHYs creation is platform code  
-> authority,
->   driver must blindly accept bus_id and phy_id platform data variables
->   instead.
->
-> Also, it seem that that driver doesn't have actual in-tree users, so
-> nothing to fix further.
->
-> The main purpose of that patch is to get rid of the following Kconfig
-> warning:
->
-> scripts/kconfig/conf -s arch/powerpc/Kconfig
-> drivers/net/Kconfig:1713:warning: 'select' used by config symbol
-> 'CPMAC' refers to undefined symbol 'FIXED_MII_100_FDX'
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/net/Kconfig |    4 +--
-> drivers/net/cpmac.c |   55 +++++++++++++++ 
-> +----------------------------------
-> 2 files changed, 19 insertions(+), 40 deletions(-)
+=20
 
-applied.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+>=20
+> On Jan 30, 2008, at 4:30 AM, Zhang Wei wrote:
+>=20
+> > Change lots of static variable to mport private. And add=20
+> mport to some
+> > function declaration.
+>=20
+> Can you explain this patch further.  Its not clear exactly from this =20
+> commit message why we are doing this.
+>=20
+> - k
 
-- k
+Sorry about I have a little hurry about it.
+
+The original RapidIO driver suppose there is only one mpc85xx RIO
+controller
+in system. So, some data structures are defined as mpc85xx_rio global,
+such as 'regs_win', 'dbell_ring', 'msg_tx_ring'. Now, I changed them to
+mport's private members. And you can define multi RIO OF-nodes in dts
+file
+for multi RapidIO controller in one processor, such as PCI/PCI-Ex host
+controllers
+in Freescale's silicon. And the mport operation function declaration
+should be changed
+to know which RapidIO controller is target.
+
+Thanks!
+Wei
