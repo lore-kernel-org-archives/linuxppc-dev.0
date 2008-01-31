@@ -1,18 +1,23 @@
-Return-Path: <Dag.K.Rognlien@sintef.no>
-Received: from smtpb.sintef.no (smtpb.sintef.no [129.241.253.24])
-	by ozlabs.org (Postfix) with ESMTP id BAA47DDE04
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 01:18:52 +1100 (EST)
-Received: from sintefav1.sintef.no (sintefav1.sintef.no [129.241.253.14])
-	by smtpb.sintef.no (Postfix) with ESMTP id 2D6E372D9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 15:18:48 +0100 (CET)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C86414.36015B7F"
-Subject: build fails for adder875 for new pulls of powerpc.git
-Date: Thu, 31 Jan 2008 15:18:54 +0100
-Message-ID: <39417DF3286A66428FA558987839F44F0356C232@SINTEFXCH01.sintef.no>
-References: <mailman.1812.1201784040.6908.linuxppc-dev@ozlabs.org>
-From: "Rognlien Dag Kristian" <Dag.K.Rognlien@sintef.no>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB9BEDDE47
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 03:00:55 +1100 (EST)
+Date: Thu, 31 Jan 2008 10:00:42 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] [POWERPC] bootwrapper: build multiple cuImages
+Message-ID: <20080131160042.GA24370@ld0162-tx32.am.freescale.net>
+References: <20080131003347.5779.96112.stgit@trillian.secretlab.ca>
+	<20080131014952.83827290071@mail95-dub.bigfish.com>
+	<fa686aa40801301840k3d9a9ba2n251d2cdb9e659748@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40801301840k3d9a9ba2n251d2cdb9e659748@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,73 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Wed, Jan 30, 2008 at 07:40:28PM -0700, Grant Likely wrote:
+> mpc866ads, mpc885ads and ep88xc are oddities in that they build
+> zImages with embedded device tree blobs.  
 
-------_=_NextPart_001_01C86414.36015B7F
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+What about ep8248e?  And the mpc8xxads boards use cuImage, not zImage.
 
+> One option would be to add two new targets: zImage.dtb.% and
+> zImage.initrd.dtb.%, but I'm not sure if it is a good idea.
 
-The latest commits to powerpc.git removes commproc.h files used by =
-arch/powerpc/platforms/8xx/adder875.c
+I'd much prefer that over having several lines per board in the makefile.
 
-The kernel fails to build for the adder configs.
-
-Regards,
-Dag Rognlien
-
-------_=_NextPart_001_01C86414.36015B7F
-Content-Type: application/ms-tnef;
-	name="winmail.dat"
-Content-Transfer-Encoding: base64
-
-eJ8+IjgOAQaQCAAEAAAAAAABAAEAAQeQBgAIAAAA5AQAAAAAAADoAAEIgAcAGAAAAElQTS5NaWNy
-b3NvZnQgTWFpbC5Ob3RlADEIAQ2ABAACAAAAAgACAAEEgAEANgAAAGJ1aWxkIGZhaWxzIGZvciBh
-ZGRlcjg3NSBmb3IgbmV3IHB1bGxzIG9mIHBvd2VycGMuZ2l0ABITAQWAAwAOAAAA2AcBAB8ADwAS
-ADYABABaAQEggAMADgAAANgHAQAfAA8AEgA3AAQAWwEBCYABACEAAAAzRTVFODYwRDA0QTYzNzRG
-ODE2MTUyQ0I1NzBBNTg4MgADBwEDkAYAUAkAADkAAAADACYAAAAAAAMANgAAAAAAQAA5AH9bATYU
-ZMgBHgA9AAEAAAABAAAAAAAAAAIBRwABAAAANAAAAGM9Tk87YT0gO3A9U0lOVEVGO2w9U0lOVEVG
-WENIMDEtMDgwMTMxMTQxODU0Wi0yOTU1OQAeAEkAAQAAACcAAABMaW51eHBwYy1kZXYgRGlnZXN0
-LCBWb2wgNDEsIElzc3VlIDMyOQAAQABOAADkQFkIZMgBHgBaAAEAAAAvAAAAbGludXhwcGMtZGV2
-LWJvdW5jZXMrZGFncj1zaW50ZWYubm9Ab3psYWJzLm9yZwAAAgFbAAEAAAB7AAAAAAAAAIErH6S+
-oxAZnW4A3QEPVAIAAAAAbGludXhwcGMtZGV2LWJvdW5jZXMrZGFncj1zaW50ZWYubm9Ab3psYWJz
-Lm9yZwBTTVRQAGxpbnV4cHBjLWRldi1ib3VuY2VzK2RhZ3I9c2ludGVmLm5vQG96bGFicy5vcmcA
-AAIBXAABAAAANAAAAFNNVFA6TElOVVhQUEMtREVWLUJPVU5DRVMrREFHUj1TSU5URUYuTk9AT1pM
-QUJTLk9SRwAeAF0AAQAAACAAAABsaW51eHBwYy1kZXYtcmVxdWVzdEBvemxhYnMub3JnAAIBXgAB
-AAAAXQAAAAAAAACBKx+kvqMQGZ1uAN0BD1QCAAAAAGxpbnV4cHBjLWRldi1yZXF1ZXN0QG96bGFi
-cy5vcmcAU01UUABsaW51eHBwYy1kZXYtcmVxdWVzdEBvemxhYnMub3JnAAAAAAIBXwABAAAAJQAA
-AFNNVFA6TElOVVhQUEMtREVWLVJFUVVFU1RAT1pMQUJTLk9SRwAAAAAeAGYAAQAAAAUAAABTTVRQ
-AAAAAB4AZwABAAAALwAAAGxpbnV4cHBjLWRldi1ib3VuY2VzK2RhZ3I9c2ludGVmLm5vQG96bGFi
-cy5vcmcAAB4AaAABAAAABQAAAFNNVFAAAAAAHgBpAAEAAAAgAAAAbGludXhwcGMtZGV2LXJlcXVl
-c3RAb3psYWJzLm9yZwAeAHAAAQAAADYAAABidWlsZCBmYWlscyBmb3IgYWRkZXI4NzUgZm9yIG5l
-dyBwdWxscyBvZiBwb3dlcnBjLmdpdAAAAAIBcQABAAAAGwAAAAHIZAiS8K2aQlhd6kfbjCnErZ7+
-dwUAAqI7bAAeAHQAAQAAABgAAABsaW51eHBwYy1kZXZAb3psYWJzLm9yZwAeABoMAQAAABYAAABS
-b2dubGllbiBEYWcgS3Jpc3RpYW4AAAAeAB0OAQAAADYAAABidWlsZCBmYWlscyBmb3IgYWRkZXI4
-NzUgZm9yIG5ldyBwdWxscyBvZiBwb3dlcnBjLmdpdAAAAAIBCRABAAAAMAEAACwBAADXAQAATFpG
-dfOpP+oDAAoAcmNwZzEyNeIyA0N0ZXgFQQEDAff/CoACpAPkBxMCgA/zAFAEVj8IVQeyESUOUQMB
-AgBjaOEKwHNldDIGAAbDESX2MwRGE7cwEiwRMwjvCfe2OxgfDjA1ESIMYGMAUPMLCQFkMzYWUAum
-CuMKgLBUaGUgC2AOsHMFQCEFoG1taXQEIHRvECBwb3cEkHBjLtpnHkAgGCAEYHYHkR4CxnADYB8Q
-aCBmAxAHkYJ1FBBkIGJ5IArAPRPQLx61IcAdkQIQcm0Acy84eHgvYWThBIE4NzUuAOAdAxz4qmsE
-kWUDIGYLcGweY/xidQMQITAikR5wHWEjM0Ud8W4goGdzLiPaUiRlZwsRcywc9ERh4mcH8WdubAiQ
-C5AdAwJ9KmAeADUQAQAAAEEAAAA8Mzk0MTdERjMyODZBNjY0MjhGQTU1ODk4NzgzOUY0NEYwMzU2
-QzIzMkBTSU5URUZYQ0gwMS5zaW50ZWYubm8+AAAAAB4AORABAAAANwAAADxtYWlsbWFuLjE4MTIu
-MTIwMTc4NDA0MC42OTA4LmxpbnV4cHBjLWRldkBvemxhYnMub3JnPgAAHgBHEAEAAAAPAAAAbWVz
-c2FnZS9yZmM4MjIAAAsA8hABAAAAHwDzEAEAAAB0AAAAYgB1AGkAbABkACAAZgBhAGkAbABzACAA
-ZgBvAHIAIABhAGQAZABlAHIAOAA3ADUAIABmAG8AcgAgAG4AZQB3ACAAcAB1AGwAbABzACAAbwBm
-ACAAcABvAHcAZQByAHAAYwAuAGcAaQB0AC4ARQBNAEwAAAALAPYQAAAAAEAABzA/wtIbE2TIAUAA
-CDCR6jw2FGTIAQMA3j+vbwAAAwDxPwkEAAAeAPg/AQAAABYAAABSb2dubGllbiBEYWcgS3Jpc3Rp
-YW4AAAACAfk/AQAAAEoAAAAAAAAA3KdAyMBCEBq0uQgAKy/hggEAAAAAAAAAL089U0lOVEVGL09V
-PVNUSUZURUxTRU4vQ049UkVDSVBJRU5UUy9DTj1EQUdSAAAAHgD6PwEAAAAVAAAAU3lzdGVtIEFk
-bWluaXN0cmF0b3IAAAAAAgH7PwEAAAAeAAAAAAAAANynQMjAQhAatLkIACsv4YIBAAAAAAAAAC4A
-AAADAP0/5AQAAAMAGUAAAAAAAwAaQAAAAAADAB1AAAAAAAMAHkAAAAAAHgAwQAEAAAAFAAAAREFH
-UgAAAAAeADFAAQAAAAUAAABEQUdSAAAAAB4AMkABAAAALwAAAGxpbnV4cHBjLWRldi1ib3VuY2Vz
-K2RhZ3I9c2ludGVmLm5vQG96bGFicy5vcmcAAB4AM0ABAAAAIAAAAGxpbnV4cHBjLWRldi1yZXF1
-ZXN0QG96bGFicy5vcmcAHgA4QAEAAAAFAAAAREFHUgAAAAAeADlAAQAAAAIAAAAuAAAAAwB2QP//
-//8LACkAAAAAAAsAIwAAAAAAAwAGEPZaFroDAAcQlQAAAAMAEBAAAAAAAwAREAAAAAAeAAgQAQAA
-AGUAAABUSEVMQVRFU1RDT01NSVRTVE9QT1dFUlBDR0lUUkVNT1ZFU0NPTU1QUk9DSEZJTEVTVVNF
-REJZQVJDSC9QT1dFUlBDL1BMQVRGT1JNUy84WFgvQURERVI4NzVDVEhFS0VSTkVMAAAAAAIBfwAB
-AAAAQQAAADwzOTQxN0RGMzI4NkE2NjQyOEZBNTU4OTg3ODM5RjQ0RjAzNTZDMjMyQFNJTlRFRlhD
-SDAxLnNpbnRlZi5ubz4AAAAAL0U=
-
-------_=_NextPart_001_01C86414.36015B7F--
+-Scott
