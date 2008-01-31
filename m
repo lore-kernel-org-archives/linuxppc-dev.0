@@ -1,17 +1,25 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 508B1DDE01
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 17:41:21 +1100 (EST)
-Date: Thu, 31 Jan 2008 00:41:30 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [POWERPC] Set dma_data correctly for direct_ops on pasemi
-Message-ID: <20080131064130.GA32344@lixom.net>
-References: <18337.8955.539106.868486@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18337.8955.539106.868486@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1E7EBDDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 18:34:38 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m0V7YYJl005664
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 00:34:35 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m0V7YXgx010237
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 01:34:34 -0600 (CST)
+From: y@az33smr01.freescale.net
+To: galak@kernel.crashing.org
+Subject: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
+Date: Thu, 31 Jan 2008 15:45:28 +0800
+Message-Id: <12017655292517-git-send-email-y>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-More late-caught fallout from the mainline merge. The patch:
+From: Zhang Wei <wei.zhang@freescale.com>
 
-[POWERPC] Use archdata.dma_data in dma_direct_ops and add the offset
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-"Now that all platforms using dma_direct_offset setup the
-archdata.dma_data correctly, ..."
-
-Nope -- the pasemi iommu setup code that disables translation on the
-DMA pci device didn't set dma_data correctly.
-
-The below patch is needed, please merge as soon as practical. Thanks!
-
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
-index 9916a0f..c5cfd4b 100644
---- a/arch/powerpc/platforms/pasemi/iommu.c
-+++ b/arch/powerpc/platforms/pasemi/iommu.c
-@@ -182,8 +182,10 @@ static void pci_dma_dev_setup_pasemi(struct pci_dev *dev)
- 	 * CONFIG_PPC_PASEMI_IOMMU_DMA_FORCE at build time.
- 	 */
- 	if (dev->vendor == 0x1959 && dev->device == 0xa007 &&
--	    !firmware_has_feature(FW_FEATURE_LPAR))
-+	    !firmware_has_feature(FW_FEATURE_LPAR)) {
- 		dev->dev.archdata.dma_ops = &dma_direct_ops;
-+		dev->dev.archdata.dma_data = 0;
-+	}
- #endif
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index 556a9ca..1a0fce5 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -25,6 +25,7 @@
+ 		serial1 = &serial1;
+ 		pci0 = &pci0;
+ 		pci1 = &pci1;
++		rapidio0 = &rapidio0;
+ 	};
  
- 	dev->dev.archdata.dma_data = &iommu_table_iobmap;
+ 	cpus {
+@@ -499,4 +500,16 @@
+ 				  0 00100000>;
+ 		};
+ 	};
++
++	rapidio0: rapidio@f80c0000 {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		compatible = "fsl,rapidio-delta";
++		reg = <f80c0000 20000>;
++		ranges = <0 0 c0000000 0 20000000>;
++		interrupt-parent = <&mpic>;
++		/* err_irq bell_outb_irq bell_inb_irq
++			msg1_tx_irq msg1_rx_irq	msg2_tx_irq msg2_rx_irq */
++		interrupts = <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
++	};
+ };
+-- 
+1.5.2
