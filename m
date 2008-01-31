@@ -1,32 +1,19 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
-	by ozlabs.org (Postfix) with ESMTP id 88C45DDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:47:04 +1100 (EST)
-Date: Thu, 31 Jan 2008 12:47:38 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
-Message-ID: <20080131104738.GA30750@cs181133002.pp.htv.fi>
-References: <200801301414.m0UEEgCC006371@hera.kernel.org>
-	<Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be>
-	<47A09F8A.3000309@sgi.com> <20080130161036.GA12293@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757C72@orsmsx424.amr.corp.intel.com>
-	<20080130180623.GA24881@elte.hu>
-	<1FE6DD409037234FAB833C420AA843EC757DEA@orsmsx424.amr.corp.intel.com>
-	<47A0CD4B.5040706@sgi.com>
-	<1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757F12@orsmsx424.amr.corp.intel.com>
-Cc: sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Mike Travis <travis@sgi.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] [POWERPC] Set dma_data correctly for direct_ops on pasemi
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20080131064130.GA32344@lixom.net>
+References: <18337.8955.539106.868486@cargo.ozlabs.ibm.com>
+	<20080131064130.GA32344@lixom.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-EPM7Uj0F70fBST1GlZel"
+Date: Thu, 31 Jan 2008 23:38:16 +1100
+Message-Id: <1201783096.4147.3.camel@concordia>
+Mime-Version: 1.0
+Cc: torvalds@linux-foundation.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,32 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 30, 2008 at 11:33:29AM -0800, Luck, Tony wrote:
-> > I'm having trouble replicating this error.  With the latest linux-2.6.git
-> > plus the patch I just sent, I get the following errors:
-> >
-> > drivers/input/mouse/psmouse-base.c:45: error: __param_proto causes a section type conflict
-> > drivers/md/md.c:5881: error: __param_start_ro causes a section type conflict
-> 
-> Weird.  psmouse-base.c builds ok for me.  Perhaps there is a compiler
-> version difference?  I'm running a rather old 3.4.6 that came with
-> my RHEL 4.5 release.
->...
 
-It depends on the compiler version.
+--=-EPM7Uj0F70fBST1GlZel
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-And you were in the Cc of Ivan's patch that fixes it... [1]
+On Thu, 2008-01-31 at 00:41 -0600, Olof Johansson wrote:
+> More late-caught fallout from the mainline merge. The patch:
+>=20
+> [POWERPC] Use archdata.dma_data in dma_direct_ops and add the offset
+>=20
+> "Now that all platforms using dma_direct_offset setup the
+> archdata.dma_data correctly, ..."
+>=20
+> Nope -- the pasemi iommu setup code that disables translation on the
+> DMA pci device didn't set dma_data correctly.
+>=20
+> The below patch is needed, please merge as soon as practical. Thanks!
 
-> -Tony
+Sorry about that.
 
-cu
-Adrian
+I'm confused though, didn't your device come from alloc_pci_dev() which
+kzalloc()s the pci_dev which contains the archdata which contains the
+dma_data, ie. dma_data will already be 0?
 
-[1] http://lkml.org/lkml/2007/12/27/29
+cheers
 
--- 
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-EPM7Uj0F70fBST1GlZel
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHocE4dSjSd0sB4dIRAkL3AKCz10lzJBXjgl/1NslBjwZGrLxvLwCgvYwH
+Tq2X4ThcC6gkilXzd55eiUc=
+=U+0H
+-----END PGP SIGNATURE-----
+
+--=-EPM7Uj0F70fBST1GlZel--
