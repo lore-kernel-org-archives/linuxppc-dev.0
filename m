@@ -1,23 +1,31 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound8-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C68C6DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 05:42:14 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] [XILINX][HWICAP] Xilinx Internal Configuration Access
-	Port device driver.
-Date: Thu, 31 Jan 2008 10:41:34 -0800
-In-Reply-To: <871wa1xrhc.fsf@macbook.be.48ers.dk>
-References: <20071204235725.61AD6A08071@mail81-dub.bigfish.com>
-	<871wa1xrhc.fsf@macbook.be.48ers.dk>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Message-Id: <20080131184140.E98E11628070@mail172-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pterry@micromemory.com>
+Received: from mail.micromemory.com (unknown [67.95.226.74])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 05398DDF88
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 05:43:26 +1100 (EST)
+Received: from [192.168.0.90] by micromemory.com (MDaemon PRO v9.6.4)
+	with ESMTP id md50000533563.msg
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 10:35:27 -0800
+Subject: RE: [PATCH 4/6] Add multi mport support.
+From: Phil Terry <pterry@micromemory.com>
+To: Wei.Zhang@freescale.com
+In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AEBD0697@zch01exm26.fsl.freescale.net>
+References: <1201689053956-git-send-email-wei.zhang@freescale.com>
+	<12016890621727-git-send-email-wei.zhang@freescale.com>
+	<120168907160-git-send-email-wei.zhang@freescale.com>
+	<12016890773706-git-send-email-wei.zhang@freescale.com>
+	<AF4B8466-C1CE-4FFB-8341-4BFC1CB76116@kernel.crashing.org>
+	<ABF87B0B6A38C0458E319AC973ED68AEBD0677@zch01exm26.fsl.freescale.net>
+	<EC566605-6890-4983-8700-3B15C9EFC1C5@kernel.crashing.org>
+	<F2D2FCC7-D1ED-4DC6-BE7A-EE2755CCE125@kernel.crashing.org>
+	<ABF87B0B6A38C0458E319AC973ED68AEBD0697@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Thu, 31 Jan 2008 10:35:25 -0800
+Message-Id: <1201804525.14266.45.camel@pterry-fc6.micromemory.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: pterry@vmetro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,146 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2008-01-31 at 14:30 +0800, Zhang Wei wrote:
+>  
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+> > 
+> > On Jan 31, 2008, at 12:15 AM, Kumar Gala wrote:
+> > 
+> > >
+> > > On Jan 30, 2008, at 11:57 PM, Zhang Wei wrote:
+> > >
+> > >>
+> > >>
+> > >>> -----Original Message-----
+> > >>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> > >>>
+> > >>> On Jan 30, 2008, at 4:30 AM, Zhang Wei wrote:
+> > >>>
+> > >>>> Change lots of static variable to mport private. And add
+> > >>> mport to some
+> > >>>> function declaration.
+> > >>>
+> > >>> Can you explain this patch further.  Its not clear 
+> > exactly from this
+> > >>> commit message why we are doing this.
+> > >>>
+> > >>> - k
+> > >>
+> > >> Sorry about I have a little hurry about it.
+> > >>
+> > >> The original RapidIO driver suppose there is only one mpc85xx RIO
+> > >> controller
+> > >> in system. So, some data structures are defined as mpc85xx_rio  
+> > >> global,
+> > >> such as 'regs_win', 'dbell_ring', 'msg_tx_ring'. Now, I 
+> > changed them
+> > >> to
+> > >> mport's private members. And you can define multi RIO 
+> > OF-nodes in dts
+> > >> file
+> > >> for multi RapidIO controller in one processor, such as PCI/PCI-Ex  
+> > >> host
+> > >> controllers
+> > >> in Freescale's silicon. And the mport operation function 
+> > declaration
+> > >> should be changed
+> > >> to know which RapidIO controller is target.
+> > >
+> > > thanks, this makes a lot of sense and now reviewing the patch will
+> > > make some sense to me :)
+> > 
+> > when we have multiple ports are the device IDs on the ports intended  
+> > to be unique only to a port or unique across all ports?
+> > 
+> I consider each RIO controller will has its own network, the device IDs
+> should be
+> unique only in its port network.
+Hmmm, I see two cases:
 
-Peter,
+1. I have two mport to two controllers each connected to different
+physical fabrics. This system can act as an application bridge between
+the two fabrics.
 
-Sorry, this has taken so long...  I've undertaken some significant
-refactorings, and included support for the new EDK9.2 xps_hwicap.
-Responses below.
+2. I have two mports to two controllers each connected directly or
+indirectly to the same fabric. I want to use the extra bandwidth and
+load balance and/or have a fall back redundant connection via an
+alternate physical connection to the fabric etc.
 
-> Please don't put the HWICAP option in the middle of the HVC options.
+What should be the rules for allocating the initial IDs to the two
+mports to allow system wide enumeration to work in both of the above
+cases? 
 
-oops!  fixed.
+What do you expect the semantics of higher level addressing to be:
+ a pair <mport,id>, where <x,n> is a different device from <y,n>,
+ a pair <mport,id>, where <x,n> is the same device as <y,n>,or
+ a singleton n, where n is unique and identifies the first routing step
+of which controller, x or y, to use.
 
->=20
-> > +config XILINX_HWICAP
-> > +	tristate "Xilinx OPB HWICAP Support"
-> > +	depends on XILINX_VIRTEX
-> > +	help
-> > +	This option enables support for Xilinx Internal=20
-> Configuration Access Port (ICAP) driver.
->=20
-> Line too long.
+I smell a can of worms.... :-)
 
-fixed.  checkpatch passes now.
+Cheers
+Phil
 
-> > +obj-$(CONFIG_XILINX_HWICAP) +=3D xilinx_hwicap_m.o=20
-> > +=20
-> > +xilinx_hwicap_m-y :=3D xilinx_hwicap.o xhwicap_srp.o
->=20
-> Those files are both quite small, couldn't you merge them and get rid
-> of the global symbols and the xilinx_hwicap directory?
-
-Its somewhat an artifact of the original EDK code that it is derived
-from,
-but your probably right.  I've refactored the code to look a little bit
-nicer, and now there is a new C file for the fifo-based xps_hwicap.  I
-think it really does make sense to have multiple files, now.
-
-> Could you please you a smaller / standard GPL header instead?
-
-Although most copyrights are shorter, in poking through the code, there
-others which are of comparable size/language.
-
-> Please use std kerneldoc format.
-
-Fixed.
-
-> No CamelCase, Uppercase parameters.
-
-Fixed.
-
-> > +	if (XHwIcap_mGetDoneReg(InstancePtr->baseAddress) =3D=3D=20
-> XHI_NOT_FINISHED) {
-> > +		return -EBUSY;
-> > +	}
->=20
-> No curly brackets around single statement. In general, please run the
-> patch through checkpatch.pl and fixup stuff.
-
-Gah... force of habit.  Does anyone have an emacs mode that comes close
-to the linux coding style?
-
-> Why don't you request official major/minor numbers?
-> (Documentation/devices.txt)
-
-I sent a request to lanana over amonth ago, but haven't received a
-response.  For embedded targets the dynamically allocated device is
-annoying, but without a static number I don't see what else to do.  In
-any event, it is easy to change when a static device number is
-allocated.
-
-> > +static struct device_driver xhwicap_module_driver =3D {
-> > +	.name =3D DRIVER_NAME,
-> > +	.bus =3D &platform_bus_type,
-> > +
-> > +	.probe =3D xhwicap_drv_probe,
-> > +	.remove =3D xhwicap_drv_remove,
-> > +};
->=20
-> Please use struct platform_driver instead.
-
-That's what I get for copying old code.  I also realized that there is a
-better way of dealing with the of_platform_device part.  It's been
-rewritten to follow the pattern that Grant and I have been following.
-
-> > +
-> > +static int __init xhwicap_module_init(void)
-> > +{
-> > +	dev_t devt;
-> > +	int retval;
-> > +
-> > +	icap_class =3D class_create(THIS_MODULE, "xilinx_config");
->=20
-> What's that for?
-
-To get this:
-
--bash-3.00# pwd
-/sys/class
--bash-3.00# find xilinx_config
-xilinx_config
-xilinx_config/xilinx_icap
-xilinx_config/xilinx_icap/subsystem
-xilinx_config/xilinx_icap/uevent
-xilinx_config/xilinx_icap/dev
-
-I started trying to do more with this, but I could never quite figure
-out how to get sysfs to do what I wanted to.  There's a couple of things
-(like the IDCODE) that would be interesting to see here, I think.
-
-> > +#ifdef CONFIG_XILINX_VIRTEX_4_FX
-> > +#define XHI_FAMILY virtex4
-> > +#else
-> > +#define XHI_FAMILY virtex2
-> > +#endif
->=20
-> So having a single kernel with v2p/v4 support is not an option?
-
-I've fixed this to add a level of indirection, and to select the right
-value based on the device tree.  This required a slight modification to
-the mhs->dts generator to make the 'xlnx,family' attribute visible.
-Note that we currently can't build a real v2/v4 kernel because of some
-v2pro errata.  Currently, I enable the errata even in v4, which is not
-so nice.
-
-> > +#define XHwIcap_mGetSizeReg(BaseAddress) \
-> > +    (in_be32((u32 *)((BaseAddress) + XHI_SIZE_REG_OFFSET)))
-> > +
-> >=20
-> +/************************************************************
-> ****************/
->=20
-> Why not a single getter with a offset/register parameter instead of
-> all these? And use inline functions instead of macros.
-
-Historical artifact to some extent, but I think it makes cleaner code
-than trying to read the constants, and in some cases, it's not a
-straightforward register read.  In any event, they've been changed to be
-static inlines.  In general, I cleaned the code up alot.
-
-> Bye, Peter Korsgaard
-
-Thanks!  An update will be coming around shortly.
-
-Steve
+> 
+> Cheers!
+> Wei
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
