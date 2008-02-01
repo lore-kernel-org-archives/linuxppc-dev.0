@@ -1,20 +1,18 @@
-Return-Path: <ntl@pobox.com>
-Received: from lollipop.listbox.com (lollipop.listbox.com [208.210.124.78])
-	by ozlabs.org (Postfix) with ESMTP id 95C83DDE26
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 12:36:48 +1100 (EST)
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by lollipop.listbox.com (Postfix) with ESMTP id 8D4154EB111
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 11:24:09 -0500 (EST)
-Date: Thu, 31 Jan 2008 10:15:27 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: Kernel oops while duming user core.
-Message-ID: <20080131161527.GT14201@localdomain>
-References: <DCEAAC0833DD314AB0B58112AD99B93B03EE44A5@ismail.innsys.innovsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B03EE44A5@ismail.innsys.innovsys.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 63CBCDDE1B
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 12:40:13 +1100 (EST)
+Date: Thu, 31 Jan 2008 19:40:05 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: add rtc node to mpc8313erdb dts
+Message-Id: <20080131194005.55ee9fc3.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,60 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
-> Hi
-> 
-> I get the following kernel core while a user program I have is dumping
-> core.
-> Any DIeas at what to look for? (this is runnign 2.6.24, arch/powerpc on
-> a 8280)
-> When runnign the program on 2.6.18 arch/ppc, the program gets a sig 11
-> and dumps core.
-> On 2.6.24, I ghet the kernel oops, and then the program hangs sround
-> forever and is unkillable.
+the 8313 rdb has a ds1339 at address 0x68.
 
-Hmm, this is the second report of 2.6.24 crashing in
-__flush_dcache_icache during a core dump; see:
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048662.html
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8313erdb.dts |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Is this easily recreatable?
-
-> 
-> Unable to handle kernel paging request for data at address 0x48024000
-> Faulting instruction address: 0xc000ef88
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> PREEMPT Innovative Systems ApMax
-> Modules linked in: drv_wd(P) drv_scc devcom drv_pcir tipc drv_ss7
-> drv_auxcpu drv_leds(P) drv_ethsw proc_sysinfo(P) i2c_8266(P)
-> NIP: c000ef88 LR: c0012180 CTR: 00000080
-> REGS: eebc9b70 TRAP: 0300   Tainted: P         (2.6.24)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 24004442  XER: 00000000
-> DAR: 48024000, DSISR: 20000000
-> TASK = eebac3c0[3131] 'armd' THREAD: eebc8000
-> GPR00: ee9b7d00 eebc9c20 eebac3c0 48024000 00000080 399a4181 48024000
-> 00000000
-> GPR08: 399a4181 ee9b7d00 00000000 c2000000 44004422 10100f38 ee82fc00
-> bfffffff
-> GPR16: ef377060 00000030 ee9b7d00 00000000 eebc9cdc 00000011 eebc9cd8
-> eeb96480
-> GPR24: ee9b7d00 399a4181 48024000 eeb9a370 eeb9a370 399a4181 48024000
-> c2733480
-> NIP [c000ef88] __flush_dcache_icache+0x14/0x40
-> LR [c0012180] update_mmu_cache+0x74/0x114
-> Call Trace:
-> [eebc9c20] [eebc8000] 0xeebc8000 (unreliable)
-> [eebc9c40] [c005d060] handle_mm_fault+0x630/0xbc0
-> [eebc9c80] [c005d9e4] get_user_pages+0x3f4/0x4fc
-> [eebc9cd0] [c00aa7c4] elf_core_dump+0x9a4/0xc5c
-> [eebc9d60] [c00779e4] do_coredump+0x6e0/0x748
-> [eebc9e50] [c002a5b0] get_signal_to_deliver+0x40c/0x45c
-> [eebc9e80] [c0008ce8] do_signal+0x50/0x294
-> [eebc9f40] [c000fb98] do_user_signal+0x74/0xc4
-> --- Exception: 300 at 0x10044efc
->     LR = 0x10044ec0
-> Instruction dump:
-> 4d820020 7c8903a6 7c001bac 38630020 4200fff8 7c0004ac 4e800020 60000000
-> 54630026 38800080 7c8903a6 7c661b78 <7c00186c> 38630020 4200fff8
-> 7c0004ac
-> ---[ end trace 97db37eaf213da3c ]---
-> note: armd[3131] exited with preempt_count 2
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 2d6653f..e1f0dca 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -118,6 +118,10 @@
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
++			rtc@68 {
++				compatible = "dallas,ds1339";
++				reg = <0x68>;
++			};
+ 		};
+ 
+ 		i2c@3100 {
+-- 
+1.5.2.2
