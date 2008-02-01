@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2AAD3DDEEA
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 88288DE0AA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Feb 2008 01:56:11 +1100 (EST)
-Message-Id: <1ADE91E0-282D-4455-9754-886846B3EB90@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: rmcguire@videopresence.com
-In-Reply-To: <000001c864c8$4bd81bb0$6405a8c0@absolut>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: 83xx immap_qe.h -> SIR type def error?
-Date: Fri, 1 Feb 2008 08:56:00 -0600
-References: <mailman.3.1201827605.31777.linuxppc-embedded@ozlabs.org>
-	<000001c864c8$4bd81bb0$6405a8c0@absolut>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  2 Feb 2008 01:58:37 +1100 (EST)
+Message-ID: <47A32CB4.6010309@ru.mvista.com>
+Date: Fri, 01 Feb 2008 17:29:08 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Marco Stornelli <marco.stornelli@coritel.it>
+Subject: Re: External Interrupt
+References: <47A2D424.3090903@coritel.it>
+In-Reply-To: <47A2D424.3090903@coritel.it>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linuxppc Embedded Mailing List <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,38 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-On Feb 1, 2008, at 5:47 AM, Russell McGuire wrote:
+Marco Stornelli wrote:
 
-> All Freescale,
->
-> Not sure if this is the place to post this, but I have run across  
-> what I
-> consider to be a possible type error in the immap_qe.h file, for the
-> asm/powerpc branch.
->
-> In the file immap_qe.h
->
-> /* SI Routing Tables */
-> struct sir {
-> 	u8  tx[0x400];
-> 	u8  rx[0x400];
-> 	u8  res0[0x800];
-> }
->
-> Shouldn't these types be defined as __be16 ?
->
-> According to the Freescale manual this is a 16 bit field, not an 8-bit
-> field.
->
-> Spent an hour trying to figure out why I couldn't fill this field  
-> out with
-> upper 8 bits last night.
->
-> Thoughts?
+> I used the linux kernel 2.6.10 with a processor MPC8548E. I wrote a
+> driver for a device connected with the local bus. This device has an
+> external interrupt. In the local bus driver I have used the macro
+> MPC85xx_IRQ_EXT<X> to get the interrupt number and pass it to the
+> driver and after that register the ISR. Now with a kernel 2.6.21 this
+> macro isn't available because in the header file irq.h there is the
+> option CONFIG_PPC_MERGE that disable those options. I think this
+> problem is related to the migration of ppc code towards powerpc. I
+> know that now there is the new device tree source file where I can add
+> a device and its interrupt number  but I think in this file I should
+> describe only the platform device, and this device is not a platform
+> device.
 
-I'm guessing it was done this way since they are just looked as base  
-offsets.  Where in the UM do you see anything about them being 16-bit  
-quantities?  (I'm really know little about this).
+    How comes that it's not platform device if it hangs off the local bus?
 
-- k
+> Then, how can I get now this  value? Is there some function to
+> call? How can I perform this operation?
+
+    Probably irq_alloc_virt()...
+
+WBR, Sergei
