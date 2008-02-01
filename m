@@ -1,20 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 4A734DDF60
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 02:17:26 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so293046anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 07:17:25 -0800 (PST)
-Message-ID: <fa686aa40802010717s16f54b9dy81bde4e64a1d6ac1@mail.gmail.com>
-Date: Fri, 1 Feb 2008 08:17:25 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sebastian Theiss" <st12@inf.tu-dresden.de>
-Subject: Re: pthread / TQM5200 problem
-In-Reply-To: <003c01c864e2$a6b44e40$0101a8c0@tis>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <002c01c864d0$a4ad11c0$0101a8c0@tis>
-	<003c01c864e2$a6b44e40$0101a8c0@tis>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 63150DDE09
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 02:32:41 +1100 (EST)
+Message-Id: <72B60725-FB4A-42FA-832D-8FD5434B9042@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080201150126.GB26545@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] get rid of `model = "UCC"' in the ucc nodes
+Date: Fri, 1 Feb 2008 09:32:38 -0600
+References: <20080201150126.GB26545@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,21 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/1/08, Sebastian Theiss <st12@inf.tu-dresden.de> wrote:
-> Hi,
+
+On Feb 1, 2008, at 9:01 AM, Anton Vorontsov wrote:
+
+> It isn't used anywhere, so remove it. If we'll ever need something
+> like this, we'll use compatible property instead.
 >
-> Here's some additional information I forgot when originally posting my
-> question today morning: I'm using the DENX ELDK 3.1.1 and a kernel version
-> 2.4.25.
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>
+> Rebased on top of recent tree.
+>
+> Documentation/powerpc/booting-without-of.txt |    1 -
+> arch/powerpc/boot/dts/mpc832x_mds.dts        |    3 ---
+> arch/powerpc/boot/dts/mpc832x_rdb.dts        |    2 --
+> arch/powerpc/boot/dts/mpc836x_mds.dts        |    2 --
+> arch/powerpc/boot/dts/mpc8568mds.dts         |    2 --
+> 5 files changed, 0 insertions(+), 10 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+> Documentation/powerpc/booting-without-of.txt
+> index 410c847..dcf9758 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1675,7 +1675,6 @@ platforms are moved over to use the flattened- 
+> device-tree model.
+> 	ucc@2000 {
+> 		device_type = "network";
+> 		compatible = "ucc_geth";
+> -		model = "UCC";
+> 		device-id = <1>;
 
-Ugh.  You might have trouble getting support on this list.  Almost
-everyone here is firmly focused on the 2.6 kernel.  Can you upgrade to
-a recent kernel version.  2.6.24 is looking really good for mpc5200
-work.
+can we change device-id to cell-index?
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+>
+- k
