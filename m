@@ -1,21 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.230])
-	by ozlabs.org (Postfix) with ESMTP id 0DD82DE017
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 05:42:25 +1100 (EST)
-Received: by qb-out-0506.google.com with SMTP id e11so1010418qbe.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 10:42:24 -0800 (PST)
-Message-ID: <fa686aa40802011042r749b61aqfe30284eff11b99f@mail.gmail.com>
-Date: Fri, 1 Feb 2008 11:42:23 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
-In-Reply-To: <20080201182253.903B5F18046@mail130-sin.bigfish.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B2D4BDDFD3
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 05:43:23 +1100 (EST)
+Message-ID: <47A36837.7010605@garzik.org>
+Date: Fri, 01 Feb 2008 13:43:03 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1201827769-7439-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080201182253.903B5F18046@mail130-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, ntl@pobox.com
+To: netdev@vger.kernel.org
+Subject: Re: [PATCH 1/5] ehea: fix ehea.h checkpatch complaints
+References: <1201832451-23634-1-git-send-email-dwm@austin.ibm.com>
+	<1201832451-23634-2-git-send-email-dwm@austin.ibm.com>
+	<47A36798.8040208@garzik.org>
+In-Reply-To: <47A36798.8040208@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Jan-Bernd Themann <themann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/1/08, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
-> diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> new file mode 100644
-> index 0000000..83f2d0b
-> --- /dev/null
-> +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> +static int hwicap_open(struct inode *inode, struct file *file)
-> +{
-> +       struct hwicap_drvdata *drvdata;
-> +       int status;
-> +
-> +       drvdata = container_of(inode->i_cdev, struct hwicap_drvdata, cdev);
-> +
-> +       if (down_interruptible(&drvdata->sem))
-> +               return -ERESTARTSYS;
-> +
-> +       drvdata->is_open = 1;
+Jeff Garzik wrote:
+> Doug Maxey wrote:
+>> Cc: Jan-Bernd Themann <themann@de.ibm.com>
+>> Signed-off-by: Doug Maxey <dwm@austin.ibm.com>
+>> ---
+>>  drivers/net/ehea/ehea.h    |    3 +++
+>>  drivers/net/ehea/ehea_hw.h |    8 ++++----
+>>  2 files changed, 7 insertions(+), 4 deletions(-)
+> 
+> applied 1-5
 
-It doesn't look like this flag is used anywhere anymore.
 
-> +
-> +       status = hwicap_initialize_hwicap(drvdata);
-> +       if (status) {
-> +               dev_err(drvdata->dev, "Failed to open file");
-> +               return status;
+BTW please do not reply to jgarzik@dunveganmedia.com.
 
-returning without up()
-
-> +       }
-> +
-> +       file->private_data = drvdata;
-> +       drvdata->write_buffer_in_use = 0;
-> +       drvdata->read_buffer_in_use = 0;
-> +
-> +       up(&drvdata->sem);
-> +
-> +       return 0;
-> +}
-> +
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+That was a Thunderbird fsck-up on my side.
