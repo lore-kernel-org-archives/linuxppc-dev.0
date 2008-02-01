@@ -1,10 +1,10 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 88288DE0AA
+	by ozlabs.org (Postfix) with ESMTP id 8BE6CDE0AB
 	for <linuxppc-embedded@ozlabs.org>;
 	Sat,  2 Feb 2008 01:58:37 +1100 (EST)
-Message-ID: <47A32CB4.6010309@ru.mvista.com>
-Date: Fri, 01 Feb 2008 17:29:08 +0300
+Message-ID: <47A32C9C.3090709@ru.mvista.com>
+Date: Fri, 01 Feb 2008 17:28:44 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 To: Marco Stornelli <marco.stornelli@coritel.it>
@@ -23,10 +23,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
-
 Marco Stornelli wrote:
-
+> Hi,
+> 
 > I used the linux kernel 2.6.10 with a processor MPC8548E. I wrote a
 > driver for a device connected with the local bus. This device has an
 > external interrupt. In the local bus driver I have used the macro
@@ -46,5 +45,3 @@ Marco Stornelli wrote:
 > call? How can I perform this operation?
 
     Probably irq_alloc_virt()...
-
-WBR, Sergei
