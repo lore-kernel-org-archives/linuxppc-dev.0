@@ -1,23 +1,19 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpauth14.prod.mesa1.secureserver.net
-	(smtpauth14.prod.mesa1.secureserver.net [64.202.165.39])
-	by ozlabs.org (Postfix) with SMTP id ACF54DDFE3
+Return-Path: <ssh@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 9D4C4DDF51
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Feb 2008 08:38:07 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: "'Kumar Gala'" <galak@kernel.crashing.org>
-References: <mailman.3.1201827605.31777.linuxppc-embedded@ozlabs.org>
-	<000001c864c8$4bd81bb0$6405a8c0@absolut>
-	<1ADE91E0-282D-4455-9754-886846B3EB90@kernel.crashing.org>
-Subject: RE: 83xx immap_qe.h -> SIR type def error?
-Date: Fri, 1 Feb 2008 13:37:13 -0800
-Message-ID: <000401c8651a$9da265c0$6405a8c0@absolut>
+	Sat,  2 Feb 2008 09:06:17 +1100 (EST)
+Message-ID: <47A397D7.30809@sgi.com>
+Date: Fri, 01 Feb 2008 16:06:15 -0600
+From: Steven Hein <ssh@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: 
+Subject: Re: 8360 custom board, ucc_geth TX errors on longer(?) packets
+References: <47A36A69.1010809@sgi.com>
+	<20080201135324.8372268e.kim.phillips@freescale.com>
+	<47A37B8E.5000500@sgi.com>
+In-Reply-To: <47A37B8E.5000500@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,75 +24,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I should state, I am looking at the MPC8360ERM.pdf Rev 2.0
+Steven Hein wrote:
+> Kim Phillips wrote:
+>> On Fri, 01 Feb 2008 12:52:25 -0600
+>> Steven Hein <ssh@sgi.com> wrote:
+>>
+>>  
+>>> The one main difference in this board is how eth0 is wired.
+>>> We have a Broadcom GbE switch part, and UCC1 eth is wired
+>>> directly to that switch (no PHY).   (This where I needed to
+>>>     
+>>
+>> sounds like you ran into some h/w errata.  if on rgmii, you might
+>> want to find a way to program the switch for rgmii with internal delay
+>> (8360 rev.2 rgmii-id rx & tx; 8360rev2.1 rgmii-rxid (i.e. for rx
+>> only)).  If not, I'd contact fsl tech support directly.
+>>
+>> Kim
+>>   
+>
+> I would suspect HW.....but this WORKS with the 2.6.16 kernel
+> I was using!    That's why I suspect that I still don't have
+> something configured right in my device tree, or something
+> else I missed in the new kernel.    But I can't
+> figure out what it is.... :-(    I've poured over the code in
+> the old versus new (both the ucc_geth driver and the platform
+> initialization in the old, and the device tree in the new)
+> and can't figure out what I missed!   And like I said, a
+> kernel with the same config (other than changing the platform)
+> works on my MPC8360E-MDS board.   Granted, that doesn't have
+> this direct switch connection......
+>
+> I did look at the code related to the HW errata (QE_ENET18).
+> But we're using GMII to the switch....and that workaround
+> code wasn't in active in my old kernel (it was there, but
+> commented out).
+>
+> Any other thoughts?    Has anyone seen this symptom before?
+>
+> Steve
+>
+Okay....I found it!    Started poking at the UCCE registers
+and found that the FIFO sizes weren't right.   This led me
+to find a bug in my ucc_geth interface to the fixed-link
+PHY driver:  the code to reconfigure the MURAM FIFO's for
+Gigabit operation wasn't being executed for no-phy configs!
+All is well once I changed this.
 
--Russ
+Sorry for the noise.....   (glad I found this before
+submitting my patch!   ;-)
 
-> -----Original Message-----
-> From: Russell McGuire [mailto:rmcguire@videopresence.com]
-> Sent: Friday, February 01, 2008 1:03 PM
-> To: 'Kumar Gala'
-> Cc: 'linuxppc-embedded@ozlabs.org'
-> Subject: RE: 83xx immap_qe.h -> SIR type def error?
-> 
-> Kumar,
-> 
-> Yes in the main memeory map they are just listed as 1K RAM blocks.
-> However, in the UM Section 36.6.1 <pg 36-12 or pg 1728 in the PDF>.
-> 
-> It gives the breakout for the RAM, which clearly indicates 16 bit fields.
-> <Here is a short clip from Figure 36-8>
-> 
-> Access: Read/Write
-> 0 1 2 3 4 5 6 7 10 11 13 14 15
-> MCC SWTR SSEL 1 SSEL 2 SSEL 3 SSEL 4 SGS CSEL CNT BYT LST
-> Figure 36-8. SI RAM Entry for UCC
-> 
-> Honest, mistake as if I were writing the header file I'd not have time to
-> ready all 2000+ pages of the UM. We find these only as somebody goes in an
-> tries to use them.
-> And I am guessing not a lot of customers use the SI block.
-> 
-> -Russ
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Friday, February 01, 2008 6:56 AM
-> > To: rmcguire@videopresence.com
-> > Cc: linuxppc-embedded@ozlabs.org
-> > Subject: Re: 83xx immap_qe.h -> SIR type def error?
-> >
-> >
-> > On Feb 1, 2008, at 5:47 AM, Russell McGuire wrote:
-> >
-> > > All Freescale,
-> > >
-> > > Not sure if this is the place to post this, but I have run across
-> > > what I
-> > > consider to be a possible type error in the immap_qe.h file, for the
-> > > asm/powerpc branch.
-> > >
-> > > In the file immap_qe.h
-> > >
-> > > /* SI Routing Tables */
-> > > struct sir {
-> > > 	u8  tx[0x400];
-> > > 	u8  rx[0x400];
-> > > 	u8  res0[0x800];
-> > > }
-> > >
-> > > Shouldn't these types be defined as __be16 ?
-> > >
-> > > According to the Freescale manual this is a 16 bit field, not an 8-bit
-> > > field.
-> > >
-> > > Spent an hour trying to figure out why I couldn't fill this field
-> > > out with
-> > > upper 8 bits last night.
-> > >
-> > > Thoughts?
-> >
-> > I'm guessing it was done this way since they are just looked as base
-> > offsets.  Where in the UM do you see anything about them being 16-bit
-> > quantities?  (I'm really know little about this).
-> >
-> > - k
+Steve
+
+-- 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
+Silicon Graphics, Inc.                          
+1168 Industrial Blvd.                 Phone: (715) 726-8410
+Chippewa Falls, WI 54729              Fax:   (715) 726-6715
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
