@@ -4,25 +4,25 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A22BCDDE01
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 14:19:59 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by ozlabs.org (Postfix) with ESMTP id 7BFE0DDE19
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 14:21:34 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m113JrhB023245
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 20:19:53 -0700 (MST)
+	m113LTZO023936
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 20:21:29 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m113JpPt011011
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:19:52 -0600 (CST)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m113LRsI006873
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:21:28 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Subject: RE: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
-Date: Fri, 1 Feb 2008 11:19:50 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD0899@zch01exm26.fsl.freescale.net>
-In-Reply-To: <47A1F73E.3090600@freescale.com>
+Date: Fri, 1 Feb 2008 11:21:26 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD089C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <47A1FEB4.1040806@freescale.com>
 References: <12017656032841-git-send-email-wei.zhang@freescale.com>
-	<47A1F73E.3090600@freescale.com>
+	<47A1FEB4.1040806@freescale.com>
 From: "Zhang Wei" <Wei.Zhang@freescale.com>
 To: "Loeliger Jon" <jdl@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
@@ -35,7 +35,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Jon,=20
+=20
 
 > -----Original Message-----
 > From: Loeliger Jon=20
@@ -51,14 +51,7 @@ Hi, Jon,=20
 > > index 556a9ca..1a0fce5 100644
 > > --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
 > > +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> > @@ -25,6 +25,7 @@
-> >  		serial1 =3D &serial1;
-> >  		pci0 =3D &pci0;
-> >  		pci1 =3D &pci1;
-> > +		rapidio0 =3D &rapidio0;
-> >  	};
-> > =20
-> >  	cpus {
+>=20
 > > @@ -499,4 +500,16 @@
 > >  				  0 00100000>;
 > >  		};
@@ -78,12 +71,11 @@ Hi, Jon,=20
 > > +	};
 > >  };
 >=20
-> The 8641 DTS file has been converted to /dts-v1/ format now.
-> Please rewrite this patch with explicit hex numbers for
-> addresses, even if 0x0, and decimal for IRQs.
+> Have updates to the booting-without-of.txt file for
+> been made or proposed for the RapidIO node definition?
 >=20
-
-Thanks! I'm dropped by fashion. :) I'll re-do them.
+I remember Kumar has a patch for RapidIO node of booting-without-of.txt, =
+is it?
 
 Cheers!
 Wei.
