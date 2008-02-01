@@ -1,21 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 0AF8DDDFB0
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 07:11:56 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so322660anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 12:11:55 -0800 (PST)
-Message-ID: <fa686aa40802011211n1b18d4ddg3fdb95f274221dd6@mail.gmail.com>
-Date: Fri, 1 Feb 2008 13:11:54 -0700
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.229])
+	by ozlabs.org (Postfix) with ESMTP id 9673EDDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 07:40:50 +1100 (EST)
+Received: by qb-out-0506.google.com with SMTP id e11so1061202qbe.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 12:40:49 -0800 (PST)
+Message-ID: <fa686aa40802011240x3e22554bv8c40ba77ff042668@mail.gmail.com>
+Date: Fri, 1 Feb 2008 13:40:48 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
-In-Reply-To: <20080201200324.66A91FF004D@mail157-sin.bigfish.com>
+Subject: Re: [PATCH 2/7] [POWERPC] Xilinx: clear data caches.
+In-Reply-To: <20071214003648.68E5EC68059@mail177-blu.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <1201890163-12219-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080201200324.66A91FF004D@mail157-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, ntl@pobox.com
+References: <1197589413-5965-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20071213234240.F3CC3AD805D@mail122-sin.bigfish.com>
+	<1197590848.15741.199.camel@pasglop>
+	<1197590981.15741.201.camel@pasglop>
+	<20071214003648.68E5EC68059@mail177-blu.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, simekm2@fel.cvut.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/1/08, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
-> This includes code for new fifo-based xps_hwicap in addition to the
-> older opb_hwicap, which has a significantly different interface.  The
-> common code between the two drivers is largely shared.
+On 12/13/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
 >
-> Significant differences exists between this driver and what is
-> supported in the EDK drivers.  In particular, most of the
-> architecture-specific code for reconfiguring individual FPGA resources
-> has been removed.  This functionality is likely better provided in a
-> user-space support library.  In addition, read and write access is
-> supported.  In addition, although the xps_hwicap cores support
-> interrupt-driver mode, this driver only supports polled operation, in
-> order to make the code simpler, and since the interrupt processing
-> overhead is likely to slow down the throughput under Linux.
->
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
->
-> Fixed to add mutexes, and a few style issues.
+> Unfortunately, I think your right... The asm code seems so clean at the
+> moment, I don't really want be the one to start tarnishing it with a
+> bunch of little fixups.. :)
 
-Inconsistent indentation (tabs vs. spaces) in some places.  Otherwise:
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+No problem, we can use a little shim that executes this stuff before
+going into crt0.S.  I'm working on this right now.
 
 g.
-
-> +static int __devexit hwicap_remove(struct device *dev)
-> +{
-> +       struct hwicap_drvdata *drvdata;
-> +
-> +       drvdata = (struct hwicap_drvdata *)dev_get_drvdata(dev);
-> +
-> +       if (!drvdata)
-> +            return 0;
-> +
-> +        class_device_destroy(icap_class, drvdata->devt);
-> +        cdev_del(&drvdata->cdev);
-> +        iounmap(drvdata->base_address);
-> +        release_mem_region(drvdata->mem_start, drvdata->mem_size);
-> +        kfree(drvdata);
-> +        dev_set_drvdata(dev, NULL);
-> +        probed_devices[MINOR(dev->devt)-xhwicap_minor] = 0;
-> +
-> +       return 0;               /* success */
-> +}
-
-Here in particular
-
 
 -- 
 Grant Likely, B.Sc., P.Eng.
