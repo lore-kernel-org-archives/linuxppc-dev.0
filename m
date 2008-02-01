@@ -1,22 +1,22 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id AEEBFDDF2E
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 10:49:08 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so810317uge.0
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 15:49:06 -0800 (PST)
-Date: Sat, 2 Feb 2008 02:30:43 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [POWERPC] fsl_soc: add support for "fsl, immr"
-	compatible matching
-Message-ID: <20080201233043.GA20533@zarina>
-References: <20080201150117.GA26545@localhost.localdomain>
-	<47A38C49.7020606@freescale.com>
+Return-Path: <greg@kroah.com>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4DBCEDDEFE
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 10:56:00 +1100 (EST)
+Date: Fri, 1 Feb 2008 15:34:09 -0800
+From: Greg KH <greg@kroah.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 1/2] pci: Fix bus resource assignment on 32 bits with
+	64b resources
+Message-ID: <20080201233409.GB24676@kroah.com>
+References: <20071210063216.89DBBDDE1E@ozlabs.org>
+	<200802011118.57610.sr@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <47A38C49.7020606@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200802011118.57610.sr@denx.de>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,45 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 01, 2008 at 03:16:57PM -0600, Scott Wood wrote:
-> Anton Vorontsov wrote:
-> > -	soc8540@e0000000 {
-> > +	soc@e0000000 {
-> >  		#address-cells = <1>;
-> >  		#size-cells = <1>;
-> >  		#interrupt-cells = <2>;
-> > -		device_type = "soc";
-> > +		compatible = "fsl,mpc8540-immr", "fsl,immr", "simple-bus";
-> >  		ranges = <00000000 e0000000 00100000>
-> >  		reg = <e0000000 00003000>;
-> >  		bus-frequency = <0>;
+On Fri, Feb 01, 2008 at 11:18:56AM +0100, Stefan Roese wrote:
+> On Monday 10 December 2007, Benjamin Herrenschmidt wrote:
+> > The current pci_assign_unassigned_resources() code doesn't work properly
+> > on 32 bits platforms with 64 bits resources. The main reason is the use
+> > of unsigned long in various places instead of resource_size_t.
+> >
+> > This fixes it, along with some tricks to avoid casting to 64 bits on
+> > platforms that don't need it in every printk around.
+> >
+> > This is a pre-requisite for making powerpc use the generic code instead of
+> > its own half-useful implementation.
+> >
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> It's called "CCSR" rather than "IMMR" on 85xx.
+> Checking Linus's latest git repository, it seems this patch (and the 2nd from 
+> this series) hasn't been applied till now. This is just a reminder, that it 
+> gets in in this merge-window.
 
-^^ Theory.
+Just got sent to him...
 
-$ grep ccsr -r arch/powerpc/boot/dts/
-$
+thanks,
 
-$ grep immr -r arch/powerpc/boot/dts/ | grep 85 | cut -d: -f1
-arch/powerpc/boot/dts/tqm8540.dts
-arch/powerpc/boot/dts/tqm8541.dts
-arch/powerpc/boot/dts/mpc8572ds.dts
-arch/powerpc/boot/dts/tqm8555.dts
-arch/powerpc/boot/dts/stx_gp3_8560.dts
-arch/powerpc/boot/dts/mpc885ads.dts
-arch/powerpc/boot/dts/tqm8560.dts
-
-^^ Practice. :-)
-
-
-Maybe "fsl,soc", finally? :-) I think soc, ccsr or immr doesn't
-really matter, what really matters is consistency. <cpu-specific>
-part of the -ccsr/-immr should be sufficient to distinct whether
-we're on 85xx or 83xx...
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+greg k-h
