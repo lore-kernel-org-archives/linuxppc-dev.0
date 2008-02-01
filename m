@@ -1,18 +1,29 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 80667DDEEF
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 87E97DDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Feb 2008 06:29:45 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so873716pyg.27
+	Fri,  1 Feb 2008 19:31:43 +1100 (EST)
+Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 1317A434002
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Jan 2008 11:29:44 -0800 (PST)
-Message-ID: <5c9cd53b0801311129m3a624e29y37062d5510519f46@mail.gmail.com>
-Date: Thu, 31 Jan 2008 14:29:43 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Kernel oops in MPC8568MDS BSP
+	Fri,  1 Feb 2008 09:04:58 +0100 (CET)
+Received: from nausicaa2.coritel.it ([127.0.0.1])
+	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id iOz-tJ3WMj2Z for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Feb 2008 09:04:57 +0100 (CET)
+Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 2526D434001
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Feb 2008 09:04:57 +0100 (CET)
+Message-ID: <47A2D424.3090903@coritel.it>
+Date: Fri, 01 Feb 2008 09:11:16 +0100
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linuxppc Embedded Mailing List <linuxppc-embedded@ozlabs.org>
+Subject: External Interrupt
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,69 +34,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi,
 
-I am using MPC8568MDS BSP on my board, which has same memory map as
-MPC8568MDS board has. However I have kernel oops at
-free_bootmem_with_active_regions() within do_init_bootmem(). Any idea
-on this issue?
+I used the linux kernel 2.6.10 with a processor MPC8548E. I wrote a
+driver for a device connected with the local bus. This device has an
+external interrupt. In the local bus driver I have used the macro
+MPC85xx_IRQ_EXT<X> to get the interrupt number and pass it to the
+driver and after that register the ISR. Now with a kernel 2.6.21 this
+macro isn't available because in the header file irq.h there is the
+option CONFIG_PPC_MERGE that disable those options. I think this
+problem is related to the migration of ppc code towards powerpc. I
+know that now there is the new device tree source file where I can add
+a device and its interrupt number  but I think in this file I should
+describe only the platform device, and this device is not a platform
+device. Then, how can I get now this  value? Is there some function to
+call? How can I perform this operation?
 
+Thanks in advance.
 
-Thanks,
-
-
-Mike
-
-bootm 0x1000000 0x2000000 0x400000
-## Booting image at 01000000 ...
-  Image Name:   Linux-2.6.23
-  Created:      2008-01-31  18:52:45 UTC
-  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-  Data Size:    1370100 Bytes =  1.3 MB
-  Load Address: 00000000
-  Entry Point:  00000000
-  Verifying Checksum ... OK
-  Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at 02000000 ...
-  Image Name:   uboot ext2 ramdisk rootfs
-  Created:      2007-11-26   2:28:38 UTC
-  Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-  Data Size:    4001113 Bytes =  3.8 MB
-  Load Address: 00000000
-  Entry Point:  00000000
-  Verifying Checksum ... OK
-  Booting using flat device tree at 0x400000
-  Loading Ramdisk to 1fb6e000, end 1ff3ed59 ... OK
-Using MPC85xx MDS machine description
-Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=0Mb residual: 0Mb
-Linux version 2.6.23 () (gcc version 4.1.2) #3 Thu Jan 31 13:52:40 EST 2008
-Found initrd at 0xdfb6e000:0xdff3ed59
-console [udbg0] enabled
-
-Kernel BUG at c0296a68 [verbose debug info unavailable]
-Oops: Exception in kernel mode, sig: 5 [#1]
-MPC85xx MDS
-Modules linked in:
-NIP: c0296a68 LR: c0298100 CTR: 00001c00
-REGS: c02c7ec0 TRAP: 0700   Not tainted  (2.6.23)
-MSR: 00021000 <ME>  CR: 24002028  XER: 20000000
-TASK = c02ac5e0[0] 'swapper' THREAD: c02c6000
-GPR00: 00000001 c02c7f70 c02ac5e0 c02daa2c 0001e401 20000000 00000000
-00000356
-GPR08: 00000001 00000000 25e90000 25e90000 24002022 60000000 1ffbd400
-007fff00
-GPR16: 00000000 1ffb9824 00000004 1fffc830 00800000 00000000 007ffeb0
-003d0d59
-GPR24: 00000000 1ff3fe50 00001140 c02b0000 00000000 c02a5320 00020000
-00000000
-Call Trace:
-[c02c7f90] [c0291144]
-[c02c7fb0] [c028f250]
-[c02c7fc0] [c028681c]
-[c02c7ff0] [c0000388]
-Instruction dump:
-5489e8fa 7d000030 7d295a14 7d604828 7d6a0078 7d40492d 40a2fff4
-7c095839
-38840001 4182000c 4200ffd0 4e800020 <0fe00000> 48000000 3d20c02b
-7c601b78
-Kernel panic - not syncing: Attempted to kill the idle task!
+Marco
