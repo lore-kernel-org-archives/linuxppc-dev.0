@@ -1,21 +1,15 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8D176DDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 14:32:56 +1100 (EST)
-Message-Id: <DBEEDD21-7CA6-4C2C-A072-3E3D7EB8E663@kernel.crashing.org>
+Message-Id: <3B00BB74-ED5B-4661-B807-79DE6CBEA883@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Zhang Wei <wei.zhang@freescale.com>
-In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AEBD089C@zch01exm26.fsl.freescale.net>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20080131225446.GA9633@mag.az.mvista.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
-Date: Thu, 31 Jan 2008 21:32:18 -0600
-References: <12017656032841-git-send-email-wei.zhang@freescale.com>
-	<47A1FEB4.1040806@freescale.com>
-	<ABF87B0B6A38C0458E319AC973ED68AEBD089C@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Reminder: removal of arch/ppc
+Date: Thu, 31 Jan 2008 21:33:09 -0600
+References: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
+	<20080131225446.GA9633@mag.az.mvista.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +20,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 31, 2008, at 9:21 PM, Zhang Wei wrote:
+On Jan 31, 2008, at 4:54 PM, Mark A. Greer wrote:
 
+> On Fri, Jan 25, 2008 at 10:55:25AM -0600, Kumar Gala wrote:
+>> Just a reminder that the plan is to remove arch/ppc this summer (June
+>> 2008).  The following boards still existing over in arch/ppc.  Some  
+>> of
+>> them have been ported over to arch/powerpc.  If you care about one of
+>> these boards and its not ported speak up (it helps if you have access
+>> to the board).  Also, if you know a given board is free to die of
+>> bitrot let us know so we know not to worry about it:
 >
+> I guess I'm just not a nice guy but I say let them die.  No need
+> to worry.  The code really isn't going anywhere -- git-checkout
+> v2.6.<pick your favorite version> and its back.
 >
->> -----Original Message-----
->> From: Loeliger Jon
->>
->> Zhang Wei wrote:
->>> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
->>> ---
->>> arch/powerpc/boot/dts/mpc8641_hpcn.dts |   13 +++++++++++++
->>> 1 files changed, 13 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->> b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->>> index 556a9ca..1a0fce5 100644
->>> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->>> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
->>
->>> @@ -499,4 +500,16 @@
->>> 				  0 00100000>;
->>> 		};
->>> 	};
->>> +
->>> +	rapidio0: rapidio@f80c0000 {
->>> +		#address-cells = <2>;
->>> +		#size-cells = <2>;
->>> +		compatible = "fsl,rapidio-delta";
->>> +		reg = <f80c0000 20000>;
->>> +		ranges = <0 0 c0000000 0 20000000>;
->>> +		interrupt-parent = <&mpic>;
->>> +		/* err_irq bell_outb_irq bell_inb_irq
->>> +			msg1_tx_irq msg1_rx_irq	msg2_tx_irq
->> msg2_rx_irq */
->>> +		interrupts = <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
->>> +	};
->>> };
->>
->> Have updates to the booting-without-of.txt file for
->> been made or proposed for the RapidIO node definition?
->>
-> I remember Kumar has a patch for RapidIO node of booting-without- 
-> of.txt, is it?
+> /me's $0.02.
 
-I do.. I'll post it and update the .dts patch once I sort through all  
-the patches.
+this is where I poke you about the sandpoint port ;)
 
 - k
