@@ -1,30 +1,16 @@
-Return-Path: <st12@inf.tu-dresden.de>
-Received: from mail.inf.tu-dresden.de (mail.inf.tu-dresden.de [141.76.2.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.inf.tu-dresden.de",
-	Issuer "orion.inf.tu-dresden.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 47992DDF7A
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 01:56:49 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.inf.tu-dresden.de (8.14.2/8.14.2) with ESMTP id m11EuhMc020120
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 15:56:43 +0100 (CET)
-Received: from mail.inf.tu-dresden.de ([127.0.0.1])
-	by localhost (mail.inf.tu-dresden.de [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id aD7qmX4tGDFQ for <linuxppc-dev@ozlabs.org>;
-	Fri,  1 Feb 2008 15:56:42 +0100 (CET)
-Received: from iai8236 (iai8236.inf.tu-dresden.de [141.76.82.36])
-	by mail.inf.tu-dresden.de (8.14.2/8.14.2) with ESMTP id m11EueLr020087
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 15:56:40 +0100 (CET)
-From: "Sebastian Theiss" <st12@inf.tu-dresden.de>
-To: <linuxppc-dev@ozlabs.org>
-References: <002c01c864d0$a4ad11c0$0101a8c0@tis>
-Subject: pthread / TQM5200 problem
-Date: Fri, 1 Feb 2008 15:56:39 +0100
-Message-ID: <003c01c864e2$a6b44e40$0101a8c0@tis>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <002c01c864d0$a4ad11c0$0101a8c0@tis>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id EBD1CDE157
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 02:01:16 +1100 (EST)
+Date: Fri, 1 Feb 2008 18:01:17 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] fsl_soc: add support for "fsl,
+	immr" compatible matching
+Message-ID: <20080201150117.GA26545@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,182 +20,171 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Unfortunately it's still impossible to remove device_type = "soc"
+from the existing device tree, because older u-boots are looking for
+it.
 
-Here's some additional information I forgot when originally posting my
-question today morning: I'm using the DENX ELDK 3.1.1 and a kernel =
-version
-2.4.25.
+Neither we can remove model number from the soc name to heal
+arch/powerpc/boot/cuboot-85xx.c, because then dts'es will be
+incompatible with older u-boots again.
 
-Regards,
-Sebastian
+So, just one machine converted so far: MPC8360E-RDK. It's new machine
+so we don't care about backward compatibility yet.
 
------Urspr=FCngliche Nachricht-----
-Von: linuxppc-dev-bounces+st12=3Dinf.tu-dresden.de@ozlabs.org
-[mailto:linuxppc-dev-bounces+st12=3Dinf.tu-dresden.de@ozlabs.org] Im =
-Auftrag
-von Sebastian Theiss
-Gesendet: Freitag, 1. Februar 2008 13:48
-An: linuxppc-dev@ozlabs.org
-Betreff: pthread / TQM5200 problem
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   18 ++++------
+ arch/powerpc/boot/dts/mpc836x_rdk.dts        |    1 -
+ arch/powerpc/sysdev/fsl_soc.c                |   51 +++++++++++++++-----------
+ 3 files changed, 37 insertions(+), 33 deletions(-)
 
-Hi all.
-
-I've been having some headache using the pthread library with a TB5200 =
-box
-(based on a TQM5200 board with a Freescale MPC5200 PowerPC-CPU). I =
-created a
-small program to pin down the problem and it runs fine on all my Unix- =
-and
-Linux-machines but fails on the embedded box: The program contains a =
-class
-CSignal that provides thread-synchronisation based on the
-pthread_cond_signal and pthread_cond_wait calls and takes care of the
-"spurious wakeup" and "lost signal" problems. The program runs 159
-additional threads (that seems to be some internal limit), each of them
-continuously increments a field variable and afterwards sleeps until the
-main thread wakes it up again. The main thread monitors the whole field =
-of
-variables that are incremented by the 159 other threads and continuously
-wakes them up. When running in the desired way, the program should show =
-a
-table with 160 entries and each entry (except for the last) should
-continuously increase. However, on the box the threads 31 to 64 never =
-wake
-up, once they call pthread_cond_wait. The code below lacks some error
-checking to keep it short, but besides that I don't see what's going =
-wrong.
-And, the code runs fine on my "real" Linux machines.
-
-Any ideas of what the problem might be and how to fix it? Your I help =
-would
-be greatly appreciated as I'm rather despaired right now.
-
-Regards,
-Sebastian
-
-
-#include <stdio.h>
-#include <pthread.h>
-
-class CSignal
-{
-public:
-	CSignal()
-	{
-		m_bFlag =3D false;
-		pthread_mutex_init(&m_Mutex, NULL);
-		pthread_cond_init(&m_Condition, NULL);
-	}
-
-	~CSignal()
-	{
-		pthread_mutex_destroy(&m_Mutex);
-		pthread_cond_destroy(&m_Condition);
-	}
-
-public:
-	void Set(bool bValue =3D true)
-	{
-		pthread_mutex_lock(&m_Mutex);
-		if( m_bFlag =3D bValue ) pthread_cond_broadcast(&m_Condition);
-		pthread_mutex_unlock(&m_Mutex);
-	}
-
-	void Wait()
-	{
-		pthread_mutex_lock(&m_Mutex);
-		while( !m_bFlag ) pthread_cond_wait(&m_Condition,&m_Mutex);
-		pthread_mutex_unlock(&m_Mutex);
-	}
-
-protected:
-	volatile bool m_bFlag;
-	pthread_mutex_t m_Mutex;
-	pthread_cond_t m_Condition;
-};
-
-#define THREAD_COUNT 160
-unsigned char state[THREAD_COUNT];
-CSignal signal[THREAD_COUNT];
-
-void* threadproc(void* pParam)
-{
-	int index =3D (int)pParam;
-
-	while( true )
-	{
-		state[index]++;
-		// wait for the signal beeing set
-		signal[index].Wait();
-		// reset signal, so that next Wait() will actually case the
-thread to sleep again
-		signal[index].Set(false);
-	}
-}
-
-int main()
-{
-	// clear state field
-	for( int i =3D 0; i < THREAD_COUNT; i++ )
-	{
-		state[i] =3D 0;
-	}
-
-	// run 160 threads (creation of the last thread throws EAGAIN, so
-159 (+ the main thread)=20
-	// seems to be some kind of limit, but that's not the point here)
-	for( int i =3D 0; i < THREAD_COUNT; i++ )
-	{
-		pthread_t id;
-		printf("create thread %i: %i\n", i, pthread_create(&id,
-NULL, threadproc, (void*)i));
-	}
-
-	for(;;)
-	{
-		// wake all threads
-		for( int i =3D 0; i < THREAD_COUNT; i++ )
-		{
-			signal[i].Set();
-		}
-
-		// print state of each thread
-		printf("\033[H");
-		int thread =3D 0;
-		for( int i =3D 0; i < 16; i++ )
-		{
-			for( int j =3D 0; j < 10; j++, thread++ )
-			{
-				printf("%03i/%03i ", thread, state[thread]);
-			}
-			printf("\n");
-		}
-	}
-
-	return 0;
-} =20
-
-=20
-_________________________________________________________
-
- Technische Universit=E4t Dresden
- Fakult=E4t Informatik
- Institut f=FCr Angewandte Informatik
- Lehrstuhl f=FCr Technische Informationssysteme
- D-01062 Dresden
-
- Besucheradresse: N=F6thnitzer Str. 46, Zi. 1079
-
- Telefon +49 351 463-38399
- Telefax +49 351 463-38460
- st12@inf.tu-dresden.de
-_________________________________________________________
- =20
-
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b5e46ef..410c847 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -32,7 +32,7 @@ Table of Contents
+       c) The /cpus/* nodes
+       d) the /memory node(s)
+       e) The /chosen node
+-      f) the /soc<SOCname> node
++      f) the /soc node
+ 
+   IV - "dtc", the device tree compiler
+ 
+@@ -960,20 +960,16 @@ compatibility.
+   under /chosen called interrupt-controller which had a phandle value
+   that pointed to the main interrupt controller)
+ 
+-  f) the /soc<SOCname> node
++  f) the /soc node
+ 
+   This node is used to represent a system-on-a-chip (SOC) and must be
+   present if the processor is a SOC. The top-level soc node contains
+-  information that is global to all devices on the SOC. The node name
+-  should contain a unit address for the SOC, which is the base address
+-  of the memory-mapped register set for the SOC. The name of an soc
+-  node should start with "soc", and the remainder of the name should
+-  represent the part number for the soc.  For example, the MPC8540's
+-  soc node would be called "soc8540".
++  information that is global to all devices on the SOC. The name of an
++  soc node should be "soc".
+ 
+   Required properties:
+ 
+-    - device_type : Should be "soc"
++    - compatible : Should be "<cpu-specific>-immr", "fsl,immr", "simple-bus"
+     - ranges : Should be defined as specified in 1) to describe the
+       translation of SOC addresses for memory mapped SOC registers.
+     - bus-frequency: Contains the bus frequency for the SOC node.
+@@ -2871,11 +2867,11 @@ Note that the #address-cells and #size-cells for the SoC node
+ in this example have been explicitly listed; these are likely
+ not necessary as they are usually the same as the root node.
+ 
+-	soc8540@e0000000 {
++	soc@e0000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+-		device_type = "soc";
++		compatible = "fsl,mpc8540-immr", "fsl,immr", "simple-bus";
+ 		ranges = <00000000 e0000000 00100000>
+ 		reg = <e0000000 00003000>;
+ 		bus-frequency = <0>;
+diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+index b062f9b..e35200a 100644
+--- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
++++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
+@@ -57,7 +57,6 @@
+ 	soc@e0000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		device_type = "soc";
+ 		compatible = "fsl,mpc8360-immr", "fsl,immr", "simple-bus";
+ 		ranges = <0 0xe0000000 0x200000>;
+ 		reg = <0xe0000000 0x200>;
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index e48b20e..721ad2d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -48,27 +48,31 @@ static phys_addr_t immrbase = -1;
+ phys_addr_t get_immrbase(void)
+ {
+ 	struct device_node *soc;
++	int size;
++	u32 naddr;
++	const u32 *prop;
+ 
+ 	if (immrbase != -1)
+ 		return immrbase;
+ 
+-	soc = of_find_node_by_type(NULL, "soc");
+-	if (soc) {
+-		int size;
+-		u32 naddr;
+-		const u32 *prop = of_get_property(soc, "#address-cells", &size);
++	soc = of_find_compatible_node(NULL, NULL, "fsl,immr");
++	if (!soc) {
++		soc = of_find_node_by_type(NULL, "soc");
++		if (!soc)
++			return immrbase;
++	}
+ 
+-		if (prop && size == 4)
+-			naddr = *prop;
+-		else
+-			naddr = 2;
++	prop = of_get_property(soc, "#address-cells", &size);
++	if (prop && size == 4)
++		naddr = *prop;
++	else
++		naddr = 2;
+ 
+-		prop = of_get_property(soc, "ranges", &size);
+-		if (prop)
+-			immrbase = of_translate_address(soc, prop + naddr);
++	prop = of_get_property(soc, "ranges", &size);
++	if (prop)
++		immrbase = of_translate_address(soc, prop + naddr);
+ 
+-		of_node_put(soc);
+-	}
++	of_node_put(soc);
+ 
+ 	return immrbase;
+ }
+@@ -528,11 +532,13 @@ static int __init mpc83xx_wdt_init(void)
+ 		goto nodev;
+ 	}
+ 
+-	soc = of_find_node_by_type(NULL, "soc");
+-
++	soc = of_find_compatible_node(NULL, NULL, "fsl,immr");
+ 	if (!soc) {
+-		ret = -ENODEV;
+-		goto nosoc;
++		soc = of_find_node_by_type(NULL, "soc");
++		if (!soc) {
++			ret = -ENODEV;
++			goto nosoc;
++		}
+ 	}
+ 
+ 	freq = of_get_property(soc, "bus-frequency", NULL);
+@@ -1375,9 +1381,12 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
+ 		const u32 *freq;
+ 		int size;
+ 
+-		np = of_find_node_by_type(NULL, "soc");
+-		if (!np)
+-			return -ENODEV;
++		np = of_find_compatible_node(NULL, NULL, "fsl,immr");
++		if (!np) {
++			np = of_find_node_by_type(NULL, "soc");
++			if (!np)
++				return -ENODEV;
++		}
+ 
+ 		freq = of_get_property(np, "clock-frequency", &size);
+ 		if (!freq || size != sizeof(*freq) || *freq == 0) {
+-- 
+1.5.2.2
