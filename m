@@ -1,22 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.243])
-	by ozlabs.org (Postfix) with ESMTP id 531FEDE348
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 03:33:49 +1100 (EST)
-Received: by hs-out-2122.google.com with SMTP id x43so1269073hsb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 08:33:47 -0800 (PST)
-Message-ID: <fa686aa40802010823n1b837ffk7110a72e2bd44bf6@mail.gmail.com>
-Date: Fri, 1 Feb 2008 09:23:47 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] get rid of `model = "UCC"' in the ucc nodes
-In-Reply-To: <72B60725-FB4A-42FA-832D-8FD5434B9042@kernel.crashing.org>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B105EDDEC9
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 04:31:12 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080201150126.GB26545@localhost.localdomain>
-	<72B60725-FB4A-42FA-832D-8FD5434B9042@kernel.crashing.org>
-Cc: Jon Loeliger <jdl@jdl.com>, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] Xilinx: hwicap driver
+Date: Fri, 1 Feb 2008 09:31:06 -0800
+In-Reply-To: <20080201055613.GY14201@localdomain>
+References: <1201805233-15112-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1201827769-7439-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080201050228.7A6E117C0053@mail145-dub.bigfish.com>
+	<20080201055613.GY14201@localdomain>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Nathan Lynch" <ntl@pobox.com>
+Message-Id: <20080201173107.DD96C338057@mail112-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,55 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/1/08, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> > --- a/Documentation/powerpc/booting-without-of.txt
-> > +++ b/Documentation/powerpc/booting-without-of.txt
-> > @@ -1675,7 +1675,6 @@ platforms are moved over to use the flattened-
-> > device-tree model.
-> >       ucc@2000 {
-> >               device_type = "network";
-> >               compatible = "ucc_geth";
-> > -             model = "UCC";
-> >               device-id = <1>;
->
-> can we change device-id to cell-index?
+Thanks,
 
-<aside>
-Here's a thought; do we really need a cell-index at all?  (and I'm
-talking in general; not just this specific case).  I'm starting to
-think we should migrate away from using it.
+I realized that on the way home..  That's what I get for trying to
+finish something quickly before leaving.. :)
 
-cell-index has been useful for things like clock controllers to know
-what offset into a shared clock control register or something like
-that and a driver would pass the cell-index value to the shared reg
-driver when requesting service.  However, I think the information
-encoded in cell-index is already encoded in the device tree in a
-different manor.
+Steve
 
-Typically, shared registers and the like are all chip specific and the
-behaviour of the shared register drivers usually needs to be tweaked
-for different SoCs.  Each ip core on an SoC is already uniquely
-indexed via the reg property.  True, 'reg' is sparse (0x2000, 0x2200,
-0x2300, ...) whereas cell-index is tight (0,1,2,3,...), but I don't
-think that introduces any additional difficulty.
-
-So, instead of a driver passing it's cell-index value to the shared
-reg driver, it would pass it's reg base instead.  The shared register
-driver could then choose an internal representation that makes sense
-for it instead of whatever layout was chosen by the device tree.
-
-Dropping cell-index would mean one less property to keep in sync when
-tailoring device trees. (== less complexity for board porters).
-Besides, the purpose of cell-index is often misunderstood already by
-people trying to use it to describe port numbers (ttyS0, ttyS1, etc).
-
-Thoughts?
-</aside>
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> -----Original Message-----
+> From: Nathan Lynch [mailto:ntl@pobox.com]
+> Sent: Thursday, January 31, 2008 9:56 PM
+> To: Stephen Neuendorffer
+> Cc: linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca;
+jacmet@sunsite.dk
+> Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
+>=20
+> Stephen Neuendorffer wrote:
+> >
+> > +static ssize_t
+> > +hwicap_read(struct file *file, char *buf, size_t count, loff_t
+*ppos)
+> > +{
+> > +	struct hwicap_drvdata *drvdata =3D file->private_data;
+> > +	ssize_t bytes_to_read =3D 0;
+> > +	u32 *kbuf;
+> > +	u32 words;
+> > +	u32 bytes_remaining;
+> > +	int status;
+> > +
+> > +        spin_lock(&hwicap_spinlock);
+> > +	if (drvdata->is_accessing)
+> > +		return -EBUSY;
+>=20
+> Need to unlock before returning (several places in this patch).
+>=20
