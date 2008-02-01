@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58A73DDDF2
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 16:19:32 +1100 (EST)
-Message-Id: <4C002C21-2823-48CB-B555-125394AAEC60@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: mike zheng <mail4mz@gmail.com>
-In-Reply-To: <5c9cd53b0801311128s1801c720pdeda8ee1bdd518e@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Kernel oops in MPC8568MDS BSP
-Date: Thu, 31 Jan 2008 23:19:26 -0600
-References: <5c9cd53b0801311128s1801c720pdeda8ee1bdd518e@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id DEB3EDDE05
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 16:21:55 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so250038anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:21:53 -0800 (PST)
+Message-ID: <fa686aa40801312121k7fb3c80bu813f31f82a801d33@mail.gmail.com>
+Date: Thu, 31 Jan 2008 22:21:53 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
+In-Reply-To: <20080201010256.22BCCBE006A@mail38-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1201805233-15112-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080201010256.22BCCBE006A@mail38-sin.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,16 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 31, 2008, at 1:28 PM, mike zheng wrote:
-
-> Hello,
+On 1/31/08, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+> This includes code for new fifo-based xps_hwicap in addition to the
+> older opb_hwicap, which has a significantly different interface.  The
+> common code between the two drivers is largely shared.
 >
-> I am using MPC8568MDS BSP on my board, which has same memory map with
-> MPC8568MDS board. However I have kernel Ooop at
-> free_bootmem_with_active_regions() within do_init_bootmem(). Any idea
-> on this issue?
+> Significant differences exists between this driver and what is
+> supported in the EDK drivers.  In particular, most of the
+> architecture-specific code for reconfiguring individual FPGA resources
+> has been removed.  This functionality is likely better provided in a
+> user-space support library.  In addition, read and write access is
+> supported.  In addition, although the xps_hwicap cores support
+> interrupt-driver mode, this driver only supports polled operation, in
+> order to make the code simpler, and since the interrupt processing
+> overhead is likely to slow down the throughput under Linux.
+>
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+>
+> Fixed to add spinlocks, and a few style issues.
 
-such questions should be asked of the BSP provider.
+You're probably better off using a semaphore, or more specifically a
+MUTEX, to protect the whole fop instead of a spin lock and the flags.
+The semantics are simpler if do it with a mutex and the function can
+sleep while holding it.
 
-- k
+Cheers,
+g.
