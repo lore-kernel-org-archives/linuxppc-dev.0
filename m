@@ -1,28 +1,15 @@
-Return-Path: <st12@inf.tu-dresden.de>
-Received: from mail.inf.tu-dresden.de (mail.inf.tu-dresden.de [141.76.2.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.inf.tu-dresden.de",
-	Issuer "orion.inf.tu-dresden.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 14966DDE29
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 23:59:45 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.inf.tu-dresden.de (8.14.2/8.14.2) with ESMTP id m11Cm0f5022799
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 13:48:01 +0100 (CET)
-Received: from mail.inf.tu-dresden.de ([127.0.0.1])
-	by localhost (mail.inf.tu-dresden.de [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id Ka9poWhwggXR for <linuxppc-dev@ozlabs.org>;
-	Fri,  1 Feb 2008 13:48:00 +0100 (CET)
-Received: from iai8236 (iai8236.inf.tu-dresden.de [141.76.82.36])
-	by mail.inf.tu-dresden.de (8.14.2/8.14.2) with ESMTP id m11CljD1022704
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 13:47:45 +0100 (CET)
-From: "Sebastian Theiss" <st12@inf.tu-dresden.de>
-To: <linuxppc-dev@ozlabs.org>
-Subject: pthread / TQM5200 problem
-Date: Fri, 1 Feb 2008 13:47:45 +0100
-Message-ID: <002c01c864d0$a4ad11c0$0101a8c0@tis>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id CE670DDE38
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 00:22:47 +1100 (EST)
+Date: Fri, 1 Feb 2008 16:22:48 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Li Yang <leoli@freescale.com>, Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH for 2.6.25 1/2] [NET] ucc_geth: fix module removal
+Message-ID: <20080201132248.GA1790@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,156 +19,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all.
+- uccf should be set to NULL to not double-free memory on
+  subsequent calls;
+- ind_hash_q and group_hash_q lists should be initialized in the
+  probe() function, instead of struct_init() (called by open()),
+  otherwise there will be an oops if ucc_geth_driver removed
+  prior 'ifconfig ethX up';
+- add unregister_netdev();
+- reorder geth_remove() steps.
 
-I've been having some headache using the pthread library with a TB5200 =
-box
-(based on a TQM5200 board with a Freescale MPC5200 PowerPC-CPU). I =
-created a
-small program to pin down the problem and it runs fine on all my Unix- =
-and
-Linux-machines but fails on the embedded box: The program contains a =
-class
-CSignal that provides thread-synchronisation based on the
-pthread_cond_signal and pthread_cond_wait calls and takes care of the
-"spurious wakeup" and "lost signal" problems. The program runs 159
-additional threads (that seems to be some internal limit), each of them
-continuously increments a field variable and afterwards sleeps until the
-main thread wakes it up again. The main thread monitors the whole field =
-of
-variables that are incremented by the 159 other threads and continuously
-wakes them up. When running in the desired way, the program should show =
-a
-table with 160 entries and each entry (except for the last) should
-continuously increase. However, on the box the threads 31 to 64 never =
-wake
-up, once they call pthread_cond_wait. The code below lacks some error
-checking to keep it short, but besides that I don't see what's going =
-wrong.
-And, the code runs fine on my "real" Linux machines.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-Any ideas of what the problem might be and how to fix it? Your I help =
-would
-be greatly appreciated as I'm rather despaired right now.
+Hi Li,
 
-Regards,
-Sebastian
+You kinda promised that these two patches would hit 2.6.25... ;-)
 
+I've rebased the patches so they apply cleanly on the current tree.
 
-#include <stdio.h>
-#include <pthread.h>
+Thanks,
 
-class CSignal
-{
-public:
-	CSignal()
-	{
-		m_bFlag =3D false;
-		pthread_mutex_init(&m_Mutex, NULL);
-		pthread_cond_init(&m_Condition, NULL);
-	}
+ drivers/net/ucc_geth.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-	~CSignal()
-	{
-		pthread_mutex_destroy(&m_Mutex);
-		pthread_cond_destroy(&m_Condition);
-	}
-
-public:
-	void Set(bool bValue =3D true)
-	{
-		pthread_mutex_lock(&m_Mutex);
-		if( m_bFlag =3D bValue ) pthread_cond_broadcast(&m_Condition);
-		pthread_mutex_unlock(&m_Mutex);
-	}
-
-	void Wait()
-	{
-		pthread_mutex_lock(&m_Mutex);
-		while( !m_bFlag ) pthread_cond_wait(&m_Condition,&m_Mutex);
-		pthread_mutex_unlock(&m_Mutex);
-	}
-
-protected:
-	volatile bool m_bFlag;
-	pthread_mutex_t m_Mutex;
-	pthread_cond_t m_Condition;
-};
-
-#define THREAD_COUNT 160
-unsigned char state[THREAD_COUNT];
-CSignal signal[THREAD_COUNT];
-
-void* threadproc(void* pParam)
-{
-	int index =3D (int)pParam;
-
-	while( true )
-	{
-		state[index]++;
-		// wait for the signal beeing set
-		signal[index].Wait();
-		// reset signal, so that next Wait() will actually case the
-thread to sleep again
-		signal[index].Set(false);
-	}
-}
-
-int main()
-{
-	// clear state field
-	for( int i =3D 0; i < THREAD_COUNT; i++ )
-	{
-		state[i] =3D 0;
-	}
-
-	// run 160 threads (creation of the last thread throws EAGAIN, so
-159 (+ the main thread)=20
-	// seems to be some kind of limit, but that's not the point here)
-	for( int i =3D 0; i < THREAD_COUNT; i++ )
-	{
-		pthread_t id;
-		printf("create thread %i: %i\n", i, pthread_create(&id,
-NULL, threadproc, (void*)i));
-	}
-
-	for(;;)
-	{
-		// wake all threads
-		for( int i =3D 0; i < THREAD_COUNT; i++ )
-		{
-			signal[i].Set();
-		}
-
-		// print state of each thread
-		printf("\033[H");
-		int thread =3D 0;
-		for( int i =3D 0; i < 16; i++ )
-		{
-			for( int j =3D 0; j < 10; j++, thread++ )
-			{
-				printf("%03i/%03i ", thread, state[thread]);
-			}
-			printf("\n");
-		}
-	}
-
-	return 0;
-} =20
-
-=20
-_________________________________________________________
-
- Technische Universit=E4t Dresden
- Fakult=E4t Informatik
- Institut f=FCr Angewandte Informatik
- Lehrstuhl f=FCr Technische Informationssysteme
- D-01062 Dresden
-
- Besucheradresse: N=F6thnitzer Str. 46, Zi. 1079
-
- Telefon +49 351 463-38399
- Telefax +49 351 463-38460
- st12@inf.tu-dresden.de
-_________________________________________________________
- =20
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 4ffd873..e41da46 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -2084,8 +2084,10 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 	if (!ugeth)
+ 		return;
+ 
+-	if (ugeth->uccf)
++	if (ugeth->uccf) {
+ 		ucc_fast_free(ugeth->uccf);
++		ugeth->uccf = NULL;
++	}
+ 
+ 	if (ugeth->p_thread_data_tx) {
+ 		qe_muram_free(ugeth->thread_dat_tx_offset);
+@@ -2305,10 +2307,6 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 	ug_info = ugeth->ug_info;
+ 	uf_info = &ug_info->uf_info;
+ 
+-	/* Create CQs for hash tables */
+-	INIT_LIST_HEAD(&ugeth->group_hash_q);
+-	INIT_LIST_HEAD(&ugeth->ind_hash_q);
+-
+ 	if (!((uf_info->bd_mem_part == MEM_PART_SYSTEM) ||
+ 	      (uf_info->bd_mem_part == MEM_PART_MURAM))) {
+ 		if (netif_msg_probe(ugeth))
+@@ -3990,6 +3988,10 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	ugeth = netdev_priv(dev);
+ 	spin_lock_init(&ugeth->lock);
+ 
++	/* Create CQs for hash tables */
++	INIT_LIST_HEAD(&ugeth->group_hash_q);
++	INIT_LIST_HEAD(&ugeth->ind_hash_q);
++
+ 	dev_set_drvdata(device, dev);
+ 
+ 	/* Set the dev->base_addr to the gfar reg region */
+@@ -4040,9 +4042,10 @@ static int ucc_geth_remove(struct of_device* ofdev)
+ 	struct net_device *dev = dev_get_drvdata(device);
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+-	dev_set_drvdata(device, NULL);
+-	ucc_geth_memclean(ugeth);
++	unregister_netdev(dev);
+ 	free_netdev(dev);
++	ucc_geth_memclean(ugeth);
++	dev_set_drvdata(device, NULL);
+ 
+ 	return 0;
+ }
+-- 
+1.5.2.2
