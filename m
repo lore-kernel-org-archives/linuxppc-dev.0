@@ -1,24 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 30409DDE01
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 06:24:34 +1100 (EST)
-Date: Fri, 1 Feb 2008 13:23:45 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Doug Maxey <dwm@austin.ibm.com>
-Subject: Re: [PATCH 4/5] ehea: fix phyp checkpatch complaints
-Message-ID: <20080201192344.GA4541@loki.buserror.net>
-References: <1201832451-23634-1-git-send-email-dwm@austin.ibm.com>
-	<1201832451-23634-5-git-send-email-dwm@austin.ibm.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 208A0DDF3F
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 06:32:29 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1201832451-23634-5-git-send-email-dwm@austin.ibm.com>
-Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, Jeff Garzik <jgarzik@garzik.org>,
-	Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [RFC/PATCH v2] [POWERPC] bootwrapper: build multiple cuImages
+Date: Fri, 1 Feb 2008 11:32:23 -0800
+In-Reply-To: <20080201000706.18869.36903.stgit@trillian.secretlab.ca>
+References: <20080201000706.18869.36903.stgit@trillian.secretlab.ca>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, <jwboyer@gmail.com>,
+	<linuxppc-dev@ozlabs.org>, <scotwood@freescale.com>,
+	<galak@kernel.crashing.org>, <jochen@scram.de>,
+	<geoffrey.levand@am.sony.com>
+Message-Id: <20080201193225.67CFAAF0057@mail201-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 31, 2008 at 08:20:50PM -0600, Doug Maxey wrote:
->  /* input param R5 */
-> -#define H_ALL_RES_QP_EQPO         EHEA_BMASK_IBM(9, 11)
-> -#define H_ALL_RES_QP_QPP          EHEA_BMASK_IBM(12, 12)
-> -#define H_ALL_RES_QP_RQR          EHEA_BMASK_IBM(13, 15)
-> -#define H_ALL_RES_QP_EQEG         EHEA_BMASK_IBM(16, 16)
-> -#define H_ALL_RES_QP_LL_QP        EHEA_BMASK_IBM(17, 17)
-> -#define H_ALL_RES_QP_DMA128       EHEA_BMASK_IBM(19, 19)
-> -#define H_ALL_RES_QP_HSM          EHEA_BMASK_IBM(20, 21)
-> -#define H_ALL_RES_QP_SIGT         EHEA_BMASK_IBM(22, 23)
-> -#define H_ALL_RES_QP_TENURE       EHEA_BMASK_IBM(48, 55)
-> -#define H_ALL_RES_QP_RES_TYP      EHEA_BMASK_IBM(56, 63)
-> +#define H_ALL_RES_QP_EQPO	  EHEA_BMASK_IBM(9, 11)
-> +#define H_ALL_RES_QP_QPP	  EHEA_BMASK_IBM(12, 12)
-> +#define H_ALL_RES_QP_RQR	  EHEA_BMASK_IBM(13, 15)
-> +#define H_ALL_RES_QP_EQEG	  EHEA_BMASK_IBM(16, 16)
-> +#define H_ALL_RES_QP_LL_QP	  EHEA_BMASK_IBM(17, 17)
-> +#define H_ALL_RES_QP_DMA128	  EHEA_BMASK_IBM(19, 19)
-> +#define H_ALL_RES_QP_HSM	  EHEA_BMASK_IBM(20, 21)
-> +#define H_ALL_RES_QP_SIGT	  EHEA_BMASK_IBM(22, 23)
-> +#define H_ALL_RES_QP_TENURE	  EHEA_BMASK_IBM(48, 55)
-> +#define H_ALL_RES_QP_RES_TYP	  EHEA_BMASK_IBM(56, 63)
+What if it was something like:
 
-This was better the way it was (before, it was readable at any tab setting);
-checkpatch is overeager to complain on tab/space issues (it's a bit hard to
-distinguish indentation from alignment with a regex).
+image-$(CONFIG_MPC832x_MDS)		+=3D cuImage.mpc832x_mds
+image-$(CONFIG_MPC832x_RDB)		+=3D cuImage.mpc832x_rdb
+image-$(CONFIG_MPC834x_ITX)		+=3D cuImage.mpc8349emitx \
+					   cuImage.mpc8349emitxgp
+platform-$(CONFIG_MPC83xx)		+=3D cuboot-83xx.o
 
--Scott
+$(obj)/cuImage.%: vmlinux $(dtstree)/%.dts $(wrapperbits) $(platform-y)
+	$(call if_changed,wrap,$(platform-y),(dtstree)/$*.dts)
+
+Which would eliminate making all the unnecessary bits of platform code
+and enabling the smart bits to be factored out of the wrapper?  It would
+also make the dependency between the board and the platform code
+specific.It would also prevent building more than one platform at a
+time, but I don't think that's really possibly anyway?
+
+Steve
