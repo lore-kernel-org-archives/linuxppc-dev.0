@@ -1,16 +1,20 @@
-Return-Path: <NWilson@Airspan.com>
-Received: from mail.airspan.com (mail.airspan.com [62.189.116.15])
-	by ozlabs.org (Postfix) with SMTP id 0ACF2DDE02
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpout04-01.prod.mesa1.secureserver.net
+	(smtpout04-01.prod.mesa1.secureserver.net [64.202.165.196])
+	by ozlabs.org (Postfix) with SMTP id DAD40DDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Feb 2008 21:50:43 +1100 (EST)
+	Fri,  1 Feb 2008 22:48:50 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.3.1201827605.31777.linuxppc-embedded@ozlabs.org>
+Subject: 83xx immap_qe.h -> SIR type def error?
+Date: Fri, 1 Feb 2008 03:47:59 -0800
+Message-ID: <000001c864c8$4bd81bb0$6405a8c0@absolut>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: arch/powerpc 440GX external IRQ
-Date: Fri, 1 Feb 2008 10:19:40 -0000
-Message-ID: <31FE7326559B534EA6C03ACF19B25A31013E85AE@fs5.airspan.com>
-From: "Neil Wilson" <NWilson@Airspan.com>
-To: <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <mailman.3.1201827605.31777.linuxppc-embedded@ozlabs.org>
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,25 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+All Freescale,
 
-Does anyone have these working and/or is able to talk me through the DTS
-structure for them please ?
-I have a 440GX board that works fine under arch/ppc with external
-IRQ4,5,6 however I cannot get it correct in the DTS, I think I am not
-correctly specifying the cascade of the UIC ?  I started off using the
-Taishan DTS as a template as that seems to be the only 440GX in
-powerpc/platforms and can get the board to boot, mount NFS etc.
+Not sure if this is the place to post this, but I have run across what I
+consider to be a possible type error in the immap_qe.h file, for the
+asm/powerpc branch.
 
-Thanks.
+In the file immap_qe.h
 
-Neil
+/* SI Routing Tables */
+struct sir {
+	u8  tx[0x400];
+	u8  rx[0x400];
+	u8  res0[0x800];
+}
 
---
-Neil Wilson
-Principal Engineer, Embedded Software
-Airspan Communications Ltd
-Cambridge House, Oxford Road
-Uxbridge, Middlesex, UB8 1UN, UK.
-+44(0)1895-467265
-nwilson@airspan.com=20
+Shouldn't these types be defined as __be16 ?
+
+According to the Freescale manual this is a 16 bit field, not an 8-bit
+field.
+
+Spent an hour trying to figure out why I couldn't fill this field out with
+upper 8 bits last night.
+
+Thoughts?
+
+Russell McGuire
