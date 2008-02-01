@@ -1,19 +1,22 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 9E45CDDF26
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 08:58:06 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [patch v6 2/4] USB: add Cypress c67x00 OTG controller core driver
-Date: Fri, 1 Feb 2008 13:58:01 -0800
-References: <20080129122430.070266000@sunsite.dk>
-	<20080129123119.681862000@sunsite.dk>
-In-Reply-To: <20080129123119.681862000@sunsite.dk>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id AEEBFDDF2E
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 10:49:08 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so810317uge.0
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 15:49:06 -0800 (PST)
+Date: Sat, 2 Feb 2008 02:30:43 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] [POWERPC] fsl_soc: add support for "fsl, immr"
+	compatible matching
+Message-ID: <20080201233043.GA20533@zarina>
+References: <20080201150117.GA26545@localhost.localdomain>
+	<47A38C49.7020606@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200802011358.02230.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47A38C49.7020606@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,333 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 29 January 2008, Peter Korsgaard wrote:
-> This patch add the core driver for the c67x00 USB OTG controller.  The core
-> driver is responsible for the platform bus binding and creating either
-> USB HCD or USB Gadget instances for each of the serial interface engines
-> on the chip.
->     
-> This driver does not directly implement the HCD or gadget behaviours; it
-> just controls access to the chip.
->     
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+On Fri, Feb 01, 2008 at 03:16:57PM -0600, Scott Wood wrote:
+> Anton Vorontsov wrote:
+> > -	soc8540@e0000000 {
+> > +	soc@e0000000 {
+> >  		#address-cells = <1>;
+> >  		#size-cells = <1>;
+> >  		#interrupt-cells = <2>;
+> > -		device_type = "soc";
+> > +		compatible = "fsl,mpc8540-immr", "fsl,immr", "simple-bus";
+> >  		ranges = <00000000 e0000000 00100000>
+> >  		reg = <e0000000 00003000>;
+> >  		bus-frequency = <0>;
+> 
+> It's called "CCSR" rather than "IMMR" on 85xx.
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+^^ Theory.
 
-> ---
->  MAINTAINERS                     |    6 +
->  drivers/usb/c67x00/c67x00-drv.c |  232 ++++++++++++++++++++++++++++++++++++++++
->  include/linux/usb/c67x00.h      |   48 ++++++++
->  3 files changed, 286 insertions(+)
-> 
-> Index: linux-2.6/drivers/usb/c67x00/c67x00-drv.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/drivers/usb/c67x00/c67x00-drv.c
-> @@ -0,0 +1,232 @@
-> +/*
-> + * c67x00-drv.c: Cypress C67X00 USB Common infrastructure
-> + *
-> + * Copyright (C) 2006-2008 Barco N.V.
-> + *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
-> + *    based on multiple host controller drivers inside the linux kernel.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-> + * MA  02110-1301  USA.
-> + */
-> +
-> +/*
-> + * This file implements the common infrastructure for using the c67x00.
-> + * It is both the link between the platform configuration and subdrivers and
-> + * the link between the common hardware parts and the subdrivers (e.g.
-> + * interrupt handling).
-> + *
-> + * The c67x00 has 2 SIE's (serial interface engine) wich can be configured
-> + * to be host, device or OTG (with some limitations, E.G. only SIE1 can be OTG).
-> + *
-> + * Depending on the platform configuration, the SIE's are created and
-> + * the corresponding subdriver is initialized (c67x00_probe_sie).
-> + */
-> +
-> +#include <linux/device.h>
-> +#include <linux/list.h>
-> +#include <linux/usb.h>
-> +#include <linux/usb/c67x00.h>
-> +#include <asm/io.h>
-> +
-> +#include "c67x00.h"
-> +
-> +static void c67x00_probe_sie(struct c67x00_sie *sie,
-> +			     struct c67x00_device *dev, int sie_num)
-> +{
-> +	spin_lock_init(&sie->lock);
-> +	sie->dev = dev;
-> +	sie->sie_num = sie_num;
-> +	sie->mode = c67x00_sie_config(dev->pdata->sie_config, sie_num);
-> +
-> +	switch (sie->mode) {
-> +	case C67X00_SIE_UNUSED:
-> +		dev_info(sie_dev(sie),
-> +			 "Not using SIE %d as requested\n", sie->sie_num);
-> +		break;
-> +
-> +	default:
-> +		dev_err(sie_dev(sie),
-> +			"Unsupported configuration: 0x%x for SIE %d\n",
-> +			sie->mode, sie->sie_num);
-> +		break;
-> +	}
-> +}
-> +
-> +static void c67x00_remove_sie(struct c67x00_sie *sie)
-> +{
-> +}
-> +
-> +static irqreturn_t c67x00_irq(int irq, void *__dev)
-> +{
-> +	struct c67x00_device *c67x00 = __dev;
-> +	struct c67x00_sie *sie;
-> +	u16 msg, int_status;
-> +	int i, count = 8;
-> +
-> +	int_status = c67x00_ll_hpi_status(c67x00);
-> +	if (!int_status)
-> +		return IRQ_NONE;
-> +
-> +	while (int_status != 0 && (count-- >= 0)) {
-> +		c67x00_ll_irq(c67x00, int_status);
-> +		for (i = 0; i < C67X00_SIES; i++) {
-> +			sie = &c67x00->sie[i];
-> +			msg = 0;
-> +			if (int_status & SIEMSG_FLG(i))
-> +				msg = c67x00_ll_fetch_siemsg(c67x00, i);
-> +			if (sie->irq)
-> +				sie->irq(sie, int_status, msg);
-> +		}
-> +		int_status = c67x00_ll_hpi_status(c67x00);
-> +	}
-> +
-> +	if (int_status)
-> +		dev_warn(&c67x00->pdev->dev, "Not all interrupts handled! "
-> +			 "status = 0x%04x\n", int_status);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +/* ------------------------------------------------------------------------- */
-> +
-> +static int __devinit c67x00_drv_probe(struct platform_device *pdev)
-> +{
-> +	struct c67x00_device *c67x00;
-> +	struct c67x00_platform_data *pdata;
-> +	struct resource *res, *res2;
-> +	int ret, i;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res)
-> +		return -ENODEV;
-> +
-> +	res2 = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-> +	if (!res2)
-> +		return -ENODEV;
-> +
-> +	pdata = pdev->dev.platform_data;
-> +	if (!pdata)
-> +		return -ENODEV;
-> +
-> +	c67x00 = kzalloc(sizeof(*c67x00), GFP_KERNEL);
-> +	if (!c67x00)
-> +		return -ENOMEM;
-> +
-> +	if (!request_mem_region(res->start, res->end - res->start + 1,
-> +				pdev->name)) {
-> +		dev_err(&pdev->dev, "Memory region busy\n");
-> +		ret = -EBUSY;
-> +		goto request_mem_failed;
-> +	}
-> +	c67x00->hpi.base = ioremap(res->start, res->end - res->start + 1);
-> +	if (!c67x00->hpi.base) {
-> +		dev_err(&pdev->dev, "Unable to map HPI registers\n");
-> +		ret = -EIO;
-> +		goto map_failed;
-> +	}
-> +
-> +	spin_lock_init(&c67x00->hpi.lock);
-> +	c67x00->hpi.regstep = pdata->hpi_regstep;
-> +	c67x00->pdata = pdev->dev.platform_data;
-> +	c67x00->pdev = pdev;
-> +
-> +	c67x00_ll_init(c67x00);
-> +	c67x00_ll_hpi_reg_init(c67x00);
-> +
-> +	ret = request_irq(res2->start, c67x00_irq, 0, pdev->name, c67x00);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Cannot claim IRQ\n");
-> +		goto request_irq_failed;
-> +	}
-> +
-> +	ret = c67x00_ll_reset(c67x00);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Device reset failed\n");
-> +		goto reset_failed;
-> +	}
-> +
-> +	for (i = 0; i < C67X00_SIES; i++)
-> +		c67x00_probe_sie(&c67x00->sie[i], c67x00, i);
-> +
-> +	platform_set_drvdata(pdev, c67x00);
-> +
-> +	return 0;
-> +
-> + reset_failed:
-> +	free_irq(res2->start, c67x00);
-> + request_irq_failed:
-> +	iounmap(c67x00->hpi.base);
-> + map_failed:
-> +	release_mem_region(res->start, res->end - res->start + 1);
-> + request_mem_failed:
-> +	kfree(c67x00);
-> +
-> +	return ret;
-> +}
-> +
-> +static int __devexit c67x00_drv_remove(struct platform_device *pdev)
-> +{
-> +	struct c67x00_device *c67x00 = platform_get_drvdata(pdev);
-> +	struct resource *res;
-> +	int i;
-> +
-> +	for (i = 0; i < C67X00_SIES; i++)
-> +		c67x00_remove_sie(&c67x00->sie[i]);
-> +
-> +	c67x00_ll_release(c67x00);
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-> +	if (res)
-> +		free_irq(res->start, c67x00);
-> +
-> +	iounmap(c67x00->hpi.base);
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (res)
-> +		release_mem_region(res->start, res->end - res->start + 1);
-> +
-> +	kfree(c67x00);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver c67x00_driver = {
-> +	.probe	= c67x00_drv_probe,
-> +	.remove	= __devexit_p(c67x00_drv_remove),
-> +	.driver	= {
-> +		.owner = THIS_MODULE,
-> +		.name = "c67x00",
-> +	},
-> +};
-> +
-> +static int __init c67x00_init(void)
-> +{
-> +	if (usb_disabled())
-> +		return -ENODEV;
-> +
-> +	return platform_driver_register(&c67x00_driver);
-> +}
-> +
-> +static void __exit c67x00_exit(void)
-> +{
-> +	platform_driver_unregister(&c67x00_driver);
-> +}
-> +
-> +module_init(c67x00_init);
-> +module_exit(c67x00_exit);
-> +
-> +MODULE_AUTHOR("Peter Korsgaard, Jan Veldeman, Grant Likely");
-> +MODULE_DESCRIPTION("Cypress C67X00 USB Controller Driver");
-> +MODULE_LICENSE("GPL");
-> Index: linux-2.6/include/linux/usb/c67x00.h
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/include/linux/usb/c67x00.h
-> @@ -0,0 +1,48 @@
-> +/*
-> + * usb_c67x00.h: platform definitions for the Cypress C67X00 USB chip
-> + *
-> + * Copyright (C) 2006-2008 Barco N.V.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-> + * MA  02110-1301  USA.
-> + */
-> +
-> +#ifndef _LINUX_USB_C67X00_H
-> +#define _LINUX_USB_C67X00_H
-> +
-> +/* SIE configuration */
-> +#define C67X00_SIE_UNUSED	0
-> +#define C67X00_SIE_HOST		1
-> +#define C67X00_SIE_PERIPHERAL_A	2	/* peripheral on A port */
-> +#define C67X00_SIE_PERIPHERAL_B	3	/* peripheral on B port */
-> +
-> +#define c67x00_sie_config(config, n)  (((config)>>(4*(n)))&0x3)
-> +
-> +#define C67X00_SIE1_UNUSED	        (C67X00_SIE_UNUSED		<< 0)
-> +#define C67X00_SIE1_HOST	        (C67X00_SIE_HOST		<< 0)
-> +#define C67X00_SIE1_PERIPHERAL_A	(C67X00_SIE_PERIPHERAL_A	<< 0)
-> +#define C67X00_SIE1_PERIPHERAL_B	(C67X00_SIE_PERIPHERAL_B	<< 0)
-> +
-> + #define C67X00_SIE2_UNUSED	        (C67X00_SIE_UNUSED		<< 4)
-> + #define C67X00_SIE2_HOST	        (C67X00_SIE_HOST		<< 4)
-> + #define C67X00_SIE2_PERIPHERAL_A	(C67X00_SIE_PERIPHERAL_A	<< 4)
-> + #define C67X00_SIE2_PERIPHERAL_B	(C67X00_SIE_PERIPHERAL_B	<< 4)
-> +
-> +struct c67x00_platform_data {
-> +	int sie_config;			/* SIEs config (C67X00_SIEx_*) */
-> +	unsigned long hpi_regstep;	/* Step between HPI registers  */
-> +};
-> +
-> +#endif /* _LINUX_USB_C67X00_H */
-> Index: linux-2.6/MAINTAINERS
-> ===================================================================
-> --- linux-2.6.orig/MAINTAINERS
-> +++ linux-2.6/MAINTAINERS
-> @@ -3841,6 +3841,12 @@
->  S:	Maintained
->  W:	http://www.kroah.com/linux-usb/
->  
-> +USB CYPRESS C67X00 DRIVER
-> +P:	Peter Korsgaard
-> +M:	jacmet@sunsite.dk
-> +L:	linux-usb@vger.kernel.org
-> +S:	Maintained
-> +
->  USB DAVICOM DM9601 DRIVER
->  P:	Peter Korsgaard
->  M:	jacmet@sunsite.dk
-> 
-> --
-> Bye, Peter Korsgaard
-> 
+$ grep ccsr -r arch/powerpc/boot/dts/
+$
+
+$ grep immr -r arch/powerpc/boot/dts/ | grep 85 | cut -d: -f1
+arch/powerpc/boot/dts/tqm8540.dts
+arch/powerpc/boot/dts/tqm8541.dts
+arch/powerpc/boot/dts/mpc8572ds.dts
+arch/powerpc/boot/dts/tqm8555.dts
+arch/powerpc/boot/dts/stx_gp3_8560.dts
+arch/powerpc/boot/dts/mpc885ads.dts
+arch/powerpc/boot/dts/tqm8560.dts
+
+^^ Practice. :-)
+
+
+Maybe "fsl,soc", finally? :-) I think soc, ccsr or immr doesn't
+really matter, what really matters is consistency. <cpu-specific>
+part of the -ccsr/-immr should be sufficient to distinct whether
+we're on 85xx or 83xx...
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
