@@ -1,30 +1,20 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 659F0DDF20
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 08:52:27 +1100 (EST)
-Received: from pd2mr3so.prod.shaw.ca
-	(pd2mr3so-qfe3.prod.shaw.ca [10.0.141.108]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JVK00E3EY3DE4C0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 01 Feb 2008 14:52:25 -0700 (MST)
-Received: from pn2ml8so.prod.shaw.ca ([10.0.121.152])
-	by pd2mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JVK0097FY3CMO20@pd2mr3so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Fri, 01 Feb 2008 14:52:25 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JVK00C6PY3BAW10@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 01 Feb 2008 14:52:23 -0700 (MST)
-Date: Fri, 01 Feb 2008 14:51:41 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] Fix incorrectly tagged __devinitdata structures
-To: jwboyer@gmail.com, paulus@samba.org, linuxppc-dev@ozlabs.org,
-	jacmet@gmail.com
-Message-id: <20080201215059.18641.74367.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <david-b@pacbell.net>
+Received: from smtp120.sbc.mail.sp1.yahoo.com (smtp120.sbc.mail.sp1.yahoo.com
+	[69.147.64.93]) by ozlabs.org (Postfix) with SMTP id 7B32CDDF50
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 08:54:14 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [patch v6 1/4] USB: add Cypress c67x00 low level interface code
+Date: Fri, 1 Feb 2008 13:54:11 -0800
+References: <20080129122430.070266000@sunsite.dk>
+	<20080129123119.273749000@sunsite.dk>
+In-Reply-To: <20080129123119.273749000@sunsite.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200802011354.11819.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,57 +24,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Tuesday 29 January 2008, Peter Korsgaard wrote:
+> This patch adds the low level support code for the Cypress c67x00 family of
+> OTG controllers.  The low level code is responsible for register access and
+> implements the software protocol for communicating with the 16bit
+> microcontroller inside the c67x00 device.
+> 
+> Communication is done over the HPI interface (16bit SRAM-like parallel bus).
+>     
+> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-Fix compile errors in the xilinxfb, xsysace and uartlite drivers used
-by the Xilinx Virtex platform
+If you fix the issues I note below:
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-Paul, Josh: this fixes a compile error in mainline.
 
- drivers/block/xsysace.c   |    2 +-
- drivers/serial/uartlite.c |    2 +-
- drivers/video/xilinxfb.c  |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 78ebfff..1110e1b 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -1202,7 +1202,7 @@ static int __devexit ace_of_remove(struct of_device *op)
- }
- 
- /* Match table for of_platform binding */
--static struct of_device_id __devinit ace_of_match[] = {
-+static struct of_device_id ace_of_match[] __devinitdata = {
- 	{ .compatible = "xilinx,xsysace", },
- 	{},
- };
-diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index 8094340..c54a5ad 100644
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -618,7 +618,7 @@ static int __devexit ulite_of_remove(struct of_device *op)
- }
- 
- /* Match table for of_platform binding */
--static struct of_device_id __devinit ulite_of_match[] = {
-+static struct of_device_id ulite_of_match[] __devinitdata = {
- 	{ .type = "serial", .compatible = "xilinx,uartlite", },
- 	{},
- };
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index e38d3b7..c92e99e 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -459,7 +459,7 @@ static int __devexit xilinxfb_of_remove(struct of_device *op)
- }
- 
- /* Match table for of_platform binding */
--static struct of_device_id __devinit xilinxfb_of_match[] = {
-+static struct of_device_id xilinxfb_of_match[] __devinitdata = {
- 	{ .compatible = "xilinx,ml300-fb", },
- 	{},
- };
+> +/**
+> + * struct c67x00_sie - Common data associated with a SIE
+> + * @lock: lock to protect this struct
+
+"and the associated chip registers"
+
+> + * @private_data: subdriver dependent data
+> + * @irq: subdriver dependent irq handler, set NULL when not used
+> + * @dev: link to common driver structure
+> + * @sie_num: SIE number on chip, starting from 0
+> + * @mode: SIE mode (host/peripheral/otg/not used)
+> + */
+> +struct c67x00_sie {
+> +	/* Entries to be used by the subdrivers */
+> +	spinlock_t lock;	/* protect this structure */
+> +	void *private_data;
+> +	void (*irq) (struct c67x00_sie *sie, u16 int_status, u16 msg);
+> +
+> +	/* Read only: */
+> +	struct c67x00_device *dev;
+> +	int sie_num;
+> +	int mode;
+> +};
+
+
+In the C file:
+
+> +static inline u16 hpi_read_word(struct c67x00_device *dev, u16 reg)
+> +{
+> +	u16 value;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	value = hpi_read_word_nolock(dev, reg);
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +
+> +	return value;
+> +}
+> +
+> +static inline void hpi_write_word_nolock(struct c67x00_device *dev, u16 reg,
+> +					 u16 value)
+> +{
+> +	hpi_write_reg(dev, HPI_ADDR, reg);
+> +	hpi_write_reg(dev, HPI_DATA, value);
+> +}
+> +
+> +static inline void hpi_write_word(struct c67x00_device *dev, u16 reg, u16 value)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	hpi_write_word_nolock(dev, reg, value);
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +}
+> +
+> +/*
+> + * Only data is little endian, addr has cpu endianess
+> + */
+> +static inline void hpi_write_words_le16(struct c67x00_device *dev, u16 addr,
+> +					u16 *data, u16 count)
+> +{
+> +	unsigned long flags;
+> +	int i;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +
+> +	hpi_write_reg(dev, HPI_ADDR, addr);
+> +	for (i = 0; i < count; i++)
+> +		hpi_write_reg(dev, HPI_DATA, cpu_to_le16(*data++));
+> +
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +}
+> +
+> +/*
+> + * Only data is little endian, addr has cpu endianess
+> + */
+> +static inline void hpi_read_words_le16(struct c67x00_device *dev, u16 addr,
+> +				       u16 *data, u16 count)
+> +{
+> +	unsigned long flags;
+> +	int i;
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	hpi_write_reg(dev, HPI_ADDR, addr);
+> +	for (i = 0; i < count; i++)
+> +		*data++ = le16_to_cpu(hpi_read_reg(dev, HPI_DATA));
+> +
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +}
+> +
+> +static inline void hpi_set_bits(struct c67x00_device *dev, u16 reg, u16 mask)
+> +{
+> +	u16 value;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	value = hpi_read_word_nolock(dev, reg);
+> +	hpi_write_word_nolock(dev, reg, value | mask);
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +}
+> +
+> +static inline void hpi_clear_bits(struct c67x00_device *dev, u16 reg, u16 mask)
+> +{
+> +	u16 value;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	value = hpi_read_word_nolock(dev, reg);
+> +	hpi_write_word_nolock(dev, reg, value & ~mask);
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +}
+> +
+> +static inline u16 hpi_recv_mbox(struct c67x00_device *dev)
+> +{
+> +	u16 value;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	value = hpi_read_reg(dev, HPI_MAILBOX);
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +
+> +	return value;
+> +}
+> +
+> +static inline u16 hpi_send_mbox(struct c67x00_device *dev, u16 value)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->hpi.lock, flags);
+> +	hpi_write_reg(dev, HPI_MAILBOX, value);
+> +	spin_unlock_irqrestore(&dev->hpi.lock, flags);
+> +
+> +	return value;
+> +}
+
+Strike the "inline" from all the above, and let the compiler decide
+if the space savings are worthwhile.  (I'd guess:  mostly not.)
+Given icache, time savings are likely negligible.
