@@ -1,16 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 07D5FDDE1F
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 02:15:31 +1100 (EST)
-Message-ID: <47A33018.2090606@ru.mvista.com>
-Date: Fri, 01 Feb 2008 17:43:36 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 4A734DDF60
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 02:17:26 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so293046anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 07:17:25 -0800 (PST)
+Message-ID: <fa686aa40802010717s16f54b9dy81bde4e64a1d6ac1@mail.gmail.com>
+Date: Fri, 1 Feb 2008 08:17:25 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sebastian Theiss" <st12@inf.tu-dresden.de>
+Subject: Re: pthread / TQM5200 problem
+In-Reply-To: <003c01c864e2$a6b44e40$0101a8c0@tis>
 MIME-Version: 1.0
-To: Laurent Lagrange <lagrange@fr.oleane.com>
-Subject: Re: PCI configuration with multiple PCI controllers
-References: <000001c864df$63b833c0$a501a8c0@GEGE6600V>
-In-Reply-To: <000001c864df$63b833c0$a501a8c0@GEGE6600V>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+References: <002c01c864d0$a4ad11c0$0101a8c0@tis>
+	<003c01c864e2$a6b44e40$0101a8c0@tis>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,36 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On 2/1/08, Sebastian Theiss <st12@inf.tu-dresden.de> wrote:
+> Hi,
+>
+> Here's some additional information I forgot when originally posting my
+> question today morning: I'm using the DENX ELDK 3.1.1 and a kernel version
+> 2.4.25.
 
-Laurent Lagrange wrote:
+Ugh.  You might have trouble getting support on this list.  Almost
+everyone here is firmly focused on the 2.6 kernel.  Can you upgrade to
+a recent kernel version.  2.6.24 is looking really good for mpc5200
+work.
 
-> I have a MPC8641 based board. I try to use the two PCIe controllers. My
-> firmware configures (physically) the PCI buses as follow:
+Cheers,
+g.
 
-> ------------------+
-> MPC8641 PCIe 1	|	bus 1		+--------------+
-> 			| --------------> | PCI device 0 |
-> 	BUS 0		|			+--------------+
-> - - - - - - - - - +
-> MPC8641 PCIe 2	|	bus 3		+--------------+
-> 			| --------------> | PCI device 1 |
-> 	BUS 2		|			+--------------+
-> ------------------+
-
-> I launch the Linux image (2.6.23.9). During the Kernel PCI configuration,
-> buses behind the 2nd MPC8641 PCIe are skipped because its primary bus don't
-> start at bus number 0. The kernel reconfigure the primary bus number of the
-> MPC8641 PCIe 2 controller from 2 to 0.
-
-    Hm...
-
-> I can patch the kernel to work with my firmware but I don't know if my PCI
-> configuration is the good one.
-
-> What is the common way to configure the PCI for Linux when a new controller
-> is found: start the bus number to 0 or to the last bus number + 1?
-
-    The latter. Otherwise it just won't work.
-
-WBR, Sergei
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
