@@ -1,16 +1,22 @@
-Return-Path: <mgreer@mvista.com>
-Date: Fri, 1 Feb 2008 11:35:20 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Reminder: removal of arch/ppc
-Message-ID: <20080201183520.GC31276@mag.az.mvista.com>
-References: <E83C3B2F-0FC4-4248-B718-0C45B56E969A@kernel.crashing.org>
-	<20080131225446.GA9633@mag.az.mvista.com>
-	<3B00BB74-ED5B-4661-B807-79DE6CBEA883@kernel.crashing.org>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A9FABDDEBE
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 05:40:44 +1100 (EST)
+Message-ID: <47A36798.8040208@garzik.org>
+Date: Fri, 01 Feb 2008 13:40:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B00BB74-ED5B-4661-B807-79DE6CBEA883@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
+To: Doug Maxey <dwm@austin.ibm.com>
+Subject: Re: [PATCH 1/5] ehea: fix ehea.h checkpatch complaints
+References: <1201832451-23634-1-git-send-email-dwm@austin.ibm.com>
+	<1201832451-23634-2-git-send-email-dwm@austin.ibm.com>
+In-Reply-To: <1201832451-23634-2-git-send-email-dwm@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org,
+	Jeff Garzik <jgarzik@garzik.org>, Jan-Bernd Themann <themann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,28 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 31, 2008 at 09:33:09PM -0600, Kumar Gala wrote:
-> 
-> On Jan 31, 2008, at 4:54 PM, Mark A. Greer wrote:
-> 
-> >On Fri, Jan 25, 2008 at 10:55:25AM -0600, Kumar Gala wrote:
-> >>Just a reminder that the plan is to remove arch/ppc this summer (June
-> >>2008).  The following boards still existing over in arch/ppc.  Some  
-> >>of
-> >>them have been ported over to arch/powerpc.  If you care about one of
-> >>these boards and its not ported speak up (it helps if you have access
-> >>to the board).  Also, if you know a given board is free to die of
-> >>bitrot let us know so we know not to worry about it:
-> >
-> >I guess I'm just not a nice guy but I say let them die.  No need
-> >to worry.  The code really isn't going anywhere -- git-checkout
-> >v2.6.<pick your favorite version> and its back.
-> >
-> >/me's $0.02.
-> 
-> this is where I poke you about the sandpoint port ;)
+Doug Maxey wrote:
+> Cc: Jan-Bernd Themann <themann@de.ibm.com>
+> Signed-off-by: Doug Maxey <dwm@austin.ibm.com>
+> ---
+>  drivers/net/ehea/ehea.h    |    3 +++
+>  drivers/net/ehea/ehea_hw.h |    8 ++++----
+>  2 files changed, 7 insertions(+), 4 deletions(-)
 
-Heh, I know, I know.  jdl was asking me about it a few days ago too.
-I haven't forgotten, it just never makes it to the top of my stack.
-
-RSN tho... :)
+applied 1-5
