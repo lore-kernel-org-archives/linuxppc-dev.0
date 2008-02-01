@@ -1,35 +1,17 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2170CDDEAB
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 01:37:47 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id m11Ebh77297014
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 14:37:43 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m11EbhJj1659112
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 15:37:43 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m11Ebgcx030806
-	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 15:37:43 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: fix sysfs link compile problem
-Date: Fri, 1 Feb 2008 15:37:42 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200802011537.42578.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <FF018A8D-21AC-4F05-887B-66B99A0D444C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080201075408.GC18684@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 2/10] sbc8560: Add v1 device tree source for Wind River
+	SBC8560 board
+Date: Fri, 1 Feb 2008 08:46:32 -0600
+References: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
+	<7107e511a0f989ad55335855fa0f241f09eff52f.1201217172.git.paul.gortmaker@windriver.com>
+	<20080201075408.GC18684@localhost.localdomain>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,82 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Due to changes in the struct device_driver there is no direct
-access to its kobj any longer. The kobj was used to create
-sysfs links between eHEA ethernet devices and the driver.
-This patch removes the affected sysfs links to resolve
-the build problems.
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+On Feb 1, 2008, at 1:54 AM, David Gibson wrote:
 
+> On Thu, Jan 24, 2008 at 06:41:24PM -0500, Paul Gortmaker wrote:
+>> This adds a v1 device tree source for the Wind River SBC8560  
+>> board.  The
+>> biggest difference between this and the MPC8560ADS reference platform
+>> dts is the use of an external 16550 compatible UART instead of the  
+>> CPM2.
+>>
+>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>
+> [snip]
+>> +/dts-v1/;
+>> +
+>> +/ {
+>> +	model = "SBC8560";
+>> +	compatible = "SBC8560";
+>
+> This is not the conventional format for board-level compatible
+> entries, which should generally be "vendor,model" and all in lower
+> case.
+>
+> [snip]
+>> +		enet0: ethernet@24000 {
+>> +			cell-index = <0>;
+>> +			device_type = "network";
+>> +			model = "TSEC";
+>> +			compatible = "gianfar";
+>
+> This looks like the old dodgy gianfar binding, and needs updating
+> (mdio node will probably also need changes).
+>
+> [snip]
+>> +	localbus@ff705000 {
+>> +		compatible = "fsl,mpc8560-localbus";
+>> +		#address-cells = <2>;
+>> +		#size-cells = <1>;
+>> +		reg = <0xff705000 0x100>;	// BRx, ORx, etc.
+>> +
+>> +		ranges = <
+>> +			0x0 0x0 0xff800000 0x0800000	// 8MB boot flash
+>> +			0x1 0x0 0xe4000000 0x4000000	// 64MB flash
+>> +			0x3 0x0 0x20000000 0x4000000	// 64MB SDRAM
+>> +			0x4 0x0 0x24000000 0x4000000	// 64MB SDRAM
+>> +			0x5 0x0 0xfc000000 0x0c00000	// EPLD
+>> +			0x6 0x0 0xe0000000 0x4000000	// 64MB flash
+>> +			0x7 0x0 0x80000000 0x0200000	// ATM1,2
+>> +		>;
+>> +
+>> +		epld@5,0 {
+>
+> I'm not entirely convinced on this two-level representation.  I think
+> the FSL people need to get together and define a binding (or set of
+> bindings) for their various chipselect style external bus bridges.
 
----
- drivers/net/ehea/ehea_main.c |   37 -------------------------------------
- 1 files changed, 0 insertions(+), 37 deletions(-)
+It seems reasonable if you had a FPGA off of the localbus to have a  
+two level representation.  One for the localbus controller on the FSL  
+part and the child to describe the FPGA.
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 869e160..9a3fd81 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2804,34 +2804,6 @@ static void __devinit logical_port_release(struct device *dev)
- 	of_node_put(port->ofdev.node);
- }
- 
--static int ehea_driver_sysfs_add(struct device *dev,
--				 struct device_driver *driver)
--{
--	int ret;
--
--	ret = sysfs_create_link(&driver->kobj, &dev->kobj,
--				kobject_name(&dev->kobj));
--	if (ret == 0) {
--		ret = sysfs_create_link(&dev->kobj, &driver->kobj,
--					"driver");
--		if (ret)
--			sysfs_remove_link(&driver->kobj,
--					  kobject_name(&dev->kobj));
--	}
--	return ret;
--}
--
--static void ehea_driver_sysfs_remove(struct device *dev,
--				     struct device_driver *driver)
--{
--	struct device_driver *drv = driver;
--
--	if (drv) {
--		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
--		sysfs_remove_link(&dev->kobj, "driver");
--	}
--}
--
- static struct device *ehea_register_port(struct ehea_port *port,
- 					 struct device_node *dn)
- {
-@@ -2856,16 +2828,8 @@ static struct device *ehea_register_port(struct ehea_port *port,
- 		goto out_unreg_of_dev;
- 	}
- 
--	ret = ehea_driver_sysfs_add(&port->ofdev.dev, &ehea_driver.driver);
--	if (ret) {
--		ehea_error("failed to register sysfs driver link");
--		goto out_rem_dev_file;
--	}
--
- 	return &port->ofdev.dev;
- 
--out_rem_dev_file:
--	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
- out_unreg_of_dev:
- 	of_device_unregister(&port->ofdev);
- out:
-@@ -2874,7 +2838,6 @@ out:
- 
- static void ehea_unregister_port(struct ehea_port *port)
- {
--	ehea_driver_sysfs_remove(&port->ofdev.dev, &ehea_driver.driver);
- 	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
- 	of_device_unregister(&port->ofdev);
- }
--- 
-1.5.2
+What are you expecting beyond what we have today?  I guess I'm asking  
+what's missing from the localbus nodes we have?
+
+- k
