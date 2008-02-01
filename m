@@ -1,31 +1,37 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e28esmtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3F796DDDEE
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 15:51:54 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m114pOYk020423
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 21:51:39 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m114pMaP001916
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2008 22:51:23 -0600 (CST)
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0EDB8DDDF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 15:58:42 +1100 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id m114wXXV001960
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 10:28:33 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m114wXXZ917684
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 10:28:33 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id m114wXGa007572
+	for <linuxppc-dev@ozlabs.org>; Fri, 1 Feb 2008 04:58:33 GMT
+Date: Fri, 1 Feb 2008 10:27:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH powerpc] Fake NUMA emulation for PowerPC (Take 4)
+Message-ID: <20080201045731.GA29448@balbir.in.ibm.com>
+References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
+	<1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
+	<1200635099.7806.3.camel@concordia.ozlabs.ibm.com>
+	<20080126071339.GA25328@balbir.in.ibm.com>
+	<18332.28991.658933.763115@cargo.ozlabs.ibm.com>
+	<20080128125206.GC4330@balbir.in.ibm.com>
+	<1201611898.26410.7.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [PATCH 1/2] Add RapidIO node into MPC8641HPCN dts file
-Date: Fri, 1 Feb 2008 12:51:21 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEBD08DB@zch01exm26.fsl.freescale.net>
-In-Reply-To: <47A1F73E.3090600@freescale.com>
-References: <12017656032841-git-send-email-wei.zhang@freescale.com>
-	<47A1F73E.3090600@freescale.com>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: "Loeliger Jon" <jdl@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1201611898.26410.7.camel@concordia>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,56 +41,197 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Jon,=20
+* Michael Ellerman <michael@ellerman.id.au> [2008-01-30 00:04:58]:
 
-> -----Original Message-----
-> From: Loeliger Jon=20
->=20
-> Zhang Wei wrote:
-> > Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> > ---
-> >  arch/powerpc/boot/dts/mpc8641_hpcn.dts |   13 +++++++++++++
-> >  1 files changed, 13 insertions(+), 0 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts=20
-> b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> > index 556a9ca..1a0fce5 100644
-> > --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> > +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> > @@ -25,6 +25,7 @@
-> >  		serial1 =3D &serial1;
-> >  		pci0 =3D &pci0;
-> >  		pci1 =3D &pci1;
-> > +		rapidio0 =3D &rapidio0;
-> >  	};
-> > =20
-> >  	cpus {
-> > @@ -499,4 +500,16 @@
-> >  				  0 00100000>;
-> >  		};
-> >  	};
-> > +
-> > +	rapidio0: rapidio@f80c0000 {
-> > +		#address-cells =3D <2>;
-> > +		#size-cells =3D <2>;
-> > +		compatible =3D "fsl,rapidio-delta";
-> > +		reg =3D <f80c0000 20000>;
-> > +		ranges =3D <0 0 c0000000 0 20000000>;
-> > +		interrupt-parent =3D <&mpic>;
-> > +		/* err_irq bell_outb_irq bell_inb_irq
-> > +			msg1_tx_irq msg1_rx_irq	msg2_tx_irq=20
-> msg2_rx_irq */
-> > +		interrupts =3D <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
-> > +	};
-> >  };
->=20
-> The 8641 DTS file has been converted to /dts-v1/ format now.
-> Please rewrite this patch with explicit hex numbers for
-> addresses, even if 0x0, and decimal for IRQs.
->=20
-I have seen other nodes in mpc8641_hpcn.dts still use old style.
- Is it better to create an another new patch for correcting the style =
-all?
+> Why do you check !p after assigning to nid? I assume it's because we
+> might have reached the end of the command line, ie. p == NULL, but we're
+> still adding memory to the last node? If so it's a it's a little subtle
+> and deserves a comment I think.
+> 
+> Otherwise this looks pretty good.
+> 
+> cheers
+> 
 
-Cheers!
-Wei
+Hi, Paul,
+
+Could you please consider version 4 for inclusion?
+
+
+Changelong v4
+
+1. Add more comments around the checks for command line arguments.
+
+Changelog v3
+1. Remove the side-effect of not setting nodes online if they end
+   up having no memory in them because of the memory limit.
+
+Changelog v2
+
+1. Get rid of the constant 5 (based on comments from
+                                Geert.Uytterhoeven@sonycom.com)
+2. Implement suggestions from Olof Johannson
+3. Check if cmdline is NULL in fake_numa_create_new_node()
+
+Tested with additional parameters from Olof
+
+numa=debug,fake=
+numa=foo,fake=bar
+
+
+Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+NUMA nodes can be specified using the following command line option
+
+numa=fake=<node range>
+
+node range is of the format <range1>,<range2>,...<rangeN>
+
+Each of the rangeX parameters is passed using memparse(). I find the patch
+useful for fake NUMA emulation on my simple PowerPC machine. I've tested it
+on a numa box with the following arguments
+
+numa=fake=512M
+numa=fake=512M,768M
+numa=fake=256M,512M mem=512M
+numa=fake=1G mem=768M
+numa=fake=
+without any numa= argument
+
+The other side-effect introduced by this patch is that; in the case where we
+don't have NUMA information, we now set a node online after adding each LMB.
+This node could very well be node 0, but in the case that we enable fake
+NUMA nodes, when we cross node boundaries, we need to set the new node online.
+
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/mm/numa.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 63 insertions(+), 3 deletions(-)
+
+diff -puN arch/powerpc/mm/numa.c~fakenumappc arch/powerpc/mm/numa.c
+--- linux-2.6.24-rc8/arch/powerpc/mm/numa.c~fakenumappc	2008-01-28 17:05:34.000000000 +0530
++++ linux-2.6.24-rc8-balbir/arch/powerpc/mm/numa.c	2008-02-01 10:24:57.000000000 +0530
+@@ -24,6 +24,8 @@
+ 
+ static int numa_enabled = 1;
+ 
++static char *cmdline __initdata;
++
+ static int numa_debug;
+ #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
+ 
+@@ -39,6 +41,53 @@ static bootmem_data_t __initdata plat_no
+ static int min_common_depth;
+ static int n_mem_addr_cells, n_mem_size_cells;
+ 
++static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
++						unsigned int *nid)
++{
++	unsigned long long mem;
++	char *p = cmdline;
++	static unsigned int fake_nid;
++	static unsigned long long curr_boundary;
++
++	/*
++	 * Modify node id, iff we started creating NUMA nodes
++	 * We want to continue from where we left of the last time
++	 */
++	if (fake_nid)
++		*nid = fake_nid;
++	/*
++	 * In case there are no more arguments to parse, the
++	 * node_id should be the same as the last fake node id
++	 * (we've handled this above).
++	 */
++	if (!p)
++		return 0;
++
++	mem = memparse(p, &p);
++	if (!mem)
++		return 0;
++
++	if (mem < curr_boundary)
++		return 0;
++
++	curr_boundary = mem;
++
++	if ((end_pfn << PAGE_SHIFT) > mem) {
++		/*
++		 * Skip commas and spaces
++		 */
++		while (*p == ',' || *p == ' ' || *p == '\t')
++			p++;
++
++		cmdline = p;
++		fake_nid++;
++		*nid = fake_nid;
++		dbg("created new fake_node with id %d\n", fake_nid);
++		return 1;
++	}
++	return 0;
++}
++
+ static void __cpuinit map_cpu_to_node(int cpu, int node)
+ {
+ 	numa_cpu_lookup_table[cpu] = node;
+@@ -344,6 +393,9 @@ static void __init parse_drconf_memory(s
+ 			if (nid == 0xffff || nid >= MAX_NUMNODES)
+ 				nid = default_nid;
+ 		}
++
++		fake_numa_create_new_node(((start + lmb_size) >> PAGE_SHIFT),
++						&nid);
+ 		node_set_online(nid);
+ 
+ 		size = numa_enforce_memory_limit(start, lmb_size);
+@@ -429,6 +481,8 @@ new_range:
+ 		nid = of_node_to_nid_single(memory);
+ 		if (nid < 0)
+ 			nid = default_nid;
++
++		fake_numa_create_new_node(((start + size) >> PAGE_SHIFT), &nid);
+ 		node_set_online(nid);
+ 
+ 		if (!(size = numa_enforce_memory_limit(start, size))) {
+@@ -461,7 +515,7 @@ static void __init setup_nonnuma(void)
+ 	unsigned long top_of_ram = lmb_end_of_DRAM();
+ 	unsigned long total_ram = lmb_phys_mem_size();
+ 	unsigned long start_pfn, end_pfn;
+-	unsigned int i;
++	unsigned int i, nid = 0;
+ 
+ 	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+ 	       top_of_ram, total_ram);
+@@ -471,9 +525,11 @@ static void __init setup_nonnuma(void)
+ 	for (i = 0; i < lmb.memory.cnt; ++i) {
+ 		start_pfn = lmb.memory.region[i].base >> PAGE_SHIFT;
+ 		end_pfn = start_pfn + lmb_size_pages(&lmb.memory, i);
+-		add_active_range(0, start_pfn, end_pfn);
++
++		fake_numa_create_new_node(end_pfn, &nid);
++		add_active_range(nid, start_pfn, end_pfn);
++		node_set_online(nid);
+ 	}
+-	node_set_online(0);
+ }
+ 
+ void __init dump_numa_cpu_topology(void)
+@@ -702,6 +758,10 @@ static int __init early_numa(char *p)
+ 	if (strstr(p, "debug"))
+ 		numa_debug = 1;
+ 
++	p = strstr(p, "fake=");
++	if (p)
++		cmdline = p + strlen("fake=");
++
+ 	return 0;
+ }
+ early_param("numa", early_numa);
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
