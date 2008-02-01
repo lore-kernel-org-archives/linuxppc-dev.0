@@ -1,23 +1,21 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7429EDE121
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 05:40:52 +1100 (EST)
-Message-ID: <47A367AE.8000004@garzik.org>
-Date: Fri, 01 Feb 2008 13:40:46 -0500
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.230])
+	by ozlabs.org (Postfix) with ESMTP id 0DD82DE017
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 05:42:25 +1100 (EST)
+Received: by qb-out-0506.google.com with SMTP id e11so1010418qbe.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 10:42:24 -0800 (PST)
+Message-ID: <fa686aa40802011042r749b61aqfe30284eff11b99f@mail.gmail.com>
+Date: Fri, 1 Feb 2008 11:42:23 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
+In-Reply-To: <20080201182253.903B5F18046@mail130-sin.bigfish.com>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH] ehea: fix sysfs link compile problem
-References: <200802011537.42578.ossthema@de.ibm.com>
-In-Reply-To: <200802011537.42578.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1201827769-7439-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080201182253.903B5F18046@mail130-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, ntl@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> Due to changes in the struct device_driver there is no direct
-> access to its kobj any longer. The kobj was used to create
-> sysfs links between eHEA ethernet devices and the driver.
-> This patch removes the affected sysfs links to resolve
-> the build problems.
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-> 
-> 
-> ---
->  drivers/net/ehea/ehea_main.c |   37 -------------------------------------
->  1 files changed, 0 insertions(+), 37 deletions(-)
+On 2/1/08, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+> diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> new file mode 100644
+> index 0000000..83f2d0b
+> --- /dev/null
+> +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> +static int hwicap_open(struct inode *inode, struct file *file)
+> +{
+> +       struct hwicap_drvdata *drvdata;
+> +       int status;
+> +
+> +       drvdata = container_of(inode->i_cdev, struct hwicap_drvdata, cdev);
+> +
+> +       if (down_interruptible(&drvdata->sem))
+> +               return -ERESTARTSYS;
+> +
+> +       drvdata->is_open = 1;
 
-applied
+It doesn't look like this flag is used anywhere anymore.
+
+> +
+> +       status = hwicap_initialize_hwicap(drvdata);
+> +       if (status) {
+> +               dev_err(drvdata->dev, "Failed to open file");
+> +               return status;
+
+returning without up()
+
+> +       }
+> +
+> +       file->private_data = drvdata;
+> +       drvdata->write_buffer_in_use = 0;
+> +       drvdata->read_buffer_in_use = 0;
+> +
+> +       up(&drvdata->sem);
+> +
+> +       return 0;
+> +}
+> +
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
