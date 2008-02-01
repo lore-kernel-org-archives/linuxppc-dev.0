@@ -1,18 +1,17 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <dwm@austin.ibm.com>
+Received: from willy.enoyolf.org (willy.enoyolf.org [24.173.215.188])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 63CBCDDE1B
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 12:40:13 +1100 (EST)
-Date: Thu, 31 Jan 2008 19:40:05 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: add rtc node to mpc8313erdb dts
-Message-Id: <20080131194005.55ee9fc3.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "willy.enoyolf.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D3179DDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2008 13:22:50 +1100 (EST)
+From: Doug Maxey <dwm@austin.ibm.com>
+To: Jeff Garzik <jgarzik@garzik.org>
+Subject: [PATCH 0/5] ehea checkpatch fixups
+Date: Thu, 31 Jan 2008 20:20:46 -0600
+Message-Id: <1201832451-23634-1-git-send-email-dwm@austin.ibm.com>
+Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Jan-Bernd Themann <themann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-the 8313 rdb has a ds1339 at address 0x68.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/boot/dts/mpc8313erdb.dts |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+A small set of fixups for checkpatch.
 
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index 2d6653f..e1f0dca 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -118,6 +118,10 @@
- 			interrupts = <14 0x8>;
- 			interrupt-parent = <&ipic>;
- 			dfsrr;
-+			rtc@68 {
-+				compatible = "dallas,ds1339";
-+				reg = <0x68>;
-+			};
- 		};
- 
- 		i2c@3100 {
--- 
-1.5.2.2
+Based on upstream pull from a few hours ago.
+
+ drivers/net/ehea/ehea.h         |    3 +
+ drivers/net/ehea/ehea_ethtool.c |    4 +-
+ drivers/net/ehea/ehea_hw.h      |    8 +-
+ drivers/net/ehea/ehea_main.c    |   87 +++++++++++----------
+ drivers/net/ehea/ehea_phyp.c    |  158 +++++++++++++++++++-------------------
+ drivers/net/ehea/ehea_phyp.h    |   22 +++---
+ drivers/net/ehea/ehea_qmr.c     |   32 ++++----
+ drivers/net/ehea/ehea_qmr.h     |   16 ++--
+ 8 files changed, 169 insertions(+), 161 deletions(-)
