@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6B8CADDEFC
+	by ozlabs.org (Postfix) with ESMTP id D22C9DDFC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Feb 2008 06:43:39 +1100 (EST)
-Message-ID: <47A37653.3070305@freescale.com>
-Date: Fri, 01 Feb 2008 13:43:15 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Marco Stornelli <marco.stornelli@coritel.it>
-Subject: Re: External Interrupt
-References: <47A2D424.3090903@coritel.it>	<47A32C9C.3090709@ru.mvista.com>	<47A3379F.2090004@coritel.it>	<47A33C59.4020509@ru.mvista.com>
-	<47A3473D.6040505@coritel.it>
-In-Reply-To: <47A3473D.6040505@coritel.it>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Linuxppc Embedded Mailing List <linuxppc-embedded@ozlabs.org>
+	Sat,  2 Feb 2008 06:53:31 +1100 (EST)
+Date: Fri, 1 Feb 2008 13:53:24 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Steven Hein <ssh@sgi.com>
+Subject: Re: 8360 custom board, ucc_geth TX errors on longer(?) packets
+Message-Id: <20080201135324.8372268e.kim.phillips@freescale.com>
+In-Reply-To: <47A36A69.1010809@sgi.com>
+References: <47A36A69.1010809@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,11 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marco Stornelli wrote:
-> Yes you are right. The local bus is like i2c, but I've never seen a
-> device connected with i2c and described with a sub-node of i2c node in
-> the dts file,
+On Fri, 01 Feb 2008 12:52:25 -0600
+Steven Hein <ssh@sgi.com> wrote:
 
-Grep the dts directory for "rtc@68".
+> The one main difference in this board is how eth0 is wired.
+> We have a Broadcom GbE switch part, and UCC1 eth is wired
+> directly to that switch (no PHY).   (This where I needed to
 
--Scott
+sounds like you ran into some h/w errata.  if on rgmii, you might
+want to find a way to program the switch for rgmii with internal delay
+(8360 rev.2 rgmii-id rx & tx; 8360rev2.1 rgmii-rxid (i.e. for rx
+only)).  If not, I'd contact fsl tech support directly.
+
+Kim
