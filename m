@@ -1,18 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 32D31DDE43
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 15:24:26 +1100 (EST)
-To: "Sebastian Theiss" <st12@inf.tu-dresden.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: pthread / TQM5200 problem
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 01 Feb 2008 13:47:45 +0100."
-	<002c01c864d0$a4ad11c0$0101a8c0@tis>
-Date: Sat, 02 Feb 2008 05:24:24 +0100
-Sender: wd@denx.de
-Message-Id: <20080202042424.8E6AA247A1@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dwm@enoyolf.org>
+Received: from bebe.enoyolf.org (bebe.enoyolf.org [24.173.215.190])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bebe.enoyolf.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 55F88DDECB
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 15:41:01 +1100 (EST)
+In-reply-to: <20080201192344.GA4541@loki.buserror.net> 
+References: <1201832451-23634-1-git-send-email-dwm@austin.ibm.com>
+	<1201832451-23634-5-git-send-email-dwm@austin.ibm.com>
+	<20080201192344.GA4541@loki.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 4/5] ehea: fix phyp checkpatch complaints 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Fri, 01 Feb 2008 22:39:57 -0600
+Message-ID: <19294.1201927197@bebe.enoyolf.org>
+From: Doug Maxey <dwm@enoyolf.org>
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
+	Jeff Garzik <jgarzik@garzik.org>,
+	Linux PowerPC List <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <002c01c864d0$a4ad11c0$0101a8c0@tis> you wrote:
+
+On Fri, 01 Feb 2008 13:23:45 CST, Scott Wood wrote:
+> On Thu, Jan 31, 2008 at 08:20:50PM -0600, Doug Maxey wrote:
+> >  /* input param R5 */
+> > -#define H_ALL_RES_QP_EQPO         EHEA_BMASK_IBM(9, 11)
+...
+> > +#define H_ALL_RES_QP_EQPO	  EHEA_BMASK_IBM(9, 11)
+...
 > 
-> I've been having some headache using the pthread library with a TB5200 box
-> (based on a TQM5200 board with a Freescale MPC5200 PowerPC-CPU). I created a
-> small program to pin down the problem and it runs fine on all my Unix- and
+> This was better the way it was (before, it was readable at any tab setting);
+> checkpatch is overeager to complain on tab/space issues (it's a bit hard to
+> distinguish indentation from alignment with a regex).
 
-NOTE: It is really bad behaviour to post the same  question  indepen-
-dently  in  several  mailing  list.  Your  question  has already been
-answered on the ELDK list.
+In emacs, with no special offsets, the lines appear to still line up.
 
-> Linux-machines but fails on the embedded box: The program contains a class
-> CSignal that provides thread-synchronisation based on the
-> pthread_cond_signal and pthread_cond_wait calls and takes care of the
-> "spurious wakeup" and "lost signal" problems. The program runs 159
-> additional threads (that seems to be some internal limit), each of them
+What did happen was spaces were turned to tabs where applicable.
 
-And this strange "internal limit"  is  an  indication  that  you  are
-running code that is more than 1.5 years old, as the bug was fixed in
-September  2006.  It was caused by bad PCI mappings that overlap with
-CONFIG_TASKSIZE.
+What editor shows a bad alignment?
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It would seem that evil retreats when forcibly confronted
-	-- Yarnek of Excalbia, "The Savage Curtain", stardate 5906.5
+++doug
