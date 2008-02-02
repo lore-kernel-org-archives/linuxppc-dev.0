@@ -1,19 +1,22 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 9C500DDDFE
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3ABA2DDEE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Feb 2008 15:22:06 +1100 (EST)
+	Sun,  3 Feb 2008 07:36:47 +1100 (EST)
+Message-ID: <47A4D45E.6030701@scram.de>
+Date: Sat, 02 Feb 2008 21:36:46 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: build is broken
-Date: Fri, 1 Feb 2008 20:22:03 -0800
-Message-ID: <F795765B112E7344AF36AA911279641502D1AA29@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <20080201212408.1bdf4acd@zod.rchland.ibm.com>
-References: <F795765B112E7344AF36AA911279641502D1AA28@xmb-sjc-212.amer.cisco.com>
-	<20080201212408.1bdf4acd@zod.rchland.ibm.com>
-From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-To: "Josh Boyer" <jwboyer@gmail.com>
+To: rmcguire@videopresence.com
+Subject: Re: 83xx HDLC Driver Dev - Multiple PHYs?
+References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>
+	<000601c85fc5$41e48330$6405a8c0@absolut>
+	<D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
+	<000001c862fe$5ff16550$6405a8c0@absolut>
+In-Reply-To: <000001c862fe$5ff16550$6405a8c0@absolut>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,88 +28,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Russell,
 
-> -----Original Message-----
-> From: Josh Boyer [mailto:jwboyer@gmail.com]=20
-> Sent: Friday, February 01, 2008 7:24 PM
-> To: Bizhan Gholikhamseh (bgholikh)
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: build is broken
->=20
-> On Fri, 1 Feb 2008 15:23:21 -0800
-> "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com> wrote:
->=20
-> > Hi
-> > I just downloaded the latest source tree from :
-> > git://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-> >=20
-> > I am using gnu cross compiler version 3.4.3. I get the an "awk" and=20
-> > "assmbeler" error.
-> >=20
-> > Please help me out. Thanks
-> >=20
-> > $ <mailto:bizhan@PPC]$>  make ARCH=3Dpowerpc
-> > CROSS_COMPILE=3Dpowerpc-linux-gnu- uImage
-> > awk: cmd. line:1: (FILENAME=3D- FNR=3D2) fatal: attempt to=20
-> access field -1
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   CALL    scripts/checksyscalls.sh
-> >   CHK     include/linux/compile.h
-> >   CALL    arch/powerpc/kernel/systbl_chk.sh
-> >   LD      vmlinux.o
-> >   MODPOST vmlinux.o
-> > WARNING: vmlinux.o(.meminit.text+0x9f8): Section mismatch=20
-> in reference=20
-> > from the function free_area_init_node() to the function
-> > .init.text:__alloc_bootmem_node()
-> > The function __meminit free_area_init_node() references a function=20
-> > __init __alloc_bootmem_node().
-> > If free_area_init_node is only used by __alloc_bootmem_node then=20
-> > annotate free_area_init_node with a matching annotation.
-> > =20
-> >   AS      .tmp_kallsyms2.o
-> >   LD      vmlinux
-> >   SYSMAP  System.map
-> >   SYSMAP  .tmp_System.map
-> >   BOOTCC  arch/powerpc/boot/treeboot-walnut.o
-> > Assembler messages:
-> > Error: Internal assembler error for instruction icbt=20
-> Internal error,=20
-> > aborting at=20
-> >=20
-> /usr/src/RPM/BUILD/crosstool/source/binutils-2.15/gas/config/tc-ppc.c
-> > line 1300 in ppc_setup_opcodes
-> > Please report this bug.
-> > make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
-> > make: *** [uImage] Error 2
->=20
-> I have no idea why you would get that if you have a properly=20
-> built toolchain.  Can you do a fresh compile with V=3D1 set?
->=20
-> josh
->
-I did the fresh build with V=3D1. I still get the same awk error and the
-compile's last line output:
-  powerpc-linux-gnuspe-gcc -m32
--Wp,-MD,arch/powerpc/boot/.treeboot-walnut.o.d -Wall -Wundef
--Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -Os -msoft-float
--pipe -fomit-frame-pointer -fno-builtin -fPIC -nostdinc -isystem
-/opt/Embedix/usr/local/powerpc-linux-gnuspe/gcc-3.4.3-e500-glibc-2.3.3-s
-pe/lib/gcc/powerpc-linux-gnuspe/3.4.3/include -Iarch/powerpc/boot
--I/home/bizhan/PPC/arch/powerpc/boot
--I/home/bizhan/PPC/arch/powerpc/boot/libfdt -mcpu=3D405 -c -o
-arch/powerpc/boot/treeboot-walnut.o arch/powerpc/boot/treeboot-walnut.c
-Assembler messages:
-Error: Internal assembler error for instruction icbt
-Internal error, aborting at
-/usr/src/RPM/BUILD/crosstool/source/binutils-2.15/gas/config/tc-ppc.c
-line 1300 in ppc_setup_opcodes
-Please report this bug.
-make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
-make: *** [uImage] Error 2
+> I am putting support for multiple PHY's into the HDLC driver, but after
+> converting it to use the of_device tree, and inserting a UCC@5000 for a
+> single UCC HDLC driver, it occurred to me that if I insert more devices
+> (UCC@6000, UCC@7000, UCC@8000) that the driver will attempt to load multiple
+> times.
 
-Any help greatly apprieciated.
+The module should only be loaded once. If the driver attempts to load multiple
+times, this looks like a userscpace bug.
 
 Thanks,
-Bizhan
+Jochen
