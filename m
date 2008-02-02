@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.247])
-	by ozlabs.org (Postfix) with ESMTP id 55111DDE43
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 17:59:47 +1100 (EST)
-Received: by ag-out-0708.google.com with SMTP id 31so5394agc.0
-	for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2008 22:59:45 -0800 (PST)
-Message-ID: <fa686aa40802012259s251c12c5t6db8918cfdb41c5d@mail.gmail.com>
-Date: Fri, 1 Feb 2008 23:59:45 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: linuxppc-dev@ozlabs.org, jwboyer@gmail.com, scottwood@freescale.com,
-	stephen.neuendorffer@xilinx.com
-Subject: Re: [RFC][POWERPC] bootwrapper: Add a firmware-independent simpleboot
-	target.
-In-Reply-To: <20080202065517.12920.20235.stgit@trillian.secretlab.ca>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 63AE9DDE3D
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 18:47:26 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/1] [PPC] 8xx swap bug-fix
+Date: Sat, 2 Feb 2008 10:47:31 +0300
+References: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
+In-Reply-To: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080202065517.12920.20235.stgit@trillian.secretlab.ca>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802021047.32055.yur@emcraft.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +24,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/1/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> This target produces a flat binary rather than an ELF file,
-> fixes the entry point at the beginning of the image, and takes
-> a complete device tree with no fixups needed.
->
-> Based on 'raw' target written by Scott Wood.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
-> index ccaedae..ec57ec9 100644
-> --- a/arch/powerpc/boot/io.h
-> +++ b/arch/powerpc/boot/io.h
-> @@ -99,4 +99,11 @@ static inline void barrier(void)
->         asm volatile("" : : : "memory");
->  }
->
-> +static inline void disable_irq(void)
-> +{
-> +       int dummy;
-> +       asm volatile("mfmsr %0; rlwinm %0, %0, 0, ~(1<<15); mtmsr %0" :
-> +                    "=r" (dummy) : : "memory");
-> +}
-> +
->  #endif /* _IO_H */
 
-Oops, ignore this bit.  This is leftover cruft from the original
-patch.  I've now removed it.
+ Hello,
 
-g.
+ Here is the patch which makes Linux-2.6 swap routines operate correctly on
+the ppc-8xx-based machines.
+
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+--
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index eb8d26f..321bda2 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -329,8 +329,18 @@ InstructionTLBMiss:
+ 	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
+ 	lwz	r10, 0(r11)	/* Get the pte */
+ 
++#ifdef CONFIG_SWAP
++	/* do not set the _PAGE_ACCESSED bit of a non-present page */
++	andi.	r11, r10, _PAGE_PRESENT
++	beq	4f
++	ori	r10, r10, _PAGE_ACCESSED
++	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
++	stw	r10, 0(r11)
++4:
++#else
+ 	ori	r10, r10, _PAGE_ACCESSED
+ 	stw	r10, 0(r11)
++#endif
+ 
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+ 	 * Software indicator bits 21, 22 and 28 must be clear.
+@@ -395,8 +405,17 @@ DataStoreTLBMiss:
+ 	DO_8xx_CPU6(0x3b80, r3)
+ 	mtspr	SPRN_MD_TWC, r11
+ 
+-	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
++#ifdef CONFIG_SWAP
++	/* do not set the _PAGE_ACCESSED bit of a non-present page */
++	andi.	r11, r10, _PAGE_PRESENT
++	beq	4f
++	ori	r10, r10, _PAGE_ACCESSED
++4:
++	/* and update pte in table */
++#else
+ 	ori	r10, r10, _PAGE_ACCESSED
++#endif
++	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
+ 	stw	r10, 0(r11)
+ 
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+@@ -575,7 +594,16 @@ DataTLBError:
+ 
+ 	/* Update 'changed', among others.
+ 	*/
++#ifdef CONFIG_SWAP
++	ori	r10, r10, _PAGE_DIRTY|_PAGE_HWWRITE
++	/* do not set the _PAGE_ACCESSED bit of a non-present page */
++	andi.	r11, r10, _PAGE_PRESENT
++	beq	4f
++	ori	r10, r10, _PAGE_ACCESSED
++4:
++#else
+ 	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
++#endif
+ 	mfspr	r11, SPRN_MD_TWC		/* Get pte address again */
+ 	stw	r10, 0(r11)		/* and update pte in table */
+ 
+diff --git a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
+index c159315..76717ff 100644
+--- a/include/asm-ppc/pgtable.h
++++ b/include/asm-ppc/pgtable.h
+@@ -341,14 +341,6 @@ extern unsigned long ioremap_bot, ioremap_base;
+ #define _PMD_PAGE_MASK	0x000c
+ #define _PMD_PAGE_8M	0x000c
+ 
+-/*
+- * The 8xx TLB miss handler allegedly sets _PAGE_ACCESSED in the PTE
+- * for an address even if _PAGE_PRESENT is not set, as a performance
+- * optimization.  This is a bug if you ever want to use swap unless
+- * _PAGE_ACCESSED is 2, which it isn't, or unless you have 8xx-specific
+- * definitions for __swp_entry etc. below, which would be gross.
+- *  -- paulus
+- */
+ #define _PTE_NONE_MASK _PAGE_ACCESSED
+ 
+ #else /* CONFIG_6xx */
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Yuri Tikhonov, Senior Software Engineer
+Emcraft Systems, www.emcraft.com
