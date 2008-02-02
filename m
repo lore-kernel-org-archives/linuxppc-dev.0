@@ -1,19 +1,18 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C6701DDED9
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 11:10:10 +1100 (EST)
-Date: Fri, 1 Feb 2008 18:10:03 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] powerpc: mpc83xx_defconfig: enable math emulation and
-	ucc_geth
-Message-Id: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 32D31DDE43
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 15:24:26 +1100 (EST)
+To: "Sebastian Theiss" <st12@inf.tu-dresden.de>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: pthread / TQM5200 problem
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 01 Feb 2008 13:47:45 +0100."
+	<002c01c864d0$a4ad11c0$0101a8c0@tis>
+Date: Sat, 02 Feb 2008 05:24:24 +0100
+Sender: wd@denx.de
+Message-Id: <20080202042424.8E6AA247A1@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-and some PHYs mpc83xx boards use.
+In message <002c01c864d0$a4ad11c0$0101a8c0@tis> you wrote:
+> 
+> I've been having some headache using the pthread library with a TB5200 box
+> (based on a TQM5200 board with a Freescale MPC5200 PowerPC-CPU). I created a
+> small program to pin down the problem and it runs fine on all my Unix- and
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/configs/mpc83xx_defconfig |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+NOTE: It is really bad behaviour to post the same  question  indepen-
+dently  in  several  mailing  list.  Your  question  has already been
+answered on the ELDK list.
 
-diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
-index 31bdbf3..a9807f0 100644
---- a/arch/powerpc/configs/mpc83xx_defconfig
-+++ b/arch/powerpc/configs/mpc83xx_defconfig
-@@ -186,7 +186,7 @@ CONFIG_PREEMPT_NONE=y
- # CONFIG_PREEMPT is not set
- CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
--# CONFIG_MATH_EMULATION is not set
-+CONFIG_MATH_EMULATION=y
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_POPULATES_NODE_MAP=y
-@@ -416,14 +416,14 @@ CONFIG_PHYLIB=y
- # MII PHY device drivers
- #
- CONFIG_MARVELL_PHY=y
--# CONFIG_DAVICOM_PHY is not set
-+CONFIG_DAVICOM_PHY=y
- # CONFIG_QSEMI_PHY is not set
- # CONFIG_LXT_PHY is not set
- # CONFIG_CICADA_PHY is not set
--# CONFIG_VITESSE_PHY is not set
-+CONFIG_VITESSE_PHY=y
- # CONFIG_SMSC_PHY is not set
- # CONFIG_BROADCOM_PHY is not set
--# CONFIG_ICPLUS_PHY is not set
-+CONFIG_ICPLUS_PHY=y
- # CONFIG_FIXED_PHY is not set
- # CONFIG_MDIO_BITBANG is not set
- CONFIG_NET_ETHERNET=y
-@@ -436,7 +436,7 @@ CONFIG_MII=y
- CONFIG_NETDEV_1000=y
- CONFIG_GIANFAR=y
- # CONFIG_GFAR_NAPI is not set
--# CONFIG_UCC_GETH is not set
-+CONFIG_UCC_GETH=y
- CONFIG_NETDEV_10000=y
- 
- #
+> Linux-machines but fails on the embedded box: The program contains a class
+> CSignal that provides thread-synchronisation based on the
+> pthread_cond_signal and pthread_cond_wait calls and takes care of the
+> "spurious wakeup" and "lost signal" problems. The program runs 159
+> additional threads (that seems to be some internal limit), each of them
+
+And this strange "internal limit"  is  an  indication  that  you  are
+running code that is more than 1.5 years old, as the bug was fixed in
+September  2006.  It was caused by bad PCI mappings that overlap with
+CONFIG_TASKSIZE.
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-1.5.2.2
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It would seem that evil retreats when forcibly confronted
+	-- Yarnek of Excalbia, "The Savage Curtain", stardate 5906.5
