@@ -1,22 +1,18 @@
-Return-Path: <greg@kroah.com>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4DBCEDDEFE
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 10:56:00 +1100 (EST)
-Date: Fri, 1 Feb 2008 15:34:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 1/2] pci: Fix bus resource assignment on 32 bits with
-	64b resources
-Message-ID: <20080201233409.GB24676@kroah.com>
-References: <20071210063216.89DBBDDE1E@ozlabs.org>
-	<200802011118.57610.sr@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200802011118.57610.sr@denx.de>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BD887DDE2F
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 11:10:01 +1100 (EST)
+Date: Fri, 1 Feb 2008 18:09:54 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc: mpc832x_rdb: fix compiler warning
+Message-Id: <20080201180954.b0671447.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 01, 2008 at 11:18:56AM +0100, Stefan Roese wrote:
-> On Monday 10 December 2007, Benjamin Herrenschmidt wrote:
-> > The current pci_assign_unassigned_resources() code doesn't work properly
-> > on 32 bits platforms with 64 bits resources. The main reason is the use
-> > of unsigned long in various places instead of resource_size_t.
-> >
-> > This fixes it, along with some tricks to avoid casting to 64 bits on
-> > platforms that don't need it in every printk around.
-> >
-> > This is a pre-requisite for making powerpc use the generic code instead of
-> > its own half-useful implementation.
-> >
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Checking Linus's latest git repository, it seems this patch (and the 2nd from 
-> this series) hasn't been applied till now. This is just a reminder, that it 
-> gets in in this merge-window.
+arch/powerpc/platforms/83xx/mpc832x_rdb.c: In function ‘mpc832x_rdb_setup_arch’:
+arch/powerpc/platforms/83xx/mpc832x_rdb.c:104: warning: ‘np’ is used uninitialized in this function
 
-Just got sent to him...
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index 9f0fd88..e7f706b 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -101,7 +101,7 @@ static void __init mpc832x_rdb_setup_arch(void)
+ #ifdef CONFIG_QUICC_ENGINE
+ 	qe_reset();
+ 
+-	if ((np = of_find_node_by_name(np, "par_io")) != NULL) {
++	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
+ 		par_io_init(np);
+ 		of_node_put(np);
+ 
+-- 
+1.5.2.2
