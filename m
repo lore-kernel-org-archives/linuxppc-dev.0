@@ -1,21 +1,19 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1D5F2DDEDA
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 22:30:52 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH 1/1] [PPC] 8xx swap bug-fix
-Date: Sat, 2 Feb 2008 14:30:59 +0300
-References: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
-	<200802021047.32055.yur@emcraft.com> <47A45269.7080403@scram.de>
-In-Reply-To: <47A45269.7080403@scram.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802021430.59102.yur@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <bodonoghue@codehermit.ie>
+Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
+	by ozlabs.org (Postfix) with ESMTP id B3F2ADDF12
+	for <linuxppc-dev@ozlabs.org>; Sat,  2 Feb 2008 22:37:02 +1100 (EST)
+Subject: Re: PATCH[1/1] 8xx: Add clock-frequency to Adder875 and mpc885ads
+	board ports
+From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <47A38888.1010901@freescale.com>
+References: <1201736088.3466.3.camel@neuromancer.mindspace>
+	<47A38888.1010901@freescale.com>
+Content-Type: text/plain
+Date: Sat, 02 Feb 2008 11:36:59 +0000
+Message-Id: <1201952219.3645.4.camel@neuromancer.mindspace>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2008-02-01 at 15:00 -0600, Scott Wood wrote:
+> Bryan O'Donoghue wrote:
+> > Redo the addition of the clock-frequency parameter to the Adder875 .dts
+> > so that the values are decimal rather then hex.
+> > 
+> > 
+> > Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+> > ---
+> > 
+> > diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts
+> > b/arch/powerpc/boot/dts/adder875-redboot.dts
+> > index 7c25d96..c508f3c 100644
+> > --- a/arch/powerpc/boot/dts/adder875-redboot.dts
+> > +++ b/arch/powerpc/boot/dts/adder875-redboot.dts
+> > @@ -149,6 +149,7 @@
+> >                                 compatible = "fsl,mpc875-brg",
+> >                                              "fsl,cpm1-brg",
+> >                                              "fsl,cpm-brg";
+> > +                               clock-frequency = <50000000>;
+> >                                 reg = <0x9f0 0x10>;
+> >                         };
 
- Hi Jochen,
+Actually I was wondering myself why the file was using whitespace
+instead of tabs - no doubt something to do with copying between
+evolution + gedit.
 
- The board for which this fix was developed is one of these (ivms8). Here are 
-some other: rpxlite, TQM860L, rpxcllf, bseip, FADS, and etc...
-
-  Just do grep -r "CONFIG_8xx=y" arch/ppc/configs/ and grep -r "CONFIG_8xx=y" 
-arch/powerpc/configs/ :)
-
- Regards, Yuri
-
-On Saturday 02 February 2008 14:22, you wrote:
-...
-> >  Here is the patch which makes Linux-2.6 swap routines operate correctly 
-on
-> > the ppc-8xx-based machines.
-> 
-> is there any 8xx board left which isn't ported to ARCH=powerpc?
-> 
-> Thanks,
-> Jochen 
-> 
-
--- 
-Yuri Tikhonov, Senior Software Engineer
-Emcraft Systems, www.emcraft.com
+Will fix this up with vim
