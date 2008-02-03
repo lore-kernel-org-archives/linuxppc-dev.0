@@ -1,16 +1,17 @@
-Return-Path: <bernhard@intevation.de>
-Received: from kolab.intevation.de (aktaia.intevation.org [212.95.126.10])
-	by ozlabs.org (Postfix) with ESMTP id DEBFEDDE1E
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 03:59:33 +1100 (EST)
-From: Bernhard Reiter <bernhard@intevation.de>
-To: debian-powerpc@lists.debian.org
-Subject: compile quirk linux-2.6.24 (with workaround)
-Date: Sun, 3 Feb 2008 17:29:05 +0100
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2273785.q9goPjTH5Y";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200802031729.12069.bernhard@intevation.de>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A1979DDEC5
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 04:10:02 +1100 (EST)
+Date: Sun, 3 Feb 2008 20:09:51 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/11] [POWERPC] Implement support for the GPIO LIB API
+Message-ID: <20080203170951.GA28024@localhost.localdomain>
+References: <20080203170820.GA18520@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080203170820.GA18520@localhost.localdomain>
+Cc: David Brownell <david-b@pacbell.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,168 +21,453 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2273785.q9goPjTH5Y
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_TvepHCewSVEVwkp"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This patch implements support for the GPIO LIB API. Two calls
+unimplemented though: irq_to_gpio and gpio_to_irq.
 
---Boundary-01=_TvepHCewSVEVwkp
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   58 ++++++++
+ arch/powerpc/Kconfig                         |    5 +
+ arch/powerpc/kernel/Makefile                 |    1 +
+ arch/powerpc/kernel/gpio.c                   |  200 ++++++++++++++++++++++++++
+ include/asm-powerpc/gpio.h                   |  118 +++++++++++++++
+ 5 files changed, 382 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/kernel/gpio.c
+ create mode 100644 include/asm-powerpc/gpio.h
 
-Dear linux powerpc Maintainers and Users,
-
-recently I have tried to compile a new kernel on a Debian sarge ppc
-system (PowerBook5,6 MacRISC3 Power Macintosh).
-
-The build system bailed out with
-       BOOTCC  arch/powerpc/boot/4xx.o
-        cc1: error: bad value (440) for -mcpu=3D switch
-        make[1]: *** [arch/powerpc/boot/4xx.o] Fehler 1
-
-I have tracked this a few steps and the attached patch made the compile for=
- me
-as my compiler gcc-Version 3.3.5 (Debian 1:3.3.5-13)=20
-cannot produce code for 4xx it seems.
-
-The "ARCH=3Dppc64" I have came about also looked wrong, but I do not know
-if this part of the patch is really necessary.
-It is just a workaround, as I have no insight of what is really going wrong.
-
-I hope my report is useful,
-Bernhard
-
-Details:
-I have used "make oldconfig" with a 2.6.17 kernel and answered some questio=
-ns.
-Here is the first section of the .config I've ended up with:
-
-
-# CONFIG_PPC64 is not set
-
-#
-# Processor support
-#
-CONFIG_6xx=3Dy
-# CONFIG_PPC_85xx is not set
-# CONFIG_PPC_8xx is not set
-# CONFIG_40x is not set
-# CONFIG_44x is not set
-# CONFIG_E200 is not set
-CONFIG_PPC_FPU=3Dy
-CONFIG_ALTIVEC=3Dy
-CONFIG_PPC_STD_MMU=3Dy
-CONFIG_PPC_STD_MMU_32=3Dy
-# CONFIG_PPC_MM_SLICES is not set
-# CONFIG_SMP is not set
-CONFIG_PPC32=3Dy
-CONFIG_WORD_SIZE=3D32
-CONFIG_PPC_MERGE=3Dy
-CONFIG_MMU=3Dy
-CONFIG_GENERIC_CMOS_UPDATE=3Dy
-CONFIG_GENERIC_TIME=3Dy
-CONFIG_GENERIC_TIME_VSYSCALL=3Dy
-CONFIG_GENERIC_CLOCKEVENTS=3Dy
-CONFIG_GENERIC_HARDIRQS=3Dy
-CONFIG_IRQ_PER_CPU=3Dy
-CONFIG_RWSEM_XCHGADD_ALGORITHM=3Dy
-CONFIG_ARCH_HAS_ILOG2_U32=3Dy
-CONFIG_GENERIC_HWEIGHT=3Dy
-CONFIG_GENERIC_CALIBRATE_DELAY=3Dy
-CONFIG_GENERIC_FIND_NEXT_BIT=3Dy
-# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-CONFIG_PPC=3Dy
-CONFIG_EARLY_PRINTK=3Dy
-CONFIG_GENERIC_NVRAM=3Dy
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=3Dy
-CONFIG_ARCH_MAY_HAVE_PC_FDC=3Dy
-CONFIG_PPC_OF=3Dy
-CONFIG_OF=3Dy
-CONFIG_PPC_UDBG_16550=3Dy
-# CONFIG_GENERIC_TBSYNC is not set
-CONFIG_AUDIT_ARCH=3Dy
-CONFIG_GENERIC_BUG=3Dy
-CONFIG_SYS_SUPPORTS_APM_EMULATION=3Dy
-# CONFIG_DEFAULT_UIMAGE is not set
-# CONFIG_PPC_DCR_NATIVE is not set
-# CONFIG_PPC_DCR_MMIO is not set
-CONFIG_DEFCONFIG_LIST=3D"/lib/modules/$UNAME_RELEASE/.config"
-
-
-
-
-=2D-=20
-Managing Director - Owner: www.intevation.net       (Free Software Company)
-Germany Coordinator: fsfeurope.org. Coordinator: www.Kolab-Konsortium.com.
-Intevation GmbH, Osnabr=FCck, DE; Amtsgericht Osnabr=FCck, HRB 18998
-Gesch=E4ftsf=FChrer Frank Koormann, Bernhard Reiter, Dr. Jan-Oliver Wagner
-
---Boundary-01=_TvepHCewSVEVwkp
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="linux-2.6.24-rc7.fix.diff"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="linux-2.6.24-rc7.fix.diff"
-
-diff -ur linux-2.6.24-rc7/arch/powerpc/boot/Makefile linux-2.6.24-rc7.new/a=
-rch/powerpc/boot/Makefile
-=2D-- linux-2.6.24-rc7/arch/powerpc/boot/Makefile	2008-01-20 21:31:13.54435=
-7150 +0100
-+++ linux-2.6.24-rc7.new/arch/powerpc/boot/Makefile	2008-01-15 00:05:14.935=
-750138 +0100
-@@ -49,13 +49,13 @@
- src-wlib :=3D string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_mis=
-c.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
-=2D		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
-+		mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
- 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
- 		fsl-soc.c mpc8xx.c pq2.c
- src-plat :=3D of.c cuboot-52xx.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
-=2D		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c \
-+		cuboot-pq2.c cuboot-sequoia.c cuboot-bamboo.c \
- 		fixed-head.S ep88xc.c cuboot-hpc2.c
- src-boot :=3D $(src-wlib) $(src-plat) empty.c
-=20
-Nur in linux-2.6.24-rc7.new/arch/powerpc/boot: zImage.coff.
-Nur in linux-2.6.24-rc7.new/arch/powerpc/boot: zImage.miboot.
-Nur in linux-2.6.24-rc7.new/arch/powerpc/kernel: vmlinux.lds.
-diff -ur linux-2.6.24-rc7/arch/powerpc/Makefile linux-2.6.24-rc7.new/arch/p=
-owerpc/Makefile
-=2D-- linux-2.6.24-rc7/arch/powerpc/Makefile	2008-01-20 21:31:13.524359050 =
-+0100
-+++ linux-2.6.24-rc7.new/arch/powerpc/Makefile	2008-01-14 23:48:30.58375013=
-8 +0100
-@@ -165,7 +165,8 @@
- boot :=3D arch/$(ARCH)/boot
-=20
- $(BOOT_TARGETS): vmlinux
-=2D	$(Q)$(MAKE) ARCH=3Dppc64 $(build)=3D$(boot) $(patsubst %,$(boot)/%,$@)
-+	$(Q)$(MAKE) ARCH=3Dpowerpc $(build)=3D$(boot) $(patsubst %,$(boot)/%,$@)
-+# $(Q)$(MAKE) ARCH=3Dppc64 $(build)=3D$(boot) $(patsubst %,$(boot)/%,$@)
-=20
- define archhelp
-   @echo '* zImage          - Compressed kernel image (arch/$(ARCH)/boot/zI=
-mage.*)'
-
---Boundary-01=_TvepHCewSVEVwkp--
-
---nextPart2273785.q9goPjTH5Y
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQBHpevXh9ag3dpKERYRAuWEAJ9UrqE2dpnkf3OTZji16hnA9zWC0wCgvla+
-P8p3bH05KV1nQ2cfUlHlA9k=
-=Ezkj
------END PGP SIGNATURE-----
-
---nextPart2273785.q9goPjTH5Y--
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 7b30798..ce77b47 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -64,6 +64,10 @@ Table of Contents
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
+ 
++  VIII - Specifying GPIO information for devices
++    1) gpios property
++    2) gpio-controller nodes
++
+   Appendix A - Sample SOC node for MPC8540
+ 
+ 
+@@ -2858,6 +2862,60 @@ encodings listed below:
+ 	2 =  high to low edge sensitive type enabled
+ 	3 =  low to high edge sensitive type enabled
+ 
++VIII - Specifying GPIO information for devices
++==============================================
++
++1) gpios property
++-----------------
++
++Nodes that makes use of GPIOs should define them using `gpios' property,
++format of which is: <&gpio-controller1-phandle gpio1-specifier
++		     &gpio-controller2-phandle gpio2-specifier
++		     ...>;
++
++Note that gpio-specifier length is controller dependent.
++
++gpio-specifier may encode: bank, pin position inside the bank,
++whether pin is open-drain and whether pin is logically inverted.
++
++Example of the node using GPIOs:
++
++	nand-flash@1,0 {
++		compatible = "stmicro,NAND512W3A2BN6E", "fsl,upm-nand";
++		reg = <1 0 1>;
++		width = <1>;
++		upm = "A";
++		upm-addr-offset = <16>;
++		upm-cmd-offset = <8>;
++		gpios = <&qe_pio_e 18 0>;
++		wait-pattern;
++		wait-write;
++	};
++
++In this example gpio-specifier is "18 0" and encodes GPIO pin number,
++and empty GPIO flags as accepted by the "qe_pio_e" gpio-controller.
++
++2) gpio-controller nodes
++------------------------
++
++Every GPIO controller node must have #gpio-cells property defined,
++this information will be used to translate gpio-specifiers.
++
++Example of two SOC GPIO banks defined as gpio-controller nodes:
++
++	qe_pio_a: gpio-controller@1400 {
++		#gpio-cells = <2>;
++		compatible = "fsl,qe-pario-bank";
++		reg = <0x1400 0x18>;
++		gpio-controller;
++	};
++
++	qe_pio_e: gpio-controller@1460 {
++		#gpio-cells = <2>;
++		compatible = "fsl,qe-pario-bank";
++		reg = <0x1460 0x18>;
++		gpio-controller;
++	};
+ 
+ Appendix A - Sample SOC node for MPC8540
+ ========================================
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9c44af3..f9ed22b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -81,6 +81,11 @@ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+ 
++config GENERIC_GPIO
++	bool
++	help
++	  Generic GPIO API support
++
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool PPC64
+ 
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 58dbfef..349a52d 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
++obj-$(CONFIG_HAVE_GPIO_LIB)	+= gpio.o
+ 
+ pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
+ obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
+diff --git a/arch/powerpc/kernel/gpio.c b/arch/powerpc/kernel/gpio.c
+new file mode 100644
+index 0000000..64c567d
+--- /dev/null
++++ b/arch/powerpc/kernel/gpio.c
+@@ -0,0 +1,200 @@
++/*
++ * OF helpers for the GPIO API
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <asm/prom.h>
++#include <asm/gpio.h>
++
++int of_get_gpio(struct device_node *np, int index)
++{
++	int ret = -EINVAL;
++	struct device_node *gc;
++	struct of_gpio_chip *of_gc = NULL;
++	int size;
++	const u32 *gpios;
++	u32 nr_cells;
++	int i;
++	const void *gpio_spec;
++	const u32 *gpio_cells;
++	int gpio_index = 0;
++
++	gpios = of_get_property(np, "gpios", &size);
++	if (!gpios) {
++		ret = -ENOENT;
++		goto err0;
++	}
++	nr_cells = size / sizeof(u32);
++
++	for (i = 0; i < nr_cells;) {
++		const phandle *gpio_phandle;
++
++		gpio_phandle = gpios + i;
++		gpio_spec = gpio_phandle + 1;
++
++		/* one cell hole in the gpios = <>; */
++		if (!*gpio_phandle) {
++			if (gpio_index == index)
++				return -ENOENT;
++			i++;
++			gpio_index++;
++			continue;
++		}
++
++		gc = of_find_node_by_phandle(*gpio_phandle);
++		if (!gc) {
++			pr_debug("%s: could not find phandle for gpios\n",
++				 np->full_name);
++			goto err0;
++		}
++
++		of_gc = gc->data;
++		if (!of_gc) {
++			pr_debug("%s: gpio controller %s isn't registered\n",
++				 np->full_name, gc->full_name);
++			goto err1;
++		}
++
++		gpio_cells = of_get_property(gc, "#gpio-cells", &size);
++		if (!gpio_cells || size != sizeof(*gpio_cells) ||
++				*gpio_cells != of_gc->gpio_cells) {
++			pr_debug("%s: wrong #gpio-cells for %s\n",
++				 np->full_name, gc->full_name);
++			goto err1;
++		}
++
++		/* Next phandle is at phandle cells + #gpio-cells */
++		i += sizeof(*gpio_phandle) / sizeof(u32) + *gpio_cells;
++		if (i >= nr_cells + 1) {
++			pr_debug("%s: insufficient gpio-spec length\n",
++				 np->full_name);
++			goto err1;
++		}
++
++		if (gpio_index == index)
++			break;
++
++		of_gc = NULL;
++		of_node_put(gc);
++		gpio_index++;
++	}
++
++	if (!of_gc) {
++		ret = -ENOENT;
++		goto err0;
++	}
++
++	ret = of_gc->xlate(of_gc, np, gpio_spec);
++	if (ret < 0)
++		goto err1;
++
++	ret += of_gc->gc.base;
++err1:
++	of_node_put(gc);
++err0:
++	pr_debug("%s exited with status %d\n", __func__, ret);
++	return ret;
++}
++EXPORT_SYMBOL(of_get_gpio);
++
++static int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
++				struct device_node *np,
++				const void *gpio_spec)
++{
++	const u32 *gpio = gpio_spec;
++
++	if (*gpio > of_gc->gc.ngpio)
++		return -EINVAL;
++
++	return *gpio;
++}
++
++static int of_get_gpiochip_base(struct device_node *np)
++{
++	struct device_node *gc = NULL;
++	int gpiochip_base = 0;
++
++	while ((gc = of_find_all_nodes(gc))) {
++		if (!of_get_property(gc, "gpio-controller", NULL))
++			continue;
++
++		if (gc != np) {
++			gpiochip_base += ARCH_OF_GPIOS_PER_CHIP;
++			continue;
++		}
++
++		of_node_put(gc);
++
++		if (gpiochip_base >= ARCH_OF_GPIOS_END)
++			return -ENOSPC;
++
++		return gpiochip_base;
++	}
++
++	return -ENOENT;
++}
++
++int of_mm_gpiochip_add(struct device_node *np,
++		       struct of_mm_gpio_chip *mm_gc)
++{
++	int ret = -ENOMEM;
++	struct of_gpio_chip *of_gc = &mm_gc->of_gc;
++
++	if (of_gc->gc.ngpio > ARCH_OF_GPIOS_PER_CHIP) {
++		ret = -ENOSPC;
++		goto err;
++	}
++
++	mm_gc->of_gc.gc.label = kstrdup(np->full_name, GFP_KERNEL);
++	if (!mm_gc->of_gc.gc.label)
++		goto err;
++
++	mm_gc->regs = of_iomap(np, 0);
++	if (!mm_gc->regs)
++		goto err1;
++
++	ret = of_get_gpiochip_base(np);
++	if (ret < 0)
++		goto err2;
++	mm_gc->of_gc.gc.base = ret;
++
++	if (!of_gc->xlate)
++		of_gc->xlate = of_gpio_simple_xlate;
++
++	if (mm_gc->save_regs)
++		mm_gc->save_regs(mm_gc);
++
++	np->data = &mm_gc->of_gc;
++
++	ret = gpiochip_add(&mm_gc->of_gc.gc);
++	if (ret)
++		goto err3;
++
++	/* We don't want to lose the node and its ->data */
++	of_node_get(np);
++
++	pr_debug("%s: registered as generic GPIO chip, base is %d\n",
++		 np->full_name, mm_gc->of_gc.gc.base);
++	return 0;
++err3:
++	np->data = NULL;
++err2:
++	iounmap(mm_gc->regs);
++err1:
++	kfree(mm_gc->of_gc.gc.label);
++err:
++	pr_err("%s: GPIO chip registration failed with status %d\n",
++	       np->full_name, ret);
++	return ret;
++}
++EXPORT_SYMBOL(of_mm_gpiochip_add);
+diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+new file mode 100644
+index 0000000..a97a93c
+--- /dev/null
++++ b/include/asm-powerpc/gpio.h
+@@ -0,0 +1,118 @@
++/*
++ * Generic GPIO API implementation for PowerPC.
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ * Copyright (c) 2007  Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __ASM_POWERPC_GPIO_H
++#define __ASM_POWERPC_GPIO_H
++
++#include <asm-generic/gpio.h>
++
++#ifdef CONFIG_HAVE_GPIO_LIB
++
++#define ARCH_OF_GPIOS_PER_CHIP	32
++#define ARCH_OF_GPIOS_BASE	0
++#define ARCH_OF_GPIOS_END	(ARCH_OF_GPIOS_PER_CHIP * 7)
++#define ARCH_NON_OF_GPIOS_BASE	ARCH_OF_GPIOS_END
++#define ARCH_NON_OF_GPIOS_END	ARCH_NR_GPIOS
++
++#if ARCH_NON_OF_GPIOS_BASE >= ARCH_NON_OF_GPIOS_END
++#error "Default ARCH_NR_GPIOS isn't sufficient, define yours."
++#endif
++
++/*
++ * We don't (yet) implement inlined/rapid versions for on-chip gpios.
++ * Just call gpiolib.
++ */
++static inline int gpio_get_value(unsigned int gpio)
++{
++	return __gpio_get_value(gpio);
++}
++
++static inline void gpio_set_value(unsigned int gpio, int value)
++{
++	__gpio_set_value(gpio, value);
++}
++
++/*
++ * Not implemented, yet.
++ */
++static inline int gpio_to_irq(unsigned int gpio)
++{
++	return -ENOSYS;
++}
++
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -ENOSYS;
++}
++
++/*
++ * Generic OF GPIO chip
++ */
++struct of_gpio_chip {
++	struct gpio_chip gc;
++	int gpio_cells;
++	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
++		     const void *gpio_spec);
++};
++
++#define to_of_gpio_chip(x) container_of(x, struct of_gpio_chip, gc)
++
++/*
++ * OF GPIO chip for memory mapped banks
++ */
++struct of_mm_gpio_chip {
++	struct of_gpio_chip of_gc;
++	void (*save_regs)(struct of_mm_gpio_chip *mm_gc);
++	void __iomem *regs;
++};
++
++#define to_of_mm_gpio_chip(x) container_of(to_of_gpio_chip(x), \
++					   struct of_mm_gpio_chip, of_gc)
++
++/**
++ * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
++ * @np:		device node to get GPIO from
++ * @index:	index of the GPIO
++ *
++ * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
++ * value on the error condition.
++ */
++extern int of_get_gpio(struct device_node *np, int index);
++
++/**
++ * of_mm_gpiochip_add - Add memory mapped GPIO chip (bank)
++ * @np:		device node of the GPIO chip
++ * @mm_gc:	pointer to the of_mm_gpio_chip allocated structure
++ *
++ * To use this function you should allocate and fill mm_gc with:
++ *
++ * 1) In the gpio_chip structure:
++ *    a) all the callbacks
++ *    b) ngpios (GPIOs per bank)
++ *
++ * 2) In the of_gpio_chip structure:
++ *    a) gpio_cells
++ *    b) xlate callback (optional)
++ *
++ * 3) In the of_mm_gpio_chip structure:
++ *    a) save_regs callback (optional)
++ *
++ * If succeeded, this function will map bank's memory and will
++ * do all necessary work for you. Then you'll able to use .regs
++ * to manage GPIOs from the callbacks.
++ */
++extern int of_mm_gpiochip_add(struct device_node *np,
++			      struct of_mm_gpio_chip *mm_gc);
++
++#endif /* CONFIG_HAVE_GPIO_LIB */
++
++#endif /* __ASM_POWERPC_GPIO_H */
+-- 
+1.5.2.2
