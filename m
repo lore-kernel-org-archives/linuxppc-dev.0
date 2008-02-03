@@ -1,20 +1,16 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from monty.telenet-ops.be (monty.telenet-ops.be [195.130.132.56])
-	by ozlabs.org (Postfix) with ESMTP id 85FA9DDEB8
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 02:49:20 +1100 (EST)
-Date: Sun, 3 Feb 2008 16:49:09 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] ADB: Add missing #include <linux/platform_device.h>
-Message-ID: <Pine.LNX.4.64.0802031647560.27760@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id BBC8DDDEA3
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 04:08:32 +1100 (EST)
+Date: Sun, 3 Feb 2008 20:08:20 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC PATCH 0/11] Patches needed to support QE USB Host Controller
+Message-ID: <20080203170820.GA18520@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: David Brownell <david-b@pacbell.net>, linux-usb@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ADB: Add missing #include <linux/platform_device.h>
+Hi all,
 
-Commit c9f6d3d5c6d4f4cd3a53549a69c92951180e2a76
+These patches are needed to support "FHCI" host controller.
 
-    [POWERPC] adb: Replace sleep notifier with platform driver suspend/resume hooks
+This includes:
 
-introduced compile errors on m68k because <linux/platform_device.h> is not
-explicitly included.  On powerpc, it's pulled in through <asm/prom.h>.
+- GPIO LIB support for PowerPC;
+- GPIO LIB support for QUICC Engine;
+- gpio_set_dedicated() addition to GPIO LIB;
+- QE LIB additions: usb, gtm;
+- FHCI driver;
+- Support for MPC8360E-RDK as an example.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/macintosh/adb.c |    1 +
- 1 file changed, 1 insertion(+)
+I have already posted GPIO LIB support for PowerPC/QE, but since
+patches changed a bit, I thought it's good idea to take a chance
+and repost them for the next RFC round.
 
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -36,6 +36,7 @@
- #include <linux/completion.h>
- #include <linux/device.h>
- #include <linux/kthread.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/uaccess.h>
- #include <asm/semaphore.h>
+Thanks,
 
-Gr{oetje,eeting}s,
+p.s.
 
-						Geert
+David, I'm Cc:ing you to this patchset (except qe_gtm, and qe_usb
+patches -- nothing insteresting), to show the complete picture of
+why we need additions to GPIO LIB.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Also will appreciate any comments regarding GPIO LIB support for
+PowerPC/QE.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+linux-usb Cc'ed only for FHCI driver patch.
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
