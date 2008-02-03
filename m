@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9FA12DE03E
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 04:10:11 +1100 (EST)
-Date: Sun, 3 Feb 2008 20:10:00 +0300
+	by ozlabs.org (Postfix) with ESMTP id 59768DE110
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 04:10:17 +1100 (EST)
+Date: Sun, 3 Feb 2008 20:10:06 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/11] [POWERPC] QE: implement GPIO LIB API
-Message-ID: <20080203171000.GC28024@localhost.localdomain>
+Subject: [PATCH 04/11] [RFC][GPIOLIB] add gpio_set_dedicated() routine
+Message-ID: <20080203171006.GD28024@localhost.localdomain>
 References: <20080203170820.GA18520@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -21,228 +21,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This routine sets dedicated functions of the GPIO pin.
+
+---
+
+Hello David,
+
+Yes, I did read Documentation/gpio.txt's last chapter. :-)
+
+...that says:
+
+  One of the biggest things these conventions omit is pin multiplexing,
+  since this is highly chip-specific and nonportable.
+
+Let me counter: "chip-specific" is a weak argument, IMO. Imagine some
+GPIO controller that can't do inputs, or outputs. First one will be
+still suitable for gpio_leds, second one will be suitable for gpio_keys.
+
+Or... gpio_to_irq/irq_to_gpio. More than chip-specific, isn't it?
+Some GPIO controllers might provide interrupt sources, some might
+not.
+
+Or let's put it completely different way: IRQs, they are
+chip specific too, some of them can't do EDGE_FALLING or
+EDGE_RISING. But these flags still exists for the IRQs,
+and drivers use them.
+
+The same for GPIO pin multiplexing: some drivers aren't aware of
+GPIO multiplexing, but some are.
+
+With the device tree/OpenFirmware environment it's quite easy
+to pass "dedicated functions" flags to the drivers. Platform device
+drivers also may accept functions via platform data (or better yet
+via IORESOURCE_GPIO and its flags -- yet to be implemented, of course).
+
+Today, there is a driver for the Freescale USB Host Controller, that
+needs switching some pins to GPIOs for short period, and then back to
+the dedicated functions...
+
+So, down below is the proposal patch: gpio_set_dedicated() routine.
+
+There are other options, tough. But I don't like them:
+
+- Don't use GPIO API for that driver. Bad idea, this driver
+  completely fits in the current GPIO use cases, except
+  set_dedicated()...
+
+- Export "gpio_chips", thus we can implement arch-specific functions.
+  Bad idea, we'll smear "GPIO LIB" across the whole kernel.
+
+- Implement gpio_chip->free() and gpio_chip->request() callbacks,
+  so controllers could restore pin's functions in the ->free().
+
+  Then drivers could do:
+  gpio_request();
+  gpio_direction_...();
+  ...do some GPIO work...
+  gpio_free(); /* and controller will restore dedicated function */
+
+  Well, this is viable option. But expensive and it isn't good
+  idea to release gpios when driver already probed (think someone
+  might request it meantime). Still viable for my case, though.
+
+  Oh, there is no way to pass "func" argument also.
+
+- Another option?
+
+Thanks!
+
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   32 ++++---
- arch/powerpc/platforms/Kconfig               |    2 +
- arch/powerpc/sysdev/qe_lib/qe_io.c           |  133 ++++++++++++++++++++++++++
- 3 files changed, 155 insertions(+), 12 deletions(-)
+ drivers/gpio/gpiolib.c     |   13 +++++++++++++
+ include/asm-generic/gpio.h |    3 +++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index ce77b47..c5b6004 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1701,24 +1701,32 @@ platforms are moved over to use the flattened-device-tree model.
-    information.
- 
-    Required properties:
--   - device_type : should be "par_io".
-+   - #gpio-cells : should be "2".
-+   - compatible : should be "fsl,qe-pario-bank"
-    - reg : offset to the register set and its length.
--   - num-ports : number of Parallel I/O ports
-+   - gpio-controller : node to identify gpio controllers.
- 
--   Example:
--	par_io@1400 {
--		reg = <1400 100>;
--		#address-cells = <1>;
--		#size-cells = <0>;
--		device_type = "par_io";
--		num-ports = <7>;
--		ucc_pin@01 {
--			......
--		};
-+   For example, two QE Par I/O banks:
-+	qe_pio_a: gpio-controller@1400 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,qe-pario-bank";
-+		reg = <0x1400 0x18>;
-+		gpio-controller;
-+	};
- 
-+	qe_pio_e: gpio-controller@1460 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,qe-pario-bank";
-+		reg = <0x1460 0x18>;
-+		gpio-controller;
-+	};
- 
-    vi) Pin configuration nodes
- 
-+   NOTE: pin configuration nodes are obsolete. Usually, their existance
-+         is an evidence of the firmware shortcomings. Such fixups are
-+         better handled by the Linux board file, not the device tree.
-+
-    Required properties:
-    - linux,phandle : phandle of this node; likely referenced by a QE
-      device.
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index fdce10c..50199cf 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -271,6 +271,8 @@ config QUICC_ENGINE
- 	bool
- 	select PPC_LIB_RHEAP
- 	select CRC32
-+	select GENERIC_GPIO
-+	select HAVE_GPIO_LIB
- 	help
- 	  The QUICC Engine (QE) is a new generation of communications
- 	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
-index aef893b..dffb44a 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_io.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
-@@ -20,9 +20,11 @@
- #include <linux/errno.h>
- #include <linux/module.h>
- #include <linux/ioport.h>
-+#include <linux/spinlock.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-+#include <asm/gpio.h>
- #include <sysdev/fsl_soc.h>
- 
- #undef DEBUG
-@@ -213,6 +215,137 @@ int par_io_of_config(struct device_node *np)
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index d8db2f8..de6e765 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -440,6 +440,19 @@ void gpio_set_value_cansleep(unsigned gpio, int value)
  }
- EXPORT_SYMBOL(par_io_of_config);
+ EXPORT_SYMBOL_GPL(gpio_set_value_cansleep);
  
-+/*
-+ * GPIO LIB API implementation
-+ */
-+
-+struct qe_gpio_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
-+
-+	/* shadowed data register to clear/set bits safely */
-+	u32 cpdata;
-+};
-+
-+#define to_qe_gpio_chip(x) container_of(x, struct qe_gpio_chip, mm_gc)
-+
-+static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
++int gpio_set_dedicated(unsigned gpio, int func)
 +{
-+	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-+	struct port_regs __iomem *regs = mm_gc->regs;
++	struct gpio_chip	*chip;
 +
-+	qe_gc->cpdata = in_be32(&regs->cpdata);
++	might_sleep_if(extra_checks);
++	chip = gpio_to_chip(gpio);
++	if (chip->set_dedicated)
++		return chip->set_dedicated(chip, gpio - chip->base, func);
++
++	return -ENOSYS;
 +}
++EXPORT_SYMBOL_GPL(gpio_set_dedicated);
 +
-+static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct port_regs __iomem *regs = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	/* calculate pin location */
-+	pin_mask = (u32) (1 << (NUM_OF_PINS - 1 - gpio));
-+
-+	return !!(in_be32(&regs->cpdata) & pin_mask);
-+}
-+
-+static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-+	struct port_regs __iomem *regs = mm_gc->regs;
-+	unsigned long flags;
-+	u32 pin_mask = 1 << (NUM_OF_PINS - 1 - gpio);
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	if (val)
-+		qe_gc->cpdata |= pin_mask;
-+	else
-+		qe_gc->cpdata &= ~pin_mask;
-+
-+	out_be32(&regs->cpdata, qe_gc->cpdata);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+}
-+
-+static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	__par_io_config_pin(mm_gc->regs, gpio, 2, 0, 0, 0);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	__par_io_config_pin(mm_gc->regs, gpio, 1, 0, 0, 0);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+
-+	qe_gpio_set(gc, gpio, val);
-+
-+	return 0;
-+}
-+
-+static int __init qe_add_gpiochips(void)
-+{
-+	int ret;
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "fsl,qe-pario-bank") {
-+		struct qe_gpio_chip *qe_gc;
-+		struct of_mm_gpio_chip *mm_gc;
-+		struct of_gpio_chip *of_gc;
-+		struct gpio_chip *gc;
-+
-+		qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
-+		if (!qe_gc) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
-+
-+		spin_lock_init(&qe_gc->lock);
-+
-+		mm_gc = &qe_gc->mm_gc;
-+		of_gc = &mm_gc->of_gc;
-+		gc = &of_gc->gc;
-+
-+		mm_gc->save_regs = qe_gpio_save_regs;
-+		of_gc->gpio_cells = 2;
-+		gc->ngpio = NUM_OF_PINS;
-+		gc->direction_input = qe_gpio_dir_in;
-+		gc->direction_output = qe_gpio_dir_out;
-+		gc->get = qe_gpio_get;
-+		gc->set = qe_gpio_set;
-+		gc->set_dedicated = qe_gpio_set_dedicated;
-+
-+		ret = of_mm_gpiochip_add(np, mm_gc);
-+		if (ret)
-+			goto err;
-+	}
-+
-+	return 0;
-+err:
-+	pr_err("%s: registration failed with status %d\n", np->full_name, ret);
-+	of_node_put(np);
-+	return ret;
-+}
-+arch_initcall(qe_add_gpiochips);
-+
- #ifdef DEBUG
- static void dump_par_io(void)
- {
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 806b86c..cfbeea8 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -61,6 +61,8 @@ struct gpio_chip {
+ 						unsigned offset, int value);
+ 	void			(*set)(struct gpio_chip *chip,
+ 						unsigned offset, int value);
++	int			(*set_dedicated)(struct gpio_chip *chip,
++						unsigned offset, int func);
+ 	void			(*dbg_show)(struct seq_file *s,
+ 						struct gpio_chip *chip);
+ 	int			base;
+@@ -88,6 +90,7 @@ extern int gpio_direction_output(unsigned gpio, int value);
+ extern int gpio_get_value_cansleep(unsigned gpio);
+ extern void gpio_set_value_cansleep(unsigned gpio, int value);
+ 
++extern int gpio_set_dedicated(unsigned gpio, int func);
+ 
+ /* A platform's <asm/gpio.h> code may want to inline the I/O calls when
+  * the GPIO is constant and refers to some always-present controller,
 -- 
 1.5.2.2
