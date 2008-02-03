@@ -1,19 +1,15 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp118.sbc.mail.sp1.yahoo.com (smtp118.sbc.mail.sp1.yahoo.com
-	[69.147.64.91]) by ozlabs.org (Postfix) with SMTP id B0EF4DDDEF
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 08:22:12 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 01/11] [POWERPC] Implement support for the GPIO LIB API
-Date: Sun, 3 Feb 2008 13:17:43 -0800
-References: <20080203170820.GA18520@localhost.localdomain>
-	<20080203170951.GA28024@localhost.localdomain>
-In-Reply-To: <20080203170951.GA28024@localhost.localdomain>
-MIME-Version: 1.0
-Message-Id: <200802031317.43858.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bodonoghue@codehermit.ie>
+Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
+	by ozlabs.org (Postfix) with ESMTP id 50267DDDFB
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 10:21:33 +1100 (EST)
+Date: Sun, 3 Feb 2008 23:21:29 +0000
+From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+To: linuxppc-dev@ozlabs.org, scottwood@freescale.com
+Subject: PATCH[1/1] 8xx: resubmit Add clock-frequency parameter to adder875
+	and mpc885ads dts configurations
+Message-ID: <20080203232129.36186b0a@neuromancer.mindspace>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +19,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 03 February 2008, Anton Vorontsov wrote:
-> This patch implements support for the GPIO LIB API. Two calls
-> unimplemented though: irq_to_gpio and gpio_to_irq.
+Previous patch submission contained tabs munged into whitespace.
 
-Also gpio_cansleep().
+This patch adds the clock-frequency parameter in decimal instead of hex.
 
+Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+---
 
-> +Example of two SOC GPIO banks defined as gpio-controller nodes:
-> +
-> +	qe_pio_a: gpio-controller@1400 {
-> +		#gpio-cells = <2>;
-> +		compatible = "fsl,qe-pario-bank";
-> +		reg = <0x1400 0x18>;
-> +		gpio-controller;
-> +	};
-> +
-> +	qe_pio_e: gpio-controller@1460 {
-> +		#gpio-cells = <2>;
-> +		compatible = "fsl,qe-pario-bank";
-> +		reg = <0x1460 0x18>;
-> +		gpio-controller;
-> +	};
-
-Let me suggest another example to provide:   an I2C GPIO expander
-such as a pcf8574 or pca9354 (both eight bit expanders).  The SOC
-case is probably the easiest to cover.
-
-
-> +#define ARCH_OF_GPIOS_PER_CHIP 32
-
-Well, ARCH_OF_* is clearly not the now-removed ARCH_GPIOS_PER_CHIP,
-but I still suggest moving away from that concept.  
-
-
-> +static inline int gpio_get_value(unsigned int gpio)
-> +{
-> +	return __gpio_get_value(gpio);
-> +}
-> +
-> +static inline void gpio_set_value(unsigned int gpio, int value)
-> +{
-> +	__gpio_set_value(gpio, value);
-> +}
-
-static inline int gpio_cansleep(unsigned int gpio)
-{
-	return __gpio_cansleep(gpio);
-}
-
-
-> +static inline int irq_to_gpio(unsigned int irq)
-> +{
-> +	return -ENOSYS;
-
-Minor nit:  "-EINVAL" would be better here, since the argument
-is constrained to have been returned from gpio_to_irq(), and
-as you wrote that call there can be no such values.
+diff --git a/arch/powerpc/boot/dts/adder875-redboot.dts b/arch/powerpc/boot/dts/adder875-redboot.dts
+index 930bfb3..28e9cd3 100644
+--- a/arch/powerpc/boot/dts/adder875-redboot.dts
++++ b/arch/powerpc/boot/dts/adder875-redboot.dts
+@@ -151,6 +151,7 @@
+ 				compatible = "fsl,mpc875-brg",
+ 				             "fsl,cpm1-brg",
+ 				             "fsl,cpm-brg";
++				clock-frequency = <50000000>;
+ 				reg = <0x9f0 0x10>;
+ 			};
+ 
+diff --git a/arch/powerpc/boot/dts/adder875-uboot.dts b/arch/powerpc/boot/dts/adder875-uboot.dts
+index 0197242..54fb60e 100644
+--- a/arch/powerpc/boot/dts/adder875-uboot.dts
++++ b/arch/powerpc/boot/dts/adder875-uboot.dts
+@@ -150,6 +150,7 @@
+ 				compatible = "fsl,mpc875-brg",
+ 				             "fsl,cpm1-brg",
+ 				             "fsl,cpm-brg";
++				clock-frequency = <50000000>;
+ 				reg = <0x9f0 0x10>;
+ 			};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+index 8848e63..d84a012 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -166,6 +166,7 @@
+ 				compatible = "fsl,mpc885-brg",
+ 				             "fsl,cpm1-brg",
+ 				             "fsl,cpm-brg";
++				clock-frequency = <0>;
+ 				reg = <9f0 10>;
+ 			};
