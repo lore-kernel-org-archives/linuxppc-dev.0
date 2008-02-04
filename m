@@ -1,23 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3ABA2DDEE9
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8CCDFDDEBC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  3 Feb 2008 07:36:47 +1100 (EST)
-Message-ID: <47A4D45E.6030701@scram.de>
-Date: Sat, 02 Feb 2008 21:36:46 +0100
-From: Jochen Friedrich <jochen@scram.de>
+	Tue,  5 Feb 2008 00:54:59 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JM1mh-0006KW-El
+	for linuxppc-embedded@ozlabs.org; Mon, 04 Feb 2008 05:54:55 -0800
+Message-ID: <15268468.post@talk.nabble.com>
+Date: Mon, 4 Feb 2008 05:54:55 -0800 (PST)
+From: IngoM <ingo.maindorfer@ipm.fraunhofer.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: [Virtex 4 PPC] Which Linux?
 MIME-Version: 1.0
-To: rmcguire@videopresence.com
-Subject: Re: 83xx HDLC Driver Dev - Multiple PHYs?
-References: <mailman.1.1201309203.24413.linuxppc-embedded@ozlabs.org>
-	<000601c85fc5$41e48330$6405a8c0@absolut>
-	<D71D9F25-4724-487E-AD07-E848B4608B97@freescale.com>
-	<000001c862fe$5ff16550$6405a8c0@absolut>
-In-Reply-To: <000001c862fe$5ff16550$6405a8c0@absolut>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,16 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Russell,
 
-> I am putting support for multiple PHY's into the HDLC driver, but after
-> converting it to use the of_device tree, and inserting a UCC@5000 for a
-> single UCC HDLC driver, it occurred to me that if I insert more devices
-> (UCC@6000, UCC@7000, UCC@8000) that the driver will attempt to load multiple
-> times.
+Hello,
 
-The module should only be loaded once. If the driver attempts to load multiple
-times, this looks like a userscpace bug.
+we develop a new laser-ranging-system and our hardware freaks have choosen
+the Virtex 4 FX 12 on the "AVNET FX12 Mini-Module". The system had to
+deliver the raw data via UDP (12 Mbyte/sec) and on TCP the processed data
+(about 6 Mbyte/sec). When you get the processed data via TCP then no data
+send by UDP.
 
-Thanks,
-Jochen
+I'm confused by the following:
+
+1) Hard-TEMAC vs. Soft-TEMAC.
+Avnet provide a demo for the module which using Soft-TEMAC. If I get it
+right this core has to be licenced. But when ther is a hard-TEMAC why pay
+for it?
+
+2) Linux
+I'd like to build my kernel and filesystem myself. But which way to go?
+Using OE, buildroot, ELDK...
+Can you please provide some starting points for me?
+
+3) Boot-Concept
+The Mini-Module had only 4MB Flash. Is this enough for a root-fs?
+
+
+Best Regards and thanks a lot,
+
+Ingo
+-- 
+View this message in context: http://www.nabble.com/-Virtex-4-PPC--Which-Linux--tp15268468p15268468.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
