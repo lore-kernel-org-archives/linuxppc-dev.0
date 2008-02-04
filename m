@@ -1,23 +1,23 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 71AC0DDEFE
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 03:21:22 +1100 (EST)
-Date: Mon, 4 Feb 2008 08:19:23 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Build failure with 2.6.24-mm1
-Message-ID: <20080204161923.GA20906@kroah.com>
-References: <47A6E355.8040404@linux.vnet.ibm.com>
-	<20080204100743.GA4445@balbir.in.ibm.com>
-	<20080204021917.41f56303.akpm@linux-foundation.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 9EA63DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 04:34:27 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so660934anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 04 Feb 2008 09:34:25 -0800 (PST)
+Message-ID: <fa686aa40802040934r7e6782cev43ee88f93beed10a@mail.gmail.com>
+Date: Mon, 4 Feb 2008 10:34:25 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Bernhard Reiter" <bernhard@intevation.de>,
+	"David Gibson" <david@gibson.dropbear.id.au>
+Subject: Re: compile quirk linux-2.6.24 (with workaround)
+In-Reply-To: <200802041126.21989.bernhard@intevation.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080204021917.41f56303.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Zhang Yanmin <yanmin.zhang@intel.com>,
-	Shaohua Li <shaohua.li@intel.com>, balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200802031729.12069.bernhard@intevation.de>
+	<20080204095121.GA18167@powerlinux.fr>
+	<200802041126.21989.bernhard@intevation.de>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,89 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 04, 2008 at 02:19:17AM -0800, Andrew Morton wrote:
-> On Mon, 4 Feb 2008 15:37:43 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * Balbir Singh <balbir@linux.vnet.ibm.com> [2008-02-04 15:35:09]:
-> > 
-> > I just saw the following build failure on a power machine.
-> > 
-> > In file included from include/acpi/platform/acenv.h:140,
-> >                  from include/acpi/acpi.h:54,
-> >                  from include/acpi/acpi_bus.h:31,
-> >                  from drivers/pci/pcie/aspm.c:20:
-> > include/acpi/platform/aclinux.h:59:22: error: asm/acpi.h: No such file or directory
-> > In file included from include/acpi/platform/aclinux.h:120,
-> >                  from include/acpi/platform/acenv.h:140,
-> >                  from include/acpi/acpi.h:54,
-> >                  from include/acpi/acpi_bus.h:31,
-> >                  from drivers/pci/pcie/aspm.c:20:
-> > include/acpi/actypes.h:130: error: expected '=', ',', ';', 'asm' or
-> > '__attribute__' before 'UINT64'
-> > include/acpi/actypes.h:131: error: expected '=', ',', ';', 'asm' or
-> > '__attribute__' before 'INT64'
-> > include/acpi/actypes.h:753: error: expected ')' before '*' token
-> > include/acpi/actypes.h:756: error: expected ')' before '*' token
-> > In file included from include/acpi/acpi.h:61,
-> >                  from include/acpi/acpi_bus.h:31,
-> >                  from drivers/pci/pcie/aspm.c:20:
-> > include/acpi/acpiosxf.h:179: error: expected declaration specifiers or '...'
-> > before 'acpi_osd_handler'
-> > include/acpi/acpiosxf.h:183: error: expected declaration specifiers or '...'
-> > before 'acpi_osd_handler'
-> > include/acpi/acpiosxf.h:192: error: expected declaration specifiers or '...'
-> > before 'acpi_osd_exec_callback'
-> > make[3]: *** [drivers/pci/pcie/aspm.o] Error 1
-> > make[2]: *** [drivers/pci/pcie] Error 2
-> > make[2]: *** Waiting for unfinished jobs....
-> >   CC      drivers/ps3/ps3-vuart.o
-> >   CC      net/netlink/attr.o
-> > make[1]: *** [drivers/pci] Error 2
-> > make[1]: *** Waiting for unfinished jobs..
-> > 
-> > The following config option is responsible for the build failure
-> > 
-> > config PCIEASPM
-> >         bool "PCI Express ASPM support(Experimental)"
-> >         depends on PCI && EXPERIMENTAL && PCIEPORTBUS
-> >         default y
-> >         help
-> >           This enables PCI Express ASPM (Active State Power Management) and
-> >           Clock Power Management. ASPM supports state L0/L0s/L1.
-> > 
-> >           When in doubt, say N.
-> > 
-> > Here's a probable fix for the problem.
-> > 
-> > 
-> > Make the build of drivers/pci/pcie/aspm.c depend on ACPI.
-> > 
-> > NOTE, the patch has not been tested. The dependency on ACPI might be wrong,
-> > but setting it to default "y" caused the build on my powerpc box to break.
-> > 
-> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  drivers/pci/pcie/Kconfig |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff -puN drivers/pci/pcie/Kconfig~fix-mm-ppc-build drivers/pci/pcie/Kconfig
-> > --- linux-2.6.24/drivers/pci/pcie/Kconfig~fix-mm-ppc-build	2008-02-04 15:30:29.000000000 +0530
-> > +++ linux-2.6.24-balbir/drivers/pci/pcie/Kconfig	2008-02-04 15:33:45.000000000 +0530
-> > @@ -32,7 +32,7 @@ source "drivers/pci/pcie/aer/Kconfig"
-> >  #
-> >  config PCIEASPM
-> >  	bool "PCI Express ASPM support(Experimental)"
-> > -	depends on PCI && EXPERIMENTAL && PCIEPORTBUS
-> > +	depends on PCI && EXPERIMENTAL && PCIEPORTBUS && ACPI
-> >  	default y
-> >  	help
-> >  	  This enables PCI Express ASPM (Active State Power Management) and
-> 
-> Thanks.  I think Greg is going to revert PCIEASPM altogether?
+On 2/4/08, Bernhard Reiter <bernhard@intevation.de> wrote:
+> On Monday 04 February 2008 10:51, Sven Luther wrote:
+> > You should normally not need to build the 4xx bootloader part. Make sure
+> > that, i don't know why this happens. Can you look into
+> > arch/powerpc/boot/Makefile, to see what option enables the 4xx build,
+> > and make sure it is disabled in the main config ?
+>
+> I have tried to do this, but it looks like it is just hardcoded into the
+> Makefile  as you can see from the patch. There is probably more that I do not
+> understand - thus my report with on the workaround.
 
-Greg did, hopefully Linus will pull the changes soon...
+The policy decision was made early on to build all of the bootwrapper
+bits regardless of whether they are needed by the configured platform
+or not.  AFAIK the reason for this is to increase the variety of
+platforms and compilers for with the bootwrapper bits are tested on.
+Unfortunately, there are bits of 4xx bootwrappers which require
+processor specific instructions for manipulating the cache and DCR.
 
-thanks,
+If we're supporting compilers which don't have 440 support, then we'll
+need to disable the build of those bits when they aren't needed, but I
+don't know the best way to go about this.  David, thoughts?
 
-greg k-h
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
