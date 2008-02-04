@@ -1,21 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 69701DDDF2
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:13:27 +1100 (EST)
-Date: Tue, 5 Feb 2008 00:13:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/5] [POWERPC] qe_lib and users: get rid of most
-	device_types and model
-Message-Id: <20080205001318.5fbc60fa.sfr@canb.auug.org.au>
-In-Reply-To: <20080124153959.GA23246@localhost.localdomain>
-References: <20080124151850.GA15190@localhost.localdomain>
-	<20080124153959.GA23246@localhost.localdomain>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6A94ADDEA0
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:19:56 +1100 (EST)
+Date: Mon, 4 Feb 2008 16:19:40 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 01/11] [POWERPC] Implement support for the GPIO LIB API
+Message-ID: <20080204131940.GA5298@localhost.localdomain>
+References: <20080203170820.GA18520@localhost.localdomain>
+	<20080203170951.GA28024@localhost.localdomain>
+	<200802031317.43858.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9"
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <200802031317.43858.david-b@pacbell.net>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,94 +24,150 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Feb 03, 2008 at 01:17:43PM -0800, David Brownell wrote:
+> On Sunday 03 February 2008, Anton Vorontsov wrote:
+> > This patch implements support for the GPIO LIB API. Two calls
+> > unimplemented though: irq_to_gpio and gpio_to_irq.
+> 
+> Also gpio_cansleep().
+> 
+> 
+> > +Example of two SOC GPIO banks defined as gpio-controller nodes:
+> > +
+> > +	qe_pio_a: gpio-controller@1400 {
+> > +		#gpio-cells = <2>;
+> > +		compatible = "fsl,qe-pario-bank";
+> > +		reg = <0x1400 0x18>;
+> > +		gpio-controller;
+> > +	};
+> > +
+> > +	qe_pio_e: gpio-controller@1460 {
+> > +		#gpio-cells = <2>;
+> > +		compatible = "fsl,qe-pario-bank";
+> > +		reg = <0x1460 0x18>;
+> > +		gpio-controller;
+> > +	};
+> 
+> Let me suggest another example to provide:   an I2C GPIO expander
+> such as a pcf8574 or pca9354 (both eight bit expanders).  The SOC
+> case is probably the easiest to cover.
 
-Hi Anton,
+I2C expander will be easy to support via device tree too, something
+like:
 
-I know this is late, but a couple of comments anyway.
+i2c@3000 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	cell-index = <0>;
+	compatible = "fsl-i2c";
+	reg = <0x3000 0x100>;
+	interrupts = <14 8>;
+	interrupt-parent = <&ipic>;
+	dfsrr;
 
-On Thu, 24 Jan 2008 18:39:59 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
->
-> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
-> @@ -65,17 +65,22 @@ static phys_addr_t qebase =3D -1;
->  phys_addr_t get_qe_base(void)
->  {
->  	struct device_node *qe;
-> +	unsigned int size;
-> +	const void *prop;
-> =20
->  	if (qebase !=3D -1)
->  		return qebase;
-> =20
-> -	qe =3D of_find_node_by_type(NULL, "qe");
-> -	if (qe) {
-> -		unsigned int size;
-> -		const void *prop =3D of_get_property(qe, "reg", &size);
-> -		qebase =3D of_translate_address(qe, prop);
-> -		of_node_put(qe);
-> -	};
-> +	qe =3D of_find_compatible_node(NULL, NULL, "fsl,qe");
-> +	if (!qe) {
-> +		qe =3D of_find_node_by_type(NULL, "qe");
-> +		if (!qe)
-> +			return qebase;
-> +	}
-> +
-> +	prop =3D of_get_property(qe, "reg", &size);
-> +	qebase =3D of_translate_address(qe, prop);
+	pcf_pio: gpio-controller@27 {
+		#gpio-cells = <2>;
+		compatible = "ti,pcf8574";
+		reg = <0x27>;
+		gpio-controller;
+	};
+};
 
-If you don't care about the returned length (argument three to
-of_get_property), you can just pass NULL (and dispense with "size").
-Also, what happens if prop is NULL?
+Of course, to support this, pcf857x driver needs OF bindings.
 
-> @@ -153,16 +158,26 @@ static unsigned int brg_clk =3D 0;
->  unsigned int get_brg_clk(void)
->  {
->  	struct device_node *qe;
-> +	unsigned int size;
-> +	const u32 *prop;
-> +
->  	if (brg_clk)
->  		return brg_clk;
-> =20
-> -	qe =3D of_find_node_by_type(NULL, "qe");
-> -	if (qe) {
-> -		unsigned int size;
-> -		const u32 *prop =3D of_get_property(qe, "brg-frequency", &size);
-> -		brg_clk =3D *prop;
-> -		of_node_put(qe);
-> -	};
-> +	qe =3D of_find_compatible_node(NULL, NULL, "fsl,qe");
-> +	if (!qe) {
-> +		qe =3D of_find_node_by_type(NULL, "qe");
-> +		if (!qe)
-> +			return brg_clk;
-> +	}
-> +
-> +	prop =3D of_get_property(qe, "brg-frequency", &size);
-> +	if (!prop || size !=3D sizeof(*prop))
-> +		return brg_clk;
+> > +#define ARCH_OF_GPIOS_PER_CHIP 32
+> 
+> Well, ARCH_OF_* is clearly not the now-removed ARCH_GPIOS_PER_CHIP,
+> but I still suggest moving away from that concept.  
 
-You need an of_node_put(qe) before the return ...
+Yes, I noticed that ARCH_GPIOS_PER_CHIP is removed from the
+gpiolib. But I solely use it to assign gpio_bases to the chips:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+static int of_get_gpiochip_base(struct device_node *np)
+{
+	struct device_node *gc = NULL;
+	int gpiochip_base = 0;
 
---Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9
-Content-Type: application/pgp-signature
+	while ((gc = of_find_all_nodes(gc))) {
+		if (!of_get_property(gc, "gpio-controller", NULL))
+			continue;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+		if (gc != np) {
+			gpiochip_base += ARCH_OF_GPIOS_PER_CHIP;
+			continue;
+		}
 
-iD8DBQFHpw92TgG2atn1QN8RAtowAKCUl18MfOG7dCDE4YU9YI9/G3V5uwCbBN0u
-l1xo/3IUJg4tHodGl/KYNuk=
-=S5qg
------END PGP SIGNATURE-----
+		of_node_put(gc);
 
---Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9--
+		if (gpiochip_base >= ARCH_OF_GPIOS_END)
+			return -ENOSPC;
+
+		return gpiochip_base;
+	}
+
+	return -ENOENT;
+}
+
+This function walks the device tree and assigns gpio_base 0 to
+the first encountered gpio-controller, ARCH_OF_GPIOS_PER_CHIP * N
+to the Nth controller...
+
+Technically, I can replace
+
+		if (gc != np) {
+			gpiochip_base += ARCH_OF_GPIOS_PER_CHIP;
+			continue;
+		}
+
+With
+
+		if (gc != np) {
+			struct gpio_chip *chip = gc->data;
+
+			if (chip)
+				gpiochip_base += chip->ngpio;
+			continue;
+		}
+
+Here we're getting next available GPIO base. But then this code can't
+handle gpio chip removal. So, we need smart "dynamic GPIO base
+allocator" as described asm-generic/gpio.h, gpio_find_base(ngpios)
+that will find free gpio base suitable for ngpios to place. Until
+that allocator implemented, we use simple allocator with
+OF_GPIOS_PER_CHIP...
+
+> > +static inline int gpio_get_value(unsigned int gpio)
+> > +{
+> > +	return __gpio_get_value(gpio);
+> > +}
+> > +
+> > +static inline void gpio_set_value(unsigned int gpio, int value)
+> > +{
+> > +	__gpio_set_value(gpio, value);
+> > +}
+> 
+> static inline int gpio_cansleep(unsigned int gpio)
+> {
+> 	return __gpio_cansleep(gpio);
+> }
+
+Will fix.
+
+> > +static inline int irq_to_gpio(unsigned int irq)
+> > +{
+> > +	return -ENOSYS;
+> 
+> Minor nit:  "-EINVAL" would be better here, since the argument
+> is constrained to have been returned from gpio_to_irq(), and
+> as you wrote that call there can be no such values.
+
+Will change.
+
+
+Thanks!
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
