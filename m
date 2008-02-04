@@ -1,19 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 004EFDDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:41:26 +1100 (EST)
-Date: Tue, 5 Feb 2008 00:41:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 7/9] powerpc: add MPC837x RDB platform support
-Message-Id: <20080205004119.fb37d472.sfr@canb.auug.org.au>
-In-Reply-To: <20080124204711.02ba14f0.kim.phillips@freescale.com>
-References: <20080124204711.02ba14f0.kim.phillips@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id D5384DDF0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:46:32 +1100 (EST)
+Date: Mon, 4 Feb 2008 16:46:17 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] qe_lib: fix few fluffy negligences (was: Re: [PATCH
+	1/5] [POWERPC] qe_lib and users: get rid of most device_types
+	and model)
+Message-ID: <20080204134617.GA10377@localhost.localdomain>
+References: <20080124151850.GA15190@localhost.localdomain>
+	<20080124153959.GA23246@localhost.localdomain>
+	<20080205001318.5fbc60fa.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__5_Feb_2008_00_41_19_+1100_hHRfwQkM+HF7UA6C"
-Cc: linuxppc-dev@ozlabs.org, D'Abbraccio <ljd015@freescale.com>, Joe
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080205001318.5fbc60fa.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +26,128 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__5_Feb_2008_00_41_19_+1100_hHRfwQkM+HF7UA6C
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 05, 2008 at 12:13:18AM +1100, Stephen Rothwell wrote:
+> Hi Anton,
+> 
+> I know this is late, but a couple of comments anyway.
+> 
+> On Thu, 24 Jan 2008 18:39:59 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> >
+> > +++ b/arch/powerpc/sysdev/qe_lib/qe.c
+> > @@ -65,17 +65,22 @@ static phys_addr_t qebase = -1;
+> >  phys_addr_t get_qe_base(void)
+> >  {
+> >  	struct device_node *qe;
+> > +	unsigned int size;
+> > +	const void *prop;
+> >  
+> >  	if (qebase != -1)
+> >  		return qebase;
+> >  
+> > -	qe = of_find_node_by_type(NULL, "qe");
+> > -	if (qe) {
+> > -		unsigned int size;
+> > -		const void *prop = of_get_property(qe, "reg", &size);
+> > -		qebase = of_translate_address(qe, prop);
+> > -		of_node_put(qe);
+> > -	};
+> > +	qe = of_find_compatible_node(NULL, NULL, "fsl,qe");
+> > +	if (!qe) {
+> > +		qe = of_find_node_by_type(NULL, "qe");
+> > +		if (!qe)
+> > +			return qebase;
+> > +	}
+> > +
+> > +	prop = of_get_property(qe, "reg", &size);
+> > +	qebase = of_translate_address(qe, prop);
+> 
+> If you don't care about the returned length (argument three to
+> of_get_property), you can just pass NULL (and dispense with "size").
+> Also, what happens if prop is NULL?
 
-Hi Kim,
+All this was in the old code already, I just didn't fix that.
 
-Again, a bit late but a couple of comments.
+> > @@ -153,16 +158,26 @@ static unsigned int brg_clk = 0;
+> >  unsigned int get_brg_clk(void)
+> >  {
+> >  	struct device_node *qe;
+> > +	unsigned int size;
+> > +	const u32 *prop;
+> > +
+> >  	if (brg_clk)
+> >  		return brg_clk;
+> >  
+> > -	qe = of_find_node_by_type(NULL, "qe");
+> > -	if (qe) {
+> > -		unsigned int size;
+> > -		const u32 *prop = of_get_property(qe, "brg-frequency", &size);
+> > -		brg_clk = *prop;
+> > -		of_node_put(qe);
+> > -	};
+> > +	qe = of_find_compatible_node(NULL, NULL, "fsl,qe");
+> > +	if (!qe) {
+> > +		qe = of_find_node_by_type(NULL, "qe");
+> > +		if (!qe)
+> > +			return brg_clk;
+> > +	}
+> > +
+> > +	prop = of_get_property(qe, "brg-frequency", &size);
+> > +	if (!prop || size != sizeof(*prop))
+> > +		return brg_clk;
+> 
+> You need an of_node_put(qe) before the return ...
 
-On Thu, 24 Jan 2008 20:47:11 -0600 Kim Phillips <kim.phillips@freescale.com=
-> wrote:
->
-> +static struct of_device_id mpc837x_ids[] =3D {
+This is new. :-) Thanks.
 
-Make this __initdata, please.
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [POWERPC] qe_lib: fix few fluffy negligences
 
-> +static void __init mpc837x_rdb_init_IRQ(void)
-> +{
-> +	struct device_node *np;
-> +
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,ipic");
-> +	if (!np)
-> +		return;
-> +
-> +	ipic_init(np, 0);
+One is intoduced by me (of_node_put() absence) and another was
+present already (not checking for NULL).
 
-You need an of_node_put(np) here.
+Found by Stephen Rothwell.
 
-> +static int __init mpc837x_rdb_probe(void)
-> +{
-> +	unsigned long root =3D of_get_flat_dt_root();
-> +
-> +	return of_flat_dt_is_compatible(root, "fsl,mpc8377rdb") ||
-> +	       of_flat_dt_is_compatible(root, "fsl,mpc8378rdb") ||
-> +	       of_flat_dt_is_compatible(root, "fsl,mpc8379rdb");
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/sysdev/qe_lib/qe.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-You need to include asm/prom.h to use the flattened device tree accessors.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__5_Feb_2008_00_41_19_+1100_hHRfwQkM+HF7UA6C
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHpxYGTgG2atn1QN8RAkZhAJ40URnO2XyJh8guBCYTjKNoWSPbHQCgkdyy
-17K1JCC+dzYzYK5Uk8Qjtzc=
-=QKN0
------END PGP SIGNATURE-----
-
---Signature=_Tue__5_Feb_2008_00_41_19_+1100_hHRfwQkM+HF7UA6C--
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 5ef844d..6efbd5e 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -66,7 +66,7 @@ phys_addr_t get_qe_base(void)
+ {
+ 	struct device_node *qe;
+ 	unsigned int size;
+-	const void *prop;
++	const u32 *prop;
+ 
+ 	if (qebase != -1)
+ 		return qebase;
+@@ -79,7 +79,8 @@ phys_addr_t get_qe_base(void)
+ 	}
+ 
+ 	prop = of_get_property(qe, "reg", &size);
+-	qebase = of_translate_address(qe, prop);
++	if (prop && size >= sizeof(*prop))
++		qebase = of_translate_address(qe, prop);
+ 	of_node_put(qe);
+ 
+ 	return qebase;
+@@ -172,10 +173,9 @@ unsigned int get_brg_clk(void)
+ 	}
+ 
+ 	prop = of_get_property(qe, "brg-frequency", &size);
+-	if (!prop || size != sizeof(*prop))
+-		return brg_clk;
++	if (prop && size == sizeof(*prop))
++		brg_clk = *prop;
+ 
+-	brg_clk = *prop;
+ 	of_node_put(qe);
+ 
+ 	return brg_clk;
+-- 
+1.5.2.2
