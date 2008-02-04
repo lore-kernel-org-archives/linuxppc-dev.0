@@ -1,19 +1,21 @@
-Return-Path: <bernhard@intevation.de>
-Received: from kolab.intevation.de (aktaia.intevation.org [212.95.126.10])
-	by ozlabs.org (Postfix) with ESMTP id 91ABCDDEEC
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 21:26:26 +1100 (EST)
-From: Bernhard Reiter <bernhard@intevation.de>
-To: Sven Luther <sven@powerlinux.fr>
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-Date: Mon, 4 Feb 2008 11:26:19 +0100
-References: <200802031729.12069.bernhard@intevation.de>
-	<20080204095121.GA18167@powerlinux.fr>
-In-Reply-To: <20080204095121.GA18167@powerlinux.fr>
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C18E8DDE49
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 21:42:39 +1100 (EST)
+Date: Mon, 4 Feb 2008 10:42:32 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+Message-ID: <20080204104232.GB29484@csn.ul.ie>
+References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie>
+	<20080201200518.174050@gmx.net> <20080201202518.GJ18688@csn.ul.ie>
+	<20080201210656.174030@gmx.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5056204.R1bsX2K3pl";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200802041126.21989.bernhard@intevation.de>
-Cc: debian-powerpc@lists.debian.org, paulus@samba.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20080201210656.174030@gmx.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart5056204.R1bsX2K3pl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Monday 04 February 2008 10:51, Sven Luther wrote:
-> On Sun, Feb 03, 2008 at 05:29:05PM +0100, Bernhard Reiter wrote:
-> > Dear linux powerpc Maintainers and Users,
-> >
-> > recently I have tried to compile a new kernel on a Debian sarge ppc
-> > system (PowerBook5,6 MacRISC3 Power Macintosh).
+On (01/02/08 22:06), Gerhard Pircher didst pronounce:
+> 
+> -------- Original-Nachricht --------
+> > Datum: Fri, 1 Feb 2008 20:25:18 +0000
+> > Von: Mel Gorman <mel@csn.ul.ie>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > CC: linux-kernel@vger.kernel.org
+> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+> 
+> > I meant uninitialised memory but I also wonder could something like this
+> > happen if you are trying to use memory that doesn't exist. i.e. you are
+> > trying to access more memory than you really have but you indicate later
+> > that this is not the case.
 >
-> This is a G4 based system.
-
-Yes.
-
-> > The build system bailed out with
-> > =A0 =A0 =A0 =A0BOOTCC =A0arch/powerpc/boot/4xx.o
-> > =A0 =A0 =A0 =A0 cc1: error: bad value (440) for -mcpu=3D switch
-> > =A0 =A0 =A0 =A0 make[1]: *** [arch/powerpc/boot/4xx.o] Fehler 1
-> >
-> > I have tracked this a few steps and the attached patch made the compile
-> > for me as my compiler gcc-Version 3.3.5 (Debian 1:3.3.5-13)
-> > cannot produce code for 4xx it seems.
+> Good question. The memory is in the physical address range from 0x00000000
+> to 0x60000000 (1536MB).
+> 
+> > > > 2. Any chance of seeing a dmesg log?
+> > > That's a little bit of a problem. The kernel log in memory doesn't show
+> > > any kernel oops, but is also fragmented (small fragments seem to have
+> > > been overwritten with 0x0).
+> > 
+> > err, that doesn't sound very healthy.
 >
-> You should normally not need to build the 4xx bootloader part. Make sure
-> that, i don't know why this happens. Can you look into
-> arch/powerpc/boot/Makefile, to see what option enables the 4xx build,
-> and make sure it is disabled in the main config ?
+> Yeah, I know. But the platform code hasn't changed much when porting it
+> from arch/ppc to arch/powerpc. That's why I'm a little bit lost in this
+> case. :-)
+> 
 
-I have tried to do this, but it looks like it is just hardcoded into the=20
-Makefile  as you can see from the patch. There is probably more that I do n=
-ot=20
-understand - thus my report with on the workaround.
+I'm at a bit of a loss to guess what might have changed in powerpc code
+that would explain this. I've added the linuxppc-dev mailing list in
+case they can make a guess.
 
-Bernhard
+I think you are also going to need to start bisecting searching
+specifically for the patch that causes these overwrites.
 
-=2D-=20
-Managing Director - Owner: www.intevation.net       (Free Software Company)
-Germany Coordinator: fsfeurope.org. Coordinator: www.Kolab-Konsortium.com.
-Intevation GmbH, Osnabr=FCck, DE; Amtsgericht Osnabr=FCck, HRB 18998
-Gesch=E4ftsf=FChrer Frank Koormann, Bernhard Reiter, Dr. Jan-Oliver Wagner
+> > > Well, I can't answer this question. The kernel currently locks up when
+> > > loading the INIT program. But that is another problem (I still have to
+> > > bisect it) and doesn't seem to be related to this problem.
+> > 
+> > INIT would be the first MOVABLE allocation so it would be using memory
+> > at the end of the physical adddress range. i.e. the crash happens when
+> > memory towards the end and the only difference between the patch applied
+> > and reverted is when it happens.
+> Oh, that sounds interesting!
+> 
+> > Could you try booting with 16MB less memory using mem=?
+> I started the kernel with 512MB RAM (mem=496) and 1.5GB (mem=1520). The
+> kernel oopes in both cases with a "Unable to handle kernel paging request
+> for data address 0xbffff000", followed by a "Oops: kernel access of bad
+> area, sig 11" message. The end of the stack trace shows the start_here()
+> function.
+> I'm not a PowerPC expert, but if 0xbffff000 is a virtual address, then
+> it would be in the user program address space, right? If it is a physical
+> address, then it is somewhere in the unallocated PCI address space.
+> 
 
---nextPart5056204.R1bsX2K3pl
-Content-Type: application/pgp-signature
+It's a virtual address so it depends on the value of CONFIG_KERNEL_START
+as to whether this is a user program address or not.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQBHpuhNh9ag3dpKERYRAh+gAJwK7xCAAIgO1+jIo42GdrxCC+cD+ACbB/ox
-5BJtxM8f3Bel0qW9PPZTnf8=
-=dXg9
------END PGP SIGNATURE-----
-
---nextPart5056204.R1bsX2K3pl--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
