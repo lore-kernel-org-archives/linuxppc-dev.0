@@ -1,31 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F424DE02A
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 08:02:28 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m14JwlHt005816
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:58:47 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m14L2M61143322
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:02:23 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m14L2LBJ019332
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:02:22 -0700
-Date: Mon, 4 Feb 2008 15:01:21 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Bernhard Reiter <bernhard@intevation.de>
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-Message-ID: <20080204150121.02355054@zod.rchland.ibm.com>
-In-Reply-To: <200802031729.12069.bernhard@intevation.de>
-References: <200802031729.12069.bernhard@intevation.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, paulus@samba.org
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DFB11DDE2F
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 09:27:29 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Mon, 04 Feb 2008 23:20:47 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <20080204104232.GB29484@csn.ul.ie>
+Message-ID: <20080204222047.243670@gmx.net>
+MIME-Version: 1.0
+References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie>
+	<20080201200518.174050@gmx.net> <20080201202518.GJ18688@csn.ul.ie>
+	<20080201210656.174030@gmx.net> <20080204104232.GB29484@csn.ul.ie>
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 3 Feb 2008 17:29:05 +0100
-Bernhard Reiter <bernhard@intevation.de> wrote:
 
-> Dear linux powerpc Maintainers and Users,
-> 
-> recently I have tried to compile a new kernel on a Debian sarge ppc
-> system (PowerBook5,6 MacRISC3 Power Macintosh).
-> 
-> The build system bailed out with
->        BOOTCC  arch/powerpc/boot/4xx.o
->         cc1: error: bad value (440) for -mcpu= switch
->         make[1]: *** [arch/powerpc/boot/4xx.o] Fehler 1
-> 
-> I have tracked this a few steps and the attached patch made the compile for me
-> as my compiler gcc-Version 3.3.5 (Debian 1:3.3.5-13) 
-> cannot produce code for 4xx it seems.
-> 
-> The "ARCH=ppc64" I have came about also looked wrong, but I do not know
-> if this part of the patch is really necessary.
-> It is just a workaround, as I have no insight of what is really going wrong.
+-------- Original-Nachricht --------
+> Datum: Mon, 4 Feb 2008 10:42:32 +0000
+> Von: Mel Gorman <mel@csn.ul.ie>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+> Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machine
 
-That patch really won't fly.  I'll try go come up with something a bit
-more robust when I can.
+> > > > > 2. Any chance of seeing a dmesg log?
+> > > > That's a little bit of a problem. The kernel log in memory doesn't
+> > > > show any kernel oops, but is also fragmented (small fragments seem
+> > > > to have been overwritten with 0x0).
+> > > 
+> > > err, that doesn't sound very healthy.
+> >
+> > Yeah, I know. But the platform code hasn't changed much when porting it
+> > from arch/ppc to arch/powerpc. That's why I'm a little bit lost in this
+> > case. :-)
+> > 
+> 
+> I'm at a bit of a loss to guess what might have changed in powerpc code
+> that would explain this. I've added the linuxppc-dev mailing list in
+> case they can make a guess.
+Yes, I'll try to get some comments on the linuxppc-dev mailing list.
 
-josh
+> I think you are also going to need to start bisecting searching
+> specifically for the patch that causes these overwrites.
+I think I had a similar problem with kernel v2.6.23, too and therefore
+waited for kernel 2.6.24. So the problem may exist since a long time.
+
+> It's a virtual address so it depends on the value of CONFIG_KERNEL_START
+> as to whether this is a user program address or not.
+AFAIK start_kernel() is called very early in the boot process, were no
+user or kernel thread is active. I also wonder why the kernel crashes when
+the mem boot option is used. Let's see what the linuxppc-dev people say.
+
+Thanks for your help!
+
+Gerhard
+
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
