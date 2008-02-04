@@ -1,23 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 9EA63DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 04:34:27 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so660934anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 04 Feb 2008 09:34:25 -0800 (PST)
-Message-ID: <fa686aa40802040934r7e6782cev43ee88f93beed10a@mail.gmail.com>
-Date: Mon, 4 Feb 2008 10:34:25 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Bernhard Reiter" <bernhard@intevation.de>,
-	"David Gibson" <david@gibson.dropbear.id.au>
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-In-Reply-To: <200802041126.21989.bernhard@intevation.de>
+Return-Path: <jdl@freescale.com>
+Message-ID: <47A74CAC.2010006@freescale.com>
+Date: Mon, 04 Feb 2008 11:34:36 -0600
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200802031729.12069.bernhard@intevation.de>
-	<20080204095121.GA18167@powerlinux.fr>
-	<200802041126.21989.bernhard@intevation.de>
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, paulus@samba.org
+To: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+Subject: Re: Moving from 2.6.14 (ppc) to 2.6.20 (powerpc): problems with
+	PCI-PCI bridge
+References: <47A6D72D.4050100@dutchspace.nl>
+In-Reply-To: <47A6D72D.4050100@dutchspace.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-dev@ozlabs.org, Linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/4/08, Bernhard Reiter <bernhard@intevation.de> wrote:
-> On Monday 04 February 2008 10:51, Sven Luther wrote:
-> > You should normally not need to build the 4xx bootloader part. Make sure
-> > that, i don't know why this happens. Can you look into
-> > arch/powerpc/boot/Makefile, to see what option enables the 4xx build,
-> > and make sure it is disabled in the main config ?
->
-> I have tried to do this, but it looks like it is just hardcoded into the
-> Makefile  as you can see from the patch. There is probably more that I do not
-> understand - thus my report with on the workaround.
+Johan Borkhuis wrote:
+> Hello,
+> 
+> I was using kernel version 2.6.14 (ppc) on a  MVME3100 board (MPC8540 
+> processor). We are planning to move to 2.6.20 (powerpc), but I have some 
+> problems with the initialization of a PCI-PCI bridge.
+> Connected to the MVME3100 board is a PCI-PCI bridge (HiNT, PCI6150, 
+> 3388:0022). When using the 2.6.14 kernel this bridge is initialized 
+> correctly:  it is setup as bus-master, memory and IO are configured, and 
+> the memory allocation on the PCI-bus is correct.
+> When I use 2.6.20 (powerpc) the device is not configured correctly: 
+> bus-master, memory and IO are not set, and the memory space of the 
+> bridge on the PCI bus is set to the minimum value (0xfffff).
+> I can correct these settings by modifying the PCI_COMMAND register to 
+> set the bus-master, memory and IO. I change the size of the memory space 
+> in pci_32.c, by forcing the size to the required setting in 
+> pci_relocate_bridge_resource. But to be honest, I don't like this very 
+> much: modifying registers like this should not be needed, so I guess 
+> there is something wrong in my configuration or setup.
+> 
+> How can I fix this problem in a better way? What could be wrong with my 
+> configuration?
 
-The policy decision was made early on to build all of the bootwrapper
-bits regardless of whether they are needed by the configured platform
-or not.  AFAIK the reason for this is to increase the variety of
-platforms and compilers for with the bootwrapper bits are tested on.
-Unfortunately, there are bits of 4xx bootwrappers which require
-processor specific instructions for manipulating the cache and DCR.
 
-If we're supporting compilers which don't have 440 support, then we'll
-need to disable the build of those bits when they aren't needed, but I
-don't know the best way to go about this.  David, thoughts?
+There has been a fair amount of PCI setup reworking done
+somewhat recently.  (.22 and .23, IIRC, and even .24).
+It might be best if you can try 2.6.24.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+jdl
