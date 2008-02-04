@@ -1,30 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6A849DDDF5
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 16:23:09 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m145Mlh2006996
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 16:22:47 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m145QhQn244810
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 16:26:43 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m145N7CG014241
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 16:23:08 +1100
-Date: Mon, 4 Feb 2008 10:52:59 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Bastian Blank <bastian@waldi.eu.org>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix ext4 bitops
-Message-ID: <20080204052259.GB7494@skywalker>
-References: <20080201200240.GA28566@wavehammer.waldi.eu.org>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id B1D08DDEBD
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 17:10:22 +1100 (EST)
+Date: Mon, 4 Feb 2008 17:08:30 +1100
+To: Sripathi Kodi <sripathik@in.ibm.com>
+Subject: Re: [ppc] Disparity between sys_clock_getres and vdso implementation
+Message-ID: <20080204060830.GS6887@bakeyournoodle.com>
+References: <200801271932.59823.sripathik@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080201200240.GA28566@wavehammer.waldi.eu.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200801271932.59823.sripathik@in.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	john stultz <johnstul@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,28 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 01, 2008 at 09:02:40PM +0100, Bastian Blank wrote:
-> Fix ext4 bitops.
+On Sun, Jan 27, 2008 at 07:32:59PM +0530, Sripathi Kodi wrote:
+> Hi Paul,
 > 
-> Signed-off-by: Bastian Blank <waldi@debian.org>
+> On PPC, I see a disparity between clock_getres implementations in the
+> vdso and syscall. I am using a IBM Openpower hardware and 2.6.24 kernel
+> with CONFIG_HIGH_RES_TIMERS=y. 
 > 
-> diff --git a/include/asm-powerpc/bitops.h b/include/asm-powerpc/bitops.h
-> index 220d9a7..d0980df 100644
-> --- a/include/asm-powerpc/bitops.h
-> +++ b/include/asm-powerpc/bitops.h
-> @@ -363,6 +363,8 @@ unsigned long generic_find_next_le_bit(const unsigned long *addr,
->  				    unsigned long size, unsigned long offset);
->  /* Bitmap functions for the ext2 filesystem */
+> clock_getres call for CLOCK_REALTIME returns 1 millisecond. However,
+> when I edit arch/powerpc/kernel/vdso*/gettimeofday.S to force it to use 
+> sys_clock_getres, I get 1 nanosecond resolution. The code in vdso seems
+> to be returning some pre-defined (incorrect) variables.
 > 
-> +#include <asm-generic/bitops/le.h>
-> +
->  #define ext2_set_bit(nr,addr) \
->  	__test_and_set_le_bit((nr), (unsigned long*)addr)
->  #define ext2_clear_bit(nr, addr) \
+> Could you please let me know the reason for this? Is it something that
+> should be fixed in vdso?
 
+Almost certainly It's something I missed when I enabled highres timers
+on powerpc.
 
-I am not sure what the changes are for. Can you send me the build logs
-with the compile error. I always test Ext4 on powerpc so not sure what
-went wrong.
+I'll fix this tomorrow.
 
--aneesh
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
