@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D919EDDFE3
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 07:30:41 +1100 (EST)
-Date: Mon, 4 Feb 2008 14:30:04 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 08/11] [POWERPC] qe_lib: implement QE GTM support
-Message-ID: <20080204203003.GA4202@loki.buserror.net>
-References: <20080203170820.GA18520@localhost.localdomain>
-	<20080203171019.GH28024@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080203171019.GH28024@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E1980DDECA
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 07:50:58 +1100 (EST)
+Subject: Re: [RFC][PATCH] PowerPC: 4xx PCIe indirect DCR spinlock fix.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20080204182740.GA2898@ru.mvista.com>
+References: <20080204182740.GA2898@ru.mvista.com>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 07:50:39 +1100
+Message-Id: <1202158239.7079.4.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +24,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Feb 03, 2008 at 08:10:19PM +0300, Anton Vorontsov wrote:
-> GTM stands for General-purpose Timers Module and able to generate
-> timer{1,2,3,4} interrupts.
+
+On Mon, 2008-02-04 at 21:27 +0300, Valentine Barshak wrote:
+> Since we have mfdcri() and mtdcri() as macros, we can't use constructions, such
+> as "mtdcri(base, reg, mfdcri(base, reg) | val)". In this case the mfdcri() stuff
+> is not evaluated first. It's evaluated inside the mtdcr() macro and we have
+> the dcr_ind_lock spinlock acquired twice. To avoid this error, I've added
+> set_dcri() and clr_dcri() macros which set/clear the specified bits.
 > 
-> There are several limitations in this support:
-> 1. Cascaded (32 bit) timers unimplemented (1-2, 3-4).
->    This is straightforward to implement when needed, two timers should
->    be marked as "requested" and configured as appropriate.
-> 2. Super-cascaded (64 bit) timers unimplemented (1-2-3-4).
->    This is also straightforward to implement when needed, all timers
->    should be marked as "requested" and configured as appropriate.
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-This isn't QE-specific; the same (as far as I see) timer hardware exists on,
-for example, mpc8313 and mpc8349.
+No, better is to fix the macros to use functions.
 
-> +config QE_GTM
-> +	bool
-> +	help
-> +	  QE General-Purpose Timers Module support
+Make mfdcri/mtdcri call into __mfdcri/__mtdcri functions after fixing
+up the macro register names, and have those be inlines that take the
+lock.
 
-No bool text?
+Ben.
 
-> +struct gtm_timer {
-> +	unsigned int irq;
-> +	bool requested;
+>  arch/powerpc/sysdev/ppc4xx_pci.c |   13 +++++--------
+>  include/asm-powerpc/dcr-native.h |   22 ++++++++++++++++++++++
+>  2 files changed, 27 insertions(+), 8 deletions(-)
+> 
+> diff -pruN linux-2.6.orig/arch/powerpc/sysdev/ppc4xx_pci.c linux-2.6/arch/powerpc/sysdev/ppc4xx_pci.c
+> --- linux-2.6.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2008-02-04 20:05:37.000000000 +0300
+> +++ linux-2.6/arch/powerpc/sysdev/ppc4xx_pci.c	2008-02-04 20:16:33.000000000 +0300
+> @@ -645,7 +645,7 @@ static int __init ppc440spe_pciex_core_i
+>  	int time_out = 20;
+>  
+>  	/* Set PLL clock receiver to LVPECL */
+> -	mtdcri(SDR0, PESDR0_PLLLCT1, mfdcri(SDR0, PESDR0_PLLLCT1) | 1 << 28);
+> +	set_dcri(SDR0, PESDR0_PLLLCT1, 1 << 28);
+>  
+>  	/* Shouldn't we do all the calibration stuff etc... here ? */
+>  	if (ppc440spe_pciex_check_reset(np))
+> @@ -659,8 +659,7 @@ static int __init ppc440spe_pciex_core_i
+>  	}
+>  
+>  	/* De-assert reset of PCIe PLL, wait for lock */
+> -	mtdcri(SDR0, PESDR0_PLLLCT1,
+> -	       mfdcri(SDR0, PESDR0_PLLLCT1) & ~(1 << 24));
+> +	clr_dcri(SDR0, PESDR0_PLLLCT1, 1 << 24);
+>  	udelay(3);
+>  
+>  	while (time_out) {
+> @@ -712,9 +711,8 @@ static int ppc440spe_pciex_init_port_hw(
+>  		mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL7SET1,
+>  		       0x35000000);
+>  	}
+> -	val = mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET);
+> -	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
+> -	       (val & ~(1 << 24 | 1 << 16)) | 1 << 12);
+> +	clr_dcri(SDR0, port->sdr_base + PESDRn_RCSSET, 1 << 24 | 1 << 16)
+> +	set_dcri(SDR0, port->sdr_base + PESDRn_RCSSET, 1 << 12);
+>  
+>  	return 0;
+>  }
+> @@ -1042,8 +1040,7 @@ static int __init ppc4xx_pciex_port_init
+>  		port->link = 0;
+>  	}
+>  
+> -	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
+> -	       mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) | 1 << 20);
+> +	set_dcri(SDR0, port->sdr_base + PESDRn_RCSSET, 1 << 20);
+>  	msleep(100);
+>  
+>  	return 0;
+> diff -pruN linux-2.6.orig/include/asm-powerpc/dcr-native.h linux-2.6/include/asm-powerpc/dcr-native.h
+> --- linux-2.6.orig/include/asm-powerpc/dcr-native.h	2008-02-04 20:06:34.000000000 +0300
+> +++ linux-2.6/include/asm-powerpc/dcr-native.h	2008-02-04 20:16:33.000000000 +0300
+> @@ -79,6 +79,28 @@ do {							\
+>  	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+>  } while (0)
+>  
+> +#define set_dcri(base, reg, data)				\
+> +do {								\
+> +	unsigned long flags; 					\
+> +	unsigned int val;					\
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);		\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);		\
+> +	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);		\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_DATA, val | (data));	\
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);		\
+> +} while (0)
 > +
-> +	u8 __iomem *gtcfr;
-> +	u16 __iomem *gtmdr;
-> +	u16 __iomem *gtpsr;
-> +	u16 __iomem *gtcnr;
-> +	u16 __iomem *gtrfr;
-> +	u16 __iomem *gtevr;
-> +};
-
-__be16
-
-> +static struct gtm_timer timers[4];
-> +static struct qe_timers __iomem *qet;
-> +static spinlock_t gtm_lock = __SPIN_LOCK_UNLOCKED(gtm_lock);
-
-static DEFINE_SPINLOCK(gtm_lock);
-
-Put these in a struct so multiple timer blocks can be supported (the non-QE
-chips tend to have two blocks).
-
-> +int qe_reset_ref_timer_16(int num, unsigned int hz, u16 ref)
-
-What does this function do?  What goes in "hz" and "ref"?  Is it periodic or
-one-shot?
-
--Scott
+> +#define clr_dcri(base, reg, data)				\
+> +do {								\
+> +	unsigned long flags; 					\
+> +	unsigned int val;					\
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);		\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);		\
+> +	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);		\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_DATA, val & ~(data));	\
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);		\
+> +} while (0)
+> +
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_DCR_NATIVE_H */
