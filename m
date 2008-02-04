@@ -1,22 +1,27 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2A41CDDF46
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 04:38:39 +1100 (EST)
-Message-ID: <47A74D98.4020309@freescale.com>
-Date: Mon, 04 Feb 2008 11:38:32 -0600
-From: Timur Tabi <timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id D9725DDE37
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 05:09:29 +1100 (EST)
+Message-ID: <47A7540E.2010400@freescale.com>
+Date: Mon, 04 Feb 2008 12:06:06 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 05/11] [POWERPC] qe_lib: support for gpio_set_dedicated
-References: <20080203170820.GA18520@localhost.localdomain>
-	<20080203171009.GE28024@localhost.localdomain>
-In-Reply-To: <20080203171009.GE28024@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
+To: Doug Maxey <dwm@enoyolf.org>
+Subject: Re: [PATCH 4/5] ehea: fix phyp checkpatch complaints
+References: <1201832451-23634-1-git-send-email-dwm@austin.ibm.com>
+	<1201832451-23634-5-git-send-email-dwm@austin.ibm.com>
+	<20080201192344.GA4541@loki.buserror.net>
+	<19294.1201927197@bebe.enoyolf.org>
+In-Reply-To: <19294.1201927197@bebe.enoyolf.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
+	Jeff Garzik <jgarzik@garzik.org>,
+	Linux PowerPC List <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+Doug Maxey wrote:
+> On Fri, 01 Feb 2008 13:23:45 CST, Scott Wood wrote:
+>> On Thu, Jan 31, 2008 at 08:20:50PM -0600, Doug Maxey wrote:
+>>>  /* input param R5 */
+>>> -#define H_ALL_RES_QP_EQPO         EHEA_BMASK_IBM(9, 11)
+> ...
+>>> +#define H_ALL_RES_QP_EQPO	  EHEA_BMASK_IBM(9, 11)
+> ...
+>> This was better the way it was (before, it was readable at any tab setting);
+>> checkpatch is overeager to complain on tab/space issues (it's a bit hard to
+>> distinguish indentation from alignment with a regex).
+> 
+> In emacs, with no special offsets, the lines appear to still line up.
 
-> +static int qe_gpio_set_dedicated(struct gpio_chip *gc, unsigned int gpio,
-> +				 int func)
-> +{
-> +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-> +	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
-> +	struct port_regs __iomem *regs = mm_gc->regs;
-> +	struct port_regs *sregs = &qe_gc->saved_regs;
-> +	unsigned long flags;
-> +	u32 mask1 = 1 << (NUM_OF_PINS - (gpio + 1));
-> +	u32 mask2 = 0x3 << (NUM_OF_PINS - (gpio % (NUM_OF_PINS / 2) + 1) * 2);
-> +	bool second_reg = gpio > (NUM_OF_PINS / 2) - 1;
-> +
-> +	spin_lock_irqsave(&qe_gc->lock, flags);
-> +
-> +	if (second_reg)
-> +		clrsetbits_be32(&regs->cpdir2, mask2, sregs->cpdir2 & mask2);
-> +	else
-> +		clrsetbits_be32(&regs->cpdir1, mask2, sregs->cpdir1 & mask2);
-> +
-> +	if (second_reg)
-> +		clrsetbits_be32(&regs->cppar2, mask2, sregs->cppar2 & mask2);
-> +	else
-> +		clrsetbits_be32(&regs->cppar1, mask2, sregs->cppar1 & mask2);
+Are you using a tab size other than 8?
 
-You could combine these into one if-statement.
+> What did happen was spaces were turned to tabs where applicable.
 
-I took a quick look at all of your QE lib patches.  They generally look okay, 
-but I haven't examined them thoroughly enough to formally ACK them.
+I disagree about the applicability. :-)
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+> What editor shows a bad alignment?
+
+Any editor that has been configured to a non-default tab size.
+
+-Scott
