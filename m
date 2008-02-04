@@ -1,22 +1,20 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802041624.31228.ossthema@de.ibm.com>
-References: <200802041404.49960.ossthema@de.ibm.com>
-	<1202136362.7672.5.camel@concordia>
-	<200802041624.31228.ossthema@de.ibm.com>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20080204222047.243670@gmx.net>
+References: <20080201184254.174020@gmx.net>
+	<20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net>
+	<20080201202518.GJ18688@csn.ul.ie> <20080201210656.174030@gmx.net>
+	<20080204104232.GB29484@csn.ul.ie>  <20080204222047.243670@gmx.net>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-iipiDIJciz2breTnx5if"
-Date: Tue, 05 Feb 2008 10:14:21 +1100
-Message-Id: <1202166861.7672.11.camel@concordia>
+	boundary="=-1AXqJ/0d1vMyoWOf4omx"
+Date: Tue, 05 Feb 2008 10:30:16 +1100
+Message-Id: <1202167816.7672.18.camel@concordia>
 Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,45 +26,55 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-iipiDIJciz2breTnx5if
+--=-1AXqJ/0d1vMyoWOf4omx
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-
-On Mon, 2008-02-04 at 16:24 +0100, Jan-Bernd Themann wrote:
-> On Monday 04 February 2008 15:46, Michael Ellerman wrote:
-> > On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
-> > > Add memory remove hotplug support
+On Mon, 2008-02-04 at 23:20 +0100, Gerhard Pircher wrote:
+> -------- Original-Nachricht --------
+> > Datum: Mon, 4 Feb 2008 10:42:32 +0000
+> > Von: Mel Gorman <mel@csn.ul.ie>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machi=
+ne
 >=20
-> > > @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
-> > >  	if (ret)
-> > >  		ehea_info("failed registering reboot notifier");
-> > > =20
-> > > +	ret =3D register_memory_notifier(&ehea_mem_nb);
-> > > +	if (ret)
-> > > +		ehea_info("failed registering memory remove notifier");
+> > > > > > 2. Any chance of seeing a dmesg log?
+> > > > > That's a little bit of a problem. The kernel log in memory doesn'=
+t
+> > > > > show any kernel oops, but is also fragmented (small fragments see=
+m
+> > > > > to have been overwritten with 0x0).
+> > > >=20
+> > > > err, that doesn't sound very healthy.
+> > >
+> > > Yeah, I know. But the platform code hasn't changed much when porting =
+it
+> > > from arch/ppc to arch/powerpc. That's why I'm a little bit lost in th=
+is
+> > > case. :-)
 > > >=20
-> > >  	ret =3D crash_shutdown_register(&ehea_crash_handler);
-> > >  	if (ret)
-> > >  		ehea_info("failed registering crash handler");
 > >=20
-> > You don't do anything except print a message if the registration fails.
-> > What happens when someone tries to remove memory but the memory notifie=
-r
-> > wasn't registered properly? Bang?
+> > I'm at a bit of a loss to guess what might have changed in powerpc code
+> > that would explain this. I've added the linuxppc-dev mailing list in
+> > case they can make a guess.
+> Yes, I'll try to get some comments on the linuxppc-dev mailing list.
 >=20
-> In case the registration fails and somebody tries to free memory:
-> - Driver will not remove the affected memory from the eHEA memory region
->   --> Firmware (phyp) can not free that memory (as marked as used)
->   --> Therefore the removed memory could not be used in an other partitio=
+> > I think you are also going to need to start bisecting searching
+> > specifically for the patch that causes these overwrites.
+> I think I had a similar problem with kernel v2.6.23, too and therefore
+> waited for kernel 2.6.24. So the problem may exist since a long time.
+>=20
+> > It's a virtual address so it depends on the value of CONFIG_KERNEL_STAR=
+T
+> > as to whether this is a user program address or not.
+> AFAIK start_kernel() is called very early in the boot process, were no
+> user or kernel thread is active. I also wonder why the kernel crashes whe=
 n
->=20
-> It makes sense to allow the driver to work anyway. Having no ethernet
-> would not really be a good alternative.
+> the mem boot option is used. Let's see what the linuxppc-dev people say.
 
-Yeah I agree. I wasn't clear from the patch that no notifier -> no
-memory removed. Rather than, no notifier -> memory removed and ehea
-isn't told about it.
+Can you post a fresh bug report? There's lots of details missing from
+the email you forwarded.
 
 cheers
 
@@ -80,16 +88,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-iipiDIJciz2breTnx5if
+--=-1AXqJ/0d1vMyoWOf4omx
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHp5xNdSjSd0sB4dIRAiwaAJ92Njb5iA7hlwLtIey0a+wqOxaoGQCffA8q
-+zpHkSlLUqJ9i1aMOFOhKTg=
-=N88B
+iD8DBQBHp6AIdSjSd0sB4dIRAkNOAJ4l9wltKBymwt8bkEeYv2VtTzhzZQCfZCl/
+20w/qrzLOAGEUKD43gfUGaM=
+=Vg5n
 -----END PGP SIGNATURE-----
 
---=-iipiDIJciz2breTnx5if--
+--=-1AXqJ/0d1vMyoWOf4omx--
