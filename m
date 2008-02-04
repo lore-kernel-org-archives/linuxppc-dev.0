@@ -1,21 +1,35 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C18E8DDE49
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 21:42:39 +1100 (EST)
-Date: Mon, 4 Feb 2008 10:42:32 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
-Message-ID: <20080204104232.GB29484@csn.ul.ie>
-References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie>
-	<20080201200518.174050@gmx.net> <20080201202518.GJ18688@csn.ul.ie>
-	<20080201210656.174030@gmx.net>
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E98C4DDE28
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:04:31 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id m14D4Rq3072692
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 13:04:27 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m14D4RrW2187412
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:04:27 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m14D4Q4v003433
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:04:27 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 0/2] ehea: kdump & memory remove support
+Date: Mon, 4 Feb 2008 14:04:25 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080201210656.174030@gmx.net>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Jeff Garzik <jeff@garzik.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802041404.26138.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,67 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (01/02/08 22:06), Gerhard Pircher didst pronounce:
-> 
-> -------- Original-Nachricht --------
-> > Datum: Fri, 1 Feb 2008 20:25:18 +0000
-> > Von: Mel Gorman <mel@csn.ul.ie>
-> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > CC: linux-kernel@vger.kernel.org
-> > Betreff: Re: Commit for mm/page_alloc.c breaks boot process on my machine
-> 
-> > I meant uninitialised memory but I also wonder could something like this
-> > happen if you are trying to use memory that doesn't exist. i.e. you are
-> > trying to access more memory than you really have but you indicate later
-> > that this is not the case.
->
-> Good question. The memory is in the physical address range from 0x00000000
-> to 0x60000000 (1536MB).
-> 
-> > > > 2. Any chance of seeing a dmesg log?
-> > > That's a little bit of a problem. The kernel log in memory doesn't show
-> > > any kernel oops, but is also fragmented (small fragments seem to have
-> > > been overwritten with 0x0).
-> > 
-> > err, that doesn't sound very healthy.
->
-> Yeah, I know. But the platform code hasn't changed much when porting it
-> from arch/ppc to arch/powerpc. That's why I'm a little bit lost in this
-> case. :-)
-> 
+This patch set adds support for kdump and hotplug memory remove
+to the eHEA driver.=20
 
-I'm at a bit of a loss to guess what might have changed in powerpc code
-that would explain this. I've added the linuxppc-dev mailing list in
-case they can make a guess.
+The "memory remove" patch depends on the following patch that
+has been posted a few days ago. That patch exports the symbols
+=A0- register_memory_notifier()
+=A0- unregister_memory_notifier()
 
-I think you are also going to need to start bisecting searching
-specifically for the patch that causes these overwrites.
+http://lkml.org/lkml/2008/2/1/293
 
-> > > Well, I can't answer this question. The kernel currently locks up when
-> > > loading the INIT program. But that is another problem (I still have to
-> > > bisect it) and doesn't seem to be related to this problem.
-> > 
-> > INIT would be the first MOVABLE allocation so it would be using memory
-> > at the end of the physical adddress range. i.e. the crash happens when
-> > memory towards the end and the only difference between the patch applied
-> > and reverted is when it happens.
-> Oh, that sounds interesting!
-> 
-> > Could you try booting with 16MB less memory using mem=?
-> I started the kernel with 512MB RAM (mem=496) and 1.5GB (mem=1520). The
-> kernel oopes in both cases with a "Unable to handle kernel paging request
-> for data address 0xbffff000", followed by a "Oops: kernel access of bad
-> area, sig 11" message. The end of the stack trace shows the start_here()
-> function.
-> I'm not a PowerPC expert, but if 0xbffff000 is a virtual address, then
-> it would be in the user program address space, right? If it is a physical
-> address, then it is somewhere in the unallocated PCI address space.
-> 
-
-It's a virtual address so it depends on the value of CONFIG_KERNEL_START
-as to whether this is a user program address or not.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Regards,
+Jan-Bernd
