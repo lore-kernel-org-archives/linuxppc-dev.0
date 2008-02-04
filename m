@@ -1,15 +1,22 @@
-Return-Path: <jdl@freescale.com>
-Message-ID: <47A74CAC.2010006@freescale.com>
-Date: Mon, 04 Feb 2008 11:34:36 -0600
-From: Jon Loeliger <jdl@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2A41CDDF46
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 04:38:39 +1100 (EST)
+Message-ID: <47A74D98.4020309@freescale.com>
+Date: Mon, 04 Feb 2008 11:38:32 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Johan Borkhuis <j.borkhuis@dutchspace.nl>
-Subject: Re: Moving from 2.6.14 (ppc) to 2.6.20 (powerpc): problems with
-	PCI-PCI bridge
-References: <47A6D72D.4050100@dutchspace.nl>
-In-Reply-To: <47A6D72D.4050100@dutchspace.nl>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 05/11] [POWERPC] qe_lib: support for gpio_set_dedicated
+References: <20080203170820.GA18520@localhost.localdomain>
+	<20080203171009.GE28024@localhost.localdomain>
+In-Reply-To: <20080203171009.GE28024@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org, Linuxppc-embedded@ozlabs.org
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johan Borkhuis wrote:
-> Hello,
-> 
-> I was using kernel version 2.6.14 (ppc) on a  MVME3100 board (MPC8540 
-> processor). We are planning to move to 2.6.20 (powerpc), but I have some 
-> problems with the initialization of a PCI-PCI bridge.
-> Connected to the MVME3100 board is a PCI-PCI bridge (HiNT, PCI6150, 
-> 3388:0022). When using the 2.6.14 kernel this bridge is initialized 
-> correctly:  it is setup as bus-master, memory and IO are configured, and 
-> the memory allocation on the PCI-bus is correct.
-> When I use 2.6.20 (powerpc) the device is not configured correctly: 
-> bus-master, memory and IO are not set, and the memory space of the 
-> bridge on the PCI bus is set to the minimum value (0xfffff).
-> I can correct these settings by modifying the PCI_COMMAND register to 
-> set the bus-master, memory and IO. I change the size of the memory space 
-> in pci_32.c, by forcing the size to the required setting in 
-> pci_relocate_bridge_resource. But to be honest, I don't like this very 
-> much: modifying registers like this should not be needed, so I guess 
-> there is something wrong in my configuration or setup.
-> 
-> How can I fix this problem in a better way? What could be wrong with my 
-> configuration?
+Anton Vorontsov wrote:
 
+> +static int qe_gpio_set_dedicated(struct gpio_chip *gc, unsigned int gpio,
+> +				 int func)
+> +{
+> +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+> +	struct qe_gpio_chip *qe_gc = to_qe_gpio_chip(mm_gc);
+> +	struct port_regs __iomem *regs = mm_gc->regs;
+> +	struct port_regs *sregs = &qe_gc->saved_regs;
+> +	unsigned long flags;
+> +	u32 mask1 = 1 << (NUM_OF_PINS - (gpio + 1));
+> +	u32 mask2 = 0x3 << (NUM_OF_PINS - (gpio % (NUM_OF_PINS / 2) + 1) * 2);
+> +	bool second_reg = gpio > (NUM_OF_PINS / 2) - 1;
+> +
+> +	spin_lock_irqsave(&qe_gc->lock, flags);
+> +
+> +	if (second_reg)
+> +		clrsetbits_be32(&regs->cpdir2, mask2, sregs->cpdir2 & mask2);
+> +	else
+> +		clrsetbits_be32(&regs->cpdir1, mask2, sregs->cpdir1 & mask2);
+> +
+> +	if (second_reg)
+> +		clrsetbits_be32(&regs->cppar2, mask2, sregs->cppar2 & mask2);
+> +	else
+> +		clrsetbits_be32(&regs->cppar1, mask2, sregs->cppar1 & mask2);
 
-There has been a fair amount of PCI setup reworking done
-somewhat recently.  (.22 and .23, IIRC, and even .24).
-It might be best if you can try 2.6.24.
+You could combine these into one if-statement.
 
-jdl
+I took a quick look at all of your QE lib patches.  They generally look okay, 
+but I haven't examined them thoroughly enough to formally ACK them.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
