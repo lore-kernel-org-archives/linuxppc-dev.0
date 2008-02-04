@@ -1,38 +1,19 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1A760DDF24
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 02:24:39 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m14FOZR9244216
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 15:24:35 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m14FOZ7G5062716
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 15:24:35 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m14FOV5S012437
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 15:24:32 GMT
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
-Date: Mon, 4 Feb 2008 16:24:30 +0100
-References: <200802041404.49960.ossthema@de.ibm.com>
-	<1202136362.7672.5.camel@concordia>
-In-Reply-To: <1202136362.7672.5.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200802041624.31228.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2E120DE098
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 02:44:52 +1100 (EST)
+Date: Tue, 5 Feb 2008 02:10:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] powerpc: free_property() mustn't be __init
+Message-Id: <20080205021005.6bbf8559.sfr@canb.auug.org.au>
+In-Reply-To: <20080130200313.GG29368@does.not.exist>
+References: <20080130200313.GG29368@does.not.exist>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,33 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 04 February 2008 15:46, Michael Ellerman wrote:
-> On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
-> > Add memory remove hotplug support
+--Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
-> >  	if (ret)
-> >  		ehea_info("failed registering reboot notifier");
-> >  
-> > +	ret = register_memory_notifier(&ehea_mem_nb);
-> > +	if (ret)
-> > +		ehea_info("failed registering memory remove notifier");
-> > 
-> >  	ret = crash_shutdown_register(&ehea_crash_handler);
-> >  	if (ret)
-> >  		ehea_info("failed registering crash handler");
-> 
-> You don't do anything except print a message if the registration fails.
-> What happens when someone tries to remove memory but the memory notifier
-> wasn't registered properly? Bang?
+On Wed, 30 Jan 2008 22:03:13 +0200 Adrian Bunk <bunk@kernel.org> wrote:
+>
+> This patch fixes the following section mismatch:
+>=20
+> <--  snip  -->
+>=20
+> ...
+> WARNING: vmlinux.o(.text+0x55648): Section mismatch in reference from the=
+ function .free_node() to the function .init.text:.free_property()
+> ...
+>=20
+> <--  snip  -->
+>=20
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-In case the registration fails and somebody tries to free memory:
-- Driver will not remove the affected memory from the eHEA memory region
-  --> Firmware (phyp) can not free that memory (as marked as used)
-  --> Therefore the removed memory could not be used in an other partition
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-It makes sense to allow the driver to work anyway. Having no ethernet
-would not really be a good alternative.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Regards,
-Jan-Bernd
+--Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHpyrTTgG2atn1QN8RAoVwAKCVJpcm9sf2B/ydDvczvOYQNQhitgCgir4X
+gakVv7jd7vpG9GRDA9dSkZc=
+=n0eB
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Feb_2008_02_10_05_+1100_ElOxRJDe4UQZi5f9--
