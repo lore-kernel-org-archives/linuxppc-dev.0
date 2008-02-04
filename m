@@ -1,16 +1,27 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F0580DE01F
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 05:29:36 +1100 (EST)
-Date: Mon, 4 Feb 2008 21:27:40 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH] PowerPC: 4xx PCIe indirect DCR spinlock fix.
-Message-ID: <20080204182740.GA2898@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <geert@linux-m68k.org>
+Received: from nelson.telenet-ops.be (nelson.telenet-ops.be [195.130.133.66])
+	by ozlabs.org (Postfix) with ESMTP id A8227DDEE6
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 07:11:25 +1100 (EST)
+Date: Mon, 4 Feb 2008 21:11:16 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix ext4 bitops
+In-Reply-To: <20080204045025.GA7494@skywalker>
+Message-ID: <Pine.LNX.4.64.0802042109020.15250@anakin>
+References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
+	<20080201122257.9524c2bb.akpm@linux-foundation.org>
+	<20080201210404.GA31271@wavehammer.waldi.eu.org>
+	<20080203121238.GD18211@osiris.ibm.com>
+	<Pine.LNX.4.64.0802031336240.28712@anakin>
+	<20080204045025.GA7494@skywalker>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Bastian Blank <bastian@waldi.eu.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,91 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since we have mfdcri() and mtdcri() as macros, we can't use constructions, such
-as "mtdcri(base, reg, mfdcri(base, reg) | val)". In this case the mfdcri() stuff
-is not evaluated first. It's evaluated inside the mtdcr() macro and we have
-the dcr_ind_lock spinlock acquired twice. To avoid this error, I've added
-set_dcri() and clr_dcri() macros which set/clear the specified bits.
+On Mon, 4 Feb 2008, Aneesh Kumar K.V wrote:
+> On Sun, Feb 03, 2008 at 01:39:02PM +0100, Geert Uytterhoeven wrote:
+> > On Sun, 3 Feb 2008, Heiko Carstens wrote:
+> > > On Fri, Feb 01, 2008 at 10:04:04PM +0100, Bastian Blank wrote:
+> > > > On Fri, Feb 01, 2008 at 12:22:57PM -0800, Andrew Morton wrote:
+> > > > > On Fri, 1 Feb 2008 21:02:08 +0100
+> > > > > Bastian Blank <bastian@waldi.eu.org> wrote:
+> > > > > > Fix ext4 bitops.
+> > > > > 
+> > > > > This is incomplete.  Please tell us what was "fixed".
+> > > > > 
+> > > > > If it was a build error then please quote the compile error output in the
+> > > > > changelog, as well as the usual description of what the problem is, and how
+> > > > > it was fixed.
+> > > > 
+> > > > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
+> > > > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
+> > > > 
+> > > > The s390 specific bitops uses parts of the generic implementation.
+> > > > Include the correct header.
+> > > 
+> > > That doesn't work:
+> > > 
+> > > fs/built-in.o: In function `ext4_mb_release_inode_pa':
+> > > mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
+> > > fs/built-in.o: In function `ext4_mb_init_cache':
+> > > mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
+> > > 
+> > > This still needs generic_find_next_le_bit which comes
+> > > from lib/find_next_bit.c. That one doesn't get built on s390 since we
+> > > don't set GENERIC_FIND_NEXT_BIT.
+> > > Currently we have the lengthly patch below queued.
+> > 
+> > Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
+> > impression the ext4 people don't (compile) test on big endian machines?
+> 
+> I have sent this patches to linux-arch expecting a review from
+> different arch people. It is true that the patches are tested only on
+> powerpc, x86-64, x86. That's the primary reason of me sending the
+> patches to linux-arch.
+> 
+> http://marc.info/?l=linux-arch&m=119503501127737&w=2
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/sysdev/ppc4xx_pci.c |   13 +++++--------
- include/asm-powerpc/dcr-native.h |   22 ++++++++++++++++++++++
- 2 files changed, 27 insertions(+), 8 deletions(-)
+Sometimes it's difficult to see what can go wrong due to a single patch that
+just adds a #define. Sorry, I missed the lack of prototype for
+generic_find_next_le_bit() and that we don't set GENERIC_FIND_NEXT_BIT,
+just like s390.
 
-diff -pruN linux-2.6.orig/arch/powerpc/sysdev/ppc4xx_pci.c linux-2.6/arch/powerpc/sysdev/ppc4xx_pci.c
---- linux-2.6.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2008-02-04 20:05:37.000000000 +0300
-+++ linux-2.6/arch/powerpc/sysdev/ppc4xx_pci.c	2008-02-04 20:16:33.000000000 +0300
-@@ -645,7 +645,7 @@ static int __init ppc440spe_pciex_core_i
- 	int time_out = 20;
- 
- 	/* Set PLL clock receiver to LVPECL */
--	mtdcri(SDR0, PESDR0_PLLLCT1, mfdcri(SDR0, PESDR0_PLLLCT1) | 1 << 28);
-+	set_dcri(SDR0, PESDR0_PLLLCT1, 1 << 28);
- 
- 	/* Shouldn't we do all the calibration stuff etc... here ? */
- 	if (ppc440spe_pciex_check_reset(np))
-@@ -659,8 +659,7 @@ static int __init ppc440spe_pciex_core_i
- 	}
- 
- 	/* De-assert reset of PCIe PLL, wait for lock */
--	mtdcri(SDR0, PESDR0_PLLLCT1,
--	       mfdcri(SDR0, PESDR0_PLLLCT1) & ~(1 << 24));
-+	clr_dcri(SDR0, PESDR0_PLLLCT1, 1 << 24);
- 	udelay(3);
- 
- 	while (time_out) {
-@@ -712,9 +711,8 @@ static int ppc440spe_pciex_init_port_hw(
- 		mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL7SET1,
- 		       0x35000000);
- 	}
--	val = mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET);
--	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
--	       (val & ~(1 << 24 | 1 << 16)) | 1 << 12);
-+	clr_dcri(SDR0, port->sdr_base + PESDRn_RCSSET, 1 << 24 | 1 << 16)
-+	set_dcri(SDR0, port->sdr_base + PESDRn_RCSSET, 1 << 12);
- 
- 	return 0;
- }
-@@ -1042,8 +1040,7 @@ static int __init ppc4xx_pciex_port_init
- 		port->link = 0;
- 	}
- 
--	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
--	       mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) | 1 << 20);
-+	set_dcri(SDR0, port->sdr_base + PESDRn_RCSSET, 1 << 20);
- 	msleep(100);
- 
- 	return 0;
-diff -pruN linux-2.6.orig/include/asm-powerpc/dcr-native.h linux-2.6/include/asm-powerpc/dcr-native.h
---- linux-2.6.orig/include/asm-powerpc/dcr-native.h	2008-02-04 20:06:34.000000000 +0300
-+++ linux-2.6/include/asm-powerpc/dcr-native.h	2008-02-04 20:16:33.000000000 +0300
-@@ -79,6 +79,28 @@ do {							\
- 	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
- } while (0)
- 
-+#define set_dcri(base, reg, data)				\
-+do {								\
-+	unsigned long flags; 					\
-+	unsigned int val;					\
-+	spin_lock_irqsave(&dcr_ind_lock, flags);		\
-+	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);		\
-+	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);		\
-+	mtdcr(DCRN_ ## base ## _CONFIG_DATA, val | (data));	\
-+	spin_unlock_irqrestore(&dcr_ind_lock, flags);		\
-+} while (0)
-+
-+#define clr_dcri(base, reg, data)				\
-+do {								\
-+	unsigned long flags; 					\
-+	unsigned int val;					\
-+	spin_lock_irqsave(&dcr_ind_lock, flags);		\
-+	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);		\
-+	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);		\
-+	mtdcr(DCRN_ ## base ## _CONFIG_DATA, val & ~(data));	\
-+	spin_unlock_irqrestore(&dcr_ind_lock, flags);		\
-+} while (0)
-+
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_DCR_NATIVE_H */
+And yes, usually I rely on the -mm autocompiler to catch things like
+this, but this time it didn't work out...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
