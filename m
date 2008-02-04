@@ -1,27 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 099DCDDE32
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 05:25:15 +1100 (EST)
-Message-ID: <47A75823.5050001@freescale.com>
-Date: Mon, 04 Feb 2008 12:23:31 -0600
+	by ozlabs.org (Postfix) with ESMTP id 9DB84DE015
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 05:25:19 +1100 (EST)
+Date: Mon, 4 Feb 2008 12:24:21 -0600
 From: Scott Wood <scottwood@freescale.com>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH 1/1] [PPC] 8xx swap bug-fix
+Message-ID: <20080204182421.GA3930@loki.buserror.net>
+References: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
+	<200802021047.32055.yur@emcraft.com> <47A45269.7080403@scram.de>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: Kernel oops while dumping user core.
-References: <DCEAAC0833DD314AB0B58112AD99B93B03EE46B8@ismail.innsys.innovsys.com>	
-	<DCEAAC0833DD314AB0B58112AD99B93B03EE47A4@ismail.innsys.innovsys.com>	
-	<20080131201601.GA10501@loki.buserror.net>	
-	<20080131204158.GV14201@localdomain>
-	<47A235AD.9050107@freescale.com>	 <47A24480.8060103@freescale.com>	
-	<DCEAAC0833DD314AB0B58112AD99B93B03EE4A90@ismail.innsys.innovsys.com>
-	<1202024064.7208.6.camel@pasglop>
-In-Reply-To: <1202024064.7208.6.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47A45269.7080403@scram.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,17 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-01-31 at 16:10 -0600, Rune Torgersen wrote:
->> Scott Wood wrote:
->>> Changing update_mmu_cache() to always call flush_dcache_icache_page()
->>> fixes it, though a better performing fix would probably be to add an
->>> exception table entry for the dcbst.
->> I can confirm that this seems to fix it.
+On Sat, Feb 02, 2008 at 12:22:17PM +0100, Jochen Friedrich wrote:
+> Hi Yuri,
 > 
-> Might be better to avoid the flush when the page isn't readable ?
+> >  Here is the patch which makes Linux-2.6 swap routines operate correctly on
+> > the ppc-8xx-based machines.
+> 
+> is there any 8xx board left which isn't ported to ARCH=powerpc?
 
-Sure, that'd work.  I was trying to avoid a tablewalk to determine that, 
-not noticing the pte argument staring me in the face. :-P
+More importantly, is this something that is also broken in arch/powerpc?  It
+looks like it has the same code...
 
 -Scott
