@@ -1,12 +1,40 @@
-Return-Path: <j.borkhuis@dutchspace.nl>
-Message-ID: <47A6D72D.4050100@dutchspace.nl>
-Date: Mon, 04 Feb 2008 10:13:17 +0100
-From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BA946DDEE1
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 20:29:44 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m149TP4F004669
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 20:29:25 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m149XLSM242202
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 20:33:21 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m149ThTK020335
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 20:29:43 +1100
+Date: Mon, 4 Feb 2008 14:59:34 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] Fix ext4 bitops
+Message-ID: <20080204092934.GE7494@skywalker>
+References: <20080201200208.GA28274@wavehammer.waldi.eu.org>
+	<20080201122257.9524c2bb.akpm@linux-foundation.org>
+	<20080201210404.GA31271@wavehammer.waldi.eu.org>
+	<20080203121238.GD18211@osiris.ibm.com>
+	<Pine.LNX.4.64.0802031336240.28712@anakin>
+	<20080204045025.GA7494@skywalker>
+	<20080204092436.GB7530@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org, Linuxppc-embedded@ozlabs.org
-Subject: Moving from 2.6.14 (ppc) to 2.6.20 (powerpc): problems with PCI-PCI
-	bridge
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080204092436.GB7530@osiris.boeblingen.de.ibm.com>
+Cc: linux-s390@vger.kernel.org, Bastian Blank <bastian@waldi.eu.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,69 +44,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon, Feb 04, 2008 at 10:24:36AM +0100, Heiko Carstens wrote:
+> > > > > | fs/ext4/mballoc.c: In function 'ext4_mb_generate_buddy':
+> > > > > | fs/ext4/mballoc.c:954: error: implicit declaration of function 'generic_find_next_le_bit'
+> > > > > 
+> > > > > The s390 specific bitops uses parts of the generic implementation.
+> > > > > Include the correct header.
+> > > > 
+> > > > That doesn't work:
+> > > > 
+> > > > fs/built-in.o: In function `ext4_mb_release_inode_pa':
+> > > > mballoc.c:(.text+0x95a8a): undefined reference to `generic_find_next_le_bit'
+> > > > fs/built-in.o: In function `ext4_mb_init_cache':
+> > > > mballoc.c:(.text+0x967ea): undefined reference to `generic_find_next_le_bit'
+> > > > 
+> > > > This still needs generic_find_next_le_bit which comes
+> > > > from lib/find_next_bit.c. That one doesn't get built on s390 since we
+> > > > don't set GENERIC_FIND_NEXT_BIT.
+> > > > Currently we have the lengthly patch below queued.
+> > > 
+> > > Similar issue on m68k. As Bastian also saw it on powerpc, I'm getting the
+> > > impression the ext4 people don't (compile) test on big endian machines?
+> > > 
+> > > Gr{oetje,eeting}s,
+> > > 
+> > 
+> > I have sent this patches to linux-arch expecting a review from
+> > different arch people. It is true that the patches are tested only on
+> > powerpc, x86-64, x86. That's the primary reason of me sending the
+> > patches to linux-arch.
+> 
+> Is there anything special I need to do so the ext4 code actually uses
+> ext2_find_next_bit() ? Haven't looked at the ext4 code, but I'd like to
+> test if the s390 implementation is ok.
 
-I was using kernel version 2.6.14 (ppc) on a  MVME3100 board (MPC8540 
-processor). We are planning to move to 2.6.20 (powerpc), but I have some 
-problems with the initialization of a PCI-PCI bridge.
-Connected to the MVME3100 board is a PCI-PCI bridge (HiNT, PCI6150, 
-3388:0022). When using the 2.6.14 kernel this bridge is initialized 
-correctly:  it is setup as bus-master, memory and IO are configured, and 
-the memory allocation on the PCI-bus is correct.
-When I use 2.6.20 (powerpc) the device is not configured correctly: 
-bus-master, memory and IO are not set, and the memory space of the 
-bridge on the PCI bus is set to the minimum value (0xfffff).
-I can correct these settings by modifying the PCI_COMMAND register to 
-set the bus-master, memory and IO. I change the size of the memory space 
-in pci_32.c, by forcing the size to the required setting in 
-pci_relocate_bridge_resource. But to be honest, I don't like this very 
-much: modifying registers like this should not be needed, so I guess 
-there is something wrong in my configuration or setup.
+With the latest linus kernel in git you can test it by mounting  ext4
 
-How can I fix this problem in a better way? What could be wrong with my 
-configuration?
+mount -t ext4dev <device> <mntpoint>
 
-Below is some output from lspci:
-bash-3.00# lspci -t
--[0000:00]-+-01.0
-           +-02.0-[0000:01]--
-           +-03.0-[0000:02-03]--+-00.0
-           |                    +-00.1
-           |                    +-00.2
-           |                    \-04.0-[0000:03]--+-02.0
-           |                                      \-03.0
-           \-04.0
 
-bash-3.00# lspci -vs  02:04.0
-02:04.0 PCI bridge: Hint Corp HiNT HB4 PCI-PCI Bridge (PCI6150) (rev 04) 
-(prog-if 00 [Normal decode])
-        Flags: bus master, medium devsel, latency 0
-        Bus: primary=02, secondary=03, subordinate=03, sec-latency=0
-        I/O behind bridge: 00011000-00011fff
-        Memory behind bridge: 87f00000-87ffffff
-        Prefetchable memory behind bridge: 0000000087e00000-0000000087e00000
-        Capabilities: [dc] Power Management version 1
-        Capabilities: [e4] #06 [0094]
-        Capabilities: [e8] Vital Product Data
-
-After the modifications to the PCI COMMAND register and memory map:
-bash-3.00# lspci -vs  02:04.0
-02:04.0 PCI bridge: Hint Corp HiNT HB4 PCI-PCI Bridge (PCI6150) (rev 04) 
-(prog-if 00 [Normal decode])
-        Flags: stepping, medium devsel
-        Bus: primary=02, secondary=03, subordinate=03, sec-latency=0
-        I/O behind bridge: 00011000-00011fff
-        Memory behind bridge: 82000000-87ffffff
-        Prefetchable memory behind bridge: 0000000000000000-0000000000000000
-        Capabilities: [dc] Power Management version 1
-        Capabilities: [e4] #06 [0094]
-        Capabilities: [e8] Vital Product Data
-
-Kind regards,
-    Johan Borkhuis
-
--- 
-Johan Borkhuis                                  Dutch Space BV
-email:        j.borkhuis@dutchspace.nl          Newtonweg 1
-phone:        071-5245788                       Leiden
-fax:          071-5245499                       The Netherlands
+-aneesh
