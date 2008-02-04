@@ -1,35 +1,21 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4F74DDDF3A
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:04:54 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m14D4ow0237418
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 13:04:50 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m14D4ohE2326668
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:04:50 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m14D4oTn015205
-	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:04:50 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH 2/2] ehea: add memory remove hotplug support
-Date: Mon, 4 Feb 2008 14:04:49 +0100
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200802041404.49960.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 69701DDDF2
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 00:13:27 +1100 (EST)
+Date: Tue, 5 Feb 2008 00:13:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/5] [POWERPC] qe_lib and users: get rid of most
+	device_types and model
+Message-Id: <20080205001318.5fbc60fa.sfr@canb.auug.org.au>
+In-Reply-To: <20080124153959.GA23246@localhost.localdomain>
+References: <20080124151850.GA15190@localhost.localdomain>
+	<20080124153959.GA23246@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,85 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add memory remove hotplug support
+--Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Hi Anton,
 
----
- Comment: This patch depends on the following patch that
- exports the symbols
-  register_memory_notifier()
-  unregister_memory_notifier()
+I know this is late, but a couple of comments anyway.
 
- http://lkml.org/lkml/2008/2/1/293
+On Thu, 24 Jan 2008 18:39:59 +0300 Anton Vorontsov <avorontsov@ru.mvista.co=
+m> wrote:
+>
+> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
+> @@ -65,17 +65,22 @@ static phys_addr_t qebase =3D -1;
+>  phys_addr_t get_qe_base(void)
+>  {
+>  	struct device_node *qe;
+> +	unsigned int size;
+> +	const void *prop;
+> =20
+>  	if (qebase !=3D -1)
+>  		return qebase;
+> =20
+> -	qe =3D of_find_node_by_type(NULL, "qe");
+> -	if (qe) {
+> -		unsigned int size;
+> -		const void *prop =3D of_get_property(qe, "reg", &size);
+> -		qebase =3D of_translate_address(qe, prop);
+> -		of_node_put(qe);
+> -	};
+> +	qe =3D of_find_compatible_node(NULL, NULL, "fsl,qe");
+> +	if (!qe) {
+> +		qe =3D of_find_node_by_type(NULL, "qe");
+> +		if (!qe)
+> +			return qebase;
+> +	}
+> +
+> +	prop =3D of_get_property(qe, "reg", &size);
+> +	qebase =3D of_translate_address(qe, prop);
 
+If you don't care about the returned length (argument three to
+of_get_property), you can just pass NULL (and dispense with "size").
+Also, what happens if prop is NULL?
 
- drivers/net/ehea/ehea_main.c |   25 +++++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
+> @@ -153,16 +158,26 @@ static unsigned int brg_clk =3D 0;
+>  unsigned int get_brg_clk(void)
+>  {
+>  	struct device_node *qe;
+> +	unsigned int size;
+> +	const u32 *prop;
+> +
+>  	if (brg_clk)
+>  		return brg_clk;
+> =20
+> -	qe =3D of_find_node_by_type(NULL, "qe");
+> -	if (qe) {
+> -		unsigned int size;
+> -		const u32 *prop =3D of_get_property(qe, "brg-frequency", &size);
+> -		brg_clk =3D *prop;
+> -		of_node_put(qe);
+> -	};
+> +	qe =3D of_find_compatible_node(NULL, NULL, "fsl,qe");
+> +	if (!qe) {
+> +		qe =3D of_find_node_by_type(NULL, "qe");
+> +		if (!qe)
+> +			return brg_clk;
+> +	}
+> +
+> +	prop =3D of_get_property(qe, "brg-frequency", &size);
+> +	if (!prop || size !=3D sizeof(*prop))
+> +		return brg_clk;
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 21af674..b75afcc 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -35,6 +35,7 @@
- #include <linux/if_ether.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
-+#include <linux/memory.h>
- #include <asm/kexec.h>
- 
- #include <net/ip.h>
-@@ -3480,6 +3481,24 @@ void ehea_crash_handler(void)
- 					      0, H_DEREG_BCMC);
- }
- 
-+static int ehea_mem_notifier(struct notifier_block *nb,
-+                             unsigned long action, void *data)
-+{
-+	switch (action) {
-+	case MEM_OFFLINE:
-+		ehea_info("memory has been removed");
-+		ehea_rereg_mrs(NULL);
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block ehea_mem_nb = {
-+	.notifier_call = ehea_mem_notifier,
-+};
-+
- static int ehea_reboot_notifier(struct notifier_block *nb,
- 				unsigned long action, void *unused)
- {
-@@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
- 	if (ret)
- 		ehea_info("failed registering reboot notifier");
- 
-+	ret = register_memory_notifier(&ehea_mem_nb);
-+	if (ret)
-+		ehea_info("failed registering memory remove notifier");
-+
- 	ret = crash_shutdown_register(&ehea_crash_handler);
- 	if (ret)
- 		ehea_info("failed registering crash handler");
-@@ -3582,6 +3605,7 @@ int __init ehea_module_init(void)
- out3:
- 	ibmebus_unregister_driver(&ehea_driver);
- out2:
-+	unregister_memory_notifier(&ehea_mem_nb);
- 	unregister_reboot_notifier(&ehea_reboot_nb);
- 	crash_shutdown_unregister(&ehea_crash_handler);
- out:
-@@ -3599,6 +3623,7 @@ static void __exit ehea_module_exit(void)
- 	ret = crash_shutdown_unregister(&ehea_crash_handler);
- 	if (ret)
- 		ehea_info("failed unregistering crash handler");
-+	unregister_memory_notifier(&ehea_mem_nb);
- 	kfree(ehea_fw_handles.arr);
- 	kfree(ehea_bcmc_regs.arr);
- 	ehea_destroy_busmap();
--- 
-1.5.2
+You need an of_node_put(qe) before the return ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHpw92TgG2atn1QN8RAtowAKCUl18MfOG7dCDE4YU9YI9/G3V5uwCbBN0u
+l1xo/3IUJg4tHodGl/KYNuk=
+=S5qg
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Feb_2008_00_13_18_+1100_7uvkjqS8iywucj=9--
