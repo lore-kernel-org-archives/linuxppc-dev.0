@@ -1,21 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] ehea: add memory remove hotplug support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802041404.49960.ossthema@de.ibm.com>
-References: <200802041404.49960.ossthema@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-QCqq2JusPKhITC7rc0pv"
-Date: Tue, 05 Feb 2008 01:46:02 +1100
-Message-Id: <1202136362.7672.5.camel@concordia>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B2135DDE3C
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 01:48:27 +1100 (EST)
+Date: Tue, 5 Feb 2008 01:48:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [POWERPC] qe_lib: fix few fluffy negligences (was: Re:
+	[PATCH 1/5] [POWERPC] qe_lib and users: get rid of most device_types
+	and model)
+Message-Id: <20080205014821.863e020d.sfr@canb.auug.org.au>
+In-Reply-To: <20080204134617.GA10377@localhost.localdomain>
+References: <20080124151850.GA15190@localhost.localdomain>
+	<20080124153959.GA23246@localhost.localdomain>
+	<20080205001318.5fbc60fa.sfr@canb.auug.org.au>
+	<20080204134617.GA10377@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__5_Feb_2008_01_48_21_+1100_S9W9_7DHgiW3HsVW"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-QCqq2JusPKhITC7rc0pv
-Content-Type: text/plain
+--Signature=_Tue__5_Feb_2008_01_48_21_+1100_S9W9_7DHgiW3HsVW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2008-02-04 at 14:04 +0100, Jan-Bernd Themann wrote:
-> Add memory remove hotplug support
+On Mon, 4 Feb 2008 16:46:17 +0300 Anton Vorontsov <avorontsov@ru.mvista.com=
+> wrote:
+>
+> On Tue, Feb 05, 2008 at 12:13:18AM +1100, Stephen Rothwell wrote:
+> >=20
+> > If you don't care about the returned length (argument three to
+> > of_get_property), you can just pass NULL (and dispense with "size").
+> > Also, what happens if prop is NULL?
 >=20
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
->=20
-> ---
->  Comment: This patch depends on the following patch that
->  exports the symbols
->   register_memory_notifier()
->   unregister_memory_notifier()
->=20
->  http://lkml.org/lkml/2008/2/1/293
->=20
->=20
->  drivers/net/ehea/ehea_main.c |   25 +++++++++++++++++++++++++
->  1 files changed, 25 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-> index 21af674..b75afcc 100644
-> --- a/drivers/net/ehea/ehea_main.c
-> +++ b/drivers/net/ehea/ehea_main.c
+> All this was in the old code already, I just didn't fix that.
 
-> @@ -3559,6 +3578,10 @@ int __init ehea_module_init(void)
->  	if (ret)
->  		ehea_info("failed registering reboot notifier");
-> =20
-> +	ret =3D register_memory_notifier(&ehea_mem_nb);
-> +	if (ret)
-> +		ehea_info("failed registering memory remove notifier");
+I appreciate that, but it did need fixing.
+
+> - - - -
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Subject: [POWERPC] qe_lib: fix few fluffy negligences
 >=20
->  	ret =3D crash_shutdown_register(&ehea_crash_handler);
->  	if (ret)
->  		ehea_info("failed registering crash handler");
+> One is intoduced by me (of_node_put() absence) and another was
+> present already (not checking for NULL).
+>=20
+> Found by Stephen Rothwell.
+>=20
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-You don't do anything except print a message if the registration fails.
-What happens when someone tries to remove memory but the memory notifier
-wasn't registered properly? Bang?
-
-cheers
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-QCqq2JusPKhITC7rc0pv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Tue__5_Feb_2008_01_48_21_+1100_S9W9_7DHgiW3HsVW
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHpyUqdSjSd0sB4dIRAlyPAJ9PYmPC9I2vIrITHjtSdFBllbxuvgCfR5+g
-vSN9TbNs1YIbuevLozy2Izw=
-=WdXK
+iD8DBQFHpyW7TgG2atn1QN8RAve8AJ9hl5Ngh8bk6gTD2c7kjJfHzbiivQCfc2Dd
+WjXzd3dIB5DRIklUnuhFaWk=
+=Lzv1
 -----END PGP SIGNATURE-----
 
---=-QCqq2JusPKhITC7rc0pv--
+--Signature=_Tue__5_Feb_2008_01_48_21_+1100_S9W9_7DHgiW3HsVW--
