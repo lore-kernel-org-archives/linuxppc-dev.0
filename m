@@ -1,18 +1,21 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id B1D08DDEBD
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 17:10:22 +1100 (EST)
-Date: Mon, 4 Feb 2008 17:08:30 +1100
-To: Sripathi Kodi <sripathik@in.ibm.com>
-Subject: Re: [ppc] Disparity between sys_clock_getres and vdso implementation
-Message-ID: <20080204060830.GS6887@bakeyournoodle.com>
-References: <200801271932.59823.sripathik@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200801271932.59823.sripathik@in.ibm.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	john stultz <johnstul@us.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 91B61DDE0A
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Feb 2008 17:39:58 +1100 (EST)
+Date: Mon, 4 Feb 2008 17:39:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] create modalias file in sysfs for bus vio
+Message-Id: <20080204173952.8afa9129.sfr@canb.auug.org.au>
+In-Reply-To: <20080125170914.GA29887@aepfle.de>
+References: <20080122083328.GA11928@aepfle.de>
+	<20080123010505.d812129e.sfr@canb.auug.org.au>
+	<20080125170914.GA29887@aepfle.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__4_Feb_2008_17_39_52_+1100_iNO8GSQg6zlX/KrS"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 27, 2008 at 07:32:59PM +0530, Sripathi Kodi wrote:
-> Hi Paul,
-> 
-> On PPC, I see a disparity between clock_getres implementations in the
-> vdso and syscall. I am using a IBM Openpower hardware and 2.6.24 kernel
-> with CONFIG_HIGH_RES_TIMERS=y. 
-> 
-> clock_getres call for CLOCK_REALTIME returns 1 millisecond. However,
-> when I edit arch/powerpc/kernel/vdso*/gettimeofday.S to force it to use 
-> sys_clock_getres, I get 1 nanosecond resolution. The code in vdso seems
-> to be returning some pre-defined (incorrect) variables.
-> 
-> Could you please let me know the reason for this? Is it something that
-> should be fixed in vdso?
+--Signature=_Mon__4_Feb_2008_17_39_52_+1100_iNO8GSQg6zlX/KrS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Almost certainly It's something I missed when I enabled highres timers
-on powerpc.
+Hi Olaf,
 
-I'll fix this tomorrow.
+[Sorry, been on vacation]
 
-Yours Tony
+On Fri, 25 Jan 2008 18:09:14 +0100 Olaf Hering <olaf@aepfle.de> wrote:
+>
+> On Wed, Jan 23, Stephen Rothwell wrote:
+>=20
+> > It would be nice if we could factor out the "vio:T%sS%s" string as it is
+> > also used in vio_hotplug().
+>=20
+> What exactly do you have in mind?
+> Creating a tempstring seems to make things more complicated.
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+Yeah, but it would be nice if the format only had to be known/changed in
+one place.  Don't worry about it for now. Or maybe create a "static const
+char []" or #define with the string.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__4_Feb_2008_17_39_52_+1100_iNO8GSQg6zlX/KrS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHprM9TgG2atn1QN8RAhNGAKCaQZYKve3IrPCGChnLJMoBgh7PYQCaApkn
+hS2J6j4lKrgD5BjKCTVvsvE=
+=wy+T
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__4_Feb_2008_17_39_52_+1100_iNO8GSQg6zlX/KrS--
