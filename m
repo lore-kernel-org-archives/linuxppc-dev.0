@@ -1,20 +1,31 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 40E89DDE2B
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 07:56:18 +1100 (EST)
-Date: Mon, 4 Feb 2008 23:56:00 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 08/11] [POWERPC] qe_lib: implement QE GTM support
-Message-ID: <20080204205600.GA20400@localhost.localdomain>
-References: <20080203170820.GA18520@localhost.localdomain>
-	<20080203171019.GH28024@localhost.localdomain>
-	<20080204203003.GA4202@loki.buserror.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9F424DE02A
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 08:02:28 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m14JwlHt005816
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:58:47 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m14L2M61143322
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:02:23 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m14L2LBJ019332
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Feb 2008 14:02:22 -0700
+Date: Mon, 4 Feb 2008 15:01:21 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Bernhard Reiter <bernhard@intevation.de>
+Subject: Re: compile quirk linux-2.6.24 (with workaround)
+Message-ID: <20080204150121.02355054@zod.rchland.ibm.com>
+In-Reply-To: <200802031729.12069.bernhard@intevation.de>
+References: <200802031729.12069.bernhard@intevation.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080204203003.GA4202@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,83 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 04, 2008 at 02:30:04PM -0600, Scott Wood wrote:
-> On Sun, Feb 03, 2008 at 08:10:19PM +0300, Anton Vorontsov wrote:
-> > GTM stands for General-purpose Timers Module and able to generate
-> > timer{1,2,3,4} interrupts.
-> > 
-> > There are several limitations in this support:
-> > 1. Cascaded (32 bit) timers unimplemented (1-2, 3-4).
-> >    This is straightforward to implement when needed, two timers should
-> >    be marked as "requested" and configured as appropriate.
-> > 2. Super-cascaded (64 bit) timers unimplemented (1-2-3-4).
-> >    This is also straightforward to implement when needed, all timers
-> >    should be marked as "requested" and configured as appropriate.
+On Sun, 3 Feb 2008 17:29:05 +0100
+Bernhard Reiter <bernhard@intevation.de> wrote:
+
+> Dear linux powerpc Maintainers and Users,
 > 
-> This isn't QE-specific; the same (as far as I see) timer hardware exists on,
-> for example, mpc8313 and mpc8349.
-
-In my endless todo list. I'll try to evolve it to support fsl gtms in
-general. Though the problem is that, for example, for QE USB we prefer
-QE timers. So, we probably want to pass timers via device tree to
-distinguish them.
-
-> > +config QE_GTM
-> > +	bool
-> > +	help
-> > +	  QE General-Purpose Timers Module support
+> recently I have tried to compile a new kernel on a Debian sarge ppc
+> system (PowerBook5,6 MacRISC3 Power Macintosh).
 > 
-> No bool text?
-
-No. This is silent config option.
-
-> > +struct gtm_timer {
-> > +	unsigned int irq;
-> > +	bool requested;
-> > +
-> > +	u8 __iomem *gtcfr;
-> > +	u16 __iomem *gtmdr;
-> > +	u16 __iomem *gtpsr;
-> > +	u16 __iomem *gtcnr;
-> > +	u16 __iomem *gtrfr;
-> > +	u16 __iomem *gtevr;
-> > +};
+> The build system bailed out with
+>        BOOTCC  arch/powerpc/boot/4xx.o
+>         cc1: error: bad value (440) for -mcpu= switch
+>         make[1]: *** [arch/powerpc/boot/4xx.o] Fehler 1
 > 
-> __be16
-
-Will do.
-
-> > +static struct gtm_timer timers[4];
-> > +static struct qe_timers __iomem *qet;
-> > +static spinlock_t gtm_lock = __SPIN_LOCK_UNLOCKED(gtm_lock);
+> I have tracked this a few steps and the attached patch made the compile for me
+> as my compiler gcc-Version 3.3.5 (Debian 1:3.3.5-13) 
+> cannot produce code for 4xx it seems.
 > 
-> static DEFINE_SPINLOCK(gtm_lock);
+> The "ARCH=ppc64" I have came about also looked wrong, but I do not know
+> if this part of the patch is really necessary.
+> It is just a workaround, as I have no insight of what is really going wrong.
 
-I'm trying to open-code as much as I could (well, not as much, but
-just using common sense :-), so I prefer the first variant, if you
-don't mind. DEFINE_SPINLOCK() and above are equivalents.
+That patch really won't fly.  I'll try go come up with something a bit
+more robust when I can.
 
-This is not something I'm going to argue about, though. Just ask
-one more time and I'll simply change it to DEFINE_SPINLOCK().
-
-> Put these in a struct so multiple timer blocks can be supported (the non-QE
-> chips tend to have two blocks).
-
-Yes, this is in my todo list. Btw, QE chips have three gtms, QE + 2 IMMR.
-
-> > +int qe_reset_ref_timer_16(int num, unsigned int hz, u16 ref)
-> 
-> What does this function do?  What goes in "hz" and "ref"?  Is it periodic or
-> one-shot?
-
-"ref" means that it counts to some reference value and fires the
-interrupt. Hz is count rate. This particular function implements
-"reset reference mode", timer will reset itself when reference
-value is reached. We probably want to add frr flag (free run).
-Will kernel-doc this function.
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+josh
