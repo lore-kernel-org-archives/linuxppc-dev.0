@@ -1,15 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F0AAFDDE07
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 14:17:32 +1100 (EST)
-Date: Tue, 5 Feb 2008 14:17:31 +1100
+	by ozlabs.org (Postfix) with ESMTP id 85B74DDE01
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 14:19:42 +1100 (EST)
+Date: Tue, 5 Feb 2008 14:19:40 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] iSeries: fix section mismatch in viocd
-Message-Id: <20080205141731.49a91ed4.sfr@canb.auug.org.au>
+Subject: [PATCH] [POWERPC] iSeries: fix section mismatch in iseries_veth
+Message-Id: <20080205141940.c6ddb479.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Jens Axboe <axboe@kernel.dk>, ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Jeff Garzik <jgarzik@pobox.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-WARNING: drivers/cdrom/viocd.o(.text+0x504): Section mismatch in reference from the function .viocd_probe() to the function .init.text:.find_capability()
+WARNING: vmlinux.o(.text+0x25dca0): Section mismatch in reference from the function .veth_probe() to the function .init.text:.veth_probe_one()
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/cdrom/viocd.c |    2 +-
+ drivers/net/iseries_veth.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-Jens, can this go in through the powerpc tree?
+Jeff, can this go in through the powerpc tree?
 
-diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
-index 8473b9f..cac06bc 100644
---- a/drivers/cdrom/viocd.c
-+++ b/drivers/cdrom/viocd.c
-@@ -558,7 +558,7 @@ static struct cdrom_device_ops viocd_dops = {
- 	.capability = CDC_CLOSE_TRAY | CDC_OPEN_TRAY | CDC_LOCK | CDC_SELECT_SPEED | CDC_SELECT_DISC | CDC_MULTI_SESSION | CDC_MCN | CDC_MEDIA_CHANGED | CDC_PLAY_AUDIO | CDC_RESET | CDC_DRIVE_STATUS | CDC_GENERIC_PACKET | CDC_CD_R | CDC_CD_RW | CDC_DVD | CDC_DVD_R | CDC_DVD_RAM | CDC_RAM
+diff --git a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
+index 419861c..58d3bb6 100644
+--- a/drivers/net/iseries_veth.c
++++ b/drivers/net/iseries_veth.c
+@@ -1020,7 +1020,7 @@ static const struct ethtool_ops ops = {
+ 	.get_link = veth_get_link,
  };
  
--static int __init find_capability(const char *type)
-+static int find_capability(const char *type)
+-static struct net_device * __init veth_probe_one(int vlan,
++static struct net_device *veth_probe_one(int vlan,
+ 		struct vio_dev *vio_dev)
  {
- 	struct capability_entry *entry;
- 
+ 	struct net_device *dev;
 -- 
 1.5.4
 
