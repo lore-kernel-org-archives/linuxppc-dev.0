@@ -1,37 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 58EFEDDE34
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 02:39:35 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m15FdVZ6030339
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 10:39:31 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m15FdVvE311200
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 10:39:31 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m15FdVSR005121
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 10:39:31 -0500
-Date: Tue, 5 Feb 2008 09:38:20 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-Message-ID: <20080205093820.5918a216@zod.rchland.ibm.com>
-In-Reply-To: <fa686aa40802050724o692ef9e7yf51945225f56da5b@mail.gmail.com>
-References: <200802031729.12069.bernhard@intevation.de>
-	<20080204095121.GA18167@powerlinux.fr>
-	<20080205070833.3a5b7c11@zod.rchland.ibm.com>
-	<20080205143926.GA9709@powerlinux.fr>
-	<20080205091548.724c4e20@zod.rchland.ibm.com>
-	<fa686aa40802050724o692ef9e7yf51945225f56da5b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Bernhard
-	Reiter <bernhard@intevation.de>, debian-powerpc@lists.debian.org,
-	paulus@samba.org
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <B819C3FE-9DD3-4B49-A8C4-48D507FBF0C4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080205024049.GC28846@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 2/10] sbc8560: Add v1 device tree source for Wind River
+	SBC8560 board
+Date: Tue, 5 Feb 2008 09:44:23 -0600
+References: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
+	<7107e511a0f989ad55335855fa0f241f09eff52f.1201217172.git.paul.gortmaker@windriver.com>
+	<20080201075408.GC18684@localhost.localdomain>
+	<FF018A8D-21AC-4F05-887B-66B99A0D444C@kernel.crashing.org>
+	<20080205024049.GC28846@localhost.localdomain>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,35 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 5 Feb 2008 08:24:38 -0700
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-> On 2/5/08, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > > I mean, if you have not included 4xx support in the kernel, as is the
-> > > case here, it does not make sense to add the 4xx bootwrapper code, no ?
-> >
-> > It does, in a manner.  There are both generic and platform specific
-> > pieces to the bootwrapper.  Having everything always built helps keep
-> > the generic bits from breaking, which is important as they're often
-> > tightly coupled.  That's at least the reason I can think of.
-> >
-> > The powerpc maintainers have been over this quite a bit and I don't see
-> > it changing anytime soon.
-> 
-> That would mean we're dropping support for compilers which can't build
-> 405/440 specific wrapper bits (or other core specific quirks that need
-> to go in the wrapper)  That doesn't sound appropriate to me.
+On Feb 4, 2008, at 8:40 PM, David Gibson wrote:
 
-No it doesn't.  At least not yet.  I said I'd try to come up with a
-patch soon-ish.  We haven't failed!(yet)  Also, this isn't a
-core-specific quirk. It's an architected instruction of Book III-E in
-the PowerPC ISA.  I can't help it if other chips don't implement this
-wonderful control mechanism ;)
+> On Fri, Feb 01, 2008 at 08:46:32AM -0600, Kumar Gala wrote:
+>>
+>> On Feb 1, 2008, at 1:54 AM, David Gibson wrote:
+>>
+>>> On Thu, Jan 24, 2008 at 06:41:24PM -0500, Paul Gortmaker wrote:
+> [snip]
+>>>> +		epld@5,0 {
+>>>
+>>> I'm not entirely convinced on this two-level representation.  I  
+>>> think
+>>> the FSL people need to get together and define a binding (or set of
+>>> bindings) for their various chipselect style external bus bridges.
+>>
+>> It seems reasonable if you had a FPGA off of the localbus to have a
+>> two level representation.  One for the localbus controller on the FSL
+>> part and the child to describe the FPGA.
+>>
+>> What are you expecting beyond what we have today?  I guess I'm asking
+>> what's missing from the localbus nodes we have?
+>
+> Sorry, I was probably misleading.  All I really meant is that I don't
+> know enough about these FSL bus bridge arrangements to assess if this
+> representation is the most sensible one.  I'm presuming that this
+> chipselect bridge unit is a more-or-less standard ASIC appearing on
+> lots of the FSL chips, so it would be nice to have a standard binding
+> for them, as we do for the roughly-equivalent EBC bridge on 4xx.
 
-Taking a step back though, there will always be odd cases like this as
-we move forward.  Toolchain XXX will eventually not support instruction
-YYYY which will eventually be used, etc.  I'll try to make this
-specific case work because it's scope is quite limited.  But this
-problem as a whole will still remain.
+Is there a writeup for EBC?  I'll take a look at it and see if it  
+makes senses for the freescale 'localbus'.
 
-josh
+- k
