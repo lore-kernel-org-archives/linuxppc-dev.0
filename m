@@ -1,15 +1,15 @@
-Return-Path: <Steve.Gray@peek-traffic.co.uk>
-Received: from mail.peek.co.uk (mail.peek-traffic.co.uk [194.75.137.2])
-	by ozlabs.org (Postfix) with ESMTP id E3C33DDE00
+Return-Path: <hans.lehmann@ritter-elektronik.de>
+Received: from mail.textile.saurer.com (mail.textile.saurer.com
+	[193.158.88.134]) by ozlabs.org (Postfix) with ESMTP id C86EEDDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Feb 2008 20:38:02 +1100 (EST)
+	Wed,  6 Feb 2008 00:39:54 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: powerPC 860 Port to asm/powerpc, early_dev_init problem
-Date: Tue, 5 Feb 2008 09:24:28 -0000
-Message-ID: <3F0066B9E04389498E53CD30B908295C015431FB@UKSV0008.peek.prv>
-From: "Gray, Steve - UK" <Steve.Gray@peek-traffic.co.uk>
+	charset="US-ASCII"
+Subject: Reboot at die_probe
+Date: Tue, 5 Feb 2008 14:39:48 +0100
+Message-ID: <D75C3E75C6176746B68E0EF7245F616F611B24@SRVEXC01.sts.saurer.vpn>
+From: "Lehmann, Hans (Ritter Elektronik)" <hans.lehmann@ritter-elektronik.de>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,32 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi List
-I have a PPC860 on our own embedded platform.
-I using a denx kernel snapshot from the git repository date 4 Feb 2008
-I am using U-boot 1.3.1 with CONFIG_OF_LIBFDT enable, and have ported
-into the kernel tree, the necessary makefiles and Kconfig changes, to
-give me a kernel that now compiles,
+Hi ,
 
-I am able to get this to work as required with asm/ppc, and drop to a
-Busybox prompt and mount rootFS over NFS
-Oon reading the list this will be dropped this summer, so I have
-undertaken the role to port this into the asm/powerpc branch.
-I have a problem that I am not able to understand and am looking to the
-list for some help.
+i have strange problems with my cf card driver on our MPC5200 embedded
+board. The cf card is mapped to memory space and interrupt is connected
+to IRQ1(rising edge sensitive). First the driver was written for Kernel
+2.6.14 and worked pretty. Now I  ported it to Kernel 2.6.24 and get
+strange behaviour I do not understand.
+After I load the modul, the kernel start to reboot when i call function
+ide_device_add(). The reboot appears while device responses in function
+"actual_try_to_identify" (ide-probe.c), after kernel sent the identify
+command (0xec) to status/command register (hwif->outb(cmd,
+DIE_COMMAND_REG;).=20
+To figure out whether card will be identify correct, I changed irq from
+edge sensitive to level sensitive and card will be identified proper,
+but get error "lost interrupt".
 
-Using a BDI-3000 I can step through the kernel startup code and
-encounter a problem as described below
+I habe no idea what happend.
 
-early_init_devtree prom.c @ line 1042, params =3D 0x7ffec0
-Call of_scan_flat_dt prom.c @ line 1058 now my debugger is showing the
-passed value as 0xc07ffec0
-This now results in a bus error when accessing *p at line 104 of prom.c
+Kindly regards
 
-This Flat device tree is new to me, and to many others I guess.=20
-Im pretty sure that I may of simply overlooked something with this new
-flat device tree but am not sure what.=20
-I also don't understand why the parameter has changed?
-Can any body point me back into the right direction?
-Thanks in advance
-Steve
+Hans
+ =20
