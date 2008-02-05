@@ -1,21 +1,16 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CCDFCDDE0A
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 11:20:02 +1100 (EST)
-In-Reply-To: <12021668462559-git-send-email-afleming@freescale.com>
-References: <12021668462559-git-send-email-afleming@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DB08EDC2-85D1-464B-A986-7BFC570833DF@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] Add oprofile support for e300
-Date: Mon, 4 Feb 2008 18:19:36 -0600
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] Search for and publish cell OF platform devices
+	earlier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1201240265.git.michael@ellerman.id.au>
+References: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1201240265.git.michael@ellerman.id.au>
+Content-Type: text/plain
+Date: Tue, 05 Feb 2008 11:19:46 +1100
+Message-Id: <1202170786.7079.24.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +21,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 4, 2008, at 17:14, Andy Fleming wrote:
+On Fri, 2008-01-25 at 16:59 +1100, Michael Ellerman wrote:
+> Currently cell publishes OF devices at device_initcall() time, which
+> means the earliest a driver can bind to a device is also device_initcall()
+> time. We have a driver we want to register before other devices, so
+> publish the devices at subsys_initcall() time.
+> 
+> This should not cause any behaviour change for existing drivers, as they
+> are still bound at device_initcall() time.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-> The e300 c3 and c4 variants support hardware performance monitor  
-> counters which
-> are identical to those found in the e500.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Please ignore.  I will send a new version that includes all the  
-changes I apparently missed a change I had already committed.
-
-I will send a new version of both oprofile patches so as to make the  
-first patch easier to read, too.
+> ---
+>  arch/powerpc/platforms/cell/setup.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+> index e6534b5..a7f609b 100644
+> --- a/arch/powerpc/platforms/cell/setup.c
+> +++ b/arch/powerpc/platforms/cell/setup.c
+> @@ -98,7 +98,7 @@ static int __init cell_publish_devices(void)
+>  	}
+>  	return 0;
+>  }
+> -machine_device_initcall(cell, cell_publish_devices);
+> +machine_subsys_initcall(cell, cell_publish_devices);
+>  
+>  static void cell_mpic_cascade(unsigned int irq, struct irq_desc *desc)
+>  {
