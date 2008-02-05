@@ -1,20 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA661DDF7C
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 07:53:01 +1100 (EST)
-Subject: Re: [PATCH] update_mmu_cache: Don't dcbst non-readable pages.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080205194326.GA13047@loki.buserror.net>
-References: <20080205194326.GA13047@loki.buserror.net>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 07:52:38 +1100
-Message-Id: <1202244758.7079.72.camel@pasglop>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 820F2DDE26
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 08:12:22 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m15LCJCU006796
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 16:12:19 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m15LCIoK071680
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 14:12:19 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m15LCI5r030413
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 14:12:18 -0700
+Date: Tue, 5 Feb 2008 15:12:16 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: jgarzik@pobox.com
+Subject: Re: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii
+	matching table
+Message-ID: <20080205151216.4ff3c32a@weaponx>
+In-Reply-To: <1201734898.8146.0.camel@pasglop>
+References: <1200476230-14026-1-git-send-email-sr@denx.de>
+	<1200477239.6755.21.camel@pasglop>
+	<20080116090110.1b7b2f00@zod.rchland.ibm.com>
+	<200801300716.52463.sr@denx.de> <1201734898.8146.0.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stefan Roese <sr@denx.de>, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 31 Jan 2008 10:14:58 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Tue, 2008-02-05 at 13:43 -0600, Scott Wood wrote:
-> Currently, update_mmu_cache will crash if given a no-access PTE.  There's no
-> need to synchronize dcache/icache unless it's an exec mapping -- however,
-> due to the existence of older glibc versions that execute out of a
-> read-but-no-exec page, readability is tested instead.
 > 
-> This assumes no exec-only mappings; if such mappings become supported, they
-> will need to go through the kmap_atomic() version of dcache/icache
-> synchronization.
+> On Wed, 2008-01-30 at 07:16 +0100, Stefan Roese wrote:
+> > On Wednesday 16 January 2008, Josh Boyer wrote:
+> > > On Wed, 16 Jan 2008 20:53:59 +1100
+> > >
+> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > > On Wed, 2008-01-16 at 10:37 +0100, Stefan Roese wrote:
+> > > > > With the removal the the "rgmii-interface" device_type property from
+> > > > > the dts files, the newemac driver needs an update to only rely on
+> > > > > compatible property.
+> > > > >
+> > > > > Signed-off-by: Stefan Roese <sr@denx.de>
+> > > >
+> > > > I need to test if it works on CAB, can't change the DT on those. I'll
+> > > > let you know tomorrow.
+> > >
+> > > This should be fine on CAB.  The rgmii node has:
+> > >
+> > > compatible = "ibm,rgmii-axon", "ibm,rgmii"
+> > >
+> > > so the match should still catch on the latter.
+> > 
+> > How about this patch? Ben, if you think this is ok then we should make sure 
+> > that it goes in in this merge-window, since the other dts patch relies on it.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> It's fine.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> This fixes the following bug:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051080.html
-> 
->  arch/powerpc/mm/mem.c |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index e812244..c7d7bd4 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -483,7 +483,12 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
->  		 */
->  		_tlbie(address, 0 /* 8xx doesn't care about PID */);
->  #endif
-> -		if (!PageReserved(page)
-> +		/* The _PAGE_USER test should really be _PAGE_EXEC, but
-> +		 * older glibc versions execute some code from no-exec
-> +		 * pages, which for now we are supporting.  If exec-only
-> +		 * pages are ever implemented, this will have to change.
-> +		 */
-> +		if (!PageReserved(page) && (pte_val(pte) & _PAGE_USER)
->  		    && !test_bit(PG_arch_1, &page->flags)) {
->  			if (vma->vm_mm == current->active_mm) {
->  				__flush_dcache_icache((void *) address);
+Jeff, any chance this can get into .25 soon?  I have another patch
+queued up behind this one that requires it, and I don't see it in any
+of your trees or branches.
+
+Or, if you aren't opposed, I can take it through Paul's tree with your
+Ack.
+
+josh
