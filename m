@@ -1,20 +1,21 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC8ABDDED0
+	by ozlabs.org (Postfix) with ESMTP id 5502FDDE44
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Feb 2008 01:58:40 +1100 (EST)
-Date: Tue, 5 Feb 2008 15:58:34 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: IngoM <ingo.maindorfer@ipm.fraunhofer.de>
-Subject: Re: [Virtex 4 PPC] Which Linux?
-Message-ID: <20080205145834.GQ13945@pengutronix.de>
-References: <15268468.post@talk.nabble.com>
+	Wed,  6 Feb 2008 02:48:56 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JMQ2W-00028C-Uo
+	for linuxppc-embedded@ozlabs.org; Tue, 05 Feb 2008 07:48:52 -0800
+Message-ID: <15291528.post@talk.nabble.com>
+Date: Tue, 5 Feb 2008 07:48:52 -0800 (PST)
+From: "Desroches L." <ludovic.desroches@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [Virtex4] kernel2.6 or distribution
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <15268468.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +26,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 04, 2008 at 05:54:55AM -0800, IngoM wrote:
-> 2) Linux
-> I'd like to build my kernel and filesystem myself. But which way to go?
-> Using OE, buildroot, ELDK...
-> Can you please provide some starting points for me?
 
-ptxdist would be another alternative.
+Hi,
 
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+Sorry for my English, I am a French student. For my internship, I have to
+implement Linux on a Virtex4.
+
+I know a few things about the Virtex4 because I am specialized in digital
+electronic (VHDL). I have to choose a solution for the Linux to implement.
+At this stage, I have some problems to determine the best solution probably
+because things are not clear for me whereas I have read a book about Linux
+embedded and seen a lot of websites.
+
+I have seen several distributions (maybe my vocable is false) from
+MontaVista, LynuxWorks and others. I have seen also kernel2.6 for Virtex4
+(http://git.xilinx.com/cgi-bin/gitweb.cgi?p=3Dlinux-2.6-xlnx.git;a=3Dsummar=
+y). I
+would like to understand the difference between these two things.
+
+If I have understood MontaVista for example offers a solution with a C
+library and drivers, isn't it ? So is it a better solution than kernel2.6 ?
+
+I prefer to start with the kernel given by xilinx, it is an internship so
+the aim is to learn the more I can but I have to convince my tutor that it
+is a better solution than MontaVista, BlueCat or =C2=B5C/OSII. Do you have =
+some
+arguments ?
+
+Thanks for your help
+
+Best Regards
+
+---
+
+Desroches Ludovic
+ESIEE engineer : http://www.esiee.fr
+
+
+--=20
+View this message in context: http://www.nabble.com/-Virtex4--kernel2.6-or-=
+distribution-tp15291528p15291528.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
