@@ -1,10 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <9efb8c0e313840ccb1bdf918406cdc812ec5de94.1202212897.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Fix legacy serial search for opb bus ports
-Date: Tue,  5 Feb 2008 23:01:50 +1100 (EST)
-Cc: paul.gortmaker@windriver.com
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id A657CDDDF9
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 23:59:18 +1100 (EST)
+Message-ID: <47A85DD8.4080300@ru.mvista.com>
+Date: Tue, 05 Feb 2008 16:00:08 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-mm1: ppc32: too few arguments to function 'reserve_bootmem'
+References: <20080203171634.58ab668b.akpm@linux-foundation.org>	<200802042129.03065.m.kozlowski@tuxland.pl>
+	<20080204144036.cf22a402.akpm@linux-foundation.org>
+In-Reply-To: <20080204144036.cf22a402.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+	paulus@samba.org, bwalle@suse.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,36 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch to legacy_serial.c (1a7507c7da2df6856e085e0fbb0c9ea8c12ac4e,
-Reduce code duplication in legacy_serial, add UART parent types) changed
-the semantics for opb ports from type = "opb" || compatible = "ibm,opb"
-to type = "opb" && compatible = "ibm,opb".
+Hello.
 
-The result is serial ports on our QS21s (Cell blades) don't get found,
-and for some reason the machine doesn't boot at all - possibly it's
-panicking due to lack of a console?
+Andrew Morton wrote:
 
-The fix is to add two entries to the of_device_id table, one that looks
-for type = "opb" and the other compatible = "ibm,opb".
+>>	This is from ppc32:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/legacy_serial.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+>>  CC      arch/powerpc/mm/mem.o
+>>arch/powerpc/mm/mem.c: In function 'do_init_bootmem':
+>>arch/powerpc/mm/mem.c:256: error: too few arguments to function 'reserve_bootmem'
+>>arch/powerpc/mm/mem.c:261: error: too few arguments to function 'reserve_bootmem'
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 76b862b..61dd174 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -36,7 +36,8 @@ static struct legacy_serial_info {
- static struct __initdata of_device_id parents[] = {
- 	{.type = "soc",},
- 	{.type = "tsi-bridge",},
--	{.type = "opb", .compatible = "ibm,opb",},
-+	{.type = "opb", },
-+	{.compatible = "ibm,opb",},
- 	{.compatible = "simple-bus",},
- 	{.compatible = "wrs,epld-localbus",},
- };
--- 
-1.5.2.rc1.1884.g59b20
+>>Leftover from introduce-flags-for-reserve_bootmem.patch?
+
+> Yes, I've had to fix that patch many times.
+
+> --- a/arch/powerpc/mm/mem.c~introduce-flags-for-reserve_bootmem-powerpc-fix
+> +++ a/arch/powerpc/mm/mem.c
+> @@ -253,12 +253,13 @@ void __init do_init_bootmem(void)
+>  				     lmb_size_bytes(&lmb.reserved, i) - 1;
+>  		if (addr < total_lowmem)
+>  			reserve_bootmem(lmb.reserved.region[i].base,
+> -					lmb_size_bytes(&lmb.reserved, i));
+> +					lmb_size_bytes(&lmb.reserved, i),
+> +					BOOTMEM_DEFAULT);
+>  		else if (lmb.reserved.region[i].base < total_lowmem) {
+>  			unsigned long adjusted_size = total_lowmem -
+>  				      lmb.reserved.region[i].base;
+>  			reserve_bootmem(lmb.reserved.region[i].base,
+> -					adjusted_size);
+> +					adjusted_size, BOOTMEM_DWEFAULT);
+
+    BOOTMEM_DWEFAULT, are you sure? :-)
+
+WBR, Sergei
