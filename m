@@ -1,19 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F3049DDF36
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 06:43:26 +1100 (EST)
-Date: Tue, 5 Feb 2008 13:43:26 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH] update_mmu_cache: Don't dcbst non-readable pages.
-Message-ID: <20080205194326.GA13047@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 36F5CDDEFC
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 07:48:04 +1100 (EST)
+Subject: Re: [RFC][PATCH] PowerPC: 4xx PCIe indirect DCR spinlock fix.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20080205183649.GA5136@ru.mvista.com>
+References: <20080205183649.GA5136@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 06 Feb 2008 07:47:41 +1100
+Message-Id: <1202244461.7079.65.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, update_mmu_cache will crash if given a no-access PTE.  There's no
-need to synchronize dcache/icache unless it's an exec mapping -- however,
-due to the existence of older glibc versions that execute out of a
-read-but-no-exec page, readability is tested instead.
 
-This assumes no exec-only mappings; if such mappings become supported, they
-will need to go through the kmap_atomic() version of dcache/icache
-synchronization.
+On Tue, 2008-02-05 at 21:36 +0300, Valentine Barshak wrote:
+> Since we have mfdcri() and mtdcri() as macros, we can't use constructions, such
+> as "mtdcri(base, reg, mfdcri(base, reg) | val)". In this case the mfdcri() stuff
+> is not evaluated first. It's evaluated inside the mtdcri() macro and we have
+> the dcr_ind_lock spinlock acquired twice. To avoid this error, I've added
+> __mfdcri()/__mtdcri() inline functions that take the lock after register name
+> fix-up.
+> 
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-This fixes the following bug:
-http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051080.html
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/mm/mem.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index e812244..c7d7bd4 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -483,7 +483,12 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
- 		 */
- 		_tlbie(address, 0 /* 8xx doesn't care about PID */);
- #endif
--		if (!PageReserved(page)
-+		/* The _PAGE_USER test should really be _PAGE_EXEC, but
-+		 * older glibc versions execute some code from no-exec
-+		 * pages, which for now we are supporting.  If exec-only
-+		 * pages are ever implemented, this will have to change.
-+		 */
-+		if (!PageReserved(page) && (pte_val(pte) & _PAGE_USER)
- 		    && !test_bit(PG_arch_1, &page->flags)) {
- 			if (vma->vm_mm == current->active_mm) {
- 				__flush_dcache_icache((void *) address);
--- 
-1.5.3.8
+> ---
+>  include/asm-powerpc/dcr-native.h |   49 +++++++++++++++++++++++----------------
+>  1 files changed, 30 insertions(+), 19 deletions(-)
+> 
+> diff -pruN linux-2.6.orig/include/asm-powerpc/dcr-native.h linux-2.6.bld/include/asm-powerpc/dcr-native.h
+> --- linux-2.6.orig/include/asm-powerpc/dcr-native.h	2008-02-05 16:44:54.000000000 +0300
+> +++ linux-2.6.bld/include/asm-powerpc/dcr-native.h	2008-02-05 19:11:55.000000000 +0300
+> @@ -59,25 +59,36 @@ do {								\
+>  /* R/W of indirect DCRs make use of standard naming conventions for DCRs */
+>  extern spinlock_t dcr_ind_lock;
+>  
+> -#define mfdcri(base, reg)				\
+> -({							\
+> -	unsigned long flags; 				\
+> -	unsigned int val;				\
+> -	spin_lock_irqsave(&dcr_ind_lock, flags);	\
+> -	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);	\
+> -	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);	\
+> -	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+> -	val;						\
+> -})
+> -
+> -#define mtdcri(base, reg, data)				\
+> -do {							\
+> -	unsigned long flags; 				\
+> -	spin_lock_irqsave(&dcr_ind_lock, flags);	\
+> -	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);	\
+> -	mtdcr(DCRN_ ## base ## _CONFIG_DATA, data);	\
+> -	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+> -} while (0)
+> +static inline unsigned __mfdcri(int base_addr, int base_data, int reg)
+> +{
+> +	unsigned long flags;
+> +	unsigned int val;
+> +
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);
+> +	__mtdcr(base_addr, reg);
+> +	val = __mfdcr(base_data);
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> +	return val;
+> +}
+> +
+> +static inline void __mtdcri(int base_addr, int base_data, int reg,
+> +			    unsigned val)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);
+> +	__mtdcr(base_addr, reg);
+> +	__mtdcr(base_data, val);
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> +}
+> +
+> +#define mfdcri(base, reg)	__mfdcri(DCRN_ ## base ## _CONFIG_ADDR,	\
+> +					 DCRN_ ## base ## _CONFIG_DATA,	\
+> +					 reg)
+> +
+> +#define mtdcri(base, reg, data)	__mtdcri(DCRN_ ## base ## _CONFIG_ADDR,	\
+> +					 DCRN_ ## base ## _CONFIG_DATA,	\
+> +					 reg, data)
+>  
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* __KERNEL__ */
