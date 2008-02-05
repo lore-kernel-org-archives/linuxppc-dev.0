@@ -1,15 +1,16 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] Search for and publish cell OF platform devices
-	earlier
+Subject: Re: [PATCH 2/4] Create and hook up of_platform_device_shutdown
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1201240265.git.michael@ellerman.id.au>
+In-Reply-To: <bf48a30aa9f58fa6e153f679eb0eb6a4864ebdc3.1201240265.git.michael@ellerman.id.au>
 References: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1201240265.git.michael@ellerman.id.au>
+	<bf48a30aa9f58fa6e153f679eb0eb6a4864ebdc3.1201240265.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Tue, 05 Feb 2008 11:19:46 +1100
-Message-Id: <1202170786.7079.24.camel@pasglop>
+Date: Tue, 05 Feb 2008 11:19:49 +1100
+Message-Id: <1202170789.7079.26.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: tnt@246tNt.com, davem@davemloft.net, linuxppc-dev@ozlabs.org,
+	sparclinux@vger.kernel.org, cbe-oss-dev@ozlabs.org, m8@semihalf.com
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,32 +23,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 On Fri, 2008-01-25 at 16:59 +1100, Michael Ellerman wrote:
-> Currently cell publishes OF devices at device_initcall() time, which
-> means the earliest a driver can bind to a device is also device_initcall()
-> time. We have a driver we want to register before other devices, so
-> publish the devices at subsys_initcall() time.
-> 
-> This should not cause any behaviour change for existing drivers, as they
-> are still bound at device_initcall() time.
+> Although of_platform_device's can have a shutdown routine, at the moment
+> the bus code doesn't actually call it. So add the required glue to
+> hook the shutdown routine.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/platforms/cell/setup.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  drivers/of/platform.c |   10 ++++++++++
+>  1 files changed, 10 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
-> index e6534b5..a7f609b 100644
-> --- a/arch/powerpc/platforms/cell/setup.c
-> +++ b/arch/powerpc/platforms/cell/setup.c
-> @@ -98,7 +98,7 @@ static int __init cell_publish_devices(void)
->  	}
->  	return 0;
+> 
+> CC various folks who've written/touched of_platform_drivers which already
+> have shutdown routines. These routines have never been called so they're
+> about to get their first testing.
+> 
+> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+> index b47bb2d..ca09a63 100644
+> --- a/drivers/of/platform.c
+> +++ b/drivers/of/platform.c
+> @@ -85,6 +85,15 @@ static int of_platform_device_resume(struct device * dev)
+>  	return error;
 >  }
-> -machine_device_initcall(cell, cell_publish_devices);
-> +machine_subsys_initcall(cell, cell_publish_devices);
 >  
->  static void cell_mpic_cascade(unsigned int irq, struct irq_desc *desc)
+> +static void of_platform_device_shutdown(struct device *dev)
+> +{
+> +	struct of_device *of_dev = to_of_device(dev);
+> +	struct of_platform_driver *drv = to_of_platform_driver(dev->driver);
+> +
+> +	if (dev->driver && drv->shutdown)
+> +		drv->shutdown(of_dev);
+> +}
+> +
+>  int of_bus_type_init(struct bus_type *bus, const char *name)
 >  {
+>  	bus->name = name;
+> @@ -93,6 +102,7 @@ int of_bus_type_init(struct bus_type *bus, const char *name)
+>  	bus->remove = of_platform_device_remove;
+>  	bus->suspend = of_platform_device_suspend;
+>  	bus->resume = of_platform_device_resume;
+> +	bus->shutdown = of_platform_device_shutdown;
+>  	return bus_register(bus);
+>  }
+>  
