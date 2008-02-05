@@ -1,24 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C3966DE0E5
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 03:09:42 +1100 (EST)
-Date: Tue, 5 Feb 2008 10:10:17 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-Message-ID: <20080205161017.GA26196@lixom.net>
-References: <200802031729.12069.bernhard@intevation.de>
-	<20080204095121.GA18167@powerlinux.fr>
-	<20080205070833.3a5b7c11@zod.rchland.ibm.com>
-	<20080205143926.GA9709@powerlinux.fr>
-	<20080205091548.724c4e20@zod.rchland.ibm.com>
-	<fa686aa40802050724o692ef9e7yf51945225f56da5b@mail.gmail.com>
-	<20080205093820.5918a216@zod.rchland.ibm.com>
-MIME-Version: 1.0
+Return-Path: <mporter@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CD62FDDF6A
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 03:24:50 +1100 (EST)
+Date: Tue, 5 Feb 2008 10:23:14 -0600
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Zhang Wei <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 4/6] Add multi mport support.
+Message-ID: <20080205162314.GA20177@gate.crashing.org>
+References: <1201689053956-git-send-email-wei.zhang@freescale.com>
+	<12016890621727-git-send-email-wei.zhang@freescale.com>
+	<120168907160-git-send-email-wei.zhang@freescale.com>
+	<12016890773706-git-send-email-wei.zhang@freescale.com>
+	<AF4B8466-C1CE-4FFB-8341-4BFC1CB76116@kernel.crashing.org>
+	<ABF87B0B6A38C0458E319AC973ED68AEBD0677@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080205093820.5918a216@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Bernhard Reiter <bernhard@intevation.de>,
-	debian-powerpc@lists.debian.org, paulus@samba.org
+In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AEBD0677@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 05, 2008 at 09:38:20AM -0600, Josh Boyer wrote:
+On Thu, Jan 31, 2008 at 01:57:25PM +0800, Zhang Wei wrote:
+>  
+> 
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+> > 
+> > On Jan 30, 2008, at 4:30 AM, Zhang Wei wrote:
+> > 
+> > > Change lots of static variable to mport private. And add 
+> > mport to some
+> > > function declaration.
+> > 
+> > Can you explain this patch further.  Its not clear exactly from this  
+> > commit message why we are doing this.
+> > 
+> > - k
+> 
+> Sorry about I have a little hurry about it.
+> 
+> The original RapidIO driver suppose there is only one mpc85xx RIO
+> controller
+> in system. So, some data structures are defined as mpc85xx_rio global,
+> such as 'regs_win', 'dbell_ring', 'msg_tx_ring'. Now, I changed them to
+> mport's private members. And you can define multi RIO OF-nodes in dts
+> file
+> for multi RapidIO controller in one processor, such as PCI/PCI-Ex host
+> controllers
+> in Freescale's silicon. And the mport operation function declaration
+> should be changed
+> to know which RapidIO controller is target.
 
-> Taking a step back though, there will always be odd cases like this as
-> we move forward.  Toolchain XXX will eventually not support instruction
-> YYYY which will eventually be used, etc.  I'll try to make this
-> specific case work because it's scope is quite limited.  But this
-> problem as a whole will still remain.
+Right, the RapidIO subsystem itself has had the concept of multiple
+master ports from the beginning. However, when I did the MPC85xx
+support I chose to just implement it for the known silicon available
+at the time. I'm not surprised there's new silicon with multiple
+controllers now.
 
-Worst case, if it's only a couple of instructions, they could be covered
-the way we usually handle new instructions in the ISA: make a macro for
-them and hand-encode them.
-
-See real_205_{read,write}b() in arch/powerpc/kernel/misc_64.S for
-example.
-
-
--Olof
+-Matt
