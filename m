@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F268DDDF53
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 07:50:44 +1100 (EST)
-Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+	by ozlabs.org (Postfix) with ESMTP id BA661DDF7C
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 07:53:01 +1100 (EST)
+Subject: Re: [PATCH] update_mmu_cache: Don't dcbst non-readable pages.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <20080205102347.GA11949@csn.ul.ie>
-References: <20080201184254.174020@gmx.net>
-	<20080201191119.GI18688@csn.ul.ie> <20080201200518.174050@gmx.net>
-	<20080201202518.GJ18688@csn.ul.ie> <20080201210656.174030@gmx.net>
-	<20080204104232.GB29484@csn.ul.ie> <1202169686.7079.17.camel@pasglop>
-	<20080205102347.GA11949@csn.ul.ie>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080205194326.GA13047@loki.buserror.net>
+References: <20080205194326.GA13047@loki.buserror.net>
 Content-Type: text/plain
-Date: Wed, 06 Feb 2008 07:50:20 +1100
-Message-Id: <1202244620.7079.70.camel@pasglop>
+Date: Wed, 06 Feb 2008 07:52:38 +1100
+Message-Id: <1202244758.7079.72.camel@pasglop>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,20 +25,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2008-02-05 at 10:23 +0000, Mel Gorman wrote:
-> On (05/02/08 11:01), Benjamin Herrenschmidt didst pronounce:
-> > 
-> > > 
-> > > It's a virtual address so it depends on the value of CONFIG_KERNEL_START
-> > > as to whether this is a user program address or not.
-> > 
-> > Shouldn't it be PAGE_OFFSET ? I mean, CONFIG_KERNEL_START should work
-> > on powerpc, but still...
-> > 
+On Tue, 2008-02-05 at 13:43 -0600, Scott Wood wrote:
+> Currently, update_mmu_cache will crash if given a no-access PTE.  There's no
+> need to synchronize dcache/icache unless it's an exec mapping -- however,
+> due to the existence of older glibc versions that execute out of a
+> read-but-no-exec page, readability is tested instead.
 > 
-> mel@arnold:~/git/linux-2.6$ grep PAGE_OFFSET include/asm-ppc/page.h
-> #define PAGE_OFFSET     CONFIG_KERNEL_START
+> This assumes no exec-only mappings; if such mappings become supported, they
+> will need to go through the kmap_atomic() version of dcache/icache
+> synchronization.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-On powerpc sure.... but it's still dodgy I think.
-
-Ben.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> This fixes the following bug:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051080.html
+> 
+>  arch/powerpc/mm/mem.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index e812244..c7d7bd4 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -483,7 +483,12 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
+>  		 */
+>  		_tlbie(address, 0 /* 8xx doesn't care about PID */);
+>  #endif
+> -		if (!PageReserved(page)
+> +		/* The _PAGE_USER test should really be _PAGE_EXEC, but
+> +		 * older glibc versions execute some code from no-exec
+> +		 * pages, which for now we are supporting.  If exec-only
+> +		 * pages are ever implemented, this will have to change.
+> +		 */
+> +		if (!PageReserved(page) && (pte_val(pte) & _PAGE_USER)
+>  		    && !test_bit(PG_arch_1, &page->flags)) {
+>  			if (vma->vm_mm == current->active_mm) {
+>  				__flush_dcache_icache((void *) address);
