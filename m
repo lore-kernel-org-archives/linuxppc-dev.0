@@ -1,19 +1,17 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86F71DDE4A
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 05:32:50 +1100 (EST)
-Message-ID: <47A8ABC1.9080008@pobox.com>
-Date: Tue, 05 Feb 2008 13:32:33 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] iSeries: fix section mismatch in iseries_veth
-References: <20080205141940.c6ddb479.sfr@canb.auug.org.au>
-In-Reply-To: <20080205141940.c6ddb479.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org, netdev@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id B1CBCDE05A
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 05:38:46 +1100 (EST)
+Date: Tue, 5 Feb 2008 21:36:49 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC][PATCH] PowerPC: 4xx PCIe indirect DCR spinlock fix.
+Message-ID: <20080205183649.GA5136@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1202158239.7079.4.camel@pasglop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> WARNING: vmlinux.o(.text+0x25dca0): Section mismatch in reference from the function .veth_probe() to the function .init.text:.veth_probe_one()
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/net/iseries_veth.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> Jeff, can this go in through the powerpc tree?
-> 
-> diff --git a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
-> index 419861c..58d3bb6 100644
-> --- a/drivers/net/iseries_veth.c
-> +++ b/drivers/net/iseries_veth.c
-> @@ -1020,7 +1020,7 @@ static const struct ethtool_ops ops = {
->  	.get_link = veth_get_link,
->  };
->  
-> -static struct net_device * __init veth_probe_one(int vlan,
-> +static struct net_device *veth_probe_one(int vlan,
->  		struct vio_dev *vio_dev)
->  {
+Since we have mfdcri() and mtdcri() as macros, we can't use constructions, such
+as "mtdcri(base, reg, mfdcri(base, reg) | val)". In this case the mfdcri() stuff
+is not evaluated first. It's evaluated inside the mtdcri() macro and we have
+the dcr_ind_lock spinlock acquired twice. To avoid this error, I've added
+__mfdcri()/__mtdcri() inline functions that take the lock after register name
+fix-up.
 
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ include/asm-powerpc/dcr-native.h |   49 +++++++++++++++++++++++----------------
+ 1 files changed, 30 insertions(+), 19 deletions(-)
 
-it's trivial enough to not matter, and faster to just...  applied
-(if you'll pardon the bad grammar)
+diff -pruN linux-2.6.orig/include/asm-powerpc/dcr-native.h linux-2.6.bld/include/asm-powerpc/dcr-native.h
+--- linux-2.6.orig/include/asm-powerpc/dcr-native.h	2008-02-05 16:44:54.000000000 +0300
++++ linux-2.6.bld/include/asm-powerpc/dcr-native.h	2008-02-05 19:11:55.000000000 +0300
+@@ -59,25 +59,36 @@ do {								\
+ /* R/W of indirect DCRs make use of standard naming conventions for DCRs */
+ extern spinlock_t dcr_ind_lock;
+ 
+-#define mfdcri(base, reg)				\
+-({							\
+-	unsigned long flags; 				\
+-	unsigned int val;				\
+-	spin_lock_irqsave(&dcr_ind_lock, flags);	\
+-	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);	\
+-	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);	\
+-	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+-	val;						\
+-})
+-
+-#define mtdcri(base, reg, data)				\
+-do {							\
+-	unsigned long flags; 				\
+-	spin_lock_irqsave(&dcr_ind_lock, flags);	\
+-	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);	\
+-	mtdcr(DCRN_ ## base ## _CONFIG_DATA, data);	\
+-	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+-} while (0)
++static inline unsigned __mfdcri(int base_addr, int base_data, int reg)
++{
++	unsigned long flags;
++	unsigned int val;
++
++	spin_lock_irqsave(&dcr_ind_lock, flags);
++	__mtdcr(base_addr, reg);
++	val = __mfdcr(base_data);
++	spin_unlock_irqrestore(&dcr_ind_lock, flags);
++	return val;
++}
++
++static inline void __mtdcri(int base_addr, int base_data, int reg,
++			    unsigned val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&dcr_ind_lock, flags);
++	__mtdcr(base_addr, reg);
++	__mtdcr(base_data, val);
++	spin_unlock_irqrestore(&dcr_ind_lock, flags);
++}
++
++#define mfdcri(base, reg)	__mfdcri(DCRN_ ## base ## _CONFIG_ADDR,	\
++					 DCRN_ ## base ## _CONFIG_DATA,	\
++					 reg)
++
++#define mtdcri(base, reg, data)	__mtdcri(DCRN_ ## base ## _CONFIG_ADDR,	\
++					 DCRN_ ## base ## _CONFIG_DATA,	\
++					 reg, data)
+ 
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
