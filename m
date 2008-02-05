@@ -1,23 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D9D90DDDFE
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 16:44:34 +1100 (EST)
-Date: Tue, 5 Feb 2008 16:44:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Zhang Wei <wei.zhang@freescale.com>
-Subject: Re: [PATCH 5/6] Add OF-tree support to RapidIO controller driver.
-Message-Id: <20080205164425.b6af5bff.sfr@canb.auug.org.au>
-In-Reply-To: <12016890832943-git-send-email-wei.zhang@freescale.com>
-References: <1201689053956-git-send-email-wei.zhang@freescale.com>
-	<12016890621727-git-send-email-wei.zhang@freescale.com>
-	<120168907160-git-send-email-wei.zhang@freescale.com>
-	<12016890773706-git-send-email-wei.zhang@freescale.com>
-	<12016890832943-git-send-email-wei.zhang@freescale.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__5_Feb_2008_16_44_25_+1100_.Pf1PbQrSHYAocGX"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EF4ECDDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 17:46:34 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/1] [PPC] 8xx swap bug-fix
+Date: Tue, 5 Feb 2008 09:46:21 +0300
+References: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
+	<47A45269.7080403@scram.de>
+	<20080204182421.GA3930@loki.buserror.net>
+In-Reply-To: <20080204182421.GA3930@loki.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802050946.21292.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__5_Feb_2008_16_44_25_+1100_.Pf1PbQrSHYAocGX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 30 Jan 2008 18:30:52 +0800 Zhang Wei <wei.zhang@freescale.com> wrot=
-e:
->
-> -void fsl_rio_setup(int law_start, int law_size)
-> +int fsl_rio_setup(struct of_device *dev)
->  {
+ Hi Scott,
 
-> +	if (!dev->node) {
-> +		dev_err(&dev->dev, "Device OF-Node is NULL");
-> +		return -EFAULT;
+ You are right. The TLB handlers for 8xx in arch/powerpc branch set the 
+PAGE_ACCESSED flag unconditionally too. And the 
+include/asm-powerpc/pgtable-ppc32.h file still includes the comment that this 
+is the bug. So, probably the corresponding patch for powerpc branch will be 
+usefull. Does anybody use swap with some of the 8xx-based boards supported in 
+powerpc branch ?
 
-Probably -EINVAL would be better. Here and all the other -EFAULTs.
+ Regards, Yuri
 
-> +	aw =3D *(u32 *)of_get_property(dev->node, "#address-cells", NULL);
-> +	sw =3D *(u32 *)of_get_property(dev->node, "#size-cells", NULL);
+On Monday 04 February 2008 21:24, Scott Wood wrote:
+> On Sat, Feb 02, 2008 at 12:22:17PM +0100, Jochen Friedrich wrote:
+> > Hi Yuri,
+> > 
+> > >  Here is the patch which makes Linux-2.6 swap routines operate correctly 
+on
+> > > the ppc-8xx-based machines.
+> > 
+> > is there any 8xx board left which isn't ported to ARCH=powerpc?
+> 
+> More importantly, is this something that is also broken in arch/powerpc?  It
+> looks like it has the same code...
+> 
+> -Scott
+> 
 
-What happens if either of these properties is missing?
-
-> +static struct of_device_id fsl_of_rio_rpn_ids[] =3D {
-
-This should be "const" please.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__5_Feb_2008_16_44_25_+1100_.Pf1PbQrSHYAocGX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHp/e9TgG2atn1QN8RAsGnAJ923qdL8k64IVemccSj7DcWuJhsYQCfbUTH
-lBGJWZSD7L0H3IIzkdc28bo=
-=O7Oi
------END PGP SIGNATURE-----
-
---Signature=_Tue__5_Feb_2008_16_44_25_+1100_.Pf1PbQrSHYAocGX--
+-- 
+Yuri Tikhonov, Senior Software Engineer
+Emcraft Systems, www.emcraft.com
