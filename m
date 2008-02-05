@@ -1,23 +1,22 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 584C1DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 21:01:57 +1100 (EST)
-Message-ID: <47A833FD.4040904@scram.de>
-Date: Tue, 05 Feb 2008 11:01:33 +0100
-From: Jochen Friedrich <jochen@scram.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1B86CDDE18
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 21:23:55 +1100 (EST)
+Date: Tue, 5 Feb 2008 10:23:48 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Commit for mm/page_alloc.c breaks boot process on my machine
+Message-ID: <20080205102347.GA11949@csn.ul.ie>
+References: <20080201184254.174020@gmx.net> <20080201191119.GI18688@csn.ul.ie>
+	<20080201200518.174050@gmx.net> <20080201202518.GJ18688@csn.ul.ie>
+	<20080201210656.174030@gmx.net> <20080204104232.GB29484@csn.ul.ie>
+	<1202169686.7079.17.camel@pasglop>
 MIME-Version: 1.0
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 1/1] [PPC] 8xx swap bug-fix
-References: <20080201181003.a3daf6ed.kim.phillips@freescale.com>
-	<47A45269.7080403@scram.de>
-	<20080204182421.GA3930@loki.buserror.net>
-	<200802050946.21292.yur@emcraft.com>
-In-Reply-To: <200802050946.21292.yur@emcraft.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1202169686.7079.17.camel@pasglop>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Yuri,
+On (05/02/08 11:01), Benjamin Herrenschmidt didst pronounce:
+> 
+> > 
+> > It's a virtual address so it depends on the value of CONFIG_KERNEL_START
+> > as to whether this is a user program address or not.
+> 
+> Shouldn't it be PAGE_OFFSET ? I mean, CONFIG_KERNEL_START should work
+> on powerpc, but still...
+> 
 
-> Does anybody use swap with some of the 8xx-based boards supported in 
-> powerpc branch ?
+mel@arnold:~/git/linux-2.6$ grep PAGE_OFFSET include/asm-ppc/page.h
+#define PAGE_OFFSET     CONFIG_KERNEL_START
 
-modded DBox2 boxes do. Unfortunately, i don't have such a modded box.
-The tuxbox project currently uses a really ugly hack to support swapping:
-
-http://git.bocc.de/cgi-bin/gitweb.cgi?p=dbox2.git;a=commitdiff;h=fc9d6ed33d85933f3900718a118a0cc2b776f067
-
-Thanks,
-Jochen
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
