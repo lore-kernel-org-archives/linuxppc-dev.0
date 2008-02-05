@@ -1,13 +1,13 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] Convert axon_msi to an of_platform driver
+Subject: Re: [PATCH 4/4] Avoid DMA exception when using axon_msi with IOMMU
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <a42b0e1b5224f8f2e6f87ab1bbe520a55be85e98.1201240265.git.michael@ellerman.id.au>
+In-Reply-To: <f1b51505f34145d7b096fef167c14c4409f0baf6.1201240265.git.michael@ellerman.id.au>
 References: <3ce7be4c77581ce103a8da9f33a734270c9dc6e8.1201240265.git.michael@ellerman.id.au>
-	<a42b0e1b5224f8f2e6f87ab1bbe520a55be85e98.1201240265.git.michael@ellerman.id.au>
+	<f1b51505f34145d7b096fef167c14c4409f0baf6.1201240265.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Tue, 05 Feb 2008 11:20:33 +1100
-Message-Id: <1202170833.7079.28.camel@pasglop>
+Date: Tue, 05 Feb 2008 11:21:25 +1100
+Message-Id: <1202170885.7079.30.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -22,149 +22,91 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 On Fri, 2008-01-25 at 16:59 +1100, Michael Ellerman wrote:
-> Now that we create of_platform devices earlier on cell, we can make the
-> axon_msi driver an of_platform driver. This makes the code cleaner in
-> several ways, and most importantly means we have a struct device.
+> There's a brown-paper-bag bug in axon_msi, we pass the address of our
+> FIFO directly to the hardware, without DMA mapping it. This leads to
+> DMA exceptions if you enable MSI & the IOMMU.
+> 
+> The fix is to correctly DMA map the fifo, dma_alloc_coherent() does
+> what we want - and we need to track the virt & phys addresses.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/platforms/cell/axon_msi.c |   76 ++++++++++++++-----------------
->  1 files changed, 34 insertions(+), 42 deletions(-)
+>  arch/powerpc/platforms/cell/axon_msi.c |   21 ++++++++++-----------
+>  1 files changed, 10 insertions(+), 11 deletions(-)
 > 
 > diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-> index 095988f..ea3dc8c 100644
+> index ea3dc8c..b9a97c4 100644
 > --- a/arch/powerpc/platforms/cell/axon_msi.c
 > +++ b/arch/powerpc/platforms/cell/axon_msi.c
-> @@ -13,7 +13,7 @@
->  #include <linux/kernel.h>
->  #include <linux/pci.h>
->  #include <linux/msi.h>
-> -#include <linux/reboot.h>
-> +#include <linux/of_platform.h>
+> @@ -65,7 +65,8 @@
 >  
->  #include <asm/dcr.h>
->  #include <asm/machdep.h>
-> @@ -67,12 +67,9 @@ struct axon_msic {
+>  struct axon_msic {
 >  	struct irq_host *irq_host;
->  	__le32 *fifo;
+> -	__le32 *fifo;
+> +	__le32 *fifo_virt;
+> +	dma_addr_t fifo_phys;
 >  	dcr_host_t dcr_host;
-> -	struct list_head list;
 >  	u32 read_offset;
 >  };
+> @@ -91,7 +92,7 @@ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
 >  
-> -static LIST_HEAD(axon_msic_list);
-> -
->  static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
+>  	while (msic->read_offset != write_offset) {
+>  		idx  = msic->read_offset / sizeof(__le32);
+> -		msi  = le32_to_cpu(msic->fifo[idx]);
+> +		msi  = le32_to_cpu(msic->fifo_virt[idx]);
+>  		msi &= 0xFFFF;
+>  
+>  		pr_debug("axon_msi: woff %x roff %x msi %x\n",
+> @@ -306,7 +307,6 @@ static int axon_msi_shutdown(struct of_device *device)
+>  static int axon_msi_probe(struct of_device *device,
+>  			  const struct of_device_id *device_id)
 >  {
->  	pr_debug("axon_msi: dcr_write(0x%x, 0x%x)\n", val, dcr_n);
-> @@ -292,30 +289,25 @@ static struct irq_host_ops msic_host_ops = {
->  	.map	= msic_host_map,
->  };
->  
-> -static int axon_msi_notify_reboot(struct notifier_block *nb,
-> -				  unsigned long code, void *data)
-> +static int axon_msi_shutdown(struct of_device *device)
->  {
-> -	struct axon_msic *msic;
-> +	struct axon_msic *msic = device->dev.platform_data;
->  	u32 tmp;
->  
-> -	list_for_each_entry(msic, &axon_msic_list, list) {
-> -		pr_debug("axon_msi: disabling %s\n",
-> -			  msic->irq_host->of_node->full_name);
-> -		tmp  = dcr_read(msic->dcr_host, MSIC_CTRL_REG);
-> -		tmp &= ~MSIC_CTRL_ENABLE & ~MSIC_CTRL_IRQ_ENABLE;
-> -		msic_dcr_write(msic, MSIC_CTRL_REG, tmp);
-> -	}
-> +	pr_debug("axon_msi: disabling %s\n",
-> +		  msic->irq_host->of_node->full_name);
-> +	tmp  = dcr_read(msic->dcr_host, MSIC_CTRL_REG);
-> +	tmp &= ~MSIC_CTRL_ENABLE & ~MSIC_CTRL_IRQ_ENABLE;
-> +	msic_dcr_write(msic, MSIC_CTRL_REG, tmp);
->  
->  	return 0;
->  }
->  
-> -static struct notifier_block axon_msi_reboot_notifier = {
-> -	.notifier_call = axon_msi_notify_reboot
-> -};
-> -
-> -static int axon_msi_setup_one(struct device_node *dn)
-> +static int axon_msi_probe(struct of_device *device,
-> +			  const struct of_device_id *device_id)
->  {
->  	struct page *page;
-> +	struct device_node *dn = device->node;
+> -	struct page *page;
+>  	struct device_node *dn = device->node;
 >  	struct axon_msic *msic;
 >  	unsigned int virq;
->  	int dcr_base, dcr_len;
-> @@ -385,7 +377,11 @@ static int axon_msi_setup_one(struct device_node *dn)
+> @@ -338,16 +338,14 @@ static int axon_msi_probe(struct of_device *device,
+>  		goto out_free_msic;
+>  	}
+>  
+> -	page = alloc_pages_node(of_node_to_nid(dn), GFP_KERNEL,
+> -				get_order(MSIC_FIFO_SIZE_BYTES));
+> -	if (!page) {
+> +	msic->fifo_virt = dma_alloc_coherent(&device->dev, MSIC_FIFO_SIZE_BYTES,
+> +					     &msic->fifo_phys, GFP_KERNEL);
+> +	if (!msic->fifo_virt) {
+>  		printk(KERN_ERR "axon_msi: couldn't allocate fifo for %s\n",
+>  		       dn->full_name);
+>  		goto out_free_msic;
+>  	}
+>  
+> -	msic->fifo = page_address(page);
+> -
+>  	msic->irq_host = irq_alloc_host(of_node_get(dn), IRQ_HOST_MAP_NOMAP,
+>  					NR_IRQS, &msic_host_ops, 0);
+>  	if (!msic->irq_host) {
+> @@ -370,9 +368,9 @@ static int axon_msi_probe(struct of_device *device,
+>  	pr_debug("axon_msi: irq 0x%x setup for axon_msi\n", virq);
+>  
+>  	/* Enable the MSIC hardware */
+> -	msic_dcr_write(msic, MSIC_BASE_ADDR_HI_REG, (u64)msic->fifo >> 32);
+> +	msic_dcr_write(msic, MSIC_BASE_ADDR_HI_REG, msic->fifo_phys >> 32);
+>  	msic_dcr_write(msic, MSIC_BASE_ADDR_LO_REG,
+> -				  (u64)msic->fifo & 0xFFFFFFFF);
+> +				  msic->fifo_phys & 0xFFFFFFFF);
+>  	msic_dcr_write(msic, MSIC_CTRL_REG,
 >  			MSIC_CTRL_IRQ_ENABLE | MSIC_CTRL_ENABLE |
 >  			MSIC_CTRL_FIFO_SIZE);
->  
-> -	list_add(&msic->list, &axon_msic_list);
-> +	device->dev.platform_data = msic;
-> +
-> +	ppc_md.setup_msi_irqs = axon_msi_setup_msi_irqs;
-> +	ppc_md.teardown_msi_irqs = axon_msi_teardown_msi_irqs;
-> +	ppc_md.msi_check_device = axon_msi_check_device;
->  
->  	printk(KERN_DEBUG "axon_msi: setup MSIC on %s\n", dn->full_name);
->  
-> @@ -402,28 +398,24 @@ out:
->  	return -1;
->  }
->  
-> -static int axon_msi_init(void)
-> -{
-> -	struct device_node *dn;
-> -	int found = 0;
-> -
-> -	pr_debug("axon_msi: initialising ...\n");
-> -
-> -	for_each_compatible_node(dn, NULL, "ibm,axon-msic") {
-> -		if (axon_msi_setup_one(dn) == 0)
-> -			found++;
-> -	}
-> -
-> -	if (found) {
-> -		ppc_md.setup_msi_irqs = axon_msi_setup_msi_irqs;
-> -		ppc_md.teardown_msi_irqs = axon_msi_teardown_msi_irqs;
-> -		ppc_md.msi_check_device = axon_msi_check_device;
-> -
-> -		register_reboot_notifier(&axon_msi_reboot_notifier);
-> +static const struct of_device_id axon_msi_device_id[] = {
-> +	{
-> +		.compatible	= "ibm,axon-msic"
-> +	},
-> +	{}
-> +};
->  
-> -		pr_debug("axon_msi: registered callbacks!\n");
-> -	}
-> +static struct of_platform_driver axon_msi_driver = {
-> +	.match_table	= axon_msi_device_id,
-> +	.probe		= axon_msi_probe,
-> +	.shutdown	= axon_msi_shutdown,
-> +	.driver		= {
-> +		.name	= "axon-msi"
-> +	},
-> +};
->  
-> -	return 0;
-> +static int __init axon_msi_init(void)
-> +{
-> +	return of_register_platform_driver(&axon_msi_driver);
->  }
-> -arch_initcall(axon_msi_init);
-> +subsys_initcall(axon_msi_init);
-> -- 
-> 1.5.2.rc1.1884.g59b20
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> @@ -390,7 +388,8 @@ static int axon_msi_probe(struct of_device *device,
+>  out_free_host:
+>  	kfree(msic->irq_host);
+>  out_free_fifo:
+> -	__free_pages(virt_to_page(msic->fifo), get_order(MSIC_FIFO_SIZE_BYTES));
+> +	dma_free_coherent(&device->dev, MSIC_FIFO_SIZE_BYTES, msic->fifo_virt,
+> +			  msic->fifo_phys);
+>  out_free_msic:
+>  	kfree(msic);
+>  out:
