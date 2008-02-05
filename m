@@ -1,19 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 57712DDDEB
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 15:21:48 +1100 (EST)
-Date: Tue, 5 Feb 2008 15:21:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] [POWERPC] of: add alias helper functions.
-Message-Id: <20080205152129.fa482b5f.sfr@canb.auug.org.au>
-In-Reply-To: <20080204161604.10674.9289.stgit@trillian.secretlab.ca>
-References: <20080204161604.10674.9289.stgit@trillian.secretlab.ca>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0"
-Cc: linuxppc-dev@ozlabs.org, davem@davemloft.net, david@gibson.dropbear.id.au
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 74435DDDF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 16:18:43 +1100 (EST)
+Date: Tue, 5 Feb 2008 16:16:48 +1100
+To: Sripathi Kodi <sripathik@in.ibm.com>
+Subject: [PATCH] [POWERPC] Use a sensible default for clock_getres() in the
+	vdso.
+Message-ID: <20080205051648.GX6887@bakeyournoodle.com>
+References: <200801271932.59823.sripathik@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200801271932.59823.sripathik@in.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	john stultz <johnstul@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,75 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jan 27, 2008 at 07:32:59PM +0530, Sripathi Kodi wrote:
+> Hi Paul,
+> 
+> On PPC, I see a disparity between clock_getres implementations in the
+> vdso and syscall. I am using a IBM Openpower hardware and 2.6.24 kernel
+> with CONFIG_HIGH_RES_TIMERS=y. 
+> 
+> clock_getres call for CLOCK_REALTIME returns 1 millisecond. However,
+> when I edit arch/powerpc/kernel/vdso*/gettimeofday.S to force it to use 
+> sys_clock_getres, I get 1 nanosecond resolution. The code in vdso seems
+> to be returning some pre-defined (incorrect) variables.
+> 
+> Could you please let me know the reason for this? Is it something that
+> should be fixed in vdso?
 
-Hi Grant,
+Can you try the attached patch and see it if works for you?
 
-On Mon, 04 Feb 2008 09:16:08 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> From: Grant Likely <grant.likely@secretlab.ca>
->=20
-> Add helper functions for translating back and forth between alias
-> properties and device tree nodes.
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH] [POWERPC] Use a sensible default for clock_getres() in the vdso.
 
-Do you have a use for this yet (I assume you do - it would be nice to
-have a reason in the changelog)?
+This ensures that the syscall and the (fast) vdso versions of clock_getres()
+will return the same resolution.
 
-Overall looks ok, just a few comments?
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/kernel/asm-offsets.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Dave (Miller) is this useful for Sparc?
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index ed083fe..e6e4928 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -22,6 +22,7 @@
+ #include <linux/mman.h>
+ #include <linux/mm.h>
+ #include <linux/suspend.h>
++#include <linux/hrtimer.h>
+ #ifdef CONFIG_PPC64
+ #include <linux/time.h>
+ #include <linux/hardirq.h>
+@@ -312,7 +313,7 @@ int main(void)
+ 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+ 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+-	DEFINE(CLOCK_REALTIME_RES, TICK_NSEC);
++	DEFINE(CLOCK_REALTIME_RES, (KTIME_MONOTONIC_RES).tv64);
+ 
+ #ifdef CONFIG_BUG
+ 	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
+-- 
+1.5.4
 
-> +struct device_node *of_find_node_by_alias(const char *alias)
-> +{
-> +	struct device_node *np, *alias_np;
-> +	const char *path;
-> +
-> +	np =3D NULL;
 
-	struct device_node *np =3D NULL;
-	struct device_node *alias_np;
+Yours Tony
 
-> +const char *of_node_alias(struct device_node *np, const char *prefix)
-
-> +	/* Loop over the aliases looking for a match */
-> +	alias =3D NULL;
-> +	for (pp =3D alias_np->properties; pp !=3D 0; pp =3D pp->next) {
-                                              ^
-Use NULL for pointers (or just test "pp").
-
-> +		if (test_np =3D=3D np)
-> +			alias =3D pp->name + prefix_len;
-> +		of_node_put(test_np);
-> +		if (alias)
-> +			break;
-
-This could be:
-		of_node_put(test_np);
-		if (test_np =3D=3D np) {
-			alias =3D pp->name + prefix_len;
-			break;
-		}
-
-As you can still test for pointer equality after dropping the ref count.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHp+RXTgG2atn1QN8RAmh5AJ936NF1Fqh98bF5B2AH6YCO1CwRSgCeIBz6
-SD5Kk2PBWcQ67WNk54OFdyQ=
-=aRFW
------END PGP SIGNATURE-----
-
---Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0--
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
