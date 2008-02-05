@@ -1,25 +1,20 @@
-Return-Path: <mporter@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0C639DE074
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 03:43:26 +1100 (EST)
-Date: Tue, 5 Feb 2008 10:43:18 -0600
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Zhang Wei <wei.zhang@freescale.com>
-Subject: Re: [PATCH 6/6] Change the kernel configurated RapidIO system size to
-	auto-probing.
-Message-ID: <20080205164318.GC20177@gate.crashing.org>
-References: <1201689053956-git-send-email-wei.zhang@freescale.com>
-	<12016890621727-git-send-email-wei.zhang@freescale.com>
-	<120168907160-git-send-email-wei.zhang@freescale.com>
-	<12016890773706-git-send-email-wei.zhang@freescale.com>
-	<12016890832943-git-send-email-wei.zhang@freescale.com>
-	<12016890873190-git-send-email-wei.zhang@freescale.com>
-Mime-Version: 1.0
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [209.5.119.169])
+	by ozlabs.org (Postfix) with ESMTP id 563E3DE181
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 03:53:10 +1100 (EST)
+Date: Tue, 5 Feb 2008 11:53:09 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/10] sbc8560: Add v1 device tree source for Wind River
+	SBC8560 board
+Message-ID: <20080205165308.GA6358@windriver.com>
+References: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
+	<7107e511a0f989ad55335855fa0f241f09eff52f.1201217172.git.paul.gortmaker@windriver.com>
+	<20080201075408.GC18684@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <12016890873190-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080201075408.GC18684@localhost.localdomain>
+Cc: david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +24,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 30, 2008 at 06:30:53PM +0800, Zhang Wei wrote:
-> The RapidIO system size will auto probe in RIO setup. The route
-> table and rionet_active in rionet.c are changed to be allocated
-> dynamically according the system size.
+In message: Re: [PATCH 2/10] sbc8560: Add v1 device tree source for Wind River SBC8560 board
+on 01/02/2008 David Gibson wrote:
 
-<snip>
+> On Thu, Jan 24, 2008 at 06:41:24PM -0500, Paul Gortmaker wrote:
+> > This adds a v1 device tree source for the Wind River SBC8560 board.  The
+> > biggest difference between this and the MPC8560ADS reference platform
+> > dts is the use of an external 16550 compatible UART instead of the CPM2.
+> > 
+> > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> 
+> [snip]
+> > +/dts-v1/;
+> > +
+> > +/ {
+> > +	model = "SBC8560";
+> > +	compatible = "SBC8560";
+> 
+> This is not the conventional format for board-level compatible
+> entries, which should generally be "vendor,model" and all in lower
+> case.
 
-> +	port->sys_size = (in_be32((priv->regs_win + RIO_PEF_CAR))
-> +					& RIO_PEF_CTLS) >> 4;
-> +	dev_info(&dev->dev, "RapidIO Common Transport System size: %d\n",
-> +			port->sys_size ? 65536 : 256);
-> +
+No problem - I can change to "sbc8560" and "wrs,sbc8560" on this board
+and others.
 
-This is much nicer than the original hardcoded transport size
-implementation.
+> 
+> [snip]
+> > +		enet0: ethernet@24000 {
+> > +			cell-index = <0>;
+> > +			device_type = "network";
+> > +			model = "TSEC";
+> > +			compatible = "gianfar";
+> 
+> This looks like the old dodgy gianfar binding, and needs updating
+> (mdio node will probably also need changes).
 
--Matt
+I thought I'd merged in all Kumar's updates to the gianfar nodes at that
+point in time, but I'll go back and re-check.
+
+> 
+> [snip]
+> > +	localbus@ff705000 {
+> > +		compatible = "fsl,mpc8560-localbus";
+> > +		#address-cells = <2>;
+> > +		#size-cells = <1>;
+> > +		reg = <0xff705000 0x100>;	// BRx, ORx, etc.
+> > +
+> > +		ranges = <
+> > +			0x0 0x0 0xff800000 0x0800000	// 8MB boot flash
+> > +			0x1 0x0 0xe4000000 0x4000000	// 64MB flash
+> > +			0x3 0x0 0x20000000 0x4000000	// 64MB SDRAM
+> > +			0x4 0x0 0x24000000 0x4000000	// 64MB SDRAM
+> > +			0x5 0x0 0xfc000000 0x0c00000	// EPLD
+> > +			0x6 0x0 0xe0000000 0x4000000	// 64MB flash
+> > +			0x7 0x0 0x80000000 0x0200000	// ATM1,2
+> > +		>;
+> > +
+> > +		epld@5,0 {
+> 
+> I'm not entirely convinced on this two-level representation.  I think
+> the FSL people need to get together and define a binding (or set of
+> bindings) for their various chipselect style external bus bridges.
+
+I'd tried to capture what you'd outlined for the localbus node, and the
+epld child seemed like a natural extension of that.  I suspect that a
+lot of boards would just have the localbus node and not the extra node
+that fans things out a step further.  There wasn't really any similar
+precedent for that to work off of that I noticed.  I'm agreeable to
+change or restructuring if Kumar recommends re-using some standard as
+set by the 4xx/EBC.
+
+Paul.
+
+> 
+> > +			compatible = "wrs,epld-localbus";
+> > +			#address-cells = <2>;
+> > +			#size-cells = <1>;
+> > +			reg = <0x5 0x0 0xc00000>;
+> > +			ranges = <
+> > +				0x0 0x0 0x5 0x000000 0x1fff	// LED disp.
+> > +				0x1 0x0 0x5 0x100000 0x1fff	// switches
+> > +				0x2 0x0 0x5 0x200000 0x1fff	// ID reg.
+> > +				0x3 0x0 0x5 0x300000 0x1fff	// status reg.
+> > +				0x4 0x0 0x5 0x400000 0x1fff	// reset reg.
+> > +				0x5 0x0 0x5 0x500000 0x1fff	// Wind port
+> > +				0x7 0x0 0x5 0x700000 0x1fff	// UART #1
+> > +				0x8 0x0 0x5 0x800000 0x1fff	// UART #2
+> > +				0x9 0x0 0x5 0x900000 0x1fff	// RTC
+> > +				0xb 0x0 0x5 0xb00000 0x1fff	// EEPROM
+> > +			>;
+> 
+> -- 
+> David Gibson			| I'll have my music baroque, and my code
+> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+> 				| _way_ _around_!
+> http://www.ozlabs.org/~dgibson
