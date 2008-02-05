@@ -1,16 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 85B74DDE01
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 14:19:42 +1100 (EST)
-Date: Tue, 5 Feb 2008 14:19:40 +1100
+	by ozlabs.org (Postfix) with ESMTP id 57712DDDEB
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Feb 2008 15:21:48 +1100 (EST)
+Date: Tue, 5 Feb 2008 15:21:29 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] iSeries: fix section mismatch in iseries_veth
-Message-Id: <20080205141940.c6ddb479.sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [POWERPC] of: add alias helper functions.
+Message-Id: <20080205152129.fa482b5f.sfr@canb.auug.org.au>
+In-Reply-To: <20080204161604.10674.9289.stgit@trillian.secretlab.ca>
+References: <20080204161604.10674.9289.stgit@trillian.secretlab.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Jeff Garzik <jgarzik@pobox.com>,
-	netdev@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0"
+Cc: linuxppc-dev@ozlabs.org, davem@davemloft.net, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-WARNING: vmlinux.o(.text+0x25dca0): Section mismatch in reference from the function .veth_probe() to the function .init.text:.veth_probe_one()
+--Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/net/iseries_veth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi Grant,
 
-Jeff, can this go in through the powerpc tree?
+On Mon, 04 Feb 2008 09:16:08 -0700 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> From: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Add helper functions for translating back and forth between alias
+> properties and device tree nodes.
 
-diff --git a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
-index 419861c..58d3bb6 100644
---- a/drivers/net/iseries_veth.c
-+++ b/drivers/net/iseries_veth.c
-@@ -1020,7 +1020,7 @@ static const struct ethtool_ops ops = {
- 	.get_link = veth_get_link,
- };
- 
--static struct net_device * __init veth_probe_one(int vlan,
-+static struct net_device *veth_probe_one(int vlan,
- 		struct vio_dev *vio_dev)
- {
- 	struct net_device *dev;
--- 
-1.5.4
+Do you have a use for this yet (I assume you do - it would be nice to
+have a reason in the changelog)?
 
--- 
+Overall looks ok, just a few comments?
+
+Dave (Miller) is this useful for Sparc?
+
+> +struct device_node *of_find_node_by_alias(const char *alias)
+> +{
+> +	struct device_node *np, *alias_np;
+> +	const char *path;
+> +
+> +	np =3D NULL;
+
+	struct device_node *np =3D NULL;
+	struct device_node *alias_np;
+
+> +const char *of_node_alias(struct device_node *np, const char *prefix)
+
+> +	/* Loop over the aliases looking for a match */
+> +	alias =3D NULL;
+> +	for (pp =3D alias_np->properties; pp !=3D 0; pp =3D pp->next) {
+                                              ^
+Use NULL for pointers (or just test "pp").
+
+> +		if (test_np =3D=3D np)
+> +			alias =3D pp->name + prefix_len;
+> +		of_node_put(test_np);
+> +		if (alias)
+> +			break;
+
+This could be:
+		of_node_put(test_np);
+		if (test_np =3D=3D np) {
+			alias =3D pp->name + prefix_len;
+			break;
+		}
+
+As you can still test for pointer equality after dropping the ref count.
+
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHp+RXTgG2atn1QN8RAmh5AJ936NF1Fqh98bF5B2AH6YCO1CwRSgCeIBz6
+SD5Kk2PBWcQ67WNk54OFdyQ=
+=aRFW
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Feb_2008_15_21_29_+1100_blr.cDevPXK4jAK0--
