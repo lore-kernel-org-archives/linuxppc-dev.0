@@ -1,21 +1,29 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5502FDDE44
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 5AF3ADE0A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Feb 2008 02:48:56 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JMQ2W-00028C-Uo
-	for linuxppc-embedded@ozlabs.org; Tue, 05 Feb 2008 07:48:52 -0800
-Message-ID: <15291528.post@talk.nabble.com>
-Date: Tue, 5 Feb 2008 07:48:52 -0800 (PST)
-From: "Desroches L." <ludovic.desroches@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: [Virtex4] kernel2.6 or distribution
+	Wed,  6 Feb 2008 03:07:13 +1100 (EST)
+Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 0B7EE434004
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  5 Feb 2008 17:04:06 +0100 (CET)
+Received: from nausicaa2.coritel.it ([127.0.0.1])
+	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id T+h1M7Zi4DQu for <linuxppc-embedded@ozlabs.org>;
+	Tue,  5 Feb 2008 17:04:05 +0100 (CET)
+Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 43B4E434002
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  5 Feb 2008 17:04:05 +0100 (CET)
+Message-ID: <47A88A73.5030101@coritel.it>
+Date: Tue, 05 Feb 2008 17:10:27 +0100
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Subject: Kernel entry point
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,44 +34,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
 Hi,
 
-Sorry for my English, I am a French student. For my internship, I have to
-implement Linux on a Virtex4.
+where is the main kernel entry point (the first function/instruction)
+for the powerpc arch called by uboot? In kernel 2.6.10 there was the
+head_fsl_booke.S (I'm using a booke processor) that it called the
+start_kernel function, and now?
 
-I know a few things about the Virtex4 because I am specialized in digital
-electronic (VHDL). I have to choose a solution for the Linux to implement.
-At this stage, I have some problems to determine the best solution probably
-because things are not clear for me whereas I have read a book about Linux
-embedded and seen a lot of websites.
+Thanks.
 
-I have seen several distributions (maybe my vocable is false) from
-MontaVista, LynuxWorks and others. I have seen also kernel2.6 for Virtex4
-(http://git.xilinx.com/cgi-bin/gitweb.cgi?p=3Dlinux-2.6-xlnx.git;a=3Dsummar=
-y). I
-would like to understand the difference between these two things.
-
-If I have understood MontaVista for example offers a solution with a C
-library and drivers, isn't it ? So is it a better solution than kernel2.6 ?
-
-I prefer to start with the kernel given by xilinx, it is an internship so
-the aim is to learn the more I can but I have to convince my tutor that it
-is a better solution than MontaVista, BlueCat or =C2=B5C/OSII. Do you have =
-some
-arguments ?
-
-Thanks for your help
-
-Best Regards
-
----
-
-Desroches Ludovic
-ESIEE engineer : http://www.esiee.fr
-
-
---=20
-View this message in context: http://www.nabble.com/-Virtex4--kernel2.6-or-=
-distribution-tp15291528p15291528.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Marco
