@@ -1,29 +1,22 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 5AF3ADE0A1
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id C65B6DDFD6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Feb 2008 03:07:13 +1100 (EST)
-Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
-	by nausicaa2.coritel.it (Postfix) with ESMTP id 0B7EE434004
+	Wed,  6 Feb 2008 03:34:35 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so765839anc.78
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Feb 2008 17:04:06 +0100 (CET)
-Received: from nausicaa2.coritel.it ([127.0.0.1])
-	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with ESMTP id T+h1M7Zi4DQu for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Feb 2008 17:04:05 +0100 (CET)
-Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
-	by nausicaa2.coritel.it (Postfix) with ESMTP id 43B4E434002
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Feb 2008 17:04:05 +0100 (CET)
-Message-ID: <47A88A73.5030101@coritel.it>
-Date: Tue, 05 Feb 2008 17:10:27 +0100
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Tue, 05 Feb 2008 08:34:33 -0800 (PST)
+Message-ID: <fa686aa40802050824y2a650231j3889b749d3553701@mail.gmail.com>
+Date: Tue, 5 Feb 2008 09:24:33 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "A. Nolson" <alohanono@gmail.com>
+Subject: Re: Problems booting in ML403
+In-Reply-To: <47A8782E.4050402@gmail.com>
 MIME-Version: 1.0
-To: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
-Subject: Kernel entry point
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47A8782E.4050402@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,13 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 2/5/08, A. Nolson <alohanono@gmail.com> wrote:
+> Hello,
+>
+>  I am having problems while trying to boot my linux kernel 2.6.24-rc3 (
+> secretlab git). After some days studying this list and other related
+> documents/wikis about how to make work a linux kernel in my ML403, I
+> managed to make it work partially.
+>
+<snip>
+>
+>
+> Linux/PPC load: console=ttyS0,9600 console=tty0,9600 console=ttyUL0,9600
+> root=/d
+> ev/xsa2 rw
+> init=/sbin/init
 
-where is the main kernel entry point (the first function/instruction)
-for the powerpc arch called by uboot? In kernel 2.6.10 there was the
-head_fsl_booke.S (I'm using a booke processor) that it called the
-start_kernel function, and now?
+What happens if you try init=/bin/sh?
 
-Thanks.
+What does your /etc/inittab look like?
 
-Marco
+It looks like the system is booting, but inittab might not be starting
+any processes attached to the serial console.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
