@@ -1,33 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AC05CDDE10
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 00:09:50 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m15D9gvK028618
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 08:09:42 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m15D9gGk218266
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 06:09:42 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m15D9fTr020180
-	for <linuxppc-dev@ozlabs.org>; Tue, 5 Feb 2008 06:09:42 -0700
-Date: Tue, 5 Feb 2008 07:08:33 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sven Luther <sven@powerlinux.fr>
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-Message-ID: <20080205070833.3a5b7c11@zod.rchland.ibm.com>
-In-Reply-To: <20080204095121.GA18167@powerlinux.fr>
-References: <200802031729.12069.bernhard@intevation.de>
-	<20080204095121.GA18167@powerlinux.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Bernhard Reiter <bernhard@intevation.de>,
-	debian-powerpc@lists.debian.org, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 6 Feb 2008 00:20:26 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [POWERPC] get rid of `model = "UCC"' in the ucc nodes
+Message-ID: <20080205132026.GE7983@localhost.localdomain>
+References: <20080201150126.GB26545@localhost.localdomain>
+	<72B60725-FB4A-42FA-832D-8FD5434B9042@kernel.crashing.org>
+	<fa686aa40802010823n1b837ffk7110a72e2bd44bf6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40802010823n1b837ffk7110a72e2bd44bf6@mail.gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,31 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 4 Feb 2008 10:51:21 +0100
-Sven Luther <sven@powerlinux.fr> wrote:
-
-> On Sun, Feb 03, 2008 at 05:29:05PM +0100, Bernhard Reiter wrote:
-> > Dear linux powerpc Maintainers and Users,
-> > 
-> > recently I have tried to compile a new kernel on a Debian sarge ppc
-> > system (PowerBook5,6 MacRISC3 Power Macintosh).
+On Fri, Feb 01, 2008 at 09:23:47AM -0700, Grant Likely wrote:
+> On 2/1/08, Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> > > --- a/Documentation/powerpc/booting-without-of.txt
+> > > +++ b/Documentation/powerpc/booting-without-of.txt
+> > > @@ -1675,7 +1675,6 @@ platforms are moved over to use the flattened-
+> > > device-tree model.
+> > >       ucc@2000 {
+> > >               device_type = "network";
+> > >               compatible = "ucc_geth";
+> > > -             model = "UCC";
+> > >               device-id = <1>;
+> >
+> > can we change device-id to cell-index?
 > 
-> This is a G4 based system.
-> 
-> > The build system bailed out with
-> >        BOOTCC  arch/powerpc/boot/4xx.o
-> >         cc1: error: bad value (440) for -mcpu= switch
-> >         make[1]: *** [arch/powerpc/boot/4xx.o] Fehler 1
-> > 
-> > I have tracked this a few steps and the attached patch made the compile for me
-> > as my compiler gcc-Version 3.3.5 (Debian 1:3.3.5-13) 
-> > cannot produce code for 4xx it seems.
-> 
-> You should normally not need to build the 4xx bootloader part. Make sure
-> that, i don't know why this happens. Can you look into
-> arch/powerpc/boot/Makefile, to see what option enables the 4xx build,
-> and make sure it is disabled in the main config ?
+> <aside>
+> Here's a thought; do we really need a cell-index at all?  (and I'm
+> talking in general; not just this specific case).  I'm starting to
+> think we should migrate away from using it.
 
-That's not true.  All the wrapper bits are built for every board always.
+_Need_ perhaps not, but in some cases I think the alternatives are
+overly complex.
 
-josh
+> cell-index has been useful for things like clock controllers to know
+> what offset into a shared clock control register or something like
+> that and a driver would pass the cell-index value to the shared reg
+> driver when requesting service.
+
+Right.  Except that if the shared resource is just a single register,
+calling the routines to access it a "shared reg driver" gives a
+misleading impression.  Depending on how the shared reg is used, even
+a lock may not be necessary, so potentially the drivers for the
+individual device instances using the shared resource can (safely)
+directly access it.
+
+>  However, I think the information
+> encoded in cell-index is already encoded in the device tree in a
+> different manor.
+> 
+> Typically, shared registers and the like are all chip specific and the
+> behaviour of the shared register drivers usually needs to be tweaked
+> for different SoCs.  Each ip core on an SoC is already uniquely
+> indexed via the reg property.  True, 'reg' is sparse (0x2000, 0x2200,
+> 0x2300, ...) whereas cell-index is tight (0,1,2,3,...), but I don't
+> think that introduces any additional difficulty.
+> 
+> So, instead of a driver passing it's cell-index value to the shared
+> reg driver, it would pass it's reg base instead.  The shared register
+> driver could then choose an internal representation that makes sense
+> for it instead of whatever layout was chosen by the device tree.
+
+Except that the "shared reg driver" then needs a way to map from reg
+property to index.  So either it has to have that hardcoded, or the
+shared resource will need its own device tree representation for the
+mapping.
+
+In some cases the shared resource is complex enough that that makes
+sense (e.g. an mdio bus shared between ethernet MACs to take an
+extreme example).  But when the "shared reg driver" consists entirely
+of:
+	(readl(shared_reg_addr) & (1UL << cell_index))
+and/or:
+	writel(shared_reg_addr, 1UL << cell_index)
+your approach would seem to be overkill and then some.  (The latter
+example can be safe without locking in the case of a read/clear
+register).
+
+Exactly this sort of thing is fairly common on 4xx, which is just the
+context in which BenH invented "cell-index" as a really simple way of
+representing the index into shared registers like this.
+
+> Dropping cell-index would mean one less property to keep in sync when
+> tailoring device trees. (== less complexity for board porters).
+> Besides, the purpose of cell-index is often misunderstood already by
+> people trying to use it to describe port numbers (ttyS0, ttyS1, etc).
+
+This is indeed a problem.  But I don't think ditching cell-index
+entirely is a sensible solution, sorry.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
