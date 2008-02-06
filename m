@@ -1,21 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 88B29DDF3C
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 03:34:45 +1100 (EST)
-Date: Wed, 6 Feb 2008 10:35:54 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii
-	matching table
-Message-ID: <20080206163554.GA18575@lixom.net>
-References: <1202300519-7294-1-git-send-email-sr@denx.de>
-	<20080206160157.GA18228@lixom.net>
-	<20080206102340.1cdf7f8d@zod.rchland.ibm.com>
+Return-Path: <stephane.marchesin@gmail.com>
+Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.244])
+	by ozlabs.org (Postfix) with ESMTP id 918FADDE3A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 01:39:54 +1100 (EST)
+Received: by hs-out-2122.google.com with SMTP id x43so3045049hsb.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Feb 2008 06:39:52 -0800 (PST)
+Message-ID: <6a89f9d50802060639j4b3a8b7u4e4e596b010ee353@mail.gmail.com>
+Date: Wed, 6 Feb 2008 15:39:51 +0100
+From: "Stephane Marchesin" <marchesin@icps.u-strasbg.fr>
+Sender: stephane.marchesin@gmail.com
+To: linuxppc-dev@ozlabs.org
+Subject: Re: V4L2: __ucmpdi2 undefined on ppc
+In-Reply-To: <1166362145.6714.53.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080206102340.1cdf7f8d@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, jeff@garzik.org,
-	netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.SOC.4.61.0612131359430.10721@math.ut.ee>
+	<1166053317.909.19.camel@praia>
+	<20061214195842.GA14041@athena.road.mcmartin.ca>
+	<1166362145.6714.53.camel@pmac.infradead.org>
+Cc: henrik.sorensen@gmail.com, David Woodhouse <dwmw2@infradead.org>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 06, 2008 at 10:23:40AM -0600, Josh Boyer wrote:
-> On Wed, 6 Feb 2008 10:01:57 -0600
-> Olof Johansson <olof@lixom.net> wrote:
-> 
-> > On Wed, Feb 06, 2008 at 01:21:59PM +0100, Stefan Roese wrote:
-> > > With the removal the the "rgmii-interface" device_type property from the
-> > > dts files, the newemac driver needs an update to only rely on compatible
-> > > property.
-> > 
-> > What about systems using an older dts, such as one kexec:ing from an
-> > older kernel?
-> 
-> Like what?  Kexec doesn't work on 4xx yet.
+On 12/17/06, David Woodhouse <dwmw2@infradead.org> wrote:
+>
+> You still get to 'accidentally' do 64-bit arithmetic in-kernel that way
+> though. Might be better just to provide __ucmpdi2, just as we have for
+> the other functions which are required from libgcc
+>
+> It'd be better just to fix the compiler though -- which is in fact what
+> they've done: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=25724
+>               http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21237
+>
+> I've applied this as a temporary hack to the Fedora kernel until the
+> compiler is updated there...
+>
 
-Sure, but similar restrictions would apply for customers who have a
-flashed device tree that want to boot a newer kernel. Deprecating old
-device tree support is something that should be done very carefully.
+Hello,
 
-> > Just because the device tree source is distributed in the kernel tree
-> > doesn't mean it can give up backwards compatibility.
-> 
-> We checked Axon, which is the only non-DTS machine that uses EMAC and
-> it will work fine with this change.
+We're hitting this i nouveau as well (http://nouveau.freedesktop.org),
+since we make extensive use ot 64 bit ints. Over time, we've had a
+number of reports on this issue, and at one point I read that it
+should be fixed in gcc. But recently, a nouveau user on PPC32 (Henrik
+in CC:) reported the issue again with gcc 4.2.3. Others have it on gcc
+4.2.2 too:
+http://bugs.freedesktop.org/show_bug.cgi?id=10547
 
-Ah, ok. I remember discussions about this patch before then, sounds like
-it's safe. I just triggered on the dts-centric patch description.
+So, the point of this email is to ask about the possibility of merging
+in one of the __ucmpdi2 patches, like David's which is kept below for
+reference. Most distros seem to ship with such a patch already, and it
+seems that other drivers hit this as well.
 
-Objections withdrawn. :)
+Thanks,
+Stephane
 
 
--Olof
+> --- linux-2.6.19.ppc/arch/powerpc/kernel/misc_32.S~     2006-11-29 21:57:37.000000000 +0000
+> +++ linux-2.6.19.ppc/arch/powerpc/kernel/misc_32.S      2006-12-17 12:19:48.000000000 +0000
+> @@ -728,6 +728,27 @@ _GLOBAL(__lshrdi3)
+>         or      r4,r4,r7        # LSW |= t2
+>         blr
+>
+> +/*
+> + * __ucmpdi2: 64-bit comparison
+> + *
+> + * R3/R4 has 64 bit value A
+> + * R5/R6 has 64 bit value B
+> + * result in R3: 0 for A < B
+> + *              1 for A == B
+> + *              2 for A > B
+> + */
+> +_GLOBAL(__ucmpdi2)
+> +       cmplw   r7,r3,r5        # compare high words
+> +       li      r3,0
+> +       blt     r7,2f           # a < b ... return 0
+> +       bgt     r7,1f           # a > b ... return 2
+> +       cmplw   r6,r4,r6        # compare low words
+> +       blt     r6,2f           # a < b ... return 0
+> +       li      r3,1
+> +       ble     r6,2f           # a = b ... return 1
+> +1:     li      r3,2
+> +2:     blr
+> +
+>  _GLOBAL(abs)
+>         srawi   r4,r3,31
+>         xor     r3,r3,r4
+> --- linux-2.6.19.ppc/arch/powerpc/kernel/ppc_ksyms.c~   2006-12-15 17:19:56.000000000 +0000
+> +++ linux-2.6.19.ppc/arch/powerpc/kernel/ppc_ksyms.c    2006-12-17 12:16:54.000000000 +0000
+> @@ -161,9 +161,11 @@ EXPORT_SYMBOL(to_tm);
+>  long long __ashrdi3(long long, int);
+>  long long __ashldi3(long long, int);
+>  long long __lshrdi3(long long, int);
+> +int __ucmpdi2(uint64_t, uint64_t);
+>  EXPORT_SYMBOL(__ashrdi3);
+>  EXPORT_SYMBOL(__ashldi3);
+>  EXPORT_SYMBOL(__lshrdi3);
+> +EXPORT_SYMBOL(__ucmpdi2);
+>  #endif
+>
+>  EXPORT_SYMBOL(memcpy);
+>
+> --
+> dwmw2
+>
