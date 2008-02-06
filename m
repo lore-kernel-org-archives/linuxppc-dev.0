@@ -1,24 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F0B1DDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 17:05:15 +1100 (EST)
-Message-Id: <5CA5CE1D-4287-47C8-BE48-B45782FB4ECE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080204134617.GA10377@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [POWERPC] qe_lib: fix few fluffy negligences (was: Re:
-	[PATCH 1/5] [POWERPC] qe_lib and users: get rid of most
-	device_types and model)
-Date: Wed, 6 Feb 2008 00:04:59 -0600
-References: <20080124151850.GA15190@localhost.localdomain>
-	<20080124153959.GA23246@localhost.localdomain>
-	<20080205001318.5fbc60fa.sfr@canb.auug.org.au>
-	<20080204134617.GA10377@localhost.localdomain>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Return-Path: <bernhard@intevation.de>
+Received: from kolab.intevation.de (aktaia.intevation.org [212.95.126.10])
+	by ozlabs.org (Postfix) with ESMTP id 494E8DDDFD
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 21:07:52 +1100 (EST)
+From: Bernhard Reiter <bernhard@intevation.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: compile quirk linux-2.6.24 (with workaround)
+Date: Wed, 6 Feb 2008 11:07:37 +0100
+References: <200802031729.12069.bernhard@intevation.de>
+	<fa686aa40802050724o692ef9e7yf51945225f56da5b@mail.gmail.com>
+	<20080205093820.5918a216@zod.rchland.ibm.com>
+In-Reply-To: <20080205093820.5918a216@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1433458.QFdKtCEU4I";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200802061107.43576.bernhard@intevation.de>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->
-> From: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Subject: [POWERPC] qe_lib: fix few fluffy negligences
->
-> One is intoduced by me (of_node_put() absence) and another was
-> present already (not checking for NULL).
->
-> Found by Stephen Rothwell.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/sysdev/qe_lib/qe.c |   10 +++++-----
-> 1 files changed, 5 insertions(+), 5 deletions(-)
+--nextPart1433458.QFdKtCEU4I
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-applied.
+On Tuesday 05 February 2008 16:38, Josh Boyer wrote:
+> > That would mean we're dropping support for compilers which can't build
+> > 405/440 specific wrapper bits (or other core specific quirks that need
+> > to go in the wrapper) =A0That doesn't sound appropriate to me.
 
-- k
+I agree.
+Note that dropping support for these compilers will raise the hurdle to=20
+compile kernels, which might lead to less testing of the whole kernel. This=
+=20
+effect would probably eat up the advantages of better testing by always=20
+building the whole source. So I do not recommend it. :)
+
+> No it doesn't. =A0At least not yet. =A0I said I'd try to come up with a
+> patch soon-ish. =A0
+
+Thanks in advance!
+
+
+=2D-=20
+Managing Director - Owner: www.intevation.net       (Free Software Company)
+Germany Coordinator: fsfeurope.org. Coordinator: www.Kolab-Konsortium.com.
+Intevation GmbH, Osnabr=FCck, DE; Amtsgericht Osnabr=FCck, HRB 18998
+Gesch=E4ftsf=FChrer Frank Koormann, Bernhard Reiter, Dr. Jan-Oliver Wagner
+
+--nextPart1433458.QFdKtCEU4I
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+
+iD8DBQBHqYbvh9ag3dpKERYRAsYoAJ9o/N1TyxRIjOQp3kNmgBZKAyEEpgCghox7
+ks9w7O9LDAr84yewD1o73cM=
+=woFq
+-----END PGP SIGNATURE-----
+
+--nextPart1433458.QFdKtCEU4I--
