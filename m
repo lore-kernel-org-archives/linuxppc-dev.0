@@ -1,21 +1,24 @@
-Return-Path: <alohanono@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
-	by ozlabs.org (Postfix) with ESMTP id C5D23DDD0C
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6BBD4DDE2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Feb 2008 23:05:10 +1100 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so1084639rnf.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 06 Feb 2008 04:05:09 -0800 (PST)
-Message-ID: <47A9A26B.2010203@gmail.com>
-Date: Wed, 06 Feb 2008 13:04:59 +0100
-From: "A. Nolson" <alohanono@gmail.com>
-MIME-Version: 1.0
+	Thu,  7 Feb 2008 01:51:07 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JMlc8-0008Im-93
+	for linuxppc-embedded@ozlabs.org; Wed, 06 Feb 2008 06:51:04 -0800
+Message-ID: <15306699.post@talk.nabble.com>
+Date: Wed, 6 Feb 2008 06:51:04 -0800 (PST)
+From: IngoM <ingo.maindorfer@ipm.fraunhofer.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Problems booting in ML403
-References: <47A8782E.4050402@gmail.com>
-	<fa686aa40802050824y2a650231j3889b749d3553701@mail.gmail.com>
-In-Reply-To: <fa686aa40802050824y2a650231j3889b749d3553701@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [Virtex 4 PPC] Which Linux?
+In-Reply-To: <20080205145834.GQ13945@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <15268468.post@talk.nabble.com>
+	<20080205145834.GQ13945@pengutronix.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +29,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-It seems that the multiple "console=" parameters in the kernel were the 
-problem. I have substituted for only
 
- console=ttyS0,9600 
+Hello!
 
-Now I have managed to boot it completely.
+Thanks for all answers!
 
-Thank you!
 
-Grant Likely wrote:
-> On 2/5/08, A. Nolson <alohanono@gmail.com> wrote:
->   
->> Hello,
->>
->>  I am having problems while trying to boot my linux kernel 2.6.24-rc3 (
->> secretlab git). After some days studying this list and other related
->> documents/wikis about how to make work a linux kernel in my ML403, I
->> managed to make it work partially.
->>
->>     
-> <snip>
->   
->> Linux/PPC load: console=ttyS0,9600 console=tty0,9600 console=ttyUL0,9600
->> root=/d
->> ev/xsa2 rw
->> init=/sbin/init
->>     
->
-> What happens if you try init=/bin/sh?
->
-> What does your /etc/inittab look like?
->
-> It looks like the system is booting, but inittab might not be starting
-> any processes attached to the serial console.
->
-> Cheers,
-> g.
->
->   
+Robert Schwebel wrote:
+> 
+> On Mon, Feb 04, 2008 at 05:54:55AM -0800, IngoM wrote:
+>> 2) Linux
+>> I'd like to build my kernel and filesystem myself. But which way to go?
+>> Using OE, buildroot, ELDK...
+>> Can you please provide some starting points for me?
+> 
+> ptxdist would be another alternative.
+> 
+
+In the meantime, I get crosstool to compile my toolchain.
+With that toolchain I get a xilinx kernel from their git-repo compiling and
+booting up.
+
+ptxdist compiles my userland, but I have some more probs:
+
+I use the xmd from EDK to download and run the kernel.
+I try to setup a rootfs via NFS but the kernel didn't get an address, maybe
+there is a problem with the network-setup.
+It's not clear to me how put the kernel-image and the userland to one
+elf-binary that is downloadable by xmd, because to work around the above
+network issue to get things started.
+
+Best Regards,
+
+Ingo
+
+-- 
+View this message in context: http://www.nabble.com/-Virtex-4-PPC--Which-Linux--tp15268468p15306699.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
