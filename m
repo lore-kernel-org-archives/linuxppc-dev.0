@@ -1,20 +1,14 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A043ADDE10
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 23:14:00 +1100 (EST)
-Message-ID: <47A9A482.1060405@garzik.org>
-Date: Wed, 06 Feb 2008 07:13:54 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
-References: <20071116073821.548CCDDDF4@ozlabs.org>
-In-Reply-To: <20071116073821.548CCDDDF4@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, auke-jan.h.kok@intel.com, jgarzik@pobox.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <SRS0=+ox4=S3=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 75538DDE04
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 23:22:26 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: jeff@garzik.org
+Subject: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii matching
+	table
+Date: Wed,  6 Feb 2008 13:21:59 +0100
+Message-Id: <1202300519-7294-1-git-send-email-sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> The e1000 driver stores the content of the PCI resources into
-> unsigned long's before ioremapping. This breaks on 32 bits
-> platforms that support 64 bits MMIO resources such as ppc 44x.
-> 
-> This fixes it by removing those temporary variables and passing
-> directly the result of pci_resource_start/len to ioremap.
-> 
-> The side effect is that I removed the assignments to the netdev
-> fields mem_start, mem_end and base_addr, which are totally useless
-> for PCI devices.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> --
-> 
->  drivers/net/e1000/e1000_main.c |   18 +++++-------------
->  1 file changed, 5 insertions(+), 13 deletions(-)
+With the removal the the "rgmii-interface" device_type property from the
+dts files, the newemac driver needs an update to only rely on compatible
+property.
 
-applied
+Signed-off-by: Stefan Roese <sr@denx.de>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/net/ibm_newemac/rgmii.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
+index 9bc1132..5757788 100644
+--- a/drivers/net/ibm_newemac/rgmii.c
++++ b/drivers/net/ibm_newemac/rgmii.c
+@@ -302,7 +302,6 @@ static int __devexit rgmii_remove(struct of_device *ofdev)
+ static struct of_device_id rgmii_match[] =
+ {
+ 	{
+-		.type		= "rgmii-interface",
+ 		.compatible	= "ibm,rgmii",
+ 	},
+ 	{
+-- 
+1.5.4.rc3
