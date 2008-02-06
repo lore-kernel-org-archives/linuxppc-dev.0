@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D1816DE0E0
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 16:37:59 +1100 (EST)
-Message-Id: <8E34A702-F871-4B0A-9607-147BD2DFFEC4@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id E13D4DE00F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 16:38:16 +1100 (EST)
+Message-Id: <4E112D00-D2F9-4167-BD9E-126BA309355B@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20080131194005.55ee9fc3.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: "Bryan O'Donoghue" <bodonoghue@codehermit.ie>
+In-Reply-To: <20080203232129.36186b0a@neuromancer.mindspace>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] powerpc: add rtc node to mpc8313erdb dts
-Date: Tue, 5 Feb 2008 23:37:46 -0600
-References: <20080131194005.55ee9fc3.kim.phillips@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: PATCH[1/1] 8xx: resubmit Add clock-frequency parameter to
+	adder875 and mpc885ads dts configurations
+Date: Tue, 5 Feb 2008 23:38:05 -0600
+References: <20080203232129.36186b0a@neuromancer.mindspace>
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +25,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 31, 2008, at 7:40 PM, Kim Phillips wrote:
+On Feb 3, 2008, at 5:21 PM, Bryan O'Donoghue wrote:
 
-> the 8313 rdb has a ds1339 at address 0x68.
+> Previous patch submission contained tabs munged into whitespace.
 >
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> This patch adds the clock-frequency parameter in decimal instead of  
+> hex.
+>
+> Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
 > ---
-> arch/powerpc/boot/dts/mpc8313erdb.dts |    4 ++++
-> 1 files changed, 4 insertions(+), 0 deletions(-)
-
 
 applied.
 
