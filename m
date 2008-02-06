@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67FA2DDE09
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 16:38:46 +1100 (EST)
-Message-Id: <E2EE4C8B-818A-462D-91C5-5B525F6FBEB2@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 51C32DE57B
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 16:38:59 +1100 (EST)
+Message-Id: <F453BB59-BD33-4621-96AB-D91F515D4AB7@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Jon Loeliger <jdl@jdl.com>
-In-Reply-To: <E1JLNdb-0002G5-Cd@jdl.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Andy Fleming <afleming@freescale.com>
+In-Reply-To: <12021712751503-git-send-email-afleming@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] [POWERPC] Fix storcenter DTS typos, feedback, IRQs.
-Date: Tue, 5 Feb 2008 23:38:35 -0600
-References: <E1JLNdb-0002G5-Cd@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, andy@protium.com
+Subject: Re: [PATCH v2] Made FSL Book-E PMC support more generic
+Date: Tue, 5 Feb 2008 23:38:51 -0600
+References: <12021712751503-git-send-email-afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +24,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 2, 2008, at 1:02 PM, Jon Loeliger wrote:
+On Feb 4, 2008, at 6:27 PM, Andy Fleming wrote:
 
+> Some of the more recent e300 cores have the same performance monitor
+> implementation as the e500.  e300 isn't book-e, so the name isn't
+> really appropriate.  In preparation for e300 support, rename a bunch
+> of fsl_booke things to say fsl_emb (Freescale Embedded Performance  
+> Monitors).
 >
-> Cleaned up IRQ layout and removed unsused ISU allocations.
-> Fixed RTC address typo from /dts-v1/ conversion.
-> Incorporated list suggestions to use an "iomega," vendor prefix,
-> and to use a node reference rather than a hard path.
->
-> Signed-off-by: Jon Loeliger <jdl@@jdl.com>
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
 > ---
->
-> Kumar,
->
-> I tried to use one large, linear IRQ block and shift the
-> IRQs up to, like, around 129 or so, but it did not work.
-> This patch definitely works, so I suspect some issue trying
-> to setup (non-)IRQs between 0x50000 and 0x51000 or so.  Ick.
-
-We can figure this out later.
-
-> In any even, this is defintely a valid bug fix.  If you
-> would, please pick up for 2.6.25.
->
-> Thanks,
-> jdl
+> arch/powerpc/kernel/cputable.c                     |    4 +-
+> arch/powerpc/kernel/pmc.c                          |    2 +-
+> arch/powerpc/oprofile/Makefile                     |    2 +-
+> arch/powerpc/oprofile/common.c                     |    6 +-
+> .../{op_model_fsl_booke.c => op_model_fsl_emb.c}   |   28 ++++----
+> arch/powerpc/platforms/Kconfig.cputype             |    4 +
+> include/asm-powerpc/cputable.h                     |    2 +-
+> include/asm-powerpc/oprofile_impl.h                |    2 +-
+> include/asm-powerpc/reg.h                          |    4 +
+> include/asm-powerpc/reg_booke.h                    |   62  
+> -----------------
+> include/asm-powerpc/reg_fsl_emb.h                  |   72 +++++++++++ 
+> +++++++++
+> 11 files changed, 102 insertions(+), 86 deletions(-)
+> rename arch/powerpc/oprofile/{op_model_fsl_booke.c =>  
+> op_model_fsl_emb.c} (91%)
+> create mode 100644 include/asm-powerpc/reg_fsl_emb.h
 
 
 applied.
