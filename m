@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 588FADDE08
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 11:09:14 +1100 (EST)
-Subject: Re: [PATCH] Fix legacy serial search for opb bus ports
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <9efb8c0e313840ccb1bdf918406cdc812ec5de94.1202212897.git.michael@ellerman.id.au>
-References: <9efb8c0e313840ccb1bdf918406cdc812ec5de94.1202212897.git.michael@ellerman.id.au>
-Content-Type: text/plain
-Date: Wed, 06 Feb 2008 11:08:51 +1100
-Message-Id: <1202256531.7079.76.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paul.gortmaker@windriver.com
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 6 Feb 2008 12:06:36 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/10] sbc8560: Add v1 device tree source for Wind River
+	SBC8560 board
+Message-ID: <20080206010636.GB10300@localhost.localdomain>
+References: <e3ccba7097a77e66f07663fe9d1f174c06183528.1201217172.git.paul.gortmaker@windriver.com>
+	<7107e511a0f989ad55335855fa0f241f09eff52f.1201217172.git.paul.gortmaker@windriver.com>
+	<20080201075408.GC18684@localhost.localdomain>
+	<FF018A8D-21AC-4F05-887B-66B99A0D444C@kernel.crashing.org>
+	<20080205024049.GC28846@localhost.localdomain>
+	<B819C3FE-9DD3-4B49-A8C4-48D507FBF0C4@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B819C3FE-9DD3-4B49-A8C4-48D507FBF0C4@kernel.crashing.org>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Feb 05, 2008 at 09:44:23AM -0600, Kumar Gala wrote:
+> 
+> On Feb 4, 2008, at 8:40 PM, David Gibson wrote:
+> 
+> > On Fri, Feb 01, 2008 at 08:46:32AM -0600, Kumar Gala wrote:
+> >>
+> >> On Feb 1, 2008, at 1:54 AM, David Gibson wrote:
+> >>
+> >>> On Thu, Jan 24, 2008 at 06:41:24PM -0500, Paul Gortmaker wrote:
+> > [snip]
+> >>>> +		epld@5,0 {
+> >>>
+> >>> I'm not entirely convinced on this two-level representation.  I  
+> >>> think
+> >>> the FSL people need to get together and define a binding (or set of
+> >>> bindings) for their various chipselect style external bus bridges.
+> >>
+> >> It seems reasonable if you had a FPGA off of the localbus to have a
+> >> two level representation.  One for the localbus controller on the FSL
+> >> part and the child to describe the FPGA.
+> >>
+> >> What are you expecting beyond what we have today?  I guess I'm asking
+> >> what's missing from the localbus nodes we have?
+> >
+> > Sorry, I was probably misleading.  All I really meant is that I don't
+> > know enough about these FSL bus bridge arrangements to assess if this
+> > representation is the most sensible one.  I'm presuming that this
+> > chipselect bridge unit is a more-or-less standard ASIC appearing on
+> > lots of the FSL chips, so it would be nice to have a standard binding
+> > for them, as we do for the roughly-equivalent EBC bridge on 4xx.
+> 
+> Is there a writeup for EBC?  I'll take a look at it and see if it  
+> makes senses for the freescale 'localbus'.
 
-On Tue, 2008-02-05 at 23:01 +1100, Michael Ellerman wrote:
-> The patch to legacy_serial.c (1a7507c7da2df6856e085e0fbb0c9ea8c12ac4e,
-> Reduce code duplication in legacy_serial, add UART parent types) changed
-> the semantics for opb ports from type = "opb" || compatible = "ibm,opb"
-> to type = "opb" && compatible = "ibm,opb".
-> 
-> The result is serial ports on our QS21s (Cell blades) don't get found,
-> and for some reason the machine doesn't boot at all - possibly it's
-> panicking due to lack of a console?
-> 
-> The fix is to add two entries to the of_device_id table, one that looks
-> for type = "opb" and the other compatible = "ibm,opb".
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Uh... not as such.  I'll try to write it up and add a binding to
+b-w-o.txt next week when I'm back at work for real.  I wouldn't expect
+it to be usable as is for the Freescale localbus, but it should be
+pretty similar in spirit.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> ---
->  arch/powerpc/kernel/legacy_serial.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-> index 76b862b..61dd174 100644
-> --- a/arch/powerpc/kernel/legacy_serial.c
-> +++ b/arch/powerpc/kernel/legacy_serial.c
-> @@ -36,7 +36,8 @@ static struct legacy_serial_info {
->  static struct __initdata of_device_id parents[] = {
->  	{.type = "soc",},
->  	{.type = "tsi-bridge",},
-> -	{.type = "opb", .compatible = "ibm,opb",},
-> +	{.type = "opb", },
-> +	{.compatible = "ibm,opb",},
->  	{.compatible = "simple-bus",},
->  	{.compatible = "wrs,epld-localbus",},
->  };
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
