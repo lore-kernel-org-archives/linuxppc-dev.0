@@ -1,21 +1,21 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound7-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 00163DDDF3
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1A776DDFBF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Feb 2008 06:29:20 +1100 (EST)
+	Thu,  7 Feb 2008 06:41:53 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JMq9W-0004N6-MH
+	for linuxppc-embedded@ozlabs.org; Wed, 06 Feb 2008 11:41:50 -0800
+Message-ID: <15312437.post@talk.nabble.com>
+Date: Wed, 6 Feb 2008 11:41:50 -0800 (PST)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: System Clock runaway on Xilinx platform
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [Virtex 4 PPC] Which Linux?
-Date: Wed, 6 Feb 2008 11:29:11 -0800
-In-Reply-To: <15268468.post@talk.nabble.com>
-References: <15268468.post@talk.nabble.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "IngoM" <ingo.maindorfer@ipm.fraunhofer.de>, <linuxppc-embedded@ozlabs.org>
-Message-Id: <20080206192914.0A1DD1D0071@mail110-dub.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,40 +27,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+Hi all,
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of IngoM
-> Sent: Monday, February 04, 2008 5:55 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: [Virtex 4 PPC] Which Linux?
->=20
->=20
-> Hello,
->=20
-> we develop a new laser-ranging-system and our hardware freaks have
-choosen
-> the Virtex 4 FX 12 on the "AVNET FX12 Mini-Module". The system had to
-> deliver the raw data via UDP (12 Mbyte/sec) and on TCP the processed
-data
-> (about 6 Mbyte/sec). When you get the processed data via TCP then no
-data
-> send by UDP.
->=20
-> I'm confused by the following:
->=20
-> 1) Hard-TEMAC vs. Soft-TEMAC.
-> Avnet provide a demo for the module which using Soft-TEMAC. If I get
-it
-> right this core has to be licenced. But when ther is a hard-TEMAC why
-pay
-> for it?
+Thanks for the help so far!
+I'm now running linux 2.6.21 on my custom virtex 4 board modeled after the
+ml410.  The cpu clock is 300MHz and the PLB bus is 175MHz.
 
-Generally speaking, if you have the hard temac, you should use it.  The
-new EDK cores do this transparently. (see
-http://www.xilinx.com/bvdocs/ipcenter/data_sheet/xps_ll_temac.pdf)  Note
-that the emaclite license has recently been made free, although this
-core doesn't support gigabit rates, which it looks like youll need.
+My question is which clock is the linux system clock that keeps track of the
+date derived from?  I set my date with rdate -s time.mit.edu at boot and
+then compare with the date command and rdate -p time.mit.edu and they are
+off by 20 or so seconds even just after a few minutes, this trend continues
+and it will be off by a day after a few hours.  I think I just don't have
+something defined correctly but I can't figure out which.
 
-Steve
+Thanks
+
+Kevin
+-- 
+View this message in context: http://www.nabble.com/System-Clock-runaway-on-Xilinx-platform-tp15312437p15312437.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
