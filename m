@@ -2,18 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5CEFBDDE01
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 16:44:38 +1100 (EST)
-Message-Id: <B8F9E742-06AC-430B-A176-A17690C8C729@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 481EFDDE01
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 16:48:16 +1100 (EST)
+Date: Tue, 5 Feb 2008 23:45:37 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20080201180958.7c66bff3.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/3] powerpc: fsl_soc: fix mpc83xx_spi device registration
-Date: Tue, 5 Feb 2008 23:44:06 -0600
-References: <20080201180958.7c66bff3.kim.phillips@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for-2.6.25' branchc
+Message-ID: <Pine.LNX.4.64.0802052345010.6087@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'for-2.6.25' branch of
 
-On Feb 1, 2008, at 6:09 PM, Kim Phillips wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.25
 
-> calling platform_device_register after platform_device_alloc causes
-> this:
->
-> kobject (c3841a70): tried to init an initialized object, something  
-> is seriously wrong.
-> Call Trace:
-> [c381fe20] [c0007bb8] show_stack+0x3c/0x194 (unreliable)
-> [c381fe50] [c01322a8] kobject_init+0xb8/0xbc
-> [c381fe60] [c01591cc] device_initialize+0x30/0x9c
-> [c381fe80] [c015ee34] platform_device_register+0x1c/0x34
-> [c381fea0] [c02f1fe0] of_fsl_spi_probe+0x21c/0x22c
-> [c381ff30] [c02f2044] fsl_spi_init+0x54/0x160
-> [c381ff60] [c02f3924] __machine_initcall_mpc832x_rdb_mpc832x_spi_init 
-> +0x120/0x138
-> [c381ff70] [c02e61b4] kernel_init+0x98/0x284
-> [c381fff0] [c000f740] kernel_thread+0x44/0x60
->
-> fixed by calling platform_device_add (second half of
-> platform_device_register) instead.
->
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+to receive the following updates:
 
-applied.
+(based on a recent pull of linus's tree)
 
-- k
+ arch/powerpc/boot/dts/adder875-redboot.dts      |    1
+ arch/powerpc/boot/dts/adder875-uboot.dts        |    1
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |    4
+ arch/powerpc/boot/dts/mpc8315erdb.dts           |    2
+ arch/powerpc/boot/dts/mpc834x_mds.dts           |    2
+ arch/powerpc/boot/dts/mpc885ads.dts             |    1
+ arch/powerpc/boot/dts/storcenter.dts            |   12
+ arch/powerpc/kernel/cputable.c                  |   10
+ arch/powerpc/kernel/pmc.c                       |    2
+ arch/powerpc/oprofile/Makefile                  |    2
+ arch/powerpc/oprofile/common.c                  |    6
+ arch/powerpc/oprofile/op_model_fsl_booke.c      |  371 ------------------------
+ arch/powerpc/oprofile/op_model_fsl_emb.c        |  369 +++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c       |    2
+ arch/powerpc/platforms/83xx/mpc83xx.h           |    2
+ arch/powerpc/platforms/83xx/usb.c               |   17 -
+ arch/powerpc/platforms/8xx/adder875.c           |    6
+ arch/powerpc/platforms/8xx/ep88xc.c             |    1
+ arch/powerpc/platforms/Kconfig                  |    1
+ arch/powerpc/platforms/Kconfig.cputype          |    4
+ arch/powerpc/platforms/embedded6xx/storcenter.c |   25 -
+ arch/powerpc/sysdev/fsl_soc.c                   |    2
+ drivers/net/Kconfig                             |    4
+ drivers/net/cpmac.c                             |   55 +--
+ include/asm-powerpc/cputable.h                  |    2
+ include/asm-powerpc/oprofile_impl.h             |    2
+ include/asm-powerpc/reg.h                       |    4
+ include/asm-powerpc/reg_booke.h                 |   62 ----
+ include/asm-powerpc/reg_fsl_emb.h               |   72 ++++
+ 29 files changed, 524 insertions(+), 520 deletions(-)
+
+Andy Fleming (2):
+      [POWERPC] Made FSL Book-E PMC support more generic
+      [POWERPC} Add oprofile support for e300
+
+Anton Vorontsov (1):
+      cpmac: convert to new Fixed PHY infrastructure
+
+Bryan O'Donoghue (1):
+      [POWERPC] 8xx: Add clock-frequency to adder875 and mpc885ads dts
+
+Jon Loeliger (1):
+      [POWERPC] Fix storcenter DTS typos, feedback, IRQs.
+
+Kim Phillips (5):
+      [POWERPC] 83xx: configure USB clock for MPC8315E
+      [POWERPC] 83xx: Correct 2nd PCI controller interrupt value in mpc834x_mds dts
+      [POWERPC] 83xx: Add rtc node to mpc8313erdb dts
+      [POWERPC] 83xx: mpc832x_rdb: fix compiler warning
+      [POWERPC] FSL: fix mpc83xx_spi device registration
+
+Scott Wood (1):
+      [POWERPC] 8xx: adder875, ep88xc: fix to match recent 8xx cleanups.
