@@ -1,20 +1,32 @@
-Return-Path: <SRS0=+ox4=S3=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 2B237DDE44
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 23:22:41 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 957D8DDFDE
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Feb 2008 23:50:07 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m16BkL3T004394
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Feb 2008 06:46:21 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m16Co2GT087062
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Feb 2008 05:50:02 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m16Co1hi015828
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Feb 2008 05:50:02 -0700
+Date: Wed, 6 Feb 2008 06:49:47 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
 Subject: Re: [PATCH] net: NEWEMAC: Remove "rgmii-interface" from rgmii
 	matching table
-Date: Wed, 6 Feb 2008 13:16:18 +0100
-References: <1200476230-14026-1-git-send-email-sr@denx.de>
-	<20080205151216.4ff3c32a@weaponx> <47A9A443.2020109@pobox.com>
-In-Reply-To: <47A9A443.2020109@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802061316.18666.sr@denx.de>
-Cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
+Message-ID: <20080206064947.7e91d833@zod.rchland.ibm.com>
+In-Reply-To: <1202300519-7294-1-git-send-email-sr@denx.de>
+References: <1202300519-7294-1-git-send-email-sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +36,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 06 February 2008, Jeff Garzik wrote:
-> > Jeff, any chance this can get into .25 soon?  I have another patch
-> > queued up behind this one that requires it, and I don't see it in any
-> > of your trees or branches.
-> >
-> > Or, if you aren't opposed, I can take it through Paul's tree with your
-> > Ack.
->
-> can you resend?  I don't see it in the pile
+On Wed,  6 Feb 2008 13:21:59 +0100
+Stefan Roese <sr@denx.de> wrote:
 
-Will do.
+> With the removal the the "rgmii-interface" device_type property from the
+> dts files, the newemac driver needs an update to only rely on compatible
+> property.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Best regards,
-Stefan
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+
+josh
