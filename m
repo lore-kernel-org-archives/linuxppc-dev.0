@@ -1,16 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18346.19527.92063.259932@cargo.ozlabs.ibm.com>
-Date: Thu, 7 Feb 2008 11:09:43 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [RFC][PATCH] remove section mappinng
-In-Reply-To: <1201558765.29357.1.camel@dyn9047017100.beaverton.ibm.com>
-References: <1201277105.26929.36.camel@dyn9047017100.beaverton.ibm.com>
-	<18330.35819.738293.742989@cargo.ozlabs.ibm.com>
-	<1201558765.29357.1.camel@dyn9047017100.beaverton.ibm.com>
-Cc: linux-mm <linux-mm@kvack.org>, linuxppc-dev@ozlabs.org, anton@au1.ibm.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 76A4ADDE1A
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 12:27:00 +1100 (EST)
+Subject: Re: Reorg of 32-bit dma code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Becky Bruce <bgill@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0802061802310.1616@monty.am.freescale.net>
+References: <Pine.LNX.4.64.0802061802310.1616@monty.am.freescale.net>
+Content-Type: text/plain
+Date: Thu, 07 Feb 2008 12:26:34 +1100
+Message-Id: <1202347594.7079.107.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Badari Pulavarty writes:
 
-> Thank you for your input and suggestions. Does this look reasonable
-> to you ?
+On Wed, 2008-02-06 at 18:32 -0600, Becky Bruce wrote:
 > 
-> Thanks,
-> Badari
+> I've been looking at converting 32-bit powerpc's DMA code over to the 
+> 64-bit method, where there is a dma_ops structure inside archdata
+> that tells us which operations a device should use for DMA.  I'll be 
+> needing this shortly because I need to implement swiotlb to deal with 
+> PCI and large amounts of RAM on 32-bit systems that support 36-bit
+> physical addressing. (Yes, I know.  Fun for me.  Woohoo.)
 > 
-> For memory remove, we need to clean up htab mappings for the
-> section of the memory we are removing.
-> 
-> This patch implements support for removing htab bolted mappings
-> for ppc64 lpar. Other sub-archs, may need to implement similar
-> functionality for the hotplug memory remove to work. 
+> Anyway, I have an initial booting first pass, and wanted to get some 
+> feedback.  What I've done at this point is to make dma_64 common to both 
+> architectures (will rename it when I send a real patch...).  The 
+> dma_direct_* functions have been changed to work on both 32/64, and the 
+> old dma_* functionality in dma-mapping.h has been removed.   For now, to 
+> avoid whacking on every 32-bit platform, the get_dma_ops() function has 
+> been changed to return &dma_direct_ops if the device pointer exists but 
+> the dma_ops field is NULL.   I'm not sure if this needs to be ifdef'd for 
+> 64-bit?
 
-Looks OK to me.
+I'd prefer so yes.
 
-Paul.
+> I've copied a bit of code over from pci_64.c into pci_common.c - some of 
+> it isn't in use yet but will be once I start doing actual setup in the 
+> platform code. pcibios_setup_new_device() becomes common as well.
+
+Cool !
+
+>   I've 
+> also temporarily hacked the 32-bit code to set archdata.dma_data to 
+> PCI_DRAM_OFFSET, so we can eliminate the use of virt_to_bus() and instead 
+> use the 64-bit method, which gets rid of some ugly ifdefs in the dma code.  
+
+Ok.
+
+> That's really about it - the preliminary patch is below - clearly it will 
+> need some cleanup, but I wanted to post early and often.  Any feedback or 
+> suggestions on cleaning this up are greatly appreciated. 
+
+I'll have a look asap, thanks for doing this !
+
+Ben.
