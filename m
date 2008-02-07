@@ -1,22 +1,21 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 23430DDE0C
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 09:54:25 +1100 (EST)
-Date: Thu, 7 Feb 2008 14:53:56 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
-In-Reply-To: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
-References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 10FE7DDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 10:34:11 +1100 (EST)
+Message-ID: <47AB956D.4090805@freescale.com>
+Date: Thu, 07 Feb 2008 17:34:05 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, tglx@linutronix.de,
-	linux-kernel@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>, jdl@jdl.com, linuxppc-dev@ozlabs.org
+Subject: Re: [libfdt] RFC: Node iterators (v2)
+References: <20080116062022.GD5016@localhost.localdomain>
+	<20080117051009.GA12239@localhost.localdomain>
+In-Reply-To: <20080117051009.GA12239@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Fri, 8 Feb 2008, Paul Mackerras wrote:
->
-> From: Tony Breeds <tony@bakeyournoodle.com>
+David Gibson wrote:
+> And here's a revised version.  This now also handles recursive
+> iteration and iteration across nodes without respect to depth.  I've
+> removed the for_each() macros for the time being, because they were
+> making my brain hurt, but I'm still contemplating bringing them back.
+> Several libfdt functions are now implemented using the new iterator,
+> so this ends up as a code-size-reducing patch.
 > 
-> Commit ad7f71674ad7c3c4467e48f6ab9e85516dae2720 corrected the clock
-> ..
+> I'm pretty happy with the basic outline of this now, although the
+> names and details might want a bit of polish still.
 
-Please, when mentioning hex numbers, also do the one-liner shortlog.
+Can we get this merged?
 
-I realize that in gitk (or even just with two terminal windows open and a 
-git repository) it's trivial to just follow the link and see what that 
-commit was, but even you're just doing a "git log" or more commonly if you 
-read the commit log somewhere else (like a mail gateway that posts them 
-automatically when I apply things), it's really much more readable if you 
-were to say something like:
+> +int _fdt_next_node(const void *fdt, int offset, int *depth)
+> +{
 
-  Commit ad7f71674ad7c3c4467e48f6ab9e85516dae2720 ("[POWERPC] Use a 
-  sensible default for clock_getres() in the VDSO") corrected the clock
-  ...
+This is a public function; why the underscore?
 
-which reads much mroe naturally without having to go wonder what that 
-commit was doing. No?
-
-As it is, I'm pretty used to editing those things in (I do it all the 
-time), and I will do so for this email too, but I want to keep bringing 
-this up so that I hopfully wouldn't have to do it so often. So please 
-write your commit messages with the specific git information available, 
-but without _requiring_ people to be git users to get the gist of the 
-matter, ok?
-
-			Linus
+-Scott
