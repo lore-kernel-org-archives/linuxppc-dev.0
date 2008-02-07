@@ -1,22 +1,18 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 25767DDDF6
+Return-Path: <nikhilgautam1@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
+	by ozlabs.org (Postfix) with ESMTP id 19724DDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Feb 2008 11:10:27 +1100 (EST)
+	Thu,  7 Feb 2008 11:36:18 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so2201361rvf.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 06 Feb 2008 16:36:17 -0800 (PST)
+Message-ID: <e9eeaac20802061636t14229054yebb41fa38dc5bffe@mail.gmail.com>
+Date: Wed, 6 Feb 2008 16:36:17 -0800
+From: "Nikhil Gautam" <nikhilgautam1@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: 440EPX is not booting from 1Gb/128MB NAND flash
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: System Clock runaway on Xilinx platform
-Date: Wed, 6 Feb 2008 16:10:18 -0800
-In-Reply-To: <15312437.post@talk.nabble.com>
-References: <15312437.post@talk.nabble.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "khollan" <khollan@daktronics.com>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080207001020.0E2696E0075@mail129-dub.bigfish.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,52 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-The processor is an integer factor faster than the bus, unless you're
-doing something really unusual.  Are you sure that's not 300 and 150?
+I am trying to boot my board which is based on Sequoia 440EPX. The
+only difference between my board and the reference board is that I
+have a 1 Gb NAND flash ( NAND01GW3B2A) instead of 256Mb flash present
+on reference board.
 
-175/150 =3D 1.16, which might be the difference you're seeing?
+In U-boot I have changed the board configuration file to reflect correct specs.
 
-Steve
+ * Now the NAND chip has to be defined (no autodetection used!)
+ */
+#define CFG_NAND_PAGE_SIZE	(2048)		/* NAND chip page size		*/
+#define CFG_NAND_BLOCK_SIZE	(128 << 10)	/* NAND chip block size		*/
+#define CFG_NAND_PAGE_COUNT	(64)		/* NAND chip page count		*/
+#define CFG_NAND_BAD_BLOCK_POS	(5)		/* Location of bad block marker	*/
+#define CFG_NAND_4_ADDR_CYCLE			/* Fourth addr used (>32MB)	*/
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of khollan
-> Sent: Wednesday, February 06, 2008 11:42 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: System Clock runaway on Xilinx platform
->=20
->=20
-> Hi all,
->=20
-> Thanks for the help so far!
-> I'm now running linux 2.6.21 on my custom virtex 4 board modeled after
-the
-> ml410.  The cpu clock is 300MHz and the PLB bus is 175MHz.
->=20
-> My question is which clock is the linux system clock that keeps track
-of the
-> date derived from?  I set my date with rdate -s time.mit.edu at boot
-and
-> then compare with the date command and rdate -p time.mit.edu and they
-are
-> off by 20 or so seconds even just after a few minutes, this trend
-continues
-> and it will be off by a day after a few hours.  I think I just don't
-have
-> something defined correctly but I can't figure out which.
->=20
-> Thanks
->=20
-> Kevin
-> --
-> View this message in context:
-http://www.nabble.com/System-Clock-runaway-on-Xilinx-platform-
-> tp15312437p15312437.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I have also changed the eeprom configuration word to
+0x87788252
+0x0947D010
+0xA0A82358
+0x0D050000
+
+Is there any other place where some NAND configuration is defined?
+
+Thanks
+Nikhil
