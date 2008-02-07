@@ -1,17 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A9024DDDFC
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 16:13:39 +1100 (EST)
-Message-ID: <47AA9382.5060706@pikatech.com>
-Date: Thu, 07 Feb 2008 00:13:38 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id C0983DDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 16:26:07 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so912012anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Feb 2008 21:26:06 -0800 (PST)
+Message-ID: <fa686aa40802062126w122ed215y5d7bb86b6b1927a2@mail.gmail.com>
+Date: Wed, 6 Feb 2008 22:26:06 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paul Mackerras" <paulus@samba.org>,
+	"Tony Breeds" <tony@bakeyournoodle.com>
+Subject: Re: Please pull powerpc.git for-2.6.25 branch
+In-Reply-To: <18346.31072.982702.10064@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: asm-offsets.c
-References: <47AA8C7D.3030109@pikatech.com>
-	<20080207050744.GE6887@bakeyournoodle.com>
-In-Reply-To: <20080207050744.GE6887@bakeyournoodle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18346.31072.982702.10064@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,11 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tony Breeds wrote:
-> Yeah it's needed, so this patch isn;t the best solution.  I'll fix this
-> ASAP.
->   
-Great! Thanks a lot.
+On 2/6/08, Paul Mackerras <paulus@samba.org> wrote:
+> Tony Breeds (1):
+>       [POWERPC] Use a sensible default for clock_getres() in the VDSO
 
-Cheers,
-   Sean
+Hmm, this commit breaks ppc32 (mpc5200) build with my cross compiler
+(ELDK 4.1; gcc 4.0; binutils 2.16.1).  Is this a bug in the code or
+the compiler?
+
+grant@trillian:~/hacking/linux-2.6$ ppc6xx make -j3
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  CC      arch/powerpc/kernel/asm-offsets.s
+arch/powerpc/kernel/asm-offsets.c: In function 'main':
+arch/powerpc/kernel/asm-offsets.c:316: warning: asm operand 0 probably
+doesn't match constraints
+arch/powerpc/kernel/asm-offsets.c:316: error: impossible constraint in 'asm'
+make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+make: *** [prepare0] Error 2
+grant@trillian:~/hacking/linux-2.6$
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
