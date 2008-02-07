@@ -1,19 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.246])
-	by ozlabs.org (Postfix) with ESMTP id 2EFE3DDE3F
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 16:37:19 +1100 (EST)
-Received: by ag-out-0708.google.com with SMTP id 31so7637182agc.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 06 Feb 2008 21:37:17 -0800 (PST)
-Message-ID: <fa686aa40802062137k4668c038qe853bd7e566b4b3d@mail.gmail.com>
-Date: Wed, 6 Feb 2008 22:37:17 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Olof Johansson" <olof@lixom.net>
-Subject: Please pull linux-2.6-mpc52xx.git (again!)
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 24332DDDF7
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 17:49:50 +1100 (EST)
+Date: Thu, 7 Feb 2008 17:47:50 +1100
+To: Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+	Linux Kernel ML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Fix powerpc vdso clock_getres().
+Message-ID: <20080207064750.GG6887@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Rigby John-R61273 <jrigby@freescale.com>
+Content-Type: text/plain; charset=utf-8
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +20,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/6/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 2/6/08, Olof Johansson <olof@lixom.net> wrote:
-> > mpc52xx_defconfig no longer builds for me, and the two latter of the
-> > above patches are the ones that touch that file:
->
-> Gah!  I caused some patch damage when I rebased the patches.  I'll
-> send a fixup patch ASAP.
+Since implementing highres timers on powerpc the clock_getres syscall
+has reported different resolutions due to the vdso using the a low res
+value.  In the patch d7f71674ad7c3c4467e48f6ab9e85516dae2720 
+([POWERPC] Use a sensible default for clock_getres() in the VDSO), the
+powerpc vdso was updated to use the correct value.
 
-Paul, here's the fixup patch for my rebase screwup.  This solves the
-mpc52xx compile failure.
+This fix doesn't work on older compilers.  Below is a fix for powerpc,
+that introduces a new (generic) #define MONOTONIC_RES_NSEC which is
+equal to the 64 value stored in KTIME_MONOTONIC_RES.
 
-The following changes since commit de0723dcca6e593a12a259798a54eb0e82628fb8:
-  Nathan Fontenot (1):
-        [POWERPC] Update default irq servers when boot cpu is removed
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-are available in the git repository at:
+---
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git for-2.6.25
+Thomas, If this is okay with you can it go through Paul's tree?
 
-Grant Likely (1):
-      [POWERPC] mpc52xx: fix compile error introduce when rebasing patch
+ arch/powerpc/kernel/asm-offsets.c |    2 +-
+ include/linux/hrtimer.h           |    5 ++++-
+ include/linux/ktime.h             |    3 ++-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
 
- drivers/serial/mpc52xx_uart.c |   39 ++++++++++++++-------------------------
- 1 files changed, 14 insertions(+), 25 deletions(-)
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index e6e4928..4b749c4 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -313,7 +313,7 @@ int main(void)
+ 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+ 	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
+ 	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+-	DEFINE(CLOCK_REALTIME_RES, (KTIME_MONOTONIC_RES).tv64);
++	DEFINE(CLOCK_REALTIME_RES, MONOTONIC_RES_NSEC);
+ 
+ #ifdef CONFIG_BUG
+ 	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 7a9398e..8dba081 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -223,11 +223,14 @@ static inline ktime_t hrtimer_cb_get_time(struct hrtimer *timer)
+  * idea of the (in)accuracy of timers. Timer values are rounded up to
+  * this resolution values.
+  */
+-# define KTIME_HIGH_RES		(ktime_t) { .tv64 = 1 }
++# define HIGH_RES_NSEC		1
++# define KTIME_HIGH_RES		(ktime_t) { .tv64 = HIGH_RES_NSEC }
++# define MONOTONIC_RES_NSEC	HIGH_RES_NSEC
+ # define KTIME_MONOTONIC_RES	KTIME_HIGH_RES
+ 
+ #else
+ 
++# define MONOTONIC_RES_NSEC	LOW_RES_NSEC
+ # define KTIME_MONOTONIC_RES	KTIME_LOW_RES
+ 
+ /*
+diff --git a/include/linux/ktime.h b/include/linux/ktime.h
+index a6ddec1..36c542b 100644
+--- a/include/linux/ktime.h
++++ b/include/linux/ktime.h
+@@ -316,7 +316,8 @@ static inline ktime_t ktime_sub_us(const ktime_t kt, const u64 usec)
+  * idea of the (in)accuracy of timers. Timer values are rounded up to
+  * this resolution values.
+  */
+-#define KTIME_LOW_RES		(ktime_t){ .tv64 = TICK_NSEC }
++#define LOW_RES_NSEC		TICK_NSEC
++#define KTIME_LOW_RES		(ktime_t){ .tv64 = LOW_RES_NSEC }
+ 
+ /* Get the monotonic time in timespec format: */
+ extern void ktime_get_ts(struct timespec *ts);
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
