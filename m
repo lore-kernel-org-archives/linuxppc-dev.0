@@ -1,14 +1,19 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 958AFDDE04
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 15:43:43 +1100 (EST)
-Message-ID: <47AA8C7D.3030109@pikatech.com>
-Date: Wed, 06 Feb 2008 23:43:41 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: asm-offsets.c
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <hch@lst.de>
+Received: from verein.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B2BFBDDE07
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 15:51:38 +1100 (EST)
+Date: Thu, 7 Feb 2008 05:51:29 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: asm-offsets.c
+Message-ID: <20080207045129.GA4324@lst.de>
+References: <47AA8C7D.3030109@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47AA8C7D.3030109@pikatech.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,31 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just did a git pull of Josh's tree, and 
-arch/powerpc/kernel/asm-offsets.c does not compile. I have only been 
-glossing over the linuxppc-dev emails, so forgive me if this already 
-came up.
+On Wed, Feb 06, 2008 at 11:43:41PM -0500, Sean MacLennan wrote:
+> I just did a git pull of Josh's tree, and 
+> arch/powerpc/kernel/asm-offsets.c does not compile. I have only been 
+> glossing over the linuxppc-dev emails, so forgive me if this already 
+> came up.
 
-It looks like, at least for the Warp, CLOCK_REALTIME_RES is not defined 
-so asm-offsets.c gets an error. The following patch fixes it.... but I 
-am not sure it is right since I don't know if CLOCK_REALTIME_RES should 
-be defined.
-
-Cheers,
-  Sean
-
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets
-.c
-index e6e4928..c1568aa 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -313,7 +313,9 @@ int main(void)
-        DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
-        DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
-        DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
-+#ifdef CLOCK_REALTIME_RES
-        DEFINE(CLOCK_REALTIME_RES, (KTIME_MONOTONIC_RES).tv64);
-+#endif
- 
- #ifdef CONFIG_BUG
-        DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
+I have the same problem with current powerpc.git.  At least it's a
+different problem from yesterdays kernel/module.c not compiling :)
