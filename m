@@ -1,11 +1,9 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18346.31072.982702.10064@cargo.ozlabs.ibm.com>
-Date: Thu, 7 Feb 2008 14:22:08 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git for-2.6.25 branch
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 07 Feb 2008 14:29:43 +1100
+Subject: [PATCH] [POWERPC] Disable G5 NAP mode during SMU commands on U3
+Message-Id: <20080207032944.82078DDDF0@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,181 +14,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+It appears that with the U3 northbridge, if the processor is in NAP
+mode the whole time while waiting for an SMU command to complete,
+then the SMU will fail. It could be related to the weird backward
+mechanism the SMU uses to get to system memory via i2c to the
+northbridge that doesn't operate properly when the said bridge is
+in nap'ing along with the CPU. At least on U3, U4 doesn't seem to
+be affected.
 
-Please do
+This didn't show before NO_HZ as the timer wakeup was enough to make
+it work it seems, but that is no longer the case.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git for-2.6.25
+This patch fixes it by disabling NAP mode on those machines while
+an SMU command is in flight.
 
-to get another powerpc update for 2.6.25.  Various bug fixes have come
-in, plus there are a few patches that I missed from the previous set.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Thanks,
-Paul.
+ arch/powerpc/platforms/powermac/feature.c |   11 ++++++++++-
+ drivers/macintosh/smu.c                   |   25 ++++++++++++++++++++++++-
+ include/asm-powerpc/pmac_feature.h        |    8 ++++++++
+ 3 files changed, 42 insertions(+), 2 deletions(-)
 
- arch/powerpc/Kconfig                            |   21 -
- arch/powerpc/Makefile                           |    9 
- arch/powerpc/boot/Makefile                      |  126 ++++---
- arch/powerpc/boot/cuboot-mpc7448hpc2.c          |    0 
- arch/powerpc/boot/dts/adder875-redboot.dts      |    1 
- arch/powerpc/boot/dts/adder875-uboot.dts        |    1 
- arch/powerpc/boot/dts/mpc5121ads.dts            |  122 +++++++
- arch/powerpc/boot/dts/mpc8313erdb.dts           |    4 
- arch/powerpc/boot/dts/mpc8315erdb.dts           |    2 
- arch/powerpc/boot/dts/mpc834x_mds.dts           |    2 
- arch/powerpc/boot/dts/mpc8572ds.dts             |   12 +
- arch/powerpc/boot/dts/mpc885ads.dts             |    1 
- arch/powerpc/boot/dts/storcenter.dts            |   12 -
- arch/powerpc/boot/wrapper                       |   23 +
- arch/powerpc/configs/mpc83xx_defconfig          |   10 -
- arch/powerpc/kernel/asm-offsets.c               |    3 
- arch/powerpc/kernel/cputable.c                  |   10 -
- arch/powerpc/kernel/legacy_serial.c             |    3 
- arch/powerpc/kernel/pmc.c                       |    2 
- arch/powerpc/kernel/traps.c                     |    2 
- arch/powerpc/kernel/vio.c                       |    2 
- arch/powerpc/mm/mem.c                           |    7 
- arch/powerpc/mm/numa.c                          |   66 +++-
- arch/powerpc/oprofile/Makefile                  |    2 
- arch/powerpc/oprofile/common.c                  |    6 
- arch/powerpc/oprofile/op_model_fsl_emb.c        |   28 +
- arch/powerpc/platforms/512x/Kconfig             |   20 +
- arch/powerpc/platforms/512x/Makefile            |    4 
- arch/powerpc/platforms/512x/mpc5121_ads.c       |  104 ++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c       |    3 
- arch/powerpc/platforms/82xx/pq2fads.c           |    3 
- arch/powerpc/platforms/83xx/mpc832x_rdb.c       |    2 
- arch/powerpc/platforms/83xx/mpc83xx.h           |    2 
- arch/powerpc/platforms/83xx/usb.c               |   17 +
- arch/powerpc/platforms/8xx/adder875.c           |    6 
- arch/powerpc/platforms/8xx/ep88xc.c             |    1 
- arch/powerpc/platforms/Kconfig                  |    2 
- arch/powerpc/platforms/Kconfig.cputype          |   10 -
- arch/powerpc/platforms/Makefile                 |    1 
- arch/powerpc/platforms/cell/Kconfig             |    7 
- arch/powerpc/platforms/cell/axon_msi.c          |   99 ++---
- arch/powerpc/platforms/cell/setup.c             |    2 
- arch/powerpc/platforms/cell/spufs/Makefile      |    2 
- arch/powerpc/platforms/cell/spufs/file.c        |    6 
- arch/powerpc/platforms/cell/spufs/inode.c       |   29 +-
- arch/powerpc/platforms/cell/spufs/run.c         |    7 
- arch/powerpc/platforms/cell/spufs/sched.c       |   28 +
- arch/powerpc/platforms/cell/spufs/spufs.h       |    5 
- arch/powerpc/platforms/cell/spufs/sputrace.c    |  250 +++++++++++++
- arch/powerpc/platforms/embedded6xx/storcenter.c |   25 -
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |    2 
- arch/powerpc/platforms/pseries/kexec.c          |    2 
- arch/powerpc/platforms/pseries/reconfig.c       |    1 
- arch/powerpc/platforms/pseries/xics.c           |  118 +++---
- arch/powerpc/platforms/pseries/xics.h           |    3 
- arch/powerpc/sysdev/fsl_soc.c                   |    2 
- arch/powerpc/sysdev/mpc8xx_pic.c                |   10 -
- arch/powerpc/sysdev/qe_lib/qe.c                 |   10 -
- drivers/cdrom/viocd.c                           |    2 
- drivers/net/Kconfig                             |    4 
- drivers/net/cpmac.c                             |   55 +--
- drivers/of/base.c                               |   25 +
- drivers/of/platform.c                           |   10 +
- drivers/serial/Kconfig                          |   12 -
- drivers/serial/mpc52xx_uart.c                   |  431 +++++++++++++++++++----
- include/asm-powerpc/cputable.h                  |    2 
- include/asm-powerpc/mpc512x.h                   |   22 +
- include/asm-powerpc/mpc52xx_psc.h               |   48 +++
- include/asm-powerpc/oprofile_impl.h             |    2 
- include/asm-powerpc/reg.h                       |    4 
- include/asm-powerpc/reg_booke.h                 |   62 ---
- include/asm-powerpc/reg_fsl_emb.h               |   72 ++++
- include/asm-powerpc/system.h                    |    2 
- include/asm-powerpc/vio.h                       |    2 
- include/linux/of.h                              |    1 
- 75 files changed, 1534 insertions(+), 482 deletions(-)
- rename arch/powerpc/boot/{cuboot-hpc2.c => cuboot-mpc7448hpc2.c} (100%)
- create mode 100644 arch/powerpc/boot/dts/mpc5121ads.dts
- rename arch/powerpc/oprofile/{op_model_fsl_booke.c => op_model_fsl_emb.c} (90%)
- create mode 100644 arch/powerpc/platforms/512x/Kconfig
- create mode 100644 arch/powerpc/platforms/512x/Makefile
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.c
- create mode 100644 arch/powerpc/platforms/cell/spufs/sputrace.c
- create mode 100644 include/asm-powerpc/mpc512x.h
- create mode 100644 include/asm-powerpc/reg_fsl_emb.h
-
-Andre Detsch (1):
-      [POWERPC] spufs: Fix memory leak on SPU affinity
-
-Andy Fleming (2):
-      [POWERPC] Made FSL Book-E PMC support more generic
-      [POWERPC} Add oprofile support for e300
-
-Anton Vorontsov (2):
-      cpmac: convert to new Fixed PHY infrastructure
-      [POWERPC] qe_lib: fix few fluffy negligences
-
-Balbir Singh (1):
-      [POWERPC] Fake NUMA emulation for PowerPC
-
-Bryan O'Donoghue (1):
-      [POWERPC] 8xx: Add clock-frequency to adder875 and mpc885ads dts
-
-Christoph Hellwig (1):
-      [POWERPC] spufs: Add marker-based tracing facility
-
-Grant Likely (1):
-      [POWERPC] bootwrapper: Build multiple cuImages
-
-Jeremy Kerr (1):
-      [POWERPC] spufs: Fix SPE single-step mode
-
-John Rigby (4):
-      [POWERPC] mpc512x: Basic platform support
-      [POWERPC] mpc512x: Device tree for MPC5121 ADS
-      [POWERPC] mpc512x: Factor out 5200 dependencies from 52xx psc driver
-      [POWERPC] mpc512x: Add MPC512x PSC support to MPC52xx psc driver
-
-Jon Loeliger (1):
-      [POWERPC] Fix storcenter DTS typos, feedback, IRQs.
-
-Julia Lawall (3):
-      [POWERPC] arch/powerpc/platforms/pseries: Add missing of_node_put
-      [POWERPC] arch/powerpc/sysdev: Add missing of_node_put
-      [POWERPC] arch/powerpc/platforms/82xx: Add missing of_node_put
-
-Kim Phillips (6):
-      [POWERPC] 83xx: configure USB clock for MPC8315E
-      [POWERPC] 83xx: Correct 2nd PCI controller interrupt value in mpc834x_mds dts
-      [POWERPC] 83xx: Add rtc node to mpc8313erdb dts
-      [POWERPC] 83xx: mpc832x_rdb: fix compiler warning
-      [POWERPC] FSL: fix mpc83xx_spi device registration
-      [POWERPC] 83xx: Update mpc83xx_defconfig
-
-Kumar Gala (1):
-      [POWERPC] 85xx: Add second cpu to 8572 dts
-
-Michael Ellerman (6):
-      [POWERPC] Add of_get_next_parent()
-      [POWERPC] Search for and publish cell OF platform devices earlier
-      [POWERPC] Create and hook up of_platform_device_shutdown
-      [POWERPC] Convert axon_msi to an of_platform driver
-      [POWERPC] Avoid DMA exception when using axon_msi with IOMMU
-      [POWERPC] Fix legacy serial search for opb bus ports
-
-Nathan Fontenot (4):
-      [POWERPC] Update irq descriptor affinity
-      [POWERPC] Split xics_teardown_cpu()
-      [POWERPC] Remove redundant of_get_cpu_node routine
-      [POWERPC] Update default irq servers when boot cpu is removed
-
-Olof Johansson (1):
-      [POWERPC] Fix compilation for CONFIG_DEBUGGER=n and CONFIG_KEXEC=y
-
-Scott Wood (2):
-      [POWERPC] 8xx: adder875, ep88xc: fix to match recent 8xx cleanups.
-      [POWERPC] update_mmu_cache: Don't cache-flush non-readable pages
-
-Stephen Rothwell (3):
-      [POWERPC] Avoid possible extra of_node_put in axon_msi.c
-      [POWERPC] iSeries: Fix section mismatch in viodsasd
-      [POWERPC] iSeries: Fix section mismatch in viocd
-
-Tony Breeds (1):
-      [POWERPC] Use a sensible default for clock_getres() in the VDSO
+--- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2008-02-07 13:15:28.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/feature.c	2008-02-07 13:17:04.000000000 +1100
+@@ -2565,6 +2565,8 @@ static void __init probe_uninorth(void)
+ 
+ 	/* Locate core99 Uni-N */
+ 	uninorth_node = of_find_node_by_name(NULL, "uni-n");
++	uninorth_maj = 1;
++
+ 	/* Locate G5 u3 */
+ 	if (uninorth_node == NULL) {
+ 		uninorth_node = of_find_node_by_name(NULL, "u3");
+@@ -2575,8 +2577,10 @@ static void __init probe_uninorth(void)
+ 		uninorth_node = of_find_node_by_name(NULL, "u4");
+ 		uninorth_maj = 4;
+ 	}
+-	if (uninorth_node == NULL)
++	if (uninorth_node == NULL) {
++		uninorth_maj = 0;
+ 		return;
++	}
+ 
+ 	addrp = of_get_property(uninorth_node, "reg", NULL);
+ 	if (addrp == NULL)
+@@ -3029,3 +3033,8 @@ void pmac_resume_agp_for_card(struct pci
+ 	pmac_agp_resume(pmac_agp_bridge);
+ }
+ EXPORT_SYMBOL(pmac_resume_agp_for_card);
++
++int pmac_get_uninorth_variant(void)
++{
++	return uninorth_maj;
++}
+Index: linux-work/drivers/macintosh/smu.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/smu.c	2008-02-07 13:13:52.000000000 +1100
++++ linux-work/drivers/macintosh/smu.c	2008-02-07 13:41:41.000000000 +1100
+@@ -85,6 +85,7 @@ struct smu_device {
+ 	u32			cmd_buf_abs;	/* command buffer absolute */
+ 	struct list_head	cmd_list;
+ 	struct smu_cmd		*cmd_cur;	/* pending command */
++	int			broken_nap;
+ 	struct list_head	cmd_i2c_list;
+ 	struct smu_i2c_cmd	*cmd_i2c_cur;	/* pending i2c command */
+ 	struct timer_list	i2c_timer;
+@@ -135,6 +136,19 @@ static void smu_start_cmd(void)
+ 	fend = faddr + smu->cmd_buf->length + 2;
+ 	flush_inval_dcache_range(faddr, fend);
+ 
++
++	/* We also disable NAP mode for the duration of the command
++	 * on U3 based machines.
++	 * This is slightly racy as it can be written back to 1 by a sysctl
++	 * but that never happens in practice. There seem to be an issue with
++	 * U3 based machines such as the iMac G5 where napping for the
++	 * whole duration of the command prevents the SMU from fetching it
++	 * from memory. This might be related to the strange i2c based
++	 * mechanism the SMU uses to access memory.
++	 */
++	if (smu->broken_nap)
++		powersave_nap = 0;
++
+ 	/* This isn't exactly a DMA mapping here, I suspect
+ 	 * the SMU is actually communicating with us via i2c to the
+ 	 * northbridge or the CPU to access RAM.
+@@ -211,6 +225,10 @@ static irqreturn_t smu_db_intr(int irq, 
+ 	misc = cmd->misc;
+ 	mb();
+ 	cmd->status = rc;
++
++	/* Re-enable NAP mode */
++	if (smu->broken_nap)
++		powersave_nap = 1;
+  bail:
+ 	/* Start next command if any */
+ 	smu_start_cmd();
+@@ -461,7 +479,7 @@ int __init smu_init (void)
+         if (np == NULL)
+ 		return -ENODEV;
+ 
+-	printk(KERN_INFO "SMU driver %s %s\n", VERSION, AUTHOR);
++	printk(KERN_INFO "SMU: Driver %s %s\n", VERSION, AUTHOR);
+ 
+ 	if (smu_cmdbuf_abs == 0) {
+ 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
+@@ -533,6 +551,11 @@ int __init smu_init (void)
+ 		goto fail;
+ 	}
+ 
++	/* U3 has an issue with NAP mode when issuing SMU commands */
++	smu->broken_nap = pmac_get_uninorth_variant() < 4;
++	if (smu->broken_nap)
++		printk(KERN_INFO "SMU: using NAP mode workaround\n");
++
+ 	sys_ctrler = SYS_CTRLER_SMU;
+ 	return 0;
+ 
+Index: linux-work/include/asm-powerpc/pmac_feature.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pmac_feature.h	2008-02-07 13:17:24.000000000 +1100
++++ linux-work/include/asm-powerpc/pmac_feature.h	2008-02-07 13:18:10.000000000 +1100
+@@ -392,6 +392,14 @@ extern u32 __iomem *uninorth_base;
+ #define UN_BIS(r,v)	(UN_OUT((r), UN_IN(r) | (v)))
+ #define UN_BIC(r,v)	(UN_OUT((r), UN_IN(r) & ~(v)))
+ 
++/* Uninorth variant:
++ *
++ * 0 = not uninorth
++ * 1 = U1.x or U2.x
++ * 3 = U3
++ * 4 = U4
++ */
++extern int pmac_get_uninorth_variant(void);
+ 
+ #endif /* __ASM_POWERPC_PMAC_FEATURE_H */
+ #endif /* __KERNEL__ */
