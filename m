@@ -1,23 +1,19 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id BE932DDFCC
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 01:57:05 +1100 (EST)
-Message-ID: <47AB1BD2.9070104@ru.mvista.com>
-Date: Thu, 07 Feb 2008 17:55:14 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 34233DDE9B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 05:01:06 +1100 (EST)
+Date: Thu, 7 Feb 2008 12:01:07 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] cuboot-pq2: PCI fixes
+Message-ID: <20080207180107.GA3910@loki.buserror.net>
 MIME-Version: 1.0
-To: Imre Kaloz <kaloz@openwrt.org>
-Subject: Re: [PATCH] MTD support for the AMCC Taishan
-References: <120203530465-git-send-email-kaloz@openwrt.org>
-	<op.t55gr5lb2s3iss@ecaz.afh.b-m.hu>
-	<20080207060012.788e4258@zod.rchland.ibm.com>
-	<47AB0BC3.2000202@ru.mvista.com>
-	<op.t55p8elk2s3iss@ecaz.afh.b-m.hu>
-	<47AB1023.9040707@ru.mvista.com>
-	<op.t55r5tt22s3iss@ecaz.afh.b-m.hu>
-In-Reply-To: <op.t55r5tt22s3iss@ecaz.afh.b-m.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Imre Kaloz wrote:
-> On Thu, 07 Feb 2008 15:05:23 +0100, Valentine Barshak 
-> <vbarshak@ru.mvista.com> wrote:
-> 
->>> Well, arch/ppc calculates the mtd2 dynamically and doesn't create
->>> a separate partition for kozio.
->>
->> That dynamic size calculation depends on the flash size.
->> The board I use has a 64MB NOR flash (I'm not aware of other Taishan 
->> boards having chips of different size). So AFAIU if such board exists, 
->> we'll need a cuboot flash-size fixup.
-> 
-> 
-> All Taishan boards have 64MB flash (2x32MB). Denx was doing the size 
-> calculation
-> to dynamically allocate mtd2 based on the size of mtd0+mtd1 if I recall 
-> right.
->
+1. Detect (and bail out on) more conditions that violate the
+assumptions of the setup code -- we assume in such cases that the device
+tree is correct and reflects what the firmware did.
 
-This is actually the code:
-arch/ppc/platforms/4xx/taishan.c:static int taishan_setup_flash(void)
-{
-taishan_nor_parts[2].size = __res.bi_flashsize -
-		RW_PART0_SZ - RW_PART1_SZ - RW_PART3_SZ - RW_PART4_SZ;
+2. The inbound memory mask calculation was wrong.
 
-Thanks,
-Valentine.
-> 
-> Cheers,
-> Imre
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/cuboot-pq2.c |   27 +++++++++++++++++++--------
+ 1 files changed, 19 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/boot/cuboot-pq2.c b/arch/powerpc/boot/cuboot-pq2.c
+index f56ac6c..9c7d134 100644
+--- a/arch/powerpc/boot/cuboot-pq2.c
++++ b/arch/powerpc/boot/cuboot-pq2.c
+@@ -128,7 +128,7 @@ static void fixup_pci(void)
+ 	u8 *soc_regs;
+ 	int i, len;
+ 	void *node, *parent_node;
+-	u32 naddr, nsize, mem_log2;
++	u32 naddr, nsize, mem_pow2, mem_mask;
+ 
+ 	node = finddevice("/pci");
+ 	if (!node || !dt_is_compatible(node, "fsl,pq2-pci"))
+@@ -141,7 +141,7 @@ static void fixup_pci(void)
+ 
+ 	soc_regs = (u8 *)fsl_get_immr();
+ 	if (!soc_regs)
+-		goto err;
++		goto unhandled;
+ 
+ 	dt_get_reg_format(node, &naddr, &nsize);
+ 	if (naddr != 3 || nsize != 2)
+@@ -153,7 +153,7 @@ static void fixup_pci(void)
+ 
+ 	dt_get_reg_format(parent_node, &naddr, &nsize);
+ 	if (naddr != 1 || nsize != 1)
+-		goto err;
++		goto unhandled;
+ 
+ 	len = getprop(node, "ranges", pci_ranges_buf,
+ 	              sizeof(pci_ranges_buf));
+@@ -170,14 +170,20 @@ static void fixup_pci(void)
+ 	}
+ 
+ 	if (!mem || !mmio || !io)
+-		goto err;
++		goto unhandled;
++	if (mem->size[1] != mmio->size[1])
++		goto unhandled;
++	if (mem->size[1] & (mem->size[1] - 1))
++		goto unhandled;
++	if (io->size[1] & (io->size[1] - 1))
++		goto unhandled;
+ 
+ 	if (mem->phys_addr + mem->size[1] == mmio->phys_addr)
+ 		mem_base = mem;
+ 	else if (mmio->phys_addr + mmio->size[1] == mem->phys_addr)
+ 		mem_base = mmio;
+ 	else
+-		goto err;
++		goto unhandled;
+ 
+ 	out_be32(&pci_regs[1][0], mem_base->phys_addr | 1);
+ 	out_be32(&pci_regs[2][0], ~(mem->size[1] + mmio->size[1] - 1));
+@@ -201,8 +207,9 @@ static void fixup_pci(void)
+ 	out_le32(&pci_regs[0][58], 0);
+ 	out_le32(&pci_regs[0][60], 0);
+ 
+-	mem_log2 = 1 << (__ilog2_u32(bd.bi_memsize - 1) + 1);
+-	out_le32(&pci_regs[0][62], 0xa0000000 | ~((1 << (mem_log2 - 12)) - 1));
++	mem_pow2 = 1 << (__ilog2_u32(bd.bi_memsize - 1) + 1);
++	mem_mask = ~(mem_pow2 - 1) >> 12;
++	out_le32(&pci_regs[0][62], 0xa0000000 | mem_mask);
+ 
+ 	/* If PCI is disabled, drive RST high to enable. */
+ 	if (!(in_le32(&pci_regs[0][32]) & 1)) {
+@@ -228,7 +235,11 @@ static void fixup_pci(void)
+ 	return;
+ 
+ err:
+-	printf("Bad PCI node\r\n");
++	printf("Bad PCI node -- using existing firmware setup.\r\n");
++	return;
++
++unhandled:
++	printf("Unsupported PCI node -- using existing firmware setup.\r\n");
+ }
+ 
+ static void pq2_platform_fixups(void)
+-- 
+1.5.3.8
