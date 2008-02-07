@@ -1,16 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18346.21469.512910.93325@cargo.ozlabs.ibm.com>
-Date: Thu, 7 Feb 2008 11:42:05 +1100
+Message-ID: <18346.19527.92063.259932@cargo.ozlabs.ibm.com>
+Date: Thu, 7 Feb 2008 11:09:43 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
-In-Reply-To: <47964422.7080505@austin.ibm.com>
-References: <4796401D.5010907@austin.ibm.com> <47964422.7080505@austin.ibm.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linasvepstas@gmail.com,
-	Larry Kessler <lkessler@us.ibm.com>,
-	Michael Strosaker <strosake@us.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [RFC][PATCH] remove section mappinng
+In-Reply-To: <1201558765.29357.1.camel@dyn9047017100.beaverton.ibm.com>
+References: <1201277105.26929.36.camel@dyn9047017100.beaverton.ibm.com>
+	<18330.35819.738293.742989@cargo.ozlabs.ibm.com>
+	<1201558765.29357.1.camel@dyn9047017100.beaverton.ibm.com>
+Cc: linux-mm <linux-mm@kvack.org>, linuxppc-dev@ozlabs.org, anton@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,40 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Manish Ahuja writes:
+Badari Pulavarty writes:
 
-> Initial patch for reserving memory in early boot, and freeing it later.
-> If the previous boot had ended with a crash, the reserved memory would contain
-> a copy of the crashed kernel data.
+> Thank you for your input and suggestions. Does this look reasonable
+> to you ?
+> 
+> Thanks,
+> Badari
+> 
+> For memory remove, we need to clean up htab mappings for the
+> section of the memory we are removing.
+> 
+> This patch implements support for removing htab bolted mappings
+> for ppc64 lpar. Other sub-archs, may need to implement similar
+> functionality for the hotplug memory remove to work. 
 
-[snip]
-
-> +static void __init reserve_crashed_mem(void)
-> +{
-> +	unsigned long base, size;
-> +
-> +	if (phyp_dump_info->phyp_dump_is_active) {
-> +		/* Reserve *everything* above RMR. We'll free this real soon.*/
-> +		base = PHYP_DUMP_RMR_END;
-> +		size = lmb_end_of_DRAM() - base;
-> +
-> +		/* XXX crashed_ram_end is wrong, since it may be beyond
-> +	 	* the memory_limit, it will need to be adjusted. */
-> +		lmb_reserve(base, size);
-> +
-> +		phyp_dump_info->init_reserve_start = base;
-> +		phyp_dump_info->init_reserve_size = size;
-> +	}
-> +	else {
-> +		size = phyp_dump_info->cpu_state_size +
-> +			phyp_dump_info->hpte_region_size +
-> +			PHYP_DUMP_RMR_END;
-> +		base = lmb_end_of_DRAM() - size;
-> +	printk(KERN_ERR "Manish reserve regular kernel space is %ld %ld\n", base, size);
-> +		lmb_reserve(base, size);
-
-This is still reserving memory even on systems that aren't running on
-pHyp at all.  Please rework this so that no memory is reserved if the
-system doesn't support phyp-assisted dump.
+Looks OK to me.
 
 Paul.
