@@ -1,10 +1,14 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 07 Feb 2008 14:29:43 +1100
-Subject: [PATCH] [POWERPC] Disable G5 NAP mode during SMU commands on U3
-Message-Id: <20080207032944.82078DDDF0@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 958AFDDE04
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 15:43:43 +1100 (EST)
+Message-ID: <47AA8C7D.3030109@pikatech.com>
+Date: Wed, 06 Feb 2008 23:43:41 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: asm-offsets.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,140 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It appears that with the U3 northbridge, if the processor is in NAP
-mode the whole time while waiting for an SMU command to complete,
-then the SMU will fail. It could be related to the weird backward
-mechanism the SMU uses to get to system memory via i2c to the
-northbridge that doesn't operate properly when the said bridge is
-in nap'ing along with the CPU. At least on U3, U4 doesn't seem to
-be affected.
+I just did a git pull of Josh's tree, and 
+arch/powerpc/kernel/asm-offsets.c does not compile. I have only been 
+glossing over the linuxppc-dev emails, so forgive me if this already 
+came up.
 
-This didn't show before NO_HZ as the timer wakeup was enough to make
-it work it seems, but that is no longer the case.
+It looks like, at least for the Warp, CLOCK_REALTIME_RES is not defined 
+so asm-offsets.c gets an error. The following patch fixes it.... but I 
+am not sure it is right since I don't know if CLOCK_REALTIME_RES should 
+be defined.
 
-This patch fixes it by disabling NAP mode on those machines while
-an SMU command is in flight.
+Cheers,
+  Sean
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
- arch/powerpc/platforms/powermac/feature.c |   11 ++++++++++-
- drivers/macintosh/smu.c                   |   25 ++++++++++++++++++++++++-
- include/asm-powerpc/pmac_feature.h        |    8 ++++++++
- 3 files changed, 42 insertions(+), 2 deletions(-)
-
---- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2008-02-07 13:15:28.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/feature.c	2008-02-07 13:17:04.000000000 +1100
-@@ -2565,6 +2565,8 @@ static void __init probe_uninorth(void)
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets
+.c
+index e6e4928..c1568aa 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -313,7 +313,9 @@ int main(void)
+        DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+        DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
+        DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
++#ifdef CLOCK_REALTIME_RES
+        DEFINE(CLOCK_REALTIME_RES, (KTIME_MONOTONIC_RES).tv64);
++#endif
  
- 	/* Locate core99 Uni-N */
- 	uninorth_node = of_find_node_by_name(NULL, "uni-n");
-+	uninorth_maj = 1;
-+
- 	/* Locate G5 u3 */
- 	if (uninorth_node == NULL) {
- 		uninorth_node = of_find_node_by_name(NULL, "u3");
-@@ -2575,8 +2577,10 @@ static void __init probe_uninorth(void)
- 		uninorth_node = of_find_node_by_name(NULL, "u4");
- 		uninorth_maj = 4;
- 	}
--	if (uninorth_node == NULL)
-+	if (uninorth_node == NULL) {
-+		uninorth_maj = 0;
- 		return;
-+	}
- 
- 	addrp = of_get_property(uninorth_node, "reg", NULL);
- 	if (addrp == NULL)
-@@ -3029,3 +3033,8 @@ void pmac_resume_agp_for_card(struct pci
- 	pmac_agp_resume(pmac_agp_bridge);
- }
- EXPORT_SYMBOL(pmac_resume_agp_for_card);
-+
-+int pmac_get_uninorth_variant(void)
-+{
-+	return uninorth_maj;
-+}
-Index: linux-work/drivers/macintosh/smu.c
-===================================================================
---- linux-work.orig/drivers/macintosh/smu.c	2008-02-07 13:13:52.000000000 +1100
-+++ linux-work/drivers/macintosh/smu.c	2008-02-07 13:41:41.000000000 +1100
-@@ -85,6 +85,7 @@ struct smu_device {
- 	u32			cmd_buf_abs;	/* command buffer absolute */
- 	struct list_head	cmd_list;
- 	struct smu_cmd		*cmd_cur;	/* pending command */
-+	int			broken_nap;
- 	struct list_head	cmd_i2c_list;
- 	struct smu_i2c_cmd	*cmd_i2c_cur;	/* pending i2c command */
- 	struct timer_list	i2c_timer;
-@@ -135,6 +136,19 @@ static void smu_start_cmd(void)
- 	fend = faddr + smu->cmd_buf->length + 2;
- 	flush_inval_dcache_range(faddr, fend);
- 
-+
-+	/* We also disable NAP mode for the duration of the command
-+	 * on U3 based machines.
-+	 * This is slightly racy as it can be written back to 1 by a sysctl
-+	 * but that never happens in practice. There seem to be an issue with
-+	 * U3 based machines such as the iMac G5 where napping for the
-+	 * whole duration of the command prevents the SMU from fetching it
-+	 * from memory. This might be related to the strange i2c based
-+	 * mechanism the SMU uses to access memory.
-+	 */
-+	if (smu->broken_nap)
-+		powersave_nap = 0;
-+
- 	/* This isn't exactly a DMA mapping here, I suspect
- 	 * the SMU is actually communicating with us via i2c to the
- 	 * northbridge or the CPU to access RAM.
-@@ -211,6 +225,10 @@ static irqreturn_t smu_db_intr(int irq, 
- 	misc = cmd->misc;
- 	mb();
- 	cmd->status = rc;
-+
-+	/* Re-enable NAP mode */
-+	if (smu->broken_nap)
-+		powersave_nap = 1;
-  bail:
- 	/* Start next command if any */
- 	smu_start_cmd();
-@@ -461,7 +479,7 @@ int __init smu_init (void)
-         if (np == NULL)
- 		return -ENODEV;
- 
--	printk(KERN_INFO "SMU driver %s %s\n", VERSION, AUTHOR);
-+	printk(KERN_INFO "SMU: Driver %s %s\n", VERSION, AUTHOR);
- 
- 	if (smu_cmdbuf_abs == 0) {
- 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
-@@ -533,6 +551,11 @@ int __init smu_init (void)
- 		goto fail;
- 	}
- 
-+	/* U3 has an issue with NAP mode when issuing SMU commands */
-+	smu->broken_nap = pmac_get_uninorth_variant() < 4;
-+	if (smu->broken_nap)
-+		printk(KERN_INFO "SMU: using NAP mode workaround\n");
-+
- 	sys_ctrler = SYS_CTRLER_SMU;
- 	return 0;
- 
-Index: linux-work/include/asm-powerpc/pmac_feature.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/pmac_feature.h	2008-02-07 13:17:24.000000000 +1100
-+++ linux-work/include/asm-powerpc/pmac_feature.h	2008-02-07 13:18:10.000000000 +1100
-@@ -392,6 +392,14 @@ extern u32 __iomem *uninorth_base;
- #define UN_BIS(r,v)	(UN_OUT((r), UN_IN(r) | (v)))
- #define UN_BIC(r,v)	(UN_OUT((r), UN_IN(r) & ~(v)))
- 
-+/* Uninorth variant:
-+ *
-+ * 0 = not uninorth
-+ * 1 = U1.x or U2.x
-+ * 3 = U3
-+ * 4 = U4
-+ */
-+extern int pmac_get_uninorth_variant(void);
- 
- #endif /* __ASM_POWERPC_PMAC_FEATURE_H */
- #endif /* __KERNEL__ */
+ #ifdef CONFIG_BUG
+        DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
