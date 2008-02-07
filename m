@@ -1,17 +1,23 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 85223DDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 16:09:45 +1100 (EST)
-Date: Thu, 7 Feb 2008 16:07:44 +1100
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: asm-offsets.c
-Message-ID: <20080207050744.GE6887@bakeyournoodle.com>
-References: <47AA8C7D.3030109@pikatech.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id 46604DDDFB
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 16:12:10 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so911268anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Feb 2008 21:12:09 -0800 (PST)
+Message-ID: <fa686aa40802062112u70f09f5fk46d2efd7c5e52cb3@mail.gmail.com>
+Date: Wed, 6 Feb 2008 22:12:09 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Olof Johansson" <olof@lixom.net>
+Subject: Re: Fwd: Please pull linux-2.6-mpc52xx.git
+In-Reply-To: <20080207025200.GA31374@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <47AA8C7D.3030109@pikatech.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40802061333kd6567bay92c530bb08a2aac8@mail.gmail.com>
+	<fa686aa40802061334u5700bbf3ua3bbf6d967c9b2cc@mail.gmail.com>
+	<20080207025200.GA31374@lixom.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Rigby John-R61273 <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 06, 2008 at 11:43:41PM -0500, Sean MacLennan wrote:
-> I just did a git pull of Josh's tree, and 
-> arch/powerpc/kernel/asm-offsets.c does not compile. I have only been 
-> glossing over the linuxppc-dev emails, so forgive me if this already 
-> came up.
+On 2/6/08, Olof Johansson <olof@lixom.net> wrote:
+> Hi,
+>
+> On Wed, Feb 06, 2008 at 02:34:24PM -0700, Grant Likely wrote:
+>
+> > John Rigby (4):
+> >       [POWERPC] mpc512x: Basic platform support
+> >       [POWERPC] mpc512x: Device tree for MPC5121 ADS
+> >       [POWERPC] mpc512x: Factor out 5200 dependencies from 52xx psc driver
+> >       [POWERPC] mpc512x: Add MPC512x PSC support to MPC52xx psc driver
+>
+> mpc52xx_defconfig no longer builds for me, and the two latter of the
+> above patches are the ones that touch that file:
 
-Hmm very sorry guys.  I /did/ build and boot pmac32_defconfig.  I have
-no idea how that worked.
- 
-> It looks like, at least for the Warp, CLOCK_REALTIME_RES is not defined 
-> so asm-offsets.c gets an error. The following patch fixes it.... but I 
-> am not sure it is right since I don't know if CLOCK_REALTIME_RES should 
-> be defined.
+Gah!  I caused some patch damage when I rebased the patches.  I'll
+send a fixup patch ASAP.
 
-Yeah it's needed, so this patch isn;t the best solution.  I'll fix this
-ASAP.
+Cheers,
+g.
 
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
