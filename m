@@ -1,20 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B0D6CDDE29
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 23:06:32 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JN5WP-0005SB-PN
-	for linuxppc-dev@ozlabs.org; Thu, 07 Feb 2008 04:06:29 -0800
-Message-ID: <15330900.post@talk.nabble.com>
-Date: Thu, 7 Feb 2008 04:06:29 -0800 (PST)
-From: Gk1 <gobikrishna.dhanuskodi@wipro.com>
-To: linuxppc-dev@ozlabs.org
-Subject: KDB on ppc32
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id E1AFFDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 00:48:34 +1100 (EST)
+Message-ID: <47AB0BC3.2000202@ru.mvista.com>
+Date: Thu, 07 Feb 2008 16:46:43 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] MTD support for the AMCC Taishan
+References: <120203530465-git-send-email-kaloz@openwrt.org>	<op.t55gr5lb2s3iss@ecaz.afh.b-m.hu>
+	<20080207060012.788e4258@zod.rchland.ibm.com>
+In-Reply-To: <20080207060012.788e4258@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Josh Boyer wrote:
+> On Thu, 07 Feb 2008 11:29:55 +0100
+> "Imre Kaloz" <kaloz@openwrt.org> wrote:
+> 
+>> *bump*? :) If anything is wrong with it, please let me know.
 
-Hi,
-  Can anyone help me on KDB patches for ppc32? Is any patches available for
-the same? If yes, please give me the links.
+The arch/ppc had a bit different partition table.
+Something like this:
+mtd0: 00180000 00040000 "kernel"
+mtd1: 00200000 00040000 "root"
+mtd2: 03bc0000 00040000 "user"
+mtd3: 00080000 00040000 "env"
+mtd4: 00040000 00040000 "u-boot"
 
 Thanks,
-Gk
+Valentine.
 
--- 
-View this message in context: http://www.nabble.com/KDB-on-ppc32-tp15330900p15330900.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> 
+> Nothing wrong that I could see.  I just need to test it first.
+> 
+> josh
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
