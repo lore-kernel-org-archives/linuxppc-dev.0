@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 293E5DDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 13:39:35 +1100 (EST)
-Message-Id: <77A19FBD-7861-4D32-84BA-BDEEC39A4982@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B11BADDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2008 13:44:26 +1100 (EST)
 In-Reply-To: <1202347594.7079.107.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Reorg of 32-bit dma code
-Date: Wed, 6 Feb 2008 20:39:16 -0600
 References: <Pine.LNX.4.64.0802061802310.1616@monty.am.freescale.net>
 	<1202347594.7079.107.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1D31DDE9-1E87-4A3D-B5E3-2377F86747AA@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: Reorg of 32-bit dma code
+Date: Wed, 6 Feb 2008 20:45:18 -0600
+To: benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,7 +25,6 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-
 
 On Feb 6, 2008, at 7:26 PM, Benjamin Herrenschmidt wrote:
 
@@ -38,26 +39,26 @@ On Feb 6, 2008, at 7:26 PM, Benjamin Herrenschmidt wrote:
 >> physical addressing. (Yes, I know.  Fun for me.  Woohoo.)
 >>
 >> Anyway, I have an initial booting first pass, and wanted to get some
->> feedback.  What I've done at this point is to make dma_64 common to  
->> both
+>> feedback.  What I've done at this point is to make dma_64 common  
+>> to both
 >> architectures (will rename it when I send a real patch...).  The
->> dma_direct_* functions have been changed to work on both 32/64, and  
->> the
+>> dma_direct_* functions have been changed to work on both 32/64,  
+>> and the
 >> old dma_* functionality in dma-mapping.h has been removed.   For  
 >> now, to
->> avoid whacking on every 32-bit platform, the get_dma_ops() function  
->> has
->> been changed to return &dma_direct_ops if the device pointer exists  
->> but
+>> avoid whacking on every 32-bit platform, the get_dma_ops()  
+>> function has
+>> been changed to return &dma_direct_ops if the device pointer  
+>> exists but
 >> the dma_ops field is NULL.   I'm not sure if this needs to be  
 >> ifdef'd for
 >> 64-bit?
 >
 > I'd prefer so yes.
 
-Can you explain why?  Got no issue with doing this, but its good to  
-know hy.
+Ok. I'll put that in, but I'd like to understand why it's necessary....
 
+>
 >> I've copied a bit of code over from pci_64.c into pci_common.c -  
 >> some of
 >> it isn't in use yet but will be once I start doing actual setup in  
@@ -66,7 +67,7 @@ know hy.
 >
 > Cool !
 >
->>  I've
+>>   I've
 >> also temporarily hacked the 32-bit code to set archdata.dma_data to
 >> PCI_DRAM_OFFSET, so we can eliminate the use of virt_to_bus() and  
 >> instead
@@ -82,8 +83,15 @@ know hy.
 >> suggestions on cleaning this up are greatly appreciated.
 >
 > I'll have a look asap, thanks for doing this !
+>
 
-Also, any ideas on how to handle setting dev->archdata for non-PCI  
-devices would be welcome.
+Heh, don't thank me until you've looked at it :)
 
-- k
+Another thing that has to be done here is that I will need to audit  
+all the driver code for places where the dev pointer passed to  
+dma_alloc_coherent() and friends is NULL.  I've already fixed the  
+gianfar driver locally, but I expect there are a pile of them.  If  
+you have any other suggestions for dealing with this, speak up.
+
+Cheers,
+B
