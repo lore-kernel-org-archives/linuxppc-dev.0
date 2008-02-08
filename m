@@ -1,16 +1,17 @@
 Return-Path: <bzolnier@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.225])
-	by ozlabs.org (Postfix) with ESMTP id E1C4DDE2AB
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:30:57 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 68so3283355wra.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:30:57 -0800 (PST)
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.186])
+	by ozlabs.org (Postfix) with ESMTP id 6C74ADE0D0
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:07 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so4153914fkz.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:04 -0800 (PST)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:09 +0100
-Message-Id: <20080208004509.17746.70379.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:16 +0100
+Message-Id: <20080208004516.17746.18498.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 07/18] ide: factor out devices init from ide_init_port_data()
+Subject: [PATCH 08/18] ide: move ide_port_setup_devices() call to
+	ide_device_add_all()
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,77 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Factor out devices init from ide_init_port_data() to
-  ide_port_init_devices_data().
-
-While at it:
-
-* Add explicit clearing of IDE device structure.
-
-There should be no functionality changes caused by this patch.
+Add ide_cfg_mtx lock/unlock to ide_port_setup_devices() and then move
+ide_port_setup_devices() call from init_irq() to ide_device_add_all().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide.c |   23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ drivers/ide/ide-probe.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: b/drivers/ide/ide.c
+Index: b/drivers/ide/ide-probe.c
 ===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -109,13 +109,13 @@ ide_hwif_t ide_hwifs[MAX_HWIFS];	/* mast
- 
- EXPORT_SYMBOL(ide_hwifs);
- 
-+static void ide_port_init_devices_data(ide_hwif_t *);
-+
- /*
-  * Do not even *think* about calling this!
-  */
- void ide_init_port_data(ide_hwif_t *hwif, unsigned int index)
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -947,6 +947,7 @@ static void ide_port_setup_devices(ide_h
  {
--	unsigned int unit;
--
- 	/* bulk initialize hwif & drive info with zeros */
- 	memset(hwif, 0, sizeof(ide_hwif_t));
+ 	int i;
  
-@@ -134,8 +134,20 @@ void ide_init_port_data(ide_hwif_t *hwif
++	mutex_lock(&ide_cfg_mtx);
+ 	for (i = 0; i < MAX_DRIVES; i++) {
+ 		ide_drive_t *drive = &hwif->drives[i];
  
- 	default_hwif_iops(hwif);
- 	default_hwif_transport(hwif);
-+
-+	ide_port_init_devices_data(hwif);
-+}
-+EXPORT_SYMBOL_GPL(ide_init_port_data);
-+
-+static void ide_port_init_devices_data(ide_hwif_t *hwif)
-+{
-+	int unit;
-+
- 	for (unit = 0; unit < MAX_DRIVES; ++unit) {
- 		ide_drive_t *drive = &hwif->drives[unit];
-+		u8 j = (hwif->index * MAX_DRIVES) + unit;
-+
-+		memset(drive, 0, sizeof(*drive));
+@@ -961,6 +962,7 @@ static void ide_port_setup_devices(ide_h
  
- 		drive->media			= ide_disk;
- 		drive->select.all		= (unit<<4)|0xa0;
-@@ -147,15 +159,14 @@ void ide_init_port_data(ide_hwif_t *hwif
- 		drive->special.b.set_geometry	= 1;
- 		drive->name[0]			= 'h';
- 		drive->name[1]			= 'd';
--		drive->name[2]			= 'a' + (index * MAX_DRIVES) + unit;
-+		drive->name[2]			= 'a' + j;
- 		drive->max_failures		= IDE_DEFAULT_MAX_FAILURES;
--		drive->using_dma		= 0;
--		drive->vdma			= 0;
-+
- 		INIT_LIST_HEAD(&drive->list);
- 		init_completion(&drive->gendev_rel_comp);
+ 		ide_add_drive_to_hwgroup(drive);
  	}
++	mutex_unlock(&ide_cfg_mtx);
  }
--EXPORT_SYMBOL_GPL(ide_init_port_data);
-+
  
- static void init_hwif_default(ide_hwif_t *hwif, unsigned int index)
- {
+ /*
+@@ -1086,8 +1088,6 @@ static int init_irq (ide_hwif_t *hwif)
+ 			hwif->sharing_irq ? "shar" : "serializ", match->name);
+ 	printk("\n");
+ 
+-	ide_port_setup_devices(hwif);
+-
+ 	mutex_unlock(&ide_cfg_mtx);
+ 	return 0;
+ out_unlink:
+@@ -1443,6 +1443,8 @@ int ide_device_add_all(u8 *idx, const st
+ 			continue;
+ 		}
+ 
++		ide_port_setup_devices(hwif);
++
+ 		ide_acpi_init(hwif);
+ 		ide_acpi_port_init_devices(hwif);
+ 	}
