@@ -1,16 +1,19 @@
-Return-Path: <Alexandre.Bounine@tundra.com>
-Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
-	by ozlabs.org (Postfix) with ESMTP id 76392DDF09
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 06:29:50 +1100 (EST)
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
+	[216.10.194.135])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "extu-mxob-2.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9B466DDF06
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 06:31:23 +1100 (EST)
+Date: Fri, 8 Feb 2008 18:25:13 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: fix DEBUG_PREEMPT warning when warning
+Message-ID: <Pine.LNX.4.64.0802081823400.6273@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: [PATCH 3/5] Tsi108_eth: remove not needed code
-Date: Fri, 8 Feb 2008 14:17:19 -0500
-Message-ID: <1B5F013528140F45B5C671039279CA5702A960A1@NANUK.pc.tundra.com>
-From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
-To: <jgarzik@pobox.com>, <netdev@vger.kernel.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,51 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Code clean-up for tsi108_eth network driver.
-This patch removes not needed dummy read and the corresponding comment.
-The PHY logic requires two reads from the status register to get=20
-current link status. This is done correctly inside mii_check_media().=20=20
-=20=20=20
-Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
+The powerpc show_regs prints CPU using smp_processor_id: change that to
+raw_smp_processor_id, so that when it's showing a WARN_ON backtrace without
+preemption disabled, DEBUG_PREEMPT doesn't mess up that warning with its own.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
 
-diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
-linux-2.6.24-fix/drivers/net/tsi108_eth.c
---- linux-2.6.24/drivers/net/tsi108_eth.c	2008-02-06
-15:47:35.000000000 -0500
-+++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
-15:54:14.000000000 -0500
-@@ -297,18 +297,11 @@ static void tsi108_check_phy(struct net_
- 	u32 speed;
- 	unsigned long flags;
-=20
--	/* Do a dummy read, as for some reason the first read
--	 * after a link becomes up returns link down, even if
--	 * it's been a while since the link came up.
--	 */
--
- 	spin_lock_irqsave(&phy_lock, flags);
-=20
- 	if (!data->phy_ok)
- 		goto out;
-=20
--	tsi108_read_mii(data, MII_BMSR);
--
- 	duplex =3D mii_check_media(&data->mii_if, netif_msg_link(data),
-data->init_media);
- 	data->init_media =3D 0;
-=20
+ powerpc/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
----=0D
-=0D
-Important Notice: This message is intended for the use of the individual to=
- whom it is addressed and may contain information which is privileged, conf=
-idential and/or exempt from disclosure under applicable law. If the reader =
-of this message is not the intended recipient, or is not the employee or ag=
-ent responsible for delivering the message to the intended recipient, you a=
-re hereby notified that any dissemination, distribution, or copying of this=
- communication is strictly prohibited. If you have received this communicat=
-ion in error, please notify the sender immediately by telephone or return e=
--mail and delete the original message from your systems. Thank you. =0D
+--- 2.6.24-git18/arch/powerpc/kernel/process.c	2008-01-24 22:58:37.000000000 +0000
++++ linux/arch/powerpc/kernel/process.c	2008-02-08 12:01:31.000000000 +0000
+@@ -462,7 +462,7 @@ void show_regs(struct pt_regs * regs)
+ 	       current, task_pid_nr(current), current->comm, task_thread_info(current));
+ 
+ #ifdef CONFIG_SMP
+-	printk(" CPU: %d", smp_processor_id());
++	printk(" CPU: %d", raw_smp_processor_id());
+ #endif /* CONFIG_SMP */
+ 
+ 	for (i = 0;  i < 32;  i++) {
