@@ -1,24 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 733F5DDEC1
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 77448DDF38
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Feb 2008 06:01:02 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JNYT5-0001TO-Aa
-	for linuxppc-embedded@ozlabs.org; Fri, 08 Feb 2008 11:00:59 -0800
-Message-ID: <15361890.post@talk.nabble.com>
-Date: Fri, 8 Feb 2008 11:00:59 -0800 (PST)
-From: IngoM <ingo.maindorfer@ipm.fraunhofer.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: [Virtex 4 PPC] Problem mountin rootfs via NFS
-In-Reply-To: <EE63F03D9E04774997AEBCD21FC77F25190363@ccomm-ex1.ccomm.com>
+	Sat,  9 Feb 2008 06:32:15 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1054656anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 08 Feb 2008 11:32:13 -0800 (PST)
+Message-ID: <fa686aa40802081132h22b91464xd150e0671ca4fc34@mail.gmail.com>
+Date: Fri, 8 Feb 2008 12:32:13 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "A. Nolson" <alohanono@gmail.com>
+Subject: Re: APU FPU in Virtex ppc405
+In-Reply-To: <47ACA4BB.6010903@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <15355858.post@talk.nabble.com>
-	<EE63F03D9E04774997AEBCD21FC77F25190363@ccomm-ex1.ccomm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47ACA4BB.6010903@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,29 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Feb 8, 2008 11:51 AM, A. Nolson <alohanono@gmail.com> wrote:
+> Hi,
+>
+>  I have just heard that Xilinx has freed the FPU module for the PPC
+> architecture in EDK9.2i. WIll I be able to make it work with my
+> Secretlab Linux 2.6.24rc3? Will the eldk toolchain for PPC_4xxfp work?
+> Will it be just a matter of integrating it with the XPS BSP?I make an
+> extensive use of floating point in my applications and this will be
+> really useful.
 
-Dear Rupesh,
+It's been 2 years since I last played with the FPU core.  At the time
+it wasn't a complete FPU so the eldk 4xxfp toolchain would not work.
+I had to build my own.  I don't know if the new core is a complete
+implementation.
 
+Cheers,
+g.
 
-Sugathan, Rupesh wrote:
-> 
-> 
-> <snip>
-> 
->  
-> Do you have a 'console' device file set up in your NFS rootfilesystem? 
-> 
-> 
-
-no, I don't think so. When I'm back in office Monday morning I'll looking
-into detail for you.
-But the error seems to be some low-level network issue: sometimes kernel can
-mount NFS, sometimes not and so on.
-
-Best Regards, 
-
-Ingo
 
 -- 
-View this message in context: http://www.nabble.com/-Virtex-4-PPC--Problem-mountin-rootfs-via-NFS-tp15355858p15361890.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
