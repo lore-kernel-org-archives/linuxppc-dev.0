@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
+Received: from outbound4-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
 	[216.32.181.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 57242DDECC
+	by ozlabs.org (Postfix) with ESMTP id 00B09DDEBF
 	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 09:54:23 +1100 (EST)
-Message-ID: <47ACDD40.3050908@am.sony.com>
-Date: Fri, 08 Feb 2008 14:52:48 -0800
+Message-ID: <47ACDD47.7080805@am.sony.com>
+Date: Fri, 08 Feb 2008 14:52:55 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 3/6] PS3: Fix bootwrapper hang bug
+Subject: [patch 4/6] PS3: Use system reboot on restart
 References: <20080208224723.029462363@am.sony.com>
 In-Reply-To: <20080208224723.029462363@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
@@ -24,31 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix a bug in the lv1_get_repository_node_value() routine of the PS3
-bootwrapper.  Changes in the PS3 system firmware 2.20 cause this bug
-to hang the system when branching from the bootwrapper to the kernel
-_start.
-
-Since the video system has not yet been enabled at the time
-the bug is hit, the system hangs with a blank screen.  Earlier
-firmwares don't cause such a catastrophic failure, and so this
-bug went undetected.
+The PS3 Other OS boot flag is not checked when an LPAR reboot is done,
+so the ps3-boot-game-os utility fails to reboot the system into the
+Game OS.  This fix changes the PS3 restart handler from requesting an
+PS3_SM_NEXT_OP_LPAR_REBOOT to requesting an PS3_SM_NEXT_OP_SYS_REBOOT.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/boot/ps3-hvcall.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ps3/ps3-sys-manager.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/boot/ps3-hvcall.S
-+++ b/arch/powerpc/boot/ps3-hvcall.S
-@@ -145,7 +145,7 @@
- .macro STORE_REGS_5_2
- 	lwz r11, 16(r1)
- 	std r4, 0(r11)
--	lwz r11, 24(r1)
-+	lwz r11, 20(r1)
- 	std r5, 0(r11)
- .endm
+--- a/drivers/ps3/ps3-sys-manager.c
++++ b/drivers/ps3/ps3-sys-manager.c
+@@ -622,7 +622,7 @@ static void ps3_sys_manager_final_restar
+ 	ps3_vuart_cancel_async(dev);
+ 
+ 	ps3_sys_manager_send_attr(dev, 0);
+-	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_LPAR_REBOOT,
++	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_REBOOT,
+ 		PS3_SM_WAKE_DEFAULT);
+ 	ps3_sys_manager_send_request_shutdown(dev);
  
 
 -- 
