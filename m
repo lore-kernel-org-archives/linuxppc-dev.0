@@ -1,19 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 10C9EDDE3F
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 04:22:09 +1100 (EST)
-Message-ID: <47AC8FF5.4010204@ru.mvista.com>
-Date: Fri, 08 Feb 2008 20:23:01 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 02/18] ide: fix ide_find_port()
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-	<20080208004434.17746.33986.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080208004434.17746.33986.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <pj@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 4269EDDEC1
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 05:06:30 +1100 (EST)
+Date: Fri, 8 Feb 2008 12:06:23 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
+Message-Id: <20080208120623.3ad74e3a.pj@sgi.com>
+In-Reply-To: <alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
+References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
+	<alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bartlomiej Zolnierkiewicz wrote:
+Linus wrote:
+> Please, when mentioning hex numbers, also do the one-liner shortlog.
+> ...
+> without _requiring_ people to be git users to get the gist of the 
+> matter, ok?
 
-> * Instead of checking for '->io_ports[IDE_DATA_OFFSET] == 0' check for
->   '->chipset == ide_unknown' when looking for an empty ide_hwifs[] slot.
 
-> * Do ide-pnp initialization after ide-generic when IDE is built-in
->   (ide-pnp is the only user of ide_find_port() which needs such fixup).
+Thanks for sticking up for us git-challenged contributors.
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Can anyone point me at instructions providing the shortest
+path for getting from one of those git hex numbers to the
+log or change it represents, for non-git users?
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Or do those instructions begin with a first step of:
 
-MBR, Sergei
+  1. become a git user
+  2. ...
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
