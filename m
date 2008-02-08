@@ -1,18 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
+Received: from outbound3-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
 	[216.32.181.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D6DC0DDEB6
+	by ozlabs.org (Postfix) with ESMTP id 622E2DDEC1
 	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 09:54:22 +1100 (EST)
-Message-ID: <47ACDD22.2050600@am.sony.com>
-Date: Fri, 08 Feb 2008 14:52:18 -0800
+Message-ID: <47ACDD2E.6010607@am.sony.com>
+Date: Fri, 08 Feb 2008 14:52:30 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 0/6] PS3 fixups for 2.6.25
+Subject: [patch 1/6] PS3: Fix lpm set bookmark
+References: <20080208224723.029462363@am.sony.com>
+In-Reply-To: <20080208224723.029462363@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+From: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 
-Here are a few PS3 fixups to apply for 2.6.25.
+Fix the ps3_set_bookmark() routine of the PS3 logical performance
+monitor driver.
 
-  [patch 1/6] PS3: Fix lpm set bookmark
-  [patch 2/6] PS3: Fix lpm read pm interval
-  [patch 3/6] PS3: Fix bootwrapper hang bug
-  [patch 4/6] PS3: Use system reboot on restart
-  [patch 5/6] PS3: Sys-manager code cleanup
-  [patch 6/6] PS3: Update sys-manager button events
+To properly set a performance monitor bookmark the Cell processor
+requires no instruction branches near the setting of the bookmark
+SPR.  Testing showed that the use of the db10cyc instruction did
+not work correctly.  This change replaces the db10cyc instruction
+with 10 nop instructions.
 
--Geoff
+Signed-off-by: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ drivers/ps3/ps3-lpm.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-
+--- a/drivers/ps3/ps3-lpm.c
++++ b/drivers/ps3/ps3-lpm.c
+@@ -181,9 +181,9 @@ void ps3_set_bookmark(u64 bookmark)
+ 	 * includes cycles before the call.
+ 	 */
+ 
+-	asm volatile("or 29, 29, 29;"); /* db10cyc */
++	asm volatile("nop;nop;nop;nop;nop;nop;nop;nop;nop;");
+ 	mtspr(SPRN_BKMK, bookmark);
+-	asm volatile("or 29, 29, 29;"); /* db10cyc */
++	asm volatile("nop;nop;nop;nop;nop;nop;nop;nop;nop;");
+ }
+ EXPORT_SYMBOL_GPL(ps3_set_bookmark);
+ 
 
 -- 
