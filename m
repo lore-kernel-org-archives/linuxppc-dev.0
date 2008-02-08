@@ -1,16 +1,17 @@
 Return-Path: <bzolnier@gmail.com>
 Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 15933DE8FA
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:41 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id EA80ADE9E2
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:47 +1100 (EST)
 Received: by wa-out-1112.google.com with SMTP id m28so80369wag.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:40 -0800 (PST)
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:47 -0800 (PST)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:52 +0100
-Message-Id: <20080208004552.17746.61665.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:59 +0100
+Message-Id: <20080208004559.17746.72635.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 13/18] ide: remove CONFIG_BLK_DEV_HD_IDE config option
+Subject: [PATCH 14/18] ide: remove obsoleted "idex=base[, ctl[,
+	irq]]" kernel parameters
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,88 +23,201 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Remove CONFIG_BLK_DEV_HD hack from init_hwif_default() ("ide0=noprobe"
-  kernel parameter should be used instead if somebody wishes to use the
-  old "hd" driver).
+* Remove obsoleted "idex=base[,ctl[,irq]]" kernel parameters
+  and update Documentation/ide.txt.
 
-* Make CONFIG_BLK_DEV_HD_ONLY config option available also when IDE
-  subsystem is used and update help entry.
-
-* Remove no longer needed CONFIG_BLK_DEV_HD_IDE config option.
+* Remove no longer needed ide_forced chipset type.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/Kconfig |   25 +++++--------------------
- drivers/ide/ide.c   |    4 ----
- 2 files changed, 5 insertions(+), 24 deletions(-)
+-244 bytes (x86-32)
 
-Index: b/drivers/ide/Kconfig
+ Documentation/ide.txt     |   31 -------------------------------
+ drivers/ide/ide-generic.c |    3 +--
+ drivers/ide/ide-probe.c   |    3 +--
+ drivers/ide/ide-proc.c    |    3 ---
+ drivers/ide/ide.c         |   22 +++++-----------------
+ drivers/ide/pci/cmd640.c  |    2 +-
+ drivers/ide/setup-pci.c   |   11 -----------
+ include/linux/ide.h       |    2 +-
+ 8 files changed, 9 insertions(+), 68 deletions(-)
+
+Index: b/Documentation/ide.txt
 ===================================================================
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -118,24 +118,6 @@ config BLK_DEV_IDE_SATA
+--- a/Documentation/ide.txt
++++ b/Documentation/ide.txt
+@@ -71,29 +71,6 @@ This driver automatically probes for mos
+ ones), for the drives/geometries attached to those interfaces, and for the IRQ
+ lines being used by the interfaces (normally 14, 15 for ide0/ide1).
  
- 	  If unsure, say N.
- 
--config BLK_DEV_HD_IDE
--	bool "Use old disk-only driver on primary interface"
--	depends on (X86 || SH_MPC1211)
--	---help---
--	  There are two drivers for MFM/RLL/IDE disks.  Most people use just
--	  the new enhanced driver by itself.  This option however installs the
--	  old hard disk driver to control the primary IDE/disk interface in
--	  the system, leaving the new enhanced IDE driver to take care of only
--	  the 2nd/3rd/4th IDE interfaces.  Doing this will prevent you from
--	  having an IDE/ATAPI CD-ROM or tape drive connected to the primary
--	  IDE interface.  Choosing this option may be useful for older systems
--	  which have MFM/RLL/ESDI controller+drives at the primary port
--	  address (0x1f0), along with IDE drives at the secondary/3rd/4th port
--	  addresses.
+-For special cases, interfaces may be specified using kernel "command line"
+-options.  For example,
 -
--	  Normally, just say N here; you will then use the new driver for all
--	  4 interfaces.
+-	ide3=0x168,0x36e,10	/* ioports 0x168-0x16f,0x36e, irq 10 */
 -
- config BLK_DEV_IDEDISK
- 	tristate "Include IDE/ATA-2 DISK support"
- 	---help---
-@@ -1112,7 +1094,6 @@ endif
+-Normally the irq number need not be specified, as ide.c will probe for it:
+-
+-	ide3=0x168,0x36e	/* ioports 0x168-0x16f,0x36e */
+-
+-The standard port, and irq values are these:
+-
+-	ide0=0x1f0,0x3f6,14
+-	ide1=0x170,0x376,15
+-	ide2=0x1e8,0x3ee,11
+-	ide3=0x168,0x36e,10
+-
+-Note that the first parameter reserves 8 contiguous ioports, whereas the
+-second value denotes a single ioport. If in doubt, do a 'cat /proc/ioports'.
+-
+-In all probability the device uses these ports and IRQs if it is attached
+-to the appropriate ide channel.  Pass the parameter for the correct ide
+-channel to the kernel, as explained above.
+-
+ Any number of interfaces may share a single IRQ if necessary, at a slight
+ performance penalty, whether on separate cards or a single VLB card.
+ The IDE driver automatically detects and handles this.  However, this may
+@@ -259,14 +236,6 @@ Summary of ide driver parameters for ker
+ 			  Bigger values are safer than smaller ones.
  
- config BLK_DEV_HD_ONLY
- 	bool "Old hard disk (MFM/RLL/IDE) driver"
--	depends on BLK_DEV_IDE=n
- 	help
- 	  There are two drivers for MFM/RLL/IDE hard disks. Most people use
- 	  the newer enhanced driver, but this old one is still around for two
-@@ -1124,12 +1105,16 @@ config BLK_DEV_HD_ONLY
- 	  for systems with only older MFM/RLL/ESDI drives. Choosing the old
- 	  driver can save 13 KB or so of kernel memory.
+  "idex=noprobe"		: do not attempt to access/use this interface
+- 
+- "idex=base"		: probe for an interface at the addr specified,
+-			  where "base" is usually 0x1f0 or 0x170
+-			  and "ctl" is assumed to be "base"+0x206
+-			  
+- "idex=base,ctl"	: specify both base and ctl
+-
+- "idex=base,ctl,irq"	: specify base, ctl, and irq number
  
-+	  If you want to use this driver together with the new one you have
-+	  to use "ide0=noprobe" kernel parameter to prevent the new driver
-+	  from probing the primary interface.
-+
- 	  If you are unsure, then just choose the Enhanced IDE/MFM/RLL driver
- 	  instead of this one. For more detailed information, read the
- 	  Disk-HOWTO, available from
- 	  <http://www.tldp.org/docs.html#howto>.
+  "idex=serialize"	: do not overlap operations on idex. Please note
+ 			  that you will have to specify this option for
+Index: b/drivers/ide/ide-generic.c
+===================================================================
+--- a/drivers/ide/ide-generic.c
++++ b/drivers/ide/ide-generic.c
+@@ -96,8 +96,7 @@ static int __init ide_generic_init(void)
+ 		ide_hwif_t *hwif = &ide_hwifs[i];
  
- config BLK_DEV_HD
--	def_bool BLK_DEV_HD_IDE || BLK_DEV_HD_ONLY
-+	def_bool BLK_DEV_HD_ONLY
+ 		if (hwif->io_ports[IDE_DATA_OFFSET] &&
+-		    (hwif->chipset == ide_unknown ||
+-		     hwif->chipset == ide_forced))
++		    hwif->chipset == ide_unknown)
+ 			idx[i] = i;
+ 		else
+ 			idx[i] = 0xff;
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1514,8 +1514,7 @@ int ide_device_add_all(u8 *idx, const st
+ 		hwif = &ide_hwifs[idx[i]];
  
- endif # IDE
+ 		if (hwif->present) {
+-			if (hwif->chipset == ide_unknown ||
+-			    hwif->chipset == ide_forced)
++			if (hwif->chipset == ide_unknown)
+ 				hwif->chipset = ide_generic;
+ 			hwif_register_devices(hwif);
+ 		}
+Index: b/drivers/ide/ide-proc.c
+===================================================================
+--- a/drivers/ide/ide-proc.c
++++ b/drivers/ide/ide-proc.c
+@@ -46,9 +46,6 @@ static int proc_ide_read_imodel
+ 	int		len;
+ 	const char	*name;
+ 
+-	/*
+-	 * Neither ide_unknown nor ide_forced should be set at this point.
+-	 */
+ 	switch (hwif->chipset) {
+ 		case ide_generic:	name = "generic";	break;
+ 		case ide_pci:		name = "pci";		break;
 Index: b/drivers/ide/ide.c
 ===================================================================
 --- a/drivers/ide/ide.c
 +++ b/drivers/ide/ide.c
-@@ -179,10 +179,6 @@ static void init_hwif_default(ide_hwif_t
- 	memcpy(hwif->io_ports, hw.io_ports, sizeof(hw.io_ports));
+@@ -1349,8 +1349,6 @@ static int __init ide_setup(char *s)
+ 			"minus10", "four", "qd65xx", "ht6560b", "cmd640_vlb",
+ 			"dtc2278", "umc8672", "ali14xx", NULL };
  
- 	hwif->noprobe = !hwif->io_ports[IDE_DATA_OFFSET];
--#ifdef CONFIG_BLK_DEV_HD
--	if (hwif->io_ports[IDE_DATA_OFFSET] == HD_DATA)
--		hwif->noprobe = 1;	/* may be overridden by ide_setup() */
--#endif
- }
+-		hw_regs_t hwregs;
+-
+ 		hw = s[3] - '0';
+ 		hwif = &ide_hwifs[hw];
+ 		i = match_parm(&s[4], ide_words, vals, 3);
+@@ -1451,21 +1449,11 @@ static int __init ide_setup(char *s)
+ 			case -1: /* "noprobe" */
+ 				hwif->noprobe = 1;
+ 				goto done;
+-
+-			case 1:	/* base */
+-				vals[1] = vals[0] + 0x206; /* default ctl */
+-			case 2: /* base,ctl */
+-				vals[2] = 0;	/* default irq = probe for it */
+-			case 3: /* base,ctl,irq */
+-				memset(&hwregs, 0, sizeof(hwregs));
+-				ide_init_hwif_ports(&hwregs, vals[0], vals[1], &hwif->irq);
+-				memcpy(hwif->io_ports, hwregs.io_ports, sizeof(hwif->io_ports));
+-				hwif->irq      = vals[2];
+-				hwif->noprobe  = 0;
+-				hwif->chipset  = ide_forced;
+-				goto obsolete_option;
+-
+-			case 0: goto bad_option;
++			case 0:
++			case 1:
++			case 2:
++			case 3:
++				goto bad_option;
+ 			default:
+ 				printk(" -- SUPPORT NOT CONFIGURED IN THIS KERNEL\n");
+ 				return 1;
+Index: b/drivers/ide/pci/cmd640.c
+===================================================================
+--- a/drivers/ide/pci/cmd640.c
++++ b/drivers/ide/pci/cmd640.c
+@@ -415,7 +415,7 @@ static void __init setup_device_ptrs (vo
+ 	cmd_hwif1 = &ide_hwifs[1]; /* default, if not found below */
+ 	for (i = 0; i < MAX_HWIFS; i++) {
+ 		ide_hwif_t *hwif = &ide_hwifs[i];
+-		if (hwif->chipset == ide_unknown || hwif->chipset == ide_forced) {
++		if (hwif->chipset == ide_unknown) {
+ 			if (hwif->io_ports[IDE_DATA_OFFSET] == 0x1f0)
+ 				cmd_hwif0 = hwif;
+ 			else if (hwif->io_ports[IDE_DATA_OFFSET] == 0x170)
+Index: b/drivers/ide/setup-pci.c
+===================================================================
+--- a/drivers/ide/setup-pci.c
++++ b/drivers/ide/setup-pci.c
+@@ -41,17 +41,6 @@ static ide_hwif_t *ide_match_hwif(unsign
+ 	ide_hwif_t *hwif;
  
- /*
+ 	/*
+-	 * Look for a hwif with matching io_base specified using
+-	 * parameters to ide_setup().
+-	 */
+-	for (h = 0; h < MAX_HWIFS; ++h) {
+-		hwif = &ide_hwifs[h];
+-		if (hwif->io_ports[IDE_DATA_OFFSET] == io_base) {
+-			if (hwif->chipset == ide_forced)
+-				return hwif; /* a perfect match */
+-		}
+-	}
+-	/*
+ 	 * Look for a hwif with matching io_base default value.
+ 	 * If chipset is "ide_unknown", then claim that hwif slot.
+ 	 * Otherwise, some other chipset has already claimed it..  :(
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -169,7 +169,7 @@ enum {		ide_unknown,	ide_generic,	ide_pc
+ 		ide_rz1000,	ide_trm290,
+ 		ide_cmd646,	ide_cy82c693,	ide_4drives,
+ 		ide_pmac,	ide_etrax100,	ide_acorn,
+-		ide_au1xxx,	ide_palm3710,	ide_forced
++		ide_au1xxx,	ide_palm3710
+ };
+ 
+ typedef u8 hwif_chipset_t;
