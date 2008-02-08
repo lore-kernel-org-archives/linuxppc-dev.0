@@ -1,23 +1,23 @@
-Return-Path: <harvey.harrison@gmail.com>
-Received: from hs-out-2122.google.com (hs-out-0708.google.com [64.233.178.247])
-	by ozlabs.org (Postfix) with ESMTP id 2147BDDF62
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 05:20:32 +1100 (EST)
-Received: by hs-out-2122.google.com with SMTP id x43so3924919hsb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 08 Feb 2008 10:20:31 -0800 (PST)
+Return-Path: <pj@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id B88D7DDF1A
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 05:39:30 +1100 (EST)
+Date: Fri, 8 Feb 2008 12:39:25 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Olof Johansson <olof@lixom.net>
 Subject: Re: [PATCH] Fix compilation of powerpc asm-offsets.c with old gcc
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Paul Jackson <pj@sgi.com>
-In-Reply-To: <20080208120623.3ad74e3a.pj@sgi.com>
+Message-Id: <20080208123925.4c234aa8.pj@sgi.com>
+In-Reply-To: <20080208182343.GB10295@lixom.net>
 References: <18347.34100.60973.215093@cargo.ozlabs.ibm.com>
 	<alpine.LFD.1.00.0802071449240.2896@woody.linux-foundation.org>
 	<20080208120623.3ad74e3a.pj@sgi.com>
-Content-Type: text/plain
-Date: Fri, 08 Feb 2008 10:20:26 -0800
-Message-Id: <1202494826.31361.49.camel@brick>
+	<20080208182154.GA10295@lixom.net>
+	<20080208182343.GB10295@lixom.net>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	tglx@linutronix.de
+	tglx@linutronix.de, torvalds@linux-foundation.org,
+	akpm@linux-foundation.org, Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-02-08 at 12:06 -0600, Paul Jackson wrote:
-> Linus wrote:
-> > Please, when mentioning hex numbers, also do the one-liner shortlog.
-> > ...
-> > without _requiring_ people to be git users to get the gist of the 
-> > matter, ok?
-> 
-> 
-> Thanks for sticking up for us git-challenged contributors.
-> 
-> Can anyone point me at instructions providing the shortest
-> path for getting from one of those git hex numbers to the
-> log or change it represents, for non-git users?
-> 
+Thanks, Olof and Harvey.
 
-Replace <SHA> as needed:
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=<SHA>
+Just what I was looking for.
 
-Harvey
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
