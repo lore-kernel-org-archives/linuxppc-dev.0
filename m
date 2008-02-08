@@ -1,20 +1,13 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
-	by ozlabs.org (Postfix) with ESMTP id 7C654DDE26
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 20:10:11 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so2666243fgg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 08 Feb 2008 01:10:08 -0800 (PST)
-Message-ID: <47AC1C6E.1090101@gmail.com>
-Date: Fri, 08 Feb 2008 10:10:06 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: hwicap driver
-References: <47AB6552.7040503@gmail.com>
-	<20080208021747.92253161805C@mail10-sin.bigfish.com>
-In-Reply-To: <20080208021747.92253161805C@mail10-sin.bigfish.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18348.10091.120122.608010@cargo.ozlabs.ibm.com>
+Date: Fri, 8 Feb 2008 20:56:59 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git for-2.6.25 branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +17,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 02/08/2008 03:17 AM, Stephen Neuendorffer wrote:
-> This includes code for new fifo-based xps_hwicap in addition to the
-> older opb_hwicap, which has a significantly different interface.  The
-> common code between the two drivers is largely shared.
-> 
-> Significant differences exists between this driver and what is
-> supported in the EDK drivers.  In particular, most of the
-> architecture-specific code for reconfiguring individual FPGA resources
-> has been removed.  This functionality is likely better provided in a
-> user-space support library.  In addition, read and write access is
-> supported.  In addition, although the xps_hwicap cores support
-> interrupt-driver mode, this driver only supports polled operation, in
-> order to make the code simpler, and since the interrupt processing
-> overhead is likely to slow down the throughput under Linux.
-> 
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> 
-> Fixed to add mutexes, and a few style issues.
-> 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-> The final update to xilinx_hwicap.h was missing.
-> 
-> fix some missing __user tags and incorrect section tags.
-> convert semaphores to mutexes.
-> make probed_devices re-entrancy and error condition safe.
-> fix some backwards memcpys.
-> some other minor cleanups.
+Linus,
 
-Looks good to me.
+Please do
 
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> ---
-[...]
-> diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> new file mode 100644
-> index 0000000..2caac31
-> --- /dev/null
-> +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-> @@ -0,0 +1,923 @@
-[...]
-> +module_param(xhwicap_major, int, S_IRUGO);
-> +module_param(xhwicap_minor, int, S_IRUGO);
-> +
-> +/* An array, which is set to true when the device is registered. */
-> +static bool probed_devices[HWICAP_DEVICES];
-> +static struct mutex icap_sem;
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git for-2.6.25
 
-Just a sideway note, static DEFINE_MUTEX(icap_sem); and you don't need to 
-runtime init it then.
+to get some bug-fixes for powerpc (1 for powermac and 8 for Cell),
+plus 3 commits from Badari Pulavarty that implement memory hot-remove
+for 64-bit powerpc.  These 3 commits have been signed-off by Andrew
+Morton.  One of them touches generic code (kernel/resource.c), and it
+has been acked by KAMEZAWA Hiroyuki.
+
+Thanks,
+Paul.
+
+ arch/powerpc/Kconfig                            |    6 +++
+ arch/powerpc/mm/mem.c                           |   33 +++++++++++++++
+ arch/powerpc/platforms/cell/iommu.c             |   48 +++++++++++++----------
+ arch/powerpc/platforms/cell/spufs/backing_ops.c |    6 +++
+ arch/powerpc/platforms/cell/spufs/fault.c       |   12 ++----
+ arch/powerpc/platforms/cell/spufs/file.c        |   49 ++++++++++++++---------
+ arch/powerpc/platforms/cell/spufs/run.c         |   21 ++++++----
+ arch/powerpc/platforms/cell/spufs/spufs.h       |    5 ++
+ arch/powerpc/platforms/powermac/feature.c       |   11 +++++
+ drivers/macintosh/smu.c                         |   25 +++++++++++-
+ include/asm-powerpc/pmac_feature.h              |    8 ++++
+ kernel/resource.c                               |    2 -
+ 12 files changed, 166 insertions(+), 60 deletions(-)
+
+Badari Pulavarty (3):
+      [POWERPC] Add remove_memory() for 64-bit powerpc
+      [POWERPC] Enable hotplug memory remove for 64-bit powerpc
+      [POWERPC] Add arch-specific walk_memory_remove() for 64-bit powerpc
+
+Benjamin Herrenschmidt (1):
+      [POWERPC] Disable G5 NAP mode during SMU commands on U3
+
+Christoph Hellwig (1):
+      [POWERPC] spufs: Fix state_mutex leaks
+
+Luke Browning (2):
+      [POWERPC] spufs: No need to have a runnable SPU for libassist update
+      [POWERPC] spufs: Fix timing dependent false return from spufs_run_spu
+
+Masato Noguchi (1):
+      [POWERPC] spufs: Update SPU_Status[CISHP] in backing runcntl write
+
+Michael Ellerman (4):
+      [POWERPC] Fix cell IOMMU null pointer explosion on old firmwares
+      [POWERPC] Don't enable cell IOMMU fixed mapping if there are no dma-ranges
+      [POWERPC] Fix potential cell IOMMU bug when switching back to default DMA ops
+      [POWERPC] Make cell IOMMU fixed mapping printk more useful
