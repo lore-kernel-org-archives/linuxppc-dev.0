@@ -1,13 +1,13 @@
 Return-Path: <Alexandre.Bounine@tundra.com>
 Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
-	by ozlabs.org (Postfix) with ESMTP id AD609DDF14
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 06:29:48 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A9F47DDF09
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 06:29:47 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: [PATCH 2/5] Tsi108_eth: fix detection of 1000Mb mode
-Date: Fri, 8 Feb 2008 14:17:04 -0500
-Message-ID: <1B5F013528140F45B5C671039279CA5702A960A0@NANUK.pc.tundra.com>
+Subject: [PATCH 4/5] Tsi108_eth: fix link recovery after disconnect
+Date: Fri, 8 Feb 2008 14:17:41 -0500
+Message-ID: <1B5F013528140F45B5C671039279CA5702A960A4@NANUK.pc.tundra.com>
 From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
 To: <jgarzik@pobox.com>, <netdev@vger.kernel.org>
 Cc: linuxppc-dev@ozlabs.org
@@ -21,7 +21,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Bug fix for tsi108_eth network driver.
-This patch fixes a problem with detection of 1000Mb speed.=20
+This patch fixes a problem with link recovery after connection was lost.
 =20=20=20
 Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 ---
@@ -29,27 +29,62 @@ Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
 linux-2.6.24-fix/drivers/net/tsi108_eth.c
 --- linux-2.6.24/drivers/net/tsi108_eth.c	2008-02-06
-15:09:19.000000000 -0500
+16:16:00.000000000 -0500
 +++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
-15:34:12.000000000 -0500
-@@ -1287,6 +1287,7 @@ static void tsi108_init_phy(struct net_d
- 		spin_lock_irqsave(&phy_lock, flags);
- 	}
+16:57:41.000000000 -0500
+@@ -338,22 +338,21 @@ static void tsi108_check_phy(struct net_
 =20
-+	data->mii_if.supports_gmii =3D
-mii_check_gmii_support(&data->mii_if);
- 	printk(KERN_DEBUG "PHY_STAT reg contains %08x\n", phyval);
- 	data->phy_ok =3D 1;
- 	data->init_media =3D 1;
-@@ -1584,7 +1585,6 @@ tsi108_init_one(struct platform_device *
- 	data->mii_if.phy_id =3D einfo->phy;
- 	data->mii_if.phy_id_mask =3D 0x1f;
- 	data->mii_if.reg_num_mask =3D 0x1f;
--	data->mii_if.supports_gmii =3D
-mii_check_gmii_support(&data->mii_if);
+ 			TSI_WRITE(TSI108_MAC_CFG2, mac_cfg2_reg);
+ 			TSI_WRITE(TSI108_EC_PORTCTRL, portctrl_reg);
++		}
 =20
- 	data->phy =3D einfo->phy;
- 	data->phy_type =3D einfo->phy_type;
+-			if (data->link_up =3D=3D 0) {
+-				/* The manual says it can take 3-4 usecs
+for the speed change
+-				 * to take effect.
+-				 */
+-				udelay(5);
+-
+-				spin_lock(&data->txlock);
+-				if (is_valid_ether_addr(dev->dev_addr)
+&& data->txfree)
+-					netif_wake_queue(dev);
++		if (data->link_up =3D=3D 0) {
++			/* The manual says it can take 3-4 usecs for the
+speed change
++			 * to take effect.
++			 */
++			udelay(5);
+=20
+-				data->link_up =3D 1;
+-				spin_unlock(&data->txlock);
+-			}
+-		}
++			spin_lock(&data->txlock);
++			if (is_valid_ether_addr(dev->dev_addr) &&
+data->txfree)
++				netif_wake_queue(dev);
+=20
++			data->link_up =3D 1;
++			spin_unlock(&data->txlock);
++		}
+ 	} else {
+ 		if (data->link_up =3D=3D 1) {
+ 			netif_stop_queue(dev);
+@@ -1267,12 +1266,11 @@ static void tsi108_init_phy(struct net_d
+ 	 * PHY_STAT register before the link up status bit is set.
+ 	 */
+=20
+-	data->link_up =3D 1;
++	data->link_up =3D 0;
+=20
+ 	while (!((phyval =3D tsi108_read_mii(data, MII_BMSR)) &
+ 		 BMSR_LSTATUS)) {
+ 		if (i++ > (MII_READ_DELAY / 10)) {
+-			data->link_up =3D 0;
+ 			break;
+ 		}
+ 		spin_unlock_irqrestore(&phy_lock, flags);
 
 
 
