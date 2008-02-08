@@ -1,17 +1,16 @@
 Return-Path: <bzolnier@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id CB386DE772
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:33 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so3580760pyg.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:33 -0800 (PST)
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 15933DE8FA
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:41 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so80369wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:40 -0800 (PST)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:45 +0100
-Message-Id: <20080208004545.17746.25806.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:52 +0100
+Message-Id: <20080208004552.17746.61665.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 12/18] ide: remove needless CONFIG_BLK_DEV_HD hack from
-	init_hwif()
+Subject: [PATCH 13/18] ide: remove CONFIG_BLK_DEV_HD_IDE config option
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,29 +22,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-request_irq() will fail if there is already another IRQ handler
-registered and IRQ flags are mismatched.
+* Remove CONFIG_BLK_DEV_HD hack from init_hwif_default() ("ide0=noprobe"
+  kernel parameter should be used instead if somebody wishes to use the
+  old "hd" driver).
+
+* Make CONFIG_BLK_DEV_HD_ONLY config option available also when IDE
+  subsystem is used and update help entry.
+
+* Remove no longer needed CONFIG_BLK_DEV_HD_IDE config option.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c |    7 -------
- 1 file changed, 7 deletions(-)
+ drivers/ide/Kconfig |   25 +++++--------------------
+ drivers/ide/ide.c   |    4 ----
+ 2 files changed, 5 insertions(+), 24 deletions(-)
 
-Index: b/drivers/ide/ide-probe.c
+Index: b/drivers/ide/Kconfig
 ===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1237,13 +1237,6 @@ static int hwif_init(ide_hwif_t *hwif)
- 			return 0;
- 		}
- 	}
--#ifdef CONFIG_BLK_DEV_HD
--	if (hwif->irq == HD_IRQ && hwif->io_ports[IDE_DATA_OFFSET] != HD_DATA) {
--		printk("%s: CANNOT SHARE IRQ WITH OLD "
--			"HARDDISK DRIVER (hd.c)\n", hwif->name);
--		return 0;
--	}
--#endif /* CONFIG_BLK_DEV_HD */
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -118,24 +118,6 @@ config BLK_DEV_IDE_SATA
  
- 	if (register_blkdev(hwif->major, hwif->name))
- 		return 0;
+ 	  If unsure, say N.
+ 
+-config BLK_DEV_HD_IDE
+-	bool "Use old disk-only driver on primary interface"
+-	depends on (X86 || SH_MPC1211)
+-	---help---
+-	  There are two drivers for MFM/RLL/IDE disks.  Most people use just
+-	  the new enhanced driver by itself.  This option however installs the
+-	  old hard disk driver to control the primary IDE/disk interface in
+-	  the system, leaving the new enhanced IDE driver to take care of only
+-	  the 2nd/3rd/4th IDE interfaces.  Doing this will prevent you from
+-	  having an IDE/ATAPI CD-ROM or tape drive connected to the primary
+-	  IDE interface.  Choosing this option may be useful for older systems
+-	  which have MFM/RLL/ESDI controller+drives at the primary port
+-	  address (0x1f0), along with IDE drives at the secondary/3rd/4th port
+-	  addresses.
+-
+-	  Normally, just say N here; you will then use the new driver for all
+-	  4 interfaces.
+-
+ config BLK_DEV_IDEDISK
+ 	tristate "Include IDE/ATA-2 DISK support"
+ 	---help---
+@@ -1112,7 +1094,6 @@ endif
+ 
+ config BLK_DEV_HD_ONLY
+ 	bool "Old hard disk (MFM/RLL/IDE) driver"
+-	depends on BLK_DEV_IDE=n
+ 	help
+ 	  There are two drivers for MFM/RLL/IDE hard disks. Most people use
+ 	  the newer enhanced driver, but this old one is still around for two
+@@ -1124,12 +1105,16 @@ config BLK_DEV_HD_ONLY
+ 	  for systems with only older MFM/RLL/ESDI drives. Choosing the old
+ 	  driver can save 13 KB or so of kernel memory.
+ 
++	  If you want to use this driver together with the new one you have
++	  to use "ide0=noprobe" kernel parameter to prevent the new driver
++	  from probing the primary interface.
++
+ 	  If you are unsure, then just choose the Enhanced IDE/MFM/RLL driver
+ 	  instead of this one. For more detailed information, read the
+ 	  Disk-HOWTO, available from
+ 	  <http://www.tldp.org/docs.html#howto>.
+ 
+ config BLK_DEV_HD
+-	def_bool BLK_DEV_HD_IDE || BLK_DEV_HD_ONLY
++	def_bool BLK_DEV_HD_ONLY
+ 
+ endif # IDE
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -179,10 +179,6 @@ static void init_hwif_default(ide_hwif_t
+ 	memcpy(hwif->io_ports, hw.io_ports, sizeof(hw.io_ports));
+ 
+ 	hwif->noprobe = !hwif->io_ports[IDE_DATA_OFFSET];
+-#ifdef CONFIG_BLK_DEV_HD
+-	if (hwif->io_ports[IDE_DATA_OFFSET] == HD_DATA)
+-		hwif->noprobe = 1;	/* may be overridden by ide_setup() */
+-#endif
+ }
+ 
+ /*
