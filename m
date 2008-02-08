@@ -1,14 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 7365ADDEC7
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 10:30:57 +1100 (EST)
-Message-ID: <47ACE630.8090101@pikatech.com>
-Date: Fri, 08 Feb 2008 18:30:56 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound5-va3-R.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BD7DDDDEC4
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 10:46:06 +1100 (EST)
+Message-ID: <47ACDD4D.5040409@am.sony.com>
+Date: Fri, 08 Feb 2008 14:53:01 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: Could the DTS experts look at this?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: paulus@samba.org
+Subject: [patch 5/6] PS3: Sys-manager code cleanup
+References: <20080208224723.029462363@am.sony.com>
+In-Reply-To: <20080208224723.029462363@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,80 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Rev B warp is moving to a 4M NOR / 256M NAND flash setup from the 
-current 64M NOR / 64M NAND. I would like to keep support for the 64M NOR 
-so I modified the boot code to be a bit more dynamic. Here is the new 
-NOR parition layout in the DTS:
+General code cleanups for PS3 system-manager:
+ o Move all MODULE_ macros to bottom.
+ o Correct PS3_SM_WAKE_P_O_R value.
+ o Enhance comment on wakeup source values.
 
-nor_flash@0,0 {
-	compatible = "amd,s29gl512n", "cfi-flash";
-	bank-width = <2>;
-	reg = <0 0 4000000>;
-	#address-cells = <1>;
-	#size-cells = <1>;
-	partition@300000 {
-		label = "fpga";
-		reg = <300000 40000>;
-	};
-	partition@340000 {
-		label = "env";
-		reg = <340000 40000>;
-	};
-	partition@380000 {
-		label = "u-boot";
-		reg = <380000 80000>;
-	};
-};
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ drivers/ps3/ps3-sys-manager.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Yes, the top of the NOR will be empty. Here is the code from 
-cuboot-warp.c to handle fixups for the 64M flash:
+--- a/drivers/ps3/ps3-sys-manager.c
++++ b/drivers/ps3/ps3-sys-manager.c
+@@ -28,10 +28,6 @@
+ 
+ #include "vuart.h"
+ 
+-MODULE_AUTHOR("Sony Corporation");
+-MODULE_LICENSE("GPL v2");
+-MODULE_DESCRIPTION("PS3 System Manager");
+-
+ /**
+  * ps3_sys_manager - PS3 system manager driver.
+  *
+@@ -181,7 +177,9 @@ enum ps3_sys_manager_next_op {
+  * @PS3_SM_WAKE_P_O_R: Power on reset.
+  *
+  * Additional wakeup sources when specifying PS3_SM_NEXT_OP_SYS_SHUTDOWN.
+- * System will always wake from the PS3_SM_WAKE_DEFAULT sources.
++ * The system will always wake from the PS3_SM_WAKE_DEFAULT sources.
++ * Sources listed here are the only ones available to guests in the
++ * other-os lpar.
+  */
+ 
+ enum ps3_sys_manager_wake_source {
+@@ -189,7 +187,7 @@ enum ps3_sys_manager_wake_source {
+ 	PS3_SM_WAKE_DEFAULT   = 0,
+ 	PS3_SM_WAKE_RTC       = 0x00000040,
+ 	PS3_SM_WAKE_RTC_ERROR = 0x00000080,
+-	PS3_SM_WAKE_P_O_R     = 0x10000000,
++	PS3_SM_WAKE_P_O_R     = 0x80000000,
+ };
+ 
+ /**
+@@ -699,4 +697,7 @@ static int __init ps3_sys_manager_init(v
+ module_init(ps3_sys_manager_init);
+ /* Module remove not supported. */
+ 
++MODULE_AUTHOR("Sony Corporation");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("PS3 System Manager");
+ MODULE_ALIAS(PS3_MODULE_ALIAS_SYSTEM_MANAGER);
 
-static void warp_fixup_one_nor(u32 from, u32 to)
-{
-	void *devp;
-	char name[40];
-	u32 v[2];
-
-	sprintf(name, "/plb/opb/ebc/nor_flash@0,0/partition@%x", from);
-
-	devp = finddevice(name);
-	if (!devp) return;
-
-	if (getprop(devp, "reg", v, sizeof(v)) == sizeof(v)) {
-		v[0] = to;
-		setprop(devp, "reg", v, sizeof(v));
-
-		printf("NOR 64M fixup %x -> %x\n", from, to);
-	}
-}
-
-
-static void warp_fixups(void)
-{
-	unsigned long sysclk = 66000000;
-
-	ibm440ep_fixup_clocks(sysclk, 11059200, 50000000);
-	ibm4xx_sdram_fixup_memsize();
-	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
-	dt_fixup_mac_addresses(&bd.bi_enetaddr);
-
-	/* Fixup for 64M flash on Rev A boards. */
-	if(bd.bi_flashsize == 0x4000000) {
-		warp_fixup_one_nor(0x300000, 0x3f00000);
-		warp_fixup_one_nor(0x340000, 0x3f40000);
-		warp_fixup_one_nor(0x380000, 0x3f80000);
-	}
-}
-
-I have tested this with the 64M NOR, and it seems to work. However, are 
-there going to be problems with the partition name not matching the reg 
-address entry?
-
-If anybody has suggestions on better ways to do this, fire away.
-
-And looking at this code, and other board ports, why is sysclk a local 
-variable and all the other numbers hardcoded in the args? I left it the 
-same way as the others but it does look a bit strange.
-
-Cheers,
-   Sean
+-- 
