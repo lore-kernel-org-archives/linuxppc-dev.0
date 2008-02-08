@@ -1,8 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH 3/4] spufs: no need to have a runnable SPU for libassist update
-Message-Id: <1202446241.802135.705426782144.3.gpush@pokey>
+Subject: [PATCH 2/4] spufs: update SPU_Status[CISHP] in backing runcntl write
+Message-Id: <1202446241.801608.714016806018.2.gpush@pokey>
 In-Reply-To: <1202446241.799868.442184577655.0.gpush@pokey>
 To: Paul Mackerras <paulus@samba.org>
 From: Jeremy Kerr <jk@ozlabs.org>
@@ -17,41 +17,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Luke Browning <lukebr@linux.vnet.ibm.com>
+From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 
-We don't need to update the libassist statistic with the context in a
-runnable state, so do it after spu_disable_spu().
+Currently, the kernel may fail to restart a SPE context which
+has stopped and been swapped out.
 
-Signed-off-by: Luke Browning <lukebrowning@us.ibm.com>
+This patch changes spu_backing_runcntl_write to emulate the real
+SPU_Status register exactly.  When the SPU Run Control register
+is written with SPU_RunCntl[Run] set to '1', the physical SPU
+automatically sets SPU_Status[R] and clears SPU_Status[CISHP].
+
+Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-Acked-by: Christoph Hellwig <hch@lst.de>
 
 ---
- arch/powerpc/platforms/cell/spufs/run.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/cell/spufs/backing_ops.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/run.c b/arch/powerpc/platforms/cell/spufs/run.c
-index e9c61a1..f401e51 100644
---- a/arch/powerpc/platforms/cell/spufs/run.c
-+++ b/arch/powerpc/platforms/cell/spufs/run.c
-@@ -395,16 +395,14 @@ long spufs_run_spu(struct spu_context *ctx, u32 *npc, u32 *event)
- 				      SPU_STATUS_STOPPED_BY_HALT |
- 				       SPU_STATUS_SINGLE_STEP)));
- 
--	if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
--	    (((status >> SPU_STOP_STATUS_SHIFT) & 0x3f00) == 0x2100) &&
--	    (ctx->state == SPU_STATE_RUNNABLE))
--		ctx->stats.libassist++;
--
--
- 	spu_disable_spu(ctx);
- 	ret = spu_run_fini(ctx, npc, &status);
- 	spu_yield(ctx);
- 
-+	if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
-+	    (((status >> SPU_STOP_STATUS_SHIFT) & 0x3f00) == 0x2100))
-+		ctx->stats.libassist++;
-+
- 	if ((ret == 0) ||
- 	    ((ret == -ERESTARTSYS) &&
- 	     ((status & SPU_STATUS_STOPPED_BY_HALT) ||
+diff --git a/arch/powerpc/platforms/cell/spufs/backing_ops.c b/arch/powerpc/platforms/cell/spufs/backing_ops.c
+index 50d98a1..64eb15b 100644
+--- a/arch/powerpc/platforms/cell/spufs/backing_ops.c
++++ b/arch/powerpc/platforms/cell/spufs/backing_ops.c
+@@ -288,6 +288,12 @@ static void spu_backing_runcntl_write(struct spu_context *ctx, u32 val)
+ 	spin_lock(&ctx->csa.register_lock);
+ 	ctx->csa.prob.spu_runcntl_RW = val;
+ 	if (val & SPU_RUNCNTL_RUNNABLE) {
++		ctx->csa.prob.spu_status_R &=
++			~SPU_STATUS_STOPPED_BY_STOP &
++			~SPU_STATUS_STOPPED_BY_HALT &
++			~SPU_STATUS_SINGLE_STEP &
++			~SPU_STATUS_INVALID_INSTR &
++			~SPU_STATUS_INVALID_CH;
+ 		ctx->csa.prob.spu_status_R |= SPU_STATUS_RUNNING;
+ 	} else {
+ 		ctx->csa.prob.spu_status_R &= ~SPU_STATUS_RUNNING;
