@@ -1,19 +1,18 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-2.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9B466DDF06
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 06:31:23 +1100 (EST)
-Date: Fri, 8 Feb 2008 18:25:13 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: fix DEBUG_PREEMPT warning when warning
-Message-ID: <Pine.LNX.4.64.0802081823400.6273@blonde.site>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D6DC0DDEB6
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 09:54:22 +1100 (EST)
+Message-ID: <47ACDD22.2050600@am.sony.com>
+Date: Fri, 08 Feb 2008 14:52:18 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: paulus@samba.org
+Subject: [patch 0/6] PS3 fixups for 2.6.25
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc show_regs prints CPU using smp_processor_id: change that to
-raw_smp_processor_id, so that when it's showing a WARN_ON backtrace without
-preemption disabled, DEBUG_PREEMPT doesn't mess up that warning with its own.
+Paul,
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+Here are a few PS3 fixups to apply for 2.6.25.
 
- powerpc/kernel/process.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  [patch 1/6] PS3: Fix lpm set bookmark
+  [patch 2/6] PS3: Fix lpm read pm interval
+  [patch 3/6] PS3: Fix bootwrapper hang bug
+  [patch 4/6] PS3: Use system reboot on restart
+  [patch 5/6] PS3: Sys-manager code cleanup
+  [patch 6/6] PS3: Update sys-manager button events
 
---- 2.6.24-git18/arch/powerpc/kernel/process.c	2008-01-24 22:58:37.000000000 +0000
-+++ linux/arch/powerpc/kernel/process.c	2008-02-08 12:01:31.000000000 +0000
-@@ -462,7 +462,7 @@ void show_regs(struct pt_regs * regs)
- 	       current, task_pid_nr(current), current->comm, task_thread_info(current));
- 
- #ifdef CONFIG_SMP
--	printk(" CPU: %d", smp_processor_id());
-+	printk(" CPU: %d", raw_smp_processor_id());
- #endif /* CONFIG_SMP */
- 
- 	for (i = 0;  i < 32;  i++) {
+-Geoff
+
+
+
+
+-- 
