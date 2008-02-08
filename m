@@ -1,15 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 8 Feb 2008 22:02:19 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC][POWERPC] bootwrapper: Add a firmware-independent
-	simpleboot target.
-Message-ID: <20080208110219.GC27955@localhost.localdomain>
-References: <20080202065517.12920.20235.stgit@trillian.secretlab.ca>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 949A7DDE20
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 01:07:06 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1032420anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 08 Feb 2008 06:07:05 -0800 (PST)
+Message-ID: <fa686aa40802080607h299811devc15af33d0fa8bd90@mail.gmail.com>
+Date: Fri, 8 Feb 2008 07:07:04 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+	jwboyer@gmail.com, scottwood@freescale.com,
+	stephen.neuendorffer@xilinx.com
+Subject: Re: [RFC][POWERPC] bootwrapper: Add a firmware-independent simpleboot
+	target.
+In-Reply-To: <20080208110219.GC27955@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080202065517.12920.20235.stgit@trillian.secretlab.ca>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080202065517.12920.20235.stgit@trillian.secretlab.ca>
+	<20080208110219.GC27955@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 01, 2008 at 11:55:42PM -0700, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Feb 8, 2008 4:02 AM, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Fri, Feb 01, 2008 at 11:55:42PM -0700, Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> > +     /* Make sure FDT blob is sane */
+> > +     if (fdt_check_header(_dtb_start) != 0)
+> > +             fatal("Invalid device tree blob\n");
+>
+> I think most of these fatal()s are pretty pointless.  This is
+> platform_init(), so the console won't even have been initialized to
+> actually print any of the messages.  Precisely because this is
+> simpleboot, in which every bit of information the wrapper has comes
+> from teh device tree, if the provided blob is so bad as to fail these
+> basic tests, we're totally stuffed anyway.  It'll take a hardware
+> debugger to track down, and I don't think the fatal()s will actually
+> help much at that point.
 
-[snip]
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-> +		   unsigned long r6, unsigned long r7)
-> +{
-> +	const u32 *na, *ns, *reg, *timebase;
-> +	u64 memsize64;
-> +	int node, size, i;
-> +
-> +	/* Allocate initial heap for probing the tree */
-> +	simple_alloc_init(initial_heap, sizeof(initial_heap), 32, 64);
-> +
-> +	/* Make sure FDT blob is sane */
-> +	if (fdt_check_header(_dtb_start) != 0)
-> +		fatal("Invalid device tree blob\n");
+heh; very true.  I'll kill them.
 
-I think most of these fatal()s are pretty pointless.  This is
-platform_init(), so the console won't even have been initialized to
-actually print any of the messages.  Precisely because this is
-simpleboot, in which every bit of information the wrapper has comes
-from teh device tree, if the provided blob is so bad as to fail these
-basic tests, we're totally stuffed anyway.  It'll take a hardware
-debugger to track down, and I don't think the fatal()s will actually
-help much at that point.
+g.
+
+
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
