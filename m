@@ -1,18 +1,19 @@
-Return-Path: <SRS0=TUrV=S5=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 7D397DDEDA
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 01:32:54 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] MTD support for the AMCC Taishan
-Date: Fri, 8 Feb 2008 15:32:42 +0100
-References: <120203530465-git-send-email-kaloz@openwrt.org>
-	<200802081527.28771.sr@denx.de>
-In-Reply-To: <200802081527.28771.sr@denx.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id EC70FDDEBF
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 04:18:02 +1100 (EST)
+Message-ID: <47AC8EFC.8030506@ru.mvista.com>
+Date: Fri, 08 Feb 2008 20:18:52 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802081532.42717.sr@denx.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH 05/18] ide: factor out cable detection from ide_init_port()
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<20080208004455.17746.44570.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080208004455.17746.44570.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 08 February 2008, Stefan Roese wrote:
-> > +					partition@380000 {
-> > +						label = "user";
-> > +						reg = <380000 3a80000>;
-> > +					};
-> > +					partition@3e00000 {
-> > +						label = "kozio";
-> > +						reg = <3e00000 140000>;
-> > +					};
->
-> Please remove the kozio partition from this list. It's not used/supported
-> anymore.
+Bartlomiej Zolnierkiewicz wrote:
 
-And please extend the "user" partition accordingly.
+> * Factor out cable detection from ide_init_port() to ide_port_cable_detect().
 
-Thanks.
+> * Move ide_port_cable_detect() call to ide_device_add_all().
 
-Best regards,
-Stefan
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
