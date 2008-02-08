@@ -1,16 +1,17 @@
 Return-Path: <bzolnier@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.225])
-	by ozlabs.org (Postfix) with ESMTP id 3CD5BDE137
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:18 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 68so3283355wra.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:18 -0800 (PST)
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id C692BDE674
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Feb 2008 11:31:26 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so3580760pyg.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 07 Feb 2008 16:31:26 -0800 (PST)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Fri, 08 Feb 2008 01:45:30 +0100
-Message-Id: <20080208004530.17746.11984.sendpatchset@localhost.localdomain>
+Date: Fri, 08 Feb 2008 01:45:37 +0100
+Message-Id: <20080208004537.17746.56138.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
 References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-Subject: [PATCH 10/18] ide: add warm-plug support for IDE devices
+Subject: [PATCH 11/18] ide-generic: add ide_generic class and attribute for
+	adding new interfaces
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,249 +23,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Add 'struct class ide_port_class' ('ide_port' class) and embedd 'struct
-  class_device classdev' ('ide_port' class device) in ide_hwif_t.
+* Add ide_generic_sysfs_init() helper registering 'ide_generic' class
+  (together with ide_generic_class_release() ->class_release method)
+  and use it in ide_generic_init().
 
-* Register 'ide_port' class in ide_init() and unregister it in
-  cleanup_module().
-
-* Add class_to_ide_port() macro and ide_port_class_release().
-
-* Register ->classdev in ide_register_port () and unregister it in
-  ide_unregister().
-
-* Add "delete_devices" class device attribute for unregistering IDE devices
-  on a port and "scan" one for probing+registering IDE devices on a port.
-
-* Add ide_sysfs_register_port() helper for registering "delete_devices"
-  and "scan" attributes with ->classdev.  Call it in ide_device_add_all().
-
-* Document IDE warm-plug support in Documentation/ide/warm-plug-howto.txt.
+* Add "add" class attribute to 'ide_generic' class for adding new interfaces
+  (it is intended to be a replacement for obsoleted "idex=base[,ctl[,irq]]"
+  kernel parameters).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-+540 bytes (x86-32)
++391 bytes (x86-32)
 
-After seeing some 'class device' conversion patches from Greg I tried to
-recast this patch to just use 'device' but I couldn't figure out how to
-use class_device_create() with *static* objects...
+I also tried interface based on kernel parameters but it sucked
+(more complex, bigger source code + resulting binary).
 
- Documentation/ide/warm-plug-howto.txt |   13 ++++++
- drivers/ide/ide-probe.c               |   70 +++++++++++++++++++++++++++++++++-
- drivers/ide/ide.c                     |   22 ++++++++++
- include/linux/ide.h                   |    7 ++-
- 4 files changed, 109 insertions(+), 3 deletions(-)
+ drivers/ide/ide-generic.c |   78 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 77 insertions(+), 1 deletion(-)
 
-Index: b/Documentation/ide/warm-plug-howto.txt
+Index: b/drivers/ide/ide-generic.c
 ===================================================================
---- /dev/null
-+++ b/Documentation/ide/warm-plug-howto.txt
-@@ -0,0 +1,13 @@
-+
-+IDE warm-plug HOWTO
-+===================
-+
-+To warm-plug devices on a port 'idex':
-+
-+# echo -n "1" > /sys/class/ide_port/idex/delete_devices
-+
-+unplug old device(s) and plug new device(s)
-+
-+# echo -n "1" > /sys/class/ide_port/idex/scan
-+
-+done
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -623,7 +623,7 @@ static void hwif_release_dev (struct dev
- 	complete(&hwif->gendev_rel_comp);
- }
- 
--static void ide_register_port(ide_hwif_t *hwif)
-+static int ide_register_port(ide_hwif_t *hwif)
- {
- 	int ret;
- 
-@@ -639,9 +639,23 @@ static void ide_register_port(ide_hwif_t
- 	}
- 	hwif->gendev.release = hwif_release_dev;
- 	ret = device_register(&hwif->gendev);
--	if (ret < 0)
-+	if (ret < 0) {
- 		printk(KERN_WARNING "IDE: %s: device_register error: %d\n",
- 			__FUNCTION__, ret);
-+		goto out;
-+	}
-+
-+	get_device(&hwif->gendev);
-+
-+	strlcpy(hwif->classdev.class_id, hwif->name, BUS_ID_SIZE);
-+	hwif->classdev.dev = &hwif->gendev;
-+	hwif->classdev.class = &ide_port_class;
-+
-+	ret = class_device_register(&hwif->classdev);
-+	if (ret < 0)
-+		device_unregister(&hwif->gendev);
-+out:
-+	return ret;
- }
- 
- /**
-@@ -1374,6 +1388,57 @@ static void ide_port_cable_detect(ide_hw
- 	}
- }
- 
-+static ssize_t store_delete_devices(struct class_device *class_dev,
-+				    const char *buf, size_t n)
-+{
-+	ide_hwif_t *hwif = class_to_ide_port(class_dev);
-+
-+	if (strncmp(buf, "1", n))
-+		return -EINVAL;
-+
-+	ide_port_unregister_devices(hwif);
-+
-+	return n;
-+};
-+
-+static CLASS_DEVICE_ATTR(delete_devices, S_IWUSR, NULL, store_delete_devices);
-+
-+static ssize_t store_scan(struct class_device *class_dev, const char *buf,
-+			  size_t n)
-+{
-+	ide_hwif_t *hwif = class_to_ide_port(class_dev);
-+
-+	if (strncmp(buf, "1", n))
-+		return -EINVAL;
-+
-+	ide_port_unregister_devices(hwif);
-+	ide_port_scan(hwif);
-+
-+	return n;
-+};
-+
-+static CLASS_DEVICE_ATTR(scan, S_IWUSR, NULL, store_scan);
-+
-+static struct class_device_attribute *ide_port_attrs[] = {
-+	&class_device_attr_delete_devices,
-+	&class_device_attr_scan,
-+	NULL
-+};
-+
-+static int ide_sysfs_register_port(ide_hwif_t *hwif)
-+{
-+	int i, rc;
-+
-+	for (i = 0; ide_port_attrs[i]; i++) {
-+		rc = class_device_create_file(&hwif->classdev,
-+					      ide_port_attrs[i]);
-+		if (rc)
-+			break;
-+	}
-+
-+	return rc;
-+}
-+
- int ide_device_add_all(u8 *idx, const struct ide_port_info *d)
- {
- 	ide_hwif_t *hwif, *mate = NULL;
-@@ -1470,6 +1535,7 @@ int ide_device_add_all(u8 *idx, const st
- 		hwif = &ide_hwifs[idx[i]];
- 
- 		if (hwif->present) {
-+			ide_sysfs_register_port(hwif);
- 			ide_proc_register_port(hwif);
- 			ide_proc_port_register_devices(hwif);
- 		}
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -596,6 +596,7 @@ void ide_unregister(unsigned int index, 
- 
- 	ide_remove_port_from_hwgroup(hwif);
- 
-+	class_device_unregister(&hwif->classdev);
- 	device_unregister(&hwif->gendev);
- 	wait_for_completion(&hwif->gendev_rel_comp);
- 
-@@ -1613,6 +1614,16 @@ struct bus_type ide_bus_type = {
- 
- EXPORT_SYMBOL_GPL(ide_bus_type);
- 
-+static void ide_port_class_release(struct class_device *class_dev)
-+{
-+	put_device(&class_to_ide_port(class_dev)->gendev);
-+}
-+
-+struct class ide_port_class = {
-+	.name		= "ide_port",
-+	.release	= ide_port_class_release,
-+};
-+
+--- a/drivers/ide/ide-generic.c
++++ b/drivers/ide/ide-generic.c
+@@ -1,17 +1,89 @@
  /*
-  * This is gets invoked once during initialization, to set *everything* up
+  * generic/default IDE host driver
+  *
+- * Copyright (C) 2004 Bartlomiej Zolnierkiewicz
++ * Copyright (C) 2004, 2008 Bartlomiej Zolnierkiewicz
+  * This code was split off from ide.c.  See it for original copyrights.
+  *
+  * May be copied or modified under the terms of the GNU General Public License.
   */
-@@ -1633,11 +1644,20 @@ static int __init ide_init(void)
- 		return ret;
- 	}
  
-+	ret = class_register(&ide_port_class);
-+	if (ret)
-+		goto out_port_class;
++/*
++ * For special cases new interfaces may be added using sysfs, i.e.
++ *
++ *	echo -n "0x168:0x36e:10" > /sys/class/ide_generic/add
++ *
++ * will add an interface using I/O ports 0x168-0x16f/0x36e and IRQ 10.
++ */
 +
- 	init_ide_data();
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/ide.h>
  
- 	proc_ide_create();
++#define DRV_NAME	"ide_generic"
++
++static ssize_t store_add(struct class *cls, const char *buf, size_t n)
++{
++	ide_hwif_t *hwif;
++	unsigned int base, ctl;
++	int irq;
++	hw_regs_t hw;
++	u8 idx[] = { 0xff, 0xff, 0xff, 0xff };
++
++	if (sscanf(buf, "%x:%x:%d", &base, &ctl, &irq) != 3)
++		return -EINVAL;
++
++	hwif = ide_find_port(base);
++	if (hwif == NULL)
++		return -ENOENT;
++
++	memset(&hw, 0, sizeof(hw));
++	ide_std_init_ports(&hw, base, ctl);
++	hw.irq = irq;
++	hw.chipset = ide_generic;
++
++	ide_init_port_hw(hwif, &hw);
++
++	idx[0] = hwif->index;
++
++	ide_device_add(idx, NULL);
++
++	return n;
++};
++
++static struct class_attribute ide_generic_class_attrs[] = {
++	__ATTR(add, S_IWUSR, NULL, store_add),
++	__ATTR_NULL
++};
++
++static void ide_generic_class_release(struct class *cls)
++{
++	kfree(cls);
++}
++
++static int __init ide_generic_sysfs_init(void)
++{
++	struct class *cls;
++	int rc;
++
++	cls = kzalloc(sizeof(*cls), GFP_KERNEL);
++	if (!cls)
++		return -ENOMEM;
++
++	cls->name = DRV_NAME;
++	cls->owner = THIS_MODULE;
++	cls->class_release = ide_generic_class_release;
++	cls->class_attrs = ide_generic_class_attrs;
++
++	rc = class_register(cls);
++	if (rc) {
++		kfree(cls);
++		return rc;
++	}
++
++	return 0;
++}
++
+ static int __init ide_generic_init(void)
+ {
+ 	u8 idx[MAX_HWIFS];
+@@ -36,6 +108,10 @@ static int __init ide_generic_init(void)
+ 	if (ide_hwifs[0].io_ports[IDE_DATA_OFFSET])
+ 		ide_release_lock();	/* for atari only */
  
++	if (ide_generic_sysfs_init())
++		printk(KERN_ERR DRV_NAME ": failed to create ide_generic "
++					 "class\n");
++
  	return 0;
-+
-+out_port_class:
-+	bus_unregister(&ide_bus_type);
-+
-+	return ret;
  }
  
- #ifdef MODULE
-@@ -1674,6 +1694,8 @@ void __exit cleanup_module (void)
- 
- 	proc_ide_destroy();
- 
-+	class_unregister(&ide_port_class);
-+
- 	bus_unregister(&ide_bus_type);
- }
- 
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -581,7 +581,9 @@ typedef struct hwif_s {
- 	unsigned	mmio       : 1; /* host uses MMIO */
- 	unsigned	straight8  : 1;	/* Alan's straight 8 check */
- 
--	struct device	gendev;
-+	struct device		gendev;
-+	struct class_device	classdev;
-+
- 	struct completion gendev_rel_comp; /* To deal with device release() */
- 
- 	void		*hwif_data;	/* extra hwif data */
-@@ -593,6 +595,8 @@ typedef struct hwif_s {
- #endif
- } ____cacheline_internodealigned_in_smp ide_hwif_t;
- 
-+#define class_to_ide_port(dev)	container_of(dev, ide_hwif_t, classdev)
-+
- /*
-  *  internal ide interrupt handler type
-  */
-@@ -1275,6 +1279,7 @@ extern struct mutex ide_cfg_mtx;
- #define local_irq_set(flags)	do { local_save_flags((flags)); local_irq_enable_in_hardirq(); } while (0)
- 
- extern struct bus_type ide_bus_type;
-+extern struct class ide_port_class;
- 
- /* check if CACHE FLUSH (EXT) command is supported (bits defined in ATA-6) */
- #define ide_id_has_flush_cache(id)	((id)->cfs_enable_2 & 0x3000)
