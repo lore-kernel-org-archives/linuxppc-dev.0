@@ -1,20 +1,14 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-va3-R.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 91892DDED0
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 09:56:58 +1100 (EST)
-Message-ID: <47ACDD53.4060708@am.sony.com>
-Date: Fri, 08 Feb 2008 14:53:07 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 7365ADDEC7
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Feb 2008 10:30:57 +1100 (EST)
+Message-ID: <47ACE630.8090101@pikatech.com>
+Date: Fri, 08 Feb 2008 18:30:56 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [patch 6/6] PS3: Update sys-manager button events
-References: <20080208224723.029462363@am.sony.com>
-In-Reply-To: <20080208224723.029462363@am.sony.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Could the DTS experts look at this?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,73 +18,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PS3 firmware 1.94 added the source of power and reset events to the
-payload of the system manager POWER_PRESSED and RESET_PRESSED events.
+The Rev B warp is moving to a 4M NOR / 256M NAND flash setup from the 
+current 64M NOR / 64M NAND. I would like to keep support for the 64M NOR 
+so I modified the boot code to be a bit more dynamic. Here is the new 
+NOR parition layout in the DTS:
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- drivers/ps3/ps3-sys-manager.c |   29 +++++++++++++++++++++++------
- 1 file changed, 23 insertions(+), 6 deletions(-)
+nor_flash@0,0 {
+	compatible = "amd,s29gl512n", "cfi-flash";
+	bank-width = <2>;
+	reg = <0 0 4000000>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+	partition@300000 {
+		label = "fpga";
+		reg = <300000 40000>;
+	};
+	partition@340000 {
+		label = "env";
+		reg = <340000 40000>;
+	};
+	partition@380000 {
+		label = "u-boot";
+		reg = <380000 80000>;
+	};
+};
 
---- a/drivers/ps3/ps3-sys-manager.c
-+++ b/drivers/ps3/ps3-sys-manager.c
-@@ -138,9 +138,11 @@ enum ps3_sys_manager_attr {
- 
- /**
-  * enum ps3_sys_manager_event - External event type, reported by system manager.
-- * @PS3_SM_EVENT_POWER_PRESSED: payload.value not used.
-+ * @PS3_SM_EVENT_POWER_PRESSED: payload.value =
-+ *  enum ps3_sys_manager_button_event.
-  * @PS3_SM_EVENT_POWER_RELEASED: payload.value = time pressed in millisec.
-- * @PS3_SM_EVENT_RESET_PRESSED: payload.value not used.
-+ * @PS3_SM_EVENT_RESET_PRESSED: payload.value =
-+ *  enum ps3_sys_manager_button_event.
-  * @PS3_SM_EVENT_RESET_RELEASED: payload.value = time pressed in millisec.
-  * @PS3_SM_EVENT_THERMAL_ALERT: payload.value = thermal zone id.
-  * @PS3_SM_EVENT_THERMAL_CLEARED: payload.value = thermal zone id.
-@@ -158,6 +160,17 @@ enum ps3_sys_manager_event {
- };
- 
- /**
-+ * enum ps3_sys_manager_button_event - Button event payload values.
-+ * @PS3_SM_BUTTON_EVENT_HARD: Hardware generated event.
-+ * @PS3_SM_BUTTON_EVENT_SOFT: Software generated event.
-+ */
-+
-+enum ps3_sys_manager_button_event {
-+	PS3_SM_BUTTON_EVENT_HARD = 0,
-+	PS3_SM_BUTTON_EVENT_SOFT = 1,
-+};
-+
-+/**
-  * enum ps3_sys_manager_next_op - Operation to perform after lpar is destroyed.
-  */
- 
-@@ -416,8 +429,10 @@ static int ps3_sys_manager_handle_event(
- 
- 	switch (event.type) {
- 	case PS3_SM_EVENT_POWER_PRESSED:
--		dev_dbg(&dev->core, "%s:%d: POWER_PRESSED\n",
--			__func__, __LINE__);
-+		dev_dbg(&dev->core, "%s:%d: POWER_PRESSED (%s)\n",
-+			__func__, __LINE__,
-+			(event.value == PS3_SM_BUTTON_EVENT_SOFT ? "soft"
-+			: "hard"));
- 		ps3_sm_force_power_off = 1;
- 		/*
- 		 * A memory barrier is use here to sync memory since
-@@ -432,8 +447,10 @@ static int ps3_sys_manager_handle_event(
- 			__func__, __LINE__, event.value);
- 		break;
- 	case PS3_SM_EVENT_RESET_PRESSED:
--		dev_dbg(&dev->core, "%s:%d: RESET_PRESSED\n",
--			__func__, __LINE__);
-+		dev_dbg(&dev->core, "%s:%d: RESET_PRESSED (%s)\n",
-+			__func__, __LINE__,
-+			(event.value == PS3_SM_BUTTON_EVENT_SOFT ? "soft"
-+			: "hard"));
- 		ps3_sm_force_power_off = 0;
- 		/*
- 		 * A memory barrier is use here to sync memory since
+Yes, the top of the NOR will be empty. Here is the code from 
+cuboot-warp.c to handle fixups for the 64M flash:
 
--- 
+static void warp_fixup_one_nor(u32 from, u32 to)
+{
+	void *devp;
+	char name[40];
+	u32 v[2];
+
+	sprintf(name, "/plb/opb/ebc/nor_flash@0,0/partition@%x", from);
+
+	devp = finddevice(name);
+	if (!devp) return;
+
+	if (getprop(devp, "reg", v, sizeof(v)) == sizeof(v)) {
+		v[0] = to;
+		setprop(devp, "reg", v, sizeof(v));
+
+		printf("NOR 64M fixup %x -> %x\n", from, to);
+	}
+}
+
+
+static void warp_fixups(void)
+{
+	unsigned long sysclk = 66000000;
+
+	ibm440ep_fixup_clocks(sysclk, 11059200, 50000000);
+	ibm4xx_sdram_fixup_memsize();
+	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
+	dt_fixup_mac_addresses(&bd.bi_enetaddr);
+
+	/* Fixup for 64M flash on Rev A boards. */
+	if(bd.bi_flashsize == 0x4000000) {
+		warp_fixup_one_nor(0x300000, 0x3f00000);
+		warp_fixup_one_nor(0x340000, 0x3f40000);
+		warp_fixup_one_nor(0x380000, 0x3f80000);
+	}
+}
+
+I have tested this with the 64M NOR, and it seems to work. However, are 
+there going to be problems with the partition name not matching the reg 
+address entry?
+
+If anybody has suggestions on better ways to do this, fire away.
+
+And looking at this code, and other board ports, why is sysclk a local 
+variable and all the other numbers hardcoded in the args? I left it the 
+same way as the others but it does look a bit strange.
+
+Cheers,
+   Sean
