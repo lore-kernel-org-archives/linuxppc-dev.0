@@ -1,18 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id BB921DDE99
+Return-Path: <wigyori@uid0.hu>
+Received: from postahivatal.webmedia.hu (postahivatal.webmedia.hu
+	[217.20.135.253]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2536ADDEE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 10 Feb 2008 03:11:24 +1100 (EST)
-Message-ID: <47ADD0A6.4090501@grandegger.com>
-Date: Sat, 09 Feb 2008 17:11:18 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Sun, 10 Feb 2008 07:24:59 +1100 (EST)
+Received: from dsl85-238-74-237.pool.tvnet.hu ([85.238.74.237]:42651
+	helo=[10.1.1.2])
+	by postahivatal.webmedia.hu with esmtpsa (Exim 4.63 #1 (Debian))
+	id 1JNvVd-0004Y4-2Z from <wigyori@uid0.hu>
+	for <linuxppc-embedded@ozlabs.org>; Sat, 09 Feb 2008 20:37:09 +0100
+Message-ID: <47AE00FE.1000704@uid0.hu>
+Date: Sat, 09 Feb 2008 20:37:34 +0100
+From: Zoltan HERPAI <wigyori@uid0.hu>
 MIME-Version: 1.0
-To: rakesh bk <rakeshbk402@gmail.com>
-Subject: Re: porting xenomaii for power pc 750Cxe based SBC
-References: <43455a600802070411w42b6745aqf87fa3ae88dcaf8c@mail.gmail.com>
-In-Reply-To: <43455a600802070411w42b6745aqf87fa3ae88dcaf8c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Ebony development board
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,18 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-rakesh bk wrote:
-> Hello Everyone,
-> 
-> Iam Trying to port the xenomai-2.2.0 using the
-> "adeos-ipipe-2.6.14-ppc-1.3-05.patch"  to linux-kernel 2.6.14( Vanilla)
-> to our custom based SBC, After applying patches as i get Enough printk's
-> on my console , I get Stucked after UNMASKING of Ethernet Irq The
-> following are the printk messages after i tried to boot the image. can i
-> know what the actual problem is ...........
+Hi,
 
-This mail is off topic. Please repost on the Xenomai-help mailing list
-(https://gna.org/mail/?group=xenomai). As you can see from your boot
-log, already the Xenomai initialization fails.
+I've recently got an Ebony board (440GP) with the original bootloader 
+(440GP 1.18 ROM Monitor) which I would like to replace with U-boot. Is 
+there a way to boot an U-boot image via TFTP to replace the bootloader, 
+or is it possible only with using a JTAG? I've googled through the 
+mailing list, but most of the related hits are dated back in 2004-2005, 
+they say no, one have to use JTAG, but some time passed since then, and 
+I would like to know if there is a way for this.
 
-Wolfgang.
+Thanks in advance,
+Zoltan HERPAI
