@@ -1,20 +1,16 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id E1920DDEBE
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Feb 2008 05:10:07 +1100 (EST)
-Message-ID: <47ADECB2.6030808@ru.mvista.com>
-Date: Sat, 09 Feb 2008 21:10:58 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 07/18] ide: factor out devices init from
-	ide_init_port_data()
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-	<20080208004509.17746.70379.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080208004509.17746.70379.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <martin-langer@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id E77DBDDE40
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Feb 2008 04:54:31 +1100 (EST)
+Received: from ml by tuba with local (Exim 4.50) id 1JNtno-0000qd-UT
+	for linuxppc-dev@ozlabs.org; Sat, 09 Feb 2008 18:47:48 +0100
+Date: Sat, 9 Feb 2008 18:47:48 +0100
+From: Martin Langer <martin-langer@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix for Freescale ppc cores: major revision detection
+Message-ID: <20080209174748.GA3245@tuba>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bartlomiej Zolnierkiewicz wrote:
+Ppc cores by Freescale are using the configuration field instead of the 
+major revision field for their major revision number. Those field 
+definitions come from include/asm-powerpc/reg.h.
 
-> * Factor out devices init from ide_init_port_data() to
->   ide_port_init_devices_data().
+Look at the pdf below and you will see that PVR_MAJ() does a wrong shift 
+for ppc cores by Freescale. This patch fixes it.
 
-> While at it:
+http://www.freescale.com/files/archives/doc/support_info/PPCPVR.pdf
 
-> * Add explicit clearing of IDE device structure.
 
-> There should be no functionality changes caused by this patch.
+Signed-Off-By: Martin Langer <martin-langer@gmx.de>
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
+--- arch/powerpc/kernel/setup-common.c.ORIGINAL	2008-02-08 22:22:56.000000000 +0100
++++ arch/powerpc/kernel/setup-common.c	2008-02-09 18:18:36.000000000 +0100
+@@ -241,7 +241,7 @@
+ 	/* If we are a Freescale core do a simple check so
+ 	 * we dont have to keep adding cases in the future */
+ 	if (PVR_VER(pvr) & 0x8000) {
+-		maj = PVR_MAJ(pvr);
++		maj = (pvr >> 8) & 0xF;
+ 		min = PVR_MIN(pvr);
+ 	} else {
+ 		switch (PVR_VER(pvr)) {
