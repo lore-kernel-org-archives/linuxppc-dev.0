@@ -1,19 +1,17 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 2EDBEDDE3B
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 05:00:13 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1562248wag.13
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Feb 2008 10:00:12 -0800 (PST)
-Date: Sun, 10 Feb 2008 21:00:03 +0300
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: pci_proc_init: proc_dir_entry '00' already registered
-Message-ID: <20080210180003.GC1754@martell.zuzino.mipt.ru>
-References: <20080210100757.GA28322@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080210100757.GA28322@aepfle.de>
-From: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <weo@reccoware.de>
+Received: from bes.recconet.de (bes.recconet.de [212.227.59.164])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6C626DDE3C
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 07:06:46 +1100 (EST)
+Subject: [PATCH] PPC440EP Interrupt Triggering and Level Settings
+From: Wolfgang Ocker <weo@reccoware.de>
+To: jwboyer@linux.vnet.ibm.com, mporter@kernel.crashing.org
+Content-Type: text/plain
+Date: Sun, 10 Feb 2008 20:24:02 +0100
+Message-Id: <1202671442.3384.15.camel@galileo.recco.de>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Feb 10, 2008 at 11:07:57AM +0100, Olaf Hering wrote:
-> Current Linus tree gives this new warning during bootup:
-> 
-> +proc_dir_entry '00' already registered
-> +Call Trace:
-> +[c00000007b0dfba0] [c00000000000e4b0] .show_stack+0x70/0x1bc (unreliable)
-> +[c00000007b0dfc50] [c0000000000f2714] .proc_register+0x130/0x210
-> +[c00000007b0dfd00] [c0000000000f299c] .proc_mkdir_mode+0x40/0x70
-> +[c00000007b0dfd80] [c000000000276ed8] .pci_proc_attach_device+0xac/0x144
-> +[c00000007b0dfe20] [c0000000005bdb3c] .pci_proc_init+0x74/0xac
-> +[c00000007b0dfea0] [c0000000005a27ac] .kernel_init+0x1d0/0x394
-> +[c00000007b0dff90] [c00000000001e258] .kernel_thread+0x4c/0x68
+From: Wolfgang Ocker <weo@reccoware.de>
 
-Can you insert dump_stack() when '00' is registered, not just second
-time?
+Corrected IRQ triggering and level settings according to latest revision
+of the 440EP User Manual (rev 1.24 nov 16, 2007).
+
+The incorrect settings might cause a failure of the network if both
+onchip ethernet ports are under heavy load.
+
+Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+---
+
+--- linux-2.6.24/arch/ppc/platforms/4xx/ibm440ep.c.irq-trig     2008-01-24 23:58:37.000000000 +0100
++++ linux-2.6.24/arch/ppc/platforms/4xx/ibm440ep.c      2008-02-10 19:43:32.000000000 +0100
+@@ -172,11 +172,11 @@
+ /* Polarity and triggering settings for internal interrupt sources */
+ struct ppc4xx_uic_settings ppc4xx_core_uic_cfg[] __initdata = {
+        { .polarity     = 0xffbffe03,
+-         .triggering   = 0xfffffe00,
++         .triggering   = 0x00000000,
+          .ext_irq_mask = 0x000001fc,   /* IRQ0 - IRQ6 */
+        },
+-       { .polarity     = 0xffffc6ef,
+-         .triggering   = 0xffffc7ff,
++       { .polarity     = 0xffffc6af,
++         .triggering   = 0x06000140,
+          .ext_irq_mask = 0x00003800,   /* IRQ7 - IRQ9 */
+        },
+ };
