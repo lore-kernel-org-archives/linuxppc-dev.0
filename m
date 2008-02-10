@@ -1,17 +1,17 @@
-Return-Path: <weo@reccoware.de>
-Received: from bes.recconet.de (bes.recconet.de [212.227.59.164])
+Return-Path: <julia@diku.dk>
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C626DDE3C
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 07:06:46 +1100 (EST)
-Subject: [PATCH] PPC440EP Interrupt Triggering and Level Settings
-From: Wolfgang Ocker <weo@reccoware.de>
-To: jwboyer@linux.vnet.ibm.com, mporter@kernel.crashing.org
-Content-Type: text/plain
-Date: Sun, 10 Feb 2008 20:24:02 +0100
-Message-Id: <1202671442.3384.15.camel@galileo.recco.de>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 201ABDDEBB
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 07:37:48 +1100 (EST)
+Date: Sun, 10 Feb 2008 21:07:59 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/8] arch/ppc: Use FIELD_SIZEOF
+Message-ID: <Pine.LNX.4.64.0802102107060.23906@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Wolfgang Ocker <weo@reccoware.de>
+From: Julia Lawall <julia@diku.dk>
 
-Corrected IRQ triggering and level settings according to latest revision
-of the 440EP User Manual (rev 1.24 nov 16, 2007).
+Robert P.J. Day proposed to use the macro FIELD_SIZEOF in replace of code
+that matches its definition.
 
-The incorrect settings might cause a failure of the network if both
-onchip ethernet ports are under heavy load.
+The modification was made using the following semantic patch
+(http://www.emn.fr/x-info/coccinelle/)
 
-Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+// <smpl>
+@haskernel@
+@@
+
+#include <linux/kernel.h>
+
+@depends on haskernel@
+type t;
+identifier f;
+@@
+
+- (sizeof(((t*)0)->f))
++ FIELD_SIZEOF(t, f)
+
+@depends on haskernel@
+type t;
+identifier f;
+@@
+
+- sizeof(((t*)0)->f)
++ FIELD_SIZEOF(t, f)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
 
---- linux-2.6.24/arch/ppc/platforms/4xx/ibm440ep.c.irq-trig     2008-01-24 23:58:37.000000000 +0100
-+++ linux-2.6.24/arch/ppc/platforms/4xx/ibm440ep.c      2008-02-10 19:43:32.000000000 +0100
-@@ -172,11 +172,11 @@
- /* Polarity and triggering settings for internal interrupt sources */
- struct ppc4xx_uic_settings ppc4xx_core_uic_cfg[] __initdata = {
-        { .polarity     = 0xffbffe03,
--         .triggering   = 0xfffffe00,
-+         .triggering   = 0x00000000,
-          .ext_irq_mask = 0x000001fc,   /* IRQ0 - IRQ6 */
-        },
--       { .polarity     = 0xffffc6ef,
--         .triggering   = 0xffffc7ff,
-+       { .polarity     = 0xffffc6af,
-+         .triggering   = 0x06000140,
-          .ext_irq_mask = 0x00003800,   /* IRQ7 - IRQ9 */
-        },
- };
+diff -u -p a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
+--- a/arch/ppc/8xx_io/commproc.c 2008-02-02 15:28:16.000000000 +0100
++++ b/arch/ppc/8xx_io/commproc.c 2008-02-10 17:36:23.000000000 +0100
+@@ -43,7 +43,7 @@
+ ({									\
+ 	u32 offset = offsetof(immap_t, member);				\
+ 	void *addr = ioremap (IMAP_ADDR + offset,			\
+-			      sizeof( ((immap_t*)0)->member));		\
++			      FIELD_SIZEOF(immap_t, member));		\
+ 	addr;								\
+ })
+ 
