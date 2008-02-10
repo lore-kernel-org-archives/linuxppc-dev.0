@@ -1,16 +1,11 @@
-Return-Path: <martin-langer@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id E77DBDDE40
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Feb 2008 04:54:31 +1100 (EST)
-Received: from ml by tuba with local (Exim 4.50) id 1JNtno-0000qd-UT
-	for linuxppc-dev@ozlabs.org; Sat, 09 Feb 2008 18:47:48 +0100
-Date: Sat, 9 Feb 2008 18:47:48 +0100
-From: Martin Langer <martin-langer@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix for Freescale ppc cores: major revision detection
-Message-ID: <20080209174748.GA3245@tuba>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910802091838x3e596debj113089faef08c1c8@mail.gmail.com>
+Date: Sat, 9 Feb 2008 21:38:53 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Linux/PPC Development" <Linuxppc-dev@ozlabs.org>
+Subject: of_iomap and request_mem_region
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +15,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ppc cores by Freescale are using the configuration field instead of the 
-major revision field for their major revision number. Those field 
-definitions come from include/asm-powerpc/reg.h.
+of_iomap doesn't implicitly do a request_mem_region().  How should
+request_mem_region() be handled? When using of_iomap you don't get the
+length of the region back so it isn't easy to call request_mem_region.
 
-Look at the pdf below and you will see that PVR_MAJ() does a wrong shift 
-for ppc cores by Freescale. This patch fixes it.
+What about adding a third param to of_iomap for the driver name? If it
+is non-null also do the request region. If it is null check to make
+sure the region has already be requested.
 
-http://www.freescale.com/files/archives/doc/support_info/PPCPVR.pdf
-
-
-Signed-Off-By: Martin Langer <martin-langer@gmx.de>
-
-
---- arch/powerpc/kernel/setup-common.c.ORIGINAL	2008-02-08 22:22:56.000000000 +0100
-+++ arch/powerpc/kernel/setup-common.c	2008-02-09 18:18:36.000000000 +0100
-@@ -241,7 +241,7 @@
- 	/* If we are a Freescale core do a simple check so
- 	 * we dont have to keep adding cases in the future */
- 	if (PVR_VER(pvr) & 0x8000) {
--		maj = PVR_MAJ(pvr);
-+		maj = (pvr >> 8) & 0xF;
- 		min = PVR_MIN(pvr);
- 	} else {
- 		switch (PVR_VER(pvr)) {
+-- 
+Jon Smirl
+jonsmirl@gmail.com
