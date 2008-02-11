@@ -1,19 +1,17 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A6FA8DDF33
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 06:50:34 +1100 (EST)
-Message-ID: <47B0A702.70601@pobox.com>
-Date: Mon, 11 Feb 2008 14:50:26 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <alex.bou9@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.224])
+	by ozlabs.org (Postfix) with ESMTP id 2807CDDECD
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 06:33:42 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so4678451wxd.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:33:41 -0800 (PST)
+Message-ID: <d5f62df20802111133x4c1669efybb0895c3f2210f6e@mail.gmail.com>
+Date: Mon, 11 Feb 2008 14:33:40 -0500
+From: "Alex Bounine" <alex.bou9@gmail.com>
+To: jgarzik@pobox.com, netdev@vger.kernel.org
+Subject: [PATCH 1/5 v3] Tsi108_eth: add missing linking to driver data
 MIME-Version: 1.0
-To: Alex Bounine <alex.bou9@gmail.com>
-Subject: Re: [PATCH 3/5 v3] Tsi108_eth: remove not needed code
-References: <d5f62df20802111135q36e47070w611291b2cea2253e@mail.gmail.com>
-In-Reply-To: <d5f62df20802111135q36e47070w611291b2cea2253e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alex Bounine wrote:
-> Code clean-up for tsi108_eth network driver.
-> This patch removes not needed dummy read and the corresponding comment.
-> The PHY logic requires two reads from the status register to get
-> current link status. This is done correctly inside mii_check_media().
-> 
-> Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
-> ---
-> 
-> diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
-> linux-2.6.24-fix/drivers/net/tsi108_eth.c
-> --- linux-2.6.24/drivers/net/tsi108_eth.c	2008-02-06 15:47:35.000000000 -0500
-> +++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
-> 15:54:14.000000000 -0500
-> @@ -297,18 +297,11 @@ static void tsi108_check_phy(struct net_
->  	u32 speed;
->  	unsigned long flags;
-> 
-> -	/* Do a dummy read, as for some reason the first read
-> -	 * after a link becomes up returns link down, even if
-> -	 * it's been a while since the link came up.
-> -	 */
-> -
->  	spin_lock_irqsave(&phy_lock, flags);
-> 
->  	if (!data->phy_ok)
->  		goto out;
-> 
-> -	tsi108_read_mii(data, MII_BMSR);
-> -
->  	duplex = mii_check_media(&data->mii_if, netif_msg_link(data),
-> data->init_media);
+Bug fix for tsi108_eth network driver.
+This patch adds missing linking to driver data.
 
-applied all five, but each one was still corrupted according to git-am. 
-  I was able to apply four via patch(1), which is more forgiving, but 
-there are still email problems.
+Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
+---
 
-As as you can see from the above quoted (last) line, your email client 
-is still word-wrapping patches.
+diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
+linux-2.6.24-fix/drivers/net/tsi108_eth.c
+--- linux-2.6.24/drivers/net/tsi108_eth.c	2008-01-24 17:58:37.000000000 -0500
++++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
+14:30:04.000000000 -0500
+@@ -1629,6 +1629,7 @@ tsi108_init_one(struct platform_device *
+ 		goto register_fail;
+ 	}
+
++	platform_set_drvdata(pdev, dev);
+ 	printk(KERN_INFO "%s: Tsi108 Gigabit Ethernet, MAC: %s\n",
+ 	       dev->name, print_mac(mac, dev->dev_addr));
+ #ifdef DEBUG
