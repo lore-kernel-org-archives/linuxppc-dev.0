@@ -1,16 +1,21 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
-Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id D3E89DDDDB
+Return-Path: <jwboyer@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.188])
+	by ozlabs.org (Postfix) with ESMTP id ED704DDE40
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Feb 2008 22:36:13 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: External interrupts with UIO framework on mpc8313e
-Date: Mon, 11 Feb 2008 12:24:00 +0100
-Message-ID: <29DC34A6B43468409F5A371CFE34E8495492CD@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Mon, 11 Feb 2008 23:54:06 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so3442655rvf.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Feb 2008 04:54:03 -0800 (PST)
+Date: Mon, 11 Feb 2008 06:53:20 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Ebony development board
+Message-ID: <20080211065320.14a4485b@zod.rchland.ibm.com>
+In-Reply-To: <200802110720.12842.sr@denx.de>
+References: <47AE00FE.1000704@uid0.hu>
+	<200802110720.12842.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,90 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everyone!
+On Mon, 11 Feb 2008 07:20:12 +0100
+Stefan Roese <sr@denx.de> wrote:
 
-I'm trying to receive external interrupts on the mpc8313erdb board.
-I'm also using the UIO framework to register the interrupt handler.=20
+> Hi Zoltan,
+> 
+> On Saturday 09 February 2008, Zoltan HERPAI wrote:
+> > I've recently got an Ebony board (440GP) with the original bootloader
+> > (440GP 1.18 ROM Monitor) which I would like to replace with U-boot. Is
+> > there a way to boot an U-boot image via TFTP to replace the bootloader,
+> > or is it possible only with using a JTAG? I've googled through the
+> > mailing list, but most of the related hits are dated back in 2004-2005,
+> > they say no, one have to use JTAG, but some time passed since then, and
+> > I would like to know if there is a way for this.
+> 
+> Does the original ROM monitor support writing to onboard FLASH? If yes, it 
+> should be possible.
 
-It works for me when I register the interrupt handler for external =
-interrupt IRQ4 (irq =3D 20)
-But when I'm trying the register the handler for IRQ0(48)-IRQ3(17-19) it =
-doesn't.=20
+It doesn't.  Theoretically, you can boot Linux and use MTD on the flash
+to load U-Boot.  I wouldn't recommend it without a JTAG debugger around
+to fix things in case they get screwed up.
 
-I'm using following simple code:
-
----snip---
-static irqreturn_t intHandler(int irq, struct uio_info *dev_info)
-{
-    printk("name: %s\n", dev_info->name);
-    return IRQ_HANDLED
-}
-
-static struct uio_info myinfo =3D {
-    .name =3D "IRQ4 Kernel Driver",
-    .version =3D "1.0.0",
-    .irq =3D 20,
-    .irq_flags =3D IRQF_SHARED | IRQF_DISABLED,
-    .handler =3D intHandler,
-};
-
-static int uio_probe(struct device *dev)
-{
-    if(uio_register_device(dev,&myinfo))
-    {
-        return -ENODEV;
-    }
-    else
-    {
-        return 0;
-    }
-}
----snip---
-
-After booting the kernel, the driver (for IRQ4) appears correct in =
-/proc/interrups and can be triggered.
-
-I guess, this should also work for IRQ0-IRQ3 but it won't. IRQ0 cannot =
-registered to 48 at all and the
-other ones appear in /proc/interruts but they cannot be triggered (BUT =
-shared with serial or i2c).=20
-
-I also checked the value of the SEMSR register and see that IRQ4 is set =
-correctly.
-
-Okay, I thought when I set the SEMSR register manually e.g. IRQ2 to "1" =
-and trigger the correct interrupt signal I could see in /proc/stat a =
-counting value. Nothing happened. But the BAD counter in =
-/proc/interrupts is rising.=20
-
-Furthermore there's a mapping issue between the interrupt id number from =
-the board manual
-(page 8-10) and the output of /proc/interrupts. The kernel registers the =
-i2c devices to=20
-ID 16 and 17 although the manual says they are mapped to 14 and 15.
-
-
-Any hint is appreciate!=20
-Best regards
-
-
-
-Frank Prepelica
-Software Design Engineer
-
-Ubidyne GmbH
-Lise-Meitner-Str.-14
-89081 Ulm - Germany
-
-Phone:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 +49 731 88 00 71 58
-Fax:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 +49 731 88 00 71 99
-Email:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
-frank.prepelica@ubidyne.com
-Homepage:=A0=A0=A0=A0=A0=A0 www.ubidyne.com
-=A0
-Registered office: Ulm
-District court of Ulm: HRB 5295
-Managing Directors:
-Dipl. Ing. Ken Hawk
-Dipl. Ing. Beat M=FCller
-Dr. Clemens Rheinfelder
+josh
