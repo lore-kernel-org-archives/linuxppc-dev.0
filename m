@@ -1,19 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 399CFDDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 10:51:17 +1100 (EST)
-Date: Tue, 12 Feb 2008 10:51:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] powerpc: Marvell 64x60 EDAC platform devices setup
-Message-Id: <20080212105113.553659b0.sfr@canb.auug.org.au>
-In-Reply-To: <20080211225023.GA15541@blade.az.mvista.com>
-References: <20080211225023.GA15541@blade.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__12_Feb_2008_10_51_13_+1100_Z8qwgCNSV0N.m8w="
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 12 Feb 2008 10:54:09 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Could the DTS experts look at this?
+Message-ID: <20080211235409.GB18348@localhost.localdomain>
+References: <47ACE630.8090101@pikatech.com> <200802100647.56590.arnd@arndb.de>
+	<47B08C76.3000009@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47B08C76.3000009@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__12_Feb_2008_10_51_13_+1100_Z8qwgCNSV0N.m8w=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 11, 2008 at 11:57:10AM -0600, Timur Tabi wrote:
+> Arnd Bergmann wrote:
+> 
+> > Maybe we can introduce a more generic way of having conditional
+> > device nodes in the tree that get knocked out in the boot wrapper.
+> 
+> I've been thinking about doing just this for quite some time now.  I've had a 
+> few informal discussions without people about.
+> 
+> One idea is to allow attaching simple conditional expressions (like
+> X is <, =, or > than Y) to a node.  It is the responsibility of the
+> code that parses the device tree to assign values to X and Y.  For
+> instance, they could be the names of U-Boot environment variables.
+> If the expression is false, then the node is removed (or ignored)
+> from the device tree.  If it's true, then it's kept in.
 
-Hi Dave,
+In the binary tree representation itself?  No way.
 
-On Mon, 11 Feb 2008 15:50:23 -0700 Dave Jiang <djiang@mvista.com> wrote:
->
-> +static int __init mv64x60_edac_pdev_init(struct device_node *np,
-> +                                         int id,
-> +                                         int num_addr,
-> +                                         char *pdev_name)
-
-The pdev_name is just passed to platform_device_register_simple() which
-take a "const char *", so make pdev_name consta as well, please.
-
-> +static int __init mv64x60_pci_fixup(struct device_node *np)
-> +{
-> +	struct resource res;
-> +	void __iomem *pci_serr;
-> +	int ret;
-> +
-> +	ret =3D of_address_to_resource(np, 1, &res);
-> +	if (ret)
-> +		return ret;
-> +
-> +	pci_serr =3D ioremap(res.start, res.end - res.start + 1);
-
-Why not use of_iomap(np, 1), then you don't need res.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__12_Feb_2008_10_51_13_+1100_Z8qwgCNSV0N.m8w=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHsN91TgG2atn1QN8RArlVAJ9FIIF2JYLBrrbZl5obr8ZdhOY/awCghisD
-eVzHSeE44nDyOOX1HbMirdY=
-=sDJD
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Feb_2008_10_51_13_+1100_Z8qwgCNSV0N.m8w=--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
