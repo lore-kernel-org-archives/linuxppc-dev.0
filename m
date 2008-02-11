@@ -1,14 +1,14 @@
-Return-Path: <martin-langer@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id A8EE4DDF7D
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 07:29:37 +1100 (EST)
-Date: Mon, 11 Feb 2008 21:29:33 +0100
-From: Martin Langer <martin-langer@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Fix for Freescale ppc cores: major revision detection
-Message-ID: <20080211202933.GA3399@tuba>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id BB9D3DDF02
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 07:59:51 +1100 (EST)
+Date: Mon, 11 Feb 2008 13:32:43 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: publish 85xx soc dts entries as of_device 
+Message-ID: <20080211203243.GA5331@blade.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,60 +18,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 11, 2008 at 09:01:03AM -0600, Kumar Gala wrote:
-> 
-> On Feb 9, 2008, at 11:47 AM, Martin Langer wrote:
-> 
-> >Ppc cores by Freescale are using the configuration field instead of  
-> >the
-> >major revision field for their major revision number. Those field
-> >definitions come from include/asm-powerpc/reg.h.
-> >
-> >Look at the pdf below and you will see that PVR_MAJ() does a wrong  
-> >shift
-> >for ppc cores by Freescale. This patch fixes it.
-> >
-> >http://www.freescale.com/files/archives/doc/support_info/PPCPVR.pdf
-> 
-> This doc doesn't encompass the e500/book-e cores that don't follow the  
-> same pattern.
-> 
-> The code should probably be something like:
-> 
-> #ifdef CONFIG_FSL_BOOKE
-> maj = PVR_MAJ(pvr);
-> #else
-> maj = (pvr >> 8) & 0xff;
-> #endif
+Publish the devices listed in dts under SOC as of_device just like what
+mpc85xx_mds platforms do. The 85xx cds and ads platforms currently do not
+export the devices in dts as of_device.
 
-Thanks for the hint. Inspired by that I did the logic the other way 
-round. So we have the same default cases as we had before and 
-additionally it will fit for the cores mentioned in the doc.
+The memory controller, L2 cache-controller, and the PCI controller(s) are
+published as of_device so the mpc85xx EDAC driver can claim them for usage.
 
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 
---- arch/powerpc/kernel/setup-common.c.ORIGINAL	2008-02-08 22:22:56.000000000 +0100
-+++ arch/powerpc/kernel/setup-common.c	2008-02-11 20:54:37.000000000 +0100
-@@ -241,8 +241,21 @@
- 	/* If we are a Freescale core do a simple check so
- 	 * we dont have to keep adding cases in the future */
- 	if (PVR_VER(pvr) & 0x8000) {
--		maj = PVR_MAJ(pvr);
--		min = PVR_MIN(pvr);
-+		switch (PVR_VER(pvr)) {
-+			case 0x8000:	/* 7441/7450/7451, Vger */
-+			case 0x8001:	/* 7445/7455, Apollo 6 */
-+			case 0x8002:	/* 7447/7457, Apollo 7 */
-+			case 0x8003:	/* 7447A, Apollo 7 PM */
-+			case 0x8004:	/* 7448, Apollo 8 */
-+			case 0x800c:	/* 7410, Nitro */
-+				maj = ((pvr >> 8) & 0xF);
-+				min = PVR_MIN(pvr);
-+				break;
-+			default:	/* e500/book-e */
-+				maj = PVR_MAJ(pvr);
-+				min = PVR_MIN(pvr);
-+				break;
-+		}
- 	} else {
- 		switch (PVR_VER(pvr)) {
- 			case 0x0020:	/* 403 family */
+---
+commit 187841bf9dff25e4ac1a7174daa55bb036c724b1
+tree 3206ffbbfc5075d195345281f72f7b52f060b41b
+parent a99824f327c748b2753f4fa570eb1fefcd6a9c4d
+author Dave Jiang <djiang@mvista.com> Mon, 11 Feb 2008 12:51:33 -0700
+committer Dave Jiang <djiang@blade.(none)> Mon, 11 Feb 2008 12:51:33 -0700
+
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c |   19 +++++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   19 +++++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
+
+mpc85xx EDAC driver is in mainline kernel now
+
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 4e03050..024393c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -26,6 +26,8 @@
+ #include <asm/mpic.h>
+ #include <mm/mmu_decl.h>
+ #include <asm/udbg.h>
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+@@ -249,6 +251,23 @@ static int __init mpc85xx_ads_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxADS");
+ }
+ 
++static struct of_device_id mpc85xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init mpc85xx_publish_devices(void)
++{
++	if (!machine_is(mpc85xx_ads))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc85xx_publish_devices);
++
+ define_machine(mpc85xx_ads) {
+ 	.name			= "MPC85xx ADS",
+ 	.probe			= mpc85xx_ads_probe,
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 8b1de78..8525882 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -42,6 +42,8 @@
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
+ #include <asm/i8259.h>
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+@@ -335,6 +337,23 @@ static int __init mpc85xx_cds_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxCDS");
+ }
+ 
++static struct of_device_id mpc85xx_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
++};
++
++static int __init mpc85xx_publish_devices(void)
++{
++	if (!machine_is(mpc85xx_cds))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc85xx_publish_devices);
++
+ define_machine(mpc85xx_cds) {
+ 	.name		= "MPC85xx CDS",
+ 	.probe		= mpc85xx_cds_probe,
