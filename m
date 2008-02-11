@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7CB8DDF30
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 08:56:51 +1100 (EST)
-Message-Id: <27AAC964-D9EE-435A-84FD-8A45FF27D448@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A2150DDF56
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 09:03:24 +1100 (EST)
+Message-ID: <47B0C59C.5080209@freescale.com>
+Date: Mon, 11 Feb 2008 16:01:00 -0600
+From: Jon Loeliger <jdl@freescale.com>
+MIME-Version: 1.0
 To: Dave Jiang <djiang@mvista.com>
-In-Reply-To: <20080211203445.GB5331@blade.az.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/2] powerpc: create mpc85xx pci err platform device for
-	EDAC
-Date: Mon, 11 Feb 2008 15:56:08 -0600
-References: <20080211203445.GB5331@blade.az.mvista.com>
+Subject: Re: [PATCH 1/2] powerpc: publish 85xx soc dts entries as of_device
+References: <20080211203243.GA5331@blade.az.mvista.com>
+In-Reply-To: <20080211203243.GA5331@blade.az.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,23 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Dave Jiang wrote:
 
-On Feb 11, 2008, at 2:34 PM, Dave Jiang wrote:
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> index 4e03050..024393c 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+> @@ -26,6 +26,8 @@
+>  #include <asm/mpic.h>
+>  #include <mm/mmu_decl.h>
+>  #include <asm/udbg.h>
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
 
-> Creating a platform device for the PCI error registers in order for  
-> the
-> mpc85xx EDAC driver to pick up proper resources. This is to prevent  
-> the
-> EDAC driver from monopolizing the of_device and thus preventing  
-> future PCI
-> code from using the PCI of_device(s).
->
-> Signed-off-by: Dave Jiang <djiang@mvista.com>
+Please use <linux/of_{device,platform}.h> throughout instead.
 
-I'd rather we didn't add new platform devices, but do this via  
-of_platform in the driver itself.
-
-Also, we need to 'rename' the compatible field for some of these  
-devices.
-
-- k
+Thanks.
+jdl
