@@ -1,34 +1,33 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
+Return-Path: <haveblue@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4C427DDE39
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 20:49:12 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id m1B9n76c028122
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 09:49:07 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m1B9n7dT2220046
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 10:49:07 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m1B9n6jP024857
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 10:49:06 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Subject: [PATCH][RESEND] drivers/base: export (un)register_memory_notifier
-Date: Mon, 11 Feb 2008 10:49:04 +0100
-MIME-Version: 1.0
-Message-Id: <200802111049.05478.ossthema@de.ibm.com>
-Content-Type: text/plain;
-  charset="us-ascii"
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1A6F4DDE09
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 21:12:26 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1BACNd5030936
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 05:12:23 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1BACN15201592
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 05:12:23 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1BACMx1012653
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 05:12:22 -0500
+Subject: Re: [PATCH][RESEND] drivers/base: export (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+In-Reply-To: <200802111049.05478.ossthema@de.ibm.com>
+References: <200802111049.05478.ossthema@de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 02:12:23 -0800
+Message-Id: <1202724743.8276.2.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>
+	Christoph Raisch <raisch@de.ibm.com>, netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,40 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Drivers like eHEA need memory notifiers in order to 
-update their internal DMA memory map when memory is added
-to or removed from the system.
+On Mon, 2008-02-11 at 10:49 +0100, Jan-Bernd Themann wrote:
+> are you the right person to address this patch to?
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+You might want to check the top of the file. ;)
 
----
-Hi Greg,
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -52,11 +52,13 @@ int register_memory_notifier(struct notifier_block *nb)
+>  {
+>          return blocking_notifier_chain_register(&memory_chain, nb);
+>  }
+> +EXPORT_SYMBOL(register_memory_notifier);
+>  
+>  void unregister_memory_notifier(struct notifier_block *nb)
+>  {
+>          blocking_notifier_chain_unregister(&memory_chain, nb);
+>  }
+> +EXPORT_SYMBOL(unregister_memory_notifier);
 
-are you the right person to address this patch to?
+Is there a particular reason these can't be GPL?
 
-Regards,
-Jan-Bernd
-
- drivers/base/memory.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 7ae413f..1e1bd4c 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -52,11 +52,13 @@ int register_memory_notifier(struct notifier_block *nb)
- {
-         return blocking_notifier_chain_register(&memory_chain, nb);
- }
-+EXPORT_SYMBOL(register_memory_notifier);
- 
- void unregister_memory_notifier(struct notifier_block *nb)
- {
-         blocking_notifier_chain_unregister(&memory_chain, nb);
- }
-+EXPORT_SYMBOL(unregister_memory_notifier);
- 
- /*
-  * register_memory - Setup a sysfs device for a memory block
--- 
-1.5.2
+-- Dave
