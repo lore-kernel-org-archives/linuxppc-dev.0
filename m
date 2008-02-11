@@ -1,14 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 11 Feb 2008 11:14:51 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Could the DTS experts look at this?
-Message-ID: <20080211001451.GA11572@localhost.localdomain>
-References: <47ACE630.8090101@pikatech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47ACE630.8090101@pikatech.com>
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 670EEDDDFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:43:02 +1100 (EST)
+Date: Mon, 11 Feb 2008 11:38:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Wire up new timerfd syscalls
+Message-Id: <20080211113840.154a3de5.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,104 +19,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 08, 2008 at 06:30:56PM -0500, Sean MacLennan wrote:
-> The Rev B warp is moving to a 4M NOR / 256M NAND flash setup from the 
-> current 64M NOR / 64M NAND. I would like to keep support for the 64M NOR 
-> so I modified the boot code to be a bit more dynamic. Here is the new 
-> NOR parition layout in the DTS:
-> 
-> nor_flash@0,0 {
-> 	compatible = "amd,s29gl512n", "cfi-flash";
-> 	bank-width = <2>;
-> 	reg = <0 0 4000000>;
-> 	#address-cells = <1>;
-> 	#size-cells = <1>;
-> 	partition@300000 {
-> 		label = "fpga";
-> 		reg = <300000 40000>;
-> 	};
-> 	partition@340000 {
-> 		label = "env";
-> 		reg = <340000 40000>;
-> 	};
-> 	partition@380000 {
-> 		label = "u-boot";
-> 		reg = <380000 80000>;
-> 	};
-> };
-> 
-> Yes, the top of the NOR will be empty. Here is the code from 
-> cuboot-warp.c to handle fixups for the 64M flash:
-> 
-> static void warp_fixup_one_nor(u32 from, u32 to)
-> {
-> 	void *devp;
-> 	char name[40];
-> 	u32 v[2];
-> 
-> 	sprintf(name, "/plb/opb/ebc/nor_flash@0,0/partition@%x", from);
-> 
-> 	devp = finddevice(name);
-> 	if (!devp) return;
-> 
-> 	if (getprop(devp, "reg", v, sizeof(v)) == sizeof(v)) {
-> 		v[0] = to;
-> 		setprop(devp, "reg", v, sizeof(v));
-> 
-> 		printf("NOR 64M fixup %x -> %x\n", from, to);
-> 	}
-> }
-> 
-> 
-> static void warp_fixups(void)
-> {
-> 	unsigned long sysclk = 66000000;
-> 
-> 	ibm440ep_fixup_clocks(sysclk, 11059200, 50000000);
-> 	ibm4xx_sdram_fixup_memsize();
-> 	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
-> 	dt_fixup_mac_addresses(&bd.bi_enetaddr);
-> 
-> 	/* Fixup for 64M flash on Rev A boards. */
-> 	if(bd.bi_flashsize == 0x4000000) {
-> 		warp_fixup_one_nor(0x300000, 0x3f00000);
-> 		warp_fixup_one_nor(0x340000, 0x3f40000);
-> 		warp_fixup_one_nor(0x380000, 0x3f80000);
-> 	}
-> }
 
-This doesn't seem right.  warp_fixup_one_nor() changes only the
-partition's offset, so you're not changing the size of any
-partitions.  If you're not going to actually use any of the extra
-flash space with 64M, I can't see why you'd bother moving around the
-partitions you have.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/systbl.h |    4 +++-
+ include/asm-powerpc/unistd.h |    6 ++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-> I have tested this with the 64M NOR, and it seems to work. However, are 
-> there going to be problems with the partition name not matching the reg 
-> address entry?
+Kernel built for ppc64_defconfig, pseries_defconfig, iseries_defconfig,
+cell_defconfig and pmac32_defconfig.  The latter failed because
+check_media_bay is still undefined (i.e. for unrelated reasons).
 
-In practice, probably not.  We already do a similar fixup on Ebony for
-different flash layouts that won't leave the unit names correct.  We
-really should get this right - and the fdt_set_name() function that's
-now in libfdt should make that possible, it just needs some wiring up
-to use in the bootwrapper.  That can come later, though, for now I
-think applying your fixups without correcting the unit addresses is
-adequate.
+This has been tested on a pseries_defconfig kernel using the posted test
+program built for 64 and 32 bit.
 
-> If anybody has suggestions on better ways to do this, fire away.
-> 
-> And looking at this code, and other board ports, why is sysclk a local 
-> variable and all the other numbers hardcoded in the args? I left it the 
-> same way as the others but it does look a bit strange.
-
-I think this also came from Ebony.  IIRC, the sysclk isn't strictly
-speaking fixed, although it almost always has initialized value.  The
-point of the local variable was that I planned to replace the static
-initialization with some sort of probing once I figured out the
-details.
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index e996521..ae7085c 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -309,8 +309,10 @@ SYSCALL_SPU(getcpu)
+ COMPAT_SYS(epoll_pwait)
+ COMPAT_SYS_SPU(utimensat)
+ COMPAT_SYS_SPU(signalfd)
+-SYSCALL(ni_syscall)
++SYSCALL_SPU(timerfd_create)
+ SYSCALL_SPU(eventfd)
+ COMPAT_SYS_SPU(sync_file_range2)
+ COMPAT_SYS(fallocate)
+ SYSCALL(subpage_prot)
++COMPAT_SYS_SPU(timerfd_settime)
++COMPAT_SYS_SPU(timerfd_gettime)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index fedc4b8..ce91bb6 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -328,15 +328,17 @@
+ #define __NR_epoll_pwait	303
+ #define __NR_utimensat		304
+ #define __NR_signalfd		305
+-#define __NR_timerfd		306
++#define __NR_timerfd_create	306
+ #define __NR_eventfd		307
+ #define __NR_sync_file_range2	308
+ #define __NR_fallocate		309
+ #define __NR_subpage_prot	310
++#define __NR_timerfd_settime	311
++#define __NR_timerfd_gettime	312
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		311
++#define __NR_syscalls		313
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.5.4
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
