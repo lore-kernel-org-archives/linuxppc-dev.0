@@ -1,21 +1,16 @@
-Return-Path: <alohanono@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id 0217BDDE49
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from mail.ubidyne.com (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id D3E89DDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Feb 2008 22:08:38 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so1480676nfd.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Feb 2008 03:08:36 -0800 (PST)
-Message-ID: <47B02CB0.8040002@gmail.com>
-Date: Mon, 11 Feb 2008 12:08:32 +0100
-From: "A. Nolson" <alohanono@gmail.com>
+	Mon, 11 Feb 2008 22:36:13 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: APU FPU in Virtex ppc405
-References: <47ACA4BB.6010903@gmail.com>
-	<fa686aa40802081132h22b91464xd150e0671ca4fc34@mail.gmail.com>
-In-Reply-To: <fa686aa40802081132h22b91464xd150e0671ca4fc34@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: External interrupts with UIO framework on mpc8313e
+Date: Mon, 11 Feb 2008 12:24:00 +0100
+Message-ID: <29DC34A6B43468409F5A371CFE34E8495492CD@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +21,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have been checking and it seems that the APU FPU patches will give 
-some headaches now, so I will probably wait until they merge them with 
-the official GCC release. In any case, it seems that the FPU restricts 
-the PowerPC and bus frequencies to a max of 200/100.
+Hi everyone!
 
-Anyway, thanks for the info. I will try to keep track of this in case of 
-an update.
+I'm trying to receive external interrupts on the mpc8313erdb board.
+I'm also using the UIO framework to register the interrupt handler.=20
 
-Grant Likely wrote:
-> On Feb 8, 2008 11:51 AM, A. Nolson <alohanono@gmail.com> wrote:
->   
->> Hi,
->>
->>  I have just heard that Xilinx has freed the FPU module for the PPC
->> architecture in EDK9.2i. WIll I be able to make it work with my
->> Secretlab Linux 2.6.24rc3? Will the eldk toolchain for PPC_4xxfp work?
->> Will it be just a matter of integrating it with the XPS BSP?I make an
->> extensive use of floating point in my applications and this will be
->> really useful.
->>     
->
-> It's been 2 years since I last played with the FPU core.  At the time
-> it wasn't a complete FPU so the eldk 4xxfp toolchain would not work.
-> I had to build my own.  I don't know if the new core is a complete
-> implementation.
->
-> Cheers,
-> g.
->
->
->   
+It works for me when I register the interrupt handler for external =
+interrupt IRQ4 (irq =3D 20)
+But when I'm trying the register the handler for IRQ0(48)-IRQ3(17-19) it =
+doesn't.=20
+
+I'm using following simple code:
+
+---snip---
+static irqreturn_t intHandler(int irq, struct uio_info *dev_info)
+{
+    printk("name: %s\n", dev_info->name);
+    return IRQ_HANDLED
+}
+
+static struct uio_info myinfo =3D {
+    .name =3D "IRQ4 Kernel Driver",
+    .version =3D "1.0.0",
+    .irq =3D 20,
+    .irq_flags =3D IRQF_SHARED | IRQF_DISABLED,
+    .handler =3D intHandler,
+};
+
+static int uio_probe(struct device *dev)
+{
+    if(uio_register_device(dev,&myinfo))
+    {
+        return -ENODEV;
+    }
+    else
+    {
+        return 0;
+    }
+}
+---snip---
+
+After booting the kernel, the driver (for IRQ4) appears correct in =
+/proc/interrups and can be triggered.
+
+I guess, this should also work for IRQ0-IRQ3 but it won't. IRQ0 cannot =
+registered to 48 at all and the
+other ones appear in /proc/interruts but they cannot be triggered (BUT =
+shared with serial or i2c).=20
+
+I also checked the value of the SEMSR register and see that IRQ4 is set =
+correctly.
+
+Okay, I thought when I set the SEMSR register manually e.g. IRQ2 to "1" =
+and trigger the correct interrupt signal I could see in /proc/stat a =
+counting value. Nothing happened. But the BAD counter in =
+/proc/interrupts is rising.=20
+
+Furthermore there's a mapping issue between the interrupt id number from =
+the board manual
+(page 8-10) and the output of /proc/interrupts. The kernel registers the =
+i2c devices to=20
+ID 16 and 17 although the manual says they are mapped to 14 and 15.
+
+
+Any hint is appreciate!=20
+Best regards
+
+
+
+Frank Prepelica
+Software Design Engineer
+
+Ubidyne GmbH
+Lise-Meitner-Str.-14
+89081 Ulm - Germany
+
+Phone:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 +49 731 88 00 71 58
+Fax:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 +49 731 88 00 71 99
+Email:=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =
+frank.prepelica@ubidyne.com
+Homepage:=A0=A0=A0=A0=A0=A0 www.ubidyne.com
+=A0
+Registered office: Ulm
+District court of Ulm: HRB 5295
+Managing Directors:
+Dipl. Ing. Ken Hawk
+Dipl. Ing. Beat M=FCller
+Dr. Clemens Rheinfelder
