@@ -1,33 +1,21 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4DB0DDE034
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:50:28 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1BGoOE0030278
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:50:24 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1BGoOgN211166
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:50:24 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1BGoN4E010642
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:50:24 -0500
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802111724.12416.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 08:50:25 -0800
-Message-Id: <1202748625.8276.24.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-Cc: "Themann, Jan-Bernd" <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>, Greg KH <greg@kroah.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 54F31DDE37
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 04:57:24 +1100 (EST)
+Message-ID: <47B08C76.3000009@freescale.com>
+Date: Mon, 11 Feb 2008 11:57:10 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Could the DTS experts look at this?
+References: <47ACE630.8090101@pikatech.com> <200802100647.56590.arnd@arndb.de>
+In-Reply-To: <200802100647.56590.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,16 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-02-11 at 17:24 +0100, Jan-Bernd Themann wrote:
-> Drivers like eHEA need memory notifiers in order to 
-> update their internal DMA memory map when memory is added
-> to or removed from the system.
-> 
-> Patch for eHEA memory hotplug support that uses these functions:
-> http://www.spinics.net/lists/netdev/msg54484.html
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Arnd Bergmann wrote:
 
-How about you fix up the driver, first?  Then, this can go in.
+> Maybe we can introduce a more generic way of having conditional
+> device nodes in the tree that get knocked out in the boot wrapper.
 
--- Dave
+I've been thinking about doing just this for quite some time now.  I've had a 
+few informal discussions without people about.
+
+One idea is to allow attaching simple conditional expressions (like X is <, =, 
+or > than Y) to a node.  It is the responsibility of the code that parses the 
+device tree to assign values to X and Y.  For instance, they could be the names 
+of U-Boot environment variables.  If the expression is false, then the node is 
+removed (or ignored) from the device tree.  If it's true, then it's kept in.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
