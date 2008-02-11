@@ -1,26 +1,12 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7C07DDDEEC
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 02:34:30 +1100 (EST)
-Date: Mon, 11 Feb 2008 07:22:54 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH][RESEND] drivers/base: export (un)register_memory_notifier
-Message-ID: <20080211152254.GC25505@kroah.com>
-References: <200802111049.05478.ossthema@de.ibm.com>
-	<1202724743.8276.2.camel@nimitz.home.sr71.net>
-	<200802111147.51225.ossthema@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Date: Mon, 11 Feb 2008 09:32:00 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Remove generated files on make clean
+Message-ID: <Pine.LNX.4.64.0802110931490.29510@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200802111147.51225.ossthema@de.ibm.com>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	Dave Hansen <haveblue@us.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,36 +16,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 11, 2008 at 11:47:50AM +0100, Jan-Bernd Themann wrote:
-> On Monday 11 February 2008 11:12, Dave Hansen wrote:
-> > On Mon, 2008-02-11 at 10:49 +0100, Jan-Bernd Themann wrote:
-> > > are you the right person to address this patch to?
-> > 
-> > You might want to check the top of the file. ;)
-> > 
-> > > --- a/drivers/base/memory.c
-> > > +++ b/drivers/base/memory.c
-> > > @@ -52,11 +52,13 @@ int register_memory_notifier(struct notifier_block *nb)
-> > >  {
-> > >          return blocking_notifier_chain_register(&memory_chain, nb);
-> > >  }
-> > > +EXPORT_SYMBOL(register_memory_notifier);
-> > >  
-> > >  void unregister_memory_notifier(struct notifier_block *nb)
-> > >  {
-> > >          blocking_notifier_chain_unregister(&memory_chain, nb);
-> > >  }
-> > > +EXPORT_SYMBOL(unregister_memory_notifier);
-> > 
-> > Is there a particular reason these can't be GPL?
-> > 
-> 
-> I don't object to make them GPL. Greg, what do you think?
+vmlinux.lds and dtc-parser.tab.h get created but never cleaned up.
 
-They should be _GPL to match the rest of the driver core.
+---
+ arch/powerpc/boot/Makefile   |    2 ++
+ arch/powerpc/kernel/Makefile |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-Care to resend this?
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 49797a4..63d07cc 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -147,6 +147,8 @@ HOSTCFLAGS += -I$(src)/dtc-src/ -I$(src)/libfdt/
+ targets += dtc-src/dtc-parser.tab.c
+ targets += dtc-src/dtc-lexer.lex.c
 
-thanks,
-
-greg k-h
++clean-files += dtc-src/dtc-parser.tab.h
++
+ ifdef DTC_GENPARSER
+ BISON = bison
+ FLEX = flex
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0662ae4..c1baf9d 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -104,3 +104,5 @@ quiet_cmd_systbl_chk = CALL    $<
+ PHONY += systbl_chk
+ systbl_chk: $(src)/systbl_chk.sh $(obj)/systbl_chk.i
+ 	$(call cmd,systbl_chk)
++
++clean-files := vmlinux.lds
+-- 
+1.5.3.8
