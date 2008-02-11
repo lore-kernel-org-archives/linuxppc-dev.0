@@ -1,13 +1,13 @@
 Return-Path: <Alexandre.Bounine@tundra.com>
 Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
-	by ozlabs.org (Postfix) with ESMTP id 79295DDEA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:31:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 0B537DE078
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:32:29 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: [PATCH 2/5 v2] Tsi108_eth: fix detection of 1000Mb mode
-Date: Mon, 11 Feb 2008 11:31:51 -0500
-Message-ID: <1B5F013528140F45B5C671039279CA5702A9638C@NANUK.pc.tundra.com>
+Subject: [PATCH 3/5 v2] Tsi108_eth: remove not needed code
+Date: Mon, 11 Feb 2008 11:32:11 -0500
+Message-ID: <1B5F013528140F45B5C671039279CA5702A9638D@NANUK.pc.tundra.com>
 From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
 To: <jgarzik@pobox.com>, <netdev@vger.kernel.org>
 Cc: linuxppc-dev@ozlabs.org
@@ -20,8 +20,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bug fix for tsi108_eth network driver.
-This patch fixes a problem with detection of 1000Mb speed.=20
+Code clean-up for tsi108_eth network driver.
+This patch removes not needed dummy read and the corresponding comment.
+The PHY logic requires two reads from the status register to get=20
+current link status. This is done correctly inside mii_check_media().=20=20
 =20=20=20
 Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 ---
@@ -29,27 +31,28 @@ Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
 linux-2.6.24-fix/drivers/net/tsi108_eth.c
 --- linux-2.6.24/drivers/net/tsi108_eth.c	2008-02-06
-15:09:19.000000000 -0500
+15:47:35.000000000 -0500
 +++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
-15:34:12.000000000 -0500
-@@ -1287,6 +1287,7 @@ static void tsi108_init_phy(struct net_d
- 		spin_lock_irqsave(&phy_lock, flags);
- 	}
+15:54:14.000000000 -0500
+@@ -297,18 +297,11 @@ static void tsi108_check_phy(struct net_
+ 	u32 speed;
+ 	unsigned long flags;
 =20
-+	data->mii_if.supports_gmii =3D
-mii_check_gmii_support(&data->mii_if);
- 	printk(KERN_DEBUG "PHY_STAT reg contains %08x\n", phyval);
- 	data->phy_ok =3D 1;
- 	data->init_media =3D 1;
-@@ -1584,7 +1585,6 @@ tsi108_init_one(struct platform_device *
- 	data->mii_if.phy_id =3D einfo->phy;
- 	data->mii_if.phy_id_mask =3D 0x1f;
- 	data->mii_if.reg_num_mask =3D 0x1f;
--	data->mii_if.supports_gmii =3D
-mii_check_gmii_support(&data->mii_if);
+-	/* Do a dummy read, as for some reason the first read
+-	 * after a link becomes up returns link down, even if
+-	 * it's been a while since the link came up.
+-	 */
+-
+ 	spin_lock_irqsave(&phy_lock, flags);
 =20
- 	data->phy =3D einfo->phy;
- 	data->phy_type =3D einfo->phy_type;
+ 	if (!data->phy_ok)
+ 		goto out;
+=20
+-	tsi108_read_mii(data, MII_BMSR);
+-
+ 	duplex =3D mii_check_media(&data->mii_if, netif_msg_link(data),
+data->init_media);
+ 	data->init_media =3D 0;
 
 
 ---=0D
