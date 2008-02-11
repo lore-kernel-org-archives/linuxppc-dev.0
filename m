@@ -1,15 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 670EEDDDFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:43:02 +1100 (EST)
-Date: Mon, 11 Feb 2008 11:38:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Wire up new timerfd syscalls
-Message-Id: <20080211113840.154a3de5.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id BB5A4DDDFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 13:40:21 +1100 (EST)
+Message-ID: <47AFB593.30805@pikatech.com>
+Date: Sun, 10 Feb 2008 21:40:19 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
+MIME-Version: 1.0
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Could the DTS experts look at this?
+References: <47ACE630.8090101@pikatech.com>
+	<20080211001451.GA11572@localhost.localdomain>
+In-Reply-To: <20080211001451.GA11572@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,64 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Gibson wrote:
+> This doesn't seem right.  warp_fixup_one_nor() changes only the
+> partition's offset, so you're not changing the size of any
+> partitions.  If you're not going to actually use any of the extra
+> flash space with 64M, I can't see why you'd bother moving around the
+> partitions you have.
+>   
+u-boot must be at the bottom of the flash. Also, for the 64M NOR flash 
+you can put everything in the NOR flash, I just don't show the 
+partitions. Booting from NOR is *much* faster than  booting from NAND.
+>
+> In practice, probably not.  We already do a similar fixup on Ebony for
+> different flash layouts that won't leave the unit names correct.  We
+> really should get this right - and the fdt_set_name() function that's
+> now in libfdt should make that possible, it just needs some wiring up
+> to use in the bootwrapper.  That can come later, though, for now I
+> think applying your fixups without correcting the unit addresses is
+> adequate.
+>
+>   
+Ok.
+>> If anybody has suggestions on better ways to do this, fire away.
+>>
+>> And looking at this code, and other board ports, why is sysclk a local 
+>> variable and all the other numbers hardcoded in the args? I left it the 
+>> same way as the others but it does look a bit strange.
+>>     
+>
+> I think this also came from Ebony.  IIRC, the sysclk isn't strictly
+> speaking fixed, although it almost always has initialized value.  The
+> point of the local variable was that I planned to replace the static
+> initialization with some sort of probing once I figured out the
+> details.
+>   
+That makes sense. I don't think you can probe for the sysclk on the 
+taco, so I may just put it as a constant to the function.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- include/asm-powerpc/systbl.h |    4 +++-
- include/asm-powerpc/unistd.h |    6 ++++--
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
-Kernel built for ppc64_defconfig, pseries_defconfig, iseries_defconfig,
-cell_defconfig and pmac32_defconfig.  The latter failed because
-check_media_bay is still undefined (i.e. for unrelated reasons).
-
-This has been tested on a pseries_defconfig kernel using the posted test
-program built for 64 and 32 bit.
-
-diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
-index e996521..ae7085c 100644
---- a/include/asm-powerpc/systbl.h
-+++ b/include/asm-powerpc/systbl.h
-@@ -309,8 +309,10 @@ SYSCALL_SPU(getcpu)
- COMPAT_SYS(epoll_pwait)
- COMPAT_SYS_SPU(utimensat)
- COMPAT_SYS_SPU(signalfd)
--SYSCALL(ni_syscall)
-+SYSCALL_SPU(timerfd_create)
- SYSCALL_SPU(eventfd)
- COMPAT_SYS_SPU(sync_file_range2)
- COMPAT_SYS(fallocate)
- SYSCALL(subpage_prot)
-+COMPAT_SYS_SPU(timerfd_settime)
-+COMPAT_SYS_SPU(timerfd_gettime)
-diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
-index fedc4b8..ce91bb6 100644
---- a/include/asm-powerpc/unistd.h
-+++ b/include/asm-powerpc/unistd.h
-@@ -328,15 +328,17 @@
- #define __NR_epoll_pwait	303
- #define __NR_utimensat		304
- #define __NR_signalfd		305
--#define __NR_timerfd		306
-+#define __NR_timerfd_create	306
- #define __NR_eventfd		307
- #define __NR_sync_file_range2	308
- #define __NR_fallocate		309
- #define __NR_subpage_prot	310
-+#define __NR_timerfd_settime	311
-+#define __NR_timerfd_gettime	312
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		311
-+#define __NR_syscalls		313
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
--- 
-1.5.4
-
--- 
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+   Sean
