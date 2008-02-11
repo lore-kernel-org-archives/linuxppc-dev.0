@@ -1,13 +1,13 @@
 Return-Path: <Alexandre.Bounine@tundra.com>
 Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
-	by ozlabs.org (Postfix) with ESMTP id C8547DE079
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:31:42 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 79295DDEA0
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:31:54 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: [PATCH 1/5 v2] Tsi108_eth: add missing linking to driver data
-Date: Mon, 11 Feb 2008 11:31:37 -0500
-Message-ID: <1B5F013528140F45B5C671039279CA5702A9638A@NANUK.pc.tundra.com>
+Subject: [PATCH 2/5 v2] Tsi108_eth: fix detection of 1000Mb mode
+Date: Mon, 11 Feb 2008 11:31:51 -0500
+Message-ID: <1B5F013528140F45B5C671039279CA5702A9638C@NANUK.pc.tundra.com>
 From: "Alexandre Bounine" <Alexandre.Bounine@tundra.com>
 To: <jgarzik@pobox.com>, <netdev@vger.kernel.org>
 Cc: linuxppc-dev@ozlabs.org
@@ -21,25 +21,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Bug fix for tsi108_eth network driver.
-This patch adds missing linking to driver data.=20
+This patch fixes a problem with detection of 1000Mb speed.=20
 =20=20=20
 Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 ---
 
 diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
 linux-2.6.24-fix/drivers/net/tsi108_eth.c
---- linux-2.6.24/drivers/net/tsi108_eth.c	2008-01-24
-17:58:37.000000000 -0500
+--- linux-2.6.24/drivers/net/tsi108_eth.c	2008-02-06
+15:09:19.000000000 -0500
 +++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
-14:30:04.000000000 -0500
-@@ -1629,6 +1629,7 @@ tsi108_init_one(struct platform_device *
- 		goto register_fail;
+15:34:12.000000000 -0500
+@@ -1287,6 +1287,7 @@ static void tsi108_init_phy(struct net_d
+ 		spin_lock_irqsave(&phy_lock, flags);
  	}
 =20
-+	platform_set_drvdata(pdev, dev);
- 	printk(KERN_INFO "%s: Tsi108 Gigabit Ethernet, MAC: %s\n",
- 	       dev->name, print_mac(mac, dev->dev_addr));
- #ifdef DEBUG
++	data->mii_if.supports_gmii =3D
+mii_check_gmii_support(&data->mii_if);
+ 	printk(KERN_DEBUG "PHY_STAT reg contains %08x\n", phyval);
+ 	data->phy_ok =3D 1;
+ 	data->init_media =3D 1;
+@@ -1584,7 +1585,6 @@ tsi108_init_one(struct platform_device *
+ 	data->mii_if.phy_id =3D einfo->phy;
+ 	data->mii_if.phy_id_mask =3D 0x1f;
+ 	data->mii_if.reg_num_mask =3D 0x1f;
+-	data->mii_if.supports_gmii =3D
+mii_check_gmii_support(&data->mii_if);
+=20
+ 	data->phy =3D einfo->phy;
+ 	data->phy_type =3D einfo->phy_type;
+
 
 ---=0D
 =0D
