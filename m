@@ -1,33 +1,21 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 33BFADDF18
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:04:44 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1BG4fJe028261
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:04:41 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1BG4faC224664
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:04:41 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1BG4ffk017535
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:04:41 -0500
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802111657.07534.ossthema@de.ibm.com>
-References: <200802111657.07534.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 08:04:43 -0800
-Message-Id: <1202745883.8276.5.camel@nimitz.home.sr71.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id BF6C3DDEF4
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 03:06:01 +1100 (EST)
+Date: Mon, 11 Feb 2008 19:06:12 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v4] [POWERPC] MPC8360E-RDK: device tree,
+	board file and defconfig
+Message-ID: <20080211160612.GA5062@localhost.localdomain>
+References: <20080201135640.GA10966@localhost.localdomain>
+	<20080211130132.GA6445@localhost.localdomain>
+	<33A3857D-9829-40CA-9A8E-751C2C417E5E@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: "Themann, Jan-Bernd" <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>, Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <33A3857D-9829-40CA-9A8E-751C2C417E5E@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,12 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-02-11 at 16:57 +0100, Jan-Bernd Themann wrote:
-> Drivers like eHEA need memory notifiers in order to 
-> update their internal DMA memory map when memory is added
-> to or removed from the system.
+On Mon, Feb 11, 2008 at 09:32:20AM -0600, Kumar Gala wrote:
+> 
+> On Feb 11, 2008, at 7:01 AM, Anton Vorontsov wrote:
+> 
+> >On Fri, Feb 01, 2008 at 04:56:40PM +0300, Anton Vorontsov wrote:
+> >>This is new board made by Freescale Semiconductor Inc. and
+> >>Logic Product Development.
+> >>
+> >>Currently supported:
+> >>1. UEC{1,2,7,4};
+> >>2. I2C;
+> >>3. SPI;
+> >>4. NS16550 serial;
+> >>5. PCI and miniPCI;
+> >>6. Intel NOR StrataFlash X16 64Mbit PC28F640P30T85;
+> >>7. Graphics controller, Fujitsu MB86277.
+> >>
+> >>Not supported so far:
+> >>1. StMICRO NAND512W3A2BN6E, 512 Mbit (supported with FSL UPM  
+> >>patches);
+> >>2. QE Serial UCCs (tested to not work with ucc_uart driver, reason
+> >>  unknown, yet);
+> >>3. ADC AD7843 (tested to work, but support via device tree depends on
+> >>  major SPI rework, GPIO API, etc);
+> >>4. FHCI USB (will send RFC patches soon).
+> >>
+> >>Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >>---
+> >>
+> >>Hello Kumar,
+> >>
+> >>It would be great if we can get this into the 2.6.25.
+> >
+> >Is there any chance this will hit 2.6.25?..
+> 
+> Not really.  It seemed like there were a lot of other patches this  
+> really depend on getting so I was waiting to see how that fell out.   
 
-Could you post this with the new users as well so we can make sure
-they're not abusing this in some way?
+Hm... This particular patch doesn't depend on any other patches.
 
--- Dave
+This is "basic support" patch with intent to be in time for .25.
+
+NAND/ADC/FHCI support is .26 material, of course, and that's exactly
+why "basic support" patch doesn't include these bits.
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
