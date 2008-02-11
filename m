@@ -1,17 +1,14 @@
-Return-Path: <alex.bou9@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
-	by ozlabs.org (Postfix) with ESMTP id 02E8FDDF29
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 06:36:40 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 68so3973248wra.13
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:36:38 -0800 (PST)
-Message-ID: <d5f62df20802111136u5b08459bj45a577f43ff88cd4@mail.gmail.com>
-Date: Mon, 11 Feb 2008 14:36:37 -0500
-From: "Alex Bounine" <alex.bou9@gmail.com>
-To: jgarzik@pobox.com, netdev@vger.kernel.org
-Subject: [PATCH 5/5 v3] Tsi108_eth: Add ethtool support
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <martin-langer@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id A8EE4DDF7D
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 07:29:37 +1100 (EST)
+Date: Mon, 11 Feb 2008 21:29:33 +0100
+From: Martin Langer <martin-langer@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix for Freescale ppc cores: major revision detection
+Message-ID: <20080211202933.GA3399@tuba>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,76 +18,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add ethtool support to tsi108_eth network driver.
+On Mon, Feb 11, 2008 at 09:01:03AM -0600, Kumar Gala wrote:
+> 
+> On Feb 9, 2008, at 11:47 AM, Martin Langer wrote:
+> 
+> >Ppc cores by Freescale are using the configuration field instead of  
+> >the
+> >major revision field for their major revision number. Those field
+> >definitions come from include/asm-powerpc/reg.h.
+> >
+> >Look at the pdf below and you will see that PVR_MAJ() does a wrong  
+> >shift
+> >for ppc cores by Freescale. This patch fixes it.
+> >
+> >http://www.freescale.com/files/archives/doc/support_info/PPCPVR.pdf
+> 
+> This doc doesn't encompass the e500/book-e cores that don't follow the  
+> same pattern.
+> 
+> The code should probably be something like:
+> 
+> #ifdef CONFIG_FSL_BOOKE
+> maj = PVR_MAJ(pvr);
+> #else
+> maj = (pvr >> 8) & 0xff;
+> #endif
 
-Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
----
+Thanks for the hint. Inspired by that I did the logic the other way 
+round. So we have the same default cases as we had before and 
+additionally it will fit for the cores mentioned in the doc.
 
-diff -pNur linux-2.6.24/drivers/net/tsi108_eth.c
-linux-2.6.24-fix/drivers/net/tsi108_eth.c
---- linux-2.6.24/drivers/net/tsi108_eth.c	2008-02-06 17:10:53.000000000 -0500
-+++ linux-2.6.24-fix/drivers/net/tsi108_eth.c	2008-02-06
-18:09:43.000000000 -0500
-@@ -36,6 +36,7 @@
- #include <linux/net.h>
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
-+#include <linux/ethtool.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-@@ -1519,12 +1520,46 @@ static void tsi108_init_mac(struct net_d
- 	TSI_WRITE(TSI108_EC_INTMASK, ~0);
- }
 
-+static int tsi108_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
-+{
-+	struct tsi108_prv_data *data = netdev_priv(dev);
-+	unsigned long flags;
-+	int rc;
-+	
-+	spin_lock_irqsave(&data->txlock, flags);
-+	rc = mii_ethtool_gset(&data->mii_if, cmd);
-+	spin_unlock_irqrestore(&data->txlock, flags);
-+
-+	return rc;
-+}
-+
-+static int tsi108_set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
-+{
-+	struct tsi108_prv_data *data = netdev_priv(dev);
-+	unsigned long flags;
-+	int rc;
-+
-+	spin_lock_irqsave(&data->txlock, flags);
-+	rc = mii_ethtool_sset(&data->mii_if, cmd);
-+	spin_unlock_irqrestore(&data->txlock, flags);
-+	
-+	return rc;
-+}
-+
- static int tsi108_do_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
- 	struct tsi108_prv_data *data = netdev_priv(dev);
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 	return generic_mii_ioctl(&data->mii_if, if_mii(rq), cmd, NULL);
- }
-
-+static const struct ethtool_ops tsi108_ethtool_ops = {
-+	.get_link 	= ethtool_op_get_link,
-+	.get_settings	= tsi108_get_settings,
-+	.set_settings	= tsi108_set_settings,
-+};
-+
- static int
- tsi108_init_one(struct platform_device *pdev)
- {
-@@ -1589,6 +1624,7 @@ tsi108_init_one(struct platform_device *
- 	dev->get_stats = tsi108_get_stats;
- 	netif_napi_add(dev, &data->napi, tsi108_poll, 64);
- 	dev->do_ioctl = tsi108_do_ioctl;
-+	dev->ethtool_ops = &tsi108_ethtool_ops;
-
- 	/* Apparently, the Linux networking code won't use scatter-gather
- 	 * if the hardware doesn't do checksums.  However, it's faster
+--- arch/powerpc/kernel/setup-common.c.ORIGINAL	2008-02-08 22:22:56.000000000 +0100
++++ arch/powerpc/kernel/setup-common.c	2008-02-11 20:54:37.000000000 +0100
+@@ -241,8 +241,21 @@
+ 	/* If we are a Freescale core do a simple check so
+ 	 * we dont have to keep adding cases in the future */
+ 	if (PVR_VER(pvr) & 0x8000) {
+-		maj = PVR_MAJ(pvr);
+-		min = PVR_MIN(pvr);
++		switch (PVR_VER(pvr)) {
++			case 0x8000:	/* 7441/7450/7451, Vger */
++			case 0x8001:	/* 7445/7455, Apollo 6 */
++			case 0x8002:	/* 7447/7457, Apollo 7 */
++			case 0x8003:	/* 7447A, Apollo 7 PM */
++			case 0x8004:	/* 7448, Apollo 8 */
++			case 0x800c:	/* 7410, Nitro */
++				maj = ((pvr >> 8) & 0xF);
++				min = PVR_MIN(pvr);
++				break;
++			default:	/* e500/book-e */
++				maj = PVR_MAJ(pvr);
++				min = PVR_MIN(pvr);
++				break;
++		}
+ 	} else {
+ 		switch (PVR_VER(pvr)) {
+ 			case 0x0020:	/* 403 family */
