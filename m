@@ -1,21 +1,19 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A2150DDF56
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 09:03:24 +1100 (EST)
-Message-ID: <47B0C59C.5080209@freescale.com>
-Date: Mon, 11 Feb 2008 16:01:00 -0600
-From: Jon Loeliger <jdl@freescale.com>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 4E1B4DDFB4
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 09:12:36 +1100 (EST)
 MIME-Version: 1.0
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH 1/2] powerpc: publish 85xx soc dts entries as of_device
-References: <20080211203243.GA5331@blade.az.mvista.com>
-In-Reply-To: <20080211203243.GA5331@blade.az.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: WARN_ON() hit in fsl bitbanged phy driver
+Date: Mon, 11 Feb 2008 16:12:34 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03F9325F@ismail.innsys.innovsys.com>
+In-Reply-To: <47B0C30A.1030801@freescale.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B03F931E6@ismail.innsys.innovsys.com>
+	<47B0C30A.1030801@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dave Jiang wrote:
+Scott Wood wrote:
+> Rune Torgersen wrote:
+>> I hit the following WARN_ON when using mii-tools agains a ethernet
+>> interface using a bit-banged mii interface
+>=20
+> It looks like the kernel thinks it's in an interrupt, even though it
+> clearly isn't from the backtrace.  Presumably, something
+> slept from an
+> interrupt handler; try turning on sleep-in-spinlock debugging.
 
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> index 4e03050..024393c 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-> @@ -26,6 +26,8 @@
->  #include <asm/mpic.h>
->  #include <mm/mmu_decl.h>
->  #include <asm/udbg.h>
-> +#include <asm/of_device.h>
-> +#include <asm/of_platform.h>
+I turned on sleep-in-spinlock and it did not reveal anything. I'm trying
+some other debug options.
 
-Please use <linux/of_{device,platform}.h> throughout instead.
-
-Thanks.
-jdl
+> The root cause was probably something other than the phy code.
+I'm not so sure, because it only happens when I run mii-tool agains the
+interface useing the bit-banged driver, and then only the first time.
