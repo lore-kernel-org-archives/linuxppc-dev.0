@@ -1,37 +1,19 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB7B2DDEF1
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 21:47:59 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id m1BAlqUf130432
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 10:47:52 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m1BAlqwX2080886
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:47:52 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m1BAlpo9020355
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 11:47:51 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [PATCH][RESEND] drivers/base: export (un)register_memory_notifier
-Date: Mon, 11 Feb 2008 11:47:50 +0100
-References: <200802111049.05478.ossthema@de.ibm.com>
-	<1202724743.8276.2.camel@nimitz.home.sr71.net>
-In-Reply-To: <1202724743.8276.2.camel@nimitz.home.sr71.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200802111147.51225.ossthema@de.ibm.com>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, netdev <netdev@vger.kernel.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 48785DDE43
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 00:01:21 +1100 (EST)
+Date: Mon, 11 Feb 2008 16:01:32 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v4] [POWERPC] MPC8360E-RDK: device tree,
+	board file and defconfig
+Message-ID: <20080211130132.GA6445@localhost.localdomain>
+References: <20080201135640.GA10966@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080201135640.GA10966@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,30 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 11 February 2008 11:12, Dave Hansen wrote:
-> On Mon, 2008-02-11 at 10:49 +0100, Jan-Bernd Themann wrote:
-> > are you the right person to address this patch to?
+On Fri, Feb 01, 2008 at 04:56:40PM +0300, Anton Vorontsov wrote:
+> This is new board made by Freescale Semiconductor Inc. and
+> Logic Product Development.
 > 
-> You might want to check the top of the file. ;)
+> Currently supported:
+> 1. UEC{1,2,7,4};
+> 2. I2C;
+> 3. SPI;
+> 4. NS16550 serial;
+> 5. PCI and miniPCI;
+> 6. Intel NOR StrataFlash X16 64Mbit PC28F640P30T85;
+> 7. Graphics controller, Fujitsu MB86277.
 > 
-> > --- a/drivers/base/memory.c
-> > +++ b/drivers/base/memory.c
-> > @@ -52,11 +52,13 @@ int register_memory_notifier(struct notifier_block *nb)
-> >  {
-> >          return blocking_notifier_chain_register(&memory_chain, nb);
-> >  }
-> > +EXPORT_SYMBOL(register_memory_notifier);
-> >  
-> >  void unregister_memory_notifier(struct notifier_block *nb)
-> >  {
-> >          blocking_notifier_chain_unregister(&memory_chain, nb);
-> >  }
-> > +EXPORT_SYMBOL(unregister_memory_notifier);
+> Not supported so far:
+> 1. StMICRO NAND512W3A2BN6E, 512 Mbit (supported with FSL UPM patches);
+> 2. QE Serial UCCs (tested to not work with ucc_uart driver, reason
+>    unknown, yet);
+> 3. ADC AD7843 (tested to work, but support via device tree depends on
+>    major SPI rework, GPIO API, etc);
+> 4. FHCI USB (will send RFC patches soon).
 > 
-> Is there a particular reason these can't be GPL?
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
 > 
+> Hello Kumar,
+> 
+> It would be great if we can get this into the 2.6.25.
 
-I don't object to make them GPL. Greg, what do you think?
+Is there any chance this will hit 2.6.25?..
 
-Regards,
-Jan-Bernd
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
