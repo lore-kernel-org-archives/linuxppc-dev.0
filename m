@@ -1,12 +1,12 @@
 Return-Path: <djiang@mvista.com>
 Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id BB9D3DDF02
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 07:59:51 +1100 (EST)
-Date: Mon, 11 Feb 2008 13:32:43 -0700
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 39206DDF76
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 07:59:54 +1100 (EST)
+Date: Mon, 11 Feb 2008 13:34:45 -0700
 From: Dave Jiang <djiang@mvista.com>
 To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc: publish 85xx soc dts entries as of_device 
-Message-ID: <20080211203243.GA5331@blade.az.mvista.com>
+Subject: [PATCH 2/2] powerpc: create mpc85xx pci err platform device for EDAC
+Message-ID: <20080211203445.GB5331@blade.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,99 +18,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Publish the devices listed in dts under SOC as of_device just like what
-mpc85xx_mds platforms do. The 85xx cds and ads platforms currently do not
-export the devices in dts as of_device.
-
-The memory controller, L2 cache-controller, and the PCI controller(s) are
-published as of_device so the mpc85xx EDAC driver can claim them for usage.
+Creating a platform device for the PCI error registers in order for the
+mpc85xx EDAC driver to pick up proper resources. This is to prevent the
+EDAC driver from monopolizing the of_device and thus preventing future PCI
+code from using the PCI of_device(s).
 
 Signed-off-by: Dave Jiang <djiang@mvista.com>
 
 ---
-commit 187841bf9dff25e4ac1a7174daa55bb036c724b1
-tree 3206ffbbfc5075d195345281f72f7b52f060b41b
-parent a99824f327c748b2753f4fa570eb1fefcd6a9c4d
-author Dave Jiang <djiang@mvista.com> Mon, 11 Feb 2008 12:51:33 -0700
-committer Dave Jiang <djiang@blade.(none)> Mon, 11 Feb 2008 12:51:33 -0700
+commit 9436d0792f1352e9a034436c82b2229622fc3364
+tree 0beeed478786b16cdb33be41ac803f781b8ea0cc
+parent 187841bf9dff25e4ac1a7174daa55bb036c724b1
+author Dave Jiang <djiang@blade.(none)> Mon, 11 Feb 2008 12:55:45 -0700
+committer Dave Jiang <djiang@blade.(none)> Mon, 11 Feb 2008 12:55:45 -0700
 
- arch/powerpc/platforms/85xx/mpc85xx_ads.c |   19 +++++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |   19 +++++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   52 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
 
-mpc85xx EDAC driver is in mainline kernel now
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 4e03050..024393c 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -26,6 +26,8 @@
- #include <asm/mpic.h>
- #include <mm/mmu_decl.h>
- #include <asm/udbg.h>
-+#include <asm/of_device.h>
-+#include <asm/of_platform.h>
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index bf13c21..c064c91 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -19,6 +19,8 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/bootmem.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
  
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -27,6 +29,56 @@
  #include <sysdev/fsl_soc.h>
  #include <sysdev/fsl_pci.h>
-@@ -249,6 +251,23 @@ static int __init mpc85xx_ads_probe(void)
-         return of_flat_dt_is_compatible(root, "MPC85xxADS");
- }
  
-+static struct of_device_id mpc85xx_ids[] = {
-+	{ .type = "soc", },
-+	{ .compatible = "soc", },
-+	{},
-+};
-+
-+static int __init mpc85xx_publish_devices(void)
++#ifdef CONFIG_85xx
++/* setting up 85xx PCI error platform device for EDAC consumption */
++static int __init mpc85xx_pcierr_setup(void)
 +{
-+	if (!machine_is(mpc85xx_ads))
-+		return 0;
++	struct device_node *np = NULL;
++	struct of_device *of_dev;
++	struct platform_device *pdev;
++	struct resource res[2];
++	int id = 0;
++	int err;
 +
-+	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
++	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci") {
++		memset(res, 0, sizeof(struct resource) * 2);
++		if (of_address_to_resource(np, 0, &res[0])) {
++			printk(KERN_WARNING "Can't get pci register base!\n");
++			continue;
++		}
 +
++		/* move start to where the error registers are */
++		res[0].start += 0xe00;
++
++		of_irq_to_resource(np, 0, &res[1]);
++
++		of_dev = of_find_device_by_node(np);
++		if (!of_dev)
++			return -ENODEV;
++
++		pdev = platform_device_alloc("mpc85xx_pci_err", id++);
++		if (!pdev)
++			return -ENOMEM;
++
++		err = platform_device_add_resources(pdev, res, 2);
++		if (err)
++			goto error;
++
++		pdev->dev.parent = &of_dev->dev;
++
++		err = platform_device_add(pdev);
++		if (err)
++			goto error;
++	}
 +	return 0;
++
++error:
++	platform_device_put(pdev);
++	return err;
 +}
-+device_initcall(mpc85xx_publish_devices);
++late_initcall(mpc85xx_pcierr_setup);
++#endif
 +
- define_machine(mpc85xx_ads) {
- 	.name			= "MPC85xx ADS",
- 	.probe			= mpc85xx_ads_probe,
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 8b1de78..8525882 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -42,6 +42,8 @@
- #include <asm/udbg.h>
- #include <asm/mpic.h>
- #include <asm/i8259.h>
-+#include <asm/of_device.h>
-+#include <asm/of_platform.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-@@ -335,6 +337,23 @@ static int __init mpc85xx_cds_probe(void)
-         return of_flat_dt_is_compatible(root, "MPC85xxCDS");
- }
- 
-+static struct of_device_id mpc85xx_ids[] = {
-+	{ .type = "soc", },
-+	{ .compatible = "soc", },
-+	{},
-+};
-+
-+static int __init mpc85xx_publish_devices(void)
-+{
-+	if (!machine_is(mpc85xx_cds))
-+		return 0;
-+
-+	of_platform_bus_probe(NULL, mpc85xx_ids, NULL);
-+
-+	return 0;
-+}
-+device_initcall(mpc85xx_publish_devices);
-+
- define_machine(mpc85xx_cds) {
- 	.name		= "MPC85xx CDS",
- 	.probe		= mpc85xx_cds_probe,
+ /* atmu setup for fsl pci/pcie controller */
+ void __init setup_pci_atmu(struct pci_controller *hose, struct resource *rsrc)
+ {
