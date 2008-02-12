@@ -1,12 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 12 Feb 2008 11:58:31 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Add and use a node iteration helper function.
-Message-ID: <20080212005831.GH18348@localhost.localdomain>
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 53F51DDDF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 17:31:17 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1C6VCXF020795
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 01:31:12 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1C6VCAU207560
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 23:31:12 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1C6VBXF023208
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Feb 2008 23:31:12 -0700
+Message-ID: <47B13D2E.1070001@austin.ibm.com>
+Date: Tue, 12 Feb 2008 00:31:10 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
+References: <4782B985.2090508@austin.ibm.com>
+In-Reply-To: <4782B985.2090508@austin.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: mahuja@us.ibm.com, linasvepstas@gmail.com, lkessler@us.ibm.com,
+	strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,440 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds an fdt_next_node() function which can be used to
-iterate through nodes of the tree while keeping track of depth.  This
-function is used to simplify the iteration code in a lot of other
-functions, and is also exported for use by library users.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+The following series of patches implement a basic framework
+for hypervisor-assisted dump. The very first patch provides 
+documentation explaining what this is :-). Yes, its supposed
+to be an improvement over kdump.
 
----
+A list of open issues / todo list is included in the documentation.
+It also appears that the not-yet-released firmware versions this was tested 
+on are still, ahem, incomplete; this work is also pending.
 
-I think we're ready to go with this one.  I'm still thinking about
-suitable for_each_* macros, but in the mean time I'm happy with the
-exported interface here, and it's a code-reducing patch.
+I have included most of the changes requested. Although, I did find
+one or two, fixed in a later patch file rather than the first location
+they appeared at.
 
-Index: dtc/libfdt/fdt_ro.c
-===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2008-02-11 14:49:27.000000000 +1100
-+++ dtc/libfdt/fdt_ro.c	2008-02-11 15:48:37.000000000 +1100
-@@ -65,7 +65,7 @@
- static int nodename_eq(const void *fdt, int offset,
- 		       const char *s, int len)
- {
--	const char *p = fdt_offset_ptr(fdt, offset, len+1);
-+	const char *p = fdt_offset_ptr(fdt, offset + FDT_TAGSIZE, len+1);
- 
- 	if (! p)
- 		/* short match */
-@@ -104,50 +104,24 @@ int fdt_num_mem_rsv(const void *fdt)
- 	return i;
- }
- 
--int fdt_subnode_offset_namelen(const void *fdt, int parentoffset,
-+int fdt_subnode_offset_namelen(const void *fdt, int offset,
- 			       const char *name, int namelen)
- {
--	int level = 0;
--	uint32_t tag;
--	int offset, nextoffset;
-+	int depth;
- 
- 	CHECK_HEADER(fdt);
- 
--	tag = fdt_next_tag(fdt, parentoffset, &nextoffset);
--	if (tag != FDT_BEGIN_NODE)
--		return -FDT_ERR_BADOFFSET;
--
--	do {
--		offset = nextoffset;
--		tag = fdt_next_tag(fdt, offset, &nextoffset);
--
--		switch (tag) {
--		case FDT_END:
--			return -FDT_ERR_TRUNCATED;
--
--		case FDT_BEGIN_NODE:
--			level++;
--			if (level != 1)
--				continue;
--			if (nodename_eq(fdt, offset+FDT_TAGSIZE, name, namelen))
--				/* Found it! */
--				return offset;
--			break;
--
--		case FDT_END_NODE:
--			level--;
--			break;
--
--		case FDT_PROP:
--		case FDT_NOP:
--			break;
--
--		default:
--			return -FDT_ERR_BADSTRUCTURE;
--		}
--	} while (level >= 0);
-+	for (depth = 0;
-+	     offset >= 0;
-+	     offset = fdt_next_node(fdt, offset, &depth)) {
-+		if (depth < 0)
-+			return -FDT_ERR_NOTFOUND;
-+		else if ((depth == 1)
-+			 && nodename_eq(fdt, offset, name, namelen))
-+			return offset;
-+	}
- 
--	return -FDT_ERR_NOTFOUND;
-+	return offset; /* error */
- }
- 
- int fdt_subnode_offset(const void *fdt, int parentoffset,
-@@ -307,76 +281,61 @@ uint32_t fdt_get_phandle(const void *fdt
- 
- int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
- {
--	uint32_t tag;
--	int p = 0, overflow = 0;
--	int offset, nextoffset, namelen;
-+	int pdepth = 0, p = 0;
-+	int offset, depth, namelen;
- 	const char *name;
- 
- 	CHECK_HEADER(fdt);
- 
--	tag = fdt_next_tag(fdt, 0, &nextoffset);
--	if (tag != FDT_BEGIN_NODE)
--		return -FDT_ERR_BADSTRUCTURE;
--
- 	if (buflen < 2)
- 		return -FDT_ERR_NOSPACE;
--	buf[0] = '/';
--	p = 1;
- 
--	while (nextoffset <= nodeoffset) {
--		offset = nextoffset;
--		tag = fdt_next_tag(fdt, offset, &nextoffset);
--		switch (tag) {
--		case FDT_END:
--			return -FDT_ERR_BADOFFSET;
-+	for (offset = 0, depth = 0;
-+	     (offset >= 0) && (offset <= nodeoffset);
-+	     offset = fdt_next_node(fdt, offset, &depth)) {
-+		if (pdepth < depth)
-+			continue; /* overflowed buffer */
- 
--		case FDT_BEGIN_NODE:
--			name = fdt_get_name(fdt, offset, &namelen);
--			if (!name)
--				return namelen;
--			if (overflow || ((p + namelen + 1) > buflen)) {
--				overflow++;
--				break;
--			}
-+		while (pdepth > depth) {
-+			do {
-+				p--;
-+			} while (buf[p-1] != '/');
-+			pdepth--;
-+		}
-+
-+		name = fdt_get_name(fdt, offset, &namelen);
-+		if (!name)
-+			return namelen;
-+		if ((p + namelen + 1) <= buflen) {
- 			memcpy(buf + p, name, namelen);
- 			p += namelen;
- 			buf[p++] = '/';
--			break;
--
--		case FDT_END_NODE:
--			if (overflow) {
--				overflow--;
--				break;
--			}
--			do {
--				p--;
--			} while  (buf[p-1] != '/');
--			break;
-+			pdepth++;
-+		}
- 
--		case FDT_PROP:
--		case FDT_NOP:
--			break;
-+		if (offset == nodeoffset) {
-+			if (pdepth < (depth + 1))
-+				return -FDT_ERR_NOSPACE;
- 
--		default:
--			return -FDT_ERR_BADSTRUCTURE;
-+			if (p > 1) /* special case so that root path is "/", not "" */
-+				p--;
-+			buf[p] = '\0';
-+			return p;
- 		}
- 	}
- 
--	if (overflow)
--		return -FDT_ERR_NOSPACE;
-+	if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
-+		return -FDT_ERR_BADOFFSET;
-+	else if (offset == -FDT_ERR_BADOFFSET)
-+		return -FDT_ERR_BADSTRUCTURE;
- 
--	if (p > 1) /* special case so that root path is "/", not "" */
--		p--;
--	buf[p] = '\0';
--	return p;
-+	return offset; /* error from fdt_next_node() */
- }
- 
- int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
- 				 int supernodedepth, int *nodedepth)
- {
--	int level = -1;
--	uint32_t tag;
--	int offset, nextoffset = 0;
-+	int offset, depth;
- 	int supernodeoffset = -FDT_ERR_INTERNAL;
- 
- 	CHECK_HEADER(fdt);
-@@ -384,38 +343,29 @@ int fdt_supernode_atdepth_offset(const v
- 	if (supernodedepth < 0)
- 		return -FDT_ERR_NOTFOUND;
- 
--	do {
--		offset = nextoffset;
--		tag = fdt_next_tag(fdt, offset, &nextoffset);
--		switch (tag) {
--		case FDT_END:
--			return -FDT_ERR_BADOFFSET;
--
--		case FDT_BEGIN_NODE:
--			level++;
--			if (level == supernodedepth)
--				supernodeoffset = offset;
--			break;
--
--		case FDT_END_NODE:
--			level--;
--			break;
--
--		case FDT_PROP:
--		case FDT_NOP:
--			break;
--
--		default:
--			return -FDT_ERR_BADSTRUCTURE;
-+	for (offset = 0, depth = 0;
-+	     (offset >= 0) && (offset <= nodeoffset);
-+	     offset = fdt_next_node(fdt, offset, &depth)) {
-+		if (depth == supernodedepth)
-+			supernodeoffset = offset;
-+
-+		if (offset == nodeoffset) {
-+			if (nodedepth)
-+				*nodedepth = depth;
-+
-+			if (supernodedepth > depth)
-+				return -FDT_ERR_NOTFOUND;
-+			else
-+				return supernodeoffset;
- 		}
--	} while (offset < nodeoffset);
-+	}
- 
--	if (nodedepth)
--		*nodedepth = level;
-+	if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
-+		return -FDT_ERR_BADOFFSET;
-+	else if (offset == -FDT_ERR_BADOFFSET)
-+		return -FDT_ERR_BADSTRUCTURE;
- 
--	if (supernodedepth > level)
--		return -FDT_ERR_NOTFOUND;
--	return supernodeoffset;
-+	return offset; /* error from fdt_next_node() */
- }
- 
- int fdt_node_depth(const void *fdt, int nodeoffset)
-@@ -443,51 +393,27 @@ int fdt_node_offset_by_prop_value(const 
- 				  const char *propname,
- 				  const void *propval, int proplen)
- {
--	uint32_t tag;
--	int offset, nextoffset;
-+	int offset;
- 	const void *val;
- 	int len;
- 
- 	CHECK_HEADER(fdt);
- 
--	if (startoffset >= 0) {
--		tag = fdt_next_tag(fdt, startoffset, &nextoffset);
--		if (tag != FDT_BEGIN_NODE)
--			return -FDT_ERR_BADOFFSET;
--	} else {
--		nextoffset = 0;
--	}
--
- 	/* FIXME: The algorithm here is pretty horrible: we scan each
- 	 * property of a node in fdt_getprop(), then if that didn't
- 	 * find what we want, we scan over them again making our way
- 	 * to the next node.  Still it's the easiest to implement
- 	 * approach; performance can come later. */
--	do {
--		offset = nextoffset;
--		tag = fdt_next_tag(fdt, offset, &nextoffset);
--
--		switch (tag) {
--		case FDT_BEGIN_NODE:
--			val = fdt_getprop(fdt, offset, propname, &len);
--			if (val
--			    && (len == proplen)
--			    && (memcmp(val, propval, len) == 0))
--				return offset;
--			break;
--
--		case FDT_PROP:
--		case FDT_END:
--		case FDT_END_NODE:
--		case FDT_NOP:
--			break;
--
--		default:
--			return -FDT_ERR_BADSTRUCTURE;
--		}
--	} while (tag != FDT_END);
-+	for (offset = fdt_next_node(fdt, startoffset, NULL);
-+	     offset >= 0;
-+	     offset = fdt_next_node(fdt, offset, NULL)) {
-+		val = fdt_getprop(fdt, offset, propname, &len);
-+		if (val && (len == proplen)
-+		    && (memcmp(val, propval, len) == 0))
-+			return offset;
-+	}
- 
--	return -FDT_ERR_NOTFOUND;
-+	return offset; /* error from fdt_next_node() */
- }
- 
- int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
-@@ -553,31 +479,15 @@ int fdt_node_offset_by_compatible(const 
- 	 * that didn't find what we want, we scan over them again
- 	 * making our way to the next node.  Still it's the easiest to
- 	 * implement approach; performance can come later. */
--	do {
--		offset = nextoffset;
--		tag = fdt_next_tag(fdt, offset, &nextoffset);
--
--		switch (tag) {
--		case FDT_BEGIN_NODE:
--			err = fdt_node_check_compatible(fdt, offset,
--							compatible);
--			if ((err < 0)
--			    && (err != -FDT_ERR_NOTFOUND))
--				return err;
--			else if (err == 0)
--				return offset;
--			break;
--
--		case FDT_PROP:
--		case FDT_END:
--		case FDT_END_NODE:
--		case FDT_NOP:
--			break;
--
--		default:
--			return -FDT_ERR_BADSTRUCTURE;
--		}
--	} while (tag != FDT_END);
-+	for (offset = fdt_next_node(fdt, startoffset, NULL);
-+	     offset >= 0;
-+	     offset = fdt_next_node(fdt, offset, NULL)) {
-+		err = fdt_node_check_compatible(fdt, offset, compatible);
-+		if ((err < 0) && (err != -FDT_ERR_NOTFOUND))
-+			return err;
-+		else if (err == 0)
-+			return offset;
-+	}
- 
--	return -FDT_ERR_NOTFOUND;
-+	return offset; /* error from fdt_next_node() */
- }
-Index: dtc/libfdt/fdt.c
-===================================================================
---- dtc.orig/libfdt/fdt.c	2008-02-11 14:49:27.000000000 +1100
-+++ dtc/libfdt/fdt.c	2008-02-11 15:48:02.000000000 +1100
-@@ -129,6 +129,47 @@ uint32_t fdt_next_tag(const void *fdt, i
- 	return tag;
- }
- 
-+int fdt_next_node(const void *fdt, int offset, int *depth)
-+{
-+	int nextoffset = 0;
-+	uint32_t tag;
-+
-+	if (offset >= 0) {
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+		if (tag != FDT_BEGIN_NODE)
-+			return -FDT_ERR_BADOFFSET;
-+	}
-+
-+	do {
-+		offset = nextoffset;
-+		tag = fdt_next_tag(fdt, offset, &nextoffset);
-+
-+		switch (tag) {
-+		case FDT_PROP:
-+		case FDT_NOP:
-+			break;
-+
-+		case FDT_BEGIN_NODE:
-+			if (depth)
-+				(*depth)++;
-+			break;
-+
-+		case FDT_END_NODE:
-+			if (depth)
-+				(*depth)--;
-+			break;
-+
-+		case FDT_END:
-+			return -FDT_ERR_NOTFOUND;
-+
-+		default:
-+			return -FDT_ERR_BADSTRUCTURE;
-+		}
-+	} while (tag != FDT_BEGIN_NODE);
-+
-+	return offset;
-+}
-+
- const char *_fdt_find_string(const char *strtab, int tabsize, const char *s)
- {
- 	int len = strlen(s) + 1;
-Index: dtc/libfdt/libfdt.h
-===================================================================
---- dtc.orig/libfdt/libfdt.h	2008-02-11 14:49:27.000000000 +1100
-+++ dtc/libfdt/libfdt.h	2008-02-12 11:44:06.000000000 +1100
-@@ -131,6 +131,12 @@ static inline void *fdt_offset_ptr_w(voi
- uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
- 
- /**********************************************************************/
-+/* Traversal functions                                                */
-+/**********************************************************************/
-+
-+int fdt_next_node(const void *fdt, int offset, int *depth);
-+
-+/**********************************************************************/
- /* General functions                                                  */
- /**********************************************************************/
- 
+Also it now does not block any memory on machines other than power6 boxes
+which have the requisite firmware. This is from a power5 box.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+from jal-lp6 a power5 machine.
+.........
+Phyp-dump not supported on this hardware
+Using pSeries machine description
+console [udbg-1] enabled
+.......
+
+Since I changed a few more things, I am reposting all the patches.
+
+-- Manish & Linas.
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
