@@ -1,33 +1,20 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C46E1DDF4B
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 05:04:22 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1CI4JBK030316
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 13:04:19 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1CI4EEv2457820
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 13:04:15 -0500
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1CI45LM009866
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:04:05 -0700
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802111724.12416.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 10:04:09 -0800
-Message-Id: <1202839449.11188.35.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-Cc: "Themann, Jan-Bernd" <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>, Greg KH <greg@kroah.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
+	by ozlabs.org (Postfix) with ESMTP id CE07ADDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 05:28:03 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so5044440wxd.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 10:28:01 -0800 (PST)
+Message-ID: <fa686aa40802121028l75c1a150obea8a72975af121a@mail.gmail.com>
+Date: Tue, 12 Feb 2008 11:28:01 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: Nick <ndroogh@rogers.com>
+Subject: Re: DTS question - MPC5200b
+In-Reply-To: <47B1D943.6020708@rogers.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47B1D943.6020708@rogers.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,40 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-02-11 at 17:24 +0100, Jan-Bernd Themann wrote:
-> Drivers like eHEA need memory notifiers in order to 
-> update their internal DMA memory map when memory is added
-> to or removed from the system.
-> 
-> Patch for eHEA memory hotplug support that uses these functions:
-> http://www.spinics.net/lists/netdev/msg54484.html
+On Feb 12, 2008 10:37 AM, Nick <ndroogh@rogers.com> wrote:
+> Hi,
+>
+> I need some help.  I am trying to access timer 7 on the MPC5200B
+> processor.  I have the DTS file setup like this
+>
+>         gpt@670 {    // General Purpose Timer
+>           device_type = "gpt";
+>             compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+>             cell-index = <7>;
+>             reg = <670 10>;
+>             interrupts = <1 10 0>;
+>             interrupt-parent = <&mpc5200_pic>;
+>         };
+>
+> I have timers 0 to 6 defined the same way except the cell-index reflects
+> the timer number.
+>
+> In my platform file where I am doing my board setup, I tried the  following.
+>
+> timer7 = mpc52xx_find_and_map ("mpc5200b-gpt");
 
-This driver is broken pretty horribly.  It won't even compile for a
-plain ppc64 kernel:
+Don't use find_and_map; it was a stupid API that I never should have written.
 
-http://sr71.net/~dave/linux/ehea-is-broken.config
+Instead, use for_each_compatible_node() or for_each_matching_node() to
+iterate over them until you find the one with the correct reg address.
 
-I know it's used for very specific hardware, but this is the symptom of
-it not using the proper abstracted interfaces to the VM.
+Then you can use of_iomap() to map the device registers.
 
-In file included from /home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_main.c:42:
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:44:14: warning: "SECTION_SIZE_BITS" is not defined
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:45:2: error: #error eHEA module cannot work if kernel sectionsize < ehea sectionsize
-  CC      drivers/net/mii.o
-make[4]: *** [drivers/net/ehea/ehea_main.o] Error 1
-make[4]: *** Waiting for unfinished jobs....
-  CC      drivers/net/ixgb/ixgb_param.o
-In file included from /home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:32:
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:44:14: warning: "SECTION_SIZE_BITS" is not defined
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:45:2: error: #error eHEA module cannot work if kernel sectionsize < ehea sectionsize
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:574: error: 'NR_MEM_SECTIONS' undeclared (first use in this function)
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:574: error: (Each undeclared identifier is reported only once
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:574: error: for each function it appears in.)
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:575: error: implicit declaration of function 'valid_section_nr'
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c: In function 'ehea_map_vaddr':
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:606: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c: In function 'ehea_reg_kernel_mr':
-/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:655: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
+> How do I specify the timer based on the cell-index?
 
--- Dave
+Match on the reg property instead of cell-index; I'll probably be
+dropping the cell-index property from future 5200 device trees because
+it just ends up duplicating information already provided by reg.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
