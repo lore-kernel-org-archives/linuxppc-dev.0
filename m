@@ -1,24 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EE5C3DDEDC
+Return-Path: <severo.ricardo@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id 09C37DDF97
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Feb 2008 02:39:43 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JOxER-0008Cj-D0
-	for linuxppc-embedded@ozlabs.org; Tue, 12 Feb 2008 07:39:39 -0800
-Message-ID: <15434487.post@talk.nabble.com>
-Date: Tue, 12 Feb 2008 07:39:39 -0800 (PST)
-From: IngoM <ingo.maindorfer@ipm.fraunhofer.de>
+	Wed, 13 Feb 2008 06:30:40 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so5303142pyg.27
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 12 Feb 2008 11:30:38 -0800 (PST)
+Message-ID: <5ee408090802121130m2a641637s4b75a8a144ec2efc@mail.gmail.com>
+Date: Tue, 12 Feb 2008 17:30:38 -0200
+From: "Ricardo Ayres Severo" <severo.ricardo@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: [Virtex 4 PPC] Problem mountin rootfs via NFS
-In-Reply-To: <EE63F03D9E04774997AEBCD21FC77F25190363@ccomm-ex1.ccomm.com>
+Subject: Howto get __log_buf on a Xilinx FPGA
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <15355858.post@talk.nabble.com>
-	<EE63F03D9E04774997AEBCD21FC77F25190363@ccomm-ex1.ccomm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,33 +23,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-Hi,
+I'm trying to boot linux 2.6.24 on a XUP Virtex II Pro evaluation
+board. It uncompresses ok but doesn't show nothing more on the
+console. I tried to change the console to ttyS0 and ttyUL0. Now I want
+to see the __log_buf but I don't if I am doing it the right way, it
+only returns trash. What I'm doing is the following:
+
+$ grep __log_buf System.map
+c01f3d5c b __log_buf
+
+$ xmd -xmp system.xmp -opt etc/xmd_ppc405_0.opt
+(xmd starts ok, mdm is not enabled)
+
+$ powerpc-eabi-gdb arch/ppc/boot/images/zImage.elf
+(click on run, the image is loaded and started)
+
+this is the output on the terminal:
+---output start---
+loaded at:     00400000 004F119C
+
+board data at: 00000000 0000007C
+
+relocated to:  00404048 004040C4
+
+zimage at:     00404E34 004EE12C
+
+avail ram:     004F2000 7C9E2378
 
 
-Sugathan, Rupesh wrote:
-> 
-> <snip>
->  
-> Do you have a 'console' device file set up in your NFS rootfilesystem? 
-> 
-> Thanks
-> --
-> Rupesh Sugathan
-> 
+Linux/PPC load: console=ttyS0,9600
 
-you are right. 
-I'm adding the device and can login via console.
+Uncompressing Linux...done.
 
-But some trouble is left:
-connected the board via a swich to the PC I loss packets, connectet directly
-there are no packets lost.
+Now booting the kernel
+---output end---
 
-Any hints?
+after a while I stop the debugger and type rst in xmd.
+then I ask gdb to dump the memory from position 0x1f3d5c to 0x1f3fff
+and only trash is returned.
 
-Best Regards,
+What am I doing wrong? Or the kernel really isn't being executed?
 
-Ingo
+Thanks,
+
 -- 
-View this message in context: http://www.nabble.com/-Virtex-4-PPC--Problem-mountin-rootfs-via-NFS-tp15355858p15434487.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Ricardo Ayres Severo <severo.ricardo@gmail.com>
