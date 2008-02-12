@@ -1,39 +1,17 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 98241DDF05
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 08:22:01 +1100 (EST)
-Received: from e35.co.us.ibm.com ([32.97.110.153])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m1CGoR5q031789
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:50:28 -0500
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1CGd11e010802
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:39:01 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1CGcp7H189470
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 09:38:51 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1CGcp6d014591
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 09:38:51 -0700
-Message-ID: <47B1CB98.7060605@austin.ibm.com>
-Date: Tue, 12 Feb 2008 10:38:48 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
-References: <4782B985.2090508@austin.ibm.com>	
-	<47B13D2E.1070001@austin.ibm.com> <47B145E9.9020907@austin.ibm.com>
-	<1202806110.9738.15.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1202806110.9738.15.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	paulus@samba.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 88B66DDDFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 08:31:25 +1100 (EST)
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: linuxppc-dev@ozlabs.org, grant.likely@secretlab.ca,
+	jacmet@sunsite.dk
+Subject: [PATCH] [RFC] Xilinx: Add generic configuration option to enable all
+	xilinx drivers.
+Date: Tue, 12 Feb 2008 13:31:12 -0800
+Message-Id: <20080212213120.D51157F806B@mail176-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,302 +21,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In the future, this will be used to provide similar configuration for
+PowerPC and Microblaze.  It may also be convenient for those using
+Xilinx cores as peripherals for external processors, rather than
+explicitly having a dependance on the processor architecture.
 
-Michael,
+Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
-Fixed.
+---
 
--Manish
+Grant,
 
+This is the patch, updated for all of the drivers that I think are in
+the tree.  I think the problematic parts may be the ppc part, which is
+required for backward compatibility.  If this has to wait until ppc
+dies, then that's fine with me, I guess.
 
-----------
-Initial patch for reserving memory in early boot, and freeing it later.
-If the previous boot had ended with a crash, the reserved memory would contain
-a copy of the crashed kernel data.
+It may also be better to clean up the Kconfig lines for Sysace and
+framebuffer drivers by having PPC32 or PPC4xx select XILINX_DRIVERS.
+My understanding is that those config options are there because of
+people using external PPCs with those devices in the FPGA.
 
-Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Steve
+---
+ arch/powerpc/platforms/40x/Kconfig |    1 +
+ arch/ppc/platforms/4xx/Kconfig     |    1 +
+ drivers/block/Kconfig              |    2 +-
+ drivers/char/Kconfig               |    2 +-
+ drivers/misc/Kconfig               |   10 ++++++++++
+ drivers/serial/Kconfig             |    2 +-
+ drivers/spi/Kconfig                |    2 +-
+ drivers/video/Kconfig              |    2 +-
+ 8 files changed, 17 insertions(+), 5 deletions(-)
 
-----
- arch/powerpc/kernel/prom.c                 |   50 ++++++++++++++++++++
- arch/powerpc/kernel/rtas.c                 |   32 +++++++++++++
- arch/powerpc/platforms/pseries/Makefile    |    1 
- arch/powerpc/platforms/pseries/phyp_dump.c |   71 +++++++++++++++++++++++++++++
- include/asm-powerpc/phyp_dump.h            |   38 +++++++++++++++
- include/asm-powerpc/rtas.h                 |    3 +
- 6 files changed, 195 insertions(+)
-
-Index: 2.6.24-rc5/include/asm-powerpc/phyp_dump.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6.24-rc5/include/asm-powerpc/phyp_dump.h	2008-02-12 16:12:45.000000000 -0600
-@@ -0,0 +1,38 @@
-+/*
-+ * Hypervisor-assisted dump
-+ *
-+ * Linas Vepstas, Manish Ahuja 2007
-+ * Copyright (c) 2007 IBM Corp.
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _PPC64_PHYP_DUMP_H
-+#define _PPC64_PHYP_DUMP_H
-+
-+#ifdef CONFIG_PHYP_DUMP
-+
-+/* The RMR region will be saved for later dumping
-+ * whenever the kernel crashes. Set this to 256MB. */
-+#define PHYP_DUMP_RMR_START 0x0
-+#define PHYP_DUMP_RMR_END   (1UL<<28)
-+
-+struct phyp_dump {
-+	/* Memory that is reserved during very early boot. */
-+	unsigned long init_reserve_start;
-+	unsigned long init_reserve_size;
-+	/* Check status during boot if dump supported, active & present*/
-+	unsigned long phyp_dump_configured;
-+	unsigned long phyp_dump_is_active;
-+	/* store cpu & hpte size */
-+	unsigned long cpu_state_size;
-+	unsigned long hpte_region_size;
-+};
-+
-+extern struct phyp_dump *phyp_dump_info;
-+
-+#endif /* CONFIG_PHYP_DUMP */
-+#endif /* _PPC64_PHYP_DUMP_H */
-Index: 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c	2008-02-12 16:12:45.000000000 -0600
-@@ -0,0 +1,71 @@
-+/*
-+ * Hypervisor-assisted dump
-+ *
-+ * Linas Vepstas, Manish Ahuja 2007
-+ * Copyrhgit (c) 2007 IBM Corp.
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/mm.h>
-+#include <linux/pfn.h>
-+#include <linux/swap.h>
-+
-+#include <asm/page.h>
-+#include <asm/phyp_dump.h>
-+
-+/* Global, used to communicate data between early boot and late boot */
-+static struct phyp_dump phyp_dump_global;
-+struct phyp_dump *phyp_dump_info = &phyp_dump_global;
-+
-+/**
-+ * release_memory_range -- release memory previously lmb_reserved
-+ * @start_pfn: starting physical frame number
-+ * @nr_pages: number of pages to free.
-+ *
-+ * This routine will release memory that had been previously
-+ * lmb_reserved in early boot. The released memory becomes
-+ * available for genreal use.
-+ */
-+static void
-+release_memory_range(unsigned long start_pfn, unsigned long nr_pages)
-+{
-+	struct page *rpage;
-+	unsigned long end_pfn;
-+	long i;
-+
-+	end_pfn = start_pfn + nr_pages;
-+
-+	for (i=start_pfn; i <= end_pfn; i++) {
-+		rpage = pfn_to_page(i);
-+		if (PageReserved(rpage)) {
-+			ClearPageReserved(rpage);
-+			init_page_count(rpage);
-+			__free_page(rpage);
-+			totalram_pages++;
-+		}
-+	}
-+}
-+
-+static int __init phyp_dump_setup(void)
-+{
-+	unsigned long start_pfn, nr_pages;
-+
-+	/* If no memory was reserved in early boot, there is nothing to do */
-+	if (phyp_dump_info->init_reserve_size == 0)
-+		return 0;
-+
-+	/* Release memory that was reserved in early boot */
-+	start_pfn = PFN_DOWN(phyp_dump_info->init_reserve_start);
-+	nr_pages = PFN_DOWN(phyp_dump_info->init_reserve_size);
-+	release_memory_range(start_pfn, nr_pages);
-+
-+	return 0;
-+}
-+
-+subsys_initcall(phyp_dump_setup);
-Index: 2.6.24-rc5/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- 2.6.24-rc5.orig/arch/powerpc/platforms/pseries/Makefile	2008-02-12 16:11:44.000000000 -0600
-+++ 2.6.24-rc5/arch/powerpc/platforms/pseries/Makefile	2008-02-12 16:12:45.000000000 -0600
-@@ -18,3 +18,4 @@ obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
- obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
-+obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
-Index: 2.6.24-rc5/arch/powerpc/kernel/prom.c
-===================================================================
---- 2.6.24-rc5.orig/arch/powerpc/kernel/prom.c	2008-02-12 16:11:44.000000000 -0600
-+++ 2.6.24-rc5/arch/powerpc/kernel/prom.c	2008-02-12 16:12:45.000000000 -0600
-@@ -51,6 +51,7 @@
- #include <asm/machdep.h>
- #include <asm/pSeries_reconfig.h>
- #include <asm/pci-bridge.h>
-+#include <asm/phyp_dump.h>
- #include <asm/kexec.h>
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index 8f6699f..03051bc 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -110,6 +110,7 @@ config 405GPR
  
- #ifdef DEBUG
-@@ -1011,6 +1012,52 @@ static void __init early_reserve_mem(voi
- #endif
- }
+ config XILINX_VIRTEX
+ 	bool
++	select XILINX_DRIVERS
  
-+#ifdef CONFIG_PHYP_DUMP
-+/**
-+ * reserve_crashed_mem() - reserve all not-yet-dumped mmemory
-+ *
-+ * This routine may reserve memory regions in the kernel only
-+ * if the system is supported and a dump was taken in last
-+ * boot instance or if the hardware is supported and the
-+ * scratch area needs to be setup. In other instances it returns
-+ * without reserving anything. The memory in case of dump being
-+ * active is freed when the dump is collected (by userland tools).
-+ */
-+static void __init reserve_crashed_mem(void)
-+{
-+	unsigned long base, size;
-+	if (!phyp_dump_info->phyp_dump_configured) {
-+		printk(KERN_ERR "Phyp-dump not supported on this hardware\n");
-+		return;
-+	}
-+
-+	if (phyp_dump_info->phyp_dump_is_active) {
-+		/* Reserve *everything* above RMR.Area freed by userland tools*/
-+		base = PHYP_DUMP_RMR_END;
-+		size = lmb_end_of_DRAM() - base;
-+
-+		/* XXX crashed_ram_end is wrong, since it may be beyond
-+	 	* the memory_limit, it will need to be adjusted. */
-+		lmb_reserve(base, size);
-+
-+		phyp_dump_info->init_reserve_start = base;
-+		phyp_dump_info->init_reserve_size = size;
-+	}
-+	else {
-+		size = phyp_dump_info->cpu_state_size +
-+			phyp_dump_info->hpte_region_size +
-+			PHYP_DUMP_RMR_END;
-+		base = lmb_end_of_DRAM() - size;
-+		lmb_reserve(base, size);
-+		phyp_dump_info->init_reserve_start = base;
-+		phyp_dump_info->init_reserve_size = size;
-+	}
-+}
-+#else
-+static inline void __init reserve_crashed_mem(void) {}
-+#endif /* CONFIG_PHYP_DUMP */
-+
-+
- void __init early_init_devtree(void *params)
- {
- 	DBG(" -> early_init_devtree(%p)\n", params);
-@@ -1022,6 +1069,8 @@ void __init early_init_devtree(void *par
- 	/* Some machines might need RTAS info for debugging, grab it now. */
- 	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
- #endif
-+	/* scan tree to see if dump occured during last boot */
-+	of_scan_flat_dt(early_init_dt_scan_phyp_dump, NULL);
+ config XILINX_VIRTEX_II_PRO
+ 	bool
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+index 76551b6..d7db7e4 100644
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -228,6 +228,7 @@ config XILINX_VIRTEX_4_FX
  
- 	/* Retrieve various informations from the /chosen node of the
- 	 * device-tree, including the platform type, initrd location and
-@@ -1043,6 +1092,7 @@ void __init early_init_devtree(void *par
- 	reserve_kdump_trampoline();
- 	reserve_crashkernel();
- 	early_reserve_mem();
-+	reserve_crashed_mem();
+ config XILINX_VIRTEX
+ 	bool
++	select XILINX_DRIVERS
  
- 	lmb_enforce_memory_limit(memory_limit);
- 	lmb_analyze();
-Index: 2.6.24-rc5/arch/powerpc/kernel/rtas.c
-===================================================================
---- 2.6.24-rc5.orig/arch/powerpc/kernel/rtas.c	2008-02-12 16:11:44.000000000 -0600
-+++ 2.6.24-rc5/arch/powerpc/kernel/rtas.c	2008-02-12 16:12:45.000000000 -0600
-@@ -39,6 +39,7 @@
- #include <asm/syscalls.h>
- #include <asm/smp.h>
- #include <asm/atomic.h>
-+#include <asm/phyp_dump.h>
+ config STB03xxx
+ 	bool
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index 4d0119e..0166560 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -412,7 +412,7 @@ source "drivers/s390/block/Kconfig"
  
- struct rtas_t rtas = {
- 	.lock = SPIN_LOCK_UNLOCKED
-@@ -883,6 +884,37 @@ void __init rtas_initialize(void)
- #endif
- }
+ config XILINX_SYSACE
+ 	tristate "Xilinx SystemACE support"
+-	depends on 4xx
++	depends on 4xx || XILINX_DRIVERS
+ 	help
+ 	  Include support for the Xilinx SystemACE CompactFlash interface
  
-+int __init early_init_dt_scan_phyp_dump(unsigned long node,
-+		const char *uname, int depth, void *data)
-+{
-+#ifdef CONFIG_PHYP_DUMP
-+	const unsigned int *sizes;
-+
-+	phyp_dump_info->phyp_dump_configured = 0;
-+	phyp_dump_info->phyp_dump_is_active = 0;
-+
-+	if (depth != 1 || strcmp(uname, "rtas") != 0)
-+		return 0;
-+
-+	if (of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL))
-+		phyp_dump_info->phyp_dump_configured++;
-+
-+	if (of_get_flat_dt_prop(node, "ibm,dump-kernel", NULL))
-+		phyp_dump_info->phyp_dump_is_active++;
-+
-+	sizes = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes", NULL);
-+	if (!sizes)
-+		return 0;
-+
-+	if (sizes[0] == 1)
-+		phyp_dump_info->cpu_state_size = *((unsigned long *)&sizes[1]);
-+
-+	if (sizes[3] == 2)
-+		phyp_dump_info->hpte_region_size = *((unsigned long *)&sizes[4]);
-+#endif
-+	return 1;
-+}
-+
- int __init early_init_dt_scan_rtas(unsigned long node,
- 		const char *uname, int depth, void *data)
- {
-Index: 2.6.24-rc5/include/asm-powerpc/rtas.h
-===================================================================
---- 2.6.24-rc5.orig/include/asm-powerpc/rtas.h	2008-02-12 16:09:48.000000000 -0600
-+++ 2.6.24-rc5/include/asm-powerpc/rtas.h	2008-02-12 16:12:45.000000000 -0600
-@@ -183,6 +183,9 @@ extern unsigned int rtas_busy_delay(int 
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 157ae2a..8230ad1 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -833,7 +833,7 @@ config DTLK
  
- extern int early_init_dt_scan_rtas(unsigned long node,
- 		const char *uname, int depth, void *data);
-+int early_init_dt_scan_phyp_dump(unsigned long node,
-+		const char *uname, int depth, void *data);
+ config XILINX_HWICAP
+ 	tristate "Xilinx HWICAP Support"
+-	depends on XILINX_VIRTEX
++	depends on XILINX_DRIVERS
+ 	help
+ 	  This option enables support for Xilinx Internal Configuration
+ 	  Access Port (ICAP) driver.
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index b5e67c0..e7b0bed 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -233,3 +233,13 @@ config ATMEL_SSC
+ 	  If unsure, say N.
+ 
+ endif # MISC_DEVICES
++endmenu
 +
++
++#
++# Xilinx devices and common device driver infrastructure
++#
++
++config XILINX_DRIVERS
++  bool
++
+diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+index d7e1996..f922ec6 100644
+--- a/drivers/serial/Kconfig
++++ b/drivers/serial/Kconfig
+@@ -757,7 +757,7 @@ config SERIAL_IMX_CONSOLE
  
- extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+ config SERIAL_UARTLITE
+ 	tristate "Xilinx uartlite serial port support"
+-	depends on PPC32
++	depends on PPC32 || XILINX_DRIVERS
+ 	select SERIAL_CORE
+ 	help
+ 	  Say Y here if you want to use the Xilinx uartlite serial controller.
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index abf0504..c66838f 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -183,7 +183,7 @@ config SPI_TXX9
  
+ config SPI_XILINX
+ 	tristate "Xilinx SPI controller"
+-	depends on SPI_MASTER && XILINX_VIRTEX && EXPERIMENTAL
++	depends on SPI_MASTER && XILINX_DRIVERS && EXPERIMENTAL
+ 	select SPI_BITBANG
+ 	help
+ 	  This exposes the SPI controller IP from the Xilinx EDK.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5b3dbcf..a66ff4b 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1871,7 +1871,7 @@ config FB_PS3_DEFAULT_SIZE_M
+ 
+ config FB_XILINX
+ 	tristate "Xilinx frame buffer support"
+-	depends on FB && XILINX_VIRTEX
++	depends on FB && XILINX_DRIVERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+1.5.3.4-dirty
