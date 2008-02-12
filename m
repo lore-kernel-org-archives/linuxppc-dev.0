@@ -1,18 +1,21 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id DABFEDDEF3
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.249])
+	by ozlabs.org (Postfix) with ESMTP id 00221DDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Feb 2008 23:43:23 +1100 (EST)
-Message-ID: <47B19543.70808@coritel.it>
-Date: Tue, 12 Feb 2008 13:46:59 +0100
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Wed, 13 Feb 2008 01:56:46 +1100 (EST)
+Received: by hs-out-0708.google.com with SMTP id x43so298901hsb.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 12 Feb 2008 06:56:45 -0800 (PST)
+Message-ID: <fa686aa40802120656g6352a2cdy66b2756409e6dbfd@mail.gmail.com>
+Date: Tue, 12 Feb 2008 07:56:45 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "A. Nolson" <alohanono@gmail.com>
+Subject: Re: Writing drivers for external IP cores
+In-Reply-To: <47B188F5.60607@gmail.com>
 MIME-Version: 1.0
-To: jay_chen <jay_chen@alphanetworks.com>
-Subject: Re: populate_rootfs fail
-References: <OF66FDCEB1.DBBF4F1E-ON482573ED.0030E325@alphanetworks.com>
-In-Reply-To: <OF66FDCEB1.DBBF4F1E-ON482573ED.0030E325@alphanetworks.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47B188F5.60607@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,53 +27,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-jay_chen ha scritto:
-> Hello all:
-> 
-> I am using mpc8548, kernel 2.6.14.5, and uboot as boot loader.
-> When I upgrade ram from 512MB to 2G, my kernel can't boot anymore.
-> (I pass mem=2048M to kernel in uboot now)
-> 
-> It always dies in exec sys_write( ) in populate_rootfs( ).
-> I did more tests about this and I found that sys_write( ) could write only
-> about 4MB in 2G ram case.
-> (My initrd is about 19MB, initrd_start  : 0xCE7C7000, initrd_end  :
-> 0xCFAAF289, initrd_end - initrd_start  : 0x012E8289 ==> about 19MB)
-> Could anybody give me some hints?
-> Is this issue related to the location of  "/initrd.image"? Could I control
-> it?
-> Is there any size limit in ppc arch about ramdisk/initrd?
-> 
-> Thanks for help.
-> 
->                   Jay...
-> 
-> void __init populate_rootfs(void)
-> {
-> 	char *err;
->                ...
-> #ifdef CONFIG_BLK_DEV_INITRD
-> 	if (initrd_start) {
->                                  ...
-> 		printk("it isn't (%s); looks like an initrd\n", err);
-> 		fd = sys_open("/initrd.image", O_WRONLY|O_CREAT, 700);
-> 		if (fd >= 0) {
-> 			sys_write(fd, (char *)initrd_start,
-> 					initrd_end - initrd_start);
-> 			sys_close(fd);
-> 			free_initrd();
-> 		}
-> 	}
-> #endif
-> }
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-I think can be a problem with the u-boot initrd_high option. Have you
-been enabled the highmem support to use 2G of ram, right? You can try to
-set this option to 0x30000000.
+On Feb 12, 2008 4:54 AM, A. Nolson <alohanono@gmail.com> wrote:
+> Hi ,
+>
+>  I am going to start developing some IP cores for my virtex fx12 (ML403)
+> and I need to control them through my embedded Linux ( it is already
+> working in the ppc405 ).  I am a bit lost and I need some references for
+> developing drivers. In principle, I will start with something like a
+> GPIO. I think an example like a driver for controlling the push buttons
+> of my Ml403 will be enough. An example IP core for that will also be
+> also very helpful.
 
-Marco
+After you've got through the examples in Linux Device Drivers v3, you
+can take a look at drivers/video/xilinxfb.c for an example of a driver
+that works with an FPGA ip core.  Unfortunately there isn't a simple
+xilinx GPIO driver in the mainline kernel at the moment, otherwise I'd
+point you there.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
