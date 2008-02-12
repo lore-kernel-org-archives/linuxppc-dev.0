@@ -1,21 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C79E7DDECC
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 21:18:25 +1100 (EST)
-Date: Tue, 12 Feb 2008 21:18:20 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 6/8] pseries: phyp dump: Invalidate and print dump areas.
-Message-Id: <20080212211820.439dad00.sfr@canb.auug.org.au>
-In-Reply-To: <47B1483E.8040303@austin.ibm.com>
-References: <4782B985.2090508@austin.ibm.com> <47B13D2E.1070001@austin.ibm.com>
-	<47B1483E.8040303@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__12_Feb_2008_21_18_20_+1100_agd2wjuoqh07rs7P"
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	paulus@samba.org
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id C8329DDDF9
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 23:23:57 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 12 Feb 2008 12:49:05 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other
+	goodies
+Message-ID: <20080212114905.GA9940@iram.es>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<1202460043.7079.157.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1202460043.7079.157.camel@pasglop>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__12_Feb_2008_21_18_20_+1100_agd2wjuoqh07rs7P
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 08, 2008 at 07:40:43PM +1100, Benjamin Herrenschmidt wrote:
+> 
+> On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > - couple of fixes and preparatory patches
+> > 
+> > - rework of PowerMac media-bay support ([un]register IDE devices instead of
+> >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
+> 
+> Interesting... I was thinking about doing a full remove of the device at
+> a higher level instead but I suppose what you propose is easier.
 
-Hi Manish,
+Well, I have serious problem on a Pegasos which appeared some time
+between 2.6.24 and 2.6.25-rc1: at boot I get an infinite string of 
 
-On Tue, 12 Feb 2008 01:18:22 -0600 Manish Ahuja <ahuja@austin.ibm.com> wrot=
-e:
->
-> -static void
-> -release_memory_range(unsigned long start_pfn, unsigned long nr_pages)
-> +static
-> +void release_memory_range(unsigned long start_pfn, unsigned long nr_page=
-s)
+hdb: empty DMA table?
 
-Cosmetic changes like this should normally be put in separate patch as
-they just distract from a real review (which this isn't :-))
+I'm trying to bisect it right now.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	Gabriel
 
---Signature=_Tue__12_Feb_2008_21_18_20_+1100_agd2wjuoqh07rs7P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHsXJyTgG2atn1QN8RAvhoAJ9GypmsNWx4yU5k8sHFbK3Wdua31wCfUF/T
-mzRK+VtyVdIh1l+iX4w8sUg=
-=aSVT
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Feb_2008_21_18_20_+1100_agd2wjuoqh07rs7P--
+> 
+> I'll have a look & test next week hopefully.
+> 
+> Ben.
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
