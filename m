@@ -1,20 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
-	by ozlabs.org (Postfix) with ESMTP id CE07ADDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 05:28:03 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so5044440wxd.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 10:28:01 -0800 (PST)
-Message-ID: <fa686aa40802121028l75c1a150obea8a72975af121a@mail.gmail.com>
-Date: Tue, 12 Feb 2008 11:28:01 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: Nick <ndroogh@rogers.com>
-Subject: Re: DTS question - MPC5200b
-In-Reply-To: <47B1D943.6020708@rogers.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CA5B4DDF4F
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 05:51:00 +1100 (EST)
+Date: Tue, 12 Feb 2008 12:51:06 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>, Timur Tabi <timur@freescale.com>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: Could the DTS experts look at this?
+Message-ID: <20080212185106.GA4042@loki.buserror.net>
+References: <47ACE630.8090101@pikatech.com>
+	<20080211235409.GB18348@localhost.localdomain>
+	<20080211235652.GC18348@localhost.localdomain>
+	<200802120121.45349.arnd@arndb.de>
+	<20080212003633.GF18348@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47B1D943.6020708@rogers.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20080212003633.GF18348@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 12, 2008 10:37 AM, Nick <ndroogh@rogers.com> wrote:
-> Hi,
->
-> I need some help.  I am trying to access timer 7 on the MPC5200B
-> processor.  I have the DTS file setup like this
->
->         gpt@670 {    // General Purpose Timer
->           device_type = "gpt";
->             compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
->             cell-index = <7>;
->             reg = <670 10>;
->             interrupts = <1 10 0>;
->             interrupt-parent = <&mpc5200_pic>;
->         };
->
-> I have timers 0 to 6 defined the same way except the cell-index reflects
-> the timer number.
->
-> In my platform file where I am doing my board setup, I tried the  following.
->
-> timer7 = mpc52xx_find_and_map ("mpc5200b-gpt");
+On Tue, Feb 12, 2008 at 11:36:33AM +1100, David Gibson wrote:
+> On Tue, Feb 12, 2008 at 01:21:44AM +0100, Arnd Bergmann wrote:
+> > On Tuesday 12 February 2008, David Gibson wrote:
+> > > Or to expand.  It's relatively easy now to just include multiple nodes
+> > > in the tree and either delete or nop some of them out conditionally
+> > > using libfdt.  But the conditional logic should be in the manipulating
+> > > agent (u-boot or bootwrapper or whatever), there's no way we're going
+> > > to require a conditional expression parser to interpret the device
+> > > tree blob itself.
+> > 
+> > How about making the logic to nop out nodes a little more generic
+> > without changes to the binary format?
+> > E.g. you could have a "linux,conditional-node" property in the device
+> > tree whose value is compared to a HW configuration specific string.
+> > In Sean's example, you can have linux,conditional-node="Rev.A" in
+> > some nodes and linux,conditional-node="Rev.B" in others, then
+> > knock out all devices that have a non-matching linux,conditional-node
+> > property, and finally remove the properties themselves before starting
+> > the kernel.
+> 
+> Well, that's basically a u-boot issue.  If they want to do their input
+> trees that way, and have helper functions that deal with it...
 
-Don't use find_and_map; it was a stupid API that I never should have written.
+The actual mechanism that we originially discussed, which Timur later
+morphed into conditions-on-nodes, was to have a separate hwoptions node,
+under which would be described various hwoptions (jumpers and such) whose
+state could be either detected by u-boot or set by environment variable. 
+Each hwoption setting would contain a device tree fragment to be merged into
+the main device tree.
 
-Instead, use for_each_compatible_node() or for_each_matching_node() to
-iterate over them until you find the one with the correct reg address.
-
-Then you can use of_iomap() to map the device registers.
-
-> How do I specify the timer based on the cell-index?
-
-Match on the reg property instead of cell-index; I'll probably be
-dropping the cell-index property from future 5200 device trees because
-it just ends up duplicating information already provided by reg.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
