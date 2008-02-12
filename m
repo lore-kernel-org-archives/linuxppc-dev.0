@@ -1,32 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 24FB9DDFC7
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 06:10:37 +1100 (EST)
-Message-ID: <47B1EF39.5000703@freescale.com>
-Date: Tue, 12 Feb 2008 13:10:49 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <jarno.manninen@tut.fi>
+Received: from pne-smtpout3-sn2.hy.skanova.net
+	(pne-smtpout3-sn2.hy.skanova.net [81.228.8.111])
+	by ozlabs.org (Postfix) with ESMTP id 34C45DE01C
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 06:17:31 +1100 (EST)
+From: Jarno Manninen <jarno.manninen@tut.fi>
+To: Nick <ndroogh@rogers.com>
+Subject: Re: DTS question - MPC5200b
+Date: Tue, 12 Feb 2008 20:07:41 +0200
+References: <47B1D943.6020708@rogers.com>
+In-Reply-To: <47B1D943.6020708@rogers.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Could the DTS experts look at this?
-References: <47ACE630.8090101@pikatech.com>	
-	<20080211001451.GA11572@localhost.localdomain>	
-	<47AFB593.30805@pikatech.com>	
-	<20080211031110.GD11572@localhost.localdomain>	
-	<47AFC5E3.20101@pikatech.com>	
-	<20080211235958.GD18348@localhost.localdomain>	
-	<47B0F142.40206@pikatech.com>	
-	<20080212002030.GE18348@localhost.localdomain>	
-	<47B0EB23.9040101@pikatech.com>	
-	<20080212185251.GB4042@loki.buserror.net>
-	<fa686aa40802121103s650fc10by197e9d5b65f09ceb@mail.gmail.com>
-In-Reply-To: <fa686aa40802121103s650fc10by197e9d5b65f09ceb@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802122007.41259.jarno.manninen@tut.fi>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Feb 12, 2008 11:52 AM, Scott Wood <scottwood@freescale.com> wrote:
->> It'd be nice if we could pass in a flag to tell it not to try to find
->> additional consecutive chips in the mapping...  It's a shame to have
->> probable chips, and still have to know how big they are anyway.
-> 
-> That is the job of the boot loader or wrapper.
+On Tuesday 12 February 2008 19:37:07 Nick wrote:
 
-Hmm?  All I meant was that it'd be nice if there were an option in the 
-Linux mtd code to disable the "look for another chip and cause a machine 
-check if it isn't there" functionality.  It was an aside from the 
-dts-variant issue.
+> How do I specify the timer based on the cell-index?
 
-> The whole concept of
-> the device tree is that by the time it gets to the kernel it is an
-> accurate representation of the hardware; not a list of things which
-> might or might not be present.
+I don't know if that is possible to do in a one call, but maybe using the 
+approach from mpc52xx_uart might help?
 
-But we don't generally include things which can be probed in a standard 
-manner... which includes flash size.
+--clip--
+        for_each_node_by_type(np, "serial") {
+                if (!of_match_node(mpc52xx_uart_of_match, np))
+                        continue;
 
--Scott
+                /* Is a particular device number requested? */
+                devno = of_get_property(np, "port-number", NULL);
+                mpc52xx_uart_of_assign(of_node_get(np), devno ? *devno : -1);
+        }
+--clip--
+
+And change  serial->gpt, port-number to cell-index and add some logic to 
+select the devices you want. Or if you wan't to do it a bit differently you 
+could add a pseudo device outside the main tree like
+
+	mydev {
+		gpt-dev = <&the_gpt_dev>:
+	};
+
+And get it that way. However I don't know if this is recommended approach, but 
+I've used it for some simple stuff like binding gpt in PWM mode to 
+framebuffer backlight, along with power-pin.
+
+Please correct any mistakes you who know better. 
+
+- Jarno
