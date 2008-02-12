@@ -1,26 +1,27 @@
 Return-Path: <ahuja@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 33C78DDEBC
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 18:12:04 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1C7C13c028605
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 02:12:01 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1C7C1tx276924
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 02:12:01 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1C7C1kH021069
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 02:12:01 -0500
-Message-ID: <47B146BE.5010807@austin.ibm.com>
-Date: Tue, 12 Feb 2008 01:11:58 -0600
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2CEC2DDE33
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 18:14:45 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1C7Eg8o010790
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 02:14:42 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1C7Eg1W178452
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 00:14:42 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1C7EfE8016789
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 00:14:42 -0700
+Message-ID: <47B14760.2030001@austin.ibm.com>
+Date: Tue, 12 Feb 2008 01:14:40 -0600
 From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
+Subject: [PATCH 4/8] pseries: phyp dump: register dump area.
 References: <4782B985.2090508@austin.ibm.com> <47B13D2E.1070001@austin.ibm.com>
 In-Reply-To: <47B13D2E.1070001@austin.ibm.com>
 Content-Type: text/plain; charset=us-ascii
@@ -35,146 +36,183 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Check to see if there actually is data from a previously
-crashed kernel waiting. If so, Allow user-space tools to
-grab the data (by reading /proc/kcore). When user-space 
-finishes dumping a section, it must release that memory
-by writing to sysfs. For example,
-
-  echo "0x40000000 0x10000000" > /sys/kernel/release_region
-
-will release 256MB starting at the 1GB.  The released memory
-becomes free for general use.
+Set up the actual dump header, register it with the hypervisor.
 
 Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ------
- arch/powerpc/platforms/pseries/phyp_dump.c |   88 +++++++++++++++++++++++++++--
- 1 file changed, 82 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/phyp_dump.c |  136 +++++++++++++++++++++++++++--
+ 1 file changed, 129 insertions(+), 7 deletions(-)
 
 Index: 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c
 ===================================================================
---- 2.6.24-rc5.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-02-12 06:12:37.000000000 -0600
-+++ 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c	2008-02-12 06:12:55.000000000 -0600
-@@ -12,17 +12,24 @@
-  */
+--- 2.6.24-rc5.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-02-12 06:12:55.000000000 -0600
++++ 2.6.24-rc5/arch/powerpc/platforms/pseries/phyp_dump.c	2008-02-12 06:13:01.000000000 -0600
+@@ -30,6 +30,117 @@ struct phyp_dump *phyp_dump_info = &phyp
+ static int ibm_configure_kernel_dump;
  
- #include <linux/init.h>
-+#include <linux/kobject.h>
- #include <linux/mm.h>
-+#include <linux/of.h>
- #include <linux/pfn.h>
- #include <linux/swap.h>
-+#include <linux/sysfs.h>
- 
- #include <asm/page.h>
- #include <asm/phyp_dump.h>
-+#include <asm/rtas.h>
- 
- /* Global, used to communicate data between early boot and late boot */
- static struct phyp_dump phyp_dump_global;
- struct phyp_dump *phyp_dump_info = &phyp_dump_global;
- 
-+static int ibm_configure_kernel_dump;
+ /* ------------------------------------------------- */
++/* RTAS interfaces to declare the dump regions */
++
++struct dump_section {
++	u32 dump_flags;
++	u16 source_type;
++	u16 error_flags;
++	u64 source_address;
++	u64 source_length;
++	u64 length_copied;
++	u64 destination_address;
++};
++
++struct phyp_dump_header {
++	u32 version;
++	u16 num_of_sections;
++	u16 status;
++
++	u32 first_offset_section;
++	u32 dump_disk_section;
++	u64 block_num_dd;
++	u64 num_of_blocks_dd;
++	u32 offset_dd;
++	u32 maxtime_to_auto;
++	/* No dump disk path string used */
++
++	struct dump_section cpu_data;
++	struct dump_section hpte_data;
++	struct dump_section kernel_data;
++};
++
++/* The dump header *must be* in low memory, so .bss it */
++static struct phyp_dump_header phdr;
++
++#define NUM_DUMP_SECTIONS 3
++#define DUMP_HEADER_VERSION 0x1
++#define DUMP_REQUEST_FLAG 0x1
++#define DUMP_SOURCE_CPU 0x0001
++#define DUMP_SOURCE_HPTE 0x0002
++#define DUMP_SOURCE_RMO  0x0011
++
++/**
++ * init_dump_header() - initialize the header declaring a dump
++ * Returns: length of dump save area.
++ *
++ * When the hypervisor saves crashed state, it needs to put
++ * it somewhere. The dump header tells the hypervisor where
++ * the data can be saved.
++ */
++static unsigned long init_dump_header(struct phyp_dump_header *ph)
++{
++	unsigned long addr_offset = 0;
++
++	/* Set up the dump header */
++	ph->version = DUMP_HEADER_VERSION;
++	ph->num_of_sections = NUM_DUMP_SECTIONS;
++	ph->status = 0;
++
++	ph->first_offset_section =
++		(u32)offsetof(struct phyp_dump_header, cpu_data);
++	ph->dump_disk_section = 0;
++	ph->block_num_dd = 0;
++	ph->num_of_blocks_dd = 0;
++	ph->offset_dd = 0;
++
++	ph->maxtime_to_auto = 0; /* disabled */
++
++	/* The first two sections are mandatory */
++	ph->cpu_data.dump_flags = DUMP_REQUEST_FLAG;
++	ph->cpu_data.source_type = DUMP_SOURCE_CPU;
++	ph->cpu_data.source_address = 0;
++	ph->cpu_data.source_length = phyp_dump_info->cpu_state_size;
++	ph->cpu_data.destination_address = addr_offset;
++	addr_offset += phyp_dump_info->cpu_state_size;
++
++	ph->hpte_data.dump_flags = DUMP_REQUEST_FLAG;
++	ph->hpte_data.source_type = DUMP_SOURCE_HPTE;
++	ph->hpte_data.source_address = 0;
++	ph->hpte_data.source_length = phyp_dump_info->hpte_region_size;
++	ph->hpte_data.destination_address = addr_offset;
++	addr_offset += phyp_dump_info->hpte_region_size;
++
++	/* This section describes the low kernel region */
++	ph->kernel_data.dump_flags = DUMP_REQUEST_FLAG;
++	ph->kernel_data.source_type = DUMP_SOURCE_RMO;
++	ph->kernel_data.source_address = PHYP_DUMP_RMR_START;
++	ph->kernel_data.source_length = PHYP_DUMP_RMR_END;
++	ph->kernel_data.destination_address = addr_offset;
++	addr_offset += ph->kernel_data.source_length;
++
++	return addr_offset;
++}
++
++static void register_dump_area(struct phyp_dump_header *ph, unsigned long addr)
++{
++	int rc;
++	ph->cpu_data.destination_address += addr;
++	ph->hpte_data.destination_address += addr;
++	ph->kernel_data.destination_address += addr;
++
++	do {
++		rc = rtas_call(ibm_configure_kernel_dump, 3, 1, NULL,
++		               1, ph, sizeof(struct phyp_dump_header));
++	} while (rtas_busy_delay(rc));
++
++	if (rc)
++	{
++		printk (KERN_ERR "phyp-dump: unexpected error (%d) on register\n", rc);
++	}
++}
 +
 +/* ------------------------------------------------- */
  /**
   * release_memory_range -- release memory previously lmb_reserved
   * @start_pfn: starting physical frame number
-@@ -52,20 +59,89 @@ release_memory_range(unsigned long start
- 	}
- }
- 
--static int __init phyp_dump_setup(void)
-+/* ------------------------------------------------- */
-+/**
-+ * sysfs_release_region -- sysfs interface to release memory range.
-+ *
-+ * Usage:
-+ *   "echo <start addr> <length> > /sys/kernel/release_region"
-+ *
-+ * Example:
-+ *   "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
-+ *
-+ * will release 256MB starting at 1GB.
-+ */
-+static ssize_t
-+store_release_region(struct kset *kset, const char *buf, size_t count)
+@@ -113,7 +224,9 @@ static struct subsys_attribute rr = __AT
+ static int __init phyp_dump_setup(void)
  {
-+	unsigned long start_addr, length, end_addr;
- 	unsigned long start_pfn, nr_pages;
-+	ssize_t ret;
-+
-+	ret = sscanf(buf, "%lx %lx", &start_addr, &length);
-+	if (ret != 2)
-+		return -EINVAL;
-+
-+	/* Range-check - don't free any reserved memory that
-+	 * wasn't reserved for phyp-dump */
-+	if (start_addr < phyp_dump_info->init_reserve_start)
-+		start_addr = phyp_dump_info->init_reserve_start;
-+
-+	end_addr = phyp_dump_info->init_reserve_start +
-+			phyp_dump_info->init_reserve_size;
-+	if (start_addr+length > end_addr)
-+		length = end_addr - start_addr;
-+
-+	/* Release the region of memory assed in by user */
-+	start_pfn = PFN_DOWN(start_addr);
-+	nr_pages = PFN_DOWN(length);
-+	release_memory_range (start_pfn, nr_pages);
-+
-+	return count;
-+}
-+
-+static ssize_t
-+show_release_region(struct kset * kset, char *buf)
-+{
-+	return sprintf(buf, "ola\n");
-+}
-+
-+static struct subsys_attribute rr = __ATTR(release_region, 0600,
-+					 show_release_region,
-+					 store_release_region);
-+
-+static int __init phyp_dump_setup(void)
-+{
-+	struct device_node *rtas;
-+	const int *dump_header;
-+	int header_len = 0;
-+	int rc;
+ 	struct device_node *rtas;
+-	const int *dump_header;
++	const struct phyp_dump_header *dump_header;
++	unsigned long dump_area_start;
++	unsigned long dump_area_length;
+ 	int header_len = 0;
+ 	int rc;
  
- 	/* If no memory was reserved in early boot, there is nothing to do */
- 	if (phyp_dump_info->init_reserve_size == 0)
+@@ -126,22 +239,31 @@ static int __init phyp_dump_setup(void)
+ 		return -ENOSYS;
+ 	}
+ 
+-	/* Is there dump data waiting for us? */
++	/* Is there dump data waiting for us? If there isn't,
++	 * then register a new dump area, and release all of
++	 * the rest of the reserved ram.
++	 *
++	 * The /rtas/ibm,kernel-dump rtas node is present only
++	 * if there is dump data waiting for us.
++	 */
+ 	rtas = of_find_node_by_path("/rtas");
+ 	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
++	of_node_put(rtas);
++
++	dump_area_length = init_dump_header(&phdr);
++	dump_area_start = phyp_dump_info->init_reserve_start & PAGE_MASK; /* align down */
++
+ 	if (dump_header == NULL) {
+-		release_all();
++		register_dump_area(&phdr, dump_area_start);
  		return 0;
+ 	}
  
--	/* Release memory that was reserved in early boot */
--	start_pfn = PFN_DOWN(phyp_dump_info->init_reserve_start);
--	nr_pages = PFN_DOWN(phyp_dump_info->init_reserve_size);
--	release_memory_range(start_pfn, nr_pages);
-+	/* Return if phyp dump not supported */
-+	if (!phyp_dump_info->phyp_dump_configured) {
-+		return -ENOSYS;
-+	}
-+
-+	/* Is there dump data waiting for us? */
-+	rtas = of_find_node_by_path("/rtas");
-+	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
-+	if (dump_header == NULL) {
-+		release_all();
-+		return 0;
-+	}
-+
-+	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
-+	rc = subsys_create_file(&kernel_subsys, &rr);
-+	if (rc) {
-+		printk (KERN_ERR "phyp-dump: unable to create sysfs file (%d)\n", rc);
-+		release_all();
-+		return 0;
-+	}
+ 	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
+ 	rc = subsys_create_file(&kernel_subsys, &rr);
+-	if (rc) {
++	if (rc)
+ 		printk (KERN_ERR "phyp-dump: unable to create sysfs file (%d)\n", rc);
+-		release_all();
+-		return 0;
+-	}
  
++	/* ToDo: re-register the dump area, for next time. */
  	return 0;
  }
--
  subsys_initcall(phyp_dump_setup);
