@@ -1,28 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.249])
-	by ozlabs.org (Postfix) with ESMTP id B3AAEDDFE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 07:43:30 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id x43so388537hsb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 12:43:29 -0800 (PST)
-Message-ID: <fa686aa40802121243h59500ef8o27c5c8aac835cccd@mail.gmail.com>
-Date: Tue, 12 Feb 2008 13:43:29 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: Could the DTS experts look at this?
-In-Reply-To: <47B1F763.9000404@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47ACE630.8090101@pikatech.com>
-	<20080211235409.GB18348@localhost.localdomain>
-	<20080211235652.GC18348@localhost.localdomain>
-	<200802120121.45349.arnd@arndb.de> <47B1BEE7.4050808@freescale.com>
-	<fa686aa40802121058u6c6e4ba9s3ced2e35950745ea@mail.gmail.com>
-	<47B1EEA8.4040904@freescale.com>
-	<fa686aa40802121134i4bc0c9bep30920a5afdeb240c@mail.gmail.com>
-	<47B1F763.9000404@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4111EDE0F7
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 08:00:25 +1100 (EST)
+Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other
+	goodies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20080212114905.GA9940@iram.es>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<1202460043.7079.157.camel@pasglop>  <20080212114905.GA9940@iram.es>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 07:59:52 +1100
+Message-Id: <1202849992.7410.19.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,116 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 12, 2008 12:45 PM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->
-> > Then use a local version in the data; don't overload the purpose of
-> > the dtb version.
->
-> I don't know what you mean by that.
 
-I'm saying that the dtb version is to describe the binary format of
-the dtb; not the content.  Using it to say "this dtb contains data
-that needs to be massaged in a particular way" is using (overloading)
-the dtb version for a different and orthogonal purpose.
+On Tue, 2008-02-12 at 12:49 +0100, Gabriel Paubert wrote:
+> On Fri, Feb 08, 2008 at 07:40:43PM +1100, Benjamin Herrenschmidt wrote:
+> > 
+> > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > - couple of fixes and preparatory patches
+> > > 
+> > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
+> > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
+> > 
+> > Interesting... I was thinking about doing a full remove of the device at
+> > a higher level instead but I suppose what you propose is easier.
+> 
+> Well, I have serious problem on a Pegasos which appeared some time
+> between 2.6.24 and 2.6.25-rc1: at boot I get an infinite string of 
+> 
+> hdb: empty DMA table?
+> 
+> I'm trying to bisect it right now.
 
-> > And when something comes along that doesn't fit into that model?  Add
-> > more constructs?
->
-> If necessary, yes.  What's wrong with expanding the power of the device tree
-> format when it solves more problems?
+Pegasos doesn't use the pmac ide which is what we were discussing. It
+uses a VIA IDE which uses a normal PRD table. So something else must
+have broken...
 
-Nothing at all; but the flipside of that is it should only be done
-when it is the appropriate place to do so.
-
-> >  I say better to handle that within the existing data
-> > format.
->
-> And the point I've been trying to make is that we have real problems today that
-> cannot be solved elegantly with the current device tree problem.  Having
-> board-specific code in U-Boot that is hard-coded to look for specific nodes in
-> the device tree, and making hard-coded edits on that tree, is *not* elegant.
->
-> >  If we get it wrong, then we just change the affected device
-> > trees and boot loaders.  We don't have to upgrade every platform that
-> > uses dt blobs.
->
-> Only the platforms that need to take advantage of conditional nodes need to be
-> upgraded in the first place.  Most platforms are happy with just one device tree.
->
-> >> That's okay too, except that if we just add additional nodes that describe
-> >> conditions, then we need to make sure that whatever parses that DTB must also
-> >> parse those additional nodes.  The only way to do that is create a new version
-> >> number, like 18, which is marked as being incompatible with the current version
-> >> (17).  Otherwise, a person could pass that DTB to an old version of U-Boot, and
-> >> U-boot will just pass it on to the kernel as-is.
-> >
-> > That's not a dtb version issue.  That is a dtb content issue.
->
-> Technically, that's true, but ...
->
-> > It does
-> > not warrant changing the dtb version number.
->
-> Then how do you solve the problem of passing a device tree to a boot loader that
-> does not know how to parse it properly?  A device tree with these additional
-> nodes *must* be parsed by a boot loader that is aware of them.  Otherwise, it
-> will pass the device tree as-is to the kernel without warning.  This is a bad
-> thing, and steps should be taken to prevent that.  If you can think of a way to
-> make this happen without changing the version number, I'd love to hear.  All I'm
-> hearing from you now is denial that this is a problem.
-
-I do not deny that it is a problem.  I assert that the proposed
-solution does not at all solve the greater problem.  Changing the DTB
-version solves the specific problem of a dtb that needs to be modified
-being passed into to an older version of u-boot.  This is a very
-narrow use case and it is not the greater problem.  The greater
-problem is passing the wrong device tree either because of a
-u-boot/dtb mismatch or the dtb is for an entirely different board.
-Changing the dtb version is just a bandaid fix that makes things more
-complex and only provides the illusion of a solution.
-
-Your suggestion of checking for specific property values is a far more
-reliable and workable solution.
-
-> > Fair enough, and it is also reasonable for the boot loader to look for
-> > a specific property name to decide how to massage the data structure.
-> > This alone does not require a dtb version change.
->
-> Current versions of U-Boot do not know how to do this.  So again, I'm asking
-> you: how do you solve the problem of passing a device tree with additional nodes
-> to a boot loader that does not know how to parse them properly?  How do you
-> prevent that old U-Boot from ignoring those nodes?
-
-We don't.  We've got no sane way to do so (except perhaps going ahead
-and renaming the soc nodes from soc<chip>@addr to soc@addr.  That will
-break almost all existing ports.  :-).  I do not agree that changing
-the dtb version is a sane change.
-
-For older u-boots, this is a configuration management problem.  Just
-like for current platforms we need to make sure that the kernel is
-compiled for the correct platform before trying to boot.  There are no
-protections in u-boot to make sure the kernel image matches the arch
-yet it all works just fine.
-
-> > I'm not missing the point because I disagree entirely with the
-> > addition of conditional expressions to the device tree.  Instead, I
-> > think properties can be added to the device tree that a bootloader can
-> > look for and decide to apply conditions against them which means the
-> > conditions are encoded in the boot loader, not the device tree.  (the
-> > device tree simply contains data which supports the boot loaders
-> > decision; a rather different thing).
->
-> Then why bother passing a DTB to the boot loader at all?  Why not just have the
-> boot loader create the device tree from scratch?
-
-There is absolutely no reason for the boot loader not to create the
-device tree from scratch.  dtbs are just more convenient to get up and
-running with.  OpenFirmware has been doing that from day one and it
-works quite well.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Ben.
