@@ -1,24 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 808F1DDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 09:01:13 +1100 (EST)
-Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other
-	goodies
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080212214137.47478e5e@core>
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-	<1202460043.7079.157.camel@pasglop> <1202850247.7410.24.camel@pasglop>
-	<20080212214137.47478e5e@core>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 09:00:40 +1100
-Message-Id: <1202853640.7410.31.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 13 Feb 2008 09:49:06 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Nick <ndroogh@rogers.com>
+Subject: Re: DTS question - MPC5200b
+Message-ID: <20080212224906.GA21230@localhost.localdomain>
+References: <47B1D943.6020708@rogers.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47B1D943.6020708@rogers.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 2008-02-12 at 21:41 +0000, Alan Cox wrote:
-> On Wed, 13 Feb 2008 08:04:07 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, Feb 12, 2008 at 12:37:07PM -0500, Nick wrote:
+> Hi,
 > 
-> > 
-> > On Fri, 2008-02-08 at 19:40 +1100, Benjamin Herrenschmidt wrote:
-> > > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > - couple of fixes and preparatory patches
-> > > > 
-> > > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
-> > > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
-> > > 
-> > > Interesting... I was thinking about doing a full remove of the device at
-> > > a higher level instead but I suppose what you propose is easier.
-> > > 
-> > > I'll have a look & test next week hopefully.
-> > 
-> > Also, the above would have the advantage of not relying on drivers/ide
-> > infrastructure, and thus working with libata (once somebody has ported
-> > pmac ide to libata).
+> I need some help.  I am trying to access timer 7 on the MPC5200B 
+> processor.  I have the DTS file setup like this
+
+Others have addressed the most salient points, but some general
+corrections for your device tree..
+
+>         gpt@670 {    // General Purpose Timer
+>           device_type = "gpt";
+
+device_type shouldn't be here.
+
+>             compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+>             cell-index = <7>;
+
+You probably don't want cell-index.  cell-index should *only* be used
+when there is some global register somewhere that's indexed by the
+cell number.
+
+>             reg = <670 10>;
+>             interrupts = <1 10 0>;
+>             interrupt-parent = <&mpc5200_pic>;
+>         };
 > 
-> Unfortunately you need a degree in dentistry to open a Macintosh up and
-> fix it otherwise we would have support by now.
+> I have timers 0 to 6 defined the same way except the cell-index reflects 
+> the timer number.
 
-Heh :-)
+Presumably 'reg' is different for each, as well.
 
-Recent powermacs are trivial to open ! But yeah, I do need to produce a
-driver for libata one of these days. On my todo list ...
+> In my platform file where I am doing my board setup, I tried the  following.
+> 
+> timer7 = mpc52xx_find_and_map ("mpc5200b-gpt");
+> 
+> How do I specify the timer based on the cell-index?
 
-Cheers,
-Ben.
+You don't.  As Grant explains, use reg instead.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
