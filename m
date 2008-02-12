@@ -1,29 +1,37 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <ahuja@austin.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C80F1DDF8A
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 05:52:42 +1100 (EST)
-Date: Tue, 12 Feb 2008 12:52:51 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Could the DTS experts look at this?
-Message-ID: <20080212185251.GB4042@loki.buserror.net>
-References: <47ACE630.8090101@pikatech.com>
-	<20080211001451.GA11572@localhost.localdomain>
-	<47AFB593.30805@pikatech.com>
-	<20080211031110.GD11572@localhost.localdomain>
-	<47AFC5E3.20101@pikatech.com>
-	<20080211235958.GD18348@localhost.localdomain>
-	<47B0F142.40206@pikatech.com>
-	<20080212002030.GE18348@localhost.localdomain>
-	<47B0EB23.9040101@pikatech.com>
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0D916DDFA9
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 05:54:20 +1100 (EST)
+Received: from e5.ny.us.ibm.com ([192.168.1.105])
+	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m1CGoU3l031796
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:50:30 -0500
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1CGf18C026529
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:41:01 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1CGf1tC243360
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:41:01 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1CGf0KE017883
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 11:41:01 -0500
+Message-ID: <47B1CC1B.80905@austin.ibm.com>
+Date: Tue, 12 Feb 2008 10:40:59 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47B0EB23.9040101@pikatech.com>
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
+References: <4782B985.2090508@austin.ibm.com>	<47B13D2E.1070001@austin.ibm.com>	<47B146BE.5010807@austin.ibm.com>
+	<20080212210818.7b9099a4.sfr@canb.auug.org.au>
+In-Reply-To: <20080212210818.7b9099a4.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 11, 2008 at 07:41:07PM -0500, Sean MacLennan wrote:
-> David Gibson wrote:
-> > Err.. now I'm doubly confused.  Initially I thought you'd need to
-> > change the size part of reg somewhere, but your description above just
-> > convinced me you didn't (because you were essentially just shifting a
-> > 4M map up into the high rather than low 4M of the 64M space).  Now
-> > you're saying you do..
-> >   
-> If you tell the mtd driver that the flash is 64M, when it is really 4M, 
-> it goes oops. So you do have to get the size right in the reg field.
+As noted, its fixed in patch 4. 
 
-It'd be nice if we could pass in a flag to tell it not to try to find
-additional consecutive chips in the mapping...  It's a shame to have
-probable chips, and still have to know how big they are anyway.
+If its okay for this time, I will prefer to leave it there.
 
--Scott
+-Manish
+
+
+Stephen Rothwell wrote:
+> Hi Manish,
+> 
+> Just a small comment.
+> 
+> On Tue, 12 Feb 2008 01:11:58 -0600 Manish Ahuja <ahuja@austin.ibm.com> wrote:
+>> +	/* Is there dump data waiting for us? */
+>> +	rtas = of_find_node_by_path("/rtas");
+>> +	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
+> 
+> You need an of_node_put(rtas) here.
+> 
+>> +	if (dump_header == NULL) {
+>> +		release_all();
+>> +		return 0;
+>> +	}
+> 
