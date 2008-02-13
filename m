@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 393B4DDE02
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 07:43:22 +1100 (EST)
-Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Krafft <krafft@de.ibm.com>
-In-Reply-To: <20080213183506.7f3e3145@de.ibm.com>
-References: <20080213182800.5c6940a8@de.ibm.com>
-	<20080213183506.7f3e3145@de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 07:42:54 +1100
-Message-Id: <1202935374.7296.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: parabelboi@bopserverein.de, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 7D00EDE03D
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 08:05:35 +1100 (EST)
+Date: Wed, 13 Feb 2008 14:08:03 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2 rev2] powerpc: publish 85xx cds soc dts entries as
+	of_device
+Message-ID: <20080213210803.GA12018@blade.az.mvista.com>
+References: <20080211203243.GA5331@blade.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20080211203243.GA5331@blade.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,63 +21,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Publish the devices listed in dts under SOC as of_device for mpc85xx_cds
+platforms.
 
-On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
-> sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
-> This patch adds a check_legacy_ioports to read_port and write_port.
-> It will now return ENXIO, instead of oopsing.
-> 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+The memory controller, L2 cache-controller, and the PCI controller(s) are
+published as of_device so the mpc85xx EDAC driver can claim them for usage.
 
-The problem is that this prevents using /proc/ioports to access PCI
-IO space, which might be useful.
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 
-I hate that sensors_detect.. or for that matter any other userland code
-that pokes random ports like that. It should die.
+---
+commit 4be72413410c560fe7ad5ef9156d43159003dad3
+tree 8890093ee1cff0ec0cc9ce0b9367e134f528eed2
+parent 19af35546de68c872dcb687613e0902a602cb20e
+author Dave Jiang <djiang@mvista.com> Wed, 13 Feb 2008 14:03:33 -0700
+committer Dave Jiang <djiang@blade.(none)> Wed, 13 Feb 2008 14:03:33 -0700
 
-Ben.
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-> Index: linux.git/drivers/char/mem.c
-> ===================================================================
-> --- linux.git.orig/drivers/char/mem.c
-> +++ linux.git/drivers/char/mem.c
-> @@ -566,8 +566,13 @@ static ssize_t read_port(struct file * f
->  	char __user *tmp = buf;
->  
->  	if (!access_ok(VERIFY_WRITE, buf, count))
-> -		return -EFAULT; 
-> +		return -EFAULT;
-> +
->  	while (count-- > 0 && i < 65536) {
-> +#ifdef CONFIG_PPC_MERGE
-> +		if (check_legacy_ioport(i))
-> +			return -ENXIO;
-> +#endif
->  		if (__put_user(inb(i),tmp) < 0) 
->  			return -EFAULT;  
->  		i++;
-> @@ -585,6 +590,7 @@ static ssize_t write_port(struct file * 
->  
->  	if (!access_ok(VERIFY_READ,buf,count))
->  		return -EFAULT;
-> +
->  	while (count-- > 0 && i < 65536) {
->  		char c;
->  		if (__get_user(c, tmp)) {
-> @@ -592,6 +598,10 @@ static ssize_t write_port(struct file * 
->  				break;
->  			return -EFAULT; 
->  		}
-> +#ifdef CONFIG_PPC_MERGE
-> +		if (check_legacy_ioport(i))
-> +			return -ENXIO;
-> +#endif
->  		outb(c,i);
->  		i++;
->  		tmp++;
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 8b1de78..374c9d5 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -324,6 +325,19 @@ static void mpc85xx_cds_show_cpuinfo(struct seq_file *m)
+ 	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
+ }
+ 
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .name = "soc", },
++	{ .type = "soc", },
++	{},
++};
++
++static int __init declare_of_platform_devices(void)
++{
++	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++
++	return 0;
++}
++machine_device_initcall(mpc85xx_cds, declare_of_platform_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
