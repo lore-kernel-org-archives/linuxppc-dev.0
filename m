@@ -1,26 +1,19 @@
-Return-Path: <dhbaird@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 8BB2BDDF34
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc1-s14.bay0.hotmail.com (bay0-omc1-s14.bay0.hotmail.com
+	[65.54.246.86]) by ozlabs.org (Postfix) with ESMTP id 06E8FDE02F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Feb 2008 06:02:11 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so163051wag.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Feb 2008 11:02:10 -0800 (PST)
-Message-ID: <440abda90802131102q234e870fx2cbf12fb3119fd0a@mail.gmail.com>
-Date: Wed, 13 Feb 2008 12:02:09 -0700
-From: "David Baird" <dhbaird@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: TLB Miss booting linux kernel on ppc 405
-In-Reply-To: <5ee408090802131049u652ef867wff034b4ccb1067f1@mail.gmail.com>
+	Thu, 14 Feb 2008 08:00:13 +1100 (EST)
+Message-ID: <BAY115-W23015408D36E22FAB3FE50B2240@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_59ba9641-f307-4542-88da-e6de9d950200_"
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: llandre <r&d2@dave-tech.it>
+Subject: RE: V4 FX12 and PLB TEMAC: no space for user logic?
+Date: Wed, 13 Feb 2008 21:00:11 +0000
+In-Reply-To: <47B2B94A.6090600@dave-tech.it>
+References: <47B2B94A.6090600@dave-tech.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <5ee408090802130850w130ce09an507ca5c4d41cc5a8@mail.gmail.com>
-	<440abda90802130917x79c3c990j6a1fc7c12ba05ed7@mail.gmail.com>
-	<5ee408090802130938u7d069636g42a496e489fe5b80@mail.gmail.com>
-	<440abda90802130951h7a23743asc85454bf089c7e55@mail.gmail.com>
-	<5ee408090802131003m4b8e632cu931769bc77f9b439@mail.gmail.com>
-	<440abda90802131032l6e11eef7gbd7eb57352c2ce4@mail.gmail.com>
-	<5ee408090802131049u652ef867wff034b4ccb1067f1@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,67 +24,127 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Feb 13, 2008 11:49 AM, Ricardo Ayres Severo <severo.ricardo@gmail.com> wrote:
-> Executing without single step the exception doesn't occurs. But at
-> __log_buf I get only trash, even after reseting the processor.
-> How can I send some characters to uartlite on asm code?
+--_59ba9641-f307-4542-88da-e6de9d950200_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Great.  This confirms that I am not crazy.  You are having similar
-results as I did.  But I still don't yet know why single-step and
-memory read can't be used in virtual mode...
 
-To use UARTLite, there are some patches you need.  First thing, you
-have to setup your TLBs so that uartlite can be accessed in virtual
-mode.  I did something like this:
+llandre,
 
-#define MY_UART_LITE_BASE 0x40000000
+Our tests show that V4 FX 12 is really a small device. The FPGA was complet=
+ely full with these set of modules:
 
- lis r3,MY_UART_LITE_BASE@h
- ori r3,r3,MY_UART_LITE_BASE@l
- mr  r4,r3
- clrrwi  r4,r4,12
- ori r4,r4,(TLB_WR|TLB_I|TLB_M|TLB_G)
+1- CPU core and related circuits, 2- PLB TEMAC , 3- DDR SDRAM Controller , =
+4- PLB BRAM IF , 5- Bridges , 6- OPB UART and 7- OPB EMC controller (Used f=
+or interfacing to flash chips )
 
- clrrwi  r3,r3,12
- ori r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_16M))
+The synthesis tool we used during our tests was : XST
+it seems that there are some solutions to have a more optimized implementat=
+ion on FX-12, personally i visited one of the members here who claimed that=
+ he has two PLB TEMACs enabled on one FX-12 FPGA. I believe that this is no=
+t possible. may be if one use better synthesis tools such as Synplify he ma=
+y get slightly better results.
 
- li  r0,0      /* TLB slot 0 */
- tlbwe r4,r0,TLB_DATA
- tlbwe r3,r0,TLB_TAG
+any how, in my idea FX-12 is not suitable for serious projects, it is suita=
+ble only for beginning phases of a project and the research phase.=20
+We are now focusing on ML410, a great board by Xiling, featuring on FX-60 F=
+PGA while keeps costs low.
 
-Then, you need to add some C code somewhere.  I chose "setup.c" (in
-same directory as head_4xx.S) for this purpose:
+any questions are welcom,
+thanks,
+Mohammad.
 
-// Try to get value for XPAR_RS232_UART_BASEADDR:
-#include <platforms/4xx/xparameters/xparameters.h>
-#include <platforms/4xx/xparameters/xparameters_ml403.h>
 
-void
-serial_putc(unsigned char c)
+> Date: Wed, 13 Feb 2008 10:32:58 +0100
+> From: r&d2@dave-tech.it
+> To: mamsadegh@hotmail.com
+> CC: linuxppc-embedded@ozlabs.org
+> Subject: V4 FX12 and PLB TEMAC: no space for user logic?
+>=20
+> Hi Mohammad,
+>=20
+> I've just had a look at the messages you generously posted in the ml=20
+> about your experience with linux on V4 FX12 FPGA.
+> I'd like to ask your opinion about FX12 practical usability in this=20
+> context (gigabit PLB TEMAC/linux).
+> In this message
+>=20
+> http://article.gmane.org/gmane.linux.ports.ppc.embedded/16816
+>=20
+> you say the device is completely full. If I understand correctly your=20
+> system provides just the devices required to run the bandwidth test so=20
+> it seems there is no room for user logic (I think you did not even add=20
+> the memory controller required to access the NOR Flash containing=20
+> bootloader, kernel image and root fs that is clearly mandatory for=20
+> standalone product). Is that true? If it is, this limits a lot the=20
+> flexibility of this architecture in this configuration. What do you think=
+?
+>=20
+>=20
+>=20
+> Regards,
+> llandre
+>=20
+> DAVE Electronics System House - R&D Department
+> web:   http://www.dave.eu
+> email: r&d2@dave-tech.it
+
+_________________________________________________________________
+
+
+--_59ba9641-f307-4542-88da-e6de9d950200_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
 {
- while (((*(volatile uint32_t*)(XPAR_RS232_UART_BASEADDR + 0x8)) & 0x08) != 0);
- *(volatile uint32_t*)(XPAR_RS232_UART_BASEADDR + 0x4) = c;
+margin:0px;
+padding:0px
 }
-
-void
-print_A()
+body.hmmessage
 {
- serial_putc('A');
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
 }
+</style>
+</head>
+<body class=3D'hmmessage'>
+llandre,<br><br>Our tests show that V4 FX 12 is really a small device. The =
+FPGA was completely full with these set of modules:<br><br>1- CPU core and =
+related circuits, 2- PLB TEMAC , 3- DDR SDRAM Controller , 4- PLB BRAM IF ,=
+ 5- Bridges , 6- OPB UART and 7- OPB EMC controller (Used for interfacing t=
+o flash chips )<br><br>The synthesis tool we used during our tests was : XS=
+T<br>it seems that there are some solutions to have a more optimized implem=
+entation on FX-12, personally i visited one of the members here who claimed=
+ that he has two PLB TEMACs enabled on one FX-12 FPGA. I believe that this =
+is not possible. may be if one use better synthesis tools such as Synplify =
+he may get slightly better results.<br><br>any how, in my idea FX-12 is not=
+ suitable for serious projects, it is suitable only for beginning phases of=
+ a project and the research phase. <br>We are now focusing on ML410, a grea=
+t board by Xiling, featuring on FX-60 FPGA while keeps costs low.<br><br>an=
+y questions are welcom,<br>thanks,<br>Mohammad.<br><br><br>&gt; Date: Wed, =
+13 Feb 2008 10:32:58 +0100<br>&gt; From: r&amp;d2@dave-tech.it<br>&gt; To: =
+mamsadegh@hotmail.com<br>&gt; CC: linuxppc-embedded@ozlabs.org<br>&gt; Subj=
+ect: V4 FX12 and PLB TEMAC: no space for user logic?<br>&gt; <br>&gt; Hi Mo=
+hammad,<br>&gt; <br>&gt; I've just had a look at the messages you generousl=
+y posted in the ml <br>&gt; about your experience with linux on V4 FX12 FPG=
+A.<br>&gt; I'd like to ask your opinion about FX12 practical usability in t=
+his <br>&gt; context (gigabit PLB TEMAC/linux).<br>&gt; In this message<br>=
+&gt; <br>&gt; http://article.gmane.org/gmane.linux.ports.ppc.embedded/16816=
+<br>&gt; <br>&gt; you say the device is completely full. If I understand co=
+rrectly your <br>&gt; system provides just the devices required to run the =
+bandwidth test so <br>&gt; it seems there is no room for user logic (I thin=
+k you did not even add <br>&gt; the memory controller required to access th=
+e NOR Flash containing <br>&gt; bootloader, kernel image and root fs that i=
+s clearly mandatory for <br>&gt; standalone product). Is that true? If it i=
+s, this limits a lot the <br>&gt; flexibility of this architecture in this =
+configuration. What do you think?<br>&gt; <br>&gt; <br>&gt; <br>&gt; Regard=
+s,<br>&gt; llandre<br>&gt; <br>&gt; DAVE Electronics System House - R&amp;D=
+ Department<br>&gt; web:   http://www.dave.eu<br>&gt; email: r&amp;d2@dave-=
+tech.it<br><br /><hr /> <a href=3D'' target=3D'_new'></a></body>
+</html>=
 
-void
-print_B()
-{
- serial_putc('B');
-}
-
-
-Now, from assembly, things are easy.  Just do this, I think:
-
- blr print_A
- blr print_B
-
-If this gives you any trouble, try it first from real mode so that you
-can easily debug it.
-
--David
+--_59ba9641-f307-4542-88da-e6de9d950200_--
