@@ -1,27 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 91869DDF1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 11:15:22 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1409460anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 16:15:20 -0800 (PST)
-Message-ID: <fa686aa40802121615v72db8ce4l122d43dccb2b8e96@mail.gmail.com>
-Date: Tue, 12 Feb 2008 17:15:20 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: Could the DTS experts look at this?
-In-Reply-To: <47B2300B.4060101@freescale.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 6E566DDEFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 13:42:38 +1100 (EST)
+Date: Wed, 13 Feb 2008 13:40:20 +1100
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] FIx compile of swim3 as module
+Message-ID: <20080213024019.GX6887@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47ACE630.8090101@pikatech.com>
-	<20080211235409.GB18348@localhost.localdomain>
-	<20080211235652.GC18348@localhost.localdomain>
-	<200802120121.45349.arnd@arndb.de> <47B1BEE7.4050808@freescale.com>
-	<fa686aa40802121058u6c6e4ba9s3ced2e35950745ea@mail.gmail.com>
-	<47B1EEA8.4040904@freescale.com>
-	<20080212232639.GD21230@localhost.localdomain>
-	<47B2300B.4060101@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=utf-8
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: Paul Mackerras <paulus@samba.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,21 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 12, 2008 4:47 PM, Timur Tabi <timur@freescale.com> wrote:
-> David Gibson wrote:
->
-> > I can pretty much guarantee you that someone will find that
-> > insufficient and want to expand the conditional representation.  This
-> > way madness lies.
->
-> Then let them.  We can have version numbers associated with the conditional
-> expressions.  If they want to make more complex condition expressions, they can
-> bump the version number and define a spec and write code to parse it.
+The current pmac32_defconfig fails to build with the following error:
 
-You say that as if bumping the version number is cheap to do.
+  Building modules, stage 2.
+ERROR: "check_media_bay" [drivers/block/swim3.ko] undefined!
+WARNING: modpost: Found 23 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+make[2]: *** [__modpost] Error 1
 
-g.
+This patch fixes that.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+
+---
+
+ drivers/block/swim3.c        |    4 ----
+ drivers/macintosh/mediabay.c |    2 --
+ 2 files changed, 0 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+index b4e462f..730ccea 100644
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -251,10 +251,6 @@ static int floppy_release(struct inode *inode, struct file *filp);
+ static int floppy_check_change(struct gendisk *disk);
+ static int floppy_revalidate(struct gendisk *disk);
+ 
+-#ifndef CONFIG_PMAC_MEDIABAY
+-#define check_media_bay(which, what)	1
+-#endif
+-
+ static void swim3_select(struct floppy_state *fs, int sel)
+ {
+ 	struct swim3 __iomem *sw = fs->swim3;
+diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
+index 9367882..51a1128 100644
+--- a/drivers/macintosh/mediabay.c
++++ b/drivers/macintosh/mediabay.c
+@@ -416,7 +416,6 @@ static void poll_media_bay(struct media_bay_info* bay)
+ 	}
+ }
+ 
+-#ifdef CONFIG_MAC_FLOPPY
+ int check_media_bay(struct device_node *which_bay, int what)
+ {
+ 	int	i;
+@@ -431,7 +430,6 @@ int check_media_bay(struct device_node *which_bay, int what)
+ 	return -ENODEV;
+ }
+ EXPORT_SYMBOL(check_media_bay);
+-#endif /* CONFIG_MAC_FLOPPY */
+ 
+ #ifdef CONFIG_BLK_DEV_IDE_PMAC
+ int check_media_bay_by_base(unsigned long base, int what)
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
