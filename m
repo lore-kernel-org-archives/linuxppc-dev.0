@@ -1,32 +1,20 @@
 Return-Path: <bgill@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E38CEDDF52
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 09:38:15 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m1DMc8Hh022488
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 15:38:09 -0700 (MST)
-Received: from monty.am.freescale.net (monty.am.freescale.net [10.82.19.26])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m1DMc8i6002541
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 16:38:08 -0600 (CST)
-Received: from monty.am.freescale.net (localhost.localdomain [127.0.0.1])
-	by monty.am.freescale.net (8.14.2/8.14.2) with ESMTP id m1DMXsSM024327
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 16:33:54 -0600
-Received: from localhost (bgill@localhost)
-	by monty.am.freescale.net (8.14.2/8.14.2/Submit) with ESMTP id
-	m1DMXrP9024324
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 16:33:54 -0600
-Date: Wed, 13 Feb 2008 16:33:53 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id DCC08DDE35
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 09:47:47 +1100 (EST)
+Date: Wed, 13 Feb 2008 16:43:23 -0600 (CST)
 From: Becky Bruce <bgill@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC/PATCH] Make lmb support large physical addressing
-Message-ID: <Pine.LNX.4.64.0802131630120.24317@monty.am.freescale.net>
+Subject: [RFC/PATCH] [POWERPC] Make lmb support large physical addressing
+Message-ID: <Pine.LNX.4.64.0802131639200.24317@monty.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: sparclinux@vger.kernel.org, davem@davemloft.net,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,7 +23,6 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-
 
 Convert the lmb code to use phys_addr_t instead of unsigned long for
 physical addresses and sizes.  This is needed to support large amounts
@@ -48,9 +35,9 @@ Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 Folks,
 
 This has been sitting in my tree for a few days, and now it looks like
-someone has submitted a patch that changes the lmb code to be shared
+David M. has submitted a patch that changes the lmb code to be shared
 between sparc and powerpc.  Sparc has no notion of a phys_addr_t.
-Should we just use u64 everywhere in this code instead?
+Should we just use u64 everywhere in this code instead?  Thoughts?
 
 Cheers,
 Becky
