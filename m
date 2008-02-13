@@ -2,16 +2,17 @@ Return-Path: <r&d2@dave-tech.it>
 Received: from mx.dave-tech.it (mx.dave-tech.it [88.37.112.223])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "localhost", Issuer "www.qmailtoaster.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 59D7DDDE1E
+	by ozlabs.org (Postfix) with ESMTP id D2EE4DDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Feb 2008 19:43:13 +1100 (EST)
-Message-ID: <47B2AC0A.9040107@dave-tech.it>
-Date: Wed, 13 Feb 2008 09:36:26 +0100
+	Wed, 13 Feb 2008 20:33:03 +1100 (EST)
+Message-ID: <47B2B94A.6090600@dave-tech.it>
+Date: Wed, 13 Feb 2008 10:32:58 +0100
 From: llandre <r&d2@dave-tech.it>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: TEMAC on Virtex FX12: device occupation
+To: mamsadegh@hotmail.com
+Subject: V4 FX12 and PLB TEMAC: no space for user logic?
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,19 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Mohammad,
 
-I'd like to hear some opinions about this post by Massimiliano:
+I've just had a look at the messages you generously posted in the ml 
+about your experience with linux on V4 FX12 FPGA.
+I'd like to ask your opinion about FX12 practical usability in this 
+context (gigabit PLB TEMAC/linux).
+In this message
 
-http://article.gmane.org/gmane.linux.ports.ppc.embedded/17568
+http://article.gmane.org/gmane.linux.ports.ppc.embedded/16816
 
-The results he got are quite impressive. It seems that everybody here 
-can hardly fit a design with just one hard TEMAC in FX12 while he was 
-able to fit two! Unfortunately Massimiliano did not say precisely how he 
-did it. I'd like to hear someone from Xilinx sharing his/her opinion 
-about this outstanding result. Maybe he used 3rd-party synthesizer or he 
-discovered some magical command-line parameters for Xilinx synthesizer ...
-Any comment will be appreciated.
+you say the device is completely full. If I understand correctly your 
+system provides just the devices required to run the bandwidth test so 
+it seems there is no room for user logic (I think you did not even add 
+the memory controller required to access the NOR Flash containing 
+bootloader, kernel image and root fs that is clearly mandatory for 
+standalone product). Is that true? If it is, this limits a lot the 
+flexibility of this architecture in this configuration. What do you think?
+
 
 
 Regards,
