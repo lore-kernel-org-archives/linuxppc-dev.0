@@ -1,18 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [GIT]: Make LMB code sharable with sparc64.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080213.004120.22092044.davem@davemloft.net>
-References: <20080213.004120.22092044.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-dkybxUrGkM3vIQDsyQxR"
-Date: Wed, 13 Feb 2008 23:12:38 +1100
-Message-Id: <1202904758.6974.9.camel@concordia>
-Mime-Version: 1.0
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <bzolnier@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.190])
+	by ozlabs.org (Postfix) with ESMTP id BC92DDDE34
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 23:20:28 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so2660138rnf.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 04:20:26 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 09/18] ide: rework PowerMac media-bay support
+Date: Wed, 13 Feb 2008 13:26:02 +0100
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<20080208004523.17746.24578.sendpatchset@localhost.localdomain>
+	<1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200802131326.02783.bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,61 +28,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-dkybxUrGkM3vIQDsyQxR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Wed, 2008-02-13 at 00:41 -0800, David Miller wrote:
-> As I mentioned to a few ppc folks at LCA08 I plan to use
-> the LMB code from powerpc as a basis for NUMA support on
-> sparc64.
->=20
-> There are two changes.
->=20
-> 1) Move arch/powerpc/mm/lmb.c to lib/lmb.c, put the main
->    interface bits in include/linux/lmb.h, put arch-specific
->    bits in asm/lmb.h and add Kconfig machinery to build this
->    stuff on sparc64.
->=20
-> 2) Fix a bug in lmb_alloc() wherein the size was not aligned
->    so we could easily run out of reserve blocks because
->    every aligned allocation would create a tiny hole, and
->    secondly the lmb_reserve() call there did not have it's
->    return value checked.
->=20
-> Powerpc folks, if there are no objections please pull, thanks!
+On Wednesday 13 February 2008, Michael Ellerman wrote:
+> On Fri, 2008-02-08 at 01:45 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > Rework PowerMac media-bay support in such way that instead of
+> > un/registering the IDE interface we un/register IDE devices:
+> > 
+> > * Add ide_port_scan() helper for probing+registerering devices on a port.
+> > 
+> > * Rename ide_port_unregister_devices() to __ide_port_unregister_devices().
+> > 
+> > * Add ide_port_unregister_devices() helper for unregistering devices on a port.
+> > 
+> > * Add 'ide_hwif_t *cd_port' to 'struct media_bay_info', pass 'hwif' instead
+> >   of hwif->index to media_bay_set_ide_infos() and use it to setup 'cd_port'.
+> > 
+> > * Use ide_port_unregister_devices() instead of ide_unregister()
+> >   and ide_port_scan() instead of ide_register_hw() in media_bay_step().
+> > 
+> > * Unexport ide_register_hw() and make it static.
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  drivers/ide/ide-probe.c        |   18 ++++++++++++++++++
+> >  drivers/ide/ide.c              |   22 ++++++++++++++++------
+> >  drivers/ide/ppc/pmac.c         |    3 ++-
+> >  drivers/macintosh/mediabay.c   |   17 +++++++----------
+> >  include/asm-powerpc/mediabay.h |    4 +++-
+> >  include/linux/ide.h            |    6 ++----
+> >  6 files changed, 48 insertions(+), 22 deletions(-)
+> 
+> > Index: b/include/asm-powerpc/mediabay.h
+> > ===================================================================
+> > --- a/include/asm-powerpc/mediabay.h
+> > +++ b/include/asm-powerpc/mediabay.h
+> > @@ -22,10 +22,12 @@ int check_media_bay(struct device_node *
+> >  /* Number of bays in the machine or 0 */
+> >  extern int media_bay_count;
+> >  
+> > +#ifdef CONFIG_BLK_DEV_IDE_PMAC
 
-Looks like there are a few places (in arch/powerpc) that were getting
-asm/prom.h via asm/lmb.h, I'll send a patch in the morning.
+Does adding:
 
-cheers
+#include <linux/ide.h>
 
-arch/powerpc/mm/numa.c:124: error: implicit declaration of function 'of_fin=
-d_node_by_type'
+after ifdef help?
 
-arch/powerpc/platforms/ps3/os-area.c:215: error: variable 'property_rtc_dif=
-f' has initializer but incomplete type
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-dkybxUrGkM3vIQDsyQxR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHst62dSjSd0sB4dIRAnHCAJ0WXswnzsz4BVnMzg+bhO1iYQvDbACeMm+i
-R9+GOvHdGVJkibSkG/wjhZ8=
-=oB+G
------END PGP SIGNATURE-----
-
---=-dkybxUrGkM3vIQDsyQxR--
+> >  int check_media_bay_by_base(unsigned long base, int what);
+> >  /* called by IDE PMAC host driver to register IDE controller for media bay */
+> >  int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
+> > -			    int irq, int index);
+> > +			    int irq, ide_hwif_t *hwif);
+> > +#endif
+> >  
+> >  #endif /* __KERNEL__ */
+> >  #endif /* _PPC_MEDIABAY_H */
+> 
+> This hunk breaks pmac32_defconfig for me.
+> 
+> include2/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
+> make[3]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+> make[2]: *** [arch/powerpc/platforms/powermac] Error 2
+> make[1]: *** [arch/powerpc/platforms] Error 2
+> make: *** [sub-make] Error 2
+> 
+> cheers
