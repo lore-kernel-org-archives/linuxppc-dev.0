@@ -1,18 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id D2010DDF5C
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 10:17:57 +1100 (EST)
-Date: Wed, 13 Feb 2008 15:18:28 -0800 (PST)
-Message-Id: <20080213.151828.177835338.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC/PATCH] [POWERPC] Make lmb support large physical addressing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1202943042.7296.48.camel@pasglop>
-References: <Pine.LNX.4.64.0802131639200.24317@monty.am.freescale.net>
-	<1202943042.7296.48.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id B7AB4DE012
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 10:31:30 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ benh@kernel.crashing.org
+Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
+Date: Thu, 14 Feb 2008 00:07:37 +0100
+References: <20080213182800.5c6940a8@de.ibm.com>
+	<20080213183506.7f3e3145@de.ibm.com>
+	<1202935374.7296.44.camel@pasglop>
+In-Reply-To: <1202935374.7296.44.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802140007.38407.arnd@arndb.de>
+Cc: parabelboi@bopserverein.de, Christian Krafft <krafft@de.ibm.com>,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,30 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 14 Feb 2008 09:50:42 +1100
+On Wednesday 13 February 2008, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
+> > sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
+> > This patch adds a check_legacy_ioports to read_port and write_port.
+> > It will now return ENXIO, instead of oopsing.
+> > 
+> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> 
+> The problem is that this prevents using /proc/ioports to access PCI
+> IO space, which might be useful.
+> 
+> I hate that sensors_detect.. or for that matter any other userland code
+> that pokes random ports like that. It should die.
 
-> 
-> On Wed, 2008-02-13 at 16:43 -0600, Becky Bruce wrote:
-> > Convert the lmb code to use phys_addr_t instead of unsigned long for
-> > physical addresses and sizes.  This is needed to support large amounts
-> > of RAM on 32-bit systems that support 36-bit physical addressing.
-> > 
-> > Built/booted on mpc8641; build tested on pasemi and 44x.
-> > 
-> > Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> > ---
-> > Folks,
-> > 
-> > This has been sitting in my tree for a few days, and now it looks like
-> > David M. has submitted a patch that changes the lmb code to be shared
-> > between sparc and powerpc.  Sparc has no notion of a phys_addr_t.
-> > Should we just use u64 everywhere in this code instead?  Thoughts?
-> 
-> An option would be to use resource_size_t, though it's a bit yucky...
-> 
-> Dave, what do you prefer ?
+What kind of Oops do you get? Is it because the ioport area is not
+ioremapped at all or do you get a machine check? If there is no
+mapping, we could possibly change inb and outb do deal with that.
 
-u64 is fine with me, either way we'll be casting the printk()
-arguments all over the place so the choice really isn't
-so important one way or the other as far as I can tell.
+	Arnd <><
