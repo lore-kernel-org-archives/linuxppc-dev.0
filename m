@@ -1,18 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.243])
-	by ozlabs.org (Postfix) with ESMTP id BE8D2DDF17
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 11:10:49 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id x43so432815hsb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 16:10:48 -0800 (PST)
-Message-ID: <fa686aa40802121610t2351aa7fw6f0c24bc89017b9e@mail.gmail.com>
-Date: Tue, 12 Feb 2008 17:10:47 -0700
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 91869DDF1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 11:15:22 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1409460anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2008 16:15:20 -0800 (PST)
+Message-ID: <fa686aa40802121615v72db8ce4l122d43dccb2b8e96@mail.gmail.com>
+Date: Tue, 12 Feb 2008 17:15:20 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>,
-	"Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	"Arnd Bergmann" <arnd@arndb.de>
+To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: Could the DTS experts look at this?
-In-Reply-To: <20080212233548.GE21230@localhost.localdomain>
+In-Reply-To: <47B2300B.4060101@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <47ACE630.8090101@pikatech.com>
@@ -21,9 +19,9 @@ References: <47ACE630.8090101@pikatech.com>
 	<200802120121.45349.arnd@arndb.de> <47B1BEE7.4050808@freescale.com>
 	<fa686aa40802121058u6c6e4ba9s3ced2e35950745ea@mail.gmail.com>
 	<47B1EEA8.4040904@freescale.com>
-	<fa686aa40802121134i4bc0c9bep30920a5afdeb240c@mail.gmail.com>
-	<47B1F763.9000404@freescale.com>
-	<20080212233548.GE21230@localhost.localdomain>
+	<20080212232639.GD21230@localhost.localdomain>
+	<47B2300B.4060101@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 12, 2008 4:35 PM, David Gibson <david@gibson.dropbear.id.au> wrote:
-> In fact, in one way of looking at it that's always what happens: the
-> dtb format is defined for passing hardware information from the
-> bootloader to the kernel; nothing else.  Passing a dtb *into* the
-> bootloader is just a bootloader implementation convenience, because
-> the possible variations on an output tree are small, so it's useful to
-> have a skeleton tree built-in.  But in order for the bootloader to
-> process those variations correctly, the skeleton *must* be in the
-> right format.  dtb input to a bootloader must match the bootloaders
-> expectations.  This has always been true, and will continue to be
-> true.
+On Feb 12, 2008 4:47 PM, Timur Tabi <timur@freescale.com> wrote:
+> David Gibson wrote:
+>
+> > I can pretty much guarantee you that someone will find that
+> > insufficient and want to expand the conditional representation.  This
+> > way madness lies.
+>
+> Then let them.  We can have version numbers associated with the conditional
+> expressions.  If they want to make more complex condition expressions, they can
+> bump the version number and define a spec and write code to parse it.
 
-Well said.
+You say that as if bumping the version number is cheap to do.
 
 g.
 
