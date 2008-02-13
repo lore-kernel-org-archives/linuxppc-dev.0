@@ -1,16 +1,19 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
-	by ozlabs.org (Postfix) with ESMTP id ADE0EDDF40
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 08:31:16 +1100 (EST)
-Date: Wed, 13 Feb 2008 23:30:55 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org
-Subject: [2.6 patch] powerpc: free_property() mustn't be __init
-Message-ID: <20080213213055.GP3383@cs181133002.pp.htv.fi>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 081C5DDFD1
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 08:39:02 +1100 (EST)
+Message-ID: <47B36405.9070406@mvista.com>
+Date: Wed, 13 Feb 2008 14:41:25 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc: create mpc85xx pci err platform device for
+	EDAC
+References: <20080211203445.GB5331@blade.az.mvista.com>
+	<27AAC964-D9EE-435A-84FD-8A45FF27D448@kernel.crashing.org>
+In-Reply-To: <27AAC964-D9EE-435A-84FD-8A45FF27D448@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes the following section mismatch:
+Kumar Gala wrote:
+> On Feb 11, 2008, at 2:34 PM, Dave Jiang wrote:
+> 
+>> Creating a platform device for the PCI error registers in order for  
+>> the
+>> mpc85xx EDAC driver to pick up proper resources. This is to prevent  
+>> the
+>> EDAC driver from monopolizing the of_device and thus preventing  
+>> future PCI
+>> code from using the PCI of_device(s).
+>>
+>> Signed-off-by: Dave Jiang <djiang@mvista.com>
+> 
+> I'd rather we didn't add new platform devices, but do this via  
+> of_platform in the driver itself.
 
-<--  snip  -->
+Kumar,
+  Here's the thread of discussion between Arnd Bergmann and I why platform
+device is used. The original patch was of_device based....
 
-...
-WARNING: vmlinux.o(.text+0x55648): Section mismatch in reference from the function .free_node() to the function .init.text:.free_property()
-...
+http://ozlabs.org/pipermail/linuxppc-dev/2007-July/thread.html
 
-<--  snip  -->
+Does it still make sense or do I need to go back to of_device?
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> 
+> Also, we need to 'rename' the compatible field for some of these  
+> devices.
+> 
+> - k
+> 
 
----
 
-This patch has been sent on:
-- 30 Jan 2008
+-- 
 
-99e9b48d8f5aba059916540fc69815db2b60b08d 
-diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
-index be06cfd..657b72f 100644
---- a/arch/powerpc/platforms/iseries/vio.c
-+++ b/arch/powerpc/platforms/iseries/vio.c
-@@ -75,7 +75,7 @@ static struct property *new_property(const char *name, int length,
- 	return np;
- }
- 
--static void __init free_property(struct property *np)
-+static void free_property(struct property *np)
- {
- 	kfree(np);
- }
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
