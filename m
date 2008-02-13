@@ -1,19 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 09/18] ide: rework PowerMac media-bay support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <20080208004523.17746.24578.sendpatchset@localhost.localdomain>
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-	<20080208004523.17746.24578.sendpatchset@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rcWHPrY1cbcdMlpZJp3I"
-Date: Wed, 13 Feb 2008 18:29:36 +1100
-Message-Id: <1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id CF2A6DDE9B
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 19:50:46 +1100 (EST)
+Date: Wed, 13 Feb 2008 00:41:20 -0800 (PST)
+Message-Id: <20080213.004120.22092044.davem@davemloft.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [GIT]: Make LMB code sharable with sparc64.
+From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,95 +20,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-rcWHPrY1cbcdMlpZJp3I
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+As I mentioned to a few ppc folks at LCA08 I plan to use
+the LMB code from powerpc as a basis for NUMA support on
+sparc64.
 
-On Fri, 2008-02-08 at 01:45 +0100, Bartlomiej Zolnierkiewicz wrote:
-> Rework PowerMac media-bay support in such way that instead of
-> un/registering the IDE interface we un/register IDE devices:
->=20
-> * Add ide_port_scan() helper for probing+registerering devices on a port.
->=20
-> * Rename ide_port_unregister_devices() to __ide_port_unregister_devices()=
-.
->=20
-> * Add ide_port_unregister_devices() helper for unregistering devices on a=
- port.
->=20
-> * Add 'ide_hwif_t *cd_port' to 'struct media_bay_info', pass 'hwif' inste=
-ad
->   of hwif->index to media_bay_set_ide_infos() and use it to setup 'cd_por=
-t'.
->=20
-> * Use ide_port_unregister_devices() instead of ide_unregister()
->   and ide_port_scan() instead of ide_register_hw() in media_bay_step().
->=20
-> * Unexport ide_register_hw() and make it static.
->=20
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-probe.c        |   18 ++++++++++++++++++
->  drivers/ide/ide.c              |   22 ++++++++++++++++------
->  drivers/ide/ppc/pmac.c         |    3 ++-
->  drivers/macintosh/mediabay.c   |   17 +++++++----------
->  include/asm-powerpc/mediabay.h |    4 +++-
->  include/linux/ide.h            |    6 ++----
->  6 files changed, 48 insertions(+), 22 deletions(-)
+There are two changes.
 
-> Index: b/include/asm-powerpc/mediabay.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- a/include/asm-powerpc/mediabay.h
-> +++ b/include/asm-powerpc/mediabay.h
-> @@ -22,10 +22,12 @@ int check_media_bay(struct device_node *
->  /* Number of bays in the machine or 0 */
->  extern int media_bay_count;
-> =20
-> +#ifdef CONFIG_BLK_DEV_IDE_PMAC
->  int check_media_bay_by_base(unsigned long base, int what);
->  /* called by IDE PMAC host driver to register IDE controller for media b=
-ay */
->  int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long=
- base,
-> -			    int irq, int index);
-> +			    int irq, ide_hwif_t *hwif);
-> +#endif
-> =20
->  #endif /* __KERNEL__ */
->  #endif /* _PPC_MEDIABAY_H */
+1) Move arch/powerpc/mm/lmb.c to lib/lmb.c, put the main
+   interface bits in include/linux/lmb.h, put arch-specific
+   bits in asm/lmb.h and add Kconfig machinery to build this
+   stuff on sparc64.
 
-This hunk breaks pmac32_defconfig for me.
+2) Fix a bug in lmb_alloc() wherein the size was not aligned
+   so we could easily run out of reserve blocks because
+   every aligned allocation would create a tiny hole, and
+   secondly the lmb_reserve() call there did not have it's
+   return value checked.
 
-include2/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
-make[3]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
-make[2]: *** [arch/powerpc/platforms/powermac] Error 2
-make[1]: *** [arch/powerpc/platforms] Error 2
-make: *** [sub-make] Error 2
+Powerpc folks, if there are no objections please pull, thanks!
 
-cheers
+The following changes since commit 96b5a46e2a72dc1829370c87053e0cd558d58bc0:
+  Linus Torvalds (1):
+        WMI: initialize wmi_blocks.list even if ACPI is disabled
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+are available in the git repository at:
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/lmb-2.6.git master
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+David S. Miller (2):
+      [LIB]: Make PowerPC LMB code generic so sparc64 can use it too.
+      [LMB]: Fix bug in __lmb_alloc_base().
 
---=-rcWHPrY1cbcdMlpZJp3I
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHspxgdSjSd0sB4dIRAibPAJ0dcGD1H6r7zo8Pb8j3YsG+884OSgCeNItN
-zwItoANm8Lo9B2HVBkp3mLg=
-=FdoT
------END PGP SIGNATURE-----
-
---=-rcWHPrY1cbcdMlpZJp3I--
+ arch/powerpc/Kconfig                    |    3 +
+ arch/powerpc/kernel/btext.c             |    2 +-
+ arch/powerpc/kernel/crash.c             |    2 +-
+ arch/powerpc/kernel/crash_dump.c        |    2 +-
+ arch/powerpc/kernel/machine_kexec.c     |    2 +-
+ arch/powerpc/kernel/prom.c              |    2 +-
+ arch/powerpc/kernel/rtas.c              |    2 +-
+ arch/powerpc/kernel/setup-common.c      |    2 +-
+ arch/powerpc/kernel/setup_64.c          |    2 +-
+ arch/powerpc/kernel/vdso.c              |    2 +-
+ arch/powerpc/mm/Makefile                |    2 +-
+ arch/powerpc/mm/hash_utils_64.c         |    2 +-
+ arch/powerpc/mm/init_32.c               |    2 +-
+ arch/powerpc/mm/init_64.c               |    2 +-
+ arch/powerpc/mm/mem.c                   |    2 +-
+ arch/powerpc/mm/numa.c                  |    2 +-
+ arch/powerpc/mm/ppc_mmu_32.c            |    2 +-
+ arch/powerpc/mm/stab.c                  |    2 +-
+ arch/powerpc/platforms/cell/iommu.c     |    2 +-
+ arch/powerpc/platforms/maple/setup.c    |    2 +-
+ arch/powerpc/platforms/powermac/setup.c |    2 +-
+ arch/powerpc/platforms/ps3/htab.c       |    2 +-
+ arch/powerpc/platforms/ps3/mm.c         |    2 +-
+ arch/powerpc/platforms/ps3/os-area.c    |    2 +-
+ arch/powerpc/sysdev/dart_iommu.c        |    2 +-
+ arch/sparc64/Kconfig                    |    3 +
+ include/asm-powerpc/abs_addr.h          |    2 +-
+ include/asm-powerpc/lmb.h               |   82 +++---------------------------
+ include/asm-sparc64/lmb.h               |   10 ++++
+ include/linux/lmb.h                     |   83 +++++++++++++++++++++++++++++++
+ lib/Makefile                            |    2 +
+ {arch/powerpc/mm => lib}/lmb.c          |   39 ++++++++-------
+ 32 files changed, 155 insertions(+), 117 deletions(-)
+ create mode 100644 include/asm-sparc64/lmb.h
+ create mode 100644 include/linux/lmb.h
+ rename {arch/powerpc/mm => lib}/lmb.c (92%)
