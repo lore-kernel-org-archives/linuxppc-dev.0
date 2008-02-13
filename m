@@ -1,15 +1,16 @@
 Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 5A326DDF39
+Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
+	by ozlabs.org (Postfix) with ESMTP id ADE0EDDF40
 	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 08:31:16 +1100 (EST)
-Date: Wed, 13 Feb 2008 23:30:57 +0200
+Date: Wed, 13 Feb 2008 23:30:55 +0200
 From: Adrian Bunk <bunk@kernel.org>
 To: paulus@samba.org
-Subject: [2.6 patch] hvc_rtas_init() must be __init
-Message-ID: <20080213213057.GQ3383@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] powerpc: free_property() mustn't be __init
+Message-ID: <20080213213055.GP3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +25,30 @@ This patch fixes the following section mismatch:
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.text+0x2fbca8): Section mismatch in reference from the function .hvc_rtas_init() to the function .devinit.text:.hvc_alloc()
+WARNING: vmlinux.o(.text+0x55648): Section mismatch in reference from the function .free_node() to the function .init.text:.free_property()
 ...
 
 <--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
 This patch has been sent on:
 - 30 Jan 2008
 
-1cc00c4ad5c881db2fc256ced43f3b5ce5c76e1c 
-diff --git a/drivers/char/hvc_rtas.c b/drivers/char/hvc_rtas.c
-index bb09413..88590d0 100644
---- a/drivers/char/hvc_rtas.c
-+++ b/drivers/char/hvc_rtas.c
-@@ -76,7 +76,7 @@ static struct hv_ops hvc_rtas_get_put_ops = {
- 	.put_chars = hvc_rtas_write_console,
- };
+99e9b48d8f5aba059916540fc69815db2b60b08d 
+diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
+index be06cfd..657b72f 100644
+--- a/arch/powerpc/platforms/iseries/vio.c
++++ b/arch/powerpc/platforms/iseries/vio.c
+@@ -75,7 +75,7 @@ static struct property *new_property(const char *name, int length,
+ 	return np;
+ }
  
--static int hvc_rtas_init(void)
-+static int __init hvc_rtas_init(void)
+-static void __init free_property(struct property *np)
++static void free_property(struct property *np)
  {
- 	struct hvc_struct *hp;
- 
+ 	kfree(np);
+ }
