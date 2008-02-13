@@ -1,37 +1,31 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F162DDFC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 04:05:23 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1DH6oWE005625
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 12:06:50 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1DH4txS1085466
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 12:04:55 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1DH4sw9004713
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 12:04:54 -0500
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802131617.58646.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-	<1202748429.8276.21.camel@nimitz.home.sr71.net>
-	<200802131617.58646.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 09:05:00 -0800
-Message-Id: <1202922300.25500.37.camel@nimitz.home.sr71.net>
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 34E1DDDFF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 04:28:21 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m1DHSGHj025328
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 17:28:16 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m1DHSGe12195668
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 18:28:16 +0100
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m1DHSGA0025468
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 18:28:16 +0100
+Date: Wed, 13 Feb 2008 18:28:00 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [Patch 0/2] add check_legacy_ioport calls to prevent oops
+Message-ID: <20080213182800.5c6940a8@de.ibm.com>
 Mime-Version: 1.0
-Cc: Thomas Klein <tklein@de.ibm.com>, "Themann, Jan-Bernd" <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, apw <apw@uk.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>, Greg KH <greg@kroah.com>,
-	Thomas Klein <osstklei@de.ibm.com>
+Content-Type: multipart/signed; boundary="Sig_/SZZ6uCqtwy11xHhoEwyju4+";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: parabelboi@bopserverein.de, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,82 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-02-13 at 16:17 +0100, Jan-Bernd Themann wrote:
-> Constraints imposed by HW / FW:
-> - eHEA has own MMU
-> - eHEA  Memory Regions (MRs) are used by the eHEA MMU  to translate virtual
->   addresses to absolute addresses (like DMA mapped memory on a PCI bus)
-> - The number of MRs is limited (not enough to have one MR per packet)
+--Sig_/SZZ6uCqtwy11xHhoEwyju4+
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Are there enough to have one per 16MB section?
+Hi,
 
-> Our current understanding about the current Memory Hotplug System are
-> (please correct me if I'm wrong):
-> 
-> - depends on sparse mem
+the following two patches prevent kernel from crashing on powerpc.
+The surrounding ifdefs will be obsolete, if check_legacy_ioport becomes
+generic code.
 
-You're wrong ;).  In mainline, this is true.  There was a version of the
-SUSE kernel that did otherwise.  But you can not and should not depend
-on this never changing.  But, someone is perfectly free to go out an
-implement something better than sparsemem for memory hotplug.  If they
-go and do this, your driver may get left behind. 
 
-> - only whole memory sections are added / removed
-> - for each section a memory resource is registered
+--=20
+Mit freundlichen Gruessen,
+kind regards,
 
-True, and true. (There might be exceptions to the whole sections one,
-but that's blatant abuse and should be fixed. :)
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
 
-> From the driver side we need:
-> - some kind of memory notification mechanism.
->   For memory add we can live without any external memory notification
->   event. For memory remove we do need an external trigger (see explanation
->   above).
 
-You can export and use (un)register_memory_notifier.  You just need to
-do it in a reasonable way that compiles for randconfig on your
-architecture.  Believe me, we don't want to start teaching drivers about
-sparsemem.  
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
 
-> - a way to iterate over all kernel pages and a way to detect holes in the
->   kernel memory layout in order to build up our own ehea_bmap.
+--Sig_/SZZ6uCqtwy11xHhoEwyju4+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Look at kernel/resource.c
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
-But, I'm really not convinced that you can actually keep this map
-yourselves.  It's not as simple as you think.  What happens if you get
-on an LPAR with two sections, one 256MB@0x0 and another
-16MB@0x1000000000000000.  That's quite possible.  I think your vmalloc'd
-array will eat all of memory.  
+iD8DBQFHsyiw6rqK4qDx+dcRAoIvAJ9w1s5v2gHg0k1qrA5RQ3E9rUKABgCaAzCx
+lrEY306uD08TWw5tv2aOvUI=
+=U3qV
+-----END PGP SIGNATURE-----
 
-That's why we have SPARSEMEM_EXTREME and SPARSEMEM_VMEMMAP implemented
-in the core, so that we can deal with these kinds of problems, once and
-*NOT* in every single little driver out there.  
-
-> Functions to use while building ehea_bmap + MRs:
-> - Use either the functions that are used by the memory hotplug system as
->   well, that means using the section defines + functions (section_nr_to_pfn,
->   pfn_valid)
-
-Basically, you can't use anything related to sections outside of the
-core code.  You can use things like pfn_valid(), or you can create new
-interfaces that are properly abstracted.  
-
-> - Use currently other not exported functions in kernel/resource.c, like
->   walk_memory_resource (where we would still need the maximum possible number
->   of pages NR_MEM_SECTIONS)
-
-It isn't the act of exporting that's the problem.  It's making sure that
-the exports won't be prone to abuse and that people are using them
-properly.  You should assume that you can export and use
-walk_memory_resource().
-
-Do you know what other operating systems do with this hardware?
-
-In the future, please make an effort to get review from knowledgeable
-people about these kinds of things before using them in your driver.
-Your company has many, many resources available, and all you need to do
-is ask.  All that you have to do is look to the tops of the files of the
-functions you are calling.
-
--- Dave
+--Sig_/SZZ6uCqtwy11xHhoEwyju4+--
