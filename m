@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DCA2DDE26
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 17:05:47 +1100 (EST)
-Subject: Re: [PATCH] FIx compile of swim3 as module
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080212204802.18a7a868@zod.rchland.ibm.com>
-References: <20080213024019.GX6887@bakeyournoodle.com>
-	<20080212204802.18a7a868@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 17:03:52 +1100
-Message-Id: <1202882632.7296.25.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 09/18] ide: rework PowerMac media-bay support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <20080208004523.17746.24578.sendpatchset@localhost.localdomain>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<20080208004523.17746.24578.sendpatchset@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-rcWHPrY1cbcdMlpZJp3I"
+Date: Wed, 13 Feb 2008 18:29:36 +1100
+Message-Id: <1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, kyle@mcmartin.ca,
-	LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Reply-To: benh@kernel.crashing.org
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +24,95 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2008-02-12 at 20:48 -0600, Josh Boyer wrote:
-> > The current pmac32_defconfig fails to build with the following
-> error:
-> > 
-> >   Building modules, stage 2.
-> > ERROR: "check_media_bay" [drivers/block/swim3.ko] undefined!
-> > WARNING: modpost: Found 23 section mismatch(es).
-> > To see full details build your kernel with:
-> > 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
-> > make[2]: *** [__modpost] Error 1
-> > 
-> > This patch fixes that.
-> 
-> Kyle posted a slightly different patch that seemed to still keep
-> the original intention of ifdefery in tact.  I've no idea which is
-> better, but the three of you might want to compare notes.
+--=-rcWHPrY1cbcdMlpZJp3I
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Just remove the bloody ifdef's, they are just a useless pain.
+On Fri, 2008-02-08 at 01:45 +0100, Bartlomiej Zolnierkiewicz wrote:
+> Rework PowerMac media-bay support in such way that instead of
+> un/registering the IDE interface we un/register IDE devices:
+>=20
+> * Add ide_port_scan() helper for probing+registerering devices on a port.
+>=20
+> * Rename ide_port_unregister_devices() to __ide_port_unregister_devices()=
+.
+>=20
+> * Add ide_port_unregister_devices() helper for unregistering devices on a=
+ port.
+>=20
+> * Add 'ide_hwif_t *cd_port' to 'struct media_bay_info', pass 'hwif' inste=
+ad
+>   of hwif->index to media_bay_set_ide_infos() and use it to setup 'cd_por=
+t'.
+>=20
+> * Use ide_port_unregister_devices() instead of ide_unregister()
+>   and ide_port_scan() instead of ide_register_hw() in media_bay_step().
+>=20
+> * Unexport ide_register_hw() and make it static.
+>=20
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ide/ide-probe.c        |   18 ++++++++++++++++++
+>  drivers/ide/ide.c              |   22 ++++++++++++++++------
+>  drivers/ide/ppc/pmac.c         |    3 ++-
+>  drivers/macintosh/mediabay.c   |   17 +++++++----------
+>  include/asm-powerpc/mediabay.h |    4 +++-
+>  include/linux/ide.h            |    6 ++----
+>  6 files changed, 48 insertions(+), 22 deletions(-)
 
-Ben.
+> Index: b/include/asm-powerpc/mediabay.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/include/asm-powerpc/mediabay.h
+> +++ b/include/asm-powerpc/mediabay.h
+> @@ -22,10 +22,12 @@ int check_media_bay(struct device_node *
+>  /* Number of bays in the machine or 0 */
+>  extern int media_bay_count;
+> =20
+> +#ifdef CONFIG_BLK_DEV_IDE_PMAC
+>  int check_media_bay_by_base(unsigned long base, int what);
+>  /* called by IDE PMAC host driver to register IDE controller for media b=
+ay */
+>  int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long=
+ base,
+> -			    int irq, int index);
+> +			    int irq, ide_hwif_t *hwif);
+> +#endif
+> =20
+>  #endif /* __KERNEL__ */
+>  #endif /* _PPC_MEDIABAY_H */
+
+This hunk breaks pmac32_defconfig for me.
+
+include2/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
+make[3]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+make[2]: *** [arch/powerpc/platforms/powermac] Error 2
+make[1]: *** [arch/powerpc/platforms] Error 2
+make: *** [sub-make] Error 2
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-rcWHPrY1cbcdMlpZJp3I
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHspxgdSjSd0sB4dIRAibPAJ0dcGD1H6r7zo8Pb8j3YsG+884OSgCeNItN
+zwItoANm8Lo9B2HVBkp3mLg=
+=FdoT
+-----END PGP SIGNATURE-----
+
+--=-rcWHPrY1cbcdMlpZJp3I--
