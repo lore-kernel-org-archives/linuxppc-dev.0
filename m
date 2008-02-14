@@ -1,20 +1,21 @@
-Return-Path: <caglar@pardus.org.tr>
-Received: from uludag.org.tr (ns2.uludag.org.tr [193.140.100.220])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7B47DDFC6
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 02:59:40 +1100 (EST)
-From: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 04/14] arch/powerpc/platforms/iseries/pci.c: Use time_* macros
-Date: Thu, 14 Feb 2008 17:36:42 +0200
-Message-Id: <1203003412-11594-5-git-send-email-caglar@pardus.org.tr>
-In-Reply-To: y
-References: y
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outbound-mail-108.bluehost.com (outbound-mail-108.bluehost.com
+	[69.89.22.8]) by ozlabs.org (Postfix) with SMTP id 524F7DDFD4
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 05:46:06 +1100 (EST)
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: /proc/bus/pci and domains
+Date: Thu, 14 Feb 2008 10:39:11 -0800
+References: <mj+md-20080213.154522.9237.albireo@ucw.cz>
+	<20080214044323.GB1176@kroah.com>
+	<mj+md-20080214.093558.3352.nikam@ucw.cz>
+In-Reply-To: <mj+md-20080214.093558.3352.nikam@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org,
-	=?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802141039.12045.jbarnes@virtuousgeek.org>
+Cc: Greg KH <greg@kroah.com>, paulus@samba.org, anton@samba.org,
+	Martin Mares <mj@ucw.cz>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The functions time_before, time_before_eq, time_after, and time_after_eq are more robust for comparing jiffies against other values.
+On Thursday, February 14, 2008 1:40 am Martin Mares wrote:
+> Hi Greg!
+>
+> > I have no idea, it sounds like a PPC specific thing, not anything the
+> > PCI core does, right?  So I'll add the ppc list to the cc: and ask if
+> > anyone there has any ideas?
+>
+> Unfortunately, this is not PPC specific at all -- proc_attach_device()
+> calls pci_proc_domain(bus), which is an arch-specific hook turning on
+> the weird behavior I described. This hook can return non-zero even on
+> x86 if there are buses outside domain 0.
+>
+> I think that the hook itself is correct, it only should trigger more
+> consistent behavior of the generic code :)
+>
+> Would it be acceptable for the PPC folks to modify the code to add
+> domain numbers to the device numbers in /proc/bus/pci/devices in the
+> same format as the bus directories already have?
+>
+> If so, I will cook up a patch.
 
-So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
+I've run into this too, on machines with many domains.  It's unfortunate that 
+there's no way to preserve compatibility, but I agree that the brokenness may 
+as well be consistent.
 
-Cc: linuxppc-dev@ozlabs.org
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
----
- arch/powerpc/platforms/iseries/pci.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index cc562e4..02a634f 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -23,6 +23,7 @@
- 
- #undef DEBUG
- 
-+#include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
- #include <linux/string.h>
-@@ -586,7 +587,7 @@ static inline struct device_node *xlate_iomm_address(
- 		static unsigned long last_jiffies;
- 		static int num_printed;
- 
--		if ((jiffies - last_jiffies) > 60 * HZ) {
-+		if (time_after(jiffies, last_jiffies + 60 * HZ)) {
- 			last_jiffies = jiffies;
- 			num_printed = 0;
- 		}
--- 
-1.5.3.7
+Jesse
