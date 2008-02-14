@@ -1,10 +1,17 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <10067109ffe9bc3c9a1357e5b8465ed1ebf114f9.1202956445.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] Cell RAS: Remove DEBUG, and add license and copyright
-Date: Thu, 14 Feb 2008 13:34:17 +1100 (EST)
-Cc: cbe-oss-dev@ozlabs.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id E1954DDE18
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 14:48:42 +1100 (EST)
+Date: Thu, 14 Feb 2008 14:46:21 +1100
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
+Message-ID: <20080214034621.GA6887@bakeyournoodle.com>
+References: <47B13D2E.1070001@austin.ibm.com> <47B145E9.9020907@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <47B145E9.9020907@austin.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,35 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/platforms/cell/ras.c still has DEBUG #defined, which is no
-longer neccessary. Disable it, this disables to pr_debugs().
+On Tue, Feb 12, 2008 at 01:08:25AM -0600, Manish Ahuja wrote:
+> 
+> Initial patch for reserving memory in early boot, and freeing it later.
+> If the previous boot had ended with a crash, the reserved memory would contain
+> a copy of the crashed kernel data.
+> 
+> Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> 
+> ----
+>  arch/powerpc/kernel/prom.c                 |   50 ++++++++++++++++++++
+>  arch/powerpc/kernel/rtas.c                 |   32 +++++++++++++
+>  arch/powerpc/platforms/pseries/Makefile    |    1 
+>  arch/powerpc/platforms/pseries/phyp_dump.c |   71 +++++++++++++++++++++++++++++
+>  include/asm-powerpc/phyp_dump.h            |   38 +++++++++++++++
+>  include/asm/rtas.h                         |    3 +
+>  6 files changed, 195 insertions(+)
+> 
+> Index: 2.6.24-rc5/include/asm-powerpc/phyp_dump.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ 2.6.24-rc5/include/asm-powerpc/phyp_dump.h	2008-02-12 06:12:37.000000000 -0600
+> @@ -0,0 +1,38 @@
+> +/*
+> + * Hypervisor-assisted dump
+> + *
+> + * Linas Vepstas, Manish Ahuja 2007
+> + * Copyright (c) 2007 IBM Corp.
 
-While we're there this file should have a copyright notice and license,
-so add both.
+Hi Manish,
+	Sorry for the minor nits but this should be:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/ras.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+ * Linas Vepstas, Manish Ahuja 2008
+ * Copyright 2008 IBM Corp.
+---
 
-diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
-index b2494eb..e43024c 100644
---- a/arch/powerpc/platforms/cell/ras.c
-+++ b/arch/powerpc/platforms/cell/ras.c
-@@ -1,4 +1,13 @@
--#define DEBUG
-+/*
-+ * Copyright 2006-2008, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#undef DEBUG
- 
- #include <linux/types.h>
- #include <linux/kernel.h>
--- 
-1.5.2.rc1.1884.g59b20
+You can optionally use the '©' symbol after word 'Copyright' but you
+shouldn't use '(c)' anymore.
+
+Also in at least one place you've misspelt "Copyright"
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
