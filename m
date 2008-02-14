@@ -1,12 +1,21 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: libfdt: Fix NOP handling bug in fdt_add_subnode_namelen() 
-In-Reply-To: Your message of "Thu, 14 Feb 2008 16:50:34 +1100."
-	<20080214055034.GA13137@localhost.localdomain>
-References: <20080214055034.GA13137@localhost.localdomain> 
-Date: Thu, 14 Feb 2008 08:05:07 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JPei3-0008KM-Pu@jdl.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 31FF1DDF6E
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 01:28:43 +1100 (EST)
+Message-Id: <A3DD9E21-D913-444F-9B7B-2D5C88A9EE5D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+In-Reply-To: <47B40573.1080203@ru.mvista.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] Enable correct operation of serial ports with
+	nonzero regshift.
+Date: Thu, 14 Feb 2008 08:28:39 -0600
+References: <47B35ED8.7020404@ru.mvista.com>
+	<B8D9D613-441B-4A20-AE2D-D808D4B82F16@kernel.crashing.org>
+	<47B40573.1080203@ru.mvista.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,18 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> fdt_add_subnode_namelen() has a bug if asked to add a subnode to a
-> node which has NOP tags interspersed with its properties.  In this
-> case fdt_add_subnode_namelen() will put the new subnode before the
-> first NOP tag, even if there are properties after it, which will
-> result in an invalid blob.
-> 
-> This patch fixes the bug, and adds a testcase for it.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Applied.
+On Feb 14, 2008, at 3:10 AM, Pavel Kiryukhin wrote:
 
-Thanks,
-jdl
+> Kumar Gala wrote:
+>>
+>> On Feb 13, 2008, at 3:19 PM, Pavel Kiryukhin wrote:
+>>
+>>> Add regshift reading to serial drivers.
+>>> This enables correct operation of serial ports with nonzero  
+>>> regshift.
+>>
+>> what device needs this?
+>>
+>> - k
+>
+> Xilinx opb 16550 uart
+
+please add that info to the commit message so we know why this change  
+was made.  Other it looks ok to me.
+
+- k
