@@ -1,22 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id B7AB4DE012
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 10:31:30 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- benh@kernel.crashing.org
-Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
-Date: Thu, 14 Feb 2008 00:07:37 +0100
-References: <20080213182800.5c6940a8@de.ibm.com>
-	<20080213183506.7f3e3145@de.ibm.com>
-	<1202935374.7296.44.camel@pasglop>
-In-Reply-To: <1202935374.7296.44.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802140007.38407.arnd@arndb.de>
-Cc: parabelboi@bopserverein.de, Christian Krafft <krafft@de.ibm.com>,
-	linux-kernel@vger.kernel.org
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id A033DDDDF2
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 11:21:57 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so914717uge.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 16:21:54 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Date: Thu, 14 Feb 2008 01:36:21 +0100
+Message-Id: <20080214003621.12879.33868.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/11] ide/ppc: remove PPC specific IDE hacks
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 13 February 2008, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
-> > sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
-> > This patch adds a check_legacy_ioports to read_port and write_port.
-> > It will now return ENXIO, instead of oopsing.
-> > 
-> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> 
-> The problem is that this prevents using /proc/ioports to access PCI
-> IO space, which might be useful.
-> 
-> I hate that sensors_detect.. or for that matter any other userland code
-> that pokes random ports like that. It should die.
 
-What kind of Oops do you get? Is it because the ioport area is not
-ioremapped at all or do you get a machine check? If there is no
-mapping, we could possibly change inb and outb do deal with that.
+Previous patchset adding warm-plug support allows the removal of PPC specific
+IDE hacks (500 LOC gone)...
 
-	Arnd <><
+[ Ben, please take a look when you have some time, thanks! ]
+
+diffstat:
+
+ arch/powerpc/kernel/setup_32.c          |    8 --
+ arch/powerpc/platforms/powermac/pci.c   |   22 -------
+ arch/powerpc/platforms/powermac/pmac.h  |    5 -
+ arch/powerpc/platforms/powermac/setup.c |    8 --
+ arch/ppc/configs/sandpoint_defconfig    |    2 
+ arch/ppc/kernel/ppc_ksyms.c             |    5 -
+ arch/ppc/kernel/setup.c                 |    2 
+ arch/ppc/platforms/4xx/bamboo.c         |    1 
+ arch/ppc/platforms/4xx/ebony.c          |    1 
+ arch/ppc/platforms/4xx/luan.c           |    1 
+ arch/ppc/platforms/4xx/ocotea.c         |    1 
+ arch/ppc/platforms/4xx/taishan.c        |    1 
+ arch/ppc/platforms/4xx/yucca.c          |    1 
+ arch/ppc/platforms/chestnut.c           |    1 
+ arch/ppc/platforms/cpci690.c            |    1 
+ arch/ppc/platforms/ev64260.c            |    1 
+ arch/ppc/platforms/hdpu.c               |   36 -----------
+ arch/ppc/platforms/lopec.c              |   85 ----------------------------
+ arch/ppc/platforms/mvme5100.c           |    1 
+ arch/ppc/platforms/powerpmc250.c        |    1 
+ arch/ppc/platforms/pplus.c              |   58 -------------------
+ arch/ppc/platforms/prep_setup.c         |   38 ------------
+ arch/ppc/platforms/prpmc750.c           |    1 
+ arch/ppc/platforms/prpmc800.c           |    1 
+ arch/ppc/platforms/radstone_ppc7d.c     |    1 
+ arch/ppc/platforms/residual.c           |    1 
+ arch/ppc/platforms/sandpoint.c          |   94 -------------------------------
+ arch/ppc/platforms/sandpoint.h          |    3 
+ arch/ppc/platforms/spruce.c             |    1 
+ arch/ppc/syslib/m8xx_setup.c            |    6 -
+ arch/ppc/syslib/ppc4xx_setup.c          |   23 -------
+ drivers/ide/ide.c                       |    6 -
+ drivers/ide/pci/sl82c105.c              |    6 +
+ drivers/ide/ppc/mpc8xx.c                |   86 +++++++---------------------
+ drivers/ide/ppc/pmac.c                  |   97 +++-----------------------------
+ include/asm-powerpc/ide.h               |   47 ++++++++++-----
+ 36 files changed, 72 insertions(+), 581 deletions(-)
