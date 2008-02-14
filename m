@@ -1,18 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 79280DDFFD
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 2B12EDDDFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Feb 2008 03:52:40 +1100 (EST)
-Message-ID: <47B471D2.3090906@anagramm.de>
-Date: Thu, 14 Feb 2008 17:52:34 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri, 15 Feb 2008 07:26:26 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so134325anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Feb 2008 12:26:25 -0800 (PST)
+Message-ID: <c384c5ea0802141226m630fcc11h60627cde75cb8b0e@mail.gmail.com>
+Date: Thu, 14 Feb 2008 21:26:25 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: High resolution timer support in 2.6.24+ for MPC831x?
 MIME-Version: 1.0
-To: mahendra varman <mahendravarman15@gmail.com>
-Subject: Re: reg Philips ISP 1562 usb controller support in linux2.6.23.11
-References: <4ac2955e0802140528i69fece47xa6d751200c5616f9@mail.gmail.com>
-In-Reply-To: <4ac2955e0802140528i69fece47xa6d751200c5616f9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-mahendra varman schrieb:
-> Hello all
-> 
-> If iam not using the open firmware architecture
-> Then can u please help me what i need to enable in menuconfig for ISP 
-> 1562 pci based usb controller ...
+Hello all,
 
-According to it's datasheet, The ISP1562 integrates normal OHCI / EHCI
-compliant USB cores. My ISP1563 works fine with these CONFIGs enabled.
+although I can enable high res timers in 2.6.24, the item note says it
+does nothing if the platform does not have support for it.
 
-> Please do reply
+My platform is a MPC8313E-RDB, and I suspect no high res clock source
+implementation exists for it in 2.6.24, because
+clock_getres(CLOCK_REALTIME,) gives me 1/HZ.
 
-Please don't push anybody.
+Is this correct and/or is anything in the works?
 
 Regards,
-
-Clemens Koller
+-- 
+Leon
