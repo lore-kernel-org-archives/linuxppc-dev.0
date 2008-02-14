@@ -1,19 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 12891DDE34
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:19:28 +1100 (EST)
-Date: Thu, 14 Feb 2008 17:21:52 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH 0/4]: Respun LMB patches.
-Message-ID: <20080214232152.GB15724@lixom.net>
-References: <20080213.170938.34536425.davem@davemloft.net>
-	<38133B3C-75A2-4465-9484-7BF8E7E85D1D@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <38133B3C-75A2-4465-9484-7BF8E7E85D1D@freescale.com>
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2A123DDE2F
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:27:12 +1100 (EST)
+Date: Fri, 15 Feb 2008 10:27:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] Enable correct operation of serial ports
+	withnonzero regshift.
+Message-Id: <20080215102706.1b7c30c1.sfr@canb.auug.org.au>
+In-Reply-To: <20080214185534.81F625F808D@mail186-dub.bigfish.com>
+References: <47B35ED8.7020404@ru.mvista.com>
+	<20080214185534.81F625F808D@mail186-dub.bigfish.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi"
+Cc: linuxppc-dev@ozlabs.org, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 14, 2008 at 02:58:22PM -0600, Becky Bruce wrote:
+--Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Thanks for picking up the patches from Kumar and myself and fitting  
-> them into your series - this is much appreciated.  FYI, I applied the  
-> entire patch series to my local tree and test-booted both mpc8641 and  
-> mpc8568mds and both build and boot cleanly. I also built pasemi and  
-> ebony, those build cleanly as well.
+On Thu, 14 Feb 2008 10:55:31 -0800 "Stephen Neuendorffer" <stephen.neuendor=
+ffer@xilinx.com> wrote:
+>
+> > --- a/arch/powerpc/kernel/legacy_serial.c
+> > +++ b/arch/powerpc/kernel/legacy_serial.c
+> > +	/* get regshift if present*/
+> > +	regshift =3D get_property(np, "reg-shift", NULL);
+>=20
+> of_get_property, presumably?
 
-pasemi_defconfig boots happily on my boards here. I've kicked off my
-"build all powerpc defconfigs" script while I leave the house for a
-couple of hours, but as others have said, no problems are expected...
+Damn, how did I miss that?  :-)
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--Olof
+--Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHtM5PTgG2atn1QN8RAkQ3AJ9iHS2hYigQMSZxssI03/6s8NiJEQCgmvZ8
+sb3bhVCzdcMGZ8fDB6CX7qY=
+=Dpps
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi--
