@@ -1,21 +1,22 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-108.bluehost.com (outbound-mail-108.bluehost.com
-	[69.89.22.8]) by ozlabs.org (Postfix) with SMTP id 524F7DDFD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 05:46:06 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: /proc/bus/pci and domains
-Date: Thu, 14 Feb 2008 10:39:11 -0800
-References: <mj+md-20080213.154522.9237.albireo@ucw.cz>
-	<20080214044323.GB1176@kroah.com>
-	<mj+md-20080214.093558.3352.nikam@ucw.cz>
-In-Reply-To: <mj+md-20080214.093558.3352.nikam@ucw.cz>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound8-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 32129DE0BF
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 05:55:42 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802141039.12045.jbarnes@virtuousgeek.org>
-Cc: Greg KH <greg@kroah.com>, paulus@samba.org, anton@samba.org,
-	Martin Mares <mj@ucw.cz>, linuxppc-dev@ozlabs.org
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] Enable correct operation of serial ports
+	withnonzero regshift.
+Date: Thu, 14 Feb 2008 10:55:31 -0800
+In-Reply-To: <47B35ED8.7020404@ru.mvista.com>
+References: <47B35ED8.7020404@ru.mvista.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Pavel Kiryukhin" <pkiryukhin@ru.mvista.com>,
+	<linuxppc-dev@ozlabs.org>
+Message-Id: <20080214185534.81F625F808D@mail186-dub.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday, February 14, 2008 1:40 am Martin Mares wrote:
-> Hi Greg!
->
-> > I have no idea, it sounds like a PPC specific thing, not anything the
-> > PCI core does, right?  So I'll add the ppc list to the cc: and ask if
-> > anyone there has any ideas?
->
-> Unfortunately, this is not PPC specific at all -- proc_attach_device()
-> calls pci_proc_domain(bus), which is an arch-specific hook turning on
-> the weird behavior I described. This hook can return non-zero even on
-> x86 if there are buses outside domain 0.
->
-> I think that the hook itself is correct, it only should trigger more
-> consistent behavior of the generic code :)
->
-> Would it be acceptable for the PPC folks to modify the code to add
-> domain numbers to the device numbers in /proc/bus/pci/devices in the
-> same format as the bus directories already have?
->
-> If so, I will cook up a patch.
 
-I've run into this too, on machines with many domains.  It's unfortunate that 
-there's no way to preserve compatibility, but I agree that the brokenness may 
-as well be consistent.
+> --- a/arch/powerpc/kernel/legacy_serial.c
+> +++ b/arch/powerpc/kernel/legacy_serial.c
+> +	/* get regshift if present*/
+> +	regshift =3D get_property(np, "reg-shift", NULL);
 
-Jesse
+of_get_property, presumably?
+
+--- a/drivers/serial/of_serial.c
++++ b/drivers/serial/of_serial.c
+> +	regshift =3D get_property(np, "reg-shift", NULL);
+
+ditto...
+
+Otherwise,=20
+
+Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+
+Also, can you post a patch to the Xilinx portion of
+booting-without-of.txt that has the device tree entries necessary to get
+the uart to work?  (Since I happened to be tracking down what I assume
+is the same issue when you posted the patch!)
+
+Steve
