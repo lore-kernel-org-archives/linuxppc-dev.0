@@ -1,20 +1,20 @@
-Return-Path: <mj+f-140208+linuxppc-dev=ozlabs.org@ucw.cz>
-Received: from nikam.ms.mff.cuni.cz (nikam-dmz.ms.mff.cuni.cz [195.113.20.16])
-	by ozlabs.org (Postfix) with ESMTP id 4A537DDF44
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 21:13:22 +1100 (EST)
-Date: Thu, 14 Feb 2008 10:40:22 +0100
-From: Martin Mares <mj@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Subject: Re: /proc/bus/pci and domains
-Message-ID: <mj+md-20080214.093558.3352.nikam@ucw.cz>
-References: <mj+md-20080213.154522.9237.albireo@ucw.cz>
-	<20080214044323.GB1176@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080214044323.GB1176@kroah.com>
-Cc: linuxppc-dev@ozlabs.org,
-	Linux-PCI Mailing List <linux-pci@atrey.karlin.mff.cuni.cz>,
-	paulus@samba.org, anton@samba.org
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 000DBDDF2D
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 22:40:08 +1100 (EST)
+Message-ID: <47B42874.7040406@scram.de>
+Date: Thu, 14 Feb 2008 12:39:32 +0100
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Nima Montaser <nima@nortel.com>
+Subject: Re: [PATCH/RFC] [POWERPC] Add i2c pins to dts and board setup on
+	01-31-08
+References: <87AC5F88F03E6249AEA68D40BD3E00BE1418A0B3@zcarhxm2.corp.nortel.com>
+In-Reply-To: <87AC5F88F03E6249AEA68D40BD3E00BE1418A0B3@zcarhxm2.corp.nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Greg!
+Hi Nima,
 
-> I have no idea, it sounds like a PPC specific thing, not anything the
-> PCI core does, right?  So I'll add the ppc list to the cc: and ask if
-> anyone there has any ideas?
+> I've got a couple of comments about the above patch - I'm not quite sure
+> how to add my comments to the ozlab.org site.
 
-Unfortunately, this is not PPC specific at all -- proc_attach_device()
-calls pci_proc_domain(bus), which is an arch-specific hook turning on
-the weird behavior I described. This hook can return non-zero even on
-x86 if there are buses outside domain 0.
+simply replying to the original mail will add your comments.
 
-I think that the hook itself is correct, it only should trigger more
-consistent behavior of the generic code :)
+> 1 -
+> -- a/arch/powerpc/boot/dts/mpc8272ads.dts
+> [snip]
+> +                       i2c@11860 {
+> +                               compatible = "fsl,mpc8248-i2c",  
+> [NIMA] Are you sure it should be mpc8248, or do you want 8272. I know
+> they are essentially the same chip, but just to avoid confusion, it
+> maybe better as 8272.
 
-Would it be acceptable for the PPC folks to modify the code to add
-domain numbers to the device numbers in /proc/bus/pci/devices in the
-same format as the bus directories already have?
+Good catch, thanks! As i don't have a CPM2 chip myself, i had a tester with
+a MPC8248. I just took his dts parts.
 
-If so, I will cook up a patch.
+> 2-
+> +++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+> @@ -96,6 +96,11 @@  static struct cpm_pin mpc8272_ads_pins[] = {
+>         {1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+>         {2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+>         {2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+> +
+> +       /* I2C */
+> +       {3, 26, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
+> +       {3, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
+> 
+> [NIMA] The MPC8272 manual states that it should be pins 14/15 and not
+> 26/27.
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-"Dijkstra probably hates me." -- /usr/src/linux/kernel/sched.c
+Ah thanks. 
+
+> However, in all my accesses,
+> - 1st write is successful
+> - 1st read fails (times out)
+> - 2nd read succeeds
+> 
+> Here is the debug log:
+> i2c-adapter i2c-0: ioctl, cmd=0x703, arg=0x40
+> i2c-dev: i2c-0 writing 2 bytes.
+> i2c-adapter i2c-0: master_xfer[0] W, addr=0x40, len=2
+> i2c-adapter i2c-0: i2c-algo-cpm.o: R: 0 T: 0
+> i2c-adapter i2c-0: cpm_iic_write(abyte=0x80)
+> i2c-adapter i2c-0: tx sc 0 bc00
+> i2c-adapter i2c-0: test ready.
+> i2c-adapter i2c-0: not ready.
+> i2c-adapter i2c-0: Interrupt: 2
+> i2c-adapter i2c-0: Interrupt: 1
+> i2c-adapter i2c-0: test ready.
+> i2c-adapter i2c-0: ready.
+> i2c-adapter i2c-0: tx sc 0 3c00
+> i2c-dev: i2c-0 reading 1 bytes.
+> i2c-adapter i2c-0: master_xfer[0] R, addr=0x40, len=1
+> i2c-adapter i2c-0: i2c-algo-cpm.o: R: 0 T: 0
+> i2c-adapter i2c-0: cpm_i2c_read(abyte=0x81)
+> i2c-adapter i2c-0: test ready.
+> i2c-adapter i2c-0: not ready.
+> i2c-adapter i2c-0: I2C read: timeout!
+> i2c-adapter i2c-0: cpm_i2c_force_close()
+> i2c-dev: i2c-0 reading 1 bytes.
+> i2c-adapter i2c-0: master_xfer[0] R, addr=0x40, len=1
+> i2c-adapter i2c-0: i2c-algo-cpm.o: R: 0 T: 0
+> i2c-adapter i2c-0: cpm_i2c_read(abyte=0x81)
+> i2c-adapter i2c-0: test ready.
+> i2c-adapter i2c-0: not ready.
+> i2c-adapter i2c-0: Interrupt: 1
+> i2c-adapter i2c-0: test ready.
+> i2c-adapter i2c-0: ready.
+> i2c-adapter i2c-0: rx sc 2c00, rx sc 1800
+> 
+> Any ideas?
+
+What does you chip expect? Start-Write-Start-Read-Stop or Start-Write-Stop, Start-Read-Stop? 
+Did you try chaining the write and read request (put them into the same msg)?
+
+Thanks,
+Jochen
