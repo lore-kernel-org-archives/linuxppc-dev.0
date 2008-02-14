@@ -1,18 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 486F2DDFE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:16:40 +1100 (EST)
-Date: Thu, 14 Feb 2008 14:17:11 -0800 (PST)
-Message-Id: <20080214.141711.222843930.davem@davemloft.net>
-To: mj@ucw.cz
+Return-Path: <mj+f-140208+linuxppc-dev=ozlabs.org@ucw.cz>
+Received: from nikam.ms.mff.cuni.cz (nikam-dmz.ms.mff.cuni.cz [195.113.20.16])
+	by ozlabs.org (Postfix) with ESMTP id 38C2FDDFCE
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:21:56 +1100 (EST)
+Date: Thu, 14 Feb 2008 23:21:55 +0100
+From: Martin Mares <mj@ucw.cz>
+To: David Miller <davem@davemloft.net>
 Subject: Re: /proc/bus/pci and domains
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <mj+md-20080214.214339.22251.nikam@ucw.cz>
+Message-ID: <mj+md-20080214.221808.725.nikam@ucw.cz>
 References: <mj+md-20080214.093558.3352.nikam@ucw.cz>
 	<20080214.134305.237408044.davem@davemloft.net>
 	<mj+md-20080214.214339.22251.nikam@ucw.cz>
+	<20080214.141711.222843930.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080214.141711.222843930.davem@davemloft.net>
 Cc: greg@kroah.com, linux-pci@atrey.karlin.mff.cuni.cz, paulus@samba.org,
 	anton@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,11 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Martin Mares <mj@ucw.cz>
-Date: Thu, 14 Feb 2008 22:45:14 +0100
+> X now uses sysfs when available, therefore I think it's
+> best not to try and muck with this deprecated interface
+> if possible.
 
-> But thanks for the tip, I will check X before I post the patch.
+However, the interface is fatally broken on machines with domains
+and the breakage is visible (e.g., run lspci when /sys is not mounted).
 
-X now uses sysfs when available, therefore I think it's
-best not to try and muck with this deprecated interface
-if possible.
+I originally intended to just disable the proc backend on the affected
+architectures, but it turned out than even x86 can be affected.
+
+				Have a nice fortnight
+-- 
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+"God doesn't play dice."   -- Albert Einstein
