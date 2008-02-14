@@ -1,16 +1,16 @@
 Return-Path: <bzolnier@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.177])
-	by ozlabs.org (Postfix) with ESMTP id D59EDDDE06
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 11:22:05 +1100 (EST)
-Received: by ik-out-1112.google.com with SMTP id b32so178778ika.1
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 16:22:01 -0800 (PST)
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id 3A6FCDDF52
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2008 11:22:11 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id g16so145124nfd.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2008 16:22:08 -0800 (PST)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Thu, 14 Feb 2008 01:36:28 +0100
-Message-Id: <20080214003628.12879.96439.sendpatchset@localhost.localdomain>
+Date: Thu, 14 Feb 2008 01:36:35 +0100
+Message-Id: <20080214003635.12879.88066.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080214003621.12879.33868.sendpatchset@localhost.localdomain>
 References: <20080214003621.12879.33868.sendpatchset@localhost.localdomain>
-Subject: [PATCH 01/11] ide-pmac: remove dead code
+Subject: [PATCH 02/11] ppc/hdpu: remove dead IDE code
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,77 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove unused pmac_ide_{check_base,get_irq}() and pmac_find_ide_boot(),
-then remove no longer needed ide_majors[] and pmac_ide_count.
+Also remove now not needed <linux/ide.h> include.
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ppc/pmac.c |   47 -----------------------------------------------
- 1 file changed, 47 deletions(-)
+ arch/ppc/platforms/hdpu.c |   36 ------------------------------------
+ 1 file changed, 36 deletions(-)
 
-Index: b/drivers/ide/ppc/pmac.c
+Index: b/arch/ppc/platforms/hdpu.c
 ===================================================================
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -80,7 +80,6 @@ typedef struct pmac_ide_hwif {
- } pmac_ide_hwif_t;
+--- a/arch/ppc/platforms/hdpu.c
++++ b/arch/ppc/platforms/hdpu.c
+@@ -16,7 +16,6 @@
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+ #include <linux/irq.h>
+-#include <linux/ide.h>
+ #include <linux/seq_file.h>
+ #include <linux/platform_device.h>
  
- static pmac_ide_hwif_t pmac_ide[MAX_HWIFS];
--static int pmac_ide_count;
- 
- enum {
- 	controller_ohare,	/* OHare based */
-@@ -893,52 +892,6 @@ pmac_ide_get_base(int index)
- 	return pmac_ide[index].regbase;
+@@ -604,41 +603,6 @@ static void parse_bootinfo(unsigned long
+ 	}
  }
  
--int
--pmac_ide_check_base(unsigned long base)
+-#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
+-static void
+-hdpu_ide_request_region(ide_ioreg_t from, unsigned int extent, const char *name)
 -{
--	int ix;
--	
-- 	for (ix = 0; ix < MAX_HWIFS; ++ix)
--		if (base == pmac_ide[ix].regbase)
--			return ix;
--	return -1;
+-	request_region(from, extent, name);
+-	return;
 -}
 -
--int
--pmac_ide_get_irq(unsigned long base)
+-static void hdpu_ide_release_region(ide_ioreg_t from, unsigned int extent)
 -{
--	int ix;
--
--	for (ix = 0; ix < MAX_HWIFS; ++ix)
--		if (base == pmac_ide[ix].regbase)
--			return pmac_ide[ix].irq;
--	return 0;
+-	release_region(from, extent);
+-	return;
 -}
 -
--static int ide_majors[] = { 3, 22, 33, 34, 56, 57 };
--
--dev_t __init
--pmac_find_ide_boot(char *bootdevice, int n)
+-static void __init
+-hdpu_ide_pci_init_hwif_ports(hw_regs_t * hw, ide_ioreg_t data_port,
+-			     ide_ioreg_t ctrl_port, int *irq)
 -{
--	int i;
--	
--	/*
--	 * Look through the list of IDE interfaces for this one.
--	 */
--	for (i = 0; i < pmac_ide_count; ++i) {
--		char *name;
--		if (!pmac_ide[i].node || !pmac_ide[i].node->full_name)
--			continue;
--		name = pmac_ide[i].node->full_name;
--		if (memcmp(name, bootdevice, n) == 0 && name[n] == 0) {
--			/* XXX should cope with the 2nd drive as well... */
--			return MKDEV(ide_majors[i], 0);
+-	struct pci_dev *dev;
+-
+-	pci_for_each_dev(dev) {
+-		if (((dev->class >> 8) == PCI_CLASS_STORAGE_IDE) ||
+-		    ((dev->class >> 8) == PCI_CLASS_STORAGE_RAID)) {
+-			hw->irq = dev->irq;
+-
+-			if (irq != NULL) {
+-				*irq = dev->irq;
+-			}
 -		}
 -	}
 -
--	return 0;
+-	return;
 -}
+-#endif
 -
- /* Suspend call back, should be called after the child devices
-  * have actually been suspended
-  */
+ void hdpu_heartbeat(void)
+ {
+ 	if (mv64x60_read(&bh, MV64x60_GPP_VALUE) & (1 << 5))
