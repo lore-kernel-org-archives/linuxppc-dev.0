@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2A123DDE2F
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:27:12 +1100 (EST)
-Date: Fri, 15 Feb 2008 10:27:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Enable correct operation of serial ports
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound5-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 87E57DDF98
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:33:58 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] Enable correct operation of serial ports
 	withnonzero regshift.
-Message-Id: <20080215102706.1b7c30c1.sfr@canb.auug.org.au>
-In-Reply-To: <20080214185534.81F625F808D@mail186-dub.bigfish.com>
-References: <47B35ED8.7020404@ru.mvista.com>
-	<20080214185534.81F625F808D@mail186-dub.bigfish.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi"
+Date: Thu, 14 Feb 2008 15:33:09 -0800
+In-Reply-To: <20080215102706.1b7c30c1.sfr@canb.auug.org.au>
+References: <47B35ED8.7020404@ru.mvista.com><20080214185534.81F625F808D@mail186-dub.bigfish.com>
+	<20080215102706.1b7c30c1.sfr@canb.auug.org.au>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Message-Id: <20080214233311.B01D7AD8050@mail122-sin.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,37 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 14 Feb 2008 10:55:31 -0800 "Stephen Neuendorffer" <stephen.neuendor=
-ffer@xilinx.com> wrote:
->
-> > --- a/arch/powerpc/kernel/legacy_serial.c
-> > +++ b/arch/powerpc/kernel/legacy_serial.c
-> > +	/* get regshift if present*/
-> > +	regshift =3D get_property(np, "reg-shift", NULL);
+gcc knows better. :)
+
+> -----Original Message-----
+> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]
+> Sent: Thursday, February 14, 2008 3:27 PM
+> To: Stephen Neuendorffer
+> Cc: Pavel Kiryukhin; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] [POWERPC] Enable correct operation of serial
+ports withnonzero regshift.
 >=20
-> of_get_property, presumably?
-
-Damn, how did I miss that?  :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHtM5PTgG2atn1QN8RAkQ3AJ9iHS2hYigQMSZxssI03/6s8NiJEQCgmvZ8
-sb3bhVCzdcMGZ8fDB6CX7qY=
-=Dpps
------END PGP SIGNATURE-----
-
---Signature=_Fri__15_Feb_2008_10_27_06_+1100_5kHI9+OPPbPgiTVi--
+> On Thu, 14 Feb 2008 10:55:31 -0800 "Stephen Neuendorffer"
+<stephen.neuendorffer@xilinx.com> wrote:
+> >
+> > > --- a/arch/powerpc/kernel/legacy_serial.c
+> > > +++ b/arch/powerpc/kernel/legacy_serial.c
+> > > +	/* get regshift if present*/
+> > > +	regshift =3D get_property(np, "reg-shift", NULL);
+> >
+> > of_get_property, presumably?
+>=20
+> Damn, how did I miss that?  :-)
+>=20
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
