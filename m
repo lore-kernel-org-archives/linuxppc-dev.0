@@ -1,18 +1,12 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 1D449DDE0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 12:07:51 +1100 (EST)
-Date: Fri, 15 Feb 2008 12:05:28 +1100
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
-Message-ID: <20080215010528.GI6887@bakeyournoodle.com>
-References: <47B13D2E.1070001@austin.ibm.com> <47B146BE.5010807@austin.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 15 Feb 2008 15:14:16 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Fold comment handling test into testsuite
+Message-ID: <20080215041416.GA6221@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <47B146BE.5010807@austin.ibm.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +16,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 12, 2008 at 01:11:58AM -0600, Manish Ahuja wrote:
+For ages dtc has included a sample dts, comment-test.dts, for checking
+various lexical corner cases in comment processing.  In fact, it
+predates the automated testsuite, and has never been integrated into
+it.  This patch addresses this oversight, folding the comment handling
+test in with the rest of the testsuite.
 
-<snip>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-> +static ssize_t
-> +show_release_region(struct kset * kset, char *buf)
-> +{
-> +	return sprintf(buf, "ola\n");
-> +}
-> +
-> +static struct subsys_attribute rr = __ATTR(release_region, 0600,
-> +					 show_release_region,
-> +					 store_release_region);
+Index: dtc/comment-test.dts
+===================================================================
+--- dtc.orig/comment-test.dts	2008-02-15 15:01:06.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,38 +0,0 @@
+-/* regexps for lexing comments are.. tricky.  Check if we've actually
+- * got it right */
+-
+-/ {
+-	// line comment
+-	prop1;
+-	/* comment */
+-	prop2;
+-	/* multiline
+-
+-	notaprop1;
+-
+-	   comment */
+-	prop3;
+-	/**/
+-	prop4;
+-	/***/
+-	prop5;
+-	/****/
+-	prop6;
+-	/* another
+-	 * multiline
+-	 * comment */
+-	prop7;
+-	/* yet
+-	 * another
+-	 * multline
+-	 * comment
+-	 */
+-	prop8;
+-	/** try this */
+-	prop9;
+-	/* and this **/
+-	prop10;
+-	child /* finally */ {
+-	};
+-};
+-/* final comment */
+Index: dtc/tests/comments.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/comments.dts	2008-02-15 15:05:50.000000000 +1100
+@@ -0,0 +1,39 @@
++/* regexps for lexing comments are.. tricky.  Check if we've actually
++ * got it right */
++/dts-v1/;
++
++/ {
++	// line comment
++	prop1;
++	/* comment */
++	prop2;
++	/* multiline
++
++	notaprop1;
++
++	   comment */
++	prop3;
++	/**/
++	prop4;
++	/***/
++	prop5;
++	/****/
++	prop6;
++	/* another
++	 * multiline
++	 * comment */
++	prop7;
++	/* yet
++	 * another
++	 * multline
++	 * comment
++	 */
++	prop8;
++	/** try this */
++	prop9;
++	/* and this **/
++	prop10;
++	child /* finally */ {
++	};
++};
++/* final comment */
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2008-02-15 15:01:20.000000000 +1100
++++ dtc/tests/run_tests.sh	2008-02-15 15:08:09.000000000 +1100
+@@ -155,6 +155,10 @@ dtc_tests () {
+     run_test dtc.sh -I dts -O dtb -o dtc_path-references.test.dtb path-references.dts
+     run_test path-references dtc_path-references.test.dtb
+ 
++    run_test dtc.sh -I dts -O dtb -o dtc_comments.test.dtb comments.dts
++    run_test dtc.sh -I dts -O dtb -o dtc_comments-cmp.test.dtb comments-cmp.dts
++    run_test dtbs_equal_ordered dtc_comments.test.dtb dtc_comments-cmp.test.dtb
++
+     # Check -Odts mode preserve all dtb information
+     for tree in test_tree1.dtb dtc_tree1.test.dtb dtc_escapes.test.dtb ; do
+ 	run_test dtc.sh -I dtb -O dts -o odts_$tree.test.dts $tree
+Index: dtc/tests/comments-cmp.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/comments-cmp.dts	2008-02-15 15:07:04.000000000 +1100
+@@ -0,0 +1,16 @@
++/dts-v1/;
++
++/ {
++	prop1;
++	prop2;
++	prop3;
++	prop4;
++	prop5;
++	prop6;
++	prop7;
++	prop8;
++	prop9;
++	prop10;
++	child {
++	};
++};
 
-Any reason this sysfs attribute can't be write only? The show method
-doesn't seem needed.
-
-> +static int __init phyp_dump_setup(void)
-> +{
-
-<snip>
-
-> +	/* Is there dump data waiting for us? */
-> +	rtas = of_find_node_by_path("/rtas");
-> +	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
-
-Hmm this isn't good.  You need to check rtas != NULL.
-
-> +	if (dump_header == NULL) {
-> +		release_all();
-> +		return 0;
-> +	}
-> +
-> +	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
-> +	rc = subsys_create_file(&kernel_subsys, &rr);
-> +	if (rc) {
-> +		printk (KERN_ERR "phyp-dump: unable to create sysfs file (%d)\n", rc);
-> +		release_all();
-> +		return 0;
-> +	}
->  
->  	return 0;
->  }
-> -
->  subsys_initcall(phyp_dump_setup);
-
-Hmm I think this really should be a:
-	machine_subsys_initcall(pseries, phyp_dump_setup)
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
