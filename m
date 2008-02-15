@@ -1,23 +1,30 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A6045DDFE9
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:51:45 +1100 (EST)
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 87CE8DE011
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:54:17 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m1FHrtVC004867
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:53:55 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1FHsG7e3723402
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:54:16 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1FHsFLM012128
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:54:16 +1100
+Message-ID: <47B5D1C3.40702@linux.vnet.ibm.com>
+Date: Fri, 15 Feb 2008 23:24:11 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] booting-without-of: add Xilinx uart 16550.
-Date: Fri, 15 Feb 2008 09:46:28 -0800
-In-Reply-To: <47B5CEAF.8030705@ru.mvista.com>
-References: <47B59631.10908@ru.mvista.com>
-	<20080215170844.9D21610081@mail40-dub.bigfish.com>
-	<47B5CEAF.8030705@ru.mvista.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Pavel Kiryukhin" <pkiryukhin@ru.mvista.com>
-Message-Id: <20080215174630.B35651B50078@mail211-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+To: bzolnier@gmail.com
+Subject: [BUID_FAILURE] next-20080215 Build failure caused by ide: rework
+	PowerMac media-bay support
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The linux-next-20080215 kernel build fails on the powerpc with
+following error
+ 
+  CC      arch/powerpc/platforms/powermac/setup.o
+In file included from arch/powerpc/platforms/powermac/setup.c:66:
+include/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
+include/asm/mediabay.h:29: warning: function declaration isn't a prototype
+make[2]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+make[1]: *** [arch/powerpc/platforms/powermac] Error 2
+make: *** [arch/powerpc/platforms] Error 2
 
+This build failure is caused by the  ide: rework PowerMac media-bay support
+patch.This problem was reported and solution suggested according to
+http://lkml.org/lkml/2008/2/13/195 including the 
 
-> -----Original Message-----
-> From: Pavel Kiryukhin [mailto:pkiryukhin@ru.mvista.com]
-> Sent: Friday, February 15, 2008 9:41 AM
-> To: Stephen Neuendorffer
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] booting-without-of: add Xilinx uart 16550.
->=20
-> Stephen Neuendorffer wrote:
-> >> +       - reg-shift : registers offset shift (standard uart_port
-> > field).
-> >> +         Property is optional if regshift is zero.
-> >
-> > I was hoping to get an idea of what is required here, or when I
-might
-> > use it?
-> >
-> > It looks like the ARCH=3Dppc code instantiates this with a reg-shift
-of
-> > 2...  Is this the expected value?
->=20
-> Yes, reg-shift =3D 2 should be set for Xilinx 16550 uart.
-> Should I add this to patch?
+#include <linux/ide.h> after
 
-Yes, please!
-=20
-> BTW regshift=3D2 is hardcoded for uartlite.
->=20
-> > When would it be not zero? or not
-> > two?
-> Sorry, it seems I don't follow here.
+#ifdef CONFIG_BLK_DEV_IDE_PMAC
 
-I think all that needs to get added is 'For the Xilinx uart 16550 cores,
-reg-shift must be set to 2'
+helps in fixing the build failure.
 
-Steve
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
