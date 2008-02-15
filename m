@@ -1,20 +1,40 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E38F3DDEFE
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 03:45:45 +1100 (EST)
-Date: Fri, 15 Feb 2008 19:45:42 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] fb: add support for foreign endianness
-Message-ID: <20080215164542.GB16810@localhost.localdomain>
-References: <20080205154432.GA8749@localhost.localdomain>
-	<20080214224942.a0cb6218.akpm@linux-foundation.org>
+Return-Path: <haveblue@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C6420DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 03:55:46 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FGtgpo020516
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 11:55:42 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1FGtfx0181572
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:55:41 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1FGtfos015380
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:55:41 -0700
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+In-Reply-To: <OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
+References: <200802111724.12416.ossthema@de.ibm.com>
+	<1202748429.8276.21.camel@nimitz.home.sr71.net>
+	<200802131617.58646.ossthema@de.ibm.com>
+	<OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com>
+	<1203009163.19205.42.camel@nimitz.home.sr71.net>
+	<OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 08:55:38 -0800
+Message-Id: <1203094538.8142.23.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080214224942.a0cb6218.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, adaplas@gmail.com
-Reply-To: avorontsov@ru.mvista.com
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>, Greg KH <greg@kroah.com>,
+	apw <apw@uk.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>,
+	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,219 +44,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
-> On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Fri, 2008-02-15 at 14:22 +0100, Christoph Raisch wrote:
+> A translation from kernel to ehea_bmap space should be fast and
+> predictable
+> (ruling out hashes).
+> If a driver doesn't know anything else about the mapping structure,
+> the normal solution in kernel for this type of problem is a multi
+> level
+> look up table
+> like pgd->pud->pmd->pte
+> This doesn't sound right to be implemented in a device driver.
 > 
-> > This patch adds support for the framebuffers with non-native
-> > endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
-> > be used by the drivers. Depending on the host endianness this flag
-> > will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
-> > 
-> > Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
-> 
-> That's a pretty large patch to fbdev core,
+> We didn't see from the existing code that such a mapping to a
+> contiguous
+> space already exists.
+> Maybe we've missed it.
 
-Yes, but changes are mostly trivial. No insurance of typos and thinkos
-though. OTOH, it survived my tests.
+I've been thinking about that, and I don't think you really *need* to
+keep a comprehensive map like that.  
 
-> and Tony appears to have gone
-> offline again and you didn't cc the fbdev mailing list.
+When the memory is in a particular configuration (range of memory
+present along with unique set of holes) you get a unique ehea_bmap
+configuration.  That layout is completely predictable.
 
-FRAMEBUFFER LAYER
-P:      Antonino Daplas
-M:      adaplas@gmail.com
-L:      linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+So, if at any time you want to figure out what the ehea_bmap address for
+a particular *Linux* virtual address is, you just need to pretend that
+you're creating the entire ehea_bmap, use the same algorithm and figure
+out host you would have placed things, and use that result.
 
-I'm lazy to subscribe on occasional patches. Yup, this is hardly
-an excuse...
+Now, that's going to be a slow, crappy linear search (but maybe not as
+slow as recreating the silly thing).  So, you might eventually run into
+some scalability problems with a lot of packets going around.  But, I'd
+be curious if you do in practice.
 
-> I fixed the third problem.  Could the other fbdev developers please review
-> and comment on this?
-> 
-> Thanks.
-> 
-> 
-> 
-> Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
-> be permanently enabled?
+The other idea is that you create a mapping that is precisely 1:1 with
+kernel memory.  Let's say you have two sections present, 0 and 100.  You
+have a high_section_index of 100, and you vmalloc() a 100 entry array.
 
-It should not. Because with CONFIG_FB_FOREIGN_ENDIAN enabled, drawing
-might be a little bit slower, because of external checks for endianness
-(I didn't noticed any slowdown, but I guess it's still measurable if we
-find some fb benchmark).
+You need to create a *CONTIGUOUS* ehea map?  Create one like this:
 
-Thinking about it a little bit more, I believe we want to add a choice,
-which exactly foreign endianness we want to compile-in. Then, if we're
-pretty confident that particular BE machine uses only LE framebuffer,
-gcc can optimize away endianness checks.
+EHEA_VADDR->Linux Section
+0->0
+1->0
+2->0
+3->0
+...
+100->100
 
-Patch on top of previous inlined here. With that patch, slowdown is
-possible with CONFIG_FB_BOTH_ENDIAN option only, which is still
-default if FOREIGN_ENDIAN is selected.
+It's contiguous.  Each area points to a valid Linux memory address.
+It's also discernable in O(1) to what EHEA address a given Linux address
+is mapped.  You just have a couple of duplicate entries.  
 
-> I'd like to at least queue a patch in -mm so that CONFIG_FB_FOREIGN_ENDIAN
-> is forced-on, so the code gets some runtime testing.  Will that break
-> anything?
-
-Nope, it should not break anything, just possible fbconsole/tux drawing
-slowdown.
-
-
-Thanks,
-
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: fb: add support for choice foreign endianness
-
-With this patch FB_FOREIGN_ENDIAN converted to menuconfig with the
-choice inside: which type of foreign endianness we want to compile-in.
-
-As a bonus, now fb subsystem will refuse to register framebuffer with
-unsupported endianness, and will suggest a way to solve the problem.
-
-[ on top of fb-add-support-for-foreign-endianness.patch ]
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/video/Kconfig |   27 +++++++++++++++++++++------
- drivers/video/fbmem.c |   38 ++++++++++++++++++++++++++++++--------
- include/linux/fb.h    |   14 +++++++++++---
- 3 files changed, 62 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 6b3940d..9e0b6ea 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -139,14 +139,29 @@ config FB_SYS_IMAGEBLIT
- 	  blitting. This is used by drivers that don't provide their own
- 	  (accelerated) version and the framebuffer is in system RAM.
- 
--config FB_FOREIGN_ENDIAN
--	bool "Enable support for foreign endianness"
-+menuconfig FB_FOREIGN_ENDIAN
-+	bool "Framebuffer foreign endianness support"
- 	depends on FB
- 	---help---
--	  This option enables support for the framebuffers with non-native
--	  endianness (e.g. Little-Endian framebuffer on a Big-Endian machine).
--	  You probably don't have such hardware, so in most cases it's safe to
--	  say "n" here.
-+	  This menu will let you enable support for the framebuffers with
-+	  non-native endianness (e.g. Little-Endian framebuffer on a
-+	  Big-Endian machine). Most probably you don't have such hardware,
-+	  so it's safe to say "n" here.
-+
-+choice
-+	prompt "Choice endianness support"
-+	depends on FB_FOREIGN_ENDIAN
-+
-+config FB_BOTH_ENDIAN
-+	bool "Support for Big- and Little-Endian framebuffers"
-+
-+config FB_BIG_ENDIAN
-+	bool "Support for Big-Endian framebuffers only"
-+
-+config FB_LITTLE_ENDIAN
-+	bool "Support for Little-Endian framebuffers only"
-+
-+endchoice
- 
- config FB_SYS_FOPS
-        tristate
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index c086004..11d92fd 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1352,6 +1352,32 @@ static const struct file_operations fb_fops = {
- 
- struct class *fb_class;
- EXPORT_SYMBOL(fb_class);
-+
-+static int fb_check_foreignness(struct fb_info *fi)
-+{
-+	const bool foreign_endian = fi->flags & FBINFO_FOREIGN_ENDIAN;
-+
-+	fi->flags &= ~FBINFO_FOREIGN_ENDIAN;
-+
-+#ifdef __BIG_ENDIAN
-+	fi->flags |= foreign_endian ? 0 : FBINFO_BE_MATH;
-+#else
-+	fi->flags |= foreign_endian ? FBINFO_BE_MATH : 0;
-+#endif /* __BIG_ENDIAN */
-+
-+	if (fi->flags & FBINFO_BE_MATH && !fb_be_math(fi)) {
-+		pr_err("%s: enable CONFIG_FB_BIG_ENDIAN to "
-+		       "support this framebuffer\n", fi->fix.id);
-+		return -ENOSYS;
-+	} else if (!(fi->flags & FBINFO_BE_MATH) && fb_be_math(fi)) {
-+		pr_err("%s: enable CONFIG_FB_LITTLE_ENDIAN to "
-+		       "support this framebuffer\n", fi->fix.id);
-+		return -ENOSYS;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-@@ -1368,10 +1394,13 @@ register_framebuffer(struct fb_info *fb_info)
- 	int i;
- 	struct fb_event event;
- 	struct fb_videomode mode;
--	const bool foreign_endian = fb_info->flags & FBINFO_FOREIGN_ENDIAN;
- 
- 	if (num_registered_fb == FB_MAX)
- 		return -ENXIO;
-+
-+	if (fb_check_foreignness(fb_info))
-+		return -ENOSYS;
-+
- 	num_registered_fb++;
- 	for (i = 0 ; i < FB_MAX; i++)
- 		if (!registered_fb[i])
-@@ -1405,13 +1434,6 @@ register_framebuffer(struct fb_info *fb_info)
- 	if (!fb_info->pixmap.blit_y)
- 		fb_info->pixmap.blit_y = ~(u32)0;
- 
--	fb_info->flags &= ~FBINFO_FOREIGN_ENDIAN;
--#ifdef __BIG_ENDIAN
--	fb_info->flags |= foreign_endian ? 0 : FBINFO_BE_MATH;
--#else
--	fb_info->flags |= foreign_endian ? FBINFO_BE_MATH : 0;
--#endif
--
- 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
- 		INIT_LIST_HEAD(&fb_info->modelist);
- 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a067ed3..72295b0 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -979,13 +979,21 @@ extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
- 
- static inline bool fb_be_math(struct fb_info *info)
- {
--#if defined(CONFIG_FB_FOREIGN_ENDIAN)
-+#ifdef CONFIG_FB_FOREIGN_ENDIAN
-+#if defined(CONFIG_FB_BOTH_ENDIAN)
- 	return info->flags & FBINFO_BE_MATH;
--#elif defined(__BIG_ENDIAN)
-+#elif defined(CONFIG_FB_BIG_ENDIAN)
-+	return true;
-+#elif defined(CONFIG_FB_LITTLE_ENDIAN)
-+	return false;
-+#endif /* CONFIG_FB_BOTH_ENDIAN */
-+#else
-+#ifdef __BIG_ENDIAN
- 	return true;
- #else
- 	return false;
--#endif
-+#endif /* __BIG_ENDIAN */
-+#endif /* CONFIG_FB_FOREIGN_ENDIAN */
- }
- 
- /* drivers/video/fbsysfs.c */
--- 
-1.5.2.2
+-- Dave
