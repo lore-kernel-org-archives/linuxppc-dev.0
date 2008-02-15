@@ -1,17 +1,29 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id A310ADDF0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 21:10:01 +1100 (EST)
-Subject: Re: [PATCH] Fix ucc_geth MII master selection
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1203009081-10966-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1203009081-10966-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 11:09:59 +0100
-Message-Id: <1203070199.5419.101.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <ananth@in.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5BCABDDF54
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 21:59:16 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FAx7dD004596
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 05:59:07 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1FAx6qI279840
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 05:59:06 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1FAx6nL016477
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 05:59:06 -0500
+Date: Fri, 15 Feb 2008 16:29:17 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: kill sparse warnings in kprobes
+Message-ID: <20080215105917.GB6721@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>, harvey.harrison@gmail.com
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-02-14 at 18:11 +0100, Joakim Tjernlund wrote:
-> Remove bogus UCC regs range test and correct
-> off by one error in call to ucc_set_qe_mux_mii_mng()
-> 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
-> 
-> I am not 100% sure this is the correct fix, please ACK or NACK
-> 
->  drivers/net/ucc_geth_mii.c |   26 +++++++++++---------------
->  1 files changed, 11 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/net/ucc_geth_mii.c b/drivers/net/ucc_geth_mii.c
-> index 6c257b8..472d5a1 100644
-> --- a/drivers/net/ucc_geth_mii.c
-> +++ b/drivers/net/ucc_geth_mii.c
-> @@ -200,21 +200,17 @@ static int uec_mdio_probe(struct of_device *ofdev, const struct of_device_id *ma
->  		if (err)
->  			goto bus_register_fail;
->  
-> -		/* if our mdio regs fall within this UCC regs range */
-> -		if ((res.start >= tempres.start) &&
-> -		    (res.end <= tempres.end)) {
-> -			/* set this UCC to be the MII master */
-> -			const u32 *id = of_get_property(tempnp, "device-id", NULL);
-> -			if (id == NULL)
-> -				goto bus_register_fail;
-> -
-> -			ucc_set_qe_mux_mii_mng(*id - 1);
-> -
-> -			/* assign the TBI an address which won't
-> -			 * conflict with the PHYs */
-> -			out_be32(&regs->utbipar, UTBIPAR_INIT_TBIPA);
-> -			break;
-> -		}
-> +		/* set this UCC to be the MII master */
-> +		const u32 *id = of_get_property(tempnp, "device-id", NULL);
-> +		if (id == NULL)
-> +			goto bus_register_fail;
-> +
-> +		ucc_set_qe_mux_mii_mng(*id);
-> +
-> +		/* assign the TBI an address which won't
-> +		 * conflict with the PHYs */
-> +		out_be32(&regs->utbipar, UTBIPAR_INIT_TBIPA);
-> +		break;
->  	}
->  
->  	err = mdiobus_register(new_bus);
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-This patch is crap, turns out that ucc_set_qe_mux_mii_mng(2) always
-works even if UCC3 isn't used at all. I can't figured out why not 1 
-or 3 works.
+Fix sparse warnings in powerpc kprobes:
 
- Jocke
+  CHECK   arch/powerpc/kernel/kprobes.c
+arch/powerpc/kernel/kprobes.c:277:6: warning: symbol 'kretprobe_trampoline_holder' was not declared. Should it be static?
+arch/powerpc/kernel/kprobes.c:287:15: warning: symbol 'trampoline_probe_handler' was not declared. Should it be static?
+arch/powerpc/kernel/kprobes.c:525:16: warning: symbol 'jprobe_return_end' was not declared. Should it be static?
+
+Fix along the same lines as http://lkml.org/lkml/2008/2/13/642
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/powerpc/kernel/kprobes.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.25-rc1/arch/powerpc/kernel/kprobes.c
+===================================================================
+--- linux-2.6.25-rc1.orig/arch/powerpc/kernel/kprobes.c
++++ linux-2.6.25-rc1/arch/powerpc/kernel/kprobes.c
+@@ -274,7 +274,7 @@ no_kprobe:
+  * 	- When the probed function returns, this probe
+  * 		causes the handlers to fire
+  */
+-void kretprobe_trampoline_holder(void)
++static void __used kretprobe_trampoline_holder(void)
+ {
+ 	asm volatile(".global kretprobe_trampoline\n"
+ 			"kretprobe_trampoline:\n"
+@@ -284,7 +284,8 @@ void kretprobe_trampoline_holder(void)
+ /*
+  * Called when the probe at kretprobe trampoline is hit
+  */
+-int __kprobes trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
++static int __kprobes trampoline_probe_handler(struct kprobe *p,
++						struct pt_regs *regs)
+ {
+ 	struct kretprobe_instance *ri = NULL;
+ 	struct hlist_head *head, empty_rp;
+@@ -517,12 +518,12 @@ int __kprobes setjmp_pre_handler(struct 
+ 	return 1;
+ }
+ 
+-void __kprobes jprobe_return(void)
++void __used __kprobes jprobe_return(void)
+ {
+ 	asm volatile("trap" ::: "memory");
+ }
+ 
+-void __kprobes jprobe_return_end(void)
++static void __used __kprobes jprobe_return_end(void)
+ {
+ };
+ 
