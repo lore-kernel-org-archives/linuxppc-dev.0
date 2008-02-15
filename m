@@ -1,32 +1,16 @@
-Return-Path: <bgill@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EC1F6DDFB2
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 05:21:35 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m1FILVn4021322
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 11:21:31 -0700 (MST)
-Received: from monty.am.freescale.net (monty.am.freescale.net [10.82.19.26])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m1FILUnM008472
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 12:21:31 -0600 (CST)
-Received: from monty.am.freescale.net (localhost.localdomain [127.0.0.1])
-	by monty.am.freescale.net (8.14.2/8.14.2) with ESMTP id m1FIHEeU001849
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 12:17:15 -0600
-Received: from localhost (bgill@localhost)
-	by monty.am.freescale.net (8.14.2/8.14.2/Submit) with ESMTP id
-	m1FIHEwU001846
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 12:17:14 -0600
-Date: Fri, 15 Feb 2008 12:17:14 -0600 (CST)
-From: Becky Bruce <bgill@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] prom.c: Fix dt_mem_next_cell() to read the full mem cells
-Message-ID: <Pine.LNX.4.64.0802151215210.1840@monty.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id E3A6FDE128
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 05:33:42 +1100 (EST)
+In-Reply-To: <47B59631.10908@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <20c4ffabf05fc65d9d2ce0e73eaed44b@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] booting-without-of: add Xilinx uart 16550.
+Date: Fri, 15 Feb 2008 12:34:01 -0600
+To: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,64 +20,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-dt_mem_next_cell() currently does of_read_ulong().  This does
-not allow for the case where #size-cells and/or #address-cells = 2 on
-a 32-bit system, as it will end up reading 32 bits instead of the
-expected 64. Change it to use of_read_number instead and always return
-a u64.
+On Sat Feb 16 00:40:01 EST 2008, Pavel Kiryukhin pkiryukhin wrote:
+> Add uart 16550 properties description to Xilinx portion of 
+> booting-without-of.txt
 
-Signed-off-by: Becky Bruce <becky.bruce at freescale.com>
----
- arch/powerpc/kernel/prom.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+This patch description is a bit weak.  How about adding what properties 
+are being added.  Also, as described below, it's going to become more 
+than just adding a property.
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index c17a585..ff600ef 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -865,12 +865,12 @@ static int __init early_init_dt_scan_root(unsigned long node,
- 	return 1;
- }
- 
--static unsigned long __init dt_mem_next_cell(int s, cell_t **cellp)
-+static u64 __init dt_mem_next_cell(int s, cell_t **cellp)
- {
- 	cell_t *p = *cellp;
- 
- 	*cellp = p + s;
--	return of_read_ulong(p, s);
-+	return of_read_number(p, s);
- }
- 
- #ifdef CONFIG_PPC_PSERIES
-@@ -883,8 +883,8 @@ static unsigned long __init dt_mem_next_cell(int s, cell_t **cellp)
- static int __init early_init_dt_scan_drconf_memory(unsigned long node)
- {
- 	cell_t *dm, *ls;
--	unsigned long l, n;
--	unsigned long base, size, lmb_size, flags;
-+	unsigned long l, n, flags;
-+	u64 base, size, lmb_size;
- 
- 	ls = (cell_t *)of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
- 	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
-@@ -959,14 +959,15 @@ static int __init early_init_dt_scan_memory(unsigned long node,
- 	    uname, l, reg[0], reg[1], reg[2], reg[3]);
- 
- 	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
--		unsigned long base, size;
-+		u64 base, size;
- 
- 		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
- 		size = dt_mem_next_cell(dt_root_size_cells, &reg);
- 
- 		if (size == 0)
- 			continue;
--		DBG(" - %lx ,  %lx\n", base, size);
-+		DBG(" - %llx ,  %llx\n", (unsigned long long)base,
-+		    (unsigned long long)size);
- #ifdef CONFIG_PPC64
- 		if (iommu_is_off) {
- 			if (base >= 0x80000000ul)
--- 
-1.5.3.8
+> Signed-off-by: Pavel Kiryukhin <pkiryukhin at ru.mvista.com>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |   16 ++++++++++++++--
+>  1 files changed, 14 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt 
+> b/Documentation/powerpc/booting-without-of.txt
+> index 7b4e8a7..dd77bbc 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -2575,10 +2575,22 @@ platforms are moved over to use the 
+> flattened-device-tree model.
+>
+>        Xilinx uartlite devices are simple fixed speed serial ports.
+>
+> -      Requred properties:
+> +      Required properties:
+>         - current-speed : Baud rate of uartlite
+>
+> -      v) Xilinx hwicap
+> +      v) Xilinx Uart 16550
+> +
+> +      Xilinx uart 16550 device registers are compatible with all 
+> standard 16540
+> +      and 16550 UARTs.
+> +
+> +      Required properties:
+> +       - current-speed : Baud rate of uart.
+> +       - clock-frequency : Baud rate generator reference clock. May 
+> be driven
+> +         by OPB_Clk (100 MHz).
+
+Freqency of the reference clock generating the baud rate.  (Sometimes 
+this is connected to the OBP_Clk which is usually 100MHz).   This is 
+not the documentation for the macro, its the documentation for the 
+device tree.
+
+> +       - reg-shift : registers offset shift (standard uart_port 
+> field).
+> +         Property is optional if regshift is zero.
+
+As Steven said, you must define what the property means (don't say that 
+the value should be 2 on chip x, describe how to determine the correct 
+value and how to use it).  "When this property is present, the address 
+bits selecting the different 16550 registers are shifted left this many 
+bits."
+
+Also, since this is not register compatible with previous the previous 
+ns16550 binding, we need to use a new compatible string. 
+ns16550-shifted or ns16550-offset would be ok with me.  When we define 
+this node, refer to 16550, and state that we expect nodes that have a 
+zero shfit should include the ns16550 string.
+
+Looking in the bigger context, this binding is not Xilinx specific; but 
+I don't see an obviousy better place and am not going to do more than 
+mention that issue.
+
+milton
