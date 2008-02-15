@@ -1,30 +1,40 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <RAISCH@de.ibm.com>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C846DE025
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 02:14:47 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FFGOd5019572
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:16:24 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1FFES5e204786
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:14:28 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1FFEShH020980
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 10:14:28 -0500
-Date: Fri, 15 Feb 2008 09:12:17 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Wolfgang Ocker <weo@reccoware.de>
-Subject: Re: [PATCH] PPC440EP Interrupt Triggering and Level Settings
-Message-ID: <20080215091217.21e86a1c@zod.rchland.ibm.com>
-In-Reply-To: <1202671442.3384.15.camel@galileo.recco.de>
-References: <1202671442.3384.15.camel@galileo.recco.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B8CE4DDFA3
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 02:19:13 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id m1FFJ78J116232
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:19:08 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m1FFJ74Z2310206
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 16:19:07 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m1FFJ609006284
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 16:19:07 +0100
+In-Reply-To: <1203009163.19205.42.camel@nimitz.home.sr71.net>
+References: <200802111724.12416.ossthema@de.ibm.com>	
+	<1202748429.8276.21.camel@nimitz.home.sr71.net>
+	<200802131617.58646.ossthema@de.ibm.com>	
+	<OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com>
+	<1203009163.19205.42.camel@nimitz.home.sr71.net>
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+To: Dave Hansen <haveblue@us.ibm.com>
+Message-ID: <OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Fri, 15 Feb 2008 14:22:55 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>, Greg KH <greg@kroah.com>,
+	apw <apw@uk.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>,
+	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,20 +44,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 10 Feb 2008 20:24:02 +0100
-Wolfgang Ocker <weo@reccoware.de> wrote:
 
-> From: Wolfgang Ocker <weo@reccoware.de>
-> 
-> Corrected IRQ triggering and level settings according to latest revision
-> of the 440EP User Manual (rev 1.24 nov 16, 2007).
-> 
-> The incorrect settings might cause a failure of the network if both
-> onchip ethernet ports are under heavy load.
-> 
-> Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+Dave Hansen <haveblue@us.ibm.com> wrote on 14.02.2008 18:12:43:
 
-Your patch is word-wrapped.  I've gone ahead and fixed that up, but you
-might want to figure that out for future patches.
+> On Thu, 2008-02-14 at 09:46 +0100, Christoph Raisch wrote:
+> > Dave Hansen <haveblue@us.ibm.com> wrote on 13.02.2008 18:05:00:
+> > > On Wed, 2008-02-13 at 16:17 +0100, Jan-Bernd Themann wrote:
+> > > > Constraints imposed by HW / FW:
+> > > > - eHEA has own MMU
+> > > > - eHEA  Memory Regions (MRs) are used by the eHEA MMU  to translate
+> > virtual
+> > > >   addresses to absolute addresses (like DMA mapped memory on a PCI
+bus)
+> > > > - The number of MRs is limited (not enough to have one MR per
+packet)
+> > >
+> > > Are there enough to have one per 16MB section?
+> >
+> > Unfortunately this won't work. This was one of our first ideas we
+tossed
+> > out,
+> > but the number of MRs will not be sufficient.
+>
+> Can you give a ballpark of how many there are to work with? 10? 100?
+> 1000?
+>
+It depends on HMC configuration, but in worst case the upper limit is in
+the 2 digits range.
 
-josh
+> > > But, I'm really not convinced that you can actually keep this map
+> > > yourselves.  It's not as simple as you think.  What happens if you
+get
+> > > on an LPAR with two sections, one 256MB@0x0 and another
+> > > 16MB@0x1000000000000000.  That's quite possible.  I think your
+vmalloc'd
+> > > array will eat all of memory.
+> > I'm glad you mention this part. There are many algorithms out there to
+> > handle this problem,
+> > hashes/trees/... all of these trade speed for smaller memory footprint.
+> > We based the table decission on the existing implementations of the
+> > architecture.
+> > Do you see such a case coming along for the next generation POWER
+systems?
+>
+> Dude.  It exists *TODAY*.  Go take a machine, add tens of gigabytes of
+> memory to it.  Then, remove all of the sections of memory in the middle.
+> You'll be left with a very sparse memory configuration that we *DO*
+> handle today in the core VM.  We handle it quite well, actually.
+>
+> The hypervisor does not shrink memory from the top down.  It pulls
+> things out of the middle and shuffles things around.  In fact, a NUMA
+> node's memory isn't even contiguous.
+>
+> Your code will OOM the machine in this case.  I consider the ehea driver
+> buggy in this regard.
+
+Your comment indicates that the upper limit for memory to be set on HMC
+does not influence
+the upper limit of the partition physical address space.
+So our base assumption we discussed internally is wrong here.
+(conclusion see below)
+>
+> > I would guess these drastic changes would also require changes in base
+> > kernel.
+>
+> No, we actually solved those a couple years ago.
+>
+> > Will you provide a generic mapping system with a contiguous virtual
+address
+> > space
+> > like the ehea_bmap we can query? This would need to be a "stable" part
+of
+> > the implementation,
+> > including translation functions from kernel to
+nextgen_ehea_generic_bmap
+> > like virt_to_abs.
+>
+> Yes, that's a real possibility, especially if some other users for it
+> come forward.  We could definitely add something like that to the
+> generic code.  But, you'll have to be convincing that what we have now
+> is insufficient.
+>
+> Does this requirement:
+> "- MRs cover a contiguous virtual memory block (no holes)"
+> come from the hardware?
+>
+yes
+> Is that *EACH* MR?  OR all MRs?
+>
+each
+> Where does EHEA_BUSMAP_START come from?  Is that defined in the
+> hardware?  Have you checked to ensure that no other users might want a
+> chunk of memory in that area?
+>
+EHEA_BUSMAP_START is a value which has to match between the wqe
+virtual addresses and the MR used in them.
+Fortunately there's a simple answer on that one. Each MR has a own address
+space,
+so there's no need to check.
+A HEA MR actually has exactly the same attributes as a Infiniband MR with
+this hardware.
+send/receive processing is pretty much comparable to a Infiniband UD queue.
+
+> Can you query the existing MRs?
+no
+> Not change them in place, but can you
+> query their contents?
+no
+>
+> > > That's why we have SPARSEMEM_EXTREME and SPARSEMEM_VMEMMAP
+implemented
+> > > in the core, so that we can deal with these kinds of problems, once
+and
+> > > *NOT* in every single little driver out there.
+> > >
+> > > > Functions to use while building ehea_bmap + MRs:
+> > > > - Use either the functions that are used by the memory hotplug
+system
+> > as
+> > > >   well, that means using the section defines + functions
+> > (section_nr_to_pfn,
+> > > >   pfn_valid)
+> > >
+> > > Basically, you can't use anything related to sections outside of the
+> > > core code.  You can use things like pfn_valid(), or you can create
+new
+> > > interfaces that are properly abstracted.
+> >
+> > We picked sections instead of PFNs because this keeps the ehea_bmap in
+a
+> > reasonable range
+> > on the existing systems.
+> > But if you provide a abstract method handling exactly the problem we
+> > mention
+> > we'll be happy to use that and dump our private implementation.
+>
+> One thing you can guarantee today is that things are contiguous up to
+> MAX_ORDER_NR_PAGES.  That's a symbol that is unlikely to change and is
+> much more appropriate than using sparsemem.  We could also give you a
+> nice new #define like MINIMUM_CONTIGUOUS_PAGES or something.  I think
+> that's what you really want.
+
+That's definitely the right direction.
+
+>From this mail thread I would conclude....
+memory space can have holes, and drivers shouldn't make any assumption when
+where and how.
+
+A translation from kernel to ehea_bmap space should be fast and predictable
+(ruling out hashes).
+If a driver doesn't know anything else about the mapping structure,
+the normal solution in kernel for this type of problem is a multi level
+look up table
+like pgd->pud->pmd->pte
+This doesn't sound right to be implemented in a device driver.
+
+We didn't see from the existing code that such a mapping to a contiguous
+space already exists.
+Maybe we've missed it.
+
+If the mapping is less random, the translation gets much simpler.
+MAX_ORDER_NR_PAGES helps here, is there more like that?
+
+
+Gruss / Regards
+Christoph Raisch + Jan-Bernd Themann
