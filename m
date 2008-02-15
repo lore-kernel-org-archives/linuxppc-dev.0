@@ -1,20 +1,31 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 99585DDF80
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 09:34:33 +1100 (EST)
-Date: Sat, 16 Feb 2008 09:32:06 +1100
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
-Message-ID: <20080215223206.GL6887@bakeyournoodle.com>
-References: <47B13D2E.1070001@austin.ibm.com> <47B146BE.5010807@austin.ibm.com>
-	<20080215010528.GI6887@bakeyournoodle.com>
-	<47B53C7C.2060403@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <47B53C7C.2060403@austin.ibm.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	paulus@samba.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 148CCDDF10
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 09:44:00 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FMhvVe024686
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 17:43:57 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1FMhvYw214438
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:43:57 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1FMhvgZ017348
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:43:57 -0700
+Date: Fri, 15 Feb 2008 16:43:52 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git merge branch
+Message-ID: <20080215164352.714f35f1@zod.rchland.ibm.com>
+In-Reply-To: <18356.47612.27417.365@cargo.ozlabs.ibm.com>
+References: <18356.47612.27417.365@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 15, 2008 at 01:17:16AM -0600, Manish Ahuja wrote:
-> Tony Breeds wrote:
-> > Any reason this sysfs attribute can't be write only? The show method
-> > doesn't seem needed.
+On Fri, 15 Feb 2008 09:00:28 +1100
+Paul Mackerras <paulus@samba.org> wrote:
+
+> Linus,
 > 
-> yes, its used later in the code.
+> Please do
+> 
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> 
+> to get a collection of bug-fixes and very minor cleanups for powerpc
+> (plus one commit wiring up the timerfd syscalls).
 
-I see that now, thanks.  From my point of view it would make reviewing 
-these patches easier if each patch was a correct and simple as possible. 
-In this case it would have made the review easier if the sysfs attribute 
-was write only now and then modified to add the read side when it's 
-actually implemented.  The same goes for fixing typosi, cosmetic changes
-and reference counting. 
+Could you please pull this into your master?  Help the peons!
 
-Looking forward to a respin of this patch series.
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+josh
