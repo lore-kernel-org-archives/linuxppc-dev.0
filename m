@@ -1,40 +1,21 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound9-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C6420DDE9F
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 03:55:46 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FGtgpo020516
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 11:55:42 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1FGtfx0181572
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:55:41 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1FGtfos015380
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:55:41 -0700
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Raisch <RAISCH@de.ibm.com>
-In-Reply-To: <OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-	<1202748429.8276.21.camel@nimitz.home.sr71.net>
-	<200802131617.58646.ossthema@de.ibm.com>
-	<OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com>
-	<1203009163.19205.42.camel@nimitz.home.sr71.net>
-	<OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 08:55:38 -0800
-Message-Id: <1203094538.8142.23.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>, Greg KH <greg@kroah.com>,
-	apw <apw@uk.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>,
-	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 38B38DE0C4
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:08:50 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] booting-without-of: add Xilinx uart 16550.
+Date: Fri, 15 Feb 2008 09:08:42 -0800
+In-Reply-To: <47B59631.10908@ru.mvista.com>
+References: <47B59631.10908@ru.mvista.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Pavel Kiryukhin" <pkiryukhin@ru.mvista.com>,
+	<linuxppc-dev@ozlabs.org>
+Message-Id: <20080215170844.9D21610081@mail40-dub.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,55 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-02-15 at 14:22 +0100, Christoph Raisch wrote:
-> A translation from kernel to ehea_bmap space should be fast and
-> predictable
-> (ruling out hashes).
-> If a driver doesn't know anything else about the mapping structure,
-> the normal solution in kernel for this type of problem is a multi
-> level
-> look up table
-> like pgd->pud->pmd->pte
-> This doesn't sound right to be implemented in a device driver.
-> 
-> We didn't see from the existing code that such a mapping to a
-> contiguous
-> space already exists.
-> Maybe we've missed it.
 
-I've been thinking about that, and I don't think you really *need* to
-keep a comprehensive map like that.  
+> +       - reg-shift : registers offset shift (standard uart_port
+field).
+> +         Property is optional if regshift is zero.
 
-When the memory is in a particular configuration (range of memory
-present along with unique set of holes) you get a unique ehea_bmap
-configuration.  That layout is completely predictable.
+I was hoping to get an idea of what is required here, or when I might
+use it?
 
-So, if at any time you want to figure out what the ehea_bmap address for
-a particular *Linux* virtual address is, you just need to pretend that
-you're creating the entire ehea_bmap, use the same algorithm and figure
-out host you would have placed things, and use that result.
+It looks like the ARCH=3Dppc code instantiates this with a reg-shift of
+2...  Is this the expected value?  When would it be not zero? or not
+two?
 
-Now, that's going to be a slow, crappy linear search (but maybe not as
-slow as recreating the silly thing).  So, you might eventually run into
-some scalability problems with a lot of packets going around.  But, I'd
-be curious if you do in practice.
-
-The other idea is that you create a mapping that is precisely 1:1 with
-kernel memory.  Let's say you have two sections present, 0 and 100.  You
-have a high_section_index of 100, and you vmalloc() a 100 entry array.
-
-You need to create a *CONTIGUOUS* ehea map?  Create one like this:
-
-EHEA_VADDR->Linux Section
-0->0
-1->0
-2->0
-3->0
-...
-100->100
-
-It's contiguous.  Each area points to a valid Linux memory address.
-It's also discernable in O(1) to what EHEA address a given Linux address
-is mapped.  You just have a couple of duplicate entries.  
-
--- Dave
+Steve
