@@ -1,19 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D66D0DDF29
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 08:08:11 +1100 (EST)
-Date: Fri, 15 Feb 2008 15:08:04 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: jgarzik@pobox.com
-Subject: [PATCH] fs_enet: Don't call phy_mii_ioctl() in atomic context.
-Message-ID: <20080215210804.GA14468@loki.buserror.net>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EC674DDF33
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 08:40:23 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] booting-without-of: add Xilinx uart 16550.
+Date: Fri, 15 Feb 2008 13:40:17 -0800
+In-Reply-To: <47B5E042.9050805@ru.mvista.com>
+References: <47B59631.10908@ru.mvista.com><fa686aa40802151038l7488293clb0c47da5b1b1e4fc@mail.gmail.com>
+	<47B5E042.9050805@ru.mvista.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>
+Message-Id: <20080215214018.EA724CB0046@mail174-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The lock acquisition in fs_ioctl() does not appear to actually be necessary,
-and thus is simply removed.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-This fixes the following bug:
-http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051564.html
+> > Instead of attempting to come up with a generic description
+> > of this, I recommend just naming it after the actual device
+instance;
+> > something like compatible=3D"xlnx,opb-uart16550";
+>=20
+>     Well, that means that we'll need a to add a code which "glues" the
+chip to
+> 8250.c driver... well, of_serial.c could be that glue layer if we add
+to it
+> the ability to recognize Xilinx UART... well, legacy_serial.c could be
+taught
+> that trick too...
+>     Well, we could also add the new compatible, but still claim
+"ns16550"
+> compatibility...
 
- drivers/net/fs_enet/fs_enet-main.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+This actually makes more sense to me...  I'd rather have the code set
+the reg-shift than have it explicitly set in the device tree anyway.
+The compatibility set should include (at the least):
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 42d94ed..af869cf 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -946,16 +946,11 @@ static int fs_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	struct mii_ioctl_data *mii = (struct mii_ioctl_data *)&rq->ifr_data;
--	unsigned long flags;
--	int rc;
- 
- 	if (!netif_running(dev))
- 		return -EINVAL;
- 
--	spin_lock_irqsave(&fep->lock, flags);
--	rc = phy_mii_ioctl(fep->phydev, mii, cmd);
--	spin_unlock_irqrestore(&fep->lock, flags);
--	return rc;
-+	return phy_mii_ioctl(fep->phydev, mii, cmd);
- }
- 
- extern int fs_mii_connect(struct net_device *dev);
--- 
-1.5.3.8
+      opb_uart16550_v1_00_c
+      opb_uart16550_v1_00_d
+      opb_uart16550_v1_00_e
+      plb_uart16550_v1_00_c
+      xps_uart16550_v1_00_a
+
+I think this is somewhat independent of Sergei's arguments that generic
+ns16550 devices should allow having a reg-shift set....
+
+Steve
