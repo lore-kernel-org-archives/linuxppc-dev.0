@@ -1,31 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 148CCDDF10
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 09:44:00 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FMhvVe024686
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 17:43:57 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1FMhvYw214438
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:43:57 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1FMhvgZ017348
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:43:57 -0700
-Date: Fri, 15 Feb 2008 16:43:52 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git merge branch
-Message-ID: <20080215164352.714f35f1@zod.rchland.ibm.com>
-In-Reply-To: <18356.47612.27417.365@cargo.ozlabs.ibm.com>
-References: <18356.47612.27417.365@cargo.ozlabs.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 4F197DDF18
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 10:45:24 +1100 (EST)
+Date: Fri, 15 Feb 2008 15:45:54 -0800 (PST)
+Message-Id: <20080215.154554.212353158.davem@davemloft.net>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 0/4]: Respun LMB patches.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1203102337.6699.0.camel@concordia>
+References: <20080213.170938.34536425.davem@davemloft.net>
+	<1203102337.6699.0.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,19 +23,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 15 Feb 2008 09:00:28 +1100
-Paul Mackerras <paulus@samba.org> wrote:
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Sat, 16 Feb 2008 06:05:37 +1100
 
-> Linus,
-> 
-> Please do
-> 
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> 
-> to get a collection of bug-fixes and very minor cleanups for powerpc
-> (plus one commit wiring up the timerfd syscalls).
+> That fixes the build failures I was seeing, ack.
 
-Could you please pull this into your master?  Help the peons!
-
-josh
+Thanks for testing.
