@@ -1,21 +1,18 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
-	by ozlabs.org (Postfix) with ESMTP id B79FBDE057
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:30:40 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so461709fgg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 09:30:39 -0800 (PST)
-Message-ID: <3ae3aa420802150930w48378c2fk830f8f1a13b2498b@mail.gmail.com>
-Date: Fri, 15 Feb 2008 11:30:39 -0600
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: "Tony Breeds" <tony@bakeyournoodle.com>
-Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
-In-Reply-To: <20080215010528.GI6887@bakeyournoodle.com>
+Return-Path: <pkiryukhin@ru.mvista.com>
+Received: from smtp02.mtu.ru (smtp02.mtu.ru [62.5.255.49])
+	by ozlabs.org (Postfix) with ESMTP id D0003DDF55
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 04:39:20 +1100 (EST)
+Message-ID: <47B5CEAF.8030705@ru.mvista.com>
+Date: Fri, 15 Feb 2008 20:41:03 +0300
+From: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
 MIME-Version: 1.0
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] booting-without-of: add Xilinx uart 16550.
+References: <47B59631.10908@ru.mvista.com>
+	<20080215170844.9D21610081@mail40-dub.bigfish.com>
+In-Reply-To: <20080215170844.9D21610081@mail40-dub.bigfish.com>
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47B13D2E.1070001@austin.ibm.com> <47B146BE.5010807@austin.ibm.com>
-	<20080215010528.GI6887@bakeyournoodle.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: linasvepstas@gmail.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 14/02/2008, Tony Breeds <tony@bakeyournoodle.com> wrote:
-> On Tue, Feb 12, 2008 at 01:11:58AM -0600, Manish Ahuja wrote:
+Stephen Neuendorffer wrote:
+>> +       - reg-shift : registers offset shift (standard uart_port
+> field).
+>> +         Property is optional if regshift is zero.
+> 
+> I was hoping to get an idea of what is required here, or when I might
+> use it?
+> 
+> It looks like the ARCH=ppc code instantiates this with a reg-shift of
+> 2...  Is this the expected value?  
 
->  > +static ssize_t
->  > +show_release_region(struct kset * kset, char *buf)
->  > +{
->  > +     return sprintf(buf, "ola\n");
->  > +}
->  > +
->  > +static struct subsys_attribute rr = __ATTR(release_region, 0600,
->  > +                                      show_release_region,
->  > +                                      store_release_region);
->
->
-> Any reason this sysfs attribute can't be write only? The show method
->  doesn't seem needed.
+Yes, reg-shift = 2 should be set for Xilinx 16550 uart. 
+Should I add this to patch?
 
-This was supposed to be a place-holder; a later patch would add detailed
-info.  The goal was to  have user-land tools that would operate these files
-to progressively dump and release memory regions; however, until these
-userland tools get written, the proper interface remains murky  (e.g.
-real addresses? virtual addresses? just delta's or a whole memory map?
-some sort of numa flags or whatever?)
+BTW regshift=2 is hardcoded for uartlite.
 
---linas
+> When would it be not zero? or not
+> two?
+Sorry, it seems I don't follow here. 
+--
+Regards,
+Pavel
