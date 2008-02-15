@@ -1,21 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 47003DDF8A
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 05:14:34 +1100 (EST)
-Message-ID: <47B5D698.2050602@freescale.com>
-Date: Fri, 15 Feb 2008 12:14:48 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 629EDDDEA3
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 05:17:45 +1100 (EST)
+Date: Fri, 15 Feb 2008 21:17:43 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Sean MacLennan <smaclennan@pikatech.com>
 Subject: Re: NOR flash partitions gone
+Message-ID: <20080215181743.GA30029@localhost.localdomain>
 References: <47B5E3CA.5050208@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 In-Reply-To: <47B5E3CA.5050208@pikatech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,7 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sean MacLennan wrote:
+On Fri, Feb 15, 2008 at 02:11:06PM -0500, Sean MacLennan wrote:
 > I did a git pull of Josh's for-2.6.25 tree. Now the NOR partitions are 
 > no longer setup.
 > 
@@ -54,9 +51,12 @@ Sean MacLennan wrote:
 > It still detects the chip, it just doesn't configure the partitions. Any 
 > ideas?
 
-Try turning off command line partition support -- there's a bug in it 
-that was exposed by changes to the OF physmap code (in particular, it 
-returns -EINVAL rather than zero when no command line partitions are 
-present).
+Probably CONFIG_MTD_OF_PARTS is not set?
 
--Scott
+Good luck,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
