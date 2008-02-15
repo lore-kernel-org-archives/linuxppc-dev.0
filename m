@@ -1,21 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 40687DDF04
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 22:40:31 +1100 (EST)
-Date: Fri, 15 Feb 2008 14:40:29 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 04/11] [RFC][GPIOLIB] add gpio_set_dedicated() routine
-Message-ID: <20080215114029.GA16810@localhost.localdomain>
-References: <20080203170820.GA18520@localhost.localdomain>
-	<200802031322.08600.david-b@pacbell.net>
-	<20080203233220.GA20105@zarina>
-	<200802142036.40770.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200802142036.40770.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 454CEDDF47
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 23:49:36 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+Date: Fri, 15 Feb 2008 13:50:15 +0100
+References: <20070920220121.GF28784@loki.buserror.net>
+In-Reply-To: <20070920220121.GF28784@loki.buserror.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2165880.djVGTVK3Kr";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200802151350.20627.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+	jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,119 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 14, 2008 at 08:36:40PM -0800, David Brownell wrote:
-[...]
-> > The point was: GPIOs could be "input only" but you still have
-> > "output" callback, and that doesn't troubles anybody. Not sure
-> > why set_dedicated() such a big issue then, it could fail too! :-)
-> 
-> See above:  you're equating pin and gpio ... and while GPIOs
-> have (by definition) standardized boolean input and output
-> functionality, the rest of what can be done with a pin isn't.
+--nextPart2165880.djVGTVK3Kr
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-There is nothing much left to do with a "pin", IMO. Pin can be GPIO
-or abstract "dedicated function". Am I missing anything else here?
+Hi Scott,
 
-> > We're talking about General Purpose IOs, right? They're general
-> > enough to support not only input/output stuff. And we want some
-> > API for these General Purpose IOs. GPIO LIB is the best candidate
-> > and we can implement such API at almost no cost, few lines of code.
-> 
-> GPIOs are not intended to be a kitchen sink though; and that's
-> the sense in which you seem to mean "best candidate":  it's a
-> clean lightweight interface, not gummed up with all kinds of
-> unrelated stuff.
+I apologize for bringing this after so much time. Hope the "better late tha=
+n=20
+never" motto applies.
 
-Just one more callback won't bloat lightweight interface...  Later
-I'll ask to add another one, and someone will ask for another. Yes, I
-see the pattern. Surely, if you want to keep it clean and lightweight,
-you should resist to additions -- I fully understand that. :-)
+On Friday 21 September 2007 00:01, Scott Wood wrote:
+> The existing OF glue code was crufty and broken.  Rather than fix it, it
+> will be removed, and the ethernet driver now talks to the device tree
+> directly.
+>
+> The old, non-CONFIG_PPC_CPM_NEW_BINDING code can go away once CPM
+> platforms are dropped from arch/ppc (which will hopefully be soon), and
+> existing arch/powerpc boards that I wasn't able to test on for this
+> patchset get converted (which should be even sooner).
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+[snip]
+> diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+> index f8c7ee8..14ebba8 100644
+> --- a/drivers/net/fs_enet/fs_enet.h
+> +++ b/drivers/net/fs_enet/fs_enet.h
+> @@ -24,19 +24,6 @@ struct fec_info {
+>  #include <asm/cpm2.h>
+>  #endif
+>
+> -/* This is used to operate with pins.
+> -  Note that the actual port size may
+> -    be different; cpm(s) handle it OK  */
+> -struct bb_info {
+> -	u8 mdio_dat_msk;
+> -	u8 mdio_dir_msk;
+> -	u8 *mdio_dir;
+> -	u8 *mdio_dat;
+> -	u8 mdc_msk;
+> -	u8 *mdc_dat;
+> -	int delay;
+> -};
+> -
+[snip]
+> diff --git a/drivers/net/fs_enet/mii-bitbang.c
+> b/drivers/net/fs_enet/mii-bitbang.c index 8f766a5..2b9c44c 100644
+> --- a/drivers/net/fs_enet/mii-bitbang.c
+> +++ b/drivers/net/fs_enet/mii-bitbang.c
+[snip]
+> +struct bb_info {
+> +	__be32 __iomem *dir;
+> +	__be32 __iomem *dat;
+> +	u32 mdio_msk;
+> +	u32 mdc_msk;
+> +	int delay;
+> +};
 
-> Take your ideas and use them to create a pin configuration
-> interface.  On some platforms, configurable pins will map
-> onto GPIOs, one-to-one.  On others, there will be configurable
-> pins that aren't GPIOs ... GPIOs that can be mapped to any of
-> several pins ... pins that can be used with several GPIOs ...
-> pins that can only be used with GPIOs ... and so on.
+We're loosing the possibility of having MDC and MDIO on different ports. Th=
+is=20
+is quite easy to fix for the non-CONFIG_PPC_CPM_NEW_BINDING case but I'm no=
+t=20
+familiar with OF bindings (yet) to fix the CONFIG_PPC_CPM_NEW_BINDING case.
 
-Sure, that's doable. But IMO this idea is about overcomplicating
-the trivial task. Let's call it pinlib, with:
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-1. pin_request
-2. pin_configure(pin, integer-representing-configuration)
-3. pin_free
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
-Hm... 2 auxiliary functions with the full-fledged subsystem just to
-configure some pins? Plus count here that drivers would have to deal
-with the two separate subsystems. Both GPIO/Pin-providers and
-drivers that would use these GPIOs/Pins.
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
-> > > The way it's usually done:  platform-specific code to handle those
-> > > platform-specific pin configuration issues.
-> > 
-> > There is a problem. Driver could be cross-platform. For example,
-> > we have platforms with "CPM1", "CPM2" and "QE" on-chip gpio
-> > controllers.
-> 
-> So "platform" isn't exactly the right word.  "Hardware-specific"
-> is more to the point.  You know you're using <Brand-X-SOC-27> and
-> that means you must reconfigure <this-way> because <reason>; or
-> likewise, <Vendor-Y-ASIC-2> must be reconfigured <that-way> etc.
+--nextPart2165880.djVGTVK3Kr
+Content-Type: application/pgp-signature
 
-<this-way> or <that-way> is passed through platform data,
-platform code knowns "hardware-specific" details.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-> > And despite special _set_dedicated() function, this driver
-> > actually does _use_ pins as GPIOs. And as dedicated functions.
-> > And as GPIOs. The same pins, but at the different times.
-> 
-> But you're assuming that GPIO identifiers can be used as pin/ball
-> identifiers ... and as I pointed out, that's chip-specific.
+iD8DBQBHtYqM8y9gWxC9vpcRAsHwAJ9Jwqm4C2K4nZ6+oAUS3U6VVL3Z8QCcCn6f
+2J2XrRruFyIr9S32XXKA/x4=
+=57T6
+-----END PGP SIGNATURE-----
 
-Heh. I did re-read Documentation/gpio.txt once again, and still don't
-get it, where are the differences between GPIOs and Pins? Yes, some
-pins can't be GPIOs, but any GPIO must have associated Pin (internal
-or external doesn't matter, it's "logical Pin").
-
-For pins that can not be "GPIOs", we can just return errors from
-output/input callbacks. Is it violation of the current GPIO API
-conventions? Yes, but this is extension that will not break anything,
-neither we contradict the "GPIO" term here, btw.
-
-> > {
-> > 	qe_chip = container_of(gpio_to_chip(...), struct qe_chip, chip);
-> > 	...
-> 
-> You know, you can write all this yourself, without needing any
-> support from the GPIO framework whatsoever.  The QE stuff that
-> registered a gpio_chip interface to its hardware probably keeps
-> some records itself, sufficient for such (infrequent) mappings.
-
-Yes, surely. And as I've said already, I do know how to workaround
-that, without GPIOLIB support. The thing is that I don't like the
-way I'm going to do it.
-
-[...]
-> > > Of course, the "function" codes are extremely chip-specific ... and
-> > > some platforms would want to include things like pullups, pulldowns,
-> > > and so forth as part of pin configuration.
-> > > 
-> > > If you want to pursue this problem, don't couple it to GPIOs.
-> > 
-> > Um... couple it to what then?..
-> 
-> An abstraction of "pin", where pins don't correspond to GPIOs in a
-> one-to-one manner.
-
-Keeping in mind that GPIOLIB was brewing a year (?), I think another
-GPIOLIB-alike subsystem not worth powder and shot, pins and GPIOs
-will be obsolete at that time. :-)
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--nextPart2165880.djVGTVK3Kr--
