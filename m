@@ -1,35 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E4824DDED8
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 09:12:56 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1FMChpL001719
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 17:12:43 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1FMChoR210914
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:12:43 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1FMCgQo008461
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2008 15:12:43 -0700
-Date: Fri, 15 Feb 2008 16:12:37 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/4]: Respun LMB patches.
-Message-ID: <20080215161237.4531e233@zod.rchland.ibm.com>
-In-Reply-To: <20080214.141531.169094647.davem@davemloft.net>
-References: <20080213.170938.34536425.davem@davemloft.net>
-	<38133B3C-75A2-4465-9484-7BF8E7E85D1D@freescale.com>
-	<20080214152448.49c69238@zod.rchland.ibm.com>
-	<20080214.141531.169094647.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 99585DDF80
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 09:34:33 +1100 (EST)
+Date: Sat, 16 Feb 2008 09:32:06 +1100
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
+Message-ID: <20080215223206.GL6887@bakeyournoodle.com>
+References: <47B13D2E.1070001@austin.ibm.com> <47B146BE.5010807@austin.ibm.com>
+	<20080215010528.GI6887@bakeyournoodle.com>
+	<47B53C7C.2060403@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <47B53C7C.2060403@austin.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,20 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 14 Feb 2008 14:15:31 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
-
-> From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> Date: Thu, 14 Feb 2008 15:24:48 -0600
+On Fri, Feb 15, 2008 at 01:17:16AM -0600, Manish Ahuja wrote:
+> Tony Breeds wrote:
+> > Any reason this sysfs attribute can't be write only? The show method
+> > doesn't seem needed.
 > 
-> > I plan on actually testing this on Ebony, Walnut, and Bamboo either
-> > later tonight or tomorrow.  I don't expect many issues.
-> > 
-> > Dave, those above boards would cover the build of PowerPC 4xx CPU cores.
-> 
-> Ok.
+> yes, its used later in the code.
 
-Ok, booted just fine on Ebony (PowerPC 440), Bamboo(PowerPC 440 + FPU),
-and Haleakala (PowerPC 405).
+I see that now, thanks.  From my point of view it would make reviewing 
+these patches easier if each patch was a correct and simple as possible. 
+In this case it would have made the review easier if the sysfs attribute 
+was write only now and then modified to add the read side when it's 
+actually implemented.  The same goes for fixing typosi, cosmetic changes
+and reference counting. 
 
-josh
+Looking forward to a respin of this patch series.
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
