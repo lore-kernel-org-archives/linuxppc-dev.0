@@ -1,20 +1,22 @@
-Return-Path: <mh@omnisys.se>
-Received: from ch-smtp02.sth.basefarm.net (ch-smtp02.sth.basefarm.net
-	[80.76.149.213])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B94DDDE1E
+Return-Path: <leon.woestenberg@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id DDD60DDE2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Feb 2008 15:57:38 +1100 (EST)
-Subject: Re: Frustrated question with insmod
-From: Magnus Hjorth <mh@omnisys.se>
-To: Bruce_Leonard@selinc.com
-In-Reply-To: <OF994170A6.977C29F1-ON882573F1.0005A6C7-882573F1.00060311@selinc.com>
-References: <OF994170A6.977C29F1-ON882573F1.0005A6C7-882573F1.00060311@selinc.com>
-Content-Type: text/plain
-Date: Sat, 16 Feb 2008 05:42:19 +0100
-Message-Id: <1203136939.5231.0.camel@magnus-desktop>
-Mime-Version: 1.0
+	Sat, 16 Feb 2008 23:44:30 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so693299anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 16 Feb 2008 04:44:29 -0800 (PST)
+Message-ID: <c384c5ea0802160444y2e15723fmbe1fd964dc2274a6@mail.gmail.com>
+Date: Sat, 16 Feb 2008 13:44:29 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: High resolution timer support in 2.6.24+ for MPC831x?
+In-Reply-To: <c384c5ea0802151249v348dd06w6e1d65928699d00e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c384c5ea0802141226m630fcc11h60627cde75cb8b0e@mail.gmail.com>
+	<47B4A9D7.3030100@freescale.com>
+	<c384c5ea0802151249v348dd06w6e1d65928699d00e@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,26 +28,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-'cat /proc/modules' perhaps?
+On Feb 15, 2008 9:49 PM, Leon Woestenberg <leon.woestenberg@gmail.com> wrote:
+> On Thu, Feb 14, 2008 at 9:51 PM, Scott Wood <scottwood@freescale.com> wrote:
+> > Leon Woestenberg wrote:
+> >  > My platform is a MPC8313E-RDB, and I suspect no high res clock source
+> >  > implementation exists for it in 2.6.24, because
+> >  > clock_getres(CLOCK_REALTIME,) gives me 1/HZ.
+> >  >
 
-//Magnus
+I found that 2.6.24 needs the patch "[PATCH] Fix powerpc vdso
+clock_getres()" posted February 8th on linuxppc-dev (which I missed,
+sorry for the noise).
+
+That seems to fix it in a quick test:
+
+root@mpc8313e-rdb:~$ /timers
+Clock resolution (clockid 0): 0.000000001
+Clock resolution (clockid 1): 0.000000001
 
 
-On Fri, 2008-02-15 at 17:06 -0800, Bruce_Leonard@selinc.com wrote:
-> Sorry if this is the wrong place to post this question.  I'm developing a 
-> NAND flash driver and I need to do some detailed dubugging using GDB with 
-> a BDI2K.  According to the Denx web site, to find out the address that the 
-> module is loading at you load it using the -m parameter to insmod (i.e., 
-> "insmod -m mymodule").  However, every version of insmod I've tried 
-> doesn't recognize ANY options much less -m.  Can anyone please point me in 
-> the right direction, or give me another way of knowing what the load 
-> address of my module is?
-> 
-> Thanks.
-> 
-> Bruce
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Regards,
+-- 
+Leon
