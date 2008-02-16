@@ -1,22 +1,18 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id AAF89DDE21
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 02:16:16 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so675012fgg.39
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 07:16:14 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUID_FAILURE] next-20080215 Build failure caused by ide: rework
-	PowerMac media-bay support
-Date: Sat, 16 Feb 2008 15:57:32 +0100
-References: <47B5D1C3.40702@linux.vnet.ibm.com>
-In-Reply-To: <47B5D1C3.40702@linux.vnet.ibm.com>
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out0.tiscali.nl (smtp-out0.tiscali.nl [195.241.79.175])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0CC9EDDE32
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 03:08:11 +1100 (EST)
+Message-ID: <47B70A61.9030306@tiscali.nl>
+Date: Sat, 16 Feb 2008 17:08:01 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802161557.32788.bzolnier@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: geoffrey.levand@am.sony.com
+Subject: [PATCH 1/3] Fix Unlikely(x) == y
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 15 February 2008, Kamalesh Babulal wrote:
-> The linux-next-20080215 kernel build fails on the powerpc with
-> following error
->  
->   CC      arch/powerpc/platforms/powermac/setup.o
-> In file included from arch/powerpc/platforms/powermac/setup.c:66:
-> include/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
-> include/asm/mediabay.h:29: warning: function declaration isn't a prototype
-> make[2]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
-> make[1]: *** [arch/powerpc/platforms/powermac] Error 2
-> make: *** [arch/powerpc/platforms] Error 2
-> 
-> This build failure is caused by the  ide: rework PowerMac media-bay support
-> patch.This problem was reported and solution suggested according to
-> http://lkml.org/lkml/2008/2/13/195 including the 
-> 
-> #include <linux/ide.h> after
-> 
-> #ifdef CONFIG_BLK_DEV_IDE_PMAC
-> 
-> helps in fixing the build failure.
+The patch below was not yet tested. If it's correct as it is, please comment.
+---
+Fix Unlikely(x) == y
 
-Thanks, I fixed the original patch.
-
-interdiff:
-
-[...]
-v2:
-* Fix build by adding <linux/ide.h> include to <asm-powerpc/mediabay.h>.
-  (Reported by Michael/Kamalesh/Andrew).
-
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-[...]
-
-diff -u b/include/asm-powerpc/mediabay.h b/include/asm-powerpc/mediabay.h
---- b/include/asm-powerpc/mediabay.h
-+++ b/include/asm-powerpc/mediabay.h
-@@ -23,6 +23,8 @@
- extern int media_bay_count;
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
+index 3a6db04..a14e5cd 100644
+--- a/arch/powerpc/platforms/ps3/interrupt.c
++++ b/arch/powerpc/platforms/ps3/interrupt.c
+@@ -709,7 +709,7 @@ static unsigned int ps3_get_irq(void)
+ 	asm volatile("cntlzd %0,%1" : "=r" (plug) : "r" (x));
+ 	plug &= 0x3f;
  
- #ifdef CONFIG_BLK_DEV_IDE_PMAC
-+#include <linux/ide.h>
-+
- int check_media_bay_by_base(unsigned long base, int what);
- /* called by IDE PMAC host driver to register IDE controller for media bay */
- int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
+-	if (unlikely(plug) == NO_IRQ) {
++	if (unlikely(plug == NO_IRQ)) {
+ 		pr_debug("%s:%d: no plug found: thread_id %lu\n", __func__,
+ 			__LINE__, pd->thread_id);
+ 		dump_bmp(&per_cpu(ps3_private, 0));
