@@ -1,31 +1,17 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28esmtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 59DD7DDE98
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 04:31:42 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28esmtp04.in.ibm.com (8.13.1/8.13.1) with ESMTP id m1GHVZoY022819
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 23:01:35 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1GHVZLK548936
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 23:01:35 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.13.1/8.13.3) with ESMTP id m1GHVZVx016092
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Feb 2008 17:31:35 GMT
-Date: Sat, 16 Feb 2008 23:01:32 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH]2.6.25-rc2-mm1 - Build Failure at security/keys/compat.c on
-	powerpc
-Message-ID: <20080216173132.GA13326@linux.vnet.ibm.com>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <SRS0+974f8591537a7899356a+1637+infradead.org+arjan@pentafluge.srs.infradead.org>
+Date: Sat, 16 Feb 2008 09:42:26 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080216094226.1e8eede1@laptopd505.fenrus.org>
+In-Reply-To: <20080216173315.GU8953@1wt.eu>
+References: <47B70A61.9030306@tiscali.nl>
+	<20080216092552.325e5726@laptopd505.fenrus.org>
+	<20080216173315.GU8953@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Roel Kluin <12o3l@tiscali.nl>,
+	cbe-oss-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,37 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+On Sat, 16 Feb 2008 18:33:16 +0100
+Willy Tarreau <w@1wt.eu> wrote:
 
-The 2.6.25-rc2-mm1 kernel build fails on the powerpc(s) 
+> On Sat, Feb 16, 2008 at 09:25:52AM -0800, Arjan van de Ven wrote:
+> > On Sat, 16 Feb 2008 17:08:01 +0100
+> > Roel Kluin <12o3l@tiscali.nl> wrote:
+> > 
+> > > The patch below was not yet tested. If it's correct as it is,
+> > > please comment. ---
+> > > Fix Unlikely(x) == y
+> > > 
+> > 
+> > you found a great set of bugs..
+> > but to be honest... I suspect it's just best to remove unlikely
+> > altogether for these cases; unlikely() is almost a
+> > go-faster-stripes thing, and if you don't know how to use it you
+> > shouldn't be using it... so just removing it for all wrong cases is
+> > actually the best thing to do imo.
+> 
+> Well, eventhough the author may not know how to use it, "unlikely" at
+> least indicates the intention of the author, or his knowledge of what
+> should happen here. I'd suggest leaving it where it is because the
+> authot of this code is in best position to know that this branch is
+> unlikely to happen, eventhough he does not correctly use the macro.
+>
 
-  CC      security/keys/compat.o
-security/keys/compat.c: In function ‘compat_sys_keyctl’:
-security/keys/compat.c:83: error: implicit declaration of function ‘keyctl_get_security’
-make[2]: *** [security/keys/compat.o] Error 1
-make[1]: *** [security/keys] Error 2
-make: *** [security] Error 2
+you have more faith in the authors knowledge of how his code actually behaves than I think is warranted  :)
+Or faith in that he knows what "unlikely" means.
+I should write docs about this; but unlikely() means:
+1) It happens less than 0.01% of the cases.
+2) The compiler couldn't have figured this out by itself
+   (NULL pointer checks are compiler done already, same for some other conditions)
+3) It's a hot codepath where shaving 0.5 cycles (less even on x86) matters
+   (and the author is ok with taking a 500 cycles hit if he's wrong)
 
-The keys-add-keyctl-function-to-get-a-security-label.patch is causing
-this build failure.
+If you think unlikely() means something else, we should fix what it maps to towards gcc ;)
+(to.. be empty ;)
 
-I have tested the patch for the build failure only
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux-2.6.25-rc2/security/keys/internal.h	2008-02-17 05:03:30.000000000 +0530
-+++ linux-2.6.25-rc2/security/keys/~internal.h	2008-02-17 05:46:16.000000000 +0530
-@@ -155,6 +155,8 @@ extern long keyctl_negate_key(key_serial
- extern long keyctl_set_reqkey_keyring(int);
- extern long keyctl_set_timeout(key_serial_t, unsigned);
- extern long keyctl_assume_authority(key_serial_t);
-+extern long keyctl_get_security(key_serial_t keyid, char __user *buffer,
-+				size_t buflen);
- 
- 
- /*
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
