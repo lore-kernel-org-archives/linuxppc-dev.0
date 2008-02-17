@@ -3,9 +3,9 @@ Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
 	[66.129.110.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8136DDEED
+	by ozlabs.org (Postfix) with ESMTP id 212E8DDEFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Feb 2008 02:27:11 +1100 (EST)
+	Mon, 18 Feb 2008 02:27:10 +1100 (EST)
 Date: Sun, 17 Feb 2008 10:27:22 -0500
 To: linuxppc-embedded@ozlabs.org,Josh Boyer <jwboyer@gmail.com>
 From: Steve Heflin <sheflin@newagemicro.com>
@@ -15,7 +15,7 @@ References: <20080217113932.02EBDDE127@ozlabs.org>
 	<20080217071851.0edbf07f@vader.jdub.homelinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; format=flowed
-Message-Id: <20080217152711.D8136DDEED@ozlabs.org>
+Message-Id: <20080217152712.212E8DDEFA@ozlabs.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
