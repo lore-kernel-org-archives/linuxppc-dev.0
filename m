@@ -1,31 +1,18 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sheflin@newagemicro.com>
+Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
+	[66.129.110.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9088DDDE1D
+	by ozlabs.org (Postfix) with ESMTP id 02EBDDE127
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Feb 2008 19:05:09 +1100 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1JQe82-000652-4g
-	for linuxppc-embedded@ozlabs.org; Sun, 17 Feb 2008 07:40:02 +0000
-Received: from adsl-75-50-169-229.dsl.lsan03.sbcglobal.net ([75.50.169.229])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sun, 17 Feb 2008 07:40:02 +0000
-Received: from thomas.a.werne by adsl-75-50-169-229.dsl.lsan03.sbcglobal.net
-	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sun, 17 Feb 2008 07:40:02 +0000
+	Sun, 17 Feb 2008 22:39:31 +1100 (EST)
+Date: Sun, 17 Feb 2008 06:39:43 -0500
 To: linuxppc-embedded@ozlabs.org
-From: Thomas Werne <thomas.a.werne@jpl.nasa.gov>
-Subject: Re: APU FPU in Virtex ppc405
-Date: Sun, 17 Feb 2008 07:34:59 +0000 (UTC)
-Message-ID: <loom.20080217T072721-349@post.gmane.org>
-References: <47ACA4BB.6010903@gmail.com>
-	<fa686aa40802081132h22b91464xd150e0671ca4fc34@mail.gmail.com>
-	<47B02CB0.8040002@gmail.com>
+From: Steve Heflin <sheflin@newagemicro.com>
+Subject: Sequoia NAND
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <20080217113932.02EBDDE127@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,31 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-A. Nolson <alohanono <at> gmail.com> writes:
+I don't see where the new powerpc architecture and drivers/mtd/nand 
+contains support for the NAND chip on the Sequoia platform.  We have 
+a Linux 2.6.14 kit where Montavista has a driver in "sequoia_nand.c" 
+which interfaces with the NAND device via NAND Flash Control registers:
+    struct ppc440ep_ndfc_regs *sequoia_ndfc;
+where:
+    struct ppc440ep_ndfc_regs {
+         uint cmd;
+         uint addr;
+         uint data;
+         uint reserved1;
+         uint ecc0;
+         uint ecc1;
+         uint ecc2;
+         uint ecc3;
+         uint ecc4;
+         uint ecc5;
+         uint ecc6;
+         uint ecc7;
+         uint b0cr;
+         uint b1cr;
+         uint b2cr;
+         uint b3cr;
+         uint cr;
+         uint sr;
+         uint hwctl;
+         uint reserved2;
+         uint revid;
+};
 
-> 
-> I have been checking and it seems that the APU FPU patches will give 
-> some headaches now, so I will probably wait until they merge them with 
-> the official GCC release. In any case, it seems that the FPU restricts 
-> the PowerPC and bus frequencies to a max of 200/100.
-> 
-> Anyway, thanks for the info. I will try to keep track of this in case of 
-> an update.
-> 
+Is the Sequoia's NAND Flash Controller supported in the current Linux-2.6.25?
 
-Hi -
-
-You can get the FPU to work with the 2.6.24rc3 Linux (I got it to work just
-yesterday).  There are a couple of small changes you have to make to kernel
-config files and to one of the .h files, plus you need to compile with the
--fshort-double flag to convert all doubles into floats.  Let me know if you're
-still interested and I can post details and/or patches.
-
-Thomas
-
---
-Thomas Werne
-NASA Jet Propulsion Laboratory
-
-All personal and professional opinions presented herein are my
-own and do not, in any way, represent the opinion or policy of JPL.
+thanks,
+Steve
