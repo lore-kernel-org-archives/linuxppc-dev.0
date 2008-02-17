@@ -1,21 +1,23 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-100-sunday.noc.nerim.net [62.4.17.100])
-	by ozlabs.org (Postfix) with ESMTP id E281BDDEC6
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 21:52:41 +1100 (EST)
-Date: Sun, 17 Feb 2008 11:52:37 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
-Message-ID: <20080217115237.55d9f6d1@hyperion.delvare>
-In-Reply-To: <47B74D76.1000708@pikatech.com>
-References: <4784FED1.2040206@pikatech.com> <47A14E23.50807@pikatech.com>
-	<20080214094516.1b958ae4@hyperion.delvare>
-	<47B66260.8010902@pikatech.com>
-	<20080216103123.50a0128b@hyperion.delvare>
-	<47B74D76.1000708@pikatech.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080216103927.2a02352b@laptopd505.fenrus.org>
+References: <47B70A61.9030306@tiscali.nl>
+	<20080216092552.325e5726@laptopd505.fenrus.org>
+	<20080216173315.GU8953@1wt.eu>
+	<20080216094226.1e8eede1@laptopd505.fenrus.org>
+	<47B72BFE.9060302@am.sony.com>
+	<20080216103927.2a02352b@laptopd505.fenrus.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Bw+OjBsWfZC8CV3ijKEj"
+Date: Sun, 17 Feb 2008 22:50:03 +1100
+Message-Id: <1203249003.6718.24.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
+	Willy Tarreau <w@1wt.eu>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,91 +27,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sean,
 
-On Sat, 16 Feb 2008 15:54:14 -0500, Sean MacLennan wrote:
-> Jean Delvare wrote:
-> > Hi Sean,
-> >
-> > On Fri, 15 Feb 2008 23:11:12 -0500, Sean MacLennan wrote:
-> >   
-> >> Here is the of platform patch. I removed the retries and removed the spaces used for spacing.
-> >>
-> >> Cheers,
-> >>    Sean
-> >>
-> >> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-> >>     
-> >
-> > First of all: please run scripts/checkpatch.pl on your patch and fix
-> > the reported errors. It tells me:
-> >   total: 10 errors, 5 warnings, 222 lines checked
-> > which is definitely too much.
-> >   
-> Many of the errors/warnings are from the cut and paste of the original 
-> code. I realize this doesn't justify my new code, but does beg the 
-> question; should I also cleanup the original code? And how much? I am 
-> tempted to cleanup all but the #ifdef CONFIG_IBM_OCP part.
+--=-Bw+OjBsWfZC8CV3ijKEj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Just take care of the code you are adding. The old code will go away
-soon anyway as I understand it, so don't bother cleaning it up.
+On Sat, 2008-02-16 at 10:39 -0800, Arjan van de Ven wrote:
+> > >> > you found a great set of bugs..
+> > >> > but to be honest... I suspect it's just best to remove unlikely
+> > >> > altogether for these cases; unlikely() is almost a
+> > >> > go-faster-stripes thing, and if you don't know how to use it you
+> > >> > shouldn't be using it... so just removing it for all wrong cases
+> > >> > is actually the best thing to do imo.
 
-> 
-> A few comments, everything else I agree with.
-> 
-> >> +		return -ENOMEM;
-> >> +	}
-> >> +
-> >> +	/* This assumes we don't mix index and non-index entries. */
-> >> +	indexp = of_get_property(np, "index", NULL);
-> >> +	dev->idx = indexp ? *indexp : index++;
-> >>     
-> >
-> > I don't like this static index thing much. Can't you just make the
-> > "index" OF property mandatory? Mixing ways to number things can become
-> > very confusing. In particular as you are using dev->idx later to call
-> > i2c_add_numbered_adapter(), the caller is really supposed to know what
-> > they are doing with the bus numbers.
-> >   
-> I also don't really like mixing the two methods, hence the comment. I 
-> did this so existing dts files, which don't currently have an index, 
-> would work as is. Maybe it would be better to add the index?
-> 
-> Without my patch, or one like it, you cannot currently use the IBM IIC 
-> in the arch/powerpc branch, so maybe now *is* the time to enforce an index?
-> 
-> So if nobody responds with a good reason not to, I will change the code 
-> to require the index to be set. Less testing for me ;)
+Hi Arjan,
 
-Yes, I think this is the right time to enforce the index.
+In general I agree with you that unlikely() is overused, and often in
+inappropriate places.
 
-> >> +	adap->timeout = 1;
-> >> +	adap->nr = dev->idx;
-> >>     
-> >
-> > Looks to me like the block above has much in common with the original
-> > probe function, maybe it would be worth sharing the code to make future
-> > maintenance easier?
-> >   
-> It is my understanding the the arch/ppc branch is going away in the 
-> middle of the year. So I kept the of platform code separate and clean 
-> expecting the CONFIG_IBM_OCP block to be removed in the near future. So 
-> future maintenance should not be an issue.
+> for mordern (last 10 years) x86 cpus... the cpu branchpredictor is better
+> than the coder in general. Same for most other architectures.
+>=20
+> unlikely() creates bigger code as well.
+>=20
+> Now... we're talking about your super duper hotpath function here right?
+> One where you care about 0.5 cycle speed improvement? (less on modern
+> systems ;)
 
-OK, fine with me then.
+The first patch was to platforms/ps3 code, which runs on the Cell, in
+particular the PPE ... which is not an x86 :)
 
-> > Note that I cannot test the code so I am relying on the linuxppc-dev
-> > folks to test it
-> I can test the of platform code and the common code. I am not setup to 
-> test the OCP code, which is why I am loath to change it. I use the IBM 
-> IIC for access to an  ad7414 thermal chip (currently not in the kernel, 
-> I am working on that too) and for reading an eeprom.
+eg:
 
-Note that Frank Edelhaeuser has submitted a driver for this chip
-recently:
-http://lists.lm-sensors.org/pipermail/lm-sensors/2008-February/022478.html
-I didn't have time to review this patch yet, maybe you will want to do
-it yourself.
+[michael@schoenaich ~]$ cat branch.c
+#include <stdio.h>
+int main(void)
+{
+        int i, j;
 
--- 
-Jean Delvare
+        for (i =3D 0, j =3D 0; i < 1000000000; i++)
+                if (i % 4 =3D=3D 0)
+                        j++;
+
+        printf("j =3D %d\n", j);
+        return 0;
+}
+[michael@schoenaich ~]$ ppu-gcc -Wall -O3 -o branch branch.c
+[michael@schoenaich ~]$ time ./branch
+real    0m5.172s
+
+[michael@schoenaich ~]$ cat branch.c
+..
+        for (i =3D 0, j =3D 0; i < 1000000000; i++)
+                if (__builtin_expect(i % 4 =3D=3D 0, 0))
+                        j++;
+..
+[michael@schoenaich ~]$ ppu-gcc -Wall -O3 -o branch branch.c
+[michael@schoenaich ~]$ time ./branch
+real    0m3.762s
+
+
+Which looks as though unlikely() is helping. Admittedly we don't have a
+lot of kernel code that looks like that, but at least unlikely is doing
+what we want it to.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Bw+OjBsWfZC8CV3ijKEj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHuB9rdSjSd0sB4dIRAlc3AKCSqznNR2VGMc0CJgu09lg5TF8oPQCgvPJ9
+Y9eLdFTtOKF/JB5EtEzwSGI=
+=9rV7
+-----END PGP SIGNATURE-----
+
+--=-Bw+OjBsWfZC8CV3ijKEj--
