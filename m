@@ -1,19 +1,31 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 4D24BDDE18
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9088DDDE1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Feb 2008 19:03:33 +1100 (EST)
-In-Reply-To: <1203136939.5231.0.camel@magnus-desktop>
-To: Magnus Hjorth <mh@omnisys.se>
-Subject: Re: Frustrated question with insmod
-MIME-Version: 1.0
-Message-ID: <OFE029FE92.B8F9D4B0-ON882573F2.002B93E9-882573F2.002C385D@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Sun, 17 Feb 2008 00:03:25 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 17 Feb 2008 19:05:09 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1JQe82-000652-4g
+	for linuxppc-embedded@ozlabs.org; Sun, 17 Feb 2008 07:40:02 +0000
+Received: from adsl-75-50-169-229.dsl.lsan03.sbcglobal.net ([75.50.169.229])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Sun, 17 Feb 2008 07:40:02 +0000
+Received: from thomas.a.werne by adsl-75-50-169-229.dsl.lsan03.sbcglobal.net
+	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Sun, 17 Feb 2008 07:40:02 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Thomas Werne <thomas.a.werne@jpl.nasa.gov>
+Subject: Re: APU FPU in Virtex ppc405
+Date: Sun, 17 Feb 2008 07:34:59 +0000 (UTC)
+Message-ID: <loom.20080217T072721-349@post.gmane.org>
+References: <47ACA4BB.6010903@gmail.com>
+	<fa686aa40802081132h22b91464xd150e0671ca4fc34@mail.gmail.com>
+	<47B02CB0.8040002@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +36,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> 'cat /proc/modules' perhaps?
-
-I tried that, but it gives me an odd address (at least I think it's an odd 
-address): 0xE1188000.  I use that address in GDB for adding the symbol 
-table (i.e., add-symbol-file mymodule 0xE1188000), but then the BDI 
-reports "*** MMU: address translation for 0xE118822C failed" when I try to 
-set a breakpoint in the probe function.  Admittedly I'm new to driver 
-writing, but shouldn't the address be somewhere in the 0xC0xxxxxx range?
+A. Nolson <alohanono <at> gmail.com> writes:
 
 > 
-> //Magnus
+> I have been checking and it seems that the APU FPU patches will give 
+> some headaches now, so I will probably wait until they merge them with 
+> the official GCC release. In any case, it seems that the FPU restricts 
+> the PowerPC and bus frequencies to a max of 200/100.
 > 
+> Anyway, thanks for the info. I will try to keep track of this in case of 
+> an update.
 > 
-> On Fri, 2008-02-15 at 17:06 -0800, Bruce_Leonard@selinc.com wrote:
-> > Sorry if this is the wrong place to post this question.  I'm 
-developing a 
-> > NAND flash driver and I need to do some detailed dubugging using GDB 
-with 
-> > a BDI2K.  According to the Denx web site, to find out the address that 
-the 
-> > module is loading at you load it using the -m parameter to insmod 
-(i.e., 
-> > "insmod -m mymodule").  However, every version of insmod I've tried 
-> > doesn't recognize ANY options much less -m.  Can anyone please point 
-me in 
-> > the right direction, or give me another way of knowing what the load 
-> > address of my module is?
-> > 
-> > Thanks.
-> > 
-> > Bruce
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+
+Hi -
+
+You can get the FPU to work with the 2.6.24rc3 Linux (I got it to work just
+yesterday).  There are a couple of small changes you have to make to kernel
+config files and to one of the .h files, plus you need to compile with the
+-fshort-double flag to convert all doubles into floats.  Let me know if you're
+still interested and I can post details and/or patches.
+
+Thomas
+
+--
+Thomas Werne
+NASA Jet Propulsion Laboratory
+
+All personal and professional opinions presented herein are my
+own and do not, in any way, represent the opinion or policy of JPL.
