@@ -1,18 +1,22 @@
-Return-Path: <w@1wt.eu>
-Date: Sat, 16 Feb 2008 18:58:49 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080216175849.GA25636@1wt.eu>
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080216094226.1e8eede1@laptopd505.fenrus.org>
-Cc: linuxppc-dev@ozlabs.org, Roel Kluin <12o3l@tiscali.nl>,
-	cbe-oss-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
+Return-Path: <geert@linux-m68k.org>
+Received: from edna.telenet-ops.be (edna.telenet-ops.be [195.130.132.58])
+	by ozlabs.org (Postfix) with ESMTP id 975CDDDED4
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 20:44:41 +1100 (EST)
+Date: Sun, 17 Feb 2008 10:44:32 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: avorontsov@ru.mvista.com, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
+	endianness
+In-Reply-To: <20080215164542.GB16810@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0802171030330.6848@anakin>
+References: <20080205154432.GA8749@localhost.localdomain>
+	<20080214224942.a0cb6218.akpm@linux-foundation.org>
+	<20080215164542.GB16810@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, adaplas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,65 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 16, 2008 at 09:42:26AM -0800, Arjan van de Ven wrote:
-> On Sat, 16 Feb 2008 18:33:16 +0100
-> Willy Tarreau <w@1wt.eu> wrote:
-> 
-> > On Sat, Feb 16, 2008 at 09:25:52AM -0800, Arjan van de Ven wrote:
-> > > On Sat, 16 Feb 2008 17:08:01 +0100
-> > > Roel Kluin <12o3l@tiscali.nl> wrote:
+On Fri, 15 Feb 2008, Anton Vorontsov wrote:
+> On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
+> > On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > This patch adds support for the framebuffers with non-native
+> > > endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
+> > > be used by the drivers. Depending on the host endianness this flag
+> > > will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
 > > > 
-> > > > The patch below was not yet tested. If it's correct as it is,
-> > > > please comment. ---
-> > > > Fix Unlikely(x) == y
-> > > > 
-> > > 
-> > > you found a great set of bugs..
-> > > but to be honest... I suspect it's just best to remove unlikely
-> > > altogether for these cases; unlikely() is almost a
-> > > go-faster-stripes thing, and if you don't know how to use it you
-> > > shouldn't be using it... so just removing it for all wrong cases is
-> > > actually the best thing to do imo.
+> > > Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
 > > 
-> > Well, eventhough the author may not know how to use it, "unlikely" at
-> > least indicates the intention of the author, or his knowledge of what
-> > should happen here. I'd suggest leaving it where it is because the
-> > authot of this code is in best position to know that this branch is
-> > unlikely to happen, eventhough he does not correctly use the macro.
-> >
+> > That's a pretty large patch to fbdev core,
 > 
-> you have more faith in the authors knowledge of how his code actually behaves than I think is warranted  :)
-> Or faith in that he knows what "unlikely" means.
-> I should write docs about this; but unlikely() means:
-> 1) It happens less than 0.01% of the cases.
-> 2) The compiler couldn't have figured this out by itself
->    (NULL pointer checks are compiler done already, same for some other conditions)
-> 3) It's a hot codepath where shaving 0.5 cycles (less even on x86) matters
->    (and the author is ok with taking a 500 cycles hit if he's wrong)
+> Yes, but changes are mostly trivial. No insurance of typos and thinkos
+> though. OTOH, it survived my tests.
 > 
-> If you think unlikely() means something else, we should fix what it maps to towards gcc ;)
-> (to.. be empty ;)
+> > and Tony appears to have gone
+> > offline again and you didn't cc the fbdev mailing list.
+> 
+> FRAMEBUFFER LAYER
+> P:      Antonino Daplas
+> M:      adaplas@gmail.com
+> L:      linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
+> 
+> I'm lazy to subscribe on occasional patches. Yup, this is hardly
+> an excuse...
 
-eventhough the gcc docs say it's just a hint to help the compiler optimize
-the branch it takes by default, I too have noticed that it more often does
-bad than good. Code gets completely reordered and even sometimes partially
-duplicated (especially when the branch is a return).
+While linux-fbdev is subscribers-only, non-subscribers are not plainly
+rejected, but moderated, so the casual patch/comment/question comes
+through.
 
-Last but not least, gcc 4 tends to emit stupid checks, to the point that I
-have replaced unlikely(x) with (x) in my code when gcc >= 4 is detected. What
-I observe is that the following code :
+I'll cook up a patch for MAINTAINERS to clarify.
 
-    if (unlikely(p == NULL)) ...
+> > Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
+> > be permanently enabled?
+> 
+> It should not. Because with CONFIG_FB_FOREIGN_ENDIAN enabled, drawing
+> might be a little bit slower, because of external checks for endianness
+> (I didn't noticed any slowdown, but I guess it's still measurable if we
+> find some fb benchmark).
 
-often gets coded like this :
+> > I'd like to at least queue a patch in -mm so that CONFIG_FB_FOREIGN_ENDIAN
+> > is forced-on, so the code gets some runtime testing.  Will that break
+> > anything?
+> 
+> Nope, it should not break anything, just possible fbconsole/tux drawing
+> slowdown.
 
-    reg1 = (p == NULL)
-    if (reg1 != 0) ...
+Tux drawing speed doesn't really matter, as it's done once only.
+Console text drawing is different.
 
-... which clobbers reg1 for nothing and performs a double test.
+`time cat MAINTAINERS' is a good test. Of course, is most time is spent
+in scrolling, you won't see much difference.
 
-But yes, I assumed that the author considered its use to be legitimate (I've
-not looked at the code). Maybe you're right and it should be removed, but in
-this case we would need a large audit of the abuses of unlikely()...
+So probably we need a test file that contains lines of text interspersed
+with `HOME' escape sequences, so we don't scroll?
 
-Willy
+> Thinking about it a little bit more, I believe we want to add a choice,
+> which exactly foreign endianness we want to compile-in. Then, if we're
+> pretty confident that particular BE machine uses only LE framebuffer,
+> gcc can optimize away endianness checks.
+> 
+> Patch on top of previous inlined here. With that patch, slowdown is
+> possible with CONFIG_FB_BOTH_ENDIAN option only, which is still
+> default if FOREIGN_ENDIAN is selected.
+> With this patch FB_FOREIGN_ENDIAN converted to menuconfig with the
+> choice inside: which type of foreign endianness we want to compile-in.
+> 
+
+The notion of `FOREIGN_ENDIAN' is relative, as it depends on the
+architecture you're compiling for.
+
+Suppose you have a PCI graphics card with a frame buffer that's always
+big endian. When compiling for a big endian platform, the driver won't
+depend on FB_FOREIGN_ENDIAN. When compiling for a little endian
+platform, it will.
+
+Shouldn't we add LITTLE_ENDIAN and BIG_ENDIAN Kconfig vars first, just
+like we have 64BIT?
+
+> As a bonus, now fb subsystem will refuse to register framebuffer with
+> unsupported endianness, and will suggest a way to solve the problem.
+
+I'd like to handle this in Kconfig (cfr. above).
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
