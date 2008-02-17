@@ -1,21 +1,22 @@
-Return-Path: <sheflin@newagemicro.com>
-Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
-	[66.129.110.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 212E8DDEFA
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 14864DDEDA
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Feb 2008 02:27:10 +1100 (EST)
-Date: Sun, 17 Feb 2008 10:27:22 -0500
-To: linuxppc-embedded@ozlabs.org,Josh Boyer <jwboyer@gmail.com>
-From: Steve Heflin <sheflin@newagemicro.com>
+	Mon, 18 Feb 2008 07:56:41 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1442746anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 17 Feb 2008 12:56:40 -0800 (PST)
+Date: Sun, 17 Feb 2008 14:56:06 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Steve Heflin <sheflin@newagemicro.com>
 Subject: Re: Sequoia NAND - others missing?
-In-Reply-To: <20080217071851.0edbf07f@vader.jdub.homelinux.org>
+Message-ID: <20080217145606.73279fe3@zod.rchland.ibm.com>
+In-Reply-To: <47b8524c.1286460a.1307.7530SMTPIN_ADDED@mx.google.com>
 References: <20080217113932.02EBDDE127@ozlabs.org>
 	<20080217071851.0edbf07f@vader.jdub.homelinux.org>
+	<47b8524c.1286460a.1307.7530SMTPIN_ADDED@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Message-Id: <20080217152712.212E8DDEFA@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,34 +28,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Are there other devices (beside the NAND Flash Controller) that exist 
-on the AMCC-440EPx chip and are not supported by the current 
-Linux-2.6.25 ARCH=powerpc?
+On Sun, 17 Feb 2008 10:27:22 -0500
+Steve Heflin <sheflin@newagemicro.com> wrote:
 
-thanks for your help,
-Steve
+> Are there other devices (beside the NAND Flash Controller) that exist 
+> on the AMCC-440EPx chip and are not supported by the current 
+> Linux-2.6.25 ARCH=powerpc?
 
-At 08:18 AM 2/17/2008, Josh Boyer wrote:
->On Sun, 17 Feb 2008 06:39:43 -0500
->Steve Heflin <sheflin@newagemicro.com> wrote:
->
-> > I don't see where the new powerpc architecture and drivers/mtd/nand
-> > contains support for the NAND chip on the Sequoia platform.  We have
->
->It's not.
->
-> > Is the Sequoia's NAND Flash Controller supported in the current 
-> Linux-2.6.25?
->
->No.
->
->There are a couple different patches floating around for it, all of
->which need work.  The driver is drivers/mtd/nand/ndfc.c and work needs
->to be done to parse a device tree and present the proper platform
->devices so that driver will work.  Stefan has something like this
->somewhere, I've just been lax in getting it into my tree.
->
->Too late for .25, but I have 4 boards that use this now so I'll be a
->bit more interested in getting it into .26.
->
->josh
+i2c, GPIO, the security stuff (if your version has that), and GPT.
+Thought GPT has never really been supported in any kernel that I
+remember.
+
+Patches for i2c and GPIO are floating around somewhere I think.  Just
+need to get them polished up and device-tree compliant.
+
+josh
