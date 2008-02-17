@@ -1,25 +1,21 @@
-Return-Path: <pinskia@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
-	by ozlabs.org (Postfix) with ESMTP id E0D73DDEEB
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 20:45:26 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so969518rvf.9
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 01:45:23 -0800 (PST)
-Message-ID: <de8d50360802170145u4bd60f76x9662b66c63bdf41d@mail.gmail.com>
-Date: Sun, 17 Feb 2008 01:45:23 -0800
-From: "Andrew Pinski" <pinskia@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: [Cbe-oss-dev] [PATCH 1/3] Fix Unlikely(x) == y
-In-Reply-To: <20080216175849.GA25636@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<20080216175849.GA25636@1wt.eu>
-Cc: linuxppc-dev@ozlabs.org, Roel Kluin <12o3l@tiscali.nl>,
-	cbe-oss-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>,
-	Arjan van de Ven <arjan@infradead.org>
+Return-Path: <khali@linux-fr.org>
+Received: from mallaury.nerim.net (smtp-100-sunday.noc.nerim.net [62.4.17.100])
+	by ozlabs.org (Postfix) with ESMTP id E281BDDEC6
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 21:52:41 +1100 (EST)
+Date: Sun, 17 Feb 2008 11:52:37 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
+Message-ID: <20080217115237.55d9f6d1@hyperion.delvare>
+In-Reply-To: <47B74D76.1000708@pikatech.com>
+References: <4784FED1.2040206@pikatech.com> <47A14E23.50807@pikatech.com>
+	<20080214094516.1b958ae4@hyperion.delvare>
+	<47B66260.8010902@pikatech.com>
+	<20080216103123.50a0128b@hyperion.delvare>
+	<47B74D76.1000708@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 16, 2008 9:58 AM, Willy Tarreau <w@1wt.eu> wrote:
-> Last but not least, gcc 4 tends to emit stupid checks, to the point that I
-> have replaced unlikely(x) with (x) in my code when gcc >= 4 is detected. What
-> I observe is that the following code :
->
->     if (unlikely(p == NULL)) ...
->
-> often gets coded like this :
->
->     reg1 = (p == NULL)
->     if (reg1 != 0) ...
->
-> ... which clobbers reg1 for nothing and performs a double test.
+Hi Sean,
 
-This really only can happen in GCC 4.0.x and 4.1.x and cannot happen
-for 4.2 or 4.3 really because of the way __builtin_expect is handled
-for those two.
+On Sat, 16 Feb 2008 15:54:14 -0500, Sean MacLennan wrote:
+> Jean Delvare wrote:
+> > Hi Sean,
+> >
+> > On Fri, 15 Feb 2008 23:11:12 -0500, Sean MacLennan wrote:
+> >   
+> >> Here is the of platform patch. I removed the retries and removed the spaces used for spacing.
+> >>
+> >> Cheers,
+> >>    Sean
+> >>
+> >> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> >>     
+> >
+> > First of all: please run scripts/checkpatch.pl on your patch and fix
+> > the reported errors. It tells me:
+> >   total: 10 errors, 5 warnings, 222 lines checked
+> > which is definitely too much.
+> >   
+> Many of the errors/warnings are from the cut and paste of the original 
+> code. I realize this doesn't justify my new code, but does beg the 
+> question; should I also cleanup the original code? And how much? I am 
+> tempted to cleanup all but the #ifdef CONFIG_IBM_OCP part.
 
--- Pinski
+Just take care of the code you are adding. The old code will go away
+soon anyway as I understand it, so don't bother cleaning it up.
+
+> 
+> A few comments, everything else I agree with.
+> 
+> >> +		return -ENOMEM;
+> >> +	}
+> >> +
+> >> +	/* This assumes we don't mix index and non-index entries. */
+> >> +	indexp = of_get_property(np, "index", NULL);
+> >> +	dev->idx = indexp ? *indexp : index++;
+> >>     
+> >
+> > I don't like this static index thing much. Can't you just make the
+> > "index" OF property mandatory? Mixing ways to number things can become
+> > very confusing. In particular as you are using dev->idx later to call
+> > i2c_add_numbered_adapter(), the caller is really supposed to know what
+> > they are doing with the bus numbers.
+> >   
+> I also don't really like mixing the two methods, hence the comment. I 
+> did this so existing dts files, which don't currently have an index, 
+> would work as is. Maybe it would be better to add the index?
+> 
+> Without my patch, or one like it, you cannot currently use the IBM IIC 
+> in the arch/powerpc branch, so maybe now *is* the time to enforce an index?
+> 
+> So if nobody responds with a good reason not to, I will change the code 
+> to require the index to be set. Less testing for me ;)
+
+Yes, I think this is the right time to enforce the index.
+
+> >> +	adap->timeout = 1;
+> >> +	adap->nr = dev->idx;
+> >>     
+> >
+> > Looks to me like the block above has much in common with the original
+> > probe function, maybe it would be worth sharing the code to make future
+> > maintenance easier?
+> >   
+> It is my understanding the the arch/ppc branch is going away in the 
+> middle of the year. So I kept the of platform code separate and clean 
+> expecting the CONFIG_IBM_OCP block to be removed in the near future. So 
+> future maintenance should not be an issue.
+
+OK, fine with me then.
+
+> > Note that I cannot test the code so I am relying on the linuxppc-dev
+> > folks to test it
+> I can test the of platform code and the common code. I am not setup to 
+> test the OCP code, which is why I am loath to change it. I use the IBM 
+> IIC for access to an  ad7414 thermal chip (currently not in the kernel, 
+> I am working on that too) and for reading an eeprom.
+
+Note that Frank Edelhaeuser has submitted a driver for this chip
+recently:
+http://lists.lm-sensors.org/pipermail/lm-sensors/2008-February/022478.html
+I didn't have time to review this patch yet, maybe you will want to do
+it yourself.
+
+-- 
+Jean Delvare
