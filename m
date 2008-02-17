@@ -1,23 +1,24 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [87.55.233.238])
-	by ozlabs.org (Postfix) with ESMTP id 38BA8DDF11
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 06:29:20 +1100 (EST)
-Date: Sun, 17 Feb 2008 20:29:13 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id 743D0DDEC7
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 07:31:37 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Subject: Re: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1
 	softlockup while bootup on powerpc
-Message-ID: <20080217192913.GO23197@kernel.dk>
+Date: Sun, 17 Feb 2008 21:08:18 +0100
 References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
 	<47B67E5E.4010001@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <47B67E5E.4010001@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200802172108.19696.rjw@sisk.pl>
 Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Jens Axboe <jens.axboe@oracle.com>,
+	Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 16 2008, Kamalesh Babulal wrote:
+On Saturday, 16 of February 2008, Kamalesh Babulal wrote:
 > Hi,
-> 
+
+Hi,
+ 
 > The softlockup is seen from 2.6.25-rc1-git{1,3} and is visible in the 2.6.24-rc2 kernel,
 > While booting up with the 2.6.25-rc1-git{1,3} and 2.6.25-rc2 kernel(s) on the powerbox
-> 
+
+Can you update the Bugzilla entry at:
+http://bugzilla.kernel.org/show_bug.cgi?id=9948
+with the above information, please?
+
+Rafael
+
+
 > Loading st.ko module
 > BUG: soft lockup - CPU#1 stuck for 61s! [insmod:379]
 > NIP: c0000000001b0620 LR: c0000000001a5dcc CTR: 0000000000000040
@@ -54,13 +64,36 @@ On Sat, Feb 16 2008, Kamalesh Babulal wrote:
 > Instruction dump:
 > 7d296214 39290018 e8090000 7caa2038 39290008 2fa00000 409e0018 7caa4215 
 > 396b0001 418200cc 424000b8 4bffffdc <79691f24> 7d296214 e9690018 2fab0000 
+> INFO: task insmod:387 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> insmod        D 000000001000e144 12144   387      1
+> Call Trace:
+> [c00000077cb97600] [c0000000008fae80] 0xc0000000008fae80 (unreliable)
+> [c00000077cb977d0] [c000000000010c7c] .__switch_to+0x11c/0x154
+> [c00000077cb97860] [c000000000344498] .schedule+0x5d0/0x6b0
+> [c00000077cb97950] [c0000000003447d8] .schedule_timeout+0x3c/0xe8
+> [c00000077cb97a20] [c000000000343d34] .wait_for_common+0x150/0x22c
+> [c00000077cb97ae0] [c00000000008ef00] .__stop_machine_run+0xbc/0xf0
+> [c00000077cb97bb0] [c00000000008ef70] .stop_machine_run+0x3c/0x80
+> [c00000077cb97c50] [c0000000000891f0] .sys_init_module+0x14e4/0x1af4
+> [c00000077cb97e30] [c00000000000872c] syscall_exit+0x0/0x40
+> -- 0:conmux-control -- time-stamp -- Feb/15/08 16:04:12 --
+> INFO: task insmod:387 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> insmod        D 000000001000e144 12144   387      1
+> Call Trace:
+> [c00000077cb97600] [c0000000008fae80] 0xc0000000008fae80 (unreliable)
+> [c00000077cb977d0] [c000000000010c7c] .__switch_to+0x11c/0x154
+> [c00000077cb97860] [c000000000344498] .schedule+0x5d0/0x6b0
+> [c00000077cb97950] [c0000000003447d8] .schedule_timeout+0x3c/0xe8
+> [c00000077cb97a20] [c000000000343d34] .wait_for_common+0x150/0x22c
+> [c00000077cb97ae0] [c00000000008ef00] .__stop_machine_run+0xbc/0xf0
+> [c00000077cb97bb0] [c00000000008ef70] .stop_machine_run+0x3c/0x80
+> [c00000077cb97c50] [c0000000000891f0] .sys_init_module+0x14e4/0x1af4
+> [c00000077cb97e30] [c00000000000872c] syscall_exit+0x0/0x40
+> -- 0:conmux-control -- time-stamp -- Feb/15/08 16:06:21 --
 
-It's odd stuff. Could you perhaps try and add some printks to
-block/cfq-iosched.c:call_for_each_cic(), like dumping the 'nr' return
-from radix_tree_gang_lookup() and the pointer value of cics[i] in the
-for() loop after the lookup?
 
-How many SCSI devices are online?
 
 -- 
-Jens Axboe
+"Premature optimization is the root of all evil." - Donald Knuth
