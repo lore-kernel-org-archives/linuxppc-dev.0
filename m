@@ -1,23 +1,30 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.240])
-	by ozlabs.org (Postfix) with ESMTP id 985BEDDECA
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 05:49:16 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id x43so716262hsb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:49:15 -0800 (PST)
-Date: Mon, 18 Feb 2008 12:49:09 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: arch_initcall time
-Message-ID: <20080218124909.52796859@weaponx>
-In-Reply-To: <20080218184240.GA17898@lixom.net>
-References: <47B9CE4D.1020303@pikatech.com>
-	<fa686aa40802181031s4ba6ec4eie949040f0bf23ad6@mail.gmail.com>
-	<fa686aa40802181032lffff9e2yf079c277c250b430@mail.gmail.com>
-	<20080218184240.GA17898@lixom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <pinskia@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id BB80ADDF06
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 06:22:24 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1360914rvf.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 11:22:18 -0800 (PST)
+Message-ID: <de8d50360802181122k63410760y9a61f4c42ff251f8@mail.gmail.com>
+Date: Mon, 18 Feb 2008 11:22:18 -0800
+From: "Andrew Pinski" <pinskia@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Cbe-oss-dev] [PATCH 1/3] Fix Unlikely(x) == y
+In-Reply-To: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <47B70A61.9030306@tiscali.nl>
+	<20080216092552.325e5726@laptopd505.fenrus.org>
+	<20080216173315.GU8953@1wt.eu>
+	<20080216094226.1e8eede1@laptopd505.fenrus.org>
+	<47B72BFE.9060302@am.sony.com>
+	<20080216103927.2a02352b@laptopd505.fenrus.org>
+	<1203249003.6718.24.camel@concordia>
+	<20080218135609.GD21080@cs181133002.pp.htv.fi>
+	<Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+Cc: Adrian Bunk <bunk@kernel.org>, Roel Kluin <12o3l@tiscali.nl>,
+	lkml <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org, Willy Tarreau <w@1wt.eu>,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 18 Feb 2008 12:42:40 -0600
-Olof Johansson <olof@lixom.net> wrote:
+On Feb 18, 2008 6:01 AM, Geert Uytterhoeven
+<Geert.Uytterhoeven@sonycom.com> wrote:
+> > This means it generates faster code with a current gcc for your platform.
+> >
+> > But a future gcc might e.g. replace the whole loop with a division
+> > (gcc SVN head (that will soon become gcc 4.3) already does
+> > transformations like replacing loops with divisions [1]).
 
-> On Mon, Feb 18, 2008 at 11:32:14AM -0700, Grant Likely wrote:
-> > On Feb 18, 2008 11:31 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > > On Feb 18, 2008 11:28 AM, Sean MacLennan <smaclennan@pikatech.com> wrote:
-> > > > I need to call i2c_register_board_info for the new i2c style ad7414
-> > > > driver. This needs to be called at arch initcall time. Currently I just
-> > > > do this:
-> > > >
-> > > > static int __init warp_arch_init(void)
-> > > > {
-> > > >         i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
-> > > >         return 0;
-> > > > }
-> > > > arch_initcall(warp_arch_init);
-> > >
-> > > Yes, this is the right thing to do, but use machine_arch_initcall()
-> > > instead so that it doesn't get called if it is not your board.
-> > 
-> > That being said, I believe there is infrastructure to handle the
-> > creation of your i2c board info from the device tree.  Your i2c board
-> > info should not be hard coded.
-> 
-> Jon Smirl's patches? Not yet, unfortunately. It didn't make .25, but
-> maybe for .26.
-> 
-> (I will need to do it specifically on my platform, like fsl_soc already
-> does, as a stopgap until then).
+Yes but the issue is one optimization inside GCC does not take into
+account the probability in one case.
 
-That, and Sean is still working on getting the iic device-tree-compliant driver through as
-well :)
+And really there is a bug in the linux kernel for not implementing the
+long long divide function (or really using libgcc) but that is a
+different story and is part of the issue there anyways.
 
-josh
+-- Pinski
