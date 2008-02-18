@@ -1,26 +1,34 @@
-Return-Path: <12o3l@tiscali.nl>
-Message-ID: <47B99D64.3090103@tiscali.nl>
-Date: Mon, 18 Feb 2008 15:59:48 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 63D5EDDED2
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 04:07:00 +1100 (EST)
+Received: from d23relay03.au.ibm.com ([202.81.18.234])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m1IH76sM004596
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 04:07:06 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1IH6Opu4079792
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 04:06:24 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1IH6Nt3030474
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 04:06:24 +1100
+Date: Mon, 18 Feb 2008 22:36:18 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Andreas Schwab <schwab@suse.de>
+Subject: [PATCH-RESEND] next-20080218 build failure at pmac_ide_macio_attach ()
+Message-ID: <20080218170618.GA7435@linux.vnet.ibm.com>
+References: <20080218140159.GA31310@linux.vnet.ibm.com>
+	<jeodae4acy.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-References: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-	<47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-	<20080216103927.2a02352b@laptopd505.fenrus.org>
-	<1203249003.6718.24.camel@concordia>
-	<20080218135609.GD21080@cs181133002.pp.htv.fi>
-	<12131.1203344830@redhat.com>
-In-Reply-To: <12131.1203344830@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Adrian Bunk <bunk@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <jeodae4acy.fsf@sykes.suse.de>
+Cc: sfr@canb.auug.org.au, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +38,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Howells wrote:
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Mon, Feb 18, 2008 at 03:17:49PM +0100, Andreas Schwab wrote:
+> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
 > 
->> Hence shouldn't we ask the gcc people what's the purpose of
->> __builtin_expect(), if it doesn't live up to its promise?
+.
+.
+<snip>
+> Just remove the cast.
 > 
-> __builtin_expect() is useful on FRV where you _have_ to give each branch and
-> conditional branch instruction a measure of probability whether the branch
-> will be taken.
-> 
-> David
+> Andreas.
 
-I was wondering whether some of the uses of likely illustrated below are
-incorrect or not useful.
+Resending the patch after making the changes Andreas said.
 
-x = likely(X) || Y
-
-for ( ... ; likely(...); ... )
-
-while ( likely(X) )
-
-if ( unlikely(X) &&/|| likely(Y) )
-
-if ( X &&/|| unlikely(Y) ) 
-
-return likely(X);
-
-return likely(X) ? a : b;
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andreas Schwab <schwab@suse.de>
+--
+--- linux-2.6.25-rc1/drivers/ide/ppc/pmac.c	2008-02-18 22:24:49.000000000 +0530
++++ linux-2.6.25-rc1/drivers/ide/ppc/~pmac.c	2008-02-18 22:25:10.000000000 +0530
+@@ -1091,7 +1091,7 @@ pmac_ide_macio_attach(struct macio_dev *
+ 	int irq, rc;
+ 	hw_regs_t hw;
+ 
+-	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
++	pmif = kzalloc(sizeof(*pmif), GFP_KERNEL);
+ 	if (pmif == NULL)
+ 		return -ENOMEM;
+ 
+@@ -1229,7 +1229,7 @@ pmac_ide_pci_attach(struct pci_dev *pdev
+ 		return -ENODEV;
+ 	}
+ 
+-	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
++	pmif = kzalloc(sizeof(*pmif), GFP_KERNEL);
+ 	if (pmif == NULL)
+ 		return -ENOMEM;
+ 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
