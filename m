@@ -1,21 +1,13 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B8705DDEF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 01:17:58 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH] next-20080218 build failure at pmac_ide_macio_attach ()
-References: <20080218140159.GA31310@linux.vnet.ibm.com>
-Date: Mon, 18 Feb 2008 15:17:49 +0100
-In-Reply-To: <20080218140159.GA31310@linux.vnet.ibm.com> (Kamalesh Babulal's
-	message of "Mon\, 18 Feb 2008 19\:31\:59 +0530")
-Message-ID: <jeodae4acy.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linux-ide@vger.kernel.org, sfr@canb.auug.org.au,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: libfdt: More tests of NOP handling behaviour 
+In-Reply-To: Your message of "Mon, 18 Feb 2008 16:09:25 +1100."
+	<20080218050925.GH29975@localhost.localdomain>
+References: <20080218050925.GH29975@localhost.localdomain> 
+Date: Mon, 18 Feb 2008 08:24:56 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JR6vQ-0000h9-2f@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +17,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
+So, like, the other day David Gibson mumbled:
+> In light of the recently discovered bug with NOP handling, this adds
+> some more testcases for NOP handling.  Specifically, it adds a helper
+> program which will add a NOP tag after every existing tag in a dtb,
+> and runs the standard battery of tests over trees mangled in this way.
+> 
+> For now, this does not add a NOP at the very beginning of the
+> structure block.  This causes problems for libfdt at present, because
+> we assume in many places that the root node's BEGIN_NODE tag is at
+> offset 0.  I'm still contemplating what to do about this (with one
+> option being simply to declare such dtbs invalid).
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-> --- linux-2.6.25-rc1/drivers/ide/ppc/pmac.c	2008-02-18 18:41:48.000000000 +0530
-> +++ linux-2.6.25-rc1/drivers/ide/ppc/~pmac.c	2008-02-18 19:20:37.000000000 +0530
-> @@ -1091,7 +1091,7 @@ pmac_ide_macio_attach(struct macio_dev *
->  	int irq, rc;
->  	hw_regs_t hw;
->  
-> -	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
-> +	pmif = (struct pmac_ide_hwif*)kzalloc(sizeof(*pmif), GFP_KERNEL);
+Applied.
 
-Just remove the cast.
+BTW, declaring DTBs with BEGIN_NODES not at offset 0
+as invalid seems like a fine choice to me.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+jdl
