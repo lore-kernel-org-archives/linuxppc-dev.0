@@ -1,41 +1,16 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D001ADDECD
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 21:00:19 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m1IA0ESA354964
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:00:14 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m1IA0E0Y2232324
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 11:00:14 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m1IA0DAd020545
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:00:14 GMT
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-Date: Mon, 18 Feb 2008 11:00:11 +0100
-References: <200802111724.12416.ossthema@de.ibm.com>
-	<OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
-	<1203094538.8142.23.camel@nimitz.home.sr71.net>
-In-Reply-To: <1203094538.8142.23.camel@nimitz.home.sr71.net>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 704BDDDEB7
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 23:15:01 +1100 (EST)
+Date: Mon, 18 Feb 2008 13:14:50 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: mm section mismatch warnings for ps3
+Message-ID: <Pine.LNX.4.64.0802181309590.22124@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802181100.12995.ossthema@de.ibm.com>
-Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>, Greg KH <greg@kroah.com>,
-	Dave Hansen <haveblue@us.ibm.com>, apw <apw@uk.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <RAISCH@de.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-67858932-1203336890=:22124"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,64 +20,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-switching to proper mail client...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Dave Hansen <haveblue@us.ibm.com> wrote on 15.02.2008 17:55:38:
+---584349381-67858932-1203336890=:22124
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> I've been thinking about that, and I don't think you really *need* to
-> keep a comprehensive map like that.=20
->=20
-> When the memory is in a particular configuration (range of memory
-> present along with unique set of holes) you get a unique ehea_bmap
-> configuration. =A0That layout is completely predictable.
->=20
-> So, if at any time you want to figure out what the ehea_bmap address for
-> a particular *Linux* virtual address is, you just need to pretend that
-> you're creating the entire ehea_bmap, use the same algorithm and figure
-> out host you would have placed things, and use that result.
->=20
-> Now, that's going to be a slow, crappy linear search (but maybe not as
-> slow as recreating the silly thing). =A0So, you might eventually run into
-> some scalability problems with a lot of packets going around. =A0But, I'd
-> be curious if you do in practice.
+When building current mainline for ps3_defconfig, I get the following
+mm-related section mismatches:
 
-Up to 14 addresses translation per packet (sg_list) might be required on=20
-the transmit side. On receive side it is only 1. Most packets require only=
-=20
-very few translations (1 or sometimes more) =A0translations. However,=20
-with more then 700.000 packets per second this approach does not seem=20
-reasonable from performance perspective when memory is fragmented as you
-described.
+| WARNING: mm/built-in.o(.text+0x25094): Section mismatch in reference from the function .sparse_add_one_section() to the function .meminit.text:.sparse_index_init()
+| The function .sparse_add_one_section() references
+| the function __meminit .sparse_index_init().
+| This is often because .sparse_add_one_section lacks a __meminit 
+| annotation or the annotation of .sparse_index_init is wrong.
+|
+| WARNING: mm/built-in.o(.text+0x25128): Section mismatch in reference from the function .sparse_add_one_section() to the function .meminit.text:.sparse_init_one_section()
+| The function .sparse_add_one_section() references
+| the function __meminit .sparse_init_one_section().
+| This is often because .sparse_add_one_section lacks a __meminit 
+| annotation or the annotation of .sparse_init_one_section is wrong.
+|
+| WARNING: mm/built-in.o(.text+0x2c5fc): Section mismatch in reference from the function .__add_zone() to the function .meminit.text:.init_currently_empty_zone()
+| The function .__add_zone() references
+| the function __meminit .init_currently_empty_zone().
+| This is often because .__add_zone lacks a __meminit 
+| annotation or the annotation of .init_currently_empty_zone is wrong.
+|
+| WARNING: mm/built-in.o(.text+0x2c628): Section mismatch in reference from the function .__add_zone() to the function .meminit.text:.memmap_init_zone()
+| The function .__add_zone() references
+| the function __meminit .memmap_init_zone().
+| This is often because .__add_zone lacks a __meminit 
+| annotation or the annotation of .memmap_init_zone is wrong.
+|
+| WARNING: vmlinux.o(.text+0x7360): Section mismatch in reference from the function .start_secondary_prolog() to the function .devinit.text:.start_secondary()
+| The function .start_secondary_prolog() references
+| the function __devinit .start_secondary().
+| This is often because .start_secondary_prolog lacks a __devinit 
+| annotation or the annotation of .start_secondary is wrong.
+|
+| WARNING: vmlinux.o(.text+0x1dea0): Section mismatch in reference from the function .move_device_tree() to the function .init.text:.lmb_alloc_base()
+| The function .move_device_tree() references
+| the function __init .lmb_alloc_base().
+| This is often because .move_device_tree lacks a __init 
+| annotation or the annotation of .lmb_alloc_base is wrong.
+|
+| WARNING: vmlinux.o(.text+0xabd7c): Section mismatch in reference from the function .sparse_add_one_section() to the function .meminit.text:.sparse_index_init()
+| The function .sparse_add_one_section() references
+| the function __meminit .sparse_index_init().
+| This is often because .sparse_add_one_section lacks a __meminit 
+| annotation or the annotation of .sparse_index_init is wrong.
+|
+| WARNING: vmlinux.o(.text+0xabe10): Section mismatch in reference from the function .sparse_add_one_section() to the function .meminit.text:.sparse_init_one_section()
+| The function .sparse_add_one_section() references
+| the function __meminit .sparse_init_one_section().
+| This is often because .sparse_add_one_section lacks a __meminit 
+| annotation or the annotation of .sparse_init_one_section is wrong.
+|
+| WARNING: vmlinux.o(.text+0xb3198): Section mismatch in reference from the function .add_memory() to the function .devinit.text:.arch_add_memory()
+| The function .add_memory() references
+| the function __devinit .arch_add_memory().
+| This is often because .add_memory lacks a __devinit 
+| annotation or the annotation of .arch_add_memory is wrong.
+|
+| WARNING: vmlinux.o(.text+0xb32e4): Section mismatch in reference from the function .__add_zone() to the function .meminit.text:.init_currently_empty_zone()
+| The function .__add_zone() references
+| the function __meminit .init_currently_empty_zone().
+| This is often because .__add_zone lacks a __meminit 
+| annotation or the annotation of .init_currently_empty_zone is wrong.
+|
+| WARNING: vmlinux.o(.text+0xb3310): Section mismatch in reference from the function .__add_zone() to the function .meminit.text:.memmap_init_zone()
+| The function .__add_zone() references
+| the function __meminit .memmap_init_zone().
+| This is often because .__add_zone lacks a __meminit 
+| annotation or the annotation of .memmap_init_zone is wrong.
 
->=20
-> The other idea is that you create a mapping that is precisely 1:1 with
-> kernel memory. =A0Let's say you have two sections present, 0 and 100. =A0=
-You
-> have a high_section_index of 100, and you vmalloc() a 100 entry array.
->=20
-> You need to create a *CONTIGUOUS* ehea map? =A0Create one like this:
->=20
-> EHEA_VADDR->Linux Section
-> 0->0
-> 1->0
-> 2->0
-> 3->0
-> ...
-> 100->100
->=20
-> It's contiguous. =A0Each area points to a valid Linux memory address.
-> It's also discernable in O(1) to what EHEA address a given Linux address
-> is mapped. =A0You just have a couple of duplicate entries.=20
+(there are a few more regarding ps3_register_repository_device(), but these
+ cannot happen as only storage devices can be added later)
 
-This has a serious issues with constraint I mentions in the previous mail:=
-=20
+With kind regards,
 
-"- MRs can have a maximum size of the memory available under linux"
+Geert Uytterhoeven
+Software Architect
 
-The requirement is not met that the memory region must not be=20
-larger then the available memory for that partition. The "create MR"=20
-H_CALL will fails (we tried this and discussed with FW development)
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Regards,
-Jan-Bernd & Christoph
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-67858932-1203336890=:22124--
