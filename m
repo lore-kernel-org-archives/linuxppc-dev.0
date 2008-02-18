@@ -1,24 +1,21 @@
-Return-Path: <bunk@kernel.org>
-Date: Mon, 18 Feb 2008 16:13:40 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080218141340.GB667@cs181133002.pp.htv.fi>
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-	<20080216103927.2a02352b@laptopd505.fenrus.org>
-	<1203249003.6718.24.camel@concordia>
-	<20080218135609.GD21080@cs181133002.pp.htv.fi>
-	<Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B8705DDEF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 01:17:58 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] next-20080218 build failure at pmac_ide_macio_attach ()
+References: <20080218140159.GA31310@linux.vnet.ibm.com>
+Date: Mon, 18 Feb 2008 15:17:49 +0100
+In-Reply-To: <20080218140159.GA31310@linux.vnet.ibm.com> (Kamalesh Babulal's
+	message of "Mon\, 18 Feb 2008 19\:31\:59 +0530")
+Message-ID: <jeodae4acy.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linux-ide@vger.kernel.org, sfr@canb.auug.org.au,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 18, 2008 at 03:01:35PM +0100, Geert Uytterhoeven wrote:
-> On Mon, 18 Feb 2008, Adrian Bunk wrote:
-> > 
-> > This means it generates faster code with a current gcc for your platform.
-> > 
-> > But a future gcc might e.g. replace the whole loop with a division
-> > (gcc SVN head (that will soon become gcc 4.3) already does 
-> > transformations like replacing loops with divisions [1]).
-> 
-> Hence shouldn't we ask the gcc people what's the purpose of __builtin_expect(),
-> if it doesn't live up to its promise?
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
 
-That's a different issue.
+> --- linux-2.6.25-rc1/drivers/ide/ppc/pmac.c	2008-02-18 18:41:48.000000000 +0530
+> +++ linux-2.6.25-rc1/drivers/ide/ppc/~pmac.c	2008-02-18 19:20:37.000000000 +0530
+> @@ -1091,7 +1091,7 @@ pmac_ide_macio_attach(struct macio_dev *
+>  	int irq, rc;
+>  	hw_regs_t hw;
+>  
+> -	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
+> +	pmif = (struct pmac_ide_hwif*)kzalloc(sizeof(*pmif), GFP_KERNEL);
 
-My point here is that we do not know how the latest gcc available in the 
-year 2010 might transform this code, and how a likely/unlikely placed 
-there might influence gcc's optimizations then.
+Just remove the cast.
 
-If this is in hotpath code with a measurable speedup when using 
-likely/unlikely with a current gcc then it's worth it.
-
-But otherwise it brings no real advantage today and the longterm effects 
-are not predictable.
-
-> With kind regards,
-> 
-> Geert Uytterhoeven
-
-cu
-Adrian
+Andreas.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
