@@ -2,27 +2,27 @@ Return-Path: <ahuja@austin.ibm.com>
 Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 147F2DDE06
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 16:34:46 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A9E8BDDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 16:36:12 +1100 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1I5YWgh001995
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 00:34:32 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1I5Zx4f004278
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 00:35:59 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1I5Yhk1197436
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 22:34:43 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1I5YhLn019128
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 22:34:43 -0700
-Message-ID: <47B918F1.10007@austin.ibm.com>
-Date: Sun, 17 Feb 2008 23:34:41 -0600
+	m1I5a92F141842
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 22:36:09 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1I5a9tf014467
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 22:36:09 -0700
+Message-ID: <47B91947.9030604@austin.ibm.com>
+Date: Sun, 17 Feb 2008 23:36:07 -0600
 From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
 To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>,
 	Linas Vepstas <linasvepstas@gmail.com>
-Subject: [PATCH 1/8] pseries: phyp dump: Documentation
+Subject: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
 References: <47B90F55.2080606@austin.ibm.com>
 In-Reply-To: <47B90F55.2080606@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -37,144 +37,294 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Basic documentation for hypervisor-assisted dump.
+Initial patch for reserving memory in early boot, and freeing it later.
+If the previous boot had ended with a crash, the reserved memory would contain
+a copy of the crashed kernel data.
 
-Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
 Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
 
 ----
- Documentation/powerpc/phyp-assisted-dump.txt |  127 +++++++++++++++++++++++++++
- 1 file changed, 127 insertions(+)
+ arch/powerpc/kernel/prom.c                 |   49 ++++++++++++++++++++
+ arch/powerpc/kernel/rtas.c                 |   34 +++++++++++++
+ arch/powerpc/platforms/pseries/Makefile    |    1 
+ arch/powerpc/platforms/pseries/phyp_dump.c |   71 +++++++++++++++++++++++++++++
+ include/asm-powerpc/phyp_dump.h            |   38 +++++++++++++++
+ include/asm-powerpc/rtas.h                 |    3 +
+ 6 files changed, 196 insertions(+)
 
-Index: 2.6.25-rc1/Documentation/powerpc/phyp-assisted-dump.txt
+Index: 2.6.25-rc1/include/asm-powerpc/phyp_dump.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6.25-rc1/Documentation/powerpc/phyp-assisted-dump.txt	2008-02-18 03:22:33.000000000 -0600
-@@ -0,0 +1,127 @@
++++ 2.6.25-rc1/include/asm-powerpc/phyp_dump.h	2008-02-18 04:30:28.000000000 -0600
+@@ -0,0 +1,38 @@
++/*
++ * Hypervisor-assisted dump
++ *
++ * Linas Vepstas, Manish Ahuja 2008
++ * Copyright 2008 IBM Corp.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ */
 +
-+                   Hypervisor-Assisted Dump
-+                   ------------------------
-+                       November 2007
++#ifndef _PPC64_PHYP_DUMP_H
++#define _PPC64_PHYP_DUMP_H
 +
-+The goal of hypervisor-assisted dump is to enable the dump of
-+a crashed system, and to do so from a fully-reset system, and
-+to minimize the total elapsed time until the system is back
-+in production use.
++#ifdef CONFIG_PHYP_DUMP
 +
-+As compared to kdump or other strategies, hypervisor-assisted
-+dump offers several strong, practical advantages:
++/* The RMR region will be saved for later dumping
++ * whenever the kernel crashes. Set this to 256MB. */
++#define PHYP_DUMP_RMR_START 0x0
++#define PHYP_DUMP_RMR_END   (1UL<<28)
 +
-+-- Unlike kdump, the system has been reset, and loaded
-+   with a fresh copy of the kernel.  In particular,
-+   PCI and I/O devices have been reinitialized and are
-+   in a clean, consistent state.
-+-- As the dump is performed, the dumped memory becomes
-+   immediately available to the system for normal use.
-+-- After the dump is completed, no further reboots are
-+   required; the system will be fully usable, and running
-+   in it's normal, production mode on it normal kernel.
++struct phyp_dump {
++	/* Memory that is reserved during very early boot. */
++	unsigned long init_reserve_start;
++	unsigned long init_reserve_size;
++	/* Check status during boot if dump supported, active & present*/
++	unsigned long phyp_dump_configured;
++	unsigned long phyp_dump_is_active;
++	/* store cpu & hpte size */
++	unsigned long cpu_state_size;
++	unsigned long hpte_region_size;
++};
 +
-+The above can only be accomplished by coordination with,
-+and assistance from the hypervisor. The procedure is
-+as follows:
++extern struct phyp_dump *phyp_dump_info;
 +
-+-- When a system crashes, the hypervisor will save
-+   the low 256MB of RAM to a previously registered
-+   save region. It will also save system state, system
-+   registers, and hardware PTE's.
++#endif /* CONFIG_PHYP_DUMP */
++#endif /* _PPC64_PHYP_DUMP_H */
+Index: 2.6.25-rc1/arch/powerpc/platforms/pseries/phyp_dump.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ 2.6.25-rc1/arch/powerpc/platforms/pseries/phyp_dump.c	2008-02-18 04:32:17.000000000 -0600
+@@ -0,0 +1,71 @@
++/*
++ * Hypervisor-assisted dump
++ *
++ * Linas Vepstas, Manish Ahuja 2008
++ * Copyright 2008 IBM Corp.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ *
++ */
 +
-+-- After the low 256MB area has been saved, the
-+   hypervisor will reset PCI and other hardware state.
-+   It will *not* clear RAM. It will then launch the
-+   bootloader, as normal.
++#include <linux/init.h>
++#include <linux/mm.h>
++#include <linux/pfn.h>
++#include <linux/swap.h>
 +
-+-- The freshly booted kernel will notice that there
-+   is a new node (ibm,dump-kernel) in the device tree,
-+   indicating that there is crash data available from
-+   a previous boot. It will boot into only 256MB of RAM,
-+   reserving the rest of system memory.
++#include <asm/page.h>
++#include <asm/phyp_dump.h>
++#include <asm/machdep.h>
 +
-+-- Userspace tools will parse /sys/kernel/release_region
-+   and read /proc/vmcore to obtain the contents of memory,
-+   which holds the previous crashed kernel. The userspace
-+   tools may copy this info to disk, or network, nas, san,
-+   iscsi, etc. as desired.
++/* Global, used to communicate data between early boot and late boot */
++static struct phyp_dump phyp_dump_global;
++struct phyp_dump *phyp_dump_info = &phyp_dump_global;
 +
-+   For Example: the values in /sys/kernel/release-region
-+   would look something like this (address-range pairs).
-+   CPU:0x177fee000-0x10000: HPTE:0x177ffe020-0x1000: /
-+   DUMP:0x177fff020-0x10000000, 0x10000000-0x16F1D370A
++/**
++ * release_memory_range -- release memory previously lmb_reserved
++ * @start_pfn: starting physical frame number
++ * @nr_pages: number of pages to free.
++ *
++ * This routine will release memory that had been previously
++ * lmb_reserved in early boot. The released memory becomes
++ * available for genreal use.
++ */
++static void
++release_memory_range(unsigned long start_pfn, unsigned long nr_pages)
++{
++	struct page *rpage;
++	unsigned long end_pfn;
++	long i;
 +
-+-- As the userspace tools complete saving a portion of
-+   dump, they echo an offset and size to
-+   /sys/kernel/release_region to release the reserved
-+   memory back to general use.
++	end_pfn = start_pfn + nr_pages;
 +
-+   An example of this is:
-+     "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
-+   which will release 256MB at the 1GB boundary.
++	for (i = start_pfn; i <= end_pfn; i++) {
++		rpage = pfn_to_page(i);
++		if (PageReserved(rpage)) {
++			ClearPageReserved(rpage);
++			init_page_count(rpage);
++			__free_page(rpage);
++			totalram_pages++;
++		}
++	}
++}
 +
-+Please note that the hypervisor-assisted dump feature
-+is only available on Power6-based systems with recent
-+firmware versions.
++static int __init phyp_dump_setup(void)
++{
++	unsigned long start_pfn, nr_pages;
 +
-+Implementation details:
-+----------------------
++	/* If no memory was reserved in early boot, there is nothing to do */
++	if (phyp_dump_info->init_reserve_size == 0)
++		return 0;
 +
-+During boot, a check is made to see if firmware supports
-+this feature on this particular machine. If it does, then
-+we check to see if a active dump is waiting for us. If yes
-+then everything but 256 MB of RAM is reserved during early
-+boot. This area is released once we collect a dump from user
-+land scripts that are run. If there is dump data, then
-+the /sys/kernel/release_region file is created, and
-+the reserved memory is held.
++	/* Release memory that was reserved in early boot */
++	start_pfn = PFN_DOWN(phyp_dump_info->init_reserve_start);
++	nr_pages = PFN_DOWN(phyp_dump_info->init_reserve_size);
++	release_memory_range(start_pfn, nr_pages);
 +
-+If there is no waiting dump data, then only the highest
-+256MB of the ram is reserved as a scratch area. This area
-+is *not* be released: this region will be kept permanently
-+reserved, so that it can act as a receptacle for a copy
-+of the low 256MB in the case a crash does occur. See,
-+however, "open issues" below, as to whether
-+such a reserved region is really needed.
++	return 0;
++}
++machine_subsys_initcall(pseries, phyp_dump_setup);
+Index: 2.6.25-rc1/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- 2.6.25-rc1.orig/arch/powerpc/platforms/pseries/Makefile	2008-02-18 03:22:06.000000000 -0600
++++ 2.6.25-rc1/arch/powerpc/platforms/pseries/Makefile	2008-02-18 03:23:47.000000000 -0600
+@@ -18,3 +18,4 @@ obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu
+ obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
+ obj-$(CONFIG_HVCS)		+= hvcserver.o
+ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
++obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
+Index: 2.6.25-rc1/arch/powerpc/kernel/prom.c
+===================================================================
+--- 2.6.25-rc1.orig/arch/powerpc/kernel/prom.c	2008-02-18 03:22:06.000000000 -0600
++++ 2.6.25-rc1/arch/powerpc/kernel/prom.c	2008-02-18 03:23:47.000000000 -0600
+@@ -51,6 +51,7 @@
+ #include <asm/machdep.h>
+ #include <asm/pSeries_reconfig.h>
+ #include <asm/pci-bridge.h>
++#include <asm/phyp_dump.h>
+ #include <asm/kexec.h>
+ 
+ #ifdef DEBUG
+@@ -1039,6 +1040,51 @@ static void __init early_reserve_mem(voi
+ #endif
+ }
+ 
++#ifdef CONFIG_PHYP_DUMP
++/**
++ * reserve_crashed_mem() - reserve all not-yet-dumped mmemory
++ *
++ * This routine may reserve memory regions in the kernel only
++ * if the system is supported and a dump was taken in last
++ * boot instance or if the hardware is supported and the
++ * scratch area needs to be setup. In other instances it returns
++ * without reserving anything. The memory in case of dump being
++ * active is freed when the dump is collected (by userland tools).
++ */
++static void __init reserve_crashed_mem(void)
++{
++	unsigned long base, size;
++	if (!phyp_dump_info->phyp_dump_configured) {
++		printk(KERN_ERR "Phyp-dump not supported on this hardware\n");
++		return;
++	}
 +
-+Currently the dump will be copied from /proc/vmcore to a
-+a new file upon user intervention. The starting address
-+to be read and the range for each data point in provided
-+in /sys/kernel/release_region.
++	if (phyp_dump_info->phyp_dump_is_active) {
++		/* Reserve *everything* above RMR.Area freed by userland tools*/
++		base = PHYP_DUMP_RMR_END;
++		size = lmb_end_of_DRAM() - base;
 +
-+The tools to examine the dump will be same as the ones
-+used for kdump.
++		/* XXX crashed_ram_end is wrong, since it may be beyond
++		 * the memory_limit, it will need to be adjusted. */
++		lmb_reserve(base, size);
 +
-+General notes:
-+--------------
-+Security: please note that there are potential security issues
-+with any sort of dump mechanism. In particular, plaintext
-+(unencrypted) data, and possibly passwords, may be present in
-+the dump data. Userspace tools must take adequate precautions to
-+preserve security.
++		phyp_dump_info->init_reserve_start = base;
++		phyp_dump_info->init_reserve_size = size;
++	} else {
++		size = phyp_dump_info->cpu_state_size +
++			phyp_dump_info->hpte_region_size +
++			PHYP_DUMP_RMR_END;
++		base = lmb_end_of_DRAM() - size;
++		lmb_reserve(base, size);
++		phyp_dump_info->init_reserve_start = base;
++		phyp_dump_info->init_reserve_size = size;
++	}
++}
++#else
++static inline void __init reserve_crashed_mem(void) {}
++#endif /* CONFIG_PHYP_DUMP */
 +
-+Open issues/ToDo:
-+------------
-+ o The various code paths that tell the hypervisor that a crash
-+   occurred, vs. it simply being a normal reboot, should be
-+   reviewed, and possibly clarified/fixed.
 +
-+ o Instead of using /sys/kernel, should there be a /sys/dump
-+   instead? There is a dump_subsys being created by the s390 code,
-+   perhaps the pseries code should use a similar layout as well.
+ void __init early_init_devtree(void *params)
+ {
+ 	DBG(" -> early_init_devtree(%p)\n", params);
+@@ -1050,6 +1096,8 @@ void __init early_init_devtree(void *par
+ 	/* Some machines might need RTAS info for debugging, grab it now. */
+ 	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
+ #endif
++	/* scan tree to see if dump occured during last boot */
++	of_scan_flat_dt(early_init_dt_scan_phyp_dump, NULL);
+ 
+ 	/* Retrieve various informations from the /chosen node of the
+ 	 * device-tree, including the platform type, initrd location and
+@@ -1071,6 +1119,7 @@ void __init early_init_devtree(void *par
+ 	reserve_kdump_trampoline();
+ 	reserve_crashkernel();
+ 	early_reserve_mem();
++	reserve_crashed_mem();
+ 
+ 	lmb_enforce_memory_limit(memory_limit);
+ 	lmb_analyze();
+Index: 2.6.25-rc1/arch/powerpc/kernel/rtas.c
+===================================================================
+--- 2.6.25-rc1.orig/arch/powerpc/kernel/rtas.c	2008-02-18 03:22:06.000000000 -0600
++++ 2.6.25-rc1/arch/powerpc/kernel/rtas.c	2008-02-18 03:23:47.000000000 -0600
+@@ -39,6 +39,7 @@
+ #include <asm/syscalls.h>
+ #include <asm/smp.h>
+ #include <asm/atomic.h>
++#include <asm/phyp_dump.h>
+ 
+ struct rtas_t rtas = {
+ 	.lock = SPIN_LOCK_UNLOCKED
+@@ -883,6 +884,39 @@ void __init rtas_initialize(void)
+ #endif
+ }
+ 
++int __init early_init_dt_scan_phyp_dump(unsigned long node,
++		const char *uname, int depth, void *data)
++{
++#ifdef CONFIG_PHYP_DUMP
++	const unsigned int *sizes;
 +
-+ o Is reserving a 256MB region really required? The goal of
-+   reserving a 256MB scratch area is to make sure that no
-+   important crash data is clobbered when the hypervisor
-+   save low mem to the scratch area. But, if one could assure
-+   that nothing important is located in some 256MB area, then
-+   it would not need to be reserved. Something that can be
-+   improved in subsequent versions.
++	phyp_dump_info->phyp_dump_configured = 0;
++	phyp_dump_info->phyp_dump_is_active = 0;
 +
-+ o Still working the kdump team to integrate this with kdump,
-+   some work remains but this would not affect the current
-+   patches.
++	if (depth != 1 || strcmp(uname, "rtas") != 0)
++		return 0;
 +
-+ o Still need to write a shell script, to copy the dump away.
-+   Currently I am parsing it manually.
++	if (of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL))
++		phyp_dump_info->phyp_dump_configured++;
++
++	if (of_get_flat_dt_prop(node, "ibm,dump-kernel", NULL))
++		phyp_dump_info->phyp_dump_is_active++;
++
++	sizes = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
++									NULL);
++	if (!sizes)
++		return 0;
++
++	if (sizes[0] == 1)
++		phyp_dump_info->cpu_state_size = *((unsigned long *)&sizes[1]);
++
++	if (sizes[3] == 2)
++		phyp_dump_info->hpte_region_size =
++						*((unsigned long *)&sizes[4]);
++#endif
++	return 1;
++}
++
+ int __init early_init_dt_scan_rtas(unsigned long node,
+ 		const char *uname, int depth, void *data)
+ {
+Index: 2.6.25-rc1/include/asm-powerpc/rtas.h
+===================================================================
+--- 2.6.25-rc1.orig/include/asm-powerpc/rtas.h	2008-02-18 03:22:06.000000000 -0600
++++ 2.6.25-rc1/include/asm-powerpc/rtas.h	2008-02-18 03:23:47.000000000 -0600
+@@ -183,6 +183,9 @@ extern unsigned int rtas_busy_delay(int 
+ 
+ extern int early_init_dt_scan_rtas(unsigned long node,
+ 		const char *uname, int depth, void *data);
++int early_init_dt_scan_phyp_dump(unsigned long node,
++		const char *uname, int depth, void *data);
++
+ 
+ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+ 
