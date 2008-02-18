@@ -1,30 +1,19 @@
-Return-Path: <pinskia@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
-	by ozlabs.org (Postfix) with ESMTP id BB80ADDF06
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 06:22:24 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1360914rvf.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 11:22:18 -0800 (PST)
-Message-ID: <de8d50360802181122k63410760y9a61f4c42ff251f8@mail.gmail.com>
-Date: Mon, 18 Feb 2008 11:22:18 -0800
-From: "Andrew Pinski" <pinskia@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Cbe-oss-dev] [PATCH 1/3] Fix Unlikely(x) == y
-In-Reply-To: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id D9C4DDDF9C
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 06:46:12 +1100 (EST)
+Message-ID: <47B9E0C0.3090109@ru.mvista.com>
+Date: Mon, 18 Feb 2008 22:47:12 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-	<20080216103927.2a02352b@laptopd505.fenrus.org>
-	<1203249003.6718.24.camel@concordia>
-	<20080218135609.GD21080@cs181133002.pp.htv.fi>
-	<Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-Cc: Adrian Bunk <bunk@kernel.org>, Roel Kluin <12o3l@tiscali.nl>,
-	lkml <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org,
-	linuxppc-dev@ozlabs.org, Willy Tarreau <w@1wt.eu>,
-	Arjan van de Ven <arjan@infradead.org>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] booting-without-of: add Xilinx uart 16550.
+References: <47B59631.10908@ru.mvista.com><fa686aa40802151038l7488293clb0c47da5b1b1e4fc@mail.gmail.com>
+	<47B5E042.9050805@ru.mvista.com>
+	<20080215214018.EA724CB0046@mail174-sin.bigfish.com>
+In-Reply-To: <20080215214018.EA724CB0046@mail174-sin.bigfish.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,19 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 18, 2008 6:01 AM, Geert Uytterhoeven
-<Geert.Uytterhoeven@sonycom.com> wrote:
-> > This means it generates faster code with a current gcc for your platform.
-> >
-> > But a future gcc might e.g. replace the whole loop with a division
-> > (gcc SVN head (that will soon become gcc 4.3) already does
-> > transformations like replacing loops with divisions [1]).
+Hello.
 
-Yes but the issue is one optimization inside GCC does not take into
-account the probability in one case.
+Stephen Neuendorffer wrote:
 
-And really there is a bug in the linux kernel for not implementing the
-long long divide function (or really using libgcc) but that is a
-different story and is part of the issue there anyways.
+>>>Instead of attempting to come up with a generic description
+>>>of this, I recommend just naming it after the actual device instance;
 
--- Pinski
+>>>something like compatible="xlnx,opb-uart16550";
+
+>>    Well, that means that we'll need a to add a code which "glues" the chip to
+>>8250.c driver... well, of_serial.c could be that glue layer if we add to it
+
+>>the ability to recognize Xilinx UART... well, legacy_serial.c could be taught
+
+>>that trick too...
+>>    Well, we could also add the new compatible, but still claim "ns16550"
+
+>>compatibility...
+
+> This actually makes more sense to me...  I'd rather have the code set
+> the reg-shift than have it explicitly set in the device tree anyway.
+> The compatibility set should include (at the least):
+
+>       opb_uart16550_v1_00_c
+>       opb_uart16550_v1_00_d
+>       opb_uart16550_v1_00_e
+>       plb_uart16550_v1_00_c
+>       xps_uart16550_v1_00_a
+
+    Sounds like too much? Couldn't this be handled via the "model" prop?
+
+> I think this is somewhat independent of Sergei's arguments that generic
+> ns16550 devices should allow having a reg-shift set....
+
+> Steve
+
+WBR, Sergei
