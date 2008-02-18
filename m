@@ -1,19 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D9C4DDDF9C
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 06:46:12 +1100 (EST)
-Message-ID: <47B9E0C0.3090109@ru.mvista.com>
-Date: Mon, 18 Feb 2008 22:47:12 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] booting-without-of: add Xilinx uart 16550.
-References: <47B59631.10908@ru.mvista.com><fa686aa40802151038l7488293clb0c47da5b1b1e4fc@mail.gmail.com>
-	<47B5E042.9050805@ru.mvista.com>
-	<20080215214018.EA724CB0046@mail174-sin.bigfish.com>
-In-Reply-To: <20080215214018.EA724CB0046@mail174-sin.bigfish.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-101-monday.nerim.net [62.4.16.101])
+	by ozlabs.org (Postfix) with ESMTP id 919C7DDEED
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 07:15:24 +1100 (EST)
+Date: Mon, 18 Feb 2008 21:15:19 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: benh@kernel.crashing.org
+Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
+Message-ID: <20080218211519.2b159ade@hyperion.delvare>
+In-Reply-To: <1202935374.7296.44.camel@pasglop>
+References: <20080213182800.5c6940a8@de.ibm.com>
+	<20080213183506.7f3e3145@de.ibm.com>
+	<1202935374.7296.44.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: parabelboi@bopserverein.de, Christian Krafft <krafft@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hi Ben,
 
-Stephen Neuendorffer wrote:
+On Thu, 14 Feb 2008 07:42:54 +1100, Benjamin Herrenschmidt wrote:
+> 
+> On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
+> > sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
 
->>>Instead of attempting to come up with a generic description
->>>of this, I recommend just naming it after the actual device instance;
+For the records, sensors-detect accesses I/O ports, not memory.
 
->>>something like compatible="xlnx,opb-uart16550";
+> > This patch adds a check_legacy_ioports to read_port and write_port.
+> > It will now return ENXIO, instead of oopsing.
+> > 
+> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> 
+> The problem is that this prevents using /proc/ioports to access PCI
+> IO space, which might be useful.
 
->>    Well, that means that we'll need a to add a code which "glues" the chip to
->>8250.c driver... well, of_serial.c could be that glue layer if we add to it
+Maybe Christian's patch can be improved to not do the check on these?
+As long as /dev/port exists, it seems reasonable that the kernel should
+behave, no matter what I/O ports are accessed from user-space.
 
->>the ability to recognize Xilinx UART... well, legacy_serial.c could be taught
+> I hate that sensors_detect.. or for that matter any other userland code
+> that pokes random ports like that. It should die.
 
->>that trick too...
->>    Well, we could also add the new compatible, but still claim "ns16550"
+What do you propose as a replacement?
 
->>compatibility...
+And how is userland code poking at random ports different from kernel
+code poking at random ports? We could move sensors-detect inside the
+kernel (and I have some plan to do that) but I fail to see how this
+would solve this particular problem.
 
-> This actually makes more sense to me...  I'd rather have the code set
-> the reg-shift than have it explicitly set in the device tree anyway.
-> The compatibility set should include (at the least):
+> > Index: linux.git/drivers/char/mem.c
+> > ===================================================================
+> > --- linux.git.orig/drivers/char/mem.c
+> > +++ linux.git/drivers/char/mem.c
+> > @@ -566,8 +566,13 @@ static ssize_t read_port(struct file * f
+> >  	char __user *tmp = buf;
+> >  
+> >  	if (!access_ok(VERIFY_WRITE, buf, count))
+> > -		return -EFAULT; 
+> > +		return -EFAULT;
+> > +
+> >  	while (count-- > 0 && i < 65536) {
+> > +#ifdef CONFIG_PPC_MERGE
+> > +		if (check_legacy_ioport(i))
+> > +			return -ENXIO;
+> > +#endif
+> >  		if (__put_user(inb(i),tmp) < 0) 
+> >  			return -EFAULT;  
+> >  		i++;
+> > @@ -585,6 +590,7 @@ static ssize_t write_port(struct file * 
+> >  
+> >  	if (!access_ok(VERIFY_READ,buf,count))
+> >  		return -EFAULT;
+> > +
+> >  	while (count-- > 0 && i < 65536) {
+> >  		char c;
+> >  		if (__get_user(c, tmp)) {
+> > @@ -592,6 +598,10 @@ static ssize_t write_port(struct file * 
+> >  				break;
+> >  			return -EFAULT; 
+> >  		}
+> > +#ifdef CONFIG_PPC_MERGE
+> > +		if (check_legacy_ioport(i))
+> > +			return -ENXIO;
+> > +#endif
+> >  		outb(c,i);
+> >  		i++;
+> >  		tmp++;
 
->       opb_uart16550_v1_00_c
->       opb_uart16550_v1_00_d
->       opb_uart16550_v1_00_e
->       plb_uart16550_v1_00_c
->       xps_uart16550_v1_00_a
 
-    Sounds like too much? Couldn't this be handled via the "model" prop?
-
-> I think this is somewhat independent of Sergei's arguments that generic
-> ns16550 devices should allow having a reg-shift set....
-
-> Steve
-
-WBR, Sergei
+-- 
+Jean Delvare
