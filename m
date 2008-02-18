@@ -1,21 +1,21 @@
-Return-Path: <hjk@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 91C47DDF90
+	by ozlabs.org (Postfix) with ESMTP id 26FF2DDE4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 01:03:36 +1100 (EST)
-Date: Mon, 18 Feb 2008 14:09:33 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: ndroogh@cadlink.com
-Subject: Re: Does anyone have a simple UIO driver that uses an interrupt
-	handler?
-Message-ID: <20080218140933.23812526@dilbert.local>
-In-Reply-To: <47B8BF83.2070907@cadlink.com>
-References: <47B8BF83.2070907@cadlink.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 18 Feb 2008 21:42:23 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JR3Ry-00014l-SE
+	for linuxppc-embedded@ozlabs.org; Mon, 18 Feb 2008 02:42:18 -0800
+Message-ID: <15542516.post@talk.nabble.com>
+Date: Mon, 18 Feb 2008 02:42:18 -0800 (PST)
+From: sunil dutt <sunil.d@redpinesignals.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: EBC configuration for mmio
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,40 +26,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Am Sun, 17 Feb 2008 18:13:07 -0500
-schrieb Nick Droogh <ndroogh@cadlink.com>:
 
-> Hi everyone,
+Hi,
+We are working on the MMIO interface and are struck up at sending the data
+over the interface on PPC405EXr.The following are the configurations done by
+us to use EBC Bank3.
 
-Hi Nick,
+EBC0_B3CR = 0x80018000 /*Base address 0x800 size 1MB Read/Write set */
+EBC0_B3AP = 0x07840f80
+                                                                                                                           
+We have configured GPIO pin 10 (PER_CS3) for the chip select.The following
+is the configuration for the CS .
+OSRL : 00aa54aa
+TSRL : 00aa54aa
+ISR1L: XX(Dont care)
+                                                                                                                           
+Here are our observations while doing the data transfer.
+1.When the data of one byte is sent continuously we have observed that the
+second write blocks and the chip select is not triggered for the second
+transfer.
+                                                                                                                           
+2.When one byte is sent and immediately we read the data over the interface
+the read blocks and we also see that chip select is not triggered for the
+read.
+                                                                                                                           
+3.The point 2 mentioned above is not consistent.We some times read the value
+from the interface though the chip select is not triggered.
+                                                                                                                           
+Please could you verify our configurations.Please let us know if there is
+any thing additional to be done.
 
-> 
-> I am looking for a driver example for a user space driver utilizing
-> an interrupt handler.  I am having trouble registering a handler in
-> my driver attempt and would like to see an example of a working UIO
-> driver.
-
-Did you have a look at uio-howto in Documentation/DocBook/ in the
-kernel sources? Just do a "make htmldocs", and you get the UIO howto in
-html format in its own subdirectory.
-
-You don't have to "register" the userspace part of an UIO driver. You
-simply open /dev/uio0, mmap() your device's memory, and wait for
-interrupts using a blocking read() or select() on /dev/uio0.
-
-If you want to do it properly, you should use sysfs to find the right
-UIO device (there could be others...) and the size of the memory to
-map. Have a look at the sources of lsuio to see how this is done:
-
-http://www.osadl.org/projects/downloads/UIO/user/
-
-You find the userspace part of the uio_cif driver there, too.
-
-If you still got problems after reading this, feel free to ask me. Note
-that I'm not subscribed to linuxppc-embedded. The preferred list for
-UIO questions is LKML. If you don't want to subscribe to LKML, you can
-also ask me by private mail. You should ask detailed questions, ideally
-accompanied by a piece of your code that shows the problem.
-
-Thanks,
-Hans
+Thanks and Regards,
+Sunil
+-- 
+View this message in context: http://www.nabble.com/EBC-configuration-for-mmio-tp15542516p15542516.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
