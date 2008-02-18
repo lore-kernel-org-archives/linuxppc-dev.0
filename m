@@ -1,32 +1,12 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2523DDDE38
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 16:45:51 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1I5jmmM027182
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 00:45:49 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1I5jmBA218618
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 22:45:48 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1I5jmRH003406
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Feb 2008 22:45:48 -0700
-Message-ID: <47B91B8B.3020004@austin.ibm.com>
-Date: Sun, 17 Feb 2008 23:45:47 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 18 Feb 2008 18:06:31 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: libfdt: Trivial cleanup for CHECK_HEADER)
+Message-ID: <20080218070631.GI29975@localhost.localdomain>
 MIME-Version: 1.0
-To: ppc-dev <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>,
-	Linas Vepstas <linasvepstas@gmail.com>
-Subject: [PATCH 8/8] pseries: phyp dump: config file
-References: <47B90F55.2080606@austin.ibm.com>
-In-Reply-To: <47B90F55.2080606@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +16,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Currently the CHECK_HEADER() macro is defined local to fdt_ro.c.
+However, there are a handful of functions (fdt_move, rw_check_header,
+fdt_open_into) from other files which could also use it (currently
+they open-code something more-or-less identical).  Therefore, this
+patch moves CHECK_HEADER() to libfdt_internal.h and uses it in those
+places.
 
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Add hypervisor-assisted dump to kernel config
+---
+ libfdt/fdt.c             |    5 +----
+ libfdt/fdt_ro.c          |    7 -------
+ libfdt/fdt_rw.c          |    8 ++------
+ libfdt/libfdt_internal.h |    7 +++++++
+ 4 files changed, 10 insertions(+), 17 deletions(-)
 
-Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
-
------
- arch/powerpc/Kconfig |   11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-Index: 2.6.25-rc1/arch/powerpc/Kconfig
+Index: dtc/libfdt/fdt.c
 ===================================================================
---- 2.6.25-rc1.orig/arch/powerpc/Kconfig	2008-02-18 03:22:06.000000000 -0600
-+++ 2.6.25-rc1/arch/powerpc/Kconfig	2008-02-18 03:22:45.000000000 -0600
-@@ -306,6 +306,17 @@ config CRASH_DUMP
+--- dtc.orig/libfdt/fdt.c	2008-02-18 18:01:59.000000000 +1100
++++ dtc/libfdt/fdt.c	2008-02-18 18:02:01.000000000 +1100
+@@ -184,10 +184,7 @@ const char *_fdt_find_string(const char 
  
- 	  Don't change this unless you know what you are doing.
+ int fdt_move(const void *fdt, void *buf, int bufsize)
+ {
+-	int err = fdt_check_header(fdt);
+-
+-	if (err)
+-		return err;
++	CHECK_HEADER(fdt);
  
-+config PHYP_DUMP
-+	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
-+	depends on PPC_PSERIES && EXPERIMENTAL
-+	default y
-+	help
-+	  Hypervisor-assisted dump is meant to be a kdump replacement
-+	  offering robustness and speed not possible without system
-+	  hypervisor assistence.
+ 	if (fdt_totalsize(fdt) > bufsize)
+ 		return -FDT_ERR_NOSPACE;
+Index: dtc/libfdt/fdt_ro.c
+===================================================================
+--- dtc.orig/libfdt/fdt_ro.c	2008-02-18 18:01:59.000000000 +1100
++++ dtc/libfdt/fdt_ro.c	2008-02-18 18:02:01.000000000 +1100
+@@ -55,13 +55,6 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-#define CHECK_HEADER(fdt) \
+-	{ \
+-		int err; \
+-		if ((err = fdt_check_header(fdt)) != 0) \
+-			return err; \
+-	}
+-
+ static int nodename_eq(const void *fdt, int offset,
+ 		       const char *s, int len)
+ {
+Index: dtc/libfdt/libfdt_internal.h
+===================================================================
+--- dtc.orig/libfdt/libfdt_internal.h	2008-02-18 18:01:59.000000000 +1100
++++ dtc/libfdt/libfdt_internal.h	2008-02-18 18:02:01.000000000 +1100
+@@ -58,6 +58,13 @@
+ #define memeq(p, q, n)	(memcmp((p), (q), (n)) == 0)
+ #define streq(p, q)	(strcmp((p), (q)) == 0)
+ 
++#define CHECK_HEADER(fdt) \
++	{ \
++		int err; \
++		if ((err = fdt_check_header(fdt)) != 0) \
++			return err; \
++	}
 +
-+	  If unsure, say "Y"
-+
- config PPCBUG_NVRAM
- 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
- 	default y if PPC_PREP
+ uint32_t _fdt_next_tag(const void *fdt, int startoffset, int *nextoffset);
+ const char *_fdt_find_string(const char *strtab, int tabsize, const char *s);
+ int _fdt_node_end_offset(void *fdt, int nodeoffset);
+Index: dtc/libfdt/fdt_rw.c
+===================================================================
+--- dtc.orig/libfdt/fdt_rw.c	2008-02-18 18:02:52.000000000 +1100
++++ dtc/libfdt/fdt_rw.c	2008-02-18 18:04:00.000000000 +1100
+@@ -69,10 +69,8 @@ static int _blocks_misordered(const void
+ 
+ static int rw_check_header(void *fdt)
+ {
+-	int err;
++	CHECK_HEADER(fdt);
+ 
+-	if ((err = fdt_check_header(fdt)))
+-		return err;
+ 	if (fdt_version(fdt) < 17)
+ 		return -FDT_ERR_BADVERSION;
+ 	if (_blocks_misordered(fdt, sizeof(struct fdt_reserve_entry),
+@@ -399,9 +397,7 @@ int fdt_open_into(const void *fdt, void 
+ 	int newsize;
+ 	void *tmp;
+ 
+-	err = fdt_check_header(fdt);
+-	if (err)
+-		return err;
++	CHECK_HEADER(fdt);
+ 
+ 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
+ 		* sizeof(struct fdt_reserve_entry);
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
