@@ -1,21 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id F229CDDEFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 05:30:08 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1817694anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:30:07 -0800 (PST)
-Message-ID: <fa686aa40802181030u4f411172wf7123b14d4a6042@mail.gmail.com>
-Date: Mon, 18 Feb 2008 11:30:07 -0700
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id F32F8DDF08
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 05:31:20 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1817946anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:31:19 -0800 (PST)
+Message-ID: <fa686aa40802181031s4ba6ec4eie949040f0bf23ad6@mail.gmail.com>
+Date: Mon, 18 Feb 2008 11:31:19 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: How to describe FPGA-based devices in the device tree ?
-In-Reply-To: <20080218174701.GA3835@loki.buserror.net>
+To: "Sean MacLennan" <smaclennan@pikatech.com>
+Subject: Re: arch_initcall time
+In-Reply-To: <47B9CE4D.1020303@pikatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <200802181343.54989.laurentp@cse-semaphore.com>
-	<20080218174701.GA3835@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
+References: <47B9CE4D.1020303@pikatech.com>
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 18, 2008 10:47 AM, Scott Wood <scottwood@freescale.com> wrote:
-> On Mon, Feb 18, 2008 at 01:43:52PM +0100, Laurent Pinchart wrote:
-> > Should I put IP core nodes as children of the FPGA node ?
+On Feb 18, 2008 11:28 AM, Sean MacLennan <smaclennan@pikatech.com> wrote:
+> I need to call i2c_register_board_info for the new i2c style ad7414
+> driver. This needs to be called at arch initcall time. Currently I just
+> do this:
 >
-> You could do that as well.
+> static int __init warp_arch_init(void)
+> {
+>         i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
+>         return 0;
+> }
+> arch_initcall(warp_arch_init);
 
-I'd recommend doing that, then your subnodes are isolated from changes
-to the bus attachment (chipselect).  (really an insignificant point,
-but I think it is a more logical layout).
-
-So, something like this:
-fpga@4,0 {
-        #address-cells = <1>;
-        #size-cells = <1>;
-        ranges = <0 4 0 00100000>;
-        /* breakdown of 'ranges' fields: */
-        /* "0": start address of internal range */
-        /* "4 0": start address of external range (chip select 4, address 0) */
-        /* "00100000: size of range */
-
-        iocore@0 {
-                compatible = "foo,bar";
-                reg = <0 00010000>;
-        };
-
-        iocore@10000 {
-                compatible = "foo,bar";
-                reg = <10000 00010000>;
-        };
-
-        iocore@20000 {
-                compatible = "foo,bar";
-                reg = <20000 00010000>;
-        };
-};
+Yes, this is the right thing to do, but use machine_arch_initcall()
+instead so that it doesn't get called if it is not your board.
 
 Cheers,
 g.
