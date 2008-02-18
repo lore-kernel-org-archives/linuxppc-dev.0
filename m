@@ -1,23 +1,37 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
-	[64.235.106.9])
+Return-Path: <THEMANN@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C257EDDE39
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 20:32:34 +1100 (EST)
-Received: from cpe001d60ad7267-cm001225dbafb6.cpe.net.cable.rogers.com
-	([99.236.100.208] helo=crashcourse.ca)
-	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.68) (envelope-from <rpjday@crashcourse.ca>)
-	id 1JR2Mb-0005ug-Lh
-	for linuxppc-dev@ozlabs.org; Mon, 18 Feb 2008 04:32:41 -0500
-Date: Mon, 18 Feb 2008 04:32:24 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Subject: "make ARCH=ppc defconfig" fails looking for common_defconfig
-Message-ID: <alpine.LFD.1.00.0802180430100.10518@localhost.localdomain>
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 33C8FDDE21
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 20:57:01 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id m1I9utrE225178
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 09:56:55 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m1I9utYE528418
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:56:55 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m1I9usxT027395
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 09:56:55 GMT
+In-Reply-To: <1203094538.8142.23.camel@nimitz.home.sr71.net>
+To: Dave Hansen <haveblue@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+Message-ID: <OF64157CA2.5201AA31-ONC12573F3.003699DB-C12573F3.00369164@de.ibm.com>
+From: Jan-Bernd Themann <THEMANN@de.ibm.com>
+Date: Mon, 18 Feb 2008 10:56:53 +0100
+Content-Type: multipart/alternative;
+	boundary="=_alternative 00369162C12573F3_="
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+	Greg KH <greg@kroah.com>, apw <apw@uk.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +41,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multipart message in MIME format.
+--=_alternative 00369162C12573F3_=
+Content-Type: text/plain; charset="US-ASCII"
 
-  (AIUI, the entire ppc/ architecture is going away, yes?  which means
-i probably shouldn't care about any errors within.  is that correct?
-even so, build errors should probably still be avoided for now.)
+Dave Hansen <haveblue@us.ibm.com> wrote on 15.02.2008 17:55:38:
 
-$ make ARCH=ppc defconfig
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-  HOSTCC  scripts/kconfig/conf.o
-  HOSTCC  scripts/kconfig/kxgettext.o
-  SHIPPED scripts/kconfig/zconf.tab.c
-  SHIPPED scripts/kconfig/lex.zconf.c
-  SHIPPED scripts/kconfig/zconf.hash.c
-  HOSTCC  scripts/kconfig/zconf.tab.o
-  HOSTLD  scripts/kconfig/conf
-*** Default configuration is based on 'common_defconfig'
-***
-*** Can't find default configuration "arch/ppc/configs/common_defconfig"!
-***
-make[1]: *** [defconfig] Error 1
-make: *** [defconfig] Error 2
+> I've been thinking about that, and I don't think you really *need* to
+> keep a comprehensive map like that. 
+> 
+> When the memory is in a particular configuration (range of memory
+> present along with unique set of holes) you get a unique ehea_bmap
+> configuration.  That layout is completely predictable.
+> 
+> So, if at any time you want to figure out what the ehea_bmap address for
+> a particular *Linux* virtual address is, you just need to pretend that
+> you're creating the entire ehea_bmap, use the same algorithm and figure
+> out host you would have placed things, and use that result.
+> 
+> Now, that's going to be a slow, crappy linear search (but maybe not as
+> slow as recreating the silly thing).  So, you might eventually run into
+> some scalability problems with a lot of packets going around.  But, I'd
+> be curious if you do in practice.
+
+Up to 14 addresses translation per packet (sg_list) might be required on 
+the
+transmit side. On receive side it is only 1. Most packets require only 
+very few
+translations (1 or sometimes more)  translations. However, with more then 
+700.000 
+packets per second this approach does not seem reasonable from performance
+perspective when memory is fragmented as you described.
+
+> 
+> The other idea is that you create a mapping that is precisely 1:1 with
+> kernel memory.  Let's say you have two sections present, 0 and 100.  You
+> have a high_section_index of 100, and you vmalloc() a 100 entry array.
+> 
+> You need to create a *CONTIGUOUS* ehea map?  Create one like this:
+> 
+> EHEA_VADDR->Linux Section
+> 0->0
+> 1->0
+> 2->0
+> 3->0
+> ...
+> 100->100
+> 
+> It's contiguous.  Each area points to a valid Linux memory address.
+> It's also discernable in O(1) to what EHEA address a given Linux address
+> is mapped.  You just have a couple of duplicate entries. 
+
+This has a serious issues with constraint I mentions in the previous mail: 
+
+"- MRs can have a maximum size of the memory available under linux"
+
+The requirement is not met that the memory region must not be 
+larger then the available memory for that partition. The "create MR" 
+H_CALL
+will fails (we tried this and discussed with FW development)
 
 
+Regards,
+Jan-Bernd & Christoph
+--=_alternative 00369162C12573F3_=
+Content-Type: text/html; charset="US-ASCII"
 
-rday
---
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+<br><tt><font size=2>Dave Hansen &lt;haveblue@us.ibm.com&gt; wrote on 15.02.2008
+17:55:38:</font></tt>
+<br>
+<br><tt><font size=2>&gt; I've been thinking about that, and I don't think
+you really *need* to</font></tt>
+<br><tt><font size=2>&gt; keep a comprehensive map like that. &nbsp;</font></tt>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; When the memory is in a particular configuration
+(range of memory</font></tt>
+<br><tt><font size=2>&gt; present along with unique set of holes) you get
+a unique ehea_bmap</font></tt>
+<br><tt><font size=2>&gt; configuration. &nbsp;That layout is completely
+predictable.</font></tt>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; So, if at any time you want to figure out what
+the ehea_bmap address for</font></tt>
+<br><tt><font size=2>&gt; a particular *Linux* virtual address is, you
+just need to pretend that</font></tt>
+<br><tt><font size=2>&gt; you're creating the entire ehea_bmap, use the
+same algorithm and figure</font></tt>
+<br><tt><font size=2>&gt; out host you would have placed things, and use
+that result.</font></tt>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; Now, that's going to be a slow, crappy linear
+search (but maybe not as</font></tt>
+<br><tt><font size=2>&gt; slow as recreating the silly thing). &nbsp;So,
+you might eventually run into</font></tt>
+<br><tt><font size=2>&gt; some scalability problems with a lot of packets
+going around. &nbsp;But, I'd</font></tt>
+<br><tt><font size=2>&gt; be curious if you do in practice.</font></tt>
+<br>
+<br><tt><font size=2>Up to 14 addresses translation per packet (sg_list)
+might be required on the</font></tt>
+<br><tt><font size=2>transmit side. On receive side it is only 1. Most
+packets require only very few</font></tt>
+<br><tt><font size=2>translations (1 or sometimes more) &nbsp;translations.
+However, with more then 700.000 </font></tt>
+<br><tt><font size=2>packets per second this approach does not seem reasonable
+from performance</font></tt>
+<br><tt><font size=2>perspective when memory is fragmented as you described.</font></tt>
+<br>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; The other idea is that you create a mapping that
+is precisely 1:1 with</font></tt>
+<br><tt><font size=2>&gt; kernel memory. &nbsp;Let's say you have two sections
+present, 0 and 100. &nbsp;You</font></tt>
+<br><tt><font size=2>&gt; have a high_section_index of 100, and you vmalloc()
+a 100 entry array.</font></tt>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; You need to create a *CONTIGUOUS* ehea map? &nbsp;Create
+one like this:</font></tt>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; EHEA_VADDR-&gt;Linux Section</font></tt>
+<br><tt><font size=2>&gt; 0-&gt;0</font></tt>
+<br><tt><font size=2>&gt; 1-&gt;0</font></tt>
+<br><tt><font size=2>&gt; 2-&gt;0</font></tt>
+<br><tt><font size=2>&gt; 3-&gt;0</font></tt>
+<br><tt><font size=2>&gt; ...</font></tt>
+<br><tt><font size=2>&gt; 100-&gt;100</font></tt>
+<br><tt><font size=2>&gt; </font></tt>
+<br><tt><font size=2>&gt; It's contiguous. &nbsp;Each area points to a
+valid Linux memory address.</font></tt>
+<br><tt><font size=2>&gt; It's also discernable in O(1) to what EHEA address
+a given Linux address</font></tt>
+<br><tt><font size=2>&gt; is mapped. &nbsp;You just have a couple of duplicate
+entries. &nbsp;</font></tt>
+<br>
+<br><tt><font size=2>This has a serious issues with constraint I mentions
+in the previous mail: </font></tt>
+<br><tt><font size=2>&quot;- MRs can have a maximum size of the memory
+available under linux&quot;</font></tt>
+<br>
+<br><tt><font size=2>The requirement is not met that the memory region
+must not be </font></tt>
+<br><tt><font size=2>larger then the available memory for that partition.
+The &quot;create MR&quot; H_CALL</font></tt>
+<br><tt><font size=2>will fails (we tried this and discussed with FW development)</font></tt>
+<br>
+<br>
+<br><tt><font size=2>Regards,</font></tt>
+<br><tt><font size=2>Jan-Bernd &amp; Christoph</font></tt>
+--=_alternative 00369162C12573F3_=--
