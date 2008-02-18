@@ -1,31 +1,21 @@
-Return-Path: <Valdis.Kletnieks@vt.edu>
-Received: from turing-police.cc.vt.edu (turing-police.cc.vt.edu
-	[128.173.14.107])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "foo-bar-baz.cc.vt.edu",
-	Issuer "foo-bar-baz.cc.vt.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7E1EBDDF30
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 05:31:22 +1100 (EST)
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
-	endianness
-In-Reply-To: Your message of "Mon, 18 Feb 2008 08:18:47 +0100."
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-From: Valdis.Kletnieks@vt.edu
-References: <20080205154432.GA8749@localhost.localdomain>
-	<20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1203355811_2991P";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
-Date: Mon, 18 Feb 2008 12:30:11 -0500
-Message-ID: <19805.1203355811@turing-police.cc.vt.edu>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.244])
+	by ozlabs.org (Postfix) with ESMTP id 2DE95DDF18
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 05:32:16 +1100 (EST)
+Received: by hs-out-0708.google.com with SMTP id x43so711707hsb.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 10:32:14 -0800 (PST)
+Message-ID: <fa686aa40802181032lffff9e2yf079c277c250b430@mail.gmail.com>
+Date: Mon, 18 Feb 2008 11:32:14 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sean MacLennan" <smaclennan@pikatech.com>
+Subject: Re: arch_initcall time
+In-Reply-To: <fa686aa40802181031s4ba6ec4eie949040f0bf23ad6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47B9CE4D.1020303@pikatech.com>
+	<fa686aa40802181031s4ba6ec4eie949040f0bf23ad6@mail.gmail.com>
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---==_Exmh_1203355811_2991P
-Content-Type: text/plain; charset=us-ascii
+On Feb 18, 2008 11:31 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Feb 18, 2008 11:28 AM, Sean MacLennan <smaclennan@pikatech.com> wrote:
+> > I need to call i2c_register_board_info for the new i2c style ad7414
+> > driver. This needs to be called at arch initcall time. Currently I just
+> > do this:
+> >
+> > static int __init warp_arch_init(void)
+> > {
+> >         i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
+> >         return 0;
+> > }
+> > arch_initcall(warp_arch_init);
+>
+> Yes, this is the right thing to do, but use machine_arch_initcall()
+> instead so that it doesn't get called if it is not your board.
 
-On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
-> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
-> Both resolve endianess at driver level. Actually, both handle it by setting special
-> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
-> I understand that this patch is for chips which cannot reorder bytes by themselves.
+That being said, I believe there is infrastructure to handle the
+creation of your i2c board info from the device tree.  Your i2c board
+info should not be hard coded.
 
-Does anybody know of such a chip that's actually available in the wild?  Or are
-we writing drivers for speculative possible chips?
+Cheers,
+g.
 
---==_Exmh_1203355811_2991P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHucCjcC3lWbTT17ARAs3WAJsF9CsHmgfsLvqldWPilbhoVFS5NACfTFrJ
-i5E2PGuWzLogM8fqDx25xCo=
-=be6Y
------END PGP SIGNATURE-----
-
---==_Exmh_1203355811_2991P--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
