@@ -1,29 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Adrian Bunk <bunk@kernel.org>
-In-Reply-To: <20080218141340.GB667@cs181133002.pp.htv.fi>
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-	<20080216103927.2a02352b@laptopd505.fenrus.org>
-	<1203249003.6718.24.camel@concordia>
-	<20080218135609.GD21080@cs181133002.pp.htv.fi>
-	<Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-	<20080218141340.GB667@cs181133002.pp.htv.fi>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-IdwcwOSGnOD6G3yqipy8"
-Date: Tue, 19 Feb 2008 08:46:03 +1100
-Message-Id: <1203371163.6844.2.camel@concordia>
-Mime-Version: 1.0
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <m.louvel@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.185])
+	by ozlabs.org (Postfix) with ESMTP id 7226DDDEF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 02:46:57 +1100 (EST)
+Received: by ti-out-0910.google.com with SMTP id y6so821763tia.13
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 07:46:56 -0800 (PST)
+Message-ID: <dda529d0802180746q4d63d4c3i41ff3afe55a0c4b9@mail.gmail.com>
+Date: Mon, 18 Feb 2008 15:46:55 +0000
+From: "maxime louvel" <m.louvel@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Build failure on treeboot-walnut.c
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5381_22390610.1203349615951"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,59 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_5381_22390610.1203349615951
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---=-IdwcwOSGnOD6G3yqipy8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Kumar Gala wrote:
 
-On Mon, 2008-02-18 at 16:13 +0200, Adrian Bunk wrote:
-> On Mon, Feb 18, 2008 at 03:01:35PM +0100, Geert Uytterhoeven wrote:
-> > On Mon, 18 Feb 2008, Adrian Bunk wrote:
-> > >=20
-> > > This means it generates faster code with a current gcc for your platf=
-orm.
-> > >=20
-> > > But a future gcc might e.g. replace the whole loop with a division
-> > > (gcc SVN head (that will soon become gcc 4.3) already does=20
-> > > transformations like replacing loops with divisions [1]).
-> >=20
-> > Hence shouldn't we ask the gcc people what's the purpose of __builtin_e=
-xpect(),
-> > if it doesn't live up to its promise?
->=20
-> That's a different issue.
->=20
-> My point here is that we do not know how the latest gcc available in the=20
-> year 2010 might transform this code, and how a likely/unlikely placed=20
-> there might influence gcc's optimizations then.
+> $ make V=1
 
-You're right, we don't know. But if giving the compiler _more_
-information causes it to produce vastly inferior code then we should be
-filing gcc bugs. After all the unlikely/likely is just a hint, if gcc
-knows better it can always ignore it.
+> make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot
+> arch/powerpc/boot/uImage powerpc-unknown-linux-gnu-gcc -m32
+>- Wp,-MD,arch/powerpc/boot/.treeboot-walnut.o.d -Wall -Wundef
+>- Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -Os -msoft-float
+-pipe
+>- fomit-frame-pointer -fno-builtin -fPIC -nostdinc -isystem
+> /_TOOLS_/.dist0/gnu-
+gcc-4.0.2-binutils-2.16.1-glibc-2.3.6-e300c2-powerpc-unknown-linux-gnu/i686-
+pc-linux2.4/bin/../lib/gcc/powerpc-unknown-linux-gnu/4.0.2/include -
+Iarch/powerpc/boot -I/temp/kumar.484/arch/powerpc/boot -mcpu=405 -c -o
+> arch/powerpc/boot/treeboot-walnut.o arch/powerpc/boot/treeboot-walnut.c
+> Assembler messages:
+> Error: Internal assembler error for instruction icbt
+> Internal error, aborting at
+> /tmp/crosstool/crosstool-0.42/build/powerpc-unknown-linux-gnu/gcc-
+4.0.2_e300-enabled-glibc-2.3.6/binutils-2.16.1-complete/gas/config/tc-ppc.c
+> line 1314 in ppc_setup_opcodes
+> Please report this bug.
+> make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
+> make: *** [uImage] Error 2
+>
+>ARCH=ppc64?  WTF?  I specifically said ARCH=powerpc on the make command
+line.
 
-cheers
+I have got the exact same problem.
+Has the problem been sovled ?
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+I am trying to compile a 2.6.24 kernel (vanilla + some board specific stuff)
+with a vanilla gcc-4.1.2 with the flag -msoft-float.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+cheers,
+Maxime
+-- 
+Maxime Louvel
+0044 7964 5555 80
+43 Allen road
+Whitemore reans
+WV60AW Wolverhampton
+United Kingdom
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+------=_Part_5381_22390610.1203349615951
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---=-IdwcwOSGnOD6G3yqipy8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Kumar Gala wrote:<br><br>&gt; $ make V=1<br><br>&gt; make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot <br>&gt; arch/powerpc/boot/uImage powerpc-unknown-linux-gnu-gcc -m32 <br>&gt;- Wp,-MD,arch/powerpc/boot/.treeboot-walnut.o.d -Wall -Wundef <br>
+&gt;- Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -Os -msoft-float -pipe <br>&gt;- fomit-frame-pointer -fno-builtin -fPIC -nostdinc -isystem <br>&gt; /_TOOLS_/.dist0/gnu-gcc-4.0.2-binutils-2.16.1-glibc-2.3.6-e300c2-powerpc-unknown-linux-gnu/i686-pc-linux2.4/bin/../lib/gcc/powerpc-unknown-linux-gnu/4.0.2/include - Iarch/powerpc/boot -I/temp/kumar.484/arch/powerpc/boot -mcpu=405 -c -o <br>
+&gt; arch/powerpc/boot/treeboot-walnut.o arch/powerpc/boot/treeboot-walnut.c<br>&gt; Assembler messages:<br>&gt; Error: Internal assembler error for instruction icbt<br>&gt; Internal error, aborting at <br>&gt; /tmp/crosstool/crosstool-0.42/build/powerpc-unknown-linux-gnu/gcc-4.0.2_e300-enabled-glibc-2.3.6/binutils-2.16.1-complete/gas/config/tc-ppc.c <br>
+&gt; line 1314 in ppc_setup_opcodes<br>&gt; Please report this bug.<br>&gt; make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2<br>&gt; make: *** [uImage] Error 2<br>&gt; <br>&gt;ARCH=ppc64?&nbsp; WTF?&nbsp; I specifically said ARCH=powerpc on the make command line.<br>
+<br>I have got the exact same problem.<br>Has the problem been sovled ?<br><br>I am trying to compile a 2.6.24 kernel (vanilla + some board specific stuff) with a vanilla gcc-4.1.2 with the flag -msoft-float.<br><br>cheers,<br>
+Maxime<br>-- <br>Maxime Louvel<br>0044 7964 5555 80<br>43 Allen road<br>Whitemore reans<br>WV60AW Wolverhampton<br>United Kingdom
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHufybdSjSd0sB4dIRAuniAKC9yzwN6FD6IrilD99aAJxbRgQNNgCgxz+v
-G9yh8IdhjWVhKqqh7KfCB5Y=
-=XGUG
------END PGP SIGNATURE-----
-
---=-IdwcwOSGnOD6G3yqipy8--
+------=_Part_5381_22390610.1203349615951--
