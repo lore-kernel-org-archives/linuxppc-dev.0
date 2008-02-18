@@ -1,27 +1,20 @@
-Return-Path: <SRS0+5527751654f2e5afd62c+1639+infradead.org+arjan@pentafluge.srs.infradead.org>
-Date: Mon, 18 Feb 2008 10:33:20 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080218103320.41cf096f@laptopd505.fenrus.org>
-In-Reply-To: <26571.1203358266@turing-police.cc.vt.edu>
-References: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-	<47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-	<20080216103927.2a02352b@laptopd505.fenrus.org>
-	<1203249003.6718.24.camel@concordia>
-	<20080218135609.GD21080@cs181133002.pp.htv.fi>
-	<12131.1203344830@redhat.com>
-	<26571.1203358266@turing-police.cc.vt.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Adrian Bunk <bunk@kernel.org>, Roel Kluin <12o3l@tiscali.nl>,
-	lkml <linux-kernel@vger.kernel.org>, Willy Tarreau <w@1wt.eu>,
-	linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9372EDDF29
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 05:39:42 +1100 (EST)
+Date: Mon, 18 Feb 2008 12:42:40 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: arch_initcall time
+Message-ID: <20080218184240.GA17898@lixom.net>
+References: <47B9CE4D.1020303@pikatech.com>
+	<fa686aa40802181031s4ba6ec4eie949040f0bf23ad6@mail.gmail.com>
+	<fa686aa40802181032lffff9e2yf079c277c250b430@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40802181032lffff9e2yf079c277c250b430@mail.gmail.com>
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,25 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 18 Feb 2008 13:11:06 -0500
-Valdis.Kletnieks@vt.edu wrote:
-
-> On Mon, 18 Feb 2008 14:27:10 GMT, David Howells said:
+On Mon, Feb 18, 2008 at 11:32:14AM -0700, Grant Likely wrote:
+> On Feb 18, 2008 11:31 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Feb 18, 2008 11:28 AM, Sean MacLennan <smaclennan@pikatech.com> wrote:
+> > > I need to call i2c_register_board_info for the new i2c style ad7414
+> > > driver. This needs to be called at arch initcall time. Currently I just
+> > > do this:
+> > >
+> > > static int __init warp_arch_init(void)
+> > > {
+> > >         i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
+> > >         return 0;
+> > > }
+> > > arch_initcall(warp_arch_init);
+> >
+> > Yes, this is the right thing to do, but use machine_arch_initcall()
+> > instead so that it doesn't get called if it is not your board.
 > 
-> > __builtin_expect() is useful on FRV where you _have_ to give each
-> > branch and conditional branch instruction a measure of probability
-> > whether the branch will be taken.
-> 
-> What does gcc do the 99.998% of the time we don't have
-> likely/unlikely coded?
+> That being said, I believe there is infrastructure to handle the
+> creation of your i2c board info from the device tree.  Your i2c board
+> info should not be hard coded.
 
-see Andi's email.
-It gets the exact same hints that 95%+ of the kernels unlikely/likely get you,
-because the heuristics in it are usually the same as the kernel programmers 
-heuristics.
+Jon Smirl's patches? Not yet, unfortunately. It didn't make .25, but
+maybe for .26.
+
+(I will need to do it specifically on my platform, like fsl_soc already
+does, as a stopgap until then).
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-Olof
