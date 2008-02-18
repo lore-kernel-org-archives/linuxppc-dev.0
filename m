@@ -1,21 +1,22 @@
-Return-Path: <alohanono@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id F13E7DDDF0
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A50FEDDF32
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 02:09:37 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so1189619fgg.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Feb 2008 07:09:35 -0800 (PST)
-Message-ID: <47B99FAC.3050709@gmail.com>
-Date: Mon, 18 Feb 2008 16:09:32 +0100
-From: "A. Nolson" <alohanono@gmail.com>
-MIME-Version: 1.0
-CC: linuxppc-embedded@ozlabs.org
-Subject: Re: APU FPU in Virtex ppc405
-References: <47ACA4BB.6010903@gmail.com>	<fa686aa40802081132h22b91464xd150e0671ca4fc34@mail.gmail.com>	<47B02CB0.8040002@gmail.com>
-	<loom.20080217T072721-349@post.gmane.org>
-In-Reply-To: <loom.20080217T072721-349@post.gmane.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Feb 2008 02:58:34 +1100 (EST)
+Date: Mon, 18 Feb 2008 09:58:23 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+Subject: Re: Linker error: no init_fcc_ioports
+Message-ID: <20080218155823.GA17534@ld0162-tx32.am.freescale.net>
+References: <F795765B112E7344AF36AA911279641502D1AAC0@xmb-sjc-212.amer.cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F795765B112E7344AF36AA911279641502D1AAC0@xmb-sjc-212.amer.cisco.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,49 +27,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Thomas,
+On Fri, Feb 15, 2008 at 06:05:36PM -0800, Bizhan Gholikhamseh (bgholikh) wrote:
+> Hi
+> Our platform is based on mpc8541cds, I am using Linux 2.6.24 from
+> powerpc git tree.
+> I tried to compile the kernel to include the fcc Ethernet controller and
+> I got the following
+> linker  errors:
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+>  
+> arch/powerpc/sysdev/built-in.o: In function `fs_enet_of_init':
+> arch/powerpc/sysdev/fsl_soc.c:853: undefined reference to
+> `init_fcc_ioports'
+> arch/powerpc/sysdev/fsl_soc.c:853: undefined reference to
+> `init_fcc_ioports'
 
- I am still very interested in this. It would be really good if you can 
-post what you have so far. Did you also have to patch gcc also? Is there 
-any penalty in performance when compiling with -fshort-double?
+You need to select PPC_CPM_NEW_BINDING from your board's kconfig entry
+(and make sure you comply with the new CPM bindings, and that all pins
+are set up by firmware or platform code).
 
- /Albert
-
-Thomas Werne wrote:
-> A. Nolson <alohanono <at> gmail.com> writes:
->
->   
->> I have been checking and it seems that the APU FPU patches will give 
->> some headaches now, so I will probably wait until they merge them with 
->> the official GCC release. In any case, it seems that the FPU restricts 
->> the PowerPC and bus frequencies to a max of 200/100.
->>
->> Anyway, thanks for the info. I will try to keep track of this in case of 
->> an update.
->>
->>     
->
-> Hi -
->
-> You can get the FPU to work with the 2.6.24rc3 Linux (I got it to work just
-> yesterday).  There are a couple of small changes you have to make to kernel
-> config files and to one of the .h files, plus you need to compile with the
-> -fshort-double flag to convert all doubles into floats.  Let me know if you're
-> still interested and I can post details and/or patches.
->
-> Thomas
->
-> --
-> Thomas Werne
-> NASA Jet Propulsion Laboratory
->
-> All personal and professional opinions presented herein are my
-> own and do not, in any way, represent the opinion or policy of JPL.
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->   
+-Scott
