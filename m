@@ -1,18 +1,20 @@
-Return-Path: <sheflin@newagemicro.com>
-Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
-	[66.129.110.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C71BDDE20
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 40726DDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 03:17:53 +1100 (EST)
-Date: Mon, 18 Feb 2008 11:18:05 -0500
-To: Linuxppc-embedded@ozlabs.org
-From: Steve Heflin <sheflin@newagemicro.com>
-Subject: Re: Sequoia NAND - others missing?
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Message-Id: <20080218161754.6C71BDDE20@ozlabs.org>
+	Tue, 19 Feb 2008 10:51:03 +1100 (EST)
+Message-ID: <47BA19E4.9010609@anagramm.de>
+Date: Tue, 19 Feb 2008 00:51:00 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: mahendra varman <mahendravarman15@gmail.com>
+Subject: Re: reg Philips ISP 1562 usb controller support in linux2.6.23.11
+References: <4ac2955e0802140528i69fece47xa6d751200c5616f9@mail.gmail.com>	
+	<47B471D2.3090906@anagramm.de>
+	<4ac2955e0802180845m3287e30bi42f57b0a2522983f@mail.gmail.com>
+In-Reply-To: <4ac2955e0802180845m3287e30bi42f57b0a2522983f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,36 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Looking at the "arch/ppc/platforms/4xx/sequoia.c" from 2.6.14 
-MontaVista, I also see ECC error handling, a Serial RTC device, UART4 
-to UART11. It doesn't look like those are supported in the current 
-"arch/powerpc/platforms/44x/sequoia" ?
+Hi, Magendra!
 
-Regarding the nftd NAND driver, I see a device table hookup in 
-"arch/powerpc/platforms/44x/warp-nand.c".  Am I right in saying that 
-file is a perfect template from which to generate sequoia-nand.c ?
+- please don't top-post!
+- and please keep the list on CC:
 
-thanks,
-Steve
+mahendra varman schrieb:
+> Sir,
+> I have enabled the necessary configs for ISP1562
+> 
+> The IRQ number is 39 and while probing the driver correctly assigns the 
+> IRQ number
+> 
+> but if i insert a device in usb port iam getting error as
+> 
+> Unlink after no-IRQ?  "
+>             "Controller is probably using the wrong IRQ"
+> 
+> Although the interrupt number assignment is correct why it gives the 
+> above message ?
 
+Well, that seems odd. What kind of cpu / platform / hardware are you using?
+Please send the output of `lspci -vv` and `cat /proc/cpuinfo`
+If you have the ISP1562 attached to PCI, I guess the interrupt assignments
+are wrong or the IRQ line is broken.
 
-At 03:56 PM 2/17/2008, you wrote:
->On Sun, 17 Feb 2008 10:27:22 -0500
->Steve Heflin <sheflin@newagemicro.com> wrote:
->
-> > Are there other devices (beside the NAND Flash Controller) that exist
-> > on the AMCC-440EPx chip and are not supported by the current
-> > Linux-2.6.25 ARCH=powerpc?
->
->i2c, GPIO, the security stuff (if your version has that), and GPT.
->Thought GPT has never really been supported in any kernel that I
->remember.
->
->Patches for i2c and GPIO are floating around somewhere I think.  Just
->need to get them polished up and device-tree compliant.
->
->josh
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Regards,
+
+Clemens
