@@ -2,15 +2,15 @@ Return-Path: <helgaas@ldl.fc.hp.com>
 Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id C440EDDE33
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id C465ADDE34
 	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 15:57:19 +1100 (EST)
-Message-Id: <20080219044307.479128872@ldl.fc.hp.com>
+Message-Id: <20080219044307.679302332@ldl.fc.hp.com>
 References: <20080219043952.845136014@ldl.fc.hp.com>
-Date: Mon, 18 Feb 2008 21:39:54 -0700
+Date: Mon, 18 Feb 2008 21:39:55 -0700
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: linux-pci@atrey.karlin.mff.cuni.cz
 To: linux-arch@vger.kernel.org
-Subject: [patch 2/4] ppc: make pcibios_enable_device() use
+Subject: [patch 3/4] xtensa: make pcibios_enable_device() use
 	pcibios_enable_resources()
 Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
 	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
@@ -32,19 +32,19 @@ pcibios_enable_resources() turns on PCI_COMMAND_MEMORY if
 there's a ROM resource).
 
 The duplication might be intentional, but I don't see any callers
-of pcibios_enable_resources() on ppc, so I think it's more
-likely a historical accident.
+of pcibios_enable_resources() on xtensa, so I think it's more
+likely a historical accident copied from ppc.
 
 This patch removes the duplication, making pcibios_enable_device()
 simply call pcibios_enable_resources() as x86 does.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work6/arch/ppc/kernel/pci.c
+Index: work6/arch/xtensa/kernel/pci.c
 ===================================================================
---- work6.orig/arch/ppc/kernel/pci.c	2008-02-18 10:43:50.000000000 -0700
-+++ work6/arch/ppc/kernel/pci.c	2008-02-18 11:31:23.000000000 -0700
-@@ -785,33 +785,11 @@
+--- work6.orig/arch/xtensa/kernel/pci.c	2008-02-18 10:43:50.000000000 -0700
++++ work6/arch/xtensa/kernel/pci.c	2008-02-18 11:32:12.000000000 -0700
+@@ -238,31 +238,7 @@
  
  int pcibios_enable_device(struct pci_dev *dev, int mask)
  {
@@ -52,16 +52,13 @@ Index: work6/arch/ppc/kernel/pci.c
 -	int idx;
 -	struct resource *r;
 -
- 	if (ppc_md.pcibios_enable_device_hook)
- 		if (ppc_md.pcibios_enable_device_hook(dev, 0))
- 			return -EINVAL;
--		
 -	pci_read_config_word(dev, PCI_COMMAND, &cmd);
 -	old_cmd = cmd;
 -	for (idx=0; idx<6; idx++) {
 -		r = &dev->resource[idx];
--		if (r->flags & IORESOURCE_UNSET) {
--			printk(KERN_ERR "PCI: Device %s not available because of resource collisions\n", pci_name(dev));
+-		if (!r->start && r->end) {
+-			printk(KERN_ERR "PCI: Device %s not available because "
+-			       "of resource collisions\n", pci_name(dev));
 -			return -EINVAL;
 -		}
 -		if (r->flags & IORESOURCE_IO)
@@ -74,11 +71,11 @@ Index: work6/arch/ppc/kernel/pci.c
 -		       pci_name(dev), old_cmd, cmd);
 -		pci_write_config_word(dev, PCI_COMMAND, cmd);
 -	}
+-
 -	return 0;
-+
 +	return pcibios_enable_resources(dev, mask);
  }
  
- struct pci_controller*
+ #ifdef CONFIG_PROC_FS
 
 -- 
