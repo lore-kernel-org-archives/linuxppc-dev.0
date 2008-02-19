@@ -1,27 +1,20 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id 51250DDEC5
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 19:59:36 +1100 (EST)
-Date: Tue, 19 Feb 2008 18:02:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1
-	softlockup  while bootup on powerpc
-Message-Id: <20080219180242.0bbec245.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080219083633.GN23197@kernel.dk>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-	<47B67E5E.4010001@linux.vnet.ibm.com>
-	<20080217192913.GO23197@kernel.dk>
-	<20080219170432.9c04376f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080219083633.GN23197@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <SRS0=kPSl=TI=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id B3D2EDDEFE
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 20:00:12 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
+Date: Tue, 19 Feb 2008 09:59:40 +0100
+References: <4784FED1.2040206@pikatech.com> <47BA3416.5080405@pikatech.com>
+	<20080219092321.1fed233d@hyperion.delvare>
+In-Reply-To: <20080219092321.1fed233d@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802190959.41253.sr@denx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 19 Feb 2008 09:36:34 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tuesday 19 February 2008, Jean Delvare wrote:
+> > diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> > index b61f56b..44c0984 100644
+> > --- a/drivers/i2c/busses/Kconfig
+> > +++ b/drivers/i2c/busses/Kconfig
+> > @@ -244,7 +244,6 @@ config I2C_PIIX4
+> >
+> >  config I2C_IBM_IIC
+> >  	tristate "IBM PPC 4xx on-chip I2C interface"
+> > -	depends on IBM_OCP
+> >  	help
+> >  	  Say Y here if you want to use IIC peripheral found on
+> >  	  embedded IBM PPC 4xx based systems.
+>
+> With this Kconfig change, "make menuconfig" lets me select the
+> i2c-ibm_iic driver on x86_64, but it fails to build horribly. I think
+> that you want to restrict the build to PPC machines somehow, or at
+> least make sure that either IBM_OCP or OF support is present.
 
-> On Tue, Feb 19 2008, KAMEZAWA Hiroyuki wrote:
-> > On Sun, 17 Feb 2008 20:29:13 +0100
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > It's odd stuff. Could you perhaps try and add some printks to
-> > > block/cfq-iosched.c:call_for_each_cic(), like dumping the 'nr' return
-> > > from radix_tree_gang_lookup() and the pointer value of cics[i] in the
-> > > for() loop after the lookup?
-> > > 
-> > I met the same issue on ia64/NUMA box.
-> > seems cisc[]->key is NULL and index for radix_tree_gang_lookup() was
-> > always '1'.
-> 
-> Why does it keep repeating then? If ->key is NULL, the next lookup index
-> should be 1UL.
-> 
-> But I think the radix 'scan over entire tree' is a bit fragile. This
-> patch adds a parallel hlist for ease of properly browsing the members,
-> does that work for you? It compiles, but I haven't booted it here yet...
-> 
-Works well for me and my box booted !
+How about this:
 
-Thanks,
--Kame
+-	depends on IBM_OCP
++	depends on 4xx
+
+Best regards,
+Stefan
