@@ -1,14 +1,18 @@
-Return-Path: <raul.moreno@telvent.abengoa.com>
-In-Reply-To: <dda529d0802190359r526dc959y8117185e1834e9f4@mail.gmail.com>
-Subject: Re: 2.6.24 for mpc8458amc
-To: "maxime louvel" <m.louvel@gmail.com>
-Message-ID: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
-Date: Tue, 19 Feb 2008 13:19:08 +0100
-From: raul.moreno@telvent.abengoa.com
+Return-Path: <Nicolas.Genevrier@jdsu.com>
+Received: from jdsu.com (mio.acterna.de [141.169.254.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B3D42DDED1
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 20 Feb 2008 00:07:12 +1100 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: Ethernet breakdown on a Yosemite evaluation board
+Date: Tue, 19 Feb 2008 14:00:19 +0100
+Message-ID: <8C40729B7184DC459A15060FA1AF589602045556@ENIEXCH01.ds.jdsu.net>
+From: "Nicolas Genevrier" <Nicolas.Genevrier@jdsu.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,121 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello all,
 
-Hello Maxime,
+I noticed an Ethernet blocking on a Yosemite evaluation board when we
+are using both Ethernet devices (eth0 and eth1).
+To reproduce the issue, I just telnet the board from a PC (PC1) through
+eth0 and then telnet another PC (PC2) from the first telnet session
+through eth1. Then I display a lot of characters on the last telnet
+session:
+	$ for i in `seq 1 100000`; do echo "$i
+aaaaaaaaaaa..(x160)..aaa"; done
 
-if your board is still running, although you can't see the messages tha=
-t
-means you don't have any console. Try to set one (I think you can use a=
- SCM
-of the CPM) in the kernel configuration (characters devices)  or in the=
+After a while, transmission is blocked and leads to an rxde interruption
+from the MAL.
 
-command line (console=3D).
+Yosemite evaluation kit runs Linux 2.16.13 but I reproduced the issue
+with our board running Linux-2.6.16 on a 440EP.
+In Linux 2.6.16, the new ibm_emac driver tries to recover the error but
+Ethernet remains very very slow even one day after the end of the
+transmission.
+ I didn't notice any evolution related to this neither any discussion on
+the topic. Sorry if I missed them.
 
-Anyway, if you want to be sure if the  kernel is booting up, look up th=
-e
-buffer where the messages are saved before the console is enabled. Find=
- the
-function __log_buffer in the System.map file and throu the bootloader, =
-have
-a look at this address.
+I am working on the subject but an idea or related information would be
+helpful.
 
-Ra=FAl Moreno
+Thank you,
 
-
-
-"maxime louvel" <m.louvel@gmail.com>
-"maxime louvel"
-Enviado por:
-linuxppc-embedded-bounces+raul.moreno=3Dtelvent.abengoa.com@ozlabs.org
-19/02/2008 12:59
-                                                                       =
-                                                
- Para:   linuxppc-embedded@ozlabs.org                                  =
-                                                
-                                                                       =
-                                                
- cc:                                                                   =
-                                                
-                                                                       =
-                                                
- Asunto: 2.6.24 for mpc8458amc                                         =
-                                                
-                                                                       =
-                                                
-
-
-
-
-
-Hi,
-
-I am trying to make a 2.6.24 vanilla kernel boot (an work fine in a sec=
-ond
-time) on a mpc8548amc board.
-I have add the platform specific stuff from the sources of the current
-kernel running on the cards.
-What I have basically add is:
-- a folder mpc8548amc, in the config/platform directory, which allow to=
-
-select the mpc8548amc as the supported platform
-- add the following files:
-  - arch/ppc/configs/mpc8548amc_defconfig
-  - arch/ppc/configs/platforms/85xx/mpc_8548_amc.h and .c
-- I have used the dts of an another platform (mpc8548cds) which seems q=
-uite
-the same, but I haven't got any confirmation of that yet.
-
-When I am booting the kernel image I get:
-
-AMC=3D> dhcp 0x1000000 uImage.amc.2.6.24
-Speed: 1000, full duplex
-BOOTP broadcast 1
-DHCP client bound to address 10.255.255.2
-Using eTSEC0 device
-TFTP from server 0.0.0.0; our IP address is 10.255.255.2; sending throu=
-gh
-gateway 10.1.1.1
-Filename 'uImage.amc.2.6.24'.
-Load address: 0x1000000
-Loading: ##############################
-###################################
-        ###############################################################=
-##
-        ###############################################################=
-##
-        ###############################################################=
-##
-        ###############################################################=
-##
-        ###########################
-done
-Bytes transferred =3D 1802102 (1b7f76 hex)
-AMC=3D> bootm 0x1000000
-## Booting image at 01000000 ...
-  Image Name:   Linux-2.6.24
-  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-  Data Size:    1802038 Bytes =3D  1.7 MB
-  Load Address: 00000000
-  Entry Point:  00000000
-  Verifying Checksum ... OK
-  Uncompressing Kernel Image ... OK
-
-No further messages...
-
-Does someone has an idea ?
-
-thanks,
-Maxime
-
-
---
-Maxime Louvel
-0044 7964 5555 80
-43 Allen road
-Whitemore reans
-WV60AW Wolverhampton
-United Kingdom _______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded=
+Nicolas Genevrier
