@@ -1,18 +1,20 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id AAF21DDE1D
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:58:03 +1100 (EST)
-Message-ID: <47BB50E9.60508@pikatech.com>
-Date: Tue, 19 Feb 2008 16:58:01 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id BA8A8DDE45
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 09:23:44 +1100 (EST)
+Message-ID: <47BB56EF.7050708@pikatech.com>
+Date: Tue, 19 Feb 2008 17:23:43 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
+To: Stefan Roese <sr@denx.de>
 Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
-References: <4784FED1.2040206@pikatech.com><47A14E23.50807@pikatech.com><20080214094516.1b958ae4@hyperion.delvare><47B66260.8010902@pikatech.com><20080216103123.50a0128b@hyperion.delvare><47BA3416.5080405@pikatech.com>
-	<20080219092321.1fed233d@hyperion.delvare>
-In-Reply-To: <20080219092321.1fed233d@hyperion.delvare>
+References: <4784FED1.2040206@pikatech.com>
+	<47BA3416.5080405@pikatech.com><20080219092321.1fed233d@hyperion.delvare>
+	<200802190959.41253.sr@denx.de>
+In-Reply-To: <200802190959.41253.sr@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,6 +23,19 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+Stefan Roese wrote:
+> How about this:
+>
+> -	depends on IBM_OCP
+> +	depends on 4xx
+>   
+That's what I did, great minds think alike ;) But the email does not 
+seem to have come through, so I will repost the patch. If you already 
+got an email with the above patch, you can ignore this one ;)
+
+Cheers,
+   Sean
 
 Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 
