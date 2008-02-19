@@ -1,22 +1,19 @@
-Return-Path: <helgaas@ldl.fc.hp.com>
-Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id C465ADDE34
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 15:57:19 +1100 (EST)
-Message-Id: <20080219044307.679302332@ldl.fc.hp.com>
-References: <20080219043952.845136014@ldl.fc.hp.com>
-Date: Mon, 18 Feb 2008 21:39:55 -0700
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-To: linux-arch@vger.kernel.org
-Subject: [patch 3/4] xtensa: make pcibios_enable_device() use
-	pcibios_enable_resources()
-Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.arm.linux.org.uk,
-	Russell King <rmk@arm.linux.org.uk>
+Return-Path: <w@1wt.eu>
+Date: Tue, 19 Feb 2008 06:58:06 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080219055806.GA8404@1wt.eu>
+References: <47B70A61.9030306@tiscali.nl>
+	<20080216094226.1e8eede1@laptopd505.fenrus.org>
+	<p731w7axrat.fsf@bingen.suse.de>
+	<200802191333.53607.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200802191333.53607.nickpiggin@yahoo.com.au>
+Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Andi Kleen <andi@firstfloor.org>,
+	cbe-oss-dev@ozlabs.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,56 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pcibios_enable_device() has an almost verbatim copy of
-pcibios_enable_resources(), (the only difference is that
-pcibios_enable_resources() turns on PCI_COMMAND_MEMORY if
-there's a ROM resource).
+On Tue, Feb 19, 2008 at 01:33:53PM +1100, Nick Piggin wrote:
+> > Note in particular the last predictors; assuming branch ending
+> > with goto, including call, causing early function return or
+> > returning negative constant are not taken. Just these alone
+> > are likely 95+% of the unlikelies in the kernel.
+> 
+> Yes, gcc should be able to do pretty good heuristics, considering
+> the quite good numbers that cold CPU predictors can attain. However
+> for really performance critical code (or really "never" executed
+> code), then I think it is OK to have the hints and not have to rely
+> on gcc heuristics.
 
-The duplication might be intentional, but I don't see any callers
-of pcibios_enable_resources() on xtensa, so I think it's more
-likely a historical accident copied from ppc.
+in my experience, the real problem is that gcc does what *it* wants and not
+what *you* want. I've been annoyed a lot by the way it coded some loops that
+could really be blazingly fast, but which resulted in a ton of branches due
+to its predictors. And using unlikely() there was a real mess, because instead
+of just hinting the compiler with probabilities to write some linear code for
+the *most* common case, it ended up with awful branches everywhere with code
+sent far away and even duplicated for some branches.
 
-This patch removes the duplication, making pcibios_enable_device()
-simply call pcibios_enable_resources() as x86 does.
+Sometimes, for performance critical paths, I would like gcc to be dumb and
+follow *my* code and not its hard-coded probabilities. For instance, in a
+tree traversal, you really know how you want to build your loop. And these
+days, it seems like the single method of getting it your way is doing asm,
+which obviously is not portable :-(
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Maybe one thing we would need would be the ability to assign probabilities
+to each branch based on what we expect, so that gcc could build a better
+tree keeping most frequently used code tight.
 
-Index: work6/arch/xtensa/kernel/pci.c
-===================================================================
---- work6.orig/arch/xtensa/kernel/pci.c	2008-02-18 10:43:50.000000000 -0700
-+++ work6/arch/xtensa/kernel/pci.c	2008-02-18 11:32:12.000000000 -0700
-@@ -238,31 +238,7 @@
- 
- int pcibios_enable_device(struct pci_dev *dev, int mask)
- {
--	u16 cmd, old_cmd;
--	int idx;
--	struct resource *r;
--
--	pci_read_config_word(dev, PCI_COMMAND, &cmd);
--	old_cmd = cmd;
--	for (idx=0; idx<6; idx++) {
--		r = &dev->resource[idx];
--		if (!r->start && r->end) {
--			printk(KERN_ERR "PCI: Device %s not available because "
--			       "of resource collisions\n", pci_name(dev));
--			return -EINVAL;
--		}
--		if (r->flags & IORESOURCE_IO)
--			cmd |= PCI_COMMAND_IO;
--		if (r->flags & IORESOURCE_MEM)
--			cmd |= PCI_COMMAND_MEMORY;
--	}
--	if (cmd != old_cmd) {
--		printk("PCI: Enabling device %s (%04x -> %04x)\n",
--		       pci_name(dev), old_cmd, cmd);
--		pci_write_config_word(dev, PCI_COMMAND, cmd);
--	}
--
--	return 0;
-+	return pcibios_enable_resources(dev, mask);
- }
- 
- #ifdef CONFIG_PROC_FS
+Hmm I've just noticed -fno-guess-branch-probability in the man, I never tried
+it.
 
--- 
+regards,
+Willy
