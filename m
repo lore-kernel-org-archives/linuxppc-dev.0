@@ -1,19 +1,24 @@
-Return-Path: <w@1wt.eu>
-Date: Tue, 19 Feb 2008 06:58:06 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080219055806.GA8404@1wt.eu>
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<p731w7axrat.fsf@bingen.suse.de>
-	<200802191333.53607.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
+Return-Path: <kyle@phobos.cabal.ca>
+Received: from phobos.cabal.ca (206-248-169-182.dsl.ncf.ca [206.248.169.182])
+	by ozlabs.org (Postfix) with ESMTP id EC552DDE29
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 17:11:53 +1100 (EST)
+Date: Tue, 19 Feb 2008 01:11:50 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [patch 0/4] RFC: PCI: consolidate several
+	pcibios_enable_resources() implementations
+Message-ID: <20080219061150.GA10115@phobos.i.cabal.ca>
+References: <20080219043952.845136014@ldl.fc.hp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200802191333.53607.nickpiggin@yahoo.com.au>
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Andi Kleen <andi@firstfloor.org>,
-	cbe-oss-dev@ozlabs.org, Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080219043952.845136014@ldl.fc.hp.com>
+Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 19, 2008 at 01:33:53PM +1100, Nick Piggin wrote:
-> > Note in particular the last predictors; assuming branch ending
-> > with goto, including call, causing early function return or
-> > returning negative constant are not taken. Just these alone
-> > are likely 95+% of the unlikelies in the kernel.
+On Mon, Feb 18, 2008 at 09:39:52PM -0700, Bjorn Helgaas wrote:
+>     - PA-RISC always turns on SERR and PARITY, which no other arch does
 > 
-> Yes, gcc should be able to do pretty good heuristics, considering
-> the quite good numbers that cold CPU predictors can attain. However
-> for really performance critical code (or really "never" executed
-> code), then I think it is OK to have the hints and not have to rely
-> on gcc heuristics.
 
-in my experience, the real problem is that gcc does what *it* wants and not
-what *you* want. I've been annoyed a lot by the way it coded some loops that
-could really be blazingly fast, but which resulted in a ton of branches due
-to its predictors. And using unlikely() there was a real mess, because instead
-of just hinting the compiler with probabilities to write some linear code for
-the *most* common case, it ended up with awful branches everywhere with code
-sent far away and even duplicated for some branches.
+I suspect this is because we set the host bus adapters to hard fail
+(HPMC) on detecting an error, since we don't want to
+	1) return possibly bogus (-1) data
+	2) write code to use the (undocumented) error detection
 
-Sometimes, for performance critical paths, I would like gcc to be dumb and
-follow *my* code and not its hard-coded probabilities. For instance, in a
-tree traversal, you really know how you want to build your loop. And these
-days, it seems like the single method of getting it your way is doing asm,
-which obviously is not portable :-(
+More to the point, I suspect it's extra paranoia because firmware has
+set it up this way. I put in a quick hack to test whether those bits
+were set, and they came enabled that way by firmware on all the boxes I
+tested. (Disclaimer, I didn't have any easily accessible boxes with
+add-on cards installed, so firmware might just set it up for core
+devices, and we're making sure its set everywhere.)
 
-Maybe one thing we would need would be the ability to assign probabilities
-to each branch based on what we expect, so that gcc could build a better
-tree keeping most frequently used code tight.
-
-Hmm I've just noticed -fno-guess-branch-probability in the man, I never tried
-it.
-
-regards,
-Willy
+cheers, Kyle
