@@ -1,27 +1,27 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[78.32.30.218])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1A6C8DDF10
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 19:39:22 +1100 (EST)
-Date: Tue, 19 Feb 2008 08:09:47 +0000
-From: Russell King <rmk-pci@arm.linux.org.uk>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [patch 0/4] RFC: PCI: consolidate several
-	pcibios_enable_resources() implementations
-Message-ID: <20080219080947.GB20893@flint.arm.linux.org.uk>
-References: <20080219043952.845136014@ldl.fc.hp.com>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by ozlabs.org (Postfix) with ESMTP id B99C7DDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 19:48:45 +1100 (EST)
+Date: Tue, 19 Feb 2008 17:47:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1
+	softlockup  while bootup on powerpc
+Message-Id: <20080219174743.202b64f8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080219083633.GN23197@kernel.dk>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	<47B67E5E.4010001@linux.vnet.ibm.com>
+	<20080217192913.GO23197@kernel.dk>
+	<20080219170432.9c04376f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080219083633.GN23197@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080219043952.845136014@ldl.fc.hp.com>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset=US-ASCII
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,33 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 18, 2008 at 09:39:52PM -0700, Bjorn Helgaas wrote:
-> There are many implementations of pcibios_enable_resources() that differ
-> in minor ways that look more like bugs than architectural differences.
-> This patch series consolidates most of them to use the x86 version.
+On Tue, 19 Feb 2008 09:36:34 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Tue, Feb 19 2008, KAMEZAWA Hiroyuki wrote:
+> > On Sun, 17 Feb 2008 20:29:13 +0100
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > It's odd stuff. Could you perhaps try and add some printks to
+> > > block/cfq-iosched.c:call_for_each_cic(), like dumping the 'nr' return
+> > > from radix_tree_gang_lookup() and the pointer value of cics[i] in the
+> > > for() loop after the lookup?
+> > > 
+> > I met the same issue on ia64/NUMA box.
+> > seems cisc[]->key is NULL and index for radix_tree_gang_lookup() was
+> > always '1'.
 > 
-> This series is for discussion only at this point.  I'm interested in
-> feedback about whether any of the differences are "real" and need to
-> be preserved.
+> Why does it keep repeating then? If ->key is NULL, the next lookup index
+> should be 1UL.
 > 
-> ARM and PA-RISC, in particular, have interesting differences:
->     - ARM always enables bridge devices, which no other arch does
+when I inserted printk here
+==
+	for (i = 0; i < nr; i++)
+		func(ioc, cics[i]);
+	printk("%d %lx\n", nr, index);
+==
+index was always "1" and  nr was always 32.
 
-ARM does this because there is nothing else which would do that - which
-means devices behind bridges would be completely inaccessible.
+So, cics[31]->key was always NULL when index=1 is passed to radix_tree_gang_lookup().
 
->     - PA-RISC always turns on SERR and PARITY, which no other arch does
 
-ARM also does this, unless pdev_bad_for_parity(dev) is true.  See
-ARMs pcibios_fixup_bus().
+> But I think the radix 'scan over entire tree' is a bit fragile. This
+> patch adds a parallel hlist for ease of properly browsing the members,
+> does that work for you? It compiles, but I haven't booted it here yet...
+> 
+will try. please wait a bit.
 
-> Should other arches do the same thing, or are these somehow related to
-> ARM and PA-RISC architecture?
-
-I suspect they're architecture specific; I wouldn't like to do either
-on x86, but they're either required or preferred on ARM.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thanks,
+-Kame
