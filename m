@@ -1,29 +1,19 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id CA435DE013
+Return-Path: <m.louvel@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.226])
+	by ozlabs.org (Postfix) with ESMTP id 1B8D5DDE46
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 20:02:33 +1100 (EST)
-Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
-	by nausicaa2.coritel.it (Postfix) with ESMTP id DC5D0434002
+	Tue, 19 Feb 2008 22:59:03 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so2200540wxd.15
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 09:59:59 +0100 (CET)
-Received: from nausicaa2.coritel.it ([127.0.0.1])
-	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with ESMTP id XTdcOXXOHIZB for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 09:59:58 +0100 (CET)
-Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
-	by nausicaa2.coritel.it (Postfix) with ESMTP id 9C3AC434001
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Feb 2008 09:59:58 +0100 (CET)
-Message-ID: <47BA9C13.6090400@coritel.it>
-Date: Tue, 19 Feb 2008 10:06:27 +0100
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Tue, 19 Feb 2008 03:59:02 -0800 (PST)
+Message-ID: <dda529d0802190359r526dc959y8117185e1834e9f4@mail.gmail.com>
+Date: Tue, 19 Feb 2008 11:59:01 +0000
+From: "maxime louvel" <m.louvel@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: 2.6.24 for mpc8458amc
 MIME-Version: 1.0
-To: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
-Subject: MPC8641D PCI-Express error
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8812_28100716.1203422341839"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,53 +24,131 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_8812_28100716.1203422341839
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 Hi,
 
-I'm working with the Freescale evaluation board MPC8641DHPCN and the
-VIRTEX5 evaluation board ML555 connected with the PCI-Express. When I
-try to read some register I have this problem:
+I am trying to make a 2.6.24 vanilla kernel boot (an work fine in a second
+time) on a mpc8548amc board.
+I have add the platform specific stuff from the sources of the current
+kernel running on the cards.
+What I have basically add is:
+- a folder mpc8548amc, in the config/platform directory, which allow to
+select the mpc8548amc as the supported platform
+- add the following files:
+  - arch/ppc/configs/mpc8548amc_defconfig
+  - arch/ppc/configs/platforms/85xx/mpc_8548_amc.h and .c
+- I have used the dts of an another platform (mpc8548cds) which seems quite
+the same, but I haven't got any confirmation of that yet.
 
-Machine check in kernel mode.
-Caused by (from SRR1=149030): Transfer error ack signal
-Oops: Machine check, sig: 7 [#1]
-PREEMPT SMP NR_CPUS=2
-Modules linked in: virtex5
-LTT NESTING LEVEL : 0
-NIP: F108019C LR: F1080198 CTR: 00000001
-REGS: c044dd60 TRAP: 0200   Tainted: GF      (2.6.18-mpc8641d_hpcn)
-MSR: 00149030 <EE,ME,IR,DR>  CR: 22000222  XER: 00000000
-TASK = c20e9990[568] 'insmod' THREAD: c044c000 CPU: 0
-GPR00: F1080198 C044DE10 C20E9990 0000002E 80000000 FFFFFFFF 00008000
-00002EA3
-GPR08: C20E9990 00000000 C04C0220 C044C000 22000222 1001956C 00000000
-00000000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-00000000
-GPR24: 3000EAA0 7FD6FDC0 00000000 C045FCC0 F107E594 F10A0000 00000000
-C2036000
-NIP [F108019C] virtex5_probe+0x130/0x1c4 [virtex5]
-LR [F1080198] virtex5_probe+0x12c/0x1c4 [virtex5]
-Call Trace:
-[C044DE10] [F1080198] virtex5_probe+0x12c/0x1c4 [virtex5] (unreliable)
-[C044DE30] [C01D2A58] pci_device_probe+0x84/0xbc
-[C044DE50] [C0213754] driver_probe_device+0x60/0x118
-[C044DE70] [C0213890] __driver_attach+0x84/0x88
-[C044DE90] [C02130F4] bus_for_each_dev+0x58/0x94
-[C044DEC0] [C02135D4] driver_attach+0x24/0x34
-[C044DED0] [C0212AC8] bus_add_driver+0x88/0x164
-[C044DEF0] [C021397C] driver_register+0x70/0xb8
-[C044DF00] [C01D284C] __pci_register_driver+0x64/0x98
-[C044DF10] [F1080030] init_module+0x30/0x6c [virtex5]
-[C044DF20] [C004CBFC] sys_init_module+0xc8/0x25c
-[C044DF40] [C0011358] ret_from_syscall+0x0/0x38
---- Exception: c00 at 0xff6de0c
-    LR = 0x10000de4
-Instruction dump:
-40820060 3c60f108 3863cea0 48000311 807f0238 3c800001 48000395 7c7d1b78
-3c60f108 3863ced4 480002f5 809d0000 <3c60f108> 3863cf04 480002e5 3c60f108
+When I am booting the kernel image I get:
 
-Have you got any suggestions?
+AMC=> dhcp 0x1000000 uImage.amc.2.6.24
+Speed: 1000, full duplex
+BOOTP broadcast 1
+DHCP client bound to address 10.255.255.2
+Using eTSEC0 device
+TFTP from server 0.0.0.0; our IP address is 10.255.255.2; sending through
+gateway 10.1.1.1
+Filename 'uImage.amc.2.6.24'.
+Load address: 0x1000000
+Loading: #################################################################
+        #################################################################
+        #################################################################
+        #################################################################
+        #################################################################
+        ###########################
+done
+Bytes transferred = 1802102 (1b7f76 hex)
+AMC=> bootm 0x1000000
+## Booting image at 01000000 ...
+  Image Name:   Linux-2.6.24
+  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+  Data Size:    1802038 Bytes =  1.7 MB
+  Load Address: 00000000
+  Entry Point:  00000000
+  Verifying Checksum ... OK
+  Uncompressing Kernel Image ... OK
 
-Thanks.
+No further messages...
 
-Marco
+Does someone has an idea ?
+
+thanks,
+Maxime
+
+
+-- 
+Maxime Louvel
+0044 7964 5555 80
+43 Allen road
+Whitemore reans
+WV60AW Wolverhampton
+United Kingdom
+
+------=_Part_8812_28100716.1203422341839
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br><br>I am trying to make a 2.6.24 vanilla kernel boot (an work fine in a second time) on a mpc8548amc board.<br>I
+have add the platform
+specific stuff from the sources of the current kernel running on the
+cards.<br>
+
+
+
+What I have basically add is:<br>- a folder mpc8548amc,
+in the config/platform directory, which allow to select the mpc8548amc
+as the supported platform <br>- add the following files:<br>
+
+
+
+&nbsp; - arch/ppc/configs/mpc8548amc_defconfig<br><div>&nbsp; - arch/ppc/configs/platforms/85xx/mpc_8548_amc.h and .c<br>-
+I have used the dts of an another platform (mpc8548cds) which seems
+quite the same, but I haven&#39;t got any confirmation of that yet.<br>
+
+
+
+<br>When I am booting the kernel image I get:<br><br>AMC=&gt; dhcp 0x1000000 uImage.amc.2.6.24<br>Speed: 1000, full duplex<br>BOOTP broadcast 1<br>DHCP client bound to address <a href="http://10.255.255.2/" target="_blank">10.255.255.2</a><br>
+
+
+
+
+
+Using eTSEC0 device<br>TFTP from server <a href="http://0.0.0.0/" target="_blank">0.0.0.0</a>; our IP address is <a href="http://10.255.255.2/" target="_blank">10.255.255.2</a>; sending through gateway <a href="http://10.1.1.1/" target="_blank">10.1.1.1</a><br>
+
+
+
+
+
+Filename &#39;uImage.amc.2.6.24&#39;.<br>Load address: 0x1000000<br>Loading: ##############################<div>###################################<br> &nbsp; &nbsp; &nbsp; &nbsp; #################################################################<br>
+
+
+
+
+
+ &nbsp; &nbsp; &nbsp; &nbsp; #################################################################<br> &nbsp; &nbsp; &nbsp; &nbsp; #################################################################<br> &nbsp; &nbsp; &nbsp; &nbsp; #################################################################<br>
+
+
+
+
+
+ &nbsp; &nbsp; &nbsp; &nbsp; ###########################<br>done<br>Bytes transferred = 1802102 (1b7f76 hex)<br>AMC=&gt; bootm 0x1000000<br>## Booting image at 01000000 ...<br> &nbsp; Image Name: &nbsp; Linux-2.6.24<br> &nbsp; Image Type: &nbsp; PowerPC Linux Kernel Image (gzip compressed)<br>
+
+
+
+
+
+ &nbsp; Data Size: &nbsp; &nbsp;1802038 Bytes = &nbsp;1.7 MB<br> &nbsp; Load Address: 00000000<br> &nbsp; Entry Point: &nbsp;00000000<br> &nbsp; Verifying Checksum ... OK<br> &nbsp; Uncompressing Kernel Image ... OK<br><br>No further messages...</div><br>Does someone has an idea ?<br>
+
+
+
+
+
+<br>thanks,<br>Maxime</div><br clear="all"><br>-- <br>Maxime Louvel<br>0044 7964 5555 80<br>43 Allen road<br>Whitemore reans<br>WV60AW Wolverhampton<br>United Kingdom
+
+------=_Part_8812_28100716.1203422341839--
