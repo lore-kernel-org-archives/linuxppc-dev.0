@@ -1,20 +1,16 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-102-tuesday.nerim.net [62.4.16.102])
-	by ozlabs.org (Postfix) with ESMTP id 753C6DE03F
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 02:24:17 +1100 (EST)
-Date: Tue, 19 Feb 2008 16:24:15 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH] Convert pfc8563 i2c driver from old style to new style
-Message-ID: <20080219162415.601c7efe@hyperion.delvare>
-In-Reply-To: <9e4733910802190717g3a4b6ddejbd180a32d7dfae47@mail.gmail.com>
-References: <20080121200901.15517.30253.stgit@terra.home>
-	<20080219161020.61f7ec10@hyperion.delvare>
-	<9e4733910802190717g3a4b6ddejbd180a32d7dfae47@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Alessandro Zummo <alessandro.zummo@towertech.it>,
-	i2c@lm-sensors.org
+Return-Path: <mattias.bostroem@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 6BA2BDE006
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 02:18:03 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so2186898anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 07:18:01 -0800 (PST)
+Message-ID: <10d674cb0802190718r13af85a6w89557e4ca052432f@mail.gmail.com>
+Date: Tue, 19 Feb 2008 16:18:01 +0100
+From: "=?ISO-8859-1?Q?Mattias_Bostr=F6m?=" <mattias.bostroem@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Patch fixing rmmod -> kernel panic for Peak CAN driver for MPC5200B
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 19 Feb 2008 10:17:43 -0500, Jon Smirl wrote:
-> On 2/19/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > Hi Jon,
-> >
-> > On Mon, 21 Jan 2008 15:09:01 -0500, Jon Smirl wrote:
-> > > Convert pfc8563 i2c driver from old style to new style.
-> 
-> Let's just forget about this patch until the dynamic module loading
-> support goes into the base.
+Here is a patch that solves the problem with kernel panic when
+removing the peak-linux-driver-3.17 on a MPC5200B. If someone else
+apart from us have experienced that.
+The patches to peak-linux-driver-3.17 needed to run on MPC5200B are:
+peak-linux-driver-3.17-mpc5200.patch (DENX)
+peak-linux-driver-3.17-mpc5200-platform_driver.patch (Sylvain Munaut &
+MontaVista)
 
-Why? I don't see the rationale. New-style drivers are good even without
-dynamic module loading.
+Mattias
 
-> The Phytec PCM030 mpc5200 board uses this chip. They are staying out
-> of tree because they've integrated real-time support which is not in
-> mainline yet.
+diff --exclude CVS -uNr
+peak-linux-driver-3.17/driver/src/pcan_mpc5200.c
+peak-linux-driver-3.17.modified/driver/src/pcan_mpc5200.c
+--- peak-linux-driver-3.17/driver/src/pcan_mpc5200.c    2008-02-19
+16:06:54.000000000 +0100
++++ peak-linux-driver-3.17.modified/driver/src/pcan_mpc5200.c
+2008-02-19 16:06:46.000000000 +0100
+@@ -752,7 +752,16 @@
+ {
+        DPRINTK(KERN_DEBUG "%s: mgt_mscan_cleanup()\n", DEVICE_NAME);
 
+-       platform_driver_unregister(&mscan_driver);
++       /* In mgt_mscan_init platform_driver_register is called only once
++        * for module 1.
++        * We should only call platform_driver_unregister once and we do it
++        * for module 1 since it is the last module to cleanup.
++        */
++       if (!(dev->port.mscan.module_num-1)) {
++          DPRINTK(KERN_DEBUG "platform_driver_unregister(&mscan_driver)\n");
++          (void) platform_driver_unregister(&mscan_driver);
++       }
++
 
--- 
-Jean Delvare
+ #if 0  /* seems like it's been freed already */
+        mgt_mscan_free_irq(dev);
