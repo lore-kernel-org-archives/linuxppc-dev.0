@@ -1,23 +1,21 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4F3CCDDFAD
+Return-Path: <Nicolas.Genevrier@jdsu.com>
+Received: from jdsu.com (mio.acterna.de [141.169.254.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F1E2DDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Feb 2008 01:57:21 +1100 (EST)
-Message-ID: <47BAEE3F.2070209@freescale.com>
-Date: Tue, 19 Feb 2008 08:57:03 -0600
-From: Jon Loeliger <jdl@freescale.com>
+	Wed, 20 Feb 2008 02:00:33 +1100 (EST)
 MIME-Version: 1.0
-To: maxime louvel <m.louvel@gmail.com>
-Subject: Re: 2.6.24 for mpc8458amc
-References: <dda529d0802190359r526dc959y8117185e1834e9f4@mail.gmail.com>	
-	<47BAE6B3.7090000@freescale.com>
-	<dda529d0802190642n56ef7fbcx988ce8825bd315da@mail.gmail.com>
-In-Reply-To: <dda529d0802190642n56ef7fbcx988ce8825bd315da@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Ethernet breakdown on a Yosemite evaluation board
+Date: Tue, 19 Feb 2008 16:04:35 +0100
+Message-ID: <8C40729B7184DC459A15060FA1AF589602045601@ENIEXCH01.ds.jdsu.net>
+In-Reply-To: <20080219081717.6b10d60d@zod.rchland.ibm.com>
+References: <8C40729B7184DC459A15060FA1AF589602045556@ENIEXCH01.ds.jdsu.net>
+	<20080219081717.6b10d60d@zod.rchland.ibm.com>
+From: "Nicolas Genevrier" <Nicolas.Genevrier@jdsu.com>
+To: "Josh Boyer" <jwboyer@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,26 +27,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-maxime louvel wrote:
-> Thanks for your answer,
-> 
-> I am going to check this ppc / powerpc things.
-> I should use the architecture powerpc, don't I?
+Thanks a lot for the information,
+I apologize having not seen the posted patch.
+Everything seems to run well now.
 
-ARCH == ppc is scheduled for _removal_ from the
-entire Kernel source base is just about 4 months.
-Feel free to move the deck chairs around. :-)
+Nicolas
 
-> I'm not really sure I have understand what do you want to do with a 
-> BDI-2000.
+-----Message d'origine-----
+De=A0: Josh Boyer [mailto:jwboyer@gmail.com]=20
+Envoy=E9=A0: mardi 19 f=E9vrier 2008 15:17
+=C0=A0: Nicolas Genevrier
+Cc=A0: linuxppc-embedded@ozlabs.org
+Objet=A0: Re: Ethernet breakdown on a Yosemite evaluation board
 
-Perhaps, for starters, you read "Building Embedded Linux Systems"
-as found here:
-    http://www.oreilly.com/catalog/belinuxsys/
+On Tue, 19 Feb 2008 14:00:19 +0100
+"Nicolas Genevrier" <Nicolas.Genevrier@jdsu.com> wrote:
 
-> I access the cards through a serial line directly.
+> Hello all,
+>=20
+> I noticed an Ethernet blocking on a Yosemite evaluation board when we
+> are using both Ethernet devices (eth0 and eth1).
+> To reproduce the issue, I just telnet the board from a PC (PC1) =
+through
+> eth0 and then telnet another PC (PC2) from the first telnet session
+> through eth1. Then I display a lot of characters on the last telnet
+> session:
+> 	$ for i in `seq 1 100000`; do echo "$i
+> aaaaaaaaaaa..(x160)..aaa"; done
+>=20
+> After a while, transmission is blocked and leads to an rxde =
+interruption
+> from the MAL.
+>=20
+> Yosemite evaluation kit runs Linux 2.16.13 but I reproduced the issue
+> with our board running Linux-2.6.16 on a 440EP.
+> In Linux 2.6.16, the new ibm_emac driver tries to recover the error =
+but
+> Ethernet remains very very slow even one day after the end of the
+> transmission.
+>  I didn't notice any evolution related to this neither any discussion =
+on
+> the topic. Sorry if I missed them.
+>=20
+> I am working on the subject but an idea or related information would =
+be
+> helpful.
 
-Of course.  But when you get no information there,
-you might try a different interface.
+There was a patch from Wolfgang Ocker recently that fixed some interrupt
+settings for 440EP in arch/ppc.  You might want to look at that.  I
+still need to evaluate if the arch/powerpc port needs fixing.
 
-jdl
+http://patchwork.ozlabs.org/linuxppc/patch?person=3D1210&id=3D16789
+
+josh
