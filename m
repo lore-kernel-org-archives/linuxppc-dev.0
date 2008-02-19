@@ -1,22 +1,25 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from n25.bullet.mail.mud.yahoo.com (n25.bullet.mail.mud.yahoo.com
-	[68.142.200.132]) by ozlabs.org (Postfix) with SMTP id 8AAC9DDE1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 17:38:45 +1100 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Date: Tue, 19 Feb 2008 17:20:48 +1100
-References: <47B70A61.9030306@tiscali.nl>
-	<200802191333.53607.nickpiggin@yahoo.com.au>
-	<20080219055806.GA8404@1wt.eu>
-In-Reply-To: <20080219055806.GA8404@1wt.eu>
+Return-Path: <kyle@phobos.cabal.ca>
+Received: from phobos.cabal.ca (206-248-169-182.dsl.ncf.ca [206.248.169.182])
+	by ozlabs.org (Postfix) with ESMTP id 5FB6EDDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 18:03:26 +1100 (EST)
+Date: Tue, 19 Feb 2008 02:03:25 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [patch 4/4] RFC: PCI: consolidate several
+	pcibios_enable_resources() implementations
+Message-ID: <20080219070325.GB10115@phobos.i.cabal.ca>
+References: <20080219043952.845136014@ldl.fc.hp.com>
+	<20080219044307.878416912@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802191720.49210.nickpiggin@yahoo.com.au>
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Andi Kleen <andi@firstfloor.org>,
-	cbe-oss-dev@ozlabs.org, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080219044307.878416912@ldl.fc.hp.com>
+Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 19 February 2008 16:58, Willy Tarreau wrote:
-> On Tue, Feb 19, 2008 at 01:33:53PM +1100, Nick Piggin wrote:
-> > > Note in particular the last predictors; assuming branch ending
-> > > with goto, including call, causing early function return or
-> > > returning negative constant are not taken. Just these alone
-> > > are likely 95+% of the unlikelies in the kernel.
-> >
-> > Yes, gcc should be able to do pretty good heuristics, considering
-> > the quite good numbers that cold CPU predictors can attain. However
-> > for really performance critical code (or really "never" executed
-> > code), then I think it is OK to have the hints and not have to rely
-> > on gcc heuristics.
+On Mon, Feb 18, 2008 at 09:39:56PM -0700, Bjorn Helgaas wrote:
+>     parisc: checks DEVICE_COUNT_RESOURCE (12) instead of PCI_NUM_RESOURCES
+>	(11) resources at (1),
 >
-> in my experience, the real problem is that gcc does what *it* wants and not
-> what *you* want. I've been annoyed a lot by the way it coded some loops
-> that could really be blazingly fast, but which resulted in a ton of
-> branches due to its predictors. And using unlikely() there was a real mess,
-> because instead of just hinting the compiler with probabilities to write
-> some linear code for the *most* common case, it ended up with awful
-> branches everywhere with code sent far away and even duplicated for some
-> branches.
->
-> Sometimes, for performance critical paths, I would like gcc to be dumb and
-> follow *my* code and not its hard-coded probabilities. For instance, in a
-> tree traversal, you really know how you want to build your loop. And these
-> days, it seems like the single method of getting it your way is doing asm,
-> which obviously is not portable :-(
 
-Probably all true.
+Good catch.
 
+> has no IORESOURCE_{IO,MEM} check at (3),
 
-> Maybe one thing we would need would be the ability to assign probabilities
-> to each branch based on what we expect, so that gcc could build a better
-> tree keeping most frequently used code tight.
+What else can it be?
 
-I don't know if that would *directly* lead to gcc being smarter. I
-think perhaps they probably don't benchmark on code bases that have
-much explicit annotation (I'm sure they wouldn't seriously benchmark
-any parts of Linux as part of daily development). I think the key is
-to continue to use annotations _properly_, and eventually gcc should
-go in the right direction if enough code uses it.
+> 	has no PCI_ROM_RESOURCE check at (4), has no collision check at (5)
+> 	always turns on PCI_COMMAND_SERR | PCI_COMMAND_PARITY at (6),
+> 	writes cmd even if unchanged at (7)
+> 
 
-And if you have really good examples like it sounds like above, then
-I guess that should be reported to gcc?
+I'll have to check into 4 & 5, there might be a good reason for it. For
+instance on a four port HP ethernet card (pci-pci bridge + 4 tulips) all
+4 of the rom resources are mapped to the same address, which afaict, is
+allowed but breaks things in mysterious and subtle ways.
+
+That said, the parisc pci code is a rats nest...
+
+cheers, Kyle
