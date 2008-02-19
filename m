@@ -1,18 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 210E9DE08B
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 06:54:40 +1100 (EST)
-Date: Tue, 19 Feb 2008 13:51:37 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: davem@davemloft.net
-Subject: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero base
-Message-ID: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 6C053DDE9E
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 07:23:15 +1100 (EST)
+Subject: Re: [patch 4/4] RFC: PCI: consolidate several
+	pcibios_enable_resources() implementations
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+In-Reply-To: <200802190911.56901.bjorn.helgaas@hp.com>
+References: <20080219043952.845136014@ldl.fc.hp.com>
+	<20080219044307.878416912@ldl.fc.hp.com>
+	<1203402667.6740.94.camel@pasglop>
+	<200802190911.56901.bjorn.helgaas@hp.com>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 07:21:43 +1100
+Message-Id: <1203452503.18618.8.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If we add to an empty lmb region with a non-zero base we will not coalesce
-the number of regions down to one.  This causes problems on ppc32 for the
-memory region as its assumed to only have one region.
 
-We can fix this easily by causing the initial add to replace the dummy
-region.
+> > That is, whatever the arch code decides to use to decide whether
+> > resources are assigned by firmware or by the first pass assignment code
+> > or not and collide or not, once that phase is finished (which is the
+> > case when calling pcibios_enable_device(), having the resource in the
+> > resource-tree or not is, I believe, the proper way to test whether it's
+> > a useable resource.
+> 
+> So should x86 adopt that collision check?  I don't hear anything about
+> actual architecture differences that are behind this implementation
+> difference.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+Well, on powerpc we do allow under some circumstances a 0 start value
+in BARs, which is why I wanted to use a different check.
 
-Fix a bug the initial patch introduced if we have a region that gets added
-at the beginning of the list we wouldn't actually add it.
-
-Dave can you replace the patch in you tree with this one.
-
- arch/powerpc/mm/lmb.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
-index 4ce23bc..4bf8f19 100644
---- a/arch/powerpc/mm/lmb.c
-+++ b/arch/powerpc/mm/lmb.c
-@@ -141,6 +141,12 @@ static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
- 	unsigned long coalesced = 0;
- 	long adjacent, i;
-
-+	if ((rgn->cnt == 1) && (rgn->region[0].size == 0)) {
-+		rgn->region[0].base = base;
-+		rgn->region[0].size = size;
-+		return 0;
-+	}
-+
- 	/* First try and coalesce this LMB with another. */
- 	for (i=0; i < rgn->cnt; i++) {
- 		unsigned long rgnbase = rgn->region[i].base;
-@@ -185,6 +191,12 @@ static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
- 			break;
- 		}
- 	}
-+
-+	if (base < rgn->region[0].base) {
-+		rgn->region[0].base = base;
-+		rgn->region[0].size = size;
-+	}
-+
- 	rgn->cnt++;
-
- 	return 0;
--- 
-1.5.3.8
+Ben.
