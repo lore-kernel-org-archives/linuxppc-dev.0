@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.245])
-	by ozlabs.org (Postfix) with ESMTP id 1469ADDEF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 02:12:04 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id x43so1072659hsb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 07:12:02 -0800 (PST)
-Message-ID: <fa686aa40802190712n5eef80acq474d5fc8a7b19588@mail.gmail.com>
-Date: Tue, 19 Feb 2008 08:12:02 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: EricDuj <eric.dujardin@sagem.com>
-Subject: Re: [PATCH] fix 2.6.25-rc2 build with CONFIG_SPI_MPC52xx_PSC
-In-Reply-To: <15560565.post@talk.nabble.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id AC090DDF67
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 02:17:46 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3437385wag.13
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 07:17:45 -0800 (PST)
+Message-ID: <9e4733910802190717g3a4b6ddejbd180a32d7dfae47@mail.gmail.com>
+Date: Tue, 19 Feb 2008 10:17:43 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH] Convert pfc8563 i2c driver from old style to new style
+In-Reply-To: <20080219161020.61f7ec10@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <15560565.post@talk.nabble.com>
-Cc: linuxppc-dev@ozlabs.org
+References: <20080121200901.15517.30253.stgit@terra.home>
+	<20080219161020.61f7ec10@hyperion.delvare>
+Cc: linuxppc-dev@ozlabs.org, Alessandro Zummo <alessandro.zummo@towertech.it>,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Feb 19, 2008 7:50 AM, EricDuj <eric.dujardin@sagem.com> wrote:
+On 2/19/08, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi Jon,
 >
-> Hello again,
->
-> Here is a second patch as the link phase fails in the same configuration.
-> The error is the following:
->
-<snip>
->
-> Find the patch below.
-> Best,
-> Eric
+> On Mon, 21 Jan 2008 15:09:01 -0500, Jon Smirl wrote:
+> > Convert pfc8563 i2c driver from old style to new style.
 
+Let's just forget about this patch until the dynamic module loading
+support goes into the base.
 
-Thanks.  This looks right.  In order to pick up this patch, I need you
-to reply with your "Signed-off-by:" line.
-
-Cheers,
-g.
-
->
-> ===========================================================================
-> --- arch/powerpc/platforms/52xx/mpc52xx_common.c.orig   2008-02-19
-> 14:14:52.000000000 +0100
-> +++ arch/powerpc/platforms/52xx/mpc52xx_common.c        2008-02-19
-> 14:12:56.000000000 +0100
-> @@ -199,6 +199,7 @@
->
->         return 0;
->  }
-> +EXPORT_SYMBOL(mpc52xx_set_psc_clkdiv);
->
->  /**
->   * mpc52xx_restart: ppc_md->restart hook for mpc5200 using the watchdog
-> timer
-> ========================================================================
->
->
-> --
-> View this message in context: http://www.nabble.com/-PATCH--fix-2.6.25-rc2-compilation-with-CONFIG_SPI_MPC52xx_PSC-tp15560559p15560565.html
-> Sent from the linuxppc-dev mailing list archive at Nabble.com.
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
+The Phytec PCM030 mpc5200 board uses this chip. They are staying out
+of tree because they've integrated real-time support which is not in
+mainline yet.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Jon Smirl
+jonsmirl@gmail.com
