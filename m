@@ -1,22 +1,40 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id DFC82DDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 23:23:19 +1100 (EST)
-Message-ID: <47BAC9EA.1070305@anagramm.de>
-Date: Tue, 19 Feb 2008 13:22:02 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1F412DDE3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 00:19:28 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m1JDJDUP008909
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 00:19:13 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1JDJS8m3956836
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 00:19:28 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1JDJRPL004069
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 00:19:28 +1100
+Message-ID: <47BAD75C.9030406@linux.vnet.ibm.com>
+Date: Tue, 19 Feb 2008 18:49:24 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
-	endianness
-References: <20080205154432.GA8749@localhost.localdomain>	<20080214224942.a0cb6218.akpm@linux-foundation.org>	<20080215164542.GB16810@localhost.localdomain>	<Pine.LNX.4.64.0802171030330.6848@anakin>	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	<19805.1203355811@turing-police.cc.vt.edu>	<47BA162C.5000807@anagramm.de>	<1203381353.6740.59.camel@pasglop>	<47BABD3A.7010102@anagramm.de>
-	<20080219040530.7b1d115d.akpm@linux-foundation.org>
-In-Reply-To: <20080219040530.7b1d115d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>, valdis.kletnieks@vt.edu
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1
+	softlockup while bootup on powerpc
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	<47B67E5E.4010001@linux.vnet.ibm.com>
+	<20080217192913.GO23197@kernel.dk>
+	<20080219170432.9c04376f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080219083633.GN23197@kernel.dk>
+In-Reply-To: <20080219083633.GN23197@kernel.dk>
+Content-Type: text/plain; charset=us-ascii
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,56 +44,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton schrieb:
-> On Tue, 19 Feb 2008 12:27:54 +0100 Clemens Koller <clemens.koller@anagramm.de> wrote:
->> Benjamin Herrenschmidt schrieb:
->>> On Tue, 2008-02-19 at 00:35 +0100, Clemens Koller wrote:
->>>> Valdis.Kletnieks@vt.edu schrieb:
->>>>> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
->>>>>> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
->>>>>> Both resolve endianess at driver level. Actually, both handle it by setting special
->>>>>> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
->>>>>> I understand that this patch is for chips which cannot reorder bytes by themselves.
->>>>> Does anybody know of such a chip that's actually available in the wild?  Or are
->>>>> we writing drivers for speculative possible chips?
->>>>>
->>>> I had troubles with the Silicon Motion SM501/SM502 endianess on PowerPC PCI vs. LocalBus.
->>>> The chip also has a register to swap endianess, but that seems to only affect some
->>>> LocalBus modes.
->>>> The current fb and X drivers are working, but when it comes to font
->>>> aliasing and hw-acceleration, the problems start to rise again...
->>> Most "sane" gfx chips nowadays provide configurable surfaces that allow
->>> to perform the swap when writing/reading from regions of the
->>> framebuffer, with the ability to set a different swapper setting (based
->>> on bit depth) per region.
->> Most! But not the SM50x. I still hope I would be wrong here. :-(
+Jens Axboe wrote:
+> On Tue, Feb 19 2008, KAMEZAWA Hiroyuki wrote:
+>> On Sun, 17 Feb 2008 20:29:13 +0100
+>> Jens Axboe <jens.axboe@oracle.com> wrote:
 >>
->>> Then there is also the risk that your PCI<->Localbus has been wired
->>> improperly :-)
->> That's not an issue in my case. The SM50x can be connected to
->> either an PCI or some Local/CPU-whateverbus IF.
->> I.e. on the MPC85xx PowerPC, PCI and LocalBus are separate bussses.
->> If the sm501 is attached to the MPC85xx' PCI like any other video card,
->> the PCI config-space is can be accessed as usual, whereas the framebuffer
->> memory area is byte-swapped compared to other common video cards.
->>
->> So, to get back on topic:
->> I would welcome endianess swapping in SW. Some architectures (PowerPC)
->> should also be able to do swapped-endian mmapping. I just haven't
->> had time for a closer look but it looks also interesting way to do it
->> that way.
+>>> It's odd stuff. Could you perhaps try and add some printks to
+>>> block/cfq-iosched.c:call_for_each_cic(), like dumping the 'nr' return
+>>> from radix_tree_gang_lookup() and the pointer value of cics[i] in the
+>>> for() loop after the lookup?
+>>>
+>> I met the same issue on ia64/NUMA box.
+>> seems cisc[]->key is NULL and index for radix_tree_gang_lookup() was
+>> always '1'.
 > 
-> Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
-> Could whoever did that please thwap himself?
+> Why does it keep repeating then? If ->key is NULL, the next lookup index
+> should be 1UL.
+> 
+> But I think the radix 'scan over entire tree' is a bit fragile. This
+> patch adds a parallel hlist for ease of properly browsing the members,
+> does that work for you? It compiles, but I haven't booted it here yet...
+> 
+>> Attached patch works well for me, but I don't know much about cfq.
+>> please confirm. 
+> 
+> It doesn't make a lot of sense, I'm afraid.
+> 
+>  block/blk-ioc.c           |   35 +++++++++++++++--------------------
+>  block/cfq-iosched.c       |   37 +++++++++++--------------------------
+>  include/linux/iocontext.h |    2 ++
+>  3 files changed, 28 insertions(+), 46 deletions(-)
+> 
+> diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+> index 80245dc..73c7002 100644
+> --- a/block/blk-ioc.c
 
-Propably my bad, being subscribed to several CCed lists...
+<snip>
 
-> Anyway, my head is now officially spinning.  Did anyone actually have a
-> reason why we shouldn't proceed with Anton's patch?
+Hi Jens,
 
-Since it seem that there are some odd chips out in the wild, I guess
-Valdis (also readded to CC:) has no more objections to give it a try. :-)
+Thanks for the patch. The patch works fine, machine boots up without the kernel panic.
 
-Regards,
 
-Clemens
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
