@@ -1,21 +1,18 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.156])
-	by ozlabs.org (Postfix) with ESMTP id EF43BDDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 11:50:58 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so1307324fgg.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Feb 2008 16:50:55 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH] next-20080218 build failure at pmac_ide_macio_attach ()
-Date: Tue, 19 Feb 2008 01:04:46 +0100
-References: <20080218140159.GA31310@linux.vnet.ibm.com>
-In-Reply-To: <20080218140159.GA31310@linux.vnet.ibm.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C0659DDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 12:42:47 +1100 (EST)
+Message-ID: <47BA3416.5080405@pikatech.com>
+Date: Mon, 18 Feb 2008 20:42:46 -0500
+From: Sean MacLennan <smaclennan@pikatech.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200802190104.47058.bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, sfr@canb.auug.org.au,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
+References: <4784FED1.2040206@pikatech.com><47A14E23.50807@pikatech.com><20080214094516.1b958ae4@hyperion.delvare><47B66260.8010902@pikatech.com>
+	<20080216103123.50a0128b@hyperion.delvare>
+In-Reply-To: <20080216103123.50a0128b@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,202 +22,245 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 18 February 2008, Kamalesh Babulal wrote:
-> Hi,
->=20
-> The next-20080218 kernel build fails on the powerpc(s)
->=20
-> drivers/ide/ppc/pmac.c: In function =E2=80=98pmac_ide_macio_attach=E2=80=
-=99:
-> drivers/ide/ppc/pmac.c:1094: error: conversion to non-scalar type request=
-ed
-> drivers/ide/ppc/pmac.c: In function =E2=80=98pmac_ide_pci_attach=E2=80=99:
-> drivers/ide/ppc/pmac.c:1232: error: conversion to non-scalar type request=
-ed
-> make[3]: *** [drivers/ide/ppc/pmac.o] Error 1
-> make[2]: *** [drivers/ide/ppc] Error 2
-> make[1]: *** [drivers/ide] Error 2
-> make: *** [drivers] Error 2
->=20
-> I Have tested this patch for build failure only.
->=20
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> ---
-> --- linux-2.6.25-rc1/drivers/ide/ppc/pmac.c	2008-02-18 18:41:48.000000000=
- +0530
-> +++ linux-2.6.25-rc1/drivers/ide/ppc/~pmac.c	2008-02-18 19:20:37.00000000=
-0 +0530
-> @@ -1091,7 +1091,7 @@ pmac_ide_macio_attach(struct macio_dev *
->  	int irq, rc;
->  	hw_regs_t hw;
-> =20
-> -	pmif =3D (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
-> +	pmif =3D (struct pmac_ide_hwif*)kzalloc(sizeof(*pmif), GFP_KERNEL);
->  	if (pmif =3D=3D NULL)
->  		return -ENOMEM;
-> =20
-> @@ -1229,7 +1229,7 @@ pmac_ide_pci_attach(struct pci_dev *pdev
->  		return -ENODEV;
->  	}
-> =20
-> -	pmif =3D (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
-> +	pmif =3D (struct pmac_ide_hwif*)kzalloc(sizeof(*pmif), GFP_KERNEL);
->  	if (pmif =3D=3D NULL)
->  		return -ENOMEM;
-> =20
+An updated version of the patch. This one should answer all of Jean's 
+concerns.
 
-Thanks, I integrated it with the "guilty" patch to preserve bisectability.
+Cheers,
+   Sean
 
-=46rom: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide-pmac: dynamically allocate struct pmac_ide_hwif instan=
-ces (take 2)
-
-* Dynamically allocate struct pmac_ide_hwif instances in pmac_ide_macio_att=
-ach()
-  and pmac_ide_pci_attach(), then remove no longer needed pmac_ide[].
-
-v2:
-* Build fix from Kamalesh Babulal.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-=2D--
- drivers/ide/ppc/pmac.c |   49 +++++++++++++++++++++++++++++++++-----------=
-=2D----
- 1 file changed, 33 insertions(+), 16 deletions(-)
-
-Index: b/drivers/ide/ppc/pmac.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=2D-- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -79,8 +79,6 @@ typedef struct pmac_ide_hwif {
- =09
- } pmac_ide_hwif_t;
-=20
-=2Dstatic pmac_ide_hwif_t pmac_ide[MAX_HWIFS];
-=2D
- enum {
- 	controller_ohare,	/* OHare based */
- 	controller_heathrow,	/* Heathrow/Paddington */
-@@ -1094,29 +1092,34 @@ pmac_ide_macio_attach(struct macio_dev *
- 	int i, rc;
- 	hw_regs_t hw;
-=20
-+	pmif =3D kzalloc(sizeof(*pmif), GFP_KERNEL);
-+	if (pmif =3D=3D NULL)
-+		return -ENOMEM;
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+---
+--- for-2.6.25/drivers/i2c/busses/orig-i2c-ibm_iic.c	2008-02-18 16:36:30.000000000 -0500
++++ for-2.6.25/drivers/i2c/busses/i2c-ibm_iic.c	2008-02-18 17:39:53.000000000 -0500
+@@ -6,6 +6,9 @@
+  * Copyright (c) 2003, 2004 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
++ * Copyright (c) 2008 PIKA Technologies
++ * Sean MacLennan <smaclennan@pikatech.com>
++ *
+  * Based on original work by
+  * 	Ian DaSilva  <idasilva@mvista.com>
+  *      Armin Kuster <akuster@mvista.com>
+@@ -39,12 +42,17 @@
+ #include <asm/io.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-id.h>
 +
- 	i =3D 0;
-=2D	while (i < MAX_HWIFS && (ide_hwifs[i].io_ports[IDE_DATA_OFFSET] !=3D 0
-=2D	    || pmac_ide[i].node !=3D NULL))
-+	while (i < MAX_HWIFS && (ide_hwifs[i].io_ports[IDE_DATA_OFFSET] !=3D 0))
- 		++i;
- 	if (i >=3D MAX_HWIFS) {
- 		printk(KERN_ERR "ide-pmac: MacIO interface attach with no slot\n");
- 		printk(KERN_ERR "          %s\n", mdev->ofdev.node->full_name);
-=2D		return -ENODEV;
-+		rc =3D -ENODEV;
-+		goto out_free_pmif;
- 	}
-=20
-=2D	pmif =3D &pmac_ide[i];
- 	hwif =3D &ide_hwifs[i];
-=20
- 	if (macio_resource_count(mdev) =3D=3D 0) {
- 		printk(KERN_WARNING "ide%d: no address for %s\n",
- 		       i, mdev->ofdev.node->full_name);
-=2D		return -ENXIO;
-+		rc =3D -ENXIO;
-+		goto out_free_pmif;
- 	}
-=20
- 	/* Request memory resource for IO ports */
- 	if (macio_request_resource(mdev, 0, "ide-pmac (ports)")) {
- 		printk(KERN_ERR "ide%d: can't request mmio resource !\n", i);
-=2D		return -EBUSY;
-+		rc =3D -EBUSY;
-+		goto out_free_pmif;
- 	}
- 		=09
- 	/* XXX This is bogus. Should be fixed in the registry by checking
-@@ -1166,11 +1169,15 @@ pmac_ide_macio_attach(struct macio_dev *
- 			iounmap(pmif->dma_regs);
- 			macio_release_resource(mdev, 1);
- 		}
-=2D		memset(pmif, 0, sizeof(*pmif));
- 		macio_release_resource(mdev, 0);
-+		kfree(pmif);
- 	}
-=20
- 	return rc;
-+
-+out_free_pmif:
-+	kfree(pmif);
-+	return rc;
++#ifdef CONFIG_IBM_OCP
+ #include <asm/ocp.h>
+ #include <asm/ibm4xx.h>
++#else
++#include <linux/of_platform.h>
++#endif
+ 
+ #include "i2c-ibm_iic.h"
+ 
+-#define DRIVER_VERSION "2.1"
++#define DRIVER_VERSION "2.2"
+ 
+ MODULE_DESCRIPTION("IBM IIC driver v" DRIVER_VERSION);
+ MODULE_LICENSE("GPL");
+@@ -657,6 +665,7 @@
+ 	return (u8)((opb + 9) / 10 - 1);
  }
-=20
- static int
-@@ -1223,30 +1230,36 @@ pmac_ide_pci_attach(struct pci_dev *pdev
- 		printk(KERN_ERR "ide-pmac: cannot find MacIO node for Kauai ATA interfac=
-e\n");
- 		return -ENODEV;
- 	}
-+
-+	pmif =3D kzalloc(sizeof(*pmif), GFP_KERNEL);
-+	if (pmif =3D=3D NULL)
-+		return -ENOMEM;
-+
- 	i =3D 0;
-=2D	while (i < MAX_HWIFS && (ide_hwifs[i].io_ports[IDE_DATA_OFFSET] !=3D 0
-=2D	    || pmac_ide[i].node !=3D NULL))
-+	while (i < MAX_HWIFS && (ide_hwifs[i].io_ports[IDE_DATA_OFFSET] !=3D 0))
- 		++i;
- 	if (i >=3D MAX_HWIFS) {
- 		printk(KERN_ERR "ide-pmac: PCI interface attach with no slot\n");
- 		printk(KERN_ERR "          %s\n", np->full_name);
-=2D		return -ENODEV;
-+		rc =3D -ENODEV;
-+		goto out_free_pmif;
- 	}
-=20
-=2D	pmif =3D &pmac_ide[i];
- 	hwif =3D &ide_hwifs[i];
-=20
- 	if (pci_enable_device(pdev)) {
- 		printk(KERN_WARNING "ide%i: Can't enable PCI device for %s\n",
- 			i, np->full_name);
-=2D		return -ENXIO;
-+		rc =3D -ENXIO;
-+		goto out_free_pmif;
- 	}
- 	pci_set_master(pdev);
- 		=09
- 	if (pci_request_regions(pdev, "Kauai ATA")) {
- 		printk(KERN_ERR "ide%d: Cannot obtain PCI resources for %s\n",
- 			i, np->full_name);
-=2D		return -ENXIO;
-+		rc =3D -ENXIO;
-+		goto out_free_pmif;
- 	}
-=20
- 	hwif->dev =3D &pdev->dev;
-@@ -1276,11 +1289,15 @@ pmac_ide_pci_attach(struct pci_dev *pdev
- 		/* The inteface is released to the common IDE layer */
- 		pci_set_drvdata(pdev, NULL);
- 		iounmap(base);
-=2D		memset(pmif, 0, sizeof(*pmif));
- 		pci_release_regions(pdev);
-+		kfree(pmif);
- 	}
-=20
- 	return rc;
-+
-+out_free_pmif:
-+	kfree(pmif);
-+	return rc;
+ 
++#ifdef CONFIG_IBM_OCP
+ /*
+  * Register single IIC interface
+  */
+@@ -828,5 +837,182 @@
+ 	ocp_unregister_driver(&ibm_iic_driver);
  }
-=20
- static int
+ 
++#else  /* !CONFIG_IBM_OCP */
++
++static int __devinit iic_request_irq(struct of_device *ofdev,
++				     struct ibm_iic_private *dev)
++{
++	struct device_node *np = ofdev->node;
++	int irq;
++
++	if (iic_force_poll)
++		return NO_IRQ;
++
++	irq = irq_of_parse_and_map(np, 0);
++	if (irq == NO_IRQ) {
++		dev_err(&ofdev->dev, "irq_of_parse_and_map failed\n");
++		return NO_IRQ;
++	}
++
++	/* Disable interrupts until we finish initialization, assumes
++	 *  level-sensitive IRQ setup...
++	 */
++	iic_interrupt_mode(dev, 0);
++	if (request_irq(irq, iic_handler, 0, "IBM IIC", dev)) {
++		dev_err(&ofdev->dev, "request_irq %d failed\n", irq);
++		/* Fallback to the polling mode */
++		return NO_IRQ;
++	}
++
++	return irq;
++}
++
++/*
++ * Register single IIC interface
++ */
++static int __devinit iic_probe(struct of_device *ofdev,
++			       const struct of_device_id *match)
++{
++	struct device_node *np = ofdev->node;
++	struct ibm_iic_private *dev;
++	struct i2c_adapter *adap;
++	const u32 *indexp, *freq;
++	int ret;
++
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev) {
++		dev_err(&ofdev->dev, "failed to allocate device data\n");
++		return -ENOMEM;
++	}
++
++	dev_set_drvdata(&ofdev->dev, dev);
++
++	indexp = of_get_property(np, "index", NULL);
++	if (!indexp) {
++		dev_err(&ofdev->dev, "no index specified.\n");
++		ret = -EINVAL;
++		goto error_cleanup;
++	}
++	dev->idx = *indexp;
++
++	dev->vaddr = of_iomap(np, 0);
++	if (dev->vaddr == NULL) {
++		dev_err(&ofdev->dev, "failed to iomap device\n");
++		ret = -ENXIO;
++		goto error_cleanup;
++	}
++
++	init_waitqueue_head(&dev->wq);
++
++	dev->irq = iic_request_irq(ofdev, dev);
++	if (dev->irq == NO_IRQ)
++		dev_warn(&ofdev->dev, "using polling mode\n");
++
++	/* Board specific settings */
++	if (iic_force_fast || of_get_property(np, "fast-mode", NULL))
++		dev->fast_mode = 1;
++
++	freq = of_get_property(np, "clock-frequency", NULL);
++	if (freq == NULL) {
++		freq = of_get_property(np->parent, "clock-frequency", NULL);
++		if (freq == NULL) {
++			dev_err(&ofdev->dev, "Unable to get bus frequency\n");
++			ret = -EBUSY;
++			goto error_cleanup;
++		}
++	}
++
++	dev->clckdiv = iic_clckdiv(*freq);
++	dev_dbg(&ofdev->dev, "clckdiv = %d\n", dev->clckdiv);
++
++	/* Initialize IIC interface */
++	iic_dev_init(dev);
++
++	/* Register it with i2c layer */
++	adap = &dev->adap;
++	adap->dev.parent = &ofdev->dev;
++	strlcpy(adap->name, "IBM IIC", sizeof(adap->name));
++	i2c_set_adapdata(adap, dev);
++	adap->id = I2C_HW_OCP;
++	adap->class = I2C_CLASS_HWMON;
++	adap->algo = &iic_algo;
++	adap->timeout = 1;
++	adap->nr = dev->idx;
++
++	ret = i2c_add_numbered_adapter(adap);
++	if (ret  < 0) {
++		dev_err(&ofdev->dev, "failed to register i2c adapter\n");
++		goto error_cleanup;
++	}
++
++	dev_dbg(&ofdev->dev, "using %s mode\n",
++		dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
++
++	return 0;
++
++error_cleanup:
++	if (dev->irq != NO_IRQ) {
++		iic_interrupt_mode(dev, 0);
++		free_irq(dev->irq, dev);
++	}
++
++	if (dev->vaddr)
++		iounmap(dev->vaddr);
++
++	dev_set_drvdata(&ofdev->dev, NULL);
++	kfree(dev);
++	return ret;
++}
++
++/*
++ * Cleanup initialized IIC interface
++ */
++static int __devexit iic_remove(struct of_device *ofdev)
++{
++	struct ibm_iic_private *dev = dev_get_drvdata(&ofdev->dev);
++
++	dev_set_drvdata(&ofdev->dev, NULL);
++
++	i2c_del_adapter(&dev->adap);
++
++	if (dev->irq != NO_IRQ) {
++		iic_interrupt_mode(dev, 0);
++		free_irq(dev->irq, dev);
++	}
++
++	iounmap(dev->vaddr);
++	kfree(dev);
++
++	return 0;
++}
++
++static const struct of_device_id ibm_iic_match[] = {
++	{ .compatible = "ibm,iic-405ex", },
++	{ .compatible = "ibm,iic-405gp", },
++	{ .compatible = "ibm,iic-440gp", },
++	{ .compatible = "ibm,iic-440gpx", },
++	{ .compatible = "ibm,iic-440grx", },
++	{}
++};
++
++static struct of_platform_driver ibm_iic_driver = {
++	.name	= "ibm-iic",
++	.match_table = ibm_iic_match,
++	.probe	= iic_probe,
++	.remove	= __devexit_p(iic_remove),
++};
++
++static int __init iic_init(void)
++{
++	return of_register_platform_driver(&ibm_iic_driver);
++}
++
++static void __exit iic_exit(void)
++{
++	of_unregister_platform_driver(&ibm_iic_driver);
++}
++#endif /* CONFIG_IBM_OCP */
++
+ module_init(iic_init);
+ module_exit(iic_exit);
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index b61f56b..44c0984 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -244,7 +244,6 @@ config I2C_PIIX4
+ 
+ config I2C_IBM_IIC
+ 	tristate "IBM PPC 4xx on-chip I2C interface"
+-	depends on IBM_OCP
+ 	help
+ 	  Say Y here if you want to use IIC peripheral found on 
+ 	  embedded IBM PPC 4xx based systems. 
