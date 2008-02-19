@@ -1,29 +1,18 @@
-Return-Path: <bjorn.helgaas@hp.com>
-Received: from g1t0028.austin.hp.com (g1t0028.austin.hp.com [15.216.28.35])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 3EF82DDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 05:11:30 +1100 (EST)
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: benh@kernel.crashing.org
-Subject: Re: [patch 0/4] RFC: PCI: consolidate several
-	pcibios_enable_resources() implementations
-Date: Tue, 19 Feb 2008 11:02:12 -0700
-References: <20080219043952.845136014@ldl.fc.hp.com>
-	<20080219080947.GB20893@flint.arm.linux.org.uk>
-	<1203415712.6740.102.camel@pasglop>
-In-Reply-To: <1203415712.6740.102.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 210E9DE08B
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 06:54:40 +1100 (EST)
+Date: Tue, 19 Feb 2008 13:51:37 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: davem@davemloft.net
+Subject: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero base
+Message-ID: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200802191102.13777.bjorn.helgaas@hp.com>
-Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-	Russell King <rmk-pci@arm.linux.org.uk>,
-	linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,46 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 19 February 2008 03:08:32 am Benjamin Herrenschmidt wrote:
-> On Tue, 2008-02-19 at 08:09 +0000, Russell King wrote:
-> > On Mon, Feb 18, 2008 at 09:39:52PM -0700, Bjorn Helgaas wrote:
-> > > 
-> > > ARM and PA-RISC, in particular, have interesting differences:
-> > >     - ARM always enables bridge devices, which no other arch does
-> > 
-> > ARM does this because there is nothing else which would do that - which
-> > means devices behind bridges would be completely inaccessible.
-> 
-> That's normally done by pci_enable_bridges() called by
-> pci_assign_unassigned_resources().
+If we add to an empty lmb region with a non-zero base we will not coalesce
+the number of regions down to one.  This causes problems on ppc32 for the
+memory region as its assumed to only have one region.
 
-alpha, mips, mn10300, powerpc, and x86 use pci_enable_bridges() via
-pci_assign_unassigned_resources().  parisc uses pci_enable_bridges()
-directly from lba_driver_probe().  I guess the other arches (except
-arm) rely on firmware to enable bridge.
+We can fix this easily by causing the initial add to replace the dummy
+region.
 
-I think pci_assign_unassigned_resources() is a bit of an anachronism --
-it's a boot-time thing that does it for all root buses at once.  A
-more hot-plug oriented scheme would do it like parisc, where every
-time we discover a root bridge, we do any necessary resource assignment
-and bridge enablement underneath it.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-For ARM, maybe that could happen in pcibios_init_hw() or something
-similar.
+Fix a bug the initial patch introduced if we have a region that gets added
+at the beginning of the list we wouldn't actually add it.
 
-> > >     - PA-RISC always turns on SERR and PARITY, which no other arch does
-> > 
-> > ARM also does this, unless pdev_bad_for_parity(dev) is true.  See
-> > ARMs pcibios_fixup_bus().
-> 
-> While that sounds like a good idea to generalize, I think it should
-> remain arch stuff tho, not move to generic code.
-> 
-> On some platforms, weirdo firmwares handle error handling and will be
-> unhappy if the kernel mucks around (such as pSeries).
+Dave can you replace the patch in you tree with this one.
 
-I agree the SERR and PARITY stuff probably needs to remain arch code.
-But it would be nice to at least have this and the bridge enable done in
-similar places across arches.
+ arch/powerpc/mm/lmb.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-Bjorn
+diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
+index 4ce23bc..4bf8f19 100644
+--- a/arch/powerpc/mm/lmb.c
++++ b/arch/powerpc/mm/lmb.c
+@@ -141,6 +141,12 @@ static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
+ 	unsigned long coalesced = 0;
+ 	long adjacent, i;
+
++	if ((rgn->cnt == 1) && (rgn->region[0].size == 0)) {
++		rgn->region[0].base = base;
++		rgn->region[0].size = size;
++		return 0;
++	}
++
+ 	/* First try and coalesce this LMB with another. */
+ 	for (i=0; i < rgn->cnt; i++) {
+ 		unsigned long rgnbase = rgn->region[i].base;
+@@ -185,6 +191,12 @@ static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
+ 			break;
+ 		}
+ 	}
++
++	if (base < rgn->region[0].base) {
++		rgn->region[0].base = base;
++		rgn->region[0].size = size;
++	}
++
+ 	rgn->cnt++;
+
+ 	return 0;
+-- 
+1.5.3.8
