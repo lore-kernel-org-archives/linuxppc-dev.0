@@ -1,20 +1,22 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id BA8A8DDE45
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 09:23:44 +1100 (EST)
-Message-ID: <47BB56EF.7050708@pikatech.com>
-Date: Tue, 19 Feb 2008 17:23:43 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from n10.bullet.mail.mud.yahoo.com (n10.bullet.mail.mud.yahoo.com
+	[209.191.125.208]) by ozlabs.org (Postfix) with SMTP id 76306DDF6D
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 09:25:23 +1100 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Date: Wed, 20 Feb 2008 09:25:12 +1100
+References: <47B70A61.9030306@tiscali.nl>
+	<200802192046.46955.nickpiggin@yahoo.com.au>
+	<20080219095702.GA6940@one.firstfloor.org>
+In-Reply-To: <20080219095702.GA6940@one.firstfloor.org>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
-References: <4784FED1.2040206@pikatech.com>
-	<47BA3416.5080405@pikatech.com><20080219092321.1fed233d@hyperion.delvare>
-	<200802190959.41253.sr@denx.de>
-In-Reply-To: <200802190959.41253.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802200925.13366.nickpiggin@yahoo.com.au>
+Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
+	Willy Tarreau <w@1wt.eu>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,252 +26,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> How about this:
+On Tuesday 19 February 2008 20:57, Andi Kleen wrote:
+> On Tue, Feb 19, 2008 at 08:46:46PM +1100, Nick Piggin wrote:
+
+> > I think it was just a simple context switch benchmark, but not lmbench
+> > (which I found to be a bit too variable). But it was a long time ago...
 >
-> -	depends on IBM_OCP
-> +	depends on 4xx
->   
-That's what I did, great minds think alike ;) But the email does not 
-seem to have come through, so I will repost the patch. If you already 
-got an email with the above patch, you can ignore this one ;)
+> Do you still have it?
+>
+> I thought about writing my own but ended up being too lazy for that @)
 
-Cheers,
-   Sean
+Had a quick look but couldn't find it. It was just two threads running
+and switching to each other with a couple of mutexes or yield. If I
+find it, then I'll send it over.
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 
---- for-2.6.25/drivers/i2c/busses/orig-i2c-ibm_iic.c	2008-02-18 16:36:30.000000000 -0500
-+++ for-2.6.25/drivers/i2c/busses/i2c-ibm_iic.c	2008-02-19 16:46:35.000000000 -0500
-@@ -6,6 +6,9 @@
-  * Copyright (c) 2003, 2004 Zultys Technologies.
-  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-  *
-+ * Copyright (c) 2008 PIKA Technologies
-+ * Sean MacLennan <smaclennan@pikatech.com>
-+ *
-  * Based on original work by
-  * 	Ian DaSilva  <idasilva@mvista.com>
-  *      Armin Kuster <akuster@mvista.com>
-@@ -39,12 +42,17 @@
- #include <asm/io.h>
- #include <linux/i2c.h>
- #include <linux/i2c-id.h>
-+
-+#ifdef CONFIG_IBM_OCP
- #include <asm/ocp.h>
- #include <asm/ibm4xx.h>
-+#else
-+#include <linux/of_platform.h>
-+#endif
- 
- #include "i2c-ibm_iic.h"
- 
--#define DRIVER_VERSION "2.1"
-+#define DRIVER_VERSION "2.2"
- 
- MODULE_DESCRIPTION("IBM IIC driver v" DRIVER_VERSION);
- MODULE_LICENSE("GPL");
-@@ -657,6 +665,7 @@
- 	return (u8)((opb + 9) / 10 - 1);
- }
- 
-+#ifdef CONFIG_IBM_OCP
- /*
-  * Register single IIC interface
-  */
-@@ -828,5 +837,181 @@
- 	ocp_unregister_driver(&ibm_iic_driver);
- }
- 
-+#else  /* !CONFIG_IBM_OCP */
-+
-+static int __devinit iic_request_irq(struct of_device *ofdev,
-+				     struct ibm_iic_private *dev)
-+{
-+	struct device_node *np = ofdev->node;
-+	int irq;
-+
-+	if (iic_force_poll)
-+		return NO_IRQ;
-+
-+	irq = irq_of_parse_and_map(np, 0);
-+	if (irq == NO_IRQ) {
-+		dev_err(&ofdev->dev, "irq_of_parse_and_map failed\n");
-+		return NO_IRQ;
-+	}
-+
-+	/* Disable interrupts until we finish initialization, assumes
-+	 *  level-sensitive IRQ setup...
-+	 */
-+	iic_interrupt_mode(dev, 0);
-+	if (request_irq(irq, iic_handler, 0, "IBM IIC", dev)) {
-+		dev_err(&ofdev->dev, "request_irq %d failed\n", irq);
-+		/* Fallback to the polling mode */
-+		return NO_IRQ;
-+	}
-+
-+	return irq;
-+}
-+
-+/*
-+ * Register single IIC interface
-+ */
-+static int __devinit iic_probe(struct of_device *ofdev,
-+			       const struct of_device_id *match)
-+{
-+	struct device_node *np = ofdev->node;
-+	struct ibm_iic_private *dev;
-+	struct i2c_adapter *adap;
-+	const u32 *indexp, *freq;
-+	int ret;
-+
-+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+	if (!dev) {
-+		dev_err(&ofdev->dev, "failed to allocate device data\n");
-+		return -ENOMEM;
-+	}
-+
-+	dev_set_drvdata(&ofdev->dev, dev);
-+
-+	indexp = of_get_property(np, "index", NULL);
-+	if (!indexp) {
-+		dev_err(&ofdev->dev, "no index specified\n");
-+		ret = -EINVAL;
-+		goto error_cleanup;
-+	}
-+	dev->idx = *indexp;
-+
-+	dev->vaddr = of_iomap(np, 0);
-+	if (dev->vaddr == NULL) {
-+		dev_err(&ofdev->dev, "failed to iomap device\n");
-+		ret = -ENXIO;
-+		goto error_cleanup;
-+	}
-+
-+	init_waitqueue_head(&dev->wq);
-+
-+	dev->irq = iic_request_irq(ofdev, dev);
-+	if (dev->irq == NO_IRQ)
-+		dev_warn(&ofdev->dev, "using polling mode\n");
-+
-+	/* Board specific settings */
-+	if (iic_force_fast || of_get_property(np, "fast-mode", NULL))
-+		dev->fast_mode = 1;
-+
-+	freq = of_get_property(np, "clock-frequency", NULL);
-+	if (freq == NULL) {
-+		freq = of_get_property(np->parent, "clock-frequency", NULL);
-+		if (freq == NULL) {
-+			dev_err(&ofdev->dev, "Unable to get bus frequency\n");
-+			ret = -EINVAL;
-+			goto error_cleanup;
-+		}
-+	}
-+
-+	dev->clckdiv = iic_clckdiv(*freq);
-+	dev_dbg(&ofdev->dev, "clckdiv = %d\n", dev->clckdiv);
-+
-+	/* Initialize IIC interface */
-+	iic_dev_init(dev);
-+
-+	/* Register it with i2c layer */
-+	adap = &dev->adap;
-+	adap->dev.parent = &ofdev->dev;
-+	strlcpy(adap->name, "IBM IIC", sizeof(adap->name));
-+	i2c_set_adapdata(adap, dev);
-+	adap->id = I2C_HW_OCP;
-+	adap->class = I2C_CLASS_HWMON;
-+	adap->algo = &iic_algo;
-+	adap->timeout = 1;
-+	adap->nr = dev->idx;
-+
-+	ret = i2c_add_numbered_adapter(adap);
-+	if (ret  < 0) {
-+		dev_err(&ofdev->dev, "failed to register i2c adapter\n");
-+		goto error_cleanup;
-+	}
-+
-+	dev_info(&ofdev->dev, "using %s mode\n",
-+		 dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
-+
-+	return 0;
-+
-+error_cleanup:
-+	if (dev->irq != NO_IRQ) {
-+		iic_interrupt_mode(dev, 0);
-+		free_irq(dev->irq, dev);
-+	}
-+
-+	if (dev->vaddr)
-+		iounmap(dev->vaddr);
-+
-+	dev_set_drvdata(&ofdev->dev, NULL);
-+	kfree(dev);
-+	return ret;
-+}
-+
-+/*
-+ * Cleanup initialized IIC interface
-+ */
-+static int __devexit iic_remove(struct of_device *ofdev)
-+{
-+	struct ibm_iic_private *dev = dev_get_drvdata(&ofdev->dev);
-+
-+	dev_set_drvdata(&ofdev->dev, NULL);
-+
-+	i2c_del_adapter(&dev->adap);
-+
-+	if (dev->irq != NO_IRQ) {
-+		iic_interrupt_mode(dev, 0);
-+		free_irq(dev->irq, dev);
-+	}
-+
-+	iounmap(dev->vaddr);
-+	kfree(dev);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id ibm_iic_match[] = {
-+	{ .compatible = "ibm,iic-405ex", },
-+	{ .compatible = "ibm,iic-405gp", },
-+	{ .compatible = "ibm,iic-440gp", },
-+	{ .compatible = "ibm,iic-440gpx", },
-+	{ .compatible = "ibm,iic-440grx", },
-+	{}
-+};
-+
-+static struct of_platform_driver ibm_iic_driver = {
-+	.name	= "ibm-iic",
-+	.match_table = ibm_iic_match,
-+	.probe	= iic_probe,
-+	.remove	= __devexit_p(iic_remove),
-+};
-+
-+static int __init iic_init(void)
-+{
-+	return of_register_platform_driver(&ibm_iic_driver);
-+}
-+
-+static void __exit iic_exit(void)
-+{
-+	of_unregister_platform_driver(&ibm_iic_driver);
-+}
-+#endif /* CONFIG_IBM_OCP */
-+
- module_init(iic_init);
- module_exit(iic_exit);
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index b61f56b..bda87a0 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -244,7 +244,7 @@ config I2C_PIIX4
- 
- config I2C_IBM_IIC
- 	tristate "IBM PPC 4xx on-chip I2C interface"
--	depends on IBM_OCP
-+	depends on 4xx
- 	help
- 	  Say Y here if you want to use IIC peripheral found on 
- 	  embedded IBM PPC 4xx based systems. 
+> > > > Actually one thing I don't like about gcc is that I think it still
+> > > > emits cmovs for likely/unlikely branches,
+> > >
+> > > That's -Os.
+> >
+> > And -O2 and -O3, on the gccs that I'm using, AFAIKS.
+>
+> Well if it still happens on gcc 4.2 with P4 tuning you should
+> perhaps open a gcc PR. They tend to ignore these bugs mostly in
+> my experience, but sometimes they act on them.
+
+I'm not sure about P4 tuning... But even IMO it should not on
+predictable branches too much for any (especially OOOE) CPU.
+
+
+> > > > which is silly (the gcc developers
+> > >
+> > > It depends on the CPU. e.g. on K8 and P6 using CMOV if possible
+> > > makes sense. P4 doesn't like it though.
+> >
+> > If the branch is completely predictable (eg. annotated), then I
+> > think branches should be used anyway. Even on well predicted
+> > branches, cmov is similar speed on microbenchmarks, but it will
+> > increase data hazards I think, so it will probably be worse for
+> > some real world situations.
+>
+> At least the respective optimization manuals say they should be used.
+> I presume they only made this recommendation after some extensive
+> benchmarking.
+
+What I have seen is that they tell you definitely not to use it for
+predictable branches. Eg. the Intel optimization manual says
+
+ Use the setcc and cmov instructions to eliminate unpredictable
+ conditional branches where possible. Do not do this for predictable
+ branches. Do not use these instructions to eliminate all
+ unpredictable conditional branches, because using these instructions
+ will incur execution overhead due to executing both paths of a
+ conditional branch. In addition, converting conditional branches to
+ cmovs or setcc trades control-flow dependence for data dependence
+ and restricts the capability of the out-of-order engine.
+
+
+> > But a likely branch will be _strongly_ predicted to be taken,
+> > wheras a lot of the gcc heuristics simply have slightly more or
+> > slightly less probability. So it's not just a question of which
+> > way is more likely, but also _how_ likely it is to go that way.
+>
+> Yes, but a lot of the heuristics are pretty strong (>80%) and gcc will
+> act on them unless it has a very strong contra cue. And that should
+> normally not be the case.
+
+True, but if you know a branch is 99%+, then use of likely/unlikely
+can still be a good idea. 80% may not be enough to choose a branch
+over a cmov for example.
