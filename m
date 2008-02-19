@@ -1,26 +1,21 @@
-Return-Path: <bunk@kernel.org>
-Date: Tue, 19 Feb 2008 09:43:02 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080219074302.GA2640@cs181133002.pp.htv.fi>
-References: <20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-	<20080216103927.2a02352b@laptopd505.fenrus.org>
-	<1203249003.6718.24.camel@concordia>
-	<20080218135609.GD21080@cs181133002.pp.htv.fi>
-	<Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-	<20080218141340.GB667@cs181133002.pp.htv.fi>
-	<1203371163.6844.2.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1203371163.6844.2.camel@concordia>
-Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-	cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-101-monday.nerim.net [62.4.16.101])
+	by ozlabs.org (Postfix) with ESMTP id 84D14DDE10
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2008 19:23:24 +1100 (EST)
+Date: Tue, 19 Feb 2008 09:23:21 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
+Message-ID: <20080219092321.1fed233d@hyperion.delvare>
+In-Reply-To: <47BA3416.5080405@pikatech.com>
+References: <4784FED1.2040206@pikatech.com> <47A14E23.50807@pikatech.com>
+	<20080214094516.1b958ae4@hyperion.delvare>
+	<47B66260.8010902@pikatech.com>
+	<20080216103123.50a0128b@hyperion.delvare>
+	<47BA3416.5080405@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,65 +25,275 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 19, 2008 at 08:46:03AM +1100, Michael Ellerman wrote:
-> On Mon, 2008-02-18 at 16:13 +0200, Adrian Bunk wrote:
-> > On Mon, Feb 18, 2008 at 03:01:35PM +0100, Geert Uytterhoeven wrote:
-> > > On Mon, 18 Feb 2008, Adrian Bunk wrote:
-> > > > 
-> > > > This means it generates faster code with a current gcc for your platform.
-> > > > 
-> > > > But a future gcc might e.g. replace the whole loop with a division
-> > > > (gcc SVN head (that will soon become gcc 4.3) already does 
-> > > > transformations like replacing loops with divisions [1]).
-> > > 
-> > > Hence shouldn't we ask the gcc people what's the purpose of __builtin_expect(),
-> > > if it doesn't live up to its promise?
-> > 
-> > That's a different issue.
-> > 
-> > My point here is that we do not know how the latest gcc available in the 
-> > year 2010 might transform this code, and how a likely/unlikely placed 
-> > there might influence gcc's optimizations then.
+Hi Sean,
+
+On Mon, 18 Feb 2008 20:42:46 -0500, Sean MacLennan wrote:
+> An updated version of the patch. This one should answer all of Jean's 
+> concerns.
 > 
-> You're right, we don't know. But if giving the compiler _more_
-> information causes it to produce vastly inferior code then we should be
-> filing gcc bugs. After all the unlikely/likely is just a hint, if gcc
-> knows better it can always ignore it.
+> Cheers,
+>    Sean
+> 
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> ---
+> --- for-2.6.25/drivers/i2c/busses/orig-i2c-ibm_iic.c	2008-02-18 16:36:30.000000000 -0500
+> +++ for-2.6.25/drivers/i2c/busses/i2c-ibm_iic.c	2008-02-18 17:39:53.000000000 -0500
+> @@ -6,6 +6,9 @@
+>   * Copyright (c) 2003, 2004 Zultys Technologies.
+>   * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+>   *
+> + * Copyright (c) 2008 PIKA Technologies
+> + * Sean MacLennan <smaclennan@pikatech.com>
+> + *
+>   * Based on original work by
+>   * 	Ian DaSilva  <idasilva@mvista.com>
+>   *      Armin Kuster <akuster@mvista.com>
+> @@ -39,12 +42,17 @@
+>  #include <asm/io.h>
+>  #include <linux/i2c.h>
+>  #include <linux/i2c-id.h>
+> +
+> +#ifdef CONFIG_IBM_OCP
+>  #include <asm/ocp.h>
+>  #include <asm/ibm4xx.h>
+> +#else
+> +#include <linux/of_platform.h>
+> +#endif
+>  
+>  #include "i2c-ibm_iic.h"
+>  
+> -#define DRIVER_VERSION "2.1"
+> +#define DRIVER_VERSION "2.2"
+>  
+>  MODULE_DESCRIPTION("IBM IIC driver v" DRIVER_VERSION);
+>  MODULE_LICENSE("GPL");
+> @@ -657,6 +665,7 @@
+>  	return (u8)((opb + 9) / 10 - 1);
+>  }
+>  
+> +#ifdef CONFIG_IBM_OCP
+>  /*
+>   * Register single IIC interface
+>   */
+> @@ -828,5 +837,182 @@
+>  	ocp_unregister_driver(&ibm_iic_driver);
+>  }
+>  
+> +#else  /* !CONFIG_IBM_OCP */
+> +
+> +static int __devinit iic_request_irq(struct of_device *ofdev,
+> +				     struct ibm_iic_private *dev)
+> +{
+> +	struct device_node *np = ofdev->node;
+> +	int irq;
+> +
+> +	if (iic_force_poll)
+> +		return NO_IRQ;
+> +
+> +	irq = irq_of_parse_and_map(np, 0);
+> +	if (irq == NO_IRQ) {
+> +		dev_err(&ofdev->dev, "irq_of_parse_and_map failed\n");
+> +		return NO_IRQ;
+> +	}
+> +
+> +	/* Disable interrupts until we finish initialization, assumes
+> +	 *  level-sensitive IRQ setup...
+> +	 */
+> +	iic_interrupt_mode(dev, 0);
+> +	if (request_irq(irq, iic_handler, 0, "IBM IIC", dev)) {
+> +		dev_err(&ofdev->dev, "request_irq %d failed\n", irq);
+> +		/* Fallback to the polling mode */
+> +		return NO_IRQ;
+> +	}
+> +
+> +	return irq;
+> +}
+> +
+> +/*
+> + * Register single IIC interface
+> + */
+> +static int __devinit iic_probe(struct of_device *ofdev,
+> +			       const struct of_device_id *match)
+> +{
+> +	struct device_node *np = ofdev->node;
+> +	struct ibm_iic_private *dev;
+> +	struct i2c_adapter *adap;
+> +	const u32 *indexp, *freq;
+> +	int ret;
+> +
+> +
 
-It's the other way round, gcc assumes that you know better than gcc when 
-you give it a __builtin_expect().
+Double blank line is prohibited inside a function.
 
-The example you gave had only a 1:3 ratio, which is far outside of the 
-ratios where __builtin_expect() should be used.
+> +	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+> +	if (!dev) {
+> +		dev_err(&ofdev->dev, "failed to allocate device data\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	dev_set_drvdata(&ofdev->dev, dev);
+> +
+> +	indexp = of_get_property(np, "index", NULL);
+> +	if (!indexp) {
+> +		dev_err(&ofdev->dev, "no index specified.\n");
 
-What if you gave this annotation for the 1:3 case and gcc generates code 
-that performs better for ratios > 1:1000 but much worse for a 1:3 ratio
-since your hint did override a better estimate of gcc?
+This is the only error message that has a trailing dot. Remove it?
 
-And I'm sure that > 90% of all kernel developers (including me) are 
-worse in such respects than the gcc heuristics.
+> +		ret = -EINVAL;
 
-I'm a firm believer in the following:
-- it's the programmer's job to write clean and efficient C code
-- it's the compiler's job to convert C code into efficient assembler
-  code
+Isn't it a bit inconsistent to return -EINVAL here...
 
-The stable interface between the programmer and the compiler is C, and 
-when the programmer starts manually messing with internals of the 
-compiler that's a layering violation that requires a _good_ 
-justification.
+> +		goto error_cleanup;
+> +	}
+> +	dev->idx = *indexp;
+> +
+> +	dev->vaddr = of_iomap(np, 0);
+> +	if (dev->vaddr == NULL) {
+> +		dev_err(&ofdev->dev, "failed to iomap device\n");
+> +		ret = -ENXIO;
+> +		goto error_cleanup;
+> +	}
+> +
+> +	init_waitqueue_head(&dev->wq);
+> +
+> +	dev->irq = iic_request_irq(ofdev, dev);
+> +	if (dev->irq == NO_IRQ)
+> +		dev_warn(&ofdev->dev, "using polling mode\n");
+> +
+> +	/* Board specific settings */
+> +	if (iic_force_fast || of_get_property(np, "fast-mode", NULL))
+> +		dev->fast_mode = 1;
+> +
+> +	freq = of_get_property(np, "clock-frequency", NULL);
+> +	if (freq == NULL) {
+> +		freq = of_get_property(np->parent, "clock-frequency", NULL);
+> +		if (freq == NULL) {
+> +			dev_err(&ofdev->dev, "Unable to get bus frequency\n");
+> +			ret = -EBUSY;
 
-With a "good justification" not consisting of some microbenchmark but of 
-measurements of the actual annotations in the kernel code.
+... but -EBUSY there?
 
-> cheers
+> +			goto error_cleanup;
+> +		}
+> +	}
+> +
+> +	dev->clckdiv = iic_clckdiv(*freq);
+> +	dev_dbg(&ofdev->dev, "clckdiv = %d\n", dev->clckdiv);
+> +
+> +	/* Initialize IIC interface */
+> +	iic_dev_init(dev);
+> +
+> +	/* Register it with i2c layer */
+> +	adap = &dev->adap;
+> +	adap->dev.parent = &ofdev->dev;
+> +	strlcpy(adap->name, "IBM IIC", sizeof(adap->name));
+> +	i2c_set_adapdata(adap, dev);
+> +	adap->id = I2C_HW_OCP;
+> +	adap->class = I2C_CLASS_HWMON;
+> +	adap->algo = &iic_algo;
+> +	adap->timeout = 1;
+> +	adap->nr = dev->idx;
+> +
+> +	ret = i2c_add_numbered_adapter(adap);
+> +	if (ret  < 0) {
+> +		dev_err(&ofdev->dev, "failed to register i2c adapter\n");
+> +		goto error_cleanup;
+> +	}
+> +
+> +	dev_dbg(&ofdev->dev, "using %s mode\n",
 
-cu
-Adrian
+dev_info?
 
+> +		dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
+> +
+> +	return 0;
+> +
+> +error_cleanup:
+> +	if (dev->irq != NO_IRQ) {
+> +		iic_interrupt_mode(dev, 0);
+> +		free_irq(dev->irq, dev);
+> +	}
+> +
+> +	if (dev->vaddr)
+> +		iounmap(dev->vaddr);
+> +
+> +	dev_set_drvdata(&ofdev->dev, NULL);
+> +	kfree(dev);
+> +	return ret;
+> +}
+> +
+> +/*
+> + * Cleanup initialized IIC interface
+> + */
+> +static int __devexit iic_remove(struct of_device *ofdev)
+> +{
+> +	struct ibm_iic_private *dev = dev_get_drvdata(&ofdev->dev);
+> +
+> +	dev_set_drvdata(&ofdev->dev, NULL);
+> +
+> +	i2c_del_adapter(&dev->adap);
+> +
+> +	if (dev->irq != NO_IRQ) {
+> +		iic_interrupt_mode(dev, 0);
+> +		free_irq(dev->irq, dev);
+> +	}
+> +
+> +	iounmap(dev->vaddr);
+> +	kfree(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id ibm_iic_match[] = {
+> +	{ .compatible = "ibm,iic-405ex", },
+> +	{ .compatible = "ibm,iic-405gp", },
+> +	{ .compatible = "ibm,iic-440gp", },
+> +	{ .compatible = "ibm,iic-440gpx", },
+> +	{ .compatible = "ibm,iic-440grx", },
+> +	{}
+> +};
+> +
+> +static struct of_platform_driver ibm_iic_driver = {
+> +	.name	= "ibm-iic",
+> +	.match_table = ibm_iic_match,
+> +	.probe	= iic_probe,
+> +	.remove	= __devexit_p(iic_remove),
+> +};
+> +
+> +static int __init iic_init(void)
+> +{
+> +	return of_register_platform_driver(&ibm_iic_driver);
+> +}
+> +
+> +static void __exit iic_exit(void)
+> +{
+> +	of_unregister_platform_driver(&ibm_iic_driver);
+> +}
+> +#endif /* CONFIG_IBM_OCP */
+> +
+>  module_init(iic_init);
+>  module_exit(iic_exit);
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index b61f56b..44c0984 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -244,7 +244,6 @@ config I2C_PIIX4
+>  
+>  config I2C_IBM_IIC
+>  	tristate "IBM PPC 4xx on-chip I2C interface"
+> -	depends on IBM_OCP
+>  	help
+>  	  Say Y here if you want to use IIC peripheral found on 
+>  	  embedded IBM PPC 4xx based systems. 
+
+With this Kconfig change, "make menuconfig" lets me select the
+i2c-ibm_iic driver on x86_64, but it fails to build horribly. I think
+that you want to restrict the build to PPC machines somehow, or at
+least make sure that either IBM_OCP or OF support is present.
+
+The rest looks fine to me. If you can address my last few comments, I
+can push your 2 i2c-ibm_iic patches to -mm.
+
+Thanks,
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jean Delvare
