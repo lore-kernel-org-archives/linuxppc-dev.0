@@ -1,18 +1,16 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 9D54CDDE02
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Feb 2008 09:36:54 +1100 (EST)
-Message-ID: <47BB589E.4040201@anagramm.de>
-Date: Tue, 19 Feb 2008 23:30:54 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Marc LeFevre <lfx@cypress.com>
-Subject: Re: RTC woes
-References: <06cb01c87315$5dad6010$f30213ac@isd.cypress.com>
-In-Reply-To: <06cb01c87315$5dad6010$f30213ac@isd.cypress.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <7CDED5EA-D72B-4D9F-A547-AC3B6A59F174@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: raul.moreno@telvent.abengoa.com
+In-Reply-To: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: 2.6.24 for mpc8458amc
+Date: Tue, 19 Feb 2008 23:19:18 -0600
+References: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
+Cc: maxime louvel <m.louvel@gmail.com>,
+	linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,30 +21,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marc LeFevre schrieb:
-> I’m new to the list.
 
-Welcome! :-)
+On Feb 19, 2008, at 6:19 AM, raul.moreno@telvent.abengoa.com wrote:
 
- > I have an e500-based embedded Linux system running
-> a 2.6.22 kernel.  I have a PCF8563T i2c based RTC chip attached to the 
-> PPC i2c bus.  In my kernel config file I have selected 
-> CONFIG_RTC_INTF_DEV=y and CONFIG_RTC_DRV_PCF8563=y.  I do a mknod  for 
-> /dev/rtc as c 10 135 (standard Linux) and link /dev/rtc0 to it.
-> 
-  > When I boot, get the following message:
-> 
-> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+>
+> Hello Maxime,
+>
+> if your board is still running, although you can't see the messages  
+> that
+> means you don't have any console. Try to set one (I think you can  
+> use a SCM
+> of the CPM) in the kernel configuration (characters devices)  or in  
+> the
+> command line (console=).
 
-2.6.22.x and 2.6.23.x i2c rtc code was quite messy around PCF8563.
+If you really have a mpc8548 than there is no CPM.  It has 16550 style  
+UARTs on it.
 
-> 3)       Does the PPC have some quirks regarding i2c operation that are 
-> at the root of this problem?
-
-The RTC subsystem was improved quite a bit lately. Try 2.6.24' powerpc
-architecture with a proper device tree instead. It works over here on
-mpc8540 / mpc8548 whereas the older ones were just a waste of time.
-
-Regards,
-
-Clemens
+- k
