@@ -1,18 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <A0EDC255-48E2-4CDC-B768-C41D8274FFA0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "maxime louvel" <m.louvel@gmail.com>
-In-Reply-To: <dda529d0802200500k7cadc8afm4f9e8f04358aea0b@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: 2.6.24 for mpc8458amc
-Date: Wed, 20 Feb 2008 07:53:14 -0600
-References: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
-	<7CDED5EA-D72B-4D9F-A547-AC3B6A59F174@kernel.crashing.org>
-	<dda529d0802200500k7cadc8afm4f9e8f04358aea0b@mail.gmail.com>
-Cc: scottwood@freescale.com,
-	linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <m.louvel@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.184])
+	by ozlabs.org (Postfix) with ESMTP id 6E818DDE39
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Feb 2008 01:01:21 +1100 (EST)
+Received: by ti-out-0910.google.com with SMTP id y6so1204197tia.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 20 Feb 2008 06:01:20 -0800 (PST)
+Message-ID: <dda529d0802200601t2db82c67o808c8407215396c@mail.gmail.com>
+Date: Wed, 20 Feb 2008 14:01:20 +0000
+From: "maxime louvel" <m.louvel@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: mpc8548amc vs mpc8548cds
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_14370_23780317.1203516080288"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,43 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_14370_23780317.1203516080288
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Feb 20, 2008, at 7:00 AM, maxime louvel wrote:
+Hi,
 
-> Hi,
->
-> yes It has something like 16550 UART.
-> the compiler version is gcc-3.4.3 with some specific stuff for the  
-> platform.
-> I also have a gcc-4.1.2 vanilla which has been compiled with the  
-> previous one. The 4.1.2 works if you tell it to emulate the floating  
-> point instructions.
->
-> thanks Scott,
-> without the treeboot-walnut it compiled
->
-> I have still my first problem though:
->
-> AMC=> bootm 0x1000000
-> ## Booting image at 01000000 ...
->   Image Name:   Linux-2.6.24
->   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->   Data Size:    1802038 Bytes =  1.7 MB
->   Load Address: 00000000
->   Entry Point:  00000000
->   Verifying Checksum ... OK
->   Uncompressing Kernel Image ... OK
->
-> and nothing else...
->
-> Any idea ?
->
-> This may become from the fact that the uboot installed on the cards  
-> is old and it apparently doesn't support the newer version of the  
-> kernel image... (I have got that from an another mailing list)
+first of all I am sorry if this is not the good place to ask that but I
+don't know where else ...
+My question is:
 
-Yes, you'll either need to look at updating u-boot and including  
-support for the device tree in it or look at the cuImage wrappers in  
-arch/powerpc/boot as a mechanism to boot a kernel w/an old fw.
+Does anyone knows the difference between the mpc8548amc and mpc8548cds
+platforms ?
+I am working on an amc one but the 2.6.24 kernel is supporting only the cds
+one.
+Do you know if I can use the dts file form the mpc8548cds for the mpc8548amc
+?
 
-- k
+thanks,
+Maxime
+
+-- 
+Maxime Louvel
+0044 7964 5555 80
+43 Allen road
+Whitemore reans
+WV60AW Wolverhampton
+United Kingdom
+
+------=_Part_14370_23780317.1203516080288
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br><br>first of all I am sorry if this is not the good place to ask that but I don&#39;t know where else ...<br>My question is:<br><br>Does anyone knows the difference between the mpc8548amc and mpc8548cds platforms ?<br>
+I am working on an amc one but the 2.6.24 kernel is supporting only the cds one. <br>Do you know if I can use the dts file form the mpc8548cds for the mpc8548amc ?<br><br>thanks,<br>Maxime<br clear="all"><br>-- <br>Maxime Louvel<br>
+0044 7964 5555 80<br>43 Allen road<br>Whitemore reans<br>WV60AW Wolverhampton<br>United Kingdom
+
+------=_Part_14370_23780317.1203516080288--
