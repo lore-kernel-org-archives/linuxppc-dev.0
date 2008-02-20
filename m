@@ -1,22 +1,15 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D4165DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 10:59:46 +1100 (EST)
-Date: Tue, 19 Feb 2008 15:55:54 -0800
-From: Greg KH <greg@kroah.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [patch v7 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-Message-ID: <20080219235554.GA13304@kroah.com>
-References: <20080219150916.263032000@sunsite.dk>
-	<20080219151149.684610000@sunsite.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080219151149.684610000@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	stern@rowland.harvard.edu, linux-usb@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C0B2BDDE0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:27:12 +1100 (EST)
+Date: Wed, 20 Feb 2008 11:27:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] fix warning in pseries/power.c
+Message-Id: <20080220112704.0ac7d7f2.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 19, 2008 at 04:09:19PM +0100, Peter Korsgaard wrote:
-> This patch adds HCD support for the Cypress c67x00 family of devices.
-> 
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Introduced by commit 79393fc46ede43451a500a132e5de9856f5a4c83 ("kobject:
+convert pseries/power.c to kobj_attr interface").
 
-And it doesn't build:
+sys_create_file takes a "struct attrbute *" not a "struct kobj_addribute *".
 
-  CC [M]  drivers/usb/c67x00/c67x00-hcd.o
-distcc[2413] ERROR: compile /home/gregkh/.ccache/c67x00-hcd.tmp.mini.2409.i on localhost failed
-drivers/usb/c67x00/c67x00-hcd.c:345: error: redefinition of 'c67x00_hcd_probe'
-drivers/usb/c67x00/c67x00-hcd.h:119: error: previous definition of 'c67x00_hcd_probe' was here
-drivers/usb/c67x00/c67x00-hcd.c:402: error: redefinition of 'c67x00_hcd_remove'
-drivers/usb/c67x00/c67x00-hcd.h:126: error: previous definition of 'c67x00_hcd_remove' was here
-make[2]: *** [drivers/usb/c67x00/c67x00-hcd.o] Error 1
-make[1]: *** [drivers/usb/c67x00] Error 2
-make: *** [_module_drivers/usb] Error 2
+arch/powerpc/platforms/pseries/power.c: In function 'apo_pm_init':
+arch/powerpc/platforms/pseries/power.c:78: warning: passing argument 2 of 'sysfs_create_file' from incompatible pointer type
 
-This is _after_ removing the obviously incorrect usb_disabled()
-function that you included in your .h file.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/pseries/power.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'm going to hold off applying any of these for now, as it doesn't look
-like something is configured properly here.
+diff --git a/arch/powerpc/platforms/pseries/power.c b/arch/powerpc/platforms/pseries/power.c
+index e95fc15..6d62662 100644
+--- a/arch/powerpc/platforms/pseries/power.c
++++ b/arch/powerpc/platforms/pseries/power.c
+@@ -75,7 +75,7 @@ core_initcall(pm_init);
+ #else
+ static int __init apo_pm_init(void)
+ {
+-	return (sysfs_create_file(power_kobj, &auto_poweron_attr));
++	return (sysfs_create_file(power_kobj, &auto_poweron_attr.attr));
+ }
+ __initcall(apo_pm_init);
+ #endif
+-- 
+1.5.4.2
 
-thanks,
-
-greg k-h
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
