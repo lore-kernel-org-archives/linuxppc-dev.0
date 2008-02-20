@@ -1,24 +1,34 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E5B1BDDF67
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:09:14 +1100 (EST)
-Date: Wed, 20 Feb 2008 09:40:32 -0800
-From: Greg KH <greg@kroah.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [patch v8 1/4] USB: add Cypress c67x00 low level interface code
-Message-ID: <20080220174032.GA12489@kroah.com>
-References: <20080220090727.904160000@sunsite.dk>
-	<20080220091400.882581000@sunsite.dk>
-	<20080220161343.GC2658@kroah.com>
-	<87r6f7d0nb.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87r6f7d0nb.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	stern@rowland.harvard.edu, linux-usb@vger.kernel.org
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 62DFEDE20C
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:09:21 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1KI94xI018261
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 13:09:04 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1KI9EPH211254
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:09:16 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1KI9E6J019172
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:09:14 -0700
+Date: Wed, 20 Feb 2008 12:08:02 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem
+	in dts
+Message-ID: <20080220120802.1657d34e@zod.rchland.ibm.com>
+In-Reply-To: <200802201416.54004.sr@denx.de>
+References: <1203504358-21331-1-git-send-email-sr@denx.de>
+	<20080220070119.27dc250d@zod.rchland.ibm.com>
+	<200802201416.54004.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 20, 2008 at 05:59:36PM +0100, Peter Korsgaard wrote:
-> >>>>> "Greg" == Greg KH <greg@kroah.com> writes:
-> 
-> Hi,
-> 
->  >> drivers/usb/c67x00/c67x00.h        |  285 ++++++++++++++++++++++++++
-> 
->  Greg> Why not drivers/usb/hcd/c67x00/ instead?
-> 
-> Because the device can do both host and peripheral (E.G. see patch 4
-> in the series).
-> 
-> We could put it under hcd for now and then move it once the gadget
-> driver gets finished/merged, but that seems silly to me..
+On Wed, 20 Feb 2008 14:16:53 +0100
+Stefan Roese <sr@denx.de> wrote:
 
-Moving files is trivial to do, if we need to do it in the future, we
-can.
+> > > The 405EX and 405EXr are identical exept that the 2nd PCIe and the
+> > > 2nd EMAC interfaces are missing.
+> >
+> > Does ppc405ex_pciex_core_init need to grow some logic to detect 405ex
+> > from 405exr and return the correct number of ports then?  It
+> > unconditionally returns 2 today.
+> 
+> Yes, this could be done. Right now it works because the 405EXr board 
+> (Haleakala) only instantiates one PCIe device in the dts.
+> 
+> A simple solution would be to just do a PVR check. Would this be acceptable?
 
-thanks,
+Looking more at the code, it seems like it's really not needed.
+Essentially the only thing that is "wrong" is that we allocate an extra
+structure that goes unused.
 
-greg k-h
+As long as the DTS file doesn't list a second bogus port, things work
+fine.  So I'm inclined to take your patch as-is.
+
+josh
