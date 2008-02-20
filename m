@@ -1,24 +1,14 @@
-Return-Path: <jacmet@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
-	by ozlabs.org (Postfix) with ESMTP id A9EFBDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 20:01:47 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 25so806047wfa.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 01:01:45 -0800 (PST)
-To: Greg KH <greg@kroah.com>
-Subject: Re: [patch v7 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-References: <20080219150916.263032000@sunsite.dk>
-	<20080219151149.684610000@sunsite.dk>
-	<20080219235554.GA13304@kroah.com>
+Return-Path: <jacmet@sunsite.dk>
+Received: from nanv.dk (vps.korsgaard.com [64.79.194.204])
+	by ozlabs.org (Postfix) with ESMTP id 3C07ADDE35
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 20:26:04 +1100 (EST)
+Message-Id: <20080220090727.904160000@sunsite.dk>
+Date: Wed, 20 Feb 2008 10:07:27 +0100
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 20 Feb 2008 10:01:40 +0100
-In-Reply-To: <20080219235554.GA13304@kroah.com> (Greg KH's message of "Tue\,
-	19 Feb 2008 15\:55\:54 -0800")
-Message-ID: <87bq6cf1cb.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	stern@rowland.harvard.edu, linux-usb@vger.kernel.org
+To: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, grant.likely@secretlab.ca,
+	stern@rowland.harvard.edu, greg@kroah.com
+Subject: [patch v8 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +18,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Greg" == Greg KH <greg@kroah.com> writes:
+The Cypress c67x00 (EZ-Host/EZ-OTG) controllers are multi-role low/fullspeed
+USB controllers. This patch series implements a HCD driver and shows the
+work-in-progress status of a gadget driver.
 
- Greg> On Tue, Feb 19, 2008 at 04:09:19PM +0100, Peter Korsgaard wrote:
- >> This patch adds HCD support for the Cypress c67x00 family of devices.
- >> 
- >> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+I believe patch 1..3 are ready, and I would like to see them queued up for
+mainline.
 
- Greg> And it doesn't build:
+Changes since v7:
+ - Moved dummy hcd probe/remove functions for conditional hcd support into
+   udc patch.
+ - Moved usb_disabled() check into c67x00_hcd_probe().
+ - Moved c67x00_get_comm_reg() to udc patch as it is only needed for gadget
+   support.
 
- Greg>   CC [M]  drivers/usb/c67x00/c67x00-hcd.o
- Greg> distcc[2413] ERROR: compile /home/gregkh/.ccache/c67x00-hcd.tmp.mini.2409.i on localhost failed
- Greg> drivers/usb/c67x00/c67x00-hcd.c:345: error: redefinition of 'c67x00_hcd_probe'
- Greg> drivers/usb/c67x00/c67x00-hcd.h:119: error: previous definition of 'c67x00_hcd_probe' was here
- Greg> drivers/usb/c67x00/c67x00-hcd.c:402: error: redefinition of 'c67x00_hcd_remove'
- Greg> drivers/usb/c67x00/c67x00-hcd.h:126: error: previous definition of 'c67x00_hcd_remove' was here
- Greg> make[2]: *** [drivers/usb/c67x00/c67x00-hcd.o] Error 1
- Greg> make[1]: *** [drivers/usb/c67x00] Error 2
- Greg> make: *** [_module_drivers/usb] Error 2
+Changes since v6:
+ - Addressed David and Alan's comments (removed done list + tasklet)
 
-Huh, that doesn't make any sense to me. The dumy definitions of
-c67x00_hcd_{probe,remove} are protected by an ifndef
-CONFIG_USB_C67X00_HCD, and c67x00-hcd.c which contains the real
-definitions only gets compiled if CONFIG_USB_C67X00_HCD is
-enabled. Could you perhaps provide some more details?
+Changes since v5:
+ - Merged c67x00_ll_{get,set}_siemsg() into c67x00_ll_fetch_siemsg().
+ - Fix for interrupt race condition at probe time (reported by Grant)
 
-Anyway, the conditional hcd stuff isn't really needed at this point in
-the patch series, so I have moved it into patch 4 in the v8 series
-I'll post in a minute.
+Changes since v4:
+ - Addressed Grant's comments (c67x00_dev->c67x00_hcd_dev, label indent)
+ - Moved c67x00_ll_set_ep_{ctrl,packet_size}_reg() to patch 4 as they are
+   only needed for gadget support.
 
- Greg> This is _after_ removing the obviously incorrect usb_disabled()
- Greg> function that you included in your .h file.
+Changes since v3:
+- Lots of cleanups: checkpatch, interrupt handling, c67x00_ prefixes, ..
+- The dummy platform_device's created per serial engine are gone.
+- Gadget driver (WIP)
 
-That was again for conditional hcd/udc support. I have now moved the
-check into _hcd_probe() instead.
-
- Greg> I'm going to hold off applying any of these for now, as it
- Greg> doesn't look like something is configured properly here.
-
-Could you give the v8 series a try please?
-
--- 
+--
 Bye, Peter Korsgaard
