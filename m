@@ -1,12 +1,14 @@
-Return-Path: <SRS0=9nXe=TJ=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 1A582DDE38
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 21:46:31 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 85E3EDDE19
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 22:57:15 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 20 Feb 2008 12:57:13 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20080220115713.193460@gmx.net>
+MIME-Version: 1.0
+Subject: Question about PPC_NATIVE/hash_native_64.c
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem in dts
-Date: Wed, 20 Feb 2008 11:45:58 +0100
-Message-Id: <1203504358-21331-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,30 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since the 4xx PCIe driver checks for 405ex compatibility, the
-PCIe interface was not detected as it is currently defined as
-"405exr" compatible. This patch changes it to "405ex".
+Hi,
 
-The 405EX and 405EXr are identical exept that the 2nd PCIe and the
-2nd EMAC interfaces are missing.
+I'm a little bit confused about the hash_native_64.c file, which is compiled
+in the kernel, if PPC_NATIVE is defined. PPC_NATIVE seems to be defined also
+for 32bit platforms (CHRP, PREP, etc.), but the name of the hash_native_64.c
+file and the Makefile suggest that it is for 64bit platforms only.
+What is hash_native_64.c actually good for on 32bit platforms and which cpus
+can make use of it?
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/boot/dts/haleakala.dts |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks!
 
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-index 5dd3d15..ae68fef 100644
---- a/arch/powerpc/boot/dts/haleakala.dts
-+++ b/arch/powerpc/boot/dts/haleakala.dts
-@@ -235,7 +235,7 @@
- 			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-405exr", "ibm,plb-pciex";
-+			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
- 			primary;
- 			port = <0>; /* port number */
- 			reg = <a0000000 20000000	/* Config space access */
+regards,
+
+Gerhard
 -- 
-1.5.4.2
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
