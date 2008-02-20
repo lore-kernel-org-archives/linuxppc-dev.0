@@ -1,19 +1,18 @@
-Return-Path: <m.louvel@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.184])
-	by ozlabs.org (Postfix) with ESMTP id 6E818DDE39
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D30CBDDF27
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Feb 2008 01:01:21 +1100 (EST)
-Received: by ti-out-0910.google.com with SMTP id y6so1204197tia.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Feb 2008 06:01:20 -0800 (PST)
-Message-ID: <dda529d0802200601t2db82c67o808c8407215396c@mail.gmail.com>
-Date: Wed, 20 Feb 2008 14:01:20 +0000
-From: "maxime louvel" <m.louvel@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: mpc8548amc vs mpc8548cds
+	Thu, 21 Feb 2008 01:04:55 +1100 (EST)
+Message-ID: <47BC3383.6060002@grandegger.com>
+Date: Wed, 20 Feb 2008 15:04:51 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_14370_23780317.1203516080288"
+To: Bruce_Leonard@selinc.com
+Subject: Re: Frustrated question with insmod
+References: <OF5B1D6538.27F4BDEE-ON882573F4.0000830F-882573F4.0001FF46@selinc.com>
+In-Reply-To: <OF5B1D6538.27F4BDEE-ON882573F4.0000830F-882573F4.0001FF46@selinc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,42 +23,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_14370_23780317.1203516080288
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Bruce_Leonard@selinc.com wrote:
+>> Bruce_Leonard@selinc.com wrote:
+>>> Sorry if this is the wrong place to post this question.  I'm 
+> developing a 
+>>> NAND flash driver and I need to do some detailed dubugging using GDB 
+> with 
+>>> a BDI2K.  According to the Denx web site, to find out the address that 
+> the 
+>>> module is loading at you load it using the -m parameter to insmod 
+> (i.e., 
+>>> "insmod -m mymodule").  However, every version of insmod I've tried 
+>>> doesn't recognize ANY options much less -m.  Can anyone please point 
+> me in 
+>>> the right direction, or give me another way of knowing what the load 
+>>> address of my module is?
+>> # cat /sys/module/<name>/sections/.text
+>>
+>> Do not forget to enable CONFIG_KALLSYMS.
+>>
+> 
+> Well, okay I guess the address I'm getting is the right one because both 
+> the above cat and 'cat /proc/modules' gives me the same thing, 0xe1188000. 
+>  I've got CONFIG_KALLSYMS and CONFIG_KALLSYMS_ALL set, though 
+> CONFIG_KALLSYMS_EXTRA_PASS is not set, don't know if that makes a 
+> difference.
+> 
+> So it would seem that there's something wrong with my BDI setup that isn't 
+> allowing address translation in the kernel's dynamically allocated memory 
+> area.  I've got PTBASE set to 0xf0 in the BDI config file so it should be 
+> finding the virtual address of the page tables just fine.  I've also got 
+> CONFIG_BDI_SWITCH set in .config and I know that works with the BDI, 
+> because I can set breakpoints at places in the kernel code that are called 
+> by my module (like nand_scan_ident() ) and everything works just fine. 
+> It's just when I try to access memory in the dynamic area where my module 
+> is located that the BDI can't do an address translation.  At least I 
+> assume it's the BDI, because I can load the module and use it with out 
+> GDB/BDI, so the processor and kernel must be able to handle the addresses 
+> okay.  Can anyone think of where I should go dig?  I've had this working 
+> exactly once in the past, but I don't know what I've changed to cause it 
+> to stop working.
 
-Hi,
+Try to specify the addresses of the other sections listed by "cat
+/sys/module/my-mod/sections/:
 
-first of all I am sorry if this is not the good place to ask that but I
-don't know where else ...
-My question is:
+  add-symbol-file my-mod.o 0xcf030060\
+   -s .rodata 0xcf030354\
+   -s .data   0xcf030488\
+   -s .sdata  0xcf030488\
+   -s .bss    0xcf030519\
+   -s .sbss   0xcf03051c
 
-Does anyone knows the difference between the mpc8548amc and mpc8548cds
-platforms ?
-I am working on an amc one but the 2.6.24 kernel is supporting only the cds
-one.
-Do you know if I can use the dts file form the mpc8548cds for the mpc8548amc
-?
-
-thanks,
-Maxime
-
--- 
-Maxime Louvel
-0044 7964 5555 80
-43 Allen road
-Whitemore reans
-WV60AW Wolverhampton
-United Kingdom
-
-------=_Part_14370_23780317.1203516080288
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>first of all I am sorry if this is not the good place to ask that but I don&#39;t know where else ...<br>My question is:<br><br>Does anyone knows the difference between the mpc8548amc and mpc8548cds platforms ?<br>
-I am working on an amc one but the 2.6.24 kernel is supporting only the cds one. <br>Do you know if I can use the dts file form the mpc8548cds for the mpc8548amc ?<br><br>thanks,<br>Maxime<br clear="all"><br>-- <br>Maxime Louvel<br>
-0044 7964 5555 80<br>43 Allen road<br>Whitemore reans<br>WV60AW Wolverhampton<br>United Kingdom
-
-------=_Part_14370_23780317.1203516080288--
+Wolfgang.
