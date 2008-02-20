@@ -1,18 +1,18 @@
-Return-Path: <kalle.pokki@eke.fi>
-Received: from smtp1.aina.net (smtp1.aina.net [81.16.64.154])
-	by ozlabs.org (Postfix) with ESMTP id 8015CDDE10
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 4AA29DE299
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Feb 2008 04:11:41 +1100 (EST)
-Date: Wed, 20 Feb 2008 19:06:29 +0200 (EET)
-From: Kalle Pokki <kalle.pokki@eke.fi>
-To: Ben Warren <biggerbadderben@gmail.com>
-Subject: Re: ELDK on 64-bit host
-In-Reply-To: <f8328f7c0802200749h7a761fffha636f292b54182e5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802201807340.7503@pc-213-140-179-32.aina.net>
-References: <a425f86c0802200703x6cbbd5acwa4b3a8dda455eeea@mail.gmail.com>
-	<f8328f7c0802200749h7a761fffha636f292b54182e5@mail.gmail.com>
+	Thu, 21 Feb 2008 06:42:06 +1100 (EST)
+In-Reply-To: <47BC3383.6060002@grandegger.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: Frustrated question with insmod
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <OFC0D67C81.314CAA65-ON882573F5.006BA6F8-882573F5.006C329E@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Wed, 20 Feb 2008 11:41:50 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,24 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Feb 2008, Ben Warren wrote:
+> 
+> Try to specify the addresses of the other sections listed by "cat
+> /sys/module/my-mod/sections/:
+> 
+>   add-symbol-file my-mod.o 0xcf030060\
+>    -s .rodata 0xcf030354\
+>    -s .data   0xcf030488\
+>    -s .sdata  0xcf030488\
+>    -s .bss    0xcf030519\
+>    -s .sbss   0xcf03051c
+> 
+> Wolfgang.
 
-> On Wed, Feb 20, 2008 at 10:03 AM, Kalle Pokki <kalle.pokki@eke.fi> wrote:
-> > Hi,
-> >
-> >  I tried to copy the ELDK 4.0 installation I had to a new Core 2 Quad
-> >  machine running 64-bit Ubuntu 7.10, but the new machine refuses to
-> >  execute the cross compiler. Has anyone succeeded in running ELDK in
-> >  this kind of environment?
-> >
-> Yes (at least with 64-bit Debian on a single core Xeon), but you need
-> a special library on the host.  I think it's call 'ia32-libs'.  It
-> should be available via aptitude.
+Thanks to all for the help.  What I've finally figured out is this: even 
+though I know in advance what address my module is going to be loaded at, 
+until the module is actually loaded the memory "doesn't exist", i.e., 
+there's no entry in the page tables.  So I set the breakpoint at an 
+address that doesn't have a translation and when I tell GDB to go it tries 
+to access that memory, which doesn't exist, so I get the MMU error.  So 
+I've figured out the problem is, but I'm not sure of the solution.  I 
+think if I tell the BDI to use HW breakpoints rather than SW breakpoints 
+it will probably work.
 
-Thanks, that was indeed the correct library to install. Now it works just 
-fine.
+Again, thanks for all the suggestions, especially about how to get the -m 
+option working for insmod.
 
-I'm a bit surprised there wasn't really any useful search results from 
-Google with obvious keywords. I was already about to install the 32-bit 
-version of Ubuntu to get the compiler working again. But then, perhaps 
-installing this library was obvious to everyone else :)
+Bruce
