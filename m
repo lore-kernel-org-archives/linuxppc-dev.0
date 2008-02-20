@@ -1,20 +1,19 @@
 Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.191])
-	by ozlabs.org (Postfix) with ESMTP id 3B6BEDDF8D
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 03:57:29 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w8so2137527mue.1
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:57:23 -0800 (PST)
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
+	by ozlabs.org (Postfix) with ESMTP id 01111DE1CB
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 03:59:51 +1100 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so1744343fgg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:59:48 -0800 (PST)
 To: Greg KH <greg@kroah.com>
-Subject: Re: [patch v7 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-References: <20080219150916.263032000@sunsite.dk>
-	<20080219151149.684610000@sunsite.dk>
-	<20080219235554.GA13304@kroah.com>
-	<87bq6cf1cb.fsf@macbook.be.48ers.dk> <20080220161608.GE2658@kroah.com>
+Subject: Re: [patch v8 1/4] USB: add Cypress c67x00 low level interface code
+References: <20080220090727.904160000@sunsite.dk>
+	<20080220091400.882581000@sunsite.dk>
+	<20080220161343.GC2658@kroah.com>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 20 Feb 2008 17:57:06 +0100
-In-Reply-To: <20080220161608.GE2658@kroah.com> (Greg KH's message of "Wed\,
-	20 Feb 2008 08\:16\:08 -0800")
-Message-ID: <874pc3efbx.fsf@macbook.be.48ers.dk>
+Date: Wed, 20 Feb 2008 17:59:36 +0100
+In-Reply-To: <20080220161343.GC2658@kroah.com> (Greg KH's message of "Wed\,
+	20 Feb 2008 08\:13\:43 -0800")
+Message-ID: <87r6f7d0nb.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -32,25 +31,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 >>>>> "Greg" == Greg KH <greg@kroah.com> writes:
 
 Hi,
- Greg> I don't know, I selected the config option, and yet, it built
- Greg> as if it wasn't set.
 
-Sorry, I cannot reproduce that here. Could you try again?
+ >> drivers/usb/c67x00/c67x00.h        |  285 ++++++++++++++++++++++++++
 
- Greg> Can you move the files under the hcd/ subdir
+ Greg> Why not drivers/usb/hcd/c67x00/ instead?
 
-Sorry, I don't think that's a good idea as the hardware can do
-peripheral as well, and as you can see in patch 4, a gadget driver is
-on it's way.
+Because the device can do both host and peripheral (E.G. see patch 4
+in the series).
 
- Greg> run it through checkpatch.pl and fix up the __FUNCTION__
- Greg> warnings, and then I'll be willing to test it again :)
-
-Ahh, that seems to be a pretty new warning in checkpatch - I atleast
-haven't seen it before. The other things it complains about seems to
-be rubbish though (except for the single indented label).
-
-I'll send a v9 series shortly.
+We could put it under hcd for now and then move it once the gadget
+driver gets finished/merged, but that seems silly to me..
 
 -- 
 Bye, Peter Korsgaard
