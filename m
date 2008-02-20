@@ -1,39 +1,21 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E3C33DE133
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:14:11 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1KIDo2O006965
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 13:13:50 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1KIE7hg212698
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:14:07 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1KIE6Kg006764
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:14:07 -0700
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200802181100.12995.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-	<OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
-	<1203094538.8142.23.camel@nimitz.home.sr71.net>
-	<200802181100.12995.ossthema@de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 10:14:02 -0800
-Message-Id: <1203531242.15017.20.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>, Greg KH <greg@kroah.com>,
-	apw <apw@uk.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
+Return-Path: <david-b@pacbell.net>
+Received: from smtp118.sbc.mail.sp1.yahoo.com (smtp118.sbc.mail.sp1.yahoo.com
+	[69.147.64.91]) by ozlabs.org (Postfix) with SMTP id CF1B0DDF38
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:20:54 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [patch v7 3/4] USB: add Cypress c67x00 OTG controller HCD driver
+Date: Wed, 20 Feb 2008 10:07:01 -0800
+References: <20080219150916.263032000@sunsite.dk>
+	<874pc3efbx.fsf@macbook.be.48ers.dk>
+	<20080220170300.GB3453@kroah.com>
+In-Reply-To: <20080220170300.GB3453@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200802201007.01907.david-b@pacbell.net>
+Cc: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, stern@rowland.harvard.edu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,35 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-02-18 at 11:00 +0100, Jan-Bernd Themann wrote:
-> Dave Hansen <haveblue@us.ibm.com> wrote on 15.02.2008 17:55:38:
+On Wednesday 20 February 2008, Greg KH wrote:
+> >  Greg> Can you move the files under the hcd/ subdir
 > 
-> > I've been thinking about that, and I don't think you really *need* to
-> > keep a comprehensive map like that. 
-> > 
-> > When the memory is in a particular configuration (range of memory
-> > present along with unique set of holes) you get a unique ehea_bmap
-> > configuration.  That layout is completely predictable.
-> > 
-> > So, if at any time you want to figure out what the ehea_bmap address for
-> > a particular *Linux* virtual address is, you just need to pretend that
-> > you're creating the entire ehea_bmap, use the same algorithm and figure
-> > out host you would have placed things, and use that result.
-> > 
-> > Now, that's going to be a slow, crappy linear search (but maybe not as
-> > slow as recreating the silly thing).  So, you might eventually run into
-> > some scalability problems with a lot of packets going around.  But, I'd
-> > be curious if you do in practice.
+> Oops, I ment "host/" not, "hcd/".
 > 
-> Up to 14 addresses translation per packet (sg_list) might be required on 
-> the transmit side. On receive side it is only 1. Most packets require only 
-> very few translations (1 or sometimes more)  translations. However, 
-> with more then 700.000 packets per second this approach does not seem 
-> reasonable from performance perspective when memory is fragmented as you
-> described.
+> > Sorry, I don't think that's a good idea as the hardware can do
+> > peripheral as well, and as you can see in patch 4, a gadget driver is
+> > on it's way.
+> 
+> Ok, that's fine, why can't the gadget stuff go into the gadget/
+> directory then also?  As this device is a host controller, it makes
+> sense to me to keep it in the host-controller subdirectory.
 
-OK, but let's see the data.  *SHOW* me that it's slow. If the algorithm
-works, then perhaps we can simply speed it up with a little caching and
-*MUCH* less memory overhead.
+FWIW we did the same thing with drivers/usb/musb (for the Mentor
+highspeed OTG core) ... the basic issue is that the host and
+peripheral sides of the hardware aren't split like that.  There
+would be lots of code sharing (FIFO access, IRQ handling, DMA,
+initialization, come quickly to mind) between HCD and gadget
+sides.  Enough that trying to create an artificial split between
+those -- and let it coordinate properly in OTG modes -- seemed
+like a waste of effort.
 
--- Dave
+- Dave
