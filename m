@@ -1,26 +1,16 @@
-Return-Path: <jacmet@gmail.com>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.244])
-	by ozlabs.org (Postfix) with ESMTP id 60E7ADDDEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 06:26:24 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id x43so1551578hsb.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:26:05 -0800 (PST)
-To: Greg KH <greg@kroah.com>
-Subject: Re: [patch v7 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-References: <20080219150916.263032000@sunsite.dk>
-	<20080219151149.684610000@sunsite.dk>
-	<20080219235554.GA13304@kroah.com>
-	<87bq6cf1cb.fsf@macbook.be.48ers.dk> <20080220161608.GE2658@kroah.com>
-	<874pc3efbx.fsf@macbook.be.48ers.dk> <20080220170300.GB3453@kroah.com>
+Return-Path: <jacmet@sunsite.dk>
+Received: from nanv.dk (vps.korsgaard.com [64.79.194.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 14E2DDDF6C
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 06:41:39 +1100 (EST)
+Message-Id: <20080220193602.452179000@sunsite.dk>
+Date: Wed, 20 Feb 2008 20:36:02 +0100
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 20 Feb 2008 20:25:56 +0100
-In-Reply-To: <20080220170300.GB3453@kroah.com> (Greg KH's message of "Wed\,
-	20 Feb 2008 09\:03\:00 -0800")
-Message-ID: <87fxvnctvf.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	stern@rowland.harvard.edu, linux-usb@vger.kernel.org
+To: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, grant.likely@secretlab.ca,
+	stern@rowland.harvard.edu, greg@kroah.com
+Subject: [patch v9 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,53 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Greg" == Greg KH <greg@kroah.com> writes:
+The Cypress c67x00 (EZ-Host/EZ-OTG) controllers are multi-role low/fullspeed
+USB controllers. This patch series implements a HCD driver and shows the
+work-in-progress status of a gadget driver.
 
- >> Sorry, I cannot reproduce that here. Could you try again?
+I believe patch 1..3 are ready, and I would like to see them queued up for
+mainline.
 
- Greg> I will on the next round :)
+Changes since v8:
+ - checkpatch.pl fixes (__FUNCTION__ -> __func__, indent)
 
-Ok.
+Changes since v7:
+ - Moved dummy hcd probe/remove functions for conditional hcd support into
+   udc patch.
+ - Moved usb_disabled() check into c67x00_hcd_probe().
+ - Moved c67x00_get_comm_reg() to udc patch as it is only needed for gadget
+   support.
 
- Greg> Can you move the files under the hcd/ subdir
+Changes since v6:
+ - Addressed David and Alan's comments (removed done list + tasklet)
 
- Greg> Oops, I ment "host/" not, "hcd/".
+Changes since v5:
+ - Merged c67x00_ll_{get,set}_siemsg() into c67x00_ll_fetch_siemsg().
+ - Fix for interrupt race condition at probe time (reported by Grant)
 
-Yeah, I guessed ;)
+Changes since v4:
+ - Addressed Grant's comments (c67x00_dev->c67x00_hcd_dev, label indent)
+ - Moved c67x00_ll_set_ep_{ctrl,packet_size}_reg() to patch 4 as they are
+   only needed for gadget support.
 
- >> Sorry, I don't think that's a good idea as the hardware can do
- >> peripheral as well, and as you can see in patch 4, a gadget driver is
- >> on it's way.
+Changes since v3:
+- Lots of cleanups: checkpatch, interrupt handling, c67x00_ prefixes, ..
+- The dummy platform_device's created per serial engine are gone.
+- Gadget driver (WIP)
 
- Greg> Ok, that's fine, why can't the gadget stuff go into the gadget/
- Greg> directory then also?  As this device is a host controller, it makes
- Greg> sense to me to keep it in the host-controller subdirectory.
-
-Because of the way the driver (and hardware) is structured. There is a
-single c67x00.ko which can contain both hcd and gadget support
-depending on Kconfig.
-
- Greg> run it through checkpatch.pl and fix up the __FUNCTION__
- Greg> warnings, and then I'll be willing to test it again :)
- >> 
- >> Ahh, that seems to be a pretty new warning in checkpatch - I atleast
- >> haven't seen it before. The other things it complains about seems to
- >> be rubbish though (except for the single indented label).
-
- Greg> What other things do you think are rubbish?
-
-It misdetected a #define as a functions and complained, E.G.:
-
-WARNING: no space between function name and open parenthesis '('
-#298: FILE: include/linux/usb/c67x00.h:41:
-+ #define C67X00_SIE2_PERIPHERAL_B	(C67X00_SIE_PERIPHERAL_B	<< 4)
-
-But ok, the space before the #define shouldn't have been there.
-
- Greg> And yes, it's a new warning with the advent of 2.6.25-rc1, but
- Greg> that's no reason to ignore it :)
-
-Sure. it's fixed in the v9 series.
-
--- 
+--
 Bye, Peter Korsgaard
