@@ -1,24 +1,19 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 73078DDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:36:10 +1100 (EST)
-Date: Wed, 20 Feb 2008 10:29:53 -0800
-From: Greg KH <greg@kroah.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch v7 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-Message-ID: <20080220182953.GA13037@kroah.com>
-References: <20080219150916.263032000@sunsite.dk>
-	<874pc3efbx.fsf@macbook.be.48ers.dk>
-	<20080220170300.GB3453@kroah.com>
-	<200802201007.01907.david-b@pacbell.net>
-MIME-Version: 1.0
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7106DDED8
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 06:20:05 +1100 (EST)
+Date: Wed, 20 Feb 2008 13:19:41 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: jdl@jdl.com
+Subject: [PATCH] Add support for binary includes.
+Message-ID: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200802201007.01907.david-b@pacbell.net>
-Cc: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, stern@rowland.harvard.edu
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +23,237 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 20, 2008 at 10:07:01AM -0800, David Brownell wrote:
-> On Wednesday 20 February 2008, Greg KH wrote:
-> > > ?Greg> Can you move the files under the hcd/ subdir
-> > 
-> > Oops, I ment "host/" not, "hcd/".
-> > 
-> > > Sorry, I don't think that's a good idea as the hardware can do
-> > > peripheral as well, and as you can see in patch 4, a gadget driver is
-> > > on it's way.
-> > 
-> > Ok, that's fine, why can't the gadget stuff go into the gadget/
-> > directory then also? ?As this device is a host controller, it makes
-> > sense to me to keep it in the host-controller subdirectory.
-> 
-> FWIW we did the same thing with drivers/usb/musb (for the Mentor
-> highspeed OTG core) ... the basic issue is that the host and
-> peripheral sides of the hardware aren't split like that.  There
-> would be lots of code sharing (FIFO access, IRQ handling, DMA,
-> initialization, come quickly to mind) between HCD and gadget
-> sides.  Enough that trying to create an artificial split between
-> those -- and let it coordinate properly in OTG modes -- seemed
-> like a waste of effort.
+A property's data can be populated with a file's contents
+as follows:
 
-Ah, but I don't see that directory in the current tree on kernel.org, so
-I haven't see this kind of driver before :)
+node {
+	prop = /incbin/("path/to/data");
+};
 
-And isn't the whole OTG code base still in flux as to where it lives?
-Or so I thought a thread last week showed.
+A subset of a file can be included by passing start and size parameters.
+For example, to include bytes 8 through 23:
 
-thanks,
+node {
+	prop = /incbin/("path/to/data", 8, 16);
+};
 
-greg k-h
+As with /include/, non-absolute paths are looked for in the directory
+of the source file that includes them.
+
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Now that there's no imminent release tagging, can we merge this, or are
+there any objections?
+
+ Makefile     |    2 +-
+ data.c       |   37 ++++++++++++++++++++++++++++++++++++-
+ dtc-lexer.l  |    7 +++++++
+ dtc-parser.y |   49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ dtc.h        |    5 +++++
+ 5 files changed, 98 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 8a47c34..d4d935c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,7 +16,7 @@ LOCAL_VERSION =
+ CONFIG_LOCALVERSION =
+ 
+ CPPFLAGS = -I libfdt
+-CFLAGS = -Wall -g -Os
++CFLAGS = -Wall -g -Os -D_FILE_OFFSET_BITS=64
+ 
+ BISON = bison
+ LEX = flex
+diff --git a/data.c b/data.c
+index a94718c..f9464bf 100644
+--- a/data.c
++++ b/data.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include "dtc.h"
++#include "srcpos.h"
+ 
+ void data_free(struct data d)
+ {
+@@ -189,7 +190,41 @@ struct data data_copy_file(FILE *f, size_t len)
+ 	d = data_grow_for(empty_data, len);
+ 
+ 	d.len = len;
+-	fread(d.val, len, 1, f);
++	if (fread(d.val, len, 1, f) != 1) {
++		yyerrorf("Couldn't read %zu bytes from file: %s",
++		         len, feof(f) ? "end-of-file" : strerror(errno));
++		return empty_data;
++	}
++
++	return d;
++}
++
++struct data data_copy_file_all(FILE *f)
++{
++	char buf[4096];
++	struct data d = empty_data;
++
++	while (1) {
++		size_t ret = fread(buf, 1, sizeof(buf), f);
++		if (ret == 0) {
++			if (!feof(f))
++				yyerrorf("Error reading file: %s", strerror(errno));
++
++			break;
++		}
++
++		assert(ret <= sizeof(buf));
++
++		d = data_grow_for(d, ret);
++		memcpy(d.val + d.len, buf, ret);
++
++		if (d.len + ret < d.len) {
++			yyerror("Binary include too large");
++			break;
++		}
++
++		d.len += ret;
++	}
+ 
+ 	return d;
+ }
+diff --git a/dtc-lexer.l b/dtc-lexer.l
+index 920b87f..ee32308 100644
+--- a/dtc-lexer.l
++++ b/dtc-lexer.l
+@@ -190,6 +190,13 @@ static int dts_version; /* = 0 */
+ 			return DT_PROPNODENAME;
+ 		}
+ 
++"/incbin/"	{
++			yylloc.file = srcpos_file;
++			yylloc.first_line = yylineno;
++			DPRINT("Binary Include\n");
++			return DT_INCBIN;
++		}
++
+ <*>[[:space:]]+	/* eat whitespace */
+ 
+ <*>"/*"([^*]|\*+[^*/])*\*+"/"	{
+diff --git a/dtc-parser.y b/dtc-parser.y
+index bae3c32..3a24d14 100644
+--- a/dtc-parser.y
++++ b/dtc-parser.y
+@@ -21,6 +21,8 @@
+ %locations
+ 
+ %{
++#include <stdio.h>
++
+ #include "dtc.h"
+ #include "srcpos.h"
+ 
+@@ -47,6 +49,7 @@ extern int treesource_error;
+ 	struct node *node;
+ 	struct node *nodelist;
+ 	struct reserve_info *re;
++	struct range range;
+ }
+ 
+ %token DT_V1
+@@ -59,6 +62,7 @@ extern int treesource_error;
+ %token <data> DT_STRING
+ %token <labelref> DT_LABEL
+ %token <labelref> DT_REF
++%token DT_INCBIN
+ 
+ %type <data> propdata
+ %type <data> propdataprefix
+@@ -79,6 +83,7 @@ extern int treesource_error;
+ %type <node> subnode
+ %type <nodelist> subnodes
+ %type <labelref> label
++%type <range> mayberange
+ 
+ %%
+ 
+@@ -197,12 +202,56 @@ propdata:
+ 		{
+ 			$$ = data_add_marker($1, REF_PATH, $2);
+ 		}
++	| propdataprefix DT_INCBIN '(' DT_STRING mayberange ')'
++		{
++			struct search_path path = { srcpos_file->dir, NULL, NULL };
++			struct dtc_file *file = dtc_open_file($4.val, &path);
++
++			if (!file) {
++				yyerrorf("Cannot open file \"%s\": %s",
++				         $4.val, strerror(errno));
++			} else {
++				struct data d = empty_data;
++
++				if ($5.len >= 0) {
++					if (fseek(file->file, $5.start, SEEK_SET) == 0)
++						d = data_copy_file(file->file, $5.len);
++					else
++						yyerrorf("Couldn't seek to offset %llu in \"%s\": %s",
++						         (unsigned long long)$5.start,
++						         $4.val, strerror(errno));
++				} else {
++					d = data_copy_file_all(file->file);
++				}
++
++				$$ = data_merge($1, d);
++				dtc_close_file(file);
++			}
++		}
+ 	| propdata DT_LABEL
+ 		{
+ 			$$ = data_add_marker($1, LABEL, $2);
+ 		}
+ 	;
+ 
++mayberange:
++	  /* empty */
++		{
++			$$.len = -1;
++		}
++	| ',' addr ',' addr
++		{
++			$$.start = $2;
++			$$.len = $4;
++
++			if ($$.len != $4) {
++				yyerrorf("Length %llu is too large",
++				         (unsigned long long)$4);
++				$$.len = -1;
++			}
++		}
++	;
++
+ propdataprefix:
+ 	  /* empty */
+ 		{
+diff --git a/dtc.h b/dtc.h
+index cba9d28..509fbc9 100644
+--- a/dtc.h
++++ b/dtc.h
+@@ -122,6 +122,10 @@ struct data {
+ 	struct marker *markers;
+ };
+ 
++struct range {
++	off_t start;
++	int len;
++};
+ 
+ #define empty_data ((struct data){ /* all .members = 0 or NULL */ })
+ 
+@@ -138,6 +142,7 @@ struct data data_grow_for(struct data d, int xlen);
+ struct data data_copy_mem(const char *mem, int len);
+ struct data data_copy_escape_string(const char *s, int len);
+ struct data data_copy_file(FILE *f, size_t len);
++struct data data_copy_file_all(FILE *f);
+ 
+ struct data data_append_data(struct data d, const void *p, int len);
+ struct data data_insert_at_marker(struct data d, struct marker *m,
+-- 
+1.5.3
