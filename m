@@ -1,16 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <7CDED5EA-D72B-4D9F-A547-AC3B6A59F174@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: raul.moreno@telvent.abengoa.com
-In-Reply-To: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: 2.6.24 for mpc8458amc
-Date: Tue, 19 Feb 2008 23:19:18 -0600
-References: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
-Cc: maxime louvel <m.louvel@gmail.com>,
-	linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FE80DDDED
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 20 Feb 2008 15:13:28 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JRgKi-00015E-Q9
+	for linuxppc-embedded@ozlabs.org; Tue, 19 Feb 2008 20:13:24 -0800
+Message-ID: <15582059.post@talk.nabble.com>
+Date: Tue, 19 Feb 2008 20:13:24 -0800 (PST)
+From: Silwer star <fariyaf@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Sample driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,20 +27,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 19, 2008, at 6:19 AM, raul.moreno@telvent.abengoa.com wrote:
-
->
-> Hello Maxime,
->
-> if your board is still running, although you can't see the messages  
-> that
-> means you don't have any console. Try to set one (I think you can  
-> use a SCM
-> of the CPM) in the kernel configuration (characters devices)  or in  
-> the
-> command line (console=).
-
-If you really have a mpc8548 than there is no CPM.  It has 16550 style  
-UARTs on it.
-
-- k
+Does anyone have sample drivers in Linux for the EBC interface for PPC405Ex?
+I would be thankful if someone could put in a sample code here. 
+-- 
+View this message in context: http://www.nabble.com/Sample-driver-tp15582059p15582059.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
