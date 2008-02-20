@@ -1,31 +1,31 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B88CCDDE34
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 23:18:21 +1100 (EST)
-Date: Wed, 20 Feb 2008 15:18:18 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
-	endianness
-Message-ID: <20080220121818.GA20836@localhost.localdomain>
-References: <20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-	<19805.1203355811@turing-police.cc.vt.edu>
-	<47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>
-	<47BABD3A.7010102@anagramm.de>
-	<20080219040530.7b1d115d.akpm@linux-foundation.org>
-	<18363.31427.989835.105966@cargo.ozlabs.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 34C64DDDEE
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 00:02:29 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1KD4MuR032688
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:04:22 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1KD2PeK388994
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:02:25 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1KD2PcJ012460
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:02:25 -0500
+Date: Wed, 20 Feb 2008 07:01:19 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem
+	in dts
+Message-ID: <20080220070119.27dc250d@zod.rchland.ibm.com>
+In-Reply-To: <1203504358-21331-1-git-send-email-sr@denx.de>
+References: <1203504358-21331-1-git-send-email-sr@denx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,37 +35,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 20, 2008 at 11:56:35AM +1100, Paul Mackerras wrote:
-> Andrew Morton writes:
+On Wed, 20 Feb 2008 11:45:58 +0100
+Stefan Roese <sr@denx.de> wrote:
+
+> Since the 4xx PCIe driver checks for 405ex compatibility, the
+> PCIe interface was not detected as it is currently defined as
+> "405exr" compatible. This patch changes it to "405ex".
 > 
-> > Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
-> > Could whoever did that please thwap himself?
-> > 
-> > Anyway, my head is now officially spinning.  Did anyone actually have a
-> > reason why we shouldn't proceed with Anton's patch?
-> 
-> I was wondering if it would be sufficient to provide alternative
-> versions of fb_readl, fb_writel etc. that do byte-swapping.
+> The 405EX and 405EXr are identical exept that the 2nd PCIe and the
+> 2nd EMAC interfaces are missing.
 
-This is of course viable alternative. And I was considering this, but
-later I abandoned the idea: that way we'll end up doing math in the
-native endianness and then converting it to the foreign. This feels
-ugly in contrast when we can do the right math in the first place, per
-framebuffer.
+Does ppc405ex_pciex_core_init need to grow some logic to detect 405ex
+from 405exr and return the correct number of ports then?  It
+unconditionally returns 2 today.
 
-> That
-> would mean that all framebuffers would have to have the same
-> endianness,
-
-Yup, another downside of changing the code to fix some narrow
-problem. Plus, this means things will break if/when we'll attach
-PCI video card into the MPC8360E-RDK.
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+josh
