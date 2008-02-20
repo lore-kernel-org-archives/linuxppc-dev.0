@@ -1,23 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
-	[62.4.17.102]) by ozlabs.org (Postfix) with ESMTP id 2CE60DDE03
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 18:20:29 +1100 (EST)
-Date: Wed, 20 Feb 2008 08:20:27 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH 2/2] i2c-ibm_iic driver
-Message-ID: <20080220082027.3b2c59b8@hyperion.delvare>
-In-Reply-To: <47BB50E9.60508@pikatech.com>
-References: <4784FED1.2040206@pikatech.com> <47A14E23.50807@pikatech.com>
-	<20080214094516.1b958ae4@hyperion.delvare>
-	<47B66260.8010902@pikatech.com>
-	<20080216103123.50a0128b@hyperion.delvare>
-	<47BA3416.5080405@pikatech.com>
-	<20080219092321.1fed233d@hyperion.delvare>
-	<47BB50E9.60508@pikatech.com>
+Return-Path: <w@1wt.eu>
+Date: Wed, 20 Feb 2008 08:32:45 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080220073245.GA28524@1wt.eu>
+References: <47B70A61.9030306@tiscali.nl>
+	<20080216094226.1e8eede1@laptopd505.fenrus.org>
+	<p731w7axrat.fsf@bingen.suse.de>
+	<200802191333.53607.nickpiggin@yahoo.com.au>
+	<20080219055806.GA8404@1wt.eu>
+	<20080219092846.GB6485@one.firstfloor.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080219092846.GB6485@one.firstfloor.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Roel Kluin <12o3l@tiscali.nl>,
+	lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sean,
-
-On Tue, 19 Feb 2008 16:58:01 -0500, Sean MacLennan wrote:
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+On Tue, Feb 19, 2008 at 10:28:46AM +0100, Andi Kleen wrote:
+> > Sometimes, for performance critical paths, I would like gcc to be dumb and
+> > follow *my* code and not its hard-coded probabilities. 
 > 
-> --- for-2.6.25/drivers/i2c/busses/orig-i2c-ibm_iic.c	2008-02-18 16:36:30.000000000 -0500
-> +++ for-2.6.25/drivers/i2c/busses/i2c-ibm_iic.c	2008-02-19 16:46:35.000000000 -0500
-> @@ -6,6 +6,9 @@
->   * Copyright (c) 2003, 2004 Zultys Technologies.
->   * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
->   *
-> + * Copyright (c) 2008 PIKA Technologies
-> + * Sean MacLennan <smaclennan@pikatech.com>
-> + *
->   * Based on original work by
->   * 	Ian DaSilva  <idasilva@mvista.com>
->   *      Armin Kuster <akuster@mvista.com>
-> (...)
-> --- a/drivers/i2c/busses/Kconfig
-> +++ b/drivers/i2c/busses/Kconfig
-> @@ -244,7 +244,7 @@ config I2C_PIIX4
->  
->  config I2C_IBM_IIC
->  	tristate "IBM PPC 4xx on-chip I2C interface"
-> -	depends on IBM_OCP
-> +	depends on 4xx
->  	help
->  	  Say Y here if you want to use IIC peripheral found on 
->  	  embedded IBM PPC 4xx based systems. 
+> If you really want that, simple: just disable optimization @)
 
-I've applied this version. I see that there are discussions going on
-about the best "depends on" statement in Kconfig, feel free to submit
-an updated (or incremental) patch as soon as a decision will have been
-taken.
+already tried. It fixed some difficulties, but create new expected issues
+with data being reloaded often from memory instead of being passed along
+a few registers. Don't forget that optimizing for x86 requires a lot of
+smartness from the compiler because of the very small number of registers!
 
-Thanks,
--- 
-Jean Delvare
+> > Maybe one thing we would need would be the ability to assign probabilities
+> > to each branch based on what we expect, so that gcc could build a better
+> > tree keeping most frequently used code tight.
+> 
+> Just use profile feedback then for user space. I don't think it's a good
+> idea for kernel code though because it leads to unreproducible binaries
+> which would wreck the development model.
+
+I never found this to be practically usable in fact, because you have to
+use it on the *exact* same source. End of game for cross-compilation. It
+would be good to be able to use a few pragmas in the code to say "hey, I
+want this block optimized like this". This is what I understood the
+__builtin_expect() was for, except that it tends to throw unpredicted
+branches too far away.
+
+> > Hmm I've just noticed -fno-guess-branch-probability in the man, I never tried
+> > it.
+> 
+> Or -fno-reorder-blocks
+
+Thanks for the hint, I will try it.
+
+Willy
