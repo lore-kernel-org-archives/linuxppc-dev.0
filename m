@@ -1,12 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 81CA0DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 15:30:47 +1100 (EST)
+Date: Tue, 19 Feb 2008 22:27:48 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: davem@davemloft.net
+Subject: [PATCH] [LMB]: Fix lmb_add_region if region should be added at the
+	head
+Message-ID: <Pine.LNX.4.64.0802192227170.2215@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18363.41603.210217.163071@cargo.ozlabs.ibm.com>
-Date: Wed, 20 Feb 2008 14:46:11 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,67 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+We introduced a bug in fixing lmb_add_region to handle an initial
+region being non-zero.  Before that fix it was impossible to insert
+a region at the head of the list since the first region always started
+at zero.
 
-Please do
+Now that its possible for the first region to be non-zero we need to
+check to see if the new region should be added at the head and if so
+actually add it.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ lib/lmb.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-to get a few more bug and warning fixes for powerpc.  The diffstat is
-bloated by the defconfig updates -- the actual code changes are only a
-few dozen lines.
+diff --git a/lib/lmb.c b/lib/lmb.c
+index e3c8dcb..3c43b95 100644
+--- a/lib/lmb.c
++++ b/lib/lmb.c
+@@ -184,6 +184,11 @@ static long __init lmb_add_region(struct lmb_region *rgn, u64 base, u64 size)
+ 			break;
+ 		}
+ 	}
++
++	if (base < rgn->region[0].base) {
++		rgn->region[0].base = base;
++		rgn->region[0].size = size;
++	}
+ 	rgn->cnt++;
 
-Thanks,
-Paul.
-
- arch/powerpc/boot/Makefile             |    8 
- arch/powerpc/boot/dts/bamboo.dts       |    3 
- arch/powerpc/boot/dts/ebony.dts        |    2 
- arch/powerpc/boot/dts/katmai.dts       |    2 
- arch/powerpc/boot/dts/kilauea.dts      |    3 
- arch/powerpc/boot/dts/makalu.dts       |    3 
- arch/powerpc/boot/dts/rainier.dts      |    4 
- arch/powerpc/boot/dts/sequoia.dts      |    4 
- arch/powerpc/boot/dts/taishan.dts      |    4 
- arch/powerpc/configs/bamboo_defconfig  |   81 ++-
- arch/powerpc/configs/ebony_defconfig   |   79 ++-
- arch/powerpc/configs/ep405_defconfig   |   92 ++-
- arch/powerpc/configs/kilauea_defconfig |   69 ++
- arch/powerpc/configs/makalu_defconfig  |   69 ++
- arch/powerpc/configs/ppc44x_defconfig  |  904 ++++++++++++++++++++++++++++++++
- arch/powerpc/configs/rainier_defconfig |   82 ++-
- arch/powerpc/configs/sequoia_defconfig |   77 ++-
- arch/powerpc/configs/taishan_defconfig |   81 ++-
- arch/powerpc/configs/walnut_defconfig  |   81 ++-
- arch/powerpc/configs/warp_defconfig    |  139 +++--
- arch/powerpc/kernel/kprobes.c          |    9 
- arch/powerpc/kernel/prom.c             |   13 
- arch/powerpc/platforms/44x/Kconfig     |   10 
- arch/powerpc/platforms/pseries/power.c |    2 
- arch/ppc/platforms/4xx/ibm440ep.c      |    6 
- drivers/net/ibm_newemac/rgmii.c        |    1 
- 26 files changed, 1497 insertions(+), 331 deletions(-)
- create mode 100644 arch/powerpc/configs/ppc44x_defconfig
-
-Ananth N Mavinakayanahalli (1):
-      [POWERPC] Kill sparse warnings in kprobes
-
-Becky Bruce (1):
-      [POWERPC] Fix dt_mem_next_cell() to read the full address
-
-Josh Boyer (4):
-      [POWERPC] 4xx: Update defconfigs for 2.6.25
-      [POWERPC] 44x: Fix Kconfig formatting
-      [POWERPC] 44x: Add multiplatform defconfig
-      [POWERPC] Fix bootwrapper builds with older gcc versions
-
-Stefan Roese (2):
-      [POWERPC] net: NEWEMAC: Remove "rgmii-interface" from rgmii matching table
-      [POWERPC] 4xx: Remove "i2c" and "xxmii-interface" device_types from dts
-
-Stephen Rothwell (1):
-      [POWERPC] Fix warning in pseries/power.c
-
-Wolfgang Ocker (1):
-      [POWERPC] PPC440EP Interrupt Triggering and Level Settings
+ 	return 0;
+-- 
+1.5.3.8
