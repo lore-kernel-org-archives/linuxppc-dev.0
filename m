@@ -1,34 +1,39 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <haveblue@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 62DFEDE20C
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:09:21 +1100 (EST)
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E3C33DE133
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 05:14:11 +1100 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1KI94xI018261
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 13:09:04 -0500
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1KIDo2O006965
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 13:13:50 -0500
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1KI9EPH211254
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:09:16 -0700
+	m1KIE7hg212698
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:14:07 -0700
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1KI9E6J019172
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:09:14 -0700
-Date: Wed, 20 Feb 2008 12:08:02 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem
-	in dts
-Message-ID: <20080220120802.1657d34e@zod.rchland.ibm.com>
-In-Reply-To: <200802201416.54004.sr@denx.de>
-References: <1203504358-21331-1-git-send-email-sr@denx.de>
-	<20080220070119.27dc250d@zod.rchland.ibm.com>
-	<200802201416.54004.sr@denx.de>
+	m1KIE6Kg006764
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 11:14:07 -0700
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+In-Reply-To: <200802181100.12995.ossthema@de.ibm.com>
+References: <200802111724.12416.ossthema@de.ibm.com>
+	<OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
+	<1203094538.8142.23.camel@nimitz.home.sr71.net>
+	<200802181100.12995.ossthema@de.ibm.com>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 10:14:02 -0800
+Message-Id: <1203531242.15017.20.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>, Greg KH <greg@kroah.com>,
+	apw <apw@uk.ibm.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	netdev <netdev@vger.kernel.org>, tklein@linux.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,26 +43,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 20 Feb 2008 14:16:53 +0100
-Stefan Roese <sr@denx.de> wrote:
-
-> > > The 405EX and 405EXr are identical exept that the 2nd PCIe and the
-> > > 2nd EMAC interfaces are missing.
-> >
-> > Does ppc405ex_pciex_core_init need to grow some logic to detect 405ex
-> > from 405exr and return the correct number of ports then?  It
-> > unconditionally returns 2 today.
+On Mon, 2008-02-18 at 11:00 +0100, Jan-Bernd Themann wrote:
+> Dave Hansen <haveblue@us.ibm.com> wrote on 15.02.2008 17:55:38:
 > 
-> Yes, this could be done. Right now it works because the 405EXr board 
-> (Haleakala) only instantiates one PCIe device in the dts.
+> > I've been thinking about that, and I don't think you really *need* to
+> > keep a comprehensive map like that. 
+> > 
+> > When the memory is in a particular configuration (range of memory
+> > present along with unique set of holes) you get a unique ehea_bmap
+> > configuration.  That layout is completely predictable.
+> > 
+> > So, if at any time you want to figure out what the ehea_bmap address for
+> > a particular *Linux* virtual address is, you just need to pretend that
+> > you're creating the entire ehea_bmap, use the same algorithm and figure
+> > out host you would have placed things, and use that result.
+> > 
+> > Now, that's going to be a slow, crappy linear search (but maybe not as
+> > slow as recreating the silly thing).  So, you might eventually run into
+> > some scalability problems with a lot of packets going around.  But, I'd
+> > be curious if you do in practice.
 > 
-> A simple solution would be to just do a PVR check. Would this be acceptable?
+> Up to 14 addresses translation per packet (sg_list) might be required on 
+> the transmit side. On receive side it is only 1. Most packets require only 
+> very few translations (1 or sometimes more)  translations. However, 
+> with more then 700.000 packets per second this approach does not seem 
+> reasonable from performance perspective when memory is fragmented as you
+> described.
 
-Looking more at the code, it seems like it's really not needed.
-Essentially the only thing that is "wrong" is that we allocate an extra
-structure that goes unused.
+OK, but let's see the data.  *SHOW* me that it's slow. If the algorithm
+works, then perhaps we can simply speed it up with a little caching and
+*MUCH* less memory overhead.
 
-As long as the DTS file doesn't list a second bogus port, things work
-fine.  So I'm inclined to take your patch as-is.
-
-josh
+-- Dave
