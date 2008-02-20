@@ -1,15 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 20 Feb 2008 13:04:07 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-Subject: Re: libfdt: More tests of NOP handling behaviour
-Message-ID: <20080220020407.GC18944@localhost.localdomain>
-References: <20080218050925.GH29975@localhost.localdomain>
-	<E1JR6vQ-0000h9-2f@jdl.com> <47BB7FDB.3050809@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47BB7FDB.3050809@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BBA37DDDE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 14:02:11 +1100 (EST)
+Message-Id: <4130F47E-4F4A-4911-B63B-403A8C423565@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080219.163003.152862383.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero
+	base
+Date: Tue, 19 Feb 2008 21:02:04 -0600
+References: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
+	<20080219.163003.152862383.davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,44 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 19, 2008 at 08:18:19PM -0500, Jerry Van Baren wrote:
-> Jon Loeliger wrote:
-> > So, like, the other day David Gibson mumbled:
-> >> In light of the recently discovered bug with NOP handling, this adds
-> >> some more testcases for NOP handling.  Specifically, it adds a helper
-> >> program which will add a NOP tag after every existing tag in a dtb,
-> >> and runs the standard battery of tests over trees mangled in this way.
-> >>
-> >> For now, this does not add a NOP at the very beginning of the
-> >> structure block.  This causes problems for libfdt at present, because
-> >> we assume in many places that the root node's BEGIN_NODE tag is at
-> >> offset 0.  I'm still contemplating what to do about this (with one
-> >> option being simply to declare such dtbs invalid).
-> >>
-> >> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> > 
-> > Applied.
-> > 
-> > BTW, declaring DTBs with BEGIN_NODES not at offset 0
-> > as invalid seems like a fine choice to me.
-> > 
-> > jdl
-> 
-> FWIIW, I vote ditto on declaring DTBs with BEGIN_NODES not at offset 0 
-> as invalid.  The root being at offset 0 assumption is pretty well 
-> entrenched and I cannot think of any reason to change it that would be 
-> worth the effort.
 
-Well, it's actually not that hard to deal with.  I've already been
-planning to add a helper function/macro which validates a node offset
-(something currently open-coded in a whole bunch of places).  It would
-be fairly easy to make it skip over nops as well.
+On Feb 19, 2008, at 6:30 PM, David Miller wrote:
 
-But, likewise I can think of no reason that NOPs before the root node
-would be useful or likely to occur in practice.
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Tue, 19 Feb 2008 13:51:37 -0600 (CST)
+>
+>> If we add to an empty lmb region with a non-zero base we will not  
+>> coalesce
+>> the number of regions down to one.  This causes problems on ppc32  
+>> for the
+>> memory region as its assumed to only have one region.
+>>
+>> We can fix this easily by causing the initial add to replace the  
+>> dummy
+>> region.
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>>
+>> Fix a bug the initial patch introduced if we have a region that  
+>> gets added
+>> at the beginning of the list we wouldn't actually add it.
+>>
+>> Dave can you replace the patch in you tree with this one.
+>
+> I think my tree has already or will soon be pulled in so
+> I don't want to rebase it.
+>
+> Why don't you simply send me the relative bug fix instead?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+np.  Are we trying to get this into 2.6.25 or .26?
+
+- k
