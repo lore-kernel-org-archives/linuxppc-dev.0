@@ -1,20 +1,12 @@
-Return-Path: <Dag.K.Rognlien@sintef.no>
-Received: from smtpb.sintef.no (smtpb.sintef.no [129.241.253.24])
-	by ozlabs.org (Postfix) with ESMTP id C64C7DDF72
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 20:50:38 +1100 (EST)
-Received: from sintefav1.sintef.no (sintefav1.sintef.no [129.241.253.14])
-	by smtpb.sintef.no (Postfix) with ESMTP id DFB27727D5
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 10:50:34 +0100 (CET)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: Build fails for adder875 redboot on Linux-2.6.25-rc2
-Date: Wed, 20 Feb 2008 10:50:07 +0100
-Message-ID: <39417DF3286A66428FA558987839F44F03FC9189@SINTEFXCH01.sintef.no>
-In-Reply-To: <mailman.658.1203499779.17968.linuxppc-dev@ozlabs.org>
-References: <mailman.658.1203499779.17968.linuxppc-dev@ozlabs.org>
-From: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <SRS0=9nXe=TJ=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 1A582DDE38
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 21:46:31 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem in dts
+Date: Wed, 20 Feb 2008 11:45:58 +0100
+Message-Id: <1203504358-21331-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +16,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Since the 4xx PCIe driver checks for 405ex compatibility, the
+PCIe interface was not detected as it is currently defined as
+"405exr" compatible. This patch changes it to "405ex".
 
-After the change to build images for several dts files the redboot image
-failes to "wrap".
+The 405EX and 405EXr are identical exept that the 2nd PCIe and the
+2nd EMAC interfaces are missing.
 
---
-  WRAP    arch/powerpc/boot/cuImage.adder875-uboot
-DTC: dts->dtb  on file ".../arch/powerpc/boot/dts/adder875-uboot.dts"
-Image Name:   Linux-2.6.25-rc2-00359-g101142c
-Created:      Wed Feb 20 10:38:21 2008
-Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-Data Size:    1053933 Bytes =3D 1029.23 kB =3D 1.01 MB
-Load Address: 0x00400000
-Entry Point:  0x00400554
-  WRAP    arch/powerpc/boot/zImage-dtb.adder875-redboot
-DTC: dts->dtb  on file ".../arch/powerpc/boot/dts/adder875-redboot.dts"
-ppc_8xx-ld: arch/powerpc/boot/adder875-redboot.o: No such file: No such
-file or directory
-make[1]: *** [arch/powerpc/boot/zImage-dtb.adder875-redboot] Error 1
-make: *** [zImage] Error 2
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/boot/dts/haleakala.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-Regards,
-Dag K. W. Rognlien
-Research Scientist
-SINTEF ICT Communication Systems
+diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
+index 5dd3d15..ae68fef 100644
+--- a/arch/powerpc/boot/dts/haleakala.dts
++++ b/arch/powerpc/boot/dts/haleakala.dts
+@@ -235,7 +235,7 @@
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			#address-cells = <3>;
+-			compatible = "ibm,plb-pciex-405exr", "ibm,plb-pciex";
++			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
+ 			primary;
+ 			port = <0>; /* port number */
+ 			reg = <a0000000 20000000	/* Config space access */
+-- 
+1.5.4.2
