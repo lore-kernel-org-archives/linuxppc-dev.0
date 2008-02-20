@@ -1,19 +1,18 @@
 Return-Path: <jacmet@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
-	by ozlabs.org (Postfix) with ESMTP id 01111DE1CB
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 03:59:51 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so1744343fgg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 08:59:48 -0800 (PST)
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
+	by ozlabs.org (Postfix) with ESMTP id A97E4DDF46
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 04:01:34 +1100 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so3190288fkz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 09:01:31 -0800 (PST)
 To: Greg KH <greg@kroah.com>
-Subject: Re: [patch v8 1/4] USB: add Cypress c67x00 low level interface code
+Subject: Re: [patch v8 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
 References: <20080220090727.904160000@sunsite.dk>
-	<20080220091400.882581000@sunsite.dk>
-	<20080220161343.GC2658@kroah.com>
+	<20080220161435.GD2658@kroah.com>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 20 Feb 2008 17:59:36 +0100
-In-Reply-To: <20080220161343.GC2658@kroah.com> (Greg KH's message of "Wed\,
-	20 Feb 2008 08\:13\:43 -0800")
-Message-ID: <87r6f7d0nb.fsf@macbook.be.48ers.dk>
+Date: Wed, 20 Feb 2008 18:01:19 +0100
+In-Reply-To: <20080220161435.GD2658@kroah.com> (Greg KH's message of "Wed\,
+	20 Feb 2008 08\:14\:35 -0800")
+Message-ID: <87mypvd0kg.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -30,17 +29,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 >>>>> "Greg" == Greg KH <greg@kroah.com> writes:
 
-Hi,
+ Greg> On Wed, Feb 20, 2008 at 10:07:27AM +0100, Peter Korsgaard wrote:
+ >> The Cypress c67x00 (EZ-Host/EZ-OTG) controllers are multi-role low/fullspeed
+ >> USB controllers. This patch series implements a HCD driver and shows the
+ >> work-in-progress status of a gadget driver.
+ >> 
+ >> I believe patch 1..3 are ready, and I would like to see them queued up for
+ >> mainline.
+ >> 
+ >> Changes since v7:
+ >> - Moved dummy hcd probe/remove functions for conditional hcd support into
+ >> udc patch.
+ >> - Moved usb_disabled() check into c67x00_hcd_probe().
+ >> - Moved c67x00_get_comm_reg() to udc patch as it is only needed for gadget
+ >> support.
 
- >> drivers/usb/c67x00/c67x00.h        |  285 ++++++++++++++++++++++++++
+ Greg> So this fixes the build errors/warnings I sent you?
 
- Greg> Why not drivers/usb/hcd/c67x00/ instead?
+Well, I cannot reproduce the errors you showed (with Linus -git), but
+it does fix a warning about c67x00_get_comm_reg being unused.
 
-Because the device can do both host and peripheral (E.G. see patch 4
-in the series).
+ Greg> Can you run them through scripts/checkpatch.pl to ensure that those
+ Greg> warnings are also fixed?
 
-We could put it under hcd for now and then move it once the gadget
-driver gets finished/merged, but that seems silly to me..
+Yes, I'll send a new series shortly.
 
 -- 
 Bye, Peter Korsgaard
