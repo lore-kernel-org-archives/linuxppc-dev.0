@@ -1,24 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C531CDE1E4
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 07:06:36 +1100 (EST)
-Message-ID: <47BDD9E2.5050007@freescale.com>
-Date: Thu, 21 Feb 2008 14:06:58 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 62C4DDDED6
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 07:08:00 +1100 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 21 Feb 2008 21:07:58 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20080221200758.62940@gmx.net>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [POWERPC] 8xx: timebase frequency should not depend on
-	bus-frequency
-References: <20080221194508.GA12896@localhost.localdomain>
-	<47BDD587.9060206@freescale.com>
-	<20080221195918.GA14636@localhost.localdomain>
-In-Reply-To: <20080221195918.GA14636@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Subject: How to dynamically disable/enable CPU features?
+To: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +18,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Thu, Feb 21, 2008 at 01:48:23PM -0600, Scott Wood wrote:
->> Anton Vorontsov wrote:
->>> diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c 
->>> b/arch/powerpc/platforms/8xx/m8xx_setup.c
->>> index 184f998..0d9f75c 100644
->>> --- a/arch/powerpc/platforms/8xx/m8xx_setup.c
->>> +++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
->>> @@ -111,17 +111,12 @@ void __init mpc8xx_calibrate_decr(void)
->>>
->>> 	/* Processor frequency is MHz.
->>> 	 */
->>> -	ppc_tb_freq = 50000000;
->>> -	if (!get_freq("bus-frequency", &ppc_tb_freq)) {
->>> -		printk(KERN_ERR "WARNING: Estimating decrementer frequency "
->>> -		                "(not found)\n");
->>> -	}
->>> -	ppc_tb_freq /= 16;
->>> 	ppc_proc_freq = 50000000;
->>> 	if (!get_freq("clock-frequency", &ppc_proc_freq))
->>> 		printk(KERN_ERR "WARNING: Estimating processor frequency "
->>> 		                "(not found)\n");
->>>
->>> +	ppc_tb_freq = ppc_proc_freq / 16;
->> Shouldn't we just use the timebase-frequency property?
-> 
-> Nope. Most u-boots currently do not setup timebase-frequency, and if
-> they are setting it up, they're doing it wrong, in sense that Linux
-> overwrites timebase setup (yeah, in this regard MPC8xx is special).
+Hi,
 
-Current u-boots don't support device trees at all on 8xx.  The most 
-recent 8xx FDT patch I saw called get_tbclk() to fill in 
-timebase-frequency; does get_tbclk() not work?
+I'm wondering how to disable or enable CPU features based on the board the
+kernel is running on. In my case I want to disable the
+CPU_FTR_NEED_COHERENT flag for 74xx CPUs, because it locks up the machine.
+I tried to clear the flag in the platform's *_probe() function with the
+following code:
 
-Obviously, when booting with a cuImage we can't use u-boot's value, 
-since it's not in the bd_t.  In that case, we should fix the wrapper's 
-calculation of the timebase frequency.
+cur_cpu_spec->cpu_features &= ~CPU_FTR_NEED_COHERENT;
 
--Scott
+First I thought that this works fine, because the kernel booted once till
+the console login prompt (and died afterwards). Therefore I suspected that
+another change or bug in the kernel conflicts with my hardware (usually
+the machine died much earlier on older kernels, if the flag wasn't
+cleared).
+Now I removed all CPU_FTR_NEED_COHERENT entries from the cputable.h file
+and the kernel boots just fine without any lockups (reproducable).
+I don't quite understand the difference between dynamically clearing the
+flag in the platform setup code and removing the flag for all CPU
+defines in cputable.h. I can only suspect that clearing the flag in the
+platform probe function is too late, as the MMU and BATs may already be
+set up.
+
+Can anybody confirm my suspicion or give me a hint how to implement it
+correctly? (I don't want to tinker with cputable.h)
+
+Thanks!
+
+regards,
+
+Gerhard
+-- 
+Psst! Geheimtipp: Online Games kostenlos spielen bei den GMX Free Games! 
+http://games.entertainment.web.de/de/entertainment/games/free
