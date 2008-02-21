@@ -1,20 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C061DDDEBC
+Return-Path: <david-b@pacbell.net>
+Received: from smtp120.sbc.mail.sp1.yahoo.com (smtp120.sbc.mail.sp1.yahoo.com
+	[69.147.64.93]) by ozlabs.org (Postfix) with SMTP id 59014DDEBC
 	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 06:59:20 +1100 (EST)
-Date: Thu, 21 Feb 2008 22:59:19 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [POWERPC] 8xx: timebase frequency should not depend on
-	bus-frequency
-Message-ID: <20080221195918.GA14636@localhost.localdomain>
-References: <20080221194508.GA12896@localhost.localdomain>
-	<47BDD587.9060206@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <47BDD587.9060206@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Date: Thu, 21 Feb 2008 11:59:18 -0800
+From: David Brownell <david-b@pacbell.net>
+To: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [USB POWERPC] ehci: fix ppc build
+References: <20080221194913.GB12896@localhost.localdomain>
+In-Reply-To: <20080221194913.GB12896@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20080221195918.3DE5228E2BC@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Cc: linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 21, 2008 at 01:48:23PM -0600, Scott Wood wrote:
-> Anton Vorontsov wrote:
-> >diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c 
-> >b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> >index 184f998..0d9f75c 100644
-> >--- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-> >+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> >@@ -111,17 +111,12 @@ void __init mpc8xx_calibrate_decr(void)
-> > 
-> > 	/* Processor frequency is MHz.
-> > 	 */
-> >-	ppc_tb_freq = 50000000;
-> >-	if (!get_freq("bus-frequency", &ppc_tb_freq)) {
-> >-		printk(KERN_ERR "WARNING: Estimating decrementer frequency "
-> >-		                "(not found)\n");
-> >-	}
-> >-	ppc_tb_freq /= 16;
-> > 	ppc_proc_freq = 50000000;
-> > 	if (!get_freq("clock-frequency", &ppc_proc_freq))
-> > 		printk(KERN_ERR "WARNING: Estimating processor frequency "
-> > 		                "(not found)\n");
-> > 
-> >+	ppc_tb_freq = ppc_proc_freq / 16;
-> 
-> Shouldn't we just use the timebase-frequency property?
+> From avorontsov@ru.mvista.com  Thu Feb 21 11:49:48 2008
+> Date: Thu, 21 Feb 2008 22:49:13 +0300
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> To: linuxppc-dev@ozlabs.org
+> Cc: linux-usb@vger.kernel.org, dbrownell@users.sourceforge.net
+> Subject: [PATCH] [USB POWERPC] ehci: fix ppc build
+>
+> Currently, this setup:
+> CONFIG_USB_ARCH_HAS_EHCI=y
+> CONFIG_USB_EHCI_HCD=y
+> CONFIG_USB_EHCI_HCD_PPC_OF=y
+>
+> Will fail to build:
+>   CC      drivers/usb/host/ehci-hcd.o
+> drivers/usb/host/ehci-hcd.c:1018:2: error: #error "missing bus glue for ehci-hcd"
+> make[3]: *** [drivers/usb/host/ehci-hcd.o] Error 1
+>
+> ehci-hcd.c actually contains OF_PLATFORM_DRIVER glue, so error is bogus.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Nope. Most u-boots currently do not setup timebase-frequency, and if
-they are setting it up, they're doing it wrong, in sense that Linux
-overwrites timebase setup (yeah, in this regard MPC8xx is special).
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-So, for MPC8xx, Linux doesn't care what timebase setup was used in
-the firmware.
+... for 2.6.25 ...
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+> ---
+>  drivers/usb/host/ehci-hcd.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+> index 4caa6a8..3a19b1a 100644
+> --- a/drivers/usb/host/ehci-hcd.c
+> +++ b/drivers/usb/host/ehci-hcd.c
+> @@ -1014,7 +1014,7 @@ MODULE_LICENSE ("GPL");
+>  #endif
+>  
+>  #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER) && \
+> -    !defined(PS3_SYSTEM_BUS_DRIVER)
+> +    !defined(PS3_SYSTEM_BUS_DRIVER) && !defined(OF_PLATFORM_DRIVER)
+>  #error "missing bus glue for ehci-hcd"
+>  #endif
+>  
+> -- 
+> 1.5.2.2
+>
