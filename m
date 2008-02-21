@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A362DDDF3
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 09:52:48 +1100 (EST)
-Subject: Re: [RFC][PATCH] PowerPC 4xx: ibm_newemac 440GX phy clock workaround.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-In-Reply-To: <20080221144617.GA19465@ru.mvista.com>
-References: <20080221144617.GA19465@ru.mvista.com>
-Content-Type: text/plain
-Date: Fri, 22 Feb 2008 09:52:20 +1100
-Message-Id: <1203634340.10422.203.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTP id 69EC3DDE19
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 09:58:06 +1100 (EST)
+Date: Fri, 22 Feb 2008 01:57:28 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 1/1] [PPC] 8xx swap bug-fix
+Message-ID: <20080222015728.31516db3@kernel.crashing.org>
+In-Reply-To: <20080221122158.11BB324D16@gemini.denx.de>
+References: <20080205013857.47ebe544@kernel.crashing.org>
+	<20080221122158.11BB324D16@gemini.denx.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: dzu@denx.de, linuxppc-dev@ozlabs.org, Mackerras <paulus@samba.org>,
+	Paul@ozlabs.org, Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,95 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 21 Feb 2008 13:21:58 +0100
+Wolfgang Denk wrote:
 
-On Thu, 2008-02-21 at 17:46 +0300, Valentine Barshak wrote:
-> The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
-> and because of that it can't find PHY chip. The older ibm_emac driver had
-> a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros which
-> toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
-> does the same for "ibm,emac-440gx" compatible chips.
-
-The main problem is that will force clock on -all- EMACs ... which can
-be a problem as they can be in probe at the same time. Might be worth
-also adding a global mutex around that block.
-
-Also, would you mind having a look at the other workaround for the
-similar bug ?
-
-Cheers,
-Ben.
-
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> ---
->  drivers/net/ibm_newemac/core.c |   16 +++++++++++++++-
->  drivers/net/ibm_newemac/core.h |    8 ++++++--
->  2 files changed, 21 insertions(+), 3 deletions(-)
+> Dear Vitaly,
 > 
-> diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
-> --- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2008-02-21 16:45:36.000000000 +0300
-> +++ linux-2.6/drivers/net/ibm_newemac/core.c	2008-02-21 17:21:21.000000000 +0300
-> @@ -43,6 +43,8 @@
->  #include <asm/io.h>
->  #include <asm/dma.h>
->  #include <asm/uaccess.h>
-> +#include <asm/dcr.h>
-> +#include <asm/dcr-regs.h>
->  
->  #include "core.h"
->  
-> @@ -2480,8 +2482,11 @@ static int __devinit emac_init_config(st
->  	}
->  
->  	/* Check EMAC version */
-> -	if (of_device_is_compatible(np, "ibm,emac4"))
-> +	if (of_device_is_compatible(np, "ibm,emac4")) {
->  		dev->features |= EMAC_FTR_EMAC4;
-> +		if (of_device_is_compatible(np, "ibm,emac-440gx"))
-> +			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
-> +	}
->  
->  	/* Fixup some feature bits based on the device tree */
->  	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
-> @@ -2673,8 +2678,17 @@ static int __devinit emac_probe(struct o
->  	dev->stop_timeout = STOP_TIMEOUT_100;
->  	INIT_DELAYED_WORK(&dev->link_work, emac_link_timer);
->  
-> +	/* Enable internal phy clock source */
-> +	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-> +		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) | SDR0_MFR_ECS);
-> +
->  	/* Find PHY if any */
->  	err = emac_init_phy(dev);
-> +
-> +	/* Enable external phy clock source */
-> +	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-> +		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) & ~SDR0_MFR_ECS);
-> +
->  	if (err != 0)
->  		goto err_detach_tah;
->  
-> diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.h linux-2.6/drivers/net/ibm_newemac/core.h
-> --- linux-2.6.orig/drivers/net/ibm_newemac/core.h	2008-02-21 16:45:36.000000000 +0300
-> +++ linux-2.6/drivers/net/ibm_newemac/core.h	2008-02-21 17:21:47.000000000 +0300
-> @@ -301,6 +301,10 @@ struct emac_instance {
->   * Set if we have new type STACR with STAOPC
->   */
->  #define EMAC_FTR_HAS_NEW_STACR		0x00000040
-> +/*
-> + * Set if we need phy clock workaround for 440gx
-> + */
-> +#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
->  
+> in message <20080205013857.47ebe544@kernel.crashing.org> you wrote:
+> > On Mon, 4 Feb 2008 12:24:21 -0600
+> > Scott Wood wrote:
+> > 
+> > > On Sat, Feb 02, 2008 at 12:22:17PM +0100, Jochen Friedrich wrote:
+> > > > Hi Yuri,
+> > > > 
+> > > > >  Here is the patch which makes Linux-2.6 swap routines operate
+> > > > > correctly on the ppc-8xx-based machines.
+> > > > 
+> > > > is there any 8xx board left which isn't ported to ARCH=powerpc?
+> > > 
+> > > More importantly, is this something that is also broken in
+> > > arch/powerpc?  It looks like it has the same code...
+> > > 
+> > yes, it is. Though there is currently no best-at-all solution, this
+> > looks worth trying. I'll have a look how the 8xx feels under load
+> > and report back.
 > 
->  /* Right now, we don't quite handle the always/possible masks on the
-> @@ -312,8 +316,8 @@ enum {
->  
->  	EMAC_FTRS_POSSIBLE	=
->  #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
-> -	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
-> -	    EMAC_FTR_STACR_OC_INVERT	|
-> +	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
-> +	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
->  #endif
->  #ifdef CONFIG_IBM_NEW_EMAC_TAH
->  	    EMAC_FTR_HAS_TAH	|
+> Have you been able to check if arch/powerpc needs similar fixing?
+> 
+> 
+> Also, what is the current state of this patch? I would like to avoid
+> that it get's lost completeley.
+> 
+I have revalidated it (version modded to fit powerpc) with pretty tight stressing and can conclude
+this is good enough for mainline (it gets things much better than they are now, 
+in  case of swap enabled).
+
+I'll follow-up with relevant patch shortly.
+
+
+
+> 
+> BenH commented on Tue, 05 Feb 2008 18:37:07 +1100:
+> 
+> > Best is to just remove writeback completely and let the generic
+> > code handle it.
+> 
+> Has this been considered / tested by anybody?
+> 
+> Best regards,
+> 
+> Wolfgang Denk
+> 
+
+
+-- 
+Sincerely, Vitaly
