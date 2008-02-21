@@ -1,29 +1,16 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id DAC70DE20C
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 06:20:58 +1100 (EST)
-Received: from pd4mr3so.prod.shaw.ca
-	(pd4mr3so-qfe3.prod.shaw.ca [10.0.141.214]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JWL00KD8SEWL150@l-daemon> for linuxppc-dev@ozlabs.org;
-	Thu, 21 Feb 2008 12:20:56 -0700 (MST)
-Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
-	by pd4mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JWL00JU6SEWLFB0@pd4mr3so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Thu, 21 Feb 2008 12:20:57 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JWL00AY5SEVTQ90@l-daemon> for linuxppc-dev@ozlabs.org;
-	Thu, 21 Feb 2008 12:20:55 -0700 (MST)
-Date: Thu, 21 Feb 2008 12:19:56 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] add target for building .dtb files
-To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com
-Message-id: <20080221191955.10139.10496.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4CD81DE1D8
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 06:45:13 +1100 (EST)
+Date: Thu, 21 Feb 2008 22:45:08 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 8xx: timebase frequency should not depend on
+	bus-frequency
+Message-ID: <20080221194508.GA12896@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,47 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+m8xx_setup.c says:
+   /* Force all 8xx processors to use divide by 16 processor clock. */
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+And at the same time it is using bus-frequency for calculating
+timebase. It is okay for most setups because bus-frequency is
+equal to clock-frequency.
 
+The problem emerges when cpu frequency is > 66MHz, quoting
+u-boot/cpu/mpc8xx/speed.c:
+
+        if (gd->cpu_clk <= 66000000) {
+                sccr_reg |= SCCR_EBDF00;        /* bus division factor = 1 */
+                gd->bus_clk = gd->cpu_clk;
+        } else {
+                sccr_reg |= SCCR_EBDF01;        /* bus division factor = 2 */
+                gd->bus_clk = gd->cpu_clk / 2;
+        }
+
+So in case of cpu clock > 66MHz, bus_clk = cpu_clk / 2. An then, from
+Linux, we calculate timebase frequency as tb_freq = bus_clk / 16,
+that is cpu_clk / 2 / 16, which is wrong.
+
+This patch fixes system time drifting problem on the EP885C board
+running at 133MHz.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
+ arch/powerpc/platforms/8xx/m8xx_setup.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-Josh, is this what your were looking for?
-
-Cheers,
-g.
----
-
- arch/powerpc/Makefile      |    2 +-
- arch/powerpc/boot/Makefile |    4 ++++
- 2 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index ab5cfe8..dd80825 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -164,7 +164,7 @@ boot := arch/$(ARCH)/boot
- $(BOOT_TARGETS): vmlinux
- 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
+index 184f998..0d9f75c 100644
+--- a/arch/powerpc/platforms/8xx/m8xx_setup.c
++++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
+@@ -111,17 +111,12 @@ void __init mpc8xx_calibrate_decr(void)
  
--bootwrapper_install:
-+bootwrapper_install %.dtb:
- 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 	/* Processor frequency is MHz.
+ 	 */
+-	ppc_tb_freq = 50000000;
+-	if (!get_freq("bus-frequency", &ppc_tb_freq)) {
+-		printk(KERN_ERR "WARNING: Estimating decrementer frequency "
+-		                "(not found)\n");
+-	}
+-	ppc_tb_freq /= 16;
+ 	ppc_proc_freq = 50000000;
+ 	if (!get_freq("clock-frequency", &ppc_proc_freq))
+ 		printk(KERN_ERR "WARNING: Estimating processor frequency "
+ 		                "(not found)\n");
  
- define archhelp
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index d57a67d..fb29f10 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -311,6 +311,10 @@ $(obj)/treeImage.initrd.%: vmlinux $(dtstree)/%.dts $(wrapperbits)
- $(obj)/treeImage.%: vmlinux $(dtstree)/%.dts $(wrapperbits)
- 	$(call if_changed,wrap,treeboot-$*,$(dtstree)/$*.dts)
++	ppc_tb_freq = ppc_proc_freq / 16;
+ 	printk("Decrementer Frequency = 0x%lx\n", ppc_tb_freq);
  
-+# Rule to build device tree blobs
-+$(obj)/%.dtb: $(dtstree)/%.dts $(obj)/dtc
-+	$(obj)/dtc -O dtb -o $(obj)/$*.dtb -b 0 $(dtstree)/$*.dts
-+
- # If there isn't a platform selected then just strip the vmlinux.
- ifeq (,$(image-y))
- image-y := vmlinux.strip
+ 	/* Perform some more timer/timebase initialization.  This used
+-- 
+1.5.2.2
