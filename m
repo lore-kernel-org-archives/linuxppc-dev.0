@@ -1,23 +1,17 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5C080DE22B
+Return-Path: <raul.moreno@telvent.abengoa.com>
+Received: from envio.abengoa.com (envio.abengoa.com [217.15.37.68])
+	by ozlabs.org (Postfix) with ESMTP id E1AFFDE186
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Feb 2008 04:50:37 +1100 (EST)
+	Fri, 22 Feb 2008 04:54:39 +1100 (EST)
+In-Reply-To: <47BD9936.2000400@dlasys.lcl>
+Subject: Re: initramfs problem - /init file
+To: dhlii@dlasys.net
+Message-ID: <OFFA27553C.639D7A97-ONC12573F6.0055F84D-C12573F6.00587AD1@abengoa.com>
+Date: Thu, 21 Feb 2008 17:05:59 +0100
+From: raul.moreno@telvent.abengoa.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Xilinx  PowerPC
-Date: Thu, 21 Feb 2008 09:50:23 -0800
-In-Reply-To: <47BD212B.6090809@dlasys.net>
-References: <47BD212B.6090809@dlasys.net>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>,
-	"Grant Likely" <grant.likely@secretlab.ca>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Message-Id: <20080221175025.7817BBD8057@mail91-sin.bigfish.com>
+Content-type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,74 +23,122 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+Hi Dave,
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of David H.
-Lynch Jr.
-> Sent: Wednesday, February 20, 2008 10:59 PM
-> To: Grant Likely; linuxppc-embedded
-> Subject: Xilinx PowerPC
->=20
->=20
->     So when you have Xilinx under powerpc working, do we pull it from
-your
->     git tree or the xilinx one ?
->=20
->     Will there be an announcement ?
->=20
->     How about a one paragraph getting started guide to moving a xilinx
-> ppc bsp to
->     xilinx powerpc.
->=20
->     Like  ?
->=20
->     step 1).
->              Generate a dts - gen-mhs-devicetree ?
->              And pass it to through your boot loader to Linux ?
+I have just figured out the problem... an stupid error... By mistake I =
+took
+the filesystem compiled to intel instead to ppc. I guess I forgot to as=
+sign
+the right cross-compile toolchain. So the microprocessor can't execute =
+the
+init file.
 
-http://git.xilinx.com/gen-mhs-devtree.git contains two utilities for
-generating device trees from EDK projects.  The older option is a python
-script, originally written by Grant.  The newer (and probably more
-mature at this point) option is an EDK BSP generator for u-boot,
-originally written by Michal Simek.  Preferably this gets passed from a
-uboot, although it's also possible to compile it into the kernel.
-Currently, the uboot option is somewhat annoying because there's not a
-good surefire way for getting uboot up and running on an EDK design.
-(Unfortunately, the EDK BSP generator is incomplete, and the uboot
-support for virtex needs some work to get it integrated as well).
+Now it works.
+Anyway thank you for your time.
 
->     Step 2).
->              the code in arch/powerpc/???? is the devicetree equvalent
-to
->              arch/ppc/platforms/4xx/xilinx_ml410.c
-http://git.xilinx.com/linux-2.6-xlnx.git contains a preliminary stab at
-the bootcode for Virtex.  I've been using this for a while with
-ARCH=3Dpowerpc.  There isn't really much need for board specific =
-platform
-code: This should (I think) be handled by the device tree.  All of this
-is still pretty preliminary at the moment however.  The big problem with
-the boot code in the Xilinx tree is that you need to be able to allocate
-memory in order to parse the device tree in order to figure out how much
-memory you have.  I just haven't rewritten the code to use libfdt, which
-can query the device tree without memory allocation yet.  Grant has a
-slightly different scheme in his tree, but it works as well.  Generally
-I've been more focused on avoiding u-boot, whereas Grant has been using
-u-boot exclusively, I think.
 
->     Step 3).
->              device drivers need to change initialization/setup from
->              ???? to ???
-All the xilinx drivers in mainline and most of the ones in the
-git.xilinx.com tree export both platform device and of_device
-interfaces.  You should be able to look at any of them to figure out a
-good way of adding of_device support to a driver.  the ll_temac is by
-far the most complex instance of this, which has to do some non-trivial
-traversal of the device tree to discover the information it needs about
-it's interface to memory.
+Ra=FAl Moreno
 
-So, the short answer is, you might be able to get it to work today, but
-the code isn't in shape for mainline yet.
 
-Steve
+
+"David H. Lynch Jr." <dhlii@dlasys.lcl>
+"David H. Lynch Jr."
+21/02/2008 16:31
+Por favor, responda a dhlii
+                                                                       =
+                                                
+ Para:   raul.moreno@telvent.abengoa.com                               =
+                                                
+                                                                       =
+                                                
+ cc:     linuxppc-embedded <linuxppc-embedded@ozlabs.org>              =
+                                                
+                                                                       =
+                                                
+ Asunto: Re: initramfs problem - /init file                            =
+                                                
+                                                                       =
+                                                
+
+
+
+
+
+raul.moreno@telvent.abengoa.com wrote:
+> Hello Dave,
+>
+> thanks for your answer. I agree with you, the easy way is to assign t=
+he
+> rootfs directory. I gave the filesystem as a cpio file because it is =
+the
+> same (the kernel takes the rootfs and converts it to a cpio format), =
+but
+> the compilation is faster. Anyway, although now I do as you said, I s=
+till
+> get the error:
+> "Failed to execute /init
+> Kernel panic - not syncing: No init found.  Try passing init=3D optio=
+n to
+> kernel."
+> I can't understand why it happens. I check the permission of /init an=
+d
+> /sbin/init and everything seems to me OK.
+>
+> Any idea?
+>
+    I have had the same problem.
+    Things I can remember:
+          Permissions,
+          console setup,
+          watch out for symbolic links to init.
+          Also is your init and executable or  script ?
+          I think you get this failure if ANYTHING goes wrong exec'ing
+init.
+             Like - it found init but could not execute a shell.
+             or the shell required a library it could not find.
+          Or something is not quite right with your Virtual memory -
+            Linux exec's by forcing chained page faults.
+
+       One thing I tried was a simple "hello world" in ppc assembler -
+no libraries,
+       and named it /init. When it succeeded I was able to narrow my
+problem down..
+       Then tried a "hello world" in C with a static library, then
+dynamic, then ...
+       Basically building more and more complex /init's until I isolate=
+d
+what was failing.
+
+
+
+
+
+
+> Ra=FAl Moreno
+>
+>
+>
+>
+
+
+--
+Dave Lynch
+     DLA Systems
+Software Development:
+Embedded Linux
+717.627.3770                    dhlii@dlasys.net
+http://www.dlasys.net
+fax: 1.253.369.9244                                               Cell:=
+
+1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too=
+
+numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It tak=
+es a
+touch of genius - and a lot of courage to move in the opposite directio=
+n."
+Albert Einstein
+
+=
