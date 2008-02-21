@@ -1,20 +1,17 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id A6024DDEBB
+Return-Path: <raul.moreno@telvent.abengoa.com>
+Received: from envio.abengoa.com (envio.abengoa.com [217.15.37.68])
+	by ozlabs.org (Postfix) with ESMTP id D9E4ADDE21
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Feb 2008 19:01:07 +1100 (EST)
-Message-ID: <47BD3001.2020004@coritel.it>
-Date: Thu, 21 Feb 2008 09:02:09 +0100
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Thu, 21 Feb 2008 21:40:02 +1100 (EST)
+In-Reply-To: <47BD1CFB.103@dlasys.lcl>
+Subject: Re: initramfs problem - /init file
+To: dhlii@dlasys.net
+Message-ID: <OFF7D0CA65.6F1F855C-ONC12573F6.0039B07D-C12573F6.003A87F3@abengoa.com>
+Date: Thu, 21 Feb 2008 11:38:52 +0100
+From: raul.moreno@telvent.abengoa.com
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8641D PCI-Express error
-References: <47BC51B5.50204@coritel.it>
-	<BA5ADBDE-BDE5-4126-B012-DA6C5A8F8EF3@kernel.crashing.org>
-In-Reply-To: <BA5ADBDE-BDE5-4126-B012-DA6C5A8F8EF3@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII
-Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Content-type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +22,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala ha scritto:
-> 
-> On Feb 20, 2008, at 10:13 AM, Marco Stornelli wrote:
-> 
->> Kumar Gala wrote:
->>>> Marco Stornelli wrote:
->>>>
->>>>> No, but I can try to backport the PCI-E code from 2.6.24 to 2.6.18
->>>>> if it could help. What do you think about it? Do you think this
->>>>> problem could be not present in 2.6.24?
->>>>> I have no idea there, honestly.  Sorry.
->>
->>> As Jon said, try 2.6.24 and see if it has an issue, if so we can look
->>> at helping.  if not, you know you need to back port the fixes.
->>
->>> - k
->>
->> I've "backported" the PCI-Express code from 2.6.24 to 2.6.18, but it
->> still doesn't work, I have the same problem (sigh), could you give me
->> any suggestions?
-> 
-> did 2.6.24 work for you or not?
-> 
-> - k
-> 
-No, it didn't. I have the same problem even with the 2.6.18 plus the
-2.6.24 PCI-Express code. I performed this action because I can't change
-kernel version but I can modify it.
 
-Marco
+
+
+
+
+
+raul.moreno@telvent.abengoa.com wrote:
+>> Hello everybody,
+>>
+>> I created a tiny root filesystem, just with Busybox, that I want to =
+use
+as
+>> rootfs through initramfs (and keep it as the final root filesystem).=
+
+>>
+>>  Then I created an init file which is a link to
+>> /sbin/init and I inserted the created cpio file with this filesystem=
+ in
+>> CONFIG_INITRAMFS_SOURCE.
+>    The simplest way to get initramfs working is to stuff your
+>root filesystem tree in a directory, and point
+>    CONFIG_INITRAMFS_SOURCE at it.
+>    The kernel build process will take care of all the cpio stuff
+>for you.
+>   Personally I think it is the easiest to maintain.
+
+
+Hello Dave,
+
+thanks for your answer. I agree with you, the easy way is to assign the=
+
+rootfs directory. I gave the filesystem as a cpio file because it is th=
+e
+same (the kernel takes the rootfs and converts it to a cpio format), bu=
+t
+the compilation is faster. Anyway, although now I do as you said, I sti=
+ll
+get the error:
+"Failed to execute /init
+Kernel panic - not syncing: No init found.  Try passing init=3D option =
+to
+kernel."
+I can't understand why it happens. I check the permission of /init and
+/sbin/init and everything seems to me OK.
+
+Any idea?
+
+Ra=FAl Moreno
+
+=
