@@ -1,16 +1,12 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3AA5FDDEC3
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 01:48:17 +1100 (EST)
-Date: Thu, 21 Feb 2008 17:46:18 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <SRS0=7Uz3=TK=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id DEB2ADDEBD
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 02:30:12 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH] PowerPC 4xx: ibm_newemac 440GX phy clock workaround.
-Message-ID: <20080221144617.GA19465@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] [POWERPC] Fix L1 cache size in katmai DTS
+Date: Thu, 21 Feb 2008 16:21:37 +0100
+Message-Id: <1203607297-15732-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,83 +16,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
-and because of that it can't find PHY chip. The older ibm_emac driver had
-a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros which
-toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
-does the same for "ibm,emac-440gx" compatible chips.
+This patch changes the katmai (440SPe) L1 cache size to 32k. Some
+whitespace issues are cleaned up too.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+Signed-off-by: Stefan Roese <sr@denx.de>
 ---
- drivers/net/ibm_newemac/core.c |   16 +++++++++++++++-
- drivers/net/ibm_newemac/core.h |    8 ++++++--
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ arch/powerpc/boot/dts/katmai.dts |   58 +++++++++++++++++++-------------------
+ 1 files changed, 29 insertions(+), 29 deletions(-)
 
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
---- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2008-02-21 16:45:36.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/core.c	2008-02-21 17:21:21.000000000 +0300
-@@ -43,6 +43,8 @@
- #include <asm/io.h>
- #include <asm/dma.h>
- #include <asm/uaccess.h>
-+#include <asm/dcr.h>
-+#include <asm/dcr-regs.h>
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index 9bdfc0f..abf7f3e 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -38,8 +38,8 @@
+ 			timebase-frequency = <0>; /* Filled in by zImage */
+ 			i-cache-line-size = <20>;
+ 			d-cache-line-size = <20>;
+-			i-cache-size = <20000>;
+-			d-cache-size = <20000>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
+ 			dcr-controller;
+ 			dcr-access-method = "native";
+ 		};
+@@ -136,11 +136,11 @@
+ 		};
  
- #include "core.h"
+ 		POB0: opb {
+-		  	compatible = "ibm,opb-440spe", "ibm,opb-440gp", "ibm,opb";
++			compatible = "ibm,opb-440spe", "ibm,opb-440gp", "ibm,opb";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+-		  	ranges = <00000000 4 e0000000 20000000>;
+-		  	clock-frequency = <0>; /* Filled in by zImage */
++			ranges = <00000000 4 e0000000 20000000>;
++			clock-frequency = <0>; /* Filled in by zImage */
  
-@@ -2480,8 +2482,11 @@ static int __devinit emac_init_config(st
- 	}
+ 			EBC0: ebc {
+ 				compatible = "ibm,ebc-440spe", "ibm,ebc-440gp", "ibm,ebc";
+@@ -153,38 +153,38 @@
+ 			};
  
- 	/* Check EMAC version */
--	if (of_device_is_compatible(np, "ibm,emac4"))
-+	if (of_device_is_compatible(np, "ibm,emac4")) {
- 		dev->features |= EMAC_FTR_EMAC4;
-+		if (of_device_is_compatible(np, "ibm,emac-440gx"))
-+			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
-+	}
+ 			UART0: serial@10000200 {
+-		   		device_type = "serial";
+-		   		compatible = "ns16550";
+-		   		reg = <10000200 8>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <10000200 8>;
+ 				virtual-reg = <a0000200>;
+-		   		clock-frequency = <0>; /* Filled in by zImage */
+-		   		current-speed = <1c200>;
+-		   		interrupt-parent = <&UIC0>;
+-		   		interrupts = <0 4>;
+-	   		};
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <1c200>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
  
- 	/* Fixup some feature bits based on the device tree */
- 	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
-@@ -2673,8 +2678,17 @@ static int __devinit emac_probe(struct o
- 	dev->stop_timeout = STOP_TIMEOUT_100;
- 	INIT_DELAYED_WORK(&dev->link_work, emac_link_timer);
- 
-+	/* Enable internal phy clock source */
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) | SDR0_MFR_ECS);
-+
- 	/* Find PHY if any */
- 	err = emac_init_phy(dev);
-+
-+	/* Enable external phy clock source */
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) & ~SDR0_MFR_ECS);
-+
- 	if (err != 0)
- 		goto err_detach_tah;
- 
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.h linux-2.6/drivers/net/ibm_newemac/core.h
---- linux-2.6.orig/drivers/net/ibm_newemac/core.h	2008-02-21 16:45:36.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/core.h	2008-02-21 17:21:47.000000000 +0300
-@@ -301,6 +301,10 @@ struct emac_instance {
-  * Set if we have new type STACR with STAOPC
-  */
- #define EMAC_FTR_HAS_NEW_STACR		0x00000040
-+/*
-+ * Set if we need phy clock workaround for 440gx
-+ */
-+#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
+ 			UART1: serial@10000300 {
+-		   		device_type = "serial";
+-		   		compatible = "ns16550";
+-		   		reg = <10000300 8>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <10000300 8>;
+ 				virtual-reg = <a0000300>;
+-		   		clock-frequency = <0>;
+-		   		current-speed = <0>;
+-		   		interrupt-parent = <&UIC0>;
+-		   		interrupts = <1 4>;
+-	   		};
++				clock-frequency = <0>;
++				current-speed = <0>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
  
  
- /* Right now, we don't quite handle the always/possible masks on the
-@@ -312,8 +316,8 @@ enum {
+ 			UART2: serial@10000600 {
+-		   		device_type = "serial";
+-		   		compatible = "ns16550";
+-		   		reg = <10000600 8>;
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <10000600 8>;
+ 				virtual-reg = <a0000600>;
+-		   		clock-frequency = <0>;
+-		   		current-speed = <0>;
+-		   		interrupt-parent = <&UIC1>;
+-		   		interrupts = <5 4>;
+-	   		};
++				clock-frequency = <0>;
++				current-speed = <0>;
++				interrupt-parent = <&UIC1>;
++				interrupts = <5 4>;
++			};
  
- 	EMAC_FTRS_POSSIBLE	=
- #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
--	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
--	    EMAC_FTR_STACR_OC_INVERT	|
-+	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
-+	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
- #endif
- #ifdef CONFIG_IBM_NEW_EMAC_TAH
- 	    EMAC_FTR_HAS_TAH	|
+ 			IIC0: i2c@10000400 {
+ 				device_type = "i2c";
+-- 
+1.5.4.2
