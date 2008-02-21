@@ -1,24 +1,21 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id D8CB8DDDFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 18:53:40 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so1046576uge.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2008 23:53:38 -0800 (PST)
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch v8 3/4] USB: add Cypress c67x00 OTG controller HCD driver
-References: <20080220090727.904160000@sunsite.dk>
-	<20080220091401.612406000@sunsite.dk>
-	<200802201906.35830.david-b@pacbell.net>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 21 Feb 2008 08:53:34 +0100
-In-Reply-To: <200802201906.35830.david-b@pacbell.net> (David Brownell's
-	message of "Wed\, 20 Feb 2008 19\:06\:35 -0800")
-Message-ID: <87mypuagox.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: dbrownell@users.sourceforge.net, greg@kroah.com, linux-usb@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, stern@rowland.harvard.edu
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8DAC9DDE04
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 20:24:48 +1100 (EST)
+Subject: Re: [PATCH] mpic: make sparse happy
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <91eb052edd9d5c608658fcdcfdc7589c@bga.com>
+References: <91eb052edd9d5c608658fcdcfdc7589c@bga.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xFhCkln1xRdak7uKWocp"
+Date: Thu, 21 Feb 2008 10:23:16 +0100
+Message-Id: <1203585796.17534.121.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "David" == David Brownell <david-b@pacbell.net> writes:
 
-Hi,
+--=-xFhCkln1xRdak7uKWocp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- David>   +ccflags-$(CONFIG_USB_DEBUG)    += -DDEBUG
 
- David> It's a newish idiom, most easily applied to new code before
- David> it merges ...  :)
+On Wed, 2008-02-20 at 23:50 -0600, Milton Miller wrote:
+> At Wed Feb 20 22:31:44 EST 2008, Johannes Berg wrote:
+> > I was running sparse on something else and noticed sparse warnings
+> > and especially the bogus code that is fixed by the first hunk of
+> > this patch, so I fixed them all while at it.
+>=20
+> But your change is not equivalent!
 
-Ok. I'll fix that.
+> You now write to the register with dcr, big, and little endian variants!
 
- David> And I realize that some of the drivers there have violated the
- David> normal "alphabetical order" convention, so maybe one big
- David> cleanup patch would be in order ... but still, I'd rather see
- David> such new options added in the right place, rather than need
- David> to see them fixed up later.
+Ouch, you're right, doh.
 
-And this as well.
+johannes
 
--- 
-Bye, Peter Korsgaard
+--=-xFhCkln1xRdak7uKWocp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR71DA6Vg1VMiehFYAQKPVxAAj/HgYRPTGL+EjU2N5lD0wxEt0bEWv8Fk
+uGlzUwBE6PAzgx08LfrUxaV2/UzDMkrHWF/IndsMEUMCZDvixeLPFk9M3wHxADEA
+8V7wftjs8YD4Nm+fVwH09ArsiHgaVUe9Wl+Bv43sPypPy32jtZP2bkZLcS0izQT0
+ytG746XTI0cp194y9wCQWvAu5v+SYzldn+eQ+Ed90HxJLdLQv9Aa3YnJz9PMyJY3
+W94aUpLB5WJ/x/gQMwJS0en+bOzyCR7MZZxzu24oK7wgZ4bgFUzT0dlx1gR6Xscx
+Z3VTTUUIkqkNsKFwO230UZ7fM933B0nivtY0P6opvv5bzAxJumYMQR6Gqk8gtS9Y
+xoHEhs1D1RG4mlPe+kccS+39+224aWEUuFoddYal7juGVW7BVaJhpD5FMMCb8sYY
+hDHTxgfn7/1mkSjQEF7dPJR29WCBuVKjkB1fsbX0qQJwLXaU3p+whiCOLZMHZTri
+54czdwJVb7P1+GIWpjt1cfvwXCOmZEXCm51z1eWO8Z0Ok3BEMRlNaHhLNqoTLnMn
+CeiiEQ1kGZsHdbe8EEsX8XiaSRME5glEqzLaLXgpbnlSp9tmFWA8ym1/S1JO/ci5
+rlND9BdMvuyu6RpAA0UgcoNZl4z3MkyqBf7hBtk+Tri7ng7yCwTqI/u7dHf9dCXG
+bXPeOe7vzXs=
+=WIXm
+-----END PGP SIGNATURE-----
+
+--=-xFhCkln1xRdak7uKWocp--
