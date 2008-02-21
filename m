@@ -1,28 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18365.1344.466799.556560@cargo.ozlabs.ibm.com>
-Date: Thu, 21 Feb 2008 15:59:44 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
-	endianness
-In-Reply-To: <20080220121818.GA20836@localhost.localdomain>
-References: <20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-	<19805.1203355811@turing-police.cc.vt.edu>
-	<47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>
-	<47BABD3A.7010102@anagramm.de>
-	<20080219040530.7b1d115d.akpm@linux-foundation.org>
-	<18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-	<20080220121818.GA20836@localhost.localdomain>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	Krzysztof Helt <krzysztof.h1@poczta.fm>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 1B56FDDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 16:51:06 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <1203507104.17534.32.camel@johannes.berg>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <91eb052edd9d5c608658fcdcfdc7589c@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] mpic: make sparse happy
+Date: Wed, 20 Feb 2008 23:50:57 -0600
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,21 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov writes:
+At Wed Feb 20 22:31:44 EST 2008, Johannes Berg wrote:
+> I was running sparse on something else and noticed sparse warnings
+> and especially the bogus code that is fixed by the first hunk of
+> this patch, so I fixed them all while at it.
 
-> > I was wondering if it would be sufficient to provide alternative
-> > versions of fb_readl, fb_writel etc. that do byte-swapping.
-> 
-> This is of course viable alternative. And I was considering this, but
-> later I abandoned the idea: that way we'll end up doing math in the
-> native endianness and then converting it to the foreign. This feels
-> ugly in contrast when we can do the right math in the first place, per
-> framebuffer.
+But your change is not equivalent!
 
-OK.  I guess I'm convinced then.  However, your patch description
-needs to be a lot better.  It should describe things like why you
-want to make the change and why the change you are proposing is a good
-idea and is better than other alternatives.  If you'd done that
-originally we might not have needed to have all this discussion. :)
+> --- everything.orig/arch/powerpc/sysdev/mpic.c  2008-02-20 
+> 12:25:41.000000000 +0100
+> +++ everything/arch/powerpc/sysdev/mpic.c       2008-02-20 
+> 12:28:37.000000000 +0100
+> @@ -175,13 +175,13 @@ static inline void _mpic_write(enum mpic
+>         switch(type) {
+>  #ifdef CONFIG_PPC_DCR
+>         case mpic_access_dcr:
+> -               return dcr_write(rb->dhost, reg, value);
+> +               dcr_write(rb->dhost, reg, value);
+>  #endif
+>         case mpic_access_mmio_be:
+> -               return out_be32(rb->base + (reg >> 2), value);
+> +               out_be32(rb->base + (reg >> 2), value);
+>         case mpic_access_mmio_le:
+>         default:
+> -               return out_le32(rb->base + (reg >> 2), value);
+> +               out_le32(rb->base + (reg >> 2), value);
+>         }
+>  }
 
-Paul.
+You now write to the register with dcr, big, and little endian variants!
+
+Either put a return or break after the calls to the void functions so 
+you don't fall through.
+
+...
+
+> @@ -1107,10 +1108,10 @@ struct mpic * __init mpic_alloc(struct d
+>          * in, try to obtain one
+>          */
+>         if (paddr == 0 && !(mpic->flags & MPIC_USES_DCR)) {
+> -               const u32 *reg;
+> -               reg = of_get_property(node, "reg", NULL);
+> -               BUG_ON(reg == NULL);
+> -               paddr = of_translate_address(node, reg);
+> +               const u32 *regprop;
+> +               regprop = of_get_property(node, "reg", NULL);
+> +               BUG_ON(regprop == NULL);
+> +               paddr = of_translate_address(node, regprop);
+>                 BUG_ON(paddr == OF_BAD_ADDR);
+>         }
+
+This is reg variable is shadowed ... ok, although i might have renamed 
+the outer one features or greg_feature.  For that matter, I would have 
+initialized this reg/regprop on definition.
