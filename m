@@ -1,10 +1,10 @@
 Return-Path: <olof@lixom.net>
-Message-Id: <20080221025929.381241000@lixom.net>
+Message-Id: <20080221025930.273755000@lixom.net>
 References: <20080221025753.903665000@lixom.net>
-Date: Wed, 20 Feb 2008 20:57:55 -0600
+Date: Wed, 20 Feb 2008 20:57:58 -0600
 From: Olof Johansson <olof@lixom.net>
 To: jgarzik@pobox.com
-Subject: [patch 2/6] [POWERPC] pasemi: Add flag management functions to dma_lib
+Subject: [patch 5/6] pasemi_mac: Enable GSO by default
 Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,132 +15,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add functions to manage the channel syncronization flags to dma_lib
-    
+Ethtool support will handle the runtime toggling, but we do quite a bit
+better with it on by default so just leave it on for now.
+
+
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Index: k.org/arch/powerpc/platforms/pasemi/dma_lib.c
+Index: k.org/drivers/net/pasemi_mac.c
 ===================================================================
---- k.org.orig/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ k.org/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -26,6 +26,7 @@
+--- k.org.orig/drivers/net/pasemi_mac.c
++++ k.org/drivers/net/pasemi_mac.c
+@@ -1750,7 +1750,7 @@ pasemi_mac_probe(struct pci_dev *pdev, c
+ 	netif_napi_add(dev, &mac->napi, pasemi_mac_poll, 64);
  
- #define MAX_TXCH 64
- #define MAX_RXCH 64
-+#define MAX_FLAGS 64
+ 	dev->features = NETIF_F_IP_CSUM | NETIF_F_LLTX | NETIF_F_SG |
+-			NETIF_F_HIGHDMA;
++			NETIF_F_HIGHDMA | NETIF_F_GSO;
  
- static struct pasdma_status *dma_status;
- 
-@@ -43,6 +44,7 @@ static struct pci_dev *dma_pdev;
- 
- static DECLARE_BITMAP(txch_free, MAX_TXCH);
- static DECLARE_BITMAP(rxch_free, MAX_RXCH);
-+static DECLARE_BITMAP(flags_free, MAX_FLAGS);
- 
- /* pasemi_read_iob_reg - read IOB register
-  * @reg: Register to read (offset into PCI CFG space)
-@@ -373,6 +375,71 @@ void pasemi_dma_free_buf(struct pasemi_d
- }
- EXPORT_SYMBOL(pasemi_dma_free_buf);
- 
-+/* pasemi_dma_alloc_flag - Allocate a flag (event) for channel syncronization
-+ *
-+ * Allocates a flag for use with channel syncronization (event descriptors).
-+ * Returns allocated flag (0-63), < 0 on error.
-+ */
-+int pasemi_dma_alloc_flag(void)
-+{
-+	int bit;
-+
-+retry:
-+	bit = find_next_bit(flags_free, MAX_FLAGS, 0);
-+	if (bit >= MAX_FLAGS)
-+		return -ENOSPC;
-+	if (!test_and_clear_bit(bit, flags_free))
-+		goto retry;
-+
-+	return bit;
-+}
-+EXPORT_SYMBOL(pasemi_dma_alloc_flag);
-+
-+
-+/* pasemi_dma_free_flag - Deallocates a flag (event)
-+ * @flag: Flag number to deallocate
-+ *
-+ * Frees up a flag so it can be reused for other purposes.
-+ */
-+void pasemi_dma_free_flag(int flag)
-+{
-+	BUG_ON(test_bit(flag, flags_free));
-+	BUG_ON(flag >= MAX_FLAGS);
-+	set_bit(flag, flags_free);
-+}
-+EXPORT_SYMBOL(pasemi_dma_free_flag);
-+
-+
-+/* pasemi_dma_set_flag - Sets a flag (event) to 1
-+ * @flag: Flag number to set active
-+ *
-+ * Sets the flag provided to 1.
-+ */
-+void pasemi_dma_set_flag(int flag)
-+{
-+	BUG_ON(flag >= MAX_FLAGS);
-+	if (flag < 32)
-+		pasemi_write_dma_reg(PAS_DMA_TXF_SFLG0, 1 << flag);
-+	else
-+		pasemi_write_dma_reg(PAS_DMA_TXF_SFLG1, 1 << flag);
-+}
-+EXPORT_SYMBOL(pasemi_dma_set_flag);
-+
-+/* pasemi_dma_clear_flag - Sets a flag (event) to 0
-+ * @flag: Flag number to set inactive
-+ *
-+ * Sets the flag provided to 0.
-+ */
-+void pasemi_dma_clear_flag(int flag)
-+{
-+	BUG_ON(flag >= MAX_FLAGS);
-+	if (flag < 32)
-+		pasemi_write_dma_reg(PAS_DMA_TXF_CFLG0, 1 << flag);
-+	else
-+		pasemi_write_dma_reg(PAS_DMA_TXF_CFLG1, 1 << flag);
-+}
-+EXPORT_SYMBOL(pasemi_dma_clear_flag);
-+
- static void *map_onedev(struct pci_dev *p, int index)
- {
- 	struct device_node *dn;
-@@ -502,6 +569,13 @@ int pasemi_dma_init(void)
- 	/* enable rx section */
- 	pasemi_write_dma_reg(PAS_DMA_COM_RXCMD, PAS_DMA_COM_RXCMD_EN);
- 
-+	for (i = 0; i < MAX_FLAGS; i++)
-+		__set_bit(i, flags_free);
-+
-+	/* clear all status flags */
-+	pasemi_write_dma_reg(PAS_DMA_TXF_CFLG0, 0xffffffff);
-+	pasemi_write_dma_reg(PAS_DMA_TXF_CFLG1, 0xffffffff);
-+
- 	printk(KERN_INFO "PA Semi PWRficient DMA library initialized "
- 		"(%d tx, %d rx channels)\n", num_txch, num_rxch);
- 
-Index: k.org/include/asm-powerpc/pasemi_dma.h
-===================================================================
---- k.org.orig/include/asm-powerpc/pasemi_dma.h
-+++ k.org/include/asm-powerpc/pasemi_dma.h
-@@ -466,6 +466,12 @@ extern void *pasemi_dma_alloc_buf(struct
- extern void pasemi_dma_free_buf(struct pasemi_dmachan *chan, int size,
- 				dma_addr_t *handle);
- 
-+/* Routines to allocate flags (events) for channel syncronization */
-+extern int  pasemi_dma_alloc_flag(void);
-+extern void pasemi_dma_free_flag(int flag);
-+extern void pasemi_dma_set_flag(int flag);
-+extern void pasemi_dma_clear_flag(int flag);
-+
- /* Initialize the library, must be called before any other functions */
- extern int pasemi_dma_init(void);
- 
+ 	mac->lro_mgr.max_aggr = LRO_MAX_AGGR;
+ 	mac->lro_mgr.max_desc = MAX_LRO_DESCRIPTORS;
 
 -- 
