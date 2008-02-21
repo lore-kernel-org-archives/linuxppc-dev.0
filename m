@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D6C9DDEBC
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 07:09:01 +1100 (EST)
-Message-ID: <47BDDA70.2060700@freescale.com>
-Date: Thu, 21 Feb 2008 14:09:20 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [USB POWERPC] ehci-fsl: add PPC_MPC837x to default y
-References: <20080221195021.GC12896@localhost.localdomain>
-	<9AD13D2E-B57F-4F19-B89C-C8A83157E0F2@kernel.crashing.org>
-In-Reply-To: <9AD13D2E-B57F-4F19-B89C-C8A83157E0F2@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Return-Path: <gerickson@nuovations.com>
+Received: from relay01.pair.com (relay01.pair.com [209.68.5.15])
+	by ozlabs.org (Postfix) with SMTP id 05C25DDF3B
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 07:09:54 +1100 (EST)
+Date: Thu, 21 Feb 2008 12:03:09 -0800
+Subject: Re: [PATCH] [POWERPC] add target for building .dtb files
+From: Grant Erickson <gerickson@nuovations.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Message-ID: <C3E318FD.D883%gerickson@nuovations.com>
+In-Reply-To: <20080221191955.10139.10496.stgit@trillian.secretlab.ca>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Feb 21, 2008, at 1:50 PM, Anton Vorontsov wrote:
+On 2/21/08 11:19 AM, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 > 
->> Without this patch it's impossible to select ehci-fsl on PPC_MPC837x.
->> Another option would be to convert USB_EHCI_FSL to verbose bool,
->> but I presume EHCI_FSL is purposely made silent.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> ---
->> drivers/usb/host/Kconfig |    2 +-
->> 1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
->> index d97b16b..33da056 100644
->> --- a/drivers/usb/host/Kconfig
->> +++ b/drivers/usb/host/Kconfig
->> @@ -72,7 +72,7 @@ config USB_EHCI_FSL
->> 	bool
->> 	depends on USB_EHCI_HCD
->> 	select USB_EHCI_ROOT_HUB_TT
->> -	default y if MPC834x || PPC_MPC831x
->> +	default y if MPC834x || PPC_MPC831x || PPC_MPC837x
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 > 
-> Can we just change this to FSL_SOC
+> ---
+> 
+> Josh, is this what your were looking for?
+> 
+> Cheers,
+> g.
+> ---
+> 
+>  arch/powerpc/Makefile      |    2 +-
+>  arch/powerpc/boot/Makefile |    4 ++++
+>  2 files changed, 5 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index ab5cfe8..dd80825 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -164,7 +164,7 @@ boot := arch/$(ARCH)/boot
+>  $(BOOT_TARGETS): vmlinux
+> $(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+>  
+> -bootwrapper_install:
+> +bootwrapper_install %.dtb:
+> $(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+>  
+>  define archhelp
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index d57a67d..fb29f10 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -311,6 +311,10 @@ $(obj)/treeImage.initrd.%: vmlinux $(dtstree)/%.dts
+> $(wrapperbits)
+>  $(obj)/treeImage.%: vmlinux $(dtstree)/%.dts $(wrapperbits)
+> $(call if_changed,wrap,treeboot-$*,$(dtstree)/$*.dts)
+>  
+> +# Rule to build device tree blobs
+> +$(obj)/%.dtb: $(dtstree)/%.dts $(obj)/dtc
+> + $(obj)/dtc -O dtb -o $(obj)/$*.dtb -b 0 $(dtstree)/$*.dts
+> +
 
-Why do you want to bloat all freescale kernels, even on chips that don't 
-have this hardware?
+Grant,
 
-There are very few cases where default y is justified.  This isn't one 
-of them.
+Would it be beneficial to provide a way to have environment- or
+command-line-provided DTC arguments/flags such that the oft-required '-S
+<size>' and '-R <reserved>' flags can be specified? Or, are there reasonable
+size and reserved defaults appropriate for all platforms that can be
+specified?
 
--Scott
+FWIW, generating a blob for Haleakala/Kilauea on the PPC405EX[r] using the
+above command in the patch results in complaints about lack of space for the
+"CHOSEN" node in u-boot.
+
+Regards,
+
+Grant
