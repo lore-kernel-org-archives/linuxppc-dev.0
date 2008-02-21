@@ -1,16 +1,25 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 1B56FDDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 16:51:06 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <1203507104.17534.32.camel@johannes.berg>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <91eb052edd9d5c608658fcdcfdc7589c@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] mpic: make sparse happy
-Date: Wed, 20 Feb 2008 23:50:57 -0600
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <yoush@debian.org>
+Received: from zigzag.lvk.cs.msu.su (zigzag.lvk.cs.msu.su [158.250.17.23])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9F4E6DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 17:14:44 +1100 (EST)
+Received: from Debian-exim by zigzag.lvk.cs.msu.su with spam-scanned (Exim
+	4.50) id 1JS4hX-0001Tr-8H
+	for linuxppc-dev@ozlabs.org; Thu, 21 Feb 2008 09:14:38 +0300
+From: "Nikita V. Youshchenko" <yoush@debian.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: don't create two devices for each cpm_uart
+	device tree node
+Date: Thu, 21 Feb 2008 09:13:27 +0300
+References: <200802200232.44486@blacky.localdomain>
+	<20080220164052.GB32165@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20080220164052.GB32165@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200802210913.28155@blacky.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,56 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At Wed Feb 20 22:31:44 EST 2008, Johannes Berg wrote:
-> I was running sparse on something else and noticed sparse warnings
-> and especially the bogus code that is fixed by the first hunk of
-> this patch, so I fixed them all while at it.
+> On Wed, Feb 20, 2008 at 02:32:33AM +0300, Nikita V. Youshchenko wrote:
+> >     powerpc: don't create two devices for each cpm_uart device tree
+> > node
+> >
+> >     Code in arch/powerpc/sysdev/fsl_soc.c used to create two 'struct
+> > device' objects for each cpm_uart device tree node - one
+> > "fsl-cpm-scc:uart" in cpm_uart_of_init() and one "fsl-cpm-smc:uart" in
+> > cpm_smc_uart_of_init().
+>
+> This is old code that only exists for non-CONFIG_PPC_CPM_NEW_BINDING
+> boards.  As there are none of these remaining in-tree, this code should
+> go away soon.
 
-But your change is not equivalent!
+Thank you for information.
 
-> --- everything.orig/arch/powerpc/sysdev/mpic.c  2008-02-20 
-> 12:25:41.000000000 +0100
-> +++ everything/arch/powerpc/sysdev/mpic.c       2008-02-20 
-> 12:28:37.000000000 +0100
-> @@ -175,13 +175,13 @@ static inline void _mpic_write(enum mpic
->         switch(type) {
->  #ifdef CONFIG_PPC_DCR
->         case mpic_access_dcr:
-> -               return dcr_write(rb->dhost, reg, value);
-> +               dcr_write(rb->dhost, reg, value);
->  #endif
->         case mpic_access_mmio_be:
-> -               return out_be32(rb->base + (reg >> 2), value);
-> +               out_be32(rb->base + (reg >> 2), value);
->         case mpic_access_mmio_le:
->         default:
-> -               return out_le32(rb->base + (reg >> 2), value);
-> +               out_le32(rb->base + (reg >> 2), value);
->         }
->  }
-
-You now write to the register with dcr, big, and little endian variants!
-
-Either put a return or break after the calls to the void functions so 
-you don't fall through.
-
-...
-
-> @@ -1107,10 +1108,10 @@ struct mpic * __init mpic_alloc(struct d
->          * in, try to obtain one
->          */
->         if (paddr == 0 && !(mpic->flags & MPIC_USES_DCR)) {
-> -               const u32 *reg;
-> -               reg = of_get_property(node, "reg", NULL);
-> -               BUG_ON(reg == NULL);
-> -               paddr = of_translate_address(node, reg);
-> +               const u32 *regprop;
-> +               regprop = of_get_property(node, "reg", NULL);
-> +               BUG_ON(regprop == NULL);
-> +               paddr = of_translate_address(node, regprop);
->                 BUG_ON(paddr == OF_BAD_ADDR);
->         }
-
-This is reg variable is shadowed ... ok, although i might have renamed 
-the outer one features or greg_feature.  For that matter, I would have 
-initialized this reg/regprop on definition.
+I am working with vendor kernel, based on 2.6.18, and that does not have 
+CONFIG_PPC_CPM_NEW_BINDING. I thought that fix I made for that kernel 
+could be usable for mainline, but if not - nevermind.
