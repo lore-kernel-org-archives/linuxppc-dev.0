@@ -1,12 +1,12 @@
 Return-Path: <SRS0=7Uz3=TK=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 64A92DDEFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 01:10:14 +1100 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 79135DDF40
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 01:22:59 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5 v2] [POWERPC] Add Canyonlands DTS
-Date: Thu, 21 Feb 2008 15:10:00 +0100
-Message-Id: <1203603000-12427-1-git-send-email-sr@denx.de>
+Subject: [PATCH 3/5 v3] [POWERPC] Add Canyonlands DTS
+Date: Thu, 21 Feb 2008 15:22:48 +0100
+Message-Id: <1203603768-13880-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,7 +18,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stefan Roese <sr@denx.de>
 ---
-I removed some whitespace warning in this version thanks to checkpatch.
+Now the L1 cache is correct. Thanks, Olof 
 
  arch/powerpc/boot/dts/canyonlands.dts |  398 +++++++++++++++++++++++++++++++++
  1 files changed, 398 insertions(+), 0 deletions(-)
@@ -66,8 +66,8 @@ index 0000000..2aee74c
 +			timebase-frequency = <0>; /* Filled in by U-Boot */
 +			i-cache-line-size = <20>;
 +			d-cache-line-size = <20>;
-+			i-cache-size = <20000>;
-+			d-cache-size = <20000>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
 +			dcr-controller;
 +			dcr-access-method = "native";
 +		};
