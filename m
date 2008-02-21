@@ -1,14 +1,28 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18365.638.273636.570276@cargo.ozlabs.ibm.com>
-Date: Thu, 21 Feb 2008 15:47:58 +1100
+Message-ID: <18365.1344.466799.556560@cargo.ozlabs.ibm.com>
+Date: Thu, 21 Feb 2008 15:59:44 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Subject: Re: Question about PPC_NATIVE/hash_native_64.c
-In-Reply-To: <20080220115713.193460@gmx.net>
-References: <20080220115713.193460@gmx.net>
-Cc: linuxppc-dev@ozlabs.org
+To: avorontsov@ru.mvista.com
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
+	endianness
+In-Reply-To: <20080220121818.GA20836@localhost.localdomain>
+References: <20080214224942.a0cb6218.akpm@linux-foundation.org>
+	<20080215164542.GB16810@localhost.localdomain>
+	<Pine.LNX.4.64.0802171030330.6848@anakin>
+	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
+	<19805.1203355811@turing-police.cc.vt.edu>
+	<47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>
+	<47BABD3A.7010102@anagramm.de>
+	<20080219040530.7b1d115d.akpm@linux-foundation.org>
+	<18363.31427.989835.105966@cargo.ozlabs.ibm.com>
+	<20080220121818.GA20836@localhost.localdomain>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+	Krzysztof Helt <krzysztof.h1@poczta.fm>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gerhard Pircher writes:
+Anton Vorontsov writes:
 
-> I'm a little bit confused about the hash_native_64.c file, which is compiled
-> in the kernel, if PPC_NATIVE is defined. PPC_NATIVE seems to be defined also
-> for 32bit platforms (CHRP, PREP, etc.), but the name of the hash_native_64.c
-> file and the Makefile suggest that it is for 64bit platforms only.
-> What is hash_native_64.c actually good for on 32bit platforms and which cpus
-> can make use of it?
+> > I was wondering if it would be sufficient to provide alternative
+> > versions of fb_readl, fb_writel etc. that do byte-swapping.
+> 
+> This is of course viable alternative. And I was considering this, but
+> later I abandoned the idea: that way we'll end up doing math in the
+> native endianness and then converting it to the foreign. This feels
+> ugly in contrast when we can do the right math in the first place, per
+> framebuffer.
 
-It's not included on 32-bit platforms.  Here are the relevant lines
-from arch/powerpc/mm/Makefile:
-
-hash-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
-obj-$(CONFIG_PPC64)		+= hash_utils_64.o \
-				   slb_low.o slb.o stab.o mmap.o $(hash-y)
-
-Note that the first line sets hash-y not obj-y, and $(hash-y) is only
-used on 64-bit machines.
+OK.  I guess I'm convinced then.  However, your patch description
+needs to be a lot better.  It should describe things like why you
+want to make the change and why the change you are proposing is a good
+idea and is better than other alternatives.  If you'd done that
+originally we might not have needed to have all this discussion. :)
 
 Paul.
