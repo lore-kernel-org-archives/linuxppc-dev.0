@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9983CDDEBC
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 06:58:25 +1100 (EST)
-Message-Id: <9AD13D2E-B57F-4F19-B89C-C8A83157E0F2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080221195021.GC12896@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [USB POWERPC] ehci-fsl: add PPC_MPC837x to default y
-Date: Thu, 21 Feb 2008 13:58:18 -0600
-References: <20080221195021.GC12896@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C061DDDEBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 06:59:20 +1100 (EST)
+Date: Thu, 21 Feb 2008 22:59:19 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] [POWERPC] 8xx: timebase frequency should not depend on
+	bus-frequency
+Message-ID: <20080221195918.GA14636@localhost.localdomain>
+References: <20080221194508.GA12896@localhost.localdomain>
+	<47BDD587.9060206@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47BDD587.9060206@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 21, 2008 at 01:48:23PM -0600, Scott Wood wrote:
+> Anton Vorontsov wrote:
+> >diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c 
+> >b/arch/powerpc/platforms/8xx/m8xx_setup.c
+> >index 184f998..0d9f75c 100644
+> >--- a/arch/powerpc/platforms/8xx/m8xx_setup.c
+> >+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
+> >@@ -111,17 +111,12 @@ void __init mpc8xx_calibrate_decr(void)
+> > 
+> > 	/* Processor frequency is MHz.
+> > 	 */
+> >-	ppc_tb_freq = 50000000;
+> >-	if (!get_freq("bus-frequency", &ppc_tb_freq)) {
+> >-		printk(KERN_ERR "WARNING: Estimating decrementer frequency "
+> >-		                "(not found)\n");
+> >-	}
+> >-	ppc_tb_freq /= 16;
+> > 	ppc_proc_freq = 50000000;
+> > 	if (!get_freq("clock-frequency", &ppc_proc_freq))
+> > 		printk(KERN_ERR "WARNING: Estimating processor frequency "
+> > 		                "(not found)\n");
+> > 
+> >+	ppc_tb_freq = ppc_proc_freq / 16;
+> 
+> Shouldn't we just use the timebase-frequency property?
 
-On Feb 21, 2008, at 1:50 PM, Anton Vorontsov wrote:
+Nope. Most u-boots currently do not setup timebase-frequency, and if
+they are setting it up, they're doing it wrong, in sense that Linux
+overwrites timebase setup (yeah, in this regard MPC8xx is special).
 
-> Without this patch it's impossible to select ehci-fsl on PPC_MPC837x.
-> Another option would be to convert USB_EHCI_FSL to verbose bool,
-> but I presume EHCI_FSL is purposely made silent.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/usb/host/Kconfig |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-> index d97b16b..33da056 100644
-> --- a/drivers/usb/host/Kconfig
-> +++ b/drivers/usb/host/Kconfig
-> @@ -72,7 +72,7 @@ config USB_EHCI_FSL
-> 	bool
-> 	depends on USB_EHCI_HCD
-> 	select USB_EHCI_ROOT_HUB_TT
-> -	default y if MPC834x || PPC_MPC831x
-> +	default y if MPC834x || PPC_MPC831x || PPC_MPC837x
+So, for MPC8xx, Linux doesn't care what timebase setup was used in
+the firmware.
 
-Can we just change this to FSL_SOC
-
-- k
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
