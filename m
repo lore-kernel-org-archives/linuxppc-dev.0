@@ -1,12 +1,12 @@
 Return-Path: <SRS0=7Uz3=TK=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id D609BDDEDA
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 01:01:36 +1100 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 64A92DDEFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 01:10:14 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] [POWERPC] Add 460EX PCIe support to 4xx pci driver
-Date: Thu, 21 Feb 2008 15:01:22 +0100
-Message-Id: <1203602482-11415-1-git-send-email-sr@denx.de>
+Subject: [PATCH 3/5 v2] [POWERPC] Add Canyonlands DTS
+Date: Thu, 21 Feb 2008 15:10:00 +0100
+Message-Id: <1203603000-12427-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,229 +16,417 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tested on AMCC Canyonlands eval board.
-
 Signed-off-by: Stefan Roese <sr@denx.de>
 ---
- arch/powerpc/sysdev/ppc4xx_pci.c |  114 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.h |   59 +++++++++++++++++++
- 2 files changed, 173 insertions(+), 0 deletions(-)
+I removed some whitespace warning in this version thanks to checkpatch.
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index 5abfcd1..d183b83 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -527,6 +527,7 @@ static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
-  *
-  * ibm,plb-pciex-440spe
-  * ibm,plb-pciex-405ex
-+ * ibm,plb-pciex-460ex
-  *
-  * Anything else will be rejected for now as they are all subtly
-  * different unfortunately.
-@@ -775,6 +776,117 @@ static struct ppc4xx_pciex_hwops ppc440speB_pcie_hwops __initdata =
- 	.setup_utl	= ppc440speB_pciex_init_utl,
- };
- 
-+static int __init ppc460ex_pciex_core_init(struct device_node *np)
-+{
-+	/* Nothing to do, return 2 ports */
-+	return 2;
-+}
-+
-+static int ppc460ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
-+{
-+	u32 val;
-+	u32 utlset1;
-+
-+	if (port->endpoint) {
-+		val = PTYPE_LEGACY_ENDPOINT << 20;
-+		utlset1 = 0x20222222;
-+	} else {
-+		val = PTYPE_ROOT_PORT << 20;
-+		utlset1 = 0x21222222;
-+	}
-+
-+	if (port->index == 0) {
-+		val |= LNKW_X1 << 12;
-+	} else {
-+		val |= LNKW_X4 << 12;
-+		utlset1 |= 0x00101101;
-+	}
-+
-+	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET, val);
-+	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, utlset1);
-+	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x01210000);
-+
-+	switch (port->index) {
-+	case 0:
-+		mtdcri(SDR0, PESDR0_460EX_L0CDRCTL, 0x00003230);
-+		mtdcri(SDR0, PESDR0_460EX_L0DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR0_460EX_L0CLK, 0x00000006);
-+
-+		mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST,0x10000000);
-+		break;
-+
-+	case 1:
-+		mtdcri(SDR0, PESDR1_460EX_L0CDRCTL, 0x00003230);
-+		mtdcri(SDR0, PESDR1_460EX_L1CDRCTL, 0x00003230);
-+		mtdcri(SDR0, PESDR1_460EX_L2CDRCTL, 0x00003230);
-+		mtdcri(SDR0, PESDR1_460EX_L3CDRCTL, 0x00003230);
-+		mtdcri(SDR0, PESDR1_460EX_L0DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR1_460EX_L1DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR1_460EX_L2DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR1_460EX_L3DRV, 0x00000136);
-+		mtdcri(SDR0, PESDR1_460EX_L0CLK, 0x00000006);
-+		mtdcri(SDR0, PESDR1_460EX_L1CLK, 0x00000006);
-+		mtdcri(SDR0, PESDR1_460EX_L2CLK, 0x00000006);
-+		mtdcri(SDR0, PESDR1_460EX_L3CLK, 0x00000006);
-+
-+		mtdcri(SDR0, PESDR1_460EX_PHY_CTL_RST,0x10000000);
-+		break;
-+	}
-+
-+	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
-+	       mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) |
-+	       (PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTPYN));
-+
-+	/* Poll for PHY reset */
-+	/* XXX FIXME add timeout */
-+	switch (port->index) {
-+	case 0:
-+		while (!(mfdcri(SDR0, PESDR0_460EX_RSTSTA) & 0x1))
-+			udelay(10);
-+		break;
-+	case 1:
-+		while (!(mfdcri(SDR0, PESDR1_460EX_RSTSTA) & 0x1))
-+			udelay(10);
-+		break;
-+	}
-+
-+	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
-+	       (mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) &
-+		~(PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTDL)) |
-+	       PESDRx_RCSSET_RSTPYN);
-+
-+	port->has_ibpre = 1;
-+
-+	return 0;
-+}
-+
-+static int ppc460ex_pciex_init_utl(struct ppc4xx_pciex_port *port)
-+{
-+	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x0);
-+
-+	/*
-+	 * Set buffer allocations and then assert VRB and TXE.
-+	 */
-+	out_be32(port->utl_base + PEUTL_PBCTL,	0x0800000c);
-+	out_be32(port->utl_base + PEUTL_OUTTR,	0x08000000);
-+	out_be32(port->utl_base + PEUTL_INTR,	0x02000000);
-+	out_be32(port->utl_base + PEUTL_OPDBSZ,	0x04000000);
-+	out_be32(port->utl_base + PEUTL_PBBSZ,	0x00000000);
-+	out_be32(port->utl_base + PEUTL_IPHBSZ,	0x02000000);
-+	out_be32(port->utl_base + PEUTL_IPDBSZ,	0x04000000);
-+	out_be32(port->utl_base + PEUTL_RCIRQEN,0x00f00000);
-+	out_be32(port->utl_base + PEUTL_PCTL,	0x80800066);
-+
-+	return 0;
-+}
-+
-+static struct ppc4xx_pciex_hwops ppc460ex_pcie_hwops __initdata =
-+{
-+	.core_init	= ppc460ex_pciex_core_init,
-+	.port_init_hw	= ppc460ex_pciex_init_port_hw,
-+	.setup_utl	= ppc460ex_pciex_init_utl,
-+};
-+
- #endif /* CONFIG_44x */
- 
- #ifdef CONFIG_40x
-@@ -896,6 +1008,8 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
- 		else
- 			ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
- 	}
-+	if (of_device_is_compatible(np, "ibm,plb-pciex-460ex"))
-+		ppc4xx_pciex_hwops = &ppc460ex_pcie_hwops;
- #endif /* CONFIG_44x    */
- #ifdef CONFIG_40x
- 	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.h b/arch/powerpc/sysdev/ppc4xx_pci.h
-index 1c07908..d04e40b 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.h
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.h
-@@ -271,6 +271,59 @@
- #define PESDR1_405EX_PHYSTA		0x044C
- 
- /*
-+ * 460EX additional DCRs
-+ */
-+#define PESDR0_460EX_L0BIST		0x0308
-+#define PESDR0_460EX_L0BISTSTS		0x0309
-+#define PESDR0_460EX_L0CDRCTL		0x030A
-+#define PESDR0_460EX_L0DRV		0x030B
-+#define PESDR0_460EX_L0REC		0x030C
-+#define PESDR0_460EX_L0LPB		0x030D
-+#define PESDR0_460EX_L0CLK		0x030E
-+#define PESDR0_460EX_PHY_CTL_RST	0x030F
-+#define PESDR0_460EX_RSTSTA		0x0310
-+#define PESDR0_460EX_OBS		0x0311
-+#define PESDR0_460EX_L0ERRC		0x0320
-+
-+#define PESDR1_460EX_L0BIST		0x0348
-+#define PESDR1_460EX_L1BIST		0x0349
-+#define PESDR1_460EX_L2BIST		0x034A
-+#define PESDR1_460EX_L3BIST		0x034B
-+#define PESDR1_460EX_L0BISTSTS		0x034C
-+#define PESDR1_460EX_L1BISTSTS		0x034D
-+#define PESDR1_460EX_L2BISTSTS		0x034E
-+#define PESDR1_460EX_L3BISTSTS		0x034F
-+#define PESDR1_460EX_L0CDRCTL		0x0350
-+#define PESDR1_460EX_L1CDRCTL		0x0351
-+#define PESDR1_460EX_L2CDRCTL		0x0352
-+#define PESDR1_460EX_L3CDRCTL		0x0353
-+#define PESDR1_460EX_L0DRV		0x0354
-+#define PESDR1_460EX_L1DRV		0x0355
-+#define PESDR1_460EX_L2DRV		0x0356
-+#define PESDR1_460EX_L3DRV		0x0357
-+#define PESDR1_460EX_L0REC		0x0358
-+#define PESDR1_460EX_L1REC		0x0359
-+#define PESDR1_460EX_L2REC		0x035A
-+#define PESDR1_460EX_L3REC		0x035B
-+#define PESDR1_460EX_L0LPB		0x035C
-+#define PESDR1_460EX_L1LPB		0x035D
-+#define PESDR1_460EX_L2LPB		0x035E
-+#define PESDR1_460EX_L3LPB		0x035F
-+#define PESDR1_460EX_L0CLK		0x0360
-+#define PESDR1_460EX_L1CLK		0x0361
-+#define PESDR1_460EX_L2CLK		0x0362
-+#define PESDR1_460EX_L3CLK		0x0363
-+#define PESDR1_460EX_PHY_CTL_RST	0x0364
-+#define PESDR1_460EX_RSTSTA		0x0365
-+#define PESDR1_460EX_OBS		0x0366
-+#define PESDR1_460EX_L0ERRC		0x0368
-+#define PESDR1_460EX_L1ERRC		0x0369
-+#define PESDR1_460EX_L2ERRC		0x036A
-+#define PESDR1_460EX_L3ERRC		0x036B
-+#define PESDR0_460EX_IHS1		0x036C
-+#define PESDR0_460EX_IHS2		0x036D
-+
+ arch/powerpc/boot/dts/canyonlands.dts |  398 +++++++++++++++++++++++++++++++++
+ 1 files changed, 398 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/canyonlands.dts
+
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+new file mode 100644
+index 0000000..2aee74c
+--- /dev/null
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -0,0 +1,398 @@
 +/*
-  * Of the above, some are common offsets from the base
-  */
- #define PESDRn_UTLSET1			0x00
-@@ -353,6 +406,12 @@
- #define PECFG_POM2LAL		0x390
- #define PECFG_POM2LAH		0x394
- 
-+/* SDR Bit Mappings */
-+#define PESDRx_RCSSET_HLDPLB	0x10000000
-+#define PESDRx_RCSSET_RSTGU	0x01000000
-+#define PESDRx_RCSSET_RDY       0x00100000
-+#define PESDRx_RCSSET_RSTDL     0x00010000
-+#define PESDRx_RCSSET_RSTPYN    0x00001000
- 
- enum
- {
++ * Device Tree Source for AMCC Canyonlands (460EX)
++ *
++ * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ */
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "amcc,canyonlands";
++	compatible = "amcc,canyonlands";
++	dcr-parent = <&/cpus/cpu@0>;
++
++	aliases {
++		ethernet0 = &EMAC0;
++		ethernet1 = &EMAC1;
++		serial0 = &UART0;
++		serial1 = &UART1;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			device_type = "cpu";
++			model = "PowerPC,460EX";
++			reg = <0>;
++			clock-frequency = <0>; /* Filled in by U-Boot */
++			timebase-frequency = <0>; /* Filled in by U-Boot */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <20000>;
++			d-cache-size = <20000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; /* Filled in by U-Boot */
++	};
++
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic-460ex","ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	UIC1: interrupt-controller1 {
++		compatible = "ibm,uic-460ex","ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	UIC2: interrupt-controller2 {
++		compatible = "ibm,uic-460ex","ibm,uic";
++		interrupt-controller;
++		cell-index = <2>;
++		dcr-reg = <0e0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <a 4 b 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	UIC3: interrupt-controller3 {
++		compatible = "ibm,uic-460ex","ibm,uic";
++		interrupt-controller;
++		cell-index = <3>;
++		dcr-reg = <0f0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <10 4 11 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	SDR0: sdr {
++		compatible = "ibm,sdr-460ex";
++		dcr-reg = <00e 002>;
++	};
++
++	CPR0: cpr {
++		compatible = "ibm,cpr-460ex";
++		dcr-reg = <00c 002>;
++	};
++
++	plb {
++		compatible = "ibm,plb-460ex", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by U-Boot */
++
++		SDRAM0: sdram {
++			compatible = "ibm,sdram-460ex", "ibm,sdram-405gp";
++			dcr-reg = <010 2>;
++		};
++
++		MAL0: mcmal {
++			compatible = "ibm,mcmal-460ex", "ibm,mcmal2";
++			dcr-reg = <180 62>;
++			num-tx-chans = <2>;
++			num-rx-chans = <10>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC2 6 4
++					 /*RXEOB*/ 1 &UIC2 7 4
++					 /*SERR*/  2 &UIC2 3 4
++					 /*TXDE*/  3 &UIC2 4 4
++					 /*RXDE*/  4 &UIC2 5 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++
++		POB0: opb {
++			compatible = "ibm,opb-460ex", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <b0000000 4 b0000000 50000000>;
++			clock-frequency = <0>; /* Filled in by U-Boot */
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-460ex", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				interrupts = <6 4>;
++				interrupt-parent = <&UIC1>;
++			};
++
++			UART0: serial@ef600300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600300 8>;
++				virtual-reg = <ef600300>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1 4>;
++			};
++
++			UART1: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600400 8>;
++				virtual-reg = <ef600400>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			UART2: serial@ef600500 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600500 8>;
++				virtual-reg = <ef600500>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1d 4>;
++			};
++
++			UART3: serial@ef600600 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600600 8>;
++				virtual-reg = <ef600600>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4>;
++			};
++
++			IIC0: i2c@4ef60700 {
++				device_type = "i2c";
++				compatible = "ibm,iic-460ex", "ibm,iic";
++				reg = <ef600700 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			IIC1: i2c@ef600800 {
++				device_type = "i2c";
++				compatible = "ibm,iic-460ex", "ibm,iic";
++				reg = <ef600800 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			ZMII0: emac-zmii@ef600d00 {
++				compatible = "ibm,zmii-460ex", "ibm,zmii";
++				reg = <ef600d00 c>;
++			};
++
++			RGMII0: emac-rgmii@ef601500 {
++				compatible = "ibm,rgmii-460ex", "ibm,rgmii";
++				reg = <ef601500 8>;
++				has-mdio;
++			};
++
++			EMAC0: ethernet@ef600e00 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-460ex", "ibm,emac4";
++				interrupt-parent = <&EMAC0>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 10 4
++						 /*Wake*/   1 &UIC2 14 4>;
++				reg = <ef600e00 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++
++			EMAC1: ethernet@ef600f00 {
++				linux,network-index = <1>;
++				device_type = "network";
++				compatible = "ibm,emac-460ex", "ibm,emac4";
++				interrupt-parent = <&EMAC1>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 11 4
++						 /*Wake*/   1 &UIC2 15 4>;
++				reg = <ef600f00 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <1>;
++				mal-rx-channel = <8>;
++				cell-index = <1>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <1>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++		};
++
++		PCIX0: pci@c0ec00000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pcix-460ex", "ibm,plb-pcix";
++			primary;
++			large-inbound-windows;
++			enable-msi-hole;
++			reg = <c 0ec00000   8	/* Config space access */
++			       0 0 0		/* no IACK cycles */
++			       c 0ed00000   4   /* Special cycles */
++			       c 0ec80000 100	/* Internal registers */
++			       c 0ec80100  fc>;	/* Internal messaging registers */
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000d 80000000 0 80000000
++				  01000000 0 00000000 0000000c 08000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 0 to 0x3f */
++			bus-range = <0 3f>;
++
++			/* All PCI interrupts are routed to ext IRQ 2 -> UIC1-2 */
++			interrupt-map-mask = <0000 0 0 0>;
++			interrupt-map = < 0000 0 0 0 &UIC1 2 8 >;
++		};
++
++		PCIE0: pciex@d00000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
++			primary;
++			port = <0>; /* port number */
++			reg = <d 00000000 20000000	/* Config space access */
++			       c 08010000 00001000>;	/* Registers */
++			dcr-reg = <100 020>;
++			sdr-base = <300>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000e 00000000 0 80000000
++				  01000000 0 00000000 0000000f 80000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 40 to 0x7f */
++			bus-range = <40 7f>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0000 0 0 7>;
++			interrupt-map = <
++				0000 0 0 1 &UIC3 c 4 /* swizzled int A */
++				0000 0 0 2 &UIC3 d 4 /* swizzled int B */
++				0000 0 0 3 &UIC3 e 4 /* swizzled int C */
++				0000 0 0 4 &UIC3 f 4 /* swizzled int D */>;
++		};
++
++		PCIE1: pciex@d20000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
++			primary;
++			port = <1>; /* port number */
++			reg = <d 20000000 20000000	/* Config space access */
++			       c 08011000 00001000>;	/* Registers */
++			dcr-reg = <120 020>;
++			sdr-base = <340>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000e 80000000 0 80000000
++				  01000000 0 00000000 0000000f 80010000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 80 to 0xbf */
++			bus-range = <80 bf>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0000 0 0 7>;
++			interrupt-map = <
++				0000 0 0 1 &UIC3 10 4 /* swizzled int A */
++				0000 0 0 2 &UIC3 11 4 /* swizzled int B */
++				0000 0 0 3 &UIC3 12 4 /* swizzled int C */
++				0000 0 0 4 &UIC3 13 4 /* swizzled int D */>;
++		};
++	};
++};
 -- 
 1.5.4.2
