@@ -1,22 +1,16 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A1251DDE10
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 22:19:53 +1100 (EST)
-Message-ID: <47BEAF00.50106@scram.de>
-Date: Fri, 22 Feb 2008 12:16:16 +0100
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
-	CPM1/CPM2 controllers
-References: <47A1C4E9.4000003@scram.de>
-	<20080221130520.12b01553@hyperion.delvare>
-In-Reply-To: <20080221130520.12b01553@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	i2c@lm-sensors.org, Scott Wood <scottwood@freescale.com>
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id 5D687DDE4A
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 21:08:48 +1100 (EST)
+Date: Fri, 22 Feb 2008 10:50:22 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: linuxppc-dev@ozlabs.org
+Subject: MPC8540 : What's "SPE used in kernel" ?
+Message-ID: <20080222095022.GA635@ingate.macqel>
+References: <20080221123534.GA17716@ingate.macqel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080221123534.GA17716@ingate.macqel>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jean,
+Dear list,
 
->> +/*
->> + * Wait for patch from Jon Smirl
->> + * #include "powerpc-common.h"
->> + */
-> 
-> It doesn't make sense to merge this comment upstream.
+I have just compiled linux-2.6.24 for a MPC8540 target using a MPC8540
+specific gcc.
 
-I know you don't like the patch from Jon Smirl and you also explained your reasons.
-Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
+I then got tan infinity of "SPE used in kernel" messages.  Looking at the
+sources I ifdeffed out the printk call in KernelSPE, and I now have a
+silent kernel, that seems to work fine.
 
-1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
-2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
-   or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
-3. use a glue layer with a translation map.
+Is there something wrong in my setting and should I look further to
+debug this problem or is this perfectly normal ?
 
-What is the preferred way to do this?
+I wonder why a kernel configured for E500 and compiled by a E500-specific gcc
+triggers this message.  Is it invalid to use SPE instructions in the kernel 
+or do I misunderstand the message ?
 
-Thanks,
-Jochen
+Philippe
