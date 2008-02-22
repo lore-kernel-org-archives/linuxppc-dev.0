@@ -1,18 +1,18 @@
 Return-Path: <SRS0=LhWK=TL=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7EF10DE02E
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 08:50:11 +1100 (EST)
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 7A257DDEBE
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 08:55:03 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] [POWERPC] AMCC Kilauea (405EX): Disable EMAC loopback mode
-Date: Fri, 22 Feb 2008 22:49:58 +0100
+Date: Fri, 22 Feb 2008 22:54:51 +0100
 References: <1203669132-9385-1-git-send-email-sr@denx.de>
-	<20080222143621.0579729b@weaponx>
-In-Reply-To: <20080222143621.0579729b@weaponx>
+	<1203715656.6976.7.camel@pasglop>
+In-Reply-To: <1203715656.6976.7.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802222249.58503.sr@denx.de>
+  charset="iso-8859-15"
+Message-Id: <200802222254.52273.sr@denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,10 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 22 February 2008, Josh Boyer wrote:
-> On Fri, 22 Feb 2008 09:32:12 +0100
->
-> Stefan Roese <sr@denx.de> wrote:
+On Friday 22 February 2008, Benjamin Herrenschmidt wrote:
+> On Fri, 2008-02-22 at 09:32 +0100, Stefan Roese wrote:
 > > 405EX(r) has SDR0_MFR[E0CS/E1CS] set after reset. This selects
 > > the internal loopback mode. Clear these bits so that both EMACs
 > > don't use loopback mode as default.
@@ -38,11 +36,17 @@ On Friday 22 February 2008, Josh Boyer wrote:
 > >
 > > Any thoughts on this welcome.
 >
-> Why isn't this done in U-Boot?  Or is it done if the network interface
-> is used?
+> This should be done in EMAC since we also need to force internal
+> loopback & clocking when probing the PHY or we might not probe
+> it properly (and fail reset) if there is no link.
 
-Correct. It's only done upon EMAC usage in U-Boot. So when booting completely 
-from FLASH, EMAC in Linux is not working.
+Yes. Valentines patches are a first step to this.
+
+> I need to work on that.
+
+That would be great. Thanks.
+
+BTW: Any news on the generic phy-lib plans for ibm_newemac?
 
 Best regards,
 Stefan
