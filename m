@@ -1,21 +1,31 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7060BDE3C8
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5FDD4DE5FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Feb 2008 07:39:20 +1100 (EST)
-In-Reply-To: <000001c87591$2b5a8740$6405a8c0@absolut>
-References: <000001c87591$2b5a8740$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <E5A4895F-4CED-44C5-BFD1-9FD3E57F69CF@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: NETdev driver question xxxx_type_trans()
-Date: Fri, 22 Feb 2008 14:39:07 -0600
-To: rmcguire@videopresence.com
+	Sat, 23 Feb 2008 07:52:29 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1MKqQ1N001603
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Feb 2008 15:52:26 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1MKqQ6I310106
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Feb 2008 15:52:26 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1MKqQAG013072
+	for <linuxppc-embedded@ozlabs.org>; Fri, 22 Feb 2008 15:52:26 -0500
+Date: Fri, 22 Feb 2008 14:52:24 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Steve Heflin <sheflin@newagemicro.com>
+Subject: Re: MODPOST section mismatches
+Message-ID: <20080222145224.7349cf36@weaponx>
+In-Reply-To: <20080222164210.48628DE0A9@ozlabs.org>
+References: <20080221213313.97814DDF55@ozlabs.org>
+	<20080222164210.48628DE0A9@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,51 +37,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, 22 Feb 2008 11:12:47 -0500
+Steve Heflin <sheflin@newagemicro.com> wrote:
 
-On Feb 22, 2008, at 14:26, Russell McGuire wrote:
+> To reproduce the problem and see the details on section mismatches:
+> 
+>      make ARCH=powerpc sequoia_defconfig
+> 
+>      make ARCH=powerpc CONFIG_DEBUG_SECTION_MISMATCH=y
 
-> All,
->
-> A general and specific question on the behavior of netdev devices =20
-> before received sk_buff(s) get passed up to the kernel.
->
-> I am almost done creating / testing an HDLC device driver for the =20
-> 83xx.
->
->
-> I have it working at a low level and was printing out skb_bufs =20
-> before and after TX and RX, to ensure data integrity.
->
-> Due to me having the print_skbbuf, AFTER the hdlc_type_trans(skb, =20
-> ndev).
->
-> I thought I was continuously losing 14 bytes of data, after a =20
-> little digging I realized that the hdlc_type_trans() call
->
-> was shifting the skb->data pointer forward by 14 bytes. ????????
->
-> Is this corresponding to a 14 byte pad that the kernel stack adds =20
-> before it sends it down?
->
-> And why isn=92t the data length being shortened as a result after I =20=
+All of those warnings are in drivers or common code.  And yes, they
+should eventually all be fixed.
 
-> call hdlc_type_trans?
->
-> Anyway=85 I guess I am confused as to what this function was intended =20=
+> >After modifying the make launch to include the recommended option
+> >shown above, I see that the section mismatch warning is due to data
+> >structures containing the address of initialization modules which
+> >have the __init attribute. Since the memory model is FLAT, is this a problem?
 
-> for, I see there are other calls for eth_type_trans, so I imagine =20
-> their usage is similar.
->
-> When are they needed?
->
+What do you mean by "the memory model is FLAT"?
 
-
-They move the data pointer to point to the start of the L2 header.  =20
-There's no need for the kernel to see the L1 header, and it doesn't =20
-expect it to be there when it looks at the skb.
-
-You shouldn't be using it for TX packets.  For TX, I believe the =20
-kernel takes care of setting up the L1 header, though I'm not =20
-familiar with the kernel's hdlc support.
-
-Andy=
+josh
