@@ -1,18 +1,31 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35BAEDE020
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 06:30:21 +1100 (EST)
-Date: Fri, 22 Feb 2008 22:28:17 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC][PATCH] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
-	workaround
-Message-ID: <20080222192817.GA26211@ru.mvista.com>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DCB14DE0FE
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 07:36:53 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1MKajnU025605
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 15:36:45 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1MKaiRf207496
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 13:36:44 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1MKaiXU020710
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 13:36:44 -0700
+Date: Fri, 22 Feb 2008 14:36:21 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] [POWERPC] AMCC Kilauea (405EX): Disable EMAC loopback mode
+Message-ID: <20080222143621.0579729b@weaponx>
+In-Reply-To: <1203669132-9385-1-git-send-email-sr@denx.de>
+References: <1203669132-9385-1-git-send-email-sr@denx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1203634340.10422.203.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,136 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds ibm_newemac phy clock workaround for 440EP/440GR emacs.
-The code is based on the previous ibm_emac driver stuff. The 440EP/440GR
-allows controlling each EMAC clock spearately as opposed to global clock
-selection for 440GX.
+On Fri, 22 Feb 2008 09:32:12 +0100
+Stefan Roese <sr@denx.de> wrote:
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- drivers/net/ibm_newemac/core.c |   46 +++++++++++++++++++++++++++++++++++++++--
- drivers/net/ibm_newemac/core.h |    6 ++++-
- 2 files changed, 49 insertions(+), 3 deletions(-)
+> 405EX(r) has SDR0_MFR[E0CS/E1CS] set after reset. This selects
+> the internal loopback mode. Clear these bits so that both EMACs
+> don't use loopback mode as default.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> ---
+> I'm not sure if this should be done here in the board platform code,
+> or in the newemac driver or perhaps in some code common for 405EX.
+> 
+> Any thoughts on this welcome.
 
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
---- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2008-02-22 20:56:56.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/core.c	2008-02-22 20:55:10.000000000 +0300
-@@ -129,10 +129,41 @@ static struct device_node *emac_boot_lis
- static inline void emac_report_timeout_error(struct emac_instance *dev,
- 					     const char *error)
- {
--	if (net_ratelimit())
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX |
-+				  EMAC_FTR_440EP_PHY_CLK_FIX))
-+		DBG(dev, "%s" NL, error);
-+	else if (net_ratelimit())
- 		printk(KERN_ERR "%s: %s\n", dev->ndev->name, error);
- }
- 
-+/* EMAC PHY clock workaround:
-+ * 440EP/440GR has more sane SDR0_MFR register implementation than 440GX,
-+ * which allows controlling each EMAC clock
-+ */
-+static inline void emac_rx_clk_tx(struct emac_instance *dev)
-+{
-+	if (emac_has_feature(dev, EMAC_FTR_440EP_PHY_CLK_FIX)) {
-+		unsigned long flags;
-+
-+		local_irq_save(flags);
-+		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) |
-+					(SDR0_MFR_ECS >> dev->cell_index));
-+		local_irq_restore(flags);
-+	}
-+}
-+
-+static inline void emac_rx_clk_default(struct emac_instance *dev)
-+{
-+	if (emac_has_feature(dev, EMAC_FTR_440EP_PHY_CLK_FIX)) {
-+		unsigned long flags;
-+
-+		local_irq_save(flags);
-+		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) &
-+					~(SDR0_MFR_ECS >> dev->cell_index));
-+		local_irq_restore(flags);
-+	}
-+}
-+
- /* PHY polling intervals */
- #define PHY_POLL_LINK_ON	HZ
- #define PHY_POLL_LINK_OFF	(HZ / 5)
-@@ -1089,9 +1120,11 @@ static int emac_open(struct net_device *
- 		int link_poll_interval;
- 		if (dev->phy.def->ops->poll_link(&dev->phy)) {
- 			dev->phy.def->ops->read_link(&dev->phy);
-+			emac_rx_clk_default(dev);
- 			netif_carrier_on(dev->ndev);
- 			link_poll_interval = PHY_POLL_LINK_ON;
- 		} else {
-+			emac_rx_clk_tx(dev);
- 			netif_carrier_off(dev->ndev);
- 			link_poll_interval = PHY_POLL_LINK_OFF;
- 		}
-@@ -1169,6 +1202,7 @@ static void emac_link_timer(struct work_
- 
- 	if (dev->phy.def->ops->poll_link(&dev->phy)) {
- 		if (!netif_carrier_ok(dev->ndev)) {
-+			emac_rx_clk_default(dev);
- 			/* Get new link parameters */
- 			dev->phy.def->ops->read_link(&dev->phy);
- 
-@@ -1181,6 +1215,7 @@ static void emac_link_timer(struct work_
- 		link_poll_interval = PHY_POLL_LINK_ON;
- 	} else {
- 		if (netif_carrier_ok(dev->ndev)) {
-+			emac_rx_clk_tx(dev);
- 			netif_carrier_off(dev->ndev);
- 			netif_tx_disable(dev->ndev);
- 			emac_reinitialize(dev);
-@@ -2325,9 +2360,12 @@ static int __devinit emac_init_phy(struc
- 	dev->phy.mdio_read = emac_mdio_read;
- 	dev->phy.mdio_write = emac_mdio_write;
- 
--	/* Enable internal clock source */
-+	/* EMAC PHY clock workaround */
- 	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		/* Enable internal clock source */
- 		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) | SDR0_MFR_ECS);
-+	else
-+		emac_rx_clk_tx(dev);
- 
- 	/* Configure EMAC with defaults so we can at least use MDIO
- 	 * This is needed mostly for 440GX
-@@ -2495,6 +2533,10 @@ static int __devinit emac_init_config(st
- 		dev->features |= EMAC_FTR_EMAC4;
- 		if (of_device_is_compatible(np, "ibm,emac-440gx"))
- 			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
-+	} else {
-+		if (of_device_is_compatible(np, "ibm,emac-440ep") ||
-+		    of_device_is_compatible(np, "ibm,emac-440gr"))
-+			dev->features |= EMAC_FTR_440EP_PHY_CLK_FIX;
- 	}
- 
- 	/* Fixup some feature bits based on the device tree */
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.h linux-2.6/drivers/net/ibm_newemac/core.h
---- linux-2.6.orig/drivers/net/ibm_newemac/core.h	2008-02-22 20:56:56.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/core.h	2008-02-22 20:56:38.000000000 +0300
-@@ -305,6 +305,10 @@ struct emac_instance {
-  * Set if we need phy clock workaround for 440gx
-  */
- #define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
-+/*
-+ * Set if we need phy clock workaround for 440ep or 440gr
-+ */
-+#define EMAC_FTR_440EP_PHY_CLK_FIX	0x00000100
- 
- 
- /* Right now, we don't quite handle the always/possible masks on the
-@@ -328,7 +332,7 @@ enum {
- #ifdef CONFIG_IBM_NEW_EMAC_RGMII
- 	    EMAC_FTR_HAS_RGMII	|
- #endif
--	    0,
-+	EMAC_FTR_440EP_PHY_CLK_FIX,
- };
- 
- static inline int emac_has_feature(struct emac_instance *dev,
+Why isn't this done in U-Boot?  Or is it done if the network interface
+is used?  I know I've tftp'd a kernel onto my 405EXr board, so I'm
+slightly confused why this is needed in the kernel.
+
+Aside from that, I'm OK with it living in the platform code for Kilauea
+(an Haleakala by inheritance).  Particularly given the fact that this
+should be fixing in U-Boot for any further boards that use 405EX(r)...
+right?
+
+josh
