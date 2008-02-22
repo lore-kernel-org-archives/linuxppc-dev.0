@@ -1,20 +1,22 @@
-Return-Path: <sheflin@newagemicro.com>
-Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
-	[66.129.110.196])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48628DE0A9
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 475B7DE067
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Feb 2008 03:42:00 +1100 (EST)
-Date: Fri, 22 Feb 2008 11:12:47 -0500
-To: linuxppc-embedded@ozlabs.org
-From: Steve Heflin <sheflin@newagemicro.com>
-Subject: Re: MODPOST section mismatches
-In-Reply-To: <20080221213313.97814DDF55@ozlabs.org>
-References: <20080221213313.97814DDF55@ozlabs.org>
+	Sat, 23 Feb 2008 03:50:42 +1100 (EST)
+Date: Fri, 22 Feb 2008 10:50:01 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: mahendra varman <mahendravarman15@gmail.com>
+Subject: Re: Doubt in Device tree entry for USB on Powerpc based board
+Message-ID: <20080222165001.GA19953@ld0162-tx32.am.freescale.net>
+References: <4ac2955e0802220533o3eba0e58ybb72326ab0e1a376@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Message-Id: <20080222164210.48628DE0A9@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4ac2955e0802220533o3eba0e58ybb72326ab0e1a376@mail.gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,29 +27,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-To reproduce the problem and see the details on section mismatches:
+On Fri, Feb 22, 2008 at 07:03:07PM +0530, mahendra varman wrote:
+> Please help me in the device tree where to give the device type
+> compatibility address_cells size cells for the USB (since usb controller is
+> in pci bridge i have some confusion in where to give the entry for usb)
 
-     make ARCH=powerpc sequoia_defconfig
+You don't need to describe PCI devices in the device tree; they are
+probed at runtime.
 
-     make ARCH=powerpc CONFIG_DEBUG_SECTION_MISMATCH=y
-
-At 04:33 PM 2/21/2008, Steve Heflin wrote:
->while building vmlinux.o the MODPOST warns about 8 section mismatches.
->WARNING: modpost: Found 8 section mismatch(es).
->To see full details build your kernel with:
->'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->
->After modifying the make launch to include the recommended option
->shown above, I see that the section mismatch warning is due to data
->structures containing the address of initialization modules which
->have the __init attribute. Since the memory model is FLAT, is this a problem?
->
->thanks,
->Steve
->
->
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-Scott
