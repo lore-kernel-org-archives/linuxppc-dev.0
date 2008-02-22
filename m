@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id D7760DDE1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 17:05:59 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so81975anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 22:05:58 -0800 (PST)
-Message-ID: <fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
-Date: Thu, 21 Feb 2008 23:05:58 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH] Add support for binary includes.
-In-Reply-To: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6EE2DDDE19
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 17:23:57 +1100 (EST)
+Subject: Re: [PATCH 1/5] [POWERPC] Add AMCC 460EX/460GT support to
+	cputable.c & cpu_setup_44x.S
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <1203602435-11302-1-git-send-email-sr@denx.de>
+References: <1203602435-11302-1-git-send-email-sr@denx.de>
+Content-Type: text/plain
+Date: Fri, 22 Feb 2008 17:23:33 +1100
+Message-Id: <1203661413.10422.283.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 20, 2008 at 12:19 PM, Scott Wood <scottwood@freescale.com> wrote:
-> A property's data can be populated with a file's contents
->  as follows:
->
->  node {
->         prop = /incbin/("path/to/data");
->  };
->
->  A subset of a file can be included by passing start and size parameters.
->  For example, to include bytes 8 through 23:
->
->  node {
->         prop = /incbin/("path/to/data", 8, 16);
->  };
 
+On Thu, 2008-02-21 at 15:00 +0100, Stefan Roese wrote:
+> Signed-off-by: Stefan Roese <sr@denx.de>
 
-Can I ask; what is the intended usage of such a thing?  How large
-would a typical binary blob be?
+Ack.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> ---
+>  arch/powerpc/kernel/cpu_setup_44x.S |    5 ++++-
+>  arch/powerpc/kernel/cputable.c      |   28 +++++++++++++++++++++++++++-
+>  2 files changed, 31 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/cpu_setup_44x.S b/arch/powerpc/kernel/cpu_setup_44x.S
+> index 6250443..5465e8d 100644
+> --- a/arch/powerpc/kernel/cpu_setup_44x.S
+> +++ b/arch/powerpc/kernel/cpu_setup_44x.S
+> @@ -3,7 +3,7 @@
+>   * Valentine Barshak <vbarshak@ru.mvista.com>
+>   * MontaVista Software, Inc (c) 2007
+>   *
+> - * Based on cpu_setup_6xx code by 
+> + * Based on cpu_setup_6xx code by
+>   * Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>   *
+>   * This program is free software; you can redistribute it and/or
+> @@ -32,6 +32,9 @@ _GLOBAL(__setup_cpu_440grx)
+>  	bl	__fixup_440A_mcheck
+>  	mtlr	r4
+>  	blr
+> +_GLOBAL(__setup_cpu_460ex)
+> +_GLOBAL(__setup_cpu_460gt)
+> +	b	__init_fpu_44x
+>  _GLOBAL(__setup_cpu_440gx)
+>  _GLOBAL(__setup_cpu_440spe)
+>  	b	__fixup_440A_mcheck
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index 2a8f5cc..26ffb44 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -36,6 +36,8 @@ extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
+>  extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
+>  extern void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
+>  extern void __setup_cpu_440spe(unsigned long offset, struct cpu_spec* spec);
+> +extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec* spec);
+> +extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec* spec);
+>  extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
+>  extern void __setup_cpu_604(unsigned long offset, struct cpu_spec* spec);
+>  extern void __setup_cpu_750(unsigned long offset, struct cpu_spec* spec);
+> @@ -1397,6 +1399,30 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  		.machine_check		= machine_check_440A,
+>  		.platform		= "ppc440",
+>  	},
+> +	{ /* 460EX */
+> +		.pvr_mask		= 0xffff0002,
+> +		.pvr_value		= 0x13020002,
+> +		.cpu_name		= "460EX",
+> +		.cpu_features		= CPU_FTRS_44X,
+> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+> +		.icache_bsize		= 32,
+> +		.dcache_bsize		= 32,
+> +		.cpu_setup		= __setup_cpu_460ex,
+> +		.machine_check		= machine_check_440A,
+> +		.platform		= "ppc440",
+> +	},
+> +	{ /* 460GT */
+> +		.pvr_mask		= 0xffff0002,
+> +		.pvr_value		= 0x13020000,
+> +		.cpu_name		= "460GT",
+> +		.cpu_features		= CPU_FTRS_44X,
+> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+> +		.icache_bsize		= 32,
+> +		.dcache_bsize		= 32,
+> +		.cpu_setup		= __setup_cpu_460gt,
+> +		.machine_check		= machine_check_440A,
+> +		.platform		= "ppc440",
+> +	},
+>  #endif /* CONFIG_44x */
+>  #ifdef CONFIG_FSL_BOOKE
+>  #ifdef CONFIG_E200
+> @@ -1512,7 +1538,7 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
+>  				*t = *s;
+>  			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+>  #if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
+> -			/* ppc64 and booke expect identify_cpu to also call 
+> +			/* ppc64 and booke expect identify_cpu to also call
+>  			 * setup_cpu for that processor. I will consolidate
+>  			 * that at a later time, for now, just use #ifdef.
+>  			 * we also don't need to PTRRELOC the function pointer
