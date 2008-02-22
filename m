@@ -1,23 +1,20 @@
-Return-Path: <bodonoghue@codehermit.ie>
-Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
-	by ozlabs.org (Postfix) with ESMTP id DDCB1DDF0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 00:01:23 +1100 (EST)
-Date: Fri, 22 Feb 2008 13:01:21 +0000
-From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-To: cbouatmailru@gmail.com
-Subject: Re: [PATCH] [POWERPC] 8xx: timebase frequency should not depend on
-	bus-frequency
-Message-ID: <20080222130121.1794a06b@neuromancer.mindspace>
-In-Reply-To: <20080221234136.GA3545@zarina>
-References: <20080221194508.GA12896@localhost.localdomain>
-	<47BDD587.9060206@freescale.com>
-	<20080221195918.GA14636@localhost.localdomain>
-	<47BDD9E2.5050007@freescale.com>
-	<20080221211343.GA24786@localhost.localdomain>
-	<47BDEB0A.80706@freescale.com> <20080221234136.GA3545@zarina>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <bernhard@intevation.de>
+Received: from kolab.intevation.de (aktaia.intevation.org [212.95.126.10])
+	by ozlabs.org (Postfix) with ESMTP id 66A62DDED1
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 01:50:35 +1100 (EST)
+From: Bernhard Reiter <bernhard@intevation.de>
+To: debian-powerpc@lists.debian.org
+Subject: Re: compile quirk linux-2.6.24 (with workaround)
+Date: Fri, 22 Feb 2008 15:50:24 +0100
+References: <200802031729.12069.bernhard@intevation.de>
+	<20080205093820.5918a216@zod.rchland.ibm.com>
+	<20080218205248.1af469d4@zod.rchland.ibm.com>
+In-Reply-To: <20080218205248.1af469d4@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart7727612.qq1kpQPdsC";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200802221550.27093.bernhard@intevation.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 22 Feb 2008 02:41:36 +0300
-Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+--nextPart7727612.qq1kpQPdsC
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Thu, Feb 21, 2008 at 03:20:10PM -0600, Scott Wood wrote:
-> > Anton Vorontsov wrote:
-> > > On Thu, Feb 21, 2008 at 02:06:58PM -0600, Scott Wood wrote:
-> > >> Current u-boots don't support device trees at all on 8xx.
-> > > 
-> > > Yes, vanilla u-boots. I assume many of us use some u-boot hacks to
-> > > actually boot with the device tree (no, not cuboots)... ;-)
-> > 
-> > Fine, but don't expect misbehavior from out-of-tree u-boots to be used 
-> > as justification for the kernel ignoring device tree content. :-)
-> 
-> You got me wrong, maybe I wasn't clear enough: it wasn't justification of
-> any kind. It's was just a remark regarding u-boot still not supporting
-> fdt for 8xx (20 lines of code we're lazy to cleanup, write annotation
-> to the patch and send it ;-).
+On Tuesday 19 February 2008 03:52, Josh Boyer wrote:
+> My apologies for taking so long on this.  Digging through gcc history
+> isn't exactly fun :)
 
-Hey Anton.
+No problem. Thanks for tackling the issue.
 
-I won't make any comment on what Linux should do with an older version of
-u-boot.
+> Ok, so it seems -mcpu=3D440 was added in gcc 3.4.  The -mcpu=3D405 option
+> has been around since 2001.  Seeing as how there really isn't anything
+> 440 specific in the files effected, we should be able to pass -mcpu=3D405
+> for everything and have it still work.
+>
+> Bernhard, can you try the patch below?=20
 
-However, just to let you know, there are a couple of patches to do a more modern
-fdt on 8xx- sent to the u-boot list in the last <= ~ 10 days.
+I will test it in the next days.
 
-Using those patches - which incorporate the changes suggested by Scott re:
-get_tbclk()- the timebase-frequency field is indeed stuffed with u-boot's
-get_tbclk(); - see below.
+The short test for my sarge compiler makes me optimistic:
 
-u-boot/cpu/mpc8xx/fdt.c
+dpkg -l gcc | grep gcc
+ii  gcc            3.3.5-3        The GNU C compiler
+bernhard@burn:~/tmp$ gcc -mcpu=3D440 x.c
+cc1: error: bad value (440) for -mcpu=3D switch
+bernhard@burn:~/tmp$ gcc -mcpu=3D405 x.c
+bernhard@burn:~/tmp$
 
-void ft_cpu_setup(void *blob, bd_t *bd)
-{
-        do_fixup_by_prop_u32(blob, "device_type", "cpu", 4,
-                "timebase-frequency", get_tbclk(), 1);
-        do_fixup_by_prop_u32(blob, "device_type", "cpu", 4,
-                "bus-frequency", bd->bi_busfreq, 1);
-        do_fixup_by_prop_u32(blob, "device_type", "cpu", 4,
-                "clock-frequency", bd->bi_intfreq, 1);
-        do_fixup_by_compat_u32(blob, "fsl,cpm-brg", "clock-frequency",
-                gd->brg_clk, 1);
-
-        /* Fixup ethernet MAC addresses */
-        fdt_fixup_ethernet(blob, bd);
-
-        fdt_fixup_memory(blob, (u64)bd->bi_memstart, (u64)bd->bi_memsize);
-}
-
-Adding fdt support to an 8xx board is then as simple as defining
-
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT        1
-#define CONFIG_OF_BOARD_SETUP   1
+> -$(obj)/cuboot-katmai.o: BOOTCFLAGS +=3D -mcpu=3D440
+> +$(obj)/4xx.o: BOOTCFLAGS +=3D -mcpu=3D405
 
 
-In your u-boot/include/configs/MySuperBoard.h
+=2D-=20
+Managing Director - Owner: www.intevation.net       (Free Software Company)
+Germany Coordinator: fsfeurope.org. Coordinator: www.Kolab-Konsortium.com.
+Intevation GmbH, Osnabr=FCck, DE; Amtsgericht Osnabr=FCck, HRB 18998
+Gesch=E4ftsf=FChrer Frank Koormann, Bernhard Reiter, Dr. Jan-Oliver Wagner
 
-Best,
-Bryan
+--nextPart7727612.qq1kpQPdsC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+
+iD8DBQBHvuEyh9ag3dpKERYRAq2vAJ469VYp6a4WIIB6mWksk0+G0l8kbwCfW191
+FNSnRrudzTRWg3i3T2jnkHI=
+=cLEL
+-----END PGP SIGNATURE-----
+
+--nextPart7727612.qq1kpQPdsC--
