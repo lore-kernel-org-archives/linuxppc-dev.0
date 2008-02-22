@@ -1,20 +1,16 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8DE8EDE13B
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 04:01:34 +1100 (EST)
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Add support for binary includes. 
-In-Reply-To: Your message of "Fri, 22 Feb 2008 10:08:20 CST."
-	<20080222160820.GA19571@ld0162-tx32.am.freescale.net>
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-	<fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
-	<20080222160820.GA19571@ld0162-tx32.am.freescale.net>
-Date: Fri, 22 Feb 2008 10:24:56 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JSahk-0003ub-Eh@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 81EDFDE1AB
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 04:23:34 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20080221200758.62940@gmx.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ebff4ecb45908616728fb5c8ede8b0bf@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: How to dynamically disable/enable CPU features?
+Date: Fri, 22 Feb 2008 11:24:38 -0600
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Scott Wood mumbled:
-> > 
-> > Can I ask; what is the intended usage of such a thing?  How large
-> > would a typical binary blob be?
-> 
-> I use it for embedding guest device trees in a hypervisor's device tree.
+At Fri Feb 22 07:07:58 EST 2008, Gerhard Pircher wrote:
+> I'm wondering how to disable or enable CPU features based on the board 
+> the
+> kernel is running on. In my case I want to disable the
+> CPU_FTR_NEED_COHERENT flag for 74xx CPUs, because it locks up the 
+> machine.
+> I tried to clear the flag in the platform's *_probe() function with the
+> following code:
+>
+> cur_cpu_spec->cpu_features &= ~CPU_FTR_NEED_COHERENT;
+>
+> First I thought that this works fine, because the kernel booted once 
+> till
+> the console login prompt (and died afterwards). Therefore I suspected 
+> that
+> another change or bug in the kernel conflicts with my hardware (usually
+> the machine died much earlier on older kernels, if the flag wasn't
+> cleared).
+> Now I removed all CPU_FTR_NEED_COHERENT entries from the cputable.h 
+> file
+> and the kernel boots just fine without any lockups (reproducable).
+> I don't quite understand the difference between dynamically clearing 
+> the
+> flag in the platform setup code and removing the flag for all CPU
+> defines in cputable.h. I can only suspect that clearing the flag in the
+> platform probe function is too late, as the MMU and BATs may already be
+> set up.
+>
+> Can anybody confirm my suspicion or give me a hint how to implement it
+> correctly? (I don't want to tinker with cputable.h)
 
-Why wouldn't we instead, say, extend the source sytax
-to allow a sub-tree or an embedded tree, rather than
-obscuring an opaque form of that guest device tree?
+We handle cpu features in a couple of ways:
+(1) we replace assembly instructions with nop early in the kernel boot
+(2) we test the feature flags in c code
 
-Thanks,
-jdl
+In (2), we form two expressions for features that are
+(a) always set
+(b) never set
+so that the compiler can eliminate the test based on the config.
+
+To change a flag, you must make sure its in POSSIBLE but not ALWAYS, 
+and also set it before it is used, either to nop out instructions (see 
+early_init in setup-32.c for 32 bit), or tested by c code (in this 
+case, maybe the initial_mmu setup is testing NEED_COHERENT, which is 
+between early_init and probe).  The code path is a bit
+different for 64 bit.
+
+milton
