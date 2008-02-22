@@ -1,26 +1,18 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 03FB1DDEB7
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 11:01:33 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so1261995uge.0
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 16:01:32 -0800 (PST)
-Date: Fri, 22 Feb 2008 02:41:36 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [POWERPC] 8xx: timebase frequency should not depend on
-	bus-frequency
-Message-ID: <20080221234136.GA3545@zarina>
-References: <20080221194508.GA12896@localhost.localdomain>
-	<47BDD587.9060206@freescale.com>
-	<20080221195918.GA14636@localhost.localdomain>
-	<47BDD9E2.5050007@freescale.com>
-	<20080221211343.GA24786@localhost.localdomain>
-	<47BDEB0A.80706@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <47BDEB0A.80706@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+In-Reply-To: <47B90F55.2080606@austin.ibm.com>
+References: <47B90F55.2080606@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-+cFJ0gv8MlDE2hxtgo0F"
+Date: Fri, 22 Feb 2008 11:53:04 +1100
+Message-Id: <1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Linas Vepstas <linasvepstas@gmail.com>,
+	paulus <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 21, 2008 at 03:20:10PM -0600, Scott Wood wrote:
-> Anton Vorontsov wrote:
-> > On Thu, Feb 21, 2008 at 02:06:58PM -0600, Scott Wood wrote:
-> >> Current u-boots don't support device trees at all on 8xx.
-> > 
-> > Yes, vanilla u-boots. I assume many of us use some u-boot hacks to
-> > actually boot with the device tree (no, not cuboots)... ;-)
-> 
-> Fine, but don't expect misbehavior from out-of-tree u-boots to be used 
-> as justification for the kernel ignoring device tree content. :-)
 
-You got me wrong, maybe I wasn't clear enough: it wasn't justification of
-any kind. It's was just a remark regarding u-boot still not supporting
-fdt for 8xx (20 lines of code we're lazy to cleanup, write annotation
-to the patch and send it ;-).
+--=-+cFJ0gv8MlDE2hxtgo0F
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Regarding timebase issue. This issue isn't introduced by the
-u-boots. It is _Linux_ code that is buggy. I'm agree that ideally we
-should get timebase-frequency from the device tree, but if we'll
-start getting it from inside the current code, it will look like:
+On Sun, 2008-02-17 at 22:53 -0600, Manish Ahuja wrote:
+> The following series of patches implement a basic framework
+> for hypervisor-assisted dump. The very first patch provides=20
+> documentation explaining what this is  :-) . Yes, its supposed
+> to be an improvement over kdump.
+>=20
+> A list of open issues / todo list is included in the documentation.
+> It also appears that the not-yet-released firmware versions this was test=
+ed=20
+> on are still, ahem, incomplete; this work is also pending.
+>=20
+> I have included most of the changes requested. Although, I did find
+> one or two, fixed in a later patch file rather than the first location
+> they appeared at.
 
-...linux setups tbfreq = cpu_clk / 16...
-tbfreq = of_get_property(.."timebase-frequency"..);
+This series still doesn't build on !CONFIG_RTAS configs:
+http://kisskb.ellerman.id.au/kisskb/head/629/
 
-You see? This is illogical, error-prone, and whatnot. :-)
-I agree, to fix this right way, we should:
-a) fix current u-boots;
-b) rework 8xx/ Linux code; and
-c) rework cuboot for compatibility;
+This solution is to move early_init_dt_scan_phyp_dump() into
+arch/powerpc/platforms/pseries/phyp_dump.c and provide a dummy
+implementation in asm-powerpc/phyp_dump.c for the !CONFIG_PHYP_DUMP
+case.
 
-Until that happen that tiny patch is a valid bug fix, right?
+cheers
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-+cFJ0gv8MlDE2hxtgo0F
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHvhzvdSjSd0sB4dIRAsjDAJ0dI78wKsy1kiWy85Z3ZC6csgpdpQCfWKBC
+W6gr1dS6OAkiRqyFelsbVzQ=
+=ClnW
+-----END PGP SIGNATURE-----
+
+--=-+cFJ0gv8MlDE2hxtgo0F--
