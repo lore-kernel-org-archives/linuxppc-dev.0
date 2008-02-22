@@ -1,22 +1,16 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp117.sbc.mail.sp1.yahoo.com (smtp117.sbc.mail.sp1.yahoo.com
-	[69.147.64.90]) by ozlabs.org (Postfix) with SMTP id 7A259DDE36
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 10:42:06 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: cbouatmailru@gmail.com,
- avorontsov@ru.mvista.com
-Subject: Re: [PATCH RFC 4/7] [GPIO] Let drivers link if they support GPIO API
-	as an addition
-Date: Fri, 22 Feb 2008 15:42:03 -0800
-References: <20071210204705.GA31263@localhost.localdomain>
-	<20071210225525.2F6C6266154@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<20071210230445.GA1141@zarina>
-In-Reply-To: <20071210230445.GA1141@zarina>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200802221542.03359.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <erick205@umn.edu>
+Received: from mta-w2.tc.umn.edu (mta-w2.tc.umn.edu [134.84.119.6])
+	by ozlabs.org (Postfix) with ESMTP id 3C8B9DDE36
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 10:44:08 +1100 (EST)
+Date: Fri, 22 Feb 2008 15:28:44 -0800
+Subject: [PATCH] [POWERPC] 40X: Add Default Restart Machdep Method to 40X
+	Platforms
+From: Grant Erickson <erick205@umn.edu>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-ID: <C3E49AAC.D8E4%erick205@umn.edu>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +20,206 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 10 December 2007, Anton Vorontsov wrote:
-> On Mon, Dec 10, 2007 at 02:55:24PM -0800, David Brownell wrote:
+This patch restores the reset on restart functionality to 40x-based
+platforms that was formerly provided--but not used in arch/powerpc--by
+abort() in head_40x.S. This functionality is now provided by
+ppc40x_reset_system(char *) in a fashion similar to that of the 44x-based
+platforms.
 
-> > The point of CONFIG_GENERIC_GPIO is to be *the* conditional used to
-> > tell whether that programming interface is available ... starting
-> > from "#include <asm/gpio.h>", and including all gpio_*() calls.
-> > 
-> > So my first reaction is to not like this patch.  It changes semantics
-> > in an incompatible way.  And AFAICT, needlessly so.
-> 
-> Why incompatible? gpio-aware drivers will get -ENOSYS on gpio_request,
-> thus they will not do anything wrong. GPIO-only drivers could still
-> depend on GENERIC_GPIO, and their behaviour will not change.
+Compiled, linked and tested against the AMCC Haleakala board.
 
-If you still want this, I think a better approach would be:
-
-  http://marc.info/?l=linux-kernel&m=120295461410848&w=2
-
-That is, #include <linux/gpio.h> and have *that* do the relevant
-switch, based on GENERIC_GPIO.  No semantic changes at all, if
-one discounts the implicit switch to <linux/gpio.h> (important
-for platforms that don't *have* any <asm/gpio.h> header), which
-won't affect any existing code.
-
-So your NAND code could use that, and work equally well on
-SOC variants that have generic GPIOs and those that don't.
-
-Comments?
-
-- Dave
+Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+---
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/kernel/head_40x.S
+linux-2.6.25-rc2-git1.N/arch/powerpc/kernel/head_40x.S
+--- linux-2.6.25-rc2-git1/arch/powerpc/kernel/head_40x.S    2008-01-24
+14:58:37.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/kernel/head_40x.S    2008-02-22
+11:02:56.000000000 -0800
+@@ -961,11 +961,6 @@
+ 
+     blr
+ 
+-_GLOBAL(abort)
+-        mfspr   r13,SPRN_DBCR0
+-        oris    r13,r13,DBCR0_RST_SYSTEM@h
+-        mtspr   SPRN_DBCR0,r13
+-
+ _GLOBAL(set_context)
+ 
+ #ifdef CONFIG_BDI_SWITCH
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/40x.h
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/40x.h
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/40x.h    1969-12-31
+16:00:00.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/40x.h    2008-02-22
+11:02:56.000000000 -0800
+@@ -0,0 +1,6 @@
++#ifndef __POWERPC_PLATFORMS_40X_40X_H
++#define __POWERPC_PLATFORMS_40X_40X_H
++
++extern void ppc40x_reset_system(char *cmd);
++
++#endif /* __POWERPC_PLATFORMS_40X_40X_H */
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/ep405.c
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/ep405.c
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/ep405.c    2008-02-22
+11:07:53.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/ep405.c    2008-02-22
+11:02:56.000000000 -0800
+@@ -30,6 +30,8 @@
+ #include <asm/uic.h>
+ #include <asm/pci-bridge.h>
+ 
++#include "40x.h"
++
+ static struct device_node *bcsr_node;
+ static void __iomem *bcsr_regs;
+ 
+@@ -119,5 +121,6 @@
+     .progress        = udbg_progress,
+     .init_IRQ        = uic_init_tree,
+     .get_irq        = uic_get_irq,
+-    .calibrate_decr        = generic_calibrate_decr,
++    .restart        = ppc40x_reset_system,
++    .calibrate_decr    = generic_calibrate_decr,
+ };
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/kilauea.c
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/kilauea.c
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/kilauea.c    2008-02-22
+11:07:53.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/kilauea.c
+2008-02-22 11:02:56.000000000 -0800
+@@ -21,6 +21,8 @@
+ #include <asm/uic.h>
+ #include <asm/pci-bridge.h>
+ 
++#include "40x.h"
++
+ static __initdata struct of_device_id kilauea_of_bus[] = {
+     { .compatible = "ibm,plb4", },
+     { .compatible = "ibm,opb", },
+@@ -54,5 +56,6 @@
+     .progress             = udbg_progress,
+     .init_IRQ             = uic_init_tree,
+     .get_irq             = uic_get_irq,
+-    .calibrate_decr            = generic_calibrate_decr,
++    .restart            = ppc40x_reset_system,
++    .calibrate_decr        = generic_calibrate_decr,
+ };
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/makalu.c
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/makalu.c
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/makalu.c    2008-02-22
+11:07:53.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/makalu.c
+2008-02-22 11:02:56.000000000 -0800
+@@ -21,6 +21,8 @@
+ #include <asm/uic.h>
+ #include <asm/pci-bridge.h>
+ 
++#include "40x.h"
++
+ static __initdata struct of_device_id makalu_of_bus[] = {
+     { .compatible = "ibm,plb4", },
+     { .compatible = "ibm,opb", },
+@@ -54,5 +56,6 @@
+     .progress             = udbg_progress,
+     .init_IRQ             = uic_init_tree,
+     .get_irq             = uic_get_irq,
+-    .calibrate_decr            = generic_calibrate_decr,
++    .restart            = ppc40x_reset_system,
++    .calibrate_decr        = generic_calibrate_decr,
+ };
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/Makefile
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/Makefile
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/Makefile    2008-02-22
+11:07:53.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/Makefile
+2008-02-22 11:02:56.000000000 -0800
+@@ -1,3 +1,4 @@
++obj-$(CONFIG_40x)                += misc_40x.o
+ obj-$(CONFIG_KILAUEA)                += kilauea.o
+ obj-$(CONFIG_MAKALU)                += makalu.o
+ obj-$(CONFIG_WALNUT)                += walnut.o
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/misc_40x.S
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/misc_40x.S
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/misc_40x.S
+1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/misc_40x.S
+2008-02-22 15:19:14.000000000 -0800
+@@ -0,0 +1,30 @@
++/*
++ * This file contains miscellaneous low-level functions for PPC 40x.
++ *
++ *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
++ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <asm/reg.h>
++#include <asm/ppc_asm.h>
++
++    .text
++
++/*
++ * void ppc40x_reset_system(char *cmd)
++ *
++ * At present, this just applies a system reset which, historically, when
++ * this routine existed as '_abort' in head_40x.S was sufficient for most
++ * systems.
++ */
++_GLOBAL(ppc40x_reset_system)
++        mfspr   r13,SPRN_DBCR0
++        oris    r13,r13,DBCR0_RST_SYSTEM@h
++        mtspr   SPRN_DBCR0,r13
++    b    .                /* Just in case reset fails. */
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/virtex.c
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/virtex.c
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/virtex.c    2008-02-22
+11:07:53.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/virtex.c
+2008-02-22 11:02:56.000000000 -0800
+@@ -15,6 +15,8 @@
+ #include <asm/time.h>
+ #include <asm/xilinx_intc.h>
+ 
++#include "40x.h"
++
+ static struct of_device_id xilinx_of_bus_ids[] __initdata = {
+     { .compatible = "xlnx,plb-v46-1.00.a", },
+     { .compatible = "xlnx,plb-v34-1.01.a", },
+@@ -48,5 +50,6 @@
+     .probe            = virtex_probe,
+     .init_IRQ        = xilinx_intc_init_tree,
+     .get_irq        = xilinx_intc_get_irq,
+-    .calibrate_decr        = generic_calibrate_decr,
++    .restart        = ppc40x_reset_system,
++    .calibrate_decr    = generic_calibrate_decr,
+ };
+diff -rauN linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/walnut.c
+linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/walnut.c
+--- linux-2.6.25-rc2-git1/arch/powerpc/platforms/40x/walnut.c    2008-02-22
+11:07:53.000000000 -0800
++++ linux-2.6.25-rc2-git1.N/arch/powerpc/platforms/40x/walnut.c
+2008-02-22 11:02:56.000000000 -0800
+@@ -27,6 +27,8 @@
+ #include <asm/uic.h>
+ #include <asm/pci-bridge.h>
+ 
++#include "40x.h"
++
+ static __initdata struct of_device_id walnut_of_bus[] = {
+     { .compatible = "ibm,plb3", },
+     { .compatible = "ibm,opb", },
+@@ -61,5 +63,6 @@
+     .progress        = udbg_progress,
+     .init_IRQ        = uic_init_tree,
+     .get_irq        = uic_get_irq,
++    .restart        = ppc40x_reset_system,
+     .calibrate_decr    = generic_calibrate_decr,
+ };
