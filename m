@@ -1,12 +1,12 @@
 Return-Path: <SRS0=LhWK=TL=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id CF989DDE01
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 16:50:51 +1100 (EST)
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 454CEDDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 16:58:26 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5 v4] [POWERPC] Add Canyonlands DTS
-Date: Fri, 22 Feb 2008 06:50:09 +0100
-Message-Id: <1203659409-14042-1-git-send-email-sr@denx.de>
+Subject: [PATCH 3/5 v5] [POWERPC] Add Canyonlands DTS
+Date: Fri, 22 Feb 2008 06:58:16 +0100
+Message-Id: <1203659896-14419-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,10 +18,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stefan Roese <sr@denx.de>
 ---
-Changed MAL interrupt description as suggested by David Gibson.
+And now the I2C device-types are removed. Sorry for the mail-flood.
 
- arch/powerpc/boot/dts/canyonlands.dts |  395 +++++++++++++++++++++++++++++++++
- 1 files changed, 395 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/canyonlands.dts |  393 +++++++++++++++++++++++++++++++++
+ 1 files changed, 393 insertions(+), 0 deletions(-)
  create mode 100644 arch/powerpc/boot/dts/canyonlands.dts
 
 diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
@@ -29,7 +29,7 @@ new file mode 100644
 index 0000000..2aee74c
 --- /dev/null
 +++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -0,0 +1,395 @@
+@@ -0,0 +1,393 @@
 +/*
 + * Device Tree Source for AMCC Canyonlands (460EX)
 + *
@@ -223,7 +223,6 @@ index 0000000..2aee74c
 +			};
 +
 +			IIC0: i2c@4ef60700 {
-+				device_type = "i2c";
 +				compatible = "ibm,iic-460ex", "ibm,iic";
 +				reg = <ef600700 14>;
 +				interrupt-parent = <&UIC0>;
@@ -231,7 +230,6 @@ index 0000000..2aee74c
 +			};
 +
 +			IIC1: i2c@ef600800 {
-+				device_type = "i2c";
 +				compatible = "ibm,iic-460ex", "ibm,iic";
 +				reg = <ef600800 14>;
 +				interrupt-parent = <&UIC0>;
