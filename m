@@ -1,31 +1,14 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DCB14DE0FE
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 07:36:53 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1MKajnU025605
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 15:36:45 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1MKaiRf207496
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 13:36:44 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1MKaiXU020710
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 13:36:44 -0700
-Date: Fri, 22 Feb 2008 14:36:21 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] [POWERPC] AMCC Kilauea (405EX): Disable EMAC loopback mode
-Message-ID: <20080222143621.0579729b@weaponx>
-In-Reply-To: <1203669132-9385-1-git-send-email-sr@denx.de>
-References: <1203669132-9385-1-git-send-email-sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@gcc12.fsffrance.org>
+Received: from snail.fsffrance.org (eucd.info [88.191.250.43])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 55026DE27F
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 07:38:33 +1100 (EST)
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Get rid of invalid shifts in math-emu
+Date: Fri, 22 Feb 2008 21:01:02 +0100
+Message-Id: <410c322e7d7e4b9a420a7209f12dfbd105583f6f.1203708822.git.segher@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,27 +18,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 22 Feb 2008 09:32:12 +0100
-Stefan Roese <sr@denx.de> wrote:
 
-> 405EX(r) has SDR0_MFR[E0CS/E1CS] set after reset. This selects
-> the internal loopback mode. Clear these bits so that both EMACs
-> don't use loopback mode as default.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> ---
-> I'm not sure if this should be done here in the board platform code,
-> or in the newemac driver or perhaps in some code common for 405EX.
-> 
-> Any thoughts on this welcome.
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+---
+ arch/powerpc/math-emu/op-2.h |   75 ++++++++++++++++-------------------------
+ 1 files changed, 29 insertions(+), 46 deletions(-)
 
-Why isn't this done in U-Boot?  Or is it done if the network interface
-is used?  I know I've tftp'd a kernel onto my 405EXr board, so I'm
-slightly confused why this is needed in the kernel.
-
-Aside from that, I'm OK with it living in the platform code for Kilauea
-(an Haleakala by inheritance).  Particularly given the fact that this
-should be fixing in U-Boot for any further boards that use 405EX(r)...
-right?
-
-josh
+diff --git a/arch/powerpc/math-emu/op-2.h b/arch/powerpc/math-emu/op-2.h
+index 7d6f17c..16d3e3c 100644
+--- a/arch/powerpc/math-emu/op-2.h
++++ b/arch/powerpc/math-emu/op-2.h
+@@ -11,58 +11,43 @@
+ 
+ #define _FP_FRAC_SLL_2(X,N)						\
+   do {									\
+-    if ((N) < _FP_W_TYPE_SIZE)						\
++    int n = (N);							\
++    if (n >= _FP_W_TYPE_SIZE)						\
+       {									\
+-        if (__builtin_constant_p(N) && (N) == 1) 			\
+-          {								\
+-            X##_f1 = X##_f1 + X##_f1 + (((_FP_WS_TYPE)(X##_f0)) < 0);	\
+-            X##_f0 += X##_f0;						\
+-          }								\
+-        else								\
+-          {								\
+-	    X##_f1 = X##_f1 << (N) | X##_f0 >> (_FP_W_TYPE_SIZE - (N));	\
+-	    X##_f0 <<= (N);						\
+-	  }								\
+-      }									\
+-    else								\
+-      {									\
+-	X##_f1 = X##_f0 << ((N) - _FP_W_TYPE_SIZE);			\
++	X##_f1 = X##_f0;						\
+ 	X##_f0 = 0;							\
++	n -= _FP_W_TYPE_SIZE;						\
+       }									\
++    X##_f1 = X##_f1 << n | X##_f0 >> (_FP_W_TYPE_SIZE - n - 1) >> 1;	\
++    X##_f0 <<= n;							\
+   } while (0)
+ 
+ #define _FP_FRAC_SRL_2(X,N)						\
+   do {									\
+-    if ((N) < _FP_W_TYPE_SIZE)						\
+-      {									\
+-	X##_f0 = X##_f0 >> (N) | X##_f1 << (_FP_W_TYPE_SIZE - (N));	\
+-	X##_f1 >>= (N);							\
+-      }									\
+-    else								\
++    int n = (N);							\
++    if (n >= _FP_W_TYPE_SIZE)						\
+       {									\
+-	X##_f0 = X##_f1 >> ((N) - _FP_W_TYPE_SIZE);			\
++	X##_f0 = X##_f1;						\
+ 	X##_f1 = 0;							\
++	n -= _FP_W_TYPE_SIZE;						\
+       }									\
++    X##_f0 = X##_f0 >> n | X##_f1 << (_FP_W_TYPE_SIZE - n - 1) << 1;	\
++    X##_f1 >>= n;							\
+   } while (0)
+ 
+ /* Right shift with sticky-lsb.  */
+ #define _FP_FRAC_SRS_2(X,N,sz)						\
+   do {									\
+-    if ((N) < _FP_W_TYPE_SIZE)						\
+-      {									\
+-	X##_f0 = (X##_f1 << (_FP_W_TYPE_SIZE - (N)) | X##_f0 >> (N) |	\
+-		  (__builtin_constant_p(N) && (N) == 1			\
+-		   ? X##_f0 & 1						\
+-		   : (X##_f0 << (_FP_W_TYPE_SIZE - (N))) != 0));	\
+-	X##_f1 >>= (N);							\
+-      }									\
+-    else								\
++    int n = (N);							\
++    if (n >= _FP_W_TYPE_SIZE)						\
+       {									\
+-	X##_f0 = (X##_f1 >> ((N) - _FP_W_TYPE_SIZE) |			\
+-	          (((X##_f1 << (2 * _FP_W_TYPE_SIZE - (N))) |		\
+-		   X##_f0) != 0));					\
++	X##_f0 = X##_f1;						\
+ 	X##_f1 = 0;							\
++	n -= _FP_W_TYPE_SIZE;						\
+       }									\
++    X##_f0 = (X##_f1 << (_FP_W_TYPE_SIZE - n - 1) << 1 | X##_f0 >> n |	\
++	      ((X##_f0 << (_FP_W_TYPE_SIZE - n - 1) << 1) != 0));	\
++    X##_f1 >>= n;							\
+   } while (0)
+ 
+ #define _FP_FRAC_ADDI_2(X,I) \
+@@ -398,20 +383,18 @@
+ 
+ #define _FP_FRAC_ASSEMBLE_2(r, X, rsize)	\
+   do {						\
+-    if (rsize <= _FP_W_TYPE_SIZE)		\
+-      r = X##_f0;				\
+-    else					\
+-      {						\
+-	r = X##_f1;				\
+-	r <<= _FP_W_TYPE_SIZE;			\
+-	r += X##_f0;				\
+-      }						\
++    r = X##_f1;					\
++    r <<= _FP_W_TYPE_SIZE - 1;			\
++    r <<= 1;					\
++    r += X##_f0;				\
+   } while (0)
+ 
+-#define _FP_FRAC_DISASSEMBLE_2(X, r, rsize)				\
+-  do {									\
+-    X##_f0 = r;								\
+-    X##_f1 = (rsize <= _FP_W_TYPE_SIZE ? 0 : r >> _FP_W_TYPE_SIZE);	\
++#define _FP_FRAC_DISASSEMBLE_2(X, r, rsize)	\
++  do {						\
++    X##_f0 = r;					\
++    r >>= _FP_W_TYPE_SIZE - 1;			\
++    r >>= 1;					\
++    X##_f1 = r;					\
+   } while (0)
+ 
+ /*
+-- 
+1.5.3.4.208.g805a
