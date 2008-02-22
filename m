@@ -2,17 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F7CDDDED3
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 17:24:01 +1100 (EST)
-Subject: Re: [PATCH 2/5] [POWERPC] Add AMCC Canyonlands 460EX eval board
-	support to platforms/44x
+	by ozlabs.org (Postfix) with ESMTP id 2C31ADDE37
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 17:24:26 +1100 (EST)
+Subject: Re: [PATCH] [POWERPC] Fix L1 cache size in katmai DTS
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Stefan Roese <sr@denx.de>
-In-Reply-To: <1203602446-11330-1-git-send-email-sr@denx.de>
-References: <1203602446-11330-1-git-send-email-sr@denx.de>
+In-Reply-To: <1203607297-15732-1-git-send-email-sr@denx.de>
+References: <1203607297-15732-1-git-send-email-sr@denx.de>
 Content-Type: text/plain
-Date: Fri, 22 Feb 2008 17:23:38 +1100
-Message-Id: <1203661418.10422.285.camel@pasglop>
+Date: Fri, 22 Feb 2008 17:24:01 +1100
+Message-Id: <1203661441.10422.287.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -26,130 +25,108 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2008-02-21 at 15:00 +0100, Stefan Roese wrote:
+On Thu, 2008-02-21 at 16:21 +0100, Stefan Roese wrote:
+> This patch changes the katmai (440SPe) L1 cache size to 32k. Some
+> whitespace issues are cleaned up too.
+> 
 > Signed-off-by: Stefan Roese <sr@denx.de>
 
 Ack.
 
 > ---
->  arch/powerpc/platforms/44x/Kconfig       |   18 ++++++++
->  arch/powerpc/platforms/44x/Makefile      |    1 +
->  arch/powerpc/platforms/44x/canyonlands.c |   64 ++++++++++++++++++++++++++++++
->  3 files changed, 83 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/platforms/44x/canyonlands.c
+>  arch/powerpc/boot/dts/katmai.dts |   58 +++++++++++++++++++-------------------
+>  1 files changed, 29 insertions(+), 29 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-> index c062c4c..b56690c 100644
-> --- a/arch/powerpc/platforms/44x/Kconfig
-> +++ b/arch/powerpc/platforms/44x/Kconfig
-> @@ -67,6 +67,16 @@ config WARP
->  	  See http://www.pikatechnologies.com/ and follow the "PIKA for Computer
->  	  Telephony Developers" link for more information.
+> diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+> index 9bdfc0f..abf7f3e 100644
+> --- a/arch/powerpc/boot/dts/katmai.dts
+> +++ b/arch/powerpc/boot/dts/katmai.dts
+> @@ -38,8 +38,8 @@
+>  			timebase-frequency = <0>; /* Filled in by zImage */
+>  			i-cache-line-size = <20>;
+>  			d-cache-line-size = <20>;
+> -			i-cache-size = <20000>;
+> -			d-cache-size = <20000>;
+> +			i-cache-size = <8000>;
+> +			d-cache-size = <8000>;
+>  			dcr-controller;
+>  			dcr-access-method = "native";
+>  		};
+> @@ -136,11 +136,11 @@
+>  		};
 >  
-> +config CANYONLANDS
-> +	bool "Canyonlands"
-> +	depends on 44x
-> +	default n
-> +	select 460EX
-> +	select PCI
-> +	select PPC4xx_PCI_EXPRESS
-> +	help
-> +	  This option enables support for the AMCC PPC460EX evaluation board.
-> +
->  #config LUAN
->  #	bool "Luan"
->  #	depends on 44x
-> @@ -122,6 +132,14 @@ config 440SPe
->          select IBM_NEW_EMAC_EMAC4
->  	bool
+>  		POB0: opb {
+> -		  	compatible = "ibm,opb-440spe", "ibm,opb-440gp", "ibm,opb";
+> +			compatible = "ibm,opb-440spe", "ibm,opb-440gp", "ibm,opb";
+>  			#address-cells = <1>;
+>  			#size-cells = <1>;
+> -		  	ranges = <00000000 4 e0000000 20000000>;
+> -		  	clock-frequency = <0>; /* Filled in by zImage */
+> +			ranges = <00000000 4 e0000000 20000000>;
+> +			clock-frequency = <0>; /* Filled in by zImage */
 >  
-> +config 460EX
-> +	bool
-> +	select PPC_FPU
-> +	select IBM_NEW_EMAC_EMAC4
-> +	select IBM_NEW_EMAC_RGMII
-> +	select IBM_NEW_EMAC_ZMII
-> +	select IBM_NEW_EMAC_TAH
-> +
->  # 44x errata/workaround config symbols, selected by the CPU models above
->  config IBM440EP_ERR42
->  	bool
-> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-> index 0864d4f..d70eb03 100644
-> --- a/arch/powerpc/platforms/44x/Makefile
-> +++ b/arch/powerpc/platforms/44x/Makefile
-> @@ -7,3 +7,4 @@ obj-$(CONFIG_KATMAI)	+= katmai.o
->  obj-$(CONFIG_RAINIER)	+= rainier.o
->  obj-$(CONFIG_WARP)	+= warp.o
->  obj-$(CONFIG_WARP)	+= warp-nand.o
-> +obj-$(CONFIG_CANYONLANDS) += canyonlands.o
-> diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
-> new file mode 100644
-> index 0000000..dac5b32
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/44x/canyonlands.c
-> @@ -0,0 +1,64 @@
-> +/*
-> + * Canyonlands board specific routines
-> + *
-> + * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
-> + *
-> + * Based on the Katmai code by
-> + * Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> + * Copyright 2007 IBM Corp.
-> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> + * Copyright 2007 IBM Corporation
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +#include <linux/init.h>
-> +#include <linux/of_platform.h>
-> +
-> +#include <asm/machdep.h>
-> +#include <asm/prom.h>
-> +#include <asm/udbg.h>
-> +#include <asm/time.h>
-> +#include <asm/uic.h>
-> +#include <asm/pci-bridge.h>
-> +
-> +#include "44x.h"
-> +
-> +static __initdata struct of_device_id canyonlands_of_bus[] = {
-> +	{ .compatible = "ibm,plb4", },
-> +	{ .compatible = "ibm,opb", },
-> +	{ .compatible = "ibm,ebc", },
-> +	{},
-> +};
-> +
-> +static int __init canyonlands_device_probe(void)
-> +{
-> +	of_platform_bus_probe(NULL, canyonlands_of_bus, NULL);
-> +
-> +	return 0;
-> +}
-> +machine_device_initcall(canyonlands, canyonlands_device_probe);
-> +
-> +static int __init canyonlands_probe(void)
-> +{
-> +	unsigned long root = of_get_flat_dt_root();
-> +
-> +	if (!of_flat_dt_is_compatible(root, "amcc,canyonlands"))
-> +		return 0;
-> +
-> +	ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC;
-> +
-> +	return 1;
-> +}
-> +
-> +define_machine(canyonlands) {
-> +	.name 				= "Canyonlands",
-> +	.probe 				= canyonlands_probe,
-> +	.progress 			= udbg_progress,
-> +	.init_IRQ 			= uic_init_tree,
-> +	.get_irq 			= uic_get_irq,
-> +	.restart			= ppc44x_reset_system,
-> +	.calibrate_decr			= generic_calibrate_decr,
-> +};
+>  			EBC0: ebc {
+>  				compatible = "ibm,ebc-440spe", "ibm,ebc-440gp", "ibm,ebc";
+> @@ -153,38 +153,38 @@
+>  			};
+>  
+>  			UART0: serial@10000200 {
+> -		   		device_type = "serial";
+> -		   		compatible = "ns16550";
+> -		   		reg = <10000200 8>;
+> +				device_type = "serial";
+> +				compatible = "ns16550";
+> +				reg = <10000200 8>;
+>  				virtual-reg = <a0000200>;
+> -		   		clock-frequency = <0>; /* Filled in by zImage */
+> -		   		current-speed = <1c200>;
+> -		   		interrupt-parent = <&UIC0>;
+> -		   		interrupts = <0 4>;
+> -	   		};
+> +				clock-frequency = <0>; /* Filled in by zImage */
+> +				current-speed = <1c200>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <0 4>;
+> +			};
+>  
+>  			UART1: serial@10000300 {
+> -		   		device_type = "serial";
+> -		   		compatible = "ns16550";
+> -		   		reg = <10000300 8>;
+> +				device_type = "serial";
+> +				compatible = "ns16550";
+> +				reg = <10000300 8>;
+>  				virtual-reg = <a0000300>;
+> -		   		clock-frequency = <0>;
+> -		   		current-speed = <0>;
+> -		   		interrupt-parent = <&UIC0>;
+> -		   		interrupts = <1 4>;
+> -	   		};
+> +				clock-frequency = <0>;
+> +				current-speed = <0>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <1 4>;
+> +			};
+>  
+> 
+>  			UART2: serial@10000600 {
+> -		   		device_type = "serial";
+> -		   		compatible = "ns16550";
+> -		   		reg = <10000600 8>;
+> +				device_type = "serial";
+> +				compatible = "ns16550";
+> +				reg = <10000600 8>;
+>  				virtual-reg = <a0000600>;
+> -		   		clock-frequency = <0>;
+> -		   		current-speed = <0>;
+> -		   		interrupt-parent = <&UIC1>;
+> -		   		interrupts = <5 4>;
+> -	   		};
+> +				clock-frequency = <0>;
+> +				current-speed = <0>;
+> +				interrupt-parent = <&UIC1>;
+> +				interrupts = <5 4>;
+> +			};
+>  
+>  			IIC0: i2c@10000400 {
+>  				device_type = "i2c";
