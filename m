@@ -1,20 +1,22 @@
-Return-Path: <bernhard@intevation.de>
-Received: from kolab.intevation.de (aktaia.intevation.org [212.95.126.10])
-	by ozlabs.org (Postfix) with ESMTP id 66A62DDED1
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 01:50:35 +1100 (EST)
-From: Bernhard Reiter <bernhard@intevation.de>
-To: debian-powerpc@lists.debian.org
-Subject: Re: compile quirk linux-2.6.24 (with workaround)
-Date: Fri, 22 Feb 2008 15:50:24 +0100
-References: <200802031729.12069.bernhard@intevation.de>
-	<20080205093820.5918a216@zod.rchland.ibm.com>
-	<20080218205248.1af469d4@zod.rchland.ibm.com>
-In-Reply-To: <20080218205248.1af469d4@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7727612.qq1kpQPdsC";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200802221550.27093.bernhard@intevation.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C4495DDECB
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 02:29:33 +1100 (EST)
+Subject: Re: MPC8540 : What's "SPE used in kernel" ?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Philippe De Muyter <phdm@macqel.be>
+In-Reply-To: <20080222095022.GA635@ingate.macqel>
+References: <20080221123534.GA17716@ingate.macqel>
+	<20080222095022.GA635@ingate.macqel>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ryMVtFjGN8fgnTGT/YuF"
+Date: Fri, 22 Feb 2008 16:29:11 +0100
+Message-Id: <1203694151.7082.37.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,55 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart7727612.qq1kpQPdsC
-Content-Type: text/plain;
-  charset="iso-8859-1"
+
+--=-ryMVtFjGN8fgnTGT/YuF
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Tuesday 19 February 2008 03:52, Josh Boyer wrote:
-> My apologies for taking so long on this.  Digging through gcc history
-> isn't exactly fun :)
-
-No problem. Thanks for tackling the issue.
-
-> Ok, so it seems -mcpu=3D440 was added in gcc 3.4.  The -mcpu=3D405 option
-> has been around since 2001.  Seeing as how there really isn't anything
-> 440 specific in the files effected, we should be able to pass -mcpu=3D405
-> for everything and have it still work.
->
-> Bernhard, can you try the patch below?=20
-
-I will test it in the next days.
-
-The short test for my sarge compiler makes me optimistic:
-
-dpkg -l gcc | grep gcc
-ii  gcc            3.3.5-3        The GNU C compiler
-bernhard@burn:~/tmp$ gcc -mcpu=3D440 x.c
-cc1: error: bad value (440) for -mcpu=3D switch
-bernhard@burn:~/tmp$ gcc -mcpu=3D405 x.c
-bernhard@burn:~/tmp$
-
-> -$(obj)/cuboot-katmai.o: BOOTCFLAGS +=3D -mcpu=3D440
-> +$(obj)/4xx.o: BOOTCFLAGS +=3D -mcpu=3D405
 
 
-=2D-=20
-Managing Director - Owner: www.intevation.net       (Free Software Company)
-Germany Coordinator: fsfeurope.org. Coordinator: www.Kolab-Konsortium.com.
-Intevation GmbH, Osnabr=FCck, DE; Amtsgericht Osnabr=FCck, HRB 18998
-Gesch=E4ftsf=FChrer Frank Koormann, Bernhard Reiter, Dr. Jan-Oliver Wagner
+> I wonder why a kernel configured for E500 and compiled by a E500-specific=
+ gcc
+> triggers this message.  Is it invalid to use SPE instructions in the kern=
+el=20
+> or do I misunderstand the message ?
 
---nextPart7727612.qq1kpQPdsC
-Content-Type: application/pgp-signature
+I think it's like floating point/altivec, we don't always save the FP
+registers on kernel/userspace transitions and so have to explicitly save
+them to use them in the kernel, otherwise we'd clobber the userspace
+register state.
+
+I guess there's something like kernel_enter_spe()?
+
+johannes
+
+--=-ryMVtFjGN8fgnTGT/YuF
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iD8DBQBHvuEyh9ag3dpKERYRAq2vAJ469VYp6a4WIIB6mWksk0+G0l8kbwCfW191
-FNSnRrudzTRWg3i3T2jnkHI=
-=cLEL
+iQIVAwUAR77qRaVg1VMiehFYAQK4XBAAgkmjt580rPMhZnb8HEFWYKwy2YXeT65c
+jI7i/m4Uhht9JDUPaM9ctDbysygYKPnQSrtBq7xhC5kKrHEJ7NVe4guAuYnYzuZA
+wHjimAuCT3GWgWP3vAUtaOkBA/5J+s4bll0YsaTvwtmoeo5wmwx8RkMUevw5vI3V
+RE2tSD3hBwJiY1yNm6uKfhfzN9PEiqNuLu2yiMsfBmy4wtG9bn+XLsRvD7R4yQxt
+bmuB0PNZX/hRaRvIY7sEyUsgqksgZNir74ElPO92UnCBld/uK7nqJoOz52fDnR5S
+0vSPWQoiJ1FTAN/wYc5w8jYKoHibPMUTfa9LjkTx32mLWZc07/isPsN1XKOQ6EjA
+KP/aye1p+jNdyKta+3DsbqejbyL6D2WxpKFHpnDl9c8Kw36n4qfpDYMMve91s06v
+u6d4DzIhnLjQcPQALzJLanTAwt9sOx9lzfoWgf6ih19EK3gpsKCx/DtIt4WzikcD
+lK3WTm8UUFke4vmU4ZVzptN1bt485P9SHNgIHlPTzUptYcXRv5I+t5a4MhNuok/w
+hsUKuBN3PLU/j/tMavpQTGIejVJBNHnpKD1nhXSlPyukvGKiuHLt5x/vkKEKTGYI
+6xyhHAThOIWMwgJO2wT/1dMcpefil8FhtN2AfCWnpu6ZAy6Nia4707cPfem+zN+Q
+pnAyCKvL/+Y=
+=AuVl
 -----END PGP SIGNATURE-----
 
---nextPart7727612.qq1kpQPdsC--
+--=-ryMVtFjGN8fgnTGT/YuF--
