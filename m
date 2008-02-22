@@ -1,21 +1,16 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5AE65DDF5B
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 05:33:37 +1100 (EST)
-In-Reply-To: <20080222095022.GA635@ingate.macqel>
-References: <20080221123534.GA17716@ingate.macqel>
-	<20080222095022.GA635@ingate.macqel>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <08A7CD2B-27EA-4C97-9220-314E36BBBAA6@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: MPC8540 : What's "SPE used in kernel" ?
-Date: Fri, 22 Feb 2008 12:33:19 -0600
-To: Philippe De Muyter <phdm@macqel.be>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 1B5FEDDF27
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 06:05:32 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Fri, 22 Feb 2008 20:05:31 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <ebff4ecb45908616728fb5c8ede8b0bf@bga.com>
+Message-ID: <20080222190531.103050@gmx.net>
+MIME-Version: 1.0
+References: <ebff4ecb45908616728fb5c8ede8b0bf@bga.com>
+Subject: Re: How to dynamically disable/enable CPU features?
+To: Milton Miller <miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,32 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Feb 22, 2008, at 03:50, Philippe De Muyter wrote:
+-------- Original-Nachricht --------
+> Datum: Fri, 22 Feb 2008 11:24:38 -0600
+> Von: Milton Miller <miltonm@bga.com>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: ppcdev <linuxppc-dev@ozlabs.org>
+> Betreff: Re: How to dynamically disable/enable CPU features?
 
-> Dear list,
->
-> I have just compiled linux-2.6.24 for a MPC8540 target using a MPC8540
-> specific gcc.
->
-> I then got tan infinity of "SPE used in kernel" messages.  Looking  
-> at the
-> sources I ifdeffed out the printk call in KernelSPE, and I now have a
-> silent kernel, that seems to work fine.
->
-> Is there something wrong in my setting and should I look further to
-> debug this problem or is this perfectly normal ?
->
-> I wonder why a kernel configured for E500 and compiled by a E500- 
-> specific gcc
-> triggers this message.  Is it invalid to use SPE instructions in  
-> the kernel
-> or do I misunderstand the message ?
+> We handle cpu features in a couple of ways:
+> (1) we replace assembly instructions with nop early in the kernel boot
+I'm pretty sure that is the problem.
 
+> (2) we test the feature flags in c code
+> 
+> In (2), we form two expressions for features that are
+> (a) always set
+> (b) never set
+> so that the compiler can eliminate the test based on the config.
+> 
+> To change a flag, you must make sure its in POSSIBLE but not ALWAYS, 
+> and also set it before it is used, either to nop out instructions (see 
+> early_init in setup-32.c for 32 bit), or tested by c code (in this 
+> case, maybe the initial_mmu setup is testing NEED_COHERENT, which is 
+> between early_init and probe). The code path is a bit different for 64
+> bit.
+The flag is in POSSIBLE. I now use this code in the platform probe
+function to nop out the code affected by the flag:
 
-We don't currently support using SPE in the kernel.  Are you using  
-SPE in the kernel for some reason?  Do you think that the compiler is  
-automatically generating SPE code in the kernel?  I've never seen  
-that before.
+cur_cpu_spec->cpu_features &= ~CPU_FTR_NEED_COHERENT;
+/* Patch out unwanted feature. */
+do_feature_fixups(cur_cpu_spec->cpu_features,
+		  PTRRELOC(&__start___ftr_fixup),
+		  PTRRELOC(&__stop___ftr_fixup));
 
-Andy
+It seems to work so far, but I would like to know if this is the right
+way to do it, or if calling do_feature_fixups() more than once can have
+any side effects.
+
+regards,
+
+Gerhard
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
