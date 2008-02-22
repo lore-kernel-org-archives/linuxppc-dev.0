@@ -1,23 +1,14 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.187])
-	by ozlabs.org (Postfix) with ESMTP id 2C07BDDE36
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 12:36:32 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w8so327762mue.1
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 17:36:30 -0800 (PST)
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [USB POWERPC] ehci-fsl: add PPC_MPC837x to default y
-References: <20080221195021.GC12896@localhost.localdomain>
-	<9AD13D2E-B57F-4F19-B89C-C8A83157E0F2@kernel.crashing.org>
-	<20080221203058.GA18624@localhost.localdomain>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 22 Feb 2008 02:36:27 +0100
-In-Reply-To: <20080221203058.GA18624@localhost.localdomain> (Anton Vorontsov's
-	message of "Thu\, 21 Feb 2008 23\:30\:58 +0300")
-Message-ID: <87bq6993hg.fsf@macbook.be.48ers.dk>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 22 Feb 2008 12:48:43 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 3/5 v3] [POWERPC] Add Canyonlands DTS
+Message-ID: <20080222014843.GA2602@localhost.localdomain>
+References: <1203603768-13880-1-git-send-email-sr@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+In-Reply-To: <1203603768-13880-1-git-send-email-sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+On Thu, Feb 21, 2008 at 03:22:48PM +0100, Stefan Roese wrote:
+> Signed-off-by: Stefan Roese <sr@denx.de>
 
-Hi,
+[snip]
+> +		MAL0: mcmal {
+> +			compatible = "ibm,mcmal-460ex", "ibm,mcmal2";
+> +			dcr-reg = <180 62>;
+> +			num-tx-chans = <2>;
+> +			num-rx-chans = <10>;
+> +			interrupt-parent = <&MAL0>;
+> +			interrupts = <0 1 2 3 4>;
+> +			#interrupt-cells = <1>;
+> +			#address-cells = <0>;
+> +			#size-cells = <0>;
+> +			interrupt-map = </*TXEOB*/ 0 &UIC2 6 4
+> +					 /*RXEOB*/ 1 &UIC2 7 4
+> +					 /*SERR*/  2 &UIC2 3 4
+> +					 /*TXDE*/  3 &UIC2 4 4
+> +					 /*RXDE*/  4 &UIC2 5 4>;
+> +			interrupt-map-mask = <ffffffff>;
 
- Anton>  config USB_EHCI_FSL
- Anton> -	bool
- Anton> -	depends on USB_EHCI_HCD
- Anton> +	bool "Support for Freescale on-chip EHCI USB controller"
- Anton> +	depends on USB_EHCI_HCD && FSL_SOC
- Anton>  	select USB_EHCI_ROOT_HUB_TT
- Anton> -	default y if MPC834x || PPC_MPC831x
+Because all the MAL interrupts are on the same UIC, you don't need
+this interrupt-map nonsense here - that's just a workaround for the
+chips that have the MAL interrupts spread across different UICs.  You
+can just use:
 
-Notice that I have a patch in the USB queue which fixes up the MPC834x
-symbol (PPC_MPC834x instead of MPC834x) so this patch won't apply.
+	interrupt-parent = <&UIC2>;
+	interrupts = <6 4 7 4 3 4 4 4 5 4>;
+
+[snip]
+> +			IIC0: i2c@4ef60700 {
+> +				device_type = "i2c";
+
+No device_type here.
 
 -- 
-Bye, Peter Korsgaard
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
