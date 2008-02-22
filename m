@@ -1,19 +1,17 @@
-Return-Path: <SRS0+03974445e4cea35fc8dc+1643+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 36502DDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 20:02:57 +1100 (EST)
-Subject: Re: [PATCH] Add support for binary includes.
-From: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <tur@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id DBEAADDED4
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 20:05:27 +1100 (EST)
+Message-ID: <47BE8929.3050805@semihalf.com>
+Date: Fri, 22 Feb 2008 09:34:49 +0100
+From: Bartlomiej Sieka <tur@semihalf.com>
+MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
+Subject: Re: [PATCH] Add support for binary includes.
 References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
 	<fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 22 Feb 2008 18:02:51 +0900
-Message-Id: <1203670971.5771.41.camel@shinybook.infradead.org>
-Mime-Version: 1.0
+In-Reply-To: <fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,12 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Thu, 2008-02-21 at 23:05 -0700, Grant Likely wrote:
+Grant Likely wrote:
+> On Wed, Feb 20, 2008 at 12:19 PM, Scott Wood <scottwood@freescale.com> wrote:
+>> A property's data can be populated with a file's contents
+>>  as follows:
+>>
+>>  node {
+>>         prop = /incbin/("path/to/data");
+>>  };
+>>
+>>  A subset of a file can be included by passing start and size parameters.
+>>  For example, to include bytes 8 through 23:
+>>
+>>  node {
+>>         prop = /incbin/("path/to/data", 8, 16);
+>>  };
+> 
+> 
 > Can I ask; what is the intended usage of such a thing?  How large
 > would a typical binary blob be?
 
-Device firmware?
+Binary includes are a critical feature of the new image format for
+U-Boot. In short: we're describing image's content and other data
+(architecture, os, image type, etc) in dts format, and then use dtc to
+generate the file that is transferred to the target and booted by
+U-Boot. Excerpt from an actual file describing an image:
 
--- 
-dwmw2
+/{
+         images {
+                 kernel@1 {
+                         data = /incbin/("./vmlinux.bin.gz");
+                         type = "kernel";
+                         arch = "ppc";
+                         os = "linux";
+                         compression = "gzip";
+                         load = <00000000>;
+                         entry = <00000000>;
+                 };
+         };
+};
+
+As to the size of the final blob in our case, it depends. It seems that
+in case of a powerpc Linux booting scenario, most of the times the size
+will be roughly the size of a compressed kernel + the size of the FDT
+blob, eventually plus the size of a ramdisk. Note however, that the new
+image format has provisions for handling multiple components of the same
+type in one image, so for example you could have three kernels, two
+ramdisks and a couple of fdt blobs in one image, and the actual booting
+configuration could be selected in U-Boot. In such a case, the final
+blob can be arbitrarily large.
+
+Regards,
+Bartlomiej
