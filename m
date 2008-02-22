@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C0E1DDDE04
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 14:42:57 +1100 (EST)
-Subject: Re: [PATCH] [POWERPC] Fix thinko in cpu_thread_mask_to_cores()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20080222032708.689FFDDE08@ozlabs.org>
-References: <20080222032708.689FFDDE08@ozlabs.org>
-Content-Type: text/plain
-Date: Fri, 22 Feb 2008 14:42:36 +1100
-Message-Id: <1203651756.10422.248.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 22 Feb 2008 16:34:50 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Add support for binary includes.
+Message-ID: <20080222053450.GH3064@localhost.localdomain>
+References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Fri, 2008-02-22 at 14:26 +1100, Benjamin Herrenschmidt wrote:
-> The function cpu_thread_mask_to_cores() which returns a cpumask
-> of one and only one thread enabled for a given core has a bug
-> as it's shifting things in the wrong direction.
+On Wed, Feb 20, 2008 at 01:19:41PM -0600, Scott Wood wrote:
+> A property's data can be populated with a file's contents
+> as follows:
 > 
-> Note: The implementation is still sub-optimal in the sense that
-> for a given core, the thread set in the result may not be any of
-> the threads set in the input, which can lead to more IPIs then
-> strictly necessary, but it isn't incorrect per-se. I'll improve
-> that later.
+> node {
+> 	prop = /incbin/("path/to/data");
+> };
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+> A subset of a file can be included by passing start and size parameters.
+> For example, to include bytes 8 through 23:
+> 
+> node {
+> 	prop = /incbin/("path/to/data", 8, 16);
+> };
+> 
+> As with /include/, non-absolute paths are looked for in the directory
+> of the source file that includes them.
 
-Note that this function is, afaik, not used by anything in-tree at the 
-moment, so the bug isn't hurting anybody, but I'd rather have it
-fixed anyway.
+I still dislike the syntax, but haven't thought of a better one yet.
+There are some issues with the implementation too, but I've been a bit
+too busy with ePAPR stuff to review properly.
 
-Ben.
+Soon, I hope.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
