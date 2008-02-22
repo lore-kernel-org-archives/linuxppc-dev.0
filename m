@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 06FAEDDF09
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 02:50:40 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so109795anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 07:50:39 -0800 (PST)
-Message-ID: <fa686aa40802220750y645c5f15y79377e3bec4d76f@mail.gmail.com>
-Date: Fri, 22 Feb 2008 08:50:39 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Woodhouse" <dwmw2@infradead.org>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (unknown [192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E402DDE054
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 03:25:44 +1100 (EST)
+Date: Fri, 22 Feb 2008 10:08:20 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH] Add support for binary includes.
-In-Reply-To: <1203670971.5771.41.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20080222160820.GA19571@ld0162-tx32.am.freescale.net>
 References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
 	<fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
-	<1203670971.5771.41.camel@shinybook.infradead.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40802212205p38c3793bg8793740955b1e91@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 22, 2008 at 2:02 AM, David Woodhouse <dwmw2@infradead.org> wrote:
->
->  On Thu, 2008-02-21 at 23:05 -0700, Grant Likely wrote:
->  > Can I ask; what is the intended usage of such a thing?  How large
->  > would a typical binary blob be?
->
->  Device firmware?
+On Thu, Feb 21, 2008 at 11:05:58PM -0700, Grant Likely wrote:
+> On Wed, Feb 20, 2008 at 12:19 PM, Scott Wood <scottwood@freescale.com> wrote:
+> > A property's data can be populated with a file's contents
+> >  as follows:
+> >
+> >  node {
+> >         prop = /incbin/("path/to/data");
+> >  };
+> >
+> >  A subset of a file can be included by passing start and size parameters.
+> >  For example, to include bytes 8 through 23:
+> >
+> >  node {
+> >         prop = /incbin/("path/to/data", 8, 16);
+> >  };
+> 
+> 
+> Can I ask; what is the intended usage of such a thing?  How large
+> would a typical binary blob be?
 
-That's what I was wondering about.  Is this really a good idea?
-Effectively, in the Linux kernel the device tree is being used as a
-big blob of initdata, except that it cannot free the memory allocated
-by the device tree when it is complete.  As it is right now, device
-trees seem to weigh in between 4-8kB, a pretty insignificant size for
-memory that cannot be reclaimed.  However, if firmware blobs start
-getting added to the tree that size could balloon pretty quickly.
+I use it for embedding guest device trees in a hypervisor's device tree.
 
-I'm not actually opposed to the feature, and I understand that it is
-needed for the new u-boot image format, but I think we need some usage
-guidelines in place when this feature is merged.  As much as possible
-I think we should be directing developers to use the existing firmware
-loading facilities in the Linux kernel.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
