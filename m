@@ -1,22 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <asmirnov@ru.mvista.com>
+Received: from spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4495DDECB
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 02:29:33 +1100 (EST)
-Subject: Re: MPC8540 : What's "SPE used in kernel" ?
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Philippe De Muyter <phdm@macqel.be>
-In-Reply-To: <20080222095022.GA635@ingate.macqel>
-References: <20080221123534.GA17716@ingate.macqel>
-	<20080222095022.GA635@ingate.macqel>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ryMVtFjGN8fgnTGT/YuF"
-Date: Fri, 22 Feb 2008 16:29:11 +0100
-Message-Id: <1203694151.7082.37.camel@johannes.berg>
+	by ozlabs.org (Postfix) with ESMTP id AF88BDDF64
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 02:29:44 +1100 (EST)
+Date: Fri, 22 Feb 2008 17:34:09 +0300
+From: Alexandr Smirnov <asmirnov@ru.mvista.com>
+To: netdev@vger.kernel.org
+Subject: Marvell PHY driver fix
+Message-ID: <20080222143409.GA1477@ru.mvista.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +21,191 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Marvell PHY m88e1111 (not sure about other models, but think they too) works in
+two modes: fiber and copper. In Marvell PHY driver (that we have in current
+community kernels) code supported only copper mode, and this is not configurable,
+bits for copper mode are simply written in registers during PHY
+initialization. This patch adds support for both modes.
 
---=-ryMVtFjGN8fgnTGT/YuF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
 
-
-> I wonder why a kernel configured for E500 and compiled by a E500-specific=
- gcc
-> triggers this message.  Is it invalid to use SPE instructions in the kern=
-el=20
-> or do I misunderstand the message ?
-
-I think it's like floating point/altivec, we don't always save the FP
-registers on kernel/userspace transitions and so have to explicitly save
-them to use them in the kernel, otherwise we'd clobber the userspace
-register state.
-
-I guess there's something like kernel_enter_spe()?
-
-johannes
-
---=-ryMVtFjGN8fgnTGT/YuF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR77qRaVg1VMiehFYAQK4XBAAgkmjt580rPMhZnb8HEFWYKwy2YXeT65c
-jI7i/m4Uhht9JDUPaM9ctDbysygYKPnQSrtBq7xhC5kKrHEJ7NVe4guAuYnYzuZA
-wHjimAuCT3GWgWP3vAUtaOkBA/5J+s4bll0YsaTvwtmoeo5wmwx8RkMUevw5vI3V
-RE2tSD3hBwJiY1yNm6uKfhfzN9PEiqNuLu2yiMsfBmy4wtG9bn+XLsRvD7R4yQxt
-bmuB0PNZX/hRaRvIY7sEyUsgqksgZNir74ElPO92UnCBld/uK7nqJoOz52fDnR5S
-0vSPWQoiJ1FTAN/wYc5w8jYKoHibPMUTfa9LjkTx32mLWZc07/isPsN1XKOQ6EjA
-KP/aye1p+jNdyKta+3DsbqejbyL6D2WxpKFHpnDl9c8Kw36n4qfpDYMMve91s06v
-u6d4DzIhnLjQcPQALzJLanTAwt9sOx9lzfoWgf6ih19EK3gpsKCx/DtIt4WzikcD
-lK3WTm8UUFke4vmU4ZVzptN1bt485P9SHNgIHlPTzUptYcXRv5I+t5a4MhNuok/w
-hsUKuBN3PLU/j/tMavpQTGIejVJBNHnpKD1nhXSlPyukvGKiuHLt5x/vkKEKTGYI
-6xyhHAThOIWMwgJO2wT/1dMcpefil8FhtN2AfCWnpu6ZAy6Nia4707cPfem+zN+Q
-pnAyCKvL/+Y=
-=AuVl
------END PGP SIGNATURE-----
-
---=-ryMVtFjGN8fgnTGT/YuF--
+diff -pruN powerpc.orig/drivers/net/phy/marvell.c powerpc/drivers/net/phy/marvell.c
+--- powerpc.orig/drivers/net/phy/marvell.c	2008-02-07 14:59:32.000000000 +0300
++++ powerpc/drivers/net/phy/marvell.c	2008-02-19 21:47:34.000000000 +0300
+@@ -58,9 +58,28 @@
+ #define MII_M1111_RX_DELAY		0x80
+ #define MII_M1111_TX_DELAY		0x2
+ #define MII_M1111_PHY_EXT_SR		0x1b
+-#define MII_M1111_HWCFG_MODE_MASK	0xf
+-#define MII_M1111_HWCFG_MODE_RGMII	0xb
++
++#define MII_M1111_HWCFG_MODE_MASK		0xf
++#define MII_M1111_HWCFG_MODE_COPPER_RGMII	0xb
++#define MII_M1111_HWCFG_MODE_FIBER_RGMII	0x3
+ #define MII_M1111_HWCFG_MODE_SGMII_NO_CLK	0x4
++#define MII_M1111_HWCFG_FIBER_COPPER_AUTO	0x8000
++#define MII_M1111_HWCFG_FIBER_COPPER_RES	0x2000
++
++#define MII_M1111_PHY_CR		0
++#define MII_M1111_SOFTWARE_RESET	0x8000
++
++#define MII_M1111_COPPER		0
++#define MII_M1111_FIBER			1
++
++#define MII_M1011_PHY_STATUS		0x11
++#define MII_M1011_PHY_STATUS_1000	0x8000
++#define MII_M1011_PHY_STATUS_100	0x4000
++#define MII_M1011_PHY_STATUS_SPD_MASK	0xc000
++#define MII_M1011_PHY_STATUS_FULLDUPLEX	0x2000
++#define MII_M1011_PHY_STATUS_RESOLVED	0x0800
++#define MII_M1011_PHY_STATUS_LINK	0x0400
++
+ 
+ MODULE_DESCRIPTION("Marvell PHY driver");
+ MODULE_AUTHOR("Andy Fleming");
+@@ -141,12 +160,22 @@ static int marvell_config_aneg(struct ph
+ static int m88e1111_config_init(struct phy_device *phydev)
+ {
+ 	int err;
++	int temp;
++	int mode;
++
++	/* Enable Fiber/Copper auto selection */
++	temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
++	temp |= MII_M1111_HWCFG_FIBER_COPPER_AUTO;
++	phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
++
++	temp = phy_read(phydev, MII_M1111_PHY_CR);
++	temp |= MII_M1111_SOFTWARE_RESET;
++	phy_write(phydev, MII_M1111_PHY_CR, temp);
+ 
+ 	if ((phydev->interface == PHY_INTERFACE_MODE_RGMII) ||
+ 	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID) ||
+ 	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
+ 	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID)) {
+-		int temp;
+ 
+ 		temp = phy_read(phydev, MII_M1111_PHY_EXT_CR);
+ 		if (temp < 0)
+@@ -171,7 +200,17 @@ static int m88e1111_config_init(struct p
+ 			return temp;
+ 
+ 		temp &= ~(MII_M1111_HWCFG_MODE_MASK);
+-		temp |= MII_M1111_HWCFG_MODE_RGMII;
++
++		mode = phy_read(phydev, MII_M1111_PHY_EXT_CR);
++		mode = (mode & MII_M1111_HWCFG_FIBER_COPPER_RES) >> 13;
++
++		switch (mode) {
++		case MII_M1111_COPPER:
++			temp |= MII_M1111_HWCFG_MODE_COPPER_RGMII;
++			break;
++		case MII_M1111_FIBER:
++			temp |= MII_M1111_HWCFG_MODE_FIBER_RGMII;
++		}
+ 
+ 		err = phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
+ 		if (err < 0)
+@@ -262,6 +301,93 @@ static int m88e1145_config_init(struct p
+ 	return 0;
+ }
+ 
++/* marvell_read_status
++ *
++ * Generic status code does not detect Fiber correctly!
++ * Description: 
++ *   Check the link, then figure out the current state
++ *   by comparing what we advertise with what the link partner
++ *   advertises.  Start by checking the gigabit possibilities,
++ *   then move on to 10/100.
++ */
++static int marvell_read_status(struct phy_device *phydev)
++{
++	int adv;
++	int err;
++	int lpa;
++	int status = 0;
++
++	/* Update the link, but return if there
++	 * was an error */
++	err = genphy_update_link(phydev);
++	if (err)
++		return err;
++
++	if (AUTONEG_ENABLE == phydev->autoneg) {
++		status = phy_read(phydev, MII_M1011_PHY_STATUS);
++		if (status < 0)
++			return status;
++
++		lpa = phy_read(phydev, MII_LPA);
++		if (lpa < 0)
++			return lpa;
++
++		adv = phy_read(phydev, MII_ADVERTISE);
++		if (adv < 0)
++			return adv;
++
++		lpa &= adv;
++
++		if (status & MII_M1011_PHY_STATUS_FULLDUPLEX)
++			phydev->duplex = DUPLEX_FULL;
++		else
++			phydev->duplex = DUPLEX_HALF;
++
++		status = status & MII_M1011_PHY_STATUS_SPD_MASK;
++		phydev->pause = phydev->asym_pause = 0;
++
++		switch (status) {
++		case MII_M1011_PHY_STATUS_1000:
++			phydev->speed = SPEED_1000;
++			break;
++
++		case MII_M1011_PHY_STATUS_100:
++			phydev->speed = SPEED_100;
++			break;
++
++		default:
++			phydev->speed = SPEED_10;
++			break;
++		}
++
++		if (phydev->duplex == DUPLEX_FULL) {
++			phydev->pause = lpa & LPA_PAUSE_CAP ? 1 : 0;
++			phydev->asym_pause = lpa & LPA_PAUSE_ASYM ? 1 : 0;
++		}
++	} else {
++		int bmcr = phy_read(phydev, MII_BMCR);
++
++		if (bmcr < 0)
++			return bmcr;
++
++		if (bmcr & BMCR_FULLDPLX)
++			phydev->duplex = DUPLEX_FULL;
++		else
++			phydev->duplex = DUPLEX_HALF;
++
++		if (bmcr & BMCR_SPEED1000)
++			phydev->speed = SPEED_1000;
++		else if (bmcr & BMCR_SPEED100)
++			phydev->speed = SPEED_100;
++		else
++			phydev->speed = SPEED_10;
++
++		phydev->pause = phydev->asym_pause = 0;
++	}
++
++	return 0;
++}
++
+ static struct phy_driver marvell_drivers[] = {
+ 	{
+ 		.phy_id = 0x01410c60,
+@@ -296,7 +422,7 @@ static struct phy_driver marvell_drivers
+ 		.flags = PHY_HAS_INTERRUPT,
+ 		.config_init = &m88e1111_config_init,
+ 		.config_aneg = &marvell_config_aneg,
+-		.read_status = &genphy_read_status,
++		.read_status = &marvell_read_status,
+ 		.ack_interrupt = &marvell_ack_interrupt,
+ 		.config_intr = &marvell_config_intr,
+ 		.driver = { .owner = THIS_MODULE },
