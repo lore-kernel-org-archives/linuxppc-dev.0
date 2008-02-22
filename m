@@ -1,23 +1,10 @@
-Return-Path: <jacmet@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 95703DDE1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2008 12:52:57 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so248135pyg.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2008 17:52:55 -0800 (PST)
-Message-ID: <9305ca410802211752h6010ca3k628a34d17ec3a4f4@mail.gmail.com>
-Date: Fri, 22 Feb 2008 02:52:55 +0100
-From: "Peter Korsgaard" <jacmet@sunsite.dk>
-Sender: jacmet@gmail.com
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [USB POWERPC] ehci-fsl: add PPC_MPC837x to default y
-In-Reply-To: <87bq6993hg.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080221195021.GC12896@localhost.localdomain>
-	<9AD13D2E-B57F-4F19-B89C-C8A83157E0F2@kernel.crashing.org>
-	<20080221203058.GA18624@localhost.localdomain>
-	<87bq6993hg.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 22 Feb 2008 14:26:43 +1100
+Subject: [PATCH] [POWERPC] Fix thinko in cpu_thread_mask_to_cores()
+Message-Id: <20080222032708.689FFDDE08@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +14,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 22, 2008 at 2:36 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+The function cpu_thread_mask_to_cores() which returns a cpumask
+of one and only one thread enabled for a given core has a bug
+as it's shifting things in the wrong direction.
 
->  Notice that I have a patch in the USB queue which fixes up the MPC834x
->  symbol (PPC_MPC834x instead of MPC834x) so this patch won't apply.
+Note: The implementation is still sub-optimal in the sense that
+for a given core, the thread set in the result may not be any of
+the threads set in the input, which can lead to more IPIs then
+strictly necessary, but it isn't incorrect per-se. I'll improve
+that later.
 
-Never mind, Greg fixed it.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
--- 
-Bye, Peter Korsgaard
+ include/asm-powerpc/cputhreads.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-work.orig/include/asm-powerpc/cputhreads.h	2008-02-22 14:22:34.000000000 +1100
++++ linux-work/include/asm-powerpc/cputhreads.h	2008-02-22 14:22:39.000000000 +1100
+@@ -35,7 +35,7 @@ static inline cpumask_t cpu_thread_mask_
+ 
+ 	res = CPU_MASK_NONE;
+ 	for (i = 0; i < NR_CPUS; i += threads_per_core) {
+-		cpus_shift_right(tmp, threads_core_mask, i);
++		cpus_shift_left(tmp, threads_core_mask, i);
+ 		if (cpus_intersects(threads, tmp))
+ 			cpu_set(i, res);
+ 	}
