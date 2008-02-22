@@ -1,24 +1,23 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <sheflin@newagemicro.com>
+Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
+	[66.129.110.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B3B11DE02B
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C82EADDF0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Feb 2008 09:06:02 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Xilinx  PowerPC
-Date: Fri, 22 Feb 2008 14:05:56 -0800
-In-Reply-To: <47BF43CF.5050102@dlasys.lcl>
-References: <47BD212B.6090809@dlasys.net>
-	<20080221175025.7817BBD8057@mail91-sin.bigfish.com>
-	<47BF43CF.5050102@dlasys.lcl>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: <dhlii@dlasys.net>
-Message-Id: <20080222220558.4CB0D1778052@mail117-sin.bigfish.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Sat, 23 Feb 2008 09:26:37 +1100 (EST)
+Date: Fri, 22 Feb 2008 17:26:52 -0500
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+From: Steve Heflin <sheflin@newagemicro.com>
+Subject: Re: MODPOST section mismatches
+In-Reply-To: <20080222145224.7349cf36@weaponx>
+References: <20080221213313.97814DDF55@ozlabs.org>
+	<20080222164210.48628DE0A9@ozlabs.org>
+	<20080222145224.7349cf36@weaponx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <20080222222637.C82EADDF0F@ozlabs.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,166 +28,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+FLAT_MEM is one of the configuration options:
+       CONFIG_ARCH_FLATMEM_ENABLE=y
 
-
-> -----Original Message-----
-> From: David H. Lynch Jr. [mailto:dhlii@dlasys.lcl]
-> Sent: Friday, February 22, 2008 1:51 PM
-> To: Stephen Neuendorffer
-> Cc: linuxppc-embedded
-> Subject: Re: Xilinx PowerPC
->=20
-> Stephen Neuendorffer wrote:
+At 03:52 PM 2/22/2008, Josh Boyer wrote:
+>On Fri, 22 Feb 2008 11:12:47 -0500
+>Steve Heflin <sheflin@newagemicro.com> wrote:
+>
+> > To reproduce the problem and see the details on section mismatches:
 > >
-> >> -----Original Message-----
-> >> From:
-linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-> >>
-> > [mailto:linuxppc-embedded-
+> >      make ARCH=powerpc sequoia_defconfig
 > >
-> >> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of David =
-H.
-> >>
-> > Lynch Jr.
-> >
-> >> Sent: Wednesday, February 20, 2008 10:59 PM
-> >> To: Grant Likely; linuxppc-embedded
-> >> Subject: Xilinx PowerPC
-> >>
-> >>
-> >>     So when you have Xilinx under powerpc working, do we pull it
-from
-> >>
-> > your
-> >
-> >>     git tree or the xilinx one ?
-> >>
-> >>     Will there be an announcement ?
-> >>
-> >>     How about a one paragraph getting started guide to moving a
-xilinx
-> >> ppc bsp to
-> >>     xilinx powerpc.
-> >>
-> >>     Like  ?
-> >>
-> >>     step 1).
-> >>              Generate a dts - gen-mhs-devicetree ?
-> >>              And pass it to through your boot loader to Linux ?
-> >>
-> >
-> > http://git.xilinx.com/gen-mhs-devtree.git contains two utilities for
-> > generating device trees from EDK projects.  The older option is a
-python
-> > script, originally written by Grant.  The newer (and probably more
-> > mature at this point) option is an EDK BSP generator for u-boot,
-> > originally written by Michal Simek.  Preferably this gets passed
-from a
-> > uboot, although it's also possible to compile it into the kernel.
-> > Currently, the uboot option is somewhat annoying because there's not
-a
-> > good surefire way for getting uboot up and running on an EDK design.
-> > (Unfortunately, the EDK BSP generator is incomplete, and the uboot
-> > support for virtex needs some work to get it integrated as well).
-> >
->     Thanks, I found the python script. Please do not fixate on u-boot.
->      it is not an option for us. We have our own bootloader.
->     it handles .elf files, fits in 16k or BRAM and just starts when
-the
->      FPGA is loaded. We will have to added  device tree support to it.
->     I had thought you were talking about appending the device tree to
-> the bitfile.
->      That sounds like a really good option for us.
->=20
->     We also really don't have a great interest in the EDK BSP
-generator.
->     We have our own BSP's for our cards for both GHS and Linux.
->     Except the rare instances - like right now while we are
-> transitioning to the
->     newer LL_TEMAC,  we use normal linux drivers, either from the
-> existing kernel
->     trees, or written inhouse.
-
-The BSP generator is significantly different from the normal EDK Linux
-BSP.  The key thing is that the device tree generated by the python
-script is necessarily incomplete, since it does not have information
-about default parameter values which appear in the core definitions.  I
-would *highly recommend* using the uboot bsp to get a device tree.  You
-can always ignore anything else that it does (or hack the code to your
-hearts content to do what you want, such as incorporating it into your
-own BSP).
-
-> >>     Step 2).
-> >>              the code in arch/powerpc/???? is the devicetree
-equvalent
-> >>
-> > to
-> >
-> >>              arch/ppc/platforms/4xx/xilinx_ml410.c
-> >>
-> > http://git.xilinx.com/linux-2.6-xlnx.git contains a preliminary stab
-at
-> > the bootcode for Virtex.  I've been using this for a while with
-> > ARCH=3Dpowerpc.  There isn't really much need for board specific
-platform
-> > code: This should (I think) be handled by the device tree.
->     So I have a device tree for my card somehow. Presumably I need the
-> binary form.
->     My bootloader needs to pass a pointer to a copy in memory to
-Linux.
->=20
->     How do I config the linux from your git tree ?
->     Do I just config for a generic Xilinx card and the device tree
-> handles the rest ?
-
-Essentially.  There is a generic virtex configuration option.
-
->     Next we have a hosted pseudo serial port. Devict Trees could cope
-> with that.
->     But We also have early serial support for both it and Uartlite,
->     Also our Linux BSP and UartLite drivers will work without a PIC.
->     And would even do ethernet (badly) with the earlier LL_TEMAC
-without
->     DMA and interrupts.
->     So do I modify the device tree to choose a different uartlite
-driver ?
->     I had to put a fair amount of patches in to support early serial
-with
->     non-8250 serial ports. Do I have to patch your generic xilinx BSP
-to
->     deal with that ?
-
-Early serial on uartlite is works fine.  You have to add an explicit
-reference to the uartlite to get it to work.  Early serial on uart16550
-doesn't work yet, because the device has an unusual spacing between the
-registers.
-
->     Please do not develop a u-boot only solution.
-
-I don't believe Linux will never *require* uboot.
-
->     Just to clarify, am I correct in presuming that say the uartlite
-> driver in the
->     xilinx git tree will handle either the arch/ppc style platform
-> device initialization
->     or the arch/powerpc devicetree initialization ?
-
-Yes.  drivers are capable of probing both the platform bus and the of
-bus.  It is expected that each device is advertised on only one.  In
-general, ppc will advertise platform devices and powerpc will advertise
-of devices.
-
->     Is there some means of doing a phased transition ?
->     Can I lift the device tree BSP setup code into my own BSP,
->     and then remove the platform device code peice by peice as things
-work ?
-probably, although changing the drivers is not challenging, as long as
-all the information you need is in the device tree.
-
->     Is there something magical about being physically located in
-> arch/ppc or arch/powerpc ?
-
-Well, ppc doesn't support of/device trees.  All of the of bus stuff is
-#ifdef'd out of the drivers.
-
-Steve
+> >      make ARCH=powerpc CONFIG_DEBUG_SECTION_MISMATCH=y
+>
+>All of those warnings are in drivers or common code.  And yes, they
+>should eventually all be fixed.
+>
+> > >After modifying the make launch to include the recommended option
+> > >shown above, I see that the section mismatch warning is due to data
+> > >structures containing the address of initialization modules which
+> > >have the __init attribute. Since the memory model is FLAT, is 
+> this a problem?
+>
+>What do you mean by "the memory model is FLAT"?
+>
+>josh
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
