@@ -1,12 +1,12 @@
 Return-Path: <SRS0=JDpv=TM=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id F2225DDF37
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 08:08:54 +1100 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 9712DDDF4E
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 08:08:57 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 4/5] [POWERPC] Add Canyonlands defconfig file
-Date: Sat, 23 Feb 2008 22:08:17 +0100
-Message-Id: <1203800897-13867-1-git-send-email-sr@denx.de>
+Subject: [PATCH v2 5/5] [POWERPC] Add 460EX PCIe support to 4xx pci driver
+Date: Sat, 23 Feb 2008 22:08:27 +0100
+Message-Id: <1203800907-13898-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,738 +16,238 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All this code is needed to properly initialize the 460EX PCIe host
+bridge(s). We re-initialize all ports again, even though this has been done
+in the bootloader (U-Boot) before. This way we make sure, that we always
+run the latest init code in Linux and don't depend on code versions from
+U-Boot.
+
+Unfortunately all IBM/AMCC chips currently supported in this PCIe driver need
+a different reset-/init-sequence.
+
+Tested on AMCC Canyonlands eval board.
+
 Signed-off-by: Stefan Roese <sr@denx.de>
 ---
- arch/powerpc/configs/canyonlands_defconfig |  721 ++++++++++++++++++++++++++++
- 1 files changed, 721 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/canyonlands_defconfig
+ arch/powerpc/sysdev/ppc4xx_pci.c |  114 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/ppc4xx_pci.h |   59 +++++++++++++++++++
+ 2 files changed, 173 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/configs/canyonlands_defconfig b/arch/powerpc/configs/canyonlands_defconfig
-new file mode 100644
-index 0000000..a3b763c
---- /dev/null
-+++ b/arch/powerpc/configs/canyonlands_defconfig
-@@ -0,0 +1,721 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.25-rc1
-+# Thu Feb 21 14:29:28 2008
-+#
-+# CONFIG_PPC64 is not set
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 5abfcd1..d183b83 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -527,6 +527,7 @@ static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
+  *
+  * ibm,plb-pciex-440spe
+  * ibm,plb-pciex-405ex
++ * ibm,plb-pciex-460ex
+  *
+  * Anything else will be rejected for now as they are all subtly
+  * different unfortunately.
+@@ -775,6 +776,117 @@ static struct ppc4xx_pciex_hwops ppc440speB_pcie_hwops __initdata =
+ 	.setup_utl	= ppc440speB_pciex_init_utl,
+ };
+ 
++static int __init ppc460ex_pciex_core_init(struct device_node *np)
++{
++	/* Nothing to do, return 2 ports */
++	return 2;
++}
 +
-+#
-+# Processor support
-+#
-+# CONFIG_6xx is not set
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+CONFIG_44x=y
-+# CONFIG_E200 is not set
-+CONFIG_PPC_FPU=y
-+CONFIG_4xx=y
-+CONFIG_BOOKE=y
-+CONFIG_PTE_64BIT=y
-+CONFIG_PHYS_64BIT=y
-+# CONFIG_PPC_MM_SLICES is not set
-+CONFIG_NOT_COHERENT_CACHE=y
-+CONFIG_PPC32=y
-+CONFIG_WORD_SIZE=32
-+CONFIG_PPC_MERGE=y
-+CONFIG_MMU=y
-+CONFIG_GENERIC_CMOS_UPDATE=y
-+CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_TIME_VSYSCALL=y
-+CONFIG_GENERIC_CLOCKEVENTS=y
-+CONFIG_GENERIC_HARDIRQS=y
-+# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+CONFIG_OF=y
-+CONFIG_PPC_UDBG_16550=y
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+# CONFIG_DEFAULT_UIMAGE is not set
-+CONFIG_PPC_DCR_NATIVE=y
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_PPC_DCR=y
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++static int ppc460ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
++{
++	u32 val;
++	u32 utlset1;
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+CONFIG_POSIX_MQUEUE=y
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_AUDIT is not set
-+# CONFIG_IKCONFIG is not set
-+CONFIG_LOG_BUF_SHIFT=14
-+# CONFIG_CGROUPS is not set
-+# CONFIG_FAIR_GROUP_SCHED is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+# CONFIG_RELAY is not set
-+# CONFIG_NAMESPACES is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_ALL is not set
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+# CONFIG_LOGBUFFER is not set
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_COMPAT_BRK=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_SLUB_DEBUG=y
-+# CONFIG_SLAB is not set
-+CONFIG_SLUB=y
-+# CONFIG_SLOB is not set
-+# CONFIG_PROFILING is not set
-+# CONFIG_MARKERS is not set
-+CONFIG_HAVE_OPROFILE=y
-+# CONFIG_KPROBES is not set
-+CONFIG_HAVE_KPROBES=y
-+CONFIG_PROC_PAGE_MONITOR=y
-+CONFIG_SLABINFO=y
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_KMOD=y
-+CONFIG_BLOCK=y
-+CONFIG_LBD=y
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_LSF is not set
-+# CONFIG_BLK_DEV_BSG is not set
++	if (port->endpoint) {
++		val = PTYPE_LEGACY_ENDPOINT << 20;
++		utlset1 = 0x20222222;
++	} else {
++		val = PTYPE_ROOT_PORT << 20;
++		utlset1 = 0x21222222;
++	}
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_PREEMPT_RCU is not set
-+CONFIG_PPC4xx_PCI_EXPRESS=y
++	if (port->index == 0) {
++		val |= LNKW_X1 << 12;
++	} else {
++		val |= LNKW_X4 << 12;
++		utlset1 |= 0x00101101;
++	}
 +
-+#
-+# Platform support
-+#
-+# CONFIG_PPC_MPC512x is not set
-+# CONFIG_PPC_MPC5121 is not set
-+# CONFIG_PPC_CELL is not set
-+# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_PQ2ADS is not set
-+# CONFIG_BAMBOO is not set
-+# CONFIG_EBONY is not set
-+# CONFIG_SEQUOIA is not set
-+# CONFIG_TAISHAN is not set
-+# CONFIG_KATMAI is not set
-+# CONFIG_RAINIER is not set
-+# CONFIG_WARP is not set
-+CONFIG_CANYONLANDS=y
-+CONFIG_460EX=y
-+# CONFIG_IPIC is not set
-+# CONFIG_MPIC is not set
-+# CONFIG_MPIC_WEIRD is not set
-+# CONFIG_PPC_I8259 is not set
-+# CONFIG_PPC_RTAS is not set
-+# CONFIG_MMIO_NVRAM is not set
-+# CONFIG_PPC_MPC106 is not set
-+# CONFIG_PPC_970_NAP is not set
-+# CONFIG_PPC_INDIRECT_IO is not set
-+# CONFIG_GENERIC_IOMAP is not set
-+# CONFIG_CPU_FREQ is not set
-+# CONFIG_FSL_ULI1575 is not set
++	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET, val);
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, utlset1);
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x01210000);
 +
-+#
-+# Kernel options
-+#
-+# CONFIG_HIGHMEM is not set
-+CONFIG_TICK_ONESHOT=y
-+CONFIG_NO_HZ=y
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+# CONFIG_SCHED_HRTICK is not set
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_RCU_TRACE=y
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_BINFMT_MISC is not set
-+# CONFIG_MATH_EMULATION is not set
-+# CONFIG_IOMMU_HELPER is not set
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+CONFIG_ARCH_HAS_WALK_MEMORY=y
-+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+CONFIG_RESOURCES_64BIT=y
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+CONFIG_PROC_DEVICETREE=y
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE=""
-+CONFIG_SECCOMP=y
-+CONFIG_WANT_DEVICE_TREE=y
-+CONFIG_ISA_DMA_API=y
++	switch (port->index) {
++	case 0:
++		mtdcri(SDR0, PESDR0_460EX_L0CDRCTL, 0x00003230);
++		mtdcri(SDR0, PESDR0_460EX_L0DRV, 0x00000136);
++		mtdcri(SDR0, PESDR0_460EX_L0CLK, 0x00000006);
 +
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+CONFIG_PPC_INDIRECT_PCI=y
-+CONFIG_PCI=y
-+CONFIG_PCI_DOMAINS=y
-+CONFIG_PCI_SYSCALL=y
-+# CONFIG_PCIEPORTBUS is not set
-+CONFIG_ARCH_SUPPORTS_MSI=y
-+# CONFIG_PCI_MSI is not set
-+CONFIG_PCI_LEGACY=y
-+# CONFIG_PCI_DEBUG is not set
-+# CONFIG_PCCARD is not set
-+# CONFIG_HOTPLUG_PCI is not set
++		mtdcri(SDR0, PESDR0_460EX_PHY_CTL_RST,0x10000000);
++		break;
 +
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
++	case 1:
++		mtdcri(SDR0, PESDR1_460EX_L0CDRCTL, 0x00003230);
++		mtdcri(SDR0, PESDR1_460EX_L1CDRCTL, 0x00003230);
++		mtdcri(SDR0, PESDR1_460EX_L2CDRCTL, 0x00003230);
++		mtdcri(SDR0, PESDR1_460EX_L3CDRCTL, 0x00003230);
++		mtdcri(SDR0, PESDR1_460EX_L0DRV, 0x00000136);
++		mtdcri(SDR0, PESDR1_460EX_L1DRV, 0x00000136);
++		mtdcri(SDR0, PESDR1_460EX_L2DRV, 0x00000136);
++		mtdcri(SDR0, PESDR1_460EX_L3DRV, 0x00000136);
++		mtdcri(SDR0, PESDR1_460EX_L0CLK, 0x00000006);
++		mtdcri(SDR0, PESDR1_460EX_L1CLK, 0x00000006);
++		mtdcri(SDR0, PESDR1_460EX_L2CLK, 0x00000006);
++		mtdcri(SDR0, PESDR1_460EX_L3CLK, 0x00000006);
 +
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0xc0000000
-+CONFIG_CONSISTENT_START=0xff100000
-+CONFIG_CONSISTENT_SIZE=0x00200000
-+CONFIG_BOOT_LOAD=0x01000000
++		mtdcri(SDR0, PESDR1_460EX_PHY_CTL_RST,0x10000000);
++		break;
++	}
 +
-+#
-+# Networking
-+#
-+CONFIG_NET=y
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
++	       mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) |
++	       (PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTPYN));
 +
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+# CONFIG_INET_LRO is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_INET6_XFRM_TUNNEL is not set
-+# CONFIG_INET6_TUNNEL is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_NET_SCHED is not set
++	/* Poll for PHY reset */
++	/* XXX FIXME add timeout */
++	switch (port->index) {
++	case 0:
++		while (!(mfdcri(SDR0, PESDR0_460EX_RSTSTA) & 0x1))
++			udelay(10);
++		break;
++	case 1:
++		while (!(mfdcri(SDR0, PESDR1_460EX_RSTSTA) & 0x1))
++			udelay(10);
++		break;
++	}
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_CAN is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
++	       (mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) &
++		~(PESDRx_RCSSET_RSTGU | PESDRx_RCSSET_RSTDL)) |
++	       PESDRx_RCSSET_RSTPYN);
 +
-+#
-+# Wireless
-+#
-+# CONFIG_CFG80211 is not set
-+# CONFIG_WIRELESS_EXT is not set
-+# CONFIG_MAC80211 is not set
-+# CONFIG_IEEE80211 is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++	port->has_ibpre = 1;
 +
-+#
-+# Device Drivers
-+#
++	return 0;
++}
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+CONFIG_FW_LOADER=y
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+CONFIG_CONNECTOR=y
-+CONFIG_PROC_EVENTS=y
-+# CONFIG_MTD is not set
-+CONFIG_OF_DEVICE=y
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_CPQ_DA is not set
-+# CONFIG_BLK_CPQ_CISS_DA is not set
-+# CONFIG_BLK_DEV_DAC960 is not set
-+# CONFIG_BLK_DEV_UMEM is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+# CONFIG_BLK_DEV_LOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_SX8 is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=35000
-+# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+# CONFIG_XILINX_SYSACE is not set
-+# CONFIG_MISC_DEVICES is not set
-+CONFIG_HAVE_IDE=y
-+# CONFIG_IDE is not set
++static int ppc460ex_pciex_init_utl(struct ppc4xx_pciex_port *port)
++{
++	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x0);
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+# CONFIG_FUSION is not set
++	/*
++	 * Set buffer allocations and then assert VRB and TXE.
++	 */
++	out_be32(port->utl_base + PEUTL_PBCTL,	0x0800000c);
++	out_be32(port->utl_base + PEUTL_OUTTR,	0x08000000);
++	out_be32(port->utl_base + PEUTL_INTR,	0x02000000);
++	out_be32(port->utl_base + PEUTL_OPDBSZ,	0x04000000);
++	out_be32(port->utl_base + PEUTL_PBBSZ,	0x00000000);
++	out_be32(port->utl_base + PEUTL_IPHBSZ,	0x02000000);
++	out_be32(port->utl_base + PEUTL_IPDBSZ,	0x04000000);
++	out_be32(port->utl_base + PEUTL_RCIRQEN,0x00f00000);
++	out_be32(port->utl_base + PEUTL_PCTL,	0x80800066);
 +
-+#
-+# IEEE 1394 (FireWire) support
-+#
-+# CONFIG_FIREWIRE is not set
-+# CONFIG_IEEE1394 is not set
-+# CONFIG_I2O is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_VETH is not set
-+# CONFIG_ARCNET is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+# CONFIG_MII is not set
-+# CONFIG_HAPPYMEAL is not set
-+# CONFIG_SUNGEM is not set
-+# CONFIG_CASSINI is not set
-+# CONFIG_NET_VENDOR_3COM is not set
-+# CONFIG_NET_TULIP is not set
-+# CONFIG_HP100 is not set
-+CONFIG_IBM_NEW_EMAC=y
-+CONFIG_IBM_NEW_EMAC_RXB=256
-+CONFIG_IBM_NEW_EMAC_TXB=256
-+CONFIG_IBM_NEW_EMAC_POLL_WEIGHT=32
-+CONFIG_IBM_NEW_EMAC_RX_COPY_THRESHOLD=256
-+CONFIG_IBM_NEW_EMAC_RX_SKB_HEADROOM=0
-+# CONFIG_IBM_NEW_EMAC_DEBUG is not set
-+CONFIG_IBM_NEW_EMAC_ZMII=y
-+CONFIG_IBM_NEW_EMAC_RGMII=y
-+CONFIG_IBM_NEW_EMAC_TAH=y
-+CONFIG_IBM_NEW_EMAC_EMAC4=y
-+# CONFIG_NET_PCI is not set
-+# CONFIG_B44 is not set
-+# CONFIG_NETDEV_1000 is not set
-+# CONFIG_NETDEV_10000 is not set
-+# CONFIG_TR is not set
++	return 0;
++}
 +
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
-+# CONFIG_WAN is not set
-+# CONFIG_FDDI is not set
-+# CONFIG_HIPPI is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++static struct ppc4xx_pciex_hwops ppc460ex_pcie_hwops __initdata =
++{
++	.core_init	= ppc460ex_pciex_core_init,
++	.port_init_hw	= ppc460ex_pciex_init_port_hw,
++	.setup_utl	= ppc460ex_pciex_init_utl,
++};
 +
-+#
-+# Input device support
-+#
-+# CONFIG_INPUT is not set
+ #endif /* CONFIG_44x */
+ 
+ #ifdef CONFIG_40x
+@@ -896,6 +1008,8 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+ 		else
+ 			ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
+ 	}
++	if (of_device_is_compatible(np, "ibm,plb-pciex-460ex"))
++		ppc4xx_pciex_hwops = &ppc460ex_pcie_hwops;
+ #endif /* CONFIG_44x    */
+ #ifdef CONFIG_40x
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.h b/arch/powerpc/sysdev/ppc4xx_pci.h
+index 1c07908..d04e40b 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.h
++++ b/arch/powerpc/sysdev/ppc4xx_pci.h
+@@ -271,6 +271,59 @@
+ #define PESDR1_405EX_PHYSTA		0x044C
+ 
+ /*
++ * 460EX additional DCRs
++ */
++#define PESDR0_460EX_L0BIST		0x0308
++#define PESDR0_460EX_L0BISTSTS		0x0309
++#define PESDR0_460EX_L0CDRCTL		0x030A
++#define PESDR0_460EX_L0DRV		0x030B
++#define PESDR0_460EX_L0REC		0x030C
++#define PESDR0_460EX_L0LPB		0x030D
++#define PESDR0_460EX_L0CLK		0x030E
++#define PESDR0_460EX_PHY_CTL_RST	0x030F
++#define PESDR0_460EX_RSTSTA		0x0310
++#define PESDR0_460EX_OBS		0x0311
++#define PESDR0_460EX_L0ERRC		0x0320
 +
-+#
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
++#define PESDR1_460EX_L0BIST		0x0348
++#define PESDR1_460EX_L1BIST		0x0349
++#define PESDR1_460EX_L2BIST		0x034A
++#define PESDR1_460EX_L3BIST		0x034B
++#define PESDR1_460EX_L0BISTSTS		0x034C
++#define PESDR1_460EX_L1BISTSTS		0x034D
++#define PESDR1_460EX_L2BISTSTS		0x034E
++#define PESDR1_460EX_L3BISTSTS		0x034F
++#define PESDR1_460EX_L0CDRCTL		0x0350
++#define PESDR1_460EX_L1CDRCTL		0x0351
++#define PESDR1_460EX_L2CDRCTL		0x0352
++#define PESDR1_460EX_L3CDRCTL		0x0353
++#define PESDR1_460EX_L0DRV		0x0354
++#define PESDR1_460EX_L1DRV		0x0355
++#define PESDR1_460EX_L2DRV		0x0356
++#define PESDR1_460EX_L3DRV		0x0357
++#define PESDR1_460EX_L0REC		0x0358
++#define PESDR1_460EX_L1REC		0x0359
++#define PESDR1_460EX_L2REC		0x035A
++#define PESDR1_460EX_L3REC		0x035B
++#define PESDR1_460EX_L0LPB		0x035C
++#define PESDR1_460EX_L1LPB		0x035D
++#define PESDR1_460EX_L2LPB		0x035E
++#define PESDR1_460EX_L3LPB		0x035F
++#define PESDR1_460EX_L0CLK		0x0360
++#define PESDR1_460EX_L1CLK		0x0361
++#define PESDR1_460EX_L2CLK		0x0362
++#define PESDR1_460EX_L3CLK		0x0363
++#define PESDR1_460EX_PHY_CTL_RST	0x0364
++#define PESDR1_460EX_RSTSTA		0x0365
++#define PESDR1_460EX_OBS		0x0366
++#define PESDR1_460EX_L0ERRC		0x0368
++#define PESDR1_460EX_L1ERRC		0x0369
++#define PESDR1_460EX_L2ERRC		0x036A
++#define PESDR1_460EX_L3ERRC		0x036B
++#define PESDR0_460EX_IHS1		0x036C
++#define PESDR0_460EX_IHS2		0x036D
 +
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
-+# CONFIG_NOZOMI is not set
-+
-+#
-+# Serial drivers
-+#
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+# CONFIG_SERIAL_8250_PCI is not set
-+CONFIG_SERIAL_8250_NR_UARTS=4
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-+CONFIG_SERIAL_8250_EXTENDED=y
-+# CONFIG_SERIAL_8250_MANY_PORTS is not set
-+CONFIG_SERIAL_8250_SHARE_IRQ=y
-+# CONFIG_SERIAL_8250_DETECT_IRQ is not set
-+# CONFIG_SERIAL_8250_RSA is not set
-+
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+# CONFIG_SERIAL_JSM is not set
-+CONFIG_SERIAL_OF_PLATFORM=y
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+# CONFIG_HW_RANDOM is not set
-+# CONFIG_NVRAM is not set
-+# CONFIG_GEN_RTC is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_APPLICOM is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+CONFIG_DEVPORT=y
-+# CONFIG_I2C is not set
-+
-+#
-+# SPI support
-+#
-+# CONFIG_SPI is not set
-+# CONFIG_SPI_MASTER is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+# CONFIG_HWMON is not set
-+# CONFIG_THERMAL is not set
-+# CONFIG_WATCHDOG is not set
-+
-+#
-+# Sonics Silicon Backplane
-+#
-+CONFIG_SSB_POSSIBLE=y
-+# CONFIG_SSB is not set
-+
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_SM501 is not set
-+
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+CONFIG_DAB=y
-+
-+#
-+# Graphics support
-+#
-+# CONFIG_AGP is not set
-+# CONFIG_DRM is not set
-+# CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=m
-+# CONFIG_FB is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
-+
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+# CONFIG_USB_SUPPORT is not set
-+# CONFIG_MMC is not set
-+# CONFIG_MEMSTICK is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_INFINIBAND is not set
-+# CONFIG_EDAC is not set
-+# CONFIG_RTC_CLASS is not set
-+
-+#
-+# Userspace I/O
-+#
-+# CONFIG_UIO is not set
-+
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+# CONFIG_EXT3_FS is not set
-+# CONFIG_EXT4DEV_FS is not set
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+CONFIG_DNOTIFY=y
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
-+# CONFIG_NTFS_FS is not set
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+# CONFIG_CONFIGFS_FS is not set
-+
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+CONFIG_CRAMFS=y
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+# CONFIG_NFS_V4 is not set
-+# CONFIG_NFS_DIRECTIO is not set
-+# CONFIG_NFSD is not set
-+CONFIG_ROOT_NFS=y
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+# CONFIG_SUNRPC_BIND34 is not set
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+
-+#
-+# Partition Types
-+#
-+# CONFIG_PARTITION_ADVANCED is not set
-+CONFIG_MSDOS_PARTITION=y
-+# CONFIG_NLS is not set
-+# CONFIG_DLM is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_WARN_DEPRECATED=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_MAGIC_SYSRQ=y
-+# CONFIG_UNUSED_SYMBOLS is not set
-+CONFIG_DEBUG_FS=y
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_DETECT_SOFTLOCKUP=y
-+CONFIG_SCHED_DEBUG=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_SLUB_DEBUG_ON is not set
-+# CONFIG_SLUB_STATS is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+# CONFIG_DEBUG_MUTEXES is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+# CONFIG_DEBUG_BUGVERBOSE is not set
-+# CONFIG_DEBUG_INFO is not set
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
-+# CONFIG_DEBUG_SG is not set
-+# CONFIG_BOOT_PRINTK_DELAY is not set
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_BACKTRACE_SELF_TEST is not set
-+# CONFIG_FAULT_INJECTION is not set
-+# CONFIG_SAMPLES is not set
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+# CONFIG_DEBUG_PAGEALLOC is not set
-+CONFIG_DEBUGGER=y
-+# CONFIG_KGDB is not set
-+# CONFIG_XMON is not set
-+# CONFIG_VIRQ_DEBUG is not set
-+# CONFIG_BDI_SWITCH is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-+# CONFIG_CRYPTO is not set
-+# CONFIG_PPC_CLOCK is not set
++/*
+  * Of the above, some are common offsets from the base
+  */
+ #define PESDRn_UTLSET1			0x00
+@@ -353,6 +406,12 @@
+ #define PECFG_POM2LAL		0x390
+ #define PECFG_POM2LAH		0x394
+ 
++/* SDR Bit Mappings */
++#define PESDRx_RCSSET_HLDPLB	0x10000000
++#define PESDRx_RCSSET_RSTGU	0x01000000
++#define PESDRx_RCSSET_RDY       0x00100000
++#define PESDRx_RCSSET_RSTDL     0x00010000
++#define PESDRx_RCSSET_RSTPYN    0x00001000
+ 
+ enum
+ {
 -- 
 1.5.4.2
