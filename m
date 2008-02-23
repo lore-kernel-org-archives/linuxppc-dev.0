@@ -1,26 +1,25 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23247DDD0C
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 21:25:15 +1100 (EST)
-Subject: Re: MPC8540 : What's "SPE used in kernel" ?
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Philippe De Muyter <phdm@macqel.be>
-In-Reply-To: <20080223101707.GA7194@10.1.86.20>
-References: <20080221123534.GA17716@ingate.macqel>
-	<20080222095022.GA635@ingate.macqel>
-	<08A7CD2B-27EA-4C97-9220-314E36BBBAA6@freescale.com>
-	<20080223092458.GA6873@10.1.86.20>
-	<1203760269.13162.11.camel@johannes.berg>
-	<20080223101707.GA7194@10.1.86.20>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-hl98tEDgMv5/DefzWbWx"
-Date: Sat, 23 Feb 2008 11:25:05 +0100
-Message-Id: <1203762305.13162.17.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2AFD6DDDEC
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 22:30:57 +1100 (EST)
+Date: Sat, 23 Feb 2008 12:24:57 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2/2] firewire: endianess annotations
+To: linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+Message-ID: <tkrat.99ed7585f5c25d58@s5r6.in-berlin.de>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<1203545913.25307.47.camel@brick>
+	<tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Jarod Wilson <jwilson@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +29,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kills warnings from 'make C=1 CHECKFLAGS="-D__CHECK_ENDIAN__" modules':
 
---=-hl98tEDgMv5/DefzWbWx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+drivers/firewire/fw-transaction.c:771:10: warning: incorrect type in assignment (different base types)
+drivers/firewire/fw-transaction.c:771:10:    expected unsigned int [unsigned] [usertype] <noident>
+drivers/firewire/fw-transaction.c:771:10:    got restricted unsigned int [usertype] <noident>
+drivers/firewire/fw-transaction.h:93:10: warning: incorrect type in assignment (different base types)
+drivers/firewire/fw-transaction.h:93:10:    expected unsigned int [unsigned] [usertype] <noident>
+drivers/firewire/fw-transaction.h:93:10:    got restricted unsigned int [usertype] <noident>
+drivers/firewire/fw-ohci.c:1490:8: warning: restricted degrades to integer
+drivers/firewire/fw-ohci.c:1490:35: warning: restricted degrades to integer
+drivers/firewire/fw-ohci.c:1516:5: warning: cast to restricted type
 
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: sparclinux@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+---
+ drivers/firewire/fw-ohci.c        |    4 ++--
+ drivers/firewire/fw-transaction.c |    2 +-
+ drivers/firewire/fw-transaction.h |    6 +++---
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-> But as I said in the same mail, processes still dies unexpectedly.
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -1487,7 +1487,7 @@ static int handle_ir_dualbuffer_packet(s
+ 	void *p, *end;
+ 	int i;
+ 
+-	if (db->first_res_count > 0 && db->second_res_count > 0) {
++	if (db->first_res_count != 0 && db->second_res_count != 0) {
+ 		if (ctx->excess_bytes <= le16_to_cpu(db->second_req_count)) {
+ 			/* This descriptor isn't done yet, stop iteration. */
+ 			return 0;
+@@ -1513,7 +1513,7 @@ static int handle_ir_dualbuffer_packet(s
+ 		memcpy(ctx->header + i + 4, p + 8, ctx->base.header_size - 4);
+ 		i += ctx->base.header_size;
+ 		ctx->excess_bytes +=
+-			(le32_to_cpu(*(u32 *)(p + 4)) >> 16) & 0xffff;
++			(le32_to_cpu(*(__le32 *)(p + 4)) >> 16) & 0xffff;
+ 		p += ctx->base.header_size + 4;
+ 	}
+ 	ctx->header_length = i;
+Index: linux/drivers/firewire/fw-transaction.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.c
++++ linux/drivers/firewire/fw-transaction.c
+@@ -751,7 +751,7 @@ handle_topology_map(struct fw_card *card
+ 		    void *payload, size_t length, void *callback_data)
+ {
+ 	int i, start, end;
+-	u32 *map;
++	__be32 *map;
+ 
+ 	if (!TCODE_IS_READ_REQUEST(tcode)) {
+ 		fw_send_response(card, request, RCODE_TYPE_ERROR);
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -85,12 +85,12 @@
+ static inline void
+ fw_memcpy_from_be32(void *_dst, void *_src, size_t size)
+ {
+-	u32 *dst = _dst;
+-	u32 *src = _src;
++	u32    *dst = _dst;
++	__be32 *src = _src;
+ 	int i;
+ 
+ 	for (i = 0; i < size / 4; i++)
+-		dst[i] = cpu_to_be32(src[i]);
++		dst[i] = be32_to_cpu(src[i]);
+ }
+ 
+ static inline void
 
-Yeah, no idea though. I guess you could try putting that into the
-arch/ppc Makefile, but arch/ppc will be removed this year so you don't
-want to rely on it.
-
-johannes
-
---=-hl98tEDgMv5/DefzWbWx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR7/0f6Vg1VMiehFYAQKcwBAAoxQkTbC2PWtedKVyn4xAFMmxdkLi+oM0
-mNr4pPoKTphehxn4dgHEcXN8IbttpyOQwu7/tmAdsySl41aXRMMCAjpMAR+moB3q
-fOMAc5XUvUjiKnQTWIxHb1JYmxxn2JaH1m4j8mF0EUjfWq5ViHbzRSCCtz8KvauS
-5wyfX7Ppx0TNt7BbtuF/PpA9juShVGmzR0xrk8mu08tND11NYIRvJIRkZncKyEYA
-NSSSxiKO5e5lFpKyK2O5/mdy6a1Qg2V6t0RQb/QQgeZGi1v07xqn2fUHvS3chPvc
-p7zBVORNPt9o8x7rKXJyec38JE/s01uMgFHbk1UU+zv8JMRW6guWMKNTqsKcxi7l
-az5rHbFRCOoCEdww2OFAju5cvRX+OWfAKH+iJ/GtiN7mwMI09dQZe7vETprjalK4
-Fl+yKVuWBDhlwJY649l8K8A1uzy4eqFrG0YtyanGdgSCfZ8vQ8WvSY3HpFrgcYC5
-LujR0cNawH0Xqnd1KvmoH1DKIGmI4xVQDDAZmmA69R/ghN4035ZjkfAyzwdjhoOi
-PyMdVRqEVfxIWfArFHJ+jZK/E8+pP/H1BVonxjcvfi0WK9M1kUoFizZamNvVQKXT
-02u3ihOLoLne1hgoQfrbV9eeDQpR/lN7RNgob7+9sTeuV1wmlo+hrENfRzHzUJAH
-e/ow1ZqR+WE=
-=eleS
------END PGP SIGNATURE-----
-
---=-hl98tEDgMv5/DefzWbWx--
+-- 
+Stefan Richter
+-=====-==--- --=- =-===
+http://arcgraph.de/sr/
