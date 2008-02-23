@@ -1,21 +1,33 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-106-saturday.nerim.net [62.4.16.106])
-	by ozlabs.org (Postfix) with ESMTP id 7F117DDDFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 23:43:39 +1100 (EST)
-Date: Sat, 23 Feb 2008 13:43:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
-	CPM1/CPM2  controllers
-Message-ID: <20080223134335.0f5c7d79@hyperion.delvare>
-In-Reply-To: <47BEAF00.50106@scram.de>
-References: <47A1C4E9.4000003@scram.de>
-	<20080221130520.12b01553@hyperion.delvare>
-	<47BEAF00.50106@scram.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C4446DDDF7
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 00:01:16 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1ND1Drp017612
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 08:01:13 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1ND1DxO213032
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 06:01:13 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1ND1C3N015932
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 06:01:13 -0700
+Date: Sat, 23 Feb 2008 07:00:44 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/5] [POWERPC] Add AMCC 460EX/460GT support to
+	cputable.c & cpu_setup_44x.S
+Message-ID: <20080223070044.5ebcb3f1@zod.rchland.ibm.com>
+In-Reply-To: <18367.34134.510940.418464@cargo.ozlabs.ibm.com>
+References: <1203602435-11302-1-git-send-email-sr@denx.de>
+	<18367.34134.510940.418464@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	i2c@lm-sensors.org, Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +37,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jochen,
+On Sat, 23 Feb 2008 13:30:46 +1100
+Paul Mackerras <paulus@samba.org> wrote:
 
-On Fri, 22 Feb 2008 12:16:16 +0100, Jochen Friedrich wrote:
-> Hi Jean,
+> Stefan Roese writes:
 > 
-> >> +/*
-> >> + * Wait for patch from Jon Smirl
-> >> + * #include "powerpc-common.h"
-> >> + */
-> > 
-> > It doesn't make sense to merge this comment upstream.
+> > Signed-off-by: Stefan Roese <sr@denx.de>
 > 
-> I know you don't like the patch from Jon Smirl and you also explained your reasons.
-> Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
+> That's a very uninformative commit message. :)
 > 
-> 1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
+> How about putting a brief description of the AMCC 460 family in here?
 
-The problem I have with this is that it breaks compatibility. The chip
-name is not only used for device/driver matching, it is also exported
-to userspace as a sysfs attribute ("name"). Applications might rely on
-it. At least libsensors does.
+It's rather boring at the moment.  460EX and 460GT are using a 440
+core.  But mentioning that is also important I would think.
 
-One way to work around the problem would be to use separate fields for
-device/driver matching and the "name" attribute. However, this will add
-some complexity to the i2c-core code and cost some memory as well, so
-it is far from perfect.
-
-> 2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
->    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
-
-This would work, and it would require almost no change to the current
-i2c-core code, but I thought that these dts files were not under our
-control?
-
-The problem I see with this approach is that the name translation would
-have to be done for each dts file, rather than just once for each device
-type. This means more work, but maybe this can be done if at least part
-of it is automated. I admit that I never considered this option because
-I considered the dts files as read-only. If this assumption was
-incorrect, then maybe this is the best solution. Can you please
-elaborate on the details of this proposal?
-
-> 3. use a glue layer with a translation map.
-
-This is what we do at the moment (see i2c_devices in
-arch/powerpc/sysdev/fsl_soc.c). Jon Smirl is worried that it won't
-scale well though, and I can't disagree.
-
-> What is the preferred way to do this?
-
-I still have to think about it. I didn't have much time to work on this
-during the last 2 weeks, hopefully I will fine some time to experiment
-again soon. As I underlined before, my patch set affects no less than 5
-subsystems with different needs and expectations, it's no trivial
-change.
-
--- 
-Jean Delvare
+josh
