@@ -1,32 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0FA28DDE3E
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 03:37:57 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1NGbZI5007366
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 11:37:35 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1NGbrQm056988
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 09:37:53 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1NGbrKa003919
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 09:37:53 -0700
-Date: Sat, 23 Feb 2008 10:37:23 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Grant Erickson <erick205@umn.edu>
-Subject: Re: [PATCH] [POWERPC] 40X: Add Default Restart Machdep Method to
-	40X Platforms
-Message-ID: <20080223103723.792efc75@zod.rchland.ibm.com>
-In-Reply-To: <C3E49AAC.D8E4%erick205@umn.edu>
-References: <C3E49AAC.D8E4%erick205@umn.edu>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4735BDDE40
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 07:47:25 +1100 (EST)
+Subject: Re: [PATCH 5/5] [POWERPC] Add 460EX PCIe support to 4xx pci driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18367.34338.962846.402664@cargo.ozlabs.ibm.com>
+References: <1203602482-11415-1-git-send-email-sr@denx.de>
+	<18367.34338.962846.402664@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Sun, 24 Feb 2008 07:46:48 +1100
+Message-Id: <1203799608.6976.44.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,20 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 22 Feb 2008 15:28:44 -0800
-Grant Erickson <erick205@umn.edu> wrote:
 
-> This patch restores the reset on restart functionality to 40x-based
-> platforms that was formerly provided--but not used in arch/powerpc--by
-> abort() in head_40x.S. This functionality is now provided by
-> ppc40x_reset_system(char *) in a fashion similar to that of the 44x-based
-> platforms.
+On Sat, 2008-02-23 at 13:34 +1100, Paul Mackerras wrote:
+> Stefan Roese writes:
 > 
-> Compiled, linked and tested against the AMCC Haleakala board.
+> > Tested on AMCC Canyonlands eval board.
+> > 
+> > Signed-off-by: Stefan Roese <sr@denx.de>
 > 
-> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+> With 173 lines of code added, you could spend a paragraph in the patch
+> description telling us why the patch is doing what it's doing the way
+> it's doing it.  Perhaps even tell us why it takes 173 new lines of
+> code to do something that sounds pretty simple - tell us what the
+> complexities you encountered were.
 
-This patch is word wrapped.  Seems your mailer decided to eat tabs as
-well.
+Actually, the patch just adds a backend to my little framework for
+dealing with 4xx PCIe, which basically is a boring piece of code
+filling registers with values mostly from the spec... nothing really
+fancy there.
 
-josh
+Cheers,
+Ben.
