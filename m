@@ -1,30 +1,33 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 119F5DDD0A
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 09:08:51 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1NM8kXi002105
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 17:08:46 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1NM8kj4249524
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 17:08:46 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1NM8kU2026230
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 17:08:46 -0500
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 545E3DDEE2
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 09:09:44 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1NM9GQ2014323
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 17:09:16 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1NM9fno178662
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 15:09:41 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1NM9fHS012693
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 15:09:41 -0700
 Received: from zod.rchland.ibm.com (wecm-9-67-149-29.wecm.ibm.com
 	[9.67.149.29])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m1NM8kia026227
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 17:08:46 -0500
-Date: Sat, 23 Feb 2008 16:08:13 -0600
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m1NM9e42012676
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 15:09:40 -0700
+Date: Sat, 23 Feb 2008 16:09:07 -0600
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3] [POWERPC] 4xx: Add support for AMCC 440EP Yosemite board
-Message-ID: <20080223160813.2f8d282b@zod.rchland.ibm.com>
+Subject: [PATCH 1/3][POWERPC] 4xx: Add AMCC 440EP Yosemite DTS
+Message-ID: <20080223160907.71a1c200@zod.rchland.ibm.com>
+In-Reply-To: <20080223160813.2f8d282b@zod.rchland.ibm.com>
+References: <20080223160813.2f8d282b@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -36,15 +39,319 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This small series of patches adds support for the AMCC 440EP Yosemite
-evaluation board.  This is the newer evaluation board for PowerPC 440EP
-chips, replacing the older Bamboo board.
+This adds a DTS file for the AMCC 440EP Yosemite board.
 
-This is just the initial round of patches, but they are functional.
-Also of note is that while all for on-board UARTs are enumerated in the
-DTS file, only two of them are usable on the board.  The other two have
-their "status" property set to disabled.  If used in conjunction with
-the of_device_is_disabled patches I just sent out, then devices for
-those won't be created.  This is not required.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
+ arch/powerpc/boot/dts/yosemite.dts |  306 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 306 insertions(+)
 
-josh
+--- /dev/null
++++ linux-2.6/arch/powerpc/boot/dts/yosemite.dts
+@@ -0,0 +1,306 @@
++/*
++ * Device Tree Source for AMCC Yosemite
++ *
++ * Copyright 2008 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ */
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "amcc,yosemite";
++	compatible = "amcc,yosemite","amcc,bamboo";
++	dcr-parent = <&/cpus/cpu@0>;
++
++	aliases {
++		ethernet0 = &EMAC0;
++		ethernet1 = &EMAC1;
++		serial0 = &UART0;
++		serial1 = &UART1;
++		serial2 = &UART2;
++		serial3 = &UART3;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			device_type = "cpu";
++			model = "PowerPC,440EP";
++			reg = <0>;
++			clock-frequency = <0>; /* Filled in by zImage */
++			timebase-frequency = <0>; /* Filled in by zImage */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; /* Filled in by zImage */
++	};
++
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic-440ep","ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	UIC1: interrupt-controller1 {
++		compatible = "ibm,uic-440ep","ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	SDR0: sdr {
++		compatible = "ibm,sdr-440ep";
++		dcr-reg = <00e 002>;
++	};
++
++	CPR0: cpr {
++		compatible = "ibm,cpr-440ep";
++		dcr-reg = <00c 002>;
++	};
++
++	plb {
++		compatible = "ibm,plb-440ep", "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by zImage */
++
++		SDRAM0: sdram {
++			compatible = "ibm,sdram-440ep", "ibm,sdram-405gp";
++			dcr-reg = <010 2>;
++		};
++
++		DMA0: dma {
++			compatible = "ibm,dma-440ep", "ibm,dma-440gp";
++			dcr-reg = <100 027>;
++		};
++
++		MAL0: mcmal {
++			compatible = "ibm,mcmal-440ep", "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <2>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					/*RXEOB*/ 1 &UIC0 b 4
++					/*SERR*/  2 &UIC1 0 4
++					/*TXDE*/  3 &UIC1 1 4
++					/*RXDE*/  4 &UIC1 2 4>;
++		};
++
++		POB0: opb {
++		  	compatible = "ibm,opb-440ep", "ibm,opb-440gp", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			/* Bamboo is oddball in the 44x world and doesn't use the ERPN
++			 * bits.
++			 */
++		  	ranges = <00000000 0 00000000 80000000
++			          80000000 0 80000000 80000000>;
++		  	interrupt-parent = <&UIC1>;
++		  	interrupts = <7 4>;
++		  	clock-frequency = <0>; /* Filled in by zImage */
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-440ep", "ibm,ebc-440gp", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				interrupts = <5 1>;
++				interrupt-parent = <&UIC1>;
++			};
++
++			UART0: serial@ef600300 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600300 8>;
++		   		virtual-reg = <ef600300>;
++		   		clock-frequency = <0>; /* Filled in by zImage */
++		   		current-speed = <1c200>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <0 4>;
++	   		};
++
++			UART1: serial@ef600400 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600400 8>;
++		   		virtual-reg = <ef600400>;
++		   		clock-frequency = <0>;
++		   		current-speed = <0>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <1 4>;
++	   		};
++
++			UART2: serial@ef600500 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600500 8>;
++		   		virtual-reg = <ef600500>;
++		   		clock-frequency = <0>;
++		   		current-speed = <0>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <3 4>;
++				status = "disabled";
++	   		};
++
++			UART3: serial@ef600600 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600600 8>;
++		   		virtual-reg = <ef600600>;
++		   		clock-frequency = <0>;
++		   		current-speed = <0>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <4 4>;
++				status = "disabled";
++	   		};
++
++			IIC0: i2c@ef600700 {
++				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
++				reg = <ef600700 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			IIC1: i2c@ef600800 {
++				compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
++				reg = <ef600800 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <7 4>;
++			};
++
++			spi@ef600900 {
++				compatible = "amcc,spi-440ep";
++				reg = <ef600900 6>;
++				interrupts = <8 4>;
++				interrupt-parent = <&UIC0>;
++			};
++
++			ZMII0: emac-zmii@ef600d00 {
++				compatible = "ibm,zmii-440ep", "ibm,zmii-440gp", "ibm,zmii";
++				reg = <ef600d00 c>;
++			};
++
++			EMAC0: ethernet@ef600e00 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-440ep", "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <ef600e00 70>;
++				local-mac-address = [000000000000];
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++
++			EMAC1: ethernet@ef600f00 {
++				linux,network-index = <1>;
++				device_type = "network";
++				compatible = "ibm,emac-440ep", "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <ef600f00 70>;
++				local-mac-address = [000000000000];
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++			usb@ef601000 {
++				compatible = "ohci-be";
++				reg = <ef601000 80>;
++				interrupts = <8 4 9 4>;
++				interrupt-parent = < &UIC1 >;
++			};
++		};
++
++		PCI0: pci@ec000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb440ep-pci", "ibm,plb-pci";
++			primary;
++			reg = <0 eec00000 8	/* Config space access */
++			       0 eed00000 4	/* IACK */
++			       0 eed00000 4	/* Special cycle */
++			       0 ef400000 40>;	/* Internal registers */
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed. Chip supports a second
++			 * IO range but we don't use it for now
++			 */
++			ranges = <02000000 0 a0000000 0 a0000000 0 20000000
++				  01000000 0 00000000 0 e8000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* Bamboo has all 4 IRQ pins tied together per slot */
++			interrupt-map-mask = <f800 0 0 0>;
++			interrupt-map = <
++				/* IDSEL 1 */
++				0800 0 0 0 &UIC0 1c 8
++
++				/* IDSEL 2 */
++				1000 0 0 0 &UIC0 1b 8
++
++				/* IDSEL 3 */
++				1800 0 0 0 &UIC0 1a 8
++
++				/* IDSEL 4 */
++				2000 0 0 0 &UIC0 19 8
++			>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@ef600300";
++	};
++};
