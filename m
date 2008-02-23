@@ -1,19 +1,18 @@
-Return-Path: <SRS0=JDpv=TM=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id DABC0DDE0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 18:11:50 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/5] [POWERPC] Add AMCC 460EX/460GT support to cputable.c
-	& cpu_setup_44x.S
-Date: Sat, 23 Feb 2008 08:11:37 +0100
-References: <1203602435-11302-1-git-send-email-sr@denx.de>
-	<18367.34134.510940.418464@cargo.ozlabs.ibm.com>
-In-Reply-To: <18367.34134.510940.418464@cargo.ozlabs.ibm.com>
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id D9F38DDD01
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 20:25:01 +1100 (EST)
+Date: Sat, 23 Feb 2008 10:24:58 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: MPC8540 : What's "SPE used in kernel" ?
+Message-ID: <20080223092458.GA6873@10.1.86.20>
+References: <20080221123534.GA17716@ingate.macqel>
+	<20080222095022.GA635@ingate.macqel>
+	<08A7CD2B-27EA-4C97-9220-314E36BBBAA6@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200802230811.38001.sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <08A7CD2B-27EA-4C97-9220-314E36BBBAA6@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,17 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 23 February 2008, Paul Mackerras wrote:
-> Stefan Roese writes:
-> > Signed-off-by: Stefan Roese <sr@denx.de>
+On Fri, Feb 22, 2008 at 12:33:19PM -0600, Andy Fleming wrote:
 >
-> That's a very uninformative commit message. :)
+> On Feb 22, 2008, at 03:50, Philippe De Muyter wrote:
 >
-> How about putting a brief description of the AMCC 460 family in here?
+>> Dear list,
+>>
+>> I have just compiled linux-2.6.24 for a MPC8540 target using a MPC8540
+>> specific gcc.
+>>
+>> I then got tan infinity of "SPE used in kernel" messages.  Looking at the
+>> sources I ifdeffed out the printk call in KernelSPE, and I now have a
+>> silent kernel, that seems to work fine.
+>>
+>> Is there something wrong in my setting and should I look further to
+>> debug this problem or is this perfectly normal ?
+>>
+>> I wonder why a kernel configured for E500 and compiled by a E500-specific 
+>> gcc
+>> triggers this message.  Is it invalid to use SPE instructions in the 
+>> kernel
+>> or do I misunderstand the message ?
+>
+>
+> We don't currently support using SPE in the kernel.  Are you using SPE in 
+> the kernel for some reason?  Do you think that the compiler is 
+> automatically generating SPE code in the kernel?  I've never seen that 
+> before.
+>
+> Andy
 
-You're right. I was a little bit lazy. :)
+I have bought a modified CLFS installation targetting by default a MPC8540.
+By default my powerpc compiler thus generates also SPE instructions.
+And I built linux using that compiler.
 
-I'll add some more text to the commit messages and resubmit in a short while.
+My first trial used ARCH=ppc and caused this infinity of "SPE used in kernel"
+messages, but I then recompiled linux with ARCH=powerpc.  With the message
+not ifdef'ed out, this second kernel does not emit "SPE used in kernel"
+messages, but I noticed problems with processes dying unexpectedly
+(like in the first one, but after my first mail to the list).
 
-Best regards,
-Stefan
+Do you by chance know which MPC8540 registers are not saved by the kernel ?
+
+Philippe
