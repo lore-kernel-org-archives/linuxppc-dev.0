@@ -1,32 +1,22 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 82D69DDDEF
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 16:51:00 +1100 (EST)
-Received: from pd2mr6so.prod.shaw.ca (pd2mr6so-qfe3.prod.shaw.ca [10.0.141.9])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JWQ00EYLAWYYBD0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sat, 23 Feb 2008 22:50:58 -0700 (MST)
-Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
-	by pd2mr6so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JWQ00NRLAWX4N10@pd2mr6so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sat, 23 Feb 2008 22:50:58 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JWQ00H8NAWXIY40@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sat, 23 Feb 2008 22:50:57 -0700 (MST)
-Date: Sat, 23 Feb 2008 22:49:55 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] mpc5200: fix build error on mpc52xx_psc_spi device
-	driver
-To: dbrownell@users.sourceforge.net, dragos.carp@toptica.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net
-Message-id: <20080224054955.21886.79000.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
+	by ozlabs.org (Postfix) with ESMTP id CE08CDDDF6
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 17:17:01 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1098681wxd.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Feb 2008 22:16:59 -0800 (PST)
+Message-ID: <fa686aa40802232216s47b7751bi384352697dbf4ce2@mail.gmail.com>
+Date: Sat, 23 Feb 2008 23:16:59 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] Xilinx: hwicap: cleanup
+In-Reply-To: <20080211182429.76E204D8018@mail62-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1202437061-12691-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080211182429.76E204D8018@mail62-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, git-dev@xilinx.com, jirislaby@gmail.com,
+	linux.kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,81 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Mon, Feb 11, 2008 at 11:24 AM, Stephen Neuendorffer
+<stephen.neuendorffer@xilinx.com> wrote:
+> Fix some missing __user tags and incorrect section tags.
+>  Convert semaphores to mutexes.
+>  Make probed_devices re-entrancy and error condition safe.
+>  Fix some backwards memcpys.
+>  Some other minor cleanups.
+>  Use kerneldoc format.
+>
+>  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
-Commit id 94f389485e27641348c1951ab8d65157122a8939 (Separate MPC52xx PSC
-FIOF regsiters from the rest of PSC) split the PSC fifo registers away
-from the core PSC regs.  Doing so broke the mpc52xx_psc_spi driver.
+Thanks Steven, some more comments below.
 
-This patch teaches the mpc52xx_psc_spi driver about the new PSC fifo
-register definitions.
+>
+>  ---
+>
+>  Grant, Since it appears that the driver will stay in as-is, here are
+>  the updates against mainline, based on Jiri's comments.
+>  ---
+>   drivers/char/xilinx_hwicap/buffer_icap.c   |   80 ++++++++++----------
+>   drivers/char/xilinx_hwicap/fifo_icap.c     |   60 +++++++-------
+>   drivers/char/xilinx_hwicap/xilinx_hwicap.c |  113 ++++++++++++++++------------
+>   drivers/char/xilinx_hwicap/xilinx_hwicap.h |   24 +++---
+>   4 files changed, 148 insertions(+), 129 deletions(-)
+>
+>  diff --git a/drivers/char/xilinx_hwicap/buffer_icap.c b/drivers/char/xilinx_hwicap/buffer_icap.c
+>  index dfea2bd..2c5d17d 100644
+>  --- a/drivers/char/xilinx_hwicap/buffer_icap.c
+>  +++ b/drivers/char/xilinx_hwicap/buffer_icap.c
+>  @@ -148,9 +148,9 @@ static inline void buffer_icap_set_size(void __iomem *base_address,
+>   }
+>
+>   /**
+>  - * buffer_icap_mSetoffsetReg: Set the bram offset register.
+>  - * @parameter base_address: contains the base address of the device.
+>  - * @parameter data: is the value to be written to the data register.
+>  + * buffer_icap_mSetoffsetReg - Set the bram offset register.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+This is the only function that is still in camel case; it should
+probably be changed also... In fact, this functions doesn't seem to be
+used at all.  Can it just be removed?  Are there any other unused
+functions in this driver?
 
----
-This is a build error bug fix which needs to go into .25
----
+>  diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+>  index 24f6aef..eddaa26 100644
+>  --- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+>  +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+>  @@ -344,7 +345,7 @@ int hwicap_initialize_hwicap(struct hwicap_drvdata *drvdata)
+>   }
+>
+>   static ssize_t
+>  -hwicap_read(struct file *file, char *buf, size_t count, loff_t *ppos)
+>  +hwicap_read(struct file *file, __user char *buf, size_t count, loff_t *ppos)
 
- drivers/spi/mpc52xx_psc_spi.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+This looks like it should be 'char __user *buf' instead of '__user char *buf'.
 
-diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
-index 253ed56..a86315a 100644
---- a/drivers/spi/mpc52xx_psc_spi.c
-+++ b/drivers/spi/mpc52xx_psc_spi.c
-@@ -42,6 +42,7 @@ struct mpc52xx_psc_spi {
- 
- 	/* driver internal data */
- 	struct mpc52xx_psc __iomem *psc;
-+	struct mpc52xx_psc_fifo __iomem *fifo;
- 	unsigned int irq;
- 	u8 bits_per_word;
- 	u8 busy;
-@@ -139,6 +140,7 @@ static int mpc52xx_psc_spi_transfer_rxtx(struct spi_device *spi,
- {
- 	struct mpc52xx_psc_spi *mps = spi_master_get_devdata(spi->master);
- 	struct mpc52xx_psc __iomem *psc = mps->psc;
-+	struct mpc52xx_psc_fifo __iomem *fifo = mps->fifo;
- 	unsigned rb = 0;	/* number of bytes receieved */
- 	unsigned sb = 0;	/* number of bytes sent */
- 	unsigned char *rx_buf = (unsigned char *)t->rx_buf;
-@@ -190,11 +192,11 @@ static int mpc52xx_psc_spi_transfer_rxtx(struct spi_device *spi,
- 			out_8(&psc->mode, 0);
- 		} else {
- 			out_8(&psc->mode, MPC52xx_PSC_MODE_FFULL);
--			out_be16(&psc->rfalarm, rfalarm);
-+			out_be16(&fifo->rfalarm, rfalarm);
- 		}
- 		out_be16(&psc->mpc52xx_psc_imr, MPC52xx_PSC_IMR_RXRDY);
- 		wait_for_completion(&mps->done);
--		recv_at_once = in_be16(&psc->rfnum);
-+		recv_at_once = in_be16(&fifo->rfnum);
- 		dev_dbg(&spi->dev, "%d bytes received\n", recv_at_once);
- 
- 		send_at_once = recv_at_once;
-@@ -331,6 +333,7 @@ static void mpc52xx_psc_spi_cleanup(struct spi_device *spi)
- static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
- {
- 	struct mpc52xx_psc __iomem *psc = mps->psc;
-+	struct mpc52xx_psc_fifo __iomem *fifo = mps->fifo;
- 	u32 mclken_div;
- 	int ret = 0;
- 
-@@ -346,7 +349,7 @@ static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
- 	/* Disable interrupts, interrupts are based on alarm level */
- 	out_be16(&psc->mpc52xx_psc_imr, 0);
- 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
--	out_8(&psc->rfcntl, 0);
-+	out_8(&fifo->rfcntl, 0);
- 	out_8(&psc->mode, MPC52xx_PSC_MODE_FFULL);
- 
- 	/* Configure 8bit codec mode as a SPI master and use EOF flags */
-@@ -419,6 +422,8 @@ static int __init mpc52xx_psc_spi_do_probe(struct device *dev, u32 regaddr,
- 		ret = -EFAULT;
- 		goto free_master;
- 	}
-+	/* On the 5200, fifo regs are immediately ajacent to the psc regs */
-+	mps->fifo = ((void __iomem *)mps->psc) + sizeof(struct mpc52xx_psc);
- 
- 	ret = request_irq(mps->irq, mpc52xx_psc_spi_isr, 0, "mpc52xx-psc-spi",
- 				mps);
+>   {
+>         struct hwicap_drvdata *drvdata = file->private_data;
+>         ssize_t bytes_to_read = 0;
+>   static ssize_t
+>  -hwicap_write(struct file *file, const char *buf,
+>  +hwicap_write(struct file *file, const __user char *buf,
+>                 size_t count, loff_t *ppos)
+
+Ditto on placement of __user
+
+>  @@ -549,8 +556,7 @@ static int hwicap_release(struct inode *inode, struct file *file)
+>         int i;
+>         int status = 0;
+>
+>  -       if (down_interruptible(&drvdata->sem))
+>  -               return -ERESTARTSYS;
+>  +       mutex_lock(&drvdata->sem);
+
+Why not mutex_lock_interruptible()? (goes for all cases of mutex_lock())
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
