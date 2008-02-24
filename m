@@ -1,23 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
-	by ozlabs.org (Postfix) with ESMTP id 85EAFDDED3
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 03:19:29 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1271630wag.13
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 08:19:28 -0800 (PST)
-Message-ID: <9e4733910802240819w70b1846ftea776495016567fc@mail.gmail.com>
-Date: Sun, 24 Feb 2008 11:19:28 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2B4D6DDE08
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 05:11:18 +1100 (EST)
+Date: Sun, 24 Feb 2008 12:15:10 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Jochen Friedrich <jochen@scram.de>
 Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
 	CPM1/CPM2 controllers
-In-Reply-To: <47BEAF00.50106@scram.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20080224181509.GA6745@lixom.net>
 References: <47A1C4E9.4000003@scram.de>
-	<20080221130520.12b01553@hyperion.delvare> <47BEAF00.50106@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org,
-	linux-kernel@vger.kernel.org
+	<20080221130520.12b01553@hyperion.delvare>
+	<47BEAF00.50106@scram.de> <20080223212823.GA22131@lixom.net>
+	<47C18A4E.5080804@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47C18A4E.5080804@scram.de>
+Cc: Jean Delvare <khali@linux-fr.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+	Scott Wood <scottwood@freescale.com>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,77 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/22/08, Jochen Friedrich <jochen@scram.de> wrote:
-> Hi Jean,
->
->
->  >> +/*
->  >> + * Wait for patch from Jon Smirl
->  >> + * #include "powerpc-common.h"
->  >> + */
->  >
->  > It doesn't make sense to merge this comment upstream.
->
->
-> I know you don't like the patch from Jon Smirl and you also explained your reasons.
->  Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
->
->  1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
+Hi,
 
-The correct statement is: modify the i2c subsystem to support the
-standard kernel driver aliasing mechanism. Leaving powerpc and OF out
-of the argument for the moment, i2c has a custom aliasing scheme on
-the x86 too.
+On Sun, Feb 24, 2008 at 04:16:30PM +0100, Jochen Friedrich wrote:
+> Hi Olof,
+> 
+> >> 2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
+> >>    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
+> > 
+> > I have to say no on this one. The device tree is not supposed to know
+> > about how linux uses devices, there are firmwares out there that don't
+> > use DTS for thier device trees, etc.
+> 
+> I still believe this this could be done for embedded devices which are usually booted
+> via wrapper or U-Boot as those devices will most probably use the most exotic I2c devices
+> out there (e.g. home-grown devices used by stbs). However, I'm not an device tree expert.
 
-So as a first step, can we remove the custom i2c aliasing scheme and
-change i2c to use standard module aliases on the x86? Patches for this
-already exist.
+Sorry, but you're wrong in your assumptions. Not all embedded devices
+use U-boot, and not all use the wrapper. It's just a bad idea to encode
+linux-specific things in the device tree, period.
 
-On 2/23/08, Jean Delvare <khali@linux-fr.org> wrote:
-> The problem I have with this is that it breaks compatibility. The chip
->  name is not only used for device/driver matching, it is also exported
->  to userspace as a sysfs attribute ("name"). Applications might rely on
->  it. At least libsensors does.
+And even if you DO decide to go that route, guess what? You need a
+translation table just as with (3) anyway!
 
-I think there is some confusion here. The OF aliases are only used by
-the kernel to load the correct driver. Would doing something like this
-help?
+> >> 3. use a glue layer with a translation map.
+> > 
+> > In my opinion this is an OK solution since the same information has to
+> > be added somewhere already anyway -- eiither to the drivers or to this
+> > translation table. It should of course be an abstacted shared table,
+> > preferrably contained under the i2c source directories since several
+> > platforms and architectures might share them.
+> 
+> I could think of a mixture between 2. and 3.:
+> 
+> Using the compatible attribute with the manufacturer stripped off as I2c name by default
+> and using an exception table. For now, the struct i2c_driver_device would currently only
+> need one entry ("dallas,ds1374", "rtc-ds1374").
 
-static struct i2c_device_id pcf8563_id[] = {
-	{"pcf8563", 0, "sysfs_legacy_name"},
-	{"rtc8564", 0, "sysfs_legacy_name"},
-	OF_ID("phillips,pcf8563", &pcf8563_id[0], 0)
-	OF_ID("epson,rtc8564", &pcf8563_id[1], 0)
-	{},
-};
-MODULE_DEVICE_TABLE(i2c, pcf8563_id);
+You still need the translation table, you're just flattening the
+namespace to one string instead of two, the same information still has
+to be encoded. I can't see what the benefit of this approach compared to
+the other one is. "dallas,ds1374" already only has one translation entry
+in the table?
 
-Then in the probe function you can use the pointer to find the base id
-entry and i2c never has to be aware that the OF alias exists.
 
->  2. record the I2c name in the dts tree, either as separate tag (like linux,i2c-name="<i2c-name>")
-
-Not really practical for the millions of machines (all PowerPC Macs)
-already shipped.
-
->    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
->  3. use a glue layer with a translation map.
-
-Audio codecs have exactly the same problem. There are probably other
-devices that also need mapping.
-
-This mapping table will need to contain a map from the OF names to the
-kernel driver names.  It will need to stored permanently in RAM and
-contain all possible mappings. This table will only grow in size.
-
-The kernel has a widely used mechanism for mapping -- aliases in the
-device drivers. Why do we want to build a new, parallel one?
-
-What we are doing now is option 4.
-
-4. Use kconfig to build custom kernels for each target system. Don't
-load drivers automatically based on what the BIOS tells us.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+-Olof
