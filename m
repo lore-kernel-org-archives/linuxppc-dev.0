@@ -1,33 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A5088DDF2F
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 05:37:45 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1OIbKSV005072
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 13:37:20 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1OIbfQr158152
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 11:37:41 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1OIbfLp009377
-	for <linuxppc-dev@ozlabs.org>; Sun, 24 Feb 2008 11:37:41 -0700
-Date: Sun, 24 Feb 2008 12:36:56 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH] PowerPC 44x: add missing define TARGET_4xx to
-	cuboot-taishan.c
-Message-ID: <20080224123656.760338da@zod.rchland.ibm.com>
-In-Reply-To: <20080224093255.7c47a1e2@zod.rchland.ibm.com>
-References: <20080221144317.GA19395@ru.mvista.com>
-	<20080224093255.7c47a1e2@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <47C1BC31.9070402@am.sony.com>
+Date: Sun, 24 Feb 2008 10:49:21 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Samuel Tardieu <sam@rfc1149.net>
+Subject: Re: [PATCH] ps3: Fix "unlikely" incorrect usage
+References: <20080224081037.D492320AFF@arrakis.enst.fr>
+In-Reply-To: <20080224081037.D492320AFF@arrakis.enst.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,18 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 24 Feb 2008 09:32:55 -0600
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-
-> On Thu, 21 Feb 2008 17:43:17 +0300
-> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+On 02/24/2008 12:06 AM, Samuel Tardieu wrote:
+> Fix unlikely(plug) == NO_IRQ into unlikely(plug == NO_IRQ).
 > 
-> > In order to get the proper bd_info structure for PowerPC 440,
-> > both TARGET_4xx and TARGET_44x should be defined.
-> 
-> Could you explain what this adds or why it's needed in the changelog?
-> Also, is this needed for other 440 boards?
+> Signed-off-by: Samuel Tardieu <sam@rfc1149.net>
+> ---
+>  arch/powerpc/platforms/ps3/interrupt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-And actually, looking at this more, does taishan also need TARGET_440GX?
+Thanks for the submission, but this fix is already in
+ps3-linux.git.  I was waiting to collect a few other bugs
+before sending it to Paul.
 
-josh
+-Geoff
