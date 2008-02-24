@@ -1,27 +1,25 @@
-Return-Path: <sheflin@newagemicro.com>
-Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
-	[66.129.110.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 32C23DDE05
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp2.netcologne.de (smtp2.netcologne.de [194.8.194.112])
+	by ozlabs.org (Postfix) with ESMTP id 53013DDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Feb 2008 11:37:46 +1100 (EST)
-Date: Fri, 22 Feb 2008 19:38:02 -0500
-To: Josh Boyer <jwboyer@gmail.com>
-From: Steve Heflin <sheflin@newagemicro.com>
-Subject: Re: MODPOST section mismatches
-In-Reply-To: <20080222183025.280b6ea3@vader.jdub.homelinux.org>
-References: <20080221213313.97814DDF55@ozlabs.org>
-	<20080222164210.48628DE0A9@ozlabs.org>
-	<20080222145224.7349cf36@weaponx>
-	<20080222222637.C82EADDF0F@ozlabs.org>
-	<20080222163625.29433d12@weaponx>
-	<20080222230722.B7FDBDDE45@ozlabs.org>
-	<20080222183025.280b6ea3@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Message-Id: <20080223003747.32C23DDE05@ozlabs.org>
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 24 Feb 2008 21:37:11 +1100 (EST)
+Received: from antares.localdomain (xdsl-87-78-201-228.netcologne.de
+	[87.78.201.228])
+	by smtp2.netcologne.de (Postfix) with ESMTP id 830844F96
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 24 Feb 2008 11:17:40 +0100 (MET)
+Received: from antares.localdomain (localhost.localdomain [127.0.0.1])
+	by antares.localdomain (Postfix) with ESMTP id 2140532F502
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 24 Feb 2008 11:17:39 +0100 (CET)
+Date: Sun, 24 Feb 2008 11:17:39 +0100
+From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
+Subject: Status of 5200B and 440 Kernel Support
+To: LinuxPPC Embedded <linuxppc-embedded@ozlabs.org>
+Message-Id: <1203848259l.2313l.1l@antares.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-RCvV/1GqzE0wN8zdlzcs"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,37 +30,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-At 07:30 PM 2/22/2008, you wrote:
->On Fri, 22 Feb 2008 18:07:37 -0500
->Steve Heflin <sheflin@newagemicro.com> wrote:
->
-> > At 05:36 PM 2/22/2008, you wrote:
-> > >On Fri, 22 Feb 2008 17:26:52 -0500
-> > >Steve Heflin <sheflin@newagemicro.com> wrote:
-> > >
-> > > > FLAT_MEM is one of the configuration options:
-> > > >        CONFIG_ARCH_FLATMEM_ENABLE=y
-> > >
-> > >That has to do with NUMA stuff.  It really doesn't have much bearing on
-> > >the section warnings.
-> >
-> > ah, thanks for setting me straight. I thought it meant that
-> > everything existed in a flat address space and existed in memory at
-> > the same time, and therefore the different section warnings might 
-> not apply.
->
->Nah.  The section warnings come about because if something is marked
->__init but referenced in a function that isn't then an oops could occur
->because the __init sections are discarded after a certain point in the
->kernel boot.  The same is true for __devinit, etc.
->
->So the section warnings are still bugs that need fixing, but they're
->orthogonal to the memory model for the most part.
->
->josh
+--=-RCvV/1GqzE0wN8zdlzcs
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Isn't there a way to keep the __init sections from being discarded 
-such that I can run it without an oops occurring?
+Hi all,
 
-thanks for your help!
-Steve
+sorry if this is a dumb question, I'm new in the list...
+
+For a new project, I am looking through the available PPC based SoC's.  =20
+Good candidates are probably the Freescale 5200B or the AMCC 440EP (I =20
+need a FPU).
+
+For a decision, I need some further information about the Kernel =20
+support (source code available, if possible in stock kernels, *not* =20
+only vendor binary modules!) of the included devices, in particular
+- MTD/NAND controller
+- Ethernet
+- UART, IIC and SPI
+- USB host
+- local external bus (not PCI) DMA
+
+Any information or pointers would be really appreciated!
+
+Thanks in advance,
+Albrecht.
+
+--=-RCvV/1GqzE0wN8zdlzcs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.8 (GNU/Linux)
+
+iD8DBQBHwURDn/9unNAn/9ERAm5cAKCTUZwS+ZMR26b3kqsyvJtfQjzBoACgv7XH
+BJCvxkbQwLgD5KxkAshxJsk=
+=QmPw
+-----END PGP SIGNATURE-----
+
+--=-RCvV/1GqzE0wN8zdlzcs--
