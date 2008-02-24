@@ -1,18 +1,24 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DBBD4DDDF5
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 01:47:48 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Sun, 24 Feb 2008 15:47:45 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1203719521.6976.30.camel@pasglop>
-Message-ID: <20080224144745.202740@gmx.net>
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 45F77DDE05
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 02:16:57 +1100 (EST)
+Message-ID: <47C18A4E.5080804@scram.de>
+Date: Sun, 24 Feb 2008 16:16:30 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-References: <ebff4ecb45908616728fb5c8ede8b0bf@bga.com>	
-	<20080222190531.103050@gmx.net> <1203719521.6976.30.camel@pasglop>
-Subject: Re: How to dynamically disable/enable CPU features?
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, miltonm@bga.com
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on
+	Freescale	CPM1/CPM2 controllers
+References: <47A1C4E9.4000003@scram.de>
+	<20080221130520.12b01553@hyperion.delvare>
+	<47BEAF00.50106@scram.de> <20080223212823.GA22131@lixom.net>
+In-Reply-To: <20080223212823.GA22131@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jean Delvare <khali@linux-fr.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+	Scott Wood <scottwood@freescale.com>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Olof,
 
--------- Original-Nachricht --------
-> Datum: Sat, 23 Feb 2008 09:32:01 +1100
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
-> Betreff: Re: How to dynamically disable/enable CPU features?
-
-> > The flag is in POSSIBLE. I now use this code in the platform probe
-> > function to nop out the code affected by the flag:
-> > 
-> > cur_cpu_spec->cpu_features &= ~CPU_FTR_NEED_COHERENT;
-> > /* Patch out unwanted feature. */
-> > do_feature_fixups(cur_cpu_spec->cpu_features,
-> > 		  PTRRELOC(&__start___ftr_fixup),
-> > 		  PTRRELOC(&__stop___ftr_fixup));
-> > 
-> > It seems to work so far, but I would like to know if this is the right
-> > way to do it, or if calling do_feature_fixups() more than once can have
-> > any side effects.
+>> 2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
+>>    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
 > 
-> It's a bit hairy... Things -could- have been nop'ed out by the first
-> call as a result of CPU_FTR_NEED_COHERENT being set and the second
-> call will not be able to put them back in... now that may not be the
-> case (depends what kind of patching is done with that flag) and so
-> 'happen' to work for this specific bit but it isn't a nice solution...
-I checked this now. Looks like it only needs to nop out some code (mainly
-in the hash table code).
+> I have to say no on this one. The device tree is not supposed to know
+> about how linux uses devices, there are firmwares out there that don't
+> use DTS for thier device trees, etc.
 
-> A better long term approach is to look at moving the fixup to after
-> the machine probe() after carefully checking whether that can cause
-> any problem...
-Well, that's a job for an more experienced kernel developer. :)
+I still believe this this could be done for embedded devices which are usually booted
+via wrapper or U-Boot as those devices will most probably use the most exotic I2c devices
+out there (e.g. home-grown devices used by stbs). However, I'm not an device tree expert.
+ 
+>> 3. use a glue layer with a translation map.
+> 
+> In my opinion this is an OK solution since the same information has to
+> be added somewhere already anyway -- eiither to the drivers or to this
+> translation table. It should of course be an abstacted shared table,
+> preferrably contained under the i2c source directories since several
+> platforms and architectures might share them.
 
-Thanks!
+I could think of a mixture between 2. and 3.:
 
-Gerhard
--- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört?
-Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+Using the compatible attribute with the manufacturer stripped off as I2c name by default
+and using an exception table. For now, the struct i2c_driver_device would currently only
+need one entry ("dallas,ds1374", "rtc-ds1374").
+
+Thanks,
+Jochen
