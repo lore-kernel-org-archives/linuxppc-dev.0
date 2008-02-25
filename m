@@ -1,25 +1,19 @@
-Return-Path: <m.louvel@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.231])
-	by ozlabs.org (Postfix) with ESMTP id C25EEDDDF2
+Return-Path: <rodolfo@lesc.ufc.br>
+Received: from lesc0.lesc.ufc.br (unknown [200.17.37.126])
+	by ozlabs.org (Postfix) with ESMTP id 0CBAEDDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Feb 2008 21:42:58 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1545072wxd.15
+	Tue, 26 Feb 2008 06:05:41 +1100 (EST)
+Received: from webmail.lesc.ufc.br (unknown [192.168.0.1])
+	by lesc0.lesc.ufc.br (Postfix) with ESMTP id 0F9C464CC39
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Feb 2008 02:42:56 -0800 (PST)
-Message-ID: <dda529d0802250242n228e3cc3sec9343285da057fd@mail.gmail.com>
-Date: Mon, 25 Feb 2008 10:42:56 +0000
-From: "maxime louvel" <m.louvel@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: 2.6.24 for mpc8458amc
-In-Reply-To: <A0EDC255-48E2-4CDC-B768-C41D8274FFA0@kernel.crashing.org>
+	Mon, 25 Feb 2008 16:10:04 -0300 (BRT)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_8993_18918835.1203936176230"
-References: <OF5ABF0D8A.75A05AE1-ONC12573F4.00426B12-C12573F4.0043B5F0@abengoa.com>
-	<7CDED5EA-D72B-4D9F-A547-AC3B6A59F174@kernel.crashing.org>
-	<dda529d0802200500k7cadc8afm4f9e8f04358aea0b@mail.gmail.com>
-	<A0EDC255-48E2-4CDC-B768-C41D8274FFA0@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
+Date: Mon, 25 Feb 2008 16:05:37 -0300
+From: rodolfo <rodolfo@lesc.ufc.br>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: XUP Virtex II p with Linux 2.4 - Question
+Message-ID: <9974727a671b73eacef871a6a394c6cb@lesc.ufc.br>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,151 +24,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_8993_18918835.1203936176230
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hey everybody, 
 
-Hi,
+I'm in trouble;
 
-I have updated the uboot on the cards and get the same result
+1) The EDK flow: I set the OS in the Software Plataform Settings to
+linux_2_6 version 1.00.a. after that, in OS and Library section I have to
+fill out the fields "memory size" , "connected_periphs" , "ramdisk size"
+... ?  How would I do it ? 
 
-AMC=> bootm 0x1000000
-## Booting image at 01000000 ...
-  Image Name:   Linux-2.6.24
-  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-  Data Size:    1802038 Bytes =  1.7 MB
-  Load Address: 00000000
-  Entry Point:  00000000
-  Verifying Checksum ... OK
-  Uncompressing Kernel Image ... OK
+2) Do I place xparametera_ml300.h in /opt/ELDK/ppc_4xx/usr/src/linux-2.6.15
+? if not where?
 
-No further messages...
+3) I downloaded "ppc-2006-01-11.iso" from denx (ELDK) website and I'm
+trying to follow their instructions for ppc 4xx plataform.
+[ website: http://www.denx.de/wiki/view/DULG/ELDK ]
 
-However I have try to boot an image (2.6.23-rc6 from freescale) which has
-been patched for my platform and it works.
-Thus the problem is not coming from the uboot anymore, but from something
-else.
-I can't get the source from freescale to see what they have changed because
-their is some other stuff (unrelated with my problem or even my platform)
-that are confidential to them...
+In /opt/ELDK/ppc_4xx/usr/src/u-boot-1.1.4/ I do:
 
-So what I am looking for here is a hint of where to look, an idea of what I
-might have done wrong...
+"make distclen" and  "make ml300_config" are ok! After "make all" in  I've
+got an error:
 
-regards,
-Maxime
+a - ppc_longjmp.o
+a - ppc_setjmp.o
+a - stubs.o
+make[1]: *** No rules for processing the target `hello_world.srec', needed
+by `all'. Stop.       --> note: "TRANSLATION FROM PORTUGESE"
+make[1]: Exiting `/opt/ELDK/ppc_4xx/usr/src/u-boot-1.1.4/examples'
+make: ** [examples] Error 2
 
-On Wed, Feb 20, 2008 at 1:53 PM, Kumar Gala <galak@kernel.crashing.org>
-wrote:
+Can you help me, please?
 
->
-> On Feb 20, 2008, at 7:00 AM, maxime louvel wrote:
->
-> > Hi,
-> >
-> > yes It has something like 16550 UART.
-> > the compiler version is gcc-3.4.3 with some specific stuff for the
-> > platform.
-> > I also have a gcc-4.1.2 vanilla which has been compiled with the
-> > previous one. The 4.1.2 works if you tell it to emulate the floating
-> > point instructions.
-> >
-> > thanks Scott,
-> > without the treeboot-walnut it compiled
-> >
-> > I have still my first problem though:
-> >
-> > AMC=> bootm 0x1000000
-> > ## Booting image at 01000000 ...
-> >   Image Name:   Linux-2.6.24
-> >   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-> >   Data Size:    1802038 Bytes =  1.7 MB
-> >   Load Address: 00000000
-> >   Entry Point:  00000000
-> >   Verifying Checksum ... OK
-> >   Uncompressing Kernel Image ... OK
-> >
-> > and nothing else...
-> >
-> > Any idea ?
-> >
-> > This may become from the fact that the uboot installed on the cards
-> > is old and it apparently doesn't support the newer version of the
-> > kernel image... (I have got that from an another mailing list)
->
-> Yes, you'll either need to look at updating u-boot and including
-> support for the device tree in it or look at the cuImage wrappers in
-> arch/powerpc/boot as a mechanism to boot a kernel w/an old fw.
->
-> - k
->
+Thanks in advance,
+Rodolfo Galvão.
 
 
 
--- 
-Maxime Louvel
-0044 7964 5555 80
-43 Allen road
-Whitemore reans
-WV60AW Wolverhampton
-United Kingdom
-
-------=_Part_8993_18918835.1203936176230
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>I have updated the uboot on the cards and get the same result <br><br>AMC=&gt; bootm 0x1000000<br>## Booting image at 01000000 ...<br> &nbsp; Image Name: &nbsp; Linux-2.6.24<br> &nbsp; Image Type: &nbsp; PowerPC Linux Kernel Image (gzip compressed)<br>
-
-
-
-
-
-
- &nbsp; Data Size: &nbsp; &nbsp;1802038 Bytes = &nbsp;1.7 MB<br> &nbsp; Load Address: 00000000<br> &nbsp; Entry Point: &nbsp;00000000<br> &nbsp; Verifying Checksum ... OK<br> &nbsp; Uncompressing Kernel Image ... OK<br><br>No further messages...<br><br>However I have try to boot an image (2.6.23-rc6 from freescale) which has been patched for my platform and it works. <br>
-Thus the problem is not coming from the uboot anymore, but from something else.<br>I can&#39;t get the source from freescale to see what they have changed because their is some other stuff (unrelated with my problem or even my platform) that are confidential to them...<br>
-<br>So what I am looking for here is a hint of where to look, an idea of what I might have done wrong...<br><br>regards,<br>Maxime<br><br><div class="gmail_quote">On Wed, Feb 20, 2008 at 1:53 PM, Kumar Gala &lt;<a href="mailto:galak@kernel.crashing.org">galak@kernel.crashing.org</a>&gt; wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div><div></div><div class="Wj3C7c"><br>
-On Feb 20, 2008, at 7:00 AM, maxime louvel wrote:<br>
-<br>
-&gt; Hi,<br>
-&gt;<br>
-&gt; yes It has something like 16550 UART.<br>
-&gt; the compiler version is gcc-3.4.3 with some specific stuff for the<br>
-&gt; platform.<br>
-&gt; I also have a gcc-4.1.2 vanilla which has been compiled with the<br>
-&gt; previous one. The 4.1.2 works if you tell it to emulate the floating<br>
-&gt; point instructions.<br>
-&gt;<br>
-&gt; thanks Scott,<br>
-&gt; without the treeboot-walnut it compiled<br>
-&gt;<br>
-&gt; I have still my first problem though:<br>
-&gt;<br>
-&gt; AMC=&gt; bootm 0x1000000<br>
-&gt; ## Booting image at 01000000 ...<br>
-&gt; &nbsp; Image Name: &nbsp; Linux-2.6.24<br>
-&gt; &nbsp; Image Type: &nbsp; PowerPC Linux Kernel Image (gzip compressed)<br>
-&gt; &nbsp; Data Size: &nbsp; &nbsp;1802038 Bytes = &nbsp;1.7 MB<br>
-&gt; &nbsp; Load Address: 00000000<br>
-&gt; &nbsp; Entry Point: &nbsp;00000000<br>
-&gt; &nbsp; Verifying Checksum ... OK<br>
-&gt; &nbsp; Uncompressing Kernel Image ... OK<br>
-&gt;<br>
-&gt; and nothing else...<br>
-&gt;<br>
-&gt; Any idea ?<br>
-&gt;<br>
-&gt; This may become from the fact that the uboot installed on the cards<br>
-&gt; is old and it apparently doesn&#39;t support the newer version of the<br>
-&gt; kernel image... (I have got that from an another mailing list)<br>
-<br>
-</div></div>Yes, you&#39;ll either need to look at updating u-boot and including<br>
-support for the device tree in it or look at the cuImage wrappers in<br>
-arch/powerpc/boot as a mechanism to boot a kernel w/an old fw.<br>
-<font color="#888888"><br>
-- k<br>
-</font></blockquote></div><br><br clear="all"><br>-- <br>Maxime Louvel<br>0044 7964 5555 80<br>43 Allen road<br>Whitemore reans<br>WV60AW Wolverhampton<br>United Kingdom
-
-------=_Part_8993_18918835.1203936176230--
+On Tue, 19 Feb 2008 10:07:54 -0700, "Grant Likely"
+<grant.likely@secretlab.ca> wrote:
+> On Feb 19, 2008 9:55 AM, rodolfo <rodolfo@lesc.ufc.br> wrote:
+>> ok Grant Likely. i have a talk with my professor and he agrees with you.
+>> Now i'm reading about ELDK. Following this guide, i will have problems
+> with
+>> edk version?
+> 
+> No.  One of the advantages of going with 2.6 is that you no longer
+> need to copy the BSP generated by EDK into the linux kernel tree.
+> Instead you only need to copy one file; xparameters_ml40x.h
+> 
+> Cheers,
+> g.
+> 
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
