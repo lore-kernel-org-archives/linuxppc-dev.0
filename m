@@ -1,19 +1,27 @@
-Return-Path: <rodolfo@lesc.ufc.br>
-Received: from lesc0.lesc.ufc.br (unknown [200.17.37.126])
-	by ozlabs.org (Postfix) with ESMTP id 0CBAEDDDF5
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
+	by ozlabs.org (Postfix) with ESMTP id 733B0DDF0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Feb 2008 06:05:41 +1100 (EST)
-Received: from webmail.lesc.ufc.br (unknown [192.168.0.1])
-	by lesc0.lesc.ufc.br (Postfix) with ESMTP id 0F9C464CC39
+	Tue, 26 Feb 2008 07:01:45 +1100 (EST)
+Received: from antares.localdomain (xdsl-87-78-247-218.netcologne.de
+	[87.78.247.218])
+	by smtp4.netcologne.de (Postfix) with ESMTP id 11F2CDB7DD
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Feb 2008 16:10:04 -0300 (BRT)
-MIME-Version: 1.0
-Date: Mon, 25 Feb 2008 16:05:37 -0300
-From: rodolfo <rodolfo@lesc.ufc.br>
+	Mon, 25 Feb 2008 21:01:43 +0100 (CET)
+Received: from antares.localdomain (localhost.localdomain [127.0.0.1])
+	by antares.localdomain (Postfix) with ESMTP id AC9C432F531
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 25 Feb 2008 21:01:42 +0100 (CET)
+Date: Mon, 25 Feb 2008 21:01:42 +0100
+From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
+Subject: Re: Status of 5200B and 440 Kernel Support
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: XUP Virtex II p with Linux 2.4 - Question
-Message-ID: <9974727a671b73eacef871a6a394c6cb@lesc.ufc.br>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20080224073800.4bdb30ac@zod.rchland.ibm.com> (from
+	jwboyer@linux.vnet.ibm.com on Sun Feb 24 14:38:00 2008)
+Message-Id: <1203969702l.2318l.2l@antares.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-AjNjr+qBd9XelJykHECA"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,57 +32,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hey everybody, 
+--=-AjNjr+qBd9XelJykHECA
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm in trouble;
+Hi Josh,
 
-1) The EDK flow: I set the OS in the Software Plataform Settings to
-linux_2_6 version 1.00.a. after that, in OS and Library section I have to
-fill out the fields "memory size" , "connected_periphs" , "ramdisk size"
-... ?  How would I do it ? 
+thanks a lot for your answers!
 
-2) Do I place xparametera_ml300.h in /opt/ELDK/ppc_4xx/usr/src/linux-2.6.15
-? if not where?
+Am 24.02.08 14:38 schrieb(en) Josh Boyer:
+> > - MTD/NAND controller
+>=20
+> NOR flash works.  NAND needs some additional code.
 
-3) I downloaded "ppc-2006-01-11.iso" from denx (ELDK) website and I'm
-trying to follow their instructions for ppc 4xx plataform.
-[ website: http://www.denx.de/wiki/view/DULG/ELDK ]
+Hmm - does it mean it's currently under development?  I couldn't find =20
+anything in make xconfig for stock 2.6.24 (running on a PowerMac, but =20
+of course with the 44x enabled).
 
-In /opt/ELDK/ppc_4xx/usr/src/u-boot-1.1.4/ I do:
+> UART works.  IIC has recent patches.  No idea about SPI.
 
-"make distclen" and  "make ml300_config" are ok! After "make all" in  I've
-got an error:
+SPI is probably not too hard.  I did some hacks for a slave in an =20
+arm920 based environment for that.  Here I would need master mode, so I =20
+guess some of the infrastructure form drivers/spi can be used.
 
-a - ppc_longjmp.o
-a - ppc_setjmp.o
-a - stubs.o
-make[1]: *** No rules for processing the target `hello_world.srec', needed
-by `all'. Stop.       --> note: "TRANSLATION FROM PORTUGESE"
-make[1]: Exiting `/opt/ELDK/ppc_4xx/usr/src/u-boot-1.1.4/examples'
-make: ** [examples] Error 2
+> > - local external bus (not PCI) DMA
+>=20
+> DMA to the EBC for what?
 
-Can you help me, please?
+To load data from an external measurement device which should be =20
+connected to the cpu's external bus at a fixed address.  It will =20
+produce "bursts" which should be shifted out of it without cpu =20
+intervention if possible, as it does not have a big fifo, and I must =20
+not lose data.
 
-Thanks in advance,
-Rodolfo Galvão.
+Thanks,
+Albrecht.
 
+--=-AjNjr+qBd9XelJykHECA
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.8 (GNU/Linux)
 
-On Tue, 19 Feb 2008 10:07:54 -0700, "Grant Likely"
-<grant.likely@secretlab.ca> wrote:
-> On Feb 19, 2008 9:55 AM, rodolfo <rodolfo@lesc.ufc.br> wrote:
->> ok Grant Likely. i have a talk with my professor and he agrees with you.
->> Now i'm reading about ELDK. Following this guide, i will have problems
-> with
->> edk version?
-> 
-> No.  One of the advantages of going with 2.6 is that you no longer
-> need to copy the BSP generated by EDK into the linux kernel tree.
-> Instead you only need to copy one file; xparameters_ml40x.h
-> 
-> Cheers,
-> g.
-> 
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
+iD8DBQBHwx6mn/9unNAn/9ERAjNrAKCsvQxwO1aWAxXSeN67+xtEuwEJbACggr55
+uXiSfbXLQcv3du6kyEELqL0=
+=k8vP
+-----END PGP SIGNATURE-----
+
+--=-AjNjr+qBd9XelJykHECA--
