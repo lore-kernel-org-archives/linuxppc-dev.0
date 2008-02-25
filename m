@@ -1,27 +1,22 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp4.netcologne.de (smtp4.netcologne.de [194.8.194.137])
-	by ozlabs.org (Postfix) with ESMTP id 733B0DDF0D
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id 417B8DDE9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Feb 2008 07:01:45 +1100 (EST)
-Received: from antares.localdomain (xdsl-87-78-247-218.netcologne.de
-	[87.78.247.218])
-	by smtp4.netcologne.de (Postfix) with ESMTP id 11F2CDB7DD
+	Tue, 26 Feb 2008 07:05:21 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1769809wxd.15
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Feb 2008 21:01:43 +0100 (CET)
-Received: from antares.localdomain (localhost.localdomain [127.0.0.1])
-	by antares.localdomain (Postfix) with ESMTP id AC9C432F531
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Feb 2008 21:01:42 +0100 (CET)
-Date: Mon, 25 Feb 2008 21:01:42 +0100
-From: =?UTF-8?q?Albrecht_Dre=C3=9F?= <albrecht.dress@arcor.de>
-Subject: Re: Status of 5200B and 440 Kernel Support
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <20080224073800.4bdb30ac@zod.rchland.ibm.com> (from
-	jwboyer@linux.vnet.ibm.com on Sun Feb 24 14:38:00 2008)
-Message-Id: <1203969702l.2318l.2l@antares.localdomain>
+	Mon, 25 Feb 2008 12:05:20 -0800 (PST)
+Message-ID: <fa686aa40802251205t5c9e76a3yf314b325bfcdd342@mail.gmail.com>
+Date: Mon, 25 Feb 2008 13:05:19 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: rodolfo <rodolfo@lesc.ufc.br>
+Subject: Re: XUP Virtex II p with Linux 2.4 - Question
+In-Reply-To: <9974727a671b73eacef871a6a394c6cb@lesc.ufc.br>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
-	protocol="application/pgp-signature"; boundary="=-AjNjr+qBd9XelJykHECA"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9974727a671b73eacef871a6a394c6cb@lesc.ufc.br>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,52 +27,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-AjNjr+qBd9XelJykHECA
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 25, 2008 at 12:05 PM, rodolfo <rodolfo@lesc.ufc.br> wrote:
+> Hey everybody,
+>
+>  I'm in trouble;
+>
+>  1) The EDK flow: I set the OS in the Software Plataform Settings to
+>  linux_2_6 version 1.00.a. after that, in OS and Library section I have to
+>  fill out the fields "memory size" , "connected_periphs" , "ramdisk size"
+>  ... ?  How would I do it ?
+>
+>  2) Do I place xparametera_ml300.h in /opt/ELDK/ppc_4xx/usr/src/linux-2.6.15
+>  ? if not where?
 
-Hi Josh,
+You should download a current release of the linux kernel.  Don't use
+the one that comes with ELDK.
 
-thanks a lot for your answers!
+in arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h.  If you're
+using the ml403 reference design, it is already there.  If you're
+using a custom design then you'll need to replace it.
 
-Am 24.02.08 14:38 schrieb(en) Josh Boyer:
-> > - MTD/NAND controller
->=20
-> NOR flash works.  NAND needs some additional code.
+See here for hints:
 
-Hmm - does it mean it's currently under development?  I couldn't find =20
-anything in make xconfig for stock 2.6.24 (running on a PowerMac, but =20
-of course with the 44x enabled).
+http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
 
-> UART works.  IIC has recent patches.  No idea about SPI.
+>  3) I downloaded "ppc-2006-01-11.iso" from denx (ELDK) website and I'm
+>  trying to follow their instructions for ppc 4xx plataform.
+>  [ website: http://www.denx.de/wiki/view/DULG/ELDK ]
 
-SPI is probably not too hard.  I did some hacks for a slave in an =20
-arm920 based environment for that.  Here I would need master mode, so I =20
-guess some of the infrastructure form drivers/spi can be used.
+This is an old release of ELDK.  You should probably move up to a more
+recent release.
 
-> > - local external bus (not PCI) DMA
->=20
-> DMA to the EBC for what?
+>
+>  In /opt/ELDK/ppc_4xx/usr/src/u-boot-1.1.4/ I do:
+>
+>  "make distclen" and  "make ml300_config" are ok! After "make all" in  I've
+>  got an error:
+>
+>  a - ppc_longjmp.o
+>  a - ppc_setjmp.o
+>  a - stubs.o
+>  make[1]: *** No rules for processing the target `hello_world.srec', needed
+>  by `all'. Stop.       --> note: "TRANSLATION FROM PORTUGESE"
+>  make[1]: Exiting `/opt/ELDK/ppc_4xx/usr/src/u-boot-1.1.4/examples'
+>  make: ** [examples] Error 2
 
-To load data from an external measurement device which should be =20
-connected to the cpu's external bus at a fixed address.  It will =20
-produce "bursts" which should be shifted out of it without cpu =20
-intervention if possible, as it does not have a big fifo, and I must =20
-not lose data.
+You're using an ancient copy of u-boot that breaks with certain
+versions of the 'make' program.  You should try using a recent release
+of u-boot.  Alternately, you can hack the u-boot makefile to not build
+the examples directory.
 
-Thanks,
-Albrecht.
+Cheers,
+g.
 
---=-AjNjr+qBd9XelJykHECA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.8 (GNU/Linux)
-
-iD8DBQBHwx6mn/9unNAn/9ERAjNrAKCsvQxwO1aWAxXSeN67+xtEuwEJbACggr55
-uXiSfbXLQcv3du6kyEELqL0=
-=k8vP
------END PGP SIGNATURE-----
-
---=-AjNjr+qBd9XelJykHECA--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
