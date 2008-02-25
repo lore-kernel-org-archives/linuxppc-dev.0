@@ -1,25 +1,24 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4A5D6DDEF8
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 05:35:49 +1100 (EST)
-Message-ID: <47C2F15B.8070703@scram.de>
-Date: Mon, 25 Feb 2008 17:48:27 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 95710DDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 05:57:37 +1100 (EST)
+Received: from sj-core-3.cisco.com (sj-core-3.cisco.com [171.68.223.137])
+	by sj-dkim-3.cisco.com (8.12.11/8.12.11) with ESMTP id m1PIl56s006775
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 10:47:05 -0800
+Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
+	[128.107.191.100])
+	by sj-core-3.cisco.com (8.12.10/8.12.6) with ESMTP id m1PIl5J9027352
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Feb 2008 18:47:05 GMT
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on
-	Freescale	CPM1/CPM2 controllers
-References: <47A1C4E9.4000003@scram.de>
-	<20080221130520.12b01553@hyperion.delvare>
-	<47BEAF00.50106@scram.de> <20080223212823.GA22131@lixom.net>
-	<47C18A4E.5080804@scram.de> <20080224181509.GA6745@lixom.net>
-In-Reply-To: <20080224181509.GA6745@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jean Delvare <khali@linux-fr.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
-	Scott Wood <scottwood@freescale.com>, i2c@lm-sensors.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C877DE.D07A48C4"
+Subject: What happened to cpm2_hostalloc
+Date: Mon, 25 Feb 2008 10:47:04 -0800
+Message-ID: <F795765B112E7344AF36AA911279641502D1AAEC@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,34 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Olof,
+This is a multi-part message in MIME format.
 
-> And even if you DO decide to go that route, guess what? You need a
-> translation table just as with (3) anyway!
+------_=_NextPart_001_01C877DE.D07A48C4
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-True.
+Hi All,
+In Linux 2.6.11 version, there was a function named "cpm2_hostalloc"  to
+allocate memory at
+specific boundary. I am not able to locate that in the latest Linux
+version, 2.6.24-rc4. Is there any
+similiar function to this that I can use?=20
+The SPI module on the CPM2 module required the memory descriptor on the
+ram to be at specific
+boundray (8 bytes).
+=20
+Many thanks in advance,
+Bizhan
 
->>>> 3. use a glue layer with a translation map.
->>> In my opinion this is an OK solution since the same information has to
->>> be added somewhere already anyway -- eiither to the drivers or to this
->>> translation table. It should of course be an abstacted shared table,
->>> preferrably contained under the i2c source directories since several
->>> platforms and architectures might share them.
->> I could think of a mixture between 2. and 3.:
->>
->> Using the compatible attribute with the manufacturer stripped off as I2c name by default
->> and using an exception table. For now, the struct i2c_driver_device would currently only
->> need one entry ("dallas,ds1374", "rtc-ds1374").
-> 
-> You still need the translation table, you're just flattening the
-> namespace to one string instead of two, the same information still has
-> to be encoded. I can't see what the benefit of this approach compared to
-> the other one is. "dallas,ds1374" already only has one translation entry
-> in the table?
+------_=_NextPart_001_01C877DE.D07A48C4
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-As soon as http://lists.lm-sensors.org/pipermail/i2c/2008-January/002752.html has been
-applied, one could get rid of all entries where the I2c (alias) name can be obtained from
-the OF name just by stripping the manufacturer.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3243" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D765404118-25022008>Hi=20
+All,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D765404118-25022008>In =
+Linux 2.6.11=20
+version,&nbsp;there was a function named "cpm2_hostalloc"&nbsp; to =
+allocate=20
+memory at</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D765404118-25022008>specific boundary. I=20
+am not able to locate that in the latest Linux version, 2.6.24-rc4. Is =
+there=20
+any</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D765404118-25022008>similiar function to=20
+this that I can use? </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D765404118-25022008>The =
+SPI module on=20
+the CPM2 module required the memory descriptor on the ram to be at=20
+specific</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D765404118-25022008>boundray (8=20
+bytes).</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D765404118-25022008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D765404118-25022008>Many =
+thanks in=20
+advance,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D765404118-25022008>Bizhan</SPAN></FONT></DIV></BODY></HTML>
 
-Thanks,
-Jochen
+------_=_NextPart_001_01C877DE.D07A48C4--
