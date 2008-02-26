@@ -1,14 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id 3AA7DDDE44
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 21:34:30 +1100 (EST)
+Date: Tue, 26 Feb 2008 11:34:28 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPC8540 : What's "SPE used in kernel" ?
+Message-ID: <20080226103428.GA2849@netgate.macqel>
+References: <20080221123534.GA17716@ingate.macqel>
+	<20080222095022.GA635@ingate.macqel>
+	<08A7CD2B-27EA-4C97-9220-314E36BBBAA6@freescale.com>
+	<20080223092458.GA6873@10.1.86.20>
+	<1203760269.13162.11.camel@johannes.berg>
+	<20080223101707.GA7194@10.1.86.20>
+	<1203762305.13162.17.camel@johannes.berg>
+	<8B0E09C7-BA68-4994-9AB6-36F400F65832@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18371.60089.808367.553892@cargo.ozlabs.ibm.com>
-Date: Tue, 26 Feb 2008 21:32:25 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Martin Langer <martin-langer@gmx.de>
-Subject: Re: [PATCH] Fix for Freescale ppc cores: major revision detection
-In-Reply-To: <20080211202933.GA3399@tuba>
-References: <20080211202933.GA3399@tuba>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <8B0E09C7-BA68-4994-9AB6-36F400F65832@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Martin Langer writes:
+Hi Kumar,
 
-> Thanks for the hint. Inspired by that I did the logic the other way 
-> round. So we have the same default cases as we had before and 
-> additionally it will fit for the cores mentioned in the doc.
+On Tue, Feb 26, 2008 at 01:39:20AM -0600, Kumar Gala wrote:
+>
+> On Feb 23, 2008, at 4:25 AM, Johannes Berg wrote:
+>
+>>
+>>> But as I said in the same mail, processes still dies unexpectedly.
+>>
+>> Yeah, no idea though. I guess you could try putting that into the
+>> arch/ppc Makefile, but arch/ppc will be removed this year so you don't
+>> want to rely on it.
+>
+> Its been removed (or will be for 2.6.25).
+>
+> What compiler version are you using?
 
-Care to resend this with a proper description and a Signed-off-by
-line?
+a gcc-4.2.1 derivative from codesourcery (4.2-50) that I needed to compile
+eglibc for e500 and that I tweaked to use it with CLFS and that I compiled
+with --host=powerpc-linuxspe.  I now noticed that it still generates
+spe insn's even when given '-mno-spe'.
 
-> +		switch (PVR_VER(pvr)) {
-> +			case 0x8000:	/* 7441/7450/7451, Vger */
-> +			case 0x8001:	/* 7445/7455, Apollo 6 */
-> +			case 0x8002:	/* 7447/7457, Apollo 7 */
-> +			case 0x8003:	/* 7447A, Apollo 7 PM */
-> +			case 0x8004:	/* 7448, Apollo 8 */
-> +			case 0x800c:	/* 7410, Nitro */
+I am now busy to retest with a vanilla powerpc-linuxspe-gcc-4.2.2 and
+that seems to work fine.  I don't think, though, that it is able to compile
+eglibc for e500.
 
-BTW, these case labels are all indented one tab too far.
+Thanks for the attention, and sorry for the noise.
 
-Paul.
+Philippe
