@@ -1,16 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18371.54796.174623.988521@cargo.ozlabs.ibm.com>
-Date: Tue, 26 Feb 2008 20:04:12 +1100
+Message-ID: <18371.57542.77446.443231@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Feb 2008 20:49:58 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH][OF] Add of_device_is_available function
-In-Reply-To: <20080223202357.20a12b84@zod.rchland.ibm.com>
-References: <20080223155823.2c85d829@zod.rchland.ibm.com>
-	<20080223185904.757c2884@zod.rchland.ibm.com>
-	<20080223202357.20a12b84@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, davem@davemloft.net
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [patch 0/6] pasemi_mac updates for 2.6.26
+In-Reply-To: <20080221025753.903665000@lixom.net>
+References: <20080221025753.903665000@lixom.net>
+Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +19,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer writes:
+Olof Johansson writes:
 
-> +	status = of_get_property(device, "status", NULL);
-> +	if (status == NULL)
-> +		return 1;
-> +
-> +	if (!strcmp(status, "okay") || !strcmp(status, "ok"))
+> Here's a set of updates for pasemi_mac for 2.6.26. Some of them touch
+> the dma_lib in the platform code as well, but it's easier if it's all
+> merged through netdev to avoid dependencies.
+> 
+> Major highlights are jumbo frame support and ethtool basics, the rest
+> is mostly minor plumbing around it.
 
-It would probably be good to defend against the possibility that the
-property isn't null-terminated (for example if its length is zero).
+What route do you think these should take upstream?  I'm happy to take
+them if Jeff is OK with that.
 
 Paul.
