@@ -1,25 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F0CBADDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 18:39:32 +1100 (EST)
-Message-Id: <8B0E09C7-BA68-4994-9AB6-36F400F65832@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1203762305.13162.17.camel@johannes.berg>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: MPC8540 : What's "SPE used in kernel" ?
-Date: Tue, 26 Feb 2008 01:39:20 -0600
-References: <20080221123534.GA17716@ingate.macqel>
-	<20080222095022.GA635@ingate.macqel>
-	<08A7CD2B-27EA-4C97-9220-314E36BBBAA6@freescale.com>
-	<20080223092458.GA6873@10.1.86.20>
-	<1203760269.13162.11.camel@johannes.berg>
-	<20080223101707.GA7194@10.1.86.20>
-	<1203762305.13162.17.camel@johannes.berg>
-Cc: linuxppc-dev@ozlabs.org, Philippe De Muyter <phdm@macqel.be>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18371.54796.174623.988521@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Feb 2008 20:04:12 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH][OF] Add of_device_is_available function
+In-Reply-To: <20080223202357.20a12b84@zod.rchland.ibm.com>
+References: <20080223155823.2c85d829@zod.rchland.ibm.com>
+	<20080223185904.757c2884@zod.rchland.ibm.com>
+	<20080223202357.20a12b84@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Josh Boyer writes:
 
-On Feb 23, 2008, at 4:25 AM, Johannes Berg wrote:
+> +	status = of_get_property(device, "status", NULL);
+> +	if (status == NULL)
+> +		return 1;
+> +
+> +	if (!strcmp(status, "okay") || !strcmp(status, "ok"))
 
->
->> But as I said in the same mail, processes still dies unexpectedly.
->
-> Yeah, no idea though. I guess you could try putting that into the
-> arch/ppc Makefile, but arch/ppc will be removed this year so you don't
-> want to rely on it.
+It would probably be good to defend against the possibility that the
+property isn't null-terminated (for example if its length is zero).
 
-Its been removed (or will be for 2.6.25).
-
-What compiler version are you using?
-
-- k
+Paul.
