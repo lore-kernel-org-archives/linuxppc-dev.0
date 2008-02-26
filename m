@@ -1,21 +1,21 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
-	by ozlabs.org (Postfix) with ESMTP id 3F7DCDDE24
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 02:16:17 +1100 (EST)
-Date: Tue, 26 Feb 2008 17:15:12 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUILD_FAILURE] Linux 2.6.25-rc3 - various unexported
-	functions () on powerpc
-Message-ID: <20080226151512.GA10717@cs181133002.pp.htv.fi>
-References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org>
-	<47C42234.6060906@linux.vnet.ibm.com>
+Return-Path: <Dag.K.Rognlien@sintef.no>
+Received: from smtpb.sintef.no (smtpb.sintef.no [129.241.253.24])
+	by ozlabs.org (Postfix) with ESMTP id 213CDDDEC1
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 02:24:21 +1100 (EST)
+Received: from sintefav1.sintef.no (sintefav1.sintef.no [129.241.253.14])
+	by smtpb.sintef.no (Postfix) with ESMTP id 535F37240F
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 16:24:18 +0100 (CET)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <47C42234.6060906@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, sam@ravnborg.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-kbuild@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Subject: Re:[PATCH] Fix wrapper platform for adder875, and
+	combine
+Date: Tue, 26 Feb 2008 16:20:49 +0100
+Message-ID: <39417DF3286A66428FA558987839F44F03FC919A@SINTEFXCH01.sintef.no>
+In-Reply-To: <mailman.679.1203532411.17968.linuxppc-dev@ozlabs.org>
+References: <mailman.679.1203532411.17968.linuxppc-dev@ozlabs.org>
+From: Rognlien Dag Kristian <Dag.K.Rognlien@sintef.no>
+To: linuxppc-dev@ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2008 at 07:59:08PM +0530, Kamalesh Babulal wrote:
-> Hi,
-> 
-> The 2.6.25-rc3 kernel build fails on powerpc with allyesconfig config option,
-> the .config has been attached.
->...
 
-Builds fine here.
+This patch from the 20th of February has not been taken into the latest
+powerpc.git
 
-Local problem (e.g. disk full) on your machine?
+Mvh,
+Dag Rognlien=20
 
-cu
-Adrian
 
--- 
+Date: Wed, 20 Feb 2008 12:33:38 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] Fix wrapper platform for adder875, and combine
+	defconfigs.
+To: galak@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
+Message-ID: <20080220183338.GA9282@loki.buserror.net>
+Content-Type: text/plain; charset=3Dus-ascii
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+This fixes the following bug:
+http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051979.html
+
+Separate defconfigs are no longer needed now that CONFIG_DEVICE_TREE is
+gone.
+
+Signed-off-by: Scott Wood <scottwood@freescale.com>
