@@ -1,15 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18371.57542.77446.443231@cargo.ozlabs.ibm.com>
-Date: Tue, 26 Feb 2008 20:49:58 +1100
+Message-ID: <18371.60089.808367.553892@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Feb 2008 21:32:25 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [patch 0/6] pasemi_mac updates for 2.6.26
-In-Reply-To: <20080221025753.903665000@lixom.net>
-References: <20080221025753.903665000@lixom.net>
-Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org, jgarzik@pobox.com,
-	linuxppc-dev@ozlabs.org
+To: Martin Langer <martin-langer@gmx.de>
+Subject: Re: [PATCH] Fix for Freescale ppc cores: major revision detection
+In-Reply-To: <20080211202933.GA3399@tuba>
+References: <20080211202933.GA3399@tuba>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,16 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson writes:
+Martin Langer writes:
 
-> Here's a set of updates for pasemi_mac for 2.6.26. Some of them touch
-> the dma_lib in the platform code as well, but it's easier if it's all
-> merged through netdev to avoid dependencies.
-> 
-> Major highlights are jumbo frame support and ethtool basics, the rest
-> is mostly minor plumbing around it.
+> Thanks for the hint. Inspired by that I did the logic the other way 
+> round. So we have the same default cases as we had before and 
+> additionally it will fit for the cores mentioned in the doc.
 
-What route do you think these should take upstream?  I'm happy to take
-them if Jeff is OK with that.
+Care to resend this with a proper description and a Signed-off-by
+line?
+
+> +		switch (PVR_VER(pvr)) {
+> +			case 0x8000:	/* 7441/7450/7451, Vger */
+> +			case 0x8001:	/* 7445/7455, Apollo 6 */
+> +			case 0x8002:	/* 7447/7457, Apollo 7 */
+> +			case 0x8003:	/* 7447A, Apollo 7 PM */
+> +			case 0x8004:	/* 7448, Apollo 8 */
+> +			case 0x800c:	/* 7410, Nitro */
+
+BTW, these case labels are all indented one tab too far.
 
 Paul.
