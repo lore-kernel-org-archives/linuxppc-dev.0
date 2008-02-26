@@ -1,20 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29FDADDE39
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 08:04:19 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JU6yE-0004Iv-5i
-	for linuxppc-dev@ozlabs.org; Tue, 26 Feb 2008 13:04:14 -0800
-Message-ID: <15699965.post@talk.nabble.com>
-Date: Tue, 26 Feb 2008 13:04:14 -0800 (PST)
-From: alex_snippet <alex.snippet@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Porting ISP1760 USB host controller driver to Virtex ppc405 arch linux
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 1A5F3DDEB9
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 09:43:39 +1100 (EST)
+Date: Tue, 26 Feb 2008 14:44:23 -0800 (PST)
+Message-Id: <20080226.144423.138965691.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH][OF] Add of_device_is_available function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1204062337.15052.160.camel@pasglop>
+References: <18371.54796.174623.988521@cargo.ozlabs.ibm.com>
+	<20080226.133430.41760910.davem@davemloft.net>
+	<1204062337.15052.160.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,11 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 27 Feb 2008 08:45:37 +1100
 
-Hi everybody, how to port ISP1760 USB host controller driver to Virtex ppc405
-arch linux?
-It has been ported to blackfin arch
-http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?action=browse&path=%2Ftrunk%2Fdrivers%2Fusb%2Fhost%2Fpehcd%2Fhost%2F&pathrev=2763
--- 
-View this message in context: http://www.nabble.com/Porting-ISP1760-USB-host-controller-driver-to-Virtex-ppc405-arch-linux-tp15699965p15699965.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> I doubt we do that. Properties that contain things like ranges, or "reg"
+> properties are expected to be of a size that is a multiple of
+> #size-cells/#address-cells and I'm not sure that won't break things here
+> or there if they suddenly get one more byte..
+> 
+> Or do you mean you/we are appending that-without- changing the length
+> field ?
+
+Right, simply don't change the length field.  Put the zero byte
+at offset "length + 1"
+
+It's stupid to validate NULL termination everywhere when we
+can make it an invariant in one spot.
