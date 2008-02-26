@@ -1,19 +1,11 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [patch 1/6] pasemi_mac: Move RX/TX section enablement to dma_lib
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20080221025929.082348000@lixom.net>
-References: <20080221025753.903665000@lixom.net>
-	<20080221025929.082348000@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-mwKwnmm86Lx4mQHMYku+"
-Date: Tue, 26 Feb 2008 22:46:06 +1100
-Message-Id: <1204026366.7203.9.camel@concordia>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org, jgarzik@pobox.com,
-	linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18371.65529.312001.673609@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Feb 2008 23:03:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches added to master & powerpc-next branches of powerpc.git
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,65 +15,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have created a powerpc-next branch in the powerpc.git tree, which
+has the following commits on it so far.  The master branch is at the
+same point.  I've pulled in Dave Miller's tree (for the LMB changes)
+and applied some other patches from the list.
 
---=-mwKwnmm86Lx4mQHMYku+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'm expecting that platform/subarchitecture maintainers will be
+sending me pull requests for their trees from time to time.
 
-On Wed, 2008-02-20 at 20:57 -0600, Olof Johansson wrote:
-> plain text document attachment (in-progress)
-> Also stop both rx and tx sections before changing the configuration of
-> the dma device during init.
->=20
-> Signed-off-by: Olof Johansson <olof@lixom.net>
->=20
-> Index: k.org/arch/powerpc/platforms/pasemi/dma_lib.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- k.org.orig/arch/powerpc/platforms/pasemi/dma_lib.c
-> +++ k.org/arch/powerpc/platforms/pasemi/dma_lib.c
-> @@ -478,6 +478,30 @@ int pasemi_dma_init(void)
->  	for (i =3D 0; i < MAX_RXCH; i++)
->  		__set_bit(i, rxch_free);
-> =20
-> +	i =3D 1000;
-> +	pasemi_write_dma_reg(PAS_DMA_COM_RXCMD, 0);
-> +	while ((i > 0) && (pasemi_read_dma_reg(PAS_DMA_COM_RXSTA) & 1))
-> +		i--;
-> +	if (i < 0)
-> +		printk(KERN_INFO "Warning: Could not disable RX section\n");
-> +
-> +	i =3D 1000;
-> +	pasemi_write_dma_reg(PAS_DMA_COM_TXCMD, 0);
-> +	while ((i > 0) && (pasemi_read_dma_reg(PAS_DMA_COM_TXSTA) & 1))
-> +		i--;
+Paul.
 
-This kind of caught my eye, is it still going to work when the next core
-is twice as fast?
+Anton Vorontsov (1):
+      [POWERPC] 8xx: Timebase frequency should not depend on bus-frequency
 
-cheers
+Badari Pulavarty (1):
+      [POWERPC] Add code for removing HPTEs for parts of the linear mapping
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Becky Bruce (1):
+      [LMB]: Make lmb support large physical addressing
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Benjamin Herrenschmidt (1):
+      [POWERPC] Fix thinko in cpu_thread_mask_to_cores()
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Dale Farnsworth (1):
+      [POWERPC] Remove dead code at KernelAltiVec
 
---=-mwKwnmm86Lx4mQHMYku+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+David S. Miller (2):
+      [LIB]: Make PowerPC LMB code generic so sparc64 can use it too.
+      [LMB]: Fix bug in __lmb_alloc_base().
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Johannes Berg (1):
+      [POWERPC] mpic: Make sparse happy
 
-iD8DBQBHw/v+dSjSd0sB4dIRAhVHAJoCdo3re9BOushlTDbGDjxt7m2EpQCgq1Yz
-gmpPrlHuTZ1Dv2O23HwB67U=
-=1kwx
------END PGP SIGNATURE-----
+Julia Lawall (1):
+      [POWERPC] Use FIELD_SIZEOF in arch/ppc
 
---=-mwKwnmm86Lx4mQHMYku+--
+Kumar Gala (2):
+      [LMB]: Fix initial lmb add region with a non-zero base
+      [LMB]: Fix lmb_add_region if region should be added at the head
