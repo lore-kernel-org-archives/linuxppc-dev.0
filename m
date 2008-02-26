@@ -1,14 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 26 Feb 2008 14:09:05 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: Start removing linux,network-index in favour of aliases
-Message-ID: <20080226030905.GA3026@localhost.localdomain>
-References: <20080226004320.GB24382@localhost.localdomain>
-	<47C380B2.7060505@pikatech.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47C380B2.7060505@pikatech.com>
+Message-ID: <18371.41934.106111.627351@cargo.ozlabs.ibm.com>
+Date: Tue, 26 Feb 2008 16:29:50 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: maynardj@us.ibm.com
+Subject: Re: copy_from_user problem
+In-Reply-To: <47C36FBA.1030600@us.ibm.com>
+References: <47C36FBA.1030600@us.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,20 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 25, 2008 at 10:00:02PM -0500, Sean MacLennan wrote:
-> David Gibson wrote:
-[snip]
-> > Subsumes my earlier Ebony-only patch.  Tested on Ebony, could do with
-> > testing on Taishan, Bamboo, Sequoia, Warp, Rainier and Walnut.
-[snip]
-> >   
-> Worked for me on the warp.
+Maynard Johnson writes:
 
-That's good to know, but in future *please* trim your quotes to what's
-relevant when replying...
+> I'm developing a kernel module that needs to parse the in-memory ELF 
+> objects for a shared library (libc, to be specific).  When running my 
+> test on a 32-bit library, it works fine, but for a 64-bit library, the 
+> very first copy_from_user() fails:
+>     Elf64_Ehdr ehdr;
+>     copy_from_user(&ehdr, location_of_lib, sizeof(Elf64_Ehdr);
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Should be OK provided location_of_lib is a user address.  I assume you
+know that copy_from_user returns the number of bytes *not* copied,
+hence a 0 return means success.
+
+> I talked this over a bit with Will Schmidt.  He determined that 
+> access_ok (being done as a result of copy_from_user) was failing, but we 
+
+I suggest you print out the value of location_of_lib just to
+sanity-check it.
+
+Paul.
