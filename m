@@ -1,11 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id D2EF2DDE34
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 23:27:44 +1100 (EST)
+Message-ID: <47C40548.4080608@ru.mvista.com>
+Date: Tue, 26 Feb 2008 15:25:44 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18371.65529.312001.673609@cargo.ozlabs.ibm.com>
-Date: Tue, 26 Feb 2008 23:03:05 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Patches added to master & powerpc-next branches of powerpc.git
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [RFC][PATCH] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
+	workaround
+References: <1203634340.10422.203.camel@pasglop>	<20080222192817.GA26211@ru.mvista.com>
+	<20080222144919.3ded7c54@weaponx>
+In-Reply-To: <20080222144919.3ded7c54@weaponx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,41 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have created a powerpc-next branch in the powerpc.git tree, which
-has the following commits on it so far.  The master branch is at the
-same point.  I've pulled in Dave Miller's tree (for the LMB changes)
-and applied some other patches from the list.
+Josh Boyer wrote:
+> On Fri, 22 Feb 2008 22:28:17 +0300
+> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+> 
+>> This patch adds ibm_newemac phy clock workaround for 440EP/440GR emacs.
+>> The code is based on the previous ibm_emac driver stuff. The 440EP/440GR
+>> allows controlling each EMAC clock spearately as opposed to global clock
+>> selection for 440GX.
+>>
+>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+>> ---
+> 
+> [snip]
+> 
+>> +/* EMAC PHY clock workaround:
+>> + * 440EP/440GR has more sane SDR0_MFR register implementation than 440GX,
+>> + * which allows controlling each EMAC clock
+>> + */
+>> +static inline void emac_rx_clk_tx(struct emac_instance *dev)
+>> +{
+>> +	if (emac_has_feature(dev, EMAC_FTR_440EP_PHY_CLK_FIX)) {
+>> +		unsigned long flags;
+>> +
+>> +		local_irq_save(flags);
+>> +		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) |
+>> +					(SDR0_MFR_ECS >> dev->cell_index));
+>> +		local_irq_restore(flags);
+>> +	}
+>> +}
+>> +
+>> +static inline void emac_rx_clk_default(struct emac_instance *dev)
+>> +{
+>> +	if (emac_has_feature(dev, EMAC_FTR_440EP_PHY_CLK_FIX)) {
+>> +		unsigned long flags;
+>> +
+>> +		local_irq_save(flags);
+>> +		mtdcri(SDR0, SDR0_MFR, mfdcri(SDR0, SDR0_MFR) &
+>> +					~(SDR0_MFR_ECS >> dev->cell_index));
+>> +		local_irq_restore(flags);
+>> +	}
+>> +}
+> 
+> Why did you do local_irq_save in these two functions?  mtdcri already
+> does spin_lock_irqsave...
+> 
+> josh
 
-I'm expecting that platform/subarchitecture maintainers will be
-sending me pull requests for their trees from time to time.
-
-Paul.
-
-Anton Vorontsov (1):
-      [POWERPC] 8xx: Timebase frequency should not depend on bus-frequency
-
-Badari Pulavarty (1):
-      [POWERPC] Add code for removing HPTEs for parts of the linear mapping
-
-Becky Bruce (1):
-      [LMB]: Make lmb support large physical addressing
-
-Benjamin Herrenschmidt (1):
-      [POWERPC] Fix thinko in cpu_thread_mask_to_cores()
-
-Dale Farnsworth (1):
-      [POWERPC] Remove dead code at KernelAltiVec
-
-David S. Miller (2):
-      [LIB]: Make PowerPC LMB code generic so sparc64 can use it too.
-      [LMB]: Fix bug in __lmb_alloc_base().
-
-Johannes Berg (1):
-      [POWERPC] mpic: Make sparse happy
-
-Julia Lawall (1):
-      [POWERPC] Use FIELD_SIZEOF in arch/ppc
-
-Kumar Gala (2):
-      [LMB]: Fix initial lmb add region with a non-zero base
-      [LMB]: Fix lmb_add_region if region should be added at the head
+Oops, this got copy-pasted from the older ibm_emac.
+Thanks,
+Valentine.
