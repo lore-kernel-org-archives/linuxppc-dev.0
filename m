@@ -1,34 +1,17 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28esmtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2CC73DDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 05:18:37 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28esmtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id m1QIIWme025114
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 23:48:32 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1QIIWjJ1007830
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 23:48:32 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m1QIIbao002676
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 18:18:37 GMT
-Message-ID: <47C457F5.4080902@linux.vnet.ibm.com>
-Date: Tue, 26 Feb 2008 23:48:29 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <jgarzik@pobox.com>
+Message-ID: <47C4588C.5060904@pobox.com>
+Date: Tue, 26 Feb 2008 13:21:00 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [BUILD_FAILURE] Linux 2.6.25-rc3 - various unexported functions
-	() on powerpc
-References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org>
-	<47C42234.6060906@linux.vnet.ibm.com>
-	<20080226151512.GA10717@cs181133002.pp.htv.fi>
-In-Reply-To: <20080226151512.GA10717@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, sam@ravnborg.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-kbuild@vger.kernel.org
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [patch 0/6] pasemi_mac updates for 2.6.26
+References: <20080221025753.903665000@lixom.net>
+	<18371.57542.77446.443231@cargo.ozlabs.ibm.com>
+	<20080226141624.GB22572@lixom.net>
+In-Reply-To: <20080226141624.GB22572@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,45 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk wrote:
-> On Tue, Feb 26, 2008 at 07:59:08PM +0530, Kamalesh Babulal wrote:
->> Hi,
+Olof Johansson wrote:
+> On Tue, Feb 26, 2008 at 08:49:58PM +1100, Paul Mackerras wrote:
+>> Olof Johansson writes:
 >>
->> The 2.6.25-rc3 kernel build fails on powerpc with allyesconfig config option,
->> the .config has been attached.
->> ...
+>>> Here's a set of updates for pasemi_mac for 2.6.26. Some of them touch
+>>> the dma_lib in the platform code as well, but it's easier if it's all
+>>> merged through netdev to avoid dependencies.
+>>>
+>>> Major highlights are jumbo frame support and ethtool basics, the rest
+>>> is mostly minor plumbing around it.
+>> What route do you think these should take upstream?  I'm happy to take
+>> them if Jeff is OK with that.
 > 
-> Builds fine here.
+> I've sent them through Jeff in the past, that's been convenient when
+> there's been churn in the network APIs. I'm not sure if there's much of
+> that for .26 though.
 > 
-> Local problem (e.g. disk full) on your machine?
+> If Jeff prefers to ACK, I'll just add it to my git and ask you to pull
+> that. But I was originally planning to just feed it through him.
 > 
-> cu
-> Adrian
-> 
-Hi Adrain,
+> (Note: I'll repost the patch set later today or tomorrow with a couple
+> of tweaks).
 
-It Builds fine on another powerpc box with the same .config file, the problem seems to be with the gcc
-on that box, the reported build failure might have been the side effect of the same. 
-
-
-drivers/md/raid6int8.c: In function `raid6_int8_gen_syndrome':
-drivers/md/raid6int8.c:185: error: unable to find a register to spill in class `FLOAT_REGS'
-drivers/md/raid6int8.c:185: error: this is the insn:
-(insn:HI 619 799 638 4 drivers/md/raid6int8.c:168 (set (mem:DI (plus:DI (reg/v/f:DI 122 [ p ])
-                (reg/v:DI 66 ctr [orig:124 d ] [124])) [0 S8 A64])
-        (reg/v:DI 129 [ wp0 ])) 320 {*movdi_internal64} (nil)
-    (expr_list:REG_DEAD (reg/v:DI 129 [ wp0 ])
-        (nil)))
-drivers/md/raid6int8.c:185: confused by earlier errors, bailing out
-make[2]: *** [drivers/md/raid6int8.o] Error 1
-make[1]: *** [drivers/md] Error 2
-make: *** [drivers] Error 2
-
-# gcc --version
-gcc (GCC) 3.4.6 20060404 (Red Hat 3.4.6-3)
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Not much networking churn for 2.6.26, and IMO this patchset have 
+above-average ppc changes/dependencies, so....   ACK
