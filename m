@@ -1,18 +1,18 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF243DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 02:01:09 +1100 (EST)
-Date: Tue, 26 Feb 2008 17:58:53 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com
-Subject: [PATCH] PowerPC 44x: add missing define TARGET_4xx and TARGET_440GX
-	to cuboot-taishan.c
-Message-ID: <20080226145853.GA18212@ru.mvista.com>
-Mime-Version: 1.0
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 0BBA6DDE18
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 02:02:00 +1100 (EST)
+Date: Tue, 26 Feb 2008 09:01:38 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Maynard Johnson <maynardj@us.ibm.com>
+Subject: Re: copy_from_user problem
+Message-ID: <20080226150138.GD16241@localdomain>
+References: <47C36FBA.1030600@us.ibm.com> <1203994599.15052.84.camel@pasglop>
+	<47C426F8.7070203@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080224123656.760338da@zod.rchland.ibm.com>
+In-Reply-To: <47C426F8.7070203@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In order to get the proper boad info (bd_info) structure defined in ppcboot.h
-both TARGET_4xx and TARGET_44x should be defined for all PowerPC 440 boards.
-The 440GX boards also need TARGET_440GX defined since they have 4 EMACs and
-there are 4 MAC addesses in bd_info passed by u-boot.
-
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/boot/cuboot-taishan.c |    2 ++
- 1 files changed, 2 insertions(+)
-
-diff -pruN linux-2.6.orig/arch/powerpc/boot/cuboot-taishan.c linux-2.6/arch/powerpc/boot/cuboot-taishan.c
---- linux-2.6.orig/arch/powerpc/boot/cuboot-taishan.c	2008-02-26 16:02:36.000000000 +0300
-+++ linux-2.6/arch/powerpc/boot/cuboot-taishan.c	2008-02-26 16:21:08.000000000 +0300
-@@ -21,7 +21,9 @@
- #include "dcr.h"
- #include "4xx.h"
- 
-+#define TARGET_4xx
- #define TARGET_44x
-+#define TARGET_440GX
- #include "ppcboot.h"
- 
- static bd_t bd;
+Maynard Johnson wrote:
+> 
+> static long lib_addr;
+> module_param(lib_addr, long, 0);
+                         ^^^^
+Should be unsigned long?
