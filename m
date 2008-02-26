@@ -1,34 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 99751DDF16
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 02:03:53 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1QF5eMj019325
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 10:05:40 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1QF3ULB1208462
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 10:03:37 -0500
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1QF3LmM019410
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 08:03:21 -0700
-Date: Tue, 26 Feb 2008 09:02:10 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: [RFC][PATCH] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
-	workaround
-Message-ID: <20080226090210.6816c130@zod.rchland.ibm.com>
-In-Reply-To: <47C41DBE.7090505@harris.com>
-References: <1203634340.10422.203.camel@pasglop>
-	<20080222192817.GA26211@ru.mvista.com>
-	<20080222144919.3ded7c54@weaponx> <47C40548.4080608@ru.mvista.com>
-	<47C41DBE.7090505@harris.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bunk@kernel.org>
+Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
+	by ozlabs.org (Postfix) with ESMTP id 3F7DCDDE24
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 02:16:17 +1100 (EST)
+Date: Tue, 26 Feb 2008 17:15:12 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUILD_FAILURE] Linux 2.6.25-rc3 - various unexported
+	functions () on powerpc
+Message-ID: <20080226151512.GA10717@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org>
+	<47C42234.6060906@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <47C42234.6060906@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, sam@ravnborg.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,28 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 26 Feb 2008 09:10:06 -0500
-"Steven A. Falco" <sfalco@harris.com> wrote:
+On Tue, Feb 26, 2008 at 07:59:08PM +0530, Kamalesh Babulal wrote:
+> Hi,
+> 
+> The 2.6.25-rc3 kernel build fails on powerpc with allyesconfig config option,
+> the .config has been attached.
+>...
 
-> When I saw Josh's question, I thought the irq save/restore was there to
-> make the read-modify-write atomic; i.e. read SDR0_MFR, "AND" out some
-> bits, then write it back without the possibility of anything else
-> touching SDR0_MFR.  I'm just starting to get familiar with the kernel,
+Builds fine here.
 
-That was probably the intention, yes.
+Local problem (e.g. disk full) on your machine?
 
-> so if you have a chance, please help educate me.  Does the irq lock in
-> mtdcri protect the read-modify-write? Or maybe this R-M-W doesn't need
-> protecting?
+cu
+Adrian
 
-Nope, it doesn't.  It is possible for something to come in between the
-first call to mtdcri and the second call to mtdcri and modify the
-value.  The window would be quite small, but I suppose it's
-theoretically possible.
+-- 
 
-Seems the code will do the right thing since everything is using
-flags.  I suppose my question can be withdrawn.  It is slightly
-confusing to do it that way though.  Perhaps a function to do
-read-modify-writes on DCRs would be welcome.  dcr_modify anyone?
-
-josh
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
