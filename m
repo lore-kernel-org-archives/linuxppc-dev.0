@@ -1,17 +1,23 @@
-Return-Path: <jgarzik@pobox.com>
-Message-ID: <47C4588C.5060904@pobox.com>
-Date: Tue, 26 Feb 2008 13:21:00 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <bunk@kernel.org>
+Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
+	by ozlabs.org (Postfix) with ESMTP id 6AD00DDF2F
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 05:26:52 +1100 (EST)
+Date: Tue, 26 Feb 2008 20:25:45 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUILD_FAILURE] Linux 2.6.25-rc3 - various unexported
+	functions () on powerpc
+Message-ID: <20080226182545.GE8287@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org>
+	<47C42234.6060906@linux.vnet.ibm.com>
+	<20080226151512.GA10717@cs181133002.pp.htv.fi>
+	<47C457F5.4080902@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [patch 0/6] pasemi_mac updates for 2.6.26
-References: <20080221025753.903665000@lixom.net>
-	<18371.57542.77446.443231@cargo.ozlabs.ibm.com>
-	<20080226141624.GB22572@lixom.net>
-In-Reply-To: <20080226141624.GB22572@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <47C457F5.4080902@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, sam@ravnborg.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
-> On Tue, Feb 26, 2008 at 08:49:58PM +1100, Paul Mackerras wrote:
->> Olof Johansson writes:
->>
->>> Here's a set of updates for pasemi_mac for 2.6.26. Some of them touch
->>> the dma_lib in the platform code as well, but it's easier if it's all
->>> merged through netdev to avoid dependencies.
->>>
->>> Major highlights are jumbo frame support and ethtool basics, the rest
->>> is mostly minor plumbing around it.
->> What route do you think these should take upstream?  I'm happy to take
->> them if Jeff is OK with that.
-> 
-> I've sent them through Jeff in the past, that's been convenient when
-> there's been churn in the network APIs. I'm not sure if there's much of
-> that for .26 though.
-> 
-> If Jeff prefers to ACK, I'll just add it to my git and ask you to pull
-> that. But I was originally planning to just feed it through him.
-> 
-> (Note: I'll repost the patch set later today or tomorrow with a couple
-> of tweaks).
+On Tue, Feb 26, 2008 at 11:48:29PM +0530, Kamalesh Babulal wrote:
+> Adrian Bunk wrote:
+> > On Tue, Feb 26, 2008 at 07:59:08PM +0530, Kamalesh Babulal wrote:
+> >> Hi,
+> >>
+> >> The 2.6.25-rc3 kernel build fails on powerpc with allyesconfig config option,
+> >> the .config has been attached.
+> >> ...
+> > 
+> > Builds fine here.
+> > 
+> > Local problem (e.g. disk full) on your machine?
+> > 
+> > cu
+> > Adrian
+> > 
+> Hi Adrain,
 
-Not much networking churn for 2.6.26, and IMO this patchset have 
-above-average ppc changes/dependencies, so....   ACK
+Hi Kamalseh,  ;)
+
+> It Builds fine on another powerpc box with the same .config file, the problem seems to be with the gcc
+> on that box, the reported build failure might have been the side effect of the same. 
+> 
+> 
+> drivers/md/raid6int8.c: In function `raid6_int8_gen_syndrome':
+> drivers/md/raid6int8.c:185: error: unable to find a register to spill in class `FLOAT_REGS'
+> drivers/md/raid6int8.c:185: error: this is the insn:
+> (insn:HI 619 799 638 4 drivers/md/raid6int8.c:168 (set (mem:DI (plus:DI (reg/v/f:DI 122 [ p ])
+>                 (reg/v:DI 66 ctr [orig:124 d ] [124])) [0 S8 A64])
+>         (reg/v:DI 129 [ wp0 ])) 320 {*movdi_internal64} (nil)
+>     (expr_list:REG_DEAD (reg/v:DI 129 [ wp0 ])
+>         (nil)))
+> drivers/md/raid6int8.c:185: confused by earlier errors, bailing out
+> make[2]: *** [drivers/md/raid6int8.o] Error 1
+> make[1]: *** [drivers/md] Error 2
+> make: *** [drivers] Error 2
+> 
+> # gcc --version
+> gcc (GCC) 3.4.6 20060404 (Red Hat 3.4.6-3)
+
+this means your quite old vendor gcc has a bug.
+
+> Thanks & Regards,
+> Kamalesh Babulal,
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
