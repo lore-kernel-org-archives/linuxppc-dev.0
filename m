@@ -1,17 +1,24 @@
-Return-Path: <olof@lixom.net>
-Date: Tue, 26 Feb 2008 12:33:42 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [patch 0/6] pasemi_mac updates for 2.6.26
-Message-ID: <20080226183342.GA25225@lixom.net>
-References: <20080221025753.903665000@lixom.net>
-	<18371.57542.77446.443231@cargo.ozlabs.ibm.com>
-	<20080226141624.GB22572@lixom.net> <47C4588C.5060904@pobox.com>
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CD6D5DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 05:31:47 +1100 (EST)
+Received: from sj-core-4.cisco.com (sj-core-4.cisco.com [171.68.223.138])
+	by sj-dkim-4.cisco.com (8.12.11/8.12.11) with ESMTP id m1QIVacV015961
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 10:31:36 -0800
+Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
+	[128.107.191.100])
+	by sj-core-4.cisco.com (8.12.10/8.12.6) with ESMTP id m1QIUq6Q008131
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2008 18:31:36 GMT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47C4588C.5060904@pobox.com>
-Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C878A5.C92A1D25"
+Subject: Define CONFIG_PPC_NEW_BINDING
+Date: Tue, 26 Feb 2008 10:31:21 -0800
+Message-ID: <F795765B112E7344AF36AA911279641502D1AAF2@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2008 at 01:21:00PM -0500, Jeff Garzik wrote:
-> Olof Johansson wrote:
-> > On Tue, Feb 26, 2008 at 08:49:58PM +1100, Paul Mackerras wrote:
+This is a multi-part message in MIME format.
 
-> >> What route do you think these should take upstream?  I'm happy to take
-> >> them if Jeff is OK with that.
-> > 
-> > I've sent them through Jeff in the past, that's been convenient when
-> > there's been churn in the network APIs. I'm not sure if there's much of
-> > that for .26 though.
-> > 
-> > If Jeff prefers to ACK, I'll just add it to my git and ask you to pull
-> > that. But I was originally planning to just feed it through him.
-> > 
-> > (Note: I'll repost the patch set later today or tomorrow with a couple
-> > of tweaks).
-> 
-> Not much networking churn for 2.6.26, and IMO this patchset have 
-> above-average ppc changes/dependencies, so....   ACK
+------_=_NextPart_001_01C878A5.C92A1D25
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Ok, thanks Jeff.
+Hi All,
+In order to define CONFIG_PPC_NEW_BINDING, which kernel configuration
+parameters should be selected (i.e. .config file)?
+=20
+Thanks in advance,
+Bizhan
 
-Paul: I'll commit to my tree and ask you to pull later.
+------_=_NextPart_001_01C878A5.C92A1D25
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3243" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D343332818-26022008>Hi=20
+All,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D343332818-26022008>In =
+order to define=20
+CONFIG_PPC_NEW_BINDING, which kernel configuration parameters should be =
+selected=20
+(i.e. .config file)?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D343332818-26022008></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D343332818-26022008>Thanks =
+in=20
+advance,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D343332818-26022008>Bizhan</SPAN></FONT></DIV></BODY></HTML>
 
--Olof
+------_=_NextPart_001_01C878A5.C92A1D25--
