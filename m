@@ -1,30 +1,19 @@
-Return-Path: <bsilverman@conceptxdesign.com>
-Received: from smtprelay.hostedemail.com (smtprelay0191.hostedemail.com
-	[216.40.44.191]) by ozlabs.org (Postfix) with ESMTP id E48DEDDE46
+Return-Path: <m.louvel@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.234])
+	by ozlabs.org (Postfix) with ESMTP id 818F9DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Feb 2008 04:28:28 +1100 (EST)
-Received: from smtprelay.hostedemail.com (ff-bigip1 [10.5.19.254])
-	by smtpgrave03.hostedemail.com (Postfix) with ESMTP id A9883B43DD
+	Wed, 27 Feb 2008 23:37:12 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so2701775wxd.15
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Feb 2008 16:32:01 +0000 (UTC)
-Received: from emd2-omf01.hostedemail.com (ff-bigip1 [10.5.19.254])
-	by smtprelay03.hostedemail.com (Postfix) with ESMTP id 36E568BD1B
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Feb 2008 16:26:55 +0000 (UTC)
-Received: from [192.168.1.37] (pool-71-248-24-233.bltmmd.east.verizon.net
-	[71.248.24.233])
-	(Authenticated sender: bsilverman@conceptxdesign.com)
-	by emd2-omf01.hostedemail.com (Postfix) with ESMTP
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Feb 2008 16:26:55 +0000 (UTC)
-Message-ID: <47C43DC8.2030104@conceptxdesign.com>
-Date: Tue, 26 Feb 2008 11:26:48 -0500
-From: Brian Silverman <bsilverman@conceptxdesign.com>
-MIME-Version: 1.0
+	Wed, 27 Feb 2008 04:37:11 -0800 (PST)
+Message-ID: <dda529d0802270437o3ea1c9beld7d65f5af2011a6f@mail.gmail.com>
+Date: Wed, 27 Feb 2008 12:37:11 +0000
+From: "maxime louvel" <m.louvel@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: MMC over SPI on Virtex-4
-Content-Type: multipart/alternative;
-	boundary="------------090903070702070901020403"
+Subject: 2.6.25-rc3 on mpc8548amc doesn't boot
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_Part_5855_8040191.1204115831213"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,176 +24,189 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090903070702070901020403
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+------=_Part_5855_8040191.1204115831213
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5856_16318217.1204115831214"
+
+------=_Part_5856_16318217.1204115831214
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hello all,
+Hi,
 
-I'm attempting to get MMC over xilinx_spi working on a custom Xilinx 
-Virtex-4 board (that has a working SD/SPI interface, tested with a 
-standalone app).
+I am still trying to make a 2.6.25-rc3 vanilla kernel boot (an work fine in
+a second time) on a mpc8548amc board.
+I have add the platform specific stuff from the sources of the current
+kernel running on the cards.
+What I have basically add is:
+- arch/powerpc/platforms/85xx/mpc85xx_amc.c
+- arch/powerpc/boot/dts/mpc8548amc.dts
+I have also changed the Kconfig and Makefile in the
+arch/powerpc/platforms/85xx to make the kernel try to support my board
 
-I'm having issues mounting the device, and after doing a bit of 
-debugging, I'm confused about how things are supposed to work.  I'm 
-using 2.6.24-rc8-xlnx from git.xilinx.com, with some patches (for the 
-uartlite (Grant Likely), and other minor things).  In addition, I'm 
-using some of a patch from Andrei Konovalov ( 
-<list?person=202&id=11577>http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11577) 
-for Xilinx SPI support in virtex_devices.c (BTW, will this patch hit the 
-main git.xilinx.com tree at some point?)
+I have encountered some problem when compiling a uImage that I have
+basically solve like this (in arch/powerpc/boot/Makefile)
+#$(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
+#$(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
+#$(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
+#$(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=405
+#$(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405
 
-Here's what I do, and what I see:
-- Create a block device: "mknod /dev/m0 b 179 0"
-- Access that device ("cat /dev/m0")
-- I see the calls into the kernel:
-    blkdev_open()
-       do_open()
-          get_gendisk()
-             kobj_lookup(bdev_map, ...)
-- The device is not found (bdev_map has been initialized, but the only 
-"probe" at major 179 is base_probe().
-- kobj_lookup() returns NULL, and the open returns ENXIO (No such device 
-or address).
+I have a gcc-3.4.3 embedded compiler with some stuff specific to the
+platform.
 
-Here's what I don't understand:  In order for kobj_lookup to 
-successfully return non-NULL, a "probe" has to have been added to 
-bdev_map using kobj_map().  But, kobj_map(bdev_map,...) is called only 
-by blk_register_region(), which is never called by the MMC driver.
+After the previous hack, I have been able to compile a uImage.
 
-I'm clearly missing something here.  Has anyone successfully used MMC 
-over SPI or xilinx_spi?  How is the MMC driver supposed to work in 
-regards to opening a device?
+I have tried to boot it and this is what I got:
+AMC=> bootm 0x1000000
+## Booting image at 01000000 ...
+  Image Name:   Linux-2.6.24
+  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+  Data Size:    1802038 Bytes =  1.7 MB
+  Load Address: 00000000
+  Entry Point:  00000000
+  Verifying Checksum ... OK
+  Uncompressing Kernel Image ... OK
 
-Also, for reference:
+No further messages...
 
-I've added the following configs:
-CONFIG_SPI=y
-CONFIG_SPI_DEBUG=y
-CONFIG_SPI_MASTER=y
-CONFIG_SPI_BITBANG=y
-CONFIG_SPI_XILINX=y
+I have recently updated the uboot of the cards (to support the new image
+version) and I am capable of booting a 2.6.23.6 image.
+This last image has been compiled from a vanilla kernel where I have add the
+platform specific stuff (cf beginning of this mail).
 
-CONFIG_MMC=y
-CONFIG_MMC_BLOCK=y
-CONFIG_MMC_BLOCK_BOUNCE=y
-CONFIG_MMC_SPI=y
+Since my 2.6.23.6 image works fine, I have tried to adapt the file I have
+added to the 2.6.25-rc3 kernel.
 
-And, /proc/devices does report the mmc device:
+I have made some changes in the arch/powerpc/platforms/85xx/mpc85xx_amc.c
+file and in the mpc8548amc.dts file.
+I have attached the changes I have done on both files.
 
-# cat /proc/devices
-Character devices:
-  1 mem
-  4 /dev/vc/0
-  4 tty
-  5 /dev/tty
-  5 /dev/console
-  5 /dev/ptmx
-  7 vcs
- 10 misc
- 13 input
-128 ptm
-136 pts
-204 ttyUL
+Do you have an idea ?
 
-Block devices:
-  1 ramdisk
-179 mmc
-
+cheers,
+Maxime
 
 -- 
-Brian Silverman
-Concept X, LLC
+Maxime Louvel
+0044 7964 5555 80
+43 Allen road
+Whitemore reans
+WV60AW Wolverhampton
+United Kingdom
 
-
---------------090903070702070901020403
+------=_Part_5856_16318217.1204115831214
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Hello all,<br>
-<br>
-I'm attempting to get MMC over xilinx_spi working on a custom Xilinx
-Virtex-4 board (that has a working SD/SPI interface, tested with a
-standalone app).<br>
-<br>
-I'm having issues mounting the device, and after doing a bit of
-debugging, I'm confused about how things are supposed to work.&nbsp; I'm
-using 2.6.24-rc8-xlnx from git.xilinx.com, with some patches (for the
-uartlite (Grant Likely), and other minor things).&nbsp; In addition, I'm
-using some of a patch from <a href="list?person=202&amp;id=11577">Andrei
-Konovalov (</a><a class="moz-txt-link-freetext" href="http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11577">http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11577</a>)
-for Xilinx SPI support in virtex_devices.c (BTW, will this patch hit
-the main git.xilinx.com tree at some point?)<br>
-<br>
-Here's what I do, and what I see:<br>
-- Create a block device: "mknod /dev/m0 b 179 0"<br>
-- Access that device ("cat /dev/m0")<br>
-- I see the calls into the kernel:<br>
-&nbsp;&nbsp;&nbsp; blkdev_open()<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; do_open()<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; get_gendisk()<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; kobj_lookup(bdev_map, ...)<br>
-- The device is not found (bdev_map has been initialized, but the only
-"probe" at major 179 is base_probe().<br>
-- kobj_lookup() returns NULL, and the open returns ENXIO (No such
-device or address).<br>
-<br>
-Here's what I don't understand:&nbsp; In order for kobj_lookup to
-successfully return non-NULL, a "probe" has to have been added to
-bdev_map using kobj_map().&nbsp; But, kobj_map(bdev_map,...) is called only
-by blk_register_region(), which is never called by the MMC driver.<br>
-<br>
-I'm clearly missing something here.&nbsp; Has anyone successfully used MMC
-over SPI or xilinx_spi?&nbsp; How is the MMC driver supposed to work in
-regards to opening a device?<br>
-<br>
-Also, for reference:<br>
-<br>
-I've added the following configs:<br>
-CONFIG_SPI=y<br>
-CONFIG_SPI_DEBUG=y<br>
-CONFIG_SPI_MASTER=y<br>
-CONFIG_SPI_BITBANG=y<br>
-CONFIG_SPI_XILINX=y<br>
-<br>
-CONFIG_MMC=y<br>
-CONFIG_MMC_BLOCK=y<br>
-CONFIG_MMC_BLOCK_BOUNCE=y<br>
-CONFIG_MMC_SPI=y<br>
-<br>
-And, /proc/devices does report the mmc device:<br>
-<br>
-# cat /proc/devices<br>
-Character devices:<br>
-&nbsp; 1 mem<br>
-&nbsp; 4 /dev/vc/0<br>
-&nbsp; 4 tty<br>
-&nbsp; 5 /dev/tty<br>
-&nbsp; 5 /dev/console<br>
-&nbsp; 5 /dev/ptmx<br>
-&nbsp; 7 vcs<br>
-&nbsp;10 misc<br>
-&nbsp;13 input<br>
-128 ptm<br>
-136 pts<br>
-204 ttyUL<br>
-<br>
-Block devices:<br>
-&nbsp; 1 ramdisk<br>
-179 mmc<br>
-<br>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Brian Silverman
-Concept X, LLC
-</pre>
-</body>
-</html>
+Hi,<br><br>I am still trying to make a 2.6.25-rc3 vanilla kernel boot (an work fine in a second time) on a mpc8548amc board.<br>I
+have add the platform
+specific stuff from the sources of the current kernel running on the
+cards.<br>
 
---------------090903070702070901020403--
+
+
+What I have basically add is:<br>- arch/powerpc/platforms/85xx/mpc85xx_amc.c<br>- arch/powerpc/boot/dts/mpc8548amc.dts<br>I have also changed the Kconfig and Makefile in the arch/powerpc/platforms/85xx to make the kernel try to support my board<br>
+<br>I have encountered some problem when compiling a uImage that I have basically solve like this (in arch/powerpc/boot/Makefile)<br>#$(obj)/4xx.o: BOOTCFLAGS += -mcpu=405<br>#$(obj)/ebony.o: BOOTCFLAGS += -mcpu=405<br>#$(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405<br>
+#$(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=405<br>#$(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405<br><br>I have a gcc-3.4.3 embedded compiler with some stuff specific to the platform.<br><br>After the previous hack, I have been able to compile a uImage.<br>
+<br>I have tried to boot it and this is what I got:<br>AMC=&gt; bootm 0x1000000<br>## Booting image at 01000000 ...<br> &nbsp; Image Name: &nbsp; Linux-2.6.24<br> &nbsp; Image Type: &nbsp; PowerPC Linux Kernel Image (gzip compressed)<br>
+
+
+
+
+
+ &nbsp; Data Size: &nbsp; &nbsp;1802038 Bytes = &nbsp;1.7 MB<br> &nbsp; Load Address: 00000000<br> &nbsp; Entry Point: &nbsp;00000000<br> &nbsp; Verifying Checksum ... OK<br> &nbsp; Uncompressing Kernel Image ... OK<br><br>No further messages...<br><br>I have recently updated the uboot of the cards (to support the new image version) and I am capable of booting a <a href="http://2.6.23.6">2.6.23.6</a> image.<br>
+This last image has been compiled from a vanilla kernel where I have add the platform specific stuff (cf beginning of this mail).<br><br>Since my <a href="http://2.6.23.6">2.6.23.6</a> image works fine, I have tried to adapt the file I have added to the 2.6.25-rc3 kernel.<br>
+<br>I have made some changes in the arch/powerpc/platforms/85xx/mpc85xx_amc.c file and in the mpc8548amc.dts file.<br>I have attached the changes I have done on both files.<br><br>Do you have an idea ?<br><br>cheers,<br>Maxime<br clear="all">
+<br>-- <br>Maxime Louvel<br>0044 7964 5555 80<br>43 Allen road<br>Whitemore reans<br>WV60AW Wolverhampton<br>United Kingdom
+
+------=_Part_5856_16318217.1204115831214--
+
+------=_Part_5855_8040191.1204115831213
+Content-Type: application/octet-stream;
+ name=2.6.23.6.mpc8548_amc_2.6.25-rc3.mpc85xx_amc
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fd5vekap0
+Content-Disposition: attachment;
+ filename=2.6.23.6.mpc8548_amc_2.6.25-rc3.mpc85xx_amc
+
+LS0tIC4uLy4uL3NyY0NoYW5nZXMvMi42LjIzLjYvbXBjODU0OF9hbWMuYwkyMDA4LTAyLTI3IDEy
+OjI3OjMzLjAwMDAwMDAwMCArMDAwMAorKysgbGludXgtMi42LjI1LXJjM19jaGFuZ2VkL2FyY2gv
+cG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X2FtYy5jCTIwMDgtMDItMjcgMTA6Mjk6MTMu
+MDAwMDAwMDAwICswMDAwCkBAIC0xLDUgKzEsNSBAQAogLyoKLSAqIE1QQzg1NDggQU1DIGJvYXJk
+IHNwZWNpZmljIHJvdXRpbmVzCisgKiBNUEM4NXh4IEFNQyBib2FyZCBzcGVjaWZpYyByb3V0aW5l
+cwogICoKICAqIENvcHlyaWdodCAyMDA2IEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yIEluYy4KICAq
+CkBAIC0yMywxNCArMjMsMjAgQEAKICNpbmNsdWRlIDxhc20vcHJvbS5oPgogI2luY2x1ZGUgPG1t
+L21tdV9kZWNsLmg+CiAjaW5jbHVkZSA8YXNtL3VkYmcuaD4KLSNpbmNsdWRlIDxhc20vb2ZfZGV2
+aWNlLmg+Ci0jaW5jbHVkZSA8YXNtL29mX3BsYXRmb3JtLmg+CisvKiAjaW5jbHVkZSA8YXNtL29m
+X2RldmljZS5oPiAqLworLyogI2luY2x1ZGUgPGFzbS9vZl9wbGF0Zm9ybS5oPiAqLworLyogY29t
+bWl0OgorICogW1BPV0VSUENdIDh4eHg6IENvbnZlcnQgI2luY2x1ZGUgb2YgYXNtL29mX3twbGF0
+Zm9ybSwgZGV2aWNlfS5oCisgICAgICAgICAgICAgICAgICAgaW50byBsaW51eC9vZl97cGxhdGZv
+cm0sIGRldmljZX0uaC4KKyAqLworI2luY2x1ZGUgPGxpbnV4L29mX2RldmljZS5oPiAgCisjaW5j
+bHVkZSA8bGludXgvb2ZfcGxhdGZvcm0uaD4KIAogI2luY2x1ZGUgPGFzbS9tcGljLmg+CiAKICNp
+bmNsdWRlIDxzeXNkZXYvZnNsX3NvYy5oPgotLyojaW5jbHVkZSA8c3lzZGV2L2ZzbF9yaW8uaD4q
+LwotI2luY2x1ZGUgIm1wYzg1eHguaCIKKyNpbmNsdWRlIDxzeXNkZXYvZnNsX3Jpby5oPgorLyog
+I2luY2x1ZGUgIm1wYzg1eHguaCIgKi8KIAogI2lmbmRlZiBDT05GSUdfUENJCiB1bnNpZ25lZCBs
+b25nIGlzYV9pb19iYXNlID0gMDsKQEAgLTE0MSw3ICsxNDcsNyBAQAogCS5pbml0X0lSUQkJPSBt
+cGM4NXh4X2FtY19waWNfaW5pdCwKIAkuc2hvd19jcHVpbmZvCQk9IG1wYzg1eHhfYW1jX3Nob3df
+Y3B1aW5mbywKIAkuZ2V0X2lycQkJPSBtcGljX2dldF9pcnEsCi0JLnJlc3RhcnQJCT0gbXBjODV4
+eF9yZXN0YXJ0LAorCS5yZXN0YXJ0CQk9IGZzbF9yc3Rjcl9yZXN0YXJ0LAogCS5jYWxpYnJhdGVf
+ZGVjcgkJPSBnZW5lcmljX2NhbGlicmF0ZV9kZWNyLAogCS5wcm9ncmVzcwkJPSB1ZGJnX3Byb2dy
+ZXNzLAogfTsK
+------=_Part_5855_8040191.1204115831213
+Content-Type: application/octet-stream;
+ name=2.6.23.6.mpc8548dts_2.6.25-rc3.mpc8548dts
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fd5veq5t1
+Content-Disposition: attachment;
+ filename=2.6.23.6.mpc8548dts_2.6.25-rc3.mpc8548dts
+
+LS0tIC4uLy4uL3NyY0NoYW5nZXMvMi42LjIzLjYvbXBjODU0OGFtYy5kdHMJMjAwOC0wMi0yNyAx
+MjoyNzo0Ni4wMDAwMDAwMDAgKzAwMDAKKysrIGxpbnV4LTIuNi4yNS1yYzNfY2hhbmdlZC9hcmNo
+L3Bvd2VycGMvYm9vdC9kdHMvbXBjODU0OGFtYy5kdHMJMjAwOC0wMi0yNyAxMDoyMjoxMy4wMDAw
+MDAwMDAgKzAwMDAKQEAgLTE1LDYgKzE1LDEyIEBACiAJY29tcGF0aWJsZSA9ICJNUEM4NTQ4QU1D
+IjsKIAkjYWRkcmVzcy1jZWxscyA9IDwxPjsKIAkjc2l6ZS1jZWxscyA9IDwxPjsKKwlhbGlhc2Vz
+IHsKKwkgICAgICAgIGV0aGVybmV0MCA9ICZlbmV0MDsKKwkJZXRoZXJuZXQxID0gJmVuZXQxOwor
+CQlldGhlcm5ldDIgPSAmZW5ldDI7CisJCWV0aGVybmV0MyA9ICZlbmV0MzsKKyAgICAgICAgfTsK
+IAogCWNwdXMgewogCQkjY3B1cyA9IDwxPjsKQEAgLTMxLDcgKzM3LDYgQEAKIAkJCXRpbWViYXNl
+LWZyZXF1ZW5jeSA9IDwwPjsJLy8gMzMgTUh6LCBmcm9tIHVib290CiAJCQlidXMtZnJlcXVlbmN5
+ID0gPDA+OwkJLy8gRnJvbSB1Ym9vdAogCQkJY2xvY2stZnJlcXVlbmN5ID0gPDA+OwkJLy8gRnJv
+bSB1Ym9vdAotCQkJMzItYml0OwogCQl9OwogCX07CiAKQEAgLTQzLDE0ICs0OCwxNSBAQAogCXNv
+Yzg1NDhAZTAwMDAwMDAgewogCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKIAkJI3NpemUtY2VsbHMg
+PSA8MT47Ci0JCSNpbnRlcnJ1cHQtY2VsbHMgPSA8Mj47CiAJCWRldmljZV90eXBlID0gInNvYyI7
+CiAJCXJhbmdlcyA9IDwwIGUwMDAwMDAwIDAwMTAwMDAwPjsKIAkJcmVnID0gPGUwMDAwMDAwIDAw
+MTAwMDAwPjsJLy8gQ0NTUkJBUiAxTQogCQlidXMtZnJlcXVlbmN5ID0gPDA+OwotCisJCiAJCWky
+Y0AzMDAwIHsKLQkJCWRldmljZV90eXBlID0gImkyYyI7CisJCQkjYWRkcmVzcy1jZWxscyA9IDwx
+PjsKKwkJCSNzaXplLWNlbGxzID0gPDA+OworCQkJY2VsbC1pbmRleCA9IDwwPgogCQkJY29tcGF0
+aWJsZSA9ICJmc2wtaTJjIjsKIAkJCXJlZyA9IDwzMDAwIDEwMD47CiAJCQlpbnRlcnJ1cHRzID0g
+PDFiIDI+OwpAQCAtNTgsMTMgKzY0LDI0IEBACiAJCQlkZnNycjsKIAkJfTsKIAorCQlpMmNAMzEw
+MCB7CisJCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKKwkJCSNzaXplLWNlbGxzID0gPDA+OworCQkJ
+Y2VsbC1pbmRleCA9IDwxPjsKKwkJCWNvbXBhdGlibGUgPSAiZnNsLWkyYyI7CisJCQlyZWcgPSA8
+MzEwMCAxMDA+OworCQkJaW50ZXJydXB0cyA9IDwxYiAyPjsKKwkJCWludGVycnVwdC1wYXJlbnQg
+PSA8Jm1waWM+OworCQkJZGZzcnI7CisJCX07CisKIAkJbWRpb0AyNDUyMCB7CiAJCQkjYWRkcmVz
+cy1jZWxscyA9IDwxPjsKIAkJCSNzaXplLWNlbGxzID0gPDA+OwotCQkJZGV2aWNlX3R5cGUgPSAi
+bWRpbyI7Ci0JCQljb21wYXRpYmxlID0gImdpYW5mYXIiOworCQkJY29tcGF0aWJsZSA9ICJmc2ws
+Z2lhbmZhci1tZGlvIjsKIAkJCXJlZyA9IDwyNDUyMCAyMD47CiAJCQlsaW51eCxwaGFuZGxlID0g
+PDI0NTIwPjsKKwkJCQogCQkJcGh5MDogZXRoZXJuZXQtcGh5QDEwIHsKIAkJCQlpbnRlcnJ1cHQt
+cGFyZW50ID0gPCZtcGljPjsKIAkJCQlpbnRlcnJ1cHRzID0gPDM0IDE+OwpAQCAtOTEsOSArMTA4
+LDggQEAKIAkJCX07CiAJCX07CiAKLQkJZXRoZXJuZXRAMjQwMDAgewotCQkJI2FkZHJlc3MtY2Vs
+bHMgPSA8MT47Ci0JCQkjc2l6ZS1jZWxscyA9IDwwPjsKKwkJZW5ldDA6IGV0aGVybmV0QDI0MDAw
+IHsKKwkJICAgICAgICBjZWxsLWluZGV4ID0gPDA+OwogCQkJZGV2aWNlX3R5cGUgPSAibmV0d29y
+ayI7CiAJCQltb2RlbCA9ICJlVFNFQyI7CiAJCQljb21wYXRpYmxlID0gImdpYW5mYXIiOwpAQCAt
+MTA0LDkgKzEyMCw4IEBACiAJCQlwaHktaGFuZGxlID0gPCZwaHkwPjsKIAkJfTsKIAotCQlldGhl
+cm5ldEAyNTAwMCB7Ci0JCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKLQkJCSNzaXplLWNlbGxzID0g
+PDA+OworCQllbmV0MTogZXRoZXJuZXRAMjUwMDAgeworCQkgICAgICAgIGNlbGwtaW5kZXggPSA8
+MT47CiAJCQlkZXZpY2VfdHlwZSA9ICJuZXR3b3JrIjsKIAkJCW1vZGVsID0gImVUU0VDIjsKIAkJ
+CWNvbXBhdGlibGUgPSAiZ2lhbmZhciI7CkBAIC0xMTcsOSArMTMyLDggQEAKIAkJCXBoeS1oYW5k
+bGUgPSA8JnBoeTE+OwogCQl9OwogCQkKLQkJZXRoZXJuZXRAMjYwMDAgewotCQkJI2FkZHJlc3Mt
+Y2VsbHMgPSA8MT47Ci0JCQkjc2l6ZS1jZWxscyA9IDwwPjsKKwkJZW5ldDM6IGV0aGVybmV0QDI2
+MDAwIHsKKwkJICAgICAgICBjZWxsLWluZGV4ID0gPDI+OwogCQkJZGV2aWNlX3R5cGUgPSAibmV0
+d29yayI7CiAJCQltb2RlbCA9ICJlVFNFQyI7CiAJCQljb21wYXRpYmxlID0gImdpYW5mYXIiOwpA
+QCAtMTMwLDkgKzE0NCw4IEBACiAJCQlwaHktaGFuZGxlID0gPCZwaHkyPjsKIAkJfTsKIAotCQll
+dGhlcm5ldEAyNzAwMCB7Ci0JCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsKLQkJCSNzaXplLWNlbGxz
+ID0gPDA+OworCQllbmV0NDogZXRoZXJuZXRAMjcwMDAgeworCQkgICAgICAgIGNlbGwtaW5kZXgg
+PSA8Mz47CiAJCQlkZXZpY2VfdHlwZSA9ICJuZXR3b3JrIjsKIAkJCW1vZGVsID0gImVUU0VDIjsK
+IAkJCWNvbXBhdGlibGUgPSAiZ2lhbmZhciI7Cg==
+------=_Part_5855_8040191.1204115831213--
