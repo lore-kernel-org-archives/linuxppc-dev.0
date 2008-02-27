@@ -1,23 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 6B6B9DDE47
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 05:20:05 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so587575anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 10:20:02 -0800 (PST)
-Message-ID: <fa686aa40802271020w4ebf05b0w6745e82cb4b51107@mail.gmail.com>
-Date: Wed, 27 Feb 2008 11:20:02 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] [POWERPC] [v2] Xilinx: hwicap: cleanup
-In-Reply-To: <20080224233457.C983D78006D@mail33-sin.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080224232152.CEC5F12C8057@mail99-dub.bigfish.com>
-	<20080224233457.C983D78006D@mail33-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, git-dev@xilinx.com, linux-kernel@vger.kernel.org,
-	jirislaby@gmail.com
+Return-Path: <jyoung5@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1C54DDDDEF
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 06:40:47 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1RJeisp031174
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:44 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1RJeiKZ176516
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:44 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1RJei54019234
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:44 -0500
+Received: from [9.53.41.205] (thinkpad.austin.ibm.com [9.53.41.205])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m1RJehE2019159
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:43 -0500
+Subject: [dtc] breaking out libfdt from dtc so other progs can use it
+From: Jerone Young <jyoung5@us.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 27 Feb 2008 13:40:43 -0600
+Message-Id: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>
+Mime-Version: 1.0
+Reply-To: jyoung5@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Feb 24, 2008 at 4:34 PM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
-> Fix some missing __user tags and incorrect section tags.
->  Convert semaphores to mutexes.
->  Make probed_devices re-entrancy and error condition safe.
->  Fix some backwards memcpys.
->  Some other minor cleanups.
->  Use kerneldoc format.
->
->  [v2]
->  __user char => char __user
->  removed unused hwicap_command_capture
->  Fixed a comment that didn't match the function name
->  fixed argument with 'register' keyword.
->
->
->  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Currently the dtc source code has libfdt integrated in it. This seems to
+have become place for upstream libfdt changes. Now we all know everyone
+(linux kernel, cuboot) also have their own versions over libfdt. But if
+another userspace app wants to use libfdt , it has to copy it from the
+dtc source and try to maintain it's own copy.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+The question I have is can libfdt be split out from dtc source, and
+become it's own thing. This way other userspace apps can easily download
+it and link with it?
 
-Josh, can you please pick this up?
-
-Thanks,
-g.
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+The reason I ask is I have added dynamic manipulation support of device
+trees in memory into qemu for KVM. But the issue is keeping a copy of
+libfdt in the KVM userspace repository, which is getting some opposition
+(understandably). But this would be much easier if there was a libfdt
+repo for the library so that we wouldn't need to keep our own copy.
