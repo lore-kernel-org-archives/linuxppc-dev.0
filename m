@@ -1,20 +1,33 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 5044EDDFB8
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 08:00:44 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so523983uge.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 13:00:41 -0800 (PST)
-Message-Id: <20080227210004.189002678@gmail.com>
-References: <20080227205831.150784453@gmail.com>
-Date: Wed, 27 Feb 2008 23:58:39 +0300
-From: gorcunov@gmail.com
-To: rth@twiddle.net, chris@zankel.net, jdike@addtoit.com,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, dhowells@redhat.com,
-	zippel@linux-m68k.org, geert@linux-m68k.org,
-	linux-m68k@lists.linux-m68k.org, takata@linux-m32r.org,
-	linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org
-Subject: [RFC 08/10] um: dyn/uml.lds.S cleanup - use PAGE_SIZE macro
-Cc: gorcunov@gmail.com, sam@ravnborg.org
+Return-Path: <jyoung5@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4072CDDE9C
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 08:24:44 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1RLOfb3019288
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 16:24:41 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1RLOfXP216830
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:24:41 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1RLOfK1022605
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:24:41 -0700
+Subject: Re: [dtc] breaking out libfdt from dtc so other progs can use it
+From: Jerone Young <jyoung5@us.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080227143101.7a262aae@zod.rchland.ibm.com>
+References: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>
+	<20080227143101.7a262aae@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 27 Feb 2008 15:24:36 -0600
+Message-Id: <1204147476.23689.13.camel@thinkpad.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: jyoung5@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,127 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch includes page.h header into liker scripts that
-allow us to use PAGE_SIZE macro instead of numeric constant.
 
-To be able to include page.h into linker scripts page.h is
-needed for some modification - i.e. we need to use __ASSEMBLY__
-and _AC macro
+On Wed, 2008-02-27 at 14:31 -0600, Josh Boyer wrote:
+> On Wed, 27 Feb 2008 13:40:43 -0600
+> Jerone Young <jyoung5@us.ibm.com> wrote:
+> 
+> > Currently the dtc source code has libfdt integrated in it. This seems to
+> > have become place for upstream libfdt changes. Now we all know everyone
+> > (linux kernel, cuboot) also have their own versions over libfdt. But if
+> > another userspace app wants to use libfdt , it has to copy it from the
+> > dtc source and try to maintain it's own copy.
+> > 
+> > The question I have is can libfdt be split out from dtc source, and
+> > become it's own thing. This way other userspace apps can easily download
+> > it and link with it?
+> 
+> Downloading isn't changed at all by splitting it out to it's own repo.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+Well it is, as we could then point to libfdt repository. Right now we
+need to download dtc ..the do make libfdt ... and then we are rollin. So
+there are some steps required. 
 
-WARNING: COMPLETELY UNTESTED !!!
+It would just be really really nice if it was more stand alone.
 
- arch/um/kernel/dyn.lds.S |    7 ++++---
- arch/um/kernel/uml.lds.S |    7 ++++---
- include/asm-um/page.h    |   17 +++++++++++------
- 3 files changed, 19 insertions(+), 12 deletions(-)
+> 
+> > The reason I ask is I have added dynamic manipulation support of device
+> > trees in memory into qemu for KVM. But the issue is keeping a copy of
+> > libfdt in the KVM userspace repository, which is getting some opposition
+> > (understandably). But this would be much easier if there was a libfdt
+> > repo for the library so that we wouldn't need to keep our own copy.
+> 
+> It seems the real crux of your issue is that you want distros to
+> provide a libfdt package.  That can be done by creating a subpackage
+> off of the dtc package.  The harder part for certain distros will be
+> either convincing them to allow the static libfdt to exist, or creating
+> a shared library for it instead.
 
-Index: linux-2.6.git/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6.git.orig/arch/um/kernel/dyn.lds.S	2008-01-29 18:03:46.000000000 +0300
-+++ linux-2.6.git/arch/um/kernel/dyn.lds.S	2008-02-27 21:38:48.000000000 +0300
-@@ -1,4 +1,5 @@
- #include <asm-generic/vmlinux.lds.h>
-+#include <asm/page.h>
- 
- OUTPUT_FORMAT(ELF_FORMAT)
- OUTPUT_ARCH(ELF_ARCH)
-@@ -21,7 +22,7 @@ SECTIONS
- 	_einittext = .;
-   }
- 
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
- 
-   /* Read-only sections, merged into text segment: */
-   .hash           : { *(.hash) }
-@@ -68,9 +69,9 @@ SECTIONS
-     /* .gnu.warning sections are handled specially by elf32.em.  */
-     *(.gnu.warning)
- 
--    . = ALIGN(4096);
-+    . = ALIGN(PAGE_SIZE);
-   } =0x90909090
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
-   .syscall_stub : {
- 	__syscall_stub_start = .;
- 	*(.__syscall_stub*)
-Index: linux-2.6.git/arch/um/kernel/uml.lds.S
-===================================================================
---- linux-2.6.git.orig/arch/um/kernel/uml.lds.S	2008-01-29 18:03:46.000000000 +0300
-+++ linux-2.6.git/arch/um/kernel/uml.lds.S	2008-02-27 21:38:53.000000000 +0300
-@@ -1,4 +1,5 @@
- #include <asm-generic/vmlinux.lds.h>
-+#include <asm/page.h>
- 
- OUTPUT_FORMAT(ELF_FORMAT)
- OUTPUT_ARCH(ELF_ARCH)
-@@ -26,7 +27,7 @@ SECTIONS
- 	INIT_TEXT
- 	_einittext = .;
-   }
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
- 
-   .text      :
-   {
-@@ -39,7 +40,7 @@ SECTIONS
-     *(.gnu.linkonce.t*)
-   }
- 
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
-   .syscall_stub : {
- 	__syscall_stub_start = .;
- 	*(.__syscall_stub*)
-@@ -79,7 +80,7 @@ SECTIONS
-   .sdata     : { *(.sdata) }
-   _edata  =  .;
-   PROVIDE (edata = .);
--  . = ALIGN(0x1000);
-+  . = ALIGN(PAGE_SIZE);
-   .sbss      :
-   {
-    __bss_start = .;
-Index: linux-2.6.git/include/asm-um/page.h
-===================================================================
---- linux-2.6.git.orig/include/asm-um/page.h	2008-02-09 12:09:29.000000000 +0300
-+++ linux-2.6.git/include/asm-um/page.h	2008-02-27 21:42:17.000000000 +0300
-@@ -7,16 +7,20 @@
- #ifndef __UM_PAGE_H
- #define __UM_PAGE_H
- 
--struct page;
--
--#include <linux/types.h>
--#include <asm/vm-flags.h>
-+#include <linux/const.h>
- 
- /* PAGE_SHIFT determines the page size */
- #define PAGE_SHIFT	12
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
-+#define PAGE_SIZE	(_AC(1, UL) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
-+#ifndef __ASSEMBLY__
-+
-+struct page;
-+
-+#include <linux/types.h>
-+#include <asm/vm-flags.h>
-+
- /*
-  * These are used to make use of C type-checking..
-  */
-@@ -120,4 +124,5 @@ extern struct page *arch_validate(struct
- #include <asm-generic/memory_model.h>
- #include <asm-generic/page.h>
- 
--#endif
-+#endif	/* __ASSEMBLY__ */
-+#endif	/* __UM_PAGE_H */
+Ultimately this would be the most optimal solution for the future. If
+distros could distribute a library with headers that would be awesome. 
+Since this is something that qemu in general can take advantage of (not
+just KVM qemu)...having libs in the distro would be easier for
+distributing.
 
--- 
+But for now I just need a way for users to easily get a hold of libary
+and just point cflags and ldflags at the directory where it is
+compiled. 
+
+
+> 
+> josh
