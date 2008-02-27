@@ -1,32 +1,26 @@
-Return-Path: <jyoung5@us.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1C54DDDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 06:40:47 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1RJeisp031174
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:44 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1RJeiKZ176516
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:44 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1RJei54019234
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:44 -0500
-Received: from [9.53.41.205] (thinkpad.austin.ibm.com [9.53.41.205])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m1RJehE2019159
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 14:40:43 -0500
-Subject: [dtc] breaking out libfdt from dtc so other progs can use it
-From: Jerone Young <jyoung5@us.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 13:40:43 -0600
-Message-Id: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>
-Mime-Version: 1.0
-Reply-To: jyoung5@us.ibm.com
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7E007DDE0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 07:08:51 +1100 (EST)
+Message-ID: <47C5C340.7080302@s5r6.in-berlin.de>
+Date: Wed, 27 Feb 2008 21:08:32 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+	<tkrat.9e19fa31951506af@s5r6.in-berlin.de>
+	<200802271458.28401.jwilson@redhat.com>
+In-Reply-To: <200802271458.28401.jwilson@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,18 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently the dtc source code has libfdt integrated in it. This seems to
-have become place for upstream libfdt changes. Now we all know everyone
-(linux kernel, cuboot) also have their own versions over libfdt. But if
-another userspace app wants to use libfdt , it has to copy it from the
-dtc source and try to maintain it's own copy.
+Jarod Wilson wrote:
+> Works just fine with the Apple UniNorth controller in my powerbook in cursory 
+> testing.
 
-The question I have is can libfdt be split out from dtc source, and
-become it's own thing. This way other userspace apps can easily download
-it and link with it?
-
-The reason I ask is I have added dynamic manipulation support of device
-trees in memory into qemu for KVM. But the issue is keeping a copy of
-libfdt in the KVM userspace repository, which is getting some opposition
-(understandably). But this would be much easier if there was a libfdt
-repo for the library so that we wouldn't need to keep our own copy.
+Could you remove the OHCI1394_HCControl_postedWriteEnable flag from 
+fw-ohci.c::ohci_enable() and test without and with the endianess patch?
+-- 
+Stefan Richter
+-=====-==--- --=- ==-==
+http://arcgraph.de/sr/
