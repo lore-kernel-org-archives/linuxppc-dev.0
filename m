@@ -3,34 +3,34 @@ Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 67845DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 10:15:09 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5EAD1DDE29
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 10:15:30 +1100 (EST)
 Received: from outbound5-dub.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound5-dub-R.bigfish.com (Postfix) with ESMTP id 552E51342C68
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:14:57 +0000 (UTC)
-Received: from mail190-dub-R.bigfish.com (unknown [10.5.252.3])
-	by outbound5-dub.bigfish.com (Postfix) with ESMTP id 3EE361F0052
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:14:57 +0000 (UTC)
-Received: from mail190-dub (localhost.localdomain [127.0.0.1])
-	by mail190-dub-R.bigfish.com (Postfix) with ESMTP id 6AF492785DD
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:14:56 +0000 (UTC)
+	by outbound5-dub-R.bigfish.com (Postfix) with ESMTP id 997541342C93
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:15:26 +0000 (UTC)
+Received: from mail124-dub-R.bigfish.com (unknown [10.5.252.3])
+	by outbound5-dub.bigfish.com (Postfix) with ESMTP id 7B69F1F0057
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:15:26 +0000 (UTC)
+Received: from mail124-dub (localhost.localdomain [127.0.0.1])
+	by mail124-dub-R.bigfish.com (Postfix) with ESMTP id D0421EE832A
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:15:24 +0000 (UTC)
 Received: from xsj-gw1 (unknown [149.199.60.83])
-	by mail190-dub.bigfish.com (Postfix) with ESMTP id DD4124507B7
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:14:52 +0000 (UTC)
+	by mail124-dub.bigfish.com (Postfix) with ESMTP id 4673DE3006A
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 23:15:21 +0000 (UTC)
 Received: from unknown-38-66.xilinx.com ([149.199.38.66]
 	helo=xsj-smtp1.xilinx.com) by xsj-gw1 with esmtp (Exim 4.63)
-	(envelope-from <John.Linn@xilinx.com>) id 1JUVUC-0001kT-AB
-	for linuxppc-dev@ozlabs.org; Wed, 27 Feb 2008 15:14:52 -0800
+	(envelope-from <John.Linn@xilinx.com>) id 1JUVUe-0001n8-0d
+	for linuxppc-dev@ozlabs.org; Wed, 27 Feb 2008 15:15:20 -0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: FW: [PATCH] Xilinx: LL TEMAC/Bootstrap: Updated driver and bootstrap
-	to pull mac addr from eeprom
-Date: Wed, 27 Feb 2008 16:14:50 -0700
+Subject: FW: [PATCH] Xilinx: BSP: Updated ML405 to match hardware used for
+	testing
+Date: Wed, 27 Feb 2008 16:15:18 -0700
 From: "John Linn" <John.Linn@xilinx.com>
 To: <linuxppc-dev@ozlabs.org>,
 	"git-dev" <git-dev@xilinx.com>
-Message-Id: <20080227231452.DD4124507B7@mail190-dub.bigfish.com>
+Message-Id: <20080227231521.4673DE3006A@mail124-dub.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,1711 +40,1052 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The LL TEMAC driver was updated to use the mac address from the board
-data,
-to use the Marvell specific PHY code so that 10 Mbit works, and to use
-the
-dcr_host from the platform data rather than using conditional
-compilation
-for DCR with DMA. The bootstrap loader was changed to read the mac
-address
-from the eeprom into the board data.
+The default config file for the ML405 and the xparameters*.h file
+were updated to match the hardware used for testing. The platform
+data in virtex_devices.c was updated for the LL TEMAC driver
+which now uses the dcr_host field to determine if it should use
+DCR for the DMA.
 
-Signed-off-by: John Linn <john.linn@xilinx.com>
+Signed-off-by: John Linn <john.linn>
 ---
- arch/ppc/boot/simple/Makefile              |   10 +-
- arch/ppc/boot/simple/embed_config.c        |  154 ++++-
- drivers/i2c/algos/xilinx_iic/Makefile      |    2 +-
- drivers/i2c/algos/xilinx_iic/xiic_l.c      |  967
-++++++++++++++++++++++++++++
- drivers/net/xilinx_lltemac/xlltemac_main.c |   58 +-
- 5 files changed, 1153 insertions(+), 38 deletions(-)
- create mode 100755 drivers/i2c/algos/xilinx_iic/xiic_l.c
+ arch/ppc/configs/ml405_defconfig                   |  130 +++--
+ .../platforms/4xx/xparameters/xparameters_ml405.h  |  649
++++++++++-----------
+ arch/ppc/syslib/virtex_devices.c                   |    2 +-
+ 3 files changed, 373 insertions(+), 408 deletions(-)
+ mode change 100644 =3D> 100755
+arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
 
-diff --git a/arch/ppc/boot/simple/Makefile
-b/arch/ppc/boot/simple/Makefile
-index 8581bea..2b0671e 100644
---- a/arch/ppc/boot/simple/Makefile
-+++ b/arch/ppc/boot/simple/Makefile
-@@ -21,6 +21,11 @@
- # XXX_memory.o file for this to work, as well as editing the
- # misc-$(CONFIG_MACHINE) variable.
+diff --git a/arch/ppc/configs/ml405_defconfig
+b/arch/ppc/configs/ml405_defconfig
+index feebe65..e5635cb 100644
+--- a/arch/ppc/configs/ml405_defconfig
++++ b/arch/ppc/configs/ml405_defconfig
+@@ -1,8 +1,9 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.23xlnx
+-# Mon Dec 17 15:41:58 2007
++# Linux kernel version: 2.6.24-rc8-xlnx
++# Tue Feb 26 15:08:13 2008
+ #
++CONFIG_WORD_SIZE=3D32
+ CONFIG_MMU=3Dy
+ CONFIG_GENERIC_HARDIRQS=3Dy
+ CONFIG_RWSEM_XCHGADD_ALGORITHM=3Dy
+@@ -35,9 +36,14 @@ CONFIG_BSD_PROCESS_ACCT=3Dy
+ CONFIG_BSD_PROCESS_ACCT_V3=3Dy
+ # CONFIG_TASKSTATS is not set
+ # CONFIG_USER_NS is not set
++# CONFIG_PID_NS is not set
+ # CONFIG_AUDIT is not set
+ # CONFIG_IKCONFIG is not set
+ CONFIG_LOG_BUF_SHIFT=3D14
++# CONFIG_CGROUPS is not set
++CONFIG_FAIR_GROUP_SCHED=3Dy
++CONFIG_FAIR_USER_SCHED=3Dy
++# CONFIG_FAIR_CGROUP_SCHED is not set
+ CONFIG_SYSFS_DEPRECATED=3Dy
+ # CONFIG_RELAY is not set
+ CONFIG_BLK_DEV_INITRD=3Dy
+@@ -64,6 +70,7 @@ CONFIG_VM_EVENT_COUNTERS=3Dy
+ CONFIG_SLAB=3Dy
+ # CONFIG_SLUB is not set
+ # CONFIG_SLOB is not set
++CONFIG_SLABINFO=3Dy
+ CONFIG_RT_MUTEXES=3Dy
+ # CONFIG_TINY_SHMEM is not set
+ CONFIG_BASE_SMALL=3D0
+@@ -157,6 +164,7 @@ CONFIG_FLATMEM_MANUAL=3Dy
+ CONFIG_FLATMEM=3Dy
+ CONFIG_FLAT_NODE_MEM_MAP=3Dy
+ # CONFIG_SPARSEMEM_STATIC is not set
++# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+ CONFIG_SPLIT_PTLOCK_CPUS=3D4
+ # CONFIG_RESOURCES_64BIT is not set
+ CONFIG_ZONE_DMA_FLAG=3D1
+@@ -165,10 +173,7 @@ CONFIG_VIRT_TO_BUS=3Dy
+ CONFIG_BINFMT_ELF=3Dy
+ # CONFIG_BINFMT_MISC is not set
+ CONFIG_CMDLINE_BOOL=3Dy
+-CONFIG_CMDLINE=3D"console=3DttyS0,9600 ip=3Ddhcp root=3D/dev/nfs rw"
+-# CONFIG_PM is not set
+-CONFIG_SUSPEND_UP_POSSIBLE=3Dy
+-CONFIG_HIBERNATION_UP_POSSIBLE=3Dy
++CONFIG_CMDLINE=3D"console=3DttyS0,9600 ip=3Don root=3D/dev/ram"
+ CONFIG_SECCOMP=3Dy
+ CONFIG_ISA_DMA_API=3Dy
 =20
-+ifeq ($(CONFIG_XILINX_EMBED_CONFIG),y)
-+EXTRA_CFLAGS		+=3D -Idrivers/i2c/algos/xilinx_iic
-+EXTRA_CFLAGS		+=3D -Idrivers/xilinx_common
-+endif
-+
- boot				:=3D arch/ppc/boot
- common				:=3D $(boot)/common
- utils				:=3D $(boot)/utils
-@@ -128,6 +133,9 @@ zimageinitrd-$(CONFIG_WALNUT)		:=3D
-zImage.initrd-TREE
-          end-$(CONFIG_EV64360)          :=3D ev64360
-    cacheflag-$(CONFIG_EV64360)          :=3D -include $(clear_L2_L3)
-=20
-+     extra.o-$(CONFIG_XILINX_EMBED_CONFIG)  :=3D
-../../../../drivers/xilinx_common/xio.o \
-+
-../../../../drivers/i2c/algos/xilinx_iic/xiic_l.o=09
-+
- # kconfig 'feature', only one of these will ever be 'y' at a time.
- # The rest will be unset.
- motorola :=3D $(CONFIG_MVME5100)$(CONFIG_PRPMC750) \
-@@ -187,7 +195,7 @@ boot-$(CONFIG_REDWOOD_6)	+=3D embed_config.o
- boot-$(CONFIG_8xx)		+=3D embed_config.o
- boot-$(CONFIG_8260)		+=3D embed_config.o
- boot-$(CONFIG_EP405)		+=3D embed_config.o
--boot-$(CONFIG_XILINX_EMBED_CONFIG)	+=3D embed_config.o
-+boot-$(CONFIG_XILINX_EMBED_CONFIG)	+=3D embed_config.o=20
- boot-$(CONFIG_BSEIP)		+=3D iic.o
- boot-$(CONFIG_MBX)		+=3D iic.o pci.o qspan_pci.o
- boot-$(CONFIG_MV64X60)		+=3D misc-mv64x60.o
-diff --git a/arch/ppc/boot/simple/embed_config.c
-b/arch/ppc/boot/simple/embed_config.c
-index beb03db..45f1421 100644
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -17,12 +17,14 @@
- #include <asm/mpc8260.h>
- #include <asm/immap_cpm2.h>
- #endif
--#ifdef CONFIG_40x
-+#if defined (CONFIG_40x) || defined (CONFIG_44x)
- #include <asm/io.h>
- #endif
-+
- #ifdef CONFIG_XILINX_VIRTEX
- #include <platforms/4xx/xparameters/xparameters.h>
- #endif
-+
- extern unsigned long timebase_period_ns;
-=20
- /* For those boards that don't provide one.
-@@ -744,17 +746,134 @@ embed_config(bd_t **bdp)
- }
- #endif /* WILLOW */
-=20
--#if defined(CONFIG_XILINX_EMBED_CONFIG)
-+#if defined(CONFIG_XILINX_ML403) || defined(CONFIG_XILINX_ML405) ||
-defined(CONFIG_XILINX_ML507)
-+
-+#if (!defined(XPAR_IIC_0_BASEADDR) ||
-!defined(XPAR_PERSISTENT_0_IIC_0_BASEADDR))
-+int get_cfg_data(unsigned char **cfg_data)
-+{
-+	/*
-+	 * The ML300, ML40x and ML50x uses an I2C SEEPROM to store the
-Ethernet
-+	 * MAC address, but either an I2C interface or the SEEPROM
-aren't
-+	 * configured in.  If you are in this situation, you'll need to
-define
-+	 * an alternative way of storing the Ethernet MAC address.  For
-now, a
-+	 * hard-coded MAC will be used. If this is sufficient, you may
-simply
-+	 * comment out the followign #warning.
-+	 */
-+#warning I2C needed for obtaining the Ethernet MAC address. Using
-hard-coded MAC address
-+	return 0;	/* no cfg data found */
-+}
-+#else
-+#include <xiic_l.h>
-+
-+#define CFG_DATA_SIZE \
-+ (XPAR_PERSISTENT_0_IIC_0_HIGHADDR - XPAR_PERSISTENT_0_IIC_0_BASEADDR +
-1)
-+
-+int get_cfg_data(unsigned char **cfg_data)
-+{
-+	static unsigned char sdata[CFG_DATA_SIZE]; /* 'static': get
-sdata off the stack */
-+	int i;
-+
-+	/*
-+	 * Fill our SEEPROM data array (sdata) from address
-+	 * XPAR_PERSISTENT_0_IIC_0_BASEADDR of the SEEPROM at slave
-+	 * address XPAR_PERSISTENT_0_IIC_0_EEPROMADDR.  We'll then parse
-+	 * that data looking for a MAC address. */
-+	sdata[0] =3D XPAR_PERSISTENT_0_IIC_0_BASEADDR >> 8;
-+#if defined(XPAR_IIC_0_TEN_BIT_ADR) && (XPAR_IIC_0_TEN_BIT_ADR =3D=3D =
-1)
-+	sdata[1] =3D XPAR_PERSISTENT_0_IIC_0_BASEADDR & 0xFF;
-+	i =3D XIic_Send(XPAR_IIC_0_BASEADDR,
-+		      XPAR_PERSISTENT_0_IIC_0_EEPROMADDR>>1, sdata, 2,
-XIIC_STOP);
-+	if (i !=3D 2)
-+		return 0;	/* Couldn't send the address.  Return
-error. */
-+#else
-+	i =3D XIic_Send(XPAR_IIC_0_BASEADDR,
-+		      XPAR_PERSISTENT_0_IIC_0_EEPROMADDR>>1, sdata, 1,
-XIIC_STOP);
-+	if (i !=3D 1) {
-+		return 0;	/* Couldn't send the address.  Return
-error. */
-+	}
-+#endif
-+	i =3D XIic_Recv(XPAR_IIC_0_BASEADDR,
-+		      XPAR_PERSISTENT_0_IIC_0_EEPROMADDR>>1,
-+		      sdata, sizeof(sdata), XIIC_STOP);
-+	if (i !=3D sizeof(sdata)) {
-+		return 0;	/* Didn't read all the data.  Return
-error. */
-+	}
-+	*cfg_data =3D sdata;
-+	return CFG_DATA_SIZE;
-+}
-+#endif /* (!defined(XPAR_IIC_0_BASEADDR) ||
-!defined(XPAR_PERSISTENT_0_IIC_0_BASEADDR)) */
-+
-+static int
-+hexdigit(char c)
-+{
-+	if ('0' <=3D c && c <=3D '9')
-+		return c - '0';
-+	else if ('a' <=3D c && c <=3D 'f')
-+		return c - 'a' + 10;
-+	else if ('A' <=3D c && c <=3D 'F')
-+		return c - 'A' + 10;
-+	else
-+		return -1;
-+}
-+
-+typedef struct iic_eeprom_struct {
-+	/* Generally used parameters */
-+	char which_board[17];          /* 0x000 to 0x010 Plain text ID
-of which board */
-+	char board_rev[5];             /* 0x011 to 0x015 Plain text
-Board Rev (A, B, C, etc) */
-+	char minor_board_rev[5];       /* 0x016 to 0x01A Plain text
-minor board rev (001, 002, etc) */
-+	char which_FPGA[19];           /* 0x01B to 0x02E Plain text
-which FPGA is on the board (main FPGA if multiple) */
-+	char board_sn[9];              /* 0x02F to 0x037 Plain text
-Serial Number of board */
-+	char board_mac_id[13];         /* 0x038 to 0x044 Plain text MAC
-Address for this board */
-+	char last_test_date[12];       /* 0x045 to 0x050 Plain text last
-date that tests were run (DD-MMM-YYYY) */
-+	char manufacture_date[12];     /* 0x051 to 0x05C Plain text
-Manufacture Date (DD-MMM-YYYY) */
-+	char manufacture_id[17];       /* 0x05D to 0x06D Plain text
-Manufacture ID (Name) */
-+	char tested_before[19];        /* 0x06E to 0x080 Plain text set
-to 'Xilinx Virtex-X Based MLxxx' (?19?) */
-+} iic_eeprom_struct;
-+
-+static int get_mac_addr(unsigned char *mac)
-+{
-+	iic_eeprom_struct *eeprom;
-+	int cfg_size;
-+
-+	cfg_size =3D get_cfg_data((unsigned char **)&eeprom);
-+
-+	if (cfg_size =3D=3D 0)
-+		return 1;	/* Failed to read configuration data */
-+
-+	/* check the manufacture date to make sure we've got the right
-struct
-+	 * info */
-+	if ((eeprom->board_mac_id[0] =3D=3D '0') &&
-+	    (eeprom->board_mac_id[1] =3D=3D '0') &&
-+            (eeprom->board_mac_id[2] =3D=3D '0') &&	=09
-+            (eeprom->board_mac_id[3] =3D=3D 'A') &&
-+	    (eeprom->board_mac_id[4] =3D=3D '3') &&
-+	    (eeprom->board_mac_id[5] =3D=3D '5')) {
-+		mac[0] =3D (hexdigit(eeprom->board_mac_id[0]) << 4) |
-(hexdigit(eeprom->board_mac_id[1]));
-+		mac[1] =3D (hexdigit(eeprom->board_mac_id[2]) << 4) |
-(hexdigit(eeprom->board_mac_id[3]));
-+		mac[2] =3D (hexdigit(eeprom->board_mac_id[4]) << 4) |
-(hexdigit(eeprom->board_mac_id[5]));
-+		mac[3] =3D (hexdigit(eeprom->board_mac_id[6]) << 4) |
-(hexdigit(eeprom->board_mac_id[7]));
-+		mac[4] =3D (hexdigit(eeprom->board_mac_id[8]) << 4) |
-(hexdigit(eeprom->board_mac_id[9]));
-+		mac[5] =3D (hexdigit(eeprom->board_mac_id[10]) << 4) |
-(hexdigit(eeprom->board_mac_id[11]));
-+
-+		/* Success */
-+		return 0;
-+
-+	}=20
-+
-+	/* Data not recognized */
-+	return 1;
-+}
-+
- void
- embed_config(bd_t ** bdp)
- {
-+#ifdef CONFIG_40x
- 	static const unsigned long line_size =3D 32;
- 	static const unsigned long congruence_classes =3D 256;
- 	unsigned long addr;
- 	unsigned long dccr;
--	uint8_t* cp;
-+#endif
- 	bd_t *bd;
--	int i;
-=20
- 	/*
- 	 * Invalidate the data cache if the data cache is turned off.
-@@ -765,6 +884,7 @@ embed_config(bd_t ** bdp)
- 	 *   a bootloader and we assume that the cache contents are
- 	 *   valid.
- 	 */
-+#ifdef CONFIG_40x
- 	__asm__("mfdccr %0": "=3Dr" (dccr));
- 	if (dccr =3D=3D 0) {
- 		for (addr =3D 0;
-@@ -773,23 +893,37 @@ embed_config(bd_t ** bdp)
- 			__asm__("dccci 0,%0": :"b"(addr));
- 		}
- 	}
-+#endif
-=20
- 	bd =3D &bdinfo;
- 	*bdp =3D bd;
- 	bd->bi_memsize =3D XPAR_DDR_0_SIZE;
- 	bd->bi_intfreq =3D XPAR_CORE_CLOCK_FREQ_HZ;
- 	bd->bi_busfreq =3D XPAR_PLB_CLOCK_FREQ_HZ;
-+#ifdef XPAR_PCI_0_CLOCK_FREQ_HZ
- 	bd->bi_pci_busfreq =3D XPAR_PCI_0_CLOCK_FREQ_HZ;
-+#endif
-=20
--	/* Copy the default ethernet address */
--	cp =3D (u_char *)def_enet_addr;
--	for (i=3D0; i<6; i++)
--		bd->bi_enetaddr[i] =3D *cp++;
-+	if (get_mac_addr(bd->bi_enetaddr)) {
-+		/* The SEEPROM is corrupted. set the address to
-+		 * Xilinx's preferred default. However, first to
-+		 * eliminate a compiler warning because we don't really
-+		 * use def_enet_addr, we'll reference it. The compiler
-+		 * optimizes it away so no harm done. */
-+		bd->bi_enetaddr[0] =3D def_enet_addr[0];
-+		bd->bi_enetaddr[0] =3D 0x00;
-+		bd->bi_enetaddr[1] =3D 0x0A;
-+		bd->bi_enetaddr[2] =3D 0x35;
-+		bd->bi_enetaddr[3] =3D 0x01;
-+		bd->bi_enetaddr[4] =3D 0x02;
-+		bd->bi_enetaddr[5] =3D 0x03;
-+	}
-=20
- 	timebase_period_ns =3D 1000000000 / bd->bi_tbfreq;
--	/* see bi_tbfreq definition in
-arch/ppc/platforms/4xx/xilinx_ml300.h */
-+	/* see bi_tbfreq definition in
-arch/ppc/platforms/4xx/xilinx_mlxxx.h */
- }
--#endif /* CONFIG_XILINX_EMBED_CONFIG */
-+#endif /* defined(CONFIG_XILINX_ML403) || defined(CONFIG_XILINX_ML405)
-||=20
-+          defined(CONFIG_XILINX_ML507) */
-=20
- #ifdef CONFIG_IBM_OPENBIOS
- /* This could possibly work for all treeboot roms.
-diff --git a/drivers/i2c/algos/xilinx_iic/Makefile
-b/drivers/i2c/algos/xilinx_iic/Makefile
-index 78ff332..80e351a 100644
---- a/drivers/i2c/algos/xilinx_iic/Makefile
-+++ b/drivers/i2c/algos/xilinx_iic/Makefile
-@@ -11,4 +11,4 @@ xilinx_iic-objs	:=3D i2c-algo-xilinx.o
-=20
- # The Xilinx OS independent code.
- xilinx_iic-objs	+=3D xiic.o xiic_options.o xiic_master.o \
--		   xiic_intr.o
-+		   xiic_intr.o xiic_l.o
-diff --git a/drivers/i2c/algos/xilinx_iic/xiic_l.c
-b/drivers/i2c/algos/xilinx_iic/xiic_l.c
-new file mode 100755
-index 0000000..e2e23e3
---- /dev/null
-+++ b/drivers/i2c/algos/xilinx_iic/xiic_l.c
-@@ -0,0 +1,967 @@
-+/* $Id: xiic_l.c,v 1.3 2007/12/17 19:15:38 meinelte Exp $ */
-+/**********************************************************************
-********
-+*
-+*       XILINX IS PROVIDING THIS DESIGN, CODE, OR INFORMATION "AS IS"
-+*       AS A COURTESY TO YOU, SOLELY FOR USE IN DEVELOPING PROGRAMS AND
-+*       SOLUTIONS FOR XILINX DEVICES.  BY PROVIDING THIS DESIGN, CODE,
-+*       OR INFORMATION AS ONE POSSIBLE IMPLEMENTATION OF THIS FEATURE,
-+*       APPLICATION OR STANDARD, XILINX IS MAKING NO REPRESENTATION
-+*       THAT THIS IMPLEMENTATION IS FREE FROM ANY CLAIMS OF
-INFRINGEMENT,
-+*       AND YOU ARE RESPONSIBLE FOR OBTAINING ANY RIGHTS YOU MAY
-REQUIRE
-+*       FOR YOUR IMPLEMENTATION.  XILINX EXPRESSLY DISCLAIMS ANY
-+*       WARRANTY WHATSOEVER WITH RESPECT TO THE ADEQUACY OF THE
-+*       IMPLEMENTATION, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OR
-+*       REPRESENTATIONS THAT THIS IMPLEMENTATION IS FREE FROM CLAIMS OF
-+*       INFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-+*       FOR A PARTICULAR PURPOSE.
-+*
-+*       (c) Copyright 2002-2007 Xilinx Inc.
-+*       All rights reserved.
-+* This program is free software; you can redistribute it and/or modify
-it
-+* under the terms of the GNU General Public License as published by the
-+* Free Software Foundation; either version 2 of the License, or (at
-your
-+* option) any later version.
-+*
-+* You should have received a copy of the GNU General Public License
-+* along with this program; if not, write to the Free Software
-+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
-USA
-+*
-+***********************************************************************
-*******/
-+/**********************************************************************
-*******/
-+/**
-+*
-+* @file xiic_l.c
-+*
-+* This file contains low-level driver functions that can be used to
-access the
-+* device in normal and dynamic controller mode. The user should refer
-to the
-+* hardware device specification for more details of the device
-operation.
-+*
-+* <pre>
-+* MODIFICATION HISTORY:
-+*
-+* Ver   Who  Date     Changes
-+* ----- --- -------   -----------------------------------------------
-+* 1.01b jhl 05/13/02  First release
-+* 1.01b jhl 10/14/02  Corrected bug in the receive function, the setup
-of the
-+*                     interrupt status mask was not being done in the
-loop such
-+*                     that a read would sometimes fail on the last byte
-because
-+*                     the transmit error which should have been ignored
-was
-+*                     being used.  This would leave an extra byte in
-the FIFO
-+*                     and the bus throttled such that the next
-operation would
-+*                     also fail.  Also updated the receive function to
-not
-+*                     disable the device after the last byte until
-after the
-+*                     bus transitions to not busy which is more
-consistent
-+*                     with the expected behavior.
-+* 1.01c ecm  12/05/02 new rev
-+* 1.02a mta  03/09/06 Implemented Repeated Start in the Low Level
-Driver.
-+* 1.03a mta  04/04/06 Implemented Dynamic IIC core routines.
-+* 1.03a ecm  06/15/06 Fixed the hang in low_level_eeprom_test with -O0
-+*                     Added polling loops for BNB to allow the slave to
-+*                     respond correctly. Also added polling loop prior
-+*                     to reset in _Recv.
-+* 1.13a wgr  03/22/07 Converted to new coding style.
-+* 1.13b ecm  11/29/07 added BB polling loops to the DynSend and DynRecv
-+*					  routines to handle the race
-condition with BNB in IISR.
-+* </pre>
-+*
-+***********************************************************************
-*****/
-+
-+/***************************** Include Files
-*******************************/
-+
-+#include "xbasic_types.h"
-+#include "xio.h"
-+#include "xiic_l.h"
-+
-+/************************** Constant Definitions
-***************************/
-+
-+/**************************** Type Definitions
-*****************************/
-+
-+/***************** Macros (Inline Functions) Definitions
-*******************/
-+
-+/************************** Function Prototypes
-****************************/
-+
-+static unsigned RecvData(u32 BaseAddress, u8 *BufferPtr,
-+			 unsigned ByteCount, u8 Option);
-+static unsigned SendData(u32 BaseAddress, u8 *BufferPtr,
-+			 unsigned ByteCount, u8 Option);
-+
-+static unsigned DynRecvData(u32 BaseAddress, u8 *BufferPtr, u8
-ByteCount);
-+static unsigned DynSendData(u32 BaseAddress, u8 *BufferPtr,
-+			    u8 ByteCount, u8 Option);
-+
-+/************************** Variable Definitions
-**************************/
-+
-+/**********************************************************************
-******/
-+/**
-+* Receive data as a master on the IIC bus.  This function receives the
-data
-+* using polled I/O and blocks until the data has been received. It only
-+* supports 7 bit addressing mode of operation. The user is responsible
-for
-+* ensuring the bus is not busy if multiple masters are present on the
-bus.
-+*
-+* @param    BaseAddress contains the base address of the IIC device.
-+* @param    Address contains the 7 bit IIC address of the device to
-send the
-+*           specified data to.
-+* @param    BufferPtr points to the data to be sent.
-+* @param    ByteCount is the number of bytes to be sent.
-+* @param    Option indicates whether to hold or free the bus after
-reception
-+*           of data, XIIC_STOP =3D end with STOP condition,
-XIIC_REPEATED_START
-+*           =3D don't end with STOP condition.
-+*
-+* @return
-+*
-+* The number of bytes received.
-+*
-+* @note
-+*
-+* None
-+*
-+***********************************************************************
-*******/
-+unsigned XIic_Recv(u32 BaseAddress, u8 Address,
-+		   u8 *BufferPtr, unsigned ByteCount, u8 Option)
-+{
-+	u8 CntlReg;
-+	unsigned RemainingByteCount;
-+	volatile u8 StatusReg;
-+
-+	/* Tx error is enabled incase the address (7 or 10) has no
-device to answer
-+	 * with Ack. When only one byte of data, must set NO ACK before
-address goes
-+	 * out therefore Tx error must not be enabled as it will go off
-immediately
-+	 * and the Rx full interrupt will be checked.  If full, then the
-one byte
-+	 * was received and the Tx error will be disabled without
-sending an error
-+	 * callback msg.
-+	 */
-+	XIic_mClearIisr(BaseAddress,
-+			XIIC_INTR_RX_FULL_MASK | XIIC_INTR_TX_ERROR_MASK
-|
-+			XIIC_INTR_ARB_LOST_MASK);
-+
-+	/* Set receive FIFO occupancy depth for 1 byte (zero based)
-+	 */
-+	XIo_Out8(BaseAddress + XIIC_RFD_REG_OFFSET, 0);
-+
-+
-+	/* Check to see if already Master on the Bus.
-+	 * If Repeated Start bit is not set send Start bit by setting
-MSMS bit else
-+	 * Send the address.
-+	 */
-+	CntlReg =3D XIo_In8(BaseAddress + XIIC_CR_REG_OFFSET);
-+	if ((CntlReg & XIIC_CR_REPEATED_START_MASK) =3D=3D 0) {
-+		/* 7 bit slave address, send the address for a read
-operation
-+		 * and set the state to indicate the address has been
-sent
-+		 */
-+		XIic_mSend7BitAddress(BaseAddress, Address,
-+				      XIIC_READ_OPERATION);
-+
-+
-+		/* MSMS gets set after putting data in FIFO. Start the
-master receive
-+		 * operation by setting CR Bits MSMS to Master, if the
-buffer is only one
-+		 * byte, then it should not be acknowledged to indicate
-the end of data
-+		 */
-+		CntlReg =3D XIIC_CR_MSMS_MASK |
-XIIC_CR_ENABLE_DEVICE_MASK;
-+		if (ByteCount =3D=3D 1) {
-+			CntlReg |=3D XIIC_CR_NO_ACK_MASK;
-+		}
-+
-+		/* Write out the control register to start receiving
-data and call the
-+		 * function to receive each byte into the buffer
-+		 */
-+		XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET, CntlReg);
-+
-+		/* Clear the latched interrupt status for the bus not
-busy bit which must
-+		 * be done while the bus is busy
-+		 */
-+		StatusReg =3D XIo_In8(BaseAddress + XIIC_SR_REG_OFFSET);
-+
-+		while ((StatusReg & XIIC_SR_BUS_BUSY_MASK) =3D=3D 0) {
-+			StatusReg =3D XIo_In8(BaseAddress +
-XIIC_SR_REG_OFFSET);
-+
-+		}
-+
-+		XIic_mClearIisr(BaseAddress, XIIC_INTR_BNB_MASK);
-+	}
-+	else {
-+		/* Already owns the Bus indicating that its a Repeated
-Start call.
-+		 * 7 bit slave address, send the address for a read
-operation
-+		 * and set the state to indicate the address has been
-sent
-+		 */
-+		XIic_mSend7BitAddress(BaseAddress, Address,
-+				      XIIC_READ_OPERATION);
-+	}
-+	/* Try to receive the data from the IIC bus */
-+
-+	RemainingByteCount =3D
-+		RecvData(BaseAddress, BufferPtr, ByteCount, Option);
-+
-+	CntlReg =3D XIo_In8(BaseAddress + XIIC_CR_REG_OFFSET);
-+	if ((CntlReg & XIIC_CR_REPEATED_START_MASK) =3D=3D 0) {
-+		/* The receive is complete, disable the IIC device if
-the Option is
-+		 * to release the Bus after Reception of data and return
-the number of
-+		 * bytes that was received
-+		 */
-+		XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET, 0);
-+	}
-+
-+	/* Return the number of bytes that was received */
-+
-+	return ByteCount - RemainingByteCount;
-+}
-+
-+/**********************************************************************
-********
-+*
-+* Receive the specified data from the device that has been previously
-addressed
-+* on the IIC bus.  This function assumes that the 7 bit address has
-been sent
-+* and it should wait for the transmit of the address to complete.
-+*
-+* @param    BaseAddress contains the base address of the IIC device.
-+* @param    BufferPtr points to the buffer to hold the data that is
-received.
-+* @param    ByteCount is the number of bytes to be received.
-+* @param    Option indicates whether to hold or free the bus after
-reception
-+*           of data, XIIC_STOP =3D end with STOP condition,
-XIIC_REPEATED_START
-+*           =3D don't end with STOP condition.
-+*
-+* @return
-+*
-+* The number of bytes remaining to be received.
-+*
-+* @note
-+*
-+* This function does not take advantage of the receive FIFO because it
-is
-+* designed for minimal code space and complexity.  It contains loops
-that
-+* that could cause the function not to return if the hardware is not
-working.
-+*
-+* This function assumes that the calling function will disable the IIC
-device
-+* after this function returns.
-+*
-+***********************************************************************
-*******/
-+static unsigned RecvData(u32 BaseAddress, u8 *BufferPtr,
-+			 unsigned ByteCount, u8 Option)
-+{
-+	u8 CntlReg;
-+	u32 IntrStatusMask;
-+	u32 IntrStatus;
-+
-+	/* Attempt to receive the specified number of bytes on the IIC
-bus */
-+
-+	while (ByteCount > 0) {
-+		/* Setup the mask to use for checking errors because
-when receiving one
-+		 * byte OR the last byte of a multibyte message an error
-naturally
-+		 * occurs when the no ack is done to tell the slave the
-last byte
-+		 */
-+		if (ByteCount =3D=3D 1) {
-+			IntrStatusMask =3D
-+				XIIC_INTR_ARB_LOST_MASK |
-XIIC_INTR_BNB_MASK;
-+		}
-+		else {
-+			IntrStatusMask =3D
-+				XIIC_INTR_ARB_LOST_MASK |
-+				XIIC_INTR_TX_ERROR_MASK |
-XIIC_INTR_BNB_MASK;
-+		}
-+
-+		/* Wait for the previous transmit and the 1st receive to
-complete
-+		 * by checking the interrupt status register of the IPIF
-+		 */
-+		while (1) {
-+			IntrStatus =3D XIIC_READ_IISR(BaseAddress);
-+			if (IntrStatus & XIIC_INTR_RX_FULL_MASK) {
-+				break;
-+			}
-+			/* Check the transmit error after the receive
-full because when
-+			 * sending only one byte transmit error will
-occur because of the
-+			 * no ack to indicate the end of the data
-+			 */
-+			if (IntrStatus & IntrStatusMask) {
-+				return ByteCount;
-+			}
-+		}
-+
-+		CntlReg =3D XIo_In8(BaseAddress + XIIC_CR_REG_OFFSET);
-+
-+		/* Special conditions exist for the last two bytes so
-check for them
-+		 * Note that the control register must be setup for
-these conditions
-+		 * before the data byte which was already received is
-read from the
-+		 * receive FIFO (while the bus is throttled
-+		 */
-+		if (ByteCount =3D=3D 1) {
-+			if (Option =3D=3D XIIC_STOP) {
-+
-+				/* If the Option is to release the bus
-after the last data
-+				 * byte, it has already been read and no
-ack has been done, so
-+				 * clear MSMS while leaving the device
-enabled so it can get off
-+				 * the IIC bus appropriately with a
-stop.
-+				 */
-+				XIo_Out8(BaseAddress +
-XIIC_CR_REG_OFFSET,
-+					 XIIC_CR_ENABLE_DEVICE_MASK);
-+			}
-+		}
-+
-+		/* Before the last byte is received, set NOACK to tell
-the slave IIC
-+		 * device that it is the end, this must be done before
-reading the byte
-+		 * from the FIFO
-+		 */
-+		if (ByteCount =3D=3D 2) {
-+			/* Write control reg with NO ACK allowing last
-byte to
-+			 * have the No ack set to indicate to slave last
-byte read.
-+			 */
-+			XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET,
-+				 CntlReg | XIIC_CR_NO_ACK_MASK);
-+		}
-+
-+		/* Read in data from the FIFO and unthrottle the bus
-such that the
-+		 * next byte is read from the IIC bus
-+		 */
-+		*BufferPtr++ =3D XIo_In8(BaseAddress +
-XIIC_DRR_REG_OFFSET);
-+
-+		if ((ByteCount =3D=3D 1) && (Option =3D=3D XIIC_REPEATED_START))
-{
-+
-+			/* RSTA bit should be set only when the FIFO is
-completely Empty.
-+			 */
-+			XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET,
-+				 XIIC_CR_ENABLE_DEVICE_MASK |
-XIIC_CR_MSMS_MASK
-+				 | XIIC_CR_REPEATED_START_MASK);
-+
-+		}
-+
-+		/* Clear the latched interrupt status so that it will be
-updated with
-+		 * the new state when it changes, this must be done
-after the receive
-+		 * register is read
-+		 */
-+		XIic_mClearIisr(BaseAddress, XIIC_INTR_RX_FULL_MASK |
-+				XIIC_INTR_TX_ERROR_MASK |
-+				XIIC_INTR_ARB_LOST_MASK);
-+		ByteCount--;
-+	}
-+
-+
-+	if (Option =3D=3D XIIC_STOP) {
-+
-+		/* If the Option is to release the bus after Reception
-of data, wait
-+		 * for the bus to transition to not busy before
-returning, the IIC
-+		 * device cannot be disabled until this occurs. It
-should transition as
-+		 * the MSMS bit of the control register was cleared
-before the last byte
-+		 * was read from the FIFO.
-+		 */
-+		while (1) {
-+			if (XIIC_READ_IISR(BaseAddress) &
-+			    XIIC_INTR_BNB_MASK) {
-+				break;
-+			}
-+		}
-+	}
-+
-+	return ByteCount;
-+}
-+
-+/**********************************************************************
-******/
-+/**
-+* Send data as a master on the IIC bus.  This function sends the data
-+* using polled I/O and blocks until the data has been sent.  It only
-supports
-+* 7 bit addressing mode of operation.  The user is responsible for
-ensuring
-+* the bus is not busy if multiple masters are present on the bus.
-+*
-+* @param    BaseAddress contains the base address of the IIC device.
-+* @param    Address contains the 7 bit IIC address of the device to
-send the
-+*           specified data to.
-+* @param    BufferPtr points to the data to be sent.
-+* @param    ByteCount is the number of bytes to be sent.
-+* @param    Option indicates whether to hold or free the bus after
-+*           transmitting the data.
-+*
-+* @return
-+*
-+* The number of bytes sent.
-+*
-+* @note
-+*
-+* None
-+*
-+***********************************************************************
-*******/
-+unsigned XIic_Send(u32 BaseAddress, u8 Address,
-+		   u8 *BufferPtr, unsigned ByteCount, u8 Option)
-+{
-+	unsigned RemainingByteCount;
-+	u8 ControlReg;
-+	volatile u8 StatusReg;
-+
-+	/* Check to see if already Master on the Bus.
-+	 * If Repeated Start bit is not set send Start bit by setting
-MSMS bit else
-+	 * Send the address.
-+	 */
-+	ControlReg =3D XIo_In8(BaseAddress + XIIC_CR_REG_OFFSET);
-+	if ((ControlReg & XIIC_CR_REPEATED_START_MASK) =3D=3D 0) {
-+		/* Put the address into the FIFO to be sent and indicate
-that the operation
-+		 * to be performed on the bus is a write operation
-+		 */
-+		XIic_mSend7BitAddress(BaseAddress, Address,
-+				      XIIC_WRITE_OPERATION);
-+		/* Clear the latched interrupt status so that it will be
-updated with the
-+		 * new state when it changes, this must be done after
-the address is put
-+		 * in the FIFO
-+		 */
-+		XIic_mClearIisr(BaseAddress, XIIC_INTR_TX_EMPTY_MASK |
-+				XIIC_INTR_TX_ERROR_MASK |
-+				XIIC_INTR_ARB_LOST_MASK);
-+
-+		/* MSMS must be set after putting data into transmit
-FIFO, indicate the
-+		 * direction is transmit, this device is master and
-enable the IIC device
-+		 */
-+		XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET,
-+			 XIIC_CR_MSMS_MASK | XIIC_CR_DIR_IS_TX_MASK |
-+			 XIIC_CR_ENABLE_DEVICE_MASK);
-+
-+		/* Clear the latched interrupt
-+		 * status for the bus not busy bit which must be done
-while the bus is busy
-+		 */
-+		StatusReg =3D XIo_In8(BaseAddress + XIIC_SR_REG_OFFSET);
-+		while ((StatusReg & XIIC_SR_BUS_BUSY_MASK) =3D=3D 0) {
-+			StatusReg =3D XIo_In8(BaseAddress +
-XIIC_SR_REG_OFFSET);
-+		}
-+
-+		XIic_mClearIisr(BaseAddress, XIIC_INTR_BNB_MASK);
-+
-+	}
-+	else {
-+		/* Already owns the Bus indicating that its a Repeated
-Start call.
-+		 * 7 bit slave address, send the address for a write
-operation
-+		 * and set the state to indicate the address has been
-sent
-+		 */
-+		XIic_mSend7BitAddress(BaseAddress, Address,
-+				      XIIC_WRITE_OPERATION);
-+	}
-+
-+	/* Send the specified data to the device on the IIC bus
-specified by the
-+	 * the address
-+	 */
-+	RemainingByteCount =3D
-+		SendData(BaseAddress, BufferPtr, ByteCount, Option);
-+
-+	ControlReg =3D XIo_In8(BaseAddress + XIIC_CR_REG_OFFSET);
-+	if ((ControlReg & XIIC_CR_REPEATED_START_MASK) =3D=3D 0) {
-+		/* The Transmission is completed, disable the IIC device
-if the Option
-+		 * is to release the Bus after transmission of data and
-return the number
-+		 * of bytes that was received. Only wait if master, if
-addressed as slave
-+		 * just reset to release the bus.
-+		 */
-+		if ((ControlReg & XIIC_CR_MSMS_MASK) !=3D 0) {
-+			XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET,
-+				 (ControlReg & ~XIIC_CR_MSMS_MASK));
-+			StatusReg =3D XIo_In8(BaseAddress +
-XIIC_SR_REG_OFFSET);
-+			while ((StatusReg & XIIC_SR_BUS_BUSY_MASK) !=3D 0)
-{
-+				StatusReg =3D
-+					XIo_In8(BaseAddress +
-+						XIIC_SR_REG_OFFSET);
-+			}
-+		}
-+
-+		XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET, 0);
-+	}
-+
-+	return ByteCount - RemainingByteCount;
-+}
-+
-+/**********************************************************************
-********
-+*
-+* Send the specified buffer to the device that has been previously
-addressed
-+* on the IIC bus.  This function assumes that the 7 bit address has
-been sent
-+* and it should wait for the transmit of the address to complete.
-+*
-+* @param    BaseAddress contains the base address of the IIC device.
-+* @param    BufferPtr points to the data to be sent.
-+* @param    ByteCount is the number of bytes to be sent.
-+* @param    Option indicates whether to hold or free the bus after
-+*           transmitting the data.
-+*
-+* @return
-+*
-+* The number of bytes remaining to be sent.
-+*
-+* @note
-+*
-+* This function does not take advantage of the transmit FIFO because it
-is
-+* designed for minimal code space and complexity.  It contains loops
-that
-+* that could cause the function not to return if the hardware is not
-working.
-+*
-+***********************************************************************
-*******/
-+static unsigned SendData(u32 BaseAddress, u8 *BufferPtr,
-+			 unsigned ByteCount, u8 Option)
-+{
-+	u32 IntrStatus;
-+
-+	/* Send the specified number of bytes in the specified buffer by
-polling
-+	 * the device registers and blocking until complete
-+	 */
-+	while (ByteCount > 0) {
-+		/* Wait for the transmit to be empty before sending any
-more data
-+		 * by polling the interrupt status register
-+		 */
-+		while (1) {
-+			IntrStatus =3D XIIC_READ_IISR(BaseAddress);
-+
-+			if (IntrStatus & (XIIC_INTR_TX_ERROR_MASK |
-+					  XIIC_INTR_ARB_LOST_MASK |
-+					  XIIC_INTR_BNB_MASK)) {
-+				return ByteCount;
-+			}
-+
-+			if (IntrStatus & XIIC_INTR_TX_EMPTY_MASK) {
-+				break;
-+			}
-+		}
-+		/* If there is more than one byte to send then put the
-next byte to send
-+		 * into the transmit FIFO
-+		 */
-+		if (ByteCount > 1) {
-+			XIo_Out8(BaseAddress + XIIC_DTR_REG_OFFSET,
-+				 *BufferPtr++);
-+		}
-+		else {
-+			if (Option =3D=3D XIIC_STOP) {
-+				/* If the Option is to release the bus
-after the last data
-+				 * byte, Set the stop Option before
-sending the last byte
-+				 * of data so that the stop Option will
-be generated
-+				 * immediately following the data. This
-is done by clearing
-+				 * the MSMS bit in the control register.
-+				 */
-+				XIo_Out8(BaseAddress +
-XIIC_CR_REG_OFFSET,
-+					 XIIC_CR_ENABLE_DEVICE_MASK |
-+					 XIIC_CR_DIR_IS_TX_MASK);
-+			}
-+
-+			/* Put the last byte to send in the transmit
-FIFO */
-+
-+			XIo_Out8(BaseAddress + XIIC_DTR_REG_OFFSET,
-+				 *BufferPtr++);
-+
-+			if (Option =3D=3D XIIC_REPEATED_START) {
-+				XIic_mClearIisr(BaseAddress,
-+
-XIIC_INTR_TX_EMPTY_MASK);
-+				/* Wait for the transmit to be empty
-before setting RSTA bit. */
-+				while (1) {
-+					IntrStatus =3D
-+						XIIC_READ_IISR
-+						(BaseAddress);
-+					if (IntrStatus &
-+					    XIIC_INTR_TX_EMPTY_MASK) {
-+						/* RSTA bit should be
-set only when the FIFO is completely Empty.
-+						 */
-+						XIo_Out8(BaseAddress +
-+
-XIIC_CR_REG_OFFSET,
-+
-XIIC_CR_REPEATED_START_MASK
-+							 |
-+
-XIIC_CR_ENABLE_DEVICE_MASK
-+							 |
-+
-XIIC_CR_DIR_IS_TX_MASK
-+							 |
-XIIC_CR_MSMS_MASK);
-+						break;
-+					}
-+				}
-+			}
-+
-+		}
-+
-+		/* Clear the latched interrupt status register and this
-must be done after
-+		 * the transmit FIFO has been written to or it won't
-clear
-+		 */
-+		XIic_mClearIisr(BaseAddress, XIIC_INTR_TX_EMPTY_MASK);
-+
-+		/* Update the byte count to reflect the byte sent and
-clear the latched
-+		 * interrupt status so it will be updated for the new
-state
-+		 */
-+		ByteCount--;
-+	}
-+
-+	if (Option =3D=3D XIIC_STOP) {
-+		/* If the Option is to release the bus after
-transmission of data,
-+		 * Wait for the bus to transition to not busy before
-returning, the IIC
-+		 * device cannot be disabled until this occurs.
-+		 * Note that this is different from a receive operation
-because the stop
-+		 * Option causes the bus to go not busy.
-+		 */
-+		while (1) {
-+			if (XIIC_READ_IISR(BaseAddress) &
-+			    XIIC_INTR_BNB_MASK) {
-+				break;
-+			}
-+		}
-+	}
-+
-+	return ByteCount;
-+}
-+
-+/**********************************************************************
-*******/
-+/**
-+* Receive data as a master on the IIC bus. This function receives the
-data
-+* using polled I/O and blocks until the data has been received. It only
-+* supports 7 bit addressing. The user is responsible for ensuring the
-bus is
-+* not busy if multiple masters are present on the bus.
-+*
-+* @param    BaseAddress contains the base address of the IIC Device.
-+* @param    Address contains the 7 bit IIC Device address of the device
-to send
-+*           the specified data to.
-+* @param    BufferPtr points to the data to be sent.
-+* @param    ByteCount is the number of bytes to be sent. This value
-can't be
-+*           greater than 255 and needs to be greater than 0.
-+*
-+* @return   The number of bytes received.
-+*
-+* @note     Upon entry to this function, the IIC interface needs to be
-already
-+*           enabled in the CR register.
-+*
-+***********************************************************************
-*******/
-+unsigned XIic_DynRecv(u32 BaseAddress, u8 Address, u8 *BufferPtr, u8
-ByteCount)
-+{
-+	unsigned RemainingByteCount;
-+	u32 StatusRegister;
-+
-+	/*
-+	 * Clear the latched interrupt status so that it will be updated
-with
-+	 * the new state when it changes.
-+	 */
-+	XIic_mClearIisr(BaseAddress, XIIC_INTR_TX_EMPTY_MASK |
-+			XIIC_INTR_TX_ERROR_MASK |
-XIIC_INTR_ARB_LOST_MASK);
-+
-+	/*
-+	 * Send the 7 bit slave address for a read operation and set the
-state
-+	 * to indicate the address has been sent. Upon writing the
-address, a
-+	 * start condition is initiated. MSMS is automatically set to
-master
-+	 * when the address is written to the Fifo. If MSMS was already
-set,
-+	 *  then a re-start is sent prior to the address.
-+	 */
-+	XIic_mDynSend7BitAddress(BaseAddress, Address,
-XIIC_READ_OPERATION);
-+
-+	/*
-+	 * Wait for the bus to go busy.
-+	 */
-+	StatusRegister =3D XIo_In8(BaseAddress + XIIC_SR_REG_OFFSET);
-+
-+	while (( StatusRegister & XIIC_SR_BUS_BUSY_MASK) !=3D
-XIIC_SR_BUS_BUSY_MASK)
-+	{
-+		StatusRegister =3D XIo_In8(BaseAddress +
-XIIC_SR_REG_OFFSET);
-+	}
-+
-+	/*
-+	 * Clear the latched interrupt status for the bus not busy bit
-which
-+	 * must be done while the bus is busy.
-+	 */
-+	XIic_mClearIisr(BaseAddress, XIIC_INTR_BNB_MASK);
-+
-+	/*
-+	 * Write to the Tx Fifo the dynamic stop control bit with the
-number of
-+	 * bytes that are to be read over the IIC interface from the
-presently
-+	 * addressed device.
-+	 */
-+	XIic_mDynSendStop(BaseAddress, ByteCount);
-+
-+	/*
-+	 * Receive the data from the IIC bus.
-+	 */
-+	RemainingByteCount =3D DynRecvData(BaseAddress, BufferPtr,
-ByteCount);
-+
-+	/*
-+	 * The receive is complete. Return the number of bytes that were
-+	 * received.
-+	 */
-+	return ByteCount - RemainingByteCount;
-+}
-+
-+/**********************************************************************
-*******/
-+/**
-+* Receive the specified data from the device that has been previously
-addressed
-+* on the IIC bus. This function assumes the following:
-+*   - The Rx Fifo occupancy depth has been set to its max.
-+*   - Upon entry, the Rx Fifo is empty.
-+*   - The 7 bit address has been sent.
-+*   - The dynamic stop and number of bytes to receive has been written
-to Tx
-+*     Fifo.
-+*
-+* @param    BaseAddress contains the base address of the IIC Device.
-+* @param    BufferPtr points to the buffer to hold the data that is
-received.
-+* @param    ByteCount is the number of bytes to be received. The range
-of this
-+*           value is greater than 0 and not higher than 255.
-+*
-+* @return   The number of bytes remaining to be received.
-+*
-+* @note     This function contains loops that could cause the function
-not
-+*           to return if the hardware is not working.
-+*
-+***********************************************************************
-*******/
-+static unsigned DynRecvData(u32 BaseAddress, u8 *BufferPtr, u8
-ByteCount)
-+{
-+ 	u8 StatusReg;
-+ 	u32 IntrStatus;
-+ 	u32 IntrStatusMask;
-+
-+ 	while (ByteCount > 0) {
-+
-+ 		/* Setup the mask to use for checking errors because
-when
-+ 		 * receiving one byte OR the last byte of a multibyte
-message
-+ 		 * an error naturally occurs when the no ack is done to
-tell
-+ 		 * the slave the last byte.
-+ 		 */
-+ 		if (ByteCount =3D=3D 1) {
-+ 			IntrStatusMask =3D
-+ 				XIIC_INTR_ARB_LOST_MASK |
-XIIC_INTR_BNB_MASK;
-+ 		}
-+ 		else {
-+ 			IntrStatusMask =3D
-+ 				XIIC_INTR_ARB_LOST_MASK |
-+ 				XIIC_INTR_TX_ERROR_MASK |
-XIIC_INTR_BNB_MASK;
-+ 		}
-+
-+ 		/*
-+ 		 * Wait for a byte to show up in the Rx Fifo.
-+ 		 */
-+ 		do {
-+ 			StatusReg =3D XIo_In8(BaseAddress +
-XIIC_SR_REG_OFFSET);
-+ 			IntrStatus =3D XIIC_READ_IISR(BaseAddress);
-+
-+ 			/* Check the transmit error after the receive
-full
-+ 			 * because when sending only one byte transmit
-error
-+ 			 * will occur because of the no ack to indicate
-the end
-+ 			 *  of the data.
-+ 			 */
-+ 			if (IntrStatus & IntrStatusMask) {
-+ 				return ByteCount;
-+ 			}
-+
-+ 		} while ((StatusReg & XIIC_SR_RX_FIFO_EMPTY_MASK) =3D=3D
-+ 			 		XIIC_SR_RX_FIFO_EMPTY_MASK);
-+
-+ 		/*
-+ 		 * Read in byte from the Rx Fifo. If the Fifo reached
-the
-+ 		 * programmed occupancy depth as programmed in the Rx
-occupancy
-+ 		 * reg, this read access will un throttle the bus such
-that
-+ 		 * the next byte is read from the IIC bus.
-+ 		 */
-+ 		*BufferPtr++ =3D XIo_In8(BaseAddress +
-XIIC_DRR_REG_OFFSET);
-+ 		ByteCount--;
-+ 	}
-+
-+	return ByteCount;
-+}
-+
-+/**********************************************************************
-*******/
-+/**
-+* Send data as a master on the IIC bus. This function sends the data
-using
-+* polled I/O and blocks until the data has been sent. It only supports
-7 bit
-+* addressing. The user is responsible for ensuring the bus is not busy
-if
-+* multiple masters are present on the bus.
-+*
-+* @param    BaseAddress contains the base address of the IIC Device.
-+* @param    Address contains the 7 bit IIC address of the device to
-send the
-+*           specified data to.
-+* @param    BufferPtr points to the data to be sent.
-+* @param    ByteCount is the number of bytes to be sent.
-+* @param    Option: XIIC_STOP =3D end with STOP condition,
-XIIC_REPEATED_START
-+*           =3D don't end with STOP condition.
-+*
-+* @return   The number of bytes sent.
-+*
-+* @note     None.
-+*
-+***********************************************************************
-*******/
-+unsigned XIic_DynSend(u32 BaseAddress, u16 Address, u8 *BufferPtr,
-+		      u8 ByteCount, u8 Option)
-+{
-+	unsigned RemainingByteCount;
-+	u32 StatusRegister;
-+
-+	/*
-+	 * Clear the latched interrupt status so that it will be updated
-with
-+	 * the new state when it changes, this must be done after the
-address
-+	 * is put in the FIFO
-+	 */
-+	XIic_mClearIisr(BaseAddress, XIIC_INTR_TX_EMPTY_MASK |
-+			XIIC_INTR_TX_ERROR_MASK |
-XIIC_INTR_ARB_LOST_MASK);
-+
-+	/*
-+	 * Put the address into the Fifo to be sent and indicate that
-the
-+	 * operation to be performed on the bus is a write operation.
-Upon
-+	 * writing the address, a start condition is initiated. MSMS is
-+	 * automatically set to master when the address is written to
-the Fifo.
-+	 * If MSMS was already set, then a re-start is sent prior to the
-+	 *  address.
-+	 */
-+	if(!(Address & XIIC_TX_DYN_STOP_MASK))
-+	{
-+
-+		XIic_mDynSend7BitAddress(BaseAddress, Address,
-+		XIIC_WRITE_OPERATION);
-+	}
-+	else
-+	{
-+		XIic_mDynSendStartStopAddress(BaseAddress, Address,
-+					XIIC_WRITE_OPERATION);
-+    }
-+
-+	/*
-+	 * Wait for the bus to go busy.
-+	 */
-+	StatusRegister =3D XIo_In8(BaseAddress + XIIC_SR_REG_OFFSET);
-+
-+	while (( StatusRegister & XIIC_SR_BUS_BUSY_MASK) !=3D
-XIIC_SR_BUS_BUSY_MASK)
-+	{
-+		StatusRegister =3D XIo_In8(BaseAddress +
-XIIC_SR_REG_OFFSET);
-+	}
-+
-+	/*
-+	 * Clear the latched interrupt status for the bus not busy bit
-which
-+	 * must be done while the bus is busy.
-+	 */
-+	XIic_mClearIisr(BaseAddress, XIIC_INTR_BNB_MASK);
-+
-+	/*
-+	 * Send the specified data to the device on the IIC bus
-specified by the
-+	 * the address.
-+	 */
-+	RemainingByteCount =3D DynSendData(BaseAddress, BufferPtr,
-ByteCount,
-+					 Option);
-+
-+	/*
-+	 * The send is complete return the number of bytes that was
-sent.
-+	 */
-+	return ByteCount - RemainingByteCount;
-+}
-+
-+/**********************************************************************
-********
-+*
-+* Send the specified buffer to the device that has been previously
-addressed
-+* on the IIC bus. This function assumes that the 7 bit address has been
-sent.
-+*
-+* @param    BaseAddress contains the base address of the IIC Device.
-+* @param    BufferPtr points to the data to be sent.
-+* @param    ByteCount is the number of bytes to be sent.
-+* @param    Option: XIIC_STOP =3D end with STOP condition,
-XIIC_REPEATED_START
-+*           =3D don't end with STOP condition.
-+*
-+* @return   The number of bytes remaining to be sent.
-+*
-+* @note     This function does not take advantage of the transmit Fifo
-because
-+*           it is designed for minimal code space and complexity.
-+*
-+***********************************************************************
-*******/
-+static unsigned DynSendData(u32 BaseAddress, u8 *BufferPtr,
-+			    u8 ByteCount, u8 Option)
-+{
-+	u32 IntrStatus;
-+
-+	while (ByteCount > 0) {
-+		/*
-+		 * Wait for the transmit to be empty before sending any
-more
-+		 * data by polling the interrupt status register.
-+		 */
-+		while (1) {
-+			IntrStatus =3D XIIC_READ_IISR(BaseAddress);
-+			if (IntrStatus & (XIIC_INTR_TX_ERROR_MASK |
-+					  XIIC_INTR_ARB_LOST_MASK |
-+					  XIIC_INTR_BNB_MASK)) {
-+				/*
-+				 * Error condition (NACK or ARB Lost or
-BNB
-+				 * Error Has occurred. Clear the Control
-+				 * register to send a STOP condition on
-the Bus
-+				 * and return the number of bytes still
-to
-+				 * transmit.
-+				 */
-+
-+				XIo_Out8(BaseAddress +
-XIIC_CR_REG_OFFSET,
-+					 0x03);
-+				XIo_Out8(BaseAddress +
-XIIC_CR_REG_OFFSET,
-+					 0x01);
-+
-+				return ByteCount;
-+			}
-+
-+			/*
-+			 * Check for the transmit Fifo to become Empty.
-+			 */
-+			if (IntrStatus & XIIC_INTR_TX_EMPTY_MASK) {
-+				break;
-+			}
-+		}
-+
-+		/*
-+		 * Send data to Tx Fifo. If a stop condition is
-specified and
-+		 * the last byte is being sent, then set the dynamic
-stop bit.
-+		 */
-+		if ((ByteCount =3D=3D 1) && (Option =3D=3D XIIC_STOP)) {
-+			/*
-+			 * The MSMS will be cleared automatically upon
-setting
-+			 *  dynamic stop.
-+			 */
-+			XIo_Out16(BaseAddress + XIIC_DTR_REG_OFFSET - 1,
-+				  	XIIC_TX_DYN_STOP_MASK |
-*BufferPtr++);
-+		}
-+		else {
-+			XIo_Out8(BaseAddress + XIIC_DTR_REG_OFFSET,
-+
-*BufferPtr++);
-+		}
-+
-+		/*
-+		 * Update the byte count to reflect the byte sent.
-+		 */
-+		ByteCount--;
-+	}
-+
-+	if (Option =3D=3D XIIC_STOP) {
-+		/*
-+		 * If the Option is to release the bus after
-transmission of
-+		 * data, Wait for the bus to transition to not busy
-before
-+		 * returning, the IIC device cannot be disabled until
-this
-+		 * occurs.
-+		 */
-+		while (1) {
-+			if (XIIC_READ_IISR(BaseAddress) &
-XIIC_INTR_BNB_MASK) {
-+				break;
-+			}
-+		}
-+	}
-+
-+	return ByteCount;
-+}
-+
-+/**********************************************************************
-********
-+*
-+* Initialize the IIC core for Dynamic Functionality.
-+*
-+* @param    BaseAddress contains the base address of the IIC Device.
-+*
-+* @return   XST_SUCCESS if Successful else XST_FAILURE.
-+*
-+* @note     None.
-+*
-+***********************************************************************
-*******/
-+int XIic_DynInit(u32 BaseAddress)
-+{
-+    u8 Status;
-+
-+	/*
-+	 * Reset IIC Core.
-+	 */
-+	XIIC_RESET(BaseAddress);
-+
-+    /*
-+     * Set receive Fifo depth to maximum (zero based).
-+     */
-+    XIo_Out8(BaseAddress + XIIC_RFD_REG_OFFSET, IIC_RX_FIFO_DEPTH - 1);
-+
-+    /*
-+     * Reset Tx Fifo.
-+     */
-+    XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET,
-XIIC_CR_TX_FIFO_RESET_MASK);
-+
-+    /*
-+     * Enable IIC Device, remove Tx Fifo reset & disable general call.
-+     */
-+    XIo_Out8(BaseAddress + XIIC_CR_REG_OFFSET,
-XIIC_CR_ENABLE_DEVICE_MASK);
-+
-+    /*
-+     * Read status register and verify IIC Device is in initial state.
-Only the
-+     * Tx Fifo and Rx Fifo empty bits should be set.
-+     */
-+    Status =3D XIo_In8(BaseAddress + XIIC_SR_REG_OFFSET);
-+    if(Status =3D=3D (XIIC_SR_RX_FIFO_EMPTY_MASK |
-XIIC_SR_TX_FIFO_EMPTY_MASK))
-+    {
-+        return XST_SUCCESS;
-+    }
-+
-+    return XST_FAILURE;
-+}
-+
-diff --git a/drivers/net/xilinx_lltemac/xlltemac_main.c
-b/drivers/net/xilinx_lltemac/xlltemac_main.c
-index fb1ab28..11bcb48 100644
---- a/drivers/net/xilinx_lltemac/xlltemac_main.c
-+++ b/drivers/net/xilinx_lltemac/xlltemac_main.c
-@@ -623,27 +623,27 @@ int renegotiate_speed(struct net_device *dev, int
-speed, DUPLEX duplex)
- 	return -1;
- }
-=20
--// #define XILINX_PLB_TEMAC_3_00A_ML403_PHY_SUPPORT
-+#define MARVELL_88E1111_PHY
- /*
-  * This function sets up MAC's speed according to link speed of PHY
-- * This function is specific to MARVELL 88E1111 PHY chip on Xilinx
-ML403
-- * board and assumes GMII interface is being used by the TEMAC
-+ * This function is specific to MARVELL 88E1111 PHY chip on many Xilinx
-
-+ * boards and assumes GMII interface is being used by the TEMAC
-  */
- void set_mac_speed(struct net_local *lp)
- {
- 	u16 phylinkspeed;
- 	struct net_device *dev =3D lp->ndev;
--	int ret;
-=20
--#ifndef XILINX_PLB_TEMAC_3_00A_ML403_PHY_SUPPORT
-+#ifndef MARVELL_88E1111_PHY
-+	int ret;
- 	int retry_count =3D 1;
- #endif
-=20
- 	/*
--	 * See comments at top for an explanation of
--	 * XILINX_PLB_TEMAC_3_00A_ML403_PHY_SUPPORT
-+	 * See comments at top for an explanation of=20
-+	 * #undef MARVELL_88E1111_PHY
- 	 */
--#ifdef XILINX_PLB_TEMAC_3_00A_ML403_PHY_SUPPORT
-+#ifdef MARVELL_88E1111_PHY
- #define MARVELL_88E1111_PHY_SPECIFIC_STATUS_REG_OFFSET  17
- #define MARVELL_88E1111_LINKSPEED_MARK                  0xC000
- #define MARVELL_88E1111_LINKSPEED_SHIFT                 14
-@@ -687,7 +687,8 @@ void set_mac_speed(struct net_local *lp)
- 		break;
- 	}
-=20
--#else
-+#else	/* generic PHY, there have been issues with 10Mbit with this
-code */
-+
- 	if (XLlTemac_GetPhysicalInterface(&lp->Emac) =3D=3D
-XTE_PHY_TYPE_MII) {
- 		phylinkspeed =3D 100;
- 	}
-@@ -881,6 +882,7 @@ static void poll_gmii(unsigned long data)
- 	netif_carrier =3D netif_carrier_ok(dev) !=3D 0;
- 	if (phy_carrier !=3D netif_carrier) {
- 		if (phy_carrier) {
-+			set_mac_speed(lp);
- 			printk(KERN_INFO
- 			       "%s: XLlTemac: PHY Link carrier
-restored.\n",
- 			       dev->name);
-@@ -1015,7 +1017,7 @@ static irqreturn_t xenet_dma_rx_interrupt(int irq,
-void *dev_id)
- 	struct net_local *lp =3D (struct net_local *) dev->priv;
- 	struct list_head *cur_lp;
-=20
--        unsigned int flags;
-+        unsigned long flags;
-=20
- 	/* Read pending interrupts */
- 	irq_status =3D XLlDma_mBdRingGetIrq(&lp->Dma.RxBdRing);
-@@ -1026,7 +1028,6 @@ static irqreturn_t xenet_dma_rx_interrupt(int irq,
-void *dev_id)
- 		XLlDma_Reset(&lp->Dma);
- 		return IRQ_HANDLED;
- 	}
+@@ -181,10 +186,6 @@ CONFIG_ZONE_DMA=3Dy
+ # CONFIG_PCI_DOMAINS is not set
+ # CONFIG_PCI_SYSCALL is not set
+ # CONFIG_ARCH_SUPPORTS_MSI is not set
 -
- 	if ((irq_status & (XLLDMA_IRQ_DELAY_MASK |
-XLLDMA_IRQ_COALESCE_MASK))) {
- 		spin_lock_irqsave(&receivedQueueSpin, flags);
- 		list_for_each(cur_lp, &receivedQueue) {
-@@ -1052,7 +1053,7 @@ static irqreturn_t xenet_dma_tx_interrupt(int irq,
-void *dev_id)
- 	struct net_local *lp =3D (struct net_local *) dev->priv;
- 	struct list_head *cur_lp;
+-#
+-# PCCARD (PCMCIA/CardBus) support
+-#
+ # CONFIG_PCCARD is not set
 =20
--	unsigned int flags;
-+	unsigned long flags;
-=20
- 	/* Read pending interrupts */
- 	irq_status =3D XLlDma_mBdRingGetIrq(&(lp->Dma.TxBdRing));
-@@ -1401,7 +1402,7 @@ static void FifoSendHandler(struct net_device
-*dev)
- {
- 	struct net_local *lp;
- 	struct sk_buff *skb;
--	unsigned int flags;
-+	unsigned long flags;
-=20
- 	spin_lock_irqsave(&XTE_tx_spinlock, flags);
- 	lp =3D (struct net_local *) dev->priv;
-@@ -2979,7 +2980,7 @@ static int detect_phy(struct net_local *lp, char
-*dev_name)
- 	printk(KERN_WARNING "XTemac: No PHY detected.  Assuming a PHY at
-address 0\n");
- 	return 0;		/* default to zero */
- }
+ #
+@@ -239,6 +240,7 @@ CONFIG_IP_PNP_DHCP=3Dy
+ CONFIG_INET_XFRM_MODE_TRANSPORT=3Dy
+ CONFIG_INET_XFRM_MODE_TUNNEL=3Dy
+ CONFIG_INET_XFRM_MODE_BEET=3Dy
++# CONFIG_INET_LRO is not set
+ CONFIG_INET_DIAG=3Dy
+ CONFIG_INET_TCP_DIAG=3Dy
+ # CONFIG_TCP_CONG_ADVANCED is not set
+@@ -264,10 +266,6 @@ CONFIG_DEFAULT_TCP_CONG=3D"cubic"
+ # CONFIG_LAPB is not set
+ # CONFIG_ECONET is not set
+ # CONFIG_WAN_ROUTER is not set
 -
-+extern bd_t __res;
+-#
+-# QoS and/or fair queueing
+-#
+ # CONFIG_NET_SCHED is not set
 =20
- /** Shared device initialization code */
- static int xtenet_setup(
-@@ -3047,8 +3048,10 @@ static int xtenet_setup(
- 		goto error;
- 	}
+ #
+@@ -296,6 +294,7 @@ CONFIG_DEFAULT_TCP_CONG=3D"cubic"
+ #
+ # Generic Driver Options
+ #
++CONFIG_UEVENT_HELPER_PATH=3D"/sbin/hotplug"
+ CONFIG_STANDALONE=3Dy
+ CONFIG_PREVENT_FIRMWARE_BUILD=3Dy
+ # CONFIG_FW_LOADER is not set
+@@ -321,6 +320,7 @@ CONFIG_BLK_DEV_RAM_BLOCKSIZE=3D1024
+ CONFIG_MISC_DEVICES=3Dy
+ # CONFIG_EEPROM_93CX6 is not set
+ CONFIG_XILINX_DRIVERS=3Dy
++CONFIG_NEED_XILINX_LLDMA=3Dy
+ CONFIG_NEED_XILINX_IPIF=3Dy
+ # CONFIG_IDE is not set
 =20
--	/* Set the MAC address */
--	memcpy(ndev->dev_addr, pdata->mac_addr, 6);
-+	/* Set the MAC address from the iic eeprom info in the board
-data */
-+        memcpy(ndev->dev_addr, ((bd_t *) &__res)->bi_enetaddr, 6);
-+        memcpy(pdata->mac_addr, ((bd_t *) &__res)->bi_enetaddr, 6);
+@@ -341,15 +341,21 @@ CONFIG_NETDEVICES=3Dy
+ # CONFIG_MACVLAN is not set
+ # CONFIG_EQUALIZER is not set
+ CONFIG_TUN=3Dy
++# CONFIG_VETH is not set
+ # CONFIG_PHYLIB is not set
+ CONFIG_NET_ETHERNET=3Dy
+ # CONFIG_MII is not set
+ # CONFIG_IBM_EMAC is not set
++# CONFIG_IBM_NEW_EMAC_ZMII is not set
++# CONFIG_IBM_NEW_EMAC_RGMII is not set
++# CONFIG_IBM_NEW_EMAC_TAH is not set
++# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
++# CONFIG_B44 is not set
+ CONFIG_XILINX_EMAC=3Dy
+ # CONFIG_XILINX_EMACLITE is not set
+ CONFIG_NETDEV_1000=3Dy
+ # CONFIG_XILINX_TEMAC is not set
+-# CONFIG_XILINX_LLTEMAC is not set
++CONFIG_XILINX_LLTEMAC=3Dy
+ CONFIG_NETDEV_10000=3Dy
+=20
+ #
+@@ -382,7 +388,6 @@ CONFIG_INPUT_MOUSEDEV=3Dy
+ CONFIG_INPUT_MOUSEDEV_SCREEN_X=3D1024
+ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=3D768
+ # CONFIG_INPUT_JOYDEV is not set
+-# CONFIG_INPUT_TSDEV is not set
+ # CONFIG_INPUT_EVDEV is not set
+ # CONFIG_INPUT_EVBUG is not set
+=20
+@@ -423,13 +428,12 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=3D4
+ #
+ # Non-8250 serial port support
+ #
++# CONFIG_SERIAL_UARTLITE is not set
+ CONFIG_SERIAL_CORE=3Dy
+ CONFIG_SERIAL_CORE_CONSOLE=3Dy
+-# CONFIG_SERIAL_XILINX_UARTLITE is not set
+ CONFIG_UNIX98_PTYS=3Dy
+ # CONFIG_LEGACY_PTYS is not set
+ # CONFIG_IPMI_HANDLER is not set
+-# CONFIG_WATCHDOG is not set
+ CONFIG_HW_RANDOM=3Dm
+ # CONFIG_NVRAM is not set
+ # CONFIG_GEN_RTC is not set
+@@ -438,7 +442,45 @@ CONFIG_HW_RANDOM=3Dm
+ # CONFIG_R3964 is not set
+ # CONFIG_RAW_DRIVER is not set
+ # CONFIG_TCG_TPM is not set
+-# CONFIG_I2C is not set
++CONFIG_I2C=3Dy
++CONFIG_I2C_BOARDINFO=3Dy
++CONFIG_I2C_CHARDEV=3Dy
 +
- 	if (_XLlTemac_SetMacAddress(&lp->Emac, ndev->dev_addr) !=3D
-XST_SUCCESS) {
- 		/* should not fail right after an initialize */
- 		dev_err(dev, "XLlTemac: could not set MAC address.\n");
-@@ -3072,17 +3075,20 @@ static int xtenet_setup(
++#
++# I2C Algorithms
++#
++# CONFIG_I2C_ALGOBIT is not set
++# CONFIG_I2C_ALGOPCF is not set
++# CONFIG_I2C_ALGOPCA is not set
++CONFIG_XILINX_IIC=3Dy
++
++#
++# I2C Hardware Bus support
++#
++# CONFIG_I2C_MPC is not set
++# CONFIG_I2C_OCORES is not set
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_SIMTEC is not set
++# CONFIG_I2C_TAOS_EVM is not set
++# CONFIG_I2C_STUB is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_SENSORS_DS1337 is not set
++# CONFIG_SENSORS_DS1374 is not set
++# CONFIG_DS1682 is not set
++# CONFIG_SENSORS_EEPROM is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_SENSORS_PCA9539 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_M41T00 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_SENSORS_TSL2550 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
 =20
- 		dev_err(dev, "XLlTemac: using DMA mode.\n");
+ #
+ # SPI support
+@@ -448,6 +490,13 @@ CONFIG_HW_RANDOM=3Dm
+ # CONFIG_W1 is not set
+ # CONFIG_POWER_SUPPLY is not set
+ # CONFIG_HWMON is not set
++# CONFIG_WATCHDOG is not set
++
++#
++# Sonics Silicon Backplane
++#
++CONFIG_SSB_POSSIBLE=3Dy
++# CONFIG_SSB is not set
 =20
--#ifndef XDCRIO_H
--		virt_baddr =3D (u32) ioremap(pdata->ll_dev_baseaddress,
-4096);
--		if (0 =3D=3D virt_baddr) {
--			dev_err(dev,
--			       "XLlTemac: Could not allocate iomem for
-local link connected device.\n");
--			rc =3D -EIO;
--			goto error;
-+		if (pdata->dcr_host) {
-+			printk("XLlTemac: DCR address: 0x%0x\n",
-pdata->ll_dev_baseaddress);
-+			XLlDma_Initialize(&lp->Dma,
-pdata->ll_dev_baseaddress);
-+		} else {
-+		        virt_baddr =3D (u32)
-ioremap(pdata->ll_dev_baseaddress, 4096);
-+			if (0 =3D=3D virt_baddr) {
-+			        dev_err(dev,
-+					"XLlTemac: Could not allocate
-iomem for local link connected device.\n");
-+				rc =3D -EIO;
-+				goto error;
-+			}
-+			printk("XLlTemac: Dma base address: phy: 0x%x,
-virt: 0x%x\n", pdata->ll_dev_baseaddress, virt_baddr);
-+			XLlDma_Initialize(&lp->Dma, virt_baddr);
- 		}
--#endif
--		printk("XLlTemac: Dma base address: phy: 0x%x, virt:
-0x%x\n", pdata->ll_dev_baseaddress, virt_baddr);
--		XLlDma_Initialize(&lp->Dma, virt_baddr);
+ #
+ # Multifunction device drivers
+@@ -464,16 +513,15 @@ CONFIG_DAB=3Dy
+ #
+ # Graphics support
+ #
++# CONFIG_VGASTATE is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=3Dm
++# CONFIG_FB is not set
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
 =20
+ #
+ # Display device support
+ #
+ # CONFIG_DISPLAY_SUPPORT is not set
+-# CONFIG_VGASTATE is not set
+-CONFIG_VIDEO_OUTPUT_CONTROL=3Dm
+-# CONFIG_FB is not set
+-# CONFIG_FB_IBM_GXT4500 is not set
 =20
- 		ndev->hard_start_xmit =3D xenet_DmaSend;
+ #
+ # Console display driver support
+@@ -487,6 +535,7 @@ CONFIG_DUMMY_CONSOLE=3Dy
+ CONFIG_HID_SUPPORT=3Dy
+ CONFIG_HID=3Dy
+ CONFIG_HID_DEBUG=3Dy
++# CONFIG_HIDRAW is not set
+ CONFIG_USB_SUPPORT=3Dy
+ # CONFIG_USB_ARCH_HAS_HCD is not set
+ # CONFIG_USB_ARCH_HAS_OHCI is not set
+@@ -504,19 +553,6 @@ CONFIG_USB_SUPPORT=3Dy
+ # CONFIG_NEW_LEDS is not set
+ # CONFIG_EDAC is not set
+ # CONFIG_RTC_CLASS is not set
+-
+-#
+-# DMA Engine support
+-#
+-# CONFIG_DMA_ENGINE is not set
+-
+-#
+-# DMA Clients
+-#
+-
+-#
+-# DMA Devices
+-#
+ CONFIG_XILINX_EDK=3Dy
+=20
+ #
+@@ -574,7 +610,6 @@ CONFIG_SYSFS=3Dy
+ CONFIG_TMPFS=3Dy
+ # CONFIG_TMPFS_POSIX_ACL is not set
+ # CONFIG_HUGETLB_PAGE is not set
+-CONFIG_RAMFS=3Dy
+ # CONFIG_CONFIGFS_FS is not set
+=20
+ #
+@@ -593,10 +628,7 @@ CONFIG_RAMFS=3Dy
+ # CONFIG_QNX4FS_FS is not set
+ # CONFIG_SYSV_FS is not set
+ # CONFIG_UFS_FS is not set
+-
+-#
+-# Network File Systems
+-#
++CONFIG_NETWORK_FILESYSTEMS=3Dy
+ CONFIG_NFS_FS=3Dy
+ CONFIG_NFS_V3=3Dy
+ # CONFIG_NFS_V3_ACL is not set
+@@ -622,10 +654,6 @@ CONFIG_SUNRPC=3Dy
+ #
+ # CONFIG_PARTITION_ADVANCED is not set
+ CONFIG_MSDOS_PARTITION=3Dy
+-
+-#
+-# Native Language Support
+-#
+ CONFIG_NLS=3Dy
+ CONFIG_NLS_DEFAULT=3D"iso8859-1"
+ CONFIG_NLS_CODEPAGE_437=3Dy
+@@ -666,10 +694,6 @@ CONFIG_NLS_ISO8859_1=3Dy
+ # CONFIG_NLS_KOI8_R is not set
+ # CONFIG_NLS_KOI8_U is not set
+ CONFIG_NLS_UTF8=3Dy
+-
+-#
+-# Distributed Lock Manager
+-#
+ # CONFIG_DLM is not set
+=20
+ #
+@@ -690,12 +714,16 @@ CONFIG_PLIST=3Dy
+ CONFIG_HAS_IOMEM=3Dy
+ CONFIG_HAS_IOPORT=3Dy
+ CONFIG_HAS_DMA=3Dy
++CONFIG_INSTRUMENTATION=3Dy
+ # CONFIG_PROFILING is not set
++# CONFIG_KPROBES is not set
++# CONFIG_MARKERS is not set
+=20
+ #
+ # Kernel hacking
+ #
+ CONFIG_PRINTK_TIME=3Dy
++CONFIG_ENABLE_WARN_DEPRECATED=3Dy
+ CONFIG_ENABLE_MUST_CHECK=3Dy
+ CONFIG_MAGIC_SYSRQ=3Dy
+ # CONFIG_UNUSED_SYMBOLS is not set
+@@ -719,9 +747,12 @@ CONFIG_DEBUG_BUGVERBOSE=3Dy
+ CONFIG_DEBUG_INFO=3Dy
+ # CONFIG_DEBUG_VM is not set
+ # CONFIG_DEBUG_LIST is not set
++# CONFIG_DEBUG_SG is not set
+ CONFIG_FORCED_INLINING=3Dy
++# CONFIG_BOOT_PRINTK_DELAY is not set
+ # CONFIG_RCU_TORTURE_TEST is not set
+ # CONFIG_FAULT_INJECTION is not set
++# CONFIG_SAMPLES is not set
+ # CONFIG_KGDB is not set
+ # CONFIG_XMON is not set
+ # CONFIG_BDI_SWITCH is not set
+@@ -732,4 +763,5 @@ CONFIG_FORCED_INLINING=3Dy
+ #
+ # CONFIG_KEYS is not set
+ # CONFIG_SECURITY is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+ # CONFIG_CRYPTO is not set
+diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
+b/arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
+old mode 100644
+new mode 100755
+index f1fabbd..bf41056
+--- a/arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
++++ b/arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
+@@ -1,358 +1,291 @@
+-
+-/*******************************************************************
+-*
+-* CAUTION: This file is automatically generated by libgen.
+-* Version: Xilinx EDK 9.2 EDK_Jm.16
+-* DO NOT EDIT.
+-*
+-* Copyright (c) 2005 Xilinx, Inc.  All rights reserved.
+-*
+-* Description: Driver parameters
+-*
+-*******************************************************************/
+-
+-
+-/* Definitions for peripheral PLB_BRAM_IF_CNTLR_0 */
+-#define XPAR_PLB_BRAM_IF_CNTLR_0_BASEADDR 0xFFFF0000
+-#define XPAR_PLB_BRAM_IF_CNTLR_0_HIGHADDR 0xFFFFFFFF
+-
+-
+-/******************************************************************/
+-
+-
+-/* Definitions for peripheral OPB_V20_0 */
+-
+-
+-/* Definitions for peripheral OPB_EMC_0 */
+-#define XPAR_OPB_EMC_0_MEM0_BASEADDR 0x20000000
+-#define XPAR_OPB_EMC_0_MEM0_HIGHADDR 0x200FFFFF
+-#define XPAR_OPB_EMC_0_MEM1_BASEADDR 0x28000000
+-#define XPAR_OPB_EMC_0_MEM1_HIGHADDR 0x287FFFFF
+-
+-
+-/* Definitions for peripheral OPB_AC97_CONTROLLER_REF_0 */
+-#define XPAR_OPB_AC97_CONTROLLER_REF_0_BASEADDR 0xA6000000
+-#define XPAR_OPB_AC97_CONTROLLER_REF_0_HIGHADDR 0xA60000FF
+-
+-
+-/* Definitions for peripheral OPB_EMC_USB_0 */
+-#define XPAR_OPB_EMC_USB_0_MEM0_BASEADDR 0xA5000000
+-#define XPAR_OPB_EMC_USB_0_MEM0_HIGHADDR 0xA50000FF
+-
+-
+-/* Definitions for peripheral PLB_DDR_0 */
+-#define XPAR_PLB_DDR_0_MEM0_BASEADDR 0x00000000
+-#define XPAR_PLB_DDR_0_MEM0_HIGHADDR 0x0FFFFFFF
+-
+-
+-/******************************************************************/
+-
+-/* Definitions for driver EMAC */
+-#define XPAR_XEMAC_NUM_INSTANCES 1
+-
+-/* Definitions for peripheral OPB_ETHERNET_0 */
+-#define XPAR_OPB_ETHERNET_0_DEVICE_ID 0
+-#define XPAR_OPB_ETHERNET_0_BASEADDR 0x60000000
+-#define XPAR_OPB_ETHERNET_0_HIGHADDR 0x60003FFF
+-#define XPAR_OPB_ETHERNET_0_ERR_COUNT_EXIST 1
+-#define XPAR_OPB_ETHERNET_0_DMA_PRESENT 1
+-#define XPAR_OPB_ETHERNET_0_MII_EXIST 1
+-#define XPAR_OPB_ETHERNET_0_CAM_EXIST 0
+-#define XPAR_OPB_ETHERNET_0_JUMBO_EXIST 0
+-#define XPAR_OPB_ETHERNET_0_TX_DRE_TYPE 0
+-#define XPAR_OPB_ETHERNET_0_RX_DRE_TYPE 0
+-#define XPAR_OPB_ETHERNET_0_TX_INCLUDE_CSUM 0
+-#define XPAR_OPB_ETHERNET_0_RX_INCLUDE_CSUM 0
+-
+-
+-/******************************************************************/
+-
+-
+-/* Canonical definitions for peripheral OPB_ETHERNET_0 */
+-#define XPAR_EMAC_0_DEVICE_ID XPAR_OPB_ETHERNET_0_DEVICE_ID
+-#define XPAR_EMAC_0_BASEADDR 0x60000000
+-#define XPAR_EMAC_0_HIGHADDR 0x60003FFF
+-#define XPAR_EMAC_0_ERR_COUNT_EXIST 1
+-#define XPAR_EMAC_0_DMA_PRESENT 1
+-#define XPAR_EMAC_0_MII_EXIST 1
+-#define XPAR_EMAC_0_CAM_EXIST 0
+-#define XPAR_EMAC_0_JUMBO_EXIST 0
+-#define XPAR_EMAC_0_TX_DRE_TYPE 0
+-#define XPAR_EMAC_0_RX_DRE_TYPE 0
+-#define XPAR_EMAC_0_TX_INCLUDE_CSUM 0
+-#define XPAR_EMAC_0_RX_INCLUDE_CSUM 0
+-
+-
+-/******************************************************************/
+-
+-/* Definitions for driver UARTNS550 */
+-#define XPAR_XUARTNS550_NUM_INSTANCES 1
+-#define XPAR_XUARTNS550_CLOCK_HZ 100000000
+-
+-/* Definitions for peripheral OPB_UART16550_0 */
+-#define XPAR_OPB_UART16550_0_DEVICE_ID 0
+-#define XPAR_OPB_UART16550_0_BASEADDR 0xA0000000
+-#define XPAR_OPB_UART16550_0_HIGHADDR 0xA0001FFF
+-
+-
+-/******************************************************************/
+-
+-
+-/* Canonical definitions for peripheral OPB_UART16550_0 */
+-#define XPAR_UARTNS550_0_CLOCK_FREQ_HZ 100000000
+-#define XPAR_UARTNS550_0_DEVICE_ID XPAR_OPB_UART16550_0_DEVICE_ID
+-#define XPAR_UARTNS550_0_BASEADDR 0xA0000000
+-#define XPAR_UARTNS550_0_HIGHADDR 0xA0001FFF
+-
+-
+-/******************************************************************/
+-
+-/* Definitions for driver GPIO */
+-#define XPAR_XGPIO_NUM_INSTANCES 3
+-
+-/* Definitions for peripheral OPB_GPIO_0 */
+-#define XPAR_OPB_GPIO_0_BASEADDR 0x90000000
+-#define XPAR_OPB_GPIO_0_HIGHADDR 0x900001FF
+-#define XPAR_OPB_GPIO_0_DEVICE_ID 0
+-#define XPAR_OPB_GPIO_0_INTERRUPT_PRESENT 0
+-#define XPAR_OPB_GPIO_0_IS_DUAL 1
+-
+-
+-/* Definitions for peripheral OPB_GPIO_EXP_HDR_0 */
+-#define XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR 0x90001000
+-#define XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR 0x900011FF
+-#define XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID 1
+-#define XPAR_OPB_GPIO_EXP_HDR_0_INTERRUPT_PRESENT 0
+-#define XPAR_OPB_GPIO_EXP_HDR_0_IS_DUAL 1
+-
+-
+-/* Definitions for peripheral OPB_GPIO_CHAR_LCD_0 */
+-#define XPAR_OPB_GPIO_CHAR_LCD_0_BASEADDR 0x90002000
+-#define XPAR_OPB_GPIO_CHAR_LCD_0_HIGHADDR 0x900021FF
+-#define XPAR_OPB_GPIO_CHAR_LCD_0_DEVICE_ID 2
+-#define XPAR_OPB_GPIO_CHAR_LCD_0_INTERRUPT_PRESENT 0
+-#define XPAR_OPB_GPIO_CHAR_LCD_0_IS_DUAL 0
+-
+-
+-/******************************************************************/
+-
+-#define XPAR_XPS2_NUM_INSTANCES 2
+-#define XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_0 0
+-#define XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_0 0xA9000000
+-#define XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_0 (0xA9000000+0x3F)
+-#define XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_1 1
+-#define XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_1 (0xA9000000+0x1000)
+-#define XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_1 (0xA9000000+0x103F)
+-
+-/******************************************************************/
+-
+-/* Definitions for driver IIC */
+-#define XPAR_XIIC_NUM_INSTANCES 1
+-
+-/* Definitions for peripheral OPB_IIC_0 */
+-#define XPAR_OPB_IIC_0_DEVICE_ID 0
+-#define XPAR_OPB_IIC_0_BASEADDR 0xA8000000
+-#define XPAR_OPB_IIC_0_HIGHADDR 0xA80001FF
+-#define XPAR_OPB_IIC_0_TEN_BIT_ADR 0
+-#define XPAR_OPB_IIC_0_GPO_WIDTH 1
+-
+-
+-/******************************************************************/
+-
+-
+-/* Canonical definitions for peripheral OPB_IIC_0 */
+-#define XPAR_IIC_0_DEVICE_ID XPAR_OPB_IIC_0_DEVICE_ID
+-#define XPAR_IIC_0_BASEADDR 0xA8000000
+-#define XPAR_IIC_0_HIGHADDR 0xA80001FF
+-#define XPAR_IIC_0_TEN_BIT_ADR 0
+-#define XPAR_IIC_0_GPO_WIDTH 1
+-
+-
+-/******************************************************************/
+-
+-#define XPAR_INTC_MAX_NUM_INTR_INPUTS 10
+-#define XPAR_XINTC_HAS_IPR 1
+-#define XPAR_XINTC_USE_DCR 0
+-/* Definitions for driver INTC */
+-#define XPAR_XINTC_NUM_INSTANCES 1
+-
+-/* Definitions for peripheral OPB_INTC_0 */
+-#define XPAR_OPB_INTC_0_DEVICE_ID 0
+-#define XPAR_OPB_INTC_0_BASEADDR 0xD1000FC0
+-#define XPAR_OPB_INTC_0_HIGHADDR 0xD1000FDF
+-#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000000
+-
+-
+-/******************************************************************/
+-
+-#define XPAR_INTC_SINGLE_BASEADDR 0xD1000FC0
+-#define XPAR_INTC_SINGLE_HIGHADDR 0xD1000FDF
+-#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
+-#define XPAR_OPB_ETHERNET_0_IP2INTC_IRPT_MASK 0X000001
+-#define XPAR_OPB_INTC_0_OPB_ETHERNET_0_IP2INTC_IRPT_INTR 0
+-#define XPAR_SYSTEM_USB_HPI_INT_MASK 0X000002
+-#define XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT_INTR 1
+-#define XPAR_MISC_LOGIC_0_PHY_MII_INT_MASK 0X000004
+-#define XPAR_OPB_INTC_0_MISC_LOGIC_0_PHY_MII_INT_INTR 2
+-#define XPAR_OPB_SYSACE_0_SYSACE_IRQ_MASK 0X000008
+-#define XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR 3
+-#define XPAR_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_MASK 0X000010
+-#define XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_INTR
+4
+-#define XPAR_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_MASK 0X000020
+-#define
+XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_INTR 5
+-#define XPAR_OPB_IIC_0_IP2INTC_IRPT_MASK 0X000040
+-#define XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR 6
+-#define XPAR_OPB_PS2_DUAL_REF_0_SYS_INTR2_MASK 0X000080
+-#define XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR2_INTR 7
+-#define XPAR_OPB_PS2_DUAL_REF_0_SYS_INTR1_MASK 0X000100
+-#define XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR1_INTR 8
+-#define XPAR_OPB_UART16550_0_IP2INTC_IRPT_MASK 0X000200
+-#define XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR 9
+-
+-/******************************************************************/
+-
+-
+-/* Canonical definitions for peripheral OPB_INTC_0 */
+-#define XPAR_INTC_0_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
+-#define XPAR_INTC_0_BASEADDR 0xD1000FC0
+-#define XPAR_INTC_0_HIGHADDR 0xD1000FDF
+-#define XPAR_INTC_0_KIND_OF_INTR 0
+-
+-#define XPAR_INTC_0_EMAC_0_VEC_ID
+XPAR_OPB_INTC_0_OPB_ETHERNET_0_IP2INTC_IRPT_INTR
+-#define XPAR_INTC_0_SYSACE_0_VEC_ID
+XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR
+-#define XPAR_INTC_0_IIC_0_VEC_ID
+XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR
+-#define XPAR_INTC_0_PS2_1_SYS_INTR2_VEC_ID
+XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR2_INTR
+-#define XPAR_INTC_0_PS2_0_SYS_INTR1_VEC_ID
+XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR1_INTR
+-#define XPAR_INTC_0_UARTNS550_0_VEC_ID
+XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR
+-
+-#define XPAR_INTC_0_PS2_1_VEC_ID
+XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR2_INTR
+-#define XPAR_INTC_0_PS2_0_VEC_ID
+XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR1_INTR
+-
+-/******************************************************************/
+-
+-/* Definitions for driver TFT_REF */
+-#define XPAR_XTFT_NUM_INSTANCES 1
+-
+-/* Definitions for peripheral PLB_TFT_CNTLR_REF_0 */
+-#define XPAR_PLB_TFT_CNTLR_REF_0_DCR_BASEADDR 0xD0000200
+-#define XPAR_PLB_TFT_CNTLR_REF_0_DCR_HIGHADDR 0xD0000207
+-#define XPAR_PLB_TFT_CNTLR_REF_0_DEVICE_ID 0
+-
+-
+-/******************************************************************/
+-
+-#define XPAR_XSYSACE_MEM_WIDTH 16
+-/* Definitions for driver SYSACE */
+-#define XPAR_XSYSACE_NUM_INSTANCES 1
+-
+-/* Definitions for peripheral OPB_SYSACE_0 */
+-#define XPAR_OPB_SYSACE_0_DEVICE_ID 0
+-#define XPAR_OPB_SYSACE_0_BASEADDR 0xCF000000
+-#define XPAR_OPB_SYSACE_0_HIGHADDR 0xCF0001FF
+-#define XPAR_OPB_SYSACE_0_MEM_WIDTH 16
+-
+-
+-/******************************************************************/
+-
+-
+-/* Canonical definitions for peripheral OPB_SYSACE_0 */
+-#define XPAR_SYSACE_0_DEVICE_ID XPAR_OPB_SYSACE_0_DEVICE_ID
+-#define XPAR_SYSACE_0_BASEADDR 0xCF000000
+-#define XPAR_SYSACE_0_HIGHADDR 0xCF0001FF
+-#define XPAR_SYSACE_0_MEM_WIDTH 16
+-
+-
+-/******************************************************************/
+-
+-#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
+-
+-/******************************************************************/
+-
+-#define XPAR_CPU_ID 0
+-#define XPAR_PPC405_VIRTEX4_ID 0
+-#define XPAR_PPC405_VIRTEX4_CORE_CLOCK_FREQ_HZ 300000000
+-#define XPAR_PPC405_VIRTEX4_IDCR_BASEADDR 0x00000100
+-#define XPAR_PPC405_VIRTEX4_IDCR_HIGHADDR 0x0000010F
+-#define XPAR_PPC405_VIRTEX4_DISABLE_OPERAND_FORWARDING 1
+-#define XPAR_PPC405_VIRTEX4_MMU_ENABLE 1
+-#define XPAR_PPC405_VIRTEX4_DETERMINISTIC_MULT 0
+-#define XPAR_PPC405_VIRTEX4_PLBSYNCBYPASS 1
+-#define XPAR_PPC405_VIRTEX4_APU_CONTROL 0b1101111000000000
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_1 0b101000011000100110000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_2 0b101000111000100110000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_3 0b101001011000100111000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_4 0b101001111000100111000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_5 0b101010011000110000000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_6 0b101010111000110000000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_7 0b101011011000110001000011
+-#define XPAR_PPC405_VIRTEX4_APU_UDI_8 0b101011111000110001000011
+-#define XPAR_PPC405_VIRTEX4_PVR_HIGH 0b0000
+-#define XPAR_PPC405_VIRTEX4_PVR_LOW 0b0000
+-#define XPAR_PPC405_VIRTEX4_HW_VER "1.01.a"
+-
+-/******************************************************************/
+-
+-
+-/******************************************************************/
+-
+-/* Cannonical Constant Names */
+-
+-/******************************************************************/
+-
+-#undef XPAR_UARTNS550_0_BASEADDR
+-#define XPAR_UARTNS550_0_BASEADDR
+(XPAR_OPB_UART16550_0_BASEADDR+0x1000)
+-
+-/******************************************************************/
+-
+-#define XPAR_GPIO_0_BASEADDR XPAR_OPB_GPIO_0_BASEADDR
+-#define XPAR_GPIO_0_HIGHADDR XPAR_OPB_GPIO_0_HIGHADDR
+-#define XPAR_GPIO_0_IS_DUAL XPAR_OPB_GPIO_0_IS_DUAL
+-#define XPAR_GPIO_0_DEVICE_ID XPAR_OPB_GPIO_0_DEVICE_ID
+-#define XPAR_GPIO_1_BASEADDR XPAR_OPB_GPIO_0_BASEADDR
+-#define XPAR_GPIO_1_HIGHADDR XPAR_OPB_GPIO_0_HIGHADDR
+-#define XPAR_GPIO_1_IS_DUAL XPAR_OPB_GPIO_0_IS_DUAL
+-#define XPAR_GPIO_1_DEVICE_ID XPAR_OPB_GPIO_0_DEVICE_ID
+-#define XPAR_GPIO_2_BASEADDR XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR
+-#define XPAR_GPIO_2_HIGHADDR XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR
+-#define XPAR_GPIO_2_IS_DUAL XPAR_OPB_GPIO_EXP_HDR_0_IS_DUAL
+-#define XPAR_GPIO_2_DEVICE_ID XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID
+-#define XPAR_GPIO_3_BASEADDR XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR
+-#define XPAR_GPIO_3_HIGHADDR XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR
+-#define XPAR_GPIO_3_IS_DUAL XPAR_OPB_GPIO_EXP_HDR_0_IS_DUAL
+-#define XPAR_GPIO_3_DEVICE_ID XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID
+-#define XPAR_GPIO_4_BASEADDR XPAR_OPB_GPIO_CHAR_LCD_0_BASEADDR
+-#define XPAR_GPIO_4_HIGHADDR XPAR_OPB_GPIO_CHAR_LCD_0_HIGHADDR
+-#define XPAR_GPIO_4_IS_DUAL XPAR_OPB_GPIO_CHAR_LCD_0_IS_DUAL
+-#define XPAR_GPIO_4_DEVICE_ID XPAR_OPB_GPIO_CHAR_LCD_0_DEVICE_ID
+-
+-/******************************************************************/
+-
+-#define XPAR_PS2_0_BASEADDR XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_0
+-#define XPAR_PS2_0_HIGHADDR XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_0
+-#define XPAR_PS2_0_DEVICE_ID XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_0
+-#define XPAR_PS2_1_BASEADDR XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_1
+-#define XPAR_PS2_1_HIGHADDR XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_1
+-#define XPAR_PS2_1_DEVICE_ID XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_1
+-
+-/******************************************************************/
+-
+-#define XPAR_TFT_0_BASEADDR XPAR_PLB_TFT_CNTLR_REF_0_DCR_BASEADDR
+-
+-/******************************************************************/
+-
+-#define XPAR_PLB_CLOCK_FREQ_HZ 100000000
+-#define XPAR_CORE_CLOCK_FREQ_HZ XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
+-#define XPAR_DDR_0_SIZE 0x4000000
+-
+-/******************************************************************/
+-
+-#define XPAR_PERSISTENT_0_IIC_0_BASEADDR 1024
+-#define XPAR_PERSISTENT_0_IIC_0_HIGHADDR 2047
+-#define XPAR_PERSISTENT_0_IIC_0_EEPROMADDR 0xA0
+-
+-/******************************************************************/
+-
+-#define XPAR_PCI_0_CLOCK_FREQ_HZ    0
+-
+-/******************************************************************/
+-
++
++/*******************************************************************
++*
++* CAUTION: This file is automatically generated by libgen.
++* Version: Xilinx EDK 10.1.1 EDK_K_SP1.1
++* DO NOT EDIT.
++*
++* Copyright (c) 2005 Xilinx, Inc.  All rights reserved.=20
++*=20
++* Description: Driver parameters
++*
++*******************************************************************/
++
++#define STDIN_BASEADDRESS 0x83E00000
++#define STDOUT_BASEADDRESS 0x83E00000
++
++/******************************************************************/
++
++/* Definitions for peripheral XPS_BRAM_IF_CNTLR_1 */
++#define XPAR_XPS_BRAM_IF_CNTLR_1_BASEADDR 0xFFFFE000
++#define XPAR_XPS_BRAM_IF_CNTLR_1_HIGHADDR 0xFFFFFFFF
++
++
++/******************************************************************/
++
++/* Definitions for driver UARTNS550 */
++#define XPAR_XUARTNS550_NUM_INSTANCES 1
++#define XPAR_XUARTNS550_CLOCK_HZ 100000000
++
++/* Definitions for peripheral RS232_UART */
++#define XPAR_RS232_UART_DEVICE_ID 0
++#define XPAR_RS232_UART_BASEADDR 0x83E00000
++#define XPAR_RS232_UART_HIGHADDR 0x83E0FFFF
++
++
++/******************************************************************/
++
++
++/* Canonical definitions for peripheral RS232_UART */
++#define XPAR_UARTNS550_0_CLOCK_FREQ_HZ 100000000
++#define XPAR_UARTNS550_0_DEVICE_ID XPAR_RS232_UART_DEVICE_ID
++#define XPAR_UARTNS550_0_BASEADDR 0x83E00000
++#define XPAR_UARTNS550_0_HIGHADDR 0x83E0FFFF
++#define XPAR_UARTNS550_0_SIO_CHAN -1
++
++
++/******************************************************************/
++
++/* Definitions for driver GPIO */
++#define XPAR_XGPIO_NUM_INSTANCES 1
++
++/* Definitions for peripheral LEDS_4BIT */
++#define XPAR_LEDS_4BIT_BASEADDR 0x81400000
++#define XPAR_LEDS_4BIT_HIGHADDR 0x8140FFFF
++#define XPAR_LEDS_4BIT_DEVICE_ID 0
++#define XPAR_LEDS_4BIT_INTERRUPT_PRESENT 1
++#define XPAR_LEDS_4BIT_IS_DUAL 0
++
++
++/******************************************************************/
++
++/* Definitions for driver IIC */
++#define XPAR_XIIC_NUM_INSTANCES 1
++
++/* Definitions for peripheral IIC_EEPROM */
++#define XPAR_IIC_EEPROM_DEVICE_ID 0
++#define XPAR_IIC_EEPROM_BASEADDR 0x81600000
++#define XPAR_IIC_EEPROM_HIGHADDR 0x8160FFFF
++#define XPAR_IIC_EEPROM_TEN_BIT_ADR 0
++#define XPAR_IIC_EEPROM_GPO_WIDTH 1
++
++
++/******************************************************************/
++
++
++/* Canonical definitions for peripheral IIC_EEPROM */
++#define XPAR_IIC_0_DEVICE_ID XPAR_IIC_EEPROM_DEVICE_ID
++#define XPAR_IIC_0_BASEADDR 0x81600000
++#define XPAR_IIC_0_HIGHADDR 0x8160FFFF
++#define XPAR_IIC_0_TEN_BIT_ADR 0
++#define XPAR_IIC_0_GPO_WIDTH 1
++
++
++/******************************************************************/
++
++#define XPAR_XSYSACE_MEM_WIDTH 16
++/* Definitions for driver SYSACE */
++#define XPAR_XSYSACE_NUM_INSTANCES 1
++
++/* Definitions for peripheral SYSACE_COMPACTFLASH */
++#define XPAR_SYSACE_COMPACTFLASH_DEVICE_ID 0
++#define XPAR_SYSACE_COMPACTFLASH_BASEADDR 0x83600000
++#define XPAR_SYSACE_COMPACTFLASH_HIGHADDR 0x8360FFFF
++#define XPAR_SYSACE_COMPACTFLASH_MEM_WIDTH 16
++
++
++/******************************************************************/
++
++
++/* Canonical definitions for peripheral SYSACE_COMPACTFLASH */
++#define XPAR_SYSACE_0_DEVICE_ID XPAR_SYSACE_COMPACTFLASH_DEVICE_ID
++#define XPAR_SYSACE_0_BASEADDR 0x83600000
++#define XPAR_SYSACE_0_HIGHADDR 0x8360FFFF
++#define XPAR_SYSACE_0_MEM_WIDTH 16
++
++/******************************************************************/
++
++/* Definitions for driver LLTEMAC */
++#define XPAR_XLLTEMAC_NUM_INSTANCES 1
++
++/* Definitions for peripheral TRIMODE_MAC_GMII Channel 0 */
++#define XPAR_TRIMODE_MAC_GMII_CHAN_0_DEVICE_ID 0
++#define XPAR_TRIMODE_MAC_GMII_CHAN_0_BASEADDR 0x81c00000
++#define XPAR_TRIMODE_MAC_GMII_CHAN_0_TXCSUM 0
++#define XPAR_TRIMODE_MAC_GMII_CHAN_0_RXCSUM 0
++#define XPAR_TRIMODE_MAC_GMII_CHAN_0_PHY_TYPE 1
++
++/* Canonical definitions for peripheral TRIMODE_MAC_GMII Channel 0 */
++#define XPAR_LLTEMAC_0_DEVICE_ID 0
++#define XPAR_LLTEMAC_0_BASEADDR 0x81c00000
++#define XPAR_LLTEMAC_0_TXCSUM 0
++#define XPAR_LLTEMAC_0_RXCSUM 0
++#define XPAR_LLTEMAC_0_PHY_TYPE 1
++#define XPAR_LLTEMAC_0_INTR 2
++
++
++/* LocalLink TYPE Enumerations */
++#define XPAR_LL_FIFO    1
++#define XPAR_LL_DMA     2
++
++
++/* Canonical LocalLink parameters for TRIMODE_MAC_GMII */
++#define XPAR_LLTEMAC_0_LLINK_CONNECTED_TYPE XPAR_LL_DMA
++#define XPAR_LLTEMAC_0_LLINK_CONNECTED_BASEADDR 0x84600100
++#define XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR 0xFF
++#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR 1
++#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR 0
++
++
++/******************************************************************/
++
++#define XPAR_INTC_MAX_NUM_INTR_INPUTS 7
++#define XPAR_XINTC_HAS_IPR 1
++#define XPAR_XINTC_USE_DCR 0
++/* Definitions for driver INTC */
++#define XPAR_XINTC_NUM_INSTANCES 1
++
++/* Definitions for peripheral XPS_INTC_0 */
++#define XPAR_XPS_INTC_0_DEVICE_ID 0
++#define XPAR_XPS_INTC_0_BASEADDR 0x81800000
++#define XPAR_XPS_INTC_0_HIGHADDR 0x8180FFFF
++#define XPAR_XPS_INTC_0_KIND_OF_INTR 0x00000000
++
++
++/******************************************************************/
++
++#define XPAR_INTC_SINGLE_BASEADDR 0x81800000
++#define XPAR_INTC_SINGLE_HIGHADDR 0x8180FFFF
++#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_XPS_INTC_0_DEVICE_ID
++#define XPAR_DDR_SDRAM_SDMA2_TX_INTOUT_MASK 0X000001
++#define XPAR_XPS_INTC_0_DDR_SDRAM_SDMA2_TX_INTOUT_INTR 0
++#define XPAR_DDR_SDRAM_SDMA2_RX_INTOUT_MASK 0X000002
++#define XPAR_XPS_INTC_0_DDR_SDRAM_SDMA2_RX_INTOUT_INTR 1
++#define XPAR_TRIMODE_MAC_GMII_TEMACINTC0_IRPT_MASK 0X000004
++#define XPAR_XPS_INTC_0_TRIMODE_MAC_GMII_TEMACINTC0_IRPT_INTR 2
++#define XPAR_SYSACE_COMPACTFLASH_SYSACE_IRQ_MASK 0X000008
++#define XPAR_XPS_INTC_0_SYSACE_COMPACTFLASH_SYSACE_IRQ_INTR 3
++#define XPAR_IIC_EEPROM_IIC2INTC_IRPT_MASK 0X000010
++#define XPAR_XPS_INTC_0_IIC_EEPROM_IIC2INTC_IRPT_INTR 4
++#define XPAR_LEDS_4BIT_IP2INTC_IRPT_MASK 0X000020
++#define XPAR_XPS_INTC_0_LEDS_4BIT_IP2INTC_IRPT_INTR 5
++#define XPAR_RS232_UART_IP2INTC_IRPT_MASK 0X000040
++#define XPAR_XPS_INTC_0_RS232_UART_IP2INTC_IRPT_INTR 6
++
++/******************************************************************/
++
++
++/* Canonical definitions for peripheral XPS_INTC_0 */
++#define XPAR_INTC_0_DEVICE_ID XPAR_XPS_INTC_0_DEVICE_ID
++#define XPAR_INTC_0_BASEADDR 0x81800000
++#define XPAR_INTC_0_HIGHADDR 0x8180FFFF
++#define XPAR_INTC_0_KIND_OF_INTR 0x00000000
++
++#define XPAR_INTC_0_MPMC_0_SDMA2_TX_INTOUT_VEC_ID
+XPAR_XPS_INTC_0_DDR_SDRAM_SDMA2_TX_INTOUT_INTR
++#define XPAR_INTC_0_MPMC_0_SDMA2_RX_INTOUT_VEC_ID
+XPAR_XPS_INTC_0_DDR_SDRAM_SDMA2_RX_INTOUT_INTR
++#define XPAR_INTC_0_LLTEMAC_0_VEC_ID
+XPAR_XPS_INTC_0_TRIMODE_MAC_GMII_TEMACINTC0_IRPT_INTR
++#define XPAR_INTC_0_SYSACE_0_VEC_ID
+XPAR_XPS_INTC_0_SYSACE_COMPACTFLASH_SYSACE_IRQ_INTR
++#define XPAR_INTC_0_IIC_0_VEC_ID
+XPAR_XPS_INTC_0_IIC_EEPROM_IIC2INTC_IRPT_INTR
++#define XPAR_INTC_0_GPIO_0_VEC_ID
+XPAR_XPS_INTC_0_LEDS_4BIT_IP2INTC_IRPT_INTR
++#define XPAR_INTC_0_UARTNS550_0_VEC_ID
+XPAR_XPS_INTC_0_RS232_UART_IP2INTC_IRPT_INTR
++
++/******************************************************************/
++
++/* Definitions for driver MPMC */
++#define XPAR_XMPMC_NUM_INSTANCES 1
++
++/* Definitions for peripheral DDR_SDRAM */
++#define XPAR_DDR_SDRAM_DEVICE_ID 0
++#define XPAR_DDR_SDRAM_MPMC_BASEADDR 0x00000000
++#define XPAR_DDR_SDRAM_MPMC_CTRL_BASEADDR 0xFFFFFFFF
++#define XPAR_DDR_SDRAM_INCLUDE_ECC_SUPPORT 0
++#define XPAR_DDR_SDRAM_USE_STATIC_PHY 0
++#define XPAR_DDR_SDRAM_PM_ENABLE 0
++#define XPAR_DDR_SDRAM_NUM_PORTS 3
++
++
++/******************************************************************/
++
++
++/* Definitions for peripheral DDR_SDRAM */
++#define XPAR_DDR_SDRAM_MPMC_BASEADDR 0x00000000
++#define XPAR_DDR_SDRAM_MPMC_HIGHADDR 0x07FFFFFF
++#define XPAR_DDR_SDRAM_SDMA_CTRL_BASEADDR 0x84600000
++#define XPAR_DDR_SDRAM_SDMA_CTRL_HIGHADDR 0x8460FFFF
++
++
++/******************************************************************/
++
++
++/* Canonical definitions for peripheral DDR_SDRAM */
++#define XPAR_MPMC_0_DEVICE_ID XPAR_DDR_SDRAM_DEVICE_ID
++#define XPAR_MPMC_0_MPMC_BASEADDR 0x00000000
++#define XPAR_MPMC_0_MPMC_CTRL_BASEADDR 0xFFFFFFFF
++#define XPAR_MPMC_0_INCLUDE_ECC_SUPPORT 0
++#define XPAR_MPMC_0_USE_STATIC_PHY 0
++#define XPAR_MPMC_0_PM_ENABLE 0
++#define XPAR_MPMC_0_NUM_PORTS 3
++
++
++
++/******************************************************************/
++
++#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
++
++/******************************************************************/
++
++#define XPAR_CPU_ID 0
++#define XPAR_PPC405_VIRTEX4_ID 0
++#define XPAR_PPC405_VIRTEX4_CORE_CLOCK_FREQ_HZ 300000000
++#define XPAR_PPC405_VIRTEX4_DPLB0_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_DPLB0_NATIVE_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_IPLB0_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_IPLB0_NATIVE_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_DPLB1_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_DPLB1_NATIVE_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_IPLB1_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_IPLB1_NATIVE_DWIDTH 64
++#define XPAR_PPC405_VIRTEX4_DPLB1_ADDR_BASE 0x00000000
++#define XPAR_PPC405_VIRTEX4_DPLB1_ADDR_HIGH 0x07ffffff
++#define XPAR_PPC405_VIRTEX4_IPLB1_ADDR_BASE 0x00000000
++#define XPAR_PPC405_VIRTEX4_IPLB1_ADDR_HIGH 0x07ffffff
++#define XPAR_PPC405_VIRTEX4_FASTEST_PLB_CLOCK DPLB0
++#define XPAR_PPC405_VIRTEX4_GENERATE_PLB_TIMESPECS 1
++#define XPAR_PPC405_VIRTEX4_DPLB0_P2P 0
++#define XPAR_PPC405_VIRTEX4_DPLB1_P2P 1
++#define XPAR_PPC405_VIRTEX4_IPLB0_P2P 0
++#define XPAR_PPC405_VIRTEX4_IPLB1_P2P 1
++#define XPAR_PPC405_VIRTEX4_IDCR_BASEADDR 0x00000100
++#define XPAR_PPC405_VIRTEX4_IDCR_HIGHADDR 0x000001FF
++#define XPAR_PPC405_VIRTEX4_DISABLE_OPERAND_FORWARDING 1
++#define XPAR_PPC405_VIRTEX4_MMU_ENABLE 1
++#define XPAR_PPC405_VIRTEX4_DETERMINISTIC_MULT 0
++#define XPAR_PPC405_VIRTEX4_PLBSYNCBYPASS 1
++#define XPAR_PPC405_VIRTEX4_APU_CONTROL 0b1101111000000000
++#define XPAR_PPC405_VIRTEX4_APU_UDI_1 0b101000011000100110000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_2 0b101000111000100110000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_3 0b101001011000100111000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_4 0b101001111000100111000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_5 0b101010011000110000000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_6 0b101010111000110000000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_7 0b101011011000110001000011
++#define XPAR_PPC405_VIRTEX4_APU_UDI_8 0b101011111000110001000011
++#define XPAR_PPC405_VIRTEX4_PVR_HIGH 0b0000
++#define XPAR_PPC405_VIRTEX4_PVR_LOW 0b0000
++#define XPAR_PPC405_VIRTEX4_HW_VER "2.01.a"
++
++/******************************************************************/
++
++#define XPAR_PLB_CLOCK_FREQ_HZ 100000000
++#define XPAR_CORE_CLOCK_FREQ_HZ XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
++#define XPAR_DDR_0_SIZE 0x4000000
++
++/******************************************************************/
++
++#define XPAR_PCI_0_CLOCK_FREQ_HZ    0
++
++/******************************************************************/
++
++#define XPAR_PERSISTENT_0_IIC_0_BASEADDR 0
++#define XPAR_PERSISTENT_0_IIC_0_HIGHADDR 1024
++#define XPAR_PERSISTENT_0_IIC_0_EEPROMADDR 0xA0
+diff --git a/arch/ppc/syslib/virtex_devices.c
+b/arch/ppc/syslib/virtex_devices.c
+index cdfc062..addf58a 100644
+--- a/arch/ppc/syslib/virtex_devices.c
++++ b/arch/ppc/syslib/virtex_devices.c
+@@ -219,7 +219,7 @@
+ 		.tx_csum =3D XPAR_LLTEMAC_##num##_TXCSUM, \
+ 		.rx_csum =3D XPAR_LLTEMAC_##num##_RXCSUM, \
+ 		.phy_type =3D XPAR_LLTEMAC_##num##_PHY_TYPE, \
+-		.dcr_host =3D 0xff, \
++		.dcr_host =3D 0x00, \
+ 		.ll_dev_type =3D
+XPAR_LLTEMAC_##num##_LLINK_CONNECTED_TYPE, \
+ 		.ll_dev_baseaddress =3D
+XPAR_LLTEMAC_##num##_LLINK_CONNECTED_BASEADDR, \
+ 		.ll_dev_dma_rx_irq =3D
+XPAR_LLTEMAC_##num##_LLINK_CONNECTED_DMARX_INTR, \
 --=20
 1.5.2.1
