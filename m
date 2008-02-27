@@ -1,18 +1,32 @@
-Return-Path: <agx@sigxcpu.org>
-Received: from honk.sigxcpu.org (static-87-79-238-240.netcologne.de
-	[87.79.238.240])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "honk.sigxcpu.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 801F5DDDFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 01:38:21 +1100 (EST)
-Date: Wed, 27 Feb 2008 15:14:52 +0100
-From: Guido =?iso-8859-1?Q?G=FCnther?= <agx@sigxcpu.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Always define pmu_sys_suspended
-Message-ID: <20080227141452.GA10345@bogon.ms20.nix>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CC1EDDDEF1
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 01:59:32 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1RExHES004680
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 09:59:17 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1RExGa3214698
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 09:59:16 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1RExGr3013799
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Feb 2008 09:59:16 -0500
+Date: Wed, 27 Feb 2008 08:57:54 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] PowerPC 44x: add missing define TARGET_4xx and
+	TARGET_440GX to cuboot-taishan.c
+Message-ID: <20080227085754.22d09d2b@zod.rchland.ibm.com>
+In-Reply-To: <20080226145853.GA18212@ru.mvista.com>
+References: <20080224123656.760338da@zod.rchland.ibm.com>
+	<20080226145853.GA18212@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +36,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In current Linus git pmu_sys_suspended is only defined if
-CONFIG_SUSPEND is set, so compilation fails with:
+On Tue, 26 Feb 2008 17:58:53 +0300
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-drivers/built-in.o: In function `pmu_led_set':
-via-pmu-led.c:(.text+0x48622): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x48626): undefined reference to `pmu_sys_suspended'
-drivers/built-in.o: In function `pmu_req_done':
-via-pmu-led.c:(.text+0x48696): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x4869a): undefined reference to `pmu_sys_suspended'
-make: *** [.tmp_vmlinux1] Error 1
+> In order to get the proper boad info (bd_info) structure defined in ppcboot.h
+> both TARGET_4xx and TARGET_44x should be defined for all PowerPC 440 boards.
+> The 440GX boards also need TARGET_440GX defined since they have 4 EMACs and
+> there are 4 MAC addesses in bd_info passed by u-boot.
 
-since via-pmu-led.c uses it unconditionally. Instead of adding more '#ifdef'
-clutter I moved it out of the #ifdef so it's always available. Need to fix
-compilation on PPC32 without CONFIG_SUSPEND.
+Thanks, looks much better.  I'll send this to Paul later today.
 
-Signed-off-by: Guido Guenther <agx@sigxcpu.org>
----
- drivers/macintosh/via-pmu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index ebec663..296edcb 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -2437,8 +2437,8 @@ void pmu_blink(int n)
- }
- #endif /* DEBUG_SLEEP */
- 
--#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
- int pmu_sys_suspended;
-+#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
- 
- static int pmu_sys_suspend(struct sys_device *sysdev, pm_message_t state)
- {
--- 
-1.5.4.2
+josh
