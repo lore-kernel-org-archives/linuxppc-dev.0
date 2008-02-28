@@ -1,17 +1,21 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it
-	(host20-155-static.82-213-b.business.telecomitalia.it
-	[213.82.155.20]) by ozlabs.org (Postfix) with ESMTP id 86E47DDFD7
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 07C2CDDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Feb 2008 07:35:17 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C87980.3D817AA7"
-Subject: ospfd minimal daemon
-Date: Wed, 27 Feb 2008 21:33:12 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E264A5E@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+	Thu, 28 Feb 2008 18:03:33 +1100 (EST)
+Message-Id: <B3C9F997-0D0B-4033-9FED-F8B6B7F5DABC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: maxime louvel <m.louvel@gmail.com>
+In-Reply-To: <dda529d0802270825p527fd1b5i3e5a72a16bd95a75@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: 2.6.25-rc3 on mpc8548amc doesn't boot
+Date: Thu, 28 Feb 2008 01:03:25 -0600
+References: <dda529d0802270437o3ea1c9beld7d65f5af2011a6f@mail.gmail.com>
+	<dda529d0802270825p527fd1b5i3e5a72a16bd95a75@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,51 +26,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C87980.3D817AA7
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Feb 27, 2008, at 10:25 AM, maxime louvel wrote:
 
-Anyone knows of a minimal ospfd daemon ? I mean a small footprint ospfd.
+> Hi again,
+>
+> I am answering my self sorry for the spam...
+> Just to say that my problem has been solve if someone has something  
+> similar...
+> My changes were good, I just didn't compile the good file...
 
-Thank you,
-Antonio.
+Any plans to submit patches to add support for this board to the kernel?
 
-
-
-
-
-------_=_NextPart_001_01C87980.3D817AA7
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7235.2">
-<TITLE>ospfd minimal daemon</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Anyone knows of a minimal ospfd daemon ? I mean a =
-small footprint ospfd.<BR>
-<BR>
-Thank you,<BR>
-Antonio.<BR>
-<BR>
-<BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C87980.3D817AA7--
+- k
