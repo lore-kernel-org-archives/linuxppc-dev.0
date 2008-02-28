@@ -1,19 +1,20 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from blu139-omc3-s9.blu139.hotmail.com
-	(blu139-omc3-s9.blu139.hotmail.com [65.55.175.209])
-	by ozlabs.org (Postfix) with ESMTP id 32CDFDDDFA
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-06.bluehost.com (outbound-mail-06.bluehost.com
+	[69.89.17.206]) by ozlabs.org (Postfix) with SMTP id 448AEDDE45
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Feb 2008 02:31:26 +1100 (EST)
-Message-ID: <BLU106-W293FED7524135F0A85B76BCA1B0@phx.gbl>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: TQM5200 2.6-denx SM501 voyager enabling problem.
-Date: Thu, 28 Feb 2008 16:31:25 +0100
-In-Reply-To: <loom.20080228T145124-686@post.gmane.org>
-References: <BLU106-W20B00A907B0D9DAD5014E2CA1D0@phx.gbl>
-	<loom.20080228T145124-686@post.gmane.org>
-Content-Type: text/plain; charset="Windows-1252"
+	Fri, 29 Feb 2008 05:14:48 +1100 (EST)
+Received: from c-67-168-89-254.hsd1.wa.comcast.net ([67.168.89.254]
+	helo=hp-dhlii.dlasys.lcl)
+	by host200.hostmonster.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.68) (envelope-from <dhlii@dlasys.net>) id 1JUnAs-00048N-Q0
+	for linuxppc-embedded@ozlabs.org; Thu, 28 Feb 2008 11:08:06 -0700
+Message-ID: <47C6F883.7030704@dlasys.net>
+Date: Thu, 28 Feb 2008 13:08:03 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: USB 2.0 Highspeed host with Xilinx/linux ?
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,40 +26,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Martin Krause  wrote:
+    Anyone have any experience/recommendations for doing USB 2.0
+Highspeed hosts with Linux driver support,
+    in a Xilinx environment ?
 
 
-> Hi Pedro,
->=20
-> Pedro Luis D. L.  hotmail.com> writes:
->> Hello,
->> I'm working right now with a TQM5200 microcontroller on a STX5200 board.
->> I'm having problems to enable SM501 video output using 2.6-denx kernel. =
-The=20
->=20
-> Have you tried to contact TQ-Components (the manufacturer of the TQM5200=
-=20
-> board)? Under the email address support@tqc.de you should get help for
-> hardware and software questions to all of their products.
->=20
-> Regards,
-> Martin
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-Hi Martin,
-
-Well, that sounds like a very reasonable suggestion. I think I should give =
-it a try. Maybe my bad experience with other providers pushed me to ask in =
-this list before. But you're right!
-
-Regards,
-Pedro.
-=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-_________________________________________________________________
-Tecnolog=EDa, moda, motor, viajes,=85suscr=EDbete a nuestros boletines para=
- estar siempre a la =FAltima
-Guapos y guapas, clips musicales y estrenos de cine. =
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
