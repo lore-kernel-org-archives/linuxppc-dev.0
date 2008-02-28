@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7785DDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 19:00:28 +1100 (EST)
-Subject: Re: [RFC][PATCH] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
-	workaround
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080226090210.6816c130@zod.rchland.ibm.com>
-References: <1203634340.10422.203.camel@pasglop>
-	<20080222192817.GA26211@ru.mvista.com>
-	<20080222144919.3ded7c54@weaponx>
-	<47C40548.4080608@ru.mvista.com> <47C41DBE.7090505@harris.com>
-	<20080226090210.6816c130@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 18:54:59 +1100
-Message-Id: <1204185299.15052.381.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 908B8DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 19:41:36 +1100 (EST)
+Message-ID: <47C673B0.2070705@s5r6.in-berlin.de>
+Date: Thu, 28 Feb 2008 09:41:20 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+References: <20080220220326.GA22328@uranus.ravnborg.org>	<1203545913.25307.47.camel@brick>	<tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>	<tkrat.9e19fa31951506af@s5r6.in-berlin.de>
+	<1204166506.15052.336.camel@pasglop>
+In-Reply-To: <1204166506.15052.336.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> Do we have the workaround for the old Apple UniNorth in the new FW OHCI
+> driver (for selfID swapping iirc ?)
 
-On Tue, 2008-02-26 at 09:02 -0600, Josh Boyer wrote:
-> Seems the code will do the right thing since everything is using
-> flags.  I suppose my question can be withdrawn.  It is slightly
-> confusing to do it that way though.  Perhaps a function to do
-> read-modify-writes on DCRs would be welcome.  dcr_modify anyone?
+According to ohci1394.c, it selfIDs and headers of incoming packets are 
+not byte-swapped by the old Apple Uninorth FireWire part.  And no, 
+firewire-ohci doesn't have the workaround yet.
 
-Yup, we probably want to expose a dcri_clrset(), though I would also
-expose then __mtdcri/__mfdcri (non locked version) and the spinlock in
-case somebody wants to do something fancy.
+It should be trivial to copy'n'paste ohci1394's workaround into fw-ohci, 
+but it would be good if someone could test before and after.
 
-Cheers,
-Ben.
+BTW, since that code is touched everytime a packet is received, we 
+should enclose such a workaround in #ifdef CONFIG_PPC_PMAC && 
+CONFIG_PPC32, shouldn't we?  (As a second step after adding the workaround.)
+-- 
+Stefan Richter
+-=====-==--- --=- ===--
+http://arcgraph.de/sr/
