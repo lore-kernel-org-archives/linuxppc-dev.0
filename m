@@ -1,25 +1,21 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 2DE68DDE28
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 23:49:11 +1100 (EST)
-Received: from smtp.belgium.cse-semaphore.com (localhost [127.0.0.1])
-	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id EEAC04A3A
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 13:49:08 +0100 (CET)
-Received: from pclaurent.belgium.cse-semaphore.com
-	(pclaurent.belgium.cse-semaphore.com [192.168.1.47])
-	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id D1E3437F5
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 13:49:08 +0100 (CET)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] fs_enet: Remove unused fields in the
-	fs_mii_bb_platform_info structure.
-Date: Thu, 28 Feb 2008 13:49:01 +0100
-References: <200802151427.44321.laurentp@cse-semaphore.com>
-In-Reply-To: <200802151427.44321.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1665545.khtHujFyc6";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200802281349.07501.laurentp@cse-semaphore.com>
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id A710FDDEC4
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 23:51:22 +1100 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080227210003.484325295@gmail.com>
+References: <20080227210003.484325295@gmail.com>
+	<20080227205831.150784453@gmail.com>
+To: gorcunov@gmail.com
+Subject: Re: [RFC 05/10] mn10300: vmlinux.lds.S cleanup - use PAGE_SIZE,
+	PERCPU macroses
+Date: Thu, 28 Feb 2008 12:50:57 +0000
+Message-ID: <21077.1204203057@redhat.com>
+Sender: dhowells@redhat.com
+Cc: chris@zankel.net, linux-m68k@vger.kernel.org, linux-m32r@ml.linux-m32r.org,
+	jdike@addtoit.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, geert@linux-m68k.org,
+	sam@ravnborg.org, takata@linux-m32r.org, rth@twiddle.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,42 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1665545.khtHujFyc6
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+gorcunov@gmail.com wrote:
 
-On Friday 15 February 2008 14:27, Laurent Pinchart wrote:
-> The mdio_port, mdio_bit, mdc_port and mdc_bit fields in the
-> fs_mii_bb_platform_info structure are left-overs from the move to the Phy
-> Abstraction Layer subsystem. They can be safely removed.
->
-> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-[snip]
+> Subject: [RFC 05/10] mn10300: vmlinux.lds.S cleanup - use PAGE_SIZE, PERCPU macroses
+> X-RedHat-Spam-Score: -1.005 
+> 
+> This patch includes page.h header into liker script that
+> allow us to use PAGE_SIZE macro instead of numeric constant
+> 
+> Also PERCPU macro is used instead of explicit section definition
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-Is there something wrong with the patch ?
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=C3=A9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1665545.khtHujFyc6
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBHxq3D8y9gWxC9vpcRAmS+AJ9QkzTBIyQUwQSj1PWp6vc7Ug8NqACfUHGt
-EU7uZJUICWcPaOmixnYfgg4=
-=OCXK
------END PGP SIGNATURE-----
-
---nextPart1665545.khtHujFyc6--
+Acked-by: David Howells <dhowells@redhat.com>
