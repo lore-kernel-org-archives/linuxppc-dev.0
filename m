@@ -1,30 +1,27 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C7838DDDE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 12:41:09 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m1S1eYOE019950
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 12:40:34 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1S1f7Bn3911750
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 12:41:07 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1S1fCkf029921
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 12:41:12 +1100
-Date: Thu, 28 Feb 2008 12:41:01 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Jerone Young <jyoung5@us.ibm.com>
-Subject: Re: [dtc] breaking out libfdt from dtc so other progs can use it
-Message-ID: <20080228014101.GA24330@localhost.localdomain>
-References: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1C879DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 13:41:05 +1100 (EST)
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jarod Wilson <jwilson@redhat.com>
+In-Reply-To: <200802271458.28401.jwilson@redhat.com>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+	<tkrat.9e19fa31951506af@s5r6.in-berlin.de>
+	<200802271458.28401.jwilson@redhat.com>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 13:40:22 +1100
+Message-Id: <1204166422.15052.334.camel@pasglop>
+Mime-Version: 1.0
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,33 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 27, 2008 at 01:40:43PM -0600, Jerone Young wrote:
-> Currently the dtc source code has libfdt integrated in it. This seems to
-> have become place for upstream libfdt changes. Now we all know everyone
-> (linux kernel, cuboot) also have their own versions over libfdt. But if
-> another userspace app wants to use libfdt , it has to copy it from the
-> dtc source and try to maintain it's own copy.
+
+On Wed, 2008-02-27 at 14:58 -0500, Jarod Wilson wrote:
+> On Saturday 23 February 2008 06:24:17 am Stefan Richter wrote:
+> > The generation of incoming requests was filled in in wrong byte order on
+> > machines with big endian CPU.
+> >
+> > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> > Cc: sparclinux@vger.kernel.org
+> > Cc: linuxppc-dev@ozlabs.org
+> > ---
+> >
+> > This patch is a shot in the dark, based on a warning when building with
+> > C=1 CHECKFLAGS="-D__CHECK_ENDIAN__".  Is it really a fix, or was the
+> > previous code accidentally correct?
+> >
+> > This needs to be tested on different big endian PCs, if possible with
+> > the Apple Uninorth FireWire controller and other types of controllers.
+> > One test which involves ohci->request_generation is simply with an SBP-2
+> > device (harddisk, CD-ROM...).  Does SBP-2 login etc. work?
 > 
-> The question I have is can libfdt be split out from dtc source, and
-> become it's own thing. This way other userspace apps can easily download
-> it and link with it?
-> 
-> The reason I ask is I have added dynamic manipulation support of device
-> trees in memory into qemu for KVM. But the issue is keeping a copy of
-> libfdt in the KVM userspace repository, which is getting some opposition
-> (understandably). But this would be much easier if there was a libfdt
-> repo for the library so that we wouldn't need to keep our own copy.
+> Works just fine with the Apple UniNorth controller in my powerbook in cursory 
+> testing. Tested with multiple sbp2 hard disks, plugging and unplugging, 
+> mounting and unmounting, etc.
 
-Um.. libfdt was moved into the dtc repo for convenience, both for us
-writing it (they help to test each other), and for those using it -
-don't have to have separate pulls for these closely related tools.
+Which specific rev/version of the uninorth controller ?
 
-I don't understand why you're finding the merged libfdt inconvenient.
-"make" will build both dtc and libfdt, and libfdt can be easily taken
-out and embedded on other projects.
+There is the "interesting" one has vendorID Apple and deviceID 0x0018,
+the normal ones have different deviceIDs (and are just lucent
+controllers afaik).
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Ben.
