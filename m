@@ -1,12 +1,27 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 28 Feb 2008 20:58:28 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Use for_each_marker_of_type in asm_emit_data()
-Message-ID: <20080228095828.GO24330@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0CC06DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 23:07:39 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m1SC7WXL011000
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 05:07:33 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m1SC7UMR008594
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 06:07:31 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
+Subject: [PATCH] MTD: fix partition scan control logic in physmap_of and
+	fsl_elbc_nand
+Date: Thu, 28 Feb 2008 20:17:31 +0800
+Message-Id: <1204201051-13107-1-git-send-email-leoli@freescale.com>
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,40 +31,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For no good reason, asm_emit_data() open-codes the equivalent of the
-for_each_marker_of_type macro.  Use the macro instead.
+The generic rule for partition scan is to try all supported
+partition types before an usable partition table is found.
+However the original code returns unsuccessful when there is
+an error in any of the partition types.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
+Signed-off-by: Li Yang <leoli@freescale.com>
+Cc: Stefan Roese <sr@denx.de>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>
 ---
- flattree.c |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+I later found that Stefan has proposed a similar patch for physmap_of
+and Peter proposed another patch to fix cmdlinepart instead.
+I'd say that even after cmdlinepart patch is applied the scan control
+logic still needs to be fixed.
 
-Index: dtc/flattree.c
-===================================================================
---- dtc.orig/flattree.c	2008-02-28 20:53:51.000000000 +1100
-+++ dtc/flattree.c	2008-02-28 20:56:56.000000000 +1100
-@@ -162,14 +162,10 @@
- {
- 	FILE *f = e;
- 	int off = 0;
--	struct marker *m;
-+	struct marker *m = d.markers;
+ drivers/mtd/maps/physmap_of.c    |   12 ++----------
+ drivers/mtd/nand/fsl_elbc_nand.c |    7 +------
+ 2 files changed, 3 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index 49acd41..5ebbbc4 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -225,23 +225,15 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 	 * line, these take precedence over device tree information */
+ 	err = parse_mtd_partitions(info->mtd, part_probe_types,
+ 	                           &info->parts, 0);
+-	if (err < 0)
+-		return err;
  
--	m = d.markers;
--	while (m) {
--		if (m->type == LABEL)
--			emit_offset_label(f, m->ref, m->offset);
--		m = m->next;
+ #ifdef CONFIG_MTD_OF_PARTS
+-	if (err == 0) {
++	if (err <= 0)
+ 		err = of_mtd_parse_partitions(&dev->dev, info->mtd,
+ 		                              dp, &info->parts);
+-		if (err < 0)
+-			return err;
 -	}
-+	for_each_marker_of_type(m, LABEL)
-+		emit_offset_label(f, m->ref, m->offset);
+ #endif
  
- 	while ((d.len - off) >= sizeof(u32)) {
- 		fprintf(f, "\t.long\t0x%x\n",
-
+-	if (err == 0) {
++	if (err <= 0)
+ 		err = parse_obsolete_partitions(dev, info, dp);
+-		if (err < 0)
+-			return err;
+-	}
+ 
+ 	if (err > 0)
+ 		add_mtd_partitions(info->mtd, info->parts, err);
+diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
+index b025dfe..72e9bd9 100644
+--- a/drivers/mtd/nand/fsl_elbc_nand.c
++++ b/drivers/mtd/nand/fsl_elbc_nand.c
+@@ -1054,16 +1054,11 @@ static int fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
+ 	/* First look for RedBoot table or partitions on the command
+ 	 * line, these take precedence over device tree information */
+ 	ret = parse_mtd_partitions(&priv->mtd, part_probe_types, &parts, 0);
+-	if (ret < 0)
+-		goto err;
+ 
+ #ifdef CONFIG_MTD_OF_PARTS
+-	if (ret == 0) {
++	if (ret <= 0)
+ 		ret = of_mtd_parse_partitions(priv->dev, &priv->mtd,
+ 		                              node, &parts);
+-		if (ret < 0)
+-			goto err;
+-	}
+ #endif
+ 
+ 	if (ret > 0)
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.4.rc4
