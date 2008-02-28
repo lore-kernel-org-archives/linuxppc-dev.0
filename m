@@ -1,18 +1,21 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 59DE0DE0B5
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 04:20:44 +1100 (EST)
-Date: Thu, 28 Feb 2008 11:20:34 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
-Message-ID: <20080228172034.GL16241@localdomain>
-References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
-	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AEE22DDEFB
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 04:24:45 +1100 (EST)
+Date: Thu, 28 Feb 2008 11:24:34 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: biswa.nayak@wipro.com
+Subject: Re: Wrong IRQ assigned on MPC8349EMDS board
+Message-ID: <20080228172434.GA25737@ld0162-tx32.am.freescale.net>
+References: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Badari Pulavarty wrote:
+On Thu, Feb 28, 2008 at 09:38:36PM +0530, biswa.nayak@wipro.com wrote:
+> I found that the IRQ lines assigned to different peripherals are
+> completely wrong.
+> My serial ports are connected to pin 9 and 10, but in this kernel the
+> IRQs assigned are 16 and 17. 
 
-> +static struct notifier_block pseries_smp_nb = {
+These are virtual IRQ numbers, which have nothing to do with the IPIC IRQ
+numbers.
 
-Rename this to pseries_mem_nb?
+> On a little investigation I found that the base address assigned to the
+> IPIC chip is '0xFDDFB700'
 
-> +	.notifier_call = pseries_memory_notifier,
-> +};
-> +
-> +static int __init pseries_memory_hotplug_init(void)
-> +{
-> +	if (firmware_has_feature(FW_FEATURE_LPAR))
-> +		pSeries_reconfig_notifier_register(&pseries_smp_nb);
-> +
-> +	return 0;
-> +}
-> +arch_initcall(pseries_memory_hotplug_init);
+That's a virtual address returned from ioremap(), not the physical
+address of the IPIC.
 
-arch_initcall doesn't seem appropriate.  __initcall should be fine.
+> Does this wrong assignment is due to the wrong base address of the IPIC
+> chip?
+> With IRQs 16 and 17, how the serial console is working fine?
+> 
+> When I tried hard coding the IPIC base value to '0xfe000700' then the
+> system refuses to boot up.
+
+That might be a hint that things aren't as wrong as you think. :-)
+
+> I kept the IPIC base as 0xfddfb700 and hard coded the irq lines for
+> serial ports as 9 and 10
+> and in that case the 'request_irq' call fails with the error number as
+> '-38',
+> which translates to '-ENOSYS'. 
+
+Likewise.
+
+-Scott
