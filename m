@@ -1,22 +1,22 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 58125DDEF7
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 04:56:00 +1100 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080228001053.404893334@ldl.fc.hp.com>
-References: <20080228001053.404893334@ldl.fc.hp.com>
-	<20080228000437.880811124@ldl.fc.hp.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [patch 6/6] PCI: consolidate several pcibios_enable_resources()
-	implementations
-Date: Thu, 28 Feb 2008 17:55:33 +0000
-Message-ID: <7005.1204221333@redhat.com>
-Sender: dhowells@redhat.com
-Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.arm.linux.org.uk,
-	Russell King <rmk@arm.linux.org.uk>
+Return-Path: <asmirnov@ru.mvista.com>
+Received: from spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7D032DDF28
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 05:26:57 +1100 (EST)
+Received: from spb.rtsoft.ru (spb.rtsoft.ru [127.0.0.1])
+	by spb.rtsoft.ru (8.13.5/8.13.5) with ESMTP id m1SIZ4D1027120
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 21:35:04 +0300
+Received: (from alex@localhost)
+	by spb.rtsoft.ru (8.13.5/8.13.5/Submit) id m1SIZ31S027119
+	for linuxppc-dev@ozlabs.org; Thu, 28 Feb 2008 21:35:03 +0300
+Date: Thu, 28 Feb 2008 21:35:03 +0300
+From: Alexandr Smirnov <asmirnov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/0] Add Emerson KSI8560 board support
+Message-ID: <20080228183503.GA26971@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+Hi all,
 
-> 
->     frv: checks only 6 resources at (1), has a different ROM
-> 	resource check at (4) and (6) that ignores IORESOURCE_ROM_ENABLE
-> ...
->     mn10300: checks only 6 resources at (1), has no IORESOURCE_{IO,MEM}
-> 	check at (3), has a different ROM resource check at (4) and (6)
-> 	that ignores IORESOURCE_ROM_ENABLE
+The following sequence of patches intended to add support for Emerson KSI8560
+board.
 
-Both parts:
-
-Acked-by: David Howells <dhowells@redhat.com>
+Thanks,
+Alexandr.
