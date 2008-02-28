@@ -1,21 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <grundler@lackof.org>
+Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AEE22DDEFB
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 04:24:45 +1100 (EST)
-Date: Thu, 28 Feb 2008 11:24:34 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: biswa.nayak@wipro.com
-Subject: Re: Wrong IRQ assigned on MPC8349EMDS board
-Message-ID: <20080228172434.GA25737@ld0162-tx32.am.freescale.net>
-References: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
-Mime-Version: 1.0
+	(Client CN "mail.lackof.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5625ADDFC4
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 04:31:42 +1100 (EST)
+Date: Thu, 28 Feb 2008 10:31:25 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [patch 5/6] PARISC: move PERR & SERR enables out of
+	pcibios_enable_resources()
+Message-ID: <20080228173125.GA16270@colo.lackof.org>
+References: <20080228000437.880811124@ldl.fc.hp.com>
+	<20080228001053.209248743@ldl.fc.hp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080228001053.209248743@ldl.fc.hp.com>
+Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 28, 2008 at 09:38:36PM +0530, biswa.nayak@wipro.com wrote:
-> I found that the IRQ lines assigned to different peripherals are
-> completely wrong.
-> My serial ports are connected to pin 9 and 10, but in this kernel the
-> IRQs assigned are 16 and 17. 
-
-These are virtual IRQ numbers, which have nothing to do with the IPIC IRQ
-numbers.
-
-> On a little investigation I found that the base address assigned to the
-> IPIC chip is '0xFDDFB700'
-
-That's a virtual address returned from ioremap(), not the physical
-address of the IPIC.
-
-> Does this wrong assignment is due to the wrong base address of the IPIC
-> chip?
-> With IRQs 16 and 17, how the serial console is working fine?
+On Wed, Feb 27, 2008 at 05:04:42PM -0700, Bjorn Helgaas wrote:
+> Move PERR and SERR enables from pcibios_enable_resources() to
+> platform_pci_enable_device() so the former matches other
+> architectures and can be shared.
 > 
-> When I tried hard coding the IPIC base value to '0xfe000700' then the
-> system refuses to boot up.
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-That might be a hint that things aren't as wrong as you think. :-)
+Ack-By: Grant Grundler <grundler@parisc-linux.org>
 
-> I kept the IPIC base as 0xfddfb700 and hard coded the irq lines for
-> serial ports as 9 and 10
-> and in that case the 'request_irq' call fails with the error number as
-> '-38',
-> which translates to '-ENOSYS'. 
+This patch sequence is heading in the right direction.
+I've not tested this particular one yet but I'm pretty sure it's ok.
+I'll fixup any breakage for parisc.
 
-Likewise.
+...
+> +/*
+> + * A driver is enabling the device.  We enable the PERR and SERR bits
+> + * unconditionally.  Drivers that do not need parity (eg graphics and
+> + * possibly networking) can clear these bits if they want.
+> + */
+> +static int platform_pci_enable_device(struct pci_dev *dev)
 
--Scott
+Thanks for preserving this comment.
+
+In general, I'm wondering if the check for device class would be
+sufficient here to NOT enable PERR/SERR for graphics automatically.
+While disabling PERR was "the right thing" for older "mostly write"
+devices of the 1990's and early 2000, it might not be correct for
+current 3-D graphics devices which use host mem to buffer processed
+results. I'm thinking of Intel graphics controllers in particular
+but I don't know any details of how they actually work.
+
+I'm also a bit concerned about this now becuase (IIRC) AGP didn't
+implement parity though it looked like PCI protocol. PCI-e certainly
+does but it's possible BIOS/Firmware disable parity generation
+on the host bridge when connected to a gfx device.
+We wouldn't want to enable parity checking on a PCI-e gfx device in this
+case and I hope someone (perhaps at Intel) could double check this.
+
+thanks,
+grant
