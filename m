@@ -1,20 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 04ADADDE0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 11:02:01 +1100 (EST)
-Date: Thu, 28 Feb 2008 11:01:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John Linn" <John.Linn@xilinx.com>
-Subject: Re: FW: [PATCH] Xilinx: BSP: Updated ML405 to match hardware used
-	for testing
-Message-Id: <20080228110153.00eb5e1d.sfr@canb.auug.org.au>
-In-Reply-To: <20080227231521.4673DE3006A@mail124-dub.bigfish.com>
-References: <20080227231521.4673DE3006A@mail124-dub.bigfish.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__28_Feb_2008_11_01_53_+1100_nqtVvoZRuPCt052E"
-Cc: linuxppc-dev@ozlabs.org, git-dev <git-dev@xilinx.com>
+Return-Path: <helgaas@ldl.fc.hp.com>
+Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 5E3C0DDE39
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 11:09:18 +1100 (EST)
+Message-Id: <20080228001053.013269726@ldl.fc.hp.com>
+References: <20080228000437.880811124@ldl.fc.hp.com>
+Date: Wed, 27 Feb 2008 17:04:41 -0700
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+To: linux-arch@vger.kernel.org
+Subject: [patch 4/6] ARM: move bridge enable out of pcibios_enable_resources()
+Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__28_Feb_2008_11_01_53_+1100_nqtVvoZRuPCt052E
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Move bridge enable from pcibios_enable_resources() to
+platform_pci_enable_device() so the former matches other
+architectures and can be shared.
 
-Hi John,
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-n Wed, 27 Feb 2008 16:15:18 -0700 "John Linn" <John.Linn@xilinx.com> wrote:
->
-> The default config file for the ML405 and the xparameters*.h file
-> were updated to match the hardware used for testing. The platform
-> data in virtex_devices.c was updated for the LL TEMAC driver
-> which now uses the dcr_host field to determine if it should use
-> DCR for the DMA.
->=20
-> Signed-off-by: John Linn <john.linn>
+Index: work6/arch/arm/kernel/bios32.c
+===================================================================
+--- work6.orig/arch/arm/kernel/bios32.c	2008-02-27 11:25:29.000000000 -0700
++++ work6/arch/arm/kernel/bios32.c	2008-02-27 11:55:59.000000000 -0700
+@@ -683,15 +683,32 @@
+ 			cmd |= PCI_COMMAND_MEMORY;
+ 	}
+ 
++	if (cmd != old_cmd) {
++		printk("PCI: enabling device %s (%04x -> %04x)\n",
++		       pci_name(dev), old_cmd, cmd);
++		pci_write_config_word(dev, PCI_COMMAND, cmd);
++	}
++	return 0;
++}
++
++static int platform_pci_enable_device(struct pci_dev *dev)
++{
++	u16 cmd, old_cmd;
++
++	pci_read_config_word(dev, PCI_COMMAND, &cmd);
++	old_cmd = cmd;
++
+ 	/*
+-	 * Bridges (eg, cardbus bridges) need to be fully enabled
++	 * Bridges (eg, cardbus bridges) need to be fully enabled.
++	 * Most architectures do this in pci_enable_bridges(), not
++	 * in the pci_enable_device() path.
+ 	 */
+ 	if ((dev->class >> 16) == PCI_BASE_CLASS_BRIDGE)
+ 		cmd |= PCI_COMMAND_IO | PCI_COMMAND_MEMORY;
+ 
+ 	if (cmd != old_cmd) {
+-		printk("PCI: enabling device %s (%04x -> %04x)\n",
+-		       pci_name(dev), old_cmd, cmd);
++		dev_info(&dev->dev, "enabling bridge device (%04x -> %04x)\n",
++		       old_cmd, cmd);
+ 		pci_write_config_word(dev, PCI_COMMAND, cmd);
+ 	}
+ 	return 0;
+@@ -699,7 +716,12 @@
+ 
+ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ {
+-	return pcibios_enable_resources(dev, mask);
++	int err;
++
++	if ((err = pcibios_enable_resources(dev, mask)) < 0)
++		return err;
++
++	return platform_pci_enable_device(dev);
+ }
+ 
+ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
 
-This was badly wrapped as well.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__28_Feb_2008_11_01_53_+1100_nqtVvoZRuPCt052E
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHxfn1TgG2atn1QN8RAlWLAJoDt9+Fd8x6w//yMha0YFXK2mDqcACfc7Er
-XlSOZj4zH3X7FewIOQ67UFw=
-=W/Cf
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Feb_2008_11_01_53_+1100_nqtVvoZRuPCt052E--
+-- 
