@@ -1,20 +1,21 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-06.bluehost.com (outbound-mail-06.bluehost.com
-	[69.89.17.206]) by ozlabs.org (Postfix) with SMTP id 448AEDDE45
+Return-Path: <sheflin@newagemicro.com>
+Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
+	[66.129.110.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F546DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Feb 2008 05:14:48 +1100 (EST)
-Received: from c-67-168-89-254.hsd1.wa.comcast.net ([67.168.89.254]
-	helo=hp-dhlii.dlasys.lcl)
-	by host200.hostmonster.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.68) (envelope-from <dhlii@dlasys.net>) id 1JUnAs-00048N-Q0
-	for linuxppc-embedded@ozlabs.org; Thu, 28 Feb 2008 11:08:06 -0700
-Message-ID: <47C6F883.7030704@dlasys.net>
-Date: Thu, 28 Feb 2008 13:08:03 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: USB 2.0 Highspeed host with Xilinx/linux ?
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 29 Feb 2008 10:07:42 +1100 (EST)
+Date: Thu, 28 Feb 2008 18:07:28 -0500
+To: linuxppc-embedded@ozlabs.org
+From: Steve Heflin <sheflin@newagemicro.com>
+Subject: 2.6.25-rc3 Sequoia build - section mismatch(es)
+In-Reply-To: <20080224073800.4bdb30ac@zod.rchland.ibm.com>
+References: <1203848259l.2313l.1l@antares.localdomain>
+	<20080224073800.4bdb30ac@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <20080228230743.6F546DDDFF@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +26,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Upon building the default Sequoia (AMCC-440EPx) configuration, the 
+MODPOST step warns about section mismatches:
+    WARNING: modpost: Found 5 section mismatch(es).
+    To see full details build your kernel with:
+    'make CONFIG_DEBUG_SECTION_MISMATCH=y'
 
-    Anyone have any experience/recommendations for doing USB 2.0
-Highspeed hosts with Linux driver support,
-    in a Xilinx environment ?
-
-
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+After using the 
