@@ -1,19 +1,27 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 83D80DE02D
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 08:05:52 +1100 (EST)
-Message-ID: <47C72223.1080501@am.sony.com>
-Date: Thu, 28 Feb 2008 13:05:39 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch] PS3: Fix unlikely typo in ps3_get_irq
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Roel Kluin <12o3l@tiscali.nl>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C855DDDE2F
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:26:43 +1100 (EST)
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jarod Wilson <jwilson@redhat.com>
+In-Reply-To: <200802281342.06493.jwilson@redhat.com>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<200802272221.38985.jwilson@redhat.com>
+	<1204179959.15052.372.camel@pasglop>
+	<200802281342.06493.jwilson@redhat.com>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 10:26:02 +1100
+Message-Id: <1204241162.15052.393.camel@pasglop>
+Mime-Version: 1.0
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +32,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Roel Kluin <12o3l@tiscali.nl>
+On Thu, 2008-02-28 at 13:42 -0500, Jarod Wilson wrote:
+> On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
+> > > Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
+> > > active". Could still be lucent though, judging by the subsys device ID of
+> > > 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
+> > > don't have the interesting one.
+> >
+> > Well, it's interesting in the sense that it's a "normal" OHCI then on a
+> > BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
+> > while ago. I'll see if I can find another machine with that one in.
+> 
+> Ah, the pismo has it, eh? I think I may actually know of someone in the office 
+> that still has one of those that I might be able to borrow and poke at...
 
-Fix a typo bug 'unlikely(x) == y' and add an unlikely() call to
-an unlikely code path in the PS3 interrupt routine ps3_get_irq().
+I -think- it has it... Pismo definitely has one of the first variant of
+UniNorth with "working" FW afaik.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-Hi Paul,
+The first UniNorth was used in the first "toilet-seat" ibook, but I
+think this one didn't have firewire, or a non-working one... and in the
+first Sawtooth G4 for which FW and Ethernet even were separate PCI chips
+because the ones in UniNorth were too broken.
 
-Please apply for 2.6.25.
+It's possible that early G4 titanium powerbooks or other model of FW
+iBooks have that UniNorth FW variant too.
 
--Geoff
-
- arch/powerpc/platforms/ps3/interrupt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -709,7 +709,7 @@ static unsigned int ps3_get_irq(void)
- 	asm volatile("cntlzd %0,%1" : "=r" (plug) : "r" (x));
- 	plug &= 0x3f;
- 
--	if (unlikely(plug) == NO_IRQ) {
-+	if (unlikely(plug == NO_IRQ)) {
- 		pr_debug("%s:%d: no plug found: thread_id %lu\n", __func__,
- 			__LINE__, pd->thread_id);
- 		dump_bmp(&per_cpu(ps3_private, 0));
+Ben.
