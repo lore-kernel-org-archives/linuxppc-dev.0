@@ -1,23 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1299DDF54
+	by ozlabs.org (Postfix) with ESMTP id 746EBDDF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Feb 2008 01:23:31 +1100 (EST)
-Message-Id: <3CEF10B6-C825-4FE5-BEFC-3F2512666597@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: maxime louvel <m.louvel@gmail.com>
-In-Reply-To: <dda529d0802272356p5db9066s5a9aaa336e74ab81@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: 2.6.25-rc3 on mpc8548amc doesn't boot
-Date: Thu, 28 Feb 2008 08:23:27 -0600
-References: <dda529d0802270437o3ea1c9beld7d65f5af2011a6f@mail.gmail.com>
-	<dda529d0802270825p527fd1b5i3e5a72a16bd95a75@mail.gmail.com>
-	<B3C9F997-0D0B-4033-9FED-F8B6B7F5DABC@kernel.crashing.org>
-	<dda529d0802272356p5db9066s5a9aaa336e74ab81@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 29 Feb 2008 02:05:13 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1JUkJj-0008Q3-1A
+	for linuxppc-embedded@ozlabs.org; Thu, 28 Feb 2008 15:05:03 +0000
+Received: from igw1.tqs.de ([62.157.136.29])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Feb 2008 15:05:03 +0000
+Received: from martin.krause by igw1.tqs.de with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Feb 2008 15:05:03 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Martin Krause <martin.krause@tqs.de>
+Subject: Re: TQM5200 2.6-denx SM501 voyager enabling problem.
+Date: Thu, 28 Feb 2008 15:01:59 +0000 (UTC)
+Message-ID: <loom.20080228T145124-686@post.gmane.org>
+References: <BLU106-W20B00A907B0D9DAD5014E2CA1D0@phx.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,16 +34,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Pedro,
 
-On Feb 28, 2008, at 1:56 AM, maxime louvel wrote:
+Pedro Luis D. L. <carcadiz <at> hotmail.com> writes:
+> Hello,
+> I'm working right now with a TQM5200 microcontroller on a STX5200 board.
+> I'm having problems to enable SM501 video output using 2.6-denx kernel. The 
 
-> Hi,
->
-> I wanted first to check how the kernel is behaving, with a few tests.
-> Then what is the best solution to do this ?
-> A patch from the 2.6.25-rc3 vanilla kernel ?
+Have you tried to contact TQ-Components (the manufacturer of the TQM5200 
+board)? Under the email address support@tqc.de you should get help for
+hardware and software questions to all of their products.
 
-2.6.25-rc3 is fine.  The best solution is against my git-tree (git:// 
-git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git).
-
--k
+Regards,
+Martin
