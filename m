@@ -1,14 +1,22 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7B0D1DDE20
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 00:38:05 +1100 (EST)
-Date: Thu, 28 Feb 2008 14:37:18 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: undefined references to __udivdi3 on powerpc
-Message-ID: <20080228133718.GA8383@aepfle.de>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id D102CDDEEB
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 02:36:57 +1100 (EST)
+Received: from smtp.belgium.cse-semaphore.com (localhost [127.0.0.1])
+	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 2B9474501
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 16:36:55 +0100 (CET)
+Received: from pclaurent.belgium.cse-semaphore.com
+	(pclaurent.belgium.cse-semaphore.com [192.168.1.47])
+	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 0FA7141E8
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 16:36:55 +0100 (CET)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] fs_enet: Don't call NAPI functions when NAPI is not used.
+Date: Thu, 28 Feb 2008 16:36:47 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; boundary="nextPart1920599.eM8EEF6dkO";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200802281636.53815.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,42 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--nextPart1920599.eM8EEF6dkO
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-While debugging __divdi3 calls in drivers/crypto/hifn_795x.c (due to the
-ndelay() delay call with a s64), I found even more breakage of that
-sort. This is after a allnoconfig with ARCH=powerpc in 2.6.25-rc3,
-plus CONFIG_MODULES=y and CONFIG_CRYPTO_DEV_HIFN_795X=y:
+fs_enet_close() calls napi_disable() unconditionally. This patch skips the
+call when use_napi isn't set.
 
-  LD      .tmp_vmlinux1
-  kernel/built-in.o: In function `update_xtime_cache':
-  (.text+0x221a0): undefined reference to `__umoddi3'
-  kernel/built-in.o: In function `update_xtime_cache':
-  (.text+0x221c0): undefined reference to `__udivdi3'
-  kernel/built-in.o: In function `getnstimeofday':
-  (.text+0x22330): undefined reference to `__umoddi3'
-  kernel/built-in.o: In function `getnstimeofday':
-  (.text+0x22350): undefined reference to `__udivdi3'
-  kernel/built-in.o: In function `timekeeping_resume':
-  timekeeping.c:(.text+0x226a0): undefined reference to `__udivdi3'
-  timekeeping.c:(.text+0x22778): undefined reference to `__umoddi3'
-  timekeeping.c:(.text+0x22798): undefined reference to `__udivdi3'
-  kernel/built-in.o: In function `update_wall_time':
-  (.text+0x22c7c): undefined reference to `__umoddi3'
-  kernel/built-in.o: In function `update_wall_time':
-  (.text+0x22c9c): undefined reference to `__udivdi3'
-  kernel/built-in.o: In function `update_wall_time':
-  (.text+0x230f8): undefined reference to `__umoddi3'
-  kernel/built-in.o: In function `update_wall_time':
-  (.text+0x23118): undefined reference to `__udivdi3'
-  kernel/built-in.o: In function `do_settimeofday':
-  (.text+0x23520): undefined reference to `__udivdi3'
-  kernel/built-in.o: In function `timekeeping_init':
-  (.init.text+0x1870): undefined reference to `__udivdi3'
-  make[1]: *** [.tmp_vmlinux1] Error 1
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+=2D--
+ drivers/net/fs_enet/fs_enet-main.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-But its not a regression, 2.6.24 allnoconfig does not link either on
-powerpc32. 
+diff --git a/drivers/net/fs_enet/fs_enet-main.c=20
+b/drivers/net/fs_enet/fs_enet-main.c
+index c83bd65..1801ce3 100644
+=2D-- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -835,7 +835,8 @@ static int fs_enet_close(struct net_device *dev)
+=20
+ 	netif_stop_queue(dev);
+ 	netif_carrier_off(dev);
+=2D	napi_disable(&fep->napi);
++	if (fep->fpi->use_napi)
++		napi_disable(&fep->napi);
+ 	phy_stop(fep->phydev);
+=20
+ 	spin_lock_irqsave(&fep->lock, flags);
+=2D-=20
+1.5.0
 
-How can this be fixed?
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-Olaf
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1920599.eM8EEF6dkO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBHxtUV8y9gWxC9vpcRAmT8AJ4/5JqfIckRxBZGWNmMJhKPjLruKQCgiW36
+9vWPnYPkKvAcOXuPeKcS3Vc=
+=mnlh
+-----END PGP SIGNATURE-----
+
+--nextPart1920599.eM8EEF6dkO--
