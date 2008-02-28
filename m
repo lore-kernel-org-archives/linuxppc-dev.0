@@ -1,19 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E95BDDDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 02:41:21 +1100 (EST)
-In-Reply-To: <20080228133718.GA8383@aepfle.de>
-References: <20080228133718.GA8383@aepfle.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <39a171fd2cc7fec9813c5b3070b193ee@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: undefined references to __udivdi3 on powerpc
-Date: Thu, 28 Feb 2008 16:40:19 +0100
-To: Olaf Hering <olaf@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7825FDDEEF
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 03:07:21 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: FW: [PATCH] Xilinx: BSP: Updated ML405 to match hardware used for
+	testing
+Date: Thu, 28 Feb 2008 09:07:16 -0700
+In-Reply-To: <20080228110153.00eb5e1d.sfr@canb.auug.org.au>
+References: <20080227231521.4673DE3006A@mail124-dub.bigfish.com>
+	<20080228110153.00eb5e1d.sfr@canb.auug.org.au>
+From: "John Linn" <John.Linn@xilinx.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Message-Id: <20080228160718.4AA8E1298060@mail127-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> While debugging __divdi3 calls in drivers/crypto/hifn_795x.c (due to 
-> the
-> ndelay() delay call with a s64), I found even more breakage of that
-> sort. This is after a allnoconfig with ARCH=powerpc in 2.6.25-rc3,
-> plus CONFIG_MODULES=y and CONFIG_CRYPTO_DEV_HIFN_795X=y:
+I think I found my problem that mangled the messages.  I really meant to
+send both messages to the embedded ppc list rather than this more
+general list.
 
-I cannot reproduce this, but my tree has
+Thanks,
+John
 
-	time: prevent the loop in timespec_add_ns() from being optimised away
+-----Original Message-----
+From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]=20
+Sent: Wednesday, February 27, 2008 5:02 PM
+To: John Linn
+Cc: linuxppc-dev@ozlabs.org; git-dev
+Subject: Re: FW: [PATCH] Xilinx: BSP: Updated ML405 to match hardware
+used for testing
 
-which is in -mm now.  Could you try that patch?
+Hi John,
 
+n Wed, 27 Feb 2008 16:15:18 -0700 "John Linn" <John.Linn@xilinx.com>
+wrote:
+>
+> The default config file for the ML405 and the xparameters*.h file
+> were updated to match the hardware used for testing. The platform
+> data in virtex_devices.c was updated for the LL TEMAC driver
+> which now uses the dcr_host field to determine if it should use
+> DCR for the DMA.
+>=20
+> Signed-off-by: John Linn <john.linn>
 
-Segher
+This was badly wrapped as well.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
