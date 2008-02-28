@@ -1,27 +1,25 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0CC06DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 23:07:39 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m1SC7WXL011000
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 05:07:33 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m1SC7UMR008594
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 06:07:31 -0600 (CST)
-From: Li Yang <leoli@freescale.com>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Subject: [PATCH] MTD: fix partition scan control logic in physmap_of and
-	fsl_elbc_nand
-Date: Thu, 28 Feb 2008 20:17:31 +0800
-Message-Id: <1204201051-13107-1-git-send-email-leoli@freescale.com>
-Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
-	Li Yang <leoli@freescale.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 2DE68DDE28
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 23:49:11 +1100 (EST)
+Received: from smtp.belgium.cse-semaphore.com (localhost [127.0.0.1])
+	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id EEAC04A3A
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 13:49:08 +0100 (CET)
+Received: from pclaurent.belgium.cse-semaphore.com
+	(pclaurent.belgium.cse-semaphore.com [192.168.1.47])
+	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id D1E3437F5
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 13:49:08 +0100 (CET)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] fs_enet: Remove unused fields in the
+	fs_mii_bb_platform_info structure.
+Date: Thu, 28 Feb 2008 13:49:01 +0100
+References: <200802151427.44321.laurentp@cse-semaphore.com>
+In-Reply-To: <200802151427.44321.laurentp@cse-semaphore.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1665545.khtHujFyc6";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200802281349.07501.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,75 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The generic rule for partition scan is to try all supported
-partition types before an usable partition table is found.
-However the original code returns unsuccessful when there is
-an error in any of the partition types.
+--nextPart1665545.khtHujFyc6
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Cc: Stefan Roese <sr@denx.de>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>
----
-I later found that Stefan has proposed a similar patch for physmap_of
-and Peter proposed another patch to fix cmdlinepart instead.
-I'd say that even after cmdlinepart patch is applied the scan control
-logic still needs to be fixed.
+On Friday 15 February 2008 14:27, Laurent Pinchart wrote:
+> The mdio_port, mdio_bit, mdc_port and mdc_bit fields in the
+> fs_mii_bb_platform_info structure are left-overs from the move to the Phy
+> Abstraction Layer subsystem. They can be safely removed.
+>
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+[snip]
 
- drivers/mtd/maps/physmap_of.c    |   12 ++----------
- drivers/mtd/nand/fsl_elbc_nand.c |    7 +------
- 2 files changed, 3 insertions(+), 16 deletions(-)
+Is there something wrong with the patch ?
 
-diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-index 49acd41..5ebbbc4 100644
---- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -225,23 +225,15 @@ static int __devinit of_flash_probe(struct of_device *dev,
- 	 * line, these take precedence over device tree information */
- 	err = parse_mtd_partitions(info->mtd, part_probe_types,
- 	                           &info->parts, 0);
--	if (err < 0)
--		return err;
- 
- #ifdef CONFIG_MTD_OF_PARTS
--	if (err == 0) {
-+	if (err <= 0)
- 		err = of_mtd_parse_partitions(&dev->dev, info->mtd,
- 		                              dp, &info->parts);
--		if (err < 0)
--			return err;
--	}
- #endif
- 
--	if (err == 0) {
-+	if (err <= 0)
- 		err = parse_obsolete_partitions(dev, info, dp);
--		if (err < 0)
--			return err;
--	}
- 
- 	if (err > 0)
- 		add_mtd_partitions(info->mtd, info->parts, err);
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index b025dfe..72e9bd9 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -1054,16 +1054,11 @@ static int fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
- 	/* First look for RedBoot table or partitions on the command
- 	 * line, these take precedence over device tree information */
- 	ret = parse_mtd_partitions(&priv->mtd, part_probe_types, &parts, 0);
--	if (ret < 0)
--		goto err;
- 
- #ifdef CONFIG_MTD_OF_PARTS
--	if (ret == 0) {
-+	if (ret <= 0)
- 		ret = of_mtd_parse_partitions(priv->dev, &priv->mtd,
- 		                              node, &parts);
--		if (ret < 0)
--			goto err;
--	}
- #endif
- 
- 	if (ret > 0)
--- 
-1.5.4.rc4
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=C3=A9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1665545.khtHujFyc6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBHxq3D8y9gWxC9vpcRAmS+AJ9QkzTBIyQUwQSj1PWp6vc7Ug8NqACfUHGt
+EU7uZJUICWcPaOmixnYfgg4=
+=OCXK
+-----END PGP SIGNATURE-----
+
+--nextPart1665545.khtHujFyc6--
