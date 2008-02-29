@@ -1,31 +1,20 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D7E7EDDF6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 11:36:24 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1T0bAdG023688
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 19:37:10 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1T0ZCpu213166
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 19:35:12 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1T0ZBWm026557
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 19:35:11 -0500
-Message-ID: <47C7533D.9040002@austin.ibm.com>
-Date: Thu, 28 Feb 2008 18:35:09 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, michael@ellerman.id.au
-Subject: [PATCH 8/8] pseries: phyp dump: config file
-References: <47B90F55.2080606@austin.ibm.com>	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
-	<47C74A66.1060105@austin.ibm.com>
-In-Reply-To: <47C74A66.1060105@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linasvepstas@gmail.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20080229003906.GP16241@localdomain>
+References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
+	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
+	<1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+	<20080229003906.GP16241@localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-DVk/HNNQ/fNHg0za3Cyb"
+Date: Fri, 29 Feb 2008 12:03:22 +1100
+Message-Id: <1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +25,92 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+--=-DVk/HNNQ/fNHg0za3Cyb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, 2008-02-28 at 18:39 -0600, Nathan Lynch wrote:
+> Michael Ellerman wrote:
+> > On Thu, 2008-02-28 at 08:46 -0800, Badari Pulavarty wrote:
+> > > Hotplug memory notifier for ppc64. This gets invoked by writing
+> > > the device-node that needs to be removed to /proc/ppc64/ofdt.
+> > > We need to adjust the sections and remove sysfs entries by
+> > > calling __remove_pages(). Then call arch specific code to
+> > > get rid of htab mappings for the section of memory.
+> > >=20
+> > > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > > ---
+> > >  arch/powerpc/platforms/pseries/Makefile         |    1=20
+> > >  arch/powerpc/platforms/pseries/hotplug-memory.c |   98 +++++++++++++=
++++++++++++
+> > >  2 files changed, 99 insertions(+)
+> > >=20
+> > > Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory=
+.c
+> > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > > +++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	=
+2008-02-28 08:20:14.000000000 -0800
+> >=20
+> > > +
+> > > +static struct notifier_block pseries_smp_nb =3D {
+> > > +	.notifier_call =3D pseries_memory_notifier,
+> > > +};
+> > > +
+> > > +static int __init pseries_memory_hotplug_init(void)
+> > > +{
+> > > +	if (firmware_has_feature(FW_FEATURE_LPAR))
+> > > +		pSeries_reconfig_notifier_register(&pseries_smp_nb);
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +arch_initcall(pseries_memory_hotplug_init);
+> >=20
+> > This is going to fire on non-pseries LPAR platforms, like iSeries and
+> > PS3. Which is not what you want I think.
+>=20
+> Well, the notifier will be registered, yes, but it will never be
+> called because that path is reachable only from a write to
+> /proc/ppc64/ofdt, which is not created on non-pseries.
 
-Add hypervisor-assisted dump to kernel config
+Sure. Still seems better not to register it in the first place.
 
-Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
+> Maybe it should be
+>=20
+> machine_device_initcall(pseries, pseries_memory_hotplug_init);
 
------
- arch/powerpc/Kconfig |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+I think so.
 
-Index: 2.6.25-rc1/arch/powerpc/Kconfig
-===================================================================
---- 2.6.25-rc1.orig/arch/powerpc/Kconfig	2008-02-18 03:22:06.000000000 -0600
-+++ 2.6.25-rc1/arch/powerpc/Kconfig	2008-02-18 03:22:45.000000000 -0600
-@@ -306,6 +306,17 @@ config CRASH_DUMP
- 
- 	  Don't change this unless you know what you are doing.
- 
-+config PHYP_DUMP
-+	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
-+	depends on PPC_PSERIES && EXPERIMENTAL
-+	default y
-+	help
-+	  Hypervisor-assisted dump is meant to be a kdump replacement
-+	  offering robustness and speed not possible without system
-+	  hypervisor assistence.
-+
-+	  If unsure, say "Y"
-+
- config PPCBUG_NVRAM
- 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
- 	default y if PPC_PREP
+> (and pseries_cpu_hotplug_init in hotplug-cpu.c should be changed to
+> machine_arch_initcall)
+
+Yeah I noticed that was not guarded as well, and I think I'm culpable
+for that :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-DVk/HNNQ/fNHg0za3Cyb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHx1nadSjSd0sB4dIRAgfjAJ91kt4A2JwSE+5R/breesd+Jx23cACfVhva
+IOcDg7uKLW78qYWR+6SEubc=
+=mLMt
+-----END PGP SIGNATURE-----
+
+--=-DVk/HNNQ/fNHg0za3Cyb--
