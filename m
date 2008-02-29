@@ -1,22 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B4CCCDDED4
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 07:56:21 +1100 (EST)
-Date: Fri, 29 Feb 2008 23:55:32 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 04/11] [RFC][GPIOLIB] add gpio_set_dedicated() routine
-Message-ID: <20080229205532.GA26939@localhost.localdomain>
-References: <20080203170820.GA18520@localhost.localdomain>
-	<200802031322.08600.david-b@pacbell.net>
-	<20080203233220.GA20105@zarina>
-	<200802142036.40770.david-b@pacbell.net>
-	<20080215114029.GA16810@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D9AA5DDE04
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 08:50:35 +1100 (EST)
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <47C7F209.9030907@s5r6.in-berlin.de>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<200802272221.38985.jwilson@redhat.com>
+	<1204179959.15052.372.camel@pasglop>
+	<200802281342.06493.jwilson@redhat.com>
+	<1204241162.15052.393.camel@pasglop>	<47C79CB1.6050104@redhat.com>
+	<18375.60394.166769.540668@cargo.ozlabs.ibm.com>
+	<47C7F209.9030907@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Sat, 01 Mar 2008 08:49:53 +1100
+Message-Id: <1204321793.15052.446.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080215114029.GA16810@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	sparclinux@vger.kernel.org, Jarod Wilson <jwilson@redhat.com>,
+	linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 15, 2008 at 02:40:29PM +0300, Anton Vorontsov wrote:
-[...]
-> > > {
-> > > 	qe_chip = container_of(gpio_to_chip(...), struct qe_chip, chip);
-> > > 	...
-> > 
-> > You know, you can write all this yourself, without needing any
-> > support from the GPIO framework whatsoever.  The QE stuff that
-> > registered a gpio_chip interface to its hardware probably keeps
-> > some records itself, sufficient for such (infrequent) mappings.
+
+> The second line looks like this is indeed one of those which needs the 
+> header byte-swap workaround which ohci1394 has but firewire-ohci hasn't yet.
 > 
-> Yes, surely. And as I've said already, I do know how to workaround
-> that, without GPIOLIB support. The thing is that I don't like the
-> way I'm going to do it.
+> On the weekend I'm going to attempt to put Linux on this PowerBook, at last.
 
-...please, don't force me to do these dirty hacks inside the arch code,
-nobody will like them, I know it beforehand. ;-)
+Those machines can netboot, or boot from USB. Might be easier for you.
 
-...if you so reluctant supporting dedicated functions inside the gpiolib,
-then nothing could be easier than exporting gpio_to_chip(), so arch code
-can write extensions without dirty hacks. Please?
+For that sort of test, usually, I just netboot a zImage with built-in
+initrd, using an initrd with all the tools I need on it.
 
+(A way to build that sort of initrd or initramfs is OpenWRT though I use
+a home made one).
 
-p.s. By "dirty hacks" I mean:
+You can netboot any newworld mac with that OF command:
 
-a) drivers will need to fetch and store device_node in their private
-   driver data, in _addition_ to gpio numbers;
+boot enet:tftp_server_ip,filename
 
-b) which means that I'll have to introduce of_get_gpio_controller()
-   to solely workaround gpio_to_chip() absence;
+(you need to make sure you have a DHCP around to give it an address).
 
-c) and all that will result in 9 * N additional lines of code to
-   handle by the drivers, where N is the number of GPIOs we want to use:
+However, make _SURE_ you use the file arch/powerpc/boot/zImage.pmac (and
+not any other zImage).
 
-   struct drvdata {
-   (1) struct device_node *gpioX_controller;
+To build one with an initrd included, put the initrd in
+arch/powerpc/boot as "ramdisk.image.gz" and do make zImage.initrd.
 
-   drv_probe()
-   (2) drvdata->gpioX_controller = of_get_gpio_controller(...);
-   (3) if (!drvdata->gpioX_controller) {
-   (4)        ret = -EINVAL;
-   (5)        goto gpioX_contr_failed;
-   (6) }
-   (7) gpioX_contr_failed:
-   (8) of_put_gpio_controller(drvdata->gpioX_controller)
+That should result in a file name zImage.initrd.pmac that you can
+netboot.
 
-   drv_remove()
-   {
-   (9) of_put_gpio_controller(drvdata->gpioX_controller)
-
--- 
-Anton Vorontsov
-email: cboumailru@gmail.com
-irc://irc.freenode.net/bd2
+Cheers,
+Ben.
