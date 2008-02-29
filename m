@@ -1,19 +1,10 @@
-Return-Path: <gvb.linuxppc.dev@gmail.com>
-Received: from QMTA05.emeryville.ca.mail.comcast.net
-	(qmta05.emeryville.ca.mail.comcast.net [76.96.30.48])
-	by ozlabs.org (Postfix) with ESMTP id 03E63DDE33
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 13:52:50 +1100 (EST)
-Message-ID: <47C773B7.40302@gmail.com>
-Date: Thu, 28 Feb 2008 21:53:43 -0500
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-MIME-Version: 1.0
-To: jyoung5@us.ibm.com
-Subject: Re: [dtc] breaking out libfdt from dtc so other progs can use it
-References: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>	<20080228014101.GA24330@localhost.localdomain>	<1204216244.6676.13.camel@thinkpad.austin.ibm.com>	<20080228125940.78f7f2b6@vader.jdub.homelinux.org>
-	<1204228953.12181.15.camel@thinkpad.austin.ibm.com>
-In-Reply-To: <1204228953.12181.15.camel@thinkpad.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 29 Feb 2008 14:58:03 +1100
+Subject: [PATCH] [POWERPC] pci: fix bogus test for unassigned resources
+Message-Id: <20080229035839.DADE0DDE03@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +14,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jerone Young wrote:
-> On Thu, 2008-02-28 at 12:59 -0600, Josh Boyer wrote:
->> On Thu, 28 Feb 2008 10:30:44 -0600
->> Jerone Young <jyoung5@us.ibm.com> wrote:
+A bogus test for unassigned resources that came from our 32 bits
+PCI code ended up being "merged" by my previous patch series,
+breaking some 64 bits setups where devices have legal resources
+ending at 0xffffffff.
 
-[big snip]
+This fixes it by completely changing the test. We now test for
+res->start == 0, as the generic code expects, and we also only
+do so on platforms that don't have the PPC_PCI_PROBE_ONLY flag
+set, as there are cases of pSeries and iSeries where it could
+be a valid value and those can't reassign devices.
 
->> You still haven't explained why maintenance is harder or somehow less
->> doable by having it in the dtc repo.  Maintenance is very much the
->> concern of the upstream developers, which seem to be saying it's not a
->> problem for them...
-> 
-> I guess what I see libfdt as something like shared userspace library. At
-> the moment dtc is the only userspace project to use it.  So it make
-> perfect since to keep it with the source and not separated.
-> 
-> Though when other projects need it .. the option of having to try to
-> figure out what version of dtc to grab so understand what libfdt is
-> usable, can be a bit of a pain.
-> 
-> Though I can't really argue that you can't get around this by just
-> downloading dtc and grabbing out the libfdt package..though it does
-> cause some indirection.  
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ 
+ arch/powerpc/kernel/pci-common.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-FWIIW, that is what the u-boot project is doing.  The last pass, I 
-actually extracted the libfdt git patch(es) and then applied them to the 
-u-boot tree so that the history would be carried over.  The libfdt 
-portion is now quite stable and I don't see major changes coming that 
-would cause this methodology to be a problem.
-
-Best regards,
-gvb
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2008-02-29 13:37:51.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2008-02-29 14:39:28.000000000 +1100
+@@ -748,7 +748,13 @@ static void __devinit pcibios_fixup_reso
+ 		struct resource *res = dev->resource + i;
+ 		if (!res->flags)
+ 			continue;
+-		if (res->end == 0xffffffff) {
++		/* On platforms that have PPC_PCI_PROBE_ONLY set, we don't
++		 * consider 0 as an unassigned BAR value. It's technically
++		 * a valid value, but linux doesn't like it... so when we can
++		 * re-assign things, we do so, but if we can't, we keep it
++		 * around and hope for the best...
++		 */
++		if (res->start == 0 && !(ppc_pci_flags & PPC_PCI_PROBE_ONLY)) {
+ 			pr_debug("PCI:%s Resource %d %016llx-%016llx [%x] is unassigned\n",
+ 				 pci_name(dev), i,
+ 				 (unsigned long long)res->start,
