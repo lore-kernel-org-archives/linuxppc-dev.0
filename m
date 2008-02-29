@@ -1,22 +1,14 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1586BDDECC
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 05:18:34 +1100 (EST)
-Message-ID: <47C84C66.4070006@am.sony.com>
-Date: Fri, 29 Feb 2008 10:18:14 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 7E062DDEC1
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 06:08:20 +1100 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 29 Feb 2008 20:08:17 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20080229190817.81180@gmx.net>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] [POWERPC] Fix zImage-dtb.initrd build error
-References: <20080221185651.6893.78700.stgit@trillian.secretlab.ca>
-	<fa686aa40802290633i2918cfbdtecb614065895f82a@mail.gmail.com>
-In-Reply-To: <fa686aa40802290633i2918cfbdtecb614065895f82a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	miltonm@bga.com, Hiroaki_Fuse@hq.scei.sony.co.jp
+Subject: No serial port interrupts in /proc/interrupts
+To: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,10 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 02/29/2008 06:33 AM, Grant Likely wrote:
-> Any comments on this patch?  It needs to go in for .25, but I haven't
-> gotten any Acks on it.
+Hi,
 
-I have it in ps3-linux.git, and seems to work OK.
+I'm wondering why the serial port interrupts don't show up in
+/proc/interrupts or in debugfs/powerpc/virq_mapping. I added some debugging
+code to the relevant code in arch/powerpc/kernel/irq.c and of_serial.c and
+it looks like irq_of_parse_and_map() returns valid virqs (irq3, irq4 on a
+i8259) for the two ns16550 compatible UARTs. Is there anything else to do,
+to correctly implement UART support for a platform?
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+regards,
+
+Gerhard
+
+-- 
+Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
+Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
