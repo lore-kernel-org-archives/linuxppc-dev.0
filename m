@@ -1,23 +1,35 @@
-Return-Path: <asmirnov@ru.mvista.com>
-Received: from spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <pbadari@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 745C1DE058
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 04:20:02 +1100 (EST)
-Received: from spb.rtsoft.ru (spb.rtsoft.ru [127.0.0.1])
-	by spb.rtsoft.ru (8.13.5/8.13.5) with ESMTP id m1THSD1Z014703
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 20:28:13 +0300
-Received: (from alex@localhost)
-	by spb.rtsoft.ru (8.13.5/8.13.5/Submit) id m1THSDha014702
-	for linuxppc-dev@ozlabs.org; Fri, 29 Feb 2008 20:28:13 +0300
-Date: Fri, 29 Feb 2008 20:28:13 +0300
-From: Alexandr Smirnov <asmirnov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/4] KSI8560 base support
-Message-ID: <20080229172813.GE14325@ru.mvista.com>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CBA79DDF21
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 04:44:52 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1THigTs024812
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 12:44:42 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1THiYiT027418
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:44:38 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1THiY9W004531
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:44:34 -0700
+Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
+References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
+	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
+	<1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+	<20080229003906.GP16241@localdomain>
+	<1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 09:47:16 -0800
+Message-Id: <1204307236.10146.1.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080229171114.GA14325@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,301 +39,187 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2008-02-29 at 12:03 +1100, Michael Ellerman wrote:
+> On Thu, 2008-02-28 at 18:39 -0600, Nathan Lynch wrote:
+> > Michael Ellerman wrote:
+> > > On Thu, 2008-02-28 at 08:46 -0800, Badari Pulavarty wrote:
+> > > > Hotplug memory notifier for ppc64. This gets invoked by writing
+> > > > the device-node that needs to be removed to /proc/ppc64/ofdt.
+> > > > We need to adjust the sections and remove sysfs entries by
+> > > > calling __remove_pages(). Then call arch specific code to
+> > > > get rid of htab mappings for the section of memory.
+> > > > 
+> > > > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > > > ---
+> > > >  arch/powerpc/platforms/pseries/Makefile         |    1 
+> > > >  arch/powerpc/platforms/pseries/hotplug-memory.c |   98 ++++++++++++++++++++++++
+> > > >  2 files changed, 99 insertions(+)
+> > > > 
+> > > > Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
+> > > > ===================================================================
+> > > > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > > > +++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-02-28 08:20:14.000000000 -0800
+> > > 
+> > > > +
+> > > > +static struct notifier_block pseries_smp_nb = {
+> > > > +	.notifier_call = pseries_memory_notifier,
+> > > > +};
+> > > > +
+> > > > +static int __init pseries_memory_hotplug_init(void)
+> > > > +{
+> > > > +	if (firmware_has_feature(FW_FEATURE_LPAR))
+> > > > +		pSeries_reconfig_notifier_register(&pseries_smp_nb);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +arch_initcall(pseries_memory_hotplug_init);
+> > > 
+> > > This is going to fire on non-pseries LPAR platforms, like iSeries and
+> > > PS3. Which is not what you want I think.
+> > 
+> > Well, the notifier will be registered, yes, but it will never be
+> > called because that path is reachable only from a write to
+> > /proc/ppc64/ofdt, which is not created on non-pseries.
+> 
+> Sure. Still seems better not to register it in the first place.
+> 
+> > Maybe it should be
+> > 
+> > machine_device_initcall(pseries, pseries_memory_hotplug_init);
+> 
+> I think so.
+> 
 
-Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
+Here is the latest for review. (just to make sure I didn't miss
+anything).
 
- arch/powerpc/platforms/85xx/Kconfig   |    7
- arch/powerpc/platforms/85xx/Makefile  |    1
- arch/powerpc/platforms/85xx/ksi8560.c |  257 ++++++++++++++++++++++++++++++++++
- 3 files changed, 265 insertions(+)
+Thanks,
+Badari
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 7e76ddb..28bc6e5 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -46,6 +46,13 @@ config MPC85xx_DS
- 	help
- 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
- 
-+config KSI8560
-+        bool "Emerson KSI8560"
-+        select PPC_CPM_NEW_BINDING
-+        select DEFAULT_UIMAGE
-+        help
-+          This option enables support for the Emerson KSI8560 board
-+
- config STX_GP3
- 	bool "Silicon Turnkey Express GP3"
- 	help
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index cb7af4e..6cea185 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -10,3 +10,4 @@ obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
- obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
- obj-$(CONFIG_SBC8560)     += sbc8560.o
- obj-$(CONFIG_SBC8548)     += sbc8548.o
-+obj-$(CONFIG_KSI8560)	  += ksi8560.o
-diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
-new file mode 100644
-index 0000000..b3b8194
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/ksi8560.c
-@@ -0,0 +1,257 @@
+Hotplug memory notifier for ppc64. This gets invoked by writing
+the device-node that needs to be removed to /proc/ppc64/ofdt.
+We need to adjust the sections and remove sysfs entries by
+calling __remove_pages(). Then call arch specific code to
+get rid of htab mappings for the section of memory.
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+---
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   98 ++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+)
+
+Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-02-29 09:25:14.000000000 -0800
+@@ -0,0 +1,98 @@
 +/*
-+ * Board setup routines for the Emerson KSI8560
++ * pseries Memory Hotplug infrastructure.
 + *
-+ * Author: Alexandr Smirnov <asmirnov@ru.mvista.com>
++ * Copyright (C) 2008 Badari Pulavarty, IBM Corporation
 + *
-+ * Based on mpc85xx_ads.c maintained by Kumar Gala
-+ *
-+ * 2008 (c) MontaVista, Software, Inc.  This file is licensed under
-+ * the terms of the GNU General Public License version 2.  This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
 + */
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/mpic.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/udbg.h>
 +#include <asm/prom.h>
++#include <asm/firmware.h>
++#include <asm/machdep.h>
++#include <asm/pSeries_reconfig.h>
 +
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+
-+#include <asm/cpm2.h>
-+#include <sysdev/cpm2_pic.h>
-+
-+
-+#define KSI8560_CPLD_HVR		0x04 /* Hardware Version Register */
-+#define KSI8560_CPLD_PVR		0x08 /* PLD Version Register */
-+#define KSI8560_CPLD_RCR1		0x30 /* Reset Command Register 1 */
-+
-+#define KSI8560_CPLD_RCR1_CPUHR		0x80 /* CPU Hard Reset */
-+
-+static void __iomem *cpld_base = NULL;
-+
-+static void machine_restart(char *cmd)
++static int pseries_remove_memory(struct device_node *np)
 +{
-+	if (cpld_base)
-+		out_8(cpld_base + KSI8560_CPLD_RCR1, KSI8560_CPLD_RCR1_CPUHR);
-+	else
-+		printk(KERN_ERR "Can't find CPLD base, hang forever\n");
++	const char *type;
++	const unsigned int *my_index;
++	const unsigned int *regs;
++	u64 start_pfn, start;
++	struct zone *zone;
++	int ret = -EINVAL;
 +
-+	for (;;);
++	/*
++	 * Check to see if we are actually removing memory
++	 */
++	type = of_get_property(np, "device_type", NULL);
++	if (type == NULL || strcmp(type, "memory") != 0)
++		return 0;
++
++	/*
++	 * Find the memory index and size of the removing section
++	 */
++	my_index = of_get_property(np, "ibm,my-drc-index", NULL);
++	if (!my_index)
++		return ret;
++
++	regs = of_get_property(np, "reg", NULL);
++	if (!regs)
++		return ret;
++
++	start_pfn = section_nr_to_pfn(*my_index & 0xffff);
++	zone = page_zone(pfn_to_page(start_pfn));
++
++	/*
++	 * Remove section mappings and sysfs entries for the
++	 * section of the memory we are removing.
++	 *
++	 * NOTE: Ideally, this should be done in generic code like
++	 * remove_memory(). But remove_memory() gets called by writing
++	 * to sysfs "state" file and we can't remove sysfs entries
++	 * while writing to it. So we have to defer it to here.
++	 */
++	ret = __remove_pages(zone, start_pfn, regs[3] >> PAGE_SHIFT);
++	if (ret)
++		return ret;
++
++	/*
++	 * Remove htab bolted mappings for this section of memory
++	 */
++ 	start = (unsigned long)__va(start_pfn << PAGE_SHIFT);
++ 	ret = remove_section_mapping(start, start + regs[3]);
++	return ret;
 +}
 +
-+static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
++static int pseries_memory_notifier(struct notifier_block *nb,
++				unsigned long action, void *node)
 +{
-+	int cascade_irq;
++	int err = NOTIFY_OK;
 +
-+	while ((cascade_irq = cpm2_get_irq()) >= 0)
-+		generic_handle_irq(cascade_irq);
-+
-+	desc->chip->eoi(irq);
++	switch (action) {
++	case PSERIES_RECONFIG_ADD:
++		break;
++	case PSERIES_RECONFIG_REMOVE:
++		if (pseries_remove_memory(node))
++			err = NOTIFY_BAD;
++		break;
++	default:
++		err = NOTIFY_DONE;
++		break;
++	}
++	return err;
 +}
 +
-+static void __init ksi8560_pic_init(void)
-+{
-+	struct mpic *mpic;
-+	struct resource r;
-+	struct device_node *np;
-+#ifdef CONFIG_CPM2
-+	int irq;
-+#endif
-+
-+	np = of_find_node_by_type(NULL, "open-pic");
-+
-+	if (np == NULL) {
-+		printk(KERN_ERR "Could not find open-pic node\n");
-+		return;
-+	}
-+
-+	if (of_address_to_resource(np, 0, &r)) {
-+		printk(KERN_ERR "Could not map mpic register space\n");
-+		of_node_put(np);
-+		return;
-+	}
-+
-+	mpic = mpic_alloc(np, r.start,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			0, 256, " OpenPIC  ");
-+	BUG_ON(mpic == NULL);
-+	of_node_put(np);
-+
-+	mpic_init(mpic);
-+
-+#ifdef CONFIG_CPM2
-+	/* Setup CPM2 PIC */
-+	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pic");
-+	if (np == NULL) {
-+		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
-+		return;
-+	}
-+	irq = irq_of_parse_and_map(np, 0);
-+
-+	cpm2_pic_init(np);
-+	of_node_put(np);
-+	set_irq_chained_handler(irq, cpm2_cascade);
-+
-+	setup_irq(0, NULL);
-+#endif
-+}
-+
-+#ifdef CONFIG_CPM2
-+/*
-+ * Setup I/O ports
-+ */
-+struct cpm_pin {
-+	int port, pin, flags;
++static struct notifier_block pseries_mem_nb = {
++	.notifier_call = pseries_memory_notifier,
 +};
 +
-+static struct cpm_pin __initdata ksi8560_pins[] = {
-+	/* SCC1 */
-+	{3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* SCC2 */
-+	{3, 26, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 27, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* FCC1 */
-+	{0, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{0, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{0, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{0, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{0, 18, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{0, 19, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{0, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{0, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{0, 26, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
-+	{0, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
-+	{0, 28, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{0, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{0, 30, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
-+	{0, 31, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
-+	{2, 23, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK9 */
-+	{2, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK10 */
-+
-+};
-+
-+static void __init init_ioports(void)
++static int __init pseries_memory_hotplug_init(void)
 +{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(ksi8560_pins); i++) {
-+		struct cpm_pin *pin = &ksi8560_pins[i];
-+		cpm2_set_pin(pin->port, pin->pin, pin->flags);
-+	}
-+
-+	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_TX);
-+	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK9, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK10, CPM_CLK_TX);
-+}
-+#endif
-+
-+/*
-+ * Setup the architecture
-+ */
-+static void __init ksi8560_setup_arch(void)
-+{
-+	struct device_node *cpld;
-+
-+	cpld = of_find_compatible_node(NULL, NULL, "altera,maxii");
-+	if (cpld)
-+		cpld_base = of_iomap(cpld, 0);
-+	else
-+		printk(KERN_ERR "Can't find CPLD in device tree\n");
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("ksi8560_setup_arch()", 0);
-+
-+#ifdef CONFIG_CPM2
-+	cpm2_reset();
-+	init_ioports();
-+#endif
-+}
-+
-+static void ksi8560_show_cpuinfo(struct seq_file *m)
-+{
-+	uint pvid, svid, phid1;
-+	uint memsize = total_memory;
-+
-+	pvid = mfspr(SPRN_PVR);
-+	svid = mfspr(SPRN_SVR);
-+
-+	seq_printf(m, "Vendor\t\t: Emerson Network Power\n");
-+	seq_printf(m, "Board\t\t: KSI8560\n");
-+
-+	if (cpld_base) {
-+		seq_printf(m, "Hardware rev\t: %d\n",
-+					in_8(cpld_base + KSI8560_CPLD_HVR));
-+		seq_printf(m, "CPLD rev\t: %d\n",
-+					in_8(cpld_base + KSI8560_CPLD_PVR));
-+	} else
-+		seq_printf(m, "Unknown Hardware and CPLD revs\n");
-+
-+	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
-+
-+	/* Display cpu Pll setting */
-+	phid1 = mfspr(SPRN_HID1);
-+	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
-+
-+	/* Display the amount of memory */
-+	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-+}
-+
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .type = "soc", },
-+	{ .name = "cpm", },
-+	{ .name = "localbus", },
-+	{},
-+};
-+
-+static int __init declare_of_platform_devices(void)
-+{
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++	if (firmware_has_feature(FW_FEATURE_LPAR))
++		pSeries_reconfig_notifier_register(&pseries_mem_nb);
 +
 +	return 0;
 +}
-+machine_device_initcall(ksi8560, declare_of_platform_devices);
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init ksi8560_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "emerson,KSI8560");
-+}
-+
-+define_machine(ksi8560) {
-+	.name			= "KSI8560",
-+	.probe			= ksi8560_probe,
-+	.setup_arch		= ksi8560_setup_arch,
-+	.init_IRQ		= ksi8560_pic_init,
-+	.show_cpuinfo		= ksi8560_show_cpuinfo,
-+	.get_irq		= mpic_get_irq,
-+	.restart		= machine_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+};
++machine_device_initcall(pseries, pseries_memory_hotplug_init);
+Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- linux-2.6.25-rc2.orig/arch/powerpc/platforms/pseries/Makefile	2008-02-28 08:15:53.000000000 -0800
++++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/Makefile	2008-02-28 08:17:57.000000000 -0800
+@@ -14,6 +14,7 @@ obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
+ obj-$(CONFIG_PCI_MSI)	+= msi.o
+ 
+ obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
++obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
+ 
+ obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
+ obj-$(CONFIG_HVCS)		+= hvcserver.o
