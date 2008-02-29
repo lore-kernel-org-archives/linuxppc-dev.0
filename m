@@ -1,12 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <ff1e6c592b314ef94867a42ed85b1d3a2de8fdf9.1204270367.git.michael@ellerman.id.au>
+Message-Id: <c3435d0c90ee6aa876593e29661b03eff7f36632.1204270367.git.michael@ellerman.id.au>
 In-Reply-To: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
 References: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 6/8] Cell IOMMU: n_pte_pages is in 4K page units,
-	not IOMMU_PAGE_SIZE
-Date: Fri, 29 Feb 2008 18:33:26 +1100 (EST)
+Subject: [PATCH 7/8] Allow for different IOMMU page sizes in cell IOMMU code
+Date: Fri, 29 Feb 2008 18:33:27 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,42 +15,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We use n_pte_pages to calculate the stride through the page tables, but
-we also use it to set the NPPT value in the segment table entry. That is
-defined as the number of 4K pages per segment, so we should calculate
-it as such regardless of the IOMMU page size.
+Make some preliminary changes to cell_iommu_alloc_ptab() to allow it to
+take the page size as a parameter rather than assuming IOMMU_PAGE_SIZE.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/iommu.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |   31 ++++++++++++++++++-------------
+ 1 files changed, 18 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 187a723..7a861cb 100644
+index 7a861cb..b0e347e 100644
 --- a/arch/powerpc/platforms/cell/iommu.c
 +++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -348,9 +348,8 @@ static unsigned long *cell_iommu_alloc_ptab(struct cbe_iommu *iommu,
- 	ptab = page_address(page);
- 	memset(ptab, 0, ptab_size);
+@@ -113,7 +113,7 @@
  
--	/* number of pages needed for a page table */
--	n_pte_pages = (pages_per_segment *
--		       sizeof(unsigned long)) >> IOMMU_PAGE_SHIFT;
-+	/* number of 4K pages needed for a page table */
-+	n_pte_pages = (pages_per_segment * sizeof(unsigned long)) >> 12;
+ /* IOMMU sizing */
+ #define IO_SEGMENT_SHIFT	28
+-#define IO_PAGENO_BITS		(IO_SEGMENT_SHIFT - IOMMU_PAGE_SHIFT)
++#define IO_PAGENO_BITS(shift)	(IO_SEGMENT_SHIFT - (shift))
  
- 	pr_debug("%s: iommu[%d]: stab at %p, ptab at %p, n_pte_pages: %lu\n",
- 			__FUNCTION__, iommu->nid, iommu->stab, ptab,
-@@ -377,8 +376,8 @@ static unsigned long *cell_iommu_alloc_ptab(struct cbe_iommu *iommu,
- 			pr_debug("\toverlap at %d, skipping\n", i);
- 			continue;
- 		}
--		iommu->stab[i] = reg | (__pa(ptab) + n_pte_pages *
--					IOMMU_PAGE_SIZE * (i - start_seg));
-+		iommu->stab[i] = reg | (__pa(ptab) + (n_pte_pages << 12) *
-+					(i - start_seg));
- 		pr_debug("\t[%d] 0x%016lx\n", i, iommu->stab[i]);
+ /* The high bit needs to be set on every DMA address */
+ #define SPIDER_DMA_OFFSET	0x80000000ul
+@@ -328,7 +328,7 @@ static void cell_iommu_setup_stab(struct cbe_iommu *iommu,
+ 
+ static unsigned long *cell_iommu_alloc_ptab(struct cbe_iommu *iommu,
+ 		unsigned long base, unsigned long size, unsigned long gap_base,
+-		unsigned long gap_size)
++		unsigned long gap_size, unsigned long page_shift)
+ {
+ 	struct page *page;
+ 	int i;
+@@ -337,7 +337,10 @@ static unsigned long *cell_iommu_alloc_ptab(struct cbe_iommu *iommu,
+ 
+ 	start_seg = base >> IO_SEGMENT_SHIFT;
+ 	segments  = size >> IO_SEGMENT_SHIFT;
+-	pages_per_segment = 1ull << IO_PAGENO_BITS;
++	pages_per_segment = 1ull << IO_PAGENO_BITS(page_shift);
++	/* PTEs for each segment must start on a 4K bounday */
++	pages_per_segment = max(pages_per_segment,
++				(1 << 12) / sizeof(unsigned long));
+ 
+ 	ptab_size = segments * pages_per_segment * sizeof(unsigned long);
+ 	pr_debug("%s: iommu[%d]: ptab_size: %lu, order: %d\n", __FUNCTION__,
+@@ -358,13 +361,12 @@ static unsigned long *cell_iommu_alloc_ptab(struct cbe_iommu *iommu,
+ 	/* initialise the STEs */
+ 	reg = IOSTE_V | ((n_pte_pages - 1) << 5);
+ 
+-	if (IOMMU_PAGE_SIZE == 0x1000)
+-		reg |= IOSTE_PS_4K;
+-	else if (IOMMU_PAGE_SIZE == 0x10000)
+-		reg |= IOSTE_PS_64K;
+-	else {
+-		extern void __unknown_page_size_error(void);
+-		__unknown_page_size_error();
++	switch (page_shift) {
++	case 12: reg |= IOSTE_PS_4K;  break;
++	case 16: reg |= IOSTE_PS_64K; break;
++	case 20: reg |= IOSTE_PS_1M;  break;
++	case 24: reg |= IOSTE_PS_16M; break;
++	default: BUG();
  	}
  
+ 	gap_base = gap_base >> IO_SEGMENT_SHIFT;
+@@ -429,7 +431,8 @@ static void cell_iommu_setup_hardware(struct cbe_iommu *iommu,
+ 	unsigned long base, unsigned long size)
+ {
+ 	cell_iommu_setup_stab(iommu, base, size, 0, 0);
+-	iommu->ptab = cell_iommu_alloc_ptab(iommu, base, size, 0, 0);
++	iommu->ptab = cell_iommu_alloc_ptab(iommu, base, size, 0, 0,
++					    IOMMU_PAGE_SHIFT);
+ 	cell_iommu_enable_hardware(iommu);
+ }
+ 
+@@ -886,7 +889,8 @@ static void cell_iommu_setup_fixed_ptab(struct cbe_iommu *iommu,
+ 	int i;
+ 	unsigned long base_pte, uaddr, *io_pte, *ptab;
+ 
+-	ptab = cell_iommu_alloc_ptab(iommu, fbase, fsize, dbase, dsize);
++	ptab = cell_iommu_alloc_ptab(iommu, fbase, fsize, dbase, dsize,
++				     IOMMU_PAGE_SHIFT);
+ 
+ 	dma_iommu_fixed_base = fbase;
+ 
+@@ -1008,7 +1012,8 @@ static int __init cell_iommu_fixed_mapping_init(void)
+ 			 dbase + dsize, fbase, fbase + fsize);
+ 
+ 		cell_iommu_setup_stab(iommu, dbase, dsize, fbase, fsize);
+-		iommu->ptab = cell_iommu_alloc_ptab(iommu, dbase, dsize, 0, 0);
++		iommu->ptab = cell_iommu_alloc_ptab(iommu, dbase, dsize, 0, 0,
++						    IOMMU_PAGE_SHIFT);
+ 		cell_iommu_setup_fixed_ptab(iommu, np, dbase, dsize,
+ 					     fbase, fsize);
+ 		cell_iommu_enable_hardware(iommu);
 -- 
 1.5.2.rc1.1884.g59b20
