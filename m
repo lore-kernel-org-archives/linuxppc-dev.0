@@ -1,33 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D2E1DDE46
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 02:45:52 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1TFjFDJ006971
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:45:15 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1TFjiYO048866
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 08:45:44 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1TFjiTS018244
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 08:45:44 -0700
-Date: Fri, 29 Feb 2008 09:43:54 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH v2 3/5] [POWERPC] Add Canyonlands DTS
-Message-ID: <20080229094354.3e0eceac@zod.rchland.ibm.com>
-In-Reply-To: <200802291636.29759.sr@denx.de>
-References: <1203800881-13837-1-git-send-email-sr@denx.de>
-	<20080229091120.1611ec56@zod.rchland.ibm.com>
-	<200802291636.29759.sr@denx.de>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id A0567DDE3B
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 03:20:52 +1100 (EST)
+Subject: [PATCH] add strncmp to PowerPC
+From: Steven Rostedt <rostedt@goodmis.org>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 11:04:57 -0500
+Message-Id: <1204301097.14759.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,73 +19,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 29 Feb 2008 16:36:29 +0100
-Stefan Roese <sr@denx.de> wrote:
 
-> On Friday 29 February 2008, Josh Boyer wrote:
-> > On Sat, 23 Feb 2008 22:08:01 +0100
-> >
-> > Stefan Roese <sr@denx.de> wrote:
-> > > Signed-off-by: Stefan Roese <sr@denx.de>
-> > > ---
-> > > And now the I2C device-types are removed. Sorry for the mail-flood.
-> > >
-> > >  arch/powerpc/boot/dts/canyonlands.dts |  393
-> > > +++++++++++++++++++++++++++++++++ 1 files changed, 393 insertions(+), 0
-> > > deletions(-)
-> > >  create mode 100644 arch/powerpc/boot/dts/canyonlands.dts
-> > >
-> > > diff --git a/arch/powerpc/boot/dts/canyonlands.dts
-> > > b/arch/powerpc/boot/dts/canyonlands.dts new file mode 100644
-> > > index 0000000..2aee74c
-> > > --- /dev/null
-> > > +++ b/arch/powerpc/boot/dts/canyonlands.dts
-> >
-> > [snip]
-> >
-> > > +		MAL0: mcmal {
-> > > +			compatible = "ibm,mcmal-460ex", "ibm,mcmal2";
-> > > +			dcr-reg = <180 62>;
-> > > +			num-tx-chans = <2>;
-> > > +			num-rx-chans = <10>;
-> > > +			#address-cells = <0>;
-> > > +			#size-cells = <0>;
-> > > +			interrupt-parent = <&UIC2>;
-> > > +			interrupts = <	/*TXEOB*/ 6 4
-> > > +					/*RXEOB*/ 7 4
-> > > +					/*SERR*/  3 4
-> >
-> > This is odd.  I have MAL SERR listed twice in the spec I have.  This
-> > assignment is there, and there's also one to UIC1 IRQ 0.  Error in my
-> > spec, or are both actually tied to the same interrupt line?
-> 
-> Must be an error in the preliminary spec. I have the engineering docs from 
-> AMCC and here UIC1 IRQ0 is the external IRQ 2, which is used for PCI. So this 
-> is still wrong in the current dts version. I'll send an updated version 
-> probably tomorrow.
+strncmp is defined in assembly for bootup, but it is not defined in the
+normal running kernel. This patch takes the strncmp code from the bootup
+and copies it to the kernel proper.
 
-OK.  That doesn't surprise me actually.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    1 +
+ arch/powerpc/lib/string.S       |   12 ++++++++++++
+ include/asm-powerpc/string.h    |    2 ++
+ 3 files changed, 15 insertions(+)
 
-> > > +					/*TXDE*/  4 4
-> > > +					/*RXDE*/  5 4>;
-> > > +		};
-> > >
-> > > +			UART0: serial@ef600300 {
-> > > +				device_type = "serial";
-> > > +				compatible = "ns16550";
-> > > +				reg = <ef600300 8>;
-> > > +				virtual-reg = <ef600300>;
-> > > +				clock-frequency = <0>; /* Filled in by U-Boot */
-> > > +				current-speed = <0>; /* Filled in by U-Boot */
-> > > +				interrupt-parent = <&UIC1>;
-> > > +				interrupts = <1 4>;
-> >
-> > Should this be <2 4> or is the spec I have wrong?
-> 
-> Again, your documentation is incorrect. Took me 1/2 a day to figure this out 
-> myself.
-
-I sort of figured that was the case.  I didn't expect you to have sent
-out patches that don't have a working console :).
-
-josh
+Index: linux-sched-devel.git/arch/powerpc/kernel/ppc_ksyms.c
+===================================================================
+--- linux-sched-devel.git.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-02-27 14:01:38.000000000 -0800
++++ linux-sched-devel.git/arch/powerpc/kernel/ppc_ksyms.c	2008-02-29 07:24:22.000000000 -0800
+@@ -78,6 +78,7 @@ EXPORT_SYMBOL(strncpy);
+ EXPORT_SYMBOL(strcat);
+ EXPORT_SYMBOL(strlen);
+ EXPORT_SYMBOL(strcmp);
++EXPORT_SYMBOL(strncmp);
+ 
+ EXPORT_SYMBOL(csum_partial);
+ EXPORT_SYMBOL(csum_partial_copy_generic);
+Index: linux-sched-devel.git/arch/powerpc/lib/string.S
+===================================================================
+--- linux-sched-devel.git.orig/arch/powerpc/lib/string.S	2008-02-27 14:01:38.000000000 -0800
++++ linux-sched-devel.git/arch/powerpc/lib/string.S	2008-02-29 07:24:22.000000000 -0800
+@@ -75,6 +75,18 @@ _GLOBAL(strcmp)
+ 	beq	1b
+ 	blr
+ 
++_GLOBAL(strncmp)
++	mtctr	r5
++	addi	r5,r3,-1
++	addi	r4,r4,-1
++1:	lbzu	r3,1(r5)
++	cmpwi	1,r3,0
++	lbzu	r0,1(r4)
++	subf.	r3,r0,r3
++	beqlr	1
++	bdnzt	eq,1b
++	blr
++
+ _GLOBAL(strlen)
+ 	addi	r4,r3,-1
+ 1:	lbzu	r0,1(r4)
+Index: linux-sched-devel.git/include/asm-powerpc/string.h
+===================================================================
+--- linux-sched-devel.git.orig/include/asm-powerpc/string.h	2008-02-27 14:01:58.000000000 -0800
++++ linux-sched-devel.git/include/asm-powerpc/string.h	2008-02-29 07:24:22.000000000 -0800
+@@ -7,6 +7,7 @@
+ #define __HAVE_ARCH_STRNCPY
+ #define __HAVE_ARCH_STRLEN
+ #define __HAVE_ARCH_STRCMP
++#define __HAVE_ARCH_STRNCMP
+ #define __HAVE_ARCH_STRCAT
+ #define __HAVE_ARCH_MEMSET
+ #define __HAVE_ARCH_MEMCPY
+@@ -18,6 +19,7 @@ extern char * strcpy(char *,const char *
+ extern char * strncpy(char *,const char *, __kernel_size_t);
+ extern __kernel_size_t strlen(const char *);
+ extern int strcmp(const char *,const char *);
++extern int strncmp(const char *,const char *,__kernel_size_t);
+ extern char * strcat(char *, const char *);
+ extern void * memset(void *,int,__kernel_size_t);
+ extern void * memcpy(void *,const void *,__kernel_size_t);
