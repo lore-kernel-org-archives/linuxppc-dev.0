@@ -1,11 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <39518dc11175a7cdd01ecfbe9a67b932bb38b522.1204270367.git.michael@ellerman.id.au>
-In-Reply-To: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
-References: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 8/8] Convert the cell IOMMU fixed mapping to 16M IOMMU pages
-Date: Fri, 29 Feb 2008 18:33:29 +1100 (EST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7820CDDE9E
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 19:35:52 +1100 (EST)
+Date: Fri, 29 Feb 2008 09:35:48 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [dtc] breaking out libfdt from dtc so other progs can use it
+In-Reply-To: <20080228125940.78f7f2b6@vader.jdub.homelinux.org>
+Message-ID: <Pine.LNX.4.64.0802290930020.25557@vixen.sonytel.be>
+References: <1204141243.18831.12.camel@thinkpad.austin.ibm.com>
+	<20080228014101.GA24330@localhost.localdomain>
+	<1204216244.6676.13.camel@thinkpad.austin.ibm.com>
+	<20080228125940.78f7f2b6@vader.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-638510431-1204274148=:25557"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,84 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The only tricky part is we need to adjust the PTE insertion loop to
-cater for holes in the page table. The PTEs for each segment start on
-a 4K boundary, so with 16M pages we have 16 PTEs per segment and then
-a gap to the next 4K page boundary.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It might be possible to allocate the PTEs for each segment separately,
-saving the memory currently filling the gaps. However we'd need to
-check that's OK with the hardware, and that it actually saves memory.
+---584349381-638510431-1204274148=:25557
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/cell/iommu.c |   37 ++++++++++++++++++++--------------
- 1 files changed, 22 insertions(+), 15 deletions(-)
+On Thu, 28 Feb 2008, Josh Boyer wrote:
+> On Thu, 28 Feb 2008 10:30:44 -0600
+> Jerone Young <jyoung5@us.ibm.com> wrote:
+> > If it where broken out of dtc it would be easier to pickup and pull
+> > fixes from it. Even package it so programs can easily build it
+> > standalone.
+> 
+> That's akin to saying libcrypto should be broken out to be completely
+> standalone from openssl.  That doesn't make sense either.
 
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index b0e347e..20ea0e1 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -882,38 +882,45 @@ static void cell_dma_dev_setup_fixed(struct device *dev)
- 	dev_dbg(dev, "iommu: fixed addr = %lx\n", addr);
- }
- 
-+static void insert_16M_pte(unsigned long addr, unsigned long *ptab,
-+			   unsigned long base_pte)
-+{
-+	unsigned long segment, offset;
-+
-+	segment = addr >> IO_SEGMENT_SHIFT;
-+	offset = (addr >> 24) - (segment << IO_PAGENO_BITS(24));
-+	ptab = ptab + (segment * (1 << 12) / sizeof(unsigned long));
-+
-+	pr_debug("iommu: addr %lx ptab %p segment %lx offset %lx\n",
-+		  addr, ptab, segment, offset);
-+
-+	ptab[offset] = base_pte | (__pa(addr) & IOPTE_RPN_Mask);
-+}
-+
- static void cell_iommu_setup_fixed_ptab(struct cbe_iommu *iommu,
- 	struct device_node *np, unsigned long dbase, unsigned long dsize,
- 	unsigned long fbase, unsigned long fsize)
- {
--	int i;
--	unsigned long base_pte, uaddr, *io_pte, *ptab;
-+	unsigned long base_pte, uaddr, ioaddr, *ptab;
- 
--	ptab = cell_iommu_alloc_ptab(iommu, fbase, fsize, dbase, dsize,
--				     IOMMU_PAGE_SHIFT);
-+	ptab = cell_iommu_alloc_ptab(iommu, fbase, fsize, dbase, dsize, 24);
- 
- 	dma_iommu_fixed_base = fbase;
- 
--	/* convert from bytes into page table indices */
--	dbase = dbase >> IOMMU_PAGE_SHIFT;
--	dsize = dsize >> IOMMU_PAGE_SHIFT;
--	fbase = fbase >> IOMMU_PAGE_SHIFT;
--	fsize = fsize >> IOMMU_PAGE_SHIFT;
--
- 	pr_debug("iommu: mapping 0x%lx pages from 0x%lx\n", fsize, fbase);
- 
--	io_pte = ptab;
- 	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW
- 		    | (cell_iommu_get_ioid(np) & IOPTE_IOID_Mask);
- 
--	uaddr = 0;
--	for (i = fbase; i < fbase + fsize; i++, uaddr += IOMMU_PAGE_SIZE) {
-+	for (uaddr = 0; uaddr < fsize; uaddr += (1 << 24)) {
- 		/* Don't touch the dynamic region */
--		if (i >= dbase && i < (dbase + dsize)) {
-+		ioaddr = uaddr + fbase;
-+		if (ioaddr >= dbase && ioaddr < (dbase + dsize)) {
- 			pr_debug("iommu: fixed/dynamic overlap, skipping\n");
- 			continue;
- 		}
--		io_pte[i - fbase] = base_pte | (__pa(uaddr) & IOPTE_RPN_Mask);
-+
-+		insert_16M_pte(uaddr, ptab, base_pte);
- 	}
- 
- 	mb();
--- 
-1.5.2.rc1.1884.g59b20
+Thanks, your openssl example triggered me posting this reply ;-)
+
+I think people are confusing source and binary packages.
+
+E.g. on Debian, the openssl source package is used to build 3 binary packages:
+openssl, libssl0.9.8, and libssl-dev. Hence to install applications that use
+libssl, you don't have to install all 3, just libssl0.9.8.
+
+But this doesn't mean libssl is separate from openssl source-wise: both are
+build from the same source package.
+
+So the single source package dtc could be packaged as 2 binary packages: dtc
+and libfdt.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-638510431-1204274148=:25557--
