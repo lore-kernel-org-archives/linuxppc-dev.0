@@ -1,32 +1,13 @@
-Return-Path: <pbadari@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E8683DDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 15:51:54 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1T4pIi6011469
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 23:51:18 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1T4pp9m215854
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 21:51:51 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1T4pp5L001531
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 21:51:51 -0700
-Message-ID: <47C78F50.7070309@us.ibm.com>
-Date: Thu, 28 Feb 2008 20:51:28 -0800
-From: Badari Pulavarty <pbadari@us.ibm.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulus@samba.org
+Subject: Please pull 'for-2.6.25' branch of cell tree
+Date: Fri, 29 Feb 2008 06:12:56 +0100
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 0/3] hotplug memory remove updates
-References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
-	<20080229013957.GQ16241@localdomain>
-In-Reply-To: <20080229013957.GQ16241@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200802290612.56728.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,20 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch wrote:
-> Badari Pulavarty wrote:
->   
->> Hi Paul,
->>
->> Here are the hotplug memory remove updates for 2.6.25-rc2-mm1.
->>     
->
-> How have these been tested?  Have you initiated a memory remove
-> operation from the HMC?  That's the only way to catch some bugs...
->   
-Yes, They are testing from HMC + running "drmgr" command manually to 
-hash out
-all the issues.
+Hi Paul,
+
+Please pull from:
+
+ master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.25
+
+To pick up a few small fixes for the cell platform. Most of it is a follow-up
+to the IOMMU rework that got merged in 2.6.25-rc1 and caused problems on
+machines with large amounts of memory.
+
+The fixes for oprofile and ptrace are not regressions, but are fixing
+functionality that was broken on cell but has always worked on the
+other platforms.
 
 Thanks,
-Badari
+
+	Arnd <><
+
+Author: Michael Ellerman <michael@ellerman.id.au>
+    [POWERPC] Convert the cell IOMMU fixed mapping to 16M IOMMU pages
+    [POWERPC] Allow for different IOMMU page sizes in cell IOMMU code
+    [POWERPC] Cell IOMMU: n_pte_pages is in 4K page units, not IOMMU_PAGE_SIZE
+    [POWERPC] Split setup of IOMMU stab and ptab, allocate dynamic/fixed ptabs separately
+    [POWERPC] Move allocation of cell IOMMU pad page
+    [POWERPC] Remove unused pte_offset variable
+    [POWERPC] Use it_offset not pte_offset in cell IOMMU code
+    [POWERPC] Clearup cell IOMMU fixed mapping terminology
+
+Author: Jens Osterkamp <jens@de.ibm.com>
+    [POWERPC] enable hardware watchpoints on cell blades
+    [POWERPC] move celleb DABRX definitions
+
+Author: Bob Nelson <rrnelson@us.ibm.com>
+    [POWERPC] OProfile: enable callgraph support for Cell
+
+ arch/powerpc/oprofile/op_model_cell.c |    2
+ arch/powerpc/platforms/cell/iommu.c   |  144 +++++++++++++++++++---------------
+ arch/powerpc/platforms/cell/setup.c   |    7 +
+ arch/powerpc/platforms/celleb/beat.h  |    3
+ include/asm-powerpc/reg.h             |    3
+ 5 files changed, 92 insertions(+), 67 deletions(-)
