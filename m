@@ -1,32 +1,18 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37AD6DDE0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:58:17 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1SNwCLb020942
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 18:58:12 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m1SNwCxS255110
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 18:58:12 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m1SNwCGi019462
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2008 18:58:12 -0500
-Message-ID: <47C74A66.1060105@austin.ibm.com>
-Date: Thu, 28 Feb 2008 17:57:26 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
-References: <47B90F55.2080606@austin.ibm.com>
-	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Linas Vepstas <linasvepstas@gmail.com>,
-	paulus <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+In-Reply-To: <1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
+References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
+	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-NnB7rV/ZWVfhQdsgSg/M"
+Date: Fri, 29 Feb 2008 11:11:15 +1100
+Message-Id: <1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,41 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Changes from previous version:
 
-The only changes are in patch 2.
-moved early_init_dt_scan_phyp_dump from rtas.c to phyp_dump.c
-Added dummy function in phyp_dump.h
+--=-NnB7rV/ZWVfhQdsgSg/M
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Patch 3 required repatching due to changes to patch 2.
-Resubmitting all patches to avoid confusion.
+On Thu, 2008-02-28 at 08:46 -0800, Badari Pulavarty wrote:
+> Hotplug memory notifier for ppc64. This gets invoked by writing
+> the device-node that needs to be removed to /proc/ppc64/ofdt.
+> We need to adjust the sections and remove sysfs entries by
+> calling __remove_pages(). Then call arch specific code to
+> get rid of htab mappings for the section of memory.
+>=20
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/Makefile         |    1=20
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |   98 +++++++++++++++++=
++++++++
+>  2 files changed, 99 insertions(+)
+>=20
+> Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	2008=
+-02-28 08:20:14.000000000 -0800
 
-Thanks,
-Manish
+> +
+> +static struct notifier_block pseries_smp_nb =3D {
+> +	.notifier_call =3D pseries_memory_notifier,
+> +};
+> +
+> +static int __init pseries_memory_hotplug_init(void)
+> +{
+> +	if (firmware_has_feature(FW_FEATURE_LPAR))
+> +		pSeries_reconfig_notifier_register(&pseries_smp_nb);
+> +
+> +	return 0;
+> +}
+> +arch_initcall(pseries_memory_hotplug_init);
 
+This is going to fire on non-pseries LPAR platforms, like iSeries and
+PS3. Which is not what you want I think.
 
-Michael Ellerman wrote:
-> On Sun, 2008-02-17 at 22:53 -0600, Manish Ahuja wrote:
->> The following series of patches implement a basic framework
->> for hypervisor-assisted dump. The very first patch provides 
->> documentation explaining what this is  :-) . Yes, its supposed
->> to be an improvement over kdump.
->>
->> A list of open issues / todo list is included in the documentation.
->> It also appears that the not-yet-released firmware versions this was tested 
->> on are still, ahem, incomplete; this work is also pending.
->>
->> I have included most of the changes requested. Although, I did find
->> one or two, fixed in a later patch file rather than the first location
->> they appeared at.
-> 
-> This series still doesn't build on !CONFIG_RTAS configs:
-> http://kisskb.ellerman.id.au/kisskb/head/629/
-> 
-> This solution is to move early_init_dt_scan_phyp_dump() into
-> arch/powerpc/platforms/pseries/phyp_dump.c and provide a dummy
-> implementation in asm-powerpc/phyp_dump.c for the !CONFIG_PHYP_DUMP
-> case.
-> 
-> cheers
-> 
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-NnB7rV/ZWVfhQdsgSg/M
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHx02jdSjSd0sB4dIRAlYPAKC+aGRqtKchzudpe0djWif8TOWQZACfRicl
+RMqH6vnLWDuVdrFRu29T5Ig=
+=e0RR
+-----END PGP SIGNATURE-----
+
+--=-NnB7rV/ZWVfhQdsgSg/M--
