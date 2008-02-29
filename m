@@ -2,19 +2,19 @@ Return-Path: <asmirnov@ru.mvista.com>
 Received: from spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DA9FEDDEF5
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 04:18:31 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 745C1DE058
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 04:20:02 +1100 (EST)
 Received: from spb.rtsoft.ru (spb.rtsoft.ru [127.0.0.1])
-	by spb.rtsoft.ru (8.13.5/8.13.5) with ESMTP id m1THQg8J014683
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 20:26:42 +0300
+	by spb.rtsoft.ru (8.13.5/8.13.5) with ESMTP id m1THSD1Z014703
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 20:28:13 +0300
 Received: (from alex@localhost)
-	by spb.rtsoft.ru (8.13.5/8.13.5/Submit) id m1THQg9K014682
-	for linuxppc-dev@ozlabs.org; Fri, 29 Feb 2008 20:26:42 +0300
-Date: Fri, 29 Feb 2008 20:26:42 +0300
+	by spb.rtsoft.ru (8.13.5/8.13.5/Submit) id m1THSDha014702
+	for linuxppc-dev@ozlabs.org; Fri, 29 Feb 2008 20:28:13 +0300
+Date: Fri, 29 Feb 2008 20:28:13 +0300
 From: Alexandr Smirnov <asmirnov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] KSI8560 default config
-Message-ID: <20080229172642.GD14325@ru.mvista.com>
+Subject: [PATCH 4/4] KSI8560 base support
+Message-ID: <20080229172813.GE14325@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080229171114.GA14325@ru.mvista.com>
@@ -30,911 +30,298 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
 
- arch/powerpc/configs/ksi8560_defconfig |  899 +++++++++++++++++++++++++++++++++
- 1 file changed, 899 insertions(+)
+ arch/powerpc/platforms/85xx/Kconfig   |    7
+ arch/powerpc/platforms/85xx/Makefile  |    1
+ arch/powerpc/platforms/85xx/ksi8560.c |  257 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 265 insertions(+)
 
-diff --git a/arch/powerpc/configs/ksi8560_defconfig b/arch/powerpc/configs/ksi8560_defconfig
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 7e76ddb..28bc6e5 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -46,6 +46,13 @@ config MPC85xx_DS
+ 	help
+ 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
+ 
++config KSI8560
++        bool "Emerson KSI8560"
++        select PPC_CPM_NEW_BINDING
++        select DEFAULT_UIMAGE
++        help
++          This option enables support for the Emerson KSI8560 board
++
+ config STX_GP3
+ 	bool "Silicon Turnkey Express GP3"
+ 	help
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index cb7af4e..6cea185 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -10,3 +10,4 @@ obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
+ obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
+ obj-$(CONFIG_SBC8560)     += sbc8560.o
+ obj-$(CONFIG_SBC8548)     += sbc8548.o
++obj-$(CONFIG_KSI8560)	  += ksi8560.o
+diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
 new file mode 100644
-index 0000000..2d0debc
+index 0000000..b3b8194
 --- /dev/null
-+++ b/arch/powerpc/configs/ksi8560_defconfig
-@@ -0,0 +1,899 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.24
-+# Mon Feb 11 16:25:19 2008
-+#
-+# CONFIG_PPC64 is not set
++++ b/arch/powerpc/platforms/85xx/ksi8560.c
+@@ -0,0 +1,257 @@
++/*
++ * Board setup routines for the Emerson KSI8560
++ *
++ * Author: Alexandr Smirnov <asmirnov@ru.mvista.com>
++ *
++ * Based on mpc85xx_ads.c maintained by Kumar Gala
++ *
++ * 2008 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ *
++ */
 +
-+#
-+# Processor support
-+#
-+# CONFIG_6xx is not set
-+CONFIG_PPC_85xx=y
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+CONFIG_E500=y
-+CONFIG_BOOKE=y
-+CONFIG_FSL_BOOKE=y
-+CONFIG_FSL_EMB_PERFMON=y
-+# CONFIG_PHYS_64BIT is not set
-+CONFIG_SPE=y
-+# CONFIG_PPC_MM_SLICES is not set
-+CONFIG_PPC32=y
-+CONFIG_WORD_SIZE=32
-+CONFIG_PPC_MERGE=y
-+CONFIG_MMU=y
-+CONFIG_GENERIC_CMOS_UPDATE=y
-+CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_TIME_VSYSCALL=y
-+CONFIG_GENERIC_CLOCKEVENTS=y
-+CONFIG_GENERIC_HARDIRQS=y
-+# CONFIG_HAVE_SETUP_PER_CPU_AREA is not set
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+CONFIG_OF=y
-+CONFIG_PPC_UDBG_16550=y
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+CONFIG_DEFAULT_UIMAGE=y
-+# CONFIG_PPC_DCR_NATIVE is not set
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
++#include <linux/of_platform.h>
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+# CONFIG_POSIX_MQUEUE is not set
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_USER_NS is not set
-+# CONFIG_PID_NS is not set
-+# CONFIG_AUDIT is not set
-+# CONFIG_IKCONFIG is not set
-+CONFIG_LOG_BUF_SHIFT=14
-+# CONFIG_CGROUPS is not set
-+CONFIG_FAIR_GROUP_SCHED=y
-+CONFIG_FAIR_USER_SCHED=y
-+# CONFIG_FAIR_CGROUP_SCHED is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+# CONFIG_RELAY is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_ALL is not set
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_SLUB_DEBUG=y
-+# CONFIG_SLAB is not set
-+CONFIG_SLUB=y
-+# CONFIG_SLOB is not set
-+# CONFIG_PROFILING is not set
-+# CONFIG_MARKERS is not set
-+CONFIG_HAVE_OPROFILE=y
-+CONFIG_HAVE_KPROBES=y
-+CONFIG_PROC_PAGE_MONITOR=y
-+CONFIG_SLABINFO=y
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+# CONFIG_MODULES is not set
-+CONFIG_BLOCK=y
-+# CONFIG_LBD is not set
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_LSF is not set
-+# CONFIG_BLK_DEV_BSG is not set
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/mpic.h>
++#include <mm/mmu_decl.h>
++#include <asm/udbg.h>
++#include <asm/prom.h>
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_PREEMPT_RCU is not set
++#include <sysdev/fsl_soc.h>
++#include <sysdev/fsl_pci.h>
 +
-+#
-+# Platform support
-+#
-+# CONFIG_PPC_MPC512x is not set
-+# CONFIG_PPC_MPC5121 is not set
-+# CONFIG_PPC_CELL is not set
-+# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_PQ2ADS is not set
-+CONFIG_MPC85xx=y
-+# CONFIG_MPC8540_ADS is not set
-+# CONFIG_MPC8560_ADS is not set
-+# CONFIG_MPC85xx_CDS is not set
-+# CONFIG_MPC85xx_MDS is not set
-+# CONFIG_MPC85xx_DS is not set
-+CONFIG_KSI8560=y
-+# CONFIG_STX_GP3 is not set
-+# CONFIG_TQM8540 is not set
-+# CONFIG_TQM8541 is not set
-+# CONFIG_TQM8555 is not set
-+# CONFIG_TQM8560 is not set
-+# CONFIG_SBC8548 is not set
-+# CONFIG_SBC8560 is not set
-+# CONFIG_IPIC is not set
-+CONFIG_MPIC=y
-+# CONFIG_MPIC_WEIRD is not set
-+# CONFIG_PPC_I8259 is not set
-+# CONFIG_PPC_RTAS is not set
-+# CONFIG_MMIO_NVRAM is not set
-+# CONFIG_PPC_MPC106 is not set
-+# CONFIG_PPC_970_NAP is not set
-+# CONFIG_PPC_INDIRECT_IO is not set
-+# CONFIG_GENERIC_IOMAP is not set
-+# CONFIG_CPU_FREQ is not set
-+CONFIG_CPM2=y
-+CONFIG_PPC_CPM_NEW_BINDING=y
-+# CONFIG_FSL_ULI1575 is not set
-+CONFIG_CPM=y
++#include <asm/cpm2.h>
++#include <sysdev/cpm2_pic.h>
 +
-+#
-+# Kernel options
-+#
-+CONFIG_HIGHMEM=y
-+# CONFIG_TICK_ONESHOT is not set
-+# CONFIG_NO_HZ is not set
-+# CONFIG_HIGH_RES_TIMERS is not set
-+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+# CONFIG_SCHED_HRTICK is not set
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_RCU_TRACE=y
-+CONFIG_BINFMT_ELF=y
-+CONFIG_BINFMT_MISC=y
-+CONFIG_MATH_EMULATION=y
-+# CONFIG_IOMMU_HELPER is not set
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_RESOURCES_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+# CONFIG_PROC_DEVICETREE is not set
-+# CONFIG_CMDLINE_BOOL is not set
-+# CONFIG_PM is not set
-+# CONFIG_SECCOMP is not set
-+CONFIG_WANT_DEVICE_TREE=y
-+CONFIG_ISA_DMA_API=y
 +
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+CONFIG_FSL_SOC=y
-+# CONFIG_PCI is not set
-+# CONFIG_PCI_DOMAINS is not set
-+# CONFIG_PCI_SYSCALL is not set
-+# CONFIG_ARCH_SUPPORTS_MSI is not set
-+# CONFIG_PCCARD is not set
++#define KSI8560_CPLD_HVR		0x04 /* Hardware Version Register */
++#define KSI8560_CPLD_PVR		0x08 /* PLD Version Register */
++#define KSI8560_CPLD_RCR1		0x30 /* Reset Command Register 1 */
 +
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
++#define KSI8560_CPLD_RCR1_CPUHR		0x80 /* CPU Hard Reset */
 +
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0xc0000000
-+CONFIG_BOOT_LOAD=0x00800000
++static void __iomem *cpld_base = NULL;
 +
-+#
-+# Networking
-+#
-+CONFIG_NET=y
++static void machine_restart(char *cmd)
++{
++	if (cpld_base)
++		out_8(cpld_base + KSI8560_CPLD_RCR1, KSI8560_CPLD_RCR1_CPUHR);
++	else
++		printk(KERN_ERR "Can't find CPLD base, hang forever\n");
 +
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+CONFIG_XFRM=y
-+# CONFIG_XFRM_USER is not set
-+# CONFIG_XFRM_SUB_POLICY is not set
-+# CONFIG_XFRM_MIGRATE is not set
-+# CONFIG_XFRM_STATISTICS is not set
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_IP_MROUTE is not set
-+# CONFIG_ARPD is not set
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_XFRM_MODE_TRANSPORT=y
-+CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
-+# CONFIG_INET_LRO is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_INET6_XFRM_TUNNEL is not set
-+# CONFIG_INET6_TUNNEL is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_NET_SCHED is not set
++	for (;;);
++}
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_CAN is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
++static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	int cascade_irq;
 +
-+#
-+# Wireless
-+#
-+# CONFIG_CFG80211 is not set
-+# CONFIG_WIRELESS_EXT is not set
-+# CONFIG_MAC80211 is not set
-+# CONFIG_IEEE80211 is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++	while ((cascade_irq = cpm2_get_irq()) >= 0)
++		generic_handle_irq(cascade_irq);
 +
-+#
-+# Device Drivers
-+#
++	desc->chip->eoi(irq);
++}
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+CONFIG_MTD=y
-+# CONFIG_MTD_DEBUG is not set
-+CONFIG_MTD_CONCAT=y
-+CONFIG_MTD_PARTITIONS=y
-+# CONFIG_MTD_REDBOOT_PARTS is not set
-+# CONFIG_MTD_CMDLINE_PARTS is not set
++static void __init ksi8560_pic_init(void)
++{
++	struct mpic *mpic;
++	struct resource r;
++	struct device_node *np;
++#ifdef CONFIG_CPM2
++	int irq;
++#endif
 +
-+#
-+# User Modules And Translation Layers
-+#
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLKDEVS=y
-+CONFIG_MTD_BLOCK=y
-+# CONFIG_FTL is not set
-+# CONFIG_NFTL is not set
-+# CONFIG_INFTL is not set
-+# CONFIG_RFD_FTL is not set
-+# CONFIG_SSFDC is not set
-+# CONFIG_MTD_OOPS is not set
++	np = of_find_node_by_type(NULL, "open-pic");
 +
-+#
-+# RAM/ROM/Flash chip drivers
-+#
-+CONFIG_MTD_CFI=y
-+CONFIG_MTD_JEDECPROBE=y
-+CONFIG_MTD_GEN_PROBE=y
-+# CONFIG_MTD_CFI_ADV_OPTIONS is not set
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
-+# CONFIG_MTD_CFI_I4 is not set
-+# CONFIG_MTD_CFI_I8 is not set
-+# CONFIG_MTD_CFI_INTELEXT is not set
-+CONFIG_MTD_CFI_AMDSTD=y
-+# CONFIG_MTD_CFI_STAA is not set
-+CONFIG_MTD_CFI_UTIL=y
-+# CONFIG_MTD_RAM is not set
-+# CONFIG_MTD_ROM is not set
-+# CONFIG_MTD_ABSENT is not set
++	if (np == NULL) {
++		printk(KERN_ERR "Could not find open-pic node\n");
++		return;
++	}
 +
-+#
-+# Mapping drivers for chip access
-+#
-+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-+# CONFIG_MTD_PHYSMAP is not set
-+CONFIG_MTD_PHYSMAP_OF=y
-+# CONFIG_MTD_PLATRAM is not set
++	if (of_address_to_resource(np, 0, &r)) {
++		printk(KERN_ERR "Could not map mpic register space\n");
++		of_node_put(np);
++		return;
++	}
 +
-+#
-+# Self-contained MTD device drivers
-+#
-+# CONFIG_MTD_SLRAM is not set
-+# CONFIG_MTD_PHRAM is not set
-+# CONFIG_MTD_MTDRAM is not set
-+# CONFIG_MTD_BLOCK2MTD is not set
++	mpic = mpic_alloc(np, r.start,
++			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
++			0, 256, " OpenPIC  ");
++	BUG_ON(mpic == NULL);
++	of_node_put(np);
 +
-+#
-+# Disk-On-Chip Device Drivers
-+#
-+# CONFIG_MTD_DOC2000 is not set
-+# CONFIG_MTD_DOC2001 is not set
-+# CONFIG_MTD_DOC2001PLUS is not set
-+# CONFIG_MTD_NAND is not set
-+# CONFIG_MTD_ONENAND is not set
++	mpic_init(mpic);
 +
-+#
-+# UBI - Unsorted block images
-+#
-+# CONFIG_MTD_UBI is not set
-+CONFIG_OF_DEVICE=y
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+CONFIG_BLK_DEV_LOOP=y
-+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=32768
-+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_EEPROM_93CX6 is not set
-+CONFIG_IDE=y
-+CONFIG_IDE_MAX_HWIFS=4
-+CONFIG_BLK_DEV_IDE=y
++#ifdef CONFIG_CPM2
++	/* Setup CPM2 PIC */
++	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pic");
++	if (np == NULL) {
++		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
++		return;
++	}
++	irq = irq_of_parse_and_map(np, 0);
 +
-+#
-+# Please see Documentation/ide.txt for help/info on IDE drives
-+#
-+# CONFIG_BLK_DEV_IDE_SATA is not set
-+# CONFIG_BLK_DEV_IDEDISK is not set
-+# CONFIG_IDEDISK_MULTI_MODE is not set
-+# CONFIG_BLK_DEV_IDECD is not set
-+# CONFIG_BLK_DEV_IDETAPE is not set
-+# CONFIG_BLK_DEV_IDEFLOPPY is not set
-+# CONFIG_IDE_TASK_IOCTL is not set
-+CONFIG_IDE_PROC_FS=y
++	cpm2_pic_init(np);
++	of_node_put(np);
++	set_irq_chained_handler(irq, cpm2_cascade);
 +
-+#
-+# IDE chipset support/bugfixes
-+#
-+CONFIG_IDE_GENERIC=y
-+# CONFIG_BLK_DEV_PLATFORM is not set
-+# CONFIG_BLK_DEV_IDEDMA is not set
-+CONFIG_IDE_ARCH_OBSOLETE_INIT=y
-+# CONFIG_BLK_DEV_HD is not set
++	setup_irq(0, NULL);
++#endif
++}
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_VETH is not set
-+CONFIG_PHYLIB=y
++#ifdef CONFIG_CPM2
++/*
++ * Setup I/O ports
++ */
++struct cpm_pin {
++	int port, pin, flags;
++};
 +
-+#
-+# MII PHY device drivers
-+#
-+CONFIG_MARVELL_PHY=y
-+# CONFIG_DAVICOM_PHY is not set
-+# CONFIG_QSEMI_PHY is not set
-+# CONFIG_LXT_PHY is not set
-+# CONFIG_CICADA_PHY is not set
-+# CONFIG_VITESSE_PHY is not set
-+# CONFIG_SMSC_PHY is not set
-+# CONFIG_BROADCOM_PHY is not set
-+# CONFIG_ICPLUS_PHY is not set
-+# CONFIG_REALTEK_PHY is not set
-+# CONFIG_FIXED_PHY is not set
-+CONFIG_MDIO_BITBANG=y
-+CONFIG_NET_ETHERNET=y
-+CONFIG_MII=y
-+# CONFIG_IBM_NEW_EMAC_ZMII is not set
-+# CONFIG_IBM_NEW_EMAC_RGMII is not set
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
-+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-+# CONFIG_B44 is not set
-+CONFIG_FS_ENET=y
-+# CONFIG_FS_ENET_HAS_SCC is not set
-+CONFIG_FS_ENET_HAS_FCC=y
-+CONFIG_FS_ENET_MDIO_FCC=y
-+CONFIG_NETDEV_1000=y
-+# CONFIG_E1000E_ENABLED is not set
-+CONFIG_GIANFAR=y
-+CONFIG_GFAR_NAPI=y
-+CONFIG_NETDEV_10000=y
++static struct cpm_pin __initdata ksi8560_pins[] = {
++	/* SCC1 */
++	{3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
 +
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++	/* SCC2 */
++	{3, 26, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{3, 27, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{3, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
 +
-+#
-+# Input device support
-+#
-+CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
-+# CONFIG_INPUT_POLLDEV is not set
++	/* FCC1 */
++	{0, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 18, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 19, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 26, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{0, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{0, 28, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{0, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{0, 30, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{0, 31, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{2, 23, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK9 */
++	{2, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK10 */
 +
-+#
-+# Userland interfaces
-+#
-+# CONFIG_INPUT_MOUSEDEV is not set
-+# CONFIG_INPUT_JOYDEV is not set
-+# CONFIG_INPUT_EVDEV is not set
-+# CONFIG_INPUT_EVBUG is not set
++};
 +
-+#
-+# Input Device Drivers
-+#
-+# CONFIG_INPUT_KEYBOARD is not set
-+# CONFIG_INPUT_MOUSE is not set
-+# CONFIG_INPUT_JOYSTICK is not set
-+# CONFIG_INPUT_TABLET is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+# CONFIG_INPUT_MISC is not set
++static void __init init_ioports(void)
++{
++	int i;
 +
-+#
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
++	for (i = 0; i < ARRAY_SIZE(ksi8560_pins); i++) {
++		struct cpm_pin *pin = &ksi8560_pins[i];
++		cpm2_set_pin(pin->port, pin->pin, pin->flags);
++	}
 +
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
++	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
++	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
++	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_RX);
++	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_TX);
++	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK9, CPM_CLK_RX);
++	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK10, CPM_CLK_TX);
++}
++#endif
 +
-+#
-+# Serial drivers
-+#
-+# CONFIG_SERIAL_8250 is not set
++/*
++ * Setup the architecture
++ */
++static void __init ksi8560_setup_arch(void)
++{
++	struct device_node *cpld;
 +
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+CONFIG_SERIAL_CPM=y
-+CONFIG_SERIAL_CPM_CONSOLE=y
-+CONFIG_SERIAL_CPM_SCC1=y
-+# CONFIG_SERIAL_CPM_SCC2 is not set
-+# CONFIG_SERIAL_CPM_SCC3 is not set
-+# CONFIG_SERIAL_CPM_SCC4 is not set
-+# CONFIG_SERIAL_CPM_SMC1 is not set
-+# CONFIG_SERIAL_CPM_SMC2 is not set
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+CONFIG_HW_RANDOM=y
-+# CONFIG_NVRAM is not set
-+CONFIG_GEN_RTC=y
-+# CONFIG_GEN_RTC_X is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+# CONFIG_I2C is not set
++	cpld = of_find_compatible_node(NULL, NULL, "altera,maxii");
++	if (cpld)
++		cpld_base = of_iomap(cpld, 0);
++	else
++		printk(KERN_ERR "Can't find CPLD in device tree\n");
 +
-+#
-+# SPI support
-+#
-+# CONFIG_SPI is not set
-+# CONFIG_SPI_MASTER is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+CONFIG_HWMON=y
-+# CONFIG_HWMON_VID is not set
-+# CONFIG_SENSORS_F71805F is not set
-+# CONFIG_SENSORS_F71882FG is not set
-+# CONFIG_SENSORS_IT87 is not set
-+# CONFIG_SENSORS_PC87360 is not set
-+# CONFIG_SENSORS_PC87427 is not set
-+# CONFIG_SENSORS_SMSC47M1 is not set
-+# CONFIG_SENSORS_SMSC47B397 is not set
-+# CONFIG_SENSORS_VT1211 is not set
-+# CONFIG_SENSORS_W83627HF is not set
-+# CONFIG_SENSORS_W83627EHF is not set
-+# CONFIG_HWMON_DEBUG_CHIP is not set
-+# CONFIG_WATCHDOG is not set
++	if (ppc_md.progress)
++		ppc_md.progress("ksi8560_setup_arch()", 0);
 +
-+#
-+# Sonics Silicon Backplane
-+#
-+CONFIG_SSB_POSSIBLE=y
-+# CONFIG_SSB is not set
++#ifdef CONFIG_CPM2
++	cpm2_reset();
++	init_ioports();
++#endif
++}
 +
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_SM501 is not set
++static void ksi8560_show_cpuinfo(struct seq_file *m)
++{
++	uint pvid, svid, phid1;
++	uint memsize = total_memory;
 +
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+CONFIG_DAB=y
++	pvid = mfspr(SPRN_PVR);
++	svid = mfspr(SPRN_SVR);
 +
-+#
-+# Graphics support
-+#
-+# CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=y
-+# CONFIG_FB is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++	seq_printf(m, "Vendor\t\t: Emerson Network Power\n");
++	seq_printf(m, "Board\t\t: KSI8560\n");
 +
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
++	if (cpld_base) {
++		seq_printf(m, "Hardware rev\t: %d\n",
++					in_8(cpld_base + KSI8560_CPLD_HVR));
++		seq_printf(m, "CPLD rev\t: %d\n",
++					in_8(cpld_base + KSI8560_CPLD_PVR));
++	} else
++		seq_printf(m, "Unknown Hardware and CPLD revs\n");
 +
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+CONFIG_HID_SUPPORT=y
-+CONFIG_HID=y
-+# CONFIG_HID_DEBUG is not set
-+# CONFIG_HIDRAW is not set
-+CONFIG_USB_SUPPORT=y
-+# CONFIG_USB_ARCH_HAS_HCD is not set
-+# CONFIG_USB_ARCH_HAS_OHCI is not set
-+# CONFIG_USB_ARCH_HAS_EHCI is not set
++	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
++	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
 +
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
-+# CONFIG_USB_GADGET is not set
-+# CONFIG_MMC is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_EDAC is not set
-+# CONFIG_RTC_CLASS is not set
++	/* Display cpu Pll setting */
++	phid1 = mfspr(SPRN_HID1);
++	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
 +
-+#
-+# Userspace I/O
-+#
-+# CONFIG_UIO is not set
++	/* Display the amount of memory */
++	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
++}
 +
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_EXT3_FS_XATTR=y
-+# CONFIG_EXT3_FS_POSIX_ACL is not set
-+# CONFIG_EXT3_FS_SECURITY is not set
-+# CONFIG_EXT4DEV_FS is not set
-+CONFIG_JBD=y
-+# CONFIG_JBD_DEBUG is not set
-+CONFIG_FS_MBCACHE=y
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+CONFIG_DNOTIFY=y
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .type = "soc", },
++	{ .name = "cpm", },
++	{ .name = "localbus", },
++	{},
++};
 +
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
++static int __init declare_of_platform_devices(void)
++{
++	of_platform_bus_probe(NULL, of_bus_ids, NULL);
 +
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
-+# CONFIG_NTFS_FS is not set
++	return 0;
++}
++machine_device_initcall(ksi8560, declare_of_platform_devices);
 +
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+# CONFIG_CONFIGFS_FS is not set
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init ksi8560_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
 +
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_JFFS2_FS is not set
-+# CONFIG_CRAMFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+CONFIG_NFS_FS=y
-+# CONFIG_NFS_V3 is not set
-+# CONFIG_NFS_V4 is not set
-+# CONFIG_NFS_DIRECTIO is not set
-+# CONFIG_NFSD is not set
-+CONFIG_ROOT_NFS=y
-+CONFIG_LOCKD=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+# CONFIG_SUNRPC_BIND34 is not set
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
++	return of_flat_dt_is_compatible(root, "emerson,KSI8560");
++}
 +
-+#
-+# Partition Types
-+#
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_ACORN_PARTITION is not set
-+# CONFIG_OSF_PARTITION is not set
-+# CONFIG_AMIGA_PARTITION is not set
-+# CONFIG_ATARI_PARTITION is not set
-+# CONFIG_MAC_PARTITION is not set
-+# CONFIG_MSDOS_PARTITION is not set
-+# CONFIG_LDM_PARTITION is not set
-+# CONFIG_SGI_PARTITION is not set
-+# CONFIG_ULTRIX_PARTITION is not set
-+# CONFIG_SUN_PARTITION is not set
-+# CONFIG_KARMA_PARTITION is not set
-+# CONFIG_EFI_PARTITION is not set
-+# CONFIG_SYSV68_PARTITION is not set
-+# CONFIG_NLS is not set
-+# CONFIG_DLM is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_WARN_DEPRECATED=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+# CONFIG_MAGIC_SYSRQ is not set
-+# CONFIG_UNUSED_SYMBOLS is not set
-+CONFIG_DEBUG_FS=y
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_DETECT_SOFTLOCKUP=y
-+CONFIG_SCHED_DEBUG=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_SLUB_DEBUG_ON is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+CONFIG_DEBUG_MUTEXES=y
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+# CONFIG_DEBUG_HIGHMEM is not set
-+# CONFIG_DEBUG_BUGVERBOSE is not set
-+# CONFIG_DEBUG_INFO is not set
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
-+# CONFIG_DEBUG_SG is not set
-+CONFIG_FORCED_INLINING=y
-+# CONFIG_BOOT_PRINTK_DELAY is not set
-+# CONFIG_BACKTRACE_SELF_TEST is not set
-+# CONFIG_FAULT_INJECTION is not set
-+# CONFIG_SAMPLES is not set
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+# CONFIG_DEBUG_PAGEALLOC is not set
-+# CONFIG_DEBUGGER is not set
-+# CONFIG_KGDB_CONSOLE is not set
-+# CONFIG_VIRQ_DEBUG is not set
-+# CONFIG_BDI_SWITCH is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-+CONFIG_CRYPTO=y
-+# CONFIG_CRYPTO_SEQIV is not set
-+# CONFIG_CRYPTO_MANAGER is not set
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+# CONFIG_CRYPTO_MD5 is not set
-+# CONFIG_CRYPTO_SHA1 is not set
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+# CONFIG_CRYPTO_ECB is not set
-+# CONFIG_CRYPTO_CBC is not set
-+# CONFIG_CRYPTO_PCBC is not set
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_XTS is not set
-+# CONFIG_CRYPTO_CTR is not set
-+# CONFIG_CRYPTO_GCM is not set
-+# CONFIG_CRYPTO_CCM is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+# CONFIG_CRYPTO_DES is not set
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_ARC4 is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_SEED is not set
-+# CONFIG_CRYPTO_SALSA20 is not set
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_AUTHENC is not set
-+# CONFIG_CRYPTO_LZO is not set
-+CONFIG_CRYPTO_HW=y
-+# CONFIG_PPC_CLOCK is not set
-+CONFIG_PPC_LIB_RHEAP=y
++define_machine(ksi8560) {
++	.name			= "KSI8560",
++	.probe			= ksi8560_probe,
++	.setup_arch		= ksi8560_setup_arch,
++	.init_IRQ		= ksi8560_pic_init,
++	.show_cpuinfo		= ksi8560_show_cpuinfo,
++	.get_irq		= mpic_get_irq,
++	.restart		= machine_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++};
