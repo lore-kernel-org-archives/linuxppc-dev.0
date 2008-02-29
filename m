@@ -1,21 +1,20 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-va3-R.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 436DFDDE26
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 13:19:44 +1100 (EST)
-Message-ID: <47C76BBA.5000503@am.sony.com>
-Date: Thu, 28 Feb 2008 18:19:38 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 0/3] hotplug memory remove updates
-References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
-	<20080229013957.GQ16241@localdomain>
-In-Reply-To: <20080229013957.GQ16241@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+In-Reply-To: <47C74A66.1060105@austin.ibm.com>
+References: <47B90F55.2080606@austin.ibm.com>
+	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
+	<47C74A66.1060105@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-BtBPsnOKFl1ntYCYs9Ru"
+Date: Fri, 29 Feb 2008 13:20:50 +1100
+Message-Id: <1204251650.7729.13.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Linas Vepstas <linasvepstas@gmail.com>,
+	paulus <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi.
 
-Nathan Lynch wrote:
-> Badari Pulavarty wrote:
->> Hi Paul,
->> 
->> Here are the hotplug memory remove updates for 2.6.25-rc2-mm1.
-> 
-> How have these been tested?  Have you initiated a memory remove
-> operation from the HMC?  That's the only way to catch some bugs...
+--=-BtBPsnOKFl1ntYCYs9Ru
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'm wondering how the memory hot un-plug is initiated on the pseries.
-Could you tell me about this HMC?  Is it an application running in
-the lpar, or is it an external entity?
+On Thu, 2008-02-28 at 17:57 -0600, Manish Ahuja wrote:
+> Changes from previous version:
+>=20
+> The only changes are in patch 2.
+> moved early_init_dt_scan_phyp_dump from rtas.c to phyp_dump.c
+> Added dummy function in phyp_dump.h
 
-Is there a 'standard' interface from userspace that can be used to
-trigger the hot-unplug sequence?  I'm asking because PS3's lv1
-hypervisor supports hot un-plug of memory, but it would need to be
-triggered from some kind of management application running in in
-userspace.
+This fixes the build failures I was seeing!
+http://kisskb.ellerman.id.au/kisskb/head/664/
 
--Geoff
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-BtBPsnOKFl1ntYCYs9Ru
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHx2wCdSjSd0sB4dIRArPaAKC3Yfy0rfwvIpTwF6luFPFhl/jzlACeNTjf
+kd/wR1hiSXZBoExR0lz8CtI=
+=p/p/
+-----END PGP SIGNATURE-----
+
+--=-BtBPsnOKFl1ntYCYs9Ru--
