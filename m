@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
+Message-Id: <9dc707f922deb1c15d0b9471f9f240eb7950c6c9.1204270367.git.michael@ellerman.id.au>
+In-Reply-To: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
+References: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/8] Clearup cell IOMMU fixed mapping terminology
-Date: Fri, 29 Feb 2008 18:33:22 +1100 (EST)
+Subject: [PATCH 2/8] Use it_offset not pte_offset in cell IOMMU code
+Date: Fri, 29 Feb 2008 18:33:23 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,52 +15,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It's called the fixed mapping, not the static mapping.
+The cell IOMMU tce build and free routines use pte_offset to convert
+the index passed from the generic IOMMU code into a page table offset.
+
+This takes into account the SPIDER_DMA_OFFSET which sets the top bit
+of every DMA address.
+
+However it doesn't cater for the IOMMU window starting at a non-zero
+address, as the base of the window is not incorporated into pte_offset
+at all.
+
+As it turns out tbl->it_offset already contains the value we need, it
+takes into account the base of the window and also pte_offset. So use
+it instead!
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/iommu.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index edab631..bbe8389 100644
+index bbe8389..4e75919 100644
 --- a/arch/powerpc/platforms/cell/iommu.c
 +++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -549,7 +549,7 @@ static void cell_dma_dev_setup_iommu(struct device *dev)
- 	archdata->dma_data = &window->table;
- }
+@@ -200,7 +200,7 @@ static void tce_build_cell(struct iommu_table *tbl, long index, long npages,
+ 		(window->ioid & IOPTE_IOID_Mask);
+ #endif
  
--static void cell_dma_dev_setup_static(struct device *dev);
-+static void cell_dma_dev_setup_fixed(struct device *dev);
+-	io_pte = (unsigned long *)tbl->it_base + (index - window->pte_offset);
++	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
  
- static void cell_dma_dev_setup(struct device *dev)
- {
-@@ -557,7 +557,7 @@ static void cell_dma_dev_setup(struct device *dev)
- 
- 	/* Order is important here, these are not mutually exclusive */
- 	if (get_dma_ops(dev) == &dma_iommu_fixed_ops)
--		cell_dma_dev_setup_static(dev);
-+		cell_dma_dev_setup_fixed(dev);
- 	else if (get_pci_dma_ops() == &dma_iommu_ops)
- 		cell_dma_dev_setup_iommu(dev);
- 	else if (get_pci_dma_ops() == &dma_direct_ops)
-@@ -858,7 +858,7 @@ static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
- 	return 0;
- }
- 
--static void cell_dma_dev_setup_static(struct device *dev)
-+static void cell_dma_dev_setup_fixed(struct device *dev)
- {
- 	struct dev_archdata *archdata = &dev->archdata;
- 	u64 addr;
-@@ -894,7 +894,7 @@ static void cell_iommu_setup_fixed_ptab(struct cbe_iommu *iommu,
- 	for (i = fbase; i < fbase + fsize; i++, uaddr += IOMMU_PAGE_SIZE) {
- 		/* Don't touch the dynamic region */
- 		if (i >= dbase && i < (dbase + dsize)) {
--			pr_debug("iommu: static/dynamic overlap, skipping\n");
-+			pr_debug("iommu: fixed/dynamic overlap, skipping\n");
- 			continue;
- 		}
+ 	for (i = 0; i < npages; i++, uaddr += IOMMU_PAGE_SIZE)
  		io_pte[i] = base_pte | (__pa(uaddr) & IOPTE_RPN_Mask);
+@@ -232,7 +232,7 @@ static void tce_free_cell(struct iommu_table *tbl, long index, long npages)
+ 		| (window->ioid & IOPTE_IOID_Mask);
+ #endif
+ 
+-	io_pte = (unsigned long *)tbl->it_base + (index - window->pte_offset);
++	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
+ 
+ 	for (i = 0; i < npages; i++)
+ 		io_pte[i] = pte;
 -- 
 1.5.2.rc1.1884.g59b20
