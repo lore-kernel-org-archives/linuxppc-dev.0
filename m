@@ -1,25 +1,12 @@
-Return-Path: <jwilson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id B74EEDDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 16:48:36 +1100 (EST)
-Message-ID: <47C79CB1.6050104@redhat.com>
-Date: Fri, 29 Feb 2008 00:48:33 -0500
-From: Jarod Wilson <jwilson@redhat.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 29 Feb 2008 16:51:28 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make -I dtb mode use fill_fullpaths()
+Message-ID: <20080229055128.GC1197@localhost.localdomain>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-References: <20080220220326.GA22328@uranus.ravnborg.org>	
-	<200802272221.38985.jwilson@redhat.com>	
-	<1204179959.15052.372.camel@pasglop>	
-	<200802281342.06493.jwilson@redhat.com>
-	<1204241162.15052.393.camel@pasglop>
-In-Reply-To: <1204241162.15052.393.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,39 +16,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-02-28 at 13:42 -0500, Jarod Wilson wrote:
->> On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
->>>> Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
->>>> active". Could still be lucent though, judging by the subsys device ID of
->>>> 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
->>>> don't have the interesting one.
->>> Well, it's interesting in the sense that it's a "normal" OHCI then on a
->>> BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
->>> while ago. I'll see if I can find another machine with that one in.
->> Ah, the pismo has it, eh? I think I may actually know of someone in the office 
->> that still has one of those that I might be able to borrow and poke at...
-> 
-> I -think- it has it... Pismo definitely has one of the first variant of
-> UniNorth with "working" FW afaik.
-> 
-> The first UniNorth was used in the first "toilet-seat" ibook, but I
-> think this one didn't have firewire, or a non-working one... and in the
-> first Sawtooth G4 for which FW and Ethernet even were separate PCI chips
-> because the ones in UniNorth were too broken.
-> 
-> It's possible that early G4 titanium powerbooks or other model of FW
-> iBooks have that UniNorth FW variant too.
+At present -I dts and -I fs modes both use the fill_fullpaths() helper
+function to fill in the fullpath and basenamelen fields of struct
+node, which are useful in later parts of the code.  -I dtb mode,
+however, fills these in itself.
 
-Still no luck finding one here. The person I was thinking of has a 
-Lombard, which has no firewire. I did get ahold of a 667MHz Titanium, 
-but its got an Agere FW323. Pretty sure my old man actually has a Pismo, 
-but its about a 3000 mile drive over to my folks house. The search 
-continues... I wonder how many people still actually 1) have a machine 
-with this controller, 2) are running Linux on it and 3) use firewire 
-devices with it. Both of you, please speak up, we're trying to help you! 
-(if only out of morbid curiosity to see this mythical goofy controller).
+This patch simplifies flattree.c by making -I dtb mode use
+fill_fullpaths() like the others.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/flattree.c
+===================================================================
+--- dtc.orig/flattree.c	2008-02-29 13:38:15.000000000 +1100
++++ dtc/flattree.c	2008-02-29 16:46:02.000000000 +1100
+@@ -704,59 +704,37 @@ static struct reserve_info *flat_read_me
+ 
+ static char *nodename_from_path(const char *ppath, const char *cpath)
+ {
+-	const char *lslash;
+ 	int plen;
+ 
+-	lslash = strrchr(cpath, '/');
+-	if (! lslash)
+-		return NULL;
++	plen = strlen(ppath);
+ 
+-	plen = lslash - cpath;
++	if (!strneq(ppath, cpath, plen))
++		die("Path \"%s\" is not valid as a child of \"%s\"\n",
++		    cpath, ppath);
+ 
+-	if (streq(cpath, "/") && streq(ppath, ""))
+-		return "";
++	/* root node is a special case */
++	if (!streq(ppath, "/"))
++		plen++;
+ 
+-	if ((plen == 0) && streq(ppath, "/"))
+-		return strdup(lslash+1);
+-
+-	if (! strneq(ppath, cpath, plen))
+-		return NULL;
+-
+-	return strdup(lslash+1);
+-}
+-
+-static int find_basenamelen(const char *name)
+-{
+-	const char *atpos = strchr(name, '@');
+-
+-	if (atpos)
+-		return atpos - name;
+-	else
+-		return strlen(name);
++	return strdup(cpath + plen);
+ }
+ 
+ static struct node *unflatten_tree(struct inbuf *dtbuf,
+ 				   struct inbuf *strbuf,
+-				   const char *parent_path, int flags)
++				   const char *parent_flatname, int flags)
+ {
+ 	struct node *node;
++	char *flatname;
+ 	u32 val;
+ 
+ 	node = build_node(NULL, NULL);
+ 
+-	if (flags & FTF_FULLPATH) {
+-		node->fullpath = flat_read_string(dtbuf);
+-		node->name = nodename_from_path(parent_path, node->fullpath);
+-
+-		if (! node->name)
+-			die("Path \"%s\" is not valid as a child of \"%s\"\n",
+-			    node->fullpath, parent_path);
+-	} else {
+-		node->name = flat_read_string(dtbuf);
+-		node->fullpath = join_path(parent_path, node->name);
+-	}
++	flatname = flat_read_string(dtbuf);
+ 
+-	node->basenamelen = find_basenamelen(node->name);
++	if (flags & FTF_FULLPATH)
++		node->name = nodename_from_path(parent_flatname, flatname);
++	else
++		node->name = flatname;
+ 
+ 	do {
+ 		struct property *prop;
+@@ -773,8 +751,7 @@ static struct node *unflatten_tree(struc
+ 			break;
+ 
+ 		case FDT_BEGIN_NODE:
+-			child = unflatten_tree(dtbuf,strbuf, node->fullpath,
+-					       flags);
++			child = unflatten_tree(dtbuf,strbuf, flatname, flags);
+ 			add_child(node, child);
+ 			break;
+ 
+Index: dtc/dtc.c
+===================================================================
+--- dtc.orig/dtc.c	2008-02-28 12:55:04.000000000 +1100
++++ dtc/dtc.c	2008-02-29 16:16:07.000000000 +1100
+@@ -55,7 +55,7 @@ char *join_path(const char *path, const 
+ 	return str;
+ }
+ 
+-void fill_fullpaths(struct node *tree, const char *prefix)
++static void fill_fullpaths(struct node *tree, const char *prefix)
+ {
+ 	struct node *child;
+ 	const char *unit;
+@@ -208,6 +208,7 @@ int main(int argc, char *argv[])
+ 	if (! bi || ! bi->dt || bi->error)
+ 		die("Couldn't read input tree\n");
+ 
++	fill_fullpaths(bi->dt, "");
+ 	process_checks(force, bi);
+ 
+ 	if (streq(outname, "-")) {
+Index: dtc/dtc.h
+===================================================================
+--- dtc.orig/dtc.h	2008-02-28 17:02:38.000000000 +1100
++++ dtc/dtc.h	2008-02-29 16:16:07.000000000 +1100
+@@ -264,6 +264,5 @@ struct boot_info *dt_from_fs(const char 
+ /* misc */
+ 
+ char *join_path(const char *path, const char *name);
+-void fill_fullpaths(struct node *tree, const char *prefix);
+ 
+ #endif /* _DTC_H */
+Index: dtc/fstree.c
+===================================================================
+--- dtc.orig/fstree.c	2008-02-28 12:55:04.000000000 +1100
++++ dtc/fstree.c	2008-02-29 16:16:07.000000000 +1100
+@@ -87,8 +87,6 @@ struct boot_info *dt_from_fs(const char 
+ 	tree = read_fstree(dirname);
+ 	tree = name_node(tree, "", NULL);
+ 
+-	fill_fullpaths(tree, "");
+-
+ 	return build_boot_info(NULL, tree);
+ }
+ 
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2008-02-28 17:02:36.000000000 +1100
++++ dtc/treesource.c	2008-02-29 16:16:07.000000000 +1100
+@@ -37,8 +37,6 @@ struct boot_info *dt_from_source(const c
+ 	if (yyparse() != 0)
+ 		return NULL;
+ 
+-	fill_fullpaths(the_boot_info->dt, "");
+-
+ 	the_boot_info->error = treesource_error;
+ 	return the_boot_info;
+ }
 
 -- 
-Jarod Wilson
-jwilson@redhat.com
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
