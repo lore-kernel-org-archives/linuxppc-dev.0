@@ -1,24 +1,19 @@
-Return-Path: <jwilson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 521C7DDE1A
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 02:35:14 +1100 (EST)
-From: Jarod Wilson <jwilson@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-Date: Fri, 29 Feb 2008 10:34:35 -0500
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-	<47C79CB1.6050104@redhat.com>
-	<18375.60394.166769.540668@cargo.ozlabs.ibm.com>
-In-Reply-To: <18375.60394.166769.540668@cargo.ozlabs.ibm.com>
+Return-Path: <SRS0=un/q=TS=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 48462DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 02:36:45 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/5] [POWERPC] Add Canyonlands DTS
+Date: Fri, 29 Feb 2008 16:36:29 +0100
+References: <1203800881-13837-1-git-send-email-sr@denx.de>
+	<20080229091120.1611ec56@zod.rchland.ibm.com>
+In-Reply-To: <20080229091120.1611ec56@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200802291034.35910.jwilson@redhat.com>
-Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>
+Message-Id: <200802291636.29759.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 29 February 2008 06:26:34 am Paul Mackerras wrote:
-> Jarod Wilson writes:
-> > Still no luck finding one here. The person I was thinking of has a
-> > Lombard, which has no firewire. I did get ahold of a 667MHz Titanium,
-> > but its got an Agere FW323. Pretty sure my old man actually has a Pismo,
-> > but its about a 3000 mile drive over to my folks house. The search
-> > continues... I wonder how many people still actually 1) have a machine
-> > with this controller, 2) are running Linux on it and 3) use firewire
-> > devices with it. Both of you, please speak up, we're trying to help you!
-> > (if only out of morbid curiosity to see this mythical goofy controller).
+On Friday 29 February 2008, Josh Boyer wrote:
+> On Sat, 23 Feb 2008 22:08:01 +0100
 >
-> I have a first-generation titanium powerbook that has this controller
-> (assuming we're talking about vendor/device id = 0x106b / 0x18), and
-> yes I run Linux (only) on it and use firewire disks. :)
+> Stefan Roese <sr@denx.de> wrote:
+> > Signed-off-by: Stefan Roese <sr@denx.de>
+> > ---
+> > And now the I2C device-types are removed. Sorry for the mail-flood.
+> >
+> >  arch/powerpc/boot/dts/canyonlands.dts |  393
+> > +++++++++++++++++++++++++++++++++ 1 files changed, 393 insertions(+), 0
+> > deletions(-)
+> >  create mode 100644 arch/powerpc/boot/dts/canyonlands.dts
+> >
+> > diff --git a/arch/powerpc/boot/dts/canyonlands.dts
+> > b/arch/powerpc/boot/dts/canyonlands.dts new file mode 100644
+> > index 0000000..2aee74c
+> > --- /dev/null
+> > +++ b/arch/powerpc/boot/dts/canyonlands.dts
+>
+> [snip]
+>
+> > +		MAL0: mcmal {
+> > +			compatible = "ibm,mcmal-460ex", "ibm,mcmal2";
+> > +			dcr-reg = <180 62>;
+> > +			num-tx-chans = <2>;
+> > +			num-rx-chans = <10>;
+> > +			#address-cells = <0>;
+> > +			#size-cells = <0>;
+> > +			interrupt-parent = <&UIC2>;
+> > +			interrupts = <	/*TXEOB*/ 6 4
+> > +					/*RXEOB*/ 7 4
+> > +					/*SERR*/  3 4
+>
+> This is odd.  I have MAL SERR listed twice in the spec I have.  This
+> assignment is there, and there's also one to UIC1 IRQ 0.  Error in my
+> spec, or are both actually tied to the same interrupt line?
 
-Yup, seems that's the one. Sounds like we had another one hiding in plain site 
-in Stefan's hands too, the thing just was meeting criterion #2. ;)
+Must be an error in the preliminary spec. I have the engineering docs from 
+AMCC and here UIC1 IRQ0 is the external IRQ 2, which is used for PCI. So this 
+is still wrong in the current dts version. I'll send an updated version 
+probably tomorrow.
 
+> > +					/*TXDE*/  4 4
+> > +					/*RXDE*/  5 4>;
+> > +		};
+> >
+> > +			UART0: serial@ef600300 {
+> > +				device_type = "serial";
+> > +				compatible = "ns16550";
+> > +				reg = <ef600300 8>;
+> > +				virtual-reg = <ef600300>;
+> > +				clock-frequency = <0>; /* Filled in by U-Boot */
+> > +				current-speed = <0>; /* Filled in by U-Boot */
+> > +				interrupt-parent = <&UIC1>;
+> > +				interrupts = <1 4>;
+>
+> Should this be <2 4> or is the spec I have wrong?
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+Again, your documentation is incorrect. Took me 1/2 a day to figure this out 
+myself.
+
+Best regards,
+Stefan
