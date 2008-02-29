@@ -1,15 +1,17 @@
-Return-Path: <Phil.Hochstetler@serveron.com>
-Received: from mail.serveron.com (mail.serveron.com [198.107.14.70])
-	by ozlabs.org (Postfix) with ESMTP id 0DE76DDEBB
+Return-Path: <DWatkins@tranzeo.com>
+Received: from mail.tranzeo.com (unknown [64.114.87.10])
+	by ozlabs.org (Postfix) with ESMTP id 4945ADDF04
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Mar 2008 04:36:59 +1100 (EST)
+	Sat,  1 Mar 2008 05:25:58 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C87AF7.FD4E6CAC"
-Subject: ML403 Linux port questions
-Date: Fri, 29 Feb 2008 09:24:46 -0800
-Message-ID: <ADA5878BA63680469C75C14CEEE2FE28012F482B@mail.serveron.com>
-From: "Phil Hochstetler" <Phil.Hochstetler@serveron.com>
+	boundary="----_=_NextPart_001_01C87AFF.347D55DC"
+Subject: RE: ML403 Linux port questions
+Date: Fri, 29 Feb 2008 10:13:44 -0800
+Message-ID: <D61182AC8012EA4EBC531B3AF23BE1095827C2@tranzeo-mail2.12stewart.tranzeo.com>
+In-Reply-To: <ADA5878BA63680469C75C14CEEE2FE28012F482B@mail.serveron.com>
+References: <ADA5878BA63680469C75C14CEEE2FE28012F482B@mail.serveron.com>
+From: "Darcy Watkins" <DWatkins@tranzeo.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,48 +25,99 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C87AF7.FD4E6CAC
+------_=_NextPart_001_01C87AFF.347D55DC
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
+Hello,
+
+=20
+
+I am using an AMCC PPC405EP based system and find that the following
+works...
+
+=20
+
+Development / build machine --> Fedora core 6 or 7 on x86 PC
+
+Cross compile and target rootfs generation --> Buildroot
+
+Linux kernel (at least to start with) --> 2.6.19.2 from DENX ELDK 4.1
+
+=20
+
+Of course, you can use the cross compile environment from ELDK if you
+like.  I used it at first (had a very good out-of-box experience on AMCC
+Taihu with it) and then switched to Buildroot later.
+
+=20
+
+http://www.denx.de <http://www.denx.de/>  for ELDK / kernel
+
+http://buildroot.uclibc.org <http://buildroot.uclibc.org/>  for
+Buildroot
+
+=20
+
+I am presently using the Linux 2.6.19.2 kernel with I-Pipe real time
+extension (2.3.0) from the Xenomai project - as bundled in ELDK 4.1 by
+DENX.  I have also experimented with some newer stuff, but this involves
+diving into the board support migration from arch/ppc to arch/powerpc
+which is still pretty bleeding edge. 2.6.19.2 is pretty safe and not too
+old - and is probably the newest available with RT option while still
+being in the arch/ppc tree.
+
+=20
+
+Don't attempt to have buildroot automatically build the kernel for you
+as part of its config - that may cause you grief as their integration
+for PowerPC kernels appears hit-and-miss for 40x series due to all the
+arch/ppc versus arch/powerpc stuff.  Also, the buildroot automatic
+kernel generation doesn't include RT support (in case you need it).
+
+=20
+
+=20
+
+Regards,
+
+=20
+
+Darcy
+
+=20
+
+=20
+
+________________________________
+
+From: linuxppc-embedded-bounces+dwatkins=3Dtranzeo.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+dwatkins=3Dtranzeo.com@ozlabs.org] On
+Behalf Of Phil Hochstetler
+Sent: Friday, February 29, 2008 9:25 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: ML403 Linux port questions
+
+=20
+
 I'm setting up a new development environment to get a working port of
 Linux on the Xilinx Virtex-4 chip  (I have a Xilinx ML403 board).  I'm
 looking for the quickest way to get a working development environment
-for the 2.6 kernel without paying thousands of $$ (what happened to
-MontaVista?).  My first attempt was to use google and found lots of
-resources.  The problem is that much of the info is dated or makes
-assumptions about your environment.  I read Grants write-up at
-http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex.  Because I
-want to use Windows XP SP2 as the host if possible, I went down the path
-of installing the current Cygwin and was able to create cross tools (gcc
-4.1) successfully.  The problem I am having is that the Linux build
-process requires a newer gcc than 3.4.4-3 which is what Cygwin provides.
-I have used the EDK to build a bsp package successfully so that is not a
-problem.  I tried to compile the 2.6.24.2 mainline kernel but it fails
-to compile using the Cygwin tools (it never gets as far as using them).
+for the 2.6 kernel without paying thousands of $$=20
 
-=20
+--snip!--
 
 I guess what I am looking for is advise on the lowest risk, easiest to
 set up environment to setup that will just work.  Also advise on which
-kernel to use.   I don't need a detailed tutorial but a high level
-direct that is known to work.  I am thinking of using either the secret
-lab tree or the Xilinx tree as recommended in Grants wiki page.  Should
-I just forget using XP and install a Linux (x86 processor so I must use
-cross tools)?   If so, what is the recommend distro and what version?
+kernel to use.=20
+
+--snip!-
 
 =20
 
-Thanks for all your sharing of experience.  I hope to contribute back as
-soon as I can.
 
-=20
-
---phil
-
-
-------_=_NextPart_001_01C87AF7.FD4E6CAC
+------_=_NextPart_001_01C87AFF.347D55DC
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -72,39 +125,73 @@ Content-Transfer-Encoding: quoted-printable
 <html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
 xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
 xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
 xmlns=3D"http://www.w3.org/TR/REC-html40">
 
 <head>
 <meta http-equiv=3DContent-Type content=3D"text/html; =
 charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
 <style>
-<!--
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]--><o:SmartTagType
+ namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags" =
+name=3D"PlaceName"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PlaceType"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"place"/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--a:link
+	{mso-style-priority:99;}
+span.MSOHYPERLINK
+	{mso-style-priority:99;}
+a:visited
+	{mso-style-priority:99;}
+span.MSOHYPERLINKFOLLOWED
+	{mso-style-priority:99;}
+
  /* Font Definitions */
  @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+@font-face
+	{font-family:Calibri;}
  /* Style Definitions */
  p.MsoNormal, li.MsoNormal, div.MsoNormal
 	{margin:0in;
 	margin-bottom:.0001pt;
 	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
+	font-family:Calibri;}
 a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
+	{color:blue;
 	text-decoration:underline;}
 a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
+	{color:purple;
 	text-decoration:underline;}
 span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
+	{mso-style-type:personal;
+	font-family:Calibri;
 	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
 @page Section1
 	{size:8.5in 11.0in;
 	margin:1.0in 1.0in 1.0in 1.0in;}
@@ -113,70 +200,237 @@ div.Section1
 -->
 </style>
 <!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+ <u1:shapedefaults u2:ext=3D"edit" spidmax=3D"1026"/>
 </xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
+ <u3:shapelayout u4:ext=3D"edit">
+  <u3:idmap u4:ext=3D"edit" data=3D"1"/>
+ </u3:shapelayout>
+</xml><![endif]-->
 </head>
 
 <body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
 <div class=3DSection1>
 
-<p class=3DMsoNormal>I&#8217;m setting up a new development environment =
-to get a
-working port of Linux on the Xilinx Virtex-4 chip&nbsp; (I have a Xilinx =
-ML403
-board).&nbsp; I&#8217;m looking for the quickest way to get a working
-development environment for the 2.6 kernel without paying thousands of =
-$$ (what
-happened to MontaVista?).&nbsp; My first attempt was to use google and =
-found
-lots of resources.&nbsp; The problem is that much of the info is dated =
-or makes
-assumptions about your environment.&nbsp; I read Grants write-up at <a
-href=3D"http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex">http:/=
-/wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex</a>.&nbsp;
-Because I want to use Windows XP SP2 as the host if possible, I went =
-down the
-path of installing the current Cygwin and was able to create cross tools =
-(gcc
-4.1) successfully.&nbsp; The problem I am having is that the Linux build
-process requires a newer gcc than 3.4.4-3 which is what Cygwin =
-provides.&nbsp;
-I have used the EDK to build a bsp package successfully so that is not a
-problem.&nbsp; I tried to compile the 2.6.24.2 mainline kernel but it =
-fails to
-compile using the Cygwin tools (it never gets as far as using =
-them).<o:p></o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Hello,<o:p></o:p></span></font></p>
 
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p class=3DMsoNormal>I guess what I am looking for is advise on the =
-lowest risk,
-easiest to set up environment to setup that will just work.&nbsp; Also =
-advise
-on which kernel to use.&nbsp;&nbsp; I don&#8217;t need a detailed =
-tutorial but
-a high level direct that is known to work.&nbsp; I am thinking of using =
-either
-the secret lab tree or the Xilinx tree as recommended in Grants wiki
-page.&nbsp; Should I just forget using XP and install a Linux (x86 =
-processor so
-I must use cross tools)?&nbsp;&nbsp; If so, what is the recommend distro =
-and
-what version?<o:p></o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>I am using an AMCC PPC405EP based =
+system
+and find that the following works&#8230;<o:p></o:p></span></font></p>
 
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p class=3DMsoNormal>Thanks for all your sharing of experience.&nbsp; I =
-hope to
-contribute back as soon as I can.<o:p></o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Development / build machine =
+</span></font><font
+size=3D2 color=3Dnavy face=3DWingdings><span =
+style=3D'font-size:10.0pt;font-family:
+Wingdings;color:navy'>&agrave;</span></font><font size=3D2 color=3Dnavy =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:navy'> Fedora core 6 =
+or 7 on
+x86 PC<o:p></o:p></span></font></p>
 
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Cross compile and target rootfs =
+generation
+</span></font><font size=3D2 color=3Dnavy face=3DWingdings><span =
+style=3D'font-size:
+10.0pt;font-family:Wingdings;color:navy'>&agrave;</span></font><font =
+size=3D2
+color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial;
+color:navy'> Buildroot<o:p></o:p></span></font></p>
 
-<p class=3DMsoNormal>--phil<o:p></o:p></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Linux kernel (at least to start =
+with) </span></font><font
+size=3D2 color=3Dnavy face=3DWingdings><span =
+style=3D'font-size:10.0pt;font-family:
+Wingdings;color:navy'>&agrave;</span></font><font size=3D2 color=3Dnavy =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial;color:navy'> 2.6.19.2 from =
+DENX ELDK
+4.1<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Of course, you can use the cross =
+compile
+environment from ELDK if you like.&nbsp; I used it at first (had a very =
+good
+out-of-box experience on AMCC Taihu with it) and then switched to =
+Buildroot
+later.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><a =
+href=3D"http://www.denx.de/">http://www.denx.de</a>
+for ELDK / kernel<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><a =
+href=3D"http://buildroot.uclibc.org/">http://buildroot.uclibc.org</a>
+for Buildroot<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>I am presently using the Linux =
+2.6.19.2
+kernel with I-Pipe real time extension (2.3.0) from the Xenomai project =
+&#8211;
+as bundled in ELDK 4.1 by DENX.&nbsp; I have also experimented with some =
+newer
+stuff, but this involves diving into the board support migration from =
+arch/ppc
+to arch/powerpc which is still pretty bleeding edge. 2.6.19.2 is pretty =
+safe
+and not too old &#8211; and is probably the newest available with RT =
+option
+while still being in the arch/ppc tree.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Don&#8217;t attempt to have =
+buildroot automatically
+build the kernel for you as part of its config &#8211; that may cause =
+you grief
+as their integration for PowerPC kernels appears hit-and-miss for 40x =
+series
+due to all the arch/ppc versus arch/powerpc stuff.&nbsp; Also, the =
+buildroot
+automatic kernel generation doesn&#8217;t include RT support (in case =
+you need
+it).<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Regards,<o:p></o:p></span></font></p=
+>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Darcy<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;font-family:"Times New Roman"'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
+linuxppc-embedded-bounces+dwatkins=3Dtranzeo.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+dwatkins=3Dtranzeo.com@ozlabs.org] =
+<b><span
+style=3D'font-weight:bold'>On Behalf Of </span></b>Phil Hochstetler<br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, February =
+29, 2008
+9:25 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> =
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> ML403 Linux port
+questions</span></font><font size=3D3 face=3D"Times New Roman"><span
+style=3D'font-size:12.0pt;font-family:"Times New =
+Roman"'><o:p></o:p></span></font></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>I&#8217;m
+setting up a new development environment to get a working <st1:place =
+w:st=3D"on"><st1:PlaceType
+ w:st=3D"on">port</st1:PlaceType> of <st1:PlaceName =
+w:st=3D"on">Linux</st1:PlaceName></st1:place>
+on the Xilinx Virtex-4 chip&nbsp; (I have a Xilinx ML403 board).&nbsp; =
+I&#8217;m
+looking for the quickest way to get a working development environment =
+for the
+2.6 kernel without paying thousands of $$ <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>--snip!--<o:p></o:p></span></font></=
+p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>I
+guess what I am looking for is advise on the lowest risk, easiest to set =
+up
+environment to setup that will just work.&nbsp; Also advise on which =
+kernel to
+use.&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>--snip!&#8212;<o:p></o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
 </div>
 
@@ -184,4 +438,4 @@ contribute back as soon as I can.<o:p></o:p></p>
 
 </html>
 
-------_=_NextPart_001_01C87AF7.FD4E6CAC--
+------_=_NextPart_001_01C87AFF.347D55DC--
