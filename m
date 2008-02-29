@@ -1,20 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.244])
-	by ozlabs.org (Postfix) with ESMTP id 1A62DDDE98
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 01:33:41 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id x43so3170959hsb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 06:33:39 -0800 (PST)
-Message-ID: <fa686aa40802290633i2918cfbdtecb614065895f82a@mail.gmail.com>
-Date: Fri, 29 Feb 2008 07:33:39 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [POWERPC] Fix zImage-dtb.initrd build error
-In-Reply-To: <20080221185651.6893.78700.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080221185651.6893.78700.stgit@trillian.secretlab.ca>
-Cc: miltonm@bga.com, paulus@samba.org, Hiroaki_Fuse@hq.scei.sony.co.jp
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 724DFDDE03
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 02:13:30 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m1TFDJKM011930
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:13:19 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m1TFDJuE170104
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:13:19 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m1TFDImD002857
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 10:13:19 -0500
+Date: Fri, 29 Feb 2008 09:11:20 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH v2 3/5] [POWERPC] Add Canyonlands DTS
+Message-ID: <20080229091120.1611ec56@zod.rchland.ibm.com>
+In-Reply-To: <1203800881-13837-1-git-send-email-sr@denx.de>
+References: <1203800881-13837-1-git-send-email-sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,132 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Any comments on this patch?  It needs to go in for .25, but I haven't
-gotten any Acks on it.
+On Sat, 23 Feb 2008 22:08:01 +0100
+Stefan Roese <sr@denx.de> wrote:
 
-Cheers,
-g.
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> ---
+> And now the I2C device-types are removed. Sorry for the mail-flood.
+> 
+>  arch/powerpc/boot/dts/canyonlands.dts |  393 +++++++++++++++++++++++++++++++++
+>  1 files changed, 393 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/canyonlands.dts
+> 
+> diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+> new file mode 100644
+> index 0000000..2aee74c
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/canyonlands.dts
 
-On Thu, Feb 21, 2008 at 11:57 AM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
->  The pattern substitution rules were failing when used with zImage-dtb
->  targets.  if zImage-dtb.initrd was selected, the pattern substitution
->  would generate "zImage.initrd-dtb" instead of "zImage-dtb.initrd" which
->  caused the build to fail.
->
->  This patch renames zImage-dtb to dtbImage to avoid the problem entirely.
->  By not using the zImage prefix then is no potential for namespace
->  collisions.
->
->  Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->
->  ---
->  Note to reviewers.  Please consider this change carefully.  I saw two
->  options for fixing this bug;
->  1) rework the pattern substitution to handle zImage-dtb correctly
->  2) avoid using the zImage prefix
->
->  I chose option 2 because it avoids increasing the complexity of the
->  pattern substitution code for generating initrd names.  However, doing
->  so will have an impact on distributors because it changes the name of
->  the generated image.  If this is a problem for anyone, or if you have
->  a better name suggestion than "dtbImage", then please speak up.
->
->  Cheers,
->  g.
->  ---
->
->   arch/powerpc/Makefile      |    2 +-
->   arch/powerpc/boot/Makefile |   18 ++++++++++--------
->   2 files changed, 11 insertions(+), 9 deletions(-)
->
->  diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->  index 1c6ce35..ab5cfe8 100644
->  --- a/arch/powerpc/Makefile
->  +++ b/arch/powerpc/Makefile
->  @@ -155,7 +155,7 @@ all: zImage
->
->   CPPFLAGS_vmlinux.lds   := -Upowerpc
->
->  -BOOT_TARGETS = zImage zImage.initrd uImage treeImage.% cuImage.%
->  +BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.%
->
->   PHONY += $(BOOT_TARGETS)
->
->  diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
->  index 63d07cc..d57a67d 100644
->  --- a/arch/powerpc/boot/Makefile
->  +++ b/arch/powerpc/boot/Makefile
->  @@ -186,7 +186,7 @@ quiet_cmd_wrap      = WRAP    $@
->   image-$(CONFIG_PPC_PSERIES)            += zImage.pseries
->   image-$(CONFIG_PPC_MAPLE)              += zImage.pseries
->   image-$(CONFIG_PPC_IBM_CELL_BLADE)     += zImage.pseries
->  -image-$(CONFIG_PPC_PS3)                        += zImage-dtb.ps3
->  +image-$(CONFIG_PPC_PS3)                        += dtbImage.ps3
->   image-$(CONFIG_PPC_CELLEB)             += zImage.pseries
->   image-$(CONFIG_PPC_CHRP)               += zImage.chrp
->   image-$(CONFIG_PPC_EFIKA)              += zImage.chrp
->  @@ -205,7 +205,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)              += uImage
->   #
->
->   # Board ports in arch/powerpc/platform/40x/Kconfig
->  -image-$(CONFIG_EP405)                  += zImage-dtb.ep405
->  +image-$(CONFIG_EP405)                  += dtbImage.ep405
->   image-$(CONFIG_WALNUT)                 += treeImage.walnut
->
->   # Board ports in arch/powerpc/platform/44x/Kconfig
->  @@ -220,9 +220,9 @@ image-$(CONFIG_WARP)                        += cuImage.warp
->   # Board ports in arch/powerpc/platform/8xx/Kconfig
->   image-$(CONFIG_PPC_MPC86XADS)          += cuImage.mpc866ads
->   image-$(CONFIG_PPC_MPC885ADS)          += cuImage.mpc885ads
->  -image-$(CONFIG_PPC_EP88XC)             += zImage-dtb.ep88xc
->  +image-$(CONFIG_PPC_EP88XC)             += dtbImage.ep88xc
->   image-$(CONFIG_PPC_ADDER875)           += cuImage.adder875-uboot \
->  -                                          zImage-dtb.adder875-redboot
->  +                                          dtbImage.adder875-redboot
->
->   # Board ports in arch/powerpc/platform/52xx/Kconfig
->   image-$(CONFIG_PPC_LITE5200)           += cuImage.lite5200 cuImage.lite5200b
->  @@ -230,7 +230,7 @@ image-$(CONFIG_PPC_LITE5200)                += cuImage.lite5200 cuImage.lite5200b
->   # Board ports in arch/powerpc/platform/82xx/Kconfig
->   image-$(CONFIG_MPC8272_ADS)            += cuImage.mpc8272ads
->   image-$(CONFIG_PQ2FADS)                        += cuImage.pq2fads
->  -image-$(CONFIG_EP8248E)                        += zImage-dtb.ep8248e
->  +image-$(CONFIG_EP8248E)                        += dtbImage.ep8248e
->
->   # Board ports in arch/powerpc/platform/83xx/Kconfig
->   image-$(CONFIG_MPC832x_MDS)            += cuImage.mpc832x_mds
->  @@ -268,7 +268,8 @@ endif
->
->   initrd-  := $(patsubst zImage%, zImage.initrd%, $(image-n) $(image-))
->   initrd-y := $(patsubst zImage%, zImage.initrd%, \
->  -               $(patsubst treeImage%, treeImage.initrd%, $(image-y)))
->  +               $(patsubst dtbImage%, dtbImage.initrd%, \
->  +               $(patsubst treeImage%, treeImage.initrd%, $(image-y))))
->   initrd-y := $(filter-out $(image-y), $(initrd-y))
->   targets        += $(image-y) $(initrd-y)
->
->  @@ -283,10 +284,11 @@ $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
->   $(obj)/zImage.%: vmlinux $(wrapperbits)
->         $(call if_changed,wrap,$*)
->
->  -$(obj)/zImage-dtb.initrd.%: vmlinux $(wrapperbits) $(dtstree)/%.dts
->  +# dtbImage% - a dtbImage is a zImage with an embedded device tree blob
->  +$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(dtstree)/%.dts
->         $(call if_changed,wrap,$*,$(dtstree)/$*.dts,,$(obj)/ramdisk.image.gz)
->
->  -$(obj)/zImage-dtb.%: vmlinux $(wrapperbits) $(dtstree)/%.dts
->  +$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(dtstree)/%.dts
->         $(call if_changed,wrap,$*,$(dtstree)/$*.dts)
->
->   # This cannot be in the root of $(src) as the zImage rule always adds a $(obj)
->
->
+[snip]
 
+> +		MAL0: mcmal {
+> +			compatible = "ibm,mcmal-460ex", "ibm,mcmal2";
+> +			dcr-reg = <180 62>;
+> +			num-tx-chans = <2>;
+> +			num-rx-chans = <10>;
+> +			#address-cells = <0>;
+> +			#size-cells = <0>;
+> +			interrupt-parent = <&UIC2>;
+> +			interrupts = <	/*TXEOB*/ 6 4
+> +					/*RXEOB*/ 7 4
+> +					/*SERR*/  3 4
 
+This is odd.  I have MAL SERR listed twice in the spec I have.  This
+assignment is there, and there's also one to UIC1 IRQ 0.  Error in my
+spec, or are both actually tied to the same interrupt line?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> +					/*TXDE*/  4 4
+> +					/*RXDE*/  5 4>;
+> +		};
+
+> +			UART0: serial@ef600300 {
+> +				device_type = "serial";
+> +				compatible = "ns16550";
+> +				reg = <ef600300 8>;
+> +				virtual-reg = <ef600300>;
+> +				clock-frequency = <0>; /* Filled in by U-Boot */
+> +				current-speed = <0>; /* Filled in by U-Boot */
+> +				interrupt-parent = <&UIC1>;
+> +				interrupts = <1 4>;
+
+Should this be <2 4> or is the spec I have wrong?
+
+josh
