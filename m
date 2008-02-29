@@ -1,29 +1,19 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CE11CDDEC3
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 11:03:17 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2405CPl014243
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2008 19:05:12 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2403DbX255228
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2008 19:03:13 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2403D68029225
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2008 19:03:13 -0500
-Subject: Bamboo PCI interrupt issues
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 18:02:33 -0600
-Message-Id: <1204588953.7921.13.camel@basalt>
-Mime-Version: 1.0
-Cc: kvm-ppc-devel <kvm-ppc-devel@lists.sourceforge.net>
-Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id A7033DDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 11:12:03 +1100 (EST)
+Date: Thu, 28 Feb 2008 18:39:06 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
+Message-ID: <20080229003906.GP16241@localdomain>
+References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
+	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
+	<1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,45 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm having two problems with PCI interrupts as described in bamboo.dts.
-Here is are the properties in question:
+Michael Ellerman wrote:
+> On Thu, 2008-02-28 at 08:46 -0800, Badari Pulavarty wrote:
+> > Hotplug memory notifier for ppc64. This gets invoked by writing
+> > the device-node that needs to be removed to /proc/ppc64/ofdt.
+> > We need to adjust the sections and remove sysfs entries by
+> > calling __remove_pages(). Then call arch specific code to
+> > get rid of htab mappings for the section of memory.
+> > 
+> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > ---
+> >  arch/powerpc/platforms/pseries/Makefile         |    1 
+> >  arch/powerpc/platforms/pseries/hotplug-memory.c |   98 ++++++++++++++++++++++++
+> >  2 files changed, 99 insertions(+)
+> > 
+> > Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-02-28 08:20:14.000000000 -0800
+> 
+> > +
+> > +static struct notifier_block pseries_smp_nb = {
+> > +	.notifier_call = pseries_memory_notifier,
+> > +};
+> > +
+> > +static int __init pseries_memory_hotplug_init(void)
+> > +{
+> > +	if (firmware_has_feature(FW_FEATURE_LPAR))
+> > +		pSeries_reconfig_notifier_register(&pseries_smp_nb);
+> > +
+> > +	return 0;
+> > +}
+> > +arch_initcall(pseries_memory_hotplug_init);
+> 
+> This is going to fire on non-pseries LPAR platforms, like iSeries and
+> PS3. Which is not what you want I think.
 
-	/* Bamboo has all 4 IRQ pins tied together per slot */
-	interrupt-map-mask = <f800 0 0 0>;
-	interrupt-map = <
-		/* IDSEL 1 */
-		0800 0 0 0 &UIC0 1c 8
+Well, the notifier will be registered, yes, but it will never be
+called because that path is reachable only from a write to
+/proc/ppc64/ofdt, which is not created on non-pseries.
 
-		/* IDSEL 2 */
-		1000 0 0 0 &UIC0 1b 8
+Maybe it should be
 
-		/* IDSEL 3 */
-		1800 0 0 0 &UIC0 1a 8
+machine_device_initcall(pseries, pseries_memory_hotplug_init);
 
-		/* IDSEL 4 */
-		2000 0 0 0 &UIC0 19 8
-	>;
-
-
-First, the 440EP[1] and Bamboo[2] user manuals indicate that PCI IRQ 0-3
--> board IRQ 2-5 -> UIC IRQ 25-28. However, the device tree has that
-reversed, so PCI IRQ 0 appears as UIC IRQ 28 (0x1c).
-
-Second, the sensitivity seems to be wrong. All these interrupts have the
-sensitivity encoded as 8, which means "high to low edge" in the OpenPIC
-binding. Now, 440EP has a UIC, rather than an OpenPIC, but there is no
-UIC binding AFAICS.
-
-When I change the 8 to a 4 ("active high level"), I see the proper
-values in the UIC polarity register, and PCI interrupts start working in
-KVM.
-
-Is anybody using Bamboo PCI support right now? Does it actually work?
-
-[1]
-https://www.amcc.com/MyAMCC/retrieveDocument/PowerPC/440EP/PPC440EP_UM2000.pdf
-[2] Seems to have been deleted from the web. Thanks, AMCC.
-
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+(and pseries_cpu_hotplug_init in hotplug-cpu.c should be changed to
+machine_arch_initcall)
