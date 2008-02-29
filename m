@@ -1,17 +1,9 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 67886DDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 17:57:50 +1100 (EST)
-Date: Fri, 29 Feb 2008 08:56:30 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: undefined references to __udivdi3 on powerpc
-Message-ID: <20080229065630.GA16851@cs181133002.pp.htv.fi>
-References: <20080228133718.GA8383@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080228133718.GA8383@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/8] Clearup cell IOMMU fixed mapping terminology
+Date: Fri, 29 Feb 2008 18:33:22 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,57 +13,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 28, 2008 at 02:37:18PM +0100, Olaf Hering wrote:
-> 
-> While debugging __divdi3 calls in drivers/crypto/hifn_795x.c (due to the
-> ndelay() delay call with a s64), I found even more breakage of that
-> sort. This is after a allnoconfig with ARCH=powerpc in 2.6.25-rc3,
-> plus CONFIG_MODULES=y and CONFIG_CRYPTO_DEV_HIFN_795X=y:
-> 
->   LD      .tmp_vmlinux1
->   kernel/built-in.o: In function `update_xtime_cache':
->   (.text+0x221a0): undefined reference to `__umoddi3'
->   kernel/built-in.o: In function `update_xtime_cache':
->   (.text+0x221c0): undefined reference to `__udivdi3'
->   kernel/built-in.o: In function `getnstimeofday':
->   (.text+0x22330): undefined reference to `__umoddi3'
->   kernel/built-in.o: In function `getnstimeofday':
->   (.text+0x22350): undefined reference to `__udivdi3'
->   kernel/built-in.o: In function `timekeeping_resume':
->   timekeeping.c:(.text+0x226a0): undefined reference to `__udivdi3'
->   timekeeping.c:(.text+0x22778): undefined reference to `__umoddi3'
->   timekeeping.c:(.text+0x22798): undefined reference to `__udivdi3'
->   kernel/built-in.o: In function `update_wall_time':
->   (.text+0x22c7c): undefined reference to `__umoddi3'
->   kernel/built-in.o: In function `update_wall_time':
->   (.text+0x22c9c): undefined reference to `__udivdi3'
->   kernel/built-in.o: In function `update_wall_time':
->   (.text+0x230f8): undefined reference to `__umoddi3'
->   kernel/built-in.o: In function `update_wall_time':
->   (.text+0x23118): undefined reference to `__udivdi3'
->   kernel/built-in.o: In function `do_settimeofday':
->   (.text+0x23520): undefined reference to `__udivdi3'
->   kernel/built-in.o: In function `timekeeping_init':
->   (.init.text+0x1870): undefined reference to `__udivdi3'
->   make[1]: *** [.tmp_vmlinux1] Error 1
-> 
-> But its not a regression, 2.6.24 allnoconfig does not link either on
-> powerpc32. 
->...
+It's called the fixed mapping, not the static mapping.
 
-You didn't mention your gcc version, but you should only get these 
-errors when using the not yet released gcc 4.3.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/iommu.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-And this issue is known for at about half a year.
-
-> Olaf
-
-cu
-Adrian
-
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index edab631..bbe8389 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -549,7 +549,7 @@ static void cell_dma_dev_setup_iommu(struct device *dev)
+ 	archdata->dma_data = &window->table;
+ }
+ 
+-static void cell_dma_dev_setup_static(struct device *dev);
++static void cell_dma_dev_setup_fixed(struct device *dev);
+ 
+ static void cell_dma_dev_setup(struct device *dev)
+ {
+@@ -557,7 +557,7 @@ static void cell_dma_dev_setup(struct device *dev)
+ 
+ 	/* Order is important here, these are not mutually exclusive */
+ 	if (get_dma_ops(dev) == &dma_iommu_fixed_ops)
+-		cell_dma_dev_setup_static(dev);
++		cell_dma_dev_setup_fixed(dev);
+ 	else if (get_pci_dma_ops() == &dma_iommu_ops)
+ 		cell_dma_dev_setup_iommu(dev);
+ 	else if (get_pci_dma_ops() == &dma_direct_ops)
+@@ -858,7 +858,7 @@ static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask)
+ 	return 0;
+ }
+ 
+-static void cell_dma_dev_setup_static(struct device *dev)
++static void cell_dma_dev_setup_fixed(struct device *dev)
+ {
+ 	struct dev_archdata *archdata = &dev->archdata;
+ 	u64 addr;
+@@ -894,7 +894,7 @@ static void cell_iommu_setup_fixed_ptab(struct cbe_iommu *iommu,
+ 	for (i = fbase; i < fbase + fsize; i++, uaddr += IOMMU_PAGE_SIZE) {
+ 		/* Don't touch the dynamic region */
+ 		if (i >= dbase && i < (dbase + dsize)) {
+-			pr_debug("iommu: static/dynamic overlap, skipping\n");
++			pr_debug("iommu: fixed/dynamic overlap, skipping\n");
+ 			continue;
+ 		}
+ 		io_pte[i] = base_pte | (__pa(uaddr) & IOPTE_RPN_Mask);
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+1.5.2.rc1.1884.g59b20
