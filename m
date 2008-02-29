@@ -1,13 +1,25 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: paulus@samba.org
-Subject: Please pull 'for-2.6.25' branch of cell tree
-Date: Fri, 29 Feb 2008 06:12:56 +0100
+Return-Path: <jwilson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id B74EEDDE0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 16:48:36 +1100 (EST)
+Message-ID: <47C79CB1.6050104@redhat.com>
+Date: Fri, 29 Feb 2008 00:48:33 -0500
+From: Jarod Wilson <jwilson@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200802290612.56728.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+References: <20080220220326.GA22328@uranus.ravnborg.org>	
+	<200802272221.38985.jwilson@redhat.com>	
+	<1204179959.15052.372.camel@pasglop>	
+	<200802281342.06493.jwilson@redhat.com>
+	<1204241162.15052.393.camel@pasglop>
+In-Reply-To: <1204241162.15052.393.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,44 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-02-28 at 13:42 -0500, Jarod Wilson wrote:
+>> On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
+>>>> Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
+>>>> active". Could still be lucent though, judging by the subsys device ID of
+>>>> 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
+>>>> don't have the interesting one.
+>>> Well, it's interesting in the sense that it's a "normal" OHCI then on a
+>>> BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
+>>> while ago. I'll see if I can find another machine with that one in.
+>> Ah, the pismo has it, eh? I think I may actually know of someone in the office 
+>> that still has one of those that I might be able to borrow and poke at...
+> 
+> I -think- it has it... Pismo definitely has one of the first variant of
+> UniNorth with "working" FW afaik.
+> 
+> The first UniNorth was used in the first "toilet-seat" ibook, but I
+> think this one didn't have firewire, or a non-working one... and in the
+> first Sawtooth G4 for which FW and Ethernet even were separate PCI chips
+> because the ones in UniNorth were too broken.
+> 
+> It's possible that early G4 titanium powerbooks or other model of FW
+> iBooks have that UniNorth FW variant too.
 
-Please pull from:
+Still no luck finding one here. The person I was thinking of has a 
+Lombard, which has no firewire. I did get ahold of a 667MHz Titanium, 
+but its got an Agere FW323. Pretty sure my old man actually has a Pismo, 
+but its about a 3000 mile drive over to my folks house. The search 
+continues... I wonder how many people still actually 1) have a machine 
+with this controller, 2) are running Linux on it and 3) use firewire 
+devices with it. Both of you, please speak up, we're trying to help you! 
+(if only out of morbid curiosity to see this mythical goofy controller).
 
- master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.25
-
-To pick up a few small fixes for the cell platform. Most of it is a follow-up
-to the IOMMU rework that got merged in 2.6.25-rc1 and caused problems on
-machines with large amounts of memory.
-
-The fixes for oprofile and ptrace are not regressions, but are fixing
-functionality that was broken on cell but has always worked on the
-other platforms.
-
-Thanks,
-
-	Arnd <><
-
-Author: Michael Ellerman <michael@ellerman.id.au>
-    [POWERPC] Convert the cell IOMMU fixed mapping to 16M IOMMU pages
-    [POWERPC] Allow for different IOMMU page sizes in cell IOMMU code
-    [POWERPC] Cell IOMMU: n_pte_pages is in 4K page units, not IOMMU_PAGE_SIZE
-    [POWERPC] Split setup of IOMMU stab and ptab, allocate dynamic/fixed ptabs separately
-    [POWERPC] Move allocation of cell IOMMU pad page
-    [POWERPC] Remove unused pte_offset variable
-    [POWERPC] Use it_offset not pte_offset in cell IOMMU code
-    [POWERPC] Clearup cell IOMMU fixed mapping terminology
-
-Author: Jens Osterkamp <jens@de.ibm.com>
-    [POWERPC] enable hardware watchpoints on cell blades
-    [POWERPC] move celleb DABRX definitions
-
-Author: Bob Nelson <rrnelson@us.ibm.com>
-    [POWERPC] OProfile: enable callgraph support for Cell
-
- arch/powerpc/oprofile/op_model_cell.c |    2
- arch/powerpc/platforms/cell/iommu.c   |  144 +++++++++++++++++++---------------
- arch/powerpc/platforms/cell/setup.c   |    7 +
- arch/powerpc/platforms/celleb/beat.h  |    3
- include/asm-powerpc/reg.h             |    3
- 5 files changed, 92 insertions(+), 67 deletions(-)
+-- 
+Jarod Wilson
+jwilson@redhat.com
