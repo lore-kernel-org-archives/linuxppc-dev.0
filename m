@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <9dc707f922deb1c15d0b9471f9f240eb7950c6c9.1204270367.git.michael@ellerman.id.au>
+Message-Id: <a6a40136dfd4f0d584113bd441bea2eeb89cf23e.1204270367.git.michael@ellerman.id.au>
 In-Reply-To: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
 References: <fdd3edc0f2f3d2d6cade5cd695b8080d0da95a7f.1204270367.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/8] Use it_offset not pte_offset in cell IOMMU code
+Subject: [PATCH 3/8] Remove unused pte_offset variable
 Date: Fri, 29 Feb 2008 18:33:23 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,46 +15,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The cell IOMMU tce build and free routines use pte_offset to convert
-the index passed from the generic IOMMU code into a page table offset.
-
-This takes into account the SPIDER_DMA_OFFSET which sets the top bit
-of every DMA address.
-
-However it doesn't cater for the IOMMU window starting at a non-zero
-address, as the base of the window is not incorporated into pte_offset
-at all.
-
-As it turns out tbl->it_offset already contains the value we need, it
-takes into account the base of the window and also pte_offset. So use
-it instead!
+The cell IOMMU code no longer needs to save the pte_offset variable
+separately, it is incorporated into tbl->it_offset.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/iommu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index bbe8389..4e75919 100644
+index 4e75919..555d264 100644
 --- a/arch/powerpc/platforms/cell/iommu.c
 +++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -200,7 +200,7 @@ static void tce_build_cell(struct iommu_table *tbl, long index, long npages,
- 		(window->ioid & IOPTE_IOID_Mask);
- #endif
+@@ -123,7 +123,6 @@ struct iommu_window {
+ 	struct cbe_iommu *iommu;
+ 	unsigned long offset;
+ 	unsigned long size;
+-	unsigned long pte_offset;
+ 	unsigned int ioid;
+ 	struct iommu_table table;
+ };
+@@ -475,13 +474,11 @@ cell_iommu_setup_window(struct cbe_iommu *iommu, struct device_node *np,
+ 	window->size = size;
+ 	window->ioid = ioid;
+ 	window->iommu = iommu;
+-	window->pte_offset = pte_offset;
  
--	io_pte = (unsigned long *)tbl->it_base + (index - window->pte_offset);
-+	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
+ 	window->table.it_blocksize = 16;
+ 	window->table.it_base = (unsigned long)iommu->ptab;
+ 	window->table.it_index = iommu->nid;
+-	window->table.it_offset = (offset >> IOMMU_PAGE_SHIFT) +
+-		window->pte_offset;
++	window->table.it_offset = (offset >> IOMMU_PAGE_SHIFT) + pte_offset;
+ 	window->table.it_size = size >> IOMMU_PAGE_SHIFT;
  
- 	for (i = 0; i < npages; i++, uaddr += IOMMU_PAGE_SIZE)
- 		io_pte[i] = base_pte | (__pa(uaddr) & IOPTE_RPN_Mask);
-@@ -232,7 +232,7 @@ static void tce_free_cell(struct iommu_table *tbl, long index, long npages)
- 		| (window->ioid & IOPTE_IOID_Mask);
- #endif
- 
--	io_pte = (unsigned long *)tbl->it_base + (index - window->pte_offset);
-+	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
- 
- 	for (i = 0; i < npages; i++)
- 		io_pte[i] = pte;
+ 	iommu_init_table(&window->table, iommu->nid);
 -- 
 1.5.2.rc1.1884.g59b20
