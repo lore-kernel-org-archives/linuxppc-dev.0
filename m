@@ -1,30 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 75C68DDEEC
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 01:43:49 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m21Ehjtu028110
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 09:43:45 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m21EhjOW308736
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 09:43:45 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m21EhjbK009402
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 09:43:45 -0500
-Date: Sat, 1 Mar 2008 08:41:40 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org, benh@kernel.crashing.org
-Subject: [PATCH 3/2][NEWEMAC] Use status property for unused/unwired EMACs
-Message-ID: <20080301084140.7abc703e@zod.rchland.ibm.com>
-In-Reply-To: <20080301081600.74598ce4@zod.rchland.ibm.com>
-References: <20080301081600.74598ce4@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gorcunov@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 0EAD6DDE3C
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 02:36:10 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so901918uge.0
+	for <linuxppc-dev@ozlabs.org>; Sat, 01 Mar 2008 07:36:08 -0800 (PST)
+Date: Sat, 1 Mar 2008 18:35:40 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jeff Dike <jdike@addtoit.com>
+Subject: Re: [RFC 08/10] um: dyn/uml.lds.S cleanup - use PAGE_SIZE macro
+Message-ID: <20080301153540.GA7934@cvg>
+References: <20080227205831.150784453@gmail.com>
+	<20080227210004.189002678@gmail.com>
+	<20080229154303.GC5886@c2.user-mode-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080229154303.GC5886@c2.user-mode-linux.org>
+Cc: chris@zankel.net, linux-m68k@vger.kernel.org, linux-m32r@ml.linux-m32r.org,
+	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, geert@linux-m68k.org,
+	sam@ravnborg.org, rth@twiddle.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,62 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert ibm_newemac to use the of_device_is_available function when checking
-for unused/unwired EMACs.  We leave the current check for an "unused" property
-to maintain backwards compatibility for older device trees.  Newer device
-trees should simply use the standard "status" property in the EMAC node.
+[Jeff Dike - Fri, Feb 29, 2008 at 10:43:03AM -0500]
+| On Wed, Feb 27, 2008 at 11:58:39PM +0300, gorcunov@gmail.com wrote:
+| > This patch includes page.h header into liker scripts that
+| > allow us to use PAGE_SIZE macro instead of numeric constant.
+| > 
+| > To be able to include page.h into linker scripts page.h is
+| > needed for some modification - i.e. we need to use __ASSEMBLY__
+| > and _AC macro
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| 
+| Needed some fixing, but it's OK.  I'll forward it on.
+| 
+|        	    	    	Jeff
+| 
+| -- 
+| Work email - jdike at linux dot intel dot com
+| 
 
-The taishan DTS file is updated to reflect this.
+Thank you
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
----
- arch/powerpc/boot/dts/taishan.dts |    4 ++--
- drivers/net/ibm_newemac/core.c    |    7 +++++--
- 2 files changed, 7 insertions(+), 4 deletions(-)
-
---- linux-2.6.orig/arch/powerpc/boot/dts/taishan.dts
-+++ linux-2.6/arch/powerpc/boot/dts/taishan.dts
-@@ -234,7 +234,6 @@
- 
- 
- 			EMAC0: ethernet@40000800 {
--				unused = <1>;
- 				linux,network-index = <2>;
- 				device_type = "network";
- 				compatible = "ibm,emac-440gx", "ibm,emac4";
-@@ -253,9 +252,9 @@
- 				phy-map = <00000001>;
- 				zmii-device = <&ZMII0>;
- 				zmii-channel = <0>;
-+				status = "disabled";
- 			};
- 		 	EMAC1: ethernet@40000900 {
--				unused = <1>;
- 				linux,network-index = <3>;
- 				device_type = "network";
- 				compatible = "ibm,emac-440gx", "ibm,emac4";
-@@ -274,6 +273,7 @@
- 				phy-map = <00000001>;
-  				zmii-device = <&ZMII0>;
- 				zmii-channel = <1>;
-+				status = "disabled";
- 			};
- 
- 		 	EMAC2: ethernet@40000c00 {
---- linux-2.6.orig/drivers/net/ibm_newemac/core.c
-+++ linux-2.6/drivers/net/ibm_newemac/core.c
-@@ -2552,8 +2552,11 @@ static int __devinit emac_probe(struct o
- 	struct device_node **blist = NULL;
- 	int err, i;
- 
--	/* Skip unused/unwired EMACS */
--	if (of_get_property(np, "unused", NULL))
-+	/* Skip unused/unwired EMACS.  We leave the check for an unused
-+	 * property here for now, but new flat device trees should set a
-+	 * status property to "disabled" instead.
-+	 */
-+	if (of_get_property(np, "unused", NULL) || !of_device_is_available(np))
- 		return -ENODEV;
- 
- 	/* Find ourselves in the bootlist if we are there */
+		- Cyrill -
