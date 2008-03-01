@@ -1,19 +1,24 @@
-Return-Path: <SRS0=+ktb=TT=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id A1253DDE35
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 22:33:09 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [POWERPC] 40X: Add Default Restart Machdep Method to 40X
-	Platforms
-Date: Sat, 1 Mar 2008 12:32:54 +0100
-References: <C3E49AAC.D8E4%erick205@umn.edu>
-In-Reply-To: <C3E49AAC.D8E4%erick205@umn.edu>
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CB210DDE43
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 22:33:50 +1100 (EST)
+Date: Sat, 1 Mar 2008 12:33:38 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 0/4] firewire, ieee1394: bus power lost after resume (PPC PMac)
+To: benh@kernel.crashing.org
+In-Reply-To: <47C90E81.7050603@s5r6.in-berlin.de>
+Message-ID: <tkrat.bc4ca3408428a60b@s5r6.in-berlin.de>
+References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+	<tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
+	<1204340392.15052.455.camel@pasglop>
+	<47C90E81.7050603@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200803011232.54392.sr@denx.de>
-Cc: Grant Erickson <erick205@umn.edu>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 23 February 2008, Grant Erickson wrote:
-> This patch restores the reset on restart functionality to 40x-based
-> platforms that was formerly provided--but not used in arch/powerpc--by
-> abort() in head_40x.S. This functionality is now provided by
-> ppc40x_reset_system(char *) in a fashion similar to that of the 44x-based
-> platforms.
->
-> Compiled, linked and tested against the AMCC Haleakala board.
+I wrote:
+> Benjamin Herrenschmidt wrote:
+> [...]
+>>> @@ -2211,6 +2241,16 @@ static int pci_suspend(struct pci_dev *p
+>>>  	if (err)
+>>>  		fw_error("pci_set_power_state failed with %d\n", err);
+>>>  
+>>> +/* PowerMac suspend code comes last */
+>>> +#ifdef CONFIG_PPC_PMAC
+>>> +	if (machine_is(powermac)) {
+>>> +		struct device_node *ofn = pci_device_to_OF_node(pdev);
+>>> +
+>>> +		if (ofn)
+>>> +			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
+>>> +	}
+>>> +#endif /* CONFIG_PPC_PMAC */
+>> 
+>> I wonder why we don't do the cable power thingy here...
+> 
+> I don't know.
+> 
+> I tested with a bus powered device now.  Actually, suspend to RAM 
+> switches off cable power nevertheless, but resume does not switch it on 
+> anymore...
+> 
+> Of course the same is true with ohci1394.  Why did nobody ever complain? 
+> I suppose the last two users of FireWire + Linux + UniNorth rev01 don't 
+> use cable power or don't suspend and resume.
 
-Instead of duplicating this code in platform/40x/ which is already present in 
-platforms/44x/misc_44x.S, why not move this misc_44x.S code into a common 
-place for all 4xx (40x and 44x) PPC's? There seems to be nothing 44x 
-specific.
+At least this is what the 1st generation PowerBook G4 does.  I don't
+know if other PPC_PMAC are affected.
 
-I suggest to introduce platforms/4xx/misc.S or sysdev/ppc4xx_misc.S with these 
-functions and change the code referencing it accordingly.
+I suggest we explicitly switch cable power on in .resume() but also
+explicitly switch cable power off in .suspend(), so that we don't get
+any surprises. (Hardware bugs related to these platform features
+excepted.)  Patches follow:
 
-Comments/thoughts?
+ 1/4 firewire: fw-ohci: switch on bus power after resume on PPC PMac
+ 2/4 firewire: fw-ohci: refactor probe, remove, suspend, resume
+ 3/4 ieee1394: ohci1394: switch on bus power after resume on PPC PMac
+ 4/4 ieee1394: ohci1394: refactor probe, remove, suspend, resume
 
-Best regards,
-Stefan
+ drivers/firewire/fw-ohci.c  |   96 +++++++++++++------------------
+ drivers/ieee1394/ohci1394.c |  109 ++++++++++++++++--------------------
+ 2 files changed, 91 insertions(+), 114 deletions(-)
+-- 
+Stefan Richter
+-=====-==--- --== ----=
+http://arcgraph.de/sr/
