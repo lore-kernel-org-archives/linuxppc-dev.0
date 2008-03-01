@@ -1,19 +1,21 @@
-Return-Path: <jwilson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 24206DDE18
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 06:43:02 +1100 (EST)
-Message-ID: <47C9B1D3.3020402@redhat.com>
-Date: Sat, 01 Mar 2008 14:43:15 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 1/3] firewire: fw-ohci: PPC PMac platform code
-References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
-	<tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A4398DDE1D
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 08:34:48 +1100 (EST)
+Subject: Re: [PATCH 3/2][NEWEMAC] Use status property for unused/unwired EMACs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080301084140.7abc703e@zod.rchland.ibm.com>
+References: <20080301081600.74598ce4@zod.rchland.ibm.com>
+	<20080301084140.7abc703e@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Sun, 02 Mar 2008 08:33:15 +1100
+Message-Id: <1204407195.15052.462.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Richter wrote:
-> Copied from ohci1394.c.  This code is necessary to prevent machine check
-> exceptions when reloading or resuming the driver.
+
+On Sat, 2008-03-01 at 08:41 -0600, Josh Boyer wrote:
+> Convert ibm_newemac to use the of_device_is_available function when checking
+> for unused/unwired EMACs.  We leave the current check for an "unused" property
+> to maintain backwards compatibility for older device trees.  Newer device
+> trees should simply use the standard "status" property in the EMAC node.
 > 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> The taishan DTS file is updated to reflect this.
+> 
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I was able to reproduce the system exception on resume with a 3rd-gen 
-Titanium PowerBook G4 667, and this patch does let the system resume 
-successfully now.
+I don't think any other DTS than Taishan uses "unused" so we may be able
+to get rid of that backward compat check. I think the Cell DT just
+ommits EMACs when they are unused.
 
-Not quite clear if there was possibly an updated version coming using 
-pci_enable_device() instead of the pair of pmac_call_feature() calls, 
-but either way, this is a definite must-have, at least for older ppc 
-macs -- my Aluminum PowerBook G4/1.67 suspends and resumes without this 
-patch just fine.
-
-Signed-off-by: Jarod Wilson <jwilson@redhat.com>
-
--- 
-Jarod Wilson
-jwilson@redhat.com
+Ben.
