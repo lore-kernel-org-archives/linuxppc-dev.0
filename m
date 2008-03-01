@@ -1,23 +1,24 @@
-Return-Path: <jdike@addtoit.com>
-Received: from saraswathi.solana.com (unknown [198.99.130.12])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DEE25DDE3F
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 03:15:37 +1100 (EST)
-Date: Fri, 29 Feb 2008 10:43:03 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: gorcunov@gmail.com
-Subject: Re: [RFC 08/10] um: dyn/uml.lds.S cleanup - use PAGE_SIZE macro
-Message-ID: <20080229154303.GC5886@c2.user-mode-linux.org>
-References: <20080227205831.150784453@gmail.com>
-	<20080227210004.189002678@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080227210004.189002678@gmail.com>
-Cc: chris@zankel.net, linux-m68k@vger.kernel.org, linux-m32r@ml.linux-m32r.org,
-	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, geert@linux-m68k.org,
-	sam@ravnborg.org, rth@twiddle.net
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E7A78DDEAB
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 13:51:25 +1100 (EST)
+Date: Sat, 1 Mar 2008 13:51:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
+Message-Id: <20080301135123.262bfdb0.sfr@canb.auug.org.au>
+In-Reply-To: <1204307236.10146.1.camel@dyn9047017100.beaverton.ibm.com>
+References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
+	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
+	<1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+	<20080229003906.GP16241@localdomain>
+	<1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
+	<1204307236.10146.1.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA"
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 27, 2008 at 11:58:39PM +0300, gorcunov@gmail.com wrote:
-> This patch includes page.h header into liker scripts that
-> allow us to use PAGE_SIZE macro instead of numeric constant.
-> 
-> To be able to include page.h into linker scripts page.h is
-> needed for some modification - i.e. we need to use __ASSEMBLY__
-> and _AC macro
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+--Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Needed some fixing, but it's OK.  I'll forward it on.
+On Fri, 29 Feb 2008 09:47:16 -0800 Badari Pulavarty <pbadari@us.ibm.com> wr=
+ote:
+>
+> Here is the latest for review. (just to make sure I didn't miss
+> anything).
 
-       	    	    	Jeff
+Sorry I didn't review the previous ones ... just a small thing.
 
--- 
-Work email - jdike at linux dot intel dot com
+> +	type =3D of_get_property(np, "device_type", NULL);
+
+To use the of_ accessors, you need to include linux/of.h (currently
+asm/prom.h include linux/of.h, but that may not always be true).  In
+fact, I think you don't even need asm/prom.h.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHyMSwTgG2atn1QN8RAoucAJ4nv1AqAVxw9DurhB0eNWs4BCMXeACfa29l
+c37eawY7yXNtg0MyKc06sUg=
+=IF3Z
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA--
