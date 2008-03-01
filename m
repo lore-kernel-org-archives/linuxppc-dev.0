@@ -1,24 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E7A78DDEAB
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 13:51:25 +1100 (EST)
-Date: Sat, 1 Mar 2008 13:51:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
-Message-Id: <20080301135123.262bfdb0.sfr@canb.auug.org.au>
-In-Reply-To: <1204307236.10146.1.camel@dyn9047017100.beaverton.ibm.com>
-References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
-	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
-	<1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
-	<20080229003906.GP16241@localdomain>
-	<1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
-	<1204307236.10146.1.camel@dyn9047017100.beaverton.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 41521DDEBC
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 14:01:24 +1100 (EST)
+Subject: Re: [PATCH 1/3] firewire: fw-ohci: PPC PMac platform code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
+References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+	<tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Sat, 01 Mar 2008 13:59:52 +1100
+Message-Id: <1204340392.15052.455.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA"
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,39 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 29 Feb 2008 09:47:16 -0800 Badari Pulavarty <pbadari@us.ibm.com> wr=
-ote:
->
-> Here is the latest for review. (just to make sure I didn't miss
-> anything).
+> +#ifdef CONFIG_PPC_PMAC
+> +	/* Necessary on some machines if fw-ohci was loaded/ unloaded before */
+> +	if (machine_is(powermac)) {
+> +		struct device_node *ofn = pci_device_to_OF_node(dev);
+> +
+> +		if (ofn) {
+> +			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, ofn, 0, 1);
+> +			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 1);
+> +		}
+> +	}
+> +#endif /* CONFIG_PPC_PMAC */
 
-Sorry I didn't review the previous ones ... just a small thing.
+I -think- that the hunk above can be removed if you just call
+pci_enable_device(). I have a hook in the arch pcibios_enable_device()
+that detects the internal firewire and does the calls. Can you verify it
+works ?
 
-> +	type =3D of_get_property(np, "device_type", NULL);
+> +#ifdef CONFIG_PPC_PMAC
+> +	/* On UniNorth, power down the cable and turn off the chip clock
+> +	 * to save power on laptops */
+> +	if (machine_is(powermac)) {
+> +		struct device_node* ofn = pci_device_to_OF_node(dev);
+> +
+> +		if (ofn) {
+> +			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
+> +			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, ofn, 0, 0);
+> +		}
+> +	}
+> +#endif /* CONFIG_PPC_PMAC */
 
-To use the of_ accessors, you need to include linux/of.h (currently
-asm/prom.h include linux/of.h, but that may not always be true).  In
-fact, I think you don't even need asm/prom.h.
+Unfortunately, I don't have the pending hook here for disable so you
+need to keep that one for now.
 
---=20
+>  	kfree(&ohci->card);
+>  
+>  	fw_notify("Removed fw-ohci device.\n");
+> @@ -2211,6 +2241,16 @@ static int pci_suspend(struct pci_dev *p
+>  	if (err)
+>  		fw_error("pci_set_power_state failed with %d\n", err);
+>  
+> +/* PowerMac suspend code comes last */
+> +#ifdef CONFIG_PPC_PMAC
+> +	if (machine_is(powermac)) {
+> +		struct device_node *ofn = pci_device_to_OF_node(pdev);
+> +
+> +		if (ofn)
+> +			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
+> +	}
+> +#endif /* CONFIG_PPC_PMAC */
+
+I wonder why we don't do the cable power thingy here...
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHyMSwTgG2atn1QN8RAoucAJ4nv1AqAVxw9DurhB0eNWs4BCMXeACfa29l
-c37eawY7yXNtg0MyKc06sUg=
-=IF3Z
------END PGP SIGNATURE-----
-
---Signature=_Sat__1_Mar_2008_13_51_23_+1100_nk16wSDzj2uP_hbA--
+Ben.
