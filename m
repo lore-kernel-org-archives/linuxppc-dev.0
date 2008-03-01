@@ -1,20 +1,23 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id E59E6DDE3A
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 09:25:30 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so5269401pyg.27
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Mar 2008 14:25:28 -0800 (PST)
-Date: Sat, 1 Mar 2008 16:25:18 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/2 v2] [OF] Add of_device_is_available function
-Message-ID: <20080301162518.0e9621c0@vader.jdub.homelinux.org>
-In-Reply-To: <20080302090218.2c99976f.sfr@canb.auug.org.au>
-References: <20080301081600.74598ce4@zod.rchland.ibm.com>
-	<20080302090218.2c99976f.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 87A5EDDE38
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 10:49:01 +1100 (EST)
+Subject: Re: [PATCH 1/3] firewire: fw-ohci: PPC PMac platform code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jarod Wilson <jwilson@redhat.com>
+In-Reply-To: <47C9B1D3.3020402@redhat.com>
+References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+	<tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
+	<47C9B1D3.3020402@redhat.com>
+Content-Type: text/plain
+Date: Sun, 02 Mar 2008 10:48:24 +1100
+Message-Id: <1204415304.15052.464.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2 Mar 2008 09:02:18 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> Hi Josh,
-> 
-> On Sat, 1 Mar 2008 08:16:00 -0600 Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> >
-> > IEEE 1275 defined a standard "status" property to indicate the
-> > operational status of a device.  The property has four possible values:
-> > okay, disabled, fail, fail-xxx.  The absence of this property means the
-> > operational status of the device is unknown or okay.
+On Sat, 2008-03-01 at 14:43 -0500, Jarod Wilson wrote:
+> Stefan Richter wrote:
+> > Copied from ohci1394.c.  This code is necessary to prevent machine check
+> > exceptions when reloading or resuming the driver.
 > > 
-> > This adds a function called of_device_is_available that checks the state
-> > of the status property of a device.  If the property is absent or set to
-> > either "okay" or "ok", it returns 1.  Otherwise it returns 0.
-> > 
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 > 
-> Looks good to me - except the patch is word wrapped (which is weird for
-> Claws) ...
+> I was able to reproduce the system exception on resume with a 3rd-gen 
+> Titanium PowerBook G4 667, and this patch does let the system resume 
+> successfully now.
+> 
+> Not quite clear if there was possibly an updated version coming using 
+> pci_enable_device() instead of the pair of pmac_call_feature() calls, 
+> but either way, this is a definite must-have, at least for older ppc 
+> macs -- my Aluminum PowerBook G4/1.67 suspends and resumes without this 
+> patch just fine.
 
-That's weird indeed...  I've never had that happen before.  I'll resend.
+Let's go with Stefan patch for now. I'll find out what's up with
+pci_enable_device() later.
 
-josh
+Ben.
