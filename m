@@ -2,30 +2,32 @@ Return-Path: <jwboyer@linux.vnet.ibm.com>
 Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5FCA9DDDFC
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 10:50:37 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m21NoYpr025997
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 18:50:34 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m21NoYU3124792
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 16:50:34 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m21NoYJ9003009
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 16:50:34 -0700
-Date: Sat, 1 Mar 2008 17:48:25 -0600
+	by ozlabs.org (Postfix) with ESMTP id 5CDD2DDDFC
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 10:52:27 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m21NqMmM028908
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 18:52:22 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m21NqMA8222700
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 16:52:22 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m21NqMd7013570
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 16:52:22 -0700
+Date: Sat, 1 Mar 2008 17:50:14 -0600
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org, sfr@canb.auug.org.au
-Subject: [RESEND] [PATCH 1/2 v2] [OF] Add of_device_is_available function
-Message-ID: <20080301174825.57715d46@zod.rchland.ibm.com>
-In-Reply-To: <20080301081600.74598ce4@zod.rchland.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 3/2][NEWEMAC] Use status property for unused/unwired EMACs
+Message-ID: <20080301175014.20f0b1e9@zod.rchland.ibm.com>
+In-Reply-To: <1204407195.15052.462.camel@pasglop>
 References: <20080301081600.74598ce4@zod.rchland.ibm.com>
+	<20080301084140.7abc703e@zod.rchland.ibm.com>
+	<1204407195.15052.462.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,64 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-IEEE 1275 defined a standard "status" property to indicate the operational
-status of a device.  The property has four possible values: okay, disabled,
-fail, fail-xxx.  The absence of this property means the operational status
-of the device is unknown or okay.
+On Sun, 02 Mar 2008 08:33:15 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-This adds a function called of_device_is_available that checks the state
-of the status property of a device.  If the property is absent or set to
-either "okay" or "ok", it returns 1.  Otherwise it returns 0.
+> 
+> On Sat, 2008-03-01 at 08:41 -0600, Josh Boyer wrote:
+> > Convert ibm_newemac to use the of_device_is_available function when checking
+> > for unused/unwired EMACs.  We leave the current check for an "unused" property
+> > to maintain backwards compatibility for older device trees.  Newer device
+> > trees should simply use the standard "status" property in the EMAC node.
+> > 
+> > The taishan DTS file is updated to reflect this.
+> > 
+> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> 
+> I don't think any other DTS than Taishan uses "unused" so we may be able
+> to get rid of that backward compat check. I think the Cell DT just
+> ommits EMACs when they are unused.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+I wasn't sure on that aspect and I can't check until next week.  If you
+can verify before I do, let me know.  I'll remove the "unused" check
+assuming the of_device_is_available patch goes in and the Axon DT
+doesn't use it.
 
----
- drivers/of/base.c  |   26 ++++++++++++++++++++++++++
- include/linux/of.h |    1 +
- 2 files changed, 27 insertions(+)
-
---- linux-2.6.orig/drivers/of/base.c
-+++ linux-2.6/drivers/of/base.c
-@@ -117,6 +117,32 @@ int of_device_is_compatible(const struct
- EXPORT_SYMBOL(of_device_is_compatible);
- 
- /**
-+ *  of_device_is_available - check if a device is available for use
-+ *
-+ *  @device: Node to check for availability
-+ *
-+ *  Returns 1 if the status property is absent or set to "okay" or "ok",
-+ *  0 otherwise
-+ */
-+int of_device_is_available(const struct device_node *device)
-+{
-+	const char *status;
-+	int statlen;
-+
-+	status = of_get_property(device, "status", &statlen);
-+	if (status == NULL)
-+		return 1;
-+
-+	if (statlen > 0) {
-+		if (!strncmp(status, "okay", 4) || !strncmp(status, "ok", 2))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(of_device_is_available);
-+
-+/**
-  *	of_get_parent - Get a node's parent if any
-  *	@node:	Node to get parent
-  *
---- linux-2.6.orig/include/linux/of.h
-+++ linux-2.6/include/linux/of.h
-@@ -62,6 +62,7 @@ extern struct property *of_find_property
- 					 int *lenp);
- extern int of_device_is_compatible(const struct device_node *device,
- 				   const char *);
-+extern int of_device_is_available(const struct device_node *device);
- extern const void *of_get_property(const struct device_node *node,
- 				const char *name,
- 				int *lenp);
+josh
