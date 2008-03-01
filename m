@@ -1,19 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 5901ADDE35
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 12:44:36 +1100 (EST)
-Date: Fri, 29 Feb 2008 17:44:34 -0800 (PST)
-Message-Id: <20080229.174434.216640668.davem@davemloft.net>
-To: pbadari@us.ibm.com
-Subject: Re: [RFC] updating lmb.memory information for hot mem add/remove
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1204333964.10146.18.camel@dyn9047017100.beaverton.ibm.com>
-References: <1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
-	<1204307816.10146.11.camel@dyn9047017100.beaverton.ibm.com>
-	<1204333964.10146.18.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: paulus@samba.org, anton@au1.ibm.com, ntl@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1F478DDEB9
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 12:47:28 +1100 (EST)
+Date: Sat, 1 Mar 2008 02:47:15 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2/3] firewire: fw-ohci: Apple UniNorth 1st generation support
+To: linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+Message-ID: <tkrat.c4405ca125bee6ed@s5r6.in-berlin.de>
+References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +24,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Badari Pulavarty <pbadari@us.ibm.com>
-Date: Fri, 29 Feb 2008 17:12:44 -0800
+Mostly copied from ohci1394.c.  Necessary for some older Macs, e.g.
+PowerBook G3 Pismo and early PowerBook G4 Titanium.
 
-> Here is what I cooked up and it seems to work fine.
-> It may be easier to review the code (against my earlier patches).
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-BTW, the lmb code now lives under lib/ (sparc64 will be using it too)
-and has several bug fixes applied to it in Paulus's current upstream
-tree.
+Since my TiBook has a broken FireWire PHY I was only able to test
+the byte order of self ID packets but not of the headers of any
+other packets.  The code in handle_ar_packet() is only guesswork
+from ohci1394.c's respective code.  Also, I wonder what's up with
+isochronous packets...
+
+ drivers/firewire/fw-ohci.c |   29 +++++++++++++++++++++--------
+ 1 file changed, 21 insertions(+), 8 deletions(-)
+
+Index: linux-2.6.25-rc3/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux-2.6.25-rc3.orig/drivers/firewire/fw-ohci.c
++++ linux-2.6.25-rc3/drivers/firewire/fw-ohci.c
+@@ -179,6 +179,7 @@ struct fw_ohci {
+ 	int generation;
+ 	int request_generation;
+ 	u32 bus_seconds;
++	bool old_uninorth;
+ 
+ 	/*
+ 	 * Spinlock for accessing fw_ohci data.  Never call out of
+@@ -315,15 +316,22 @@ static int ar_context_add_page(struct ar
+ 	return 0;
+ }
+ 
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
++#define cond_le32_to_cpu(v) \
++	(ohci->old_uninorth ? (__force __u32)(v) : le32_to_cpu(v))
++#else
++#define cond_le32_to_cpu(v) le32_to_cpu(v)
++#endif
++
+ static __le32 *handle_ar_packet(struct ar_context *ctx, __le32 *buffer)
+ {
+ 	struct fw_ohci *ohci = ctx->ohci;
+ 	struct fw_packet p;
+ 	u32 status, length, tcode;
+ 
+-	p.header[0] = le32_to_cpu(buffer[0]);
+-	p.header[1] = le32_to_cpu(buffer[1]);
+-	p.header[2] = le32_to_cpu(buffer[2]);
++	p.header[0] = cond_le32_to_cpu(buffer[0]);
++	p.header[1] = cond_le32_to_cpu(buffer[1]);
++	p.header[2] = cond_le32_to_cpu(buffer[2]);
+ 
+ 	tcode = (p.header[0] >> 4) & 0x0f;
+ 	switch (tcode) {
+@@ -335,7 +343,7 @@ static __le32 *handle_ar_packet(struct a
+ 		break;
+ 
+ 	case TCODE_READ_BLOCK_REQUEST :
+-		p.header[3] = le32_to_cpu(buffer[3]);
++		p.header[3] = cond_le32_to_cpu(buffer[3]);
+ 		p.header_length = 16;
+ 		p.payload_length = 0;
+ 		break;
+@@ -344,7 +352,7 @@ static __le32 *handle_ar_packet(struct a
+ 	case TCODE_READ_BLOCK_RESPONSE:
+ 	case TCODE_LOCK_REQUEST:
+ 	case TCODE_LOCK_RESPONSE:
+-		p.header[3] = le32_to_cpu(buffer[3]);
++		p.header[3] = cond_le32_to_cpu(buffer[3]);
+ 		p.header_length = 16;
+ 		p.payload_length = p.header[3] >> 16;
+ 		break;
+@@ -361,7 +369,7 @@ static __le32 *handle_ar_packet(struct a
+ 
+ 	/* FIXME: What to do about evt_* errors? */
+ 	length = (p.header_length + p.payload_length + 3) / 4;
+-	status = le32_to_cpu(buffer[length]);
++	status = cond_le32_to_cpu(buffer[length]);
+ 
+ 	p.ack        = ((status >> 16) & 0x1f) - 16;
+ 	p.speed      = (status >> 21) & 0x7;
+@@ -1026,13 +1034,14 @@ static void bus_reset_tasklet(unsigned l
+ 	 */
+ 
+ 	self_id_count = (reg_read(ohci, OHCI1394_SelfIDCount) >> 3) & 0x3ff;
+-	generation = (le32_to_cpu(ohci->self_id_cpu[0]) >> 16) & 0xff;
++	generation = (cond_le32_to_cpu(ohci->self_id_cpu[0]) >> 16) & 0xff;
+ 	rmb();
+ 
+ 	for (i = 1, j = 0; j < self_id_count; i += 2, j++) {
+ 		if (ohci->self_id_cpu[i] != ~ohci->self_id_cpu[i + 1])
+ 			fw_error("inconsistent self IDs\n");
+-		ohci->self_id_buffer[j] = le32_to_cpu(ohci->self_id_cpu[i]);
++		ohci->self_id_buffer[j] =
++				cond_le32_to_cpu(ohci->self_id_cpu[i]);
+ 	}
+ 	rmb();
+ 
+@@ -2091,6 +2100,10 @@ pci_probe(struct pci_dev *dev, const str
+ 	pci_write_config_dword(dev, OHCI1394_PCI_HCI_Control, 0);
+ 	pci_set_drvdata(dev, ohci);
+ 
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
++	ohci->old_uninorth = dev->vendor == PCI_VENDOR_ID_APPLE &&
++			     dev->device == PCI_DEVICE_ID_APPLE_UNI_N_FW;
++#endif
+ 	spin_lock_init(&ohci->lock);
+ 
+ 	tasklet_init(&ohci->bus_reset_tasklet,
+
+-- 
+Stefan Richter
+-=====-==--- --== ----=
+http://arcgraph.de/sr/
