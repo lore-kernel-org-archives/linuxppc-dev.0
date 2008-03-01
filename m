@@ -1,21 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <pbadari@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4EE4ADDE3A
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 14:05:39 +1100 (EST)
-Subject: Re: [PATCH] add strncmp to PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <1204301097.14759.6.camel@localhost.localdomain>
-References: <1204301097.14759.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 01 Mar 2008 14:04:50 +1100
-Message-Id: <1204340690.15052.457.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6883ADDE3A
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 14:06:15 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2136CnE015974
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 22:06:12 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2136CBv183812
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 20:06:12 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2136Con008883
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Feb 2008 20:06:12 -0700
+Message-ID: <47C8C823.9090700@us.ibm.com>
+Date: Fri, 29 Feb 2008 19:06:11 -0800
+From: Badari Pulavarty <pbadari@us.ibm.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: [RFC] updating lmb.memory information for hot mem add/remove
+References: <1204247002.7729.11.camel@concordia.ozlabs.ibm.com>
+	<1204307816.10146.11.camel@dyn9047017100.beaverton.ibm.com>
+	<1204333964.10146.18.camel@dyn9047017100.beaverton.ibm.com>
+	<20080229.174434.216640668.davem@davemloft.net>
+In-Reply-To: <20080229.174434.216640668.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, anton@au1.ibm.com, ntl@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,82 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Miller wrote:
+> From: Badari Pulavarty <pbadari@us.ibm.com>
+> Date: Fri, 29 Feb 2008 17:12:44 -0800
+>
+>   
+>> Here is what I cooked up and it seems to work fine.
+>> It may be easier to review the code (against my earlier patches).
+>>     
+>
+> BTW, the lmb code now lives under lib/ (sparc64 will be using it too)
+> and has several bug fixes applied to it in Paulus's current upstream
+> tree.
+>   
+Yes. I noticed that earlier. But it was easy for me to test against 
+mainline/-mm.
+I can easily update it against Paul's tree, if every one is okay with 
+the changes
+I am proposing.
 
-On Fri, 2008-02-29 at 11:04 -0500, Steven Rostedt wrote:
-> strncmp is defined in assembly for bootup, but it is not defined in the
-> normal running kernel. This patch takes the strncmp code from the bootup
-> and copies it to the kernel proper.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
-
-Do we have any indication that it performs better than the C one ?
-
-Ben.
-
->  arch/powerpc/kernel/ppc_ksyms.c |    1 +
->  arch/powerpc/lib/string.S       |   12 ++++++++++++
->  include/asm-powerpc/string.h    |    2 ++
->  3 files changed, 15 insertions(+)
-> 
-> Index: linux-sched-devel.git/arch/powerpc/kernel/ppc_ksyms.c
-> ===================================================================
-> --- linux-sched-devel.git.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-02-27 14:01:38.000000000 -0800
-> +++ linux-sched-devel.git/arch/powerpc/kernel/ppc_ksyms.c	2008-02-29 07:24:22.000000000 -0800
-> @@ -78,6 +78,7 @@ EXPORT_SYMBOL(strncpy);
->  EXPORT_SYMBOL(strcat);
->  EXPORT_SYMBOL(strlen);
->  EXPORT_SYMBOL(strcmp);
-> +EXPORT_SYMBOL(strncmp);
->  
->  EXPORT_SYMBOL(csum_partial);
->  EXPORT_SYMBOL(csum_partial_copy_generic);
-> Index: linux-sched-devel.git/arch/powerpc/lib/string.S
-> ===================================================================
-> --- linux-sched-devel.git.orig/arch/powerpc/lib/string.S	2008-02-27 14:01:38.000000000 -0800
-> +++ linux-sched-devel.git/arch/powerpc/lib/string.S	2008-02-29 07:24:22.000000000 -0800
-> @@ -75,6 +75,18 @@ _GLOBAL(strcmp)
->  	beq	1b
->  	blr
->  
-> +_GLOBAL(strncmp)
-> +	mtctr	r5
-> +	addi	r5,r3,-1
-> +	addi	r4,r4,-1
-> +1:	lbzu	r3,1(r5)
-> +	cmpwi	1,r3,0
-> +	lbzu	r0,1(r4)
-> +	subf.	r3,r0,r3
-> +	beqlr	1
-> +	bdnzt	eq,1b
-> +	blr
-> +
->  _GLOBAL(strlen)
->  	addi	r4,r3,-1
->  1:	lbzu	r0,1(r4)
-> Index: linux-sched-devel.git/include/asm-powerpc/string.h
-> ===================================================================
-> --- linux-sched-devel.git.orig/include/asm-powerpc/string.h	2008-02-27 14:01:58.000000000 -0800
-> +++ linux-sched-devel.git/include/asm-powerpc/string.h	2008-02-29 07:24:22.000000000 -0800
-> @@ -7,6 +7,7 @@
->  #define __HAVE_ARCH_STRNCPY
->  #define __HAVE_ARCH_STRLEN
->  #define __HAVE_ARCH_STRCMP
-> +#define __HAVE_ARCH_STRNCMP
->  #define __HAVE_ARCH_STRCAT
->  #define __HAVE_ARCH_MEMSET
->  #define __HAVE_ARCH_MEMCPY
-> @@ -18,6 +19,7 @@ extern char * strcpy(char *,const char *
->  extern char * strncpy(char *,const char *, __kernel_size_t);
->  extern __kernel_size_t strlen(const char *);
->  extern int strcmp(const char *,const char *);
-> +extern int strncmp(const char *,const char *,__kernel_size_t);
->  extern char * strcat(char *, const char *);
->  extern void * memset(void *,int,__kernel_size_t);
->  extern void * memcpy(void *,const void *,__kernel_size_t);
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Thanks,
+Badari
