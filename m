@@ -1,24 +1,28 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 0EAD6DDE3C
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 02:36:10 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so901918uge.0
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Mar 2008 07:36:08 -0800 (PST)
-Date: Sat, 1 Mar 2008 18:35:40 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [RFC 08/10] um: dyn/uml.lds.S cleanup - use PAGE_SIZE macro
-Message-ID: <20080301153540.GA7934@cvg>
-References: <20080227205831.150784453@gmail.com>
-	<20080227210004.189002678@gmail.com>
-	<20080229154303.GC5886@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080229154303.GC5886@c2.user-mode-linux.org>
-Cc: chris@zankel.net, linux-m68k@vger.kernel.org, linux-m32r@ml.linux-m32r.org,
-	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, geert@linux-m68k.org,
-	sam@ravnborg.org, rth@twiddle.net
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E7A64DDE26
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 03:08:23 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m21G8Kl9029328
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 11:08:20 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m21G8KPH341200
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 11:08:20 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m21G8Kl5020628
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 11:08:20 -0500
+Date: Sat, 1 Mar 2008 10:06:13 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 'next' branch of powerpc4xx tree
+Message-ID: <20080301100613.5de31a42@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[Jeff Dike - Fri, Feb 29, 2008 at 10:43:03AM -0500]
-| On Wed, Feb 27, 2008 at 11:58:39PM +0300, gorcunov@gmail.com wrote:
-| > This patch includes page.h header into liker scripts that
-| > allow us to use PAGE_SIZE macro instead of numeric constant.
-| > 
-| > To be able to include page.h into linker scripts page.h is
-| > needed for some modification - i.e. we need to use __ASSEMBLY__
-| > and _AC macro
-| > 
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| 
-| Needed some fixing, but it's OK.  I'll forward it on.
-| 
-|        	    	    	Jeff
-| 
-| -- 
-| Work email - jdike at linux dot intel dot com
-| 
+Since all the cool kids are doing it, I went and created a 'next' branch
+in the powerpc4xx tree.
 
-Thank you
+I'm basically using it as a place for me to queue things up as they are
+submitted that look pretty good for going into the next release.  While
+I'll try hard not to rebase it, I can't guarantee that.  Pull requests
+to Paul will still come from a 'for-2.6.xx' branch when I think it's
+time to send stuff upstream, so if you're looking for something stable
+track that instead.
 
-		- Cyrill -
+Stephen, if you'd like to add this to your -next tree feel free.
+Hopefully it will usually be empty as I merge things into Paul's tree.
+
+As of right now, I have the following patches in the 'next' branch:
+
+David Gibson (1):
+      [POWERPC] Start removing linux,network-index in favour of aliases
+
+Stefan Roese (5):
+      [POWERPC] 4xx: Add AMCC 460EX/460GT support to cputable.c & cpu_setup_44x.
+      [POWERPC] 4xx: Add AMCC Canyonlands 460EX eval board support to platforms/
+      [POWERPC] 4xx: Add Canyonlands DTS
+      [POWERPC] 4xx: Add 460EX PCIe support to 4xx pci driver
+      [POWERPC] 4xx: Add Canyonlands defconfig file
+
+Soon to go in will be the Yosemite board port I did, and moving the
+reset function to a common place for 4xx boards.
+
+josh
