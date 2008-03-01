@@ -1,19 +1,24 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 8EB11DDE23
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 14:56:48 +1100 (EST)
-Date: Fri, 29 Feb 2008 22:56:45 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] add strncmp to PowerPC
-In-Reply-To: <1204340690.15052.457.camel@pasglop>
-Message-ID: <Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
-References: <1204301097.14759.6.camel@localhost.localdomain>
-	<1204340690.15052.457.camel@pasglop>
+Return-Path: <jwilson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 80FC7DDE2E
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 16:23:32 +1100 (EST)
+From: Jarod Wilson <jwilson@redhat.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 0/2] firewire: endinaness warnings (was Re: sparse - make
+	__CHECK_ENDIAN__ default enabled?)
+Date: Sat, 1 Mar 2008 00:23:24 -0500
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<1203545913.25307.47.camel@brick>
+	<tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200803010023.25086.jwilson@redhat.com>
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,76 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sat, 1 Mar 2008, Benjamin Herrenschmidt wrote:
->
-> Do we have any indication that it performs better than the C one ?
-
-See below.
-
->
-> Ben.
->
-
+On Saturday 23 February 2008 06:23:30 am Stefan Richter wrote:
+> On 20 Feb, Harvey Harrison wrote on LKML:
+> > On Wed, 2008-02-20 at 23:03 +0100, Sam Ravnborg wrote:
+> >> Hi Harvey.
+> >>
+> >> Can I ask you to look into the worst offenders so we
+> >> can make -D__CHECK_ENDIAN__ enabled per default
+> >> in the kernel.
+> >> Or maybe we should do it anyway?
 > >
-> > +_GLOBAL(strncmp)
-> > +	mtctr	r5
-> > +	addi	r5,r3,-1
-> > +	addi	r4,r4,-1
-> > +1:	lbzu	r3,1(r5)
-> > +	cmpwi	1,r3,0
-> > +	lbzu	r0,1(r4)
-> > +	subf.	r3,r0,r3
-> > +	beqlr	1
-> > +	bdnzt	eq,1b
-> > +	blr
-> > +
+> > Well, I've got the worst of fs and drivers/ata done so far, still
+> > weeping over the 5500 warnings in drivers. (X86_32 allyesconfig).
+> > People ignore the existing warnings anyway, why not toss a few more
+> > on the pile?
+> >
+> > I'll look them over tonight and see how bad it would be.
+>
+> I looked into drivers/firewire and drivers/ieee1394.  As expected, there
+> are quite a lot endianess related warnings in the latter because this is
+> code from way before sparse was regularly used.
+>
+> There are also a few warnings in the former, even though sparse checks
+> were run before submission of the whole drivers/firewire stack.  I will
+> follow up with two patches:
+> 	1/2 firewire: endianess fix
+> 	2/2 firewire: endianess annotations
+> Whether the "fix" is really a fix remains to be seen; I don't have a big
+> endian Linux box myself.
+
+Doesn't hurt anything on my end, spb2 devices work, they survive bus resets 
+and so on. The funky uninorth controller definitely doesn't work, but it 
+didn't before the patch either, and the fix is being chased in another patch 
+series.
+
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
 
-And here's the objdump of the C version:
-
-0000000000000080 <.strncmp>:
-  80:   fb e1 ff f0     std     r31,-16(r1)
-  84:   f8 21 ff c1     stdu    r1,-64(r1)
-  88:   7c 69 1b 78     mr      r9,r3
-  8c:   7c a0 2b 79     mr.     r0,r5
-  90:   38 60 00 00     li      r3,0
-  94:   7c 09 03 a6     mtctr   r0
-  98:   7c 3f 0b 78     mr      r31,r1
-  9c:   41 82 00 68     beq-    104 <.strncmp+0x84>
-  a0:   89 69 00 00     lbz     r11,0(r9)
-  a4:   88 04 00 00     lbz     r0,0(r4)
-  a8:   7c 00 58 50     subf    r0,r0,r11
-  ac:   78 00 06 20     clrldi  r0,r0,56
-  b0:   2f a0 00 00     cmpdi   cr7,r0,0
-  b4:   7c 00 07 74     extsb   r0,r0
-  b8:   7c 03 03 78     mr      r3,r0
-  bc:   40 9e 00 48     bne-    cr7,104 <.strncmp+0x84>
-  c0:   2f ab 00 00     cmpdi   cr7,r11,0
-  c4:   41 9e 00 40     beq-    cr7,104 <.strncmp+0x84>
-  c8:   38 84 00 01     addi    r4,r4,1
-  cc:   38 69 00 01     addi    r3,r9,1
-  d0:   42 40 00 30     bdz-    100 <.strncmp+0x80>
-  d4:   88 03 00 00     lbz     r0,0(r3)
-  d8:   89 24 00 00     lbz     r9,0(r4)
-  dc:   38 63 00 01     addi    r3,r3,1
-  e0:   38 84 00 01     addi    r4,r4,1
-  e4:   2f 20 00 00     cmpdi   cr6,r0,0
-  e8:   7c 09 00 50     subf    r0,r9,r0
-  ec:   78 00 06 20     clrldi  r0,r0,56
-  f0:   2f a0 00 00     cmpdi   cr7,r0,0
-  f4:   7c 00 07 74     extsb   r0,r0
-  f8:   40 9e 00 08     bne-    cr7,100 <.strncmp+0x80>
-  fc:   40 9a ff d4     bne+    cr6,d0 <.strncmp+0x50>
- 100:   7c 03 03 78     mr      r3,r0
- 104:   e8 21 00 00     ld      r1,0(r1)
- 108:   eb e1 ff f0     ld      r31,-16(r1)
- 10c:   4e 80 00 20     blr
-
-
-I'll let you decide ;-)
-
-Even if it was logically faster (which I still doubt) it's a hell of a lot
-of cache lines to waste.
-
--- Steve
+-- 
+Jarod Wilson
+jwilson@redhat.com
