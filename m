@@ -1,25 +1,19 @@
-Return-Path: <stefanr@s5r6.in-berlin.de>
-Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.vr.in-berlin.de",
-	Issuer "IN-Berlin Server CA (G2)" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 42657DDE25
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 22:22:05 +1100 (EST)
-Date: Sat, 1 Mar 2008 12:21:47 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 3/3 update] firewire: fw-ohci: shut up false compiler warning
-	on PPC32
-To: linux1394-devel@lists.sourceforge.net
-In-Reply-To: <47C90F83.3030700@s5r6.in-berlin.de>
-Message-ID: <tkrat.0428557bce5b81da@s5r6.in-berlin.de>
-References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
-	<tkrat.ee238048a5a50184@s5r6.in-berlin.de>
-	<20080301141741.172013ba.sfr@canb.auug.org.au>
-	<47C90F83.3030700@s5r6.in-berlin.de>
+Return-Path: <SRS0=+ktb=TT=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id A1253DDE35
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Mar 2008 22:33:09 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] 40X: Add Default Restart Machdep Method to 40X
+	Platforms
+Date: Sat, 1 Mar 2008 12:32:54 +0100
+References: <C3E49AAC.D8E4%erick205@umn.edu>
+In-Reply-To: <C3E49AAC.D8E4%erick205@umn.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200803011232.54392.sr@denx.de>
+Cc: Grant Erickson <erick205@umn.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,38 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Shut up two "may be used uninitialised in this function" warnings due to
-PPC32's implementation of dma_alloc_coherent().
+On Saturday 23 February 2008, Grant Erickson wrote:
+> This patch restores the reset on restart functionality to 40x-based
+> platforms that was formerly provided--but not used in arch/powerpc--by
+> abort() in head_40x.S. This functionality is now provided by
+> ppc40x_reset_system(char *) in a fashion similar to that of the 44x-based
+> platforms.
+>
+> Compiled, linked and tested against the AMCC Haleakala board.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Instead of duplicating this code in platform/40x/ which is already present in 
+platforms/44x/misc_44x.S, why not move this misc_44x.S code into a common 
+place for all 4xx (40x and 44x) PPC's? There seems to be nothing 44x 
+specific.
 
-Index: linux-2.6.25-rc3/drivers/firewire/fw-ohci.c
-===================================================================
---- linux-2.6.25-rc3.orig/drivers/firewire/fw-ohci.c
-+++ linux-2.6.25-rc3/drivers/firewire/fw-ohci.c
-@@ -544,7 +544,7 @@ static int
- context_add_buffer(struct context *ctx)
- {
- 	struct descriptor_buffer *desc;
--	dma_addr_t bus_addr;
-+	dma_addr_t uninitialized_var(bus_addr);
- 	int offset;
- 
- 	/*
-@@ -1334,7 +1334,7 @@ ohci_set_config_rom(struct fw_card *card
- 	unsigned long flags;
- 	int retval = -EBUSY;
- 	__be32 *next_config_rom;
--	dma_addr_t next_config_rom_bus;
-+	dma_addr_t uninitialized_var(next_config_rom_bus);
- 
- 	ohci = fw_ohci(card);
- 
+I suggest to introduce platforms/4xx/misc.S or sysdev/ppc4xx_misc.S with these 
+functions and change the code referencing it accordingly.
 
--- 
-Stefan Richter
--=====-==--- --== ----=
-http://arcgraph.de/sr/
+Comments/thoughts?
+
+Best regards,
+Stefan
