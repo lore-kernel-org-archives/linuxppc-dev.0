@@ -1,28 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E7A64DDE26
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 03:08:23 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m21G8Kl9029328
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 11:08:20 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m21G8KPH341200
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 11:08:20 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m21G8Kl5020628
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Mar 2008 11:08:20 -0500
-Date: Sat, 1 Mar 2008 10:06:13 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: 'next' branch of powerpc4xx tree
-Message-ID: <20080301100613.5de31a42@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sfr@canb.auug.org.au
+Return-Path: <jwilson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 24206DDE18
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 06:43:02 +1100 (EST)
+Message-ID: <47C9B1D3.3020402@redhat.com>
+Date: Sat, 01 Mar 2008 14:43:15 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/3] firewire: fw-ohci: PPC PMac platform code
+References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+	<tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux1394-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,32 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since all the cool kids are doing it, I went and created a 'next' branch
-in the powerpc4xx tree.
+Stefan Richter wrote:
+> Copied from ohci1394.c.  This code is necessary to prevent machine check
+> exceptions when reloading or resuming the driver.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-I'm basically using it as a place for me to queue things up as they are
-submitted that look pretty good for going into the next release.  While
-I'll try hard not to rebase it, I can't guarantee that.  Pull requests
-to Paul will still come from a 'for-2.6.xx' branch when I think it's
-time to send stuff upstream, so if you're looking for something stable
-track that instead.
+I was able to reproduce the system exception on resume with a 3rd-gen 
+Titanium PowerBook G4 667, and this patch does let the system resume 
+successfully now.
 
-Stephen, if you'd like to add this to your -next tree feel free.
-Hopefully it will usually be empty as I merge things into Paul's tree.
+Not quite clear if there was possibly an updated version coming using 
+pci_enable_device() instead of the pair of pmac_call_feature() calls, 
+but either way, this is a definite must-have, at least for older ppc 
+macs -- my Aluminum PowerBook G4/1.67 suspends and resumes without this 
+patch just fine.
 
-As of right now, I have the following patches in the 'next' branch:
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
-David Gibson (1):
-      [POWERPC] Start removing linux,network-index in favour of aliases
-
-Stefan Roese (5):
-      [POWERPC] 4xx: Add AMCC 460EX/460GT support to cputable.c & cpu_setup_44x.
-      [POWERPC] 4xx: Add AMCC Canyonlands 460EX eval board support to platforms/
-      [POWERPC] 4xx: Add Canyonlands DTS
-      [POWERPC] 4xx: Add 460EX PCIe support to 4xx pci driver
-      [POWERPC] 4xx: Add Canyonlands defconfig file
-
-Soon to go in will be the Yosemite board port I did, and moving the
-reset function to a common place for 4xx boards.
-
-josh
+-- 
+Jarod Wilson
+jwilson@redhat.com
