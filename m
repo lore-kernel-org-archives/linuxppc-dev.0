@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A4398DDE1D
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 08:34:48 +1100 (EST)
-Subject: Re: [PATCH 3/2][NEWEMAC] Use status property for unused/unwired EMACs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 05CA5DDE24
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Mar 2008 09:02:59 +1100 (EST)
+Date: Sun, 2 Mar 2008 09:02:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080301084140.7abc703e@zod.rchland.ibm.com>
+Subject: Re: [PATCH 1/2 v2] [OF] Add of_device_is_available function
+Message-Id: <20080302090218.2c99976f.sfr@canb.auug.org.au>
+In-Reply-To: <20080301081600.74598ce4@zod.rchland.ibm.com>
 References: <20080301081600.74598ce4@zod.rchland.ibm.com>
-	<20080301084140.7abc703e@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sun, 02 Mar 2008 08:33:15 +1100
-Message-Id: <1204407195.15052.462.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__2_Mar_2008_09_02_18_+1100_K+aStCt8c9DxhcJI"
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Sun__2_Mar_2008_09_02_18_+1100_K+aStCt8c9DxhcJI
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2008-03-01 at 08:41 -0600, Josh Boyer wrote:
-> Convert ibm_newemac to use the of_device_is_available function when checking
-> for unused/unwired EMACs.  We leave the current check for an "unused" property
-> to maintain backwards compatibility for older device trees.  Newer device
-> trees should simply use the standard "status" property in the EMAC node.
-> 
-> The taishan DTS file is updated to reflect this.
-> 
+Hi Josh,
+
+On Sat, 1 Mar 2008 08:16:00 -0600 Josh Boyer <jwboyer@linux.vnet.ibm.com> w=
+rote:
+>
+> IEEE 1275 defined a standard "status" property to indicate the
+> operational status of a device.  The property has four possible values:
+> okay, disabled, fail, fail-xxx.  The absence of this property means the
+> operational status of the device is unknown or okay.
+>=20
+> This adds a function called of_device_is_available that checks the state
+> of the status property of a device.  If the property is absent or set to
+> either "okay" or "ok", it returns 1.  Otherwise it returns 0.
+>=20
 > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I don't think any other DTS than Taishan uses "unused" so we may be able
-to get rid of that backward compat check. I think the Cell DT just
-ommits EMACs when they are unused.
+Looks good to me - except the patch is word wrapped (which is weird for
+Claws) ...
 
-Ben.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__2_Mar_2008_09_02_18_+1100_K+aStCt8c9DxhcJI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHydJvTgG2atn1QN8RAqJ5AJ4+cfW9524cR7I2CnO0pPjW+p3nEgCfYYY0
+dHszFmoUE3bfPj40MAmp7HY=
+=azwT
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__2_Mar_2008_09_02_18_+1100_K+aStCt8c9DxhcJI--
