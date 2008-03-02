@@ -1,17 +1,23 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 77C20DDE3C
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 09:37:43 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so5871529pyg.27
-	for <linuxppc-dev@ozlabs.org>; Sun, 02 Mar 2008 14:37:42 -0800 (PST)
-Date: Sun, 2 Mar 2008 16:37:32 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH][NEWEMAC] Fix section mismatch warnings
-Message-ID: <20080302163732.7c3af536@vader.jdub.homelinux.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3883FDDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 09:54:39 +1100 (EST)
+Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20080302223012.90210@gmx.net>
+References: <20071125234254.B4405DDE49@ozlabs.org>
+	<20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>
+	<20080302223012.90210@gmx.net>
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 09:54:07 +1100
+Message-Id: <1204498447.15052.485.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,77 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes several section mismatch warnings in the
-ibm_newemac driver similar to:
 
-WARNING: vmlinux.o(.devinit.text+0x3a04): Section mismatch in reference from the function emac_probe() to the function .devexit.text:tah_detach()
-The function __devinit emac_probe() references
-a function __devexit tah_detach().
+> Okay, I changed the code to this:
+> 
+> >DRM_DEBUG("dev = 0x%x, bus_address = 0x%x, bus_to_virt = 0x%lx, max_pages = 0x%x\n",
+> >	(unsigned int)&dev->pdev->dev, bus_address,
+> >	(unsigned long)virt_to_bus(bus_address), max_pages);
+> >
+> >if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
+> >	DRM_DEBUG("calling dma_sync_single_for_device()\n");
+> >	dma_sync_single_for_device(&dev->pdev->dev,
+> >		bus_address,
+> >		max_pages * sizeof(u32),
+> >		PCI_DMA_TODEVICE);
+> >}
+> 
+> It looks like dma_sync_single_for_device() is not called here (the debug
+> messages don't show up in kernel log). I also included the Xorg.0.log
+> file.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Ok, try adding more debug then, around the calls to pci_map_single() in
+that same function and dump the arguments. I'm especially interested
+in the result of the various page_address().
 
----
- drivers/net/ibm_newemac/core.c  |    2 +-
- drivers/net/ibm_newemac/mal.c   |    4 ++--
- drivers/net/ibm_newemac/rgmii.c |    2 +-
- drivers/net/ibm_newemac/tah.c   |    2 +-
- drivers/net/ibm_newemac/zmii.c  |    2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
-
---- linux-2.6.orig/drivers/net/ibm_newemac/core.c
-+++ linux-2.6/drivers/net/ibm_newemac/core.c
-@@ -2230,7 +2230,7 @@ static int __devinit emac_of_bus_notify(
- 	return 0;
- }
- 
--static struct notifier_block emac_of_bus_notifier = {
-+static struct notifier_block emac_of_bus_notifier __devinitdata = {
- 	.notifier_call = emac_of_bus_notify
- };
- 
---- linux-2.6.orig/drivers/net/ibm_newemac/mal.c
-+++ linux-2.6/drivers/net/ibm_newemac/mal.c
-@@ -61,8 +61,8 @@ int __devinit mal_register_commac(struct
- 	return 0;
- }
- 
--void __devexit mal_unregister_commac(struct mal_instance	*mal,
--				     struct mal_commac		*commac)
-+void mal_unregister_commac(struct mal_instance	*mal,
-+		struct mal_commac *commac)
- {
- 	unsigned long flags;
- 
---- linux-2.6.orig/drivers/net/ibm_newemac/rgmii.c
-+++ linux-2.6/drivers/net/ibm_newemac/rgmii.c
-@@ -179,7 +179,7 @@ void rgmii_put_mdio(struct of_device *of
- 	mutex_unlock(&dev->lock);
- }
- 
--void __devexit rgmii_detach(struct of_device *ofdev, int input)
-+void rgmii_detach(struct of_device *ofdev, int input)
- {
- 	struct rgmii_instance *dev = dev_get_drvdata(&ofdev->dev);
- 	struct rgmii_regs __iomem *p = dev->base;
---- linux-2.6.orig/drivers/net/ibm_newemac/tah.c
-+++ linux-2.6/drivers/net/ibm_newemac/tah.c
-@@ -35,7 +35,7 @@ int __devinit tah_attach(struct of_devic
- 	return 0;
- }
- 
--void __devexit tah_detach(struct of_device *ofdev, int channel)
-+void tah_detach(struct of_device *ofdev, int channel)
- {
- 	struct tah_instance *dev = dev_get_drvdata(&ofdev->dev);
- 
---- linux-2.6.orig/drivers/net/ibm_newemac/zmii.c
-+++ linux-2.6/drivers/net/ibm_newemac/zmii.c
-@@ -189,7 +189,7 @@ void zmii_set_speed(struct of_device *of
- 	mutex_unlock(&dev->lock);
- }
- 
--void __devexit zmii_detach(struct of_device *ofdev, int input)
-+void zmii_detach(struct of_device *ofdev, int input)
- {
- 	struct zmii_instance *dev = dev_get_drvdata(&ofdev->dev);
- 
+Ben.
