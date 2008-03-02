@@ -1,25 +1,15 @@
-Return-Path: <stephane.marchesin@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
-	by ozlabs.org (Postfix) with ESMTP id 2723CDDE49
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 05:48:48 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so1184374wri.3
-	for <linuxppc-dev@ozlabs.org>; Sun, 02 Mar 2008 10:48:47 -0800 (PST)
-Message-ID: <6a89f9d50803021048v7a330bd6m82d553d80042c5aa@mail.gmail.com>
-Date: Sun, 2 Mar 2008 19:48:45 +0100
-From: "Stephane Marchesin" <marchesin@icps.u-strasbg.fr>
-Sender: stephane.marchesin@gmail.com
-To: linuxppc-dev@ozlabs.org, "David Woodhouse" <dwmw2@infradead.org>,
-	benh@kernel.crashing.org, paulus@samba.org,
-	henrik.sorensen@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: V4L2: __ucmpdi2 undefined on ppc
-In-Reply-To: <6a89f9d50802060639j4b3a8b7u4e4e596b010ee353@mail.gmail.com>
+Return-Path: <waldi@debian.org>
+Received: from wavehammer.waldi.eu.org (wavehammer.waldi.eu.org
+	[82.139.201.20]) by ozlabs.org (Postfix) with ESMTP id 0FA9DDDEC5
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 06:33:17 +1100 (EST)
+Date: Sun, 2 Mar 2008 20:06:32 +0100
+From: Bastian Blank <waldi@debian.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc - Use KBUILD_CFLAGS and similar
+Message-ID: <20080302190632.GA9898@wavehammer.waldi.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.SOC.4.61.0612131359430.10721@math.ut.ee>
-	<1166053317.909.19.camel@praia>
-	<20061214195842.GA14041@athena.road.mcmartin.ca>
-	<1166362145.6714.53.camel@pmac.infradead.org>
-	<6a89f9d50802060639j4b3a8b7u4e4e596b010ee353@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,25 +19,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/6/08, Stephane Marchesin <marchesin@icps.u-strasbg.fr> wrote:
->
->  We're hitting this i nouveau as well (http://nouveau.freedesktop.org),
->  since we make extensive use ot 64 bit ints. Over time, we've had a
->  number of reports on this issue, and at one point I read that it
->  should be fixed in gcc. But recently, a nouveau user on PPC32 (Henrik
->  in CC:) reported the issue again with gcc 4.2.3. Others have it on gcc
->  4.2.2 too:
->  http://bugs.freedesktop.org/show_bug.cgi?id=10547
->
->  So, the point of this email is to ask about the possibility of merging
->  in one of the __ucmpdi2 patches, like David's which is kept below for
->  reference. Most distros seem to ship with such a patch already, and it
->  seems that other drivers hit this as well.
->
 
-So, could we have that thing in main tree ? It's not like it's
-untested, most distros carry that, and a couple of arches provide
-their own ucmpdi2 implementation already. It's also such a small
-function...
+--h31gzZEtNLTqOjlF
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Stephane
+Hi folks
+
+The attached patch changes the powerpc main Makefile from using the override
+make directive to KBUILD_CFLAGS and similar.
+
+The override approach breaks with both variants "CC=3Dgcc-4.3 make" and
+"make CC=3Dgcc-4.3". The first ignores the given value completely because
+the toplevel Makefile includes a CC definition:
+
+| $ CC=3D"gcc-4.3" make V=3D1
+[...]
+|  gcc -m64 -Wp,-MD,init/.main.o.d
+
+The second does not add -m64:
+| $ make CC=3D"gcc-4.3" V=3D1
+[...]
+|  gcc-4.3 -Wp,-MD,arch/powerpc/kernel/.asm-offsets.s.d
+
+The patch changes the CC, AS and LD overrides into changes of
+KBUILD_CFLAGS, KBUILD_AFLAGS and LDFLAGS similar to arch/s390/Makefile.
+
+Signed-off-by: Bastian Blank <waldi@debian.org>
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 1c6ce35..b267c60 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -63,9 +63,9 @@ endif
+ UTS_MACHINE :=3D $(OLDARCH)
+=20
+ ifeq ($(HAS_BIARCH),y)
+-override AS    +=3D -a$(CONFIG_WORD_SIZE)
+-override LD    +=3D -m elf$(CONFIG_WORD_SIZE)ppc
+-override CC    +=3D -m$(CONFIG_WORD_SIZE)
++LDFLAGS                :=3D -m elf$(CONFIG_WORD_SIZE)ppc
++KBUILD_CFLAGS  +=3D -m$(CONFIG_WORD_SIZE)
++KBUILD_AFLAGS  +=3D -m$(CONFIG_WORD_SIZE)
+ override AR    :=3D GNUTARGET=3Delf$(CONFIG_WORD_SIZE)-powerpc $(AR)
+ endif
+=20
+--=20
+Men will always be men -- no matter where they are.
+		-- Harry Mudd, "Mudd's Women", stardate 1329.8
+
+--h31gzZEtNLTqOjlF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iEYEARECAAYFAkfK+rgACgkQnw66O/MvCNFf1wCff0HGBL+LIu+LiuJ0KSXqDn1H
+bwkAn3U6aN8KlBPV+HzzN8+eASUNtY8D
+=Bk79
+-----END PGP SIGNATURE-----
+
+--h31gzZEtNLTqOjlF--
