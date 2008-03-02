@@ -1,18 +1,22 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B1B99DDEE1
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 06:43:33 +1100 (EST)
-Message-ID: <47CB0363.6000705@pikatech.com>
-Date: Sun, 02 Mar 2008 14:43:31 -0500
-From: Sean MacLennan <smaclennan@pikatech.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/2][NEWEMAC] Use status property for unused/unwired EMACs
-References: <20080301081600.74598ce4@zod.rchland.ibm.com>
-	<20080301084140.7abc703e@zod.rchland.ibm.com>
-In-Reply-To: <20080301084140.7abc703e@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6367DDDEDA
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 07:48:13 +1100 (EST)
+Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20080302110505.175270@gmx.net>
+References: <20071125234254.B4405DDE49@ozlabs.org>
+	<20080302110505.175270@gmx.net>
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 07:47:09 +1100
+Message-Id: <1204490829.15052.482.camel@pasglop>
+Mime-Version: 1.0
+Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> Convert ibm_newemac to use the of_device_is_available function when checking
-> for unused/unwired EMACs.  We leave the current check for an "unused" property
-> to maintain backwards compatibility for older device trees.  Newer device
-> trees should simply use the standard "status" property in the EMAC node.
->
-> The taishan DTS file is updated to reflect this.
->   
-What is the advantage of documenting unwired devices? I ask because the 
-taco does not have emac1 connected. I handle it by not defining emac1 in 
-the dts file.
 
-Is it better to document it and disable it? Or is this mainly for 
-reference boards to show that while the PPC supports to emacs, only one 
-is enabled on the reference board?
+> Xorg (v7.1.1, Debian Etch) crashes with this patch (applied to 2.6.25-rc3)
+> on my AmigaOne with a Radeon 9200 (PCIGART mode enabled). See the attached
+> log file for the stack trace.
 
-i.e. We want reference design boards to show what *could* be done, but 
-production boards to show what *is* done?
+That doesn't look possible, which is weird... looks like we are passing
+0 to clean_dcache_range().
 
-Cheers,
-   Sean
+Interestingly enough, I can -see- possible issues with the ppc32 DMA API
+when trying to use HIGHMEM but that isn't the case here... 
+
+Can you add printk's to ati_pcigart.c to print the arguments passed to
+
++               dma_sync_single_for_device(&dev->pdev->dev,
++                                          bus_address,
++                                          max_pages * sizeof(u32),
++                                          PCI_DMA_TODEVICE);
++
+
+And also print the result of bus_to_virt(bus_address) ?
+
+Ben.
