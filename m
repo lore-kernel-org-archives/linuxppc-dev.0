@@ -1,24 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 65998DDFC9
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 08:53:37 +1100 (EST)
-In-Reply-To: <6a89f9d50802060639j4b3a8b7u4e4e596b010ee353@mail.gmail.com>
-References: <Pine.SOC.4.61.0612131359430.10721@math.ut.ee>
-	<1166053317.909.19.camel@praia>
-	<20061214195842.GA14041@athena.road.mcmartin.ca>
-	<1166362145.6714.53.camel@pmac.infradead.org>
-	<6a89f9d50802060639j4b3a8b7u4e4e596b010ee353@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <15d7ac5a7542b05fb9b9abb5d4c7a22d@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: V4L2: __ucmpdi2 undefined on ppc
-Date: Sun, 2 Mar 2008 22:53:12 +0100
-To: "Stephane Marchesin" <marchesin@icps.u-strasbg.fr>
-Cc: linuxppc-dev@ozlabs.org, henrik.sorensen@gmail.com, paulus@samba.org,
-	David Woodhouse <dwmw2@infradead.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 84EEADDE45
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 09:25:56 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m22MPq2U023037
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Mar 2008 17:25:52 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m22MPpHc191862
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Mar 2008 15:25:51 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m22MPp62018803
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Mar 2008 15:25:51 -0700
+Date: Sun, 2 Mar 2008 16:23:31 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 3/2][NEWEMAC] Use status property for unused/unwired EMACs
+Message-ID: <20080302162331.46d5d960@zod.rchland.ibm.com>
+In-Reply-To: <47CB0363.6000705@pikatech.com>
+References: <20080301081600.74598ce4@zod.rchland.ibm.com>
+	<20080301084140.7abc703e@zod.rchland.ibm.com>
+	<47CB0363.6000705@pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +/*
->> + * __ucmpdi2: 64-bit comparison
->> + *
->> + * R3/R4 has 64 bit value A
->> + * R5/R6 has 64 bit value B
->> + * result in R3: 0 for A < B
->> + *              1 for A == B
->> + *              2 for A > B
->> + */
->> +_GLOBAL(__ucmpdi2)
->> +       cmplw   r7,r3,r5        # compare high words
->> +       li      r3,0
->> +       blt     r7,2f           # a < b ... return 0
->> +       bgt     r7,1f           # a > b ... return 2
->> +       cmplw   r6,r4,r6        # compare low words
->> +       blt     r6,2f           # a < b ... return 0
->> +       li      r3,1
->> +       ble     r6,2f           # a = b ... return 1
->> +1:     li      r3,2
->> +2:     blr
+On Sun, 02 Mar 2008 14:43:31 -0500
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-Every occurrence of r7 here is wrong (and some of the r6).  Is there
-any reason to do this in assembler code at all?
+> Josh Boyer wrote:
+> > Convert ibm_newemac to use the of_device_is_available function when checking
+> > for unused/unwired EMACs.  We leave the current check for an "unused" property
+> > to maintain backwards compatibility for older device trees.  Newer device
+> > trees should simply use the standard "status" property in the EMAC node.
+> >
+> > The taishan DTS file is updated to reflect this.
+> >   
+> What is the advantage of documenting unwired devices? I ask because the 
+> taco does not have emac1 connected. I handle it by not defining emac1 in 
+> the dts file.
 
+If it never has the possibility of becoming usable without some kind
+of hardware rework, then that's probably best.
 
-Segher
+> Is it better to document it and disable it? Or is this mainly for 
+> reference boards to show that while the PPC supports to emacs, only one 
+> is enabled on the reference board?
+> 
+> i.e. We want reference design boards to show what *could* be done, but 
+> production boards to show what *is* done?
+
+Sort of.  A lot of these eval boards have DIP switches that change pins
+to various devices.  So for those, we enumerate most things and we can
+adjust the status property based on those settings in the
+firmware/wrapper.
+
+josh
