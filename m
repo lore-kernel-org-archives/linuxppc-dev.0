@@ -1,21 +1,23 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 6B831DDE34
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:37:07 +1100 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 03 Mar 2008 22:37:05 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1204577051.21545.12.camel@pasglop>
-Message-ID: <20080303213705.312670@gmx.net>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 6C6A5DDEE0
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:40:52 +1100 (EST)
+Date: Mon, 3 Mar 2008 15:40:28 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2 v2] [POWERPC] Ignore disabled serial ports
+Message-ID: <20080303214028.GE4712@localdomain>
+References: <20080301081600.74598ce4@zod.rchland.ibm.com>
+	<20080301081746.689a0a17@zod.rchland.ibm.com>
+	<200803030443.43346.arnd@arndb.de>
+	<20080302224317.15f259ca@zod.rchland.ibm.com>
+	<20080303190925.GA6735@loki.buserror.net>
+	<20080303132107.67200634@weaponx>
 MIME-Version: 1.0
-References: <20071125234254.B4405DDE49@ozlabs.org>	
-	<20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>	
-	<20080302223012.90210@gmx.net> <1204498569.15052.488.camel@pasglop>	
-	<20080303195117.7040@gmx.net> <1204577051.21545.12.camel@pasglop>
-Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
-To: benh@kernel.crashing.org
-Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080303132107.67200634@weaponx>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Tue, 04 Mar 2008 07:44:11 +1100
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: airlied@linux.ie, linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-> Betreff: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
-
-> On Mon, 2008-03-03 at 20:51 +0100, Gerhard Pircher wrote:
-> > > Remove the GFP_HIGHMEM from the above. It looks like our cache
-> > > flushing isn't going to work for highmem, it would need some
-> > > kmap's for that.
+Josh Boyer wrote:
+> On Mon, 3 Mar 2008 13:09:25 -0600
+> Scott Wood <scottwood@freescale.com> wrote:
 > 
-> > Yes, it looks like this was the problem. No kernel oops anymore.
-> > The machine locks up anyway (which is a well known hardware problem).
-> > It doesn't lock up with CPPIOMode=true, but probably only because the
-> > initialization of DRI fails with "BAD cp_mode (f0000000)!".
+> > On Sun, Mar 02, 2008 at 10:43:17PM -0600, Josh Boyer wrote:
+> > > On Mon, 3 Mar 2008 04:43:42 +0100
+> > > Arnd Bergmann <arnd@arndb.de> wrote:
+> > > > I wonder whether we should move the check for "used-by-rtas" into the
+> > > > of_device_is_available function. I understand that used-by-rtas is
+> > > > another way of expressing the idea that the kernel is not supposed to
+> > > > access the specific device. In this case, the device is physically
+> > > > present, but is not available to the OS.
+> > > 
+> > > I'd rather not at the moment.  My intention was to only look at the
+> > > status property for now.  I'd like to avoid this function growing into
+> > > a huge switch statement for $random_firmware's way of flagging
+> > > something as "don't touch".
+> > 
+> > Better that than having the "huge" list of tests in every driver...
 > 
-> Damn, I wonder why you insist trying to make that machine work :-) The
-> hardware is just totally busted.
-Because it's a challenge! :) Or because the OS4 developers say that
-PCIGART works.
+> Perhaps.
+> 
+> This isn't set in stone.  I'd rather get what's in the patch in-tree
+> now and massage it as we go.  Otherwise this bike shed will wind up
+> being rainbow colored yet totally useless because it's a never-ending
+> patch rework.
 
-Gerhard
--- 
-Psst! Geheimtipp: Online Games kostenlos spielen bei den GMX Free Games! 
-http://games.entertainment.web.de/de/entertainment/games/free
+I agree.  Josh's patch is immediately useful to other code as-is.
+
+used-by-rtas is powerpc-specific and doesn't belong in drivers/of IMO.
