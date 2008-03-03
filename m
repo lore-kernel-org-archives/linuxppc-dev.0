@@ -1,11 +1,17 @@
-Return-Path: <s104259@yahoo.it>
-Date: Mon, 3 Mar 2008 14:18:19 +0100 (CET)
-From: Angelo <s104259@yahoo.it>
-Subject: i2s driver
-To: Linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1481141879-1204550299=:99199"
-Message-ID: <931295.99199.qm@web23104.mail.ird.yahoo.com>
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (mail.tsinghua.org.cn [210.77.143.232])
+	by ozlabs.org (Postfix) with SMTP id E2AD3DDEEC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Mar 2008 00:51:28 +1100 (EST)
+Message-ID: <404550515.21147@tsinghua.org.cn>
+From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+To: support.asia@freescale.com, b09033@freescale.com,
+	linuxppc-embedded@ozlabs.org
+Date: Mon, 03 Mar 2008 21:21:55 +0800
+Message-ID: <MCUYTANHJGOQYTPDFFVWROJQBRZP.guojin02@tsinghua.org.cn>
+Subject: The problem about the GETH speed on MPC8360?
+Content-Type: text/plain
+Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,61 +22,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1481141879-1204550299=:99199
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hi,freescale,
 
-Thanks for answer.
+   I used the linux-2.6.11 version. I designed the MPC8360 system with 1GB DDR-1
+memory and the GMII 1 to interface the 88E1111(RJ45) and GMII 2 to interface the
+BCM5387 switch chip(SFP). Now we do the internet test for those GETH. We connect
+those RJ45 or SFP to server PC.We used "iperf" test software to test them.
 
->I can also send you some GPL'd code that works.
->It is extremely bad commented (:-p) and probably not useful
-> (it's not an ALSA driver itself, but it uses the DMA to
-> copy data to the PSC - I2S mode) but it works. 
+ Follow is the test result:
+   UDP protocol: 
+      Server PC send 1GB data to MPC8360, the speed is about 300Mbps, MPC8360 CPU
+used 100%;
+      MPC8360 send 1GB data to Server PC, the speed is about 600Mbps,MPC8360 CPU
+used 100%;
+     Server PC send 100MB data to MPC8360, and MPC8360 send 100MB to server PC at
+the same time, both send and receiver of MPC8360 is 100Mbps. MPC8360 CPU used
+100%;
 
-It is a great idea; i can use it to start. 
-You can send it via mail..
+   TCP protocol:
+       Server PC send 1GB data to MPC8360, the speed is about 250Mbps, MPC8360 CPU
+used 100%;
+       MPC8360 send 1GB data to Server PC, the speed is about 6Mbps,MPC8360 CPU
+used 20%;
 
-> But this code is based on 2.6.16 kernel.
+   The problem is why the speed is so slow and the cpu used so little during the
+last TCP test? The Gigebyte internet is only 6M bit per sencond, it's too slow.
 
-I'm using 2.6.22 kernel version.
-
-I just enabled in lite5200b.dts:
-
-//PSC3 in CODEC mode example  //asimmini
-i2s@2400 {  // PSC3
- device_type = "sound";
- compatible = "mpc5200b-psc-i2s";//not 5200 compatible
- cell-index = <2>;
- reg = <2400 100>;
- interrupts = <2 3 0>;
- interrupt-parent = <&mpc5200_pic>;
-};
-
-..and added in lite5200.c, in function mpc52xx_psc_functions
-...
-struct mpc52xx_psc_func mpc52xx_psc_functions[]= {
-{       .id     = 2,  
-        .func   = "i2s",
-},
-...
-thanks for help.
+ 
 
 
-
-
-       
----------------------------------
-
----------------------------------
-L'email della prossima generazione? Puoi averla con la nuova Yahoo! Mail
---0-1481141879-1204550299=:99199
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Thanks for answer.<br><br>&gt;I can also send you some GPL'd code that works.<span style="font-family: monospace;"><br></span>&gt;It is extremely bad commented (:-p) and probably not useful<span style="font-family: monospace;"><br></span>&gt; (it's not an ALSA driver itself, but it uses the DMA to<span style="font-family: monospace;"><br></span>&gt; copy data to the PSC - I2S mode) but it works. <br><pre>It is a great idea; i can use it to start. <br>You can send it via mail..<br><br>&gt; But this code is based on 2.6.16 kernel.<br><br>I'm using 2.6.22 kernel version.<span style="font-family: arial;"><br><br>I just enabled in lite5200b.dts:<br><br>//PSC3 in CODEC mode example  //asimmini<br>i2s@2400 {  // PSC3<br> device_type = "sound";<br> compatible = "mpc5200b-psc-i2s";//not 5200 compatible<br> cell-index = &lt;2&gt;;<br> reg = &lt;2400 100&gt;;<br> interrupts = &lt;2 3 0&gt;;<br> interrupt-parent = &lt;&amp;mpc5200_pic&gt;;<br>};<br><br>..and added in lite5200.c, in
- function </span><span style="font-family: arial;">mpc52xx_psc_functions</span><br><span style="font-family: arial;">...<br>struct mpc52xx_psc_func mpc52xx_psc_functions[]= {<br>{       .id     = 2,  <br>        .func   = "i2s",<br>},<br>...<br>thanks for help.<br></span></pre><BR><BR><p>&#32;
-
-
-
-      <hr size=1><font face="Arial" size="2"><hr size=1><font face="Arial" size="2">L'email della prossima generazione? Puoi averla con la <a href="http://us.rd.yahoo.com/mail/it/taglines/hotmail/nowyoucan/nextgen/*http://it.docs.yahoo.com/nowyoucan.html">nuova Yahoo! Mail</a></font>
---0-1481141879-1204550299=:99199--
+   Could you help me to test the MPC8360EMDS board and send me the test report?
+   Could you tell me why the GETH on MPC8360 is so poor? Even the UDP protocol
+just only realize the 100Mbps with the send and receive at the same time on
+MPC8360. It just like the 100M internet, not 1000M internet.
+   Could you tell me why the TCP protocol is much slower then UTP procotol?   
+We need up to about 900Mbps TCP protocol both on send and receive at the same
+time.
+   
