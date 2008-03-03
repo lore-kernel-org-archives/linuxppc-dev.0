@@ -1,20 +1,22 @@
-Return-Path: <phdm@macqel.be>
-Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
-	by ozlabs.org (Postfix) with ESMTP id 07DE4DDF2E
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:26:23 +1100 (EST)
-Date: Mon, 3 Mar 2008 22:26:22 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 02F51DDF37
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:26:49 +1100 (EST)
 Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-Message-ID: <20080303212622.GB20382@netgate.macqel>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Philippe De Muyter <phdm@macqel.be>
+In-Reply-To: <20080303210532.GA20382@netgate.macqel>
 References: <20080303144727.GA27949@ingate.macqel>
 	<20080303170719.GC28951@ld0162-tx32.am.freescale.net>
 	<20080303210532.GA20382@netgate.macqel>
-	<47CC696C.4090103@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47CC696C.4090103@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 08:26:14 +1100
+Message-Id: <1204579574.21545.19.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
 
-On Mon, Mar 03, 2008 at 03:11:08PM -0600, Scott Wood wrote:
-> Philippe De Muyter wrote:
->> Is the PCI-interrupt map that part of the dts file :
->>                 interrupt-map = <
->>                         /* IDSEL 0x02 */
->>                         1000 0 0 1 &mpic 1 1
->>                         1000 0 0 2 &mpic 2 1
->>                         1000 0 0 3 &mpic 3 1
->>                         1000 0 0 4 &mpic 4 1
->>                         /* IDSEL 0x03 */
->>                         1800 0 0 1 &mpic 4 1
->>                         1800 0 0 2 &mpic 1 1
->>                         1800 0 0 3 &mpic 2 1
->>                         1800 0 0 4 &mpic 3 1
->> 			...
->
-> Yes.
->
->> I do not understand anything there :(
->
-> It maps PCI interrupts to mpic interrupts.  The first three cells are the 
-> PCI address (only the device number is unmasked), then the PCI interrupt 
-> (INTA=1, INTB=2, etc.), then a phandle to the parent interrupt controller, 
-> then the interrupt specifier for the parent controller.
+> > Maybe your PCI interrupt-map is wrong...
+> 
+> Is the PCI-interrupt map that part of the dts file :
+> 
+>                 interrupt-map = <
+> 
+>                         /* IDSEL 0x02 */
+>                         1000 0 0 1 &mpic 1 1
+>                         1000 0 0 2 &mpic 2 1
+>                         1000 0 0 3 &mpic 3 1
+>                         1000 0 0 4 &mpic 4 1
+> 
+>                         /* IDSEL 0x03 */
+>                         1800 0 0 1 &mpic 4 1
+>                         1800 0 0 2 &mpic 1 1
+>                         1800 0 0 3 &mpic 2 1
+>                         1800 0 0 4 &mpic 3 1
+> 
+> 			...
+> 
+> I do not understand anything there :(
 
-Thanks
+It's documented in booting-without-of.txt afaik... The interrupt-map
+goes along with the interrupt-map-mask. The later defines which bits of
+the map are relevant.
 
-The following seems important also :
+The first part of the map is 3 cells containing a PCI address, followed
+by a cell containing a PCI IRQ line (1=A....4=D). The next is the parent
+interrupt controller, followed by the IRQ specification, which for MPIC
+is the interrupt number on that controller, followed by an encoding of
+the interrupt polarity & trigger type (1 for level-low).
 
-/*
-                interrupts = <18 2>;
-*/
-                /* interrupts number are coded in hexa ! */
-                interrupts = <12 2 19 2 1a 2 1b 2 35 2 36 2 37 2>;
+The first part, the PCI address, has a special format, which should be
+documented as well in the document I pointed out. For readability, we
+ommited the top 16 bits of the first cell, which are the address type
+and bus number, mostly irrelevant for interrupt mapping. The next bits
+are the device/function. Usually only the device part is unmasked.
 
-I have replaced the interrupts spec in comments by the longer interrupts spec
-below, and it seems to have some positive effect, but I do not know
-precisely what I have described there.
-
-I know that 25, 26, 27, 53, 54 and 55 decimal i(hence 19, 1a etc...) are the
-interrupts numbers that I had in the ARCH=ppc version.  I added 18 because
-of the error message, but it did not help.
-
-What should be described here and how ?
-
-Philippe
+Ben.
