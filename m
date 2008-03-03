@@ -1,12 +1,9 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [GIT PULL] Please pull spufs.git master branch
-Message-Id: <1204521564.484720.279352630417.0.gpush@pokey>
-To: <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Mon, 03 Mar 2008 16:19:24 +1100
-Cc: cbe-oss-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 03 Mar 2008 17:27:46 +1100
+Subject: [PATCH] [POWERPC] (testers ?) Fix sleep on some powerbooks
+Message-Id: <20080303062831.6BD8EDDED8@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,62 +13,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+The PMU backlight code would kick in during sleep/resume even on
+machines that use a different backlight method. This appears to
+break sleep on my PowerBook, though I can't test that patch at
+the moment as the machine died while I was bisecting.
 
-Please do a:
+So if anybody around has one of those latest revision PowerPC
+PowerBooks, the one just before they went to Intel, and have a
+problem with suspend/resume, please test this and let me know
+if it helps.
 
-git pull \
-    git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git master
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I have a number of striaghtforward spufs bugfixes for .25.
+ drivers/macintosh/via-pmu-backlight.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Cheers,
-
-
-Jeremy
-
-
---- 7 commits:
-
-  [POWERPC] spufs: fix context destruction during psmap fault
-    Jeremy Kerr <jk@ozlabs.org>
-
-    arch/powerpc/platforms/cell/spufs/file.c           |   12 +++++++++++-
-    1 file changed, 11 insertions(+), 1 deletion(-)
-   
-  [POWERPC] spufs: fix invalid scheduling of forgotten contexts
-    Jeremy Kerr <jk@ozlabs.org>
-
-    arch/powerpc/platforms/cell/spufs/context.c        |    7 +++----
-    1 file changed, 3 insertions(+), 4 deletions(-)
-   
-  [POWERPC] spufs: fix order of sputrace thread IDs
-    Jeremy Kerr <jk@ozlabs.org>
-
-    arch/powerpc/platforms/cell/spufs/sputrace.c       |    7 ++++---
-    1 file changed, 4 insertions(+), 3 deletions(-)
-   
-  [POWERPC] spufs: synchronize IRQ when disabling
-    Arnd Bergmann <arnd@arndb.de>
-
-    arch/powerpc/platforms/cell/spufs/switch.c         |    6 ++++++
-    1 file changed, 6 insertions(+)
-   
-  [POWERPC] spufs: invalidate SLB translation before adding a new entry
-    Arnd Bergmann <arnd@arndb.de>
-
-    arch/powerpc/platforms/cell/spu_base.c             |    4 ++++
-    1 file changed, 4 insertions(+)
-   
-  [POWERPC] spufs: serialize SLB invalidation against SLB loading
-    Arnd Bergmann <arnd@arndb.de>
-
-    arch/powerpc/platforms/cell/spu_base.c             |   12 +++++++++---
-    1 file changed, 9 insertions(+), 3 deletions(-)
-   
-  [POWERPC] spufs: fix use time accounting on SPE-overcommit
-    Andre Detsch <adetsch@br.ibm.com>
-
-    arch/powerpc/platforms/cell/spufs/sched.c          |    2 +-
-    1 file changed, 1 insertion(+), 1 deletion(-)
-   
+--- linux-work.orig/drivers/macintosh/via-pmu-backlight.c	2008-03-03 17:24:44.000000000 +1100
++++ linux-work/drivers/macintosh/via-pmu-backlight.c	2008-03-03 17:25:12.000000000 +1100
+@@ -17,7 +17,7 @@
+ 
+ static struct backlight_ops pmu_backlight_data;
+ static DEFINE_SPINLOCK(pmu_backlight_lock);
+-static int sleeping;
++static int sleeping, uses_pmu_bl;
+ static u8 bl_curve[FB_BACKLIGHT_LEVELS];
+ 
+ static void pmu_backlight_init_curve(u8 off, u8 min, u8 max)
+@@ -128,7 +128,7 @@ void pmu_backlight_set_sleep(int sleep)
+ 
+ 	spin_lock_irqsave(&pmu_backlight_lock, flags);
+ 	sleeping = sleep;
+-	if (pmac_backlight) {
++	if (pmac_backlight && uses_pmu_bl) {
+ 		if (sleep) {
+ 			struct adb_request req;
+ 
+@@ -166,6 +166,7 @@ void __init pmu_backlight_init()
+ 		printk(KERN_ERR "PMU Backlight registration failed\n");
+ 		return;
+ 	}
++	uses_pmu_bl = 1;
+ 	bd->props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
+ 	pmu_backlight_init_curve(0x7F, 0x46, 0x0E);
+ 
