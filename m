@@ -1,19 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EFA82DDE30
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 17:58:55 +1100 (EST)
-Date: Mon, 3 Mar 2008 17:58:54 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: 'next' branch of powerpc4xx tree
-Message-Id: <20080303175854.5a96431d.sfr@canb.auug.org.au>
-In-Reply-To: <20080301100613.5de31a42@zod.rchland.ibm.com>
-References: <20080301100613.5de31a42@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ michael@ellerman.id.au
+Subject: Re: [Cbe-oss-dev] Please pull 'for-2.6.25' branch of cell tree
+Date: Mon, 3 Mar 2008 09:14:57 +0100
+References: <200802290612.56728.arnd@arndb.de>
+	<1204265597.7729.27.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1204265597.7729.27.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200803030914.57836.arnd@arndb.de>
+Cc: paulus@samba.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Friday 29 February 2008, Michael Ellerman wrote:
+> On Fri, 2008-02-29 at 06:12 +0100, Arnd Bergmann wrote:
+> > Hi Paul,
+> > 
+> > Please pull from:
+> > 
+> >  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.25
+> > 
+> > To pick up a few small fixes for the cell platform. Most of it is a follow-up
+> > to the IOMMU rework that got merged in 2.6.25-rc1 and caused problems on
+> > machines with large amounts of memory.
+> 
+> Sorry, I have updated versions of the IOMMU patches to send. Arnd is
+> away for the weekend, so Paul if you just want to cherry pick the other
+> fixes that might work. I'll send the updated IOMMU patches momentarily.
 
-Hi Josh,
+The git tree should finally be fixed up now, same location as before,
+commit ID is now da40451bba23b51eaca4170a095891646ce72104.
 
-On Sat, 1 Mar 2008 10:06:13 -0600 Josh Boyer <jwboyer@linux.vnet.ibm.com> w=
-rote:
->
-> Since all the cool kids are doing it, I went and created a 'next' branch
-> in the powerpc4xx tree.
-
-If only the "cool kids" would :-(
-
-> Stephen, if you'd like to add this to your -next tree feel free.
-> Hopefully it will usually be empty as I merge things into Paul's tree.
-
-Sorry, I fogot to put it in for today's tree.  It will turn up tomorrow.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHy6GyTgG2atn1QN8RAmSMAJ9I3UO5SM0eojNMUzwW9ZwlAQYLJwCgjC4C
-2erE4vZnfOqd0lzd7RdrZoo=
-=/OO4
------END PGP SIGNATURE-----
-
---Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF--
+	Arnd <><
