@@ -1,17 +1,25 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] Please pull 'for-2.6.25' branch of cell tree
-Date: Mon, 3 Mar 2008 09:14:57 +0100
-References: <200802290612.56728.arnd@arndb.de>
-	<1204265597.7729.27.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1204265597.7729.27.camel@concordia.ozlabs.ibm.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 95725DDF09
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 20:19:36 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 3 Mar 2008 10:19:27 +0100
+To: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+Message-ID: <20080303091927.GA27105@iram.es>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<200802272221.38985.jwilson@redhat.com>
+	<1204179959.15052.372.camel@pasglop>
+	<200802281342.06493.jwilson@redhat.com>
+	<1204241162.15052.393.camel@pasglop> <47C79CB1.6050104@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200803030914.57836.arnd@arndb.de>
-Cc: paulus@samba.org, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47C79CB1.6050104@redhat.com>
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 29 February 2008, Michael Ellerman wrote:
-> On Fri, 2008-02-29 at 06:12 +0100, Arnd Bergmann wrote:
-> > Hi Paul,
+On Fri, Feb 29, 2008 at 12:48:33AM -0500, Jarod Wilson wrote:
+> Benjamin Herrenschmidt wrote:
+> > On Thu, 2008-02-28 at 13:42 -0500, Jarod Wilson wrote:
+> >> On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
+> >>>> Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
+> >>>> active". Could still be lucent though, judging by the subsys device ID of
+> >>>> 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
+> >>>> don't have the interesting one.
+> >>> Well, it's interesting in the sense that it's a "normal" OHCI then on a
+> >>> BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
+> >>> while ago. I'll see if I can find another machine with that one in.
+> >> Ah, the pismo has it, eh? I think I may actually know of someone in the office 
+> >> that still has one of those that I might be able to borrow and poke at...
 > > 
-> > Please pull from:
+> > I -think- it has it... Pismo definitely has one of the first variant of
+> > UniNorth with "working" FW afaik.
 > > 
-> >  master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.25
+> > The first UniNorth was used in the first "toilet-seat" ibook, but I
+> > think this one didn't have firewire, or a non-working one... and in the
+> > first Sawtooth G4 for which FW and Ethernet even were separate PCI chips
+> > because the ones in UniNorth were too broken.
 > > 
-> > To pick up a few small fixes for the cell platform. Most of it is a follow-up
-> > to the IOMMU rework that got merged in 2.6.25-rc1 and caused problems on
-> > machines with large amounts of memory.
+> > It's possible that early G4 titanium powerbooks or other model of FW
+> > iBooks have that UniNorth FW variant too.
 > 
-> Sorry, I have updated versions of the IOMMU patches to send. Arnd is
-> away for the weekend, so Paul if you just want to cherry pick the other
-> fixes that might work. I'll send the updated IOMMU patches momentarily.
+> Still no luck finding one here. The person I was thinking of has a 
+> Lombard, which has no firewire. I did get ahold of a 667MHz Titanium, 
+> but its got an Agere FW323. Pretty sure my old man actually has a Pismo, 
+> but its about a 3000 mile drive over to my folks house. The search 
+> continues... I wonder how many people still actually 1) have a machine 
+> with this controller, 2) are running Linux on it and 3) use firewire 
+> devices with it. Both of you, please speak up, we're trying to help you! 
+> (if only out of morbid curiosity to see this mythical goofy controller).
 
-The git tree should finally be fixed up now, same location as before,
-commit ID is now da40451bba23b51eaca4170a095891646ce72104.
+Definitely yes to 1) and 2), I have a Pismo which I use on a virtually
+daily basis (and about to remove the last remnants of MacOS on it). 
+However I have disabled Firewire because it would not sleep and wake 
+up properly. 
 
-	Arnd <><
+I can test it on Wednesday with a 5GB fireflly disk from 2001.
+
+Please tell me which configuration options I need to set for
+Firewire (which stack, etc...).
+
+	Regards,
+	Gabriel
