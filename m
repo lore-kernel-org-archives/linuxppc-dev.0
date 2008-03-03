@@ -1,19 +1,15 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 7736EDDE17
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 14:43:59 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2 v2] [POWERPC] Ignore disabled serial ports
-Date: Mon, 3 Mar 2008 04:43:42 +0100
-References: <20080301081600.74598ce4@zod.rchland.ibm.com>
-	<20080301081746.689a0a17@zod.rchland.ibm.com>
-In-Reply-To: <20080301081746.689a0a17@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200803030443.43346.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <hch@lst.de>
+Date: Mon, 3 Mar 2008 05:18:56 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [PATCH 1/1] Cell RAS: Remove DEBUG,
+	and add license and copyright
+Message-ID: <20080303041856.GA22960@lst.de>
+References: <10067109ffe9bc3c9a1357e5b8465ed1ebf114f9.1202956445.git.michael@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <10067109ffe9bc3c9a1357e5b8465ed1ebf114f9.1202956445.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +19,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 01 March 2008, Josh Boyer wrote:
-> --- linux-2.6.orig/drivers/serial/of_serial.c
-> +++ linux-2.6/drivers/serial/of_serial.c
-> @@ -72,6 +72,11 @@ static int __devinit of_platform_serial_
-> =A0=A0=A0=A0=A0=A0=A0=A0int port_type;
-> =A0=A0=A0=A0=A0=A0=A0=A0int ret;
-> =A0
-> +=A0=A0=A0=A0=A0=A0=A0if (!of_device_is_available(ofdev->node)) {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0dev_info(&ofdev->dev, "Disa=
-bled serial port. =A0Ignored\n");
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -ENODEV;
-> +=A0=A0=A0=A0=A0=A0=A0}
-> +
-> =A0=A0=A0=A0=A0=A0=A0=A0if (of_find_property(ofdev->node, "used-by-rtas",=
- NULL))
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -EBUSY;
+On Thu, Feb 14, 2008 at 01:34:17PM +1100, Michael Ellerman wrote:
+> arch/powerpc/platforms/cell/ras.c still has DEBUG #defined, which is no
+> longer neccessary. Disable it, this disables to pr_debugs().
 
-I wonder whether we should move the check for "used-by-rtas" into the
-of_device_is_available function. I understand that used-by-rtas is
-another way of expressing the idea that the kernel is not supposed to
-access the specific device. In this case, the device is physically
-present, but is not available to the OS.
-
-	Arnd <><
+No need to undef it, it's undefined by default.  Otherwise the patch
+looks fine to me.
