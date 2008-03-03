@@ -1,27 +1,24 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-30.bluehost.com (outbound-mail-30.bluehost.com
-	[69.89.17.212]) by ozlabs.org (Postfix) with SMTP id 3E92ADDF42
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 07:44:36 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: benh@kernel.crashing.org
-Subject: Re: [patch 4/6] ARM: move bridge enable out of
-	pcibios_enable_resources()
-Date: Mon, 3 Mar 2008 12:43:51 -0800
-References: <20080228000437.880811124@ldl.fc.hp.com>
-	<200803030959.35625.jbarnes@virtuousgeek.org>
-	<1204576557.21545.4.camel@pasglop>
-In-Reply-To: <1204576557.21545.4.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200803031243.51613.jbarnes@virtuousgeek.org>
-Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Russell King <rmk@arm.linux.org.uk>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2E1F0DE15F
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 07:44:50 +1100 (EST)
+Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20080303195117.7040@gmx.net>
+References: <20071125234254.B4405DDE49@ozlabs.org>
+	<20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>
+	<20080302223012.90210@gmx.net> <1204498569.15052.488.camel@pasglop>
+	<20080303195117.7040@gmx.net>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 07:44:11 +1100
+Message-Id: <1204577051.21545.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday, March 03, 2008 12:35 pm Benjamin Herrenschmidt wrote:
-> On Mon, 2008-03-03 at 09:59 -0800, Jesse Barnes wrote:
-> > On Wednesday, February 27, 2008 4:04 pm Bjorn Helgaas wrote:
-> > > Move bridge enable from pcibios_enable_resources() to
-> > > platform_pci_enable_device() so the former matches other
-> > > architectures and can be shared.
-> >
-> > I really like the direction of these patches.  Getting PCI resources
-> > assigned & devices setup correctly for new arches has always been a bit
-> > more trouble than it should be...
->
-> You'll noticed that I recently moved powerpc to something more common to
-> x86 in the are of resource allocation. Still -slightly- different but I
-> do believe there is room for somebody with some skills to try to turn
-> some of that into generic code.
 
-Yeah, I think that would be a good thing to shoot for.  Even on PCs there are 
-times when we need resource allocation to be done (or re-done) by the kernel 
-for hotplug or just because the platform is pared down enough that it doesn't 
-to it all by itself.
+On Mon, 2008-03-03 at 20:51 +0100, Gerhard Pircher wrote:
+> > Remove the GFP_HIGHMEM from the above. It looks like our cache
+> > flushing isn't going to work for highmem, it would need some
+> > kmap's for that.
 
-I might be able to find time to look into that myself in the next few weeks; I 
-think we even have some open PCI bugs that could be solved by better resource 
-allocation.
+> Yes, it looks like this was the problem. No kernel oops anymore.
+> The machine locks up anyway (which is a well known hardware problem).
+> It doesn't lock up with CPPIOMode=true, but probably only because the
+> initialization of DRI fails with "BAD cp_mode (f0000000)!".
 
-Jesse
+Damn, I wonder why you insist trying to make that machine work :-) The
+hardware is just totally busted.
+
+Ben.
