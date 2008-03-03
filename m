@@ -1,26 +1,17 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-104.bluehost.com (outbound-mail-104.bluehost.com
-	[69.89.22.14]) by ozlabs.org (Postfix) with SMTP id 55F5BDDEDE
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 05:31:43 +1100 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [patch 5/6] PARISC: move PERR & SERR enables out of
-	pcibios_enable_resources()
-Date: Mon, 3 Mar 2008 10:30:58 -0800
-References: <20080228000437.880811124@ldl.fc.hp.com>
-	<20080228001053.209248743@ldl.fc.hp.com>
-	<20080228173125.GA16270@colo.lackof.org>
-In-Reply-To: <20080228173125.GA16270@colo.lackof.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200803031030.59305.jbarnes@virtuousgeek.org>
-Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.arm.linux.org.uk,
-	Russell King <rmk@arm.linux.org.uk>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Return-Path: <adolnikov@ru.mvista.com>
+Received: from barber.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5BD4FDDF0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 05:32:31 +1100 (EST)
+Date: Mon, 3 Mar 2008 21:01:21 +0300
+From: Andrei Dolnikov <adolnikov@ru.mvista.com>
+To: linux-mtd@lists.infradead.org
+Subject: [PATCH][MTD][NOR]Add support for the SST 36VF3203 flash chip
+Message-ID: <20080303180121.GA9206@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday, February 28, 2008 9:31 am Grant Grundler wrote:
-> In general, I'm wondering if the check for device class would be
-> sufficient here to NOT enable PERR/SERR for graphics automatically.
-> While disabling PERR was "the right thing" for older "mostly write"
-> devices of the 1990's and early 2000, it might not be correct for
-> current 3-D graphics devices which use host mem to buffer processed
-> results. I'm thinking of Intel graphics controllers in particular
-> but I don't know any details of how they actually work.
+Add support for the SST 36VF3203 flash chip. It is used on Emerson KSI8560 board.
 
-Well, in general chipset devices aren't required to support parity checking, 
-AIUI; Intel gfx devices don't bother (PERR enable is hardwired to 0).
+Signed-off-by: Andrei Dolnikov <adolnikov@ru.mvista.com>
 
-> I'm also a bit concerned about this now becuase (IIRC) AGP didn't
-> implement parity though it looked like PCI protocol. PCI-e certainly
-> does but it's possible BIOS/Firmware disable parity generation
-> on the host bridge when connected to a gfx device.
-> We wouldn't want to enable parity checking on a PCI-e gfx device in this
-> case and I hope someone (perhaps at Intel) could double check this.
+---
+ jedec_probe.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+)
 
-I'd have to ping our BIOS folks to see if that's the case, but I doubt it.  It 
-would be a bad idea to disable any PCIe error reporting (including legacy 
-error mapping) just because a gfx device was attached.  Apparently the AMD 
-PCIe parts include PERR generation, so disabling upstream reporting at boot 
-time seems like it would be an outright bug; it should be left up to driver & 
-OS software.
-
-Jesse
+diff --git a/drivers/mtd/chips/jedec_probe.c b/drivers/mtd/chips/jedec_probe.c
+index 6405938..15e061b 100644
+--- a/drivers/mtd/chips/jedec_probe.c
++++ b/drivers/mtd/chips/jedec_probe.c
+@@ -160,6 +160,7 @@
+ #define SST49LF030A	0x001C
+ #define SST49LF040A	0x0051
+ #define SST49LF080A	0x005B
++#define SST36VF3203	0x7354
+ 
+ /* Toshiba */
+ #define TC58FVT160	0x00C2
+@@ -1412,6 +1413,18 @@ static const struct amd_flash_info jedec_table[] = {
+ 			ERASEINFO(0x1000,256)
+ 		}
+ 	}, {
++		.mfr_id		= MANUFACTURER_SST,
++		.dev_id		= SST36VF3203,
++		.name		= "SST 36VF3203",
++		.devtypes	= CFI_DEVICETYPE_X16|CFI_DEVICETYPE_X8,
++		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
++		.dev_size	= SIZE_4MiB,
++		.cmd_set	= P_ID_AMD_STD,
++		.nr_regions	= 1,
++		.regions	= {
++			ERASEINFO(0x10000,64),
++		}
++	}, {
+ 		.mfr_id		= MANUFACTURER_ST,
+ 		.dev_id		= M29F800AB,
+ 		.name		= "ST M29F800AB",
