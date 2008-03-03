@@ -1,17 +1,21 @@
-Return-Path: <guojin02@tsinghua.org.cn>
-Received: from tsinghua.org.cn (mail.tsinghua.org.cn [210.77.143.232])
-	by ozlabs.org (Postfix) with SMTP id E2AD3DDEEC
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 52273DDEFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Mar 2008 00:51:28 +1100 (EST)
-Message-ID: <404550515.21147@tsinghua.org.cn>
-From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
-To: support.asia@freescale.com, b09033@freescale.com,
-	linuxppc-embedded@ozlabs.org
-Date: Mon, 03 Mar 2008 21:21:55 +0800
-Message-ID: <MCUYTANHJGOQYTPDFFVWROJQBRZP.guojin02@tsinghua.org.cn>
-Subject: The problem about the GETH speed on MPC8360?
-Content-Type: text/plain
-Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
+	Tue,  4 Mar 2008 01:12:59 +1100 (EST)
+Date: Mon, 3 Mar 2008 13:47:00 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Roman Fietze <roman.fietze@telemotive.de>
+Subject: Re: I2S driver
+Message-ID: <20080303134656.GA25086@sirena.org.uk>
+References: <529490.33431.qm@web23110.mail.ird.yahoo.com>
+	<200803031340.36665.roman.fietze@telemotive.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200803031340.36665.roman.fietze@telemotive.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,40 +26,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,freescale,
+On Mon, Mar 03, 2008 at 01:40:36PM +0100, Roman Fietze wrote:
+> On Monday 03 March 2008 13:08:43 Angelo wrote:
 
-   I used the linux-2.6.11 version. I designed the MPC8360 system with 1GB DDR-1
-memory and the GMII 1 to interface the 88E1111(RJ45) and GMII 2 to interface the
-BCM5387 switch chip(SFP). Now we do the internet test for those GETH. We connect
-those RJ45 or SFP to server PC.We used "iperf" test software to test them.
+> > I'm working on I2S driver, on MPC5200b board.
 
- Follow is the test result:
-   UDP protocol: 
-      Server PC send 1GB data to MPC8360, the speed is about 300Mbps, MPC8360 CPU
-used 100%;
-      MPC8360 send 1GB data to Server PC, the speed is about 600Mbps,MPC8360 CPU
-used 100%;
-     Server PC send 100MB data to MPC8360, and MPC8360 send 100MB to server PC at
-the same time, both send and receiver of MPC8360 is 100Mbps. MPC8360 CPU used
-100%;
+> An ALSA sound driver?
 
-   TCP protocol:
-       Server PC send 1GB data to MPC8360, the speed is about 250Mbps, MPC8360 CPU
-used 100%;
-       MPC8360 send 1GB data to Server PC, the speed is about 6Mbps,MPC8360 CPU
-used 20%;
+> If yes, there are many places where you can find documentation. If
+> not, there are still many places where you can find documentation.
 
-   The problem is why the speed is so slow and the cpu used so little during the
-last TCP test? The Gigebyte internet is only 6M bit per sencond, it's too slow.
+> Could you please specify more precisely what you want to do or where
+> you are having problems.
 
- 
+If you are working on an audio device in an embedded system you probably
+want to use the ALSA SoC subsystem - have a look at
+Documentation/sound/alsa/soc and sound/soc for information.  There is a
+development git tree for this availiable at:
 
-
-   Could you help me to test the MPC8360EMDS board and send me the test report?
-   Could you tell me why the GETH on MPC8360 is so poor? Even the UDP protocol
-just only realize the 100Mbps with the send and receive at the same time on
-MPC8360. It just like the 100M internet, not 1000M internet.
-   Could you tell me why the TCP protocol is much slower then UTP procotol?   
-We need up to about 900Mbps TCP protocol both on send and receive at the same
-time.
-   
+	git://opensource.wolfsonmicro.com/linux-2.6-asoc
