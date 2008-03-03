@@ -1,23 +1,18 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from mail.telemotive.de (mail.telemotive.de [62.206.149.210])
-	by ozlabs.org (Postfix) with ESMTP id 8ACC5DDE10
+Return-Path: <carcadiz@hotmail.com>
+Received: from blu139-omc3-s10.blu139.hotmail.com
+	(blu139-omc3-s10.blu139.hotmail.com [65.55.175.210])
+	by ozlabs.org (Postfix) with ESMTP id 9184DDDF05
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Mar 2008 23:46:56 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 2541A49362
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Mar 2008 13:40:37 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: I2S driver
-References: <529490.33431.qm@web23110.mail.ird.yahoo.com>
+	Tue,  4 Mar 2008 00:05:44 +1100 (EST)
+Message-ID: <BLU106-W22AC7D9FCF4035AF6AB5E6CA170@phx.gbl>
+From: "Pedro Luis D. L." <carcadiz@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: I2S driver
+Date: Mon, 3 Mar 2008 14:05:42 +0100
 In-Reply-To: <529490.33431.qm@web23110.mail.ird.yahoo.com>
+References: <529490.33431.qm@web23110.mail.ird.yahoo.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Message-ID: <200803031340.36665.roman.fietze@telemotive.de>
-Date: Mon, 3 Mar 2008 13:40:36 +0100
-Content-Type: text/plain;
-  charset="iso-8859-15"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,22 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Ngelo,
 
-On Monday 03 March 2008 13:08:43 Angelo wrote:
-
+Angelo wrote:
+=20
+> Hi my name is Angelo.
+>=20
 > I'm working on I2S driver, on MPC5200b board.
-
-An ALSA sound driver?
-
-If yes, there are many places where you can find documentation. If
-not, there are still many places where you can find documentation.
-
-Could you please specify more precisely what you want to do or where
-you are having problems.
+> Does anyone tell me where i can found some information on HOW to write it=
+?
+>=20
+> Thanks for help.
+>=20
 
 
-Roman
+Hello Angelo,
+depends on which kernel version are you using. You can find some working co=
+de in DENX repository:
+http://source.denx.net/cgi-bin/gitweb.cgi
+=20
+I can also send you some GPL'd code that works. It is extremely bad comment=
+ed (:-p) and probably not useful (it's not an ALSA driver itself, but it us=
+es the DMA to copy data to the PSC - I2S mode) but it works. But this code =
+is based on 2.6.16 kernel.
 
-=2D-=20
-Roman Fietze Telemotive AG B=FCro M=FChlhausen
+Tell me the version and I would guide you a little bit.
+=20
+Regards,
+Pedro.
+
+_________________________________________________________________
+MSN Video.=20
+http://video.msn.com/?mkt=3Des-es=
