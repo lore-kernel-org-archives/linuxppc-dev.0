@@ -1,25 +1,20 @@
 Return-Path: <paubert@iram.es>
 Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 95725DDF09
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 20:19:36 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DEB3DDDF11
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 20:55:10 +1100 (EST)
 From: Gabriel Paubert <paubert@iram.es>
-Date: Mon, 3 Mar 2008 10:19:27 +0100
-To: Jarod Wilson <jwilson@redhat.com>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-Message-ID: <20080303091927.GA27105@iram.es>
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-	<200802272221.38985.jwilson@redhat.com>
-	<1204179959.15052.372.camel@pasglop>
-	<200802281342.06493.jwilson@redhat.com>
-	<1204241162.15052.393.camel@pasglop> <47C79CB1.6050104@redhat.com>
+Date: Mon, 3 Mar 2008 10:54:43 +0100
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] add strncmp to PowerPC
+Message-ID: <20080303095443.GB27105@iram.es>
+References: <1204301097.14759.6.camel@localhost.localdomain>
+	<1204340690.15052.457.camel@pasglop>
+	<Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47C79CB1.6050104@redhat.com>
-Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>
+In-Reply-To: <Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
+Cc: paulus@samba.org, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,49 +24,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 29, 2008 at 12:48:33AM -0500, Jarod Wilson wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Thu, 2008-02-28 at 13:42 -0500, Jarod Wilson wrote:
-> >> On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
-> >>>> Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
-> >>>> active". Could still be lucent though, judging by the subsys device ID of
-> >>>> 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
-> >>>> don't have the interesting one.
-> >>> Well, it's interesting in the sense that it's a "normal" OHCI then on a
-> >>> BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
-> >>> while ago. I'll see if I can find another machine with that one in.
-> >> Ah, the pismo has it, eh? I think I may actually know of someone in the office 
-> >> that still has one of those that I might be able to borrow and poke at...
-> > 
-> > I -think- it has it... Pismo definitely has one of the first variant of
-> > UniNorth with "working" FW afaik.
-> > 
-> > The first UniNorth was used in the first "toilet-seat" ibook, but I
-> > think this one didn't have firewire, or a non-working one... and in the
-> > first Sawtooth G4 for which FW and Ethernet even were separate PCI chips
-> > because the ones in UniNorth were too broken.
-> > 
-> > It's possible that early G4 titanium powerbooks or other model of FW
-> > iBooks have that UniNorth FW variant too.
+On Fri, Feb 29, 2008 at 10:56:45PM -0500, Steven Rostedt wrote:
 > 
-> Still no luck finding one here. The person I was thinking of has a 
-> Lombard, which has no firewire. I did get ahold of a 667MHz Titanium, 
-> but its got an Agere FW323. Pretty sure my old man actually has a Pismo, 
-> but its about a 3000 mile drive over to my folks house. The search 
-> continues... I wonder how many people still actually 1) have a machine 
-> with this controller, 2) are running Linux on it and 3) use firewire 
-> devices with it. Both of you, please speak up, we're trying to help you! 
-> (if only out of morbid curiosity to see this mythical goofy controller).
+> On Sat, 1 Mar 2008, Benjamin Herrenschmidt wrote:
+> >
+> > Do we have any indication that it performs better than the C one ?
+> 
+> See below.
+> 
+> >
+> > Ben.
+> >
+> 
+> > >
+> > > +_GLOBAL(strncmp)
+> > > +	mtctr	r5
+> > > +	addi	r5,r3,-1
+> > > +	addi	r4,r4,-1
+> > > +1:	lbzu	r3,1(r5)
+> > > +	cmpwi	1,r3,0
+> > > +	lbzu	r0,1(r4)
+> > > +	subf.	r3,r0,r3
+> > > +	beqlr	1
+> > > +	bdnzt	eq,1b
+> > > +	blr
+> > > +
+> 
+> 
+> And here's the objdump of the C version:
+> 
+> 0000000000000080 <.strncmp>:
+>   80:   fb e1 ff f0     std     r31,-16(r1)
+>   84:   f8 21 ff c1     stdu    r1,-64(r1)
+>   88:   7c 69 1b 78     mr      r9,r3
+>   8c:   7c a0 2b 79     mr.     r0,r5
+>   90:   38 60 00 00     li      r3,0
+>   94:   7c 09 03 a6     mtctr   r0
+>   98:   7c 3f 0b 78     mr      r31,r1
+>   9c:   41 82 00 68     beq-    104 <.strncmp+0x84>
+>   a0:   89 69 00 00     lbz     r11,0(r9)
+>   a4:   88 04 00 00     lbz     r0,0(r4)
+>   a8:   7c 00 58 50     subf    r0,r0,r11
+>   ac:   78 00 06 20     clrldi  r0,r0,56
+>   b0:   2f a0 00 00     cmpdi   cr7,r0,0
+>   b4:   7c 00 07 74     extsb   r0,r0
+>   b8:   7c 03 03 78     mr      r3,r0
+>   bc:   40 9e 00 48     bne-    cr7,104 <.strncmp+0x84>
+>   c0:   2f ab 00 00     cmpdi   cr7,r11,0
+>   c4:   41 9e 00 40     beq-    cr7,104 <.strncmp+0x84>
+>   c8:   38 84 00 01     addi    r4,r4,1
+>   cc:   38 69 00 01     addi    r3,r9,1
+>   d0:   42 40 00 30     bdz-    100 <.strncmp+0x80>
+>   d4:   88 03 00 00     lbz     r0,0(r3)
+>   d8:   89 24 00 00     lbz     r9,0(r4)
+>   dc:   38 63 00 01     addi    r3,r3,1
+>   e0:   38 84 00 01     addi    r4,r4,1
+>   e4:   2f 20 00 00     cmpdi   cr6,r0,0
+>   e8:   7c 09 00 50     subf    r0,r9,r0
+>   ec:   78 00 06 20     clrldi  r0,r0,56
+>   f0:   2f a0 00 00     cmpdi   cr7,r0,0
+>   f4:   7c 00 07 74     extsb   r0,r0
+>   f8:   40 9e 00 08     bne-    cr7,100 <.strncmp+0x80>
+>   fc:   40 9a ff d4     bne+    cr6,d0 <.strncmp+0x50>
+>  100:   7c 03 03 78     mr      r3,r0
+>  104:   e8 21 00 00     ld      r1,0(r1)
+>  108:   eb e1 ff f0     ld      r31,-16(r1)
+>  10c:   4e 80 00 20     blr
+> 
+> 
+> I'll let you decide ;-)
+> 
+> Even if it was logically faster (which I still doubt) it's a hell of a lot
+> of cache lines to waste.
 
-Definitely yes to 1) and 2), I have a Pismo which I use on a virtually
-daily basis (and about to remove the last remnants of MacOS on it). 
-However I have disabled Firewire because it would not sleep and wake 
-up properly. 
+Indeed, but there are some corner cases that the C code handles. Like
+a length of 0 which may lead to infinite loop in the asm code. 
 
-I can test it on Wednesday with a 5GB fireflly disk from 2001.
+OTOH, I'm a bit surprised by the extsb instructions in the compiler generated
+code. We don't compile with -fsigned-char, do we? The clrldi
+instructions are also extremely stupid.
 
-Please tell me which configuration options I need to set for
-Firewire (which stack, etc...).
+Now that I think a bit more about it, I believe that the C version is
+incorrect: the clrldi/extsb dance takes a value between -255 and +255
+and collapses it into the -128 to 127 range, meaning that the return
+value may be wrong if we rely on the sign of the result. So unless I
+miss something, the problem is much more serious than just stupid code
+(I had just a look at the libc version in C and characters are cast to
+unsigned char before the comparison).
 
 	Regards,
 	Gabriel
