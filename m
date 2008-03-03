@@ -1,11 +1,14 @@
-Return-Path: <s104259@yahoo.it>
-Date: Mon, 3 Mar 2008 18:05:24 +0100 (CET)
-From: Angelo <s104259@yahoo.it>
-Subject: I2S driver
-To: Linuxppc-embedded@ozlabs.org
+Return-Path: <phillip.lougher@gmail.com>
+Message-ID: <bffbecbb0803030914l545b3e90xf3adb457e6e01d6e@mail.gmail.com>
+Date: Mon, 3 Mar 2008 17:14:11 +0000
+From: "Phillip Lougher" <phillip.lougher@gmail.com>
+To: Angelo <s104259@yahoo.it>
+Subject: Re: I2S driver
+In-Reply-To: <157246.48338.qm@web23111.mail.ird.yahoo.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1370374606-1204563924=:48338"
-Message-ID: <157246.48338.qm@web23111.mail.ird.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <157246.48338.qm@web23111.mail.ird.yahoo.com>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,37 +19,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1370374606-1204563924=:48338
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+On Mon, Mar 3, 2008 at 5:05 PM, Angelo <s104259@yahoo.it> wrote:
+
+> in my kernel version (2.6.22) there isn't any folder named
+> fsl in sound/soc/
+>
+> So where i can found it?
+>
+
+Get the development git tree,  available at:
+
+       git://opensource.wolfsonmicro.com/linux-2.6-asoc
+
+http://opensource.wolfsonmicro.com/node/6 gives more info on the
+development trees.
 
 
-Timur wrote:
->I wrote an ASoC driver for the MPC8610, which also has 
->an I2S interface.  You can find it in sound/soc/fsl.
+Phillip
 
-in my kernel version (2.6.22) there isn't any folder named
-fsl in sound/soc/
-
-So where i can found it?
-
-thanks for help.
-
-
-
-
-       
----------------------------------
-
----------------------------------
-L'email della prossima generazione? Puoi averla con la nuova Yahoo! Mail
---0-1370374606-1204563924=:48338
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<pre>Timur wrote:<br>&gt;I wrote an ASoC driver for the MPC8610, which also has <br>&gt;an I2S interface.  You can find it in sound/soc/fsl.<br><br>in my kernel version (2.6.22) there isn't any folder named<br>fsl in sound/soc/<br><br>So where i can found it?<br><br>thanks for help.<br></pre><BR><BR><p>&#32;
-
-
-
-      <hr size=1><font face="Arial" size="2"><hr size=1><font face="Arial" size="2">L'email della prossima generazione? Puoi averla con la <a href="http://us.rd.yahoo.com/mail/it/taglines/hotmail/nowyoucan/nextgen/*http://it.docs.yahoo.com/nowyoucan.html">nuova Yahoo! Mail</a></font>
---0-1370374606-1204563924=:48338--
+> thanks for help.
+>
+>
+>
+>
+>
+>  ________________________________
+> ________________________________
+>
+> L'email della prossima generazione? Puoi averla con la nuova Yahoo! Mail
+> _______________________________________________
+>  Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
