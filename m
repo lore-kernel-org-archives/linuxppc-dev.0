@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02F51DDF37
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:26:49 +1100 (EST)
-Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Philippe De Muyter <phdm@macqel.be>
-In-Reply-To: <20080303210532.GA20382@netgate.macqel>
-References: <20080303144727.GA27949@ingate.macqel>
-	<20080303170719.GC28951@ld0162-tx32.am.freescale.net>
-	<20080303210532.GA20382@netgate.macqel>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 08:26:14 +1100
-Message-Id: <1204579574.21545.19.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 6B831DDE34
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:37:07 +1100 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 03 Mar 2008 22:37:05 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1204577051.21545.12.camel@pasglop>
+Message-ID: <20080303213705.312670@gmx.net>
+MIME-Version: 1.0
+References: <20071125234254.B4405DDE49@ozlabs.org>	
+	<20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>	
+	<20080302223012.90210@gmx.net> <1204498569.15052.488.camel@pasglop>	
+	<20080303195117.7040@gmx.net> <1204577051.21545.12.camel@pasglop>
+Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
+To: benh@kernel.crashing.org
+Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +26,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > Maybe your PCI interrupt-map is wrong...
-> 
-> Is the PCI-interrupt map that part of the dts file :
-> 
->                 interrupt-map = <
-> 
->                         /* IDSEL 0x02 */
->                         1000 0 0 1 &mpic 1 1
->                         1000 0 0 2 &mpic 2 1
->                         1000 0 0 3 &mpic 3 1
->                         1000 0 0 4 &mpic 4 1
-> 
->                         /* IDSEL 0x03 */
->                         1800 0 0 1 &mpic 4 1
->                         1800 0 0 2 &mpic 1 1
->                         1800 0 0 3 &mpic 2 1
->                         1800 0 0 4 &mpic 3 1
-> 
-> 			...
-> 
-> I do not understand anything there :(
+-------- Original-Nachricht --------
+> Datum: Tue, 04 Mar 2008 07:44:11 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: airlied@linux.ie, linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+> Betreff: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
 
-It's documented in booting-without-of.txt afaik... The interrupt-map
-goes along with the interrupt-map-mask. The later defines which bits of
-the map are relevant.
+> On Mon, 2008-03-03 at 20:51 +0100, Gerhard Pircher wrote:
+> > > Remove the GFP_HIGHMEM from the above. It looks like our cache
+> > > flushing isn't going to work for highmem, it would need some
+> > > kmap's for that.
+> 
+> > Yes, it looks like this was the problem. No kernel oops anymore.
+> > The machine locks up anyway (which is a well known hardware problem).
+> > It doesn't lock up with CPPIOMode=true, but probably only because the
+> > initialization of DRI fails with "BAD cp_mode (f0000000)!".
+> 
+> Damn, I wonder why you insist trying to make that machine work :-) The
+> hardware is just totally busted.
+Because it's a challenge! :) Or because the OS4 developers say that
+PCIGART works.
 
-The first part of the map is 3 cells containing a PCI address, followed
-by a cell containing a PCI IRQ line (1=A....4=D). The next is the parent
-interrupt controller, followed by the IRQ specification, which for MPIC
-is the interrupt number on that controller, followed by an encoding of
-the interrupt polarity & trigger type (1 for level-low).
-
-The first part, the PCI address, has a special format, which should be
-documented as well in the document I pointed out. For readability, we
-ommited the top 16 bits of the first cell, which are the address type
-and bus number, mostly irrelevant for interrupt mapping. The next bits
-are the device/function. Usually only the device part is unmasked.
-
-Ben.
+Gerhard
+-- 
+Psst! Geheimtipp: Online Games kostenlos spielen bei den GMX Free Games! 
+http://games.entertainment.web.de/de/entertainment/games/free
