@@ -1,21 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0EB76DDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 04:53:24 +1100 (EST)
-Date: Mon, 3 Mar 2008 11:07:20 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-Message-ID: <20080303170719.GC28951@ld0162-tx32.am.freescale.net>
-References: <20080303144727.GA27949@ingate.macqel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080303144727.GA27949@ingate.macqel>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outbound-mail-103.bluehost.com (outbound-mail-103.bluehost.com
+	[69.89.22.13]) by ozlabs.org (Postfix) with SMTP id 03EB9DDEDF
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 05:00:44 +1100 (EST)
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch 4/6] ARM: move bridge enable out of
+	pcibios_enable_resources()
+Date: Mon, 3 Mar 2008 09:59:35 -0800
+References: <20080228000437.880811124@ldl.fc.hp.com>
+	<20080228001053.013269726@ldl.fc.hp.com>
+In-Reply-To: <20080228001053.013269726@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200803030959.35625.jbarnes@virtuousgeek.org>
+Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 03, 2008 at 03:47:27PM +0100, Philippe De Muyter wrote:
-> My root device is on a compact-flash connected to a PCI yenta chip from TI,
-> and this one is not working, altough it seems to be discovered :
-> 
-> 	Yenta: CardBus bridge found at 0000:00:12.0 [0000:0000]
-> 	Yenta: Using CSCINT to route CSC interrupts to PCI
-> 	Yenta: Routing CardBus interrupts to PCI
-> 	Yenta TI: socket 0000:00:12.0, mfunc 0x00001b22, devctl 0x64
-> 	irq 18: nobody cared (try booting with the "irqpoll" option)
-> 	Call Trace:
-> 	[cf813af0] [c00066c8] show_stack+0x3c/0x1bc (unreliable)
-> 	[cf813b30] [c003c1ac] __report_bad_irq+0x38/0xcc
-> 	[cf813b50] [c003c4c8] note_interrupt+0x288/0x2cc
-> 	[cf813b80] [c003cc34] handle_fasteoi_irq+0x94/0xf8
+On Wednesday, February 27, 2008 4:04 pm Bjorn Helgaas wrote:
+> Move bridge enable from pcibios_enable_resources() to
+> platform_pci_enable_device() so the former matches other
+> architectures and can be shared.
 
-Maybe your PCI interrupt-map is wrong...
+I really like the direction of these patches.  Getting PCI resources assigned 
+& devices setup correctly for new arches has always been a bit more trouble 
+than it should be...
 
--Scott
+>
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>
+> Index: work6/arch/arm/kernel/bios32.c
+> ===================================================================
+> --- work6.orig/arch/arm/kernel/bios32.c	2008-02-27 11:25:29.000000000 -0700
+> +++ work6/arch/arm/kernel/bios32.c	2008-02-27 11:55:59.000000000 -0700
+> @@ -683,15 +683,32 @@
+>  			cmd |= PCI_COMMAND_MEMORY;
+>  	}
+>
+> +	if (cmd != old_cmd) {
+> +		printk("PCI: enabling device %s (%04x -> %04x)\n",
+> +		       pci_name(dev), old_cmd, cmd);
+
+Probably worth giving this printk a prefix at some point (doesn't matter for 
+this patchset though since you're just moving it around).
+
+Rest of it looks good.
+
+Jesse
