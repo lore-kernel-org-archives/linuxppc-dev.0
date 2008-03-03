@@ -1,14 +1,19 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <47CC64AE.5060305@freescale.com>
-Date: Mon, 03 Mar 2008 14:50:54 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Angelo <s104259@yahoo.it>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 613EDDDDF0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Mar 2008 09:06:47 +1100 (EST)
+To: "Pedro Luis D. L." <carcadiz@hotmail.com>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: I2S driver
-References: <157246.48338.qm@web23111.mail.ird.yahoo.com>
-In-Reply-To: <157246.48338.qm@web23111.mail.ird.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-embedded@ozlabs.org
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 03 Mar 2008 14:05:42 +0100."
+	<BLU106-W22AC7D9FCF4035AF6AB5E6CA170@phx.gbl>
+Date: Mon, 03 Mar 2008 23:06:44 +0100
+Sender: wd@denx.de
+Message-Id: <20080303220644.5499324344@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,16 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Angelo wrote:
-> Timur wrote:
->>I wrote an ASoC driver for the MPC8610, which also has 
->>an I2S interface.  You can find it in sound/soc/fsl.
+In message <BLU106-W22AC7D9FCF4035AF6AB5E6CA170@phx.gbl> you wrote:
 > 
-> in my kernel version (2.6.22) there isn't any folder named
-> fsl in sound/soc/
+> depends on which kernel version are you using. You can find some working code in DENX repository:
+> http://source.denx.net/cgi-bin/gitweb.cgi
 
-It's in 2.6.25.
+Ah, you should use the official server instead:
+
+http://www.denx.de/cgi-bin/gitweb.cgi
+
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+    \|/ ____ \|/                                     \|/ ____ \|/
+     @~/ ,. \~@                                       @~/ ,. \~@
+    /_( \__/ )_\                                     /_( \__/ )_\
+       \__U_/                                           \__U_/
