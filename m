@@ -1,9 +1,19 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 03 Mar 2008 17:27:46 +1100
-Subject: [PATCH] [POWERPC] (testers ?) Fix sleep on some powerbooks
-Message-Id: <20080303062831.6BD8EDDED8@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id EFA82DDE30
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 17:58:55 +1100 (EST)
+Date: Mon, 3 Mar 2008 17:58:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: 'next' branch of powerpc4xx tree
+Message-Id: <20080303175854.5a96431d.sfr@canb.auug.org.au>
+In-Reply-To: <20080301100613.5de31a42@zod.rchland.ibm.com>
+References: <20080301100613.5de31a42@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,47 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PMU backlight code would kick in during sleep/resume even on
-machines that use a different backlight method. This appears to
-break sleep on my PowerBook, though I can't test that patch at
-the moment as the machine died while I was bisecting.
+--Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So if anybody around has one of those latest revision PowerPC
-PowerBooks, the one just before they went to Intel, and have a
-problem with suspend/resume, please test this and let me know
-if it helps.
+Hi Josh,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+On Sat, 1 Mar 2008 10:06:13 -0600 Josh Boyer <jwboyer@linux.vnet.ibm.com> w=
+rote:
+>
+> Since all the cool kids are doing it, I went and created a 'next' branch
+> in the powerpc4xx tree.
 
- drivers/macintosh/via-pmu-backlight.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+If only the "cool kids" would :-(
 
---- linux-work.orig/drivers/macintosh/via-pmu-backlight.c	2008-03-03 17:24:44.000000000 +1100
-+++ linux-work/drivers/macintosh/via-pmu-backlight.c	2008-03-03 17:25:12.000000000 +1100
-@@ -17,7 +17,7 @@
- 
- static struct backlight_ops pmu_backlight_data;
- static DEFINE_SPINLOCK(pmu_backlight_lock);
--static int sleeping;
-+static int sleeping, uses_pmu_bl;
- static u8 bl_curve[FB_BACKLIGHT_LEVELS];
- 
- static void pmu_backlight_init_curve(u8 off, u8 min, u8 max)
-@@ -128,7 +128,7 @@ void pmu_backlight_set_sleep(int sleep)
- 
- 	spin_lock_irqsave(&pmu_backlight_lock, flags);
- 	sleeping = sleep;
--	if (pmac_backlight) {
-+	if (pmac_backlight && uses_pmu_bl) {
- 		if (sleep) {
- 			struct adb_request req;
- 
-@@ -166,6 +166,7 @@ void __init pmu_backlight_init()
- 		printk(KERN_ERR "PMU Backlight registration failed\n");
- 		return;
- 	}
-+	uses_pmu_bl = 1;
- 	bd->props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
- 	pmu_backlight_init_curve(0x7F, 0x46, 0x0E);
- 
+> Stephen, if you'd like to add this to your -next tree feel free.
+> Hopefully it will usually be empty as I merge things into Paul's tree.
+
+Sorry, I fogot to put it in for today's tree.  It will turn up tomorrow.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHy6GyTgG2atn1QN8RAmSMAJ9I3UO5SM0eojNMUzwW9ZwlAQYLJwCgjC4C
+2erE4vZnfOqd0lzd7RdrZoo=
+=/OO4
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__3_Mar_2008_17_58_54_+1100_EPYEqk+CuI+BwZdF--
