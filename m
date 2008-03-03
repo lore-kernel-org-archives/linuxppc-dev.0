@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E1F0DE15F
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 07:44:50 +1100 (EST)
-Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20080303195117.7040@gmx.net>
-References: <20071125234254.B4405DDE49@ozlabs.org>
-	<20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>
-	<20080302223012.90210@gmx.net> <1204498569.15052.488.camel@pasglop>
-	<20080303195117.7040@gmx.net>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 07:44:11 +1100
-Message-Id: <1204577051.21545.12.camel@pasglop>
-Mime-Version: 1.0
-Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id AAF37DDF25
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 08:05:34 +1100 (EST)
+Date: Mon, 3 Mar 2008 22:05:32 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
+Message-ID: <20080303210532.GA20382@netgate.macqel>
+References: <20080303144727.GA27949@ingate.macqel>
+	<20080303170719.GC28951@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080303170719.GC28951@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Scott,
 
-On Mon, 2008-03-03 at 20:51 +0100, Gerhard Pircher wrote:
-> > Remove the GFP_HIGHMEM from the above. It looks like our cache
-> > flushing isn't going to work for highmem, it would need some
-> > kmap's for that.
+On Mon, Mar 03, 2008 at 11:07:20AM -0600, Scott Wood wrote:
+> On Mon, Mar 03, 2008 at 03:47:27PM +0100, Philippe De Muyter wrote:
+> > My root device is on a compact-flash connected to a PCI yenta chip from TI,
+> > and this one is not working, altough it seems to be discovered :
+> > 
+> > 	Yenta: CardBus bridge found at 0000:00:12.0 [0000:0000]
+> > 	Yenta: Using CSCINT to route CSC interrupts to PCI
+> > 	Yenta: Routing CardBus interrupts to PCI
+> > 	Yenta TI: socket 0000:00:12.0, mfunc 0x00001b22, devctl 0x64
+> > 	irq 18: nobody cared (try booting with the "irqpoll" option)
+> > 	Call Trace:
+> > 	[cf813af0] [c00066c8] show_stack+0x3c/0x1bc (unreliable)
+> > 	[cf813b30] [c003c1ac] __report_bad_irq+0x38/0xcc
+> > 	[cf813b50] [c003c4c8] note_interrupt+0x288/0x2cc
+> > 	[cf813b80] [c003cc34] handle_fasteoi_irq+0x94/0xf8
+> 
+> Maybe your PCI interrupt-map is wrong...
 
-> Yes, it looks like this was the problem. No kernel oops anymore.
-> The machine locks up anyway (which is a well known hardware problem).
-> It doesn't lock up with CPPIOMode=true, but probably only because the
-> initialization of DRI fails with "BAD cp_mode (f0000000)!".
+Is the PCI-interrupt map that part of the dts file :
 
-Damn, I wonder why you insist trying to make that machine work :-) The
-hardware is just totally busted.
+                interrupt-map = <
 
-Ben.
+                        /* IDSEL 0x02 */
+                        1000 0 0 1 &mpic 1 1
+                        1000 0 0 2 &mpic 2 1
+                        1000 0 0 3 &mpic 3 1
+                        1000 0 0 4 &mpic 4 1
+
+                        /* IDSEL 0x03 */
+                        1800 0 0 1 &mpic 4 1
+                        1800 0 0 2 &mpic 1 1
+                        1800 0 0 3 &mpic 2 1
+                        1800 0 0 4 &mpic 3 1
+
+			...
+
+I do not understand anything there :(
+
+Philippe
