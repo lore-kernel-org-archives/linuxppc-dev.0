@@ -1,24 +1,13 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2FADDDF16
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 21:10:54 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCH] add strncmp to PowerPC
-References: <1204301097.14759.6.camel@localhost.localdomain>
-	<1204340690.15052.457.camel@pasglop>
-	<Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
-	<20080303095443.GB27105@iram.es>
-Date: Mon, 03 Mar 2008 11:10:27 +0100
-In-Reply-To: <20080303095443.GB27105@iram.es> (Gabriel Paubert's message of
-	"Mon\, 3 Mar 2008 10\:54\:43 +0100")
-Message-ID: <je4pbow224.fsf@sykes.suse.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18379.58317.223229.950553@cargo.ozlabs.ibm.com>
+Date: Mon, 3 Mar 2008 22:41:01 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +17,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gabriel Paubert <paubert@iram.es> writes:
+Linus,
 
-> Now that I think a bit more about it, I believe that the C version is
-> incorrect: the clrldi/extsb dance takes a value between -255 and +255
-> and collapses it into the -128 to 127 range, meaning that the return
-> value may be wrong if we rely on the sign of the result. So unless I
-> miss something, the problem is much more serious than just stupid code
-> (I had just a look at the libc version in C and characters are cast to
-> unsigned char before the comparison).
+Please do:
 
-The latter is explicitly required by the C standard.  Ie. even if your
-characters are signed they are always compared as unsigned by
-strcmp/strncmp/memcmp.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Andreas.
+to get a collection of bug-fixes for powerpc, for the Cell, 4xx and
+52xx platforms.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Thanks,
+Paul.
+
+ arch/powerpc/boot/cuboot-bamboo.c            |    1 
+ arch/powerpc/boot/cuboot-ebony.c             |    1 
+ arch/powerpc/boot/cuboot-katmai.c            |    1 
+ arch/powerpc/boot/cuboot-taishan.c           |    2 
+ arch/powerpc/boot/cuboot-warp.c              |    1 
+ arch/powerpc/boot/dts/haleakala.dts          |    2 
+ arch/powerpc/boot/dts/katmai.dts             |   58 +++++-----
+ arch/powerpc/oprofile/op_model_cell.c        |    2 
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    1 
+ arch/powerpc/platforms/cell/iommu.c          |  151 +++++++++++++++-----------
+ arch/powerpc/platforms/cell/setup.c          |    7 +
+ arch/powerpc/platforms/cell/spu_base.c       |   16 ++-
+ arch/powerpc/platforms/cell/spufs/context.c  |    7 +
+ arch/powerpc/platforms/cell/spufs/file.c     |   12 ++
+ arch/powerpc/platforms/cell/spufs/sched.c    |    2 
+ arch/powerpc/platforms/cell/spufs/sputrace.c |    7 +
+ arch/powerpc/platforms/cell/spufs/switch.c   |    6 +
+ arch/powerpc/platforms/celleb/beat.h         |    3 -
+ drivers/char/xilinx_hwicap/buffer_icap.c     |   80 +++++++-------
+ drivers/char/xilinx_hwicap/fifo_icap.c       |   60 +++++-----
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c   |  138 +++++++++++-------------
+ drivers/char/xilinx_hwicap/xilinx_hwicap.h   |   24 ++--
+ include/asm-powerpc/reg.h                    |    3 +
+ 23 files changed, 318 insertions(+), 267 deletions(-)
+
+Andre Detsch (1):
+      [POWERPC] spufs: fix use time accounting on SPE-overcommit
+
+Arnd Bergmann (3):
+      [POWERPC] spufs: synchronize IRQ when disabling
+      [POWERPC] spufs: invalidate SLB translation before adding a new entry
+      [POWERPC] spufs: serialize SLB invalidation against SLB loading
+
+Bob Nelson (1):
+      [POWERPC] OProfile: enable callgraph support for Cell
+
+Eric Dujardin (1):
+      [POWERPC] Add export for mpc52xx_set_psc_clkdiv
+
+Jens Osterkamp (2):
+      [POWERPC] move celleb DABRX definitions
+      [POWERPC] enable hardware watchpoints on cell blades
+
+Jeremy Kerr (3):
+      [POWERPC] spufs: fix context destruction during psmap fault
+      [POWERPC] spufs: fix invalid scheduling of forgotten contexts
+      [POWERPC] spufs: fix order of sputrace thread IDs
+
+Josh Boyer (1):
+      [POWERPC] 4xx: Use correct board info structure in cuboot wrappers
+
+Michael Ellerman (8):
+      [POWERPC] Clearup cell IOMMU fixed mapping terminology
+      [POWERPC] Use it_offset not pte_offset in cell IOMMU code
+      [POWERPC] Remove unused pte_offset variable
+      [POWERPC] Move allocation of cell IOMMU pad page
+      [POWERPC] Split setup of IOMMU stab and ptab, allocate dynamic/fixed ptabs separately
+      [POWERPC] Cell IOMMU: n_pte_pages is in 4K page units, not IOMMU_PAGE_SIZE
+      [POWERPC] Allow for different IOMMU page sizes in cell IOMMU code
+      [POWERPC] Convert the cell IOMMU fixed mapping to 16M IOMMU pages
+
+Stefan Roese (2):
+      [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem in dts
+      [POWERPC] 4xx: Fix L1 cache size in katmai DTS
+
+Stephen Neuendorffer (1):
+      [POWERPC] Xilinx: hwicap cleanup
+
+Valentine Barshak (1):
+      [POWERPC] 44x: add missing define TARGET_4xx and TARGET_440GX to cuboot-taishan
