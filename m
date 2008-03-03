@@ -1,13 +1,34 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ADFA5DDECC
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2008 23:52:12 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m23Cq7gt373316
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2008 12:52:07 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m23Cq7PV1790014
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2008 12:52:07 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m23Cq7Da006795
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2008 12:52:07 GMT
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: Fix missing Kconfig dependency
+Date: Mon, 3 Mar 2008 13:52:06 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18379.58317.223229.950553@cargo.ozlabs.ibm.com>
-Date: Mon, 3 Mar 2008 22:41:01 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200803031352.06322.osstklei@de.ibm.com>
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,86 +38,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Fixed Kconfig: ehea driver requires sparse mem
 
-Please do:
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-to get a collection of bug-fixes for powerpc, for the Cell, 4xx and
-52xx platforms.
-
-Thanks,
-Paul.
-
- arch/powerpc/boot/cuboot-bamboo.c            |    1 
- arch/powerpc/boot/cuboot-ebony.c             |    1 
- arch/powerpc/boot/cuboot-katmai.c            |    1 
- arch/powerpc/boot/cuboot-taishan.c           |    2 
- arch/powerpc/boot/cuboot-warp.c              |    1 
- arch/powerpc/boot/dts/haleakala.dts          |    2 
- arch/powerpc/boot/dts/katmai.dts             |   58 +++++-----
- arch/powerpc/oprofile/op_model_cell.c        |    2 
- arch/powerpc/platforms/52xx/mpc52xx_common.c |    1 
- arch/powerpc/platforms/cell/iommu.c          |  151 +++++++++++++++-----------
- arch/powerpc/platforms/cell/setup.c          |    7 +
- arch/powerpc/platforms/cell/spu_base.c       |   16 ++-
- arch/powerpc/platforms/cell/spufs/context.c  |    7 +
- arch/powerpc/platforms/cell/spufs/file.c     |   12 ++
- arch/powerpc/platforms/cell/spufs/sched.c    |    2 
- arch/powerpc/platforms/cell/spufs/sputrace.c |    7 +
- arch/powerpc/platforms/cell/spufs/switch.c   |    6 +
- arch/powerpc/platforms/celleb/beat.h         |    3 -
- drivers/char/xilinx_hwicap/buffer_icap.c     |   80 +++++++-------
- drivers/char/xilinx_hwicap/fifo_icap.c       |   60 +++++-----
- drivers/char/xilinx_hwicap/xilinx_hwicap.c   |  138 +++++++++++-------------
- drivers/char/xilinx_hwicap/xilinx_hwicap.h   |   24 ++--
- include/asm-powerpc/reg.h                    |    3 +
- 23 files changed, 318 insertions(+), 267 deletions(-)
-
-Andre Detsch (1):
-      [POWERPC] spufs: fix use time accounting on SPE-overcommit
-
-Arnd Bergmann (3):
-      [POWERPC] spufs: synchronize IRQ when disabling
-      [POWERPC] spufs: invalidate SLB translation before adding a new entry
-      [POWERPC] spufs: serialize SLB invalidation against SLB loading
-
-Bob Nelson (1):
-      [POWERPC] OProfile: enable callgraph support for Cell
-
-Eric Dujardin (1):
-      [POWERPC] Add export for mpc52xx_set_psc_clkdiv
-
-Jens Osterkamp (2):
-      [POWERPC] move celleb DABRX definitions
-      [POWERPC] enable hardware watchpoints on cell blades
-
-Jeremy Kerr (3):
-      [POWERPC] spufs: fix context destruction during psmap fault
-      [POWERPC] spufs: fix invalid scheduling of forgotten contexts
-      [POWERPC] spufs: fix order of sputrace thread IDs
-
-Josh Boyer (1):
-      [POWERPC] 4xx: Use correct board info structure in cuboot wrappers
-
-Michael Ellerman (8):
-      [POWERPC] Clearup cell IOMMU fixed mapping terminology
-      [POWERPC] Use it_offset not pte_offset in cell IOMMU code
-      [POWERPC] Remove unused pte_offset variable
-      [POWERPC] Move allocation of cell IOMMU pad page
-      [POWERPC] Split setup of IOMMU stab and ptab, allocate dynamic/fixed ptabs separately
-      [POWERPC] Cell IOMMU: n_pte_pages is in 4K page units, not IOMMU_PAGE_SIZE
-      [POWERPC] Allow for different IOMMU page sizes in cell IOMMU code
-      [POWERPC] Convert the cell IOMMU fixed mapping to 16M IOMMU pages
-
-Stefan Roese (2):
-      [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem in dts
-      [POWERPC] 4xx: Fix L1 cache size in katmai DTS
-
-Stephen Neuendorffer (1):
-      [POWERPC] Xilinx: hwicap cleanup
-
-Valentine Barshak (1):
-      [POWERPC] 44x: add missing define TARGET_4xx and TARGET_440GX to cuboot-taishan
+---
+diff -Nurp linux-2.6.25-rc3.org/drivers/net/Kconfig linux-2.6.25-rc3/drivers/net/Kconfig
+--- linux-2.6.25-rc3.org/drivers/net/Kconfig	2008-02-24 22:25:54.000000000 +0100
++++ linux-2.6.25-rc3/drivers/net/Kconfig	2008-03-03 13:36:48.000000000 +0100
+@@ -2513,7 +2513,7 @@ config CHELSIO_T3
+ 
+ config EHEA
+ 	tristate "eHEA Ethernet support"
+-	depends on IBMEBUS && INET
++	depends on IBMEBUS && INET && SPARSEMEM
+ 	select INET_LRO
+ 	---help---
+ 	  This driver supports the IBM pSeries eHEA ethernet adapter.
