@@ -1,29 +1,20 @@
-Return-Path: <bjorn.helgaas@hp.com>
-Received: from g4t0015.houston.hp.com (g4t0015.houston.hp.com [15.201.24.18])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id EA61ADDF48
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 06:22:33 +1100 (EST)
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [patch 6/6] PCI: consolidate several pcibios_enable_resources()
-	implementations
-Date: Mon, 3 Mar 2008 12:10:46 -0700
-References: <20080228000437.880811124@ldl.fc.hp.com>
-	<20080228001053.404893334@ldl.fc.hp.com>
-	<200803031045.07054.jbarnes@virtuousgeek.org>
-In-Reply-To: <200803031045.07054.jbarnes@virtuousgeek.org>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 09DD8DDF5D
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 06:51:20 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Mon, 03 Mar 2008 20:51:17 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1204498569.15052.488.camel@pasglop>
+Message-ID: <20080303195117.7040@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200803031210.47906.bjorn.helgaas@hp.com>
-Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	Russell King <rmk@arm.linux.org.uk>
+References: <20071125234254.B4405DDE49@ozlabs.org>	
+	<20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>	
+	<20080302223012.90210@gmx.net> <1204498569.15052.488.camel@pasglop>
+Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
+To: benh@kernel.crashing.org
+Cc: airlied@linux.ie, linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 03 March 2008 11:45:06 am Jesse Barnes wrote:
-> On Wednesday, February 27, 2008 4:04 pm Bjorn Helgaas wrote:
-> >
-> > Not-Yet-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+-------- Original-Nachricht --------
+> Datum: Mon, 03 Mar 2008 09:56:09 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: linuxppc-dev@ozlabs.org, dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, airlied@linux.ie
+> Betreff: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
+
+> Bah, I think I found the problem:
 > 
-> So you'd like to see the MIPS stuff cleaned up a bit more first before actual 
-> sign-off?  Or just more testing?
+> +static inline void *drm_vmalloc_dma(unsigned long size)
+> +{
+> +#if defined(__powerpc__) && defined(CONFIG_NOT_COHERENT_CACHE)
+> +       return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM,
+> +                        PAGE_KERNEL | _PAGE_NO_CACHE);
+> +#else
+> +       return vmalloc_32(size);
+> +#endif
+> +}
+> +
+> 
+> Remove the GFP_HIGHMEM from the above. It looks like our cache
+> flushing isn't going to work for highmem, it would need some
+> kmap's for that.
+Yes, it looks like this was the problem. No kernel oops anymore.
+The machine locks up anyway (which is a well known hardware problem).
+It doesn't lock up with CPPIOMode=true, but probably only because the
+initialization of DRI fails with "BAD cp_mode (f0000000)!".
 
-I think it'd be *nice* if that MIPS stuff got cleaned up, but that's
-way beyond my scope.  I just want to address Kyle's comments and make
-sure I don't screw up ARM and PARISC.
-
-Bjorn
+Gerhard
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
