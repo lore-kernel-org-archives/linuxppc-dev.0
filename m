@@ -1,14 +1,12 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48159DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 14:42:13 +1100 (EST)
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Correct a terrible scheduling error
-Date: Tue,  4 Mar 2008 04:42:07 +0100
-Message-Id: <d1f2621db926ece5ec9ec0baf8a70ec8e2d72b10.1204601394.git.segher@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 4 Mar 2008 15:37:00 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make some functions local to parser
+Message-ID: <20080304043700.GB2757@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,32 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It would be a pity if we can't all enjoy this.
+* eval_literal() is defined and used only in the parser, so make it
+  static.
 
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+* The Bison documentation explicitly permits yyerror() to be a
+  variadic function, so fold yyerror() and yyerrorf() into a single
+  printf-style function.  The combined function is defined and used
+  only in the parse, so make it static.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
 ---
- Documentation/feature-removal-schedule.txt |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ dtc-parser.y |   14 +++++---------
+ srcpos.h     |    3 ---
+ 2 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index c1d1fd0..78021bf 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -201,13 +201,13 @@ Who:  Tejun Heo <htejun@gmail.com>
- ---------------------------
+Index: dtc/dtc-parser.y
+===================================================================
+--- dtc.orig/dtc-parser.y	2008-03-04 15:29:09.000000000 +1100
++++ dtc/dtc-parser.y	2008-03-04 15:31:32.000000000 +1100
+@@ -24,12 +24,13 @@
+ #include "dtc.h"
+ #include "srcpos.h"
  
- What: The arch/ppc and include/asm-ppc directories
--When: Jun 2008
-+When: end of July 2008
- Why:  The arch/powerpc tree is the merged architecture for ppc32 and ppc64
-       platforms.  Currently there are efforts underway to port the remaining
-       arch/ppc platforms to the merged tree.  New submissions to the arch/ppc
-       tree have been frozen with the 2.6.22 kernel release and that tree will
-       remain in bug-fix only mode until its scheduled removal.  Platforms
--      that are not ported by June 2008 will be removed due to the lack of an
-+      that are not ported by July 2008 will be removed due to the lack of an
-       interested maintainer.
- Who:  linuxppc-dev@ozlabs.org
+-int yylex(void);
+-unsigned long long eval_literal(const char *s, int base, int bits);
++extern int yylex(void);
  
+ extern struct boot_info *the_boot_info;
+ extern int treesource_error;
+ 
++static void yyerror(char const *, ...) __attribute__((format(printf, 1, 2)));
++static unsigned long long eval_literal(const char *s, int base, int bits);
+ %}
+ 
+ %union {
+@@ -308,7 +309,7 @@ label:
+ 
+ %%
+ 
+-void yyerrorf(char const *s, ...)
++static void yyerror(char const *s, ...)
+ {
+ 	const char *fname = srcpos_file ? srcpos_file->name : "<no-file>";
+ 	va_list va;
+@@ -325,12 +326,7 @@ void yyerrorf(char const *s, ...)
+ 	va_end(va);
+ }
+ 
+-void yyerror (char const *s)
+-{
+-	yyerrorf("%s", s);
+-}
+-
+-unsigned long long eval_literal(const char *s, int base, int bits)
++static unsigned long long eval_literal(const char *s, int base, int bits)
+ {
+ 	unsigned long long val;
+ 	char *e;
+Index: dtc/srcpos.h
+===================================================================
+--- dtc.orig/srcpos.h	2008-03-04 15:30:06.000000000 +1100
++++ dtc/srcpos.h	2008-03-04 15:30:09.000000000 +1100
+@@ -70,9 +70,6 @@ typedef struct YYLTYPE {
+ 
+ 
+ 
+-extern void yyerror(char const *);
+-extern void yyerrorf(char const *, ...) __attribute__((format(printf, 1, 2)));
+-
+ extern struct dtc_file *srcpos_file;
+ 
+ extern void push_input_file(const char *filename);
+
 -- 
-1.5.3.4.208.g805a
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
