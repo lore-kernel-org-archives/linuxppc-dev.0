@@ -1,24 +1,21 @@
-Return-Path: <penberg@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.189])
-	by ozlabs.org (Postfix) with ESMTP id 70640DDF98
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:47:39 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so717728rvf.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Mar 2008 10:47:37 -0800 (PST)
-Message-ID: <84144f020803041047k7d9d6d5ai10e3f0dac3ca2aeb@mail.gmail.com>
-Date: Tue, 4 Mar 2008 20:47:37 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Sender: penberg@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-In-Reply-To: <20080304103636.3e7b8fdd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<47CD4AB3.3080409@linux.vnet.ibm.com>
-	<20080304103636.3e7b8fdd.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Mel Gorman <mel@csn.ul.ie>,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-mm@kvack.org
+Return-Path: <helgaas@ldl.fc.hp.com>
+Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 873A0DDF3B
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:15 +1100 (EST)
+Message-Id: <20080304185820.125200297@ldl.fc.hp.com>
+References: <20080304185646.864917286@ldl.fc.hp.com>
+Date: Tue, 04 Mar 2008 11:56:48 -0700
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+To: linux-arch@vger.kernel.org
+Subject: [patch 02/16] alpha: use generic pci_enable_resources()
+Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,44 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 04 Mar 2008 18:42:19 +0530 Kamalesh Babulal
-<kamalesh@linux.vnet.ibm.com> wrote:
->  > 3) Third attempt kernel booted up but had the following call trace 264 times while running
->  > test
->  >
->  > Badness at include/linux/gfp.h:110
->  > NIP: c0000000000b4ff0 LR: c0000000000b4fa0 CTR: c00000000019cdb4
->  > REGS: c000000009edf250 TRAP: 0700   Not tainted  (2.6.25-rc3-mm1-autotest)
->  > MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 22024042  XER: 20000003
->  > TASK = c000000009062140[548] 'kjournald' THREAD: c000000009edc000 CPU: 0
->  > NIP [c0000000000b4ff0] .get_page_from_freelist+0x29c/0x898
->  > LR [c0000000000b4fa0] .get_page_from_freelist+0x24c/0x898
->  > Call Trace:
->  > [c000000009edf5f0] [c0000000000b56e4] .__alloc_pages_internal+0xf8/0x470
->  > [c000000009edf6e0] [c0000000000e0458] .kmem_getpages+0x8c/0x194
->  > [c000000009edf770] [c0000000000e1050] .fallback_alloc+0x194/0x254
->  > [c000000009edf820] [c0000000000e14b0] .kmem_cache_alloc+0xd8/0x144
->  > [c000000009edf8c0] [c0000000001fe0f8] .radix_tree_preload+0x50/0xd4
->  > [c000000009edf960] [c0000000000ad048] .add_to_page_cache+0x38/0x12c
->  > [c000000009edfa00] [c0000000000ad158] .add_to_page_cache_lru+0x1c/0x4c
->  > [c000000009edfa90] [c0000000000add58] .find_or_create_page+0x60/0xa8
->  > [c000000009edfb30] [c00000000011e478] .__getblk+0x140/0x310
->  > [c000000009edfc00] [c0000000001b78c4] .journal_get_descriptor_buffer+0x44/0xd8
->  > [c000000009edfca0] [c0000000001b236c] .journal_commit_transaction+0x948/0x1590
->  > [c000000009edfe00] [c0000000001b585c] .kjournald+0xf4/0x2ac
->  > [c000000009edff00] [c00000000007ff4c] .kthread+0x84/0xd0
->  > [c000000009edff90] [c000000000028900] .kernel_thread+0x4c/0x68
->  > Instruction dump:
->  > 7dc57378 48009575 60000000 2fa30000 419e0490 56c902d8 3c000018 7dd907b4
->  > 7ad2c7e2 7f890000 7c000026 5400fffe <0b000000> e93e8128 3b000000 80090000
+Use the generic pci_enable_resources() instead of the arch-specific code.
 
-On Tue, Mar 4, 2008 at 8:36 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  /* Convert GFP flags to their corresponding migrate type */
->  static inline int allocflags_to_migratetype(gfp_t gfp_flags)
->  {
->         WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
->
->  Mel, Pekka: would you have some head-scratching time for this one please?
+Unlike this arch-specific code, the generic version:
+    - skips resources unless requested in "mask"
+    - skips ROM resources unless IORESOURCE_ROM_ENABLE is set
+    - checks for resource collisions with "!r->parent"
 
-Sure. Just to double-check, this is with SLAB, right? Do you see this with SLUB?
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: work8/arch/alpha/kernel/pci.c
+===================================================================
+--- work8.orig/arch/alpha/kernel/pci.c	2008-03-04 09:58:07.000000000 -0700
++++ work8/arch/alpha/kernel/pci.c	2008-03-04 09:58:54.000000000 -0700
+@@ -372,28 +372,7 @@
+ int
+ pcibios_enable_device(struct pci_dev *dev, int mask)
+ {
+-	u16 cmd, oldcmd;
+-	int i;
+-
+-	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+-	oldcmd = cmd;
+-
+-	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+-		struct resource *res = &dev->resource[i];
+-
+-		if (res->flags & IORESOURCE_IO)
+-			cmd |= PCI_COMMAND_IO;
+-		else if (res->flags & IORESOURCE_MEM)
+-			cmd |= PCI_COMMAND_MEMORY;
+-	}
+-
+-	if (cmd != oldcmd) {
+-		printk(KERN_DEBUG "PCI: Enabling device: (%s), cmd %x\n",
+-		       pci_name(dev), cmd);
+-		/* Enable the appropriate bits in the PCI command register.  */
+-		pci_write_config_word(dev, PCI_COMMAND, cmd);
+-	}
+-	return 0;
++	return pci_enable_resources(dev, mask);
+ }
+ 
+ /*
+
+-- 
