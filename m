@@ -1,16 +1,16 @@
 Return-Path: <helgaas@ldl.fc.hp.com>
-Received: from g5t0008.atlanta.hp.com (g5t0008.atlanta.hp.com [15.192.0.45])
+Received: from g5t0007.atlanta.hp.com (g5t0007.atlanta.hp.com [15.192.0.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 54596DE161
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:33 +1100 (EST)
-Message-Id: <20080304185822.341747405@ldl.fc.hp.com>
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 94EAADE153
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:36 +1100 (EST)
+Message-Id: <20080304185822.542010547@ldl.fc.hp.com>
 References: <20080304185646.864917286@ldl.fc.hp.com>
-Date: Tue, 04 Mar 2008 11:56:59 -0700
+Date: Tue, 04 Mar 2008 11:57:00 -0700
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: linux-pci@atrey.karlin.mff.cuni.cz
 To: linux-arch@vger.kernel.org
-Subject: [patch 13/16] sparc64: use generic pci_enable_resources()
+Subject: [patch 14/16] v850: use generic pci_enable_resources()
 Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
 	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
 	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
@@ -28,49 +28,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Use the generic pci_enable_resources() instead of the arch-specific code.
 
 Unlike this arch-specific code, the generic version:
+    - checks PCI_NUM_RESOURCES (11), not 6, resources
     - skips resources that have neither IORESOURCE_IO nor IORESOURCE_MEM set
     - skips ROM resources unless IORESOURCE_ROM_ENABLE is set
     - checks for resource collisions with "!r->parent"
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work8/arch/sparc64/kernel/pci.c
+Index: work8/arch/v850/kernel/rte_mb_a_pci.c
 ===================================================================
---- work8.orig/arch/sparc64/kernel/pci.c	2008-03-04 10:11:25.000000000 -0700
-+++ work8/arch/sparc64/kernel/pci.c	2008-03-04 10:11:45.000000000 -0700
-@@ -927,32 +927,7 @@
- 
- int pcibios_enable_device(struct pci_dev *dev, int mask)
+--- work8.orig/arch/v850/kernel/rte_mb_a_pci.c	2008-03-04 10:12:04.000000000 -0700
++++ work8/arch/v850/kernel/rte_mb_a_pci.c	2008-03-04 10:12:26.000000000 -0700
+@@ -219,30 +219,7 @@
+ 
+ int __nomods_init pcibios_enable_device (struct pci_dev *dev, int mask)
  {
--	u16 cmd, oldcmd;
--	int i;
+-	u16 cmd, old_cmd;
+-	int idx;
+-	struct resource *r;
 -
 -	pci_read_config_word(dev, PCI_COMMAND, &cmd);
--	oldcmd = cmd;
--
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
--
--		/* Only set up the requested stuff */
--		if (!(mask & (1<<i)))
--			continue;
--
--		if (res->flags & IORESOURCE_IO)
+-	old_cmd = cmd;
+-	for (idx = 0; idx < 6; idx++) {
+-		r = &dev->resource[idx];
+-		if (!r->start && r->end) {
+-			printk(KERN_ERR "PCI: Device %s not available because "
+-			       "of resource collisions\n", pci_name(dev));
+-			return -EINVAL;
+-		}
+-		if (r->flags & IORESOURCE_IO)
 -			cmd |= PCI_COMMAND_IO;
--		if (res->flags & IORESOURCE_MEM)
+-		if (r->flags & IORESOURCE_MEM)
 -			cmd |= PCI_COMMAND_MEMORY;
 -	}
--
--	if (cmd != oldcmd) {
--		printk(KERN_DEBUG "PCI: Enabling device: (%s), cmd %x\n",
--		       pci_name(dev), cmd);
--                /* Enable the appropriate bits in the PCI command register.  */
+-	if (cmd != old_cmd) {
+-		printk("PCI: Enabling device %s (%04x -> %04x)\n",
+-		       pci_name(dev), old_cmd, cmd);
 -		pci_write_config_word(dev, PCI_COMMAND, cmd);
 -	}
 -	return 0;
 +	return pci_enable_resources(dev, mask);
  }
  
- void pcibios_resource_to_bus(struct pci_dev *pdev, struct pci_bus_region *region,
+ 
 
 -- 
