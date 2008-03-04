@@ -1,18 +1,25 @@
-Return-Path: <gaudenz@debian.org>
-Received: from ping.pong.ch (ping.pong.ch [212.103.71.101])
-	by ozlabs.org (Postfix) with ESMTP id 30E8ADE12D
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:54:31 +1100 (EST)
-Date: Tue, 4 Mar 2008 21:21:00 +0100
-From: Gaudenz Steinlin <gaudenz@debian.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] (testers ?) Fix sleep on some powerbooks
-Message-ID: <20080304202100.GA5525@soziologie.ch>
-References: <20080303062831.6BD8EDDED8@ozlabs.org>
-	<20080304161518.GA4523@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080304161518.GA4523@localhost>
-Cc: debian-powerpc@lists.debian.org, linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 872D3DE060
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:59:45 +1100 (EST)
+In-Reply-To: <1204663317.21545.73.camel@pasglop>
+References: <1204588953.7921.13.camel@basalt>
+	<20080303213718.12291eee@zod.rchland.ibm.com>
+	<200803040715.22301.sr@denx.de> <1204612384.21545.50.camel@pasglop>
+	<9eeb7e8e1acf8a9217a5121fe4ec69d8@kernel.crashing.org>
+	<1204663317.21545.73.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1a852cd10d2aab54aaa7d810649ab1b3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Bamboo PCI interrupt issues
+Date: Tue, 4 Mar 2008 21:59:28 +0100
+To: benh@kernel.crashing.org
+Cc: kvm-ppc-devel <kvm-ppc-devel@lists.sourceforge.net>,
+	linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben
+>> More generally, the target interrupt descriptors (sense values, in
+>> particular) in a device tree interrupt map describe the interrupts as
+>> seen on the target interrupt controller, *not* as seen on this 
+>> (source)
+>> interrupt domain.  This should be obvious, but since the source
+>> interrupt
+>> descriptor for PCI doesn't have a sense value (it's always level low,
+>> after all), it can be confusing.  Well, interrupts always are 
+>> confusing
+>> :-)
+>
+> Sure. But if your stupid bridge sticks a not gate between the PIRQ 
+> input
+> and the UIC (interrupt controller), effectively, the UIC sees a 
+> reversed
+> polarity. Thus you need to put in your interrupt map a reversed 
+> polarity
+> information for the UIC interrupt specifiers.
+
+That's what I said, isn't it?  :-)
 
 
-On Tue, Mar 04, 2008 at 05:15:18PM +0100, Wolfgang Pfeiffer wrote:
-> Hi Ben, Gaudenz - Hi All
-> 
-> On Mon, Mar 03 2008, at 17:27 +1100, Benjamin Herrenschmidt wrote:
-> > The PMU backlight code would kick in during sleep/resume even on
-> > machines that use a different backlight method. This appears to
-> > break sleep on my PowerBook, though I can't test that patch at
-> > the moment as the machine died while I was bisecting.
-> > 
-> > So if anybody around has one of those latest revision PowerPC
-> > PowerBooks, the one just before they went to Intel, 
-> 
-> yes, I think so:
-> 
-> $ cat /proc/cpuinfo 
-> processor       : 0
-> cpu             : 7447A, altivec supported
-> clock           : 1666.666000MHz
-> revision        : 0.5 (pvr 8003 0105)
-> bogomips        : 33.15
-> timebase        : 8320000
-> platform        : PowerMac
-> machine         : PowerBook5,8
-> motherboard     : PowerBook5,8 MacRISC3 Power Macintosh 
-> detected as     : 287 (PowerBook G4 15")
-> pmac flags      : 00000019
-> L2 cache        : 512K unified
-> pmac-generation : NewWorld
-> 
-> 
-> > and have a
-> > problem with suspend/resume, please test this and let me know
-> > if it helps.
-> 
-> It helps. Thanks a lot .. :) ... 
-
-For me it fixes the problem too. I have the same machine.
-
-Gaudenz
--- 
-Ever tried. Ever failed. No matter.
-Try again. Fail again. Fail better.
-~ Samuel Beckett ~
+Segher
