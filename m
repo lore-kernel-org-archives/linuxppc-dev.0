@@ -1,11 +1,27 @@
-Return-Path: <linux.matthew@gmail.com>
-Message-ID: <38e5df7d0803041356v1816aaabnf6917670a5e689c7@mail.gmail.com>
-Date: Tue, 4 Mar 2008 16:56:03 -0500
-From: "Matthew Clark" <linux.matthew@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: Unable to set cache write-thru on 7447A
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 50773DDEB7
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 09:43:45 +1100 (EST)
+In-Reply-To: <18381.49853.255430.142431@cargo.ozlabs.ibm.com>
+References: <Pine.SOC.4.61.0612131359430.10721@math.ut.ee>
+	<1166053317.909.19.camel@praia>
+	<20061214195842.GA14041@athena.road.mcmartin.ca>
+	<1166362145.6714.53.camel@pmac.infradead.org>
+	<6a89f9d50802060639j4b3a8b7u4e4e596b010ee353@mail.gmail.com>
+	<15d7ac5a7542b05fb9b9abb5d4c7a22d@kernel.crashing.org>
+	<18381.49853.255430.142431@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c3fe70f4c488b04e426b9d61c5263059@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: V4L2: __ucmpdi2 undefined on ppc
+Date: Tue, 4 Mar 2008 23:43:25 +0100
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, henrik.sorensen@gmail.com,
+	Stephane Marchesin <marchesin@icps.u-strasbg.fr>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,37 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm trying to run my 2.6.14 Gentoo distro on a 7447A system I have
-with different cache configurations (ie, write back vs write thru) for
-both the kernel, system apps (sshd, etc) and user apps.  I first
-wanted to run entirely in Write-Thru to get a worst-case benchmark,
-but after discovering (to my chagrin) that the 7447A doesn't honor the
-L2CR_L2WT bit, I tried something a bit more adventurous by setting the
-WIMG bits on the linux PTE's in the arch/ppc files.
+>> Every occurrence of r7 here is wrong (and some of the r6).  Is there
+>> any reason to do this in assembler code at all?
+>
+> The fact that the obvious C code generates ... a call to __ucmpdi2? :)
 
-Rather, I thought I would.  Nothing I've tried seems to work.
+Hrm?  Here's the "obvious" C code, portable to all architectures
+(modulo the specific types used, this isn't a proposed patch):
 
-In arch/ppc/mm/ppc_mmu.c
-Adding _PAGE_WRITETHRU to the _PAGE_RAM flag in the setbat calls at
-lines 112 & 120 results in a kernel that won't go past the
-"Uncompressing" step.
 
-In arch/ppc/mm/pgtables.c
-If I add _PAGE_WRITETHRU to the _PAGE_RAM flag in mapin_ram and
-map_page allows the kernel to boot, and in fact shows no noticable
-performance difference.
+unsigned int ucmpdi2(unsigned long long a, unsigned long long b)
+{
+         unsigned long ahi, bhi, alo, blo;
 
-I found in arch/ppc/mm/hashtable.S that the linux PTE's aren't
-entirely transferred into the HPTE's of the PPC, so with some
-reluctance, I tried adding a line turning on WRITETHRU at line 350 in
-create_hpte:
+         ahi = a >> 32;
+         bhi = b >> 32;
+         if (ahi < bhi)
+                 return 0;
+         if (ahi > bhi)
+                 return 2;
 
-ori r8,r8,_PAGE_WRITETHRU
+         alo = a;
+         blo = b;
+         if (alo < blo)
+                 return 0;
+         if (alo > blo)
+                 return 2;
 
-The kernel will come up, but init promptly dies with Signal 11.
+         return 1;
+}
 
-There's little documentation on PPC Memory management & the linux
-kernel, so I'm not sure what do to from here.  Can anyone help me out
-here?  Thanks.
 
-Matt
+(libgcc does it a bit differently, with unions and stuff).
+
+
+Segher
