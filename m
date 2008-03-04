@@ -1,16 +1,16 @@
 Return-Path: <helgaas@ldl.fc.hp.com>
-Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
+Received: from g5t0009.atlanta.hp.com (g5t0009.atlanta.hp.com [15.192.0.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 873A0DDF3B
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:15 +1100 (EST)
-Message-Id: <20080304185820.125200297@ldl.fc.hp.com>
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id C1DDBDDF3B
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:23 +1100 (EST)
+Message-Id: <20080304185820.528510677@ldl.fc.hp.com>
 References: <20080304185646.864917286@ldl.fc.hp.com>
-Date: Tue, 04 Mar 2008 11:56:48 -0700
+Date: Tue, 04 Mar 2008 11:56:50 -0700
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: linux-pci@atrey.karlin.mff.cuni.cz
 To: linux-arch@vger.kernel.org
-Subject: [patch 02/16] alpha: use generic pci_enable_resources()
+Subject: [patch 04/16] cris: use generic pci_enable_resources()
 Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
 	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
 	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
@@ -28,45 +28,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Use the generic pci_enable_resources() instead of the arch-specific code.
 
 Unlike this arch-specific code, the generic version:
-    - skips resources unless requested in "mask"
+    - checks PCI_NUM_RESOURCES (11), not 6, resources
+    - skips resources that have neither IORESOURCE_IO nor IORESOURCE_MEM set
     - skips ROM resources unless IORESOURCE_ROM_ENABLE is set
     - checks for resource collisions with "!r->parent"
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work8/arch/alpha/kernel/pci.c
+Index: work8/arch/cris/arch-v32/drivers/pci/bios.c
 ===================================================================
---- work8.orig/arch/alpha/kernel/pci.c	2008-03-04 09:58:07.000000000 -0700
-+++ work8/arch/alpha/kernel/pci.c	2008-03-04 09:58:54.000000000 -0700
-@@ -372,28 +372,7 @@
- int
- pcibios_enable_device(struct pci_dev *dev, int mask)
- {
--	u16 cmd, oldcmd;
--	int i;
+--- work8.orig/arch/cris/arch-v32/drivers/pci/bios.c	2008-03-04 10:02:27.000000000 -0700
++++ work8/arch/cris/arch-v32/drivers/pci/bios.c	2008-03-04 10:02:47.000000000 -0700
+@@ -55,38 +55,6 @@
+ 	}
+ }
+ 
+-int pcibios_enable_resources(struct pci_dev *dev, int mask)
+-{
+-	u16 cmd, old_cmd;
+-	int idx;
+-	struct resource *r;
 -
 -	pci_read_config_word(dev, PCI_COMMAND, &cmd);
--	oldcmd = cmd;
+-	old_cmd = cmd;
+-	for(idx=0; idx<6; idx++) {
+-		/* Only set up the requested stuff */
+-		if (!(mask & (1<<idx)))
+-			continue;
 -
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
--
--		if (res->flags & IORESOURCE_IO)
+-		r = &dev->resource[idx];
+-		if (!r->start && r->end) {
+-			printk(KERN_ERR "PCI: Device %s not available because of resource collisions\n", pci_name(dev));
+-			return -EINVAL;
+-		}
+-		if (r->flags & IORESOURCE_IO)
 -			cmd |= PCI_COMMAND_IO;
--		else if (res->flags & IORESOURCE_MEM)
+-		if (r->flags & IORESOURCE_MEM)
 -			cmd |= PCI_COMMAND_MEMORY;
 -	}
--
--	if (cmd != oldcmd) {
--		printk(KERN_DEBUG "PCI: Enabling device: (%s), cmd %x\n",
--		       pci_name(dev), cmd);
--		/* Enable the appropriate bits in the PCI command register.  */
+-	if (dev->resource[PCI_ROM_RESOURCE].start)
+-		cmd |= PCI_COMMAND_MEMORY;
+-	if (cmd != old_cmd) {
+-		printk("PCI: Enabling device %s (%04x -> %04x)\n", pci_name(dev), old_cmd, cmd);
 -		pci_write_config_word(dev, PCI_COMMAND, cmd);
 -	}
 -	return 0;
-+	return pci_enable_resources(dev, mask);
- }
+-}
+-
+ int pcibios_enable_irq(struct pci_dev *dev)
+ {
+ 	dev->irq = EXT_INTR_VECT;
+@@ -97,7 +65,7 @@
+ {
+ 	int err;
  
- /*
+-	if ((err = pcibios_enable_resources(dev, mask)) < 0)
++	if ((err = pci_enable_resources(dev, mask)) < 0)
+ 		return err;
+ 
+ 	if (!dev->msi_enabled)
 
 -- 
