@@ -1,24 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C1B0DDEEF3
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 06:18:32 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m24JIMQv021993
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 12:18:23 -0700 (MST)
-Date: Tue, 4 Mar 2008 13:18:44 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: dtc: Make some functions local to parser
-Message-ID: <20080304191844.GA7810@loki.buserror.net>
-References: <20080304043700.GB2757@localhost.localdomain>
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 94A56DE8DF
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 06:20:21 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m24JJuiZ027353
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 06:19:56 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m24JNx0U263582
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 06:23:59 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m24JKJ9d010743
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 06:20:20 +1100
+Message-ID: <47CDA0F1.9030908@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2008 00:50:17 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080304043700.GB2757@localhost.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [BUG] 2.6.25-rc3-mm1 kernel bug while running libhugetlbfs
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+In-Reply-To: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +35,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 04, 2008 at 03:37:00PM +1100, David Gibson wrote:
-> * The Bison documentation explicitly permits yyerror() to be a
->   variadic function, so fold yyerror() and yyerrorf() into a single
->   printf-style function.
+Hi Andrew,
 
-Then the bison documentation is not consistent with the bison
-implementation when verbose error messages are enabled.  How can it possibly
-know whether to put % or %% in the string when an unexpected % is
-encountered?
+kernel bug is triggered while running libhugetlbfs test with 2.6.25-rc3-mm1 kernel
+over the x86 and power machines.
 
-Reading bison internals makes my head hurt...
+------------[ cut here ]------------
+kernel BUG at mm/hugetlb.c:295!
+invalid opcode: 0000 [#1] SMP 
+last sysfs file: /sys/devices/system/node/possible
+Modules linked in:
 
->   The combined function is defined and used
->   only in the parse, so make it static.
+Pid: 5484, comm: counters Not tainted (2.6.25-rc3-mm1-autokern1 #1)
+EIP: 0060:[<c10535cf>] EFLAGS: 00010202 CPU: 0
+EIP is at alloc_buddy_huge_page+0x7a/0xb0
+EAX: c13acd01 EBX: f7d3a000 ECX: 00000000 EDX: 00006363
+ESI: 00000001 EDI: 00000000 EBP: 00000000 ESP: f5539ebc
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process counters (pid: 5484, ti=f5538000 task=f60afa20 task.ti=f5538000)
+Stack: 00000001 c1053669 fffffff4 00000001 f5539ecc f5539ecc 00000001 fffffff4 
+       f55d0e78 00000001 c105480c 00000001 00200000 c1054875 00000000 f54426c0 
+       00200000 00000000 f54426c0 c10b0fb8 fffffff4 00200000 00000000 f55d0e78 
+Call Trace:
+ [<c1053669>] gather_surplus_pages+0x64/0x16d
+ [<c105480c>] hugetlb_acct_memory+0x1e/0x4a
+ [<c1054875>] hugetlb_reserve_pages+0x3d/0x6b
+ [<c10b0fb8>] hugetlbfs_file_mmap+0x9b/0xe1
+ [<c104bf9f>] mmap_region+0x1dc/0x3ae
+ [<c104bd42>] do_mmap_pgoff+0x27f/0x28e
+ [<c1005af2>] sys_mmap2+0x5a/0x78
+ [<c10029fa>] syscall_call+0x7/0xb
+ =======================
+Code: c1 e8 ed 27 1c 00 85 db 74 41 83 7b 04 00 75 10 68 c0 93 27 c1 e8 02 92 fc ff 58 e8 c1 02 fb ff f0 ff 4b 04 0f 94 c0 84 c0 74 04 <0f> 0b eb fe c7 43 38 3e 33 05 c1 8b 03 c1 e8 1c ff 04 85 60 ce 
+EIP: [<c10535cf>] alloc_buddy_huge_page+0x7a/0xb0 SS:ESP 0068:f5539ebc
+---[ end trace 5a47484f8fe93a33 ]---
 
-Static-izing something that is used externally in a posted patch where
-you've provided no alternate to use is rather bad form...
 
--Scott
+------------[ cut here ]------------
+cpu 0x3: Vector: 700 (Program Check) at [c0000000fb277740]
+    pc: c0000000000c6f54: .alloc_buddy_huge_page+0x120/0x1dc
+    lr: c0000000000c6f20: .alloc_buddy_huge_page+0xec/0x1dc
+    sp: c0000000fb2779c0
+   msr: 8000000000029032
+  current = 0xc0000000fc4cae90
+  paca    = 0xc0000000004fae80
+    pid   = 6828, comm = counters
+kernel BUG at mm/hugetlb.c:295!
+enter ? for help
+[c0000000fb277a50] c0000000000c70e8 .hugetlb_acct_memory+0xd8/0x374
+[c0000000fb277b10] c0000000000c769c .hugetlb_reserve_pages+0x184/0x2b0
+[c0000000fb277bc0] c00000000018c950 .hugetlbfs_file_mmap+0xec/0x160
+[c0000000fb277c70] c0000000000bc280 .mmap_region+0x254/0x4d4
+[c0000000fb277d80] c00000000000b1b8 .sys_mmap+0xa4/0x104
+[c0000000fb277e30] c00000000000872c syscall_exit+0x0/0x40
+--- Exception: c01 (System Call) at 000004000019e528
+SP (fffffcd4eb0) is in userspace
+3:mon>
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
