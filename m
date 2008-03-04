@@ -4,22 +4,21 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 21498DE0C2
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:35:30 +1100 (EST)
-Date: Tue, 4 Mar 2008 10:33:50 -0800
+	by ozlabs.org (Postfix) with ESMTP id EB7EBDE0CC
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:39:03 +1100 (EST)
+Date: Tue, 4 Mar 2008 10:36:36 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Neuling <mikey@neuling.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-Message-Id: <20080304103350.12d26560.akpm@linux-foundation.org>
-In-Reply-To: <20778.1204641656@neuling.org>
+Message-Id: <20080304103636.3e7b8fdd.akpm@linux-foundation.org>
+In-Reply-To: <47CD4AB3.3080409@linux.vnet.ibm.com>
 References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
 	<47CD4AB3.3080409@linux.vnet.ibm.com>
-	<20778.1204641656@neuling.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Mel Gorman <mel@csn.ul.ie>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	Pekka Enberg <penberg@cs.helsinki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,72 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 04 Mar 2008 15:40:56 +0100 Michael Neuling <mikey@neuling.org> wrote:
+On Tue, 04 Mar 2008 18:42:19 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> In message <47CD4AB3.3080409@linux.vnet.ibm.com> you wrote:
-> > Hi Andrew,
-> > 
-> > The 2.6.25-rc3-mm1 kernel panics while bootup on power box. The machine boote
-> d up
-> > without the panic on the third attempt, but badness call trace were seen whil
-> e running
-> > tests
-> > 
-> > 1) The kernel panic on first attempt
-> > 
-> > Unable to handle kernel paging request for data at address 0x00000000
-> > Faulting instruction address: 0xc00000000000cb2c
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > SMP NR_CPUS=128 NUMA pSeries
-> > Modules linked in:
-> > NIP: c00000000000cb2c LR: c00000000000caf8 CTR: 0000000000000226
-> > REGS: c00000000068f360 TRAP: 0300   Not tainted  (2.6.25-rc3-mm1-autotest)
-> > MSR: 8000000000001032 <ME,IR,DR>  CR: 28000024  XER: 20000001
-> > DAR: 0000000000000000, DSISR: 0000000040000000
-> > TASK = c0000000005c8590[0] 'swapper' THREAD: c00000000068c000 CPU: 0
-> > GPR00: c00000000068f5e0 c00000000068f5e0 c00000000068e690 0000000000000000 
-> > GPR04: 00000000000035e0 000000000087264e c000000008011280 c000000000594000 
-> > GPR08: c0000000005c9300 0000000000000000 c000000000591090 c00000000068c000 
-> > GPR12: 8000000000009032 c0000000005c9300 0000000000000000 0000000000000000 
-> > GPR16: 0000000000000000 0000000000000000 0000000000008000 0000000000000000 
-> > GPR20: 0000000000000000 0000000000000000 000000000000007f 0000000000018000 
-> > GPR24: 0000000000000001 0000000000000080 0000000000000018 0000000000000000 
-> > GPR28: 0000000000000c00 c000000000588988 c000000000639be8 c000000008001c00 
-> > NIP [c00000000000cb2c] .do_IRQ+0x74/0x1c4
-> > LR [c00000000000caf8] .do_IRQ+0x40/0x1c4
-> > Call Trace:
-> > [c00000000068f5e0] [c00000000000caf8] .do_IRQ+0x40/0x1c4 (unreliable)
-> > [c00000000068f680] [c000000000004790] hardware_interrupt_entry+0x18/0x1c
-> > --- Exception: 501 at .memset+0x70/0xfc
-> >     LR = .__alloc_bootmem_core+0x39c/0x3dc
-> > [c00000000068f970] [c00000000068fa10] init_thread_union+0x3a10/0x4000 (unreli
-> able)
-> > [c00000000068fa30] [c00000000057237c] .__alloc_bootmem_node+0x38/0x8c
-> > [c00000000068fad0] [c0000000003c477c] .zone_wait_table_init+0x74/0x108
-> > [c00000000068fb60] [c0000000003d9058] .init_currently_empty_zone+0x40/0x11c
-> > [c00000000068fc00] [c0000000003d94c8] .free_area_init_node+0x394/0x3fc
-> > [c00000000068fcf0] [c00000000057314c] .free_area_init_nodes+0x2d8/0x364
-> > [c00000000068fd90] [c00000000056682c] .paging_init+0x40/0x58
-> > [c00000000068fe40] [c00000000055ba34] .setup_arch+0x20c/0x240
-> > [c00000000068fee0] [c000000000552690] .start_kernel+0xdc/0x414
-> > [c00000000068ff90] [c000000000008594] .start_here_common+0x54/0xc0
-> > Instruction dump:
-> > 7c200b78 780404a0 2ba408ff 41bd001c e87e80a8 3884ff00 48058d21 60000000 
-> > 480054cd 60000000 e93e80b0 e92900b8 <e8090000> f8410028 e9690010 e8490008 
+> 3) Third attempt kernel booted up but had the following call trace 264 times while running
+> test
 > 
-> I'm not getting a crash but I am getting this:
-> 
->    start_kernel(): bug: interrupts were enabled *very* early, fixing it
-> 
-> ...and you're getting a null pointer access here (in do_IRQ):
-> 
-> 	irq = ppc_md.get_irq();
-> 
-> Are we somehow enabling interrupts before we've setup ppc_md.get_irq?
-> 
+> Badness at include/linux/gfp.h:110
+> NIP: c0000000000b4ff0 LR: c0000000000b4fa0 CTR: c00000000019cdb4
+> REGS: c000000009edf250 TRAP: 0700   Not tainted  (2.6.25-rc3-mm1-autotest)
+> MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 22024042  XER: 20000003
+> TASK = c000000009062140[548] 'kjournald' THREAD: c000000009edc000 CPU: 0
+> NIP [c0000000000b4ff0] .get_page_from_freelist+0x29c/0x898
+> LR [c0000000000b4fa0] .get_page_from_freelist+0x24c/0x898
+> Call Trace:
+> [c000000009edf5f0] [c0000000000b56e4] .__alloc_pages_internal+0xf8/0x470
+> [c000000009edf6e0] [c0000000000e0458] .kmem_getpages+0x8c/0x194
+> [c000000009edf770] [c0000000000e1050] .fallback_alloc+0x194/0x254
+> [c000000009edf820] [c0000000000e14b0] .kmem_cache_alloc+0xd8/0x144
+> [c000000009edf8c0] [c0000000001fe0f8] .radix_tree_preload+0x50/0xd4
+> [c000000009edf960] [c0000000000ad048] .add_to_page_cache+0x38/0x12c
+> [c000000009edfa00] [c0000000000ad158] .add_to_page_cache_lru+0x1c/0x4c
+> [c000000009edfa90] [c0000000000add58] .find_or_create_page+0x60/0xa8
+> [c000000009edfb30] [c00000000011e478] .__getblk+0x140/0x310
+> [c000000009edfc00] [c0000000001b78c4] .journal_get_descriptor_buffer+0x44/0xd8
+> [c000000009edfca0] [c0000000001b236c] .journal_commit_transaction+0x948/0x1590
+> [c000000009edfe00] [c0000000001b585c] .kjournald+0xf4/0x2ac
+> [c000000009edff00] [c00000000007ff4c] .kthread+0x84/0xd0
+> [c000000009edff90] [c000000000028900] .kernel_thread+0x4c/0x68
+> Instruction dump:
+> 7dc57378 48009575 60000000 2fa30000 419e0490 56c902d8 3c000018 7dd907b4 
+> 7ad2c7e2 7f890000 7c000026 5400fffe <0b000000> e93e8128 3b000000 80090000 
 
-Yes, we are - it's the semaphore rewrite which is doing this in
-start_kernel().  It's being discussed.
+/* Convert GFP flags to their corresponding migrate type */
+static inline int allocflags_to_migratetype(gfp_t gfp_flags)
+{
+        WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
 
-Enabling interrupts too early on powerpc was discovered to be fatal on
-powerpc years ago.  It looks like that remains the case.
+Mel, Pekka: would you have some head-scratching time for this one please?
