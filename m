@@ -1,13 +1,31 @@
-Return-Path: <s104259@yahoo.it>
-Date: Tue, 4 Mar 2008 17:38:53 +0100 (CET)
-From: Angelo <s104259@yahoo.it>
-Subject: RE: I2S driver
-To: "Pedro Luis D. L." <carcadiz@hotmail.com>
-In-Reply-To: <BLU106-W3340DC3BF1A9FD27E9FCD3CA100@phx.gbl>
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1481751835-1204648733=:10329"
-Message-ID: <538035.10329.qm@web23104.mail.ird.yahoo.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CB285DDEEC
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  5 Mar 2008 04:01:12 +1100 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1JWaVj-0000YW-Ex
+	for linuxppc-embedded@ozlabs.org; Tue, 04 Mar 2008 17:01:03 +0000
+Received: from p5497fb5c.dip.t-dialin.net ([84.151.251.92])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 04 Mar 2008 17:01:03 +0000
+Received: from dzu by p5497fb5c.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 04 Mar 2008 17:01:03 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: ELDK on 64-bit host
+Date: Tue, 04 Mar 2008 18:00:56 +0100
+Message-ID: <m2fxv65sqf.fsf@ohwell.denx.de>
+References: <a425f86c0802200703x6cbbd5acwa4b3a8dda455eeea@mail.gmail.com>
+	<f8328f7c0802200749h7a761fffha636f292b54182e5@mail.gmail.com>
+	<Pine.LNX.4.64.0802201807340.7503@pc-213-140-179-32.aina.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,70 +36,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1481751835-1204648733=:10329
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hi Kalle,
 
-Pedro wrote:
- Ok, here down is the code I told you.
-A few considerations before:
- - As I told you, it is very bad commented, sorry. I'm still working on it.
- - It's is not an alsa driver, but it copies data to the PSC working as SPI mode (it is not I2S but you only need to change the PSC configuration).
- - Its purpose is to establish a dma task to copy the data from a buffer to the PSC, where I had attached a Digital to Analog Converter that into sound through a speaker.
- - Data alignment is imposed by DAC requirements.
- - Clock configuration is fixed to 44.1 Khz, so audio data must be sampled using that frequency. Data must be also mono (only one converter attached).
- - This module is part of a mayor project to stream audio data through ethernet, so it provides a function to copy audio data to audio buffers. If there's no data to copy, it copies a null buffer to keep silence.
- - What can you find useful in this code? Configuration steps to establish DMA Tasks and PSC configuration.
- - After the module I send you also the code from another module that establishes PSC as I2S configuration. Clocks where adjusted to send the audio data also at 44.1 Khz as fine tunned as possible due to communication requirements of the attached DAC in that hardware.
+> On Wed, 20 Feb 2008, Ben Warren wrote:
+>
+>> On Wed, Feb 20, 2008 at 10:03 AM, Kalle Pokki <kalle.pokki@eke.fi> wrote:
+>> > Hi,
+>> >
+>> >  I tried to copy the ELDK 4.0 installation I had to a new Core 2 Quad
+>> >  machine running 64-bit Ubuntu 7.10, but the new machine refuses to
+>> >  execute the cross compiler. Has anyone succeeded in running ELDK in
+>> >  this kind of environment?
+>> >
+>> Yes (at least with 64-bit Debian on a single core Xeon), but you need
+>> a special library on the host.  I think it's call 'ia32-libs'.  It
+>> should be available via aptitude.
+>
+> Thanks, that was indeed the correct library to install. Now it works just 
+> fine.
+>
+> I'm a bit surprised there wasn't really any useful search results from 
+> Google with obvious keywords. I was already about to install the 32-bit 
+> version of Ubuntu to get the compiler working again. But then, perhaps 
+> installing this library was obvious to everyone else :)
 
-And finally, here is the code:
+We added an FAQ entry[1] to our DULG documentation.  And just as a
+reminder, there is also an ELDK mailing list for such questions[2].
 
-#define SPI_DBG
+Cheers
+  Detlev
 
-#ifdef SPI_DBG
-#define DBG(x...) printk("(debug) " x)
-#else
-#define DBG(x...)
-#endif
+[1] http://www.denx.de/wiki/DULG/ELDKUsageIn64BitEnvironment
+[2] http://lists.denx.de/mailman/listinfo/eldk
 
-#include 
-#include 
-#include 
-#include 
-#include 
-#include 
-.....
- Thanks for code.
- But why i can't see library?
- 
- >After the module I send you also the code from another module that >establishes PSC as I2S configuration. Clocks where adjusted to send >the audio data also at 44.1 Khz as fine tunned as possible due to >communication requirements of the attached DAC in that hardware.
- You'll send me another code?
- 
- And what about my file lite5200b.dts?
- I must enable some like this?
-         // PSC3 in CODEC mode example
-         //i2s@2400 {        // PSC3
-         //    device_type = "sound";
-         //    compatible = "mpc5200b-psc-i2s";//not 5200 compatible
-         //    cell-index = <2>;
-         //    reg = <2400 100>;
-         //    interrupts = <2 3 0>;
-         //    interrupt-parent = <&mpc5200_pic>;
-         //};
-
-
-       
----------------------------------
-L'email della prossima generazione? Puoi averla con la Nuova Yahoo! Mail
---0-1481751835-1204648733=:10329
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<i>Pedro wrote:</i><br> <blockquote class="replbq" style="border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; padding-left: 5px;">Ok, here down is the code I told you.<br>A few considerations before:<br> - As I told you, it is very bad commented, sorry. I'm still working on it.<br> - It's is not an alsa driver, but it copies data to the PSC working as SPI mode (it is not I2S but you only need to change the PSC configuration).<br> - Its purpose is to establish a dma task to copy the data from a buffer to the PSC, where I had attached a Digital to Analog Converter that into sound through a speaker.<br> - Data alignment is imposed by DAC requirements.<br> - Clock configuration is fixed to 44.1 Khz, so audio data must be sampled using that frequency. Data must be also mono (only one converter attached).<br> - This module is part of a mayor project to stream audio data through ethernet, so it provides a function to copy audio data to audio buffers. If there's no data to
- copy, it copies a null buffer to keep silence.<br> - What can you find useful in this code? Configuration steps to establish DMA Tasks and PSC configuration.<br> - After the module I send you also the code from another module that establishes PSC as I2S configuration. Clocks where adjusted to send the audio data also at 44.1 Khz as fine tunned as possible due to communication requirements of the attached DAC in that hardware.<br><br>And finally, here is the code:<br><br>#define SPI_DBG<br><br>#ifdef SPI_DBG<br>#define DBG(x...) printk("(debug) " x)<br>#else<br>#define DBG(x...)<br>#endif<br><br>#include <br>#include <br>#include <br>#include <br>#include <br>#include <br></blockquote>.....<br> Thanks for code.<br> But why i can't see library?<br> <br> &gt;After the module I send you also the code from another module that &gt;establishes PSC as I2S configuration. Clocks where adjusted to send &gt;the audio data also at 44.1 Khz as fine tunned as possible due to
- &gt;communication requirements of the attached DAC in that hardware.<br> You'll send me another code?<br> <br> And what about my file lite5200b.dts?<br> I must enable some like this?<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; // PSC3 in CODEC mode example<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //i2s@2400 {&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; // PSC3<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; device_type = "sound";<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; compatible = "mpc5200b-psc-i2s";//not 5200 compatible<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; cell-index = &lt;2&gt;;<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; reg = &lt;2400 100&gt;;<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; interrupts = &lt;2 3 0&gt;;<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //&nbsp;&nbsp;&nbsp; interrupt-parent = &lt;&amp;mpc5200_pic&gt;;<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
- //};<BR><BR><p>&#32;
-
-
-      <hr size=1><font face="Arial" size="2">L'email della prossima generazione? Puoi averla con la <a href="http://us.rd.yahoo.com/mail/it/taglines/hotmail/nowyoucan/nextgen/*http://it.docs.yahoo.com/nowyoucan.html">Nuova Yahoo! Mail</a></font>
---0-1481751835-1204648733=:10329--
+-- 
+Paul Simon sang "Fifty Ways to Lose Your Lover", because quite
+frankly, "A Million Ways to Tell a Developer He Is a D*ckhead"
+doesn't scan nearly as well.  But I'm sure he thought about it.
+                            -- linux/Documentation/ManagementStyle
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
