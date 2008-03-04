@@ -2,15 +2,15 @@ Return-Path: <helgaas@ldl.fc.hp.com>
 Received: from g5t0007.atlanta.hp.com (g5t0007.atlanta.hp.com [15.192.0.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id CD72CDE1AB
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:32 +1100 (EST)
-Message-Id: <20080304185821.953824560@ldl.fc.hp.com>
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 8126CDE153
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 05:56:33 +1100 (EST)
+Message-Id: <20080304185822.152813696@ldl.fc.hp.com>
 References: <20080304185646.864917286@ldl.fc.hp.com>
-Date: Tue, 04 Mar 2008 11:56:57 -0700
+Date: Tue, 04 Mar 2008 11:56:58 -0700
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: linux-pci@atrey.karlin.mff.cuni.cz
 To: linux-arch@vger.kernel.org
-Subject: [patch 11/16] ppc: use generic pci_enable_resources()
+Subject: [patch 12/16] sh: use generic pci_enable_resources()
 Cc: Chris Zankel <chris@zankel.net>, Grant Grundler <grundler@parisc-linux.org>,
 	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
 	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
@@ -31,35 +31,31 @@ Unlike this arch-specific code, the generic version:
     - checks PCI_NUM_RESOURCES (11), not 6, resources
     - skips resources that have neither IORESOURCE_IO nor IORESOURCE_MEM set
     - skips ROM resources unless IORESOURCE_ROM_ENABLE is set
-    - checks for resource collisions with "!r->parent", not IORESOURCE_UNSET
+    - checks for resource collisions with "!r->parent"
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work8/arch/ppc/kernel/pci.c
+Index: work8/arch/sh/drivers/pci/pci.c
 ===================================================================
---- work8.orig/arch/ppc/kernel/pci.c	2008-03-04 10:09:13.000000000 -0700
-+++ work8/arch/ppc/kernel/pci.c	2008-03-04 10:10:18.000000000 -0700
-@@ -578,39 +578,6 @@
- }
+--- work8.orig/arch/sh/drivers/pci/pci.c	2008-03-04 10:10:44.000000000 -0700
++++ work8/arch/sh/drivers/pci/pci.c	2008-03-04 10:11:04.000000000 -0700
+@@ -133,34 +133,7 @@
  
- 
--int
--pcibios_enable_resources(struct pci_dev *dev, int mask)
--{
+ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ {
 -	u16 cmd, old_cmd;
 -	int idx;
 -	struct resource *r;
 -
 -	pci_read_config_word(dev, PCI_COMMAND, &cmd);
 -	old_cmd = cmd;
--	for (idx=0; idx<6; idx++) {
--		/* Only set up the requested stuff */
--		if (!(mask & (1<<idx)))
+-	for(idx=0; idx<6; idx++) {
+-		if (!(mask & (1 << idx)))
 -			continue;
--	
 -		r = &dev->resource[idx];
--		if (r->flags & IORESOURCE_UNSET) {
--			printk(KERN_ERR "PCI: Device %s not available because of resource collisions\n", pci_name(dev));
+-		if (!r->start && r->end) {
+-			printk(KERN_ERR "PCI: Device %s not available because "
+-			       "of resource collisions\n", pci_name(dev));
 -			return -EINVAL;
 -		}
 -		if (r->flags & IORESOURCE_IO)
@@ -70,50 +66,14 @@ Index: work8/arch/ppc/kernel/pci.c
 -	if (dev->resource[PCI_ROM_RESOURCE].start)
 -		cmd |= PCI_COMMAND_MEMORY;
 -	if (cmd != old_cmd) {
--		printk("PCI: Enabling device %s (%04x -> %04x)\n", pci_name(dev), old_cmd, cmd);
--		pci_write_config_word(dev, PCI_COMMAND, cmd);
--	}
--	return 0;
--}
--
- static int next_controller_index;
- 
- struct pci_controller * __init
-@@ -785,33 +752,11 @@
- 
- int pcibios_enable_device(struct pci_dev *dev, int mask)
- {
--	u16 cmd, old_cmd;
--	int idx;
--	struct resource *r;
--
- 	if (ppc_md.pcibios_enable_device_hook)
- 		if (ppc_md.pcibios_enable_device_hook(dev, 0))
- 			return -EINVAL;
--		
--	pci_read_config_word(dev, PCI_COMMAND, &cmd);
--	old_cmd = cmd;
--	for (idx=0; idx<6; idx++) {
--		r = &dev->resource[idx];
--		if (r->flags & IORESOURCE_UNSET) {
--			printk(KERN_ERR "PCI: Device %s not available because of resource collisions\n", pci_name(dev));
--			return -EINVAL;
--		}
--		if (r->flags & IORESOURCE_IO)
--			cmd |= PCI_COMMAND_IO;
--		if (r->flags & IORESOURCE_MEM)
--			cmd |= PCI_COMMAND_MEMORY;
--	}
--	if (cmd != old_cmd) {
--		printk("PCI: Enabling device %s (%04x -> %04x)\n",
+-		printk(KERN_INFO "PCI: Enabling device %s (%04x -> %04x)\n",
 -		       pci_name(dev), old_cmd, cmd);
 -		pci_write_config_word(dev, PCI_COMMAND, cmd);
 -	}
 -	return 0;
-+
 +	return pci_enable_resources(dev, mask);
  }
  
- struct pci_controller*
+ /*
 
 -- 
