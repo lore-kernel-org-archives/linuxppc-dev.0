@@ -1,29 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 11C5CDDEE3
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:36:08 +1100 (EST)
-Date: Tue, 4 Mar 2008 12:34:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-Message-Id: <20080304123459.364f879b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0803041205370.18277@schroedinger.engr.sgi.com>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<47CD4AB3.3080409@linux.vnet.ibm.com>
-	<20080304103636.3e7b8fdd.akpm@linux-foundation.org>
-	<47CDA081.7070503@cs.helsinki.fi> <20080304193532.GC9051@csn.ul.ie>
-	<84144f020803041141x5bb55832r495d7fde92356e27@mail.gmail.com>
-	<Pine.LNX.4.64.0803041151360.18160@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0803042200410.8545@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0803041205370.18277@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mm@kvack.org, mel@csn.ul.ie, kamalesh@linux.vnet.ibm.com,
-	linuxppc-dev@ozlabs.org, penberg@cs.helsinki.fi, stable@kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EFB4DE268
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:39:59 +1100 (EST)
+In-Reply-To: <1204612384.21545.50.camel@pasglop>
+References: <1204588953.7921.13.camel@basalt>
+	<20080303213718.12291eee@zod.rchland.ibm.com>
+	<200803040715.22301.sr@denx.de> <1204612384.21545.50.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9eeb7e8e1acf8a9217a5121fe4ec69d8@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Bamboo PCI interrupt issues
+Date: Tue, 4 Mar 2008 21:39:29 +0100
+To: benh@kernel.crashing.org
+Cc: kvm-ppc-devel <kvm-ppc-devel@lists.sourceforge.net>,
+	linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,39 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 4 Mar 2008 12:07:39 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
+>> Using '8' is correct. PCI interrupts are *always* level sensitive and
+>> active
+>> low.
+>
+> Unless you use one of those strange bridges that stick not gates on the
+> PCI IRQ inputs :-) But I don't think that's the case on the 440EP.
 
-> I think this is the correct fix.
-> 
-> The NUMA fallback logic should be passing local_flags to kmem_get_pages() 
-> and not simply the flags.
-> 
-> Maybe a stable candidate since we are now simply 
-> passing on flags to the page allocator on the fallback path.
+More generally, the target interrupt descriptors (sense values, in
+particular) in a device tree interrupt map describe the interrupts as
+seen on the target interrupt controller, *not* as seen on this (source)
+interrupt domain.  This should be obvious, but since the source 
+interrupt
+descriptor for PCI doesn't have a sense value (it's always level low,
+after all), it can be confusing.  Well, interrupts always are confusing 
+:-)
 
-Do we know why this is only reported in 2.6.25-rc3-mm1?
 
-Why does this need fixing in 2.6.24.x?
-
-Thanks.
-
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  mm/slab.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.25-rc3-mm1/mm/slab.c
-> ===================================================================
-> --- linux-2.6.25-rc3-mm1.orig/mm/slab.c	2008-03-04 12:01:07.430911920 -0800
-> +++ linux-2.6.25-rc3-mm1/mm/slab.c	2008-03-04 12:04:54.449857145 -0800
-> @@ -3277,7 +3277,7 @@ retry:
->  		if (local_flags & __GFP_WAIT)
->  			local_irq_enable();
->  		kmem_flagcheck(cache, flags);
-> -		obj = kmem_getpages(cache, flags, -1);
-> +		obj = kmem_getpages(cache, local_flags, -1);
->  		if (local_flags & __GFP_WAIT)
->  			local_irq_disable();
->  		if (obj) {
+Segher
