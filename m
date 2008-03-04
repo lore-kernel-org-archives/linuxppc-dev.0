@@ -1,22 +1,18 @@
-Return-Path: <penberg@cs.helsinki.fi>
-Received: from mail.cs.helsinki.fi (courier.cs.helsinki.fi [128.214.9.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30020DE292
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:45:38 +1100 (EST)
-Message-ID: <47CDB498.6040003@cs.helsinki.fi>
-Date: Tue, 04 Mar 2008 22:44:08 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Return-Path: <gaudenz@debian.org>
+Received: from ping.pong.ch (ping.pong.ch [212.103.71.101])
+	by ozlabs.org (Postfix) with ESMTP id 30E8ADE12D
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:54:31 +1100 (EST)
+Date: Tue, 4 Mar 2008 21:21:00 +0100
+From: Gaudenz Steinlin <gaudenz@debian.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] (testers ?) Fix sleep on some powerbooks
+Message-ID: <20080304202100.GA5525@soziologie.ch>
+References: <20080303062831.6BD8EDDED8@ozlabs.org>
+	<20080304161518.GA4523@localhost>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>	<47CD4AB3.3080409@linux.vnet.ibm.com>	<20080304103636.3e7b8fdd.akpm@linux-foundation.org>	<47CDA081.7070503@cs.helsinki.fi>	<20080304193532.GC9051@csn.ul.ie>	<84144f020803041141x5bb55832r495d7fde92356e27@mail.gmail.com>	<Pine.LNX.4.64.0803041151360.18160@schroedinger.engr.sgi.com>	<Pine.LNX.4.64.0803042200410.8545@sbz-30.cs.Helsinki.FI>	<Pine.LNX.4.64.0803041205370.18277@schroedinger.engr.sgi.com>
-	<20080304123459.364f879b.akpm@linux-foundation.org>
-In-Reply-To: <20080304123459.364f879b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-mm@kvack.org, mel@csn.ul.ie, kamalesh@linux.vnet.ibm.com,
-	linuxppc-dev@ozlabs.org, stable@kernel.org,
-	Christoph Lameter <clameter@sgi.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080304161518.GA4523@localhost>
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> On Tue, 4 Mar 2008 12:07:39 -0800 (PST)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
->> I think this is the correct fix.
->>
->> The NUMA fallback logic should be passing local_flags to kmem_get_pages() 
->> and not simply the flags.
->>
->> Maybe a stable candidate since we are now simply 
->> passing on flags to the page allocator on the fallback path.
-> 
-> Do we know why this is only reported in 2.6.25-rc3-mm1?
-> 
-> Why does this need fixing in 2.6.24.x?
+Hi Ben
 
-Looking at the code, it's triggerable in 2.6.24.3 at least. Why we don't 
-have a report yet, probably because (1) the default allocator is SLUB 
-which doesn't suffer from this and (2) you need a big honkin' NUMA box 
-that causes fallback allocations to happen to trigger it.
 
-			Pekka
+On Tue, Mar 04, 2008 at 05:15:18PM +0100, Wolfgang Pfeiffer wrote:
+> Hi Ben, Gaudenz - Hi All
+> 
+> On Mon, Mar 03 2008, at 17:27 +1100, Benjamin Herrenschmidt wrote:
+> > The PMU backlight code would kick in during sleep/resume even on
+> > machines that use a different backlight method. This appears to
+> > break sleep on my PowerBook, though I can't test that patch at
+> > the moment as the machine died while I was bisecting.
+> > 
+> > So if anybody around has one of those latest revision PowerPC
+> > PowerBooks, the one just before they went to Intel, 
+> 
+> yes, I think so:
+> 
+> $ cat /proc/cpuinfo 
+> processor       : 0
+> cpu             : 7447A, altivec supported
+> clock           : 1666.666000MHz
+> revision        : 0.5 (pvr 8003 0105)
+> bogomips        : 33.15
+> timebase        : 8320000
+> platform        : PowerMac
+> machine         : PowerBook5,8
+> motherboard     : PowerBook5,8 MacRISC3 Power Macintosh 
+> detected as     : 287 (PowerBook G4 15")
+> pmac flags      : 00000019
+> L2 cache        : 512K unified
+> pmac-generation : NewWorld
+> 
+> 
+> > and have a
+> > problem with suspend/resume, please test this and let me know
+> > if it helps.
+> 
+> It helps. Thanks a lot .. :) ... 
+
+For me it fixes the problem too. I have the same machine.
+
+Gaudenz
+-- 
+Ever tried. Ever failed. No matter.
+Try again. Fail again. Fail better.
+~ Samuel Beckett ~
