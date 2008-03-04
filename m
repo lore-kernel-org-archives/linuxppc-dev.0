@@ -1,22 +1,11 @@
-Return-Path: <Alain.Cadillac@alcatel-lucent.fr>
-Received: from smail5.alcatel.fr (smail5.alcatel.fr [62.23.212.27])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smail.alcatel.fr", Issuer "smail.alcatel.fr" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 446DCDDE18
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Mar 2008 18:51:58 +1100 (EST)
-Received: from FRVELSBHS07.ad2.ad.alcatel.com (frvelsbhs07.ad2.ad.alcatel.com
-	[155.132.6.79])
-	by smail5.alcatel.fr (8.13.8/8.13.8/ICT) with ESMTP id m247UCnh018097
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Mar 2008 08:30:12 +0100
-Message-ID: <47CCFDE5.4000305@alcatel-lucent.fr>
-Date: Tue, 04 Mar 2008 08:44:37 +0100
-From: "Alain.Cadillac" <alain.cadillac@alcatel-lucent.fr>
+Return-Path: <s104259@yahoo.it>
+Date: Tue, 4 Mar 2008 11:26:48 +0100 (CET)
+From: Angelo <s104259@yahoo.it>
+Subject: I2S driver
+To: Linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: out of vmalloc 
-Content-Type: multipart/alternative;
-	boundary="------------050302040604080900010107"
+Content-Type: multipart/alternative; boundary="0-1816320898-1204626408=:28874"
+Message-ID: <766668.28874.qm@web23115.mail.ird.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +16,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------050302040604080900010107
-Content-Type: text/plain; charset=ISO-8859-3; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hi my name is Alain
-I'm working on plateform MPC8541 with linux 2.6.14 kernel.
-I must to  increase the  kernel  space  area  (1GB)  beacause I had an 
-"out of vmalloc message" when i tried to reserve 256 Mo of PCI area.
-
-*Does anyone tell me where i can found some information on HOW to do it?*
-
-Thanks for help.
-
-
-
-
---------------050302040604080900010107
-Content-Type: text/html; charset=ISO-8859-3
+--0-1816320898-1204626408=:28874
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Hi my name is Alain<br>
-I'm working on plateform MPC8541 with linux 2.6.14 kernel.<br>
-I must to  increase the  kernel  space  area  (1GB)  beacause I had an
-"out of vmalloc message" when i tried to reserve 256 Mo of PCI area.<br>
-<pre><b><big>Does anyone tell me where i can found some information on HOW to do it?</big></b>
 
-Thanks for help.</pre>
-<br>
-<div class="moz-signature"><br>
-</div>
-</body>
-</html>
+Angelo wrote:
+> Timur wrote:
+>>I wrote an ASoC driver for the MPC8610, which also has 
+>>an I2S interface.  You can find it in sound/soc/fsl.
+> 
+> in my kernel version (2.6.22) there isn't any folder named
+> fsl in sound/soc/
 
---------------050302040604080900010107--
+> Timur wrote:
+> It's in 2.6.25.
+
+
+The main problem is that in the feature of MPC8610 you can find:
+  Two synchronous serial interface (SSI) controllers for I2S or AC97   
+  audio     inputs/outputs
+
+while in MPC5200b's feature there's only:
+  I2S (up to three)
+However the main difference features:
+MPC5200B: http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5200B&nodeId=0162468rH3bTdG0898
+MPC8610:
+http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC8610
+
+What do you think on this difference?
+
+
+
+
+       
+---------------------------------
+
+---------------------------------
+L'email della prossima generazione? Puoi averla con la nuova Yahoo! Mail
+--0-1816320898-1204626408=:28874
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<pre>Angelo wrote:<br>&gt;<i> Timur wrote:<br></i>&gt;&gt;<i>I wrote an ASoC driver for the MPC8610, which also has <br></i>&gt;&gt;<i>an I2S interface.  You can find it in sound/soc/fsl.<br></i>&gt;<i> <br></i>&gt;<i> in my kernel version (2.6.22) there isn't any folder named<br></i>&gt;<i> fsl in sound/soc/<br></i><br>&gt;<i> Timur wrote:</i><br>&gt; It's in 2.6.25.<br><br></pre><div style="text-align: left;">The main problem is that in the feature of MPC8610 you can find:<br><span style="font-style: italic;">&nbsp; Two synchronous serial interface (SSI) controllers for I</span><sup style="font-style: italic;">2</sup><span style="font-style: italic;">S or AC97&nbsp;&nbsp; <br>&nbsp; audio     inputs/outputs</span><br style="font-style: italic;"></div><div style="text-align: left;">while in MPC5200b's feature there's only:<br>&nbsp; <span style="font-style: italic;">I</span><small style="font-style: italic;"><sup>2</sup></small><span style="font-style: italic;">S (up to
+ three)<br></span>However the main difference features:<br>MPC5200B: <a href="http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5200B&amp;nodeId=0162468rH3bTdG0898">http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC5200B&amp;nodeId=0162468rH3bTdG0898</a><br>MPC8610:<br><a href="http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC8610">http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC8610</a><br><br>What do you think on this difference?<br><span style="font-style: italic;"></span></div><BR><BR><p>&#32;
+
+
+
+      <hr size=1><font face="Arial" size="2"><hr size=1><font face="Arial" size="2">L'email della prossima generazione? Puoi averla con la <a href="http://us.rd.yahoo.com/mail/it/taglines/hotmail/nowyoucan/nextgen/*http://it.docs.yahoo.com/nowyoucan.html">nuova Yahoo! Mail</a></font>
+--0-1816320898-1204626408=:28874--
