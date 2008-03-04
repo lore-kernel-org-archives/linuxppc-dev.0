@@ -4,23 +4,23 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 310A8DDFEF
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 19:30:50 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C07AFDE01D
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 19:30:52 +1100 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m248Uih2015963
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 01:30:45 -0700 (MST)
+	m248UkTS015978
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 01:30:46 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m248UYX4000251
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 02:30:43 -0600 (CST)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m248UYX6000251
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 02:30:45 -0600 (CST)
 From: Zhang Wei <wei.zhang@freescale.com>
 To: mporter@kernel.crashing.org, galak@kernel.crashing.org
-Subject: [PATCH 09/17] Add serial RapidIO controller support,
-	which includes MPC8548, MPC8641.
-Date: Wed,  5 Mar 2008 00:29:54 +0800
-Message-Id: <1204648202-5495-9-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <1204648202-5495-8-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 10/17] Add RapidIO connection info print out and re-training
+	for break connection.
+Date: Wed,  5 Mar 2008 00:29:55 +0800
+Message-Id: <1204648202-5495-10-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <1204648202-5495-9-git-send-email-wei.zhang@freescale.com>
 References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-2-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-3-git-send-email-wei.zhang@freescale.com>
@@ -29,6 +29,7 @@ References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-6-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-7-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-8-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-9-git-send-email-wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -41,175 +42,97 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_rio.c |   74 +++++++++++++++++++++++++++++++++++-----
- include/linux/rio.h           |    6 +++
- 2 files changed, 70 insertions(+), 10 deletions(-)
+ arch/powerpc/sysdev/fsl_rio.c |   71 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 71 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 9dae418..1535d12 100644
+index 1535d12..585f7d2 100644
 --- a/arch/powerpc/sysdev/fsl_rio.c
 +++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -21,6 +21,7 @@
- #include <linux/rio.h>
- #include <linux/rio_drv.h>
- #include <linux/of_platform.h>
-+#include <linux/delay.h>
+@@ -945,6 +945,48 @@ static int fsl_rio_get_cmdline(char *s)
  
- #include <asm/io.h>
+ __setup("riohdid=", fsl_rio_get_cmdline);
  
-@@ -30,7 +31,12 @@
- #define IRQ_RIO_RX(m)		(((struct rio_priv *)(m->priv))->rxirq)
- 
- #define RIO_ATMU_REGS_OFFSET	0x10c00
--#define RIO_MSG_REGS_OFFSET	0x11000
-+#define RIO_P_MSG_REGS_OFFSET	0x11000
-+#define RIO_S_MSG_REGS_OFFSET	0x13000
-+#define RIO_ESCSR		0x158
-+#define RIO_CCSR		0x15c
-+#define RIO_ISR_AACR		0x10120
-+#define RIO_ISR_AACR_AA		0x1	/* Accept All ID */
- #define RIO_MAINT_WIN_SIZE	0x400000
- #define RIO_DBELL_WIN_SIZE	0x1000
- 
-@@ -69,7 +75,7 @@
- 
- struct rio_atmu_regs {
- 	u32 rowtar;
--	u32 pad1;
-+	u32 rowtear;
- 	u32 rowbar;
- 	u32 pad2;
- 	u32 rowar;
-@@ -95,7 +101,15 @@ struct rio_msg_regs {
- 	u32 ifqdpar;
- 	u32 pad6;
- 	u32 ifqepar;
--	u32 pad7[250];
-+	u32 pad7[226];
-+	u32 odmr;
-+	u32 odsr;
-+	u32 res0[4];
-+	u32 oddpr;
-+	u32 oddatr;
-+	u32 res1[3];
-+	u32 odretcr;
-+	u32 res2[12];
- 	u32 dmr;
- 	u32 dsr;
- 	u32 pad8;
-@@ -175,8 +189,22 @@ static int fsl_rio_doorbell_send(struct rio_mport *mport,
- 	struct rio_priv *priv = mport->priv;
- 	pr_debug("fsl_doorbell_send: index %d destid %4.4x data %4.4x\n",
- 		 index, destid, data);
--	out_be32(&priv->dbell_atmu_regs->rowtar, destid << 22);
--	out_be16(priv->dbell_win, data);
-+	switch (mport->phy_type) {
-+	case RIO_PHY_PARALLEL:
-+		out_be32(&priv->dbell_atmu_regs->rowtar, destid << 22);
-+		out_be16(priv->dbell_win, data);
-+		break;
-+	case RIO_PHY_SERIAL:
-+		/* In the serial version silicons, such as MPC8548, MPC8641,
-+		 * below operations is must be.
-+		 */
-+		out_be32(&priv->msg_regs->odmr, 0x00000000);
-+		out_be32(&priv->msg_regs->odretcr, 0x00000004);
-+		out_be32(&priv->msg_regs->oddpr, destid << 16);
-+		out_be32(&priv->msg_regs->oddatr,data );
-+		out_be32(&priv->msg_regs->odmr, 0x00000001);
-+		break;
++static inline void fsl_rio_info(struct device *dev, u32 ccsr)
++{
++	const char *str;
++	if (ccsr & 1) {
++		/* Serial phy */
++		switch (ccsr >> 30) {
++		case 0:
++			str = "1";
++			break;
++		case 1:
++			str = "4";
++			break;
++		default:
++			str = "Unknown";
++			break;;
++		}
++		dev_info(dev, "Hardware port width: %s\n", str);
++
++		switch ((ccsr >> 27) & 7) {
++		case 0:
++			str = "Single-lane 0";
++			break;
++		case 1:
++			str = "Single-lane 2";
++			break;
++		case 2:
++			str = "Four-lane";
++			break;
++		default:
++			str = "Unknown";
++			break;
++		}
++		dev_info(dev, "Training connection status: %s\n", str);
++	} else {
++		/* Parallel phy */
++		if (!(ccsr & 0x80000000))
++			dev_info(dev, "Output port operating in 8-bit mode\n");
++		if (!(ccsr & 0x08000000))
++			dev_info(dev, "Input port operating in 8-bit mode\n");
 +	}
- 
- 	return 0;
- }
-@@ -342,11 +370,22 @@ rio_hw_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
- 		memset(priv->msg_tx_ring.virt_buffer[priv->msg_tx_ring.tx_slot]
- 				+ len, 0, RIO_MAX_MSG_SIZE - len);
- 
--	/* Set mbox field for message */
--	desc->dport = mbox & 0x3;
-+	switch(mport->phy_type) {
-+	case RIO_PHY_PARALLEL:
-+		/* Set mbox field for message */
-+		desc->dport = mbox & 0x3;
- 
--	/* Enable EOMI interrupt, set priority, and set destid */
--	desc->dattr = 0x28000000 | (rdev->destid << 2);
-+		/* Enable EOMI interrupt, set priority, and set destid */
-+		desc->dattr = 0x28000000 | (rdev->destid << 2);
-+		break;
-+	case RIO_PHY_SERIAL:
-+		/* Set mbox field for message, and set destid */
-+		desc->dport = (rdev->destid << 16) | ( mbox & 0x3);
-+
-+		/* Enable EOMI interrupt and priority */
-+		desc->dattr = 0x28000000;
-+		break;
-+	}
- 
- 	/* Set transfer size aligned to next power of 2 (in double words) */
- 	desc->dwcnt = is_power_of_2(len) ? len : 1 << get_bitmask_order(len);
-@@ -923,6 +962,7 @@ int fsl_rio_setup(struct of_device *dev)
- 	const u32 *dt_range, *cell;
- 	struct resource regs;
- 	int rlen;
-+	u32 ccsr;
- 	u64 law_start, law_size;
- 	int paw, aw, sw;
- 
-@@ -1011,6 +1051,14 @@ int fsl_rio_setup(struct of_device *dev)
- 
- 	priv->regs_win = (u32) ioremap(regs.start, regs.end - regs.start + 1);
- 
-+	/* Probe the master port phy type */
-+	ccsr = in_be32(priv->regs_win + RIO_CCSR);
-+	port->phy_type = (ccsr & 1) ? RIO_PHY_SERIAL : RIO_PHY_PARALLEL;
-+	dev_info(&dev->dev, "RapidIO PHY type: %s\n",
-+			(port->phy_type == RIO_PHY_PARALLEL) ? "parallel" :
-+			((port->phy_type == RIO_PHY_SERIAL) ? "serial" :
-+			 "unknown"));
-+
- 	port->sys_size = (in_be32((priv->regs_win + RIO_PEF_CAR))
- 					& RIO_PEF_CTLS) >> 4;
- 	dev_info(&dev->dev, "RapidIO Common Transport System size: %d\n",
-@@ -1020,7 +1068,13 @@ int fsl_rio_setup(struct of_device *dev)
- 					+ RIO_ATMU_REGS_OFFSET);
- 	priv->maint_atmu_regs = priv->atmu_regs + 1;
- 	priv->dbell_atmu_regs = priv->atmu_regs + 2;
--	priv->msg_regs = (struct rio_msg_regs *)(priv->regs_win + RIO_MSG_REGS_OFFSET);
-+	priv->msg_regs = (struct rio_msg_regs *)(priv->regs_win +
-+				((port->phy_type == RIO_PHY_SERIAL) ?
-+				RIO_S_MSG_REGS_OFFSET : RIO_P_MSG_REGS_OFFSET));
-+
-+	/* Set to receive any dist ID for serial RapidIO controller. */
-+	if (port->phy_type == RIO_PHY_SERIAL)
-+		out_be32((priv->regs_win + RIO_ISR_AACR), RIO_ISR_AACR_AA);
- 
- 	/* Configure maintenance transaction window */
- 	out_be32(&priv->maint_atmu_regs->rowbar, 0x000c0000);
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index 4b0156d..b96cdf4 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -145,6 +145,11 @@ struct rio_dbell {
- 	void *dev_id;
- };
- 
-+enum rio_phy_type {
-+	RIO_PHY_PARALLEL,
-+	RIO_PHY_SERIAL,
-+};
++}
 +
  /**
-  * struct rio_mport - RIO master port info
-  * @dbells: List of doorbell events
-@@ -178,6 +183,7 @@ struct rio_mport {
- 				 * 0 - Small size. 256 devices.
- 				 * 1 - Large size, 65536 devices.
- 				 */
-+	enum rio_phy_type phy_type;	/* RapidIO phy type */
- 	unsigned char name[40];
- 	void *priv;		/* Master port private data */
- };
+  * fsl_rio_setup - Setup MPC85xx RapidIO interface
+  * @fsl_rio_setup - Setup Freescale PowerPC RapidIO interface
+@@ -1058,6 +1100,35 @@ int fsl_rio_setup(struct of_device *dev)
+ 			(port->phy_type == RIO_PHY_PARALLEL) ? "parallel" :
+ 			((port->phy_type == RIO_PHY_SERIAL) ? "serial" :
+ 			 "unknown"));
++	/* Checking the port training status */
++	if (in_be32((priv->regs_win + RIO_ESCSR)) & 1) {
++		dev_err(&dev->dev, "Port is not ready. "
++				   "Try to restart connection...\n");
++		switch (port->phy_type) {
++		case RIO_PHY_SERIAL:
++			/* Disable ports */
++			out_be32(priv->regs_win + RIO_CCSR, 0);
++			/* Set 1x lane */
++			setbits32(priv->regs_win + RIO_CCSR, 0x02000000);
++			/* Enable ports */
++			setbits32(priv->regs_win + RIO_CCSR, 0x00600000);
++			break;
++		case RIO_PHY_PARALLEL:
++			/* Disable ports */
++			out_be32(priv->regs_win + RIO_CCSR, 0x22000000);
++			/* Enable ports */
++			out_be32(priv->regs_win + RIO_CCSR, 0x44000000);
++			break;
++		}
++		msleep(100);
++		if (in_be32((priv->regs_win + RIO_ESCSR)) & 1) {
++			dev_err(&dev->dev, "Port restart failed.\n");
++			rc = -ENOLINK;
++			goto err;
++		}
++		dev_info(&dev->dev, "Port restart success!\n");
++	}
++	fsl_rio_info(&dev->dev, ccsr);
+ 
+ 	port->sys_size = (in_be32((priv->regs_win + RIO_PEF_CAR))
+ 					& RIO_PEF_CTLS) >> 4;
 -- 
 1.5.4
