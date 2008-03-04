@@ -1,23 +1,23 @@
-Return-Path: <clameter@sgi.com>
-Received: from relay.sgi.com (relay2.sgi.com [192.48.171.30])
-	by ozlabs.org (Postfix) with ESMTP id 5BFE5DE284
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 06:56:50 +1100 (EST)
-Date: Tue, 4 Mar 2008 11:56:42 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-In-Reply-To: <84144f020803041141x5bb55832r495d7fde92356e27@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0803041151360.18160@schroedinger.engr.sgi.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 83D0CDDE16
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 07:00:28 +1100 (EST)
+Date: Tue, 4 Mar 2008 11:51:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel bug while running libhugetlbfs
+Message-Id: <20080304115158.505f33eb.akpm@linux-foundation.org>
+In-Reply-To: <47CDA0F1.9030908@linux.vnet.ibm.com>
 References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<47CD4AB3.3080409@linux.vnet.ibm.com>
-	<20080304103636.3e7b8fdd.akpm@linux-foundation.org>
-	<47CDA081.7070503@cs.helsinki.fi> <20080304193532.GC9051@csn.ul.ie>
-	<84144f020803041141x5bb55832r495d7fde92356e27@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	<47CDA0F1.9030908@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, balbir@linux.vnet.ibm.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 4 Mar 2008, Pekka Enberg wrote:
+On Wed, 05 Mar 2008 00:50:17 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> >  > I suspect the WARN_ON() is bogus although I really don't know that part
-> >  > of the code all too well. Mel?
-> >  >
-> >
-> >  The warn-on is valid. A situation should not exist that allows both flags to
-> >  be set. I suspect  if remove-set_migrateflags.patch was reverted from -mm
-> >  the warning would not trigger. Christoph, would it be reasonable to always
-> >  clear __GFP_MOVABLE when __GFP_RECLAIMABLE is set for SLAB_RECLAIM_ACCOUNT.
+> Hi Andrew,
+> 
+> kernel bug is triggered while running libhugetlbfs test with 2.6.25-rc3-mm1 kernel
+> over the x86 and power machines.
+> 
+> ------------[ cut here ]------------
+> kernel BUG at mm/hugetlb.c:295!
+> invalid opcode: 0000 [#1] SMP 
+> last sysfs file: /sys/devices/system/node/possible
+> Modules linked in:
+> 
+> Pid: 5484, comm: counters Not tainted (2.6.25-rc3-mm1-autokern1 #1)
+> EIP: 0060:[<c10535cf>] EFLAGS: 00010202 CPU: 0
+> EIP is at alloc_buddy_huge_page+0x7a/0xb0
+> EAX: c13acd01 EBX: f7d3a000 ECX: 00000000 EDX: 00006363
+> ESI: 00000001 EDI: 00000000 EBP: 00000000 ESP: f5539ebc
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process counters (pid: 5484, ti=f5538000 task=f60afa20 task.ti=f5538000)
+> Stack: 00000001 c1053669 fffffff4 00000001 f5539ecc f5539ecc 00000001 fffffff4 
+>        f55d0e78 00000001 c105480c 00000001 00200000 c1054875 00000000 f54426c0 
+>        00200000 00000000 f54426c0 c10b0fb8 fffffff4 00200000 00000000 f55d0e78 
+> Call Trace:
+>  [<c1053669>] gather_surplus_pages+0x64/0x16d
+>  [<c105480c>] hugetlb_acct_memory+0x1e/0x4a
+>  [<c1054875>] hugetlb_reserve_pages+0x3d/0x6b
+>  [<c10b0fb8>] hugetlbfs_file_mmap+0x9b/0xe1
+>  [<c104bf9f>] mmap_region+0x1dc/0x3ae
+>  [<c104bd42>] do_mmap_pgoff+0x27f/0x28e
+>  [<c1005af2>] sys_mmap2+0x5a/0x78
+>  [<c10029fa>] syscall_call+0x7/0xb
+>  =======================
+> Code: c1 e8 ed 27 1c 00 85 db 74 41 83 7b 04 00 75 10 68 c0 93 27 c1 e8 02 92 fc ff 58 e8 c1 02 fb ff f0 ff 4b 04 0f 94 c0 84 c0 74 04 <0f> 0b eb fe c7 43 38 3e 33 05 c1 8b 03 c1 e8 1c ff 04 85 60 ce 
+> EIP: [<c10535cf>] alloc_buddy_huge_page+0x7a/0xb0 SS:ESP 0068:f5539ebc
+> ---[ end trace 5a47484f8fe93a33 ]---
+> 
+> 
 
-Slab allocations should never be passed these flags since the slabs do 
-their own thing there.
+Please send Adam a copy of that libhugetlbfs test ;)
 
-The following patch would clear these in slub:
+hugetlb-correct-page-count-for-surplus-huge-pages.patch adds:
 
----
- mm/slub.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.25-rc3-mm1/mm/slub.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/slub.c	2008-03-04 11:53:47.600342756 -0800
-+++ linux-2.6.25-rc3-mm1/mm/slub.c	2008-03-04 11:55:40.153855150 -0800
-@@ -1033,8 +1033,8 @@ static struct page *allocate_slab(struct
- 	struct page *page;
- 	int pages = 1 << s->order;
- 
-+	flags &= ~GFP_MOVABLE_MASK;
- 	flags |= s->allocflags;
--
- 	page = alloc_slab_page(flags | __GFP_NOWARN | __GFP_NORETRY,
- 								node, s->order);
- 	if (unlikely(!page)) {
+        if (page) {
+                /*
+                 * This page is now managed by the hugetlb allocator and has
+                 * no users -- drop the buddy allocator's reference.
+                 */
+                int page_count = put_page_testzero(page);
+                BUG_ON(page_count != 0);
