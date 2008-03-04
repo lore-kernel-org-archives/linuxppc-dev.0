@@ -1,27 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C2C2CDDF5A
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 08:02:02 +1100 (EST)
-Subject: Re: Bamboo PCI interrupt issues
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <1a852cd10d2aab54aaa7d810649ab1b3@kernel.crashing.org>
-References: <1204588953.7921.13.camel@basalt>
-	<20080303213718.12291eee@zod.rchland.ibm.com>
-	<200803040715.22301.sr@denx.de> <1204612384.21545.50.camel@pasglop>
-	<9eeb7e8e1acf8a9217a5121fe4ec69d8@kernel.crashing.org>
-	<1204663317.21545.73.camel@pasglop>
-	<1a852cd10d2aab54aaa7d810649ab1b3@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 08:01:30 +1100
-Message-Id: <1204664490.21545.84.camel@pasglop>
-Mime-Version: 1.0
-Cc: kvm-ppc-devel <kvm-ppc-devel@lists.sourceforge.net>,
-	linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 109DDDDF20
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 08:28:56 +1100 (EST)
+Date: Tue, 4 Mar 2008 22:28:56 +0100
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: debian-powerpc@lists.debian.org
+Subject: Re: [PATCH] [POWERPC] (testers ?) Fix sleep on some powerbooks
+Message-ID: <20080304212856.GB4523@localhost>
+References: <20080303062831.6BD8EDDED8@ozlabs.org>
+	<20080304161518.GA4523@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080304161518.GA4523@localhost>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 2008-03-04 at 21:59 +0100, Segher Boessenkool wrote:
-> >> More generally, the target interrupt descriptors (sense values, in
-> >> particular) in a device tree interrupt map describe the interrupts as
-> >> seen on the target interrupt controller, *not* as seen on this 
-> >> (source)
-> >> interrupt domain.  This should be obvious, but since the source
-> >> interrupt
-> >> descriptor for PCI doesn't have a sense value (it's always level low,
-> >> after all), it can be confusing.  Well, interrupts always are 
-> >> confusing
-> >> :-)
-> >
-> > Sure. But if your stupid bridge sticks a not gate between the PIRQ 
-> > input
-> > and the UIC (interrupt controller), effectively, the UIC sees a 
-> > reversed
-> > polarity. Thus you need to put in your interrupt map a reversed 
-> > polarity
-> > information for the UIC interrupt specifiers.
+On Tue, Mar 04 2008, at 17:15 +0100, Wolfgang Pfeiffer wrote:
 > 
-> That's what I said, isn't it?  :-)
+> 
+> [ ... ]
 
-Maybe, I wasn't sure I decrypted you properly :-)
+> I uploaded this fresh kernel .deb, patched with your code, up to
+> rapidshare: 
+> http://rapidshare.com/files/96992135/linux-image-2.6.25-rc3-g7704a8b-with-ben.s-pmu-patch_2008.02.29_powerpc.deb.html
+> 
+> md5sum for the file above is 7a7613e0c52e179acf7caacaa3890901
+              
+"the file" should say:
+linux-image-2.6.25-rc3-g7704a8b-with-ben.s-pmu-patch_2008.02.29_powerpc.deb
 
-Ben.
+Sorry for the overhead ...
+
+Regards
+
+-- 
+Wolfgang 
+
+http://heelsbroke.blogspot.com/
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
