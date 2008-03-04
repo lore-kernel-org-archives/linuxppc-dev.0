@@ -1,19 +1,21 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
-	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id A7033DDEC2
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 11:12:03 +1100 (EST)
-Date: Thu, 28 Feb 2008 18:39:06 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/3] ppc64-specific memory notifier support
-Message-ID: <20080229003906.GP16241@localdomain>
-References: <1204217028.28696.10.camel@dyn9047017100.beaverton.ibm.com>
-	<1204217166.28696.15.camel@dyn9047017100.beaverton.ibm.com>
-	<1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id BF697DDEA3
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 11:42:21 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2 v2] [POWERPC] Ignore disabled serial ports
+Date: Tue, 4 Mar 2008 01:42:05 +0100
+References: <20080301081600.74598ce4@zod.rchland.ibm.com>
+	<20080303132107.67200634@weaponx>
+	<20080303214028.GE4712@localdomain>
+In-Reply-To: <20080303214028.GE4712@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1204243875.7729.3.camel@concordia.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200803040142.06533.arnd@arndb.de>
+Cc: Scott Wood <scottwood@freescale.com>, Nathan Lynch <ntl@pobox.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,49 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Thu, 2008-02-28 at 08:46 -0800, Badari Pulavarty wrote:
-> > Hotplug memory notifier for ppc64. This gets invoked by writing
-> > the device-node that needs to be removed to /proc/ppc64/ofdt.
-> > We need to adjust the sections and remove sysfs entries by
-> > calling __remove_pages(). Then call arch specific code to
-> > get rid of htab mappings for the section of memory.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > ---
-> >  arch/powerpc/platforms/pseries/Makefile         |    1 
-> >  arch/powerpc/platforms/pseries/hotplug-memory.c |   98 ++++++++++++++++++++++++
-> >  2 files changed, 99 insertions(+)
-> > 
-> > Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-02-28 08:20:14.000000000 -0800
-> 
-> > +
-> > +static struct notifier_block pseries_smp_nb = {
-> > +	.notifier_call = pseries_memory_notifier,
-> > +};
-> > +
-> > +static int __init pseries_memory_hotplug_init(void)
-> > +{
-> > +	if (firmware_has_feature(FW_FEATURE_LPAR))
-> > +		pSeries_reconfig_notifier_register(&pseries_smp_nb);
-> > +
-> > +	return 0;
-> > +}
-> > +arch_initcall(pseries_memory_hotplug_init);
-> 
-> This is going to fire on non-pseries LPAR platforms, like iSeries and
-> PS3. Which is not what you want I think.
+On Monday 03 March 2008, Nathan Lynch wrote:
+> I agree. =A0Josh's patch is immediately useful to other code as-is.
+>=20
+> used-by-rtas is powerpc-specific and doesn't belong in drivers/of IMO.
 
-Well, the notifier will be registered, yes, but it will never be
-called because that path is reachable only from a write to
-/proc/ppc64/ofdt, which is not created on non-pseries.
+Ok, makes sense, plus paulus looked at the PAPR spec with me and we found
+that used-by-rtas doesn't necessarily mean "don't touch" in all
+circumstances, so original patch
 
-Maybe it should be
-
-machine_device_initcall(pseries, pseries_memory_hotplug_init);
-
-(and pseries_cpu_hotplug_init in hotplug-cpu.c should be changed to
-machine_arch_initcall)
+Acked-by: Arnd Bergmann <arnd@arndb.de>
