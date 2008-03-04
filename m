@@ -1,19 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 613EDDDDF0
+Return-Path: <Alain.Cadillac@alcatel-lucent.fr>
+Received: from smail5.alcatel.fr (smail5.alcatel.fr [62.23.212.27])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smail.alcatel.fr", Issuer "smail.alcatel.fr" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 446DCDDE18
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Mar 2008 09:06:47 +1100 (EST)
-To: "Pedro Luis D. L." <carcadiz@hotmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: I2S driver
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 03 Mar 2008 14:05:42 +0100."
-	<BLU106-W22AC7D9FCF4035AF6AB5E6CA170@phx.gbl>
-Date: Mon, 03 Mar 2008 23:06:44 +0100
-Sender: wd@denx.de
-Message-Id: <20080303220644.5499324344@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  4 Mar 2008 18:51:58 +1100 (EST)
+Received: from FRVELSBHS07.ad2.ad.alcatel.com (frvelsbhs07.ad2.ad.alcatel.com
+	[155.132.6.79])
+	by smail5.alcatel.fr (8.13.8/8.13.8/ICT) with ESMTP id m247UCnh018097
+	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Mar 2008 08:30:12 +0100
+Message-ID: <47CCFDE5.4000305@alcatel-lucent.fr>
+Date: Tue, 04 Mar 2008 08:44:37 +0100
+From: "Alain.Cadillac" <alain.cadillac@alcatel-lucent.fr>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: out of vmalloc 
+Content-Type: multipart/alternative;
+	boundary="------------050302040604080900010107"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +27,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <BLU106-W22AC7D9FCF4035AF6AB5E6CA170@phx.gbl> you wrote:
-> 
-> depends on which kernel version are you using. You can find some working code in DENX repository:
-> http://source.denx.net/cgi-bin/gitweb.cgi
+This is a multi-part message in MIME format.
+--------------050302040604080900010107
+Content-Type: text/plain; charset=ISO-8859-3; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Ah, you should use the official server instead:
+Hi my name is Alain
+I'm working on plateform MPC8541 with linux 2.6.14 kernel.
+I must to  increase the  kernel  space  area  (1GB)  beacause I had an 
+"out of vmalloc message" when i tried to reserve 256 Mo of PCI area.
 
-http://www.denx.de/cgi-bin/gitweb.cgi
+*Does anyone tell me where i can found some information on HOW to do it?*
+
+Thanks for help.
 
 
-Best regards,
 
-Wolfgang Denk
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-    \|/ ____ \|/                                     \|/ ____ \|/
-     @~/ ,. \~@                                       @~/ ,. \~@
-    /_( \__/ )_\                                     /_( \__/ )_\
-       \__U_/                                           \__U_/
+--------------050302040604080900010107
+Content-Type: text/html; charset=ISO-8859-3
+Content-Transfer-Encoding: 8bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Hi my name is Alain<br>
+I'm working on plateform MPC8541 with linux 2.6.14 kernel.<br>
+I must to  increase the  kernel  space  area  (1GB)  beacause I had an
+"out of vmalloc message" when i tried to reserve 256 Mo of PCI area.<br>
+<pre><b><big>Does anyone tell me where i can found some information on HOW to do it?</big></b>
+
+Thanks for help.</pre>
+<br>
+<div class="moz-signature"><br>
+</div>
+</body>
+</html>
+
+--------------050302040604080900010107--
