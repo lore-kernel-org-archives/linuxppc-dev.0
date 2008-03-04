@@ -4,22 +4,23 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D9D66DDF5F
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 19:30:57 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D80E3DE0C3
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2008 19:30:58 +1100 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m248UpRE019106
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 01:30:51 -0700 (MST)
+	m248UqsR019127
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 01:30:53 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m248UYXC000251
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 02:30:50 -0600 (CST)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m248UYXE000251
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 02:30:52 -0600 (CST)
 From: Zhang Wei <wei.zhang@freescale.com>
 To: mporter@kernel.crashing.org, galak@kernel.crashing.org
-Subject: [PATCH 13/17] Add FSL RapidIO controller memory ops functions.
-Date: Wed,  5 Mar 2008 00:29:58 +0800
-Message-Id: <1204648202-5495-13-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <1204648202-5495-12-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 14/17] Add the RapidIO master port maintance and doorbell
+	window to space resources.
+Date: Wed,  5 Mar 2008 00:29:59 +0800
+Message-Id: <1204648202-5495-14-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <1204648202-5495-13-git-send-email-wei.zhang@freescale.com>
 References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-2-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-3-git-send-email-wei.zhang@freescale.com>
@@ -32,6 +33,7 @@ References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-10-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-11-git-send-email-wei.zhang@freescale.com>
 	<1204648202-5495-12-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-13-git-send-email-wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -42,262 +44,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add FSL RapidIO controller (MPC85xx, MPC86xx) memory operation
-functions, which include map inbound/outbound window and
-unmap incound/outbound window.
+Add the RapidIO master port maintance and doorbell IO windows to
+RIO space resources.
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_rio.c |  202 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 202 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/fsl_rio.c |   26 +++++++++++++++++++++-----
+ include/linux/rio.h           |    1 +
+ 2 files changed, 22 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index d793084..c260ae5 100644
+index c260ae5..350db4e 100644
 --- a/arch/powerpc/sysdev/fsl_rio.c
 +++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -30,6 +30,8 @@
- #define IRQ_RIO_TX(m)		(((struct rio_priv *)(m->priv))->txirq)
- #define IRQ_RIO_RX(m)		(((struct rio_priv *)(m->priv))->rxirq)
- 
-+#define IS_64BIT_RES ((sizeof(resource_size_t) == 8) ? 1 : 0)
-+
- #define RIO_ATMU_REGS_OFFSET	0x10c00
- #define RIO_P_MSG_REGS_OFFSET	0x11000
- #define RIO_S_MSG_REGS_OFFSET	0x13000
-@@ -39,6 +41,15 @@
- #define RIO_ISR_AACR_AA		0x1	/* Accept All ID */
- #define RIO_MAINT_WIN_SIZE	0x400000
- #define RIO_DBELL_WIN_SIZE	0x1000
-+#define RIO_MAX_INB_ATMU	4
-+#define RIO_MAX_OUTB_ATMU	8
-+#define RIO_INB_ATMU_REGS_OFFSET	0x10de0
-+#define RIO_ATMU_EN_MASK	0x80000000
-+
-+#define RIO_NREAD		0x4
-+#define RIO_NWRITE		0x4
-+#define RIO_NWRITE_R		0x5
-+#define RIO_NREAD_R		0x5
- 
- #define RIO_MSG_OMR_MUI		0x00000002
- #define RIO_MSG_OSR_TE		0x00000080
-@@ -82,6 +93,15 @@ struct rio_atmu_regs {
- 	u32 pad3[3];
+@@ -192,6 +192,8 @@ struct rio_priv {
+ 	int bellirq;
+ 	int txirq;
+ 	int rxirq;
++	struct resource maint_res;
++	struct resource dbell_res;
  };
  
-+struct rio_inb_atmu_regs {
-+	u32 riwtar;
-+	u32 pad1;
-+	u32 riwbar;
-+	u32 pad2;
-+	u32 riwar;
-+	u32 pad3[3];
-+};
-+
- struct rio_msg_regs {
- 	u32 omr;
- 	u32 osr;
-@@ -334,6 +354,180 @@ fsl_rio_config_write(struct rio_mport *mport, int index, u16 destid,
- }
- 
  /**
-+ * fsl_rio_map_inb_mem -- Mapping inbound memory region.
-+ * @lstart: Local memory space start address.
-+ * @rstart: RapidIO space start address.
-+ * @size: The mapping region size.
-+ * @flags: Flags for mapping. 0 for using default flags.
-+ *
-+ * Return: 0 -- Success.
-+ *
-+ * This function will create the inbound mapping
-+ * from rstart to lstart.
-+ */
-+static int fsl_rio_map_inb_mem(struct rio_mport *mport, resource_size_t lstart,
-+		resource_size_t rstart,	resource_size_t size, u32 flags)
-+{
-+	int i;
-+	struct rio_priv *priv = mport->priv;
-+	struct rio_inb_atmu_regs __iomem *inbatmu = (struct rio_inb_atmu_regs *)
-+				(priv->regs_win + RIO_INB_ATMU_REGS_OFFSET) - 1;
-+	int size_ffs;
-+	resource_size_t align;
-+
-+	if (flags == 0)
-+		flags = (RIO_NREAD_R << 4) | RIO_NWRITE_R;
-+
-+	align = (size < 0x1000) ? 0x1000 : 1 << (__ilog2(size - 1) + 1);
-+
-+	/* Align the size */
-+	if ((lstart + size) > (_ALIGN_DOWN(lstart, align) + align)) {
-+		size_ffs = __ffs(_ALIGN_DOWN(lstart + size - 1, align));
-+		size = 1 << (size_ffs +	(((_ALIGN_DOWN(lstart, 1 << size_ffs) +
-+				(1 << size_ffs)) < (lstart + size)) ? 1 : 0));
-+	} else
-+		size = align;
-+
-+	if ((lstart & (size - 1)) != (rstart & (size - 1))) {
-+		dev_err(mport->dev, "The local address 0x%x can not be aligned "
-+			"to the same size 0x%x with the RapidIO space "
-+			"address 0x%x!\n", lstart, size, rstart);
-+		return -EINVAL;
-+	}
-+
-+	/* Search for free inbound ATMU */
-+	for (i = 1;
-+		(i <= RIO_MAX_INB_ATMU) && (inbatmu->riwar & RIO_ATMU_EN_MASK);
-+		i++, inbatmu--)
-+		;
-+
-+	if (i > RIO_MAX_INB_ATMU) {
-+		dev_err(mport->dev, "No free inbound ATMU!\n");
-+		return -EBUSY;
-+	}
-+	out_be32(&inbatmu->riwtar, ((IS_64BIT_RES ? (lstart >> 32)
-+				& 0xf : 0) << 20) | ((lstart >> 12) & 0xfffff));
-+	out_be32(&inbatmu->riwbar, ((IS_64BIT_RES ? (rstart >> 32)
-+				& 0x3 : 0) << 20) | ((rstart >> 12) & 0xfffff));
-+	out_be32(&inbatmu->riwar, 0x80000000 | (0xf << 20)
-+				| ((flags & 0xff) << 12)
-+				| (__ilog2(size) - 1));
-+	return 0;
-+}
-+
-+/**
-+ * fsl_rio_map_outb_mem -- Mapping outbound memory region.
-+ * @lstart: Local memory space start address.
-+ * @rstart: RapidIO space start address.
-+ * @size: The mapping region size.
-+ * @tid: The target RapidIO device id.
-+ * @flags: Flags for mapping. 0 for using default flags.
-+ *
-+ * Return: 0 -- Success.
-+ *
-+ * This function will create the outbound mapping
-+ * from lstart to rstart.
-+ */
-+static int fsl_rio_map_outb_mem(struct rio_mport *mport, resource_size_t lstart,
-+		resource_size_t rstart,	resource_size_t size,
-+		u16 tid, u32 flags)
-+{
-+	int i;
-+	struct rio_priv *priv = mport->priv;
-+	struct rio_atmu_regs __iomem *outbatmu = (struct rio_atmu_regs *)
-+			(priv->regs_win + RIO_ATMU_REGS_OFFSET) + 1;
-+	int size_ffs;
-+	resource_size_t align;
-+
-+	if (flags == 0)
-+		flags = (RIO_NREAD << 4) | RIO_NWRITE_R;
-+
-+	align = (size < 0x1000) ? 0x1000 : 1 << (__ilog2(size - 1) + 1);
-+
-+	/* Align the size */
-+	if ((lstart + size) > (_ALIGN_DOWN(lstart, align) + align)) {
-+		size_ffs = __ffs(_ALIGN_DOWN(lstart + size - 1, align));
-+		size = 1 << (size_ffs +	(((_ALIGN_DOWN(lstart, 1 << size_ffs) +
-+				(1 << size_ffs)) < (lstart + size)) ? 1 : 0));
-+	} else
-+		size = align;
-+
-+	if ((lstart & (size - 1)) != (rstart & (size - 1))) {
-+		dev_err(mport->dev, "The local address 0x%x can not be aligned "
-+			"to the same size 0x%x with the RapidIO space address "
-+			"0x%x!\n", lstart, size, rstart);
-+		return -EINVAL;
-+	}
-+
-+	/* Search for free outbound ATMU */
-+	for (i = 1;
-+	      (i <= RIO_MAX_OUTB_ATMU) && (outbatmu->rowar & RIO_ATMU_EN_MASK);
-+	      i++, outbatmu++)
-+		;
-+
-+	if (i > RIO_MAX_OUTB_ATMU) {
-+		dev_err(mport->dev, "No free outbound ATMU!\n");
-+		return -EBUSY;
-+	}
-+	out_be32(&outbatmu->rowtar, ((tid & 0x3ff) << 22)
-+			| ((IS_64BIT_RES ? (rstart >> 32) & 0x3 : 0) << 20)
-+			| ((rstart >> 12) & 0xfffff));
-+	if (mport->phy_type == RIO_PHY_SERIAL)
-+		out_be32(&outbatmu->rowtear, tid >> 10);
-+	out_be32(&outbatmu->rowbar, ((IS_64BIT_RES ?
-+					(lstart >> 32) & 0xf : 0) << 20)
-+					| ((lstart >> 12) & 0xfffff));
-+	out_be32(&outbatmu->rowar, 0x80000000
-+				| ((flags & 0xff) << 12)
-+				| (__ilog2(size) - 1));
-+	return 0;
-+}
-+
-+/**
-+ * fsl_rio_unmap_inb_mem -- Unmapping inbound memory region.
-+ * @lstart: Local memory space start address.
-+ */
-+static void fsl_rio_unmap_inb_mem(struct rio_mport *mport, resource_size_t lstart)
-+{
-+	int i;
-+	struct rio_priv *priv = mport->priv;
-+	struct rio_inb_atmu_regs __iomem *inbatmu = (struct rio_inb_atmu_regs *)
-+			(priv->regs_win + RIO_INB_ATMU_REGS_OFFSET) - 1;
-+
-+	/* Search for inbound ATMU */
-+	for (i = 1; i <= RIO_MAX_INB_ATMU ; i++, inbatmu--) {
-+		u32 tar = ((IS_64BIT_RES ? (lstart >> 32) & 0xf : 0) << 20)
-+			| ((lstart >> 12) & 0xfffff);
-+		if (inbatmu->riwtar == tar) {
-+			out_be32(&inbatmu->riwar, ~(RIO_ATMU_EN_MASK));
-+			return;
-+		}
-+	}
-+}
-+
-+/**
-+ * fsl_rio_unmap_inb_mem -- Unmapping outbound memory region.
-+ * @lstart: Local memory space start address.
-+ */
-+static void fsl_rio_unmap_outb_mem(struct rio_mport *mport, resource_size_t lstart)
-+{
-+	int i;
-+	struct rio_priv *priv = mport->priv;
-+	struct rio_atmu_regs __iomem *outbatmu = (struct rio_atmu_regs *)
-+			(priv->regs_win + RIO_ATMU_REGS_OFFSET) + 1;
-+
-+	/* Search for outbound ATMU */
-+	for (i = 1; i <= RIO_MAX_OUTB_ATMU ; i++, outbatmu++) {
-+		u32 bar = ((IS_64BIT_RES ? (lstart >> 32) & 0xf : 0) << 20)
-+			| ((lstart >> 12) & 0xfffff);
-+		if (outbatmu->rowbar == bar) {
-+			out_be32(&outbatmu->rowar, ~(RIO_ATMU_EN_MASK));
-+			return;
-+		}
-+	}
-+}
-+
-+/**
-  * rio_hw_add_outb_message - Add message to the MPC85xx outbound message queue
-  * @mport: Master port with outbound message queue
-  * @rdev: Target of outbound message
-@@ -956,6 +1150,13 @@ static int fsl_rio_get_cmdline(char *s)
+@@ -1363,15 +1365,29 @@ int fsl_rio_setup(struct of_device *dev)
+ 		out_be32((priv->regs_win + RIO_ISR_AACR), RIO_ISR_AACR_AA);
  
- __setup("riohdid=", fsl_rio_get_cmdline);
+ 	/* Configure maintenance transaction window */
+-	out_be32(&priv->maint_atmu_regs->rowbar, 0x000c0000);
+-	out_be32(&priv->maint_atmu_regs->rowar, 0x80077015);
++	rio_init_io_res(&priv->maint_res, law_start, RIO_MAINT_WIN_SIZE,
++			"maint_win", RIO_RESOURCE_MAINT);
++	rc = rio_request_io_region(port, &priv->maint_res);
++	if (rc) {
++		dev_err(&dev->dev, "request maint window error!\n");
++		goto err;
++	}
++	out_be32(&priv->maint_atmu_regs->rowbar, (law_start >> 12) & 0xffffff);
++	out_be32(&priv->maint_atmu_regs->rowar, 0x80077000
++					| (__ilog2(RIO_MAINT_WIN_SIZE) - 1));
  
-+static struct rio_mem_ops fsl_mem_ops = {
-+	.map_inb = fsl_rio_map_inb_mem,
-+	.map_outb = fsl_rio_map_outb_mem,
-+	.unmap_inb = fsl_rio_unmap_inb_mem,
-+	.unmap_outb = fsl_rio_unmap_outb_mem,
-+};
-+
- static inline void fsl_rio_info(struct device *dev, u32 ccsr)
- {
- 	const char *str;
-@@ -1099,6 +1300,7 @@ int fsl_rio_setup(struct of_device *dev)
- 	strcpy(port->name, "RIO0 mport");
+ 	priv->maint_win = (u32) ioremap(law_start, RIO_MAINT_WIN_SIZE);
  
- 	port->ops = ops;
-+	port->mops = &fsl_mem_ops;
- 	port->host_deviceid = fsl_rio_get_hdid(port->id);
+ 	/* Configure outbound doorbell window */
+-	out_be32(&priv->dbell_atmu_regs->rowbar, 0x000c0400);
+-	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);
+-	fsl_rio_doorbell_init(port);
++	rio_init_io_res(&priv->dbell_res, law_start + RIO_MAINT_WIN_SIZE,
++			RIO_DBELL_WIN_SIZE, "dbell_win", RIO_RESOURCE_DOORBELL);
++	out_be32(&priv->dbell_atmu_regs->rowbar, (priv->dbell_res.start >> 12)
++							& 0xffffff);
++	out_be32(&priv->dbell_atmu_regs->rowar, 0x80042000
++					| (__ilog2(RIO_DBELL_WIN_SIZE) - 1));
++	rc = fsl_rio_doorbell_init(port);
++	if (rc)
++		goto err;
  
- 	port->priv = priv;
+ 	return 0;
+ err:
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index d8ff4b8..c4acb52 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -257,6 +257,7 @@ struct rio_ops {
+ #define RIO_RESOURCE_MEM	0x00000100
+ #define RIO_RESOURCE_DOORBELL	0x00000200
+ #define RIO_RESOURCE_MAILBOX	0x00000400
++#define RIO_RESOURCE_MAINT	0x00000800
+ 
+ #define RIO_RESOURCE_CACHEABLE	0x00010000
+ #define RIO_RESOURCE_PCI	0x00020000
 -- 
 1.5.4
