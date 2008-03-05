@@ -1,22 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5BBF4DDFE8
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 04:30:57 +1100 (EST)
-Date: Wed, 5 Mar 2008 11:31:28 -0600
+	by ozlabs.org (Postfix) with ESMTP id DDB61DDE10
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 04:34:04 +1100 (EST)
+Date: Wed, 5 Mar 2008 11:34:37 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Alexandr Smirnov <asmirnov@ru.mvista.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
-Message-ID: <20080305173128.GA12443@loki.buserror.net>
-References: <20080304162322.GA19634@ru.mvista.com>
-	<20080304163540.GD19634@ru.mvista.com>
-	<20080304232940.GB8399@localhost.localdomain>
+To: galak@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH] Fix wrapper platform for adder875, and combine defconfigs.
+Message-ID: <20080305173437.GA14946@loki.buserror.net>
+References: <20080220183338.GA9282@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080304232940.GB8399@localhost.localdomain>
+In-Reply-To: <20080220183338.GA9282@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 05, 2008 at 10:29:40AM +1100, David Gibson wrote:
-> On Tue, Mar 04, 2008 at 07:35:40PM +0300, Alexandr Smirnov wrote:
-> > +			device_type = "network";
-> > +			model = "TSEC";
-> > +			compatible = "gianfar";
-> 
-> This still looks like the old binding.
+On Wed, Feb 20, 2008 at 12:33:38PM -0600, Scott Wood wrote:
+> This fixes the following bug:
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051979.html
 
-Unfortunately, only the mdio node has a new binding.  The gianfar driver
-itself (or rather the glue code in fsl_soc.c) still insists on the above.
+Can someone apply this for 2.6.25?  Adder875 does not currently build.
 
 -Scott
