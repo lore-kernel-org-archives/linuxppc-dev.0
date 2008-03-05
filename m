@@ -1,17 +1,17 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id DEDFFDE057
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 22:33:10 +1100 (EST)
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 8DB97DDF48
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 22:37:15 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/11] celleb: coding style cleanup
-Date: Wed, 5 Mar 2008 12:32:59 +0100
-References: <20080305.172143.-1350505489.kouish@swc.toshiba.co.jp>
-In-Reply-To: <20080305.172143.-1350505489.kouish@swc.toshiba.co.jp>
+Subject: Re: [PATCH 2/11] celleb: move the base part for celleb support
+Date: Wed, 5 Mar 2008 12:36:56 +0100
+References: <20080305.172345.-1625872818.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20080305.172345.-1625872818.kouish@swc.toshiba.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200803051233.00538.arnd@arndb.de>
+Message-Id: <200803051236.57425.arnd@arndb.de>
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,10 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 05 March 2008, Ishizaki Kou wrote:
-> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-
-all changes in here look right, and they don't change the generated
-code.
+T24gV2VkbmVzZGF5IDA1IE1hcmNoIDIwMDgsIElzaGl6YWtpIEtvdSB3cm90ZToKPiBUaGlzIHBh
+dGNoIG1vdmVzIHRoZSBiYXNlIGNvZGUgZm9yIGNlbGxlYiBzdXBwb3J0IGludG8gcGxhdGZvcm1z
+L2NlbGwvLgo+IEFsbCBmaWxlcyBpbiB0aGlzIHBhdGNoIGFyZSB1c2VkIGJ5IGNlbGxlYi1iZWF0
+IGFuZCBjZWxsZWItbmF0aXZlIGNvbW1vbmx5LgoKTW92aW5nIGFyb3VuZCB0aGUgZmlsZXMgdGhp
+cyB3YXkgaXMgZ29vZCwgYnV0Cgo+ICsrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9N
+YWtlZmlsZaCgoKCgoDIwMDgtMDMtMDQgMTQ6MDA6MjguMDAwMDAwMDAwICArMDkwMCAKPiBAQCAt
+MjYsMyArMjYsMjAgQEAKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IKAgc3B1ZnMvCj4goAo+IKBvYmotJChDT05GSUdfUENJX01TSSmgoKCgoKCgoKCgoKCgoKCgoKAr
+PSBheG9uX21zaS5vCj4gKwo+ICsKPiArIyBjZWxsZWIgc3R1ZmYKPiAraWZlcSAoJChDT05GSUdf
+UFBDX0NFTExFQikseSkKPiArb2JqLXmgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+Kz0gY2VsbGViX3NldHVwLm8gXAo+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKAgoCBjZWxsZWJfcGNpLm8gY2VsbGViX3NjY19lcGNpLm8gXAo+ICugoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgoCBjZWxsZWJfc2NjX3BjaWV4Lm8gXAo+ICugoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgoCBjZWxsZWJfc2NjX3VoYy5vIFwK
+PiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIKAgYmVhdC5vIGJlYXRf
+aHRhYi5vIGJlYXRfaHZDYWxsLm8gXAo+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgoCBiZWF0X2ludGVycnVwdC5vIGJlYXRfaW9tbXUubyBcCj4gK6CgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCCgIGlvLXdvcmthcm91bmRzLm8gc3BpZGVyLXBj
+aS5vCj4gKwo+ICtvYmotJChDT05GSUdfU01QKaCgoKCgoKCgoKCgoKCgoKCgoKCgoKArPSBiZWF0
+X3NtcC5vCj4gK29iai0kKENPTkZJR19QUENfVURCR19CRUFUKaCgoKCgoKCgoKCgoCs9IGJlYXRf
+dWRiZy5vCj4gK29iai0kKENPTkZJR19TRVJJQUxfVFhYOSmgoKCgoKCgoKCgoKCgoCs9IGNlbGxl
+Yl9zY2Nfc2lvLm8KPiArb2JqLSQoQ09ORklHX1NQVV9CQVNFKaCgoKCgoKCgoKCgoKCgoKCgKz0g
+YmVhdF9zcHVfcHJpdjEubwo+ICtlbmRpZgoKVGhpcyBsb29rcyBsaWtlIHlvdSBhcmUgcmVmZXJl
+bmNpbmcgZmlsZXMgaW4gdGhlIE1ha2VmaWxlIHRoYXQgYXJlIG1vdmVkCmluIHRoZSBsYXRlciBw
+YXRjaGVzLiBJbiBvcmRlciB0byBtYWtlIHRoZSBnaXQtYmlzZWN0IHdvcmsgY29ycmVjdGx5Cm9u
+IHRoZSBrZXJuZWwgYWZ0ZXIgdGhlIHBhdGNoZXMgYXJlIGFwcGxpZWQsIEknZCBzdWdnZXN0IGVp
+dGhlciBtb3ZpbmcKYWxsIGZpbGVzIGF0IG9uY2UsIG9yIHRvIG1vZGlmeSB0aGUgTWFrZWZpbGUg
+aW4gZXZlcnkgc3RlcCBvZiB0aGUgd2F5CnNvIHRoYXQgdGhlIGtlcm5lbCBzdGlsbCBidWlsZHMu
+CgoJQXJuZCA8PjwK
