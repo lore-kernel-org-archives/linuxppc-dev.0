@@ -1,21 +1,22 @@
-Return-Path: <ionut.nicu@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A739DE036
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 03:34:33 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m25GQx4o028682
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 09:34:25 -0700 (MST)
-From: Ionut Nicu <ionut.nicu@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix kernel panic in arch_arm_kprobe
-Date: Wed,  5 Mar 2008 18:12:54 +0200
-Message-Id: <1204733574-7445-1-git-send-email-ionut.nicu@freescale.com>
-Cc: Ionut Nicu <ionut.nicu@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 5BBF4DDFE8
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 04:30:57 +1100 (EST)
+Date: Wed, 5 Mar 2008 11:31:28 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Alexandr Smirnov <asmirnov@ru.mvista.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
+Message-ID: <20080305173128.GA12443@loki.buserror.net>
+References: <20080304162322.GA19634@ru.mvista.com>
+	<20080304163540.GD19634@ru.mvista.com>
+	<20080304232940.GB8399@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080304232940.GB8399@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The code in arch_arm_kprobe was trying to set a breakpoint which
-resulted in a page fault because the kernel text pages were write
-protected. Disable the write protect when CONFIG_KPROBES is defined.
+On Wed, Mar 05, 2008 at 10:29:40AM +1100, David Gibson wrote:
+> On Tue, Mar 04, 2008 at 07:35:40PM +0300, Alexandr Smirnov wrote:
+> > +			device_type = "network";
+> > +			model = "TSEC";
+> > +			compatible = "gianfar";
+> 
+> This still looks like the old binding.
 
-Signed-off-by: Ionut Nicu <ionut.nicu@freescale.com>
----
- include/asm-powerpc/pgtable-ppc32.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Unfortunately, only the mdio node has a new binding.  The gianfar driver
+itself (or rather the glue code in fsl_soc.c) still insists on the above.
 
-diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
-index d1332bb..ce66f72 100644
---- a/include/asm-powerpc/pgtable-ppc32.h
-+++ b/include/asm-powerpc/pgtable-ppc32.h
-@@ -428,7 +428,8 @@ extern int icache_44x_need_flush;
- #define _PAGE_IO	(_PAGE_KERNEL | _PAGE_NO_CACHE | _PAGE_GUARDED)
- #define _PAGE_RAM	(_PAGE_KERNEL | _PAGE_HWEXEC)
- 
--#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH)
-+#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
-+	defined(CONFIG_KPROBES)
- /* We want the debuggers to be able to set breakpoints anywhere, so
-  * don't write protect the kernel text */
- #define _PAGE_RAM_TEXT	_PAGE_RAM
--- 
-1.5.4.2
+-Scott
