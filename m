@@ -1,19 +1,23 @@
-Return-Path: <asmirnov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F421DDDFCB
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 01:36:45 +1100 (EST)
-Message-ID: <47CEB1F7.7020803@ru.mvista.com>
-Date: Wed, 05 Mar 2008 17:45:11 +0300
-From: Alexandr Smirnov <asmirnov@ru.mvista.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
-References: <20080304162322.GA19634@ru.mvista.com>
-	<20080304163540.GD19634@ru.mvista.com>
-	<20080304232940.GB8399@localhost.localdomain>
-In-Reply-To: <20080304232940.GB8399@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 731B2DDFE6
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 02:02:49 +1100 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080304185819.885549413@ldl.fc.hp.com>
+References: <20080304185819.885549413@ldl.fc.hp.com>
+	<20080304185646.864917286@ldl.fc.hp.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [patch 01/16] PCI: add generic pci_enable_resources()
+Date: Wed, 05 Mar 2008 14:53:31 +0000
+Message-ID: <20894.1204728811@redhat.com>
+Sender: dhowells@redhat.com
+Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
 
-David, could you please explain what do you mean by "old bindind"? I 
-looked through ppc_dev listing,
-documentation, and how it's done for other boards, but didn't find any 
-difference with my code. Maybe
-you're talking about future changes in ethernet driver registration?
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Thanks,
-Alexandr.
+> Each architecture has its own pcibios_enable_resources() implementation.
+> These differ in many minor ways that have nothing to do with actual
+> architectural differences.  Follow-on patches will make most arches
+> use this generic version instead.
+> 
+> This version is based on powerpc, which seemed most up-to-date.  The only
+> functional difference from the x86 version is that this uses "!r->parent"
+> to check for resource collisions instead of "!r->start && r->end".
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-David Gibson wrote:
->> +			device_type = "network";
->> +			model = "TSEC";
->> +			compatible = "gianfar";
->>     
->
-> This still looks like the old binding.
->   
+Acked-by: David Howells <dhowells@redhat.com>
