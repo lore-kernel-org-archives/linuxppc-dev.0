@@ -1,34 +1,27 @@
-Return-Path: <pbadari@gmail.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 157A5DDF0A
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 09:32:25 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m25MWMFY015348
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 17:32:22 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m25MWMbc178412
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 15:32:22 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m25MWMiF028128
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 15:32:22 -0700
-Subject: Re: 2.6.25-rc3-mm1 ppc64 boot hang
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080305135425.c8ebf8e4.akpm@linux-foundation.org>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<1204752855.7939.42.camel@dyn9047017100.beaverton.ibm.com>
-	<20080305135425.c8ebf8e4.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 14:35:42 -0800
-Message-Id: <1204756542.7939.44.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
-	lkml <linux-kernel@vger.kernel.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 87E69DDEC5
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 09:59:10 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 5 Mar 2008 23:59:02 +0100
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+Message-ID: <20080305225902.GA27985@iram.es>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<200802272221.38985.jwilson@redhat.com>
+	<1204179959.15052.372.camel@pasglop>
+	<200802281342.06493.jwilson@redhat.com>
+	<1204241162.15052.393.camel@pasglop>
+	<47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es>
+	<47CC0C95.1030709@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47CC0C95.1030709@s5r6.in-berlin.de>
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Jarod Wilson <jwilson@redhat.com>, linux1394-devel@lists.sourceforge.net,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,31 +31,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-03-05 at 13:54 -0800, Andrew Morton wrote:
-> On Wed, 05 Mar 2008 13:34:14 -0800
-> Badari Pulavarty <pbadari@gmail.com> wrote:
+On Mon, Mar 03, 2008 at 03:35:01PM +0100, Stefan Richter wrote:
+> Gabriel Paubert wrote:
+> > I have a Pismo which I use on a virtually
+> > daily basis (and about to remove the last remnants of MacOS on it). 
+> > However I have disabled Firewire because it would not sleep and wake 
+> > up properly. 
+> > 
+> > I can test it on Wednesday with a 5GB fireflly disk from 2001.
+> > 
+> > Please tell me which configuration options I need to set for
+> > Firewire (which stack, etc...).
 > 
-> > On Tue, 2008-03-04 at 01:19 -0800, Andrew Morton wrote:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
-> > > 
-> > 
-> > Hi Andrew,
-> > 
-> > Not able to boot 2.6.25-rc3-mm1 my ppc64 box.
-> > 2.6.25-rc2-mm1 and 2.6.25-rc3 boots fine.
-> > 
-> > I applied slab.c fix also.
-> > 
-> > Any other known issues ? My config file attached.
-> > Here are the messages on the console.
+> Config options of the new stack:
+> FIREWIRE=m
+> FIREWIRE_OHCI=m
+> FIREWIRE_SBP2=m
 > 
-> The semaphore consolidation code enables interrupts early in boot, when it
-> shouldn't.  This tends to make powerpc blow up.  Could be that this is what
-> you're hitting.
+> Config options of the old stack:
+> IEEE1394=m
+> IEEE1394_OHCI1394=m
+> IEEE1394_SBP2=m
+> and if desired also the other drivers for raw userspace access,
+> isochronous I/O (alias video1394 even though it can also be used for
+> other purposes), DV I/O, and IPv4 over 1394.
 > 
-> Matthew, is this ging to be fixed soon?
+> The two SBP2 drivers also need SCSI and BLK_DEV_SD a.k.a. SCSI disk
+> support or/and BLK_DEV_SR a.k.a. SCSI CDROM support.
+> 
+> You can also set the options to Y but I find loadable and hence
+> unloadable modules more practical... 'cause I unload and reload them all
+> the time.  :-)
 
-Yes. I just backed out git-semaphore.patch and machine booted fine.
+Indeed, although this machine typically had non-modular kernels, I
+compiled one for these tests.
 
-Thanks,
-Badari
+For now I have only tested the new stack with a 6 year old 1.8" disk
+and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
+plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+
+Thanks a lot.
+
+	Regards,
+	Gabriel
+
+P.S: it seems that something broke in the APM emulation around rc2
+on this machine, battery level reads at -1% from /proc/apm.
+> Caveats:
+>   - You could build and install both stacks but should then blacklist
+>     at least one of ohci1394 or firewire-ohci.  Better keep it simple
+>     and install only one of the stacks at a time.
+>   - We still have a serious use-after-free bug in the new stack.  This
+>     may lead to kernel panic if the kernel was build with (slab? or
+>     page allocation?) debugging enabled.
+> Users of IP over 1394 and pro/semipro audio still need the old stack.
+> Users of video should stick with the stack which their distribution has
+> enabled because our support in the lowlevel libraries libraw1394 and
+> libdc1394 to switch between the stacks is not quite comfortable yet.
+> 
+> Suspend (to RAM) and resume worked for me [TM] when I last tested them
+> with each stack.  I tested i586/APM, x86-64/ACPI, and last weekend ppc32
+> on 1st generation PowerBook G4.  I haven't tested hibernate (to disk)
+> and restore yet.
+
+I have never used suspend to disk on this machine. Suspend to RAM
+failed when ieee1394 was loaded (or built-in) since 2.6.22 or so. 
+
+For now I have only tested the new stack with a 6 year old 1.8" disk
+and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
+plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+
+Thanks a lot.
+
+	Regards,
+	Gabriel
+
+P.S: it seems that something broke in the APM emulation around rc2
+on this machine, battery level reads at -1% from /proc/apm.
