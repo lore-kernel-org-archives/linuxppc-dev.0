@@ -1,39 +1,31 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28esmtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AED14DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 13:28:17 +1100 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28esmtp06.in.ibm.com (8.13.1/8.13.1) with ESMTP id m252S9L1028170
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 07:58:09 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m252S9IM1073242
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 07:58:09 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m252SEkP013613
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 02:28:15 GMT
-Message-ID: <47CE0537.3010907@linux.vnet.ibm.com>
-Date: Wed, 05 Mar 2008 07:58:07 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<47CD4AB3.3080409@linux.vnet.ibm.com>
-	<20080304103636.3e7b8fdd.akpm@linux-foundation.org>
-	<47CDA081.7070503@cs.helsinki.fi> <20080304193532.GC9051@csn.ul.ie>
-	<84144f020803041141x5bb55832r495d7fde92356e27@mail.gmail.com>
-	<Pine.LNX.4.64.0803041151360.18160@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0803042200410.8545@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0803041205370.18277@schroedinger.engr.sgi.com>
-	<47CDAC58.6090207@cs.helsinki.fi>
-In-Reply-To: <47CDAC58.6090207@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Lameter <clameter@sgi.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 903A7DDE30
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 13:51:57 +1100 (EST)
+Date: Wed, 5 Mar 2008 13:51:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Zhang Wei" <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 11/17] Add memory mapping driver to RapidIO.
+Message-Id: <20080305135148.21d6c25a.sfr@canb.auug.org.au>
+In-Reply-To: <ABF87B0B6A38C0458E319AC973ED68AECE4522@zch01exm26.fsl.freescale.net>
+References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-2-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-3-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-4-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-5-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-6-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-7-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-8-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-9-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-10-git-send-email-wei.zhang@freescale.com>
+	<1204648202-5495-11-git-send-email-wei.zhang@freescale.com>
+	<20080304213735.c77d6203.sfr@canb.auug.org.au>
+	<ABF87B0B6A38C0458E319AC973ED68AECE4522@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__5_Mar_2008_13_51_48_+1100_lP8xoRT_lZWZy.6q"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,30 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Pekka Enberg wrote:
-> Christoph Lameter wrote:
->> I think this is the correct fix.
->>
->> The NUMA fallback logic should be passing local_flags to kmem_get_pages() 
->> and not simply the flags.
->>
->> Maybe a stable candidate since we are now simply 
->> passing on flags to the page allocator on the fallback path.
->>
->> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> Indeed, good catch. I spotted the same thing just few seconds ago.
-> 
-> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Was it you Kamalesh that reported this? Can you please re-test?
+--Signature=_Wed__5_Mar_2008_13_51_48_+1100_lP8xoRT_lZWZy.6q
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks the patch fixes the kernel bug.
+Hi Weu,
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+On Wed, 5 Mar 2008 09:59:38 +0800 "Zhang Wei" <Wei.Zhang@freescale.com> wro=
+te:
+>
+> Thanks! I'm considering to commit a updated patch or new code cleaning
+> patch.
+> How about your idea?
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Preferably, fix up the patches.  If that is a pain, then a followup patch
+that cleans up is ok as these do not affect the correctness of the code.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__5_Mar_2008_13_51_48_+1100_lP8xoRT_lZWZy.6q
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHzgrMTgG2atn1QN8RAtWOAJ9qPET8JOdSTx3VEWfVOHEmh386igCfV9Gl
+arv6cBW1/qX78ISWMmgLmpc=
+=dkVp
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Mar_2008_13_51_48_+1100_lP8xoRT_lZWZy.6q--
