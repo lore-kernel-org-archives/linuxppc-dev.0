@@ -1,19 +1,20 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpauth15.prod.mesa1.secureserver.net (unknown [64.202.165.26])
-	by ozlabs.org (Postfix) with SMTP id 4A511DDEBE
+Return-Path: <rsass@uncc.edu>
+Received: from rsass-homer.uncc.edu (rsass-homer.uncc.edu [152.15.91.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1F47BDDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Mar 2008 10:34:52 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.1516.1204637021.17968.linuxppc-embedded@ozlabs.org>
-Subject: Virtual device hdlc0 asks to que packet!
-Date: Tue, 4 Mar 2008 15:33:37 -0800
-Message-ID: <000301c87e50$2bbdc680$6405a8c0@absolut>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <mailman.1516.1204637021.17968.linuxppc-embedded@ozlabs.org>
-Reply-To: rmcguire@videopresence.com
+	Wed,  5 Mar 2008 13:34:12 +1100 (EST)
+Received: from uncc.edu (localhost.localdomain [127.0.0.1])
+	by rsass-homer.uncc.edu (8.13.8/8.13.8) with ESMTP id m252Y6Um026382
+	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Mar 2008 21:34:07 -0500
+Message-Id: <200803050234.m252Y6Um026382@rsass-homer.uncc.edu>
+To: linuxppc-embedded@ozlabs.org
+Subject: linux-headers (powerpc v. ppc)
+From: "Ron Sass" <rsass@uncc.edu>
+Date: Tue, 04 Mar 2008 21:34:06 -0500
+Sender: rsass@uncc.edu
+Reply-To: Ron Sass <rsass@uncc.edu>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,35 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-All,
 
-Background MPC8360, using a T1 PHY as an HDLC device.
+I hope this is to the right list... the recent discussion of
+retiring ppc arch encouraged me to ask.
 
-Developing my hdlc driver, and was writing a simple send utility. To test it
-out. Things seem well when I had massive delays in between the write() or
-sendot(), and I was able to attain 100+Kbytes/sec. However, when I replaced
-the simple usleeps(xxx) with select statements, suddenly I started getting a
-ton of these messages.
+Ultimately, I'm trying to build a native PPC 405 compiler (i.e
+Canadian cross).  I've got a crosstool's generated cross-compiler
+and I have glibc and a native bintools on my 405 root filesystem.
 
-"Virtual device hdlc0 asks to que packet!"
+What I'd like to do is:
 
-Along with dropped or non-sent data.
+make ARCH=ppc headers_check
+make ARCH=ppc INSTALL_HDR_PATH=dest headers_install
 
-In my driver I am tracking the available TX buffers, and issue a
-netif_stop_que() statement inside the start_xmit() call, with a
-corresponding netif_wake_que() in the tx_handler.
+but that's not supported in the ppc tree.
 
-Is there something else that needs to be done in order to make a select
-statement wait for the socket to not be busy? It seems that it always
-returns immediately with no timeout.
+So my question is, can I just ...
 
-I guess the other pieces of the scenario are as follows:
+make ARCH=powerpc headers_check
+make ARCH=powerpc INSTALL_HDR_PATH=dest headers_install
 
-* Using 'sethdlc hdlc0 hdlc' for the mode, so no IP stack is used.
-* Opening the socket to the hdlc device directly to the device itself, i.e.
-no port number socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+and then switch to ppc when I build the kernel?
 
-I have used both sendto() and write() to pass data down, and they both
-return as if all the data has been sent, i.e. I never get an error.
+I suspect it will work but just don't know if there is a
+subtle difference that will come back to haunt me at
+run-time.
 
--Russ
+Any advice would be greatly appreciated!
+
+Ron
