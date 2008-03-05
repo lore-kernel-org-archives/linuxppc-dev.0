@@ -1,20 +1,19 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B6B14DE058
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 04:48:23 +1100 (EST)
-Message-ID: <47CEDC6F.6060205@ru.mvista.com>
-Date: Wed, 05 Mar 2008 20:46:23 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <olof@lixom.net>
+Date: Wed, 5 Mar 2008 12:21:00 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [Pasemi-linux] [patch 1/6] pasemi_mac: Move RX/TX section
+	enablement to dma_lib
+Message-ID: <20080305182100.GA8411@lixom.net>
+References: <20080221025753.903665000@lixom.net>
+	<20080221025929.082348000@lixom.net>
+	<1204026366.7203.9.camel@concordia>
+	<20080226141420.GA22572@lixom.net>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [RFC][PATCH] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
-	workaround
-References: <1203634340.10422.203.camel@pasglop>	<20080222192817.GA26211@ru.mvista.com>	<20080222144919.3ded7c54@weaponx>	<47C40548.4080608@ru.mvista.com>
-	<47C41DBE.7090505@harris.com>	<20080226090210.6816c130@zod.rchland.ibm.com>
-	<1204185299.15052.381.camel@pasglop>
-In-Reply-To: <1204185299.15052.381.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080226141420.GA22572@lixom.net>
+Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2008-02-26 at 09:02 -0600, Josh Boyer wrote:
->> Seems the code will do the right thing since everything is using
->> flags.  I suppose my question can be withdrawn.  It is slightly
->> confusing to do it that way though.  Perhaps a function to do
->> read-modify-writes on DCRs would be welcome.  dcr_modify anyone?
+On Tue, Feb 26, 2008 at 08:14:20AM -0600, Olof Johansson wrote:
+> Hi,
 > 
-> Yup, we probably want to expose a dcri_clrset(), though I would also
-> expose then __mtdcri/__mfdcri (non locked version) and the spinlock in
-> case somebody wants to do something fancy.
+> On Tue, Feb 26, 2008 at 10:46:06PM +1100, Michael Ellerman wrote:
+> > On Wed, 2008-02-20 at 20:57 -0600, Olof Johansson wrote:
+> > > +	i = 1000;
+> > > +	pasemi_write_dma_reg(PAS_DMA_COM_RXCMD, 0);
+> > > +	while ((i > 0) && (pasemi_read_dma_reg(PAS_DMA_COM_RXSTA) & 1))
+> > > +		i--;
+> > > +	if (i < 0)
+> > > +		printk(KERN_INFO "Warning: Could not disable RX section\n");
+> > > +
+> > > +	i = 1000;
+> > > +	pasemi_write_dma_reg(PAS_DMA_COM_TXCMD, 0);
+> > > +	while ((i > 0) && (pasemi_read_dma_reg(PAS_DMA_COM_TXSTA) & 1))
+> > > +		i--;
+> > 
+> > This kind of caught my eye, is it still going to work when the next core
+> > is twice as fast?
+> 
+> Actually, I added the variable right before posting, I used to have an
+> infinite loop there while testing the patch. I've never seen it do more
+> than a few rounds, so I'm not that worried.
+> 
+> We already have a similar loop in the channel shutdown code, but it runs
+> a bit longer. I might bring that over instead. Thanks for pointing it
+> out.
 
-I've made a patch which adds dcri_clrset function, but I haven't exposed 
-the unlocked versions though. I think that dcri_clrset is sufficient for 
-working with indirect dcr (at least for now, since the most fancy stuff 
-done with it atm is read/modify/write) and exposing the unlocked version 
-may lead to its misuse.
-I'll submit the patch shortly.
+FYI; I've commited in this change, rest of the patch is identical.
 
-Thanks,
-Valentine.
-> 
-> Cheers,
-> Ben.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
+index c529d8d..48cb7c9 100644
+--- a/arch/powerpc/platforms/pasemi/dma_lib.c
++++ b/arch/powerpc/platforms/pasemi/dma_lib.c
+@@ -17,6 +17,7 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
+ 
++#include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+@@ -410,6 +411,7 @@ int pasemi_dma_init(void)
+ 	struct resource res;
+ 	struct device_node *dn;
+ 	int i, intf, err = 0;
++	unsigned long timeout;
+ 	u32 tmp;
+ 
+ 	if (!machine_is(pasemi))
+@@ -478,6 +480,34 @@ int pasemi_dma_init(void)
+ 	for (i = 0; i < MAX_RXCH; i++)
+ 		__set_bit(i, rxch_free);
+ 
++	timeout = jiffies + HZ;
++	pasemi_write_dma_reg(PAS_DMA_COM_RXCMD, 0);
++	while (pasemi_read_dma_reg(PAS_DMA_COM_RXSTA) & 1) {
++		if (time_after(jiffies, timeout)) {
++			pr_warning("Warning: Could not disable RX section\n");
++			break;
++		}
++	}
++
++	timeout = jiffies + HZ;
++	pasemi_write_dma_reg(PAS_DMA_COM_TXCMD, 0);
++	while (pasemi_read_dma_reg(PAS_DMA_COM_TXSTA) & 1) {
++		if (time_after(jiffies, timeout)) {
++			pr_warning("Warning: Could not disable TX section\n");
++			break;
++		}
++	}
