@@ -1,22 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 9D3F5DDF34
+Return-Path: <carcadiz@hotmail.com>
+Received: from blu139-omc3-s10.blu139.hotmail.com
+	(blu139-omc3-s10.blu139.hotmail.com [65.55.175.210])
+	by ozlabs.org (Postfix) with ESMTP id 43D3ADDF0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Mar 2008 21:04:38 +1100 (EST)
-Subject: RE: Virtual device hdlc0 asks to que packet!
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: rmcguire@videopresence.com
-In-Reply-To: <002801c87e9c$f57e4430$6405a8c0@absolut>
-References: <mailman.1516.1204637021.17968.linuxppc-embedded@ozlabs.org>
-	<000301c87e50$2bbdc680$6405a8c0@absolut>
-	<1204704716.20637.50.camel@gentoo-jocke.transmode.se>
-	<002801c87e9c$f57e4430$6405a8c0@absolut>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 11:04:36 +0100
-Message-Id: <1204711476.20637.54.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+	Wed,  5 Mar 2008 21:09:01 +1100 (EST)
+Message-ID: <BLU106-W11BB87023EFF6EED3D8E4DCA110@phx.gbl>
+From: "Pedro Luis D. L." <carcadiz@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: I2S driver
+Date: Wed, 5 Mar 2008 11:09:00 +0100
+In-Reply-To: <538035.10329.qm@web23104.mail.ird.yahoo.com>
+References: <BLU106-W3340DC3BF1A9FD27E9FCD3CA100@phx.gbl>
+	<538035.10329.qm@web23104.mail.ird.yahoo.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,85 +25,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-03-05 at 00:43 -0800, Russell McGuire wrote:
-> Jocke,
-> 
-> I wonder how one change this? I don't remember any of the API calls
-> referencing this, so maybe the default to 1000? Or perhaps that is protocol
-> specific. I will hunt through some of Freescale's Ethernet drivers and see
-> if I can't find anything.
+Angelo wrote:
 
-default is 1000 for ethernet.
-See tx_queue_len in net/ethernet/eth.c, 
-ether_setup(struct net_device *dev)
+> Thanks for code.
+> But why i can't see library?
 
-Maybe you can find out from there.
+Which library do you mean? I don't understand, sorry.
+=20
+>>After the module I send you also the code from another module that>establ=
+ishes PSC as I2S configuration. Clocks where adjusted to send>the audio dat=
+a also at 44.1 Khz as fine tunned as possible due to>communication requirem=
+ents of the attached DAC in that hardware.
+> You'll send me another code?
 
-> 
-> I know that inside the driver, I have 32 RX, and 32 TX buffers <buffer
-> descriptors> available. There needs to be some smarter way to manage it
-> though than raw numbers. Large file transfers, if they are cached, can
-> easily over flow any number of buffers. 
-> 
-> Thanks for the note.
-> 
-> -Russ
-> 
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> > Sent: Wednesday, March 05, 2008 12:12 AM
-> > To: rmcguire@videopresence.com
-> > Cc: linuxppc-embedded@ozlabs.org
-> > Subject: Re: Virtual device hdlc0 asks to que packet!
-> > 
-> > 
-> > On Tue, 2008-03-04 at 15:33 -0800, Russell McGuire wrote:
-> > > All,
-> > >
-> > > Background MPC8360, using a T1 PHY as an HDLC device.
-> > >
-> > > Developing my hdlc driver, and was writing a simple send utility. To
-> > test it
-> > > out. Things seem well when I had massive delays in between the write()
-> > or
-> > > sendot(), and I was able to attain 100+Kbytes/sec. However, when I
-> > replaced
-> > > the simple usleeps(xxx) with select statements, suddenly I started
-> > getting a
-> > > ton of these messages.
-> > >
-> > > "Virtual device hdlc0 asks to que packet!"
-> > >
-> > > Along with dropped or non-sent data.
-> > >
-> > > In my driver I am tracking the available TX buffers, and issue a
-> > > netif_stop_que() statement inside the start_xmit() call, with a
-> > > corresponding netif_wake_que() in the tx_handler.
-> > >
-> > > Is there something else that needs to be done in order to make a select
-> > > statement wait for the socket to not be busy? It seems that it always
-> > > returns immediately with no timeout.
-> > >
-> > > I guess the other pieces of the scenario are as follows:
-> > >
-> > > * Using 'sethdlc hdlc0 hdlc' for the mode, so no IP stack is used.
-> > > * Opening the socket to the hdlc device directly to the device itself,
-> > i.e.
-> > > no port number socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-> > >
-> > > I have used both sendto() and write() to pass data down, and they both
-> > > return as if all the data has been sent, i.e. I never get an error.
-> > >
-> > > -Russ
-> > 
-> > When playing with your driver I noticed that the hdlc interfaces had
-> > txqueuelen:0
-> > Normal eth interfaces has txqueuelen:1000. Maybe you need to add a
-> > txqueue to the hdlc interfaces?
-> > 
-> >  Jocke
-> > 
-> > PS.
-> >     The driver seems to work now, I get both TX and RX IRQs now.
-> 
-> 
+This code was already in my previous email. After "------------------------=
+-------------------" at the end of the email. Check it again, hehehe.
+
+> And what about my file lite5200b.dts?
+> I must enable some like this?
+>         // PSC3 in CODEC mode example
+>         //i2s@2400 {        // PSC3
+>         //    device_type =3D "sound";
+>         //    compatible =3D "mpc5200b-psc-i2s";//not 5200 compatible
+>         //    cell-index =3D ;
+>         //    reg =3D ;
+>         //    interrupts =3D ;
+>         //    interrupt-parent =3D <&mpc5200_pic>;
+>         //};
+
+I didn't need it. :-)
+
+>=20
+> ________________________________
+> L'email della prossima generazione? Puoi averla con la Nuova Yahoo! Mail
+
+_________________________________________________________________
+Tecnolog=EDa, moda, motor, viajes,=85suscr=EDbete a nuestros boletines para=
+ estar siempre a la =FAltima
+http://newsletters.msn.com/hm/maintenanceeses.asp?L=3DES&C=3DES&P=3DWCMaint=
+enance&Brand=3DWL&RU=3Dhttp%3a%2f%2fmail.live.com=
