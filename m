@@ -1,15 +1,16 @@
-Return-Path: <ravi.rao@rflelect.com>
-In-Reply-To: <4ac2955e0803050644g2ccd2e46n305d2790389b517@mail.gmail.com>
-To: "mahendra varman" <mahendravarman15@gmail.com>
-Subject: Re: Unresolved symbols while inserting a module in linux
-MIME-Version: 1.0
-Message-ID: <OF9EDF1522.4B5A1F32-ON85257403.00522346-85257403.0052A659@slpower.com>
-From: ravi.rao@rflelect.com
-Date: Wed, 5 Mar 2008 10:01:44 -0500
-Content-Type: multipart/alternative;
-	boundary="=_alternative 0052A65485257403_="
-Cc: linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (mail.tsinghua.org.cn [210.77.143.232])
+	by ozlabs.org (Postfix) with SMTP id A701EDDFC3
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  6 Mar 2008 02:21:51 +1100 (EST)
+Message-ID: <404729222.13333@tsinghua.org.cn>
+From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 05 Mar 2008 23:00:22 +0800
+Subject: The question about the linux Exception during the GETH test on
+	MPC8360?
+Content-Type: text/plain
+Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,263 +21,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 0052A65485257403_=
-Content-Type: text/plain; charset="US-ASCII"
+HI,friends,
 
-Hi,
-    In 2.6 kernel All the functions that are being used by a module should 
-have been exported by the provider..
-For Example If your driver module say foo.ko wants to use function x ( ) 
-defined in bar.c, then in bar.c the function x () had be exported using
-EXPORT_SYMBOL_GPL(x); If not when you try to insmod foo.ko U will get 
-unresolved symbol x.
-There should be something similar in 2.4..
- Thanks,
-Ravishankar Govindarao
-RFL Electronics Inc.
-E-mail : Ravi.Rao@rflelect.com
-Voice: 973.334.3100 Ext. 233
-Fax: 973.334.3863
+I tested the GETH on MPC8360 by "iperf", after several times test, the linux is
+dead, please see follow information. Then I slow down the core frequency from
+667MHZ to 533MHZ, the test is OK, could you tell me where has the problem?
+Thanks.
+
+
+
+/ # iperf -c 192.168.0.2 -i 6 -t 600
+------------------------------------------------------------
+Client connecting to 192.168.0.2, TCP port 5001
+TCP window size: 27.9 KByte (default)
+------------------------------------------------------------
+[  3] local 192.168.0.202 port 2079 connected with 192.168.0.2 port 5001
+[  3]  0.0- 6.0 sec    267 MBytes    374 Mbits/sec
+[  3]  6.0-12.0 sec    268 MBytes    375 Mbits/sec
+[  3] 12.0-18.0 sec    267 MBytes    374 Mbits/sec
+[  3] 18.0-24.0 sec    266 MBytes    372 Mbits/sec
+[  3] 24.0-30.0 sec    256 MBytes    358 Mbits/sec
+[  3] 30.0-36.0 sec    264 MBytes    369 Mbits/sec
+[  3] 36.0-42.0 sec    268 MBytes    374 Mbits/sec
+[  3] 42.0-48.0 sec    268 MBytes    375 Mbits/sec
+kernel BUG in skb_checksum at net/core/skbuff.c:1120!
+Oops: Exception in kernel mode, sig: 5 [#1]
+NIP: C00FC1D8 LR: C00FC004 SP: C01A9BF0 REGS: c01a9b40 TRAP: 0700    Tainted: P  
+
  
-CONFIDENTIALITY NOTE
-This e-mail, including any attachments, may contain confidential and/or 
-legally privileged information.  The Information is intended only for the 
-use of the individual or entity named on this e-mail .  If you are not the 
-intended recipient, you are hereby notified that any disclosure, copying, 
-distribution, or the taking of any action in reliance on the contents of 
-this transmitted Information is strictly prohibited.  Further, if you are 
-not the intended recipient, please notify us by return e-mail and delete 
-the Information promptly.
- 
- 
- 
-
-
-
-"mahendra varman" <mahendravarman15@gmail.com> 
-Sent by: linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org
-03/05/2008 09:44 AM
-
-To
-linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
-cc
-
-Subject
-Unresolved symbols while inserting a module in linux
+MSR: 00029032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c0191ab0[0] 'swapper' THREAD: c01a8000
+Last syscall: 120 
+GPR00: 00000000 C01A9BF0 C0191AB0 00000000 00000000 001A3916 00000008 CED5C080 
+GPR08: 0E874000 CED5C660 CED5C0A0 CED5C05E C01D58B4 FAEA00A8 0FFFE000 007FFF00 
+GPR16: 0FFF8450 00000000 00000003 007FFEB0 00259DF0 0FFFF8E8 00800000 00000020 
+GPR24: C04EB360 00000000 BE570CCD 00000042 C0101174 000005A8 00000042 00000020 
+Call trace: [c0100f80]  [c0101300]  [c0118308]  [c01186dc]  [c0129678] 
+[c012ad1c]
+ [c012d238]  [c001e3f8]  [c0019d94]  [c0019e60]  [c0005 
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+ <0>Rebooting in 180 seconds..
 
 
 
 
+Follow is the UBoot information about my mpc8360 board:
+
+U-Boot 1.2.0 (Mar  5 2008 - 17:47:06) MPC83XX
+
+CPU:   e300c1, MPC8360E, Rev: 20 at 660 MHz, CSB:  330 MHz
+Board: Freescale MPC8360EMDS
+I2C:   ready
+DRAM:  
+DIMM type:       32MX64U-40B       
+SPD size:        128
+EEPROM size:     256
+Memory type:     7
+Row addr:        13
+Column addr:     10
+# of rows:       1
+Row density:     64
+# of banks:      4
+Data width:      64
+Chip width:      8
+Refresh rate:    82
+CAS latencies:   0C
+Write latencies: 02
+tRP:             72
+tRCD:            72
 
 
-Hi all
+   DDR DIMM: data bus width is 64 bit without ECC2   
+   DDRC ECC mode: OFF
 
-For a customised hdlc card we have written hdlc driver.
-we need to compile it as a module in linux 2.4.25 version
-Thru Config.in we have defined the customised driver as tristate and
-selected 'M' in menuconfig for that driver
-The other dependencies generic hdlc driver, cisco , framedelay , ppp
-etc are compiled as configured within the kernel itself
-By giving make modules we have produced driver.o file
-
-When I insert the driver.o using insmod iam getting the following
-unresolved symbols
-Even though the dependencies have been configured with the kernel
-itself iam getting these unresolved symbols
-
-If we use modprobe driver.o (or) modprobe driver it is reporting
-driver:applet not found..
-
-Help me to produce a module with its dependencies also to solve the
-unresolved symbols error
-
-
-Thanks
-
----------------------------------------------------- unresolved
-symbols after insmod
-------------------------------------------------------
-
-Using driver.o
-insmod: unresolved symbol pci_write_config_byte
-insmod: unresolved symbol __netdev_watchdog_up
-insmod: unresolved symbol schedule_timeout
-insmod: unresolved symbol __kfree_skb
-insmod: unresolved symbol alloc_skb
-insmod: unresolved symbol pci_register_driver
-insmod: unresolved symbol register_hdlc_device
-insmod: unresolved symbol unregister_hdlc_device
-insmod: unresolved symbol __release_region
-insmod: unresolved symbol kmalloc
-insmod: unresolved symbol pci_free_consistent
-insmod: unresolved symbol pci_free_consistent
-insmod: unresolved symbol __save_flags_ptr
-insmod: unresolved symbol ioremap
-insmod: unresolved symbol cpu_raise_softirq
-insmod: unresolved symbol free_irq
-insmod: unresolved symbol __out_of_line_bug
-insmod: unresolved symbol iounmap
-insmod: unresolved symbol pci_alloc_consistent
-insmod: unresolved symbol iomem_resource
-insmod: unresolved symbol kfree
-insmod: unresolved symbol strlen
-insmod: unresolved symbol request_irq
-insmod: unresolved symbol netif_rx
-insmod: unresolved symbol pci_unregister_driver
-insmod: unresolved symbol skb_over_panic
-insmod: unresolved symbol pci_set_master
-insmod: unresolved symbol hdlc_ioctl
-insmod: unresolved symbol jiffies
-insmod: unresolved symbol __copy_tofrom_user
-insmod: unresolved symbol __restore_flags
-insmod: unresolved symbol softnet_data
-insmod: unresolved symbol __request_region
-insmod: unresolved symbol printk
-insmod: unresolved symbol __cli
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
---=_alternative 0052A65485257403_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi,</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; In 2.6 kernel All the
-functions that are being used by a module should have been exported by
-the provider..</font>
-<br><font size=2 face="sans-serif">For Example If your driver module say
-foo.ko wants to use function x ( ) &nbsp;defined in bar.c, then in bar.c
-the function x () had be exported using</font>
-<br><font size=2 face="sans-serif">EXPORT_SYMBOL_GPL(x); If not when you
-try to insmod foo.ko U will get unresolved symbol x.</font>
-<br><font size=2 face="sans-serif">There should be something similar in
-2.4..</font>
-<br><font size=2 face="sans-serif">&nbsp;Thanks,<br>
-</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
-RFL Electronics Inc.<br>
-E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
-</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
-<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
-Fax: 973.334.3863</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<div align=center>
-<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
-<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
-may contain confidential and/or legally privileged information.&nbsp; The
-Information is intended only for the use of the individual or entity named
-on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
-If you are not the intended recipient, you are hereby notified that any
-disclosure, copying, distribution, or the taking of any action in reliance
-on the contents of this transmitted Information is strictly prohibited.&nbsp;
-Further, if you are not the intended recipient, please notify us by return
-e-mail and delete the Information promptly.</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<p><font size=3>&nbsp;</font>
-<br>
-<br>
-<br>
-<table width=100%>
-<tr valign=top>
-<td width=40%><font size=1 face="sans-serif"><b>&quot;mahendra varman&quot;
-&lt;mahendravarman15@gmail.com&gt;</b> </font>
-<br><font size=1 face="sans-serif">Sent by: linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org</font>
-<p><font size=1 face="sans-serif">03/05/2008 09:44 AM</font>
-<td width=59%>
-<table width=100%>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">To</font></div>
-<td><font size=1 face="sans-serif">linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org</font>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">cc</font></div>
-<td>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">Subject</font></div>
-<td><font size=1 face="sans-serif">Unresolved symbols while inserting a
-module in linux</font></table>
-<br>
-<table>
-<tr valign=top>
-<td>
-<td></table>
-<br></table>
-<br>
-<br>
-<br><tt><font size=2>Hi all<br>
-<br>
-For a customised hdlc card we have written hdlc driver.<br>
-we need to compile it as a module in linux 2.4.25 version<br>
-Thru Config.in we have defined the customised driver as tristate and<br>
-selected 'M' in menuconfig for that driver<br>
-The other dependencies generic hdlc driver, cisco , framedelay , ppp<br>
-etc are compiled as configured within the kernel itself<br>
-By giving make modules we have produced driver.o file<br>
-<br>
-When I insert the driver.o using insmod iam getting the following<br>
-unresolved symbols<br>
-Even though the dependencies have been configured with the kernel<br>
-itself iam getting these unresolved symbols<br>
-<br>
-If we use modprobe driver.o (or) modprobe driver it is reporting<br>
-driver:applet not found..<br>
-<br>
-Help me to produce a module with its dependencies also to solve the<br>
-unresolved symbols error<br>
-<br>
-<br>
-Thanks<br>
-<br>
----------------------------------------------------- unresolved<br>
-symbols after insmod<br>
-------------------------------------------------------<br>
-<br>
-Using driver.o<br>
-insmod: unresolved symbol pci_write_config_byte<br>
-insmod: unresolved symbol __netdev_watchdog_up<br>
-insmod: unresolved symbol schedule_timeout<br>
-insmod: unresolved symbol __kfree_skb<br>
-insmod: unresolved symbol alloc_skb<br>
-insmod: unresolved symbol pci_register_driver<br>
-insmod: unresolved symbol register_hdlc_device<br>
-insmod: unresolved symbol unregister_hdlc_device<br>
-insmod: unresolved symbol __release_region<br>
-insmod: unresolved symbol kmalloc<br>
-insmod: unresolved symbol pci_free_consistent<br>
-insmod: unresolved symbol pci_free_consistent<br>
-insmod: unresolved symbol __save_flags_ptr<br>
-insmod: unresolved symbol ioremap<br>
-insmod: unresolved symbol cpu_raise_softirq<br>
-insmod: unresolved symbol free_irq<br>
-insmod: unresolved symbol __out_of_line_bug<br>
-insmod: unresolved symbol iounmap<br>
-insmod: unresolved symbol pci_alloc_consistent<br>
-insmod: unresolved symbol iomem_resource<br>
-insmod: unresolved symbol kfree<br>
-insmod: unresolved symbol strlen<br>
-insmod: unresolved symbol request_irq<br>
-insmod: unresolved symbol netif_rx<br>
-insmod: unresolved symbol pci_unregister_driver<br>
-insmod: unresolved symbol skb_over_panic<br>
-insmod: unresolved symbol pci_set_master<br>
-insmod: unresolved symbol hdlc_ioctl<br>
-insmod: unresolved symbol jiffies<br>
-insmod: unresolved symbol __copy_tofrom_user<br>
-insmod: unresolved symbol __restore_flags<br>
-insmod: unresolved symbol softnet_data<br>
-insmod: unresolved symbol __request_region<br>
-insmod: unresolved symbol printk<br>
-insmod: unresolved symbol __cli<br>
-_______________________________________________<br>
-Linuxppc-embedded mailing list<br>
-Linuxppc-embedded@ozlabs.org<br>
-</font></tt><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded"><tt><font size=2>https://ozlabs.org/mailman/listinfo/linuxppc-embedded<br>
-</font></tt></a>
-<br>
---=_alternative 0052A65485257403_=--
+   SDRAM on Local Bus: 64 MB
+   DDR RAM: 256 MB
+FLASH: 16 MB
+PCI clock is 66MHz
+PCI 32bit bus on PMC1 & PMC2 & PMC3
+In:    serial
+Out:   serial
+Err:   serial
+Net:   UEC: PHY is Marvell 88E11x1 (1410cc1)
+FSL UEC0: Full Duplex
+FSL UEC0: Speed 1000BT
+FSL UEC0: Link is up
+FSL UEC0
+Hit any key to stop autoboot:  0 
+=> clocks
+Clock configuration Guo Jing:
+  Core:                 660 MHz
+  Coherent System Bus:  330 MHz
+  QE:                   396 MHz
+  BRG:                  198 MHz
+  Local Bus Controller: 330 MHz
+  Local Bus:             82 MHz
+  DDR:                  330 MHz
+  DDR Secondary:        330 MHz
+  SEC:                  110 MHz
+  I2C1:                 330 MHz
+  I2C2:                 330 MHz
