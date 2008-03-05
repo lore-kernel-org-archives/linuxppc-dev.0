@@ -1,20 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DDB61DDE10
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 04:34:04 +1100 (EST)
-Date: Wed, 5 Mar 2008 11:34:37 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH] Fix wrapper platform for adder875, and combine defconfigs.
-Message-ID: <20080305173437.GA14946@loki.buserror.net>
-References: <20080220183338.GA9282@loki.buserror.net>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B6B14DE058
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 04:48:23 +1100 (EST)
+Message-ID: <47CEDC6F.6060205@ru.mvista.com>
+Date: Wed, 05 Mar 2008 20:46:23 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080220183338.GA9282@loki.buserror.net>
+To: benh@kernel.crashing.org
+Subject: Re: [RFC][PATCH] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
+	workaround
+References: <1203634340.10422.203.camel@pasglop>	<20080222192817.GA26211@ru.mvista.com>	<20080222144919.3ded7c54@weaponx>	<47C40548.4080608@ru.mvista.com>
+	<47C41DBE.7090505@harris.com>	<20080226090210.6816c130@zod.rchland.ibm.com>
+	<1204185299.15052.381.camel@pasglop>
+In-Reply-To: <1204185299.15052.381.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,10 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 20, 2008 at 12:33:38PM -0600, Scott Wood wrote:
-> This fixes the following bug:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051979.html
+Benjamin Herrenschmidt wrote:
+> On Tue, 2008-02-26 at 09:02 -0600, Josh Boyer wrote:
+>> Seems the code will do the right thing since everything is using
+>> flags.  I suppose my question can be withdrawn.  It is slightly
+>> confusing to do it that way though.  Perhaps a function to do
+>> read-modify-writes on DCRs would be welcome.  dcr_modify anyone?
+> 
+> Yup, we probably want to expose a dcri_clrset(), though I would also
+> expose then __mtdcri/__mfdcri (non locked version) and the spinlock in
+> case somebody wants to do something fancy.
 
-Can someone apply this for 2.6.25?  Adder875 does not currently build.
+I've made a patch which adds dcri_clrset function, but I haven't exposed 
+the unlocked versions though. I think that dcri_clrset is sufficient for 
+working with indirect dcr (at least for now, since the most fancy stuff 
+done with it atm is read/modify/write) and exposing the unlocked version 
+may lead to its misuse.
+I'll submit the patch shortly.
 
--Scott
+Thanks,
+Valentine.
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
