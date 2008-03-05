@@ -1,27 +1,22 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 87E69DDEC5
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 09:59:10 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 5 Mar 2008 23:59:02 +0100
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-Message-ID: <20080305225902.GA27985@iram.es>
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-	<200802272221.38985.jwilson@redhat.com>
-	<1204179959.15052.372.camel@pasglop>
-	<200802281342.06493.jwilson@redhat.com>
-	<1204241162.15052.393.camel@pasglop>
-	<47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es>
-	<47CC0C95.1030709@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47CC0C95.1030709@s5r6.in-berlin.de>
-Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Jarod Wilson <jwilson@redhat.com>, linux1394-devel@lists.sourceforge.net,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id DB752DDE20
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 10:17:37 +1100 (EST)
+Date: Thu, 6 Mar 2008 10:17:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.25-rc3-mm1 ppc64 boot hang
+Message-Id: <20080306101722.ea2428f3.sfr@canb.auug.org.au>
+In-Reply-To: <20080305135425.c8ebf8e4.akpm@linux-foundation.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	<1204752855.7939.42.camel@dyn9047017100.beaverton.ibm.com>
+	<20080305135425.c8ebf8e4.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo="
+Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, Badari Pulavarty <pbadari@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,80 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 03, 2008 at 03:35:01PM +0100, Stefan Richter wrote:
-> Gabriel Paubert wrote:
-> > I have a Pismo which I use on a virtually
-> > daily basis (and about to remove the last remnants of MacOS on it). 
-> > However I have disabled Firewire because it would not sleep and wake 
-> > up properly. 
-> > 
-> > I can test it on Wednesday with a 5GB fireflly disk from 2001.
-> > 
-> > Please tell me which configuration options I need to set for
-> > Firewire (which stack, etc...).
-> 
-> Config options of the new stack:
-> FIREWIRE=m
-> FIREWIRE_OHCI=m
-> FIREWIRE_SBP2=m
-> 
-> Config options of the old stack:
-> IEEE1394=m
-> IEEE1394_OHCI1394=m
-> IEEE1394_SBP2=m
-> and if desired also the other drivers for raw userspace access,
-> isochronous I/O (alias video1394 even though it can also be used for
-> other purposes), DV I/O, and IPv4 over 1394.
-> 
-> The two SBP2 drivers also need SCSI and BLK_DEV_SD a.k.a. SCSI disk
-> support or/and BLK_DEV_SR a.k.a. SCSI CDROM support.
-> 
-> You can also set the options to Y but I find loadable and hence
-> unloadable modules more practical... 'cause I unload and reload them all
-> the time.  :-)
+--Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Indeed, although this machine typically had non-modular kernels, I
-compiled one for these tests.
+Hi Andrew,
 
-For now I have only tested the new stack with a 6 year old 1.8" disk
-and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
-plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+On Wed, 5 Mar 2008 13:54:25 -0800 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> The semaphore consolidation code enables interrupts early in boot, when it
+> shouldn't.  This tends to make powerpc blow up.  Could be that this is wh=
+at
+> you're hitting.
+>=20
+> Matthew, is this ging to be fixed soon?
 
-Thanks a lot.
+There is a new version of these patches in the current linux-next tree ...
 
-	Regards,
-	Gabriel
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-P.S: it seems that something broke in the APM emulation around rc2
-on this machine, battery level reads at -1% from /proc/apm.
-> Caveats:
->   - You could build and install both stacks but should then blacklist
->     at least one of ohci1394 or firewire-ohci.  Better keep it simple
->     and install only one of the stacks at a time.
->   - We still have a serious use-after-free bug in the new stack.  This
->     may lead to kernel panic if the kernel was build with (slab? or
->     page allocation?) debugging enabled.
-> Users of IP over 1394 and pro/semipro audio still need the old stack.
-> Users of video should stick with the stack which their distribution has
-> enabled because our support in the lowlevel libraries libraw1394 and
-> libdc1394 to switch between the stacks is not quite comfortable yet.
-> 
-> Suspend (to RAM) and resume worked for me [TM] when I last tested them
-> with each stack.  I tested i586/APM, x86-64/ACPI, and last weekend ppc32
-> on 1st generation PowerBook G4.  I haven't tested hibernate (to disk)
-> and restore yet.
+--Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo=
+Content-Type: application/pgp-signature
 
-I have never used suspend to disk on this machine. Suspend to RAM
-failed when ieee1394 was loaded (or built-in) since 2.6.22 or so. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-For now I have only tested the new stack with a 6 year old 1.8" disk
-and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
-plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+iD8DBQFHzyoNTgG2atn1QN8RAh3oAJ0ehwJJuuzTm8suvAXRZqm2fTfFiwCeOAGZ
+AwHV7VwMg0KY6ucf3X0OGpo=
+=IdnR
+-----END PGP SIGNATURE-----
 
-Thanks a lot.
-
-	Regards,
-	Gabriel
-
-P.S: it seems that something broke in the APM emulation around rc2
-on this machine, battery level reads at -1% from /proc/apm.
+--Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo=--
