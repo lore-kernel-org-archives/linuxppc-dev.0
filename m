@@ -1,19 +1,23 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from blu139-omc3-s10.blu139.hotmail.com
-	(blu139-omc3-s10.blu139.hotmail.com [65.55.175.210])
-	by ozlabs.org (Postfix) with ESMTP id 43D3ADDF0B
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 11A31DDE0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Mar 2008 21:09:01 +1100 (EST)
-Message-ID: <BLU106-W11BB87023EFF6EED3D8E4DCA110@phx.gbl>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: I2S driver
-Date: Wed, 5 Mar 2008 11:09:00 +0100
-In-Reply-To: <538035.10329.qm@web23104.mail.ird.yahoo.com>
-References: <BLU106-W3340DC3BF1A9FD27E9FCD3CA100@phx.gbl>
-	<538035.10329.qm@web23104.mail.ird.yahoo.com>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
+	Wed,  5 Mar 2008 22:52:35 +1100 (EST)
+Subject: RE: Virtual device hdlc0 asks to que packet!
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: rmcguire@videopresence.com
+In-Reply-To: <1204711476.20637.54.camel@gentoo-jocke.transmode.se>
+References: <mailman.1516.1204637021.17968.linuxppc-embedded@ozlabs.org>
+	<000301c87e50$2bbdc680$6405a8c0@absolut>
+	<1204704716.20637.50.camel@gentoo-jocke.transmode.se>
+	<002801c87e9c$f57e4430$6405a8c0@absolut>
+	<1204711476.20637.54.camel@gentoo-jocke.transmode.se>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 12:52:33 +0100
+Message-Id: <1204717953.20637.57.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,42 +29,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Angelo wrote:
+On Wed, 2008-03-05 at 11:04 +0100, Joakim Tjernlund wrote:
+> On Wed, 2008-03-05 at 00:43 -0800, Russell McGuire wrote:
+> > Jocke,
+> > 
+> > I wonder how one change this? I don't remember any of the API calls
+> > referencing this, so maybe the default to 1000? Or perhaps that is protocol
+> > specific. I will hunt through some of Freescale's Ethernet drivers and see
+> > if I can't find anything.
+> 
+> default is 1000 for ethernet.
+> See tx_queue_len in net/ethernet/eth.c, 
+> ether_setup(struct net_device *dev)
+> 
+> Maybe you can find out from there.
 
-> Thanks for code.
-> But why i can't see library?
+In 
+  int mpc8360hdlc_register_netdev_ops(struct net_device *dev, dev_data_t *dev_data)
+add	
+   dev->tx_queue_len = 100;
 
-Which library do you mean? I don't understand, sorry.
-=20
->>After the module I send you also the code from another module that>establ=
-ishes PSC as I2S configuration. Clocks where adjusted to send>the audio dat=
-a also at 44.1 Khz as fine tunned as possible due to>communication requirem=
-ents of the attached DAC in that hardware.
-> You'll send me another code?
-
-This code was already in my previous email. After "------------------------=
--------------------" at the end of the email. Check it again, hehehe.
-
-> And what about my file lite5200b.dts?
-> I must enable some like this?
->         // PSC3 in CODEC mode example
->         //i2s@2400 {        // PSC3
->         //    device_type =3D "sound";
->         //    compatible =3D "mpc5200b-psc-i2s";//not 5200 compatible
->         //    cell-index =3D ;
->         //    reg =3D ;
->         //    interrupts =3D ;
->         //    interrupt-parent =3D <&mpc5200_pic>;
->         //};
-
-I didn't need it. :-)
-
->=20
-> ________________________________
-> L'email della prossima generazione? Puoi averla con la Nuova Yahoo! Mail
-
-_________________________________________________________________
-Tecnolog=EDa, moda, motor, viajes,=85suscr=EDbete a nuestros boletines para=
- estar siempre a la =FAltima
-http://newsletters.msn.com/hm/maintenanceeses.asp?L=3DES&C=3DES&P=3DWCMaint=
-enance&Brand=3DWL&RU=3Dhttp%3a%2f%2fmail.live.com=
+ Jocke
