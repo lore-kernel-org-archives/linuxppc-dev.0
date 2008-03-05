@@ -1,31 +1,39 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28esmtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6F7D9DDEA0
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 12:59:45 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m251xdA8000251
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 18:59:40 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m251xcAR025135
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Mar 2008 19:59:39 -0600 (CST)
+	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AED14DDE17
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 13:28:17 +1100 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp06.in.ibm.com (8.13.1/8.13.1) with ESMTP id m252S9L1028170
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 07:58:09 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m252S9IM1073242
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 07:58:09 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m252SEkP013613
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 02:28:15 GMT
+Message-ID: <47CE0537.3010907@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2008 07:58:07 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 11/17] Add memory mapping driver to RapidIO.
-Date: Wed, 5 Mar 2008 09:59:38 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AECE4522@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20080304213735.c77d6203.sfr@canb.auug.org.au>
-References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com><1204648202-5495-2-git-send-email-wei.zhang@freescale.com><1204648202-5495-3-git-send-email-wei.zhang@freescale.com><1204648202-5495-4-git-send-email-wei.zhang@freescale.com><1204648202-5495-5-git-send-email-wei.zhang@freescale.com><1204648202-5495-6-git-send-email-wei.zhang@freescale.com><1204648202-5495-7-git-send-email-wei.zhang@freescale.com><1204648202-5495-8-git-send-email-wei.zhang@freescale.com><1204648202-5495-9-git-send-email-wei.zhang@freescale.com><1204648202-5495-10-git-send-email-wei.zhang@freescale.com><1204648202-5495-11-git-send-email-wei.zhang@freescale.com>
-	<20080304213735.c77d6203.sfr@canb.auug.org.au>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	<47CD4AB3.3080409@linux.vnet.ibm.com>
+	<20080304103636.3e7b8fdd.akpm@linux-foundation.org>
+	<47CDA081.7070503@cs.helsinki.fi> <20080304193532.GC9051@csn.ul.ie>
+	<84144f020803041141x5bb55832r495d7fde92356e27@mail.gmail.com>
+	<Pine.LNX.4.64.0803041151360.18160@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0803042200410.8545@sbz-30.cs.Helsinki.FI>
+	<Pine.LNX.4.64.0803041205370.18277@schroedinger.engr.sgi.com>
+	<47CDAC58.6090207@cs.helsinki.fi>
+In-Reply-To: <47CDAC58.6090207@cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm@kvack.org, Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,37 +43,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Stephen,
+Pekka Enberg wrote:
+> Christoph Lameter wrote:
+>> I think this is the correct fix.
+>>
+>> The NUMA fallback logic should be passing local_flags to kmem_get_pages() 
+>> and not simply the flags.
+>>
+>> Maybe a stable candidate since we are now simply 
+>> passing on flags to the page allocator on the fallback path.
+>>
+>> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Indeed, good catch. I spotted the same thing just few seconds ago.
+> 
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Was it you Kamalesh that reported this? Can you please re-test?
 
-Thanks! I'm considering to commit a updated patch or new code cleaning
-patch.
-How about your idea?
+Thanks the patch fixes the kernel bug.
 
-Cheers!
-Wei=20
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-> -----Original Message-----
-> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]=20
-> Sent: Tuesday, March 04, 2008 6:38 PM
-> To: Zhang Wei
-> Cc: mporter@kernel.crashing.org; galak@kernel.crashing.org;=20
-> linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 11/17] Add memory mapping driver to RapidIO.
->=20
-> On Wed,  5 Mar 2008 00:29:56 +0800 Zhang Wei=20
-> <wei.zhang@freescale.com> wrote:
-> >
-> > +	if (!(rmem->virt =3D dma_alloc_coherent(NULL, rmem->size,
-> > +				&rmem->iores.start, GFP_KERNEL))) {
->=20
-> Please separate assignments from tests.
->=20
-> > +	if ((ret =3D rio_space_claim(rmem))) {
->=20
-> Again.
->=20
-> --=20
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->=20
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
