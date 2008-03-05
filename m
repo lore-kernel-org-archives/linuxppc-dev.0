@@ -1,24 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86B33DDED6
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 18:01:35 +1100 (EST)
-In-Reply-To: <18382.12838.527446.325768@cargo.ozlabs.ibm.com>
-References: <1204301097.14759.6.camel@localhost.localdomain>
-	<1204340690.15052.457.camel@pasglop>
-	<18382.7074.69060.661720@cargo.ozlabs.ibm.com>
-	<d495403c2b5f700be085c965746cd211@kernel.crashing.org>
-	<18382.12838.527446.325768@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5b485b22fcd97d89ee82f1fa5c1940db@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] add strncmp to PowerPC
-Date: Wed, 5 Mar 2008 08:01:20 +0100
-To: Paul Mackerras <paulus@samba.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 78758DDE04
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 18:40:30 +1100 (EST)
+Date: Wed, 5 Mar 2008 18:40:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: powerpc tree merge conflict
+Message-Id: <20080305184016.ee7e04fc.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__5_Mar_2008_18_40_16_+1100_GXjA=HYzSSYnmLdd"
+Cc: linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Anyway, this asm code has bugs, as do both the current C version in 
->> the
->> kernel, and the code I posted.  We need to do better :-)
->
-> The only bug I know of in the asm code is the behaviour when the count
-> is zero.  Do you know of any other?
+--Signature=_Wed__5_Mar_2008_18_40_16_+1100_GXjA=HYzSSYnmLdd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No, that's the bug I meant.  Sorry for using such inexact language.
+Hi Paul,
 
+There was a small conflict with Linus' tree (in arch/powerpc/Kconfig) in
+merging the powerpc next branch into today's linux-next tree.  Commit
+d9b2b2a277219d4812311d995054ce4f95067725 ('[LIB]: Make PowerPC LMB code
+generic so sparc64 can use it too') conflicted with
+9edddaa200df18e08fe0cf21036e8ae467b1363c ('Kprobes: indicate kretprobe
+support in Kconfig'). I fixed it up.
 
-Segher
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__5_Mar_2008_18_40_16_+1100_GXjA=HYzSSYnmLdd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHzk5sTgG2atn1QN8RAszcAJ9ta6jVu+adkK/Tdy1isn3nvf9YugCggghg
+svO0K/JtZ1becqJMFBhO8H4=
+=SApi
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Mar_2008_18_40_16_+1100_GXjA=HYzSSYnmLdd--
