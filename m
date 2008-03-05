@@ -1,19 +1,18 @@
-Return-Path: <olof@lixom.net>
-Date: Wed, 5 Mar 2008 12:21:00 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [Pasemi-linux] [patch 1/6] pasemi_mac: Move RX/TX section
-	enablement to dma_lib
-Message-ID: <20080305182100.GA8411@lixom.net>
-References: <20080221025753.903665000@lixom.net>
-	<20080221025929.082348000@lixom.net>
-	<1204026366.7203.9.camel@concordia>
-	<20080226141420.GA22572@lixom.net>
-MIME-Version: 1.0
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 60B78DDEEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 05:42:45 +1100 (EST)
+Date: Wed, 5 Mar 2008 21:38:04 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC 4xx: Add dcri_clrset() for locked read/modify/write
+	functionality
+Message-ID: <20080305183804.GA21760@ru.mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080226141420.GA22572@lixom.net>
-Cc: netdev@vger.kernel.org, pasemi-linux@ozlabs.org, jgarzik@pobox.com,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <47CEDC6F.6060205@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,74 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 26, 2008 at 08:14:20AM -0600, Olof Johansson wrote:
-> Hi,
-> 
-> On Tue, Feb 26, 2008 at 10:46:06PM +1100, Michael Ellerman wrote:
-> > On Wed, 2008-02-20 at 20:57 -0600, Olof Johansson wrote:
-> > > +	i = 1000;
-> > > +	pasemi_write_dma_reg(PAS_DMA_COM_RXCMD, 0);
-> > > +	while ((i > 0) && (pasemi_read_dma_reg(PAS_DMA_COM_RXSTA) & 1))
-> > > +		i--;
-> > > +	if (i < 0)
-> > > +		printk(KERN_INFO "Warning: Could not disable RX section\n");
-> > > +
-> > > +	i = 1000;
-> > > +	pasemi_write_dma_reg(PAS_DMA_COM_TXCMD, 0);
-> > > +	while ((i > 0) && (pasemi_read_dma_reg(PAS_DMA_COM_TXSTA) & 1))
-> > > +		i--;
-> > 
-> > This kind of caught my eye, is it still going to work when the next core
-> > is twice as fast?
-> 
-> Actually, I added the variable right before posting, I used to have an
-> infinite loop there while testing the patch. I've never seen it do more
-> than a few rounds, so I'm not that worried.
-> 
-> We already have a similar loop in the channel shutdown code, but it runs
-> a bit longer. I might bring that over instead. Thanks for pointing it
-> out.
+This adds dcri_clrset() macro which does read/modify/write
+on indirect dcr registers while holding indirect dcr lock.
 
-FYI; I've commited in this change, rest of the patch is identical.
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ include/asm-powerpc/dcr-native.h |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-index c529d8d..48cb7c9 100644
---- a/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ b/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -17,6 +17,7 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
+--- linux-2.6.orig/include/asm-powerpc/dcr-native.h	2008-03-05 17:32:31.000000000 +0300
++++ linux-2.6/include/asm-powerpc/dcr-native.h	2008-03-05 17:53:16.000000000 +0300
+@@ -82,6 +82,19 @@ static inline void __mtdcri(int base_add
+ 	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+ }
  
-+#include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/pci.h>
-@@ -410,6 +411,7 @@ int pasemi_dma_init(void)
- 	struct resource res;
- 	struct device_node *dn;
- 	int i, intf, err = 0;
-+	unsigned long timeout;
- 	u32 tmp;
- 
- 	if (!machine_is(pasemi))
-@@ -478,6 +480,34 @@ int pasemi_dma_init(void)
- 	for (i = 0; i < MAX_RXCH; i++)
- 		__set_bit(i, rxch_free);
- 
-+	timeout = jiffies + HZ;
-+	pasemi_write_dma_reg(PAS_DMA_COM_RXCMD, 0);
-+	while (pasemi_read_dma_reg(PAS_DMA_COM_RXSTA) & 1) {
-+		if (time_after(jiffies, timeout)) {
-+			pr_warning("Warning: Could not disable RX section\n");
-+			break;
-+		}
-+	}
++static inline void __dcri_clrset(int base_addr, int base_data, int reg,
++				 unsigned clr, unsigned set)
++{
++	unsigned long flags;
++	unsigned int val;
 +
-+	timeout = jiffies + HZ;
-+	pasemi_write_dma_reg(PAS_DMA_COM_TXCMD, 0);
-+	while (pasemi_read_dma_reg(PAS_DMA_COM_TXSTA) & 1) {
-+		if (time_after(jiffies, timeout)) {
-+			pr_warning("Warning: Could not disable TX section\n");
-+			break;
-+		}
-+	}
++	spin_lock_irqsave(&dcr_ind_lock, flags);
++	__mtdcr(base_addr, reg);
++	val = (__mfdcr(base_data) & ~clr) | set;
++	__mtdcr(base_data, val);
++	spin_unlock_irqrestore(&dcr_ind_lock, flags);
++}
++
+ #define mfdcri(base, reg)	__mfdcri(DCRN_ ## base ## _CONFIG_ADDR,	\
+ 					 DCRN_ ## base ## _CONFIG_DATA,	\
+ 					 reg)
+@@ -90,6 +103,10 @@ static inline void __mtdcri(int base_add
+ 					 DCRN_ ## base ## _CONFIG_DATA,	\
+ 					 reg, data)
+ 
++#define dcri_clrset(base, reg, clr, set)	__dcri_clrset(DCRN_ ## base ## _CONFIG_ADDR,	\
++							      DCRN_ ## base ## _CONFIG_DATA,	\
++							      reg, clr, set)
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_DCR_NATIVE_H */
