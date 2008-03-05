@@ -1,9 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 5 Mar 2008 15:52:08 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Philippe De Muyter <phdm@macqel.be>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6A286DDED0
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2008 16:01:39 +1100 (EST)
 Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-Message-ID: <20080305045208.GI8399@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Philippe De Muyter <phdm@macqel.be>
+In-Reply-To: <20080304091059.GD18829@netgate.macqel>
 References: <20080303144727.GA27949@ingate.macqel>
 	<20080303170719.GC28951@ld0162-tx32.am.freescale.net>
 	<20080303210532.GA20382@netgate.macqel>
@@ -13,10 +17,12 @@ References: <20080303144727.GA27949@ingate.macqel>
 	<20080304080828.GA18829@netgate.macqel>
 	<1204618939.21545.52.camel@pasglop>
 	<20080304091059.GD18829@netgate.macqel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080304091059.GD18829@netgate.macqel>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 16:01:04 +1100
+Message-Id: <1204693264.21545.165.camel@pasglop>
+Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,78 +32,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 04, 2008 at 10:10:59AM +0100, Philippe De Muyter wrote:
-> Hi Ben,
+
+> I also attach my current (not working) dts file attempt.  It is actually
+> a modified mpc8540ads.dts file.
 > 
-> On Tue, Mar 04, 2008 at 07:22:19PM +1100, Benjamin Herrenschmidt wrote:
-
-These comments aren't relevant to the problems you're seeing, but
-they're a good idea for writing device trees in general.
-
-First, you may want to consider moving to the version 1 dts format
-which uses C-style integer values throughout, instead of hex by
-default.
-
-[snip]
-> 		i2c@3000 {
-> 			#address-cells = <1>;
-> 			#size-cells = <0>;
-> 			device_type = "i2c";
-
-device_type shouldn't be included here.
-
-> 			compatible = "fsl-i2c";
-> 			reg = <3000 100>;
-> 			interrupts = <2b 2>;
-> 			interrupt-parent = <&mpic>;
-> 			dfsrr;
+> I now thinks that the ide-cs (hda) discovery or not depends on the cold
+> or warm reboot.
 > 
-> 			rtc@68 {
-> 				compatible = "stm,m41t81";
-> 				reg = <68>;
-> 			};
-> 		};
-> 
-> 		mdio@24520 {
-> 			#address-cells = <1>;
-> 			#size-cells = <0>;
-> 			device_type = "mdio";
-> 			compatible = "gianfar";
-[snip]
-> 		ethernet@24000 {
-> 			#address-cells = <1>;
-> 			#size-cells = <0>;
-> 			device_type = "network";
-> 			model = "TSEC";
-> 			compatible = "gianfar";
+> Here are the patches for my config (MEIP_8540) relative to a vanilla
+> linux-2.6.24.  I hacked the MPC8540ADS config. The PCI4520 is the
+> multi-function chip from TI (dual-socket pc-card + iee1394 ohci and two-port
+> phy)
 
-The binding for gianfar mdio and ethernet devices has been updated to
-better fit conventions for use of device_type and compatible
-properties.  Check booting-without-of.txt for the details.
+ .../...
 
-Can someone from freescale please go though and update the existing
-device trees, so that people stop copying the old crap.
+> +#ifdef CONFIG_MEIP_8540
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	// External 0 : nINTPFO
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	// External 1 : nINTRTC
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	// External 2 : nINTPLD
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	// External 3 : nINTSTX
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	// External 4 : nINTPHY
+> +#if defined(CONFIG_PCI)
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 5 : PCI4520 MFUNC 0 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 6 : PCI4520 MFUNC 1 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 7 : PCI4520 MFUNC 2 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 8 : PCI4520 MFUNC 3 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 9 : PCI4520 MFUNC 4 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 10 : PCI4520 MFUNC 5 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* External 11 : PCI4520 MFUNC 6 */
+> +#else
+> +	0x0,						/* External  6: */
+> +	0x0,						/* External  7: */
+> +	0x0,						/* External  8: */
+> +	0x0,						/* External  9: */
+> +	0x0,						/* External 10: */
+> +	0x0,						/* External 11: */
+> +#endif
+> +#else
+>  	0x0,						/* External  0: */
+>  #if defined(CONFIG_PCI)
+>  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 1: PCI slot 0 */
+> @@ -77,6 +100,7 @@
+>  	0x0,				/* External  9: */
+>  	0x0,				/* External 10: */
+>  	0x0,				/* External 11: */
+> +#endif
+>  };
 
-[snip]
-> 		ethernet@24000 {
-> 			#address-cells = <1>;
-> 			#size-cells = <0>;
-> 			device_type = "network";
-> 			model = "TSEC";
-> 			compatible = "gianfar";
-> 			reg = <24000 1000>;
-> 			/*
-> 			 * address is deprecated and will be removed
-> 			 * in 2.6.25.  Only recent versions of
-> 			 * U-Boot support local-mac-address, however.
-> 			 */
-> 			address = [ 00 00 00 00 00 00 ];
+Ok, so based on the above, I deduce that you have 12 external interrupt
+sources:
 
-And since this is a new port, you ought to be able to use a recent
-u-boot and drop this backwards compatibility property.
+0...4 are those nINT* things. They correspond apparently do discrete
+devices on your board. You will have to create device nodes in your .dts
+for these with the appropriate interrupts property for each of these.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+The rest are ... hrm... weird. You -appear- to have 5 to 8 going to PCI,
+to PIRQA...D. Do that mean that you have wired your connectors on the board
+such that the interrupt does not depend on the actual slot number ?
+
+Or are you doing some swizzling ?
+
+Also, I would need to know how those external IRQs are connected to the MPIC,
+I don't have the spec of that chip here. Hrm. Somebody from freescale can
+help him here ?
+
+It's also not clear to me what your interrupts 9 10 and 11 are since you
+seem to only talk about PIRQA...D which is only 4 lines ..
+
+So at this stage, that's not enough information. We need to know exactly how
+you have wired things on your board, and somebody from fsl needs to tell
+me how the ExtIrq are routed to the MPIC on that guy.
+
+Once that's done, you seem to have grasped the interrupt map... for any
+device or slot, you provide the mapping between idsel/pirq line on one side,
+and mpic interrupt & sense on the other. For PCI, sense is always 1 for an
+mpic so you mostly have to check your actual MPIC source numbers.
+
+>From your .dts, I see you've been doing some swizzling of slots using
+interrupts 1...4 ... do that correspond to EXTIRQ 5....8 ?
+
+Ben.
+
+>  
+>  /* ************************************************************************ */
+> --- ./arch/ppc/platforms/85xx/mpc85xx_ads_common.hbk	2008-01-24 22:58:37.000000000 +0000
+> +++ ./arch/ppc/platforms/85xx/mpc85xx_ads_common.h	2008-02-20 16:36:07.000000000 +0000
+> @@ -29,10 +29,17 @@
+>  extern void mpc85xx_ads_map_io(void) __init;
+>  
+>  /* PCI interrupt controller */
+> +#ifdef CONFIG_MEIP_8540
+> +#define PIRQA		MPC85xx_IRQ_EXT5
+> +#define PIRQB		MPC85xx_IRQ_EXT6
+> +#define PIRQC		MPC85xx_IRQ_EXT7
+> +#define PIRQD		MPC85xx_IRQ_EXT8
+> +#else
+>  #define PIRQA		MPC85xx_IRQ_EXT1
+>  #define PIRQB		MPC85xx_IRQ_EXT2
+>  #define PIRQC		MPC85xx_IRQ_EXT3
+>  #define PIRQD		MPC85xx_IRQ_EXT4
+> +#endif
+>  
+>  #define MPC85XX_PCI1_LOWER_IO	0x00000000
+>  #define MPC85XX_PCI1_UPPER_IO	0x00ffffff
