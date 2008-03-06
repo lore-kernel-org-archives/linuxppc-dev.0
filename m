@@ -1,30 +1,11 @@
-Return-Path: <Yu.Liu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BDDEEDDEDE
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 14:05:54 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m2635m35005242
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 20:05:48 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2635lBW025585
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 21:05:47 -0600 (CST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 6 Mar 2008 15:48:04 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Abolish asize field of struct data
+Message-ID: <20080306044804.GD18315@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] math-emu: delete PowerPC old math-emu headers
-Date: Thu, 6 Mar 2008 11:05:44 +0800
-Message-ID: <6EBEC19BF4A8F843BCD6B9155BBE2515E22911@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1204713892.21545.199.camel@pasglop>
-References: <12047077481825-git-send-email-Yu.Liu@freescale.com>
-	<1204713892.21545.199.camel@pasglop>
-From: "Liu Yu" <Yu.Liu@freescale.com>
-To: <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,38 +16,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->=20
-> On Wed, 2008-03-05 at 17:02 +0800, Liu Yu wrote:
-> > Use common headers as a replacement.
-> > The Common headers are located in "include/math-emu/", they=20
-> are used=20
-> > by multiple platforms such as s390, sparc, alpha.
-> >=20
-> > As the common headers have more developers, they are more=20
-> popular and=20
-> > more stable.
-> >=20
-> > In fact, PowerPC old math-emu headers cannot handle float point=20
-> > exceptions exactly while the common headers can.
->=20
-> That sounds like an excellent idea. However, were you able to=20
-> run some kind of test suite to verify that the emulation=20
-> works properly ?
->=20
+The asize field in struct data is a hangover from the early days when
+a struct data was sometimes allowed to refer to a static chunk of
+memory rather than a malloc()ed block.
 
-Not yet, for I don't have the right environment. :-(
+That's long gone, since the lifetime issues were far more trouble than
+it was worth, so get rid of the asize field.
 
-We have a patch to handle MPC85xx SPE.
-The patch is not yet a part of kernel and used to adopt PowerPC math-emu
-headers=20
-like current math-emu for PowerPC FP does.=20
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-When we ran TestFloat which is a famous FP test suite to test the SPE
-patch,
-it reported numerous errors and most of them concerned wrong FP
-exception flags.
-After we change the SPE patch to the common math-emu headers, the result
-of TestFloat are splendid.
+Index: dtc/dtc.h
+===================================================================
+--- dtc.orig/dtc.h	2008-03-06 15:43:56.000000000 +1100
++++ dtc/dtc.h	2008-03-06 15:44:06.000000000 +1100
+@@ -118,7 +118,6 @@
+ struct data {
+ 	int len;
+ 	char *val;
+-	int asize;
+ 	struct marker *markers;
+ };
+ 
+Index: dtc/data.c
+===================================================================
+--- dtc.orig/data.c	2008-03-06 15:44:27.000000000 +1100
++++ dtc/data.c	2008-03-06 15:45:01.000000000 +1100
+@@ -32,8 +32,6 @@
+ 		m = nm;
+ 	}
+ 
+-	assert(!d.val || d.asize);
+-
+ 	if (d.val)
+ 		free(d.val);
+ }
+@@ -43,9 +41,6 @@
+ 	struct data nd;
+ 	int newsize;
+ 
+-	/* we must start with an allocated datum */
+-	assert(!d.val || d.asize);
+-
+ 	if (xlen == 0)
+ 		return d;
+ 
+@@ -56,11 +51,8 @@
+ 	while ((d.len + xlen) > newsize)
+ 		newsize *= 2;
+ 
+-	nd.asize = newsize;
+ 	nd.val = xrealloc(d.val, newsize);
+ 
+-	assert(nd.asize >= (d.len + xlen));
+-
+ 	return nd;
+ }
+ 
 
-So I think the same change should be done on current PowerPC FP
-math-emu.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
