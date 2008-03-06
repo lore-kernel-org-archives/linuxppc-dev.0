@@ -1,20 +1,17 @@
-Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1E3F9DE010
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 00:20:34 +1100 (EST)
-Message-ID: <47CFEF82.10709@tiscali.nl>
-Date: Thu, 06 Mar 2008 14:20:02 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-MIME-Version: 1.0
-To: paulus@samba.org, arnd@arndb.de
-Subject: Re: [PATCH] PPC: in celleb_show_cpuinfo() convert strncpy(x, y,
-	sizeof(x)) to strlcpy
-References: <47CFEE9D.1020300@tiscali.nl>
-In-Reply-To: <47CFEE9D.1020300@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTP id 245DEDE02D
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 00:44:17 +1100 (EST)
+Date: Thu, 6 Mar 2008 16:41:05 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
+Message-ID: <20080306134105.GA31715@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1204804237.21545.257.camel@pasglop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +21,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roel Kluin wrote:
-> This patch was not yet tested. Please confirm it's right.
+The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
+if there's no link. Because of that it fails to find PHY chip. The older ibm_emac
+driver had a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros,
+which toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
+does the same for "ibm,emac-440gx" compatible chips. The workaround forces
+clock on -all- EMACs, so we select clock under global emac_phy_map_lock.
 
-was too quick with the send button. the batch below is probably better
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
-strncpy does not append '\0' if the length of the source string equals
-the size parameter, strlcpy does.
+ drivers/net/ibm_newemac/core.c |   16 +++++++++++++++-
+ drivers/net/ibm_newemac/core.h |    8 ++++++--
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/powerpc/platforms/celleb/setup.c b/arch/powerpc/platforms/celleb/setup.c
-index f27ae1e..cbe09d9 100644
---- a/arch/powerpc/platforms/celleb/setup.c
-+++ b/arch/powerpc/platforms/celleb/setup.c
-@@ -81,8 +81,7 @@ static void celleb_show_cpuinfo(struct seq_file *m)
+diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
+--- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2008-02-22 19:56:26.000000000 +0300
++++ linux-2.6/drivers/net/ibm_newemac/core.c	2008-02-22 20:38:47.000000000 +0300
+@@ -43,6 +43,8 @@
+ #include <asm/io.h>
+ #include <asm/dma.h>
+ #include <asm/uaccess.h>
++#include <asm/dcr.h>
++#include <asm/dcr-regs.h>
  
- static int __init celleb_machine_type_hack(char *ptr)
- {
--	strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
--	celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
-+	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
- 	return 0;
- }
+ #include "core.h"
  
+@@ -2323,6 +2325,10 @@ static int __devinit emac_init_phy(struc
+ 	dev->phy.mdio_read = emac_mdio_read;
+ 	dev->phy.mdio_write = emac_mdio_write;
+ 
++	/* Enable internal clock source */
++	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
++		dcri_clrset(SDR0, SDR0_MFR, 0, SDR0_MFR_ECS);
++
+ 	/* Configure EMAC with defaults so we can at least use MDIO
+ 	 * This is needed mostly for 440GX
+ 	 */
+@@ -2355,6 +2361,11 @@ static int __devinit emac_init_phy(struc
+ 			if (!emac_mii_phy_probe(&dev->phy, i))
+ 				break;
+ 		}
++
++	/* Enable external clock source */
++	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
++		dcri_clrset(SDR0, SDR0_MFR, SDR0_MFR_ECS, 0);
++
+ 	mutex_unlock(&emac_phy_map_lock);
+ 	if (i == 0x20) {
+ 		printk(KERN_WARNING "%s: can't find PHY!\n", np->full_name);
+@@ -2480,8 +2491,11 @@ static int __devinit emac_init_config(st
+ 	}
+ 
+ 	/* Check EMAC version */
+-	if (of_device_is_compatible(np, "ibm,emac4"))
++	if (of_device_is_compatible(np, "ibm,emac4")) {
+ 		dev->features |= EMAC_FTR_EMAC4;
++		if (of_device_is_compatible(np, "ibm,emac-440gx"))
++			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
++	}
+ 
+ 	/* Fixup some feature bits based on the device tree */
+ 	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
+diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.h linux-2.6/drivers/net/ibm_newemac/core.h
+--- linux-2.6.orig/drivers/net/ibm_newemac/core.h	2008-02-21 16:45:36.000000000 +0300
++++ linux-2.6/drivers/net/ibm_newemac/core.h	2008-02-22 19:57:44.000000000 +0300
+@@ -301,6 +301,10 @@ struct emac_instance {
+  * Set if we have new type STACR with STAOPC
+  */
+ #define EMAC_FTR_HAS_NEW_STACR		0x00000040
++/*
++ * Set if we need phy clock workaround for 440gx
++ */
++#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
+ 
+ 
+ /* Right now, we don't quite handle the always/possible masks on the
+@@ -312,8 +316,8 @@ enum {
+ 
+ 	EMAC_FTRS_POSSIBLE	=
+ #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
+-	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
+-	    EMAC_FTR_STACR_OC_INVERT	|
++	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
++	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
+ #endif
+ #ifdef CONFIG_IBM_NEW_EMAC_TAH
+ 	    EMAC_FTR_HAS_TAH	|
