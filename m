@@ -2,21 +2,21 @@ Return-Path: <asmirnov@ru.mvista.com>
 Received: from spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B3F3BDE05E
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 02:06:27 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2CFC0DDF3F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 02:08:50 +1100 (EST)
 Received: from spb.rtsoft.ru (spb.rtsoft.ru [127.0.0.1])
-	by spb.rtsoft.ru (8.13.5/8.13.5) with ESMTP id m26FEq5s025575
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 18:14:53 +0300
+	by spb.rtsoft.ru (8.13.5/8.13.5) with ESMTP id m26FHGQ9025603
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 18:17:16 +0300
 Received: (from alex@localhost)
-	by spb.rtsoft.ru (8.13.5/8.13.5/Submit) id m26FEqwW025574
-	for linuxppc-dev@ozlabs.org; Thu, 6 Mar 2008 18:14:52 +0300
-Date: Thu, 6 Mar 2008 18:14:51 +0300
+	by spb.rtsoft.ru (8.13.5/8.13.5/Submit) id m26FHGDw025602
+	for linuxppc-dev@ozlabs.org; Thu, 6 Mar 2008 18:17:16 +0300
+Date: Thu, 6 Mar 2008 18:17:16 +0300
 From: Alexandr Smirnov <asmirnov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] Emerson KSI8560 device tree
-Message-ID: <20080306151451.GA25251@ru.mvista.com>
+Subject: [PATCH 1/4] Emerson KSI8560 base support
+Message-ID: <20080306151716.GB25251@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 In-Reply-To: <20080304162322.GA19634@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,26 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add device tree file for Emerson KSI8560 board.
+The KSI8560 is a single compact, mid-, or full-size Advanced Mezzanine Card
+(AdvancedMC™) based on the Freescale™ Semiconductor MPC8560 PowerQUICC III™
+microprocessor. This product will serve in data and signaling applications such
+as signaling gateways (SGW) and softswitch signaling interface cards.
+
+The board has altera maxii CPLD, that is used to obtain and manage board
+configuration. Also there are two SCC UART serial consoles and FCC ethernet,
+that is routed to the front panel, while other ethernet controlers (TSEC's) are
+routed to the backplane.
 
 Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
 
- b/arch/powerpc/boot/dts/ksi8560.dts |  264 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 264 insertions(+)
+ arch/powerpc/platforms/85xx/Kconfig   |    7
+ arch/powerpc/platforms/85xx/Makefile  |    1
+ arch/powerpc/platforms/85xx/ksi8560.c |  257 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 265 insertions(+)
 
-
-diff --git a/arch/powerpc/boot/dts/ksi8560.dts b/arch/powerpc/boot/dts/ksi8560.dts
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 7e76ddb..28bc6e5 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -46,6 +46,13 @@ config MPC85xx_DS
+ 	help
+ 	  This option enables support for the MPC85xx DS (MPC8544 DS) board
+ 
++config KSI8560
++        bool "Emerson KSI8560"
++        select PPC_CPM_NEW_BINDING
++        select DEFAULT_UIMAGE
++        help
++          This option enables support for the Emerson KSI8560 board
++
+ config STX_GP3
+ 	bool "Silicon Turnkey Express GP3"
+ 	help
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index cb7af4e..6cea185 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -10,3 +10,4 @@ obj-$(CONFIG_STX_GP3)	  += stx_gp3.o
+ obj-$(CONFIG_TQM85xx)	  += tqm85xx.o
+ obj-$(CONFIG_SBC8560)     += sbc8560.o
+ obj-$(CONFIG_SBC8548)     += sbc8548.o
++obj-$(CONFIG_KSI8560)	  += ksi8560.o
+diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
 new file mode 100644
-index 0000000..78d26f4
+index 0000000..b3b8194
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/ksi8560.dts
-@@ -0,0 +1,264 @@
++++ b/arch/powerpc/platforms/85xx/ksi8560.c
+@@ -0,0 +1,257 @@
 +/*
-+ * Device Tree Source for Emerson KSI8560
++ * Board setup routines for the Emerson KSI8560
 + *
 + * Author: Alexandr Smirnov <asmirnov@ru.mvista.com>
 + *
-+ * Based on mpc8560ads.dts
++ * Based on mpc85xx_ads.c maintained by Kumar Gala
 + *
 + * 2008 (c) MontaVista, Software, Inc.  This file is licensed under
 + * the terms of the GNU General Public License version 2.  This program
@@ -55,253 +91,246 @@ index 0000000..78d26f4
 + *
 + */
 +
-+/dts-v1/;
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
++#include <linux/of_platform.h>
 +
-+/ {
-+	model = "KSI8560";
-+	compatible = "emerson,KSI8560";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/mpic.h>
++#include <mm/mmu_decl.h>
++#include <asm/udbg.h>
++#include <asm/prom.h>
 +
-+	aliases {
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+	};
++#include <sysdev/fsl_soc.h>
++#include <sysdev/fsl_pci.h>
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,8560@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <32>;
-+			i-cache-line-size = <32>;
-+			d-cache-size = <0x8000>;		/* L1, 32K */
-+			i-cache-size = <0x8000>;		/* L1, 32K */
-+			timebase-frequency = <0>;		/* From U-boot */
-+			bus-frequency = <0>;			/* From U-boot */
-+			clock-frequency = <0>;			/* From U-boot */
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x10000000>;			/* Fixed by bootwrapper */
-+	};
-+
-+	soc@fdf00000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		ranges = <0x00000000 0xfdf00000 0x00100000>;
-+		bus-frequency = <0>;				/* Fixed by bootwrapper */
-+
-+		memory-controller@2000 {
-+			compatible = "fsl,8540-memory-controller";
-+			reg = <0x2000 0x1000>;
-+			interrupt-parent = <&MPIC>;
-+			interrupts = <0x12 0x2>;
-+		};
-+
-+		l2-cache-controller@20000 {
-+			compatible = "fsl,8540-l2-cache-controller";
-+			reg = <0x20000 0x1000>;
-+			cache-line-size = <0x20>;		/* 32 bytes */
-+			cache-size = <0x40000>;			/* L2, 256K */
-+			interrupt-parent = <&MPIC>;
-+			interrupts = <0x10 0x2>;
-+		};
-+
-+		i2c@3000 {
-+			compatible = "fsl-i2c";
-+			reg = <0x3000 0x100>;
-+			interrupts = <0x2b 0x2>;
-+			interrupt-parent = <&MPIC>;
-+			dfsrr;
-+		};
-+
-+		mdio@24520 {					/* For TSECs */
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,gianfar-mdio";
-+			reg = <0x24520 0x20>;
-+
-+			PHY1: ethernet-phy@1 {
-+				interrupt-parent = <&MPIC>;
-+				reg = <0x1>;
-+				device_type = "ethernet-phy";
-+			};
-+
-+			PHY2: ethernet-phy@2 {
-+				interrupt-parent = <&MPIC>;
-+				reg = <0x2>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		enet0: ethernet@24000 {
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <0x24000 0x1000>;
-+			/* Mac address filled in by bootwrapper */
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <0x1d 0x2 0x1e 0x2 0x22 0x2>;
-+			interrupt-parent = <&MPIC>;
-+			phy-handle = <&PHY1>;
-+		};
-+
-+		enet1: ethernet@25000 {
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <0x25000 0x1000>;
-+			/* Mac address filled in by bootwrapper */
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <0x23 0x2 0x24 0x2 0x28 0x2>;
-+			interrupt-parent = <&MPIC>;
-+			phy-handle = <&PHY2>;
-+		};
-+
-+		MPIC: pic@40000 {
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			interrupt-controller;
-+			reg = <0x40000 0x40000>;
-+			device_type = "open-pic";
-+		};
-+
-+		cpm@919c0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8560-cpm", "fsl,cpm2";
-+			reg = <0x919c0 0x30>;
-+			ranges;
-+
-+			muram@80000 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0x0 0x80000 0x10000>;
-+
-+				data@0 {
-+					compatible = "fsl,cpm-muram-data";
-+					reg = <0x0 0x4000 0x9000 0x2000>;
-+				};
-+			};
-+
-+			brg@919f0 {
-+				compatible = "fsl,mpc8560-brg",
-+					     "fsl,cpm2-brg",
-+					     "fsl,cpm-brg";
-+				reg = <0x919f0 0x10 0x915f0 0x10>;
-+				clock-frequency = <165000000>;	/* 166MHz */
-+			};
-+
-+			CPMPIC: pic@90c00 {
-+				#address-cells = <0>;
-+				#interrupt-cells = <2>;
-+				interrupt-controller;
-+				interrupts = <0x2e 0x2>;
-+				interrupt-parent = <&MPIC>;
-+				reg = <0x90c00 0x80>;
-+				compatible = "fsl,mpc8560-cpm-pic", "fsl,cpm2-pic";
-+			};
-+
-+			serial@91a00 {
-+				device_type = "serial";
-+				compatible = "fsl,mpc8560-scc-uart",
-+					     "fsl,cpm2-scc-uart";
-+				reg = <0x91a00 0x20 0x88000 0x100>;
-+				fsl,cpm-brg = <1>;
-+				fsl,cpm-command = <0x800000>;
-+				current-speed = <0x1c200>;
-+				interrupts = <0x28 0x8>;
-+				interrupt-parent = <&CPMPIC>;
-+			};
-+
-+			serial@91a20 {
-+				device_type = "serial";
-+				compatible = "fsl,mpc8560-scc-uart",
-+					     "fsl,cpm2-scc-uart";
-+				reg = <0x91a20 0x20 0x88100 0x100>;
-+				fsl,cpm-brg = <2>;
-+				fsl,cpm-command = <0x4a00000>;
-+				current-speed = <0x1c200>;
-+				interrupts = <0x29 0x8>;
-+				interrupt-parent = <&CPMPIC>;
-+			};
-+
-+			mdio@90d00 {				/* For FCCs */
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,cpm2-mdio-bitbang";
-+				reg = <0x90d00 0x14>;
-+				fsl,mdio-pin = <24>;
-+				fsl,mdc-pin = <25>;
-+
-+				PHY0: ethernet-phy@0 {
-+					interrupt-parent = <&MPIC>;
-+					reg = <0x0>;
-+					device_type = "ethernet-phy";
-+				};
-+			};
-+
-+			enet2: ethernet@91300 {
-+				device_type = "network";
-+				compatible = "fsl,mpc8560-fcc-enet",
-+					     "fsl,cpm2-fcc-enet";
-+				reg = <0x91300 0x20 0x88400 0x100 0x91390 0x1>;
-+				/* Mac address filled in by bootwrapper */
-+				local-mac-address = [ 00 00 00 00 00 00 ];
-+				fsl,cpm-command = <0x12000300>;
-+				interrupts = <0x20 0x8>;
-+				interrupt-parent = <&CPMPIC>;
-+				phy-handle = <&PHY0>;
-+			};
-+		};
-+	};
-+
-+	localbus@fdf05000 {
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		compatible = "fsl,mpc8560-localbus";
-+		reg = <0xfdf05000 0x68>;
-+
-+		ranges = <0x0 0x0 0xe0000000 0x00800000
-+			  0x4 0x0 0xe8080000 0x00080000>;
-+
-+		flash@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "jedec-flash";
-+			reg = <0x0 0x0 0x800000>;
-+			bank-width = <0x2>;
-+
-+			partition@0 {
-+				label = "Primary Kernel";
-+				reg = <0x0 0x180000>;
-+			};
-+			partition@180000 {
-+				label = "Primary Filesystem";
-+				reg = <0x180000 0x580000>;
-+			};
-+			partition@700000 {
-+				label = "Monitor";
-+				reg = <0x300000 0x100000>;
-+				read-only;
-+			};
-+		};
-+
-+		cpld@4,0 {
-+			compatible = "emerson,KSI8560-cpld";
-+			reg = <0x4 0x0 0x80000>;
-+		};
-+	};
++#include <asm/cpm2.h>
++#include <sysdev/cpm2_pic.h>
 +
 +
-+	chosen {
-+		linux,stdout-path = "/soc/cpm/serial@91a00";
-+	};
++#define KSI8560_CPLD_HVR		0x04 /* Hardware Version Register */
++#define KSI8560_CPLD_PVR		0x08 /* PLD Version Register */
++#define KSI8560_CPLD_RCR1		0x30 /* Reset Command Register 1 */
++
++#define KSI8560_CPLD_RCR1_CPUHR		0x80 /* CPU Hard Reset */
++
++static void __iomem *cpld_base = NULL;
++
++static void machine_restart(char *cmd)
++{
++	if (cpld_base)
++		out_8(cpld_base + KSI8560_CPLD_RCR1, KSI8560_CPLD_RCR1_CPUHR);
++	else
++		printk(KERN_ERR "Can't find CPLD base, hang forever\n");
++
++	for (;;);
++}
++
++static void cpm2_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	int cascade_irq;
++
++	while ((cascade_irq = cpm2_get_irq()) >= 0)
++		generic_handle_irq(cascade_irq);
++
++	desc->chip->eoi(irq);
++}
++
++static void __init ksi8560_pic_init(void)
++{
++	struct mpic *mpic;
++	struct resource r;
++	struct device_node *np;
++#ifdef CONFIG_CPM2
++	int irq;
++#endif
++
++	np = of_find_node_by_type(NULL, "open-pic");
++
++	if (np == NULL) {
++		printk(KERN_ERR "Could not find open-pic node\n");
++		return;
++	}
++
++	if (of_address_to_resource(np, 0, &r)) {
++		printk(KERN_ERR "Could not map mpic register space\n");
++		of_node_put(np);
++		return;
++	}
++
++	mpic = mpic_alloc(np, r.start,
++			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
++			0, 256, " OpenPIC  ");
++	BUG_ON(mpic == NULL);
++	of_node_put(np);
++
++	mpic_init(mpic);
++
++#ifdef CONFIG_CPM2
++	/* Setup CPM2 PIC */
++	np = of_find_compatible_node(NULL, NULL, "fsl,cpm2-pic");
++	if (np == NULL) {
++		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
++		return;
++	}
++	irq = irq_of_parse_and_map(np, 0);
++
++	cpm2_pic_init(np);
++	of_node_put(np);
++	set_irq_chained_handler(irq, cpm2_cascade);
++
++	setup_irq(0, NULL);
++#endif
++}
++
++#ifdef CONFIG_CPM2
++/*
++ * Setup I/O ports
++ */
++struct cpm_pin {
++	int port, pin, flags;
++};
++
++static struct cpm_pin __initdata ksi8560_pins[] = {
++	/* SCC1 */
++	{3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++
++	/* SCC2 */
++	{3, 26, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{3, 27, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{3, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++
++	/* FCC1 */
++	{0, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++	{0, 18, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 19, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	{0, 26, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{0, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{0, 28, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{0, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{0, 30, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{0, 31, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
++	{2, 23, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK9 */
++	{2, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, /* CLK10 */
++
++};
++
++static void __init init_ioports(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(ksi8560_pins); i++) {
++		struct cpm_pin *pin = &ksi8560_pins[i];
++		cpm2_set_pin(pin->port, pin->pin, pin->flags);
++	}
++
++	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
++	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
++	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_RX);
++	cpm2_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_TX);
++	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK9, CPM_CLK_RX);
++	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK10, CPM_CLK_TX);
++}
++#endif
++
++/*
++ * Setup the architecture
++ */
++static void __init ksi8560_setup_arch(void)
++{
++	struct device_node *cpld;
++
++	cpld = of_find_compatible_node(NULL, NULL, "emerson,KSI8560-cpld");
++	if (cpld)
++		cpld_base = of_iomap(cpld, 0);
++	else
++		printk(KERN_ERR "Can't find CPLD in device tree\n");
++
++	if (ppc_md.progress)
++		ppc_md.progress("ksi8560_setup_arch()", 0);
++
++#ifdef CONFIG_CPM2
++	cpm2_reset();
++	init_ioports();
++#endif
++}
++
++static void ksi8560_show_cpuinfo(struct seq_file *m)
++{
++	uint pvid, svid, phid1;
++	uint memsize = total_memory;
++
++	pvid = mfspr(SPRN_PVR);
++	svid = mfspr(SPRN_SVR);
++
++	seq_printf(m, "Vendor\t\t: Emerson Network Power\n");
++	seq_printf(m, "Board\t\t: KSI8560\n");
++
++	if (cpld_base) {
++		seq_printf(m, "Hardware rev\t: %d\n",
++					in_8(cpld_base + KSI8560_CPLD_HVR));
++		seq_printf(m, "CPLD rev\t: %d\n",
++					in_8(cpld_base + KSI8560_CPLD_PVR));
++	} else
++		seq_printf(m, "Unknown Hardware and CPLD revs\n");
++
++	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
++	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
++
++	/* Display cpu Pll setting */
++	phid1 = mfspr(SPRN_HID1);
++	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
++
++	/* Display the amount of memory */
++	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
++}
++
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .type = "soc", },
++	{ .name = "cpm", },
++	{ .name = "localbus", },
++	{},
++};
++
++static int __init declare_of_platform_devices(void)
++{
++	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++
++	return 0;
++}
++machine_device_initcall(ksi8560, declare_of_platform_devices);
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init ksi8560_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "emerson,KSI8560");
++}
++
++define_machine(ksi8560) {
++	.name			= "KSI8560",
++	.probe			= ksi8560_probe,
++	.setup_arch		= ksi8560_setup_arch,
++	.init_IRQ		= ksi8560_pic_init,
++	.show_cpuinfo		= ksi8560_show_cpuinfo,
++	.get_irq		= mpic_get_irq,
++	.restart		= machine_restart,
++	.calibrate_decr		= generic_calibrate_decr,
 +};
