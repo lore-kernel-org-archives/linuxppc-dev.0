@@ -2,22 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E40DCDDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 11:04:41 +1100 (EST)
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
+	by ozlabs.org (Postfix) with ESMTP id 0618ADDEE8
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 11:09:05 +1100 (EST)
+Subject: Re: [PATCH] PowerPC 4xx: Add dcri_clrset() for locked
+	read/modify/write functionality
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080304103350.12d26560.akpm@linux-foundation.org>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<47CD4AB3.3080409@linux.vnet.ibm.com> <20778.1204641656@neuling.org>
-	<20080304103350.12d26560.akpm@linux-foundation.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20080305183804.GA21760@ru.mvista.com>
+References: <20080305183804.GA21760@ru.mvista.com>
 Content-Type: text/plain
-Date: Thu, 06 Mar 2008 11:03:31 +1100
-Message-Id: <1204761811.21545.238.camel@pasglop>
+Date: Thu, 06 Mar 2008 11:06:18 +1100
+Message-Id: <1204761978.21545.240.camel@pasglop>
 Mime-Version: 1.0
-Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
-	Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,37 +26,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Yes, we are - it's the semaphore rewrite which is doing this in
-> start_kernel().  It's being discussed.
+On Wed, 2008-03-05 at 21:38 +0300, Valentine Barshak wrote:
+> This adds dcri_clrset() macro which does read/modify/write
+> on indirect dcr registers while holding indirect dcr lock.
 > 
-> Enabling interrupts too early on powerpc was discovered to be fatal on
-> powerpc years ago.  It looks like that remains the case.
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-Regarding these issues. I could make it non fatal and just WARN_ON,
-provided that I have a way to differentiate legal vs. illegal calls
-to local_irq_enable(). We already have that function mostly out of
-line in C code due to our lazy irq disabling scheme, so the overhead of
-testing some global kernel state would be minimum here.
-
-However, I don't see anything around init/main.c:start_kernel() that I
-can use. What do you reckon here we should do ? Add some kind of global
-we set before calling local_irq_enable() ? Or make early_boot_irqs_on()
-do that generically 
-
-It's currently defined as an empty inline without CONFIG_TRACE_IRQFLAGS
-but we could make it set a flag instead.
-
-I'm pretty sure other archs have similar problems, especially in the
-embedded world where you are booted with random junk firmwares that may
-leave devices, interrupt controllers etc... in random state, and
-enabling incoming IRQs before the arch code properly initializes the
-main interrupt controller can be fatal. I know at least of an ARM board
-I worked on a while ago that had a similar issues.
-
-On ppc32, unfortunately, our local_irq_enable/restore are nice inlines
-that whack the appropriate MSR bits directly, thus adding a test for a
-global flag would add some bloat/overhead that I'd like to avoid, at
-least until we decide to also do lazy disabling on those, if ever...
-
-Cheers,
-Ben.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+> ---
+>  include/asm-powerpc/dcr-native.h |   17 +++++++++++++++++
+>  1 files changed, 17 insertions(+)
+> 
+> --- linux-2.6.orig/include/asm-powerpc/dcr-native.h	2008-03-05 17:32:31.000000000 +0300
+> +++ linux-2.6/include/asm-powerpc/dcr-native.h	2008-03-05 17:53:16.000000000 +0300
+> @@ -82,6 +82,19 @@ static inline void __mtdcri(int base_add
+>  	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+>  }
+>  
+> +static inline void __dcri_clrset(int base_addr, int base_data, int reg,
+> +				 unsigned clr, unsigned set)
+> +{
+> +	unsigned long flags;
+> +	unsigned int val;
+> +
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);
+> +	__mtdcr(base_addr, reg);
+> +	val = (__mfdcr(base_data) & ~clr) | set;
+> +	__mtdcr(base_data, val);
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> +}
+> +
+>  #define mfdcri(base, reg)	__mfdcri(DCRN_ ## base ## _CONFIG_ADDR,	\
+>  					 DCRN_ ## base ## _CONFIG_DATA,	\
+>  					 reg)
+> @@ -90,6 +103,10 @@ static inline void __mtdcri(int base_add
+>  					 DCRN_ ## base ## _CONFIG_DATA,	\
+>  					 reg, data)
+>  
+> +#define dcri_clrset(base, reg, clr, set)	__dcri_clrset(DCRN_ ## base ## _CONFIG_ADDR,	\
+> +							      DCRN_ ## base ## _CONFIG_DATA,	\
+> +							      reg, clr, set)
+> +
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_DCR_NATIVE_H */
