@@ -1,35 +1,29 @@
-Return-Path: <pbadari@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B7BA5DE253
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 06:25:55 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m26JPpXH012550
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 14:25:51 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m26JPphk220274
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 12:25:51 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m26JPovc023836
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 12:25:51 -0700
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
-References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-	<20080306110847.11d7cb26.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Thu, 06 Mar 2008 11:29:11 -0800
-Message-Id: <1204831751.6272.6.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>,
-	Yasunori Goto <y-goto@jp.fujitsu.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id C7498DDF56
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 07:23:21 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Thu, 6 Mar 2008 21:23:11 +0100
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+Message-ID: <20080306202311.GA18925@iram.es>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+	<200802272221.38985.jwilson@redhat.com>
+	<1204179959.15052.372.camel@pasglop>
+	<200802281342.06493.jwilson@redhat.com>
+	<1204241162.15052.393.camel@pasglop>
+	<47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es>
+	<47CC0C95.1030709@s5r6.in-berlin.de>
+	<20080305225902.GA27985@iram.es>
+	<47CF2C08.5000609@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47CF2C08.5000609@s5r6.in-berlin.de>
+Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Jarod Wilson <jwilson@redhat.com>, linux1394-devel@lists.sourceforge.net,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Harvey Harrison <harvey.harrison@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,47 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-03-06 at 11:08 -0800, Randy Dunlap wrote:
-> On Thu, 06 Mar 2008 10:55:34 -0800 Badari Pulavarty wrote:
+On Thu, Mar 06, 2008 at 12:26:00AM +0100, Stefan Richter wrote:
+> Gabriel Paubert wrote:
+> >>>I have a Pismo which I use on a virtually
+> >>>daily basis (and about to remove the last remnants of MacOS on it). 
+> >>>However I have disabled Firewire because it would not sleep and wake 
+> >>>up properly. 
+> ...
+> >For now I have only tested the new stack with a 6 year old 1.8" disk
+> >and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
+> >plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
 > 
-> > Generic helper function to remove section mappings and sysfs entries
-> > for the section of the memory we are removing.  offline_pages() correctly 
-> > adjusted zone and marked the pages reserved.
-> 
-> Such generic (exported, non-static) interfaces could use some
-> (kernel-)docs, please.
+> That's great.  Thanks for testing.
 
-Sure. Will do.
+The old stack also works. I forgot to mention that with the new
+stack (not with the old) there is a message when going to sleep:
 
-> > Issue: If mem_map, usemap allocation could come from different places -
-> > kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
-> > to find and free up bootmem allocations.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > 
-> > ---
-> >  include/linux/memory_hotplug.h |    4 +++
-> >  mm/memory_hotplug.c            |   44 +++++++++++++++++++++++++++++++++++++++++
-> >  mm/sparse.c                    |   43 +++++++++++++++++++++++++++++++++++++---
-> >  3 files changed, 88 insertions(+), 3 deletions(-)
-> 
-> > Index: linux-2.6.25-rc2/include/linux/memory_hotplug.h
-> > ===================================================================
-> > --- linux-2.6.25-rc2.orig/include/linux/memory_hotplug.h	2008-02-27 12:58:17.000000000 -0800
-> > +++ linux-2.6.25-rc2/include/linux/memory_hotplug.h	2008-02-27 13:00:04.000000000 -0800
-> > @@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
-> >  /* reasonably generic interface to expand the physical pages in a zone  */
-> >  extern int __add_pages(struct zone *zone, unsigned long start_pfn,
-> >  	unsigned long nr_pages);
-> > +extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
-> > +	unsigned long nr_pages);
-> >  
-> >  /*
-> >   * Walk thorugh all memory which is registered as resource.
-> 
->            through :)
+firewire_ohci: pci_set_power_state failed with -5
 
-I will fix that.
+but it is harmless, and if I understand correctly due to the 
+fact that the power management on this chip is not implemented 
+through capability fields in the PCI configuration space.
 
-Thanks,
-Badari
+	Gabriel
