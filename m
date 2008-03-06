@@ -1,28 +1,31 @@
-Return-Path: <linux+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[78.32.30.218])
+Return-Path: <pbadari@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6F678DE0D2
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 02:40:16 +1100 (EST)
-Date: Thu, 6 Mar 2008 15:06:40 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [patch 4/6] ARM: move bridge enable out of
-	pcibios_enable_resources()
-Message-ID: <20080306150640.GL3283@flint.arm.linux.org.uk>
-References: <20080228000437.880811124@ldl.fc.hp.com>
-	<20080228001053.013269726@ldl.fc.hp.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 06DDADE045
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 05:51:16 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m26IpD9M027730
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 13:51:13 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m26IpDY4194034
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 11:51:13 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m26IpC65024860
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 11:51:13 -0700
+Subject: [PATCH 0/5] 2.6.25-rc3-mm1 hotplug memory remove updates
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org
+Content-Type: text/plain
+Date: Thu, 06 Mar 2008 10:54:33 -0800
+Message-Id: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080228001053.013269726@ldl.fc.hp.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arch@vger.kernel.org, Chris Zankel <chris@zankel.net>,
-	Grant Grundler <grundler@parisc-linux.org>,
-	linux-parisc@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+	Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,27 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 27, 2008 at 05:04:41PM -0700, Bjorn Helgaas wrote:
-> Move bridge enable from pcibios_enable_resources() to
-> platform_pci_enable_device() so the former matches other
-> architectures and can be shared.
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> Index: work6/arch/arm/kernel/bios32.c
-> ===================================================================
-> --- work6.orig/arch/arm/kernel/bios32.c	2008-02-27 11:25:29.000000000 -0700
-> +++ work6/arch/arm/kernel/bios32.c	2008-02-27 11:55:59.000000000 -0700
-> @@ -683,15 +683,32 @@
->  			cmd |= PCI_COMMAND_MEMORY;
->  	}
->  
-> +	if (cmd != old_cmd) {
-> +		printk("PCI: enabling device %s (%04x -> %04x)\n",
-> +		       pci_name(dev), old_cmd, cmd);
+Hi Andrew & Paul,
 
-Should be dev_info().
+Here are the updates for hotplug memory remove. Most changes are
+PPC specific, but I would like these to be included in next -mm 
+for easy testing and review, before including in Paul's tree.
 
-Apart from that...
+eHEA driver folks are verifying if the exported interface
+walk_memory_resource() is good enough for their needs. And also,
+we are verifying the code on x86_64. Once that is done, we may
+be able to cleanup some of the code (make remove_memory() arch
+generic).
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+We still have an issue with not being able to free up the allocations
+that came from bootmem. Yasunori Goto wants to clean up that code.
+
+[PATCH 1/5] generic __remove_pages() support
+[PATCH 2/5] [PPC] htab_remove_mapping() error handling
+[PATCH 3/5] [PPC] hotplug memory notifications for ppc
+[PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
+[PATCH 5/5] [PPC] provide walk_memory_resource() for ppc
+
+Testing: All the patches are tested on p-series LPAR configuration,
+writing to /sysfs & /proc, through DLPAR tools and through HMC. 
+Testing on x86_64 needs more work.
+
+Thanks,
+Badari
