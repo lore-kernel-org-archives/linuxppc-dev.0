@@ -1,21 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BECBDDDE07
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 03:12:10 +1100 (EST)
-In-Reply-To: <7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8CDF9DDFD4
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 04:18:52 +1100 (EST)
+Date: Thu, 6 Mar 2008 10:05:42 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [POWERPC] 8xx: fix swap
+Message-ID: <20080306160542.GB958@ld0162-tx32.am.freescale.net>
 References: <20080306135330.6d5462d2@vitb.ru.mvista.com>
 	<7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <aece767c51f5ab68c3012f1446cdd569@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [POWERPC] 8xx: fix swap
-Date: Thu, 6 Mar 2008 17:12:03 +0100
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 06, 2008 at 09:56:58AM -0600, Kumar Gala wrote:
+> On Mar 6, 2008, at 4:53 AM, Vitaly Bordug wrote:
+> > arch/powerpc/kernel/head_8xx.S      |   30 ++++++++++++++++++++++++++ 
+> > +++-
+> > include/asm-powerpc/pgtable-ppc32.h |    8 --------
+> > 2 files changed, 29 insertions(+), 9 deletions(-)
+> 
 > do we need similar fixes to arch/ppc ?
 
-Do we care?
+Yes, a patch was posted a while ago.
 
-arch/ppc needs many fixes, when you have implemented all of that, you
-get a clone of arch/powerpc ;-)
-
-
-Segher
+-Scott
