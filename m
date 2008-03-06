@@ -1,19 +1,25 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B5C07DDEEE
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 22:33:20 +1100 (EST)
-Message-ID: <47CFD607.2000309@ru.mvista.com>
-Date: Thu, 06 Mar 2008 14:31:19 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PowerPC 4xx: Add dcri_clrset() for locked
-	read/modify/write functionality
-References: <20080305183804.GA21760@ru.mvista.com>	<1204761978.21545.240.camel@pasglop>
-	<20080305191216.5089f696@zod.rchland.ibm.com>
-In-Reply-To: <20080305191216.5089f696@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D20C1DDF09
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 22:46:07 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	m26BhljT021242
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 04:46:01 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m26AVpOo015583
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 04:31:52 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH 1/2] fix wrong USB phy type in mpc837xmds dts
+Date: Thu,  6 Mar 2008 18:42:26 +0800
+Message-Id: <1204800146-11591-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +29,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Thu, 06 Mar 2008 11:06:18 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
->> On Wed, 2008-03-05 at 21:38 +0300, Valentine Barshak wrote:
->>> This adds dcri_clrset() macro which does read/modify/write
->>> on indirect dcr registers while holding indirect dcr lock.
->>>
->>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Indeed, looks good.  Valentine, are you going to rework your EMAC patch
-> to use this?
-> 
-> josh
+Due to chip constraint MPC837x USB DR module can only use
+ULPI and serial PHY interfaces.  The patch fixes the wrong
+type in dts.
 
-Yes, I was going to update the pcie stuff and rework the emac patches.
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8377_mds.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8378_mds.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8379_mds.dts |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-Thanks,
-Valentine.
+diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
+index a3637ff..677a061 100644
+--- a/arch/powerpc/boot/dts/mpc8377_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+@@ -91,7 +91,6 @@
+ 			mode = "cpu";
+ 		};
+ 
+-		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+ 		usb@23000 {
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <0x23000 0x1000>;
+@@ -99,7 +98,8 @@
+ 			#size-cells = <0>;
+ 			interrupt-parent = <&ipic>;
+ 			interrupts = <38 0x8>;
+-			phy_type = "utmi_wide";
++			dr_mode = "host";
++			phy_type = "ulpi";
+ 		};
+ 
+ 		mdio@24520 {
+diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
+index 533e9b0..3f9e9fe 100644
+--- a/arch/powerpc/boot/dts/mpc8378_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
+@@ -91,7 +91,6 @@
+ 			mode = "cpu";
+ 		};
+ 
+-		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+ 		usb@23000 {
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <0x23000 0x1000>;
+@@ -99,7 +98,8 @@
+ 			#size-cells = <0>;
+ 			interrupt-parent = <&ipic>;
+ 			interrupts = <38 0x8>;
+-			phy_type = "utmi_wide";
++			dr_mode = "host";
++			phy_type = "ulpi";
+ 		};
+ 
+ 		mdio@24520 {
+diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
+index c270685..36c1c13 100644
+--- a/arch/powerpc/boot/dts/mpc8379_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
+@@ -91,7 +91,6 @@
+ 			mode = "cpu";
+ 		};
+ 
+-		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+ 		usb@23000 {
+ 			compatible = "fsl-usb2-dr";
+ 			reg = <0x23000 0x1000>;
+@@ -99,7 +98,8 @@
+ 			#size-cells = <0>;
+ 			interrupt-parent = <&ipic>;
+ 			interrupts = <38 0x8>;
+-			phy_type = "utmi_wide";
++			dr_mode = "host";
++			phy_type = "ulpi";
+ 		};
+ 
+ 		mdio@24520 {
+-- 
+1.5.4.rc4
