@@ -1,32 +1,11 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5CD40DDF13
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 12:15:22 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m261EXHV004085
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 20:14:33 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m261FJJV194018
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 18:15:19 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m261FJR6016220
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2008 18:15:19 -0700
-Date: Wed, 5 Mar 2008 19:12:16 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] PowerPC 4xx: Add dcri_clrset() for locked
-	read/modify/write functionality
-Message-ID: <20080305191216.5089f696@zod.rchland.ibm.com>
-In-Reply-To: <1204761978.21545.240.camel@pasglop>
-References: <20080305183804.GA21760@ru.mvista.com>
-	<1204761978.21545.240.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 6 Mar 2008 12:16:55 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make dtc_open_file() die() if unable to open requested file
+Message-ID: <20080306011655.GA18315@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,19 +16,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 06 Mar 2008 11:06:18 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+All current callers of dtc_open_file() immediately die() if it returns
+an error.  In a non-interative tool like dtc, it's hard to see what
+you could sensibly do to recover from a failure to open an input file
+in any case.
 
-> 
-> On Wed, 2008-03-05 at 21:38 +0300, Valentine Barshak wrote:
-> > This adds dcri_clrset() macro which does read/modify/write
-> > on indirect dcr registers while holding indirect dcr lock.
-> > 
-> > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Therefore, make dtc_open_file() itself die() if there's an error
+opening the requested file.  This removes the need for error checking
+at the callsites, and ensures a consistent error message in all cases.
+While we're at it, change the rror message from fstree.c when we fail
+to open the input directory to match dtc_open_file()'s error message.
 
-Indeed, looks good.  Valentine, are you going to rework your EMAC patch
-to use this?
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-josh
+---
+ dtc-lexer.l |    3 ---
+ dtc.c       |    4 ----
+ fstree.c    |    4 ++--
+ srcpos.c    |   11 ++++-------
+ 4 files changed, 6 insertions(+), 16 deletions(-)
+
+Index: dtc/dtc-lexer.l
+===================================================================
+--- dtc.orig/dtc-lexer.l	2008-03-06 12:07:32.000000000 +1100
++++ dtc/dtc-lexer.l	2008-03-06 12:08:22.000000000 +1100
+@@ -259,9 +259,6 @@
+ 	}
+ 
+ 	newfile = dtc_open_file(filename, searchptr);
+-	if (!newfile)
+-		die("Couldn't open \"%s\": %s", filename, strerror(errno));
+-
+ 
+ 	incl_file = xmalloc(sizeof(struct incl_file));
+ 
+Index: dtc/fstree.c
+===================================================================
+--- dtc.orig/fstree.c	2008-03-06 12:07:32.000000000 +1100
++++ dtc/fstree.c	2008-03-06 12:08:22.000000000 +1100
+@@ -31,8 +31,8 @@
+ 	struct node *tree;
+ 
+ 	d = opendir(dirname);
+-	if (! d)
+-		die("opendir(): %s\n", strerror(errno));
++	if (!d)
++		die("Couldn't opendir() \"%s\": %s\n", dirname, strerror(errno));
+ 
+ 	tree = build_node(NULL, NULL);
+ 
+Index: dtc/srcpos.c
+===================================================================
+--- dtc.orig/srcpos.c	2008-03-06 12:07:32.000000000 +1100
++++ dtc/srcpos.c	2008-03-06 12:08:22.000000000 +1100
+@@ -82,9 +82,8 @@
+ 
+ 	if (fname[0] == '/') {
+ 		file->file = fopen(fname, "r");
+-
+ 		if (!file->file)
+-			goto out;
++			goto fail;
+ 
+ 		file->name = strdup(fname);
+ 		return file;
+@@ -98,15 +97,13 @@
+ 			return file;
+ 
+ 		if (errno != ENOENT)
+-			goto out;
++			goto fail;
+ 
+ 		search = search->next;
+ 	}
+ 
+-out:
+-	free(file->dir);
+-	free(file);
+-	return NULL;
++fail:
++	die("Couldn't open \"%s\": %s\n", fname, strerror(errno));
+ }
+ 
+ void dtc_close_file(struct dtc_file *file)
+Index: dtc/dtc.c
+===================================================================
+--- dtc.orig/dtc.c	2008-03-06 12:08:34.000000000 +1100
++++ dtc/dtc.c	2008-03-06 12:08:38.000000000 +1100
+@@ -193,10 +193,6 @@
+ 		bi = dt_from_fs(arg);
+ 	} else if(streq(inform, "dtb")) {
+ 		inf = dtc_open_file(arg, NULL);
+-		if (!inf)
+-			die("Couldn't open \"%s\": %s\n", arg,
+-			    strerror(errno));
+-
+ 		bi = dt_from_blob(inf->file);
+ 	} else {
+ 		die("Unknown input format \"%s\"\n", inform);
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
