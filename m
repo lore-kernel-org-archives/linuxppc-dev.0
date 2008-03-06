@@ -1,17 +1,20 @@
-Return-Path: <s104259@yahoo.it>
-Received: from web23109.mail.ird.yahoo.com (web23109.mail.ird.yahoo.com
-	[217.146.189.49]) by ozlabs.org (Postfix) with SMTP id 6D7A9DDECC
+Return-Path: <learn.mips.linux@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.185])
+	by ozlabs.org (Postfix) with ESMTP id 609EEDDECC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Mar 2008 21:27:15 +1100 (EST)
-Date: Thu, 6 Mar 2008 11:27:13 +0100 (CET)
-From: Angelo <s104259@yahoo.it>
-Subject: RE: I2S driver
-To: "Pedro Luis D. L." <carcadiz@hotmail.com>
-In-Reply-To: <BLU106-W10231BF41CAF09DAD5DBC0CA110@phx.gbl>
+	Thu,  6 Mar 2008 21:21:01 +1100 (EST)
+Received: by ti-out-0910.google.com with SMTP id y6so2668869tia.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 06 Mar 2008 02:20:59 -0800 (PST)
+Message-ID: <56ef64000803060220r61a9cd87ibf1e92af95fad04a@mail.gmail.com>
+Date: Thu, 6 Mar 2008 15:50:57 +0530
+From: "learn linux" <learn.mips.linux@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: How to boot kernel in JTAG mode
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2073941732-1204799233=:99121"
-Message-ID: <352127.99121.qm@web23109.mail.ird.yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_24095_31026774.1204798857405"
+Cc: Heydeck@kieback-peter.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,40 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-2073941732-1204799233=:99121
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+------=_Part_24095_31026774.1204798857405
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Hi,
+      I am new to this linux and jtag. I want to set up the my board in jtag
+mode so that I could boot the kernel in jtag mode and try to debug the
+kernel.
+      I need a general information how to set it up.
 
-how can i take these headers file?
+Thanks in advance,
+Sudeep.
 
-> Pedro wrote: 
-> #include <sysdev/bestcomm/bestcomm.h>
-> #include <sysdev/bestcomm/gen_bd.h>
-> #include <sysdev/bestcomm/bestcomm_priv.h>
+------=_Part_24095_31026774.1204798857405
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-
-I try to download some kernel version (2.6.23 and 2.6.24) but there aren't any library of bestcomm.
-
-Many thanks.
-
-
-
-
-       
----------------------------------
-Inviato da Yahoo! Mail.
-La web mail più usata al mondo.
---0-2073941732-1204799233=:99121
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<pre><tt><tt>how can i take these headers file?<br><br>&gt; </tt></tt><tt><tt><tt><tt>Pedro wrote: </tt></tt></tt></tt><br><tt><tt>&gt; #include &lt;sysdev/bestcomm/bestcomm.h&gt;<br>&gt; #include &lt;sysdev/bestcomm/gen_bd.h&gt;<br>&gt; #include &lt;sysdev/bestcomm/bestcomm_priv.h&gt;<br><br></tt></tt></pre><div style="text-align: left;"><tt><tt>I try to download some kernel version (2.6.23 and 2.6.24) but there aren't any library of bestcomm.<br><br>Many thanks.<br></tt></tt></div><BR><BR><p>&#32;
-
-
-      <hr size=1>
-Inviato da <a  
-href="http://us.rd.yahoo.com/mailuk/taglines/isp/control/*http://us.rd.yahoo.com/evt=52436/*http://it.docs.yahoo.com/mail/overview/index.html" target=_blank>Yahoo! Mail</a>.
+Hi,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I am new to this linux and jtag. I want
+to set up the my board in jtag mode so that I could boot the kernel in
+jtag mode and try to debug the kernel.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I need a general information how to set it up. <br>
 <br>
-La web mail più usata al mondo.
---0-2073941732-1204799233=:99121--
+Thanks in advance,<br>
+Sudeep.<br>
+<br>
+
+------=_Part_24095_31026774.1204798857405--
