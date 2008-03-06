@@ -2,27 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4212DDEFA
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 10:47:28 +1100 (EST)
-Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
+	by ozlabs.org (Postfix) with ESMTP id E40DCDDEEA
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 11:04:41 +1100 (EST)
+Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <47CECB21.3060704@freescale.com>
-References: <20080303144727.GA27949@ingate.macqel>
-	<20080303170719.GC28951@ld0162-tx32.am.freescale.net>
-	<20080303210532.GA20382@netgate.macqel>
-	<47CC696C.4090103@freescale.com>
-	<20080303212622.GB20382@netgate.macqel>
-	<47CC73CE.4080801@freescale.com>
-	<20080304080828.GA18829@netgate.macqel>
-	<1204618939.21545.52.camel@pasglop>
-	<20080304091059.GD18829@netgate.macqel>
-	<1204693264.21545.165.camel@pasglop> <47CECB21.3060704@freescale.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080304103350.12d26560.akpm@linux-foundation.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	<47CD4AB3.3080409@linux.vnet.ibm.com> <20778.1204641656@neuling.org>
+	<20080304103350.12d26560.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Thu, 06 Mar 2008 10:46:51 +1100
-Message-Id: <1204760811.21545.231.camel@pasglop>
+Date: Thu, 06 Mar 2008 11:03:31 +1100
+Message-Id: <1204761811.21545.238.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Philippe De Muyter <phdm@macqel.be>
+Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
+	Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,33 +29,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> >>From your .dts, I see you've been doing some swizzling of slots using
-> > interrupts 1...4 ... do that correspond to EXTIRQ 5....8 ?
+> Yes, we are - it's the semaphore rewrite which is doing this in
+> start_kernel().  It's being discussed.
 > 
-> No, those correspond to the EXT1-4 that are the other side of the #ifdef 
-> for this board in arch/ppc. :-)
+> Enabling interrupts too early on powerpc was discovered to be fatal on
+> powerpc years ago.  It looks like that remains the case.
 
-Yes, that's what I was thinking. So that's what he got wrong in
-his .dts.
+Regarding these issues. I could make it non fatal and just WARN_ON,
+provided that I have a way to differentiate legal vs. illegal calls
+to local_irq_enable(). We already have that function mostly out of
+line in C code due to our lazy irq disabling scheme, so the overhead of
+testing some global kernel state would be minimum here.
 
-Philippe, you need to fix those numbers so they map your EXTIRQ.
+However, I don't see anything around init/main.c:start_kernel() that I
+can use. What do you reckon here we should do ? Add some kind of global
+we set before calling local_irq_enable() ? Or make early_boot_irqs_on()
+do that generically 
 
-(that is 1 -> 5, 2 -> 6, etc... )
+It's currently defined as an empty inline without CONFIG_TRACE_IRQFLAGS
+but we could make it set a flag instead.
 
-And of course you need to make sure you have the right routing to the
-chip. it's funny the way you keep providing all sort of info but -never-
-the one we actually asked for :-)
+I'm pretty sure other archs have similar problems, especially in the
+embedded world where you are booted with random junk firmwares that may
+leave devices, interrupt controllers etc... in random state, and
+enabling incoming IRQs before the arch code properly initializes the
+main interrupt controller can be fatal. I know at least of an ARM board
+I worked on a while ago that had a similar issues.
 
-We basically, to help you, need to know for each PCI device connected to
-the SoC, or PCI slot if you have such, which address line is used for
-IDSEL, and to which MPIC interrupt inputs.
+On ppc32, unfortunately, our local_irq_enable/restore are nice inlines
+that whack the appropriate MSR bits directly, thus adding a test for a
+global flag would add some bloat/overhead that I'd like to avoid, at
+least until we decide to also do lazy disabling on those, if ever...
 
-Once you have given us that, we'll be able to help.
-
-It appears that just looking at the arch/ppc code is a bit too messy and
-confusing (and not necessarily right).
-
-In addition, you will also need to do proper interrupt routing for you
-other devices (RTC, etc...) but we can look at that separately.
-
+Cheers,
 Ben.
