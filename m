@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 6 Mar 2008 12:16:55 +1100
+Date: Thu, 6 Mar 2008 12:45:41 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Make dtc_open_file() die() if unable to open requested file
-Message-ID: <20080306011655.GA18315@localhost.localdomain>
+Subject: dtc: Remove ugly include stack abuse
+Message-ID: <20080306014541.GB18315@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,104 +16,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All current callers of dtc_open_file() immediately die() if it returns
-an error.  In a non-interative tool like dtc, it's hard to see what
-you could sensibly do to recover from a failure to open an input file
-in any case.
+Currently, dt_from_source() uses push_input_file() to set up the
+initial input file for the lexer.  That sounds sensible - put the
+outermost input file at the bottom of the stack - until you realise
+that what it *actually* does is pushes the current, uninitialized,
+lexer input state onto the stack, then sets up the new lexer input.
 
-Therefore, make dtc_open_file() itself die() if there's an error
-opening the requested file.  This removes the need for error checking
-at the callsites, and ensures a consistent error message in all cases.
-While we're at it, change the rror message from fstree.c when we fail
-to open the input directory to match dtc_open_file()'s error message.
+That necessitates an extra check in pop_input_file(), rather than
+signalling termination in the natural way when the include stack is
+empty, it has to check when it pops the bogus uninitialized state off
+the stack.  Ick.
+
+With that fixed, push_input_file(), pop_input_file() and
+incl_file_stack itself become local to the lexer, so make them static.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 ---
- dtc-lexer.l |    3 ---
- dtc.c       |    4 ----
- fstree.c    |    4 ++--
- srcpos.c    |   11 ++++-------
- 4 files changed, 6 insertions(+), 16 deletions(-)
+ dtc-lexer.l  |   12 ++++++------
+ srcpos.h     |    3 ---
+ treesource.c |    3 ++-
+ 3 files changed, 8 insertions(+), 10 deletions(-)
 
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2008-03-05 16:14:54.000000000 +1100
++++ dtc/treesource.c	2008-03-06 12:24:49.000000000 +1100
+@@ -32,7 +32,8 @@
+ 	the_boot_info = NULL;
+ 	treesource_error = 0;
+ 
+-	push_input_file(fname);
++	srcpos_file = dtc_open_file(fname, NULL);
++	yyin = srcpos_file->file;
+ 
+ 	if (yyparse() != 0)
+ 		return NULL;
 Index: dtc/dtc-lexer.l
 ===================================================================
---- dtc.orig/dtc-lexer.l	2008-03-06 12:07:32.000000000 +1100
-+++ dtc/dtc-lexer.l	2008-03-06 12:08:22.000000000 +1100
-@@ -259,9 +259,6 @@
- 	}
+--- dtc.orig/dtc-lexer.l	2008-03-06 12:25:24.000000000 +1100
++++ dtc/dtc-lexer.l	2008-03-06 12:43:52.000000000 +1100
+@@ -52,6 +52,9 @@
+ 				DPRINT("<V1>\n"); \
+ 				BEGIN(V1); \
+ 			}
++
++static void push_input_file(const char *filename);
++static int pop_input_file(void);
+ %}
  
- 	newfile = dtc_open_file(filename, searchptr);
--	if (!newfile)
--		die("Couldn't open \"%s\": %s", filename, strerror(errno));
--
+ %%
+@@ -229,7 +232,7 @@
+ 	struct incl_file *prev;
+ };
  
- 	incl_file = xmalloc(sizeof(struct incl_file));
+-struct incl_file *incl_file_stack;
++static struct incl_file *incl_file_stack;
  
-Index: dtc/fstree.c
-===================================================================
---- dtc.orig/fstree.c	2008-03-06 12:07:32.000000000 +1100
-+++ dtc/fstree.c	2008-03-06 12:08:22.000000000 +1100
-@@ -31,8 +31,8 @@
- 	struct node *tree;
  
- 	d = opendir(dirname);
--	if (! d)
--		die("opendir(): %s\n", strerror(errno));
-+	if (!d)
-+		die("Couldn't opendir() \"%s\": %s\n", dirname, strerror(errno));
+ /*
+@@ -240,7 +243,7 @@
+ static int incl_depth = 0;
  
- 	tree = build_node(NULL, NULL);
  
-Index: dtc/srcpos.c
-===================================================================
---- dtc.orig/srcpos.c	2008-03-06 12:07:32.000000000 +1100
-+++ dtc/srcpos.c	2008-03-06 12:08:22.000000000 +1100
-@@ -82,9 +82,8 @@
- 
- 	if (fname[0] == '/') {
- 		file->file = fopen(fname, "r");
--
- 		if (!file->file)
--			goto out;
-+			goto fail;
- 
- 		file->name = strdup(fname);
- 		return file;
-@@ -98,15 +97,13 @@
- 			return file;
- 
- 		if (errno != ENOENT)
--			goto out;
-+			goto fail;
- 
- 		search = search->next;
- 	}
- 
--out:
--	free(file->dir);
--	free(file);
--	return NULL;
-+fail:
-+	die("Couldn't open \"%s\": %s\n", fname, strerror(errno));
+-void push_input_file(const char *filename)
++static void push_input_file(const char *filename)
+ {
+ 	struct incl_file *incl_file;
+ 	struct dtc_file *newfile;
+@@ -282,7 +285,7 @@
  }
  
- void dtc_close_file(struct dtc_file *file)
-Index: dtc/dtc.c
-===================================================================
---- dtc.orig/dtc.c	2008-03-06 12:08:34.000000000 +1100
-+++ dtc/dtc.c	2008-03-06 12:08:38.000000000 +1100
-@@ -193,10 +193,6 @@
- 		bi = dt_from_fs(arg);
- 	} else if(streq(inform, "dtb")) {
- 		inf = dtc_open_file(arg, NULL);
--		if (!inf)
--			die("Couldn't open \"%s\": %s\n", arg,
--			    strerror(errno));
+ 
+-int pop_input_file(void)
++static int pop_input_file(void)
+ {
+ 	struct incl_file *incl_file;
+ 
+@@ -312,8 +315,5 @@
+ 	 */
+ 	free(incl_file);
+ 
+-	if (YY_CURRENT_BUFFER == 0)
+-		return 0;
 -
- 		bi = dt_from_blob(inf->file);
- 	} else {
- 		die("Unknown input format \"%s\"\n", inform);
+ 	return 1;
+ }
+Index: dtc/srcpos.h
+===================================================================
+--- dtc.orig/srcpos.h	2008-03-06 12:43:23.000000000 +1100
++++ dtc/srcpos.h	2008-03-06 12:43:25.000000000 +1100
+@@ -75,9 +75,6 @@
+ 
+ extern struct dtc_file *srcpos_file;
+ 
+-extern void push_input_file(const char *filename);
+-extern int pop_input_file(void);
+-
+ struct search_path {
+ 	const char *dir; /* NULL for current directory */
+ 	struct search_path *prev, *next;
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
