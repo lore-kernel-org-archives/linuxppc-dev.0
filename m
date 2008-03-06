@@ -1,21 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8405FDE115
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 02:44:54 +1100 (EST)
-In-Reply-To: <47CFEE9D.1020300@tiscali.nl>
-References: <47CFEE9D.1020300@tiscali.nl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5adf51cc1df72cfd261e3c6e7bead312@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] PPC: in celleb_show_cpuinfo() convert strncpy(x, y,
-	sizeof(x)) to strlcpy
-Date: Thu, 6 Mar 2008 16:44:24 +0100
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	lkml <linux-kernel@vger.kernel.org>, arnd@arndb.de
+	by ozlabs.org (Postfix) with ESMTP id E2461DDF9A
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 02:57:02 +1100 (EST)
+Message-Id: <7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20080306135330.6d5462d2@vitb.ru.mvista.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [POWERPC] 8xx: fix swap
+Date: Thu, 6 Mar 2008 09:56:58 -0600
+References: <20080306135330.6d5462d2@vitb.ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch was not yet tested. Please confirm it's right.
+
+On Mar 6, 2008, at 4:53 AM, Vitaly Bordug wrote:
+
+> This makes swap routines operate correctly on the ppc_8xx based  
+> machines.
+> Code has been revalidated on mpc885ads (8M sdram) with recent  
+> kernel. Based
+> on patch from Yuri Tikhonov <yur@emcraft.com> to do the same on arch/ 
+> ppc
+> instance.
+>
+> Recent kernel's size makes swap feature very important on low-memory  
+> platforms,
+> those are actually non-operable without it.
+>
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 > ---
-> strncpy does not append '\0' if the length of the source string equals
-> the size parameter, strlcpy does.
+>
+> arch/powerpc/kernel/head_8xx.S      |   30 ++++++++++++++++++++++++++ 
+> +++-
+> include/asm-powerpc/pgtable-ppc32.h |    8 --------
+> 2 files changed, 29 insertions(+), 9 deletions(-)
 
-strlcpy() doesn't fill the rest of the array with zeroes, strncpy()
-does.  This could matter (information leak, for example), although
-I doubt it does here.
+do we need similar fixes to arch/ppc ?
 
-> -	strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
-> +	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
->  	celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
-
-That last statement makes the strncpy() case always zero-terminated,
-so this patch isn't necessary.  Oh, and neither the old nor the new
-code handles the case where the string doesn't fit (other than just
-cutting it short); is that the wanted behaviour?
-
-
-Segher
+- k
