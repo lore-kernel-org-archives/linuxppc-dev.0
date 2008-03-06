@@ -1,29 +1,27 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id C7498DDF56
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 07:23:21 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 6 Mar 2008 21:23:11 +0100
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-Message-ID: <20080306202311.GA18925@iram.es>
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-	<200802272221.38985.jwilson@redhat.com>
-	<1204179959.15052.372.camel@pasglop>
-	<200802281342.06493.jwilson@redhat.com>
-	<1204241162.15052.393.camel@pasglop>
-	<47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es>
-	<47CC0C95.1030709@s5r6.in-berlin.de>
-	<20080305225902.GA27985@iram.es>
-	<47CF2C08.5000609@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47CF2C08.5000609@s5r6.in-berlin.de>
-Cc: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Jarod Wilson <jwilson@redhat.com>, linux1394-devel@lists.sourceforge.net,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>
+Return-Path: <randy.dunlap@oracle.com>
+Received: from agminet02.oracle.com (agminet02.oracle.com [141.146.126.229])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 187DBDE002
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 07:35:44 +1100 (EST)
+Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
+	by agminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
+	m26JAVVC014751
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 13:10:32 -0600
+Date: Thu, 6 Mar 2008 11:08:47 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH 1/5] generic __remove_pages() support
+Message-Id: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
+In-Reply-To: <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
+References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
+	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>,
+	Yasunori Goto <y-goto@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,26 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 06, 2008 at 12:26:00AM +0100, Stefan Richter wrote:
-> Gabriel Paubert wrote:
-> >>>I have a Pismo which I use on a virtually
-> >>>daily basis (and about to remove the last remnants of MacOS on it). 
-> >>>However I have disabled Firewire because it would not sleep and wake 
-> >>>up properly. 
-> ...
-> >For now I have only tested the new stack with a 6 year old 1.8" disk
-> >and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
-> >plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+On Thu, 06 Mar 2008 10:55:34 -0800 Badari Pulavarty wrote:
+
+> Generic helper function to remove section mappings and sysfs entries
+> for the section of the memory we are removing.  offline_pages() correctly 
+> adjusted zone and marked the pages reserved.
+
+Such generic (exported, non-static) interfaces could use some
+(kernel-)docs, please.
+
+> Issue: If mem_map, usemap allocation could come from different places -
+> kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
+> to find and free up bootmem allocations.
 > 
-> That's great.  Thanks for testing.
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> 
+> ---
+>  include/linux/memory_hotplug.h |    4 +++
+>  mm/memory_hotplug.c            |   44 +++++++++++++++++++++++++++++++++++++++++
+>  mm/sparse.c                    |   43 +++++++++++++++++++++++++++++++++++++---
+>  3 files changed, 88 insertions(+), 3 deletions(-)
 
-The old stack also works. I forgot to mention that with the new
-stack (not with the old) there is a message when going to sleep:
+> Index: linux-2.6.25-rc2/include/linux/memory_hotplug.h
+> ===================================================================
+> --- linux-2.6.25-rc2.orig/include/linux/memory_hotplug.h	2008-02-27 12:58:17.000000000 -0800
+> +++ linux-2.6.25-rc2/include/linux/memory_hotplug.h	2008-02-27 13:00:04.000000000 -0800
+> @@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
+>  /* reasonably generic interface to expand the physical pages in a zone  */
+>  extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+>  	unsigned long nr_pages);
+> +extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+> +	unsigned long nr_pages);
+>  
+>  /*
+>   * Walk thorugh all memory which is registered as resource.
 
-firewire_ohci: pci_set_power_state failed with -5
+           through :)
 
-but it is harmless, and if I understand correctly due to the 
-fact that the power management on this chip is not implemented 
-through capability fields in the PCI configuration space.
-
-	Gabriel
+---
+~Randy
