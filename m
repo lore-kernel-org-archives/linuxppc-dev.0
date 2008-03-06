@@ -1,25 +1,17 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D20C1DDF09
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 22:46:07 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m26BhljT021242
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 04:46:01 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m26AVpOo015583
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 04:31:52 -0600 (CST)
-From: Li Yang <leoli@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH 1/2] fix wrong USB phy type in mpc837xmds dts
-Date: Thu,  6 Mar 2008 18:42:26 +0800
-Message-Id: <1204800146-11591-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16813DDF0D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2008 22:47:59 +1100 (EST)
+Date: Thu, 6 Mar 2008 13:53:30 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [POWERPC] 8xx: fix swap
+Message-ID: <20080306135330.6d5462d2@vitb.ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,82 +21,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Due to chip constraint MPC837x USB DR module can only use
-ULPI and serial PHY interfaces.  The patch fixes the wrong
-type in dts.
+This makes swap routines operate correctly on the ppc_8xx based machines.
+Code has been revalidated on mpc885ads (8M sdram) with recent kernel. Based
+on patch from Yuri Tikhonov <yur@emcraft.com> to do the same on arch/ppc
+instance.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
+Recent kernel's size makes swap feature very important on low-memory platforms,
+those are actually non-operable without it.
+
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/mpc8377_mds.dts |    4 ++--
- arch/powerpc/boot/dts/mpc8378_mds.dts |    4 ++--
- arch/powerpc/boot/dts/mpc8379_mds.dts |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index a3637ff..677a061 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -91,7 +91,6 @@
- 			mode = "cpu";
- 		};
+ arch/powerpc/kernel/head_8xx.S      |   30 +++++++++++++++++++++++++++++-
+ include/asm-powerpc/pgtable-ppc32.h |    8 --------
+ 2 files changed, 29 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index f745839..3c9452d 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -332,8 +332,18 @@ InstructionTLBMiss:
+ 	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
+ 	lwz	r10, 0(r11)	/* Get the pte */
  
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
-@@ -99,7 +98,8 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
- 			interrupts = <38 0x8>;
--			phy_type = "utmi_wide";
-+			dr_mode = "host";
-+			phy_type = "ulpi";
- 		};
++#ifdef CONFIG_SWAP
++	/* do not set the _PAGE_ACCESSED bit of a non-present page */
++	andi.	r11, r10, _PAGE_PRESENT
++	beq	4f
++	ori	r10, r10, _PAGE_ACCESSED
++	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
++	stw	r10, 0(r11)
++4:
++#else
+ 	ori	r10, r10, _PAGE_ACCESSED
+ 	stw	r10, 0(r11)
++#endif
  
- 		mdio@24520 {
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index 533e9b0..3f9e9fe 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -91,7 +91,6 @@
- 			mode = "cpu";
- 		};
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+ 	 * Software indicator bits 21, 22 and 28 must be clear.
+@@ -398,8 +408,17 @@ DataStoreTLBMiss:
+ 	DO_8xx_CPU6(0x3b80, r3)
+ 	mtspr	SPRN_MD_TWC, r11
  
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
-@@ -99,7 +98,8 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
- 			interrupts = <38 0x8>;
--			phy_type = "utmi_wide";
-+			dr_mode = "host";
-+			phy_type = "ulpi";
- 		};
+-	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
++#ifdef CONFIG_SWAP
++	/* do not set the _PAGE_ACCESSED bit of a non-present page */
++	andi.	r11, r10, _PAGE_PRESENT
++	beq	4f
+ 	ori	r10, r10, _PAGE_ACCESSED
++4:
++	/* and update pte in table */
++#else
++	ori	r10, r10, _PAGE_ACCESSED
++#endif
++	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
+ 	stw	r10, 0(r11)
  
- 		mdio@24520 {
-diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
-index c270685..36c1c13 100644
---- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-@@ -91,7 +91,6 @@
- 			mode = "cpu";
- 		};
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+@@ -507,7 +526,16 @@ DataTLBError:
  
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
-@@ -99,7 +98,8 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
- 			interrupts = <38 0x8>;
--			phy_type = "utmi_wide";
-+			dr_mode = "host";
-+			phy_type = "ulpi";
- 		};
+ 	/* Update 'changed', among others.
+ 	*/
++#ifdef CONFIG_SWAP
++	ori	r10, r10, _PAGE_DIRTY|_PAGE_HWWRITE
++	/* do not set the _PAGE_ACCESSED bit of a non-present page */
++	andi.	r11, r10, _PAGE_PRESENT
++	beq	4f
++	ori	r10, r10, _PAGE_ACCESSED
++4:
++#else
+ 	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
++#endif
+ 	mfspr	r11, SPRN_MD_TWC		/* Get pte address again */
+ 	stw	r10, 0(r11)		/* and update pte in table */
  
- 		mdio@24520 {
+diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+index d1332bb..2c79f55 100644
+--- a/include/asm-powerpc/pgtable-ppc32.h
++++ b/include/asm-powerpc/pgtable-ppc32.h
+@@ -339,14 +339,6 @@ extern int icache_44x_need_flush;
+ #define _PMD_PAGE_MASK	0x000c
+ #define _PMD_PAGE_8M	0x000c
+ 
+-/*
+- * The 8xx TLB miss handler allegedly sets _PAGE_ACCESSED in the PTE
+- * for an address even if _PAGE_PRESENT is not set, as a performance
+- * optimization.  This is a bug if you ever want to use swap unless
+- * _PAGE_ACCESSED is 2, which it isn't, or unless you have 8xx-specific
+- * definitions for __swp_entry etc. below, which would be gross.
+- *  -- paulus
+- */
+ #define _PTE_NONE_MASK _PAGE_ACCESSED
+ 
+ #else /* CONFIG_6xx */
+
+
 -- 
-1.5.4.rc4
+Sincerely, 
+Vitaly
