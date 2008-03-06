@@ -1,24 +1,31 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from agminet02.oracle.com (agminet02.oracle.com [141.146.126.229])
+Return-Path: <haveblue@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 187DBDE002
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 07:35:44 +1100 (EST)
-Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
-	by agminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
-	m26JAVVC014751
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 13:10:32 -0600
-Date: Thu, 6 Mar 2008 11:08:47 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 254E2DDF30
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 07:54:24 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m26KraxT031954
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 15:53:36 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m26KsLdu076752
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 13:54:21 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m26KsK1T022818
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 13:54:21 -0700
 Subject: Re: [PATCH 1/5] generic __remove_pages() support
-Message-Id: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
 In-Reply-To: <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
 References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
 	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
+Content-Type: text/plain
+Date: Thu, 06 Mar 2008 12:54:19 -0800
+Message-Id: <1204836859.4772.32.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
 	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>,
 	Yasunori Goto <y-goto@jp.fujitsu.com>
@@ -31,42 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 06 Mar 2008 10:55:34 -0800 Badari Pulavarty wrote:
+On Thu, 2008-03-06 at 10:55 -0800, Badari Pulavarty wrote:
+> +               if (memmap)
+> +                       __kfree_section_memmap(memmap, PAGES_PER_SECTION);
+> +               return;
+> +       }
+> +
+> +       /*
+> +        * Allocations came from bootmem - how do I free up ?
+> +        */
+> +
 
-> Generic helper function to remove section mappings and sysfs entries
-> for the section of the memory we are removing.  offline_pages() correctly 
-> adjusted zone and marked the pages reserved.
+Shouldn't we figure this one out before merging?
 
-Such generic (exported, non-static) interfaces could use some
-(kernel-)docs, please.
+I think we at least need a printk() there.
 
-> Issue: If mem_map, usemap allocation could come from different places -
-> kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
-> to find and free up bootmem allocations.
-> 
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> 
-> ---
->  include/linux/memory_hotplug.h |    4 +++
->  mm/memory_hotplug.c            |   44 +++++++++++++++++++++++++++++++++++++++++
->  mm/sparse.c                    |   43 +++++++++++++++++++++++++++++++++++++---
->  3 files changed, 88 insertions(+), 3 deletions(-)
-
-> Index: linux-2.6.25-rc2/include/linux/memory_hotplug.h
-> ===================================================================
-> --- linux-2.6.25-rc2.orig/include/linux/memory_hotplug.h	2008-02-27 12:58:17.000000000 -0800
-> +++ linux-2.6.25-rc2/include/linux/memory_hotplug.h	2008-02-27 13:00:04.000000000 -0800
-> @@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
->  /* reasonably generic interface to expand the physical pages in a zone  */
->  extern int __add_pages(struct zone *zone, unsigned long start_pfn,
->  	unsigned long nr_pages);
-> +extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
-> +	unsigned long nr_pages);
->  
->  /*
->   * Walk thorugh all memory which is registered as resource.
-
-           through :)
-
----
-~Randy
+-- Dave
