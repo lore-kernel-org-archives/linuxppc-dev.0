@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Fri, 7 Mar 2008 11:31:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
-	engine
-Message-Id: <20080307113150.c0874344.sfr@canb.auug.org.au>
-In-Reply-To: <20080306233900.GA3969@lixom.net>
-References: <20080306233900.GA3969@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm"
-Cc: hskinnemoen@atmel.com, shannon.nelson@intel.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	pasemi-linux@ozlabs.org, dan.j.williams@intel.com
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from QMTA09.emeryville.ca.mail.comcast.net
+	(qmta09.emeryville.ca.mail.comcast.net [76.96.30.96])
+	by ozlabs.org (Postfix) with ESMTP id A7FA5DDF4F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 11:50:37 +1100 (EST)
+Message-ID: <47D09199.4090800@gmail.com>
+Date: Thu, 06 Mar 2008 19:51:37 -0500
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] The MPC83xx family doesn't support performance monitor
+	instructions
+References: <20080306003316.GA14068@cideas.com>
+	<74F2472D-65F2-422B-821B-554EC81A3494@kernel.crashing.org>
+In-Reply-To: <74F2472D-65F2-422B-821B-554EC81A3494@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kumar Gala wrote:
+> On Mar 5, 2008, at 6:33 PM, Gerald Van Baren wrote:
+> 
+>> "Errata to MPC8349EA PowerQUICC[tm] II Pro Integrated Host Processor  
+>> Family
+>> Reference Manual, Rev. 1" (Freescale)
+>>
+>> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+>> ---
+>>
+>> Hi Kumar,
+>>
+>> Please apply this fix to 2.6.25rc4 if possible.  Without this
+>> patch, the PPC_83xx family configuration is broken (will not compile).
+> 
+> What's the compile issue?  Some of the 83xx family have perf mon so we  
+> need to fix the compile issue.
+> 
+> - k
 
-Hi Olof,
+Hi Kumar,
 
-Just one thing I noticed ...
+The mpc8360 and mpc8349 do not have a perfmon register (I don't find it 
+at all in the MPC8360RM and the mpc8349 errata I referenced says the 
+MPC8349RM is in error).
 
-On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
->
-> +	dma_dev->device_dependency_added =3D pasemi_dma_dependency_added;
+The result is that the assembler dies with an error.  If the assembler 
+didn't die with an error, I presume the kernel would since it is an 
+invalid SPR.
 
-device_dependency_added is going away in 2.6.26 ...
+   CC      arch/powerpc/kernel/pmc.o
+{standard input}: Assembler messages:
+{standard input}:7: Error: Unrecognized opcode: `mfpmr'
+{standard input}:11: Error: Unrecognized opcode: `mtpmr'
+make[1]: *** [arch/powerpc/kernel/pmc.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This is using ELDK4.1 (also 4.2rc) using the ppc_6xx- version of the 
+compiler (which symlinks to powerpc-linux-gcc).
 
---Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm
-Content-Type: application/pgp-signature
+If some of the mpc83xx processors have perfmon registers, we need a more 
+granular way of selecting the CONFIG_FSL_EMB_PERFMON option (or a Plan 
+B, but I don't know what Plan B would be).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH0Iz6TgG2atn1QN8RAnm9AJ9Untb2ftwcbu9xkD/9HSVkAaFfPQCfemLP
-gWkqeNeF4p/QbQk/X9Bh6n0=
-=CBww
------END PGP SIGNATURE-----
-
---Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm--
+Best regards,
+gvb
