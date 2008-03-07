@@ -1,15 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <A984ECC2-9094-4045-B49E-95D924E6AAD2@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 69C3CDE01A
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 01:46:20 +1100 (EST)
+Message-Id: <36E7CB5B-4C3B-4ED3-BC46-A87BA92BC150@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080307002730.GB24142@localhost.localdomain>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20080306135330.6d5462d2@vitb.ru.mvista.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
-Date: Fri, 7 Mar 2008 08:35:39 -0600
-References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
-	<20080307002730.GB24142@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
+Subject: Re: [POWERPC] 8xx: fix swap
+Date: Fri, 7 Mar 2008 08:46:14 -0600
+References: <20080306135330.6d5462d2@vitb.ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +25,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 6, 2008, at 6:27 PM, David Gibson wrote:
+On Mar 6, 2008, at 4:53 AM, Vitaly Bordug wrote:
 
-> [snip]
->> +		bcsr@1,0 {
->> +			reg = <1 0x0 0x8000>;
->> +			compatible = "fsl,mpc837xmds-bcsr";
->> +		};
->> +
->> +		nand@3,0 {
+> This makes swap routines operate correctly on the ppc_8xx based  
+> machines.
+> Code has been revalidated on mpc885ads (8M sdram) with recent  
+> kernel. Based
+> on patch from Yuri Tikhonov <yur@emcraft.com> to do the same on arch/ 
+> ppc
+> instance.
 >
-> This isn't a problem with this device tree, but it's probably time we
-> started establishing some conventional generic names for nand flash
-> and board-control devices.
+> Recent kernel's size makes swap feature very important on low-memory  
+> platforms,
+> those are actually non-operable without it.
 >
-> So, to start the ball rolling, I've seen several names for nand flash
-> nodes, I'd suggest we standardise on "nand-flash".
+> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> ---
+>
+> arch/powerpc/kernel/head_8xx.S      |   30 ++++++++++++++++++++++++++ 
+> +++-
+> include/asm-powerpc/pgtable-ppc32.h |    8 --------
+> 2 files changed, 29 insertions(+), 9 deletions(-)
 
-This seems reasonable.
-
-> I've seen several variants for board control devices (cpld, bcsr,
-> fpga, etc.) I suggest we standardise on "board-control"
-
-I don't see any reason for this.  If I have a cpld or fpga why not  
-just call it that.  I don't see what calling it 'board-control' gets  
-us.  There may be non-board control functionality in an fpga than what  
-do we call it?
+applied.
 
 - k
