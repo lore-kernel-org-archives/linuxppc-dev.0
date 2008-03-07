@@ -1,35 +1,26 @@
-Return-Path: <pbadari@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1ED15DDF85
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 10:34:06 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m26NY03E016981
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 18:34:00 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m26NY0S5192380
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 16:34:00 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m26NXxRm020365
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2008 16:33:59 -0700
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
-References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-	<20080306110847.11d7cb26.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Thu, 06 Mar 2008 15:37:20 -0800
-Message-Id: <1204846640.6272.21.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>,
-	Yasunori Goto <y-goto@jp.fujitsu.com>
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id 37AD1DDF48
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 11:10:28 +1100 (EST)
+Date: Fri, 7 Mar 2008 01:10:25 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
+Message-ID: <20080307001025.GA27321@netgate.macqel>
+References: <20080303210532.GA20382@netgate.macqel>
+	<47CC696C.4090103@freescale.com>
+	<20080303212622.GB20382@netgate.macqel>
+	<47CC73CE.4080801@freescale.com>
+	<20080304080828.GA18829@netgate.macqel>
+	<1204618939.21545.52.camel@pasglop>
+	<20080304091059.GD18829@netgate.macqel>
+	<1204693264.21545.165.camel@pasglop>
+	<47CECB21.3060704@freescale.com>
+	<1204760811.21545.231.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1204760811.21545.231.camel@pasglop>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,200 +30,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is the latest version, addressing Randy and Dave's comments.
+Hi Ben,
 
-Thanks,
-Badari
+On Thu, Mar 06, 2008 at 10:46:51AM +1100, Benjamin Herrenschmidt wrote:
+> 
+> > >>From your .dts, I see you've been doing some swizzling of slots using
+> > > interrupts 1...4 ... do that correspond to EXTIRQ 5....8 ?
+> > 
+> > No, those correspond to the EXT1-4 that are the other side of the #ifdef 
+> > for this board in arch/ppc. :-)
+> 
+> Yes, that's what I was thinking. So that's what he got wrong in
+> his .dts.
+> 
+> Philippe, you need to fix those numbers so they map your EXTIRQ.
+> 
+> (that is 1 -> 5, 2 -> 6, etc... )
+> 
+> And of course you need to make sure you have the right routing to the
+> chip. it's funny the way you keep providing all sort of info but -never-
+> the one we actually asked for :-)
 
-Generic helper function to remove section mappings and sysfs entries
-for the section of the memory we are removing.  offline_pages() correctly 
-adjusted zone and marked the pages reserved.
+I did not have that.  The board has been designed, and the original linux
+port has been made, by a third-party, and the documentation is scarce :(
 
-Issue: If mem_map, usemap allocation could come from different places -
-kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
-to find and free up bootmem allocations.
+> 
+> We basically, to help you, need to know for each PCI device connected to
+> the SoC, or PCI slot if you have such, which address line is used for
+> IDSEL, and to which MPIC interrupt inputs.
 
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+Well, i have finally an answer for IDSEL : it is connected to AD18 (18 is
+decimal), but we knew that actually, because the chip appears as 0000:00:12.0,
+0000:00:12.1 and 0000:00:12.2 in the kernel messages.
 
----
- include/linux/memory_hotplug.h |    6 +++-
- mm/memory_hotplug.c            |   55 +++++++++++++++++++++++++++++++++++++++++
- mm/sparse.c                    |   45 +++++++++++++++++++++++++++++++--
- 3 files changed, 102 insertions(+), 4 deletions(-)
+The pci4520 chip does not have pins labelled inta, intb, intc, or intd,
+but pins labelled mfunc0, mfunc1 ... mfunc6.
+The pci4520 datasheet does not seem very clear to me about the relation
+between the mfunc0..6 pins and the inta..d interrupts :(
+Luckily, the running linux kernel shows in /proc/interrupts :
 
-Index: linux-2.6.25-rc3.save/mm/memory_hotplug.c
-===================================================================
---- linux-2.6.25-rc3.save.orig/mm/memory_hotplug.c	2008-03-05 10:44:30.000000000 -0800
-+++ linux-2.6.25-rc3.save/mm/memory_hotplug.c	2008-03-06 15:08:45.000000000 -0800
-@@ -102,6 +102,21 @@ static int __add_section(struct zone *zo
- 	return register_new_memory(__pfn_to_section(phys_start_pfn));
- }
- 
-+static int __remove_section(struct zone *zone, struct mem_section *ms)
-+{
-+	int ret = -EINVAL;
-+
-+	if (!valid_section(ms))
-+		return ret;
-+
-+	ret = unregister_memory_section(ms);
-+	if (ret)
-+		return ret;
-+
-+	sparse_remove_one_section(zone, ms);
-+	return 0;
-+}
-+
- /*
-  * Reasonably generic function for adding memory.  It is
-  * expected that archs that support memory hotplug will
-@@ -135,6 +150,46 @@ int __add_pages(struct zone *zone, unsig
- }
- EXPORT_SYMBOL_GPL(__add_pages);
- 
-+/**
-+ * __remove_pages() - remove sections of pages from a zone
-+ * @zone: zone from which pages need to be removed
-+ * @phys_start_pfn: starting pageframe (must be aligned to start of a section)
-+ * @nr_pages: number of pages to remove (must be multiple of section size)
-+ *
-+ * Generic helper function to remove section mappings and sysfs entries
-+ * for the section of the memory we are removing. Caller needs to make
-+ * sure that pages are marked reserved and zones are adjust properly by
-+ * calling offline_pages().
-+ */
-+int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
-+		 unsigned long nr_pages)
-+{
-+	unsigned long i, ret = 0;
-+	int sections_to_remove;
-+	unsigned long flags;
-+	struct pglist_data *pgdat = zone->zone_pgdat;
-+
-+	/*
-+	 * We can only remove entire sections
-+	 */
-+	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
-+	BUG_ON(nr_pages % PAGES_PER_SECTION);
-+
-+	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
-+
-+	sections_to_remove = nr_pages / PAGES_PER_SECTION;
-+	for (i = 0; i < sections_to_remove; i++) {
-+		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
-+		pgdat_resize_lock(pgdat, &flags);
-+		ret = __remove_section(zone, __pfn_to_section(pfn));
-+		pgdat_resize_unlock(pgdat, &flags);
-+		if (ret)
-+			break;
-+	}
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(__remove_pages);
-+
- static void grow_zone_span(struct zone *zone,
- 		unsigned long start_pfn, unsigned long end_pfn)
- {
-Index: linux-2.6.25-rc3.save/mm/sparse.c
-===================================================================
---- linux-2.6.25-rc3.save.orig/mm/sparse.c	2008-03-05 10:44:30.000000000 -0800
-+++ linux-2.6.25-rc3.save/mm/sparse.c	2008-03-06 15:15:18.000000000 -0800
-@@ -198,12 +198,13 @@ static unsigned long sparse_encode_mem_m
- }
- 
- /*
-- * We need this if we ever free the mem_maps.  While not implemented yet,
-- * this function is included for parity with its sibling.
-+ * Decode mem_map from the coded memmap
-  */
--static __attribute((unused))
-+static
- struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
- {
-+	/* mask off the extra low bits of information */
-+	coded_mem_map &= SECTION_MAP_MASK;
- 	return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
- }
- 
-@@ -363,6 +364,28 @@ static void __kfree_section_memmap(struc
- }
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
-+static void free_section_usemap(struct page *memmap, unsigned long *usemap)
-+{
-+	if (!usemap)
-+		return;
-+
-+	/*
-+	 * Check to see if allocation came from hot-plug-add
-+	 */
-+	if (PageSlab(virt_to_page(usemap))) {
-+		kfree(usemap);
-+		if (memmap)
-+			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
-+		return;
-+	}
-+
-+	/*
-+	 * TODO: Allocations came from bootmem - how do I free up ?
-+	 */
-+	printk(KERN_WARNING "Not freeing up allocations from bootmem "
-+			"- leaking memory\n");
-+}
-+
- /*
-  * returns the number of sections whose mem_maps were properly
-  * set.  If this is <=0, then that means that the passed-in
-@@ -415,4 +438,20 @@ out:
- 	}
- 	return ret;
- }
-+
-+void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
-+{
-+	struct page *memmap = NULL;
-+	unsigned long *usemap = NULL;
-+
-+	if (ms->section_mem_map) {
-+		usemap = ms->pageblock_flags;
-+		memmap = sparse_decode_mem_map(ms->section_mem_map,
-+						__section_nr(ms));
-+		ms->section_mem_map = 0;
-+		ms->pageblock_flags = NULL;
-+	}
-+
-+	free_section_usemap(memmap, usemap);
-+}
- #endif
-Index: linux-2.6.25-rc3.save/include/linux/memory_hotplug.h
-===================================================================
---- linux-2.6.25-rc3.save.orig/include/linux/memory_hotplug.h	2008-03-05 10:44:30.000000000 -0800
-+++ linux-2.6.25-rc3.save/include/linux/memory_hotplug.h	2008-03-06 15:02:13.000000000 -0800
-@@ -8,6 +8,7 @@
- struct page;
- struct zone;
- struct pglist_data;
-+struct mem_section;
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- /*
-@@ -64,9 +65,11 @@ extern int offline_pages(unsigned long, 
- /* reasonably generic interface to expand the physical pages in a zone  */
- extern int __add_pages(struct zone *zone, unsigned long start_pfn,
- 	unsigned long nr_pages);
-+extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
-+	unsigned long nr_pages);
- 
- /*
-- * Walk thorugh all memory which is registered as resource.
-+ * Walk through all memory which is registered as resource.
-  * arg is (start_pfn, nr_pages, private_arg_pointer)
-  */
- extern int walk_memory_resource(unsigned long start_pfn,
-@@ -188,5 +191,6 @@ extern int arch_add_memory(int nid, u64 
- extern int remove_memory(u64 start, u64 size);
- extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
- 								int nr_pages);
-+extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
- 
- #endif /* __LINUX_MEMORY_HOTPLUG_H */
+         55:      18797   OpenPIC   Level     yenta, ide0
+         54:          1   OpenPIC   Level     yenta
+         55:         79   OpenPIC   Level     ohci1394
+
+I can thus deduce that each function of the pci4520 chip uses only
+one interrupt line.  With the kernel messages at startup, I also
+know that the two yenta's are 12.0 and 12.1 and the ohci1394 is 12.2.
+I wrote then the following in my dts file :
+
+        pci@e0008000 {
+/*
+                                      f800 masks idsel address line
+                                      07 masks (sub)function number
+                                               7 masks INTA, INTB, INTC or INTD
+*/
+                interrupt-map-mask = <ff00 0 0 7>;
+                interrupt-map = <
+                        /* IDSEL 0x12 func 0 */
+                        9000 0 0 1 &mpic 5 1
+                        9000 0 0 2 &mpic 5 1
+                        9000 0 0 3 &mpic 5 1
+                        9000 0 0 4 &mpic 5 1
+
+                        /* IDSEL 0x12 func 1 */
+                        9100 0 0 1 &mpic 6 1
+                        9100 0 0 2 &mpic 6 1
+                        9100 0 0 3 &mpic 6 1
+                        9100 0 0 4 &mpic 6 1
+
+                        /* IDSEL 0x12 func 2 */
+                        9200 0 0 1 &mpic 7 1
+                        9200 0 0 2 &mpic 7 1
+                        9200 0 0 3 &mpic 7 1
+                        9200 0 0 4 &mpic 7 1
+                        >;
+
+And it works :) : my board boots and finds its compact-flash disk.  When
+writing this, I realize I may simplify my interrupt-map and write
+only one config line per function, thus :
+
+                interrupt-map-mask = <ff00 0 0 0>;
+                interrupt-map = <
+                        /* IDSEL 0x12 func 0 */
+                        9000 0 0 0 &mpic 5 1
+
+                        /* IDSEL 0x12 func 1 */
+                        9100 0 0 0 &mpic 6 1
+
+                        /* IDSEL 0x12 func 2 */
+                        9200 0 0 0 &mpic 7 1
+                        >;
+
+Maybe you should explain in booting_without_of.txt the relation between
+the idsel and the pci device notation used by lspci or the kernel, and
+also document the "function" part ?
+
+> 
+> Once you have given us that, we'll be able to help.
+> 
+> It appears that just looking at the arch/ppc code is a bit too messy and
+> confusing (and not necessarily right).
+> 
+> In addition, you will also need to do proper interrupt routing for you
+> other devices (RTC, etc...) but we can look at that separately.
+
+That's for tomorrow.
+
+But I already noticed that the interrupt numbers that the arch/powerpc tree
+uses for the parts that do already work (compact-flash and serials) are
+different from the ones I saw on the running arch/ppc tree.  e.g.,
+the serial lines used irq 26 with the arch/ppc tree and now use 42 with
+the powerpc tree.  For the pci4520, irqs changed from 53, 54 and 55 in the
+arch/ppc kernel to 17, 18 and 19 with the arch/powerpc kernel.
+That's a little bit confusing.
+
+There must be something hidden in the sources of the openpic driver to
+explain that difference.  Could it be fixed by a setting in the dts-file ?
+
+Thanks for you help
+
+Philippe
