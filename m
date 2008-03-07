@@ -1,21 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <pbadari@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EC65EDE006
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 03:21:46 +1100 (EST)
-Date: Fri, 7 Mar 2008 10:21:35 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: Trouble with SCC UART ports when moving from ppc to powerpc
-Message-ID: <20080307162135.GC10545@ld0162-tx32.am.freescale.net>
-References: <200803071521.00383.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200803071521.00383.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 10A8ADE0DF
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 03:36:30 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m27GaPN8003494
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Mar 2008 11:36:25 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m27GaOSX146022
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Mar 2008 09:36:24 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m27GaNWg029321
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Mar 2008 09:36:24 -0700
+Message-ID: <47D16F05.2030303@us.ibm.com>
+Date: Fri, 07 Mar 2008 08:36:21 -0800
+From: Badari Pulavarty <pbadari@us.ibm.com>
+MIME-Version: 1.0
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH 1/5] generic __remove_pages() support
+References: <1204836859.4772.32.camel@nimitz.home.sr71.net>
+	<1204839763.6272.8.camel@dyn9047017100.beaverton.ibm.com>
+	<20080307102032.A17D.E1E9C6FF@jp.fujitsu.com>
+In-Reply-To: <20080307102032.A17D.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Dave Hansen <haveblue@us.ibm.com>,
+	lkml <linux-kernel@vger.kernel.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +39,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 07, 2008 at 03:20:55PM +0100, Laurent Pinchart wrote:
-> The CPM dual port ram was defined in the device tree as follows (copied from 
-> the MPC8272ADS board device tree).
-> 
->         muram@0 {
->                 #address-cells = <1>;
->                 #size-cells = <1>;
->                 ranges = <0 0 10000>;
-> 
->                 data@0 {
->                         compatible = "fsl,cpm-muram-data";
->                         reg = <0 2000 9800 800>;
->                 };
->         };
-> 
-> Changing the reg property to
-> 
-> reg = <80 1f80 9800 800>;
-> 
-> fixed my problem.
+Yasunori Goto wrote:
+> Hi Badari-san.
+>
+>   
+>> On Thu, 2008-03-06 at 12:54 -0800, Dave Hansen wrote:
+>>     
+>>> On Thu, 2008-03-06 at 10:55 -0800, Badari Pulavarty wrote:
+>>>       
+>>>> +               if (memmap)
+>>>> +                       __kfree_section_memmap(memmap, PAGES_PER_SECTION);
+>>>> +               return;
+>>>> +       }
+>>>> +
+>>>> +       /*
+>>>> +        * Allocations came from bootmem - how do I free up ?
+>>>> +        */
+>>>> +
+>>>>         
+>>> Shouldn't we figure this one out before merging?
+>>>
+>>> I think we at least need a printk() there.
+>>>       
+>> I can add a printk(). I am hoping Yasunori Goto has something to
+>> handle this, before we really merge into mainline.
+>>     
+>
+> Ah, yes. 
+> I'm making patches for around here. I'm sorry for your waiting.
+>
+> BTW, do you hurry for merging your patch? 
+> To be honest, I would like to solve not only here
+> but also some other issues.
+> But, if you hurry, I'll concentrate to solve only this.
+>
+> Bye.
+>
+>   
+I am hoping to get all of this merged into 2.6.26.  Till then I would 
+like this to
+be tested in -mm. I am not in a hurry, but I would like to make sure 
+some one is
+working on the issue. Please let me know, if you have something to test 
+- I will
+be happy to help out.
 
-Perhaps there's an SMC1 running with its parameter RAM at offset zero? 
-
-> Does anyone have any clue regarding what could write to the dpram ? I thought 
-> about some CPM peripheral set up by the boot loader, but my board 
-> initialization code calls cpm2_reset() long before initializing SCC1.
-
-cpm2_reset() doesn't currently actually reset the CPM, for some reason
-(unlike cpm1).  This should probably be fixed, though then we'd have to
-deal with assigning SMC parameter RAM addresses ourselves.
-
-For now, the above fix should be done on any board with an active SMC
-device (assuming SMC parameter RAM at zero, as u-boot sets it; other
-bootloaders may need to exempt a different region).
-
--Scott
+Thanks,
+Badari
