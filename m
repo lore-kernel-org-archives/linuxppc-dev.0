@@ -1,20 +1,19 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D102FDDF5C
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 19:06:35 +1100 (EST)
-Date: Fri, 07 Mar 2008 17:06:19 +0900 (JST)
-Message-Id: <20080307.170619.-1300529804.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: Re: [PATCH] PPC: in celleb_show_cpuinfo() convert strncpy(x, y,
-	sizeof(x)) to strlcpy
-In-Reply-To: <47CFEF82.10709@tiscali.nl>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, 12o3l@tiscali.nl, linux-kernel@vger.kernel.org,
-	arnd@arndb.de
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2044BDDF1C
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 00:14:48 +1100 (EST)
+Message-ID: <47D13F37.6070504@denx.de>
+Date: Fri, 07 Mar 2008 14:12:23 +0100
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>,  linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] 82xx: MGCOGE support
+References: <mailman.813.1200609119.6908.linuxppc-dev@ozlabs.org>
+	<479EFE7F.4000104@denx.de> <47A04813.7070306@denx.de>
+	<47A38507.1040804@freescale.com>
+In-Reply-To: <47A38507.1040804@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roel Kluin <12o3l@tiscali.nl> wrote:
-> Roel Kluin wrote:
-> > This patch was not yet tested. Please confirm it's right.
+Hello Scott,
+
+Scott Wood wrote:
+> Heiko Schocher wrote:
+>> The following patch adds support for the mpc8247 based
+>> board MGCOGE from keymile.
+>>
+>> changes to the previous patchset:
+>>
+>> - Added the suggestions from Scott Wood:
+>>   http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050957.html
+>>
+>> - The patch
+>> http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050931.html
+>>   is no longer needed.
+>>
+>> Signed-off-by: Heiko Schocher <hs@denx.de>
 > 
-> was too quick with the send button. the batch below is probably better
-> ---
-> strncpy does not append '\0' if the length of the source string equals
-> the size parameter, strlcpy does.
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> Acked-by: Scott Wood <scottwood@freescale.com>
 
-Acked-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+I have some changes for this Hardware (a second Flash is now there),
+how should I post this change?
 
-I tested Roel's 2nd patch and it works good on Celleb.
+a) The complete board support again, with the new Flash.
+b) as an incremental Patch against the patch I postet in this Thread.
 
-> ---
-> diff --git a/arch/powerpc/platforms/celleb/setup.c b/arch/powerpc/platforms/celleb/setup.c
-> index f27ae1e..cbe09d9 100644
-> --- a/arch/powerpc/platforms/celleb/setup.c
-> +++ b/arch/powerpc/platforms/celleb/setup.c
-> @@ -81,8 +81,7 @@ static void celleb_show_cpuinfo(struct seq_file *m)
->  
->  static int __init celleb_machine_type_hack(char *ptr)
->  {
-> -	strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
-> -	celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
-> +	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
->  	return 0;
->  }
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+(I vote for option a, and we throw away the "v2 Patch")
+
+thanks for helping
+
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
