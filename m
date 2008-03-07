@@ -1,16 +1,16 @@
 Return-Path: <afleming@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5CCCADDF79
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 10:41:48 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 762EBDDF1B
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 10:59:18 +1100 (EST)
 From: Andy Fleming <afleming@freescale.com>
 To: paulus@samba.org, galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Make 83xx perfmon support selectable
-Date: Fri,  7 Mar 2008 17:41:36 -0600
-Message-Id: <1204933296-28417-1-git-send-email-afleming@freescale.com>
+Subject: [PATCH v2] Make 83xx perfmon support selectable
+Date: Fri,  7 Mar 2008 17:59:03 -0600
+Message-Id: <1204934343-5235-1-git-send-email-afleming@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,9 +30,8 @@ determination.
 Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
 
-This needs to go in for 2.6.25 if possible.  It breaks the build
-for some boards, and would cause them to crash or perform
-indefinite operations.
+Ugh.  The previous version was a little hasty.  Needed to base off
+PPC_83xx rather than 83xx
 
  arch/powerpc/platforms/Kconfig         |    1 -
  arch/powerpc/platforms/Kconfig.cputype |    7 ++++++-
@@ -51,7 +50,7 @@ index 0afd225..a578b96 100644
  config PPC_86xx
  	bool "Freescale 86xx"
 diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 73d81ce..db6e2c4 100644
+index 73d81ce..0c3face 100644
 --- a/arch/powerpc/platforms/Kconfig.cputype
 +++ b/arch/powerpc/platforms/Kconfig.cputype
 @@ -113,7 +113,12 @@ config FSL_BOOKE
@@ -60,7 +59,7 @@ index 73d81ce..db6e2c4 100644
  config FSL_EMB_PERFMON
 -	bool
 +	bool "Freescale Embedded Perfmon"
-+	depends on E500 || 83xx
++	depends on E500 || PPC_83xx
 +	help
 +	  This is the Performance Monitor support found on the e500 core
 +	  and some e300 cores (c3 and c4).  Select this only if your
