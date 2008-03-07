@@ -1,17 +1,19 @@
-Return-Path: <nvbolhuis@aimvalley.nl>
-Received: from smtp-vbr15.xs4all.nl (smtp-vbr15.xs4all.nl [194.109.24.35])
-	by ozlabs.org (Postfix) with ESMTP id DACC9DDF2D
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 59D5CDDF32
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Mar 2008 19:03:32 +1100 (EST)
-Message-ID: <47D0F479.4050109@aimvalley.nl>
-Date: Fri, 07 Mar 2008 08:53:29 +0100
-From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+	Fri,  7 Mar 2008 23:24:51 +1100 (EST)
+Message-ID: <47D12F80.3000400@denx.de>
+Date: Fri, 07 Mar 2008 13:05:20 +0100
+From: Anatolij Gustschin <agust@denx.de>
 MIME-Version: 1.0
-To: rmcguire@videopresence.com
-Subject: Re: RAW Sockets - HDLC or Ethernet
-References: <000001c87f6b$e1d5e9e0$6405a8c0@absolut>
-In-Reply-To: <000001c87f6b$e1d5e9e0$6405a8c0@absolut>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Pedro Luis D. L." <carcadiz@hotmail.com>
+Subject: Re: TQM5200 2.6-denx SM501 voyager enabling problem.
+References: <BLU106-W20B00A907B0D9DAD5014E2CA1D0@phx.gbl>	<loom.20080228T145124-686@post.gmane.org>
+	<BLU106-W293FED7524135F0A85B76BCA1B0@phx.gbl>
+	<BLU106-W3191420D0642825B53DD08CA120@phx.gbl>
+In-Reply-To: <BLU106-W3191420D0642825B53DD08CA120@phx.gbl>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,70 +25,150 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-I guess this is what a raw packet socket is supposed to do.
-It's not a bug it's a feature.
-Can't you somehow recognize your own packet (and skip it) ?
+Pedro Luis D. L. wrote:
 
-Btw. this question can probably be better addressed in
-comp.os.linux.development.system
+<snip>
 
----
-N. van Bolhuis.
+> I tried to contact TQ but they seem not to be able to solve my
+> problem. They suggested that the problem could be in the different
+> endianness used by MPC5200 and SMI501. That problem seems to be
+> corrected in the driver. Anyway, this endianness problem may come
+> to light if I had any video output. It is possible to change the
+> endianness of SM501 chip from the u-boot writing a register.
+> I did it and it made no difference at all. The real problem is
+> still that none device is initialized or detected even when the
+> Framebuffer driver for SM501 and MFD Driver for SM501 are compiled
+> with the kernel. I checked that platform driver for both are
+> registered (using some printk output) but their probe functions
+> are never invoked.
+> 
+> I thought that my problem could be that I don't have initialized
+> the device within the platform file tqm5200.c. I added the following
+> code (marked with +) to this file under arch/powerpc/platforms/52xx/tqm5200.c
+> 
+> +static struct resource sm501_resources[] = {
+> +	[0]	= {
+> +		.start	= 0xE3E00000,
+> +		.end	= 0xE3DFFFFF,
 
+This is wrong as '.end' resource should be greater than '.start'.
+The value for '.end' seems to origin from the typo in TQ docs for
+TQM5200. The proper value results from adding 2MB register space
+of the SM501 to the IO base 0xe3e00000 and is 0xe3ffffff.
+Furthermore you didn't define any framebuffer memory resource
+which is strictly needed here for the framebuffer driver.
 
-Russell McGuire wrote:
-> Anyone,
+> +		.flags	= IORESOURCE_MEM,
+> +	},
+> +};
+> +
+> +static struct platform_device sm501_device = {
+> +	.name		= "sm501",
+> +	.id		= 0,
+> +	.num_resources	= ARRAY_SIZE(sm501_resources),
+> +	.resource	= sm501_resources,
+> +};
 > 
-> Yet another mysterious question, at least to me.
+> static void __init tqm5200_setup_arch(void)
+> {
+> 	if (ppc_md.progress)
+> 		ppc_md.progress("tqm5200_setup_arch()", 0);
 > 
-> I have written to simple utilities to send and receive a file / data through
-> a newly created driver, HDLC using an MPC8360E. 
-> Though I doubt this question is limited to that specific HW.
+> 	/* Some mpc5200 & mpc5200b related configuration */
+> 	mpc5200_setup_xlb_arbiter();
 > 
-> The main question is that everything I send though device HDLC0 I can
-> immediately read from HDLC0 even though logically there is no connection
-> there. It as if the kernel is immediately allowing me to read from the same
-> device, what a separate application just wrote.???
-> HOW CAN THIS BE?
+> 	/* Map wdt for mpc52xx_restart() */
+> 	mpc52xx_map_wdt();
 > 
-> Details:
-> I have two applications: send and receive.  (pseudo code as follows)
+> #ifdef CONFIG_PCI
+> 	np = of_find_node_by_type(NULL, "pci");
+> 	if (np) {
+> 		mpc52xx_add_bridge(np);
+> 		of_node_put(np);
+> 	}
+> #endif
+> +
+> +	platform_device_register(&sm501_device);
+> +
+> }
 > 
-> Send opens a socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL)).
-> And binds it (AF_PACKET, ETH_P_HLDC, if_index(hdlc0))
-> 
-> Receive opens a socket to the same device 
-> socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))
-> bind(AF_PACKET, ETH_P_ALL, if_index(hdlc0)
-> 
-> Note they are opening the same device.
-> 
-> Now if I send anything through the send application, I immediately receive
-> it via the receive application??
-> Note, entirely separate processes!
-> 
-> Note, there is NO hardware loopback, this should be a dead end, and I should
-> get nothing back at least as far as HW is concerned.
-> 
-> What am I missing, that causes all my TX data to show up immediately in the
-> RX app? Note I have verified my HDLC drier is not actually receiving
-> anything, so is there something in the kernel that is bridging the TX / RX
-> paths, or am I just missing the function of this? If so how can I use RAW
-> mode, while not mixing this, or at least keeping them separate in the
-> applications?
-> 
-> -Russ
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> I got this idea from the configuration files from other platforms,
+> but I still need to find out how exactly "resources" must be defined.
+> Anybody knows wheather am I pointing in the right direction and this
+> makes any sense?
 
+yes, the direction is right or this is at least a possible solution
+among others provided that you do it correctly.
+Calling "platform_device_register(...)" from "tqm5200_setup_arch()"
+won't work, so move this call and the resource definitions to
+sm501 platform driver. A really right direction would be adding
+sm501 resource description to the device tree and adding appropriate
+code to the sm501 platform driver, but it is more effort.
+
+> As far as I understand now (and I may be terribly wrong), once
+> that SM501 MFD and Framebuffer drivers are registered,  I need
+> to tell the kernel where to find the device in the local bus.
+> Is it right?
+
+yes, try the patch below, and also ensure that
+CONFIG_VT,
+CONFIG_VT_CONSOLE,
+CONFIG_FRAMEBUFFER_CONSOLE
+are enabled in the kernel configuration.
+
+diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index afd8296..599ffe6 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -901,6 +901,9 @@ static int sm501_init_dev(struct sm501_devdata *sm)
+ 
+ 	INIT_LIST_HEAD(&sm->devices);
+ 
++	/* switch to BE */
++	writel(0xffffffff, sm->regs + SM501_ENDIAN_CONTROL);
++
+ 	devid = readl(sm->regs + SM501_DEVICEID);
+ 
+ 	if ((devid & SM501_DEVICEID_IDMASK) != SM501_DEVICEID_SM501) {
+@@ -1263,8 +1266,31 @@ static struct platform_driver sm501_plat_drv = {
+ 	.resume		= sm501_plat_resume,
+ };
+ 
++/* define some sm501 resources on tqm5200 */
++#define SM501_FB_BASE	0xe0000000
++#define SM501_IO_BASE	0xe3e00000
++#define SM501_FB_END	((SM501_FB_BASE) + 0x7fffff)
++#define SM501_IO_END	((SM501_IO_BASE) + 0x1fffff)
++
++static struct resource sm501_device0_resources[] = {
++	[0] = {.start = SM501_FB_BASE, .end = SM501_FB_END, .flags = IORESOURCE_MEM,},
++	[1] = {.start = SM501_IO_BASE, .end = SM501_IO_END, .flags = IORESOURCE_MEM,},
++};
++
++static struct platform_device sm501_device0 = {
++	.name = "sm501",
++	.id = 0,
++	.num_resources = ARRAY_SIZE(sm501_device0_resources),
++	.resource = sm501_device0_resources,
++};
++
++static struct platform_device *mfd_devices[] __initdata = {
++	&sm501_device0,
++};
++
+ static int __init sm501_base_init(void)
+ {
++	platform_add_devices(mfd_devices, ARRAY_SIZE(mfd_devices));
+ 	platform_driver_register(&sm501_plat_drv);
+ 	return pci_register_driver(&sm501_pci_drv);
+ }
+
+Best regards,
+Anatolij
 
 -- 
-This message has been scanned for viruses and is believed to be clean
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
