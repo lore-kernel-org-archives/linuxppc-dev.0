@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 83B6BDE1F7
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 02:10:51 +1100 (EST)
-Message-Id: <B094061B-8B4B-4E1A-BBC7-65A4E225E2B9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Alexandr Smirnov <asmirnov@ru.mvista.com>
-In-Reply-To: <20080306151451.GA25251@ru.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
-Date: Fri, 7 Mar 2008 09:10:46 -0600
-References: <20080306151451.GA25251@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 9FB8FDDEB9
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 02:23:45 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Sergej Stepanov <Sergej.Stepanov@ids.de>
+Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+Date: Fri, 7 Mar 2008 16:23:39 +0100
+References: <20070920220121.GF28784@loki.buserror.net>
+	<200802151350.20627.laurentp@cse-semaphore.com>
+	<1203089936.20350.7.camel@p60365-ste>
+In-Reply-To: <1203089936.20350.7.camel@p60365-ste>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1306640.PFn9xxkKFV";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200803071623.42519.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--nextPart1306640.PFn9xxkKFV
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mar 6, 2008, at 9:14 AM, Alexandr Smirnov wrote:
+Hi Sergej,
 
-> Add device tree file for Emerson KSI8560 board.
+On Friday 15 February 2008 16:38, Sergej Stepanov wrote:
+> Am Freitag, den 15.02.2008, 13:50 +0100 schrieb Laurent Pinchart:
+> > We're loosing the possibility of having MDC and MDIO on different ports.
+> > This is quite easy to fix for the non-CONFIG_PPC_CPM_NEW_BINDING case b=
+ut
+> > I'm not familiar with OF bindings (yet) to fix the
+> > CONFIG_PPC_CPM_NEW_BINDING case.
 >
-> Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
->
-> b/arch/powerpc/boot/dts/ksi8560.dts |  264 ++++++++++++++++++++++++++ 
-> ++++++++++
-> 1 file changed, 264 insertions(+)
+> for OF issue i had this for a paar month:
+> http://www.spinics.net/lists/netdev/msg45778.html
+> http://www.spinics.net/lists/netdev/msg47159.html
+> i'll be glad if it helps...
 
-Fixed up i2c to add #address-cells, #size-cells and cell-idnex
+Could these be applied ? Any showstopper ?
 
-applied to powerpc-next.
+Best regards,
 
-- k
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=C3=A9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1306640.PFn9xxkKFV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH0V3+8y9gWxC9vpcRAsxrAKCM3B9Od9SMB7zGOGLifeiLypd1gwCgmG2m
+k+dzZ8nQBjO5yq8g2Qo1t+s=
+=dp8U
+-----END PGP SIGNATURE-----
+
+--nextPart1306640.PFn9xxkKFV--
