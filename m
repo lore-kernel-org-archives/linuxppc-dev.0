@@ -1,14 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 7 Mar 2008 11:27:30 +1100
+Date: Fri, 7 Mar 2008 11:29:59 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
-Message-ID: <20080307002730.GB24142@localhost.localdomain>
-References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
+To: Alexandr Smirnov <asmirnov@ru.mvista.com>
+Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
+Message-ID: <20080307002959.GC24142@localhost.localdomain>
+References: <20080304162322.GA19634@ru.mvista.com>
+	<20080306151451.GA25251@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1204800155-11613-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <20080306151451.GA25251@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 06, 2008 at 06:14:51PM +0300, Alexandr Smirnov wrote:
+> Add device tree file for Emerson KSI8560 board.
+> 
+> Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
+
 [snip]
-> +		bcsr@1,0 {
-> +			reg = <1 0x0 0x8000>;
-> +			compatible = "fsl,mpc837xmds-bcsr";
-> +		};
-> +
-> +		nand@3,0 {
+> +	soc@fdf00000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
 
-This isn't a problem with this device tree, but it's probably time we
-started establishing some conventional generic names for nand flash
-and board-control devices.
-
-So, to start the ball rolling, I've seen several names for nand flash
-nodes, I'd suggest we standardise on "nand-flash".
-
-I've seen several variants for board control devices (cpld, bcsr,
-fpga, etc.) I suggest we standardise on "board-control"
+Since this is a new board, is it feasible to require it to have a
+sufficient new u-boot version that we don't require this old
+device_type entry.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
