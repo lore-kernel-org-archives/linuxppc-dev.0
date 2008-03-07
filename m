@@ -1,21 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E0BCDDDEF0
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 02:14:04 +1100 (EST)
-Message-Id: <2B4FC926-6ECD-4C1C-AE96-61157FF596B6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <47D1EF73.7030200@am.sony.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] bootwrapper: Allow specifying of image physical
-	offset
-Date: Sat, 8 Mar 2008 09:13:48 -0600
-References: <Pine.LNX.4.64.0803071055200.8522@blarg.am.freescale.net>
-	<47D1EF73.7030200@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <Jeremy.McNicoll@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 4938FDDF4E
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 18:55:33 +1100 (EST)
+From: Jeremy McNicoll <jeremy.mcnicoll@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] sbc8548: fix incorrect PCI-X and PCI interrupt map
+Date: Fri,  7 Mar 2008 15:14:09 -0500
+Message-Id: <1204920849-31741-1-git-send-email-jeremy.mcnicoll@windriver.com>
+Cc: Jeremy McNicoll <jeremy.mcnicoll@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +17,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The following patch allows interrupts to occur on the
+sbc8548. Currently PCI and PCI-X devices get assigned an IRQ
+but the interrupt count never increases.  This solves the
+problem and adds PCI support as well.
 
-On Mar 7, 2008, at 7:44 PM, Geoff Levand wrote:
+Signed-off-by: Jeremy McNicoll <jeremy.mcnicoll@windriver.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/boot/dts/sbc8548.dts |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
-> On 03/07/2008 08:55 AM, Kumar Gala wrote:
->> Normally we assume kernel images will be loaded at offset 0. However
->> there are situations, like when the kernel itself is running at a  
->> non-zero
->> physical address, that we don't want to load it at 0.
->>
->> Allow the wrapper to take an offset.  We use this when building u- 
->> boot images.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> arch/powerpc/boot/Makefile |    7 +++++++
->> arch/powerpc/boot/wrapper  |   12 ++++++++++--
->> 2 files changed, 17 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
->> index f43dd6e..1b4bfc6 100644
->> --- a/arch/powerpc/boot/Makefile
->> +++ b/arch/powerpc/boot/Makefile
->> @@ -35,6 +35,12 @@ endif
->>
->> BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj) -I$(srctree)/$(src)/libfdt
->>
->> +ifdef CONFIG_MEMORY_START
->> +MEMBASE=$(CONFIG_MEMORY_START)
->
-> We have the powerpc config option CONFIG_KERNEL_START.  I'm
-> wondering  how this CONFIG_MEMORY_START is different.  I just
-> did a quick search, and it seems that CONFIG_MEMORY_START is
-> only defined for the renesas arch's.
-
-KERNEL_START is the virtual address of the kernel.  It makes no claims  
-about what the physical address is.
-
-MEMORY_START will be the physical address that the kernel is at.  This  
-will only be supported on platforms like Book-e that can have  
-exception vectors at roughly any address.
-
-- k
+diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sbc8548.dts
+index 14be38a..b86e65d 100644
+--- a/arch/powerpc/boot/dts/sbc8548.dts
++++ b/arch/powerpc/boot/dts/sbc8548.dts
+@@ -184,11 +184,17 @@
+ 		cell-index = <0>;
+ 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+ 		interrupt-map = <
+-			/* IDSEL 0x01 (PCI-X slot) */
+-			0x0800 0x0 0x0 0x1 &mpic 0x0 0x1
+-			0x0800 0x0 0x0 0x2 &mpic 0x1 0x1
+-			0x0800 0x0 0x0 0x3 &mpic 0x2 0x1
+-			0x0800 0x0 0x0 0x4 &mpic 0x3 0x1>;
++			/* IDSEL 0x01 (PCI-X slot) @66MHz */
++			0x0800 0x0 0x0 0x1 &mpic 0x2 0x1
++			0x0800 0x0 0x0 0x2 &mpic 0x3 0x1
++			0x0800 0x0 0x0 0x3 &mpic 0x4 0x1
++			0x0800 0x0 0x0 0x4 &mpic 0x1 0x1
++
++			/* IDSEL 0x11 (PCI, 3.3V 32bit) @33MHz */
++			0x8800 0x0 0x0 0x1 &mpic 0x2 0x1
++			0x8800 0x0 0x0 0x2 &mpic 0x3 0x1
++			0x8800 0x0 0x0 0x3 &mpic 0x4 0x1
++			0x8800 0x0 0x0 0x4 &mpic 0x1 0x1>;
+ 
+ 		interrupt-parent = <&mpic>;
+ 		interrupts = <0x18 0x2>;
+-- 
+1.5.3.7
