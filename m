@@ -2,17 +2,19 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BF6E7DDF23
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 18:04:50 +1100 (EST)
-Date: Fri, 07 Mar 2008 16:04:21 +0900 (JST)
-Message-Id: <20080307.160421.-1300529901.kouish@swc.toshiba.co.jp>
-To: arnd@arndb.de
-Subject: Re: [PATCH 2/11] celleb: move the base part for celleb support
-In-Reply-To: <200803051236.57425.arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id D102FDDF5C
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 19:06:35 +1100 (EST)
+Date: Fri, 07 Mar 2008 17:06:19 +0900 (JST)
+Message-Id: <20080307.170619.-1300529804.kouish@swc.toshiba.co.jp>
+To: paulus@samba.org
+Subject: Re: [PATCH] PPC: in celleb_show_cpuinfo() convert strncpy(x, y,
+	sizeof(x)) to strlcpy
+In-Reply-To: <47CFEF82.10709@tiscali.nl>
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, 12o3l@tiscali.nl, linux-kernel@vger.kernel.org,
+	arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 05 March 2008, Ishizaki Kou wrote:
-> > This patch moves the base code for celleb support into platforms/cell/.
-> > All files in this patch are used by celleb-beat and celleb-native commonly.
+Roel Kluin <12o3l@tiscali.nl> wrote:
+> Roel Kluin wrote:
+> > This patch was not yet tested. Please confirm it's right.
 > 
-> Moving around the files this way is good, but
+> was too quick with the send button. the batch below is probably better
+> ---
+> strncpy does not append '\0' if the length of the source string equals
+> the size parameter, strlcpy does.
 > 
-> > +++ b/arch/powerpc/platforms/cell/Makefile       2008-03-04 14:00:28.000000000  +0900 
-> > @@ -26,3 +26,20 @@
-> >                                          ? spufs/
-> > 
-> >  obj-$(CONFIG_PCI_MSI)                  += axon_msi.o
-> > +
-> > +
-> > +# celleb stuff
-> > +ifeq ($(CONFIG_PPC_CELLEB),y)
-> > +obj-y                                  += celleb_setup.o \
-> > +                                          celleb_pci.o celleb_scc_epci.o \
-> > +                                          celleb_scc_pciex.o \
-> > +                                          celleb_scc_uhc.o \
-> > +                                          beat.o beat_htab.o beat_hvCall.o \
-> > +                                          beat_interrupt.o beat_iommu.o \
-> > +                                          io-workarounds.o spider-pci.o
-> > +
-> > +obj-$(CONFIG_SMP)                      += beat_smp.o
-> > +obj-$(CONFIG_PPC_UDBG_BEAT)            += beat_udbg.o
-> > +obj-$(CONFIG_SERIAL_TXX9)              += celleb_scc_sio.o
-> > +obj-$(CONFIG_SPU_BASE)                 += beat_spu_priv1.o
-> > +endif
-> 
-> This looks like you are referencing files in the Makefile that are moved
-> in the later patches. In order to make the git-bisect work correctly
-> on the kernel after the patches are applied, I'd suggest either moving
-> all files at once, or to modify the Makefile in every step of the way
-> so that the kernel still builds.
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-Thanks for your advice.
+Acked-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
-I'll split changing the Makefile because the moving patches is too
-large to be one patch.
+I tested Roel's 2nd patch and it works good on Celleb.
 
-Best regards,
-Kou Ishizaki
+> ---
+> diff --git a/arch/powerpc/platforms/celleb/setup.c b/arch/powerpc/platforms/celleb/setup.c
+> index f27ae1e..cbe09d9 100644
+> --- a/arch/powerpc/platforms/celleb/setup.c
+> +++ b/arch/powerpc/platforms/celleb/setup.c
+> @@ -81,8 +81,7 @@ static void celleb_show_cpuinfo(struct seq_file *m)
+>  
+>  static int __init celleb_machine_type_hack(char *ptr)
+>  {
+> -	strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
+> -	celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
+> +	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
+>  	return 0;
+>  }
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
