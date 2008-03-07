@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D086DDDFE2
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 03:05:12 +1100 (EST)
-Message-Id: <D2A89054-3C19-444B-9155-FF8880E3100A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1204800155-11613-1-git-send-email-leoli@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
-Date: Fri, 7 Mar 2008 08:46:51 -0600
-References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EC65EDE006
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 03:21:46 +1100 (EST)
+Date: Fri, 7 Mar 2008 10:21:35 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: Trouble with SCC UART ports when moving from ppc to powerpc
+Message-ID: <20080307162135.GC10545@ld0162-tx32.am.freescale.net>
+References: <200803071521.00383.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200803071521.00383.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Mar 07, 2008 at 03:20:55PM +0100, Laurent Pinchart wrote:
+> The CPM dual port ram was defined in the device tree as follows (copied from 
+> the MPC8272ADS board device tree).
+> 
+>         muram@0 {
+>                 #address-cells = <1>;
+>                 #size-cells = <1>;
+>                 ranges = <0 0 10000>;
+> 
+>                 data@0 {
+>                         compatible = "fsl,cpm-muram-data";
+>                         reg = <0 2000 9800 800>;
+>                 };
+>         };
+> 
+> Changing the reg property to
+> 
+> reg = <80 1f80 9800 800>;
+> 
+> fixed my problem.
 
-On Mar 6, 2008, at 4:42 AM, Li Yang wrote:
+Perhaps there's an SMC1 running with its parameter RAM at offset zero? 
 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> arch/powerpc/boot/dts/mpc8377_mds.dts     |   66 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/mpc8378_mds.dts     |   66 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/boot/dts/mpc8379_mds.dts     |   66 ++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/platforms/83xx/mpc837x_mds.c |    8 +--
-> 4 files changed, 201 insertions(+), 5 deletions(-)
+> Does anyone have any clue regarding what could write to the dpram ? I thought 
+> about some CPM peripheral set up by the boot loader, but my board 
+> initialization code calls cpm2_reset() long before initializing SCC1.
 
-applied.
+cpm2_reset() doesn't currently actually reset the CPM, for some reason
+(unlike cpm1).  This should probably be fixed, though then we'd have to
+deal with assigning SMC parameter RAM addresses ourselves.
 
-- k
+For now, the above fix should be done on any board with an active SMC
+device (assuming SMC parameter RAM at zero, as u-boot sets it; other
+bootloaders may need to exempt a different region).
+
+-Scott
