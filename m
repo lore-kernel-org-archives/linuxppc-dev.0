@@ -1,17 +1,18 @@
-Return-Path: <baishuwei@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id 978A0DDF13
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 12:47:57 +1100 (EST)
-Received: by wf-out-1314.google.com with SMTP id 25so221939wfa.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 06 Mar 2008 17:47:56 -0800 (PST)
-Message-ID: <f3566d60803061747j500c1ddctfa61fe01fc8eb4b5@mail.gmail.com>
-Date: Fri, 7 Mar 2008 09:47:56 +0800
-From: "Bai Shuwei" <baishuwei@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: CFI_DEF_CFA instruction
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 88DC8DDF80
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 12:52:00 +1100 (EST)
+Date: Thu, 6 Mar 2008 19:57:34 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Alexandr Smirnov <asmirnov@ru.mvista.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
+Message-ID: <20080307015734.GA6877@lixom.net>
+References: <20080304162322.GA19634@ru.mvista.com>
+	<20080306151451.GA25251@ru.mvista.com>
+	<20080307002959.GC24142@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_6158_12394705.1204854476701"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080307002959.GC24142@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6158_12394705.1204854476701
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, Mar 07, 2008 at 11:29:59AM +1100, David Gibson wrote:
+> On Thu, Mar 06, 2008 at 06:14:51PM +0300, Alexandr Smirnov wrote:
+> > Add device tree file for Emerson KSI8560 board.
+> > 
+> > Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
+> 
+> [snip]
+> > +	soc@fdf00000 {
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		device_type = "soc";
+> 
+> Since this is a new board, is it feasible to require it to have a
+> sufficient new u-boot version that we don't require this old
+> device_type entry.
 
-hi,
-   all, from the web i find the definition is:
-      .cfi_def_cfa defines a rule for computing CFA as: take adress from
-register and add offeset to it.
+Here's a novel idea:
 
-There is a concept CFA i can't understand, what means of the CFA, and this
-address point to where?
+What if the device tree police spent a little more time on fixing up
+existing DTS files and booting-without-of.txt, and a little less time
+making it as hard as possible for people to get new board ports in?
 
-Best Regards!
+That way, at least they would be demanding of new submissions what is
+documented and already accepted.
 
-Bai Shuwei
+Current booting-without-of.txt still claims that /soc should have
+device_type "soc".
 
 
--- 
-Add: Tianshui South Road 222, Lanzhou, P.R.China
-Tel: +86-931-8912025
-Zip Code: 730000
-Email: baishuwei@gmail.com, buroc@126.com
-
-------=_Part_6158_12394705.1204854476701
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-hi,<br>&nbsp;&nbsp; all, from the web i find the definition is:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .cfi_def_cfa defines a rule for computing CFA as: take adress from register and add offeset to it. <br><br>There is a concept CFA i can&#39;t understand, what means of the CFA, and this address point to where?&nbsp; <br>
-<br>Best Regards!<br><br>Bai Shuwei<br><br clear="all"><br>-- <br>Add: Tianshui South Road 222, Lanzhou, P.R.China<br>Tel: +86-931-8912025<br>Zip Code: 730000<br>Email: <a href="mailto:baishuwei@gmail.com">baishuwei@gmail.com</a>, <a href="mailto:buroc@126.com">buroc@126.com</a>
-
-------=_Part_6158_12394705.1204854476701--
+-Olof
