@@ -1,22 +1,18 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 04A7DDDFB0
+Return-Path: <nvbolhuis@aimvalley.nl>
+Received: from smtp-vbr15.xs4all.nl (smtp-vbr15.xs4all.nl [194.109.24.35])
+	by ozlabs.org (Postfix) with ESMTP id DACC9DDF2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Mar 2008 09:15:48 +1100 (EST)
+	Fri,  7 Mar 2008 19:03:32 +1100 (EST)
+Message-ID: <47D0F479.4050109@aimvalley.nl>
+Date: Fri, 07 Mar 2008 08:53:29 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Xilinx Temac link detect
-Date: Thu, 6 Mar 2008 15:14:44 -0700
-In-Reply-To: <15883376.post@talk.nabble.com>
-References: <15616042.post@talk.nabble.com> <15883376.post@talk.nabble.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "khollan" <khollan@daktronics.com>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080306221446.4509A1118051@mail123-sin.bigfish.com>
+To: rmcguire@videopresence.com
+Subject: Re: RAW Sockets - HDLC or Ethernet
+References: <000001c87f6b$e1d5e9e0$6405a8c0@absolut>
+In-Reply-To: <000001c87f6b$e1d5e9e0$6405a8c0@absolut>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,130 +23,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kevin,
 
-I couldn't find any example laying around, so I took a shot at it based
-on other non-network examples we had. I've not personally done it so
-bear that in mind.
+I guess this is what a raw packet socket is supposed to do.
+It's not a bug it's a feature.
+Can't you somehow recognize your own packet (and skip it) ?
 
-I have not tried to compile any of this, just stole parts for places and
-pasted in.
+Btw. this question can probably be better addressed in
+comp.os.linux.development.system
 
-Hope it helps,
-John
-
-#include <ioctl.h>
-
-	/*
- 	 * FD of the IIC device opened.
- 	 */
-	int Fdtemac;
-
-	struct mii_ioctl_data ioctl_data;=09
-
-	/*
-	 * Open the device.
-	 */
-	Fdtemac =3D open("/dev/TBD", O_RDWR);
-	if(Fdtemac < 0)
-	{
-		printf("Cannot open the temac device\n");
-		return -1;
-	}
-
-	/* setup the inputs to the ioctl call */
-
-	ioctl_data.phy_num =3D TBD;
-	ioctl_data.reg_num =3D TBD;
-=09
-	/*
-	 * Read the phy register
-	 */
-	Register =3D ioctl(Fdtemac, SIOCGMIIREG, &ioctl_data);
-	if(Status < 0)
-	{
-		/* failure */
-		return 0;
-	}
-
-	/* results should be in ioctl_data.val_out I think
-
-}
-
->From the temac linux adapter, a snippet showing the the ioctl function.
-
-xenet_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
-{
-    struct mii_ioctl_data *data =3D (struct mii_ioctl_data *)
-&rq->ifr_data;
-
-    case SIOCGMIIREG:   /* Read GMII PHY register. */
-        ret =3D XTemac_PhyRead(&lp->Emac, data->phy_id,
-                       data->reg_num, &data->val_out);
-}
-
-from linux/mii.h
-
-/* This structure is used in all SIOCxMIIxxx ioctl calls */
-struct mii_ioctl_data {
-	__u16		phy_id;
-	__u16		reg_num;
-	__u16		val_in;
-	__u16		val_out;
-};
-
-from linux/if.h
-
-struct ifreq=20
-{
-#define IFHWADDRLEN	6
-	union
-	{
-		char	ifrn_name[IFNAMSIZ];		/* if name, e.g.
-"en0" */
-	} ifr_ifrn;
-=09
-	union {
-		struct	sockaddr ifru_addr;
-		struct	sockaddr ifru_dstaddr;
-		struct	sockaddr ifru_broadaddr;
-		struct	sockaddr ifru_netmask;
-		struct  sockaddr ifru_hwaddr;
-		short	ifru_flags;
-		int	ifru_ivalue;
-		int	ifru_mtu;
-		struct  ifmap ifru_map;
-		char	ifru_slave[IFNAMSIZ];	/* Just fits the size */
-		char	ifru_newname[IFNAMSIZ];
-		void __user *	ifru_data;
-		struct	if_settings ifru_settings;
-	} ifr_ifru;
-};
-
------Original Message-----
-From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
-Behalf Of khollan
-Sent: Thursday, March 06, 2008 1:44 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Xilinx Temac link detect
+---
+N. van Bolhuis.
 
 
+Russell McGuire wrote:
+> Anyone,
+> 
+> Yet another mysterious question, at least to me.
+> 
+> I have written to simple utilities to send and receive a file / data through
+> a newly created driver, HDLC using an MPC8360E. 
+> Though I doubt this question is limited to that specific HW.
+> 
+> The main question is that everything I send though device HDLC0 I can
+> immediately read from HDLC0 even though logically there is no connection
+> there. It as if the kernel is immediately allowing me to read from the same
+> device, what a separate application just wrote.???
+> HOW CAN THIS BE?
+> 
+> Details:
+> I have two applications: send and receive.  (pseudo code as follows)
+> 
+> Send opens a socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL)).
+> And binds it (AF_PACKET, ETH_P_HLDC, if_index(hdlc0))
+> 
+> Receive opens a socket to the same device 
+> socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))
+> bind(AF_PACKET, ETH_P_ALL, if_index(hdlc0)
+> 
+> Note they are opening the same device.
+> 
+> Now if I send anything through the send application, I immediately receive
+> it via the receive application??
+> Note, entirely separate processes!
+> 
+> Note, there is NO hardware loopback, this should be a dead end, and I should
+> get nothing back at least as far as HW is concerned.
+> 
+> What am I missing, that causes all my TX data to show up immediately in the
+> RX app? Note I have verified my HDLC drier is not actually receiving
+> anything, so is there something in the kernel that is bridging the TX / RX
+> paths, or am I just missing the function of this? If so how can I use RAW
+> mode, while not mixing this, or at least keeping them separate in the
+> applications?
+> 
+> -Russ
+> 
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-I figure I could write a C program to talk to the ioctl in the TEMAC
-driver
-and read the PHY register.  Does anyone have example code for talking to
-network ioctl's?
 
-Thanks
-
-Kevin
---=20
-View this message in context:
-http://www.nabble.com/Xilinx-Temac-link-detect-tp15616042p15883376.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+This message has been scanned for viruses and is believed to be clean
