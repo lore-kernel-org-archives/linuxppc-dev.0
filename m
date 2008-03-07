@@ -1,18 +1,25 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 88DC8DDF80
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 12:52:00 +1100 (EST)
-Date: Thu, 6 Mar 2008 19:57:34 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Alexandr Smirnov <asmirnov@ru.mvista.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/4] Emerson KSI8560 device tree
-Message-ID: <20080307015734.GA6877@lixom.net>
-References: <20080304162322.GA19634@ru.mvista.com>
-	<20080306151451.GA25251@ru.mvista.com>
-	<20080307002959.GC24142@localhost.localdomain>
+Return-Path: <y-goto@jp.fujitsu.com>
+Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
+	by ozlabs.org (Postfix) with ESMTP id C28A9DDFA3
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2008 13:00:10 +1100 (EST)
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	m271ZTr5028499
+	for <linuxppc-dev@ozlabs.org> (envelope-from y-goto@jp.fujitsu.com);
+	Fri, 7 Mar 2008 10:35:29 +0900
+Date: Fri, 07 Mar 2008 10:35:09 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH 1/5] generic __remove_pages() support
+In-Reply-To: <1204839763.6272.8.camel@dyn9047017100.beaverton.ibm.com>
+References: <1204836859.4772.32.camel@nimitz.home.sr71.net>
+	<1204839763.6272.8.camel@dyn9047017100.beaverton.ibm.com>
+Message-Id: <20080307102032.A17D.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080307002959.GC24142@localhost.localdomain>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Dave Hansen <haveblue@us.ibm.com>,
+	lkml <linux-kernel@vger.kernel.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 07, 2008 at 11:29:59AM +1100, David Gibson wrote:
-> On Thu, Mar 06, 2008 at 06:14:51PM +0300, Alexandr Smirnov wrote:
-> > Add device tree file for Emerson KSI8560 board.
+Hi Badari-san.
+
+> On Thu, 2008-03-06 at 12:54 -0800, Dave Hansen wrote:
+> > On Thu, 2008-03-06 at 10:55 -0800, Badari Pulavarty wrote:
+> > > +               if (memmap)
+> > > +                       __kfree_section_memmap(memmap, PAGES_PER_SECTION);
+> > > +               return;
+> > > +       }
+> > > +
+> > > +       /*
+> > > +        * Allocations came from bootmem - how do I free up ?
+> > > +        */
+> > > +
 > > 
-> > Signed-off-by: Alexandr Smirnov <asmirnov@ru.mvista.com>
+> > Shouldn't we figure this one out before merging?
+> > 
+> > I think we at least need a printk() there.
 > 
-> [snip]
-> > +	soc@fdf00000 {
-> > +		#address-cells = <1>;
-> > +		#size-cells = <1>;
-> > +		device_type = "soc";
-> 
-> Since this is a new board, is it feasible to require it to have a
-> sufficient new u-boot version that we don't require this old
-> device_type entry.
+> I can add a printk(). I am hoping Yasunori Goto has something to
+> handle this, before we really merge into mainline.
 
-Here's a novel idea:
+Ah, yes. 
+I'm making patches for around here. I'm sorry for your waiting.
 
-What if the device tree police spent a little more time on fixing up
-existing DTS files and booting-without-of.txt, and a little less time
-making it as hard as possible for people to get new board ports in?
+BTW, do you hurry for merging your patch? 
+To be honest, I would like to solve not only here
+but also some other issues.
+But, if you hurry, I'll concentrate to solve only this.
 
-That way, at least they would be demanding of new submissions what is
-documented and already accepted.
+Bye.
 
-Current booting-without-of.txt still claims that /soc should have
-device_type "soc".
-
-
--Olof
+-- 
+Yasunori Goto 
