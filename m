@@ -2,20 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E06D5DDFA9
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 01:55:23 +1100 (EST)
-Message-Id: <C4037008-672F-4C76-B122-3AD3947F07E4@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 26353DDF73
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 02:00:42 +1100 (EST)
+Message-Id: <77D7C44C-AB9F-4326-81DE-17BE6A74B421@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: hs@denx.de
-In-Reply-To: <47D13F37.6070504@denx.de>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080228185034.GA3897@loki.buserror.net>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v2] 82xx: MGCOGE support
-Date: Fri, 7 Mar 2008 08:55:09 -0600
-References: <mailman.813.1200609119.6908.linuxppc-dev@ozlabs.org>
-	<479EFE7F.4000104@denx.de> <47A04813.7070306@denx.de>
-	<47A38507.1040804@freescale.com> <47D13F37.6070504@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] fs_enet: Remove unused fields in the
+	fs_mii_bb_platform_info structure.
+Date: Fri, 7 Mar 2008 09:00:17 -0600
+References: <200802151427.44321.laurentp@cse-semaphore.com>
+	<200802281349.07501.laurentp@cse-semaphore.com>
+	<20080228185034.GA3897@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +27,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 7, 2008, at 7:12 AM, Heiko Schocher wrote:
+On Feb 28, 2008, at 12:50 PM, Scott Wood wrote:
 
-> Hello Scott,
->
-> Scott Wood wrote:
->> Heiko Schocher wrote:
->>> The following patch adds support for the mpc8247 based
->>> board MGCOGE from keymile.
+> On Thu, Feb 28, 2008 at 01:49:01PM +0100, Laurent Pinchart wrote:
+>> On Friday 15 February 2008 14:27, Laurent Pinchart wrote:
+>>> The mdio_port, mdio_bit, mdc_port and mdc_bit fields in the
+>>> fs_mii_bb_platform_info structure are left-overs from the move to  
+>>> the Phy
+>>> Abstraction Layer subsystem. They can be safely removed.
 >>>
->>> changes to the previous patchset:
->>>
->>> - Added the suggestions from Scott Wood:
->>>  http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050957.html
->>>
->>> - The patch
->>> http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050931.html
->>>  is no longer needed.
->>>
->>> Signed-off-by: Heiko Schocher <hs@denx.de>
+>>> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+>> [snip]
 >>
->> Acked-by: Scott Wood <scottwood@freescale.com>
+>> Is there something wrong with the patch ?
 >
-> I have some changes for this Hardware (a second Flash is now there),
-> how should I post this change?
->
-> a) The complete board support again, with the new Flash.
-> b) as an incremental Patch against the patch I postet in this Thread.
->
-> (I vote for option a, and we throw away the "v2 Patch")
->
-> thanks for helping
+> No, the patch looks OK.  However, note that non-PPC_CPM_NEW_BINDING  
+> code
+> should go away altogether soon.
 
-go a head w/a since we haven't applied a version of this to any tree  
-yet.
+also any such patch should normally go via netdev as its to a network  
+driver.
 
 - k
