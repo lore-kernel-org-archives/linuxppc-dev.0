@@ -1,22 +1,20 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from blu139-omc3-s21.blu139.hotmail.com
-	(blu139-omc3-s21.blu139.hotmail.com [65.55.175.221])
-	by ozlabs.org (Postfix) with ESMTP id 06DD7DDF34
+Return-Path: <mike.koss@ngc.com>
+Received: from xmrm0101.northgrum.com (xmrm0101.northgrum.com
+	[155.104.240.104]) by ozlabs.org (Postfix) with ESMTP id 05BCBDDF5C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Mar 2008 01:10:08 +1100 (EST)
-Message-ID: <BLU106-W13F58AFC51977B5ACB4318CA130@phx.gbl>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: TQM5200 2.6-denx SM501 voyager enabling problem.
-Date: Fri, 7 Mar 2008 15:10:07 +0100
-In-Reply-To: <47D12F80.3000400@denx.de>
-References: <BLU106-W20B00A907B0D9DAD5014E2CA1D0@phx.gbl>
-	<loom.20080228T145124-686@post.gmane.org>
-	<BLU106-W293FED7524135F0A85B76BCA1B0@phx.gbl>
-	<BLU106-W3191420D0642825B53DD08CA120@phx.gbl>
-	<47D12F80.3000400@denx.de>
-Content-Type: text/plain; charset="iso-8859-1"
+	Sat,  8 Mar 2008 02:00:00 +1100 (EST)
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Xilinx Temac link detect
+Date: Fri, 7 Mar 2008 08:29:35 -0600
+Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FA3CF03@XMBIL132.northgrum.com>
+In-Reply-To: <20080306221446.4509A1118051@mail123-sin.bigfish.com>
+References: <15616042.post@talk.nabble.com> <15883376.post@talk.nabble.com>
+	<20080306221446.4509A1118051@mail123-sin.bigfish.com>
+From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
+To: "John Linn" <John.Linn@xilinx.com>, "khollan" <khollan@daktronics.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,187 +25,207 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Here's a snippet from a program I use to debug an ethernet driver that I
+have using ioctl's. The ethernet ioctl interface is slightly different
+from a "normal" ioctl in that it uses sockets and not a file descriptor.
+The ioctl's I use are added to the ioctl interface in the driver, using
+the defined device-specific range (that was supposed to disappear in
+2.5.x or 2.6.x). With this I read/write my phy register's to test out
+the interface between my TEMAC and my PHY.=20
+
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <net/if.h>
+#include <linux/sockios.h>
+
+int main (int argc, char **argv)
+{
+   int   driver_fd =3D -1;
+   int   cmd       =3D 0;
+   int   res;
+   char* buffer    =3D NULL;
+   struct ifreq ifr;
+
+   if (argc < 3)
+   {
+      printf ("Usage %s <devname> <ioctl>\n", argv [0]);
+      exit (1);
+   }
+
+   driver_fd =3D socket(AF_INET, SOCK_DGRAM, 0);
+   if (driver_fd =3D=3D -1)
+   {
+      printf ("Could not open %s: %s\n", TEMAC_DRIVER_NAME, strerror
+(errno));
+      exit (1);
+   }
+
+   memset(&ifr, 0, sizeof(struct ifreq));
+   strcpy(ifr.ifr_name, argv[1]);
+
+   cmd =3D atoi (argv [2]);
+   if (SIOCDEVPRIVATE + 3 =3D=3D cmd) {
+      if (argc !=3D 4) {
+         printf("usage %s <devname> 35315 <phy reg>\n", argv[0]);
+         exit(1);
+      }
+
+      ifr.ifr_ifindex =3D atoi(argv[3]);
+   }
+   if (SIOCDEVPRIVATE + 4 =3D=3D cmd) {
+      if (argc !=3D 5) {
+         printf("usage %s <devname> 35316 <phy reg> <val>\n", argv[0]);
+         exit(1);
+      }
+
+      ifr.ifr_ifindex =3D atoi(argv[3]) << 16;
+      ifr.ifr_ifindex |=3D atoi(argv[4]);
+   }
+   printf("Performing ioctl %d:\n", cmd);
+
+   res =3D ioctl(driver_fd, cmd, &ifr);
+
+   if (res =3D=3D -1)
+   {
+      printf ("Error from %d: %s\n", driver_fd, strerror (errno));
+      exit (1);
+   }
+
+   return 0;
+}
+
+-----Original Message-----
+From: John Linn [mailto:John.Linn@xilinx.com]=20
+Sent: Thursday, March 06, 2008 5:15 PM
+To: khollan; linuxppc-embedded@ozlabs.org
+Subject: RE: Xilinx Temac link detect
+
+Hi Kevin,
+
+I couldn't find any example laying around, so I took a shot at it based
+on other non-network examples we had. I've not personally done it so
+bear that in mind.
+
+I have not tried to compile any of this, just stole parts for places and
+pasted in.
+
+Hope it helps,
+John
+
+#include <ioctl.h>
+
+	/*
+ 	 * FD of the IIC device opened.
+ 	 */
+	int Fdtemac;
+
+	struct mii_ioctl_data ioctl_data;=09
+
+	/*
+	 * Open the device.
+	 */
+	Fdtemac =3D open("/dev/TBD", O_RDWR);
+	if(Fdtemac < 0)
+	{
+		printf("Cannot open the temac device\n");
+		return -1;
+	}
+
+	/* setup the inputs to the ioctl call */
+
+	ioctl_data.phy_num =3D TBD;
+	ioctl_data.reg_num =3D TBD;
+=09
+	/*
+	 * Read the phy register
+	 */
+	Register =3D ioctl(Fdtemac, SIOCGMIIREG, &ioctl_data);
+	if(Status < 0)
+	{
+		/* failure */
+		return 0;
+	}
+
+	/* results should be in ioctl_data.val_out I think
+
+}
+
+>From the temac linux adapter, a snippet showing the the ioctl function.
+
+xenet_ioctl(struct net_device *dev, struct ifreq *rq, int cmd) {
+    struct mii_ioctl_data *data =3D (struct mii_ioctl_data *)
+&rq->ifr_data;
+
+    case SIOCGMIIREG:   /* Read GMII PHY register. */
+        ret =3D XTemac_PhyRead(&lp->Emac, data->phy_id,
+                       data->reg_num, &data->val_out); }
+
+from linux/mii.h
+
+/* This structure is used in all SIOCxMIIxxx ioctl calls */ struct
+mii_ioctl_data {
+	__u16		phy_id;
+	__u16		reg_num;
+	__u16		val_in;
+	__u16		val_out;
+};
+
+from linux/if.h
+
+struct ifreq
+{
+#define IFHWADDRLEN	6
+	union
+	{
+		char	ifrn_name[IFNAMSIZ];		/* if name, e.g.
+"en0" */
+	} ifr_ifrn;
+=09
+	union {
+		struct	sockaddr ifru_addr;
+		struct	sockaddr ifru_dstaddr;
+		struct	sockaddr ifru_broadaddr;
+		struct	sockaddr ifru_netmask;
+		struct  sockaddr ifru_hwaddr;
+		short	ifru_flags;
+		int	ifru_ivalue;
+		int	ifru_mtu;
+		struct  ifmap ifru_map;
+		char	ifru_slave[IFNAMSIZ];	/* Just fits the size */
+		char	ifru_newname[IFNAMSIZ];
+		void __user *	ifru_data;
+		struct	if_settings ifru_settings;
+	} ifr_ifru;
+};
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
+Behalf Of khollan
+Sent: Thursday, March 06, 2008 1:44 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Xilinx Temac link detect
 
 
-Anatolij wrote:
 
-> Hello,
+I figure I could write a C program to talk to the ioctl in the TEMAC
+driver and read the PHY register.  Does anyone have example code for
+talking to network ioctl's?
 
-Hello Anatoli,
+Thanks
 
-> Pedro Luis D. L. wrote:
->=20
->=20
->=20
->> I tried to contact TQ but they seem not to be able to solve my
->> problem. They suggested that the problem could be in the different
->> endianness used by MPC5200 and SMI501. That problem seems to be
->> corrected in the driver. Anyway, this endianness problem may come
->> to light if I had any video output. It is possible to change the
->> endianness of SM501 chip from the u-boot writing a register.
->> I did it and it made no difference at all. The real problem is
->> still that none device is initialized or detected even when the
->> Framebuffer driver for SM501 and MFD Driver for SM501 are compiled
->> with the kernel. I checked that platform driver for both are
->> registered (using some printk output) but their probe functions
->> are never invoked.
->>=20
->> I thought that my problem could be that I don't have initialized
->> the device within the platform file tqm5200.c. I added the following
->> code (marked with +) to this file under arch/powerpc/platforms/52xx/tqm5=
-200.c
->>=20
->> +static struct resource sm501_resources[] =3D {
->> +	[0]	=3D {
->> +		.start	=3D 0xE3E00000,
->> +		.end	=3D 0xE3DFFFFF,
->=20
-> This is wrong as '.end' resource should be greater than '.start'.
-> The value for '.end' seems to origin from the typo in TQ docs for
-> TQM5200. The proper value results from adding 2MB register space
-> of the SM501 to the IO base 0xe3e00000 and is 0xe3ffffff.
-> Furthermore you didn't define any framebuffer memory resource
-> which is strictly needed here for the framebuffer driver.
+Kevin
+--
+View this message in context:
+http://www.nabble.com/Xilinx-Temac-link-detect-tp15616042p15883376.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
 
-Yes, I supposed I had to add another resource, but I was not sure how to po=
-int them. I didn't realize the documentation error, ups, but it is true, e3=
-d is smaller than e3E... My mistake, sorry :-(
-
-
->> +		.flags	=3D IORESOURCE_MEM,
->> +	},
->> +};
->> +
->> +static struct platform_device sm501_device =3D {
->> +	.name		=3D "sm501",
->> +	.id		=3D 0,
->> +	.num_resources	=3D ARRAY_SIZE(sm501_resources),
->> +	.resource	=3D sm501_resources,
->> +};
->>=20
->> static void __init tqm5200_setup_arch(void)
->> {
->> 	if (ppc_md.progress)
->> 		ppc_md.progress("tqm5200_setup_arch()", 0);
->>=20
->> 	/* Some mpc5200 & mpc5200b related configuration */
->> 	mpc5200_setup_xlb_arbiter();
->>=20
->> 	/* Map wdt for mpc52xx_restart() */
->> 	mpc52xx_map_wdt();
->>=20
->> #ifdef CONFIG_PCI
->> 	np =3D of_find_node_by_type(NULL, "pci");
->> 	if (np) {
->> 		mpc52xx_add_bridge(np);
->> 		of_node_put(np);
->> 	}
->> #endif
->> +
->> +	platform_device_register(&sm501_device);
->> +
->> }
->>=20
->> I got this idea from the configuration files from other platforms,
->> but I still need to find out how exactly "resources" must be defined.
->> Anybody knows wheather am I pointing in the right direction and this
->> makes any sense?
->=20
-> yes, the direction is right or this is at least a possible solution
-> among others provided that you do it correctly.
-> Calling "platform_device_register(...)" from "tqm5200_setup_arch()"
-> won't work, so move this call and the resource definitions to
-> sm501 platform driver. A really right direction would be adding
-> sm501 resource description to the device tree and adding appropriate
-> code to the sm501 platform driver, but it is more effort.
-
-I thought about this possible solution (adding resource description to devi=
-ce tree), but as far as I understood, the device tree was intended to descr=
-ibe the microcontroller peripherals and tqm5200, based on the mpc5200 is so=
-ld out also without sm501, so that's why I discarded this option.
-
->> As far as I understand now (and I may be terribly wrong), once
->> that SM501 MFD and Framebuffer drivers are registered,  I need
->> to tell the kernel where to find the device in the local bus.
->> Is it right?
->=20
-> yes, try the patch below, and also ensure that
-> CONFIG_VT,
-> CONFIG_VT_CONSOLE,
-> CONFIG_FRAMEBUFFER_CONSOLE
-> are enabled in the kernel configuration.
->=20
-> diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-> index afd8296..599ffe6 100644
-> --- a/drivers/mfd/sm501.c
-> +++ b/drivers/mfd/sm501.c
-> @@ -901,6 +901,9 @@ static int sm501_init_dev(struct sm501_devdata *sm)
-> =20
->  	INIT_LIST_HEAD(&sm->devices);
-> =20
-> +	/* switch to BE */
-> +	writel(0xffffffff, sm->regs + SM501_ENDIAN_CONTROL);
-> +
->  	devid =3D readl(sm->regs + SM501_DEVICEID);
-> =20
->  	if ((devid & SM501_DEVICEID_IDMASK) !=3D SM501_DEVICEID_SM501) {
-> @@ -1263,8 +1266,31 @@ static struct platform_driver sm501_plat_drv =3D {
->  	.resume		=3D sm501_plat_resume,
->  };
-> =20
-> +/* define some sm501 resources on tqm5200 */
-> +#define SM501_FB_BASE	0xe0000000
-> +#define SM501_IO_BASE	0xe3e00000
-> +#define SM501_FB_END	((SM501_FB_BASE) + 0x7fffff)
-> +#define SM501_IO_END	((SM501_IO_BASE) + 0x1fffff)
-> +
-> +static struct resource sm501_device0_resources[] =3D {
-> +	[0] =3D {.start =3D SM501_FB_BASE, .end =3D SM501_FB_END, .flags =3D IO=
-RESOURCE_MEM,},
-> +	[1] =3D {.start =3D SM501_IO_BASE, .end =3D SM501_IO_END, .flags =3D IO=
-RESOURCE_MEM,},
-> +};
-> +
-> +static struct platform_device sm501_device0 =3D {
-> +	.name =3D "sm501",
-> +	.id =3D 0,
-> +	.num_resources =3D ARRAY_SIZE(sm501_device0_resources),
-> +	.resource =3D sm501_device0_resources,
-> +};
-> +
-> +static struct platform_device *mfd_devices[] __initdata =3D {
-> +	&sm501_device0,
-> +};
-> +
->  static int __init sm501_base_init(void)
->  {
-> +	platform_add_devices(mfd_devices, ARRAY_SIZE(mfd_devices));
->  	platform_driver_register(&sm501_plat_drv);
->  	return pci_register_driver(&sm501_pci_drv);
->  }
->=20
-> Best regards,
-> Anatolij
-
-It worked!! Thank you very much. The device is added and I can get some out=
-put throught the LCD attached. Although the output is not correct yet (look=
-s like static noise :-) ), but I think it could be because of an incorrect =
-clocks and registers initialization. I should check it up right now.
-
-I think this patch might be include within the kernel. Maybe like a configu=
-ration option just in case that SM501 is attached to the tqm. I don't know =
-how to do it but I'll give it a try and submit a patch to denx once I have =
-a proper output when I figure out how.
-
-Thank you very much,
-
-Pedro L.
-
-> --=20
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-> Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-
-_________________________________________________________________
-La vida de los famosos al desnudo en MSN Entretenimiento
-http://entretenimiento.es.msn.com/=
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
