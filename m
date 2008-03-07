@@ -1,17 +1,17 @@
-Return-Path: <ionut.nicu@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 59BCCDE031
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 04:28:19 +1100 (EST)
-From: Ionut Nicu <ionut.nicu@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: [PATCH] Make qe_get_firmware_info reentrant
-Date: Fri,  7 Mar 2008 19:27:59 +0200
-Message-Id: <1204910879-18584-1-git-send-email-ionut.nicu@freescale.com>
-Cc: Ionut Nicu <ionut.nicu@freescale.com>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <A984ECC2-9094-4045-B49E-95D924E6AAD2@kernel.crashing.org>
+References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
+	<20080307002730.GB24142@localhost.localdomain>
+	<A984ECC2-9094-4045-B49E-95D924E6AAD2@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3e5545630948f7bb2a2a6e103eb4ed10@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
+Date: Fri, 7 Mar 2008 19:24:10 +0100
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The function was returning NULL the second time it was
-called if the firmware was uploaded from the boot loader
-or the first time it was called if the firmware was
-uploaded from the kernel.
+>> I've seen several variants for board control devices (cpld, bcsr,
+>> fpga, etc.) I suggest we standardise on "board-control"
+>
+> I don't see any reason for this.  If I have a cpld or fpga why not
+> just call it that.  I don't see what calling it 'board-control' gets
+> us.  There may be non-board control functionality in an fpga than what
+> do we call it?
 
-Signed-off-by: Ionut Nicu <ionut.nicu@freescale.com>
-Acked-By: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/sysdev/qe_lib/qe.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Good point.  Also, it is important to keep in mind that the "name" is
+meant for human consumption only, so while it is important to use some
+consistent naming (to not confuse the user), there should be quite some
+leeway here.
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 6efbd5e..53d61a0 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -609,7 +609,10 @@ struct qe_firmware_info *qe_get_firmware_info(void)
- 	 * If we haven't checked yet, and a driver hasn't uploaded a firmware
- 	 * yet, then check the device tree for information.
- 	 */
--	if (initialized || qe_firmware_uploaded)
-+	if (qe_firmware_uploaded)
-+		return &qe_firmware_info;
-+
-+	if (initialized)
- 		return NULL;
- 
- 	initialized = 1;
--- 
-1.5.4.2
+
+Segher
