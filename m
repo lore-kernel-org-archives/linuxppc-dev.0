@@ -1,16 +1,16 @@
-Return-Path: <afleming@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 762EBDDF1B
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Mar 2008 10:59:18 +1100 (EST)
-From: Andy Fleming <afleming@freescale.com>
-To: paulus@samba.org, galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] Make 83xx perfmon support selectable
-Date: Fri,  7 Mar 2008 17:59:03 -0600
-Message-Id: <1204934343-5235-1-git-send-email-afleming@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 8 Mar 2008 11:37:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
+Message-ID: <20080308003742.GA1009@localhost.localdomain>
+References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
+	<20080307002730.GB24142@localhost.localdomain>
+	<A984ECC2-9094-4045-B49E-95D924E6AAD2@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A984ECC2-9094-4045-B49E-95D924E6AAD2@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,52 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Not all e300 cores support the performance monitors, and the ones
-that don't will be confused by the mf/mtpmr instructions.  This
-allows the support to be optional, so the 8349 can turn it off
-while the 8379 can turn it on.  Sadly, those aren't config options,
-so it will be left to the defconfigs and the users to make that
-determination.
+On Fri, Mar 07, 2008 at 08:35:39AM -0600, Kumar Gala wrote:
+> On Mar 6, 2008, at 6:27 PM, David Gibson wrote:
+[snip]
+> > I've seen several variants for board control devices (cpld, bcsr,
+> > fpga, etc.) I suggest we standardise on "board-control"
+> 
+> I don't see any reason for this.  If I have a cpld or fpga why not  
+> just call it that.  I don't see what calling it 'board-control' gets  
+> us.  There may be non-board control functionality in an fpga than what  
+> do we call it?
 
-Signed-off-by: Andy Fleming <afleming@freescale.com>
----
+Exactly!  The device tree is supposed to describe the hardware from a
+functional perspective, so the fact that something is implemented in
+an fpga or cpld is irrelevant, what matters is what's inside the fpga.
 
-Ugh.  The previous version was a little hasty.  Needed to base off
-PPC_83xx rather than 83xx
+If an fpga was used to implement an ethernet MAC, we'd call if
+"ethernet", if something else, something else.  If it was designed to
+be programmed at runtime by the OS, then we'd probably call it "fpga",
+but otherwise it should be named for what's inside it.
 
- arch/powerpc/platforms/Kconfig         |    1 -
- arch/powerpc/platforms/Kconfig.cputype |    7 ++++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 0afd225..a578b96 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -22,7 +22,6 @@ config PPC_83xx
- 	select FSL_SOC
- 	select MPC83xx
- 	select IPIC
--	select FSL_EMB_PERFMON
- 
- config PPC_86xx
- 	bool "Freescale 86xx"
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 73d81ce..0c3face 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -113,7 +113,12 @@ config FSL_BOOKE
- 	default y
- 
- config FSL_EMB_PERFMON
--	bool
-+	bool "Freescale Embedded Perfmon"
-+	depends on E500 || PPC_83xx
-+	help
-+	  This is the Performance Monitor support found on the e500 core
-+	  and some e300 cores (c3 and c4).  Select this only if your
-+	  core supports the Embedded Performance Monitor APU
- 
- config PTE_64BIT
- 	bool
 -- 
-1.5.4.23.gef5b9
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
