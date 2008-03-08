@@ -4,15 +4,17 @@ Received: from honk.sigxcpu.org (static-87-79-238-240.netcologne.de
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "honk.sigxcpu.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5CDB5DDFEB
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 06:20:54 +1100 (EST)
-Date: Sat, 8 Mar 2008 20:19:37 +0100
+	by ozlabs.org (Postfix) with ESMTP id 795AADE070
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 06:21:27 +1100 (EST)
+Date: Sat, 8 Mar 2008 20:20:17 +0100
 From: Guido =?iso-8859-1?Q?G=FCnther?= <agx@sigxcpu.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Always define pmu_sys_suspended
-Message-ID: <20080308191937.GB26962@bogon.ms20.nix>
+Subject: [PATCH] Export pmu_* variables unconditionally
+Message-ID: <20080308192017.GC26962@bogon.ms20.nix>
+References: <20080227141452.GA10345@bogon.ms20.nix>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080227141452.GA10345@bogon.ms20.nix>
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,20 +29,15 @@ Hi,
 This is a resend, since it's still unfixed in current Linus git and I
 didn't see any comments (please cc: me since I'm not subscribed):
 
-In current Linus git pmu_sys_suspended is only defined if
-CONFIG_SUSPEND is set, so compilation fails with:
+Otherwise without CONFIG_SUSPEND we have:
 
-drivers/built-in.o: In function `pmu_led_set':
-via-pmu-led.c:(.text+0x48622): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x48626): undefined reference to `pmu_sys_suspended'
-drivers/built-in.o: In function `pmu_req_done':
-via-pmu-led.c:(.text+0x48696): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x4869a): undefined reference to `pmu_sys_suspended'
-make: *** [.tmp_vmlinux1] Error 1
+ERROR: "pmu_batteries" [drivers/macintosh/apm_emu.ko] undefined!
+ERROR: "pmu_battery_count" [drivers/macintosh/apm_emu.ko] undefined!
+ERROR: "pmu_power_flags" [drivers/macintosh/apm_emu.ko] undefined!
 
-since via-pmu-led.c uses it unconditionally. Instead of adding more '#ifdef'
-clutter I moved it out of the #ifdef so it's always available. Need to fix
-compilation on PPC32 without CONFIG_SUSPEND.
+on PPC32. The variables aren't wrapped in '#if defined(CONFIG_SUSPEND)'
+so we probably shouldn't wrap the exports either. Fixes compilation on
+ppc32.
 
 Signed-off-by: Guido Guenther <agx@sigxcpu.org>
 ---
@@ -48,18 +45,17 @@ Signed-off-by: Guido Guenther <agx@sigxcpu.org>
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index ebec663..296edcb 100644
+index 296edcb..399fc7f 100644
 --- a/drivers/macintosh/via-pmu.c
 +++ b/drivers/macintosh/via-pmu.c
-@@ -2437,8 +2437,8 @@ void pmu_blink(int n)
- }
- #endif /* DEBUG_SLEEP */
- 
+@@ -2528,7 +2528,7 @@ EXPORT_SYMBOL(pmu_wait_complete);
+ EXPORT_SYMBOL(pmu_suspend);
+ EXPORT_SYMBOL(pmu_resume);
+ EXPORT_SYMBOL(pmu_unlock);
 -#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
- int pmu_sys_suspended;
-+#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
- 
- static int pmu_sys_suspend(struct sys_device *sysdev, pm_message_t state)
- {
++#if defined(CONFIG_PPC32)
+ EXPORT_SYMBOL(pmu_enable_irled);
+ EXPORT_SYMBOL(pmu_battery_count);
+ EXPORT_SYMBOL(pmu_batteries);
 -- 
 1.5.4.2
