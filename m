@@ -1,19 +1,17 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 26E42DDDF0
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 03:59:28 +1100 (EST)
-Date: Sun, 9 Mar 2008 19:59:14 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: hs@denx.de
-Subject: Re: [Patch] 8xx: MGSUVD support
-Message-ID: <20080309195914.69d51e68@kernel.crashing.org>
-In-Reply-To: <47D3B44D.8070909@denx.de>
-References: <47D3B44D.8070909@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D5EB2DDDEF
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 07:58:20 +1100 (EST)
+Date: Sun, 9 Mar 2008 21:58:24 +0100
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: linux-ppc <linuxppc-dev@ozlabs.org>
+Subject: Re: Long boot delay with agpgart
+Message-ID: <20080309205824.GA3373@localhost>
+References: <20080305163320.GA3961@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080305163320.GA3961@localhost>
+Cc: debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,83 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Heiko,
+On Wed, Mar 05 2008, at 17:33 +0100, Wolfgang Pfeiffer wrote:
 
-On Sun, 09 Mar 2008 10:56:29 +0100
-Heiko Schocher wrote:
-
-> Hello,
+> The boot process began being stuck the moment some agpgart init
+> routine started:
 > 
-> the following patch adds support for the MPC852 based mgsuvd board
-> from keymile.
-Looks good overall. Please add supported/working/not working etc SoC devices state along with the patch 
-description. Also a few really small comments below...
-
+> Excerpt from kern.log that moment:
 > 
-> Signed-off-by: Heiko Schocher <hs@denx.de>
-> ---
->  arch/powerpc/boot/dts/mgsuvd.dts      |  158 +++++++
->  arch/powerpc/configs/mgsuvd_defconfig |  827
-> +++++++++++++++++++++++++++++++++
-> arch/powerpc/platforms/8xx/Kconfig    |    7 +
-> arch/powerpc/platforms/8xx/Makefile   |    1 +
-> arch/powerpc/platforms/8xx/mgsuvd.c   |  138 ++++++ 5 files changed,
-> 1131 insertions(+), 0 deletions(-) create mode 100644
-> arch/powerpc/boot/dts/mgsuvd.dts create mode 100644
-> arch/powerpc/configs/mgsuvd_defconfig create mode 100644
-> arch/powerpc/platforms/8xx/mgsuvd.c
+> [    6.882357] usbcore: registered new device driver usb
+> [   36.732011] uninorth_agp: gave up waiting for init of module agpgart.
+> [   36.733009] uninorth_agp: Unknown symbol agp_bridge
+> [   66.734008] uninorth_agp: gave up waiting for init of module agpgart.
+> [   66.735011] uninorth_agp: Unknown symbol agp_find_bridge
+> [   96.736009] uninorth_agp: gave up waiting for init of module agpgart.
+> [   96.737010] uninorth_agp: Unknown symbol agp_device_command
 > 
-> diff --git a/arch/powerpc/boot/dts/mgsuvd.dts
-> b/arch/powerpc/boot/dts/mgsuvd.dts new file mode 100644
-> index 0000000..629cb6d
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/mgsuvd.dts
-> @@ -0,0 +1,158 @@
-> +/*
-> + * MGSUVD Device Tree Source
-> + *
-> + * Copyright 2008 DENX Software Engineering GmbH
-> + * Heiko Schocher <hs@denx.de>
-> + *
-> + * This program is free software; you can redistribute  it and/or
-> modify it
-> + * under  the terms of  the GNU General  Public License as published
-> by the
-> + * Free Software Foundation;  either version 2 of the  License, or
-> (at your
-> + * option) any later version.
-> + */
-> +
-> +
-> +/ {
-> +	model = "MGSUVD";
-> +	compatible = "keymile,mgsuvd";
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,866@0 {
-But it's mpc852, isn't it?
 
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			d-cache-line-size = <d#16>;
-> +			i-cache-line-size = <d#16>;
-> +			d-cache-size = <d#8192>;
-> +			i-cache-size = <d#8192>;
-> +			timebase-frequency = <0>;  /* Filled in by
-> u-boot */
-> +			bus-frequency = <0>;  /* Filled in by u-boot
-> */
-> +			clock-frequency = <0>; /* Filled in by
-> u-boot */
-> +			interrupts = <f 2>;	// decrementer
-> interrupt
-I would like all the comments to be consistent C style (because that's it for the most other dts'es).
+With Debian package modutils not being installed I still had in
+/etc/modutils/local and in /etc/modules.conf:
 
-[....]
+pre-install radeon /sbin/modprobe "-k" "agpgart"
+pre-install agpgart /sbin/modprobe "-k" "uninorth_agp"
+
+I don't know whether these lines can be confusing for the boot
+routines, or whether they're read at all by the system on boot
+time. Anyway: 
+
+I removed modules.conf, and commented out everything in
+/etc/modutils/local
+
+A first reboot after the change didn't break anything, as it seems
+... 
+
+Sorry if it was only noise ...
+
+Best Regards
+Wolfgang
+
 -- 
-Sincerely, Vitaly
+http://heelsbroke.blogspot.com/
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
