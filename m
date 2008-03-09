@@ -1,19 +1,14 @@
 Return-Path: <hs@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 06D77DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 20:46:51 +1100 (EST)
-Message-ID: <47D3B3AC.3030800@denx.de>
-Date: Sun, 09 Mar 2008 10:53:48 +0100
+	by ozlabs.org (Postfix) with ESMTP id 9D444DDE17
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 20:49:28 +1100 (EST)
+Message-ID: <47D3B44D.8070909@denx.de>
+Date: Sun, 09 Mar 2008 10:56:29 +0100
 From: Heiko Schocher <hs@denx.de>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] 82xx: MGCOGE support
-References: <mailman.813.1200609119.6908.linuxppc-dev@ozlabs.org>
-	<479EFE7F.4000104@denx.de> <47A04813.7070306@denx.de>
-	<47A38507.1040804@freescale.com>
-In-Reply-To: <47A38507.1040804@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>
+Subject: [Patch] 8xx: MGSUVD support
+Content-Type: text/plain; charset=ISO-8859-15
 Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,34 +21,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hello,
 
-following Patch adds support for the MPC8247 based mgcoge
-board from keymile.
-
-changes since v2 Patch:
-
-- added JFFS2 support
-- added support for the second Flash on the board.
+the following patch adds support for the MPC852 based mgsuvd board
+from keymile.
 
 Signed-off-by: Heiko Schocher <hs@denx.de>
 ---
- arch/powerpc/boot/dts/mgcoge.dts      |  165 +++++++
- arch/powerpc/configs/mgcoge_defconfig |  854 +++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/82xx/Kconfig   |    9 +
- arch/powerpc/platforms/82xx/Makefile  |    1 +
- arch/powerpc/platforms/82xx/mgcoge.c  |  130 +++++
- 5 files changed, 1159 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mgcoge.dts
- create mode 100644 arch/powerpc/configs/mgcoge_defconfig
- create mode 100644 arch/powerpc/platforms/82xx/mgcoge.c
+ arch/powerpc/boot/dts/mgsuvd.dts      |  158 +++++++
+ arch/powerpc/configs/mgsuvd_defconfig |  827 +++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/8xx/Kconfig    |    7 +
+ arch/powerpc/platforms/8xx/Makefile   |    1 +
+ arch/powerpc/platforms/8xx/mgsuvd.c   |  138 ++++++
+ 5 files changed, 1131 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mgsuvd.dts
+ create mode 100644 arch/powerpc/configs/mgsuvd_defconfig
+ create mode 100644 arch/powerpc/platforms/8xx/mgsuvd.c
 
-diff --git a/arch/powerpc/boot/dts/mgcoge.dts b/arch/powerpc/boot/dts/mgcoge.dts
+diff --git a/arch/powerpc/boot/dts/mgsuvd.dts b/arch/powerpc/boot/dts/mgsuvd.dts
 new file mode 100644
-index 0000000..fa6f933
+index 0000000..629cb6d
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/mgcoge.dts
-@@ -0,0 +1,165 @@
++++ b/arch/powerpc/boot/dts/mgsuvd.dts
+@@ -0,0 +1,158 @@
 +/*
-+ * Device Tree for the MGCOGE plattform from keymile
++ * MGSUVD Device Tree Source
 + *
 + * Copyright 2008 DENX Software Engineering GmbH
 + * Heiko Schocher <hs@denx.de>
@@ -64,186 +54,177 @@ index 0000000..fa6f933
 + * option) any later version.
 + */
 +
-+/dts-v1/;
++
 +/ {
-+	model = "MGCOGE";
-+	compatible = "keymile,mgcoge";
++	model = "MGSUVD";
++	compatible = "keymile,mgsuvd";
 +	#address-cells = <1>;
 +	#size-cells = <1>;
-+
-+	aliases {
-+		ethernet0 = &eth0;
-+		serial0 = &smc2;
-+	};
 +
 +	cpus {
 +		#address-cells = <1>;
 +		#size-cells = <0>;
 +
-+		PowerPC,8247@0 {
++		PowerPC,866@0 {
 +			device_type = "cpu";
 +			reg = <0>;
-+			d-cache-line-size = <32>;
-+			i-cache-line-size = <32>;
-+			d-cache-size = <16384>;
-+			i-cache-size = <16384>;
-+			timebase-frequency = <0>; /* Filled in by U-Boot */
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+			bus-frequency = <0>; /* Filled in by U-Boot */
++			d-cache-line-size = <d#16>;
++			i-cache-line-size = <d#16>;
++			d-cache-size = <d#8192>;
++			i-cache-size = <d#8192>;
++			timebase-frequency = <0>;  /* Filled in by u-boot */
++			bus-frequency = <0>;  /* Filled in by u-boot */
++			clock-frequency = <0>; /* Filled in by u-boot */
++			interrupts = <f 2>;	// decrementer interrupt
++			interrupt-parent = <&PIC>;
 +		};
 +	};
 +
-+	localbus@f0010100 {
-+		compatible = "fsl,mpc8247-localbus",
-+		             "fsl,pq2-localbus",
-+		             "simple-bus";
++	memory {
++		device_type = "memory";
++		reg = <00000000 4000000>;  /* Filled in by u-boot */
++	};
++
++	localbus@fff00100 {
++		compatible = "fsl,pq1-localbus";
 +		#address-cells = <2>;
 +		#size-cells = <1>;
-+		reg = <0xf0010100 0x40>;
++		reg = <fff00100 40>;
 +
-+		ranges = <0 0 0xfe000000 0x00400000
-+			  1 0 0x50000000 0x20000000
-+			>; /* Filled in by U-Boot */
++		ranges = <
++			0 0 f0000000 01000000
++		>;  /* Filled in by u-boot */
 +
 +		flash@0,0 {
 +			compatible = "cfi-flash";
-+			reg = <0 0x0 0x400000>;
++			reg = <0 0 1000000>;
 +			#address-cells = <1>;
 +			#size-cells = <1>;
 +			bank-width = <1>;
 +			device-width = <1>;
 +			partition@0 {
 +				label = "u-boot";
-+				reg = <0 0x40000>;
++				reg = <0 80000>;
 +			};
 +			partition@40000 {
 +				label = "env";
-+				reg = <0x40000 0x20000>;
++				reg = <80000 20000>;
 +			};
-+			partition@60000 {
++			partition@80000 {
 +				label = "user";
-+				reg = <0x60000 0x3a0000>;
-+			};
-+		};
-+
-+		flash@1,0 {
-+			compatible = "cfi-flash";
-+			reg = <1 0x0 0x2000000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			bank-width = <2>;
-+			device-width = <2>;
-+			partition@0 {
-+				label = "cfg";
-+				reg = <0 0x2000000>;
++				reg = <a0000 f60000>;
 +			};
 +		};
 +	};
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0>; /* Filled in by U-Boot */
-+	};
-+
-+	soc@f0000000 {
++	soc@fff00000 {
++		compatible = "fsl,mpc885", "fsl,pq1-soc";
 +		#address-cells = <1>;
 +		#size-cells = <1>;
-+		compatible = "fsl,mpc8247-immr", "fsl,pq2-soc", "simple-bus";
-+		ranges = <0x00000000 0xf0000000 0x00053000>;
-+
-+		// Temporary until code stops depending on it.
 +		device_type = "soc";
++		ranges = <0 fff00000 00004000>;
 +
-+		cpm@119c0 {
++		PIC: interrupt-controller@0 {
++			interrupt-controller;
++			#interrupt-cells = <2>;
++			reg = <0 24>;
++			compatible = "fsl,pq1-pic";
++		};
++
++		cpm@9c0 {
 +			#address-cells = <1>;
 +			#size-cells = <1>;
-+			#interrupt-cells = <2>;
-+			compatible = "fsl,mpc8247-cpm", "fsl,cpm2",
-+					"simple-bus";
-+			reg = <0x119c0 0x30>;
++			compatible = "fsl,cpm1";
++			command-proc = <9c0>;
++			interrupts = <0>;	// cpm error interrupt
++			interrupt-parent = <&CPM_PIC>;
++			reg = <9c0 10>;
 +			ranges;
 +
-+			muram {
++			muram@2000 {
 +				#address-cells = <1>;
 +				#size-cells = <1>;
-+				ranges = <0 0 0x10000>;
++				ranges = <0 2000 2000>;
 +
 +				data@0 {
 +					compatible = "fsl,cpm-muram-data";
-+					reg = <0x80 0x1f80 0x9800 0x800>;
++					reg = <800 1800>;
 +				};
 +			};
 +
-+			brg@119f0 {
-+				compatible = "fsl,mpc8247-brg",
-+				             "fsl,cpm2-brg",
++			brg@9f0 {
++				compatible = "fsl,mpc885-brg",
++				             "fsl,cpm1-brg",
 +				             "fsl,cpm-brg";
-+				reg = <0x119f0 0x10 0x115f0 0x10>;
++				reg = <9f0 10>;
++				clock-frequency = <3ef1480>;
 +			};
 +
-+			/* Monitor port/SMC2 */
-+			smc2: serial@11a90 {
++			CPM_PIC: interrupt-controller@930 {
++				interrupt-controller;
++				#interrupt-cells = <1>;
++				interrupts = <5 2 0 2 20 2>;
++				interrupt-parent = <&PIC>;
++				reg = <930 20>;
++				compatible = "fsl,cpm1-pic";
++			};
++
++			// MON-1
++			serial@a80 {
 +				device_type = "serial";
-+				compatible = "fsl,mpc8247-smc-uart",
-+				             "fsl,cpm2-smc-uart";
-+				reg = <0x11a90 0x20 0x40 0x40>;
-+				interrupts = <5 8>;
-+				interrupt-parent = <&PIC>;
-+				fsl,cpm-brg = <2>;
-+				fsl,cpm-command = <0x21200000>;
-+				current-speed = <115200>;
++				compatible = "cpm_uart",
++				             "fsl,cpm1-smc-uart";
++				model = "SMC";
++				device-id = <1>;
++				reg = <a80 10 3fc0 40>;
++				interrupts = <4>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-brg = <1>;
++				fsl,cpm-command = <0090>;
++				current-speed = <0>; /* Filled in by u-boot */
 +			};
 +
-+			eth0: ethernet@11a60 {
++			ethernet@a40 {
 +				device_type = "network";
-+				compatible = "fsl,mpc8247-scc-enet",
-+				             "fsl,cpm2-scc-enet";
-+				reg = <0x11a60 0x20 0x8300 0x100 0x11390 1>;
-+				local-mac-address = [ 00 00 00 00 00 00 ]; /* Filled in by U-Boot */
-+				interrupts = <43 8>;
-+				interrupt-parent = <&PIC>;
-+				linux,network-index = <0>;
-+				fsl,cpm-command = <0xce00000>;
-+				fixed-link = <0 0 10 0 0>;
++				compatible = "fs_enet",
++				             "fsl,cpm1-scc-enet";
++				model = "SCC";
++				device-id = <3>;
++				reg = <a40 18 3e00 b0>;
++				mac-address = [ 00 00 00 00 00 00 ];  /* Filled in by u-boot */
++				interrupts = <1c>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-command = <80>;
++				fixed-link = <0 0 a 0 0>;
 +			};
-+
-+		};
-+
-+		PIC: interrupt-controller@10c00 {
-+			#interrupt-cells = <2>;
-+			interrupt-controller;
-+			reg = <0x10c00 0x80>;
-+			compatible = "fsl,mpc8247-pic", "fsl,pq2-pic";
 +		};
 +	};
 +};
-diff --git a/arch/powerpc/configs/mgcoge_defconfig b/arch/powerpc/configs/mgcoge_defconfig
+diff --git a/arch/powerpc/configs/mgsuvd_defconfig b/arch/powerpc/configs/mgsuvd_defconfig
 new file mode 100644
-index 0000000..d6145f1
+index 0000000..b586b97
 --- /dev/null
-+++ b/arch/powerpc/configs/mgcoge_defconfig
-@@ -0,0 +1,854 @@
++++ b/arch/powerpc/configs/mgsuvd_defconfig
+@@ -0,0 +1,827 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.25-rc3
-+# Sun Mar  9 09:21:21 2008
++# Sun Mar  9 09:36:20 2008
 +#
 +# CONFIG_PPC64 is not set
 +
 +#
 +# Processor support
 +#
-+CONFIG_6xx=y
++# CONFIG_6xx is not set
 +# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
++CONFIG_PPC_8xx=y
 +# CONFIG_40x is not set
 +# CONFIG_44x is not set
 +# CONFIG_E200 is not set
-+CONFIG_PPC_FPU=y
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
++CONFIG_8xx=y
 +# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
++CONFIG_NOT_COHERENT_CACHE=y
 +CONFIG_PPC32=y
 +CONFIG_WORD_SIZE=32
 +CONFIG_PPC_MERGE=y
@@ -271,7 +252,6 @@ index 0000000..d6145f1
 +# CONFIG_PPC_UDBG_16550 is not set
 +# CONFIG_GENERIC_TBSYNC is not set
 +CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
 +# CONFIG_DEFAULT_UIMAGE is not set
 +# CONFIG_PPC_DCR_NATIVE is not set
 +# CONFIG_PPC_DCR_MMIO is not set
@@ -280,49 +260,50 @@ index 0000000..d6145f1
 +#
 +# General setup
 +#
-+# CONFIG_EXPERIMENTAL is not set
++CONFIG_EXPERIMENTAL=y
 +CONFIG_BROKEN_ON_SMP=y
 +CONFIG_INIT_ENV_ARG_LIMIT=32
 +CONFIG_LOCALVERSION=""
 +CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
++# CONFIG_SWAP is not set
 +CONFIG_SYSVIPC=y
 +CONFIG_SYSVIPC_SYSCTL=y
++# CONFIG_POSIX_MQUEUE is not set
 +# CONFIG_BSD_PROCESS_ACCT is not set
 +# CONFIG_TASKSTATS is not set
 +# CONFIG_AUDIT is not set
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=14
++# CONFIG_IKCONFIG is not set
++CONFIG_LOG_BUF_SHIFT=17
 +# CONFIG_CGROUPS is not set
 +CONFIG_GROUP_SCHED=y
 +CONFIG_FAIR_GROUP_SCHED=y
++# CONFIG_RT_GROUP_SCHED is not set
 +CONFIG_USER_SCHED=y
 +# CONFIG_CGROUP_SCHED is not set
 +CONFIG_SYSFS_DEPRECATED=y
 +# CONFIG_RELAY is not set
 +# CONFIG_NAMESPACES is not set
 +# CONFIG_BLK_DEV_INITRD is not set
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
 +CONFIG_SYSCTL=y
 +CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
++# CONFIG_SYSCTL_SYSCALL is not set
 +CONFIG_KALLSYMS=y
-+CONFIG_KALLSYMS_ALL=y
 +# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
++# CONFIG_HOTPLUG is not set
 +CONFIG_PRINTK=y
-+CONFIG_BUG=y
++# CONFIG_BUG is not set
 +CONFIG_ELF_CORE=y
 +CONFIG_COMPAT_BRK=y
-+CONFIG_BASE_FULL=y
++# CONFIG_BASE_FULL is not set
 +CONFIG_FUTEX=y
 +CONFIG_ANON_INODES=y
-+CONFIG_EPOLL=y
++# CONFIG_EPOLL is not set
 +CONFIG_SIGNALFD=y
 +CONFIG_TIMERFD=y
 +CONFIG_EVENTFD=y
 +CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
++# CONFIG_VM_EVENT_COUNTERS is not set
 +CONFIG_SLAB=y
 +# CONFIG_SLUB is not set
 +# CONFIG_SLOB is not set
@@ -334,46 +315,60 @@ index 0000000..d6145f1
 +CONFIG_SLABINFO=y
 +CONFIG_RT_MUTEXES=y
 +# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
++CONFIG_BASE_SMALL=1
 +# CONFIG_MODULES is not set
 +CONFIG_BLOCK=y
 +# CONFIG_LBD is not set
 +# CONFIG_BLK_DEV_IO_TRACE is not set
 +# CONFIG_LSF is not set
++# CONFIG_BLK_DEV_BSG is not set
 +
 +#
 +# IO Schedulers
 +#
 +CONFIG_IOSCHED_NOOP=y
-+# CONFIG_IOSCHED_AS is not set
++CONFIG_IOSCHED_AS=y
 +CONFIG_IOSCHED_DEADLINE=y
-+# CONFIG_IOSCHED_CFQ is not set
-+# CONFIG_DEFAULT_AS is not set
-+CONFIG_DEFAULT_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
 +# CONFIG_DEFAULT_CFQ is not set
 +# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="deadline"
++CONFIG_DEFAULT_IOSCHED="anticipatory"
 +CONFIG_CLASSIC_RCU=y
 +# CONFIG_PREEMPT_RCU is not set
 +
 +#
 +# Platform support
 +#
-+# CONFIG_PPC_MULTIPLATFORM is not set
-+CONFIG_PPC_82xx=y
-+# CONFIG_PPC_83xx is not set
-+# CONFIG_PPC_86xx is not set
 +# CONFIG_PPC_MPC512x is not set
 +# CONFIG_PPC_MPC5121 is not set
 +# CONFIG_PPC_CELL is not set
 +# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_MPC8272_ADS is not set
-+# CONFIG_PQ2FADS is not set
-+# CONFIG_EP8248E is not set
-+CONFIG_MGCOGE=y
++CONFIG_CPM1=y
++# CONFIG_MPC8XXFADS is not set
++# CONFIG_MPC86XADS is not set
++# CONFIG_MPC885ADS is not set
++# CONFIG_PPC_EP88XC is not set
++# CONFIG_PPC_ADDER875 is not set
++CONFIG_PPC_MGSUVD=y
++
++#
++# MPC8xx CPM Options
++#
++
++#
++# Generic MPC8xx Options
++#
++CONFIG_8xx_COPYBACK=y
++CONFIG_8xx_CPU6=y
++CONFIG_8xx_CPU15=y
++# CONFIG_NO_UCODE_PATCH is not set
++# CONFIG_USB_SOF_UCODE_PATCH is not set
++# CONFIG_I2C_SPI_UCODE_PATCH is not set
++CONFIG_I2C_SPI_SMC1_UCODE_PATCH=y
++CONFIG_UCODE_PATCH=y
 +# CONFIG_PQ2ADS is not set
-+CONFIG_8260=y
-+CONFIG_8272=y
 +# CONFIG_IPIC is not set
 +# CONFIG_MPIC is not set
 +# CONFIG_MPIC_WEIRD is not set
@@ -385,7 +380,6 @@ index 0000000..d6145f1
 +# CONFIG_PPC_INDIRECT_IO is not set
 +# CONFIG_GENERIC_IOMAP is not set
 +# CONFIG_CPU_FREQ is not set
-+CONFIG_CPM2=y
 +CONFIG_PPC_CPM_NEW_BINDING=y
 +# CONFIG_FSL_ULI1575 is not set
 +CONFIG_CPM=y
@@ -399,23 +393,28 @@ index 0000000..d6145f1
 +# CONFIG_HIGH_RES_TIMERS is not set
 +CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
 +# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
++# CONFIG_HZ_250 is not set
 +# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
++CONFIG_HZ_1000=y
++CONFIG_HZ=1000
 +# CONFIG_SCHED_HRTICK is not set
 +CONFIG_PREEMPT_NONE=y
 +# CONFIG_PREEMPT_VOLUNTARY is not set
 +# CONFIG_PREEMPT is not set
 +CONFIG_RCU_TRACE=y
 +CONFIG_BINFMT_ELF=y
-+CONFIG_BINFMT_MISC=y
++# CONFIG_BINFMT_MISC is not set
++CONFIG_MATH_EMULATION=y
 +# CONFIG_IOMMU_HELPER is not set
 +CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
 +CONFIG_ARCH_HAS_WALK_MEMORY=y
 +CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
 +CONFIG_ARCH_FLATMEM_ENABLE=y
 +CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
 +CONFIG_FLATMEM=y
 +CONFIG_FLAT_NODE_MEM_MAP=y
 +# CONFIG_SPARSEMEM_STATIC is not set
@@ -425,7 +424,7 @@ index 0000000..d6145f1
 +CONFIG_ZONE_DMA_FLAG=1
 +CONFIG_BOUNCE=y
 +CONFIG_VIRT_TO_BUS=y
-+CONFIG_PROC_DEVICETREE=y
++# CONFIG_PROC_DEVICETREE is not set
 +# CONFIG_CMDLINE_BOOL is not set
 +# CONFIG_PM is not set
 +# CONFIG_SECCOMP is not set
@@ -439,8 +438,8 @@ index 0000000..d6145f1
 +# CONFIG_PCI is not set
 +# CONFIG_PCI_DOMAINS is not set
 +# CONFIG_PCI_SYSCALL is not set
++# CONFIG_PCI_QSPAN is not set
 +# CONFIG_ARCH_SUPPORTS_MSI is not set
-+# CONFIG_PCCARD is not set
 +
 +#
 +# Advanced setup
@@ -453,7 +452,9 @@ index 0000000..d6145f1
 +CONFIG_HIGHMEM_START=0xfe000000
 +CONFIG_LOWMEM_SIZE=0x30000000
 +CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0xc0000000
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_CONSISTENT_START=0xfd000000
++CONFIG_CONSISTENT_SIZE=0x00200000
 +CONFIG_BOOT_LOAD=0x00400000
 +
 +#
@@ -469,18 +470,22 @@ index 0000000..d6145f1
 +CONFIG_UNIX=y
 +CONFIG_XFRM=y
 +# CONFIG_XFRM_USER is not set
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_XFRM_STATISTICS is not set
 +# CONFIG_NET_KEY is not set
 +CONFIG_INET=y
 +CONFIG_IP_MULTICAST=y
 +# CONFIG_IP_ADVANCED_ROUTER is not set
 +CONFIG_IP_FIB_HASH=y
 +CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
++# CONFIG_IP_PNP_DHCP is not set
++# CONFIG_IP_PNP_BOOTP is not set
 +# CONFIG_IP_PNP_RARP is not set
 +# CONFIG_NET_IPIP is not set
 +# CONFIG_NET_IPGRE is not set
 +# CONFIG_IP_MROUTE is not set
++# CONFIG_ARPD is not set
 +CONFIG_SYN_COOKIES=y
 +# CONFIG_INET_AH is not set
 +# CONFIG_INET_ESP is not set
@@ -496,29 +501,15 @@ index 0000000..d6145f1
 +# CONFIG_TCP_CONG_ADVANCED is not set
 +CONFIG_TCP_CONG_CUBIC=y
 +CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_IP_VS is not set
++# CONFIG_TCP_MD5SIG is not set
 +# CONFIG_IPV6 is not set
 +# CONFIG_INET6_XFRM_TUNNEL is not set
 +# CONFIG_INET6_TUNNEL is not set
 +# CONFIG_NETWORK_SECMARK is not set
-+CONFIG_NETFILTER=y
-+# CONFIG_NETFILTER_DEBUG is not set
-+CONFIG_NETFILTER_ADVANCED=y
-+
-+#
-+# Core Netfilter Configuration
-+#
-+# CONFIG_NETFILTER_NETLINK_QUEUE is not set
-+# CONFIG_NETFILTER_NETLINK_LOG is not set
-+# CONFIG_NF_CONNTRACK is not set
-+# CONFIG_NETFILTER_XTABLES is not set
-+
-+#
-+# IP: Netfilter Configuration
-+#
-+# CONFIG_IP_NF_QUEUE is not set
-+# CONFIG_IP_NF_IPTABLES is not set
-+# CONFIG_IP_NF_ARPTABLES is not set
++# CONFIG_NETFILTER is not set
++# CONFIG_IP_DCCP is not set
++# CONFIG_IP_SCTP is not set
++# CONFIG_TIPC is not set
 +# CONFIG_ATM is not set
 +# CONFIG_BRIDGE is not set
 +# CONFIG_VLAN_8021Q is not set
@@ -526,6 +517,10 @@ index 0000000..d6145f1
 +# CONFIG_LLC2 is not set
 +# CONFIG_IPX is not set
 +# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
 +# CONFIG_NET_SCHED is not set
 +
 +#
@@ -536,6 +531,7 @@ index 0000000..d6145f1
 +# CONFIG_CAN is not set
 +# CONFIG_IRDA is not set
 +# CONFIG_BT is not set
++# CONFIG_AF_RXRPC is not set
 +
 +#
 +# Wireless
@@ -545,6 +541,7 @@ index 0000000..d6145f1
 +# CONFIG_MAC80211 is not set
 +# CONFIG_IEEE80211 is not set
 +# CONFIG_RFKILL is not set
++# CONFIG_NET_9P is not set
 +
 +#
 +# Device Drivers
@@ -553,17 +550,13 @@ index 0000000..d6145f1
 +#
 +# Generic Driver Options
 +#
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
 +CONFIG_STANDALONE=y
 +CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
 +# CONFIG_SYS_HYPERVISOR is not set
 +# CONFIG_CONNECTOR is not set
 +CONFIG_MTD=y
 +# CONFIG_MTD_DEBUG is not set
-+CONFIG_MTD_CONCAT=y
++# CONFIG_MTD_CONCAT is not set
 +CONFIG_MTD_PARTITIONS=y
 +# CONFIG_MTD_REDBOOT_PARTS is not set
 +CONFIG_MTD_CMDLINE_PARTS=y
@@ -574,8 +567,7 @@ index 0000000..d6145f1
 +#
 +CONFIG_MTD_CHAR=y
 +CONFIG_MTD_BLKDEVS=y
-+# CONFIG_MTD_BLOCK is not set
-+# CONFIG_MTD_BLOCK_RO is not set
++CONFIG_MTD_BLOCK=y
 +# CONFIG_FTL is not set
 +# CONFIG_NFTL is not set
 +# CONFIG_INFTL is not set
@@ -607,7 +599,7 @@ index 0000000..d6145f1
 +# CONFIG_MTD_OTP is not set
 +CONFIG_MTD_CFI_INTELEXT=y
 +CONFIG_MTD_CFI_AMDSTD=y
-+# CONFIG_MTD_CFI_STAA is not set
++CONFIG_MTD_CFI_STAA=y
 +CONFIG_MTD_CFI_UTIL=y
 +# CONFIG_MTD_RAM is not set
 +# CONFIG_MTD_ROM is not set
@@ -619,6 +611,7 @@ index 0000000..d6145f1
 +# CONFIG_MTD_COMPLEX_MAPPINGS is not set
 +# CONFIG_MTD_PHYSMAP is not set
 +CONFIG_MTD_PHYSMAP_OF=y
++# CONFIG_MTD_CFI_FLAGADM is not set
 +# CONFIG_MTD_PLATRAM is not set
 +
 +#
@@ -671,6 +664,7 @@ index 0000000..d6145f1
 +# CONFIG_NETDEVICES_MULTIQUEUE is not set
 +# CONFIG_DUMMY is not set
 +# CONFIG_BONDING is not set
++# CONFIG_MACVLAN is not set
 +# CONFIG_EQUALIZER is not set
 +# CONFIG_TUN is not set
 +# CONFIG_VETH is not set
@@ -700,8 +694,8 @@ index 0000000..d6145f1
 +# CONFIG_B44 is not set
 +CONFIG_FS_ENET=y
 +CONFIG_FS_ENET_HAS_SCC=y
-+# CONFIG_FS_ENET_HAS_FCC is not set
-+# CONFIG_FS_ENET_MDIO_FCC is not set
++# CONFIG_FS_ENET_HAS_FEC is not set
++# CONFIG_FS_ENET_MDIO_FEC is not set
 +# CONFIG_NETDEV_1000 is not set
 +# CONFIG_NETDEV_10000 is not set
 +
@@ -713,6 +707,7 @@ index 0000000..d6145f1
 +# CONFIG_WAN is not set
 +# CONFIG_PPP is not set
 +# CONFIG_SLIP is not set
++# CONFIG_NETCONSOLE is not set
 +# CONFIG_NETPOLL is not set
 +# CONFIG_NET_POLL_CONTROLLER is not set
 +# CONFIG_ISDN is not set
@@ -753,16 +748,17 @@ index 0000000..d6145f1
 +# CONFIG_SERIAL_CPM_SCC3 is not set
 +# CONFIG_SERIAL_CPM_SCC4 is not set
 +CONFIG_SERIAL_CPM_SMC1=y
-+CONFIG_SERIAL_CPM_SMC2=y
++# CONFIG_SERIAL_CPM_SMC2 is not set
 +CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
++# CONFIG_LEGACY_PTYS is not set
 +# CONFIG_IPMI_HANDLER is not set
 +CONFIG_HW_RANDOM=y
 +# CONFIG_NVRAM is not set
-+# CONFIG_GEN_RTC is not set
++CONFIG_GEN_RTC=y
++# CONFIG_GEN_RTC_X is not set
 +# CONFIG_R3964 is not set
 +# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
 +# CONFIG_I2C is not set
 +
 +#
@@ -815,6 +811,7 @@ index 0000000..d6145f1
 +# CONFIG_MMC is not set
 +# CONFIG_MEMSTICK is not set
 +# CONFIG_NEW_LEDS is not set
++# CONFIG_EDAC is not set
 +# CONFIG_RTC_CLASS is not set
 +
 +#
@@ -826,23 +823,30 @@ index 0000000..d6145f1
 +# File systems
 +#
 +CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
++CONFIG_EXT2_FS_XATTR=y
++# CONFIG_EXT2_FS_POSIX_ACL is not set
++# CONFIG_EXT2_FS_SECURITY is not set
 +# CONFIG_EXT2_FS_XIP is not set
 +CONFIG_EXT3_FS=y
-+# CONFIG_EXT3_FS_XATTR is not set
++CONFIG_EXT3_FS_XATTR=y
++# CONFIG_EXT3_FS_POSIX_ACL is not set
++# CONFIG_EXT3_FS_SECURITY is not set
++# CONFIG_EXT4DEV_FS is not set
 +CONFIG_JBD=y
 +# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
 +# CONFIG_REISERFS_FS is not set
 +# CONFIG_JFS_FS is not set
 +# CONFIG_FS_POSIX_ACL is not set
 +# CONFIG_XFS_FS is not set
++# CONFIG_GFS2_FS is not set
 +# CONFIG_OCFS2_FS is not set
 +CONFIG_DNOTIFY=y
 +CONFIG_INOTIFY=y
 +CONFIG_INOTIFY_USER=y
 +# CONFIG_QUOTA is not set
 +# CONFIG_AUTOFS_FS is not set
-+CONFIG_AUTOFS4_FS=y
++# CONFIG_AUTOFS4_FS is not set
 +# CONFIG_FUSE_FS is not set
 +
 +#
@@ -862,7 +866,7 @@ index 0000000..d6145f1
 +# Pseudo filesystems
 +#
 +CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
++# CONFIG_PROC_KCORE is not set
 +CONFIG_PROC_SYSCTL=y
 +CONFIG_SYSFS=y
 +CONFIG_TMPFS=y
@@ -873,11 +877,19 @@ index 0000000..d6145f1
 +#
 +# Miscellaneous filesystems
 +#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
 +# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
 +CONFIG_JFFS2_FS=y
 +CONFIG_JFFS2_FS_DEBUG=0
 +CONFIG_JFFS2_FS_WRITEBUFFER=y
 +# CONFIG_JFFS2_FS_WBUF_VERIFY is not set
++# CONFIG_JFFS2_SUMMARY is not set
++# CONFIG_JFFS2_FS_XATTR is not set
 +# CONFIG_JFFS2_COMPRESSION_OPTIONS is not set
 +CONFIG_JFFS2_ZLIB=y
 +# CONFIG_JFFS2_LZO is not set
@@ -895,6 +907,7 @@ index 0000000..d6145f1
 +CONFIG_NFS_FS=y
 +CONFIG_NFS_V3=y
 +# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
 +# CONFIG_NFS_DIRECTIO is not set
 +# CONFIG_NFSD is not set
 +CONFIG_ROOT_NFS=y
@@ -902,10 +915,14 @@ index 0000000..d6145f1
 +CONFIG_LOCKD_V4=y
 +CONFIG_NFS_COMMON=y
 +CONFIG_SUNRPC=y
++# CONFIG_SUNRPC_BIND34 is not set
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
 +# CONFIG_SMB_FS is not set
 +# CONFIG_CIFS is not set
 +# CONFIG_NCP_FS is not set
 +# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
 +
 +#
 +# Partition Types
@@ -928,52 +945,14 @@ index 0000000..d6145f1
 +# CONFIG_KARMA_PARTITION is not set
 +# CONFIG_EFI_PARTITION is not set
 +# CONFIG_SYSV68_PARTITION is not set
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+CONFIG_NLS_CODEPAGE_437=y
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+CONFIG_NLS_ASCII=y
-+CONFIG_NLS_ISO8859_1=y
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+CONFIG_NLS_UTF8=y
++# CONFIG_NLS is not set
++# CONFIG_DLM is not set
 +
 +#
 +# Library routines
 +#
 +CONFIG_BITREVERSE=y
-+# CONFIG_CRC_CCITT is not set
++CONFIG_CRC_CCITT=y
 +# CONFIG_CRC16 is not set
 +# CONFIG_CRC_ITU_T is not set
 +CONFIG_CRC32=y
@@ -993,40 +972,13 @@ index 0000000..d6145f1
 +# CONFIG_PRINTK_TIME is not set
 +CONFIG_ENABLE_WARN_DEPRECATED=y
 +CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_MAGIC_SYSRQ=y
++# CONFIG_MAGIC_SYSRQ is not set
 +# CONFIG_UNUSED_SYMBOLS is not set
 +CONFIG_DEBUG_FS=y
 +# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+# CONFIG_DETECT_SOFTLOCKUP is not set
-+# CONFIG_SCHED_DEBUG is not set
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+# CONFIG_DEBUG_MUTEXES is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+CONFIG_DEBUG_BUGVERBOSE=y
-+CONFIG_DEBUG_INFO=y
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
-+# CONFIG_DEBUG_SG is not set
-+# CONFIG_BOOT_PRINTK_DELAY is not set
-+# CONFIG_BACKTRACE_SELF_TEST is not set
-+# CONFIG_FAULT_INJECTION is not set
++# CONFIG_DEBUG_KERNEL is not set
 +# CONFIG_SAMPLES is not set
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+# CONFIG_DEBUG_PAGEALLOC is not set
-+# CONFIG_DEBUGGER is not set
-+# CONFIG_KGDB_CONSOLE is not set
 +# CONFIG_VIRQ_DEBUG is not set
-+CONFIG_BDI_SWITCH=y
 +# CONFIG_PPC_EARLY_DEBUG is not set
 +
 +#
@@ -1034,28 +986,31 @@ index 0000000..d6145f1
 +#
 +# CONFIG_KEYS is not set
 +# CONFIG_SECURITY is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
 +CONFIG_CRYPTO=y
-+CONFIG_CRYPTO_ALGAPI=y
-+CONFIG_CRYPTO_BLKCIPHER=y
 +# CONFIG_CRYPTO_SEQIV is not set
-+CONFIG_CRYPTO_MANAGER=y
++# CONFIG_CRYPTO_MANAGER is not set
 +# CONFIG_CRYPTO_HMAC is not set
++# CONFIG_CRYPTO_XCBC is not set
 +# CONFIG_CRYPTO_NULL is not set
 +# CONFIG_CRYPTO_MD4 is not set
-+CONFIG_CRYPTO_MD5=y
++# CONFIG_CRYPTO_MD5 is not set
 +# CONFIG_CRYPTO_SHA1 is not set
 +# CONFIG_CRYPTO_SHA256 is not set
 +# CONFIG_CRYPTO_SHA512 is not set
 +# CONFIG_CRYPTO_WP512 is not set
 +# CONFIG_CRYPTO_TGR192 is not set
-+CONFIG_CRYPTO_ECB=y
-+CONFIG_CRYPTO_CBC=y
-+CONFIG_CRYPTO_PCBC=y
++# CONFIG_CRYPTO_GF128MUL is not set
++# CONFIG_CRYPTO_ECB is not set
++# CONFIG_CRYPTO_CBC is not set
++# CONFIG_CRYPTO_PCBC is not set
++# CONFIG_CRYPTO_LRW is not set
++# CONFIG_CRYPTO_XTS is not set
 +# CONFIG_CRYPTO_CTR is not set
 +# CONFIG_CRYPTO_GCM is not set
 +# CONFIG_CRYPTO_CCM is not set
 +# CONFIG_CRYPTO_CRYPTD is not set
-+CONFIG_CRYPTO_DES=y
++# CONFIG_CRYPTO_DES is not set
 +# CONFIG_CRYPTO_FCRYPT is not set
 +# CONFIG_CRYPTO_BLOWFISH is not set
 +# CONFIG_CRYPTO_TWOFISH is not set
@@ -1068,183 +1023,189 @@ index 0000000..d6145f1
 +# CONFIG_CRYPTO_KHAZAD is not set
 +# CONFIG_CRYPTO_ANUBIS is not set
 +# CONFIG_CRYPTO_SEED is not set
++# CONFIG_CRYPTO_SALSA20 is not set
 +# CONFIG_CRYPTO_DEFLATE is not set
 +# CONFIG_CRYPTO_MICHAEL_MIC is not set
 +# CONFIG_CRYPTO_CRC32C is not set
 +# CONFIG_CRYPTO_CAMELLIA is not set
 +# CONFIG_CRYPTO_AUTHENC is not set
 +# CONFIG_CRYPTO_LZO is not set
-+# CONFIG_CRYPTO_HW is not set
++CONFIG_CRYPTO_HW=y
 +# CONFIG_PPC_CLOCK is not set
 +CONFIG_PPC_LIB_RHEAP=y
-diff --git a/arch/powerpc/platforms/82xx/Kconfig b/arch/powerpc/platforms/82xx/Kconfig
-index 4fad6c7..f2ea477 100644
---- a/arch/powerpc/platforms/82xx/Kconfig
-+++ b/arch/powerpc/platforms/82xx/Kconfig
-@@ -39,6 +39,15 @@ config EP8248E
- 	  This board is also resold by Freescale as the QUICCStart
- 	  MPC8248 Evaluation System and/or the CWH-PPC-8248N-VE.
+diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+index 7fd224c..4d14b8a 100644
+--- a/arch/powerpc/platforms/8xx/Kconfig
++++ b/arch/powerpc/platforms/8xx/Kconfig
+@@ -53,6 +53,13 @@ config PPC_ADDER875
+ 	  This enables support for the Analogue & Micro Adder 875
+ 	  board.
 
-+config MGCOGE
-+	bool "Keymile MGCOGE"
-+	select 8272
-+	select 8260
-+	select FSL_SOC
++config PPC_MGSUVD
++	bool "MGSUVD"
++	select CPM1
 +	select PPC_CPM_NEW_BINDING
 +	help
-+	  This enables support for the Keymile MGCOGE board.
++	  This enables support for the Keymile MGSUVD board.
 +
  endchoice
 
- config PQ2ADS
-diff --git a/arch/powerpc/platforms/82xx/Makefile b/arch/powerpc/platforms/82xx/Makefile
-index 6cd5cd5..d982793 100644
---- a/arch/powerpc/platforms/82xx/Makefile
-+++ b/arch/powerpc/platforms/82xx/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_CPM2) += pq2.o
- obj-$(CONFIG_PQ2_ADS_PCI_PIC) += pq2ads-pci-pic.o
- obj-$(CONFIG_PQ2FADS) += pq2fads.o
- obj-$(CONFIG_EP8248E) += ep8248e.o
-+obj-$(CONFIG_MGCOGE) += mgcoge.o
-diff --git a/arch/powerpc/platforms/82xx/mgcoge.c b/arch/powerpc/platforms/82xx/mgcoge.c
+ menu "Freescale Ethernet driver platform-specific options"
+diff --git a/arch/powerpc/platforms/8xx/Makefile b/arch/powerpc/platforms/8xx/Makefile
+index 7b71d9c..bdbfd74 100644
+--- a/arch/powerpc/platforms/8xx/Makefile
++++ b/arch/powerpc/platforms/8xx/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_MPC885ADS)   += mpc885ads_setup.o
+ obj-$(CONFIG_MPC86XADS)   += mpc86xads_setup.o
+ obj-$(CONFIG_PPC_EP88XC)  += ep88xc.o
+ obj-$(CONFIG_PPC_ADDER875) += adder875.o
++obj-$(CONFIG_PPC_MGSUVD) += mgsuvd.o
+diff --git a/arch/powerpc/platforms/8xx/mgsuvd.c b/arch/powerpc/platforms/8xx/mgsuvd.c
 new file mode 100644
-index 0000000..c21e807
+index 0000000..888e39b
 --- /dev/null
-+++ b/arch/powerpc/platforms/82xx/mgcoge.c
-@@ -0,0 +1,130 @@
-+/*
-+ * Keymile mgcoge support
-+ * Copyright 2008 DENX Software Engineering GmbH
-+ * Author: Heiko Schocher <hs@denx.de>
++++ b/arch/powerpc/platforms/8xx/mgsuvd.c
+@@ -0,0 +1,138 @@
++/* arch/powerpc/platforms/8xx/mgsuvd.c
 + *
-+ * based on code from:
-+ * Copyright 2007 Freescale Semiconductor, Inc.
-+ * Author: Scott Wood <scottwood@freescale.com>
++ * Platform setup for the Keymile mgsuvd board
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * Heiko Schocher <hs@denx.de>
++ *
++ * Copyright 2007 DENX Software Engineering GmbH
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
 + */
 +
 +#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/fsl_devices.h>
-+#include <linux/of_platform.h>
++#include <linux/module.h>
++#include <linux/param.h>
++#include <linux/string.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++#include <linux/delay.h>
++#include <linux/root_dev.h>
 +
++#include <asm/delay.h>
 +#include <asm/io.h>
-+#include <asm/cpm2.h>
-+#include <asm/udbg.h>
 +#include <asm/machdep.h>
++#include <asm/page.h>
++#include <asm/processor.h>
++#include <asm/system.h>
 +#include <asm/time.h>
-+#include <asm/mpc8260.h>
++#include <asm/mpc8xx.h>
++#include <asm/8xx_immap.h>
++#include <asm/cpm1.h>
++#include <asm/fs_pd.h>
 +#include <asm/prom.h>
++#include <asm/of_platform.h>
 +
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/cpm2_pic.h>
++#include "mpc8xx.h"
 +
-+#include "pq2.h"
-+
-+static void __init mgcoge_pic_init(void)
-+{
-+	struct device_node *np = of_find_compatible_node(NULL, NULL, "fsl,pq2-pic");
-+	if (!np) {
-+		printk(KERN_ERR "PIC init: can not find cpm-pic node\n");
-+		return;
-+	}
-+
-+	cpm2_pic_init(np);
-+	of_node_put(np);
-+}
-+
++extern void cpm_reset(void);
 +struct cpm_pin {
 +	int port, pin, flags;
 +};
 +
-+static __initdata struct cpm_pin mgcoge_pins[] = {
++static struct cpm_pin mgsuvd_pins[] = {
++	/* SMC1 */
++	{CPM_PORTB, 24, CPM_PIN_INPUT}, /* RX */
++	{CPM_PORTB, 25, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TX */
 +
-+	/* SMC2 */
-+	{1, 8, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{1, 9, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+
-+	/* SCC4 */
-+	{3, 25, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{3, 24, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{3,  9, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{3,  8, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{4, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+	{4, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
-+	{4, 22, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
++	/* SCC3 */
++	{0, 10, CPM_PIN_INPUT},
++	{0, 11, CPM_PIN_INPUT},
++	{0, 3, CPM_PIN_INPUT},
++	{0, 2, CPM_PIN_INPUT},
++	{2, 13, CPM_PIN_INPUT},
 +};
 +
 +static void __init init_ioports(void)
 +{
 +	int i;
 +
-+	for (i = 0; i < ARRAY_SIZE(mgcoge_pins); i++) {
-+		const struct cpm_pin *pin = &mgcoge_pins[i];
-+		cpm2_set_pin(pin->port, pin->pin, pin->flags);
++	for (i = 0; i < ARRAY_SIZE(mgsuvd_pins); i++) {
++		struct cpm_pin *pin = &mgsuvd_pins[i];
++		cpm1_set_pin(pin->port, pin->pin, pin->flags);
 +	}
 +
-+	cpm2_smc_clk_setup(CPM_CLK_SMC2, CPM_BRG8);
-+	cpm2_clk_setup(CPM_CLK_SCC4, CPM_CLK7, CPM_CLK_RX);
-+	cpm2_clk_setup(CPM_CLK_SCC4, CPM_CLK8, CPM_CLK_TX);
++	setbits16(&mpc8xx_immr->im_ioport.iop_pcso, 0x300);
++	cpm1_clk_setup(CPM_CLK_SCC3, CPM_CLK5, CPM_CLK_RX);
++	cpm1_clk_setup(CPM_CLK_SCC3, CPM_CLK6, CPM_CLK_TX);
++	setbits32(&mpc8xx_immr->im_cpm.cp_pbpar, 0x300);
++	setbits32(&mpc8xx_immr->im_cpm.cp_pbdir, 0x300);
++
++	cpm1_clk_setup(CPM_CLK_SMC1, CPM_BRG1, CPM_CLK_RTX);
 +}
 +
-+static void __init mgcoge_setup_arch(void)
++static void __init mgsuvd_setup_arch(void)
 +{
-+	if (ppc_md.progress)
-+		ppc_md.progress("mgcoge_setup_arch()", 0);
++	struct device_node *cpu;
 +
-+	cpm2_reset();
++	cpu = of_find_node_by_type(NULL, "cpu");
++	if (cpu != 0) {
++		const unsigned int *fp;
 +
-+	/* When this is set, snooping CPM DMA from RAM causes
-+	 * machine checks.  See erratum SIU18.
-+	 */
-+	clrbits32(&cpm2_immr->im_siu_conf.siu_82xx.sc_bcr, MPC82XX_BCR_PLDP);
++		fp = of_get_property(cpu, "clock-frequency", NULL);
++		if (fp != 0)
++			loops_per_jiffy = *fp / HZ;
++		else
++			loops_per_jiffy = 50000000 / HZ;
++		of_node_put(cpu);
++	}
++
++	cpm_reset();
 +
 +	init_ioports();
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("mgcoge_setup_arch(), finish", 0);
++	ROOT_DEV = Root_NFS;
 +}
 +
-+static  __initdata struct of_device_id of_bus_ids[] = {
-+	{ .compatible = "simple-bus", },
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .name = "soc", },
++	{ .name = "cpm", },
++	{ .name = "localbus", },
 +	{},
 +};
 +
 +static int __init declare_of_platform_devices(void)
 +{
++	if (!machine_is(mgsuvd))
++		return 0;
++
 +	of_platform_bus_probe(NULL, of_bus_ids, NULL);
 +
 +	return 0;
 +}
-+machine_device_initcall(mgcoge, declare_of_platform_devices);
++device_initcall(declare_of_platform_devices);
 +
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init mgcoge_probe(void)
++static int __init mgsuvd_probe(void)
 +{
-+	unsigned long root = of_get_flat_dt_root();
-+	return of_flat_dt_is_compatible(root, "keymile,mgcoge");
++	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
++					  "model", NULL);
++	if (model == NULL)
++		return 0;
++	if (strcmp(model, "MGSUVD"))
++		return 0;
++
++	return 1;
 +}
 +
-+define_machine(mgcoge)
-+{
-+	.name = "Keymile MGCOGE",
-+	.probe = mgcoge_probe,
-+	.setup_arch = mgcoge_setup_arch,
-+	.init_IRQ = mgcoge_pic_init,
-+	.get_irq = cpm2_get_irq,
-+	.calibrate_decr = generic_calibrate_decr,
-+	.restart = pq2_restart,
-+	.progress = udbg_progress,
++define_machine(mgsuvd) {
++	.name			= "MGSUVD",
++	.probe			= mgsuvd_probe,
++	.setup_arch		= mgsuvd_setup_arch,
++	.init_IRQ		= mpc8xx_pics_init,
++	.get_irq		= mpc8xx_get_irq,
++	.restart		= mpc8xx_restart,
++	.calibrate_decr		= mpc8xx_calibrate_decr,
++	.set_rtc_time		= mpc8xx_set_rtc_time,
++	.get_rtc_time		= mpc8xx_get_rtc_time,
 +};
 -- 
 1.5.4.2
-
 
 
 bye,
