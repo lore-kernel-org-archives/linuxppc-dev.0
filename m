@@ -1,22 +1,22 @@
-Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79A9DDDDEC
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 19:22:35 +1100 (EST)
-Message-ID: <47D4EFC1.1050403@tiscali.nl>
-Date: Mon, 10 Mar 2008 09:22:25 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+	by ozlabs.org (Postfix) with ESMTPS id 0F7A8DDE10
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 20:13:53 +1100 (EST)
+In-Reply-To: <47D4EFC1.1050403@tiscali.nl>
 References: <47D47B11.1000303@tiscali.nl>	
 	<20080310084633.5246ecfe@paperstreet.colino.net>
-	<1205136413.8621.3.camel@pasglop>
-In-Reply-To: <1205136413.8621.3.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Colin Leroy <colin@colino.net>, linuxppc-dev@ozlabs.org,
-	lkml <linux-kernel@vger.kernel.org>
+	<1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+Date: Mon, 10 Mar 2008 10:13:34 +0100
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Colin Leroy <colin@colino.net>, lkml <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2008-03-10 at 08:46 +0100, Colin Leroy wrote:
->> On Mon, 10 Mar 2008 01:04:33 +0100, Roel Kluin wrote:
->>
->>> logical-bitwise & confusion
->> Looks good to me, but I'm not really maintaining that anymore :-)
->> I'm not sure who does, Cc:ing Benjamin as he'll probably know.
-> 
-> Nobody is U suspect...
-> 
-> Send it to the list linuxppc-dev@ozlabs.org, it should be picked up
-> anyway.
-(linuxppc-dev CC'd)
----
-logical-bitwise & confusion
+> diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
+> index 9587869..8ea7da2 100644
+> --- a/drivers/hwmon/adt7473.c
+> +++ b/drivers/hwmon/adt7473.c
+> @@ -570,7 +570,7 @@ static ssize_t set_max_duty_at_crit(struct device 
+> *dev,
+>  	struct i2c_client *client = to_i2c_client(dev);
+>  	struct adt7473_data *data = i2c_get_clientdata(client);
+>  	int temp = simple_strtol(buf, NULL, 10);
+> -	temp = temp && 0xFF;
+> +	temp &= 0xFF;
+>
+>  	mutex_lock(&data->lock);
+>  	data->max_duty_at_overheat = temp;
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
-index 9587869..8ea7da2 100644
---- a/drivers/hwmon/adt7473.c
-+++ b/drivers/hwmon/adt7473.c
-@@ -570,7 +570,7 @@ static ssize_t set_max_duty_at_crit(struct device *dev,
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct adt7473_data *data = i2c_get_clientdata(client);
- 	int temp = simple_strtol(buf, NULL, 10);
--	temp = temp && 0xFF;
-+	temp &= 0xFF;
- 
- 	mutex_lock(&data->lock);
- 	data->max_duty_at_overheat = temp;
+The & 0xff here is bogus anyway; temp is only ever used as an u8,
+so just declare it as that, or do proper overflow/underflow checking
+on it.  The patch will need testing on hardware too, since it changes
+behaviour (it should be a bugfix, but who knows).
+
+
+Segher
