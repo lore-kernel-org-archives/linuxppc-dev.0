@@ -1,17 +1,36 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <djwong@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 31BD7DDF5D
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 05:12:17 +1100 (EST)
-Date: Mon, 10 Mar 2008 13:08:52 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for-2.6.25' [updated]
-Message-ID: <Pine.LNX.4.64.0803101308380.6193@blarg.am.freescale.net>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2B67EDDDDB
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 05:13:46 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2AIDLUI024416
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 14:13:21 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2AIDK3d191544
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:13:20 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2AIDKrc010172
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:13:20 -0600
+Date: Mon, 10 Mar 2008 11:13:19 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+Message-ID: <20080310181319.GA7500@tree.beaverton.ibm.com>
+References: <47D47B11.1000303@tiscali.nl>
+	<20080310084633.5246ecfe@paperstreet.colino.net>
+	<1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl>
+	<64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
+	<47D5068F.8050709@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47D5068F.8050709@tiscali.nl>
+Cc: Colin Leroy <colin@colino.net>, lkml <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +40,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for-2.6.25' branch of
+On Mon, Mar 10, 2008 at 10:59:43AM +0100, Roel Kluin wrote:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.25
+> > The & 0xff here is bogus anyway; temp is only ever used as an u8,
+> > so just declare it as that, or do proper overflow/underflow checking
+> > on it.  The patch will need testing on hardware too, since it changes
+> > behaviour (it should be a bugfix, but who knows).
+> 
+> Maybe someone can test this?
 
-to receive the following updates:
+I did.  No regressions observed and it fixes that bug as well.  Sorry I
+didn't catch it earlier... :/
 
- arch/powerpc/boot/dts/mpc8377_mds.dts           |   70 ++
- arch/powerpc/boot/dts/mpc8378_mds.dts           |   70 ++
- arch/powerpc/boot/dts/mpc8379_mds.dts           |   70 ++
- arch/powerpc/boot/dts/sbc8548.dts               |   16
- arch/powerpc/boot/wrapper                       |    6
- arch/powerpc/configs/adder875-redboot_defconfig |  798 -----------------------
- arch/powerpc/configs/adder875-uboot_defconfig   |  798 -----------------------
- arch/powerpc/configs/adder875_defconfig         |  813 ++++++++++++++++++++++++
- arch/powerpc/kernel/head_8xx.S                  |   30
- arch/powerpc/platforms/83xx/mpc837x_mds.c       |    8
- arch/powerpc/platforms/Kconfig                  |    1
- arch/powerpc/platforms/Kconfig.cputype          |    7
- arch/powerpc/sysdev/qe_lib/qe.c                 |    7
- arch/ppc/kernel/head_8xx.S                      |   30
- include/asm-powerpc/pgtable-ppc32.h             |    8
- include/asm-ppc/pgtable.h                       |    8
- 16 files changed, 1105 insertions(+), 1635 deletions(-)
+Acked-by: Darrick J. Wong <djwong@us.ibm.com>
 
-Andy Fleming (1):
-      [POWERPC] 83xx: Make 83xx perfmon support selectable
-
-Ionut Nicu (1):
-      [POWERPC] QE: Make qe_get_firmware_info reentrant
-
-Jeremy McNicoll (1):
-      [POWERPC] 85xx: sbc8548 - Fix incorrect PCI-X and PCI interrupt map
-
-Li Yang (2):
-      [POWERPC] 83xx: Fix wrong USB phy type in mpc837xmds dts
-      [POWERPC] 83xx: Add local bus device nodes to MPC837xMDS device trees.
-
-Scott Wood (1):
-      [POWERPC] 8xx: Fix wrapper platform for adder875, and combine defconfigs.
-
-Timur Tabi (1):
-      [POWERPC] QE: Fix QE firmware uploading limit
-
-Vitaly Bordug (1):
-      [POWERPC] 8xx: fix swap
-
-Yuri Tikhonov (1):
-      [PPC] 8xx: swap bug-fix
+--D
