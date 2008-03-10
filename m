@@ -1,18 +1,23 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from blu139-omc3-s27.blu139.hotmail.com
-	(blu139-omc3-s27.blu139.hotmail.com [65.55.175.227])
-	by ozlabs.org (Postfix) with ESMTP id 1A739DDE26
+Return-Path: <akhilesh@innomedia.soft.net>
+Received: from gateway.innomedia.soft.net (mail.innomedia.soft.net
+	[164.164.79.130])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D60B3DDFB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Mar 2008 19:38:35 +1100 (EST)
-Message-ID: <BLU106-W2741C72B55848FCACEA0AACA0E0@phx.gbl>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
+	Tue, 11 Mar 2008 01:08:39 +1100 (EST)
+Received: from akhileshld ([192.168.28.7]) (authenticated bits=0)
+	by gateway.innomedia.soft.net (8.13.1/8.13.1) with ESMTP id
+	m2ADDgLH007301
+	for <linuxppc-embedded@ozlabs.org>; Mon, 10 Mar 2008 18:43:43 +0530
+Message-ID: <002001c882b0$7e6bd430$071ca8c0@akhileshld>
+From: "Akhilesh Soni" <akhilesh@innomedia.soft.net>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: TQM5200 2.6-denx SM501 voyager enabling problem.
-Date: Mon, 10 Mar 2008 09:38:34 +0100
-In-Reply-To: <20080308012738.0C3D9247AF@gemini.denx.de>
-References: Your message of  <20080308012738.0C3D9247AF@gemini.denx.de>
-Content-Type: text/plain; charset="Windows-1252"
+Subject: Query about Kernel Load address
+Date: Mon, 10 Mar 2008 18:43:11 +0530
 MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_001D_01C882DE.974B3C60"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,51 +28,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Wolfgang wrote:
+------=_NextPart_000_001D_01C882DE.974B3C60
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
->>=20
->> I thought about this possible solution (adding resource description to=20
->> device tree), but as far as I understood, the device tree was intended t=
-o=20
->> describe the microcontroller peripherals and tqm5200, based on the mpc52=
-00=20
->> is sold out also without sm501, so that's why I discarded this option.
->
->=20
-> The device tree describes the hardware, and the TQM5200 (with  SM501)
-> and  the  TQM5200S  (without  the SM501) are two different boards and
-> need different device trees.
->=20
+Hi,
 
-So I got it wrong... Good to know. Once I had something working I can give =
-it=20
-a try and make a different device tree for TQM5200 and TQM5200S and try
-to initialize the SM501 using of_platform api.
+I''ve ported u-boot-1.1.1 sucessfully on my IBM STBx25xx  rewood6 =
+platform (ppc405 core). Earlier in the ppcboot I used to load the =
+zImage.treeboot directly via the bootloader and it used to relocate and =
+run.=20
 
->=20
-> And, Pedro - could you please restrict your line length to some 70+
-> characters or so? Thanks.
+But with u-boot which image I should use and which address I should load =
+the image. My board has 64 MB of RAM and out of which 32 MB is mapped at =
+0x0000000 and another 32MB is mapped at 0xA0000000. The U-boot code is =
+located at 0x1fe2000 in RAM.
 
-Ups, sorry. I'll do it since now.
+Also is there any 2.6 kernel source supporting redwood6 IBM STBx25xx =
+platform.
 
-> Best regards,
->=20
-> Wolfgang Denk
->
+Thanx in advance.
 
-Best regards,
+Regards,
+Akhilesh
+------=_NextPart_000_001D_01C882DE.974B3C60
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Pedro L. Dominguez.
-=20
-> --=20
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> "The greatest warriors are the ones who fight for peace."
-> - Holly Near
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.6000.16608" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I''ve ported =
+u-boot-1.1.1&nbsp;sucessfully on my=20
+IBM STBx25xx&nbsp; rewood6 platform (ppc405 core). Earlier in the =
+ppcboot I used=20
+to load the zImage.treeboot directly via the bootloader and it used to =
+relocate=20
+and run. </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>But with&nbsp;u-boot which image I =
+should use and=20
+which address I should load the image. My board has 64 MB of RAM and out =
+of=20
+which 32 MB is mapped at 0x0000000 and another 32MB is mapped at =
+0xA0000000. The=20
+U-boot code is located at 0x1fe2000 in RAM.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Also is there any 2.6 kernel source =
+supporting=20
+redwood6 IBM STBx25xx platform.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Thanx in advance.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Regards,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Akhilesh</FONT></DIV></BODY></HTML>
 
-_________________________________________________________________
-Tecnolog=EDa, moda, motor, viajes,=85suscr=EDbete a nuestros boletines para=
- estar siempre a la =FAltima
-Guapos y guapas, clips musicales y estrenos de cine. =
+------=_NextPart_000_001D_01C882DE.974B3C60--
