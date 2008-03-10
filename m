@@ -2,24 +2,23 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B2288DDF6B
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 08:56:33 +1100 (EST)
-In-Reply-To: <47D5A585.8050107@tiscali.nl>
-References: <47D47B11.1000303@tiscali.nl>	
-	<20080310084633.5246ecfe@paperstreet.colino.net>
-	<1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl>
-	<64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
-	<47D5A585.8050107@tiscali.nl>
+	by ozlabs.org (Postfix) with ESMTPS id 32262DE0B6
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 09:07:09 +1100 (EST)
+In-Reply-To: <20080310191957.0B42626F991@magilla.localdomain>
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200711290113.29024.arnd@arndb.de>
+	<1205110432.10078.5.camel@gargoyle>
+	<200803101501.34439.jens@de.ibm.com>
+	<20080310191957.0B42626F991@magilla.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1dd996a5ad3a455c91886cacd3243128@kernel.crashing.org>
+Message-Id: <54cef72c35bbf5dd2d8eec5eec52f99e@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
-Date: Mon, 10 Mar 2008 22:56:00 +0100
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Colin Leroy <colin@colino.net>, akpm@linux-foundation.org,
-	"Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: PPC upstream kernel ignored DABR bug
+Date: Mon, 10 Mar 2008 23:06:40 +0100
+To: Roland McGrath <roland@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Jan Kratochvil <jan.kratochvil@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> It includes suggested changes by Segher Boessenkool and I think this
-> version was tested by Darrick J. Wong
+>> On the Blade DABRX had to be set additional to DABR. PS3 and Celleb
+>> already did this. Uli Weigand found this back in November. I submitted
+>> a patch for this which went into 2.6.25-rc4.
+>> Can you please try again with rc4 ?
+>
+> This is not the problem.  This came up before and everyone seems have
+> forgotten.  This bug has been reproduced on G5's, which do not have 
+> DABRX
+> as I understand it.
 
-> -	u8 reg;
-> +	u8 reg, temp;
->  	struct i2c_client *client = to_i2c_client(dev);
->  	struct adt7473_data *data = i2c_get_clientdata(client);
-> -	int temp = simple_strtol(buf, NULL, 10);
-> -	temp = temp && 0xFF;
-> +
-> +	temp = simple_strtol(buf, NULL, 10) & 0xFF;
-
-It still does this superfluous "& 0xff", which hides the lack of
-range checking.
+970 (all versions) _does_ have a DABRX register.  Dunno if it has
+the same register definition (I cannot find DABRX in the Cell docs).
 
 
 Segher
