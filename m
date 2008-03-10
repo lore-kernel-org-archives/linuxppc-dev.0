@@ -1,19 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3AD71DDF4D
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 01:40:08 +1100 (EST)
-Message-Id: <EDCBAD9F-B469-4448-B5E0-4B8806519C63@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Andy Fleming <afleming@freescale.com>
-In-Reply-To: <1204934343-5235-1-git-send-email-afleming@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v2] Make 83xx perfmon support selectable
-Date: Mon, 10 Mar 2008 09:39:27 -0500
-References: <1204934343-5235-1-git-send-email-afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id ACDEADDF01
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:02:46 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id 061CCF49195
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 16:02:45 +0100 (CET)
+Subject: [PATCH v3] using mii-bitbang on different processor ports - update
+	the booting-without-of.txt-file
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200803101205.16158.laurentp@cse-semaphore.com>
+References: <20070920220121.GF28784@loki.buserror.net>
+	<20080307163747.GF10545@ld0162-tx32.am.freescale.net>
+	<1205135421.3837.1.camel@p60365-ste>
+	<200803101205.16158.laurentp@cse-semaphore.com>
+Date: Mon, 10 Mar 2008 16:02:44 +0100
+Message-Id: <1205161364.4627.12.camel@p60365-ste>
+Mime-Version: 1.0
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The patch updates the booting-without-of.txt-file.
+There is a description for the case
+if mdio data and clock pins are on different processor ports.
+It extends the "[PATCH v3] using mii-bitbang on different processor ports".
 
-On Mar 7, 2008, at 5:59 PM, Andy Fleming wrote:
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Sergej Stepanov <Sergej.Stepanov@ids.de>
+--
 
-> Not all e300 cores support the performance monitors, and the ones
-> that don't will be confused by the mf/mtpmr instructions.  This
-> allows the support to be optional, so the 8349 can turn it off
-> while the 8379 can turn it on.  Sadly, those aren't config options,
-> so it will be left to the defconfigs and the users to make that
-> determination.
->
-> Signed-off-by: Andy Fleming <afleming@freescale.com>
-> ---
->
-> Ugh.  The previous version was a little hasty.  Needed to base off
-> PPC_83xx rather than 83xx
->
-> arch/powerpc/platforms/Kconfig         |    1 -
-> arch/powerpc/platforms/Kconfig.cputype |    7 ++++++-
-> 2 files changed, 6 insertions(+), 2 deletions(-)
-
-applied.
-
-- k
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 7b4e8a7..3285f58 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2003,10 +2003,14 @@ platforms are moved over to use the flattened-device-tree model.
+ 
+    Currently defined compatibles:
+    fsl,pq1-fec-mdio (reg is same as first resource of FEC device)
+-   fsl,cpm2-mdio-bitbang (reg is port C registers)
++   fsl,cpm2-mdio-bitbang
+ 
+    Properties for fsl,cpm2-mdio-bitbang:
+-   fsl,mdio-pin : pin of port C controlling mdio data
+-   fsl,mdc-pin : pin of port C controlling mdio clock
++   The first reg resource is the I/O port register block on which MDC
++   resides.  The second reg resource is the I/O port register block on
++   which MDIO resides.  If there is only one reg resource, it is used for
++   both MDIO and MDC.
++   fsl,mdio-pin : pin of chosen port for controlling mdio data
++   fsl,mdc-pin : pin of chosen port for controlling mdio clock
+ 
+    Example:
