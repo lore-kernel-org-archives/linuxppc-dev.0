@@ -1,18 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id A434ADE104
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 04:00:31 +1100 (EST)
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 31BD7DDF5D
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 05:12:17 +1100 (EST)
+Date: Mon, 10 Mar 2008 13:08:52 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for-2.6.25' [updated]
+Message-ID: <Pine.LNX.4.64.0803101308380.6193@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: OF compatible MTD platform RAM driver ?
-Date: Mon, 10 Mar 2008 12:00:22 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0418505E@ismail.innsys.innovsys.com>
-In-Reply-To: <200803101606.39184.laurentp@cse-semaphore.com>
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Laurent Pinchart" <laurentp@cse-semaphore.com>, <linuxppc-dev@ozlabs.org>
-Cc: ben@simtec.co.uk, linux-mtd@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,84 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-linuxppc-dev-bounces+runet=3Dinnovsys.com@ozlabs.org wrote:
-> Hi everybody,
->=20
-> as part of a ARCH=3Dppc to ARCH=3Dpowerpc migration process, I'm
-> looking for an
-> OpenFirmware compatible way to handle a RAM-based MTD device.
->=20
-> On the platform_device based ppc architecture, the
-> drivers/mtd/maps/plat-ram.c
-> driver handled "mtd-ram" platform devices. There is no such
-> driver for the
-> OF-based powerpc architecture.
->=20
-> As a temporary workaround I hacked the physmap_of driver to
-> handle "direct-mapped" OF devices oh type "ram" by adding a
-> corresponding entry in the of_flash_match[] array. This seems to work
-> fine.=20
->=20
-> What would be the preferred way to handle OF-compatible RAM-based MTD
-> devices ? The 3 ways I can think of are
->=20
-> 1. porting the plat-ram driver to OF (the driver isn't used
-> in the kernel tree
-> but I suspect it is used by out-of-tree boards)
->=20
-> 2. creating a new plat-ram-of driver, much like the
-> physmap_of driver comes
-> from the physmap driver
->=20
-> 3. extending the physmap_of driver to handle RAM devices (in
-> which case
-> references to "flash" in the function names should probably
-> be replaced
-> by "mtd")
->=20
-> I live option 3 better so far.
->=20
-> Has anyone already worked on this ? Is there any defined
-> device tree mapping
-> for MTD RAM devices ?
->=20
-> Best regards,
+Please pull from 'for-2.6.25' branch of
 
-We ran ito the same issue.=20
-We did option 3, as it was efinetly the easiest,
-here is the sram entry in our dts:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.25
 
-        sram@9,0 {
-            device_type =3D "rom";
-            compatible =3D "direct-mapped";
-            probe-type =3D "RAM";
-            reg =3D <9 0 20000>;
-            bank-width =3D <2>;
-            device-width =3D <2>;
-            #address-cells =3D <1>;
-            #size-cells =3D <1>;
-            partition@0 {
-                label =3D "SRAM";
-                reg =3D <0 20000>;
-            };
+to receive the following updates:
 
-here is the change to physmap_of.c:
+ arch/powerpc/boot/dts/mpc8377_mds.dts           |   70 ++
+ arch/powerpc/boot/dts/mpc8378_mds.dts           |   70 ++
+ arch/powerpc/boot/dts/mpc8379_mds.dts           |   70 ++
+ arch/powerpc/boot/dts/sbc8548.dts               |   16
+ arch/powerpc/boot/wrapper                       |    6
+ arch/powerpc/configs/adder875-redboot_defconfig |  798 -----------------------
+ arch/powerpc/configs/adder875-uboot_defconfig   |  798 -----------------------
+ arch/powerpc/configs/adder875_defconfig         |  813 ++++++++++++++++++++++++
+ arch/powerpc/kernel/head_8xx.S                  |   30
+ arch/powerpc/platforms/83xx/mpc837x_mds.c       |    8
+ arch/powerpc/platforms/Kconfig                  |    1
+ arch/powerpc/platforms/Kconfig.cputype          |    7
+ arch/powerpc/sysdev/qe_lib/qe.c                 |    7
+ arch/ppc/kernel/head_8xx.S                      |   30
+ include/asm-powerpc/pgtable-ppc32.h             |    8
+ include/asm-ppc/pgtable.h                       |    8
+ 16 files changed, 1105 insertions(+), 1635 deletions(-)
 
-diff --git a/drivers/mtd/maps/physmap_of.c
-b/drivers/mtd/maps/physmap_of.c
-old mode 100644
-new mode 100755
-index aeed9ea..687ef54
---- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -201,6 +201,8 @@ static struct mtd_info * __devinit
-obsolete_probe(struct of_device *dev,
- 		return do_map_probe("cfi_probe", map);
- 	} else if (strcmp(of_probe, "JEDEC") =3D=3D 0) {
- 		return do_map_probe("jedec_probe", map);
-+	} else if (strcmp(of_probe, "RAM") =3D=3D 0) {
-+		return do_map_probe("map_ram", map);
- 	} else {
- 		if (strcmp(of_probe, "ROM") !=3D 0)
- 			dev_warn(&dev->dev, "obsolete_probe: don't know
-probe "
+Andy Fleming (1):
+      [POWERPC] 83xx: Make 83xx perfmon support selectable
+
+Ionut Nicu (1):
+      [POWERPC] QE: Make qe_get_firmware_info reentrant
+
+Jeremy McNicoll (1):
+      [POWERPC] 85xx: sbc8548 - Fix incorrect PCI-X and PCI interrupt map
+
+Li Yang (2):
+      [POWERPC] 83xx: Fix wrong USB phy type in mpc837xmds dts
+      [POWERPC] 83xx: Add local bus device nodes to MPC837xMDS device trees.
+
+Scott Wood (1):
+      [POWERPC] 8xx: Fix wrapper platform for adder875, and combine defconfigs.
+
+Timur Tabi (1):
+      [POWERPC] QE: Fix QE firmware uploading limit
+
+Vitaly Bordug (1):
+      [POWERPC] 8xx: fix swap
+
+Yuri Tikhonov (1):
+      [PPC] 8xx: swap bug-fix
