@@ -1,29 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <luisgpm@linux.vnet.ibm.com>
+Received: from igw3.br.ibm.com (igw3.br.ibm.com [32.104.18.26])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 321BFDDDF9
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 09:37:01 +1100 (EST)
-Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Philippe De Muyter <phdm@macqel.be>
-In-Reply-To: <20080309223109.GA3989@netgate.macqel>
-References: <20080303212622.GB20382@netgate.macqel>
-	<47CC73CE.4080801@freescale.com>
-	<20080304080828.GA18829@netgate.macqel>
-	<1204618939.21545.52.camel@pasglop>
-	<20080304091059.GD18829@netgate.macqel>
-	<1204693264.21545.165.camel@pasglop> <47CECB21.3060704@freescale.com>
-	<1204760811.21545.231.camel@pasglop>
-	<20080307001025.GA27321@netgate.macqel>
-	<1204849197.21545.272.camel@pasglop>
-	<20080309223109.GA3989@netgate.macqel>
+	(Client CN "igw3.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 54062DDDFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 11:54:08 +1100 (EST)
+Received: from mailhub1.br.ibm.com (unknown [9.18.232.109])
+	by igw3.br.ibm.com (Postfix) with ESMTP id C8A2E390076
+	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 21:42:52 -0300 (BRST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
+	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2A0rwnH4038860
+	for <linuxppc-dev@ozlabs.org>; Sun, 9 Mar 2008 21:53:58 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2A0rwtk019188
+	for <linuxppc-dev@ozlabs.org>; Sun, 9 Mar 2008 21:53:58 -0300
+Subject: Re: PPC upstream kernel ignored DABR bug
+From: Luis Machado <luisgpm@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200711290113.29024.arnd@arndb.de>
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200711272335.36981.arnd@arndb.de> <474DF2D8.9010407@am.sony.com>
+	<200711290113.29024.arnd@arndb.de>
 Content-Type: text/plain
-Date: Mon, 10 Mar 2008 09:36:26 +1100
-Message-Id: <1205102186.8621.1.camel@pasglop>
+Date: Sun, 09 Mar 2008 21:53:51 -0300
+Message-Id: <1205110432.10078.5.camel@gargoyle>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Roland McGrath <roland@redhat.com>,
+	Jan Kratochvil <jan.kratochvil@redhat.com>
+Reply-To: luisgpm@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,23 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Yes, I know. I tried it on the PS3 first and couldn't reproduce
+> the bug he saw on the blade.
 
-On Sun, 2008-03-09 at 23:31 +0100, Philippe De Muyter wrote:
-> Hi Ben,
-> 
-> I now have a working linux on my mpc8540 based board, with support for
-> the compactflash disk and the i2c rtc.
-> 
-> The network tough, does not work yet. altough the the integrated ethernet
-> controller (FEC) seems to be recognized.  Could it be a problem with the phy ?
-> I notice that I do not have an entry for gfar_interrupt in /proc/interrupts
-> on my ethernet-missing linux, while I have one ont the working arch/ppc linux ?
-> Do I need to give the phy type in the dts file, and how ?
-> 
-> I would also like to know if it is possible to still get in linux the mac
-> address known by uboot when using a dts file, and how ?
+Arnd,
 
-I'll let the freescale people answer here as I don't know the gianfar
-driver at all.
+Do we have any news on this topic? 
 
-Ben.
+I've seen this happening quite often within GDB when using hardware
+watchpoints on a shared variable in a threaded (7+ threads) binary.
+Sometimes the watchpoint won't trigger, even though the monitored
+variable's value was modified.
+
+Appreciate your feedback.
+
+Best regards,
+
+-- 
+Luis Machado
+LoP Toolchain
+Software Engineer 
+IBM Linux Technology Center
