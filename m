@@ -1,21 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id ADE6ADDDEF
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 17:36:23 +1100 (EST)
-Date: Mon, 10 Mar 2008 17:35:47 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: hs@denx.de
-Subject: Re: [Patch] 8xx: MGSUVD support
-Message-Id: <20080310173547.e3cfeaa1.sfr@canb.auug.org.au>
-In-Reply-To: <47D4D686.8010101@denx.de>
-References: <47D3B44D.8070909@denx.de>
-	<20080310143217.11e2b10f.sfr@canb.auug.org.au>
-	<47D4D686.8010101@denx.de>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id CC217DDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 18:50:26 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id 91F2DF49178
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 08:50:22 +0100 (CET)
+Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080307163747.GF10545@ld0162-tx32.am.freescale.net>
+References: <20070920220121.GF28784@loki.buserror.net>
+	<200802151350.20627.laurentp@cse-semaphore.com>
+	<1203089936.20350.7.camel@p60365-ste>
+	<200803071623.42519.laurentp@cse-semaphore.com>
+	<20080307163747.GF10545@ld0162-tx32.am.freescale.net>
+Date: Mon, 10 Mar 2008 08:50:21 +0100
+Message-Id: <1205135421.3837.1.camel@p60365-ste>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR."
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, 10 Mar 2008 07:34:46 +0100 Heiko Schocher <hs@denx.de> wrote:
->
-> >> +static struct of_device_id __initdata of_bus_ids[] =3D {
-> >=20
-> > Make this __initdata, please.
+> Acked-by: Scott Wood <scottwood@freescale.com>, if I haven't already.
 >=20
-> Hmm.. it is __initdata, or? But I fix it to:
-
-OOPS, brain not working again after break :-)
-
-sorry.
-
-> static  __initdata struct of_device_id of_bus_ids[]
-
-It is right either way.  But linux/init.h says it should go just before
-the '=3D' sign.
-
-> I will send a overworked patch.
-
-Nice :-)  ("overworked" means "having too much work to do" - I think you
-meant "reworked")
+> -Scott
+I thought, you did it.
+Thank you.
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Dipl.-Ing. Sergej Stepanov=20
+Software-Entwicklung
 
---Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR.
-Content-Type: application/pgp-signature
+IDS GmbH=20
+E-PA  (Entwicklung - Prozess Automatisierung)
+Nobelstr. 18,=20
+D-76275 Ettlingen=20
+T. (0) 72 43/2 18-615=20
+F. (0) 72 43/2 18-100=20
+E. Sergej.Stepanov@ids.de
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH1NbITgG2atn1QN8RAqpgAJ9JtuGepys/xOc2mqw7ZtONseTrXwCeNHkr
-IRVOMoMYOjWO3673RhIWkVY=
-=LxcI
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR.--
+<http://www.ids.de>
+Gesch=C3=A4ftsf=C3=BChrer: Norbert Wagner, Friedrich Abri=C3=9F=20
+Sitz der Gesellschaft: Ettlingen=20
+Amtsgericht Mannheim HRB 362503=20
