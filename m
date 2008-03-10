@@ -1,20 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DDBB3DDF47
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 03:53:38 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Confused about usercopy_64.c
-References: <47D56419.6000704@freescale.com>
-Date: Mon, 10 Mar 2008 17:53:31 +0100
-In-Reply-To: <47D56419.6000704@freescale.com> (Timur Tabi's message of "Mon\,
-	10 Mar 2008 11\:38\:49 -0500")
-Message-ID: <jeabl6ikqc.fsf@sykes.suse.de>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id A434ADE104
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 04:00:31 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: OF compatible MTD platform RAM driver ?
+Date: Mon, 10 Mar 2008 12:00:22 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0418505E@ismail.innsys.innovsys.com>
+In-Reply-To: <200803101606.39184.laurentp@cse-semaphore.com>
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>, <linuxppc-dev@ozlabs.org>
+Cc: ben@simtec.co.uk, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +22,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi <timur@freescale.com> writes:
+linuxppc-dev-bounces+runet=3Dinnovsys.com@ozlabs.org wrote:
+> Hi everybody,
+>=20
+> as part of a ARCH=3Dppc to ARCH=3Dpowerpc migration process, I'm
+> looking for an
+> OpenFirmware compatible way to handle a RAM-based MTD device.
+>=20
+> On the platform_device based ppc architecture, the
+> drivers/mtd/maps/plat-ram.c
+> driver handled "mtd-ram" platform devices. There is no such
+> driver for the
+> OF-based powerpc architecture.
+>=20
+> As a temporary workaround I hacked the physmap_of driver to
+> handle "direct-mapped" OF devices oh type "ram" by adding a
+> corresponding entry in the of_flash_match[] array. This seems to work
+> fine.=20
+>=20
+> What would be the preferred way to handle OF-compatible RAM-based MTD
+> devices ? The 3 ways I can think of are
+>=20
+> 1. porting the plat-ram driver to OF (the driver isn't used
+> in the kernel tree
+> but I suspect it is used by out-of-tree boards)
+>=20
+> 2. creating a new plat-ram-of driver, much like the
+> physmap_of driver comes
+> from the physmap driver
+>=20
+> 3. extending the physmap_of driver to handle RAM devices (in
+> which case
+> references to "flash" in the function names should probably
+> be replaced
+> by "mtd")
+>=20
+> I live option 3 better so far.
+>=20
+> Has anyone already worked on this ? Is there any defined
+> device tree mapping
+> for MTD RAM devices ?
+>=20
+> Best regards,
 
-> I'm confused about something in usercopy_64.c:
->
-> unsigned long copy_from_user(void *to, const void __user *from, unsigned long n)
-> {
-> 	if (likely(access_ok(VERIFY_READ, from, n)))
-> 		n = __copy_from_user(to, from, n);
-> 	else
-> 		memset(to, 0, n);
-> 	return n;
-> }
->
-> If access_ok() returns false, then that means that we cannot copy the data from
-> user-space.  So why are we returning 'n'?
+We ran ito the same issue.=20
+We did option 3, as it was efinetly the easiest,
+here is the sram entry in our dts:
 
-To tell the caller that the function failed.  The result is the number
-of bytes _left_ to be copying, ie. zero means success.
+        sram@9,0 {
+            device_type =3D "rom";
+            compatible =3D "direct-mapped";
+            probe-type =3D "RAM";
+            reg =3D <9 0 20000>;
+            bank-width =3D <2>;
+            device-width =3D <2>;
+            #address-cells =3D <1>;
+            #size-cells =3D <1>;
+            partition@0 {
+                label =3D "SRAM";
+                reg =3D <0 20000>;
+            };
 
-Andreas.
+here is the change to physmap_of.c:
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+diff --git a/drivers/mtd/maps/physmap_of.c
+b/drivers/mtd/maps/physmap_of.c
+old mode 100644
+new mode 100755
+index aeed9ea..687ef54
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -201,6 +201,8 @@ static struct mtd_info * __devinit
+obsolete_probe(struct of_device *dev,
+ 		return do_map_probe("cfi_probe", map);
+ 	} else if (strcmp(of_probe, "JEDEC") =3D=3D 0) {
+ 		return do_map_probe("jedec_probe", map);
++	} else if (strcmp(of_probe, "RAM") =3D=3D 0) {
++		return do_map_probe("map_ram", map);
+ 	} else {
+ 		if (strcmp(of_probe, "ROM") !=3D 0)
+ 			dev_warn(&dev->dev, "obsolete_probe: don't know
+probe "
