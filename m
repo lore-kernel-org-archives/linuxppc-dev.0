@@ -1,19 +1,25 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 4C329DDF1F
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 23:32:15 +1100 (EST)
-Date: Mon, 10 Mar 2008 13:32:11 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: DTC 1.1.0 Release!
-In-Reply-To: <E1JI5CO-0002Y1-A1@jdl.com>
-Message-ID: <Pine.LNX.4.64.0803101323350.22505@vixen.sonytel.be>
-References: <E1JI5CO-0002Y1-A1@jdl.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-948395609-1205152331=:22505"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id 9661FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 00:17:31 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id 8D96EF4910E
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 14:17:29 +0100 (CET)
+Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200803101205.16158.laurentp@cse-semaphore.com>
+References: <20070920220121.GF28784@loki.buserror.net>
+	<20080307163747.GF10545@ld0162-tx32.am.freescale.net>
+	<1205135421.3837.1.camel@p60365-ste>
+	<200803101205.16158.laurentp@cse-semaphore.com>
+Date: Mon, 10 Mar 2008 14:17:28 +0100
+Message-Id: <1205155048.4627.5.camel@p60365-ste>
+Mime-Version: 1.0
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Am Montag, den 10.03.2008, 12:05 +0100 schrieb Laurent Pinchart:
 
----584349381-948395609-1205152331=:22505
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-	Hi John,
-
-On Thu, 24 Jan 2008, Jon Loeliger wrote:
-> You may find it using git here:
+> Your documentation patch states that
 > 
->     git://www.jdl.com/software/dtc
+> "The first reg resource is the I/O port register block on which MDIO
+> resides.  The second reg resource is the I/O port register block on
+> which MDC resides.  If there is only one reg resource, it is used for
+> both MDIO and MDC."
 > 
-> A tarball snap-shot is also available here:
+> If I'm not mistaken the code uses the first reg resource for MDC and the 
+> second reg resource for MDIO. Which one should be fixed, the doc or the 
+> code ?
 > 
->     http://www.jdl.com/software/dtc-1.1.0.tgz
+> Best regards,
 > 
-> Please let me know if there are problems with it!
+Ooops... Sorry...
+You are right: the first is MDC, second MDIO.
+I have to fix the docu, it would be simpler.
 
-It looks like www.jdl.com got wiped out? I cannot get dtc anymore from your
-site, both git and http (default apache page) fail?
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-948395609-1205152331=:22505--
+Thank you and best regards
+Sergej.
