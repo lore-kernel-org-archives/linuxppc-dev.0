@@ -1,26 +1,23 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA04.emeryville.ca.mail.comcast.net
-	(qmta04.emeryville.ca.mail.comcast.net [76.96.30.40])
-	by ozlabs.org (Postfix) with ESMTP id E96CFDDEE2
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 07:00:30 +1100 (EST)
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 985D9DDF9D
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 08:18:13 +1100 (EST)
+Message-ID: <47D5A585.8050107@tiscali.nl>
+Date: Mon, 10 Mar 2008 22:17:57 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: PPC upstream kernel ignored DABR bug
-In-Reply-To: Olof Johansson's message of  Monday,
-	10 March 2008 14:50:57 -0500 <20080310195057.GA28140@lixom.net>
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200711290113.29024.arnd@arndb.de>
-	<1205110432.10078.5.camel@gargoyle>
-	<200803101501.34439.jens@de.ibm.com>
-	<20080310191957.0B42626F991@magilla.localdomain>
-	<1205177797.23926.21.camel@gargoyle.br.ibm.com>
-	<20080310195057.GA28140@lixom.net>
-Message-Id: <20080310195408.868DF26F991@magilla.localdomain>
-Date: Mon, 10 Mar 2008 12:54:08 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Jan Kratochvil <jan.kratochvil@redhat.com>, Arnd Bergmann <arnd@arndb.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>, akpm@linux-foundation.org
+Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+References: <47D47B11.1000303@tiscali.nl>	
+	<20080310084633.5246ecfe@paperstreet.colino.net>
+	<1205136413.8621.3.camel@pasglop> <47D4EFC1.1050403@tiscali.nl>
+	<64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
+In-Reply-To: <64d5b5e6dfd0d1820d21db323ef88e25@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Colin Leroy <colin@colino.net>, "Darrick J. Wong" <djwong@us.ibm.com>,
+	lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,17 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The G5 that I have says:
+Andrew, I think you may want this patch instead of the other
+adt746x-logical-bitwise-confusion-in-set_max_duty_at_crit.patch
 
-	cpu             : PPC970FX, altivec supported
-	revision        : 3.0 (pvr 003c 0300)
+It includes suggested changes by Segher Boessenkool and I think this
+version was tested by Darrick J. Wong
+---
+logical-bitwise & confusion
 
-and it does indeed reproduce this bug.
-
-It also strange for it to be the DABRX issue given the failure mode.
-That is, it works sometimes but unreliably (as if the context switch
-sometimes fails to install the value).
-
-
-Thanks,
-Roland
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
+index 9587869..2a2de73 100644
+--- a/drivers/hwmon/adt7473.c
++++ b/drivers/hwmon/adt7473.c
+@@ -566,11 +566,11 @@ static ssize_t set_max_duty_at_crit(struct device *dev,
+ 				    const char *buf,
+ 				    size_t count)
+ {
+-	u8 reg;
++	u8 reg, temp;
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct adt7473_data *data = i2c_get_clientdata(client);
+-	int temp = simple_strtol(buf, NULL, 10);
+-	temp = temp && 0xFF;
++
++	temp = simple_strtol(buf, NULL, 10) & 0xFF;
+ 
+ 	mutex_lock(&data->lock);
+ 	data->max_duty_at_overheat = temp;
