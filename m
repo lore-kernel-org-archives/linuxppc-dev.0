@@ -1,19 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8441CDDDDB
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 14:32:49 +1100 (EST)
-Date: Mon, 10 Mar 2008 14:32:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: hs@denx.de
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E86E3DDD0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 17:26:52 +1100 (EST)
+Message-ID: <47D4D652.4080902@denx.de>
+Date: Mon, 10 Mar 2008 07:33:54 +0100
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
 Subject: Re: [Patch] 8xx: MGSUVD support
-Message-Id: <20080310143217.11e2b10f.sfr@canb.auug.org.au>
-In-Reply-To: <47D3B44D.8070909@denx.de>
 References: <47D3B44D.8070909@denx.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e"
+	<20080309195914.69d51e68@kernel.crashing.org>
+In-Reply-To: <20080309195914.69d51e68@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,65 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Vitaly,
 
-Hi Heiko,
+Vitaly Bordug wrote:
+> Heiko Schocher wrote:
+>> the following patch adds support for the MPC852 based mgsuvd board
+>> from keymile.
+> Looks good overall. Please add supported/working/not working etc SoC devices state along with the patch 
+> description. Also a few really small comments below...
 
-Just a few small comments.
+OK.
 
-On Sun, 09 Mar 2008 10:56:29 +0100 Heiko Schocher <hs@denx.de> wrote:
->
-> +++ b/arch/powerpc/platforms/8xx/mgsuvd.c
->
-> +#include <asm/of_platform.h>
+>> Signed-off-by: Heiko Schocher <hs@denx.de>
+>> ---
+[...]
+>> +
+>> +		PowerPC,866@0 {
+> But it's mpc852, isn't it?
 
-You should include linux/of_platform.h (not asm/)
+Yes your are right.
 
-> +static struct cpm_pin mgsuvd_pins[] =3D {
+>> +			device_type = "cpu";
+>> +			reg = <0>;
+>> +			d-cache-line-size = <d#16>;
+>> +			i-cache-line-size = <d#16>;
+>> +			d-cache-size = <d#8192>;
+>> +			i-cache-size = <d#8192>;
+>> +			timebase-frequency = <0>;  /* Filled in by
+>> u-boot */
+>> +			bus-frequency = <0>;  /* Filled in by u-boot
+>> */
+>> +			clock-frequency = <0>; /* Filled in by
+>> u-boot */
+>> +			interrupts = <f 2>;	// decrementer
+>> interrupt
+> I would like all the comments to be consistent C style (because that's it for the most other dts'es).
 
-Make this __initdata, please.
+Okay, I fix this, and send a new patch.
 
-> +	ROOT_DEV =3D Root_NFS;
-
-I am not sue we do this explicitly any more ... hopefully someone else
-will comment.
-
-> +static struct of_device_id __initdata of_bus_ids[] =3D {
-
-Make this __initdata, please.
-
-> +static int __init declare_of_platform_devices(void)
-> +{
-> +	if (!machine_is(mgsuvd))
-> +		return 0;
-> +
-> +	of_platform_bus_probe(NULL, of_bus_ids, NULL);
-> +
-> +	return 0;
-> +}
-> +device_initcall(declare_of_platform_devices);
-
-This should be "machine_device_initcall(mgsuvd,
-declare_of_platform_devices);" then you don't need the machine_is() check
-above.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH1KvGTgG2atn1QN8RAvAJAJ9lbtkparwNVP+XNiEksQqStcOOpgCcDBTh
-5KbEBSXEr+PYLNdIfJcVgSU=
-=o8Tj
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e--
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
