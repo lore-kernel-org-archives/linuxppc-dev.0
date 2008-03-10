@@ -1,16 +1,35 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id D3B46DDF0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:06:43 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: OF compatible MTD platform RAM driver ?
-Date: Mon, 10 Mar 2008 16:06:31 +0100
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1451589.TJpG23SlHl";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803101606.39184.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linux-mtd@lists.infradead.org
+Return-Path: <luisgpm@linux.vnet.ibm.com>
+Received: from igw3.br.ibm.com (igw3.br.ibm.com [32.104.18.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "igw3.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06EF6DDF3D
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:14:17 +1100 (EST)
+Received: from mailhub1.br.ibm.com (unknown [9.18.232.109])
+	by igw3.br.ibm.com (Postfix) with ESMTP id 76C24390491
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:02:42 -0300 (BRST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
+	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2AFDfuV2314294
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:13:44 -0300
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2AFDbBh020718
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:13:38 -0300
+Subject: Re: PPC upstream kernel ignored DABR bug
+From: Luis Machado <luisgpm@linux.vnet.ibm.com>
+To: Jens Osterkamp <jens@de.ibm.com>
+In-Reply-To: <200803101501.34439.jens@de.ibm.com>
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200711290113.29024.arnd@arndb.de> <1205110432.10078.5.camel@gargoyle>
+	<200803101501.34439.jens@de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 10 Mar 2008 12:13:32 -0300
+Message-Id: <1205162012.23926.12.camel@gargoyle>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Roland McGrath <roland@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jan Kratochvil <jan.kratochvil@redhat.com>
+Reply-To: luisgpm@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,71 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1451589.TJpG23SlHl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> On the Blade DABRX had to be set additional to DABR. PS3 and Celleb
+> already did this. Uli Weigand found this back in November. I submitted
+> a patch for this which went into 2.6.25-rc4.
+> Can you please try again with rc4 ?
 
-Hi everybody,
+I will try it and will post the results back.
 
-as part of a ARCH=3Dppc to ARCH=3Dpowerpc migration process, I'm looking fo=
-r an=20
-OpenFirmware compatible way to handle a RAM-based MTD device.
+Thanks Jens.
 
-On the platform_device based ppc architecture, the drivers/mtd/maps/plat-ra=
-m.c=20
-driver handled "mtd-ram" platform devices. There is no such driver for the=
-=20
-OF-based powerpc architecture.
-
-As a temporary workaround I hacked the physmap_of driver to=20
-handle "direct-mapped" OF devices oh type "ram" by adding a corresponding=20
-entry in the of_flash_match[] array. This seems to work fine.
-
-What would be the preferred way to handle OF-compatible RAM-based MTD=20
-devices ? The 3 ways I can think of are
-
-1. porting the plat-ram driver to OF (the driver isn't used in the kernel t=
-ree=20
-but I suspect it is used by out-of-tree boards)
-
-2. creating a new plat-ram-of driver, much like the physmap_of driver comes=
-=20
-from the physmap driver
-
-3. extending the physmap_of driver to handle RAM devices (in which case=20
-references to "flash" in the function names should probably be replaced=20
-by "mtd")
-
-I live option 3 better so far.
-
-Has anyone already worked on this ? Is there any defined device tree mappin=
-g=20
-for MTD RAM devices ?
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1451589.TJpG23SlHl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH1U5/8y9gWxC9vpcRAiHPAKC5fQMqWimjqFGVVqNX8hV+C+vhMgCdF5cf
-hQ26RPBmjf9fBrvQHMkgQio=
-=yPVj
------END PGP SIGNATURE-----
-
---nextPart1451589.TJpG23SlHl--
+Regards,
+-- 
+Luis Machado
+Software Engineer 
+IBM Linux Technology Center
