@@ -1,35 +1,19 @@
-Return-Path: <luisgpm@linux.vnet.ibm.com>
-Received: from igw3.br.ibm.com (igw3.br.ibm.com [32.104.18.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "igw3.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 54062DDDFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 11:54:08 +1100 (EST)
-Received: from mailhub1.br.ibm.com (unknown [9.18.232.109])
-	by igw3.br.ibm.com (Postfix) with ESMTP id C8A2E390076
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Mar 2008 21:42:52 -0300 (BRST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
-	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2A0rwnH4038860
-	for <linuxppc-dev@ozlabs.org>; Sun, 9 Mar 2008 21:53:58 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
-	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2A0rwtk019188
-	for <linuxppc-dev@ozlabs.org>; Sun, 9 Mar 2008 21:53:58 -0300
-Subject: Re: PPC upstream kernel ignored DABR bug
-From: Luis Machado <luisgpm@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200711290113.29024.arnd@arndb.de>
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200711272335.36981.arnd@arndb.de> <474DF2D8.9010407@am.sony.com>
-	<200711290113.29024.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sun, 09 Mar 2008 21:53:51 -0300
-Message-Id: <1205110432.10078.5.camel@gargoyle>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8441CDDDDB
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 14:32:49 +1100 (EST)
+Date: Mon, 10 Mar 2008 14:32:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: hs@denx.de
+Subject: Re: [Patch] 8xx: MGSUVD support
+Message-Id: <20080310143217.11e2b10f.sfr@canb.auug.org.au>
+In-Reply-To: <47D3B44D.8070909@denx.de>
+References: <47D3B44D.8070909@denx.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Roland McGrath <roland@redhat.com>,
-	Jan Kratochvil <jan.kratochvil@redhat.com>
-Reply-To: luisgpm@linux.vnet.ibm.com
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,24 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Yes, I know. I tried it on the PS3 first and couldn't reproduce
-> the bug he saw on the blade.
+--Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Arnd,
+Hi Heiko,
 
-Do we have any news on this topic? 
+Just a few small comments.
 
-I've seen this happening quite often within GDB when using hardware
-watchpoints on a shared variable in a threaded (7+ threads) binary.
-Sometimes the watchpoint won't trigger, even though the monitored
-variable's value was modified.
+On Sun, 09 Mar 2008 10:56:29 +0100 Heiko Schocher <hs@denx.de> wrote:
+>
+> +++ b/arch/powerpc/platforms/8xx/mgsuvd.c
+>
+> +#include <asm/of_platform.h>
 
-Appreciate your feedback.
+You should include linux/of_platform.h (not asm/)
 
-Best regards,
+> +static struct cpm_pin mgsuvd_pins[] =3D {
 
--- 
-Luis Machado
-LoP Toolchain
-Software Engineer 
-IBM Linux Technology Center
+Make this __initdata, please.
+
+> +	ROOT_DEV =3D Root_NFS;
+
+I am not sue we do this explicitly any more ... hopefully someone else
+will comment.
+
+> +static struct of_device_id __initdata of_bus_ids[] =3D {
+
+Make this __initdata, please.
+
+> +static int __init declare_of_platform_devices(void)
+> +{
+> +	if (!machine_is(mgsuvd))
+> +		return 0;
+> +
+> +	of_platform_bus_probe(NULL, of_bus_ids, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(declare_of_platform_devices);
+
+This should be "machine_device_initcall(mgsuvd,
+declare_of_platform_devices);" then you don't need the machine_is() check
+above.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH1KvGTgG2atn1QN8RAvAJAJ9lbtkparwNVP+XNiEksQqStcOOpgCcDBTh
+5KbEBSXEr+PYLNdIfJcVgSU=
+=o8Tj
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__10_Mar_2008_14_32_17_+1100_lujtfCvOA1V0gs.e--
