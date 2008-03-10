@@ -1,25 +1,22 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [213.144.29.131])
-	by ozlabs.org (Postfix) with ESMTP id CC217DDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 18:50:26 +1100 (EST)
-Received: from ares.ids.de (ares.ids.de [127.0.0.1])
-	by ares.ids.de (PGP Universal) with ESMTP id 91F2DF49178
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 08:50:22 +0100 (CET)
-Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
-	CONFIG_PPC_CPM_NEW_BINDING is set.
-From: Sergej Stepanov <Sergej.Stepanov@ids.de>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080307163747.GF10545@ld0162-tx32.am.freescale.net>
-References: <20070920220121.GF28784@loki.buserror.net>
-	<200802151350.20627.laurentp@cse-semaphore.com>
-	<1203089936.20350.7.camel@p60365-ste>
-	<200803071623.42519.laurentp@cse-semaphore.com>
-	<20080307163747.GF10545@ld0162-tx32.am.freescale.net>
-Date: Mon, 10 Mar 2008 08:50:21 +0100
-Message-Id: <1205135421.3837.1.camel@p60365-ste>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 79A9DDDDEC
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 19:22:35 +1100 (EST)
+Message-ID: <47D4EFC1.1050403@tiscali.nl>
+Date: Mon, 10 Mar 2008 09:22:25 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: ADT746X: logical-bitwise & confusion in set_max_duty_at_crit()
+References: <47D47B11.1000303@tiscali.nl>	
+	<20080310084633.5246ecfe@paperstreet.colino.net>
+	<1205136413.8621.3.camel@pasglop>
+In-Reply-To: <1205136413.8621.3.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Colin Leroy <colin@colino.net>, linuxppc-dev@ozlabs.org,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> On Mon, 2008-03-10 at 08:46 +0100, Colin Leroy wrote:
+>> On Mon, 10 Mar 2008 01:04:33 +0100, Roel Kluin wrote:
+>>
+>>> logical-bitwise & confusion
+>> Looks good to me, but I'm not really maintaining that anymore :-)
+>> I'm not sure who does, Cc:ing Benjamin as he'll probably know.
+> 
+> Nobody is U suspect...
+> 
+> Send it to the list linuxppc-dev@ozlabs.org, it should be picked up
+> anyway.
+(linuxppc-dev CC'd)
+---
+logical-bitwise & confusion
 
-> Acked-by: Scott Wood <scottwood@freescale.com>, if I haven't already.
->=20
-> -Scott
-I thought, you did it.
-Thank you.
-
---=20
-Dipl.-Ing. Sergej Stepanov=20
-Software-Entwicklung
-
-IDS GmbH=20
-E-PA  (Entwicklung - Prozess Automatisierung)
-Nobelstr. 18,=20
-D-76275 Ettlingen=20
-T. (0) 72 43/2 18-615=20
-F. (0) 72 43/2 18-100=20
-E. Sergej.Stepanov@ids.de
-
-<http://www.ids.de>
-Gesch=C3=A4ftsf=C3=BChrer: Norbert Wagner, Friedrich Abri=C3=9F=20
-Sitz der Gesellschaft: Ettlingen=20
-Amtsgericht Mannheim HRB 362503=20
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/hwmon/adt7473.c b/drivers/hwmon/adt7473.c
+index 9587869..8ea7da2 100644
+--- a/drivers/hwmon/adt7473.c
++++ b/drivers/hwmon/adt7473.c
+@@ -570,7 +570,7 @@ static ssize_t set_max_duty_at_crit(struct device *dev,
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct adt7473_data *data = i2c_get_clientdata(client);
+ 	int temp = simple_strtol(buf, NULL, 10);
+-	temp = temp && 0xFF;
++	temp &= 0xFF;
+ 
+ 	mutex_lock(&data->lock);
+ 	data->max_duty_at_overheat = temp;
