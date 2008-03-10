@@ -1,35 +1,25 @@
-Return-Path: <luisgpm@linux.vnet.ibm.com>
-Received: from igw3.br.ibm.com (igw3.br.ibm.com [32.104.18.26])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "igw3.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06EF6DDF3D
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:14:17 +1100 (EST)
-Received: from mailhub1.br.ibm.com (unknown [9.18.232.109])
-	by igw3.br.ibm.com (Postfix) with ESMTP id 76C24390491
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:02:42 -0300 (BRST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
-	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2AFDfuV2314294
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:13:44 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
-	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2AFDbBh020718
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 12:13:38 -0300
-Subject: Re: PPC upstream kernel ignored DABR bug
-From: Luis Machado <luisgpm@linux.vnet.ibm.com>
-To: Jens Osterkamp <jens@de.ibm.com>
-In-Reply-To: <200803101501.34439.jens@de.ibm.com>
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200711290113.29024.arnd@arndb.de> <1205110432.10078.5.camel@gargoyle>
-	<200803101501.34439.jens@de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 10 Mar 2008 12:13:32 -0300
-Message-Id: <1205162012.23926.12.camel@gargoyle>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Roland McGrath <roland@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jan Kratochvil <jan.kratochvil@redhat.com>
-Reply-To: luisgpm@linux.vnet.ibm.com
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 51A21DE012
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 03:38:59 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m2AGco33024712
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 09:38:51 -0700 (MST)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2AGcoKx012559
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 11:38:50 -0500 (CDT)
+Message-ID: <47D56419.6000704@freescale.com>
+Date: Mon, 10 Mar 2008 11:38:49 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Confused about usercopy_64.c
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,17 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On the Blade DABRX had to be set additional to DABR. PS3 and Celleb
-> already did this. Uli Weigand found this back in November. I submitted
-> a patch for this which went into 2.6.25-rc4.
-> Can you please try again with rc4 ?
+I'm confused about something in usercopy_64.c:
 
-I will try it and will post the results back.
+unsigned long copy_from_user(void *to, const void __user *from, unsigned long n)
+{
+	if (likely(access_ok(VERIFY_READ, from, n)))
+		n = __copy_from_user(to, from, n);
+	else
+		memset(to, 0, n);
+	return n;
+}
 
-Thanks Jens.
+If access_ok() returns false, then that means that we cannot copy the data from
+user-space.  So why are we returning 'n'?  Shouldn't we return zero, to let the
+caller know that the function failed?
 
-Regards,
 -- 
-Luis Machado
-Software Engineer 
-IBM Linux Technology Center
+Timur Tabi
+Linux kernel developer at Freescale
