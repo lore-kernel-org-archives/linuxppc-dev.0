@@ -1,19 +1,21 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id ADDABDDDEC
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 17:27:38 +1100 (EST)
-Message-ID: <47D4D686.8010101@denx.de>
-Date: Mon, 10 Mar 2008 07:34:46 +0100
-From: Heiko Schocher <hs@denx.de>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id ADE6ADDDEF
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2008 17:36:23 +1100 (EST)
+Date: Mon, 10 Mar 2008 17:35:47 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: hs@denx.de
 Subject: Re: [Patch] 8xx: MGSUVD support
+Message-Id: <20080310173547.e3cfeaa1.sfr@canb.auug.org.au>
+In-Reply-To: <47D4D686.8010101@denx.de>
 References: <47D3B44D.8070909@denx.de>
 	<20080310143217.11e2b10f.sfr@canb.auug.org.au>
-In-Reply-To: <20080310143217.11e2b10f.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-15
+	<47D4D686.8010101@denx.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR."
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,54 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Stephen,
+--Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Stephen Rothwell wrote:
-> On Sun, 09 Mar 2008 10:56:29 +0100 Heiko Schocher <hs@denx.de> wrote:
->> +++ b/arch/powerpc/platforms/8xx/mgsuvd.c
->>
->> +#include <asm/of_platform.h>
-> 
-> You should include linux/of_platform.h (not asm/)
+Hi,
 
-Ok.
+On Mon, 10 Mar 2008 07:34:46 +0100 Heiko Schocher <hs@denx.de> wrote:
+>
+> >> +static struct of_device_id __initdata of_bus_ids[] =3D {
+> >=20
+> > Make this __initdata, please.
+>=20
+> Hmm.. it is __initdata, or? But I fix it to:
 
->> +static struct cpm_pin mgsuvd_pins[] = {
-> 
-> Make this __initdata, please.
+OOPS, brain not working again after break :-)
 
-Argh... forgot this.
+sorry.
 
-[...]
->> +static struct of_device_id __initdata of_bus_ids[] = {
-> 
-> Make this __initdata, please.
+> static  __initdata struct of_device_id of_bus_ids[]
 
-Hmm.. it is __initdata, or? But I fix it to:
+It is right either way.  But linux/init.h says it should go just before
+the '=3D' sign.
 
-static  __initdata struct of_device_id of_bus_ids[]
+> I will send a overworked patch.
 
->> +static int __init declare_of_platform_devices(void)
->> +{
->> +	if (!machine_is(mgsuvd))
->> +		return 0;
->> +
->> +	of_platform_bus_probe(NULL, of_bus_ids, NULL);
->> +
->> +	return 0;
->> +}
->> +device_initcall(declare_of_platform_devices);
-> 
-> This should be "machine_device_initcall(mgsuvd,
-> declare_of_platform_devices);" then you don't need the machine_is() check
-> above.
+Nice :-)  ("overworked" means "having too much work to do" - I think you
+meant "reworked")
 
-Ok
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I will send a overworked patch.
+--Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR.
+Content-Type: application/pgp-signature
 
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH1NbITgG2atn1QN8RAqpgAJ9JtuGepys/xOc2mqw7ZtONseTrXwCeNHkr
+IRVOMoMYOjWO3673RhIWkVY=
+=LxcI
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__10_Mar_2008_17_35_47_+1100_1iGiDzct2L3O1uR.--
