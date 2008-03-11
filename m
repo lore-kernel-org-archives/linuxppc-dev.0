@@ -1,19 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17E0ADDF00
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 16:03:24 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2B53KPC015108
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 00:03:20 -0500
-Date: Tue, 11 Mar 2008 00:00:03 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Remove Kconfig option BOOT_LOAD
-Message-ID: <Pine.LNX.4.64.0803102359240.19195@blarg.am.freescale.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18390.9443.218176.274640@cargo.ozlabs.ibm.com>
+Date: Tue, 11 Mar 2008 17:21:23 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH 8/8] pseries: phyp dump: config file
+In-Reply-To: <47C7533D.9040002@austin.ibm.com>
+References: <47B90F55.2080606@austin.ibm.com>
+	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
+	<47C74A66.1060105@austin.ibm.com> <47C7533D.9040002@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com, mahuja@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nothing appears to use BOOT_LOAD so remove it as a configurable option.
+Manish Ahuja writes:
 
----
-in my powerpc-next branch.
+> +config PHYP_DUMP
+> +	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
+> +	depends on PPC_PSERIES && EXPERIMENTAL
+> +	default y
 
-- k
+I think this should default to n for now (i.e. leave out the default
+line entirely).  We can make it default to y later.
 
- arch/powerpc/Kconfig |   16 ----------------
- 1 files changed, 0 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e4e13e0..803415e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -663,22 +663,6 @@ config CONSISTENT_SIZE
- 	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
- 	default "0x00200000" if NOT_COHERENT_CACHE
-
--config BOOT_LOAD_BOOL
--	bool "Set the boot link/load address"
--	depends on ADVANCED_OPTIONS && !PPC_MULTIPLATFORM
--	help
--	  This option allows you to set the initial load address of the zImage
--	  or zImage.initrd file.  This can be useful if you are on a board
--	  which has a small amount of memory.
--
--	  Say N here unless you know what you are doing.
--
--config BOOT_LOAD
--	hex "Link/load address for booting" if BOOT_LOAD_BOOL
--	default "0x00400000" if 40x || 8xx || 8260
--	default "0x01000000" if 44x
--	default "0x00800000"
--
- config PIN_TLB
- 	bool "Pinned Kernel TLBs (860 ONLY)"
- 	depends on ADVANCED_OPTIONS && 8xx
--- 
-1.5.4.1
+Paul.
