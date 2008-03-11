@@ -1,24 +1,22 @@
-Return-Path: <rza1@so-logic.net>
-Received: from smtp01.so-logic.net (unknown [62.99.208.151])
-	by ozlabs.org (Postfix) with ESMTP id 6E80BDE07D
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Mar 2008 02:45:56 +1100 (EST)
-Received: from freak-2.local (62-99-208-157.c-vbergg.xdsl-line.inode.at
-	[62.99.208.157])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp01.so-logic.net (Postfix) with ESMTP id AD5078FD18E
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F809DE197
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 16:45:55 +0100 (CET)
-Message-ID: <47D6A933.8050601@so-logic.net>
-Date: Tue, 11 Mar 2008 16:45:55 +0100
-From: rza1 <rza1@so-logic.net>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: bootstrap loader + gzip 1.3.5 --> huge image!?
-References: <47D6992B.6060208@so-logic.net>
-In-Reply-To: <47D6992B.6060208@so-logic.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 12 Mar 2008 02:52:40 +1100 (EST)
+In-Reply-To: <604678.57629.qm@web15104.mail.cnb.yahoo.com>
+References: <604678.57629.qm@web15104.mail.cnb.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E8F6B026-A4C0-46F7-9A70-2EF42C0CD019@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: issue about CONFIG_PPC_MMU and CONFIG_SMP define
+Date: Tue, 11 Mar 2008 10:53:15 -0500
+To: jie han <jiehanca@yahoo.com.cn>
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,70 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I just recognized that gzip does his job right.
-But objcopy of all binutils > 2.16.1 has problems during binary copy:
-powerpc-linux-objcopy -O binary vmlinux arch/ppc/boot/images/vmlinux.bin
+On Mar 10, 2008, at 3:15 PM, jie han wrote:
 
-The vmlinux file does look good (what i can see with vi) but the 
-generated vmlinux.bin file is strange. Windows machines say that the 
-vmlinux.bin file is > then 3GByte, but linux says 1,5Mbyte. But, I can't 
-open it with vi...
+> Hi guys,
+>
+> I want to simulate compile mutli-core using sequoia(IBM/AMCC 44x  
+> processor) source code under kernel arch/powerpc directory.I want  
+> to define CONFIG_SMP, I sould define CONFIG_STD_MMU at first,but  
+> AMCC 44x don't need to config CONFIG_STD_MMU.Is CONFIG_STD_MMU just  
+> for freescale chip? How can I do next? Thanks ahead for your help,
 
-Anywhay i think binutils > 2.16.1 has some problems with ppc.
+STD_MMU is for all powerpc cpus with a non-BookE MMU.  That includes  
+all the 64-bit parts from IBM to date, pasemi's parts, and 32-bit  
+parts from IBM & Freescale like the 6xx, 7xx, 7xxx, e600 e300, etc.   
+You cannot set this for 44x, because it is a BookE part.
 
-Does anyone else use buildroot for ppc405 platform and solved the 
-problems with actual binutils versions?
-cheers!
-robert
+BTW, there's no real relationship between STD_MMU and SMP.  It was  
+just a convenient way to restrict the SMP config option in the  
+kernel, since all the Linux configs that currently support SMP are  
+STD_MMU. We will have BookE configs in the future that do support  
+SMP, at which point arch/powerpc/platforms/Kconfig.cputype will be  
+changed to allow SMP to be set for those configs.
 
-Robert Zach wrote:
-> hi list!
->
-> I am using the xilinx git tree with the included bootstrap loader.
-> Everthing works fine when i use binutils-2.16.1-gcc-3.4.6-uClibc-0.9.29.
->
-> But when useing binutils-2.18.50-gcc-4.2.0-uClibc-0.9.29  (generated 
-> with buildroot) i get the following problem:
->
-> At the end of the kernel build process the vmlinux image gets 
-> compressed (for the bootstrap loader).
-> something like:
-> gzip -f -9 < arch/ppc/boot/images/vmlinux.bin > 
-> arch/ppc/boot/images/vmlinux.gz.$$
-> when i compiled the kernel with 
-> binutils-2.16.1-gcc-3.4.6-uClibc-0.9.29 the resulting image size is 
-> smaller then the original and everything works (the bootstrap loader 
-> uncompresses, the kernel boots, ..)
->
-> But when using the binutils-2.18.50-gcc-4.2.0-uClibc-0.9.29 
-> cross-toolchain i get the following:
-> du arch/ppc/boot/images/vmlinux.bin
-> 1264    arch/ppc/boot/images/vmlinux.bin
-> gzip -f -9 < arch/ppc/boot/images/vmlinux.bin > 
-> arch/ppc/boot/images/vmlinux.gz.$$
-> du arch/ppc/boot/images/vmlinux.gz.$$
-> 3640    arch/ppc/boot/images/vmlinux.gz
->
-> The resulting huge zImage.elf file does not work (the bootstraploader 
-> stops somewhere early).
-> Its the same for all other toolchains i tryed using binutils > 2.16.
->
-> what does gzip do?
-> I use the following version
-> gzip --version
-> gzip 1.3.5
-> (2002-09-30)
-> Copyright 2002 Free Software Foundation
-> Copyright 1992-1993 Jean-loup Gailly
->
-> Does anybody know this problem?
-> any suggestions for a solution.
->
-> thanks in advanced!
-> greets!
-> robert
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+You can't enable SMP on 44x right now.  It's not supported.
+
+Cheers,
+B
