@@ -1,22 +1,18 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 85D03DDF2F
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 09:23:32 +1100 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 12 Mar 2008 09:40:48 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: OF compatible MTD platform RAM driver ?
+Message-ID: <20080311224048.GA7642@localhost.localdomain>
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B0418505E@ismail.innsys.innovsys.com>
+	<20080311004545.GI11559@localhost.localdomain>
+	<200803111139.12667.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: of_serial vs legacy serial support with powerpc arch on 405
-Date: Tue, 11 Mar 2008 16:23:22 -0600
-In-Reply-To: <20080311170255.4866e51a@zod.rchland.ibm.com>
-References: <20080311150430.153AD3D8066@mail134-sin.bigfish.com>
-	<20080311170255.4866e51a@zod.rchland.ibm.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Message-Id: <20080311222326.1A544A90088@mail53-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+In-Reply-To: <200803111139.12667.laurentp@cse-semaphore.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,52 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the help Josh.  I made some comments in-line.
 
+--BOKacYhQ+x31HxR3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
------Original Message-----
-From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]=20
-Sent: Tuesday, March 11, 2008 4:03 PM
-To: John Linn
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: of_serial vs legacy serial support with powerpc arch on 405
-
-On Tue, 11 Mar 2008 09:04:27 -0600
-"John Linn" <John.Linn@xilinx.com> wrote:
-
-> I've searched and found some threads, but it's still not clear to me.
-> I'm working on 405 with powerpc and trying to get UART550 working.
-
-Walnut works.  So do Halakeau and Kilauea.  Is your serial port
-significantly different from those?
-
->> Requires a shift as the regs are farther apart.
-
-> I know that I need speed, freq, and reg-shift properties in the device
-> tree and I have found patches for of_serial.c.
-
-Patches for of_serial.c for what?
-
->> There was a patch to correct where the spd was assumed to be in the=20
->> device tree and it would bomb out if it wasn't. I was thinking there
-was
->> a patch for the reg-shift value also.
+On Tue, Mar 11, 2008 at 11:39:08AM +0100, Laurent Pinchart wrote:
+> On Tuesday 11 March 2008 01:45, David Gibson wrote:
+> > On Mon, Mar 10, 2008 at 12:00:22PM -0500, Rune Torgersen wrote:
+> > > linuxppc-dev-bounces+runet=3Dinnovsys.com@ozlabs.org wrote:
+[snip]
+> > > We ran ito the same issue.
+> > > We did option 3, as it was efinetly the easiest,
+> >
+> > I think this is the best option in principle.
+>=20
+> I'll implement that and post a patch after completing the ppc-to-powerpc=
 =20
-> I still don't understand when to use of_serial.c (SERIAL_OF_PLATFORM)
-vs
-> the legacy support for serial ports.  Is there any docs that I'm not
-> finding that I should read?
+> migration.
+>=20
+> > > here is the sram entry in our dts:
+> >
+> > Except that your implementation of it is not good.
+> >
+> > You're relying on the old obsolete flash binding with the "probe-type"
+> > field.  The solution should be adapted to the new approach which uses
+> > values in the "compatible" field to indicate various sorts of flash
+> > device.
+>=20
+> What "compatible" values should I use for ROM and RAM mappings ?
 
-There are no docs.  At one time, of_serial was declared as the one true
-serial driver, but these days either will do.  The benefit of
-legacy_serial is that output is enabled earlier in the boot.
+That I'm not so sure of.  We'll need to find some consensus.
 
-> I don't see a way to configure in the legacy support, but I'm using
-> SERIAL_OF and having problems. I don't see the console getting enabled
-> even though it found the serial port driver.
+There may be existing IEEE1275 bindings for roms, which we should
+investigate.  Arguably RAM should be represented by a memory node, but
+that's going to get messy for this sort of application.
 
-You need to have CONFIG_PPC_UDBG_16550 set to bring in legacy_serial.
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
->> Thanks got it working with some mods.
+--BOKacYhQ+x31HxR3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-josh
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH1wpwaILKxv3ab8YRAtFsAJ4oLMQCnrh6dQicU7h2+liQsiwQVACdGm/a
+ULO9we1PJ/LcnUnicwABH7I=
+=DE/E
+-----END PGP SIGNATURE-----
+
+--BOKacYhQ+x31HxR3--
