@@ -1,23 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 11 Mar 2008 11:32:49 +1100
+Date: Tue, 11 Mar 2008 11:37:05 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-Message-ID: <20080311003249.GG11559@localhost.localdomain>
-References: <47CC73CE.4080801@freescale.com>
-	<20080304080828.GA18829@netgate.macqel>
-	<1204618939.21545.52.camel@pasglop>
-	<20080304091059.GD18829@netgate.macqel>
-	<1204693264.21545.165.camel@pasglop>
-	<47CECB21.3060704@freescale.com>
-	<1204760811.21545.231.camel@pasglop>
-	<20080307001025.GA27321@netgate.macqel>
-	<1204849197.21545.272.camel@pasglop>
-	<20080309223109.GA3989@netgate.macqel>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] bootwrapper: Allow specifying of image
+	physical offset
+Message-ID: <20080311003705.GH11559@localhost.localdomain>
+References: <Pine.LNX.4.64.0803071055200.8522@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080309223109.GA3989@netgate.macqel>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.64.0803071055200.8522@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 09, 2008 at 11:31:09PM +0100, Philippe De Muyter wrote:
-> Hi Ben,
+On Fri, Mar 07, 2008 at 10:55:51AM -0600, Kumar Gala wrote:
+> Normally we assume kernel images will be loaded at offset 0. However
+> there are situations, like when the kernel itself is running at a non-zero
+> physical address, that we don't want to load it at 0.
 > 
-> I now have a working linux on my mpc8540 based board, with support for
-> the compactflash disk and the i2c rtc.
+> Allow the wrapper to take an offset.  We use this when building u-boot images.
 > 
-> The network tough, does not work yet. altough the the integrated ethernet
-> controller (FEC) seems to be recognized.  Could it be a problem with the phy ?
-> I notice that I do not have an entry for gfar_interrupt in /proc/interrupts
-> on my ethernet-missing linux, while I have one ont the working arch/ppc linux ?
-> Do I need to give the phy type in the dts file, and how ?
-> 
-> I would also like to know if it is possible to still get in linux the mac
-> address known by uboot when using a dts file, and how ?
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-This chiefly depends on whether you're using an old u-boot that
-doesn't know about the device tree, or a new u-boot which itself
-supplies a device tree to the kernel.
-
-If the old u-boot, you'll need to write a bootwrapper for your
-platform which reads the bd_t and pokes the right mac addresses into
-the device tree.
-
-If the new u-boot, u-boot itself should put the address into the
-device tree.  If it's not, why it's not is a u-boot question rather
-than a device tree question.
+Hrm.  It concerns me that with the patch as it stands,
+CONFIG_MEMORY_START looks like a fairly universal option, but it will
+only be respected on u-boot platforms (and only new u-boot, not cuboot
+at that).
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
