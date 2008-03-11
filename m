@@ -1,17 +1,28 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2137DDDF7E
+Return-Path: <marko.vaupotic@iskrasistemi.si>
+Received: from mercury.iskratr.si (mercury.iskratr.si [193.201.45.54])
+	by ozlabs.org (Postfix) with ESMTP id 06FFCDDF45
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 22:21:15 +1100 (EST)
-Date: Tue, 11 Mar 2008 11:39:06 +0100
-From: Sebastian Siewior <bigeasy@tglx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: [RFC/PATCH] [POWER] mpc85xx_ds add DMA engine to the DT and parse it.
-Message-ID: <20080311103906.GD9656@www.tglx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Tue, 11 Mar 2008 19:08:01 +1100 (EST)
+Received: from localhost (mercury.iskratr.si [127.0.0.1])
+	by mercury.iskratr.si (Postfix) with ESMTP id 544CB33C91F
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Mar 2008 08:50:51 +0100 (CET)
+Received: from mercury.iskratr.si ([127.0.0.1])
+	by localhost (mercury.iskratr.si [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Fdhd7czxHiyD for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Mar 2008 08:50:50 +0100 (CET)
+Received: from vavpoticmarko (unknown [10.12.14.51])
+	by mercury.iskratr.si (Postfix) with ESMTP id 7FF1233C919
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Mar 2008 08:50:50 +0100 (CET)
+From: "Vaupotic Marko" <marko.vaupotic@iskrasistemi.si>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: I2C device node on Sequoia (440EPx)
+Date: Tue, 11 Mar 2008 08:50:52 +0100
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0034_01C88355.02B67570"
+Message-Id: <20080311075050.7FF1233C919@mercury.iskratr.si>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,96 +33,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The DT entry is copy / paste from the documentation.
+This is a multi-part message in MIME format.
 
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/boot/dts/mpc8544ds.dts      |   41 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |   13 +++++++++
- 2 files changed, 54 insertions(+), 0 deletions(-)
+------=_NextPart_000_0034_01C88355.02B67570
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
-index 688af9d..fdaf793 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-@@ -116,6 +116,47 @@
- 			};
- 		};
- 
-+		dma@21300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
-+			reg = <21300 4>;
-+			ranges = <0 21100 200>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8540-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <0 80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <14 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8540-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <80 80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <15 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8540-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <100 80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <16 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8540-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <180 80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <17 2>;
-+			};
-+		};
-+
- 		enet0: ethernet@24000 {
- 			cell-index = <0>;
- 			device_type = "network";
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index bdb3d0b..b9a3094 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -19,6 +19,7 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/system.h>
- #include <asm/time.h>
-@@ -183,6 +184,18 @@ static int __init mpc8544_ds_probe(void)
- 	}
- }
- 
-+static struct of_device_id mpc85xxds_ids[] = {
-+	{ .type = "soc", },
-+	{ .compatible = "soc", },
-+	{},
-+};
-+
-+static int __init mpc85xxds_publish_devices(void)
-+{
-+	return of_platform_bus_probe(NULL, mpc85xxds_ids, NULL);
-+}
-+machine_device_initcall(mpc8544_ds, mpc85xxds_publish_devices);
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
--- 
-1.5.4.3
+
+Hi
+
+I am using an AMCC 440EPx processor on "Sequoia" board with Linux 2.6.21
+rc4. I am trying to use the i2c in the user-space
+In my Linux config file (Sequoia default) I have:
+CONFIG_I2C=y
+CONFIG_I2C_CHARDEV=y
+
+I than added the "i2c-0" device in /dev (# mknod i2c-0 c 89 0)
+When I run a simple program to open the device (provided by the
+"dev-interface" file of i2c kernel documentation) it returns errno message:
+"No such device".
+
+I have tried to use the device number 1, 2, 3, 4 but with no luck.
+
+Any suggestions what I  might be doing wrong?
+
+Best Regards
+
+Marko
+
+
+
+
+------=_NextPart_000_0034_01C88355.02B67570
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7036.0">
+<TITLE>I2C device node on Sequoia (440EPx)</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+<BR>
+
+<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Hi<BR>
+<BR>
+I am using an AMCC 440EPx processor on &quot;Sequoia&quot; board with =
+Linux 2.6.21 rc4. I am trying to use the i2c in the =
+user-space</FONT></SPAN></P>
+
+<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">In my Linux config =
+file (Sequoia default)</FONT></SPAN><SPAN LANG=3D"sl"> <FONT SIZE=3D2 =
+FACE=3D"Arial CE">I</FONT></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial"> have:<BR>
+CONFIG_I2C=3Dy<BR>
+CONFIG_I2C_CHARDEV=3Dy<BR>
+<BR>
+I than added the &quot;i2c-0&quot; device in /dev (# mknod i2c-0 c 89 =
+0)<BR>
+When I run a simple program to open the device (provided by the =
+&quot;dev-interface&quot; file of i2c kernel documentation) it returns =
+errno message: &quot;No such device&quot;.<BR>
+<BR>
+I have tried to use the device number 1, 2, 3, 4 but with no luck.<BR>
+<BR>
+Any suggestions what I&nbsp; might be doing wrong?<BR>
+<BR>
+Best Regards<BR>
+<BR>
+Marko</FONT></SPAN>
+</P>
+<BR>
+<BR>
+
+</BODY>
+</HTML>
+------=_NextPart_000_0034_01C88355.02B67570--
