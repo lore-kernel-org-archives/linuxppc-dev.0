@@ -1,22 +1,26 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id DBB5DDE06E
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 21:58:54 +1100 (EST)
-Received: from smtp.belgium.cse-semaphore.com (localhost [127.0.0.1])
-	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 8719C663A
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 11:58:49 +0100 (CET)
-Received: from pclaurent.belgium.cse-semaphore.com
-	(pclaurent.belgium.cse-semaphore.com [192.168.1.47])
-	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 612125065
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 11:58:49 +0100 (CET)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Interrupt handling documentation
-Date: Tue, 11 Mar 2008 11:58:45 +0100
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id 2C048DDFAF
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 22:46:04 +1100 (EST)
+Date: Tue, 11 Mar 2008 12:46:02 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
+Message-ID: <20080311114601.GA19189@netgate.macqel>
+References: <20080304080828.GA18829@netgate.macqel>
+	<1204618939.21545.52.camel@pasglop>
+	<20080304091059.GD18829@netgate.macqel>
+	<1204693264.21545.165.camel@pasglop>
+	<47CECB21.3060704@freescale.com>
+	<1204760811.21545.231.camel@pasglop>
+	<20080307001025.GA27321@netgate.macqel>
+	<1204849197.21545.272.camel@pasglop>
+	<20080309223109.GA3989@netgate.macqel>
+	<20080311003249.GG11559@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14019155.HfdIyVySCb";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803111158.48540.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080311003249.GG11559@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart14019155.HfdIyVySCb
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi David,
 
-Hi everybody,
+On Tue, Mar 11, 2008 at 11:32:49AM +1100, David Gibson wrote:
+> On Sun, Mar 09, 2008 at 11:31:09PM +0100, Philippe De Muyter wrote:
+> > Hi Ben,
+> > 
+> > I now have a working linux on my mpc8540 based board, with support for
+> > the compactflash disk and the i2c rtc.
+> > 
+> > The network tough, does not work yet. altough the the integrated ethernet
+> > controller (FEC) seems to be recognized.  Could it be a problem with the phy ?
+> > I notice that I do not have an entry for gfar_interrupt in /proc/interrupts
+> > on my ethernet-missing linux, while I have one ont the working arch/ppc linux ?
+> > Do I need to give the phy type in the dts file, and how ?
+> > 
+> > I would also like to know if it is possible to still get in linux the mac
+> > address known by uboot when using a dts file, and how ?
+> 
+> This chiefly depends on whether you're using an old u-boot that
+> doesn't know about the device tree, or a new u-boot which itself
+> supplies a device tree to the kernel.
+> 
+> If the old u-boot, you'll need to write a bootwrapper for your
+> platform which reads the bd_t and pokes the right mac addresses into
+> the device tree.
+> 
+> If the new u-boot, u-boot itself should put the address into the
+> device tree.  If it's not, why it's not is a u-boot question rather
+> than a device tree question.
 
-is there any documentation describing interrupt handling for the powerpc=20
-architecture ? I'm writing a driver for a cascaded interrupt controller and=
-=20
-the only source of information I found was the code.
+OK :(
 
-I'm particularly interested in information about irq hosts (allocation and=
-=20
-initialisation, especially the map and unmap callbacks) and irq chaining.=20
-Different drivers seem to implement cascaded irqs differently (for instance=
-=20
-arch/powerpc/sysdev/uic.c uses setup_irq to register the cascaded irq=20
-handler, while arch/powerpc/platforms/82xx/pq2ads-pci-pic.c uses=20
-set_irq_chained_handler) so I'm a bit lost here.
+Now back to the first an bigger problem :
+currently, I have an "old" U-boot and I have written myself a dts file.
 
-Best regards,
+Problem is : ethernet does not work, but that's not a mac-address problem,
+but something else that I do not understand yet.  The symptom is I get
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+	ip route add default via 192.168.85.33 dev eth0
+	RTNETLINK answers: Network is unreachable
 
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+I surmise this is because my eth0 does not become up, and I surmise
+again this is because there is no driver selected to drive the phy.
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+In my arch/ppc setup this was automagically handled by fixed@100:1 IIRC  
 
---nextPart14019155.HfdIyVySCb
-Content-Type: application/pgp-signature
+Is there something I can put in my dts file to activate a driver for my phy ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Best regards
 
-iD8DBQBH1mXo8y9gWxC9vpcRAgt4AKCatWiEuLmQpjK7b97oXn7JmywJJQCgkzuG
-4UUjj7YxSa8eUlMNkUKV90M=
-=WQCm
------END PGP SIGNATURE-----
-
---nextPart14019155.HfdIyVySCb--
+Philippe
