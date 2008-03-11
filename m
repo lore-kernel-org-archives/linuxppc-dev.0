@@ -1,15 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18390.9443.218176.274640@cargo.ozlabs.ibm.com>
-Date: Tue, 11 Mar 2008 17:21:23 +1100
+Message-ID: <18390.9349.330212.214849@cargo.ozlabs.ibm.com>
+Date: Tue, 11 Mar 2008 17:19:49 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 8/8] pseries: phyp dump: config file
-In-Reply-To: <47C7533D.9040002@austin.ibm.com>
+Subject: Re: [PATCH 6/8] pseries: phyp dump: Invalidate and print dump areas.
+In-Reply-To: <47C75292.6000705@austin.ibm.com>
 References: <47B90F55.2080606@austin.ibm.com>
 	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
-	<47C74A66.1060105@austin.ibm.com> <47C7533D.9040002@austin.ibm.com>
+	<47C74A66.1060105@austin.ibm.com> <47C75292.6000705@austin.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com, mahuja@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,12 +22,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Manish Ahuja writes:
 
-> +config PHYP_DUMP
-> +	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
-> +	depends on PPC_PSERIES && EXPERIMENTAL
-> +	default y
+> -static void
+> -release_memory_range(unsigned long start_pfn, unsigned long nr_pages)
+> +static
+> +void release_memory_range(unsigned long start_pfn, unsigned long nr_pages)
 
-I think this should default to n for now (i.e. leave out the default
-line entirely).  We can make it default to y later.
+This change looks rather pointless.  If you have to change it, I'd
+prefer:
+
+static void release_memory_range(unsigned long start_pfn,
+			unsigned long nr_pages)
 
 Paul.
