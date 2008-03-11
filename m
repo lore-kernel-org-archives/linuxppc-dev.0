@@ -1,14 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 34EE0DE0C4
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 06:33:14 +1100 (EST)
-Date: Tue, 11 Mar 2008 22:33:13 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] [NAND] FSL UPM NAND driver
-Message-ID: <20080311193313.GA14466@localhost.localdomain>
+Return-Path: <dan.j.williams@intel.com>
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
+	engine
+From: Dan Williams <dan.j.williams@intel.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <F4B05C0E-99BB-4F60-BDD8-A79F07A81692@kernel.crashing.org>
+References: <20080306233900.GA3969@lixom.net>
+	<20080311000619.ba39311f.akpm@linux-foundation.org>
+	<20080311142545.GA18843@lixom.net>
+	<20080311105355.64a9c380.akpm@linux-foundation.org>
+	<1205259311.26723.40.camel@dwillia2-linux.ch.intel.com>
+	<F4B05C0E-99BB-4F60-BDD8-A79F07A81692@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 11 Mar 2008 13:37:20 -0700
+Message-Id: <1205267840.27495.9.camel@dwillia2-linux.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Cc: hskinnemoen@atmel.com, "Nelson, Shannon" <shannon.nelson@intel.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	pasemi-linux@ozlabs.org, Olof Johansson <olof@lixom.net>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,344 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is very simple driver, NAND is connected through localbus,
-and User-Programmable Machine is doing various adjustments to
-speak NAND. No special efforts needed to do read and write cycles,
-though to control ALE and CLE phases, we ask UPM to generate exact
-pre-programmed signals on the localbus lines.
+On Tue, 2008-03-11 at 11:29 -0700, Kumar Gala wrote:
+> > My fault for not pushing out this cleanup to the old url while the
+> > git-md-accel changeover was pending.
+> 
+> Any reason not to push Zhang's fixes for 2.6.25?
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mtd/nand/Kconfig   |    8 ++
- drivers/mtd/nand/Makefile  |    1 +
- drivers/mtd/nand/fsl_upm.c |  291 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 300 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mtd/nand/fsl_upm.c
+I plan to push these fixes for 2.6.25.  Olof had some valid comments
+about "Fix fsldma.c warning messages..." [1].
 
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 4a3c675..288b871 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -330,4 +330,12 @@ config MTD_NAND_FSL_ELBC
- 	  Enabling this option will enable you to use this to control
- 	  external NAND devices.
- 
-+config MTD_NAND_FSL_UPM
-+	tristate "Support for NAND on Freescale UPM"
-+	depends on MTD_NAND && OF_GPIO && (PPC_83xx || PPC_85xx)
-+	select FSL_LBC
-+	help
-+	  Enables support for NAND Flash chips wired onto Freescale PowerPC
-+	  processor localbus with User-Programmable Machine support.
-+
- endif # MTD_NAND
-diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
-index 80d575e..44eddb1 100644
---- a/drivers/mtd/nand/Makefile
-+++ b/drivers/mtd/nand/Makefile
-@@ -32,5 +32,6 @@ obj-$(CONFIG_MTD_ALAUDA)		+= alauda.o
- obj-$(CONFIG_MTD_NAND_PASEMI)		+= pasemi_nand.o
- obj-$(CONFIG_MTD_NAND_ORION)		+= orion_nand.o
- obj-$(CONFIG_MTD_NAND_FSL_ELBC)		+= fsl_elbc_nand.o
-+obj-$(CONFIG_MTD_NAND_FSL_UPM)		+= fsl_upm.o
- 
- nand-objs := nand_base.o nand_bbt.o
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-new file mode 100644
-index 0000000..f1f8cf8
---- /dev/null
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -0,0 +1,291 @@
-+/*
-+ * Freescale UPM NAND driver.
-+ *
-+ * Copyright (c) 2007-2008  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/nand_ecc.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_gpio.h>
-+#include <linux/io.h>
-+#include <asm/fsl_lbc.h>
-+
-+struct fsl_upm_nand {
-+	struct device *dev;
-+	struct mtd_info mtd;
-+	struct nand_chip chip;
-+	int last_ctrl;
-+#ifdef CONFIG_MTD_PARTITIONS
-+	struct mtd_partition *parts;
-+#endif
-+
-+	struct fsl_upm upm;
-+	u8 upm_addr_offset;
-+	u8 upm_cmd_offset;
-+	void __iomem *io_base;
-+	int rnb_gpio;
-+	const u32 *wait_pattern;
-+	const u32 *wait_write;
-+	int chip_delay;
-+};
-+
-+#define to_fsl_upm_nand(mtd) container_of(mtd, struct fsl_upm_nand, mtd)
-+
-+static int fun_chip_ready(struct mtd_info *mtd)
-+{
-+	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
-+
-+	if (gpio_get_value(fun->rnb_gpio))
-+		return 1;
-+
-+	dev_vdbg(fun->dev, "busy\n");
-+	return 0;
-+}
-+
-+static void fun_wait_rnb(struct fsl_upm_nand *fun)
-+{
-+	int cnt = 1000000;
-+
-+	if (fun->rnb_gpio >= 0) {
-+		while (--cnt && !fun_chip_ready(&fun->mtd))
-+			cpu_relax();
-+	}
-+
-+	if (!cnt)
-+		dev_err(fun->dev, "tired waiting for RNB\n");
-+}
-+
-+static void fun_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
-+{
-+	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
-+
-+	if (!(ctrl & fun->last_ctrl)) {
-+		fsl_upm_end_pattern(&fun->upm);
-+
-+		if (cmd == NAND_CMD_NONE)
-+			return;
-+
-+		fun->last_ctrl = ctrl & (NAND_ALE | NAND_CLE);
-+	}
-+
-+	if (ctrl & NAND_CTRL_CHANGE) {
-+		if (ctrl & NAND_ALE)
-+			fsl_upm_start_pattern(&fun->upm, fun->upm_addr_offset);
-+		else if (ctrl & NAND_CLE)
-+			fsl_upm_start_pattern(&fun->upm, fun->upm_cmd_offset);
-+	}
-+
-+	fsl_upm_run_pattern(&fun->upm, fun->io_base, cmd);
-+
-+	if (fun->wait_pattern)
-+		fun_wait_rnb(fun);
-+}
-+
-+static uint8_t fun_read_byte(struct mtd_info *mtd)
-+{
-+	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
-+
-+	return in_8(fun->chip.IO_ADDR_R);
-+}
-+
-+static void fun_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
-+{
-+	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
-+	int i;
-+
-+	for (i = 0; i < len; i++)
-+		buf[i] = in_8(fun->chip.IO_ADDR_R);
-+}
-+
-+static void fun_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
-+{
-+	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
-+	int i;
-+
-+	for (i = 0; i < len; i++) {
-+		out_8(fun->chip.IO_ADDR_W, buf[i]);
-+		if (fun->wait_write)
-+			fun_wait_rnb(fun);
-+	}
-+}
-+
-+static int __devinit fun_chip_init(struct fsl_upm_nand *fun)
-+{
-+	int ret;
-+#ifdef CONFIG_MTD_PARTITIONS
-+	static const char *part_types[] = { "cmdlinepart", NULL, };
-+#endif
-+
-+	fun->chip.IO_ADDR_R = fun->io_base;
-+	fun->chip.IO_ADDR_W = fun->io_base;
-+	fun->chip.cmd_ctrl = fun_cmd_ctrl;
-+	fun->chip.chip_delay = fun->chip_delay;
-+	fun->chip.read_byte = fun_read_byte;
-+	fun->chip.read_buf = fun_read_buf;
-+	fun->chip.write_buf = fun_write_buf;
-+	fun->chip.ecc.mode = NAND_ECC_SOFT;
-+
-+	if (fun->rnb_gpio >= 0)
-+		fun->chip.dev_ready = fun_chip_ready;
-+
-+	fun->mtd.priv = &fun->chip;
-+	fun->mtd.owner = THIS_MODULE;
-+
-+	ret = nand_scan(&fun->mtd, 1);
-+	if (ret)
-+		return ret;
-+
-+	fun->mtd.name = fun->dev->bus_id;
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+	ret = parse_mtd_partitions(&fun->mtd, part_types, &fun->parts, 0);
-+	if (ret > 0)
-+		return add_mtd_partitions(&fun->mtd, fun->parts, ret);
-+#endif
-+	return add_mtd_device(&fun->mtd);
-+}
-+
-+static int __devinit fun_probe(struct of_device *ofdev,
-+			       const struct of_device_id *ofid)
-+{
-+	struct fsl_upm_nand *fun;
-+	struct resource io_res;
-+	const u32 *prop;
-+	int ret;
-+	int size;
-+
-+	fun = kzalloc(sizeof(*fun), GFP_KERNEL);
-+	if (!fun)
-+		return -ENOMEM;
-+
-+	ret = of_address_to_resource(ofdev->node, 0, &io_res);
-+	if (ret) {
-+		dev_err(&ofdev->dev, "can't get IO base\n");
-+		goto err1;
-+	}
-+
-+	ret = fsl_upm_find(io_res.start, &fun->upm);
-+	if (ret) {
-+		dev_err(&ofdev->dev, "can't find UPM\n");
-+		goto err1;
-+	}
-+
-+	prop = of_get_property(ofdev->node, "fsl,upm-addr-offset", &size);
-+	if (!prop || size != sizeof(u32)) {
-+		dev_err(&ofdev->dev, "can't get UPM address offset\n");
-+		ret = -EINVAL;
-+		goto err2;
-+	}
-+	fun->upm_addr_offset = *prop;
-+
-+	prop = of_get_property(ofdev->node, "fsl,upm-cmd-offset", &size);
-+	if (!prop || size != sizeof(u32)) {
-+		dev_err(&ofdev->dev, "can't get UPM command offset\n");
-+		ret = -EINVAL;
-+		goto err2;
-+	}
-+	fun->upm_cmd_offset = *prop;
-+
-+	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
-+	if (fun->rnb_gpio >= 0) {
-+		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
-+		if (ret) {
-+			dev_err(&ofdev->dev, "can't request RNB gpio\n");
-+			goto err2;
-+		}
-+		gpio_direction_input(fun->rnb_gpio);
-+	} else if (fun->rnb_gpio == -EINVAL) {
-+		dev_err(&ofdev->dev, "specified RNB gpio is invalid\n");
-+		goto err2;
-+	}
-+
-+	fun->io_base = devm_ioremap_nocache(&ofdev->dev, io_res.start,
-+					  io_res.end - io_res.start + 1);
-+	if (!fun->io_base) {
-+		ret = -ENOMEM;
-+		goto err2;
-+	}
-+
-+	fun->dev = &ofdev->dev;
-+	fun->last_ctrl = NAND_CLE;
-+	fun->wait_pattern = of_get_property(ofdev->node, "fsl,wait-pattern",
-+					    NULL);
-+	fun->wait_write = of_get_property(ofdev->node, "fsl,wait-write", NULL);
-+
-+	prop = of_get_property(ofdev->node, "chip-delay", NULL);
-+	if (prop)
-+		fun->chip_delay = *prop;
-+	else
-+		fun->chip_delay = 50;
-+
-+	ret = fun_chip_init(fun);
-+	if (ret)
-+		goto err2;
-+
-+	dev_set_drvdata(&ofdev->dev, fun);
-+
-+	return 0;
-+err2:
-+	if (fun->rnb_gpio >= 0)
-+		gpio_free(fun->rnb_gpio);
-+err1:
-+	kfree(fun);
-+
-+	return ret;
-+}
-+
-+static int __devexit fun_remove(struct of_device *ofdev)
-+{
-+	struct fsl_upm_nand *fun = dev_get_drvdata(&ofdev->dev);
-+
-+	nand_release(&fun->mtd);
-+
-+	if (fun->rnb_gpio >= 0)
-+		gpio_free(fun->rnb_gpio);
-+
-+	kfree(fun);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id of_fun_match[] = {
-+	{ .compatible = "fsl,upm-nand" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, of_fun_match);
-+
-+static struct of_platform_driver of_fun_driver = {
-+	.name		= "fsl,upm-nand",
-+	.match_table	= of_fun_match,
-+	.probe		= fun_probe,
-+	.remove		= __devexit_p(fun_remove),
-+};
-+
-+static int __init fun_module_init(void)
-+{
-+	return of_register_platform_driver(&of_fun_driver);
-+}
-+module_init(fun_module_init);
-+
-+static void __exit fun_module_exit(void)
-+{
-+	of_unregister_platform_driver(&of_fun_driver);
-+}
-+module_exit(fun_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
-+MODULE_DESCRIPTION("Driver for NAND chips working through Freescale "
-+		   "LocalBus User-Programmable Machine");
--- 
-1.5.2.2
+> I also have a patch I want to push for 2.6.25 to deal with the powerpc 
+> device tree.  I was going to handle this via the powerpc tree's since 
+> that seems to be the model we have used for netdev and other drivers 
+> that play with arch/powerpc.  I hope that's not an issue (I'll CC you 
+> on the patch).
+
+Not an issue at all.  Just give me a heads up on what you want me to
+pick up and what you want me to just ack.
+
+[1] http://marc.info/?l=linux-kernel&m=120524510630957&w=2
