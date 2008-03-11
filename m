@@ -4,27 +4,32 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CB93ADDFDE
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 20:10:23 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id CC38CDE073
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 20:10:24 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	m2B9A82C023065
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:10:09 -0700 (MST)
+	m2B9AFvZ023165
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:10:15 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m2B99x26028188
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 04:10:08 -0500 (CDT)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m2B99x2E028188
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 04:10:14 -0500 (CDT)
 From: Zhang Wei <wei.zhang@freescale.com>
 To: mporter@kernel.crashing.org, akpm@linux-foundation.org,
 	galak@kernel.crashing.org
-Subject: [PATCH 05/17] Add OF-tree support to RapidIO controller driver.
-Date: Tue, 11 Mar 2008 17:07:46 +0800
-Message-Id: <1205226478-7641-5-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <1205226478-7641-4-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 09/17] Add serial RapidIO controller support,
+	which includes MPC8548, MPC8641.
+Date: Tue, 11 Mar 2008 17:07:50 +0800
+Message-Id: <1205226478-7641-9-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <1205226478-7641-8-git-send-email-wei.zhang@freescale.com>
 References: <1205226478-7641-1-git-send-email-wei.zhang@freescale.com>
 	<1205226478-7641-2-git-send-email-wei.zhang@freescale.com>
 	<1205226478-7641-3-git-send-email-wei.zhang@freescale.com>
 	<1205226478-7641-4-git-send-email-wei.zhang@freescale.com>
+	<1205226478-7641-5-git-send-email-wei.zhang@freescale.com>
+	<1205226478-7641-6-git-send-email-wei.zhang@freescale.com>
+	<1205226478-7641-7-git-send-email-wei.zhang@freescale.com>
+	<1205226478-7641-8-git-send-email-wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,276 +42,176 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
- arch/powerpc/kernel/Makefile  |    1 -
- arch/powerpc/kernel/rio.c     |   52 -------------------
- arch/powerpc/sysdev/fsl_rio.c |  110 ++++++++++++++++++++++++++++++++++++++---
- arch/powerpc/sysdev/fsl_rio.h |   20 -------
- 4 files changed, 102 insertions(+), 81 deletions(-)
- delete mode 100644 arch/powerpc/kernel/rio.c
- delete mode 100644 arch/powerpc/sysdev/fsl_rio.h
+ arch/powerpc/sysdev/fsl_rio.c |   75 +++++++++++++++++++++++++++++++++++------
+ include/linux/rio.h           |    6 +++
+ 2 files changed, 70 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index c1baf9d..e4c8e12 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -72,7 +72,6 @@ pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
- obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
- 				   pci-common.o
- obj-$(CONFIG_PCI_MSI)		+= msi.o
--obj-$(CONFIG_RAPIDIO)		+= rio.o
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o \
- 				   machine_kexec_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_AUDIT)		+= audit.o
-diff --git a/arch/powerpc/kernel/rio.c b/arch/powerpc/kernel/rio.c
-deleted file mode 100644
-index 29487fe..0000000
---- a/arch/powerpc/kernel/rio.c
-+++ /dev/null
-@@ -1,52 +0,0 @@
--/*
-- * RapidIO PPC32 support
-- *
-- * Copyright 2005 MontaVista Software, Inc.
-- * Matt Porter <mporter@kernel.crashing.org>
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#include <linux/init.h>
--#include <linux/kernel.h>
--#include <linux/rio.h>
--
--#include <asm/rio.h>
--
--/**
-- * platform_rio_init - Do platform specific RIO init
-- *
-- * Any platform specific initialization of RapdIO
-- * hardware is done here as well as registration
-- * of any active master ports in the system.
-- */
--void __attribute__ ((weak))
--    platform_rio_init(void)
--{
--	printk(KERN_WARNING "RIO: No platform_rio_init() present\n");
--}
--
--/**
-- * ppc_rio_init - Do PPC32 RIO init
-- *
-- * Calls platform-specific RIO init code and then calls
-- * rio_init_mports() to initialize any master ports that
-- * have been registered with the RIO subsystem.
-- */
--static int __init ppc_rio_init(void)
--{
--	printk(KERN_INFO "RIO: RapidIO init\n");
--
--	/* Platform specific initialization */
--	platform_rio_init();
--
--	/* Enumerate all registered ports */
--	rio_init_mports();
--
--	return 0;
--}
--
--subsys_initcall(ppc_rio_init);
 diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 80acc79..d2d1470 100644
+index 14c106c..935822a 100644
 --- a/arch/powerpc/sysdev/fsl_rio.c
 +++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -20,6 +20,7 @@
- #include <linux/interrupt.h>
+@@ -21,6 +21,7 @@
  #include <linux/rio.h>
  #include <linux/rio_drv.h>
-+#include <linux/of_platform.h>
+ #include <linux/of_platform.h>
++#include <linux/delay.h>
  
  #include <asm/io.h>
  
-@@ -28,7 +29,6 @@
- #define IRQ_RIO_TX(m)		(((struct rio_priv *)(m->priv))->txirq)
+@@ -30,7 +31,12 @@
  #define IRQ_RIO_RX(m)		(((struct rio_priv *)(m->priv))->rxirq)
  
--#define RIO_REGS_BASE		(CCSRBAR + 0xc0000)
  #define RIO_ATMU_REGS_OFFSET	0x10c00
- #define RIO_MSG_REGS_OFFSET	0x11000
+-#define RIO_MSG_REGS_OFFSET	0x11000
++#define RIO_P_MSG_REGS_OFFSET	0x11000
++#define RIO_S_MSG_REGS_OFFSET	0x13000
++#define RIO_ESCSR		0x158
++#define RIO_CCSR		0x15c
++#define RIO_ISR_AACR		0x10120
++#define RIO_ISR_AACR_AA		0x1	/* Accept All ID */
  #define RIO_MAINT_WIN_SIZE	0x400000
-@@ -905,19 +905,66 @@ __setup("riohdid=", fsl_rio_get_cmdline);
+ #define RIO_DBELL_WIN_SIZE	0x1000
  
- /**
-  * fsl_rio_setup - Setup MPC85xx RapidIO interface
-- * @law_start: Starting physical address of RapidIO LAW
-- * @law_size: Size of RapidIO LAW
-+ * @fsl_rio_setup - Setup Freescale PowerPC RapidIO interface
-  *
-  * Initializes MPC85xx RapidIO hardware interface, configures
-  * master port with system-specific info, and registers the
-  * master port with the RapidIO subsystem.
-  */
--void fsl_rio_setup(int law_start, int law_size)
-+int fsl_rio_setup(struct of_device *dev)
- {
- 	struct rio_ops *ops;
- 	struct rio_mport *port;
--	struct rio_priv *priv = NULL;
--	int rc;
-+	struct rio_priv *priv;
-+	int rc = 0;
-+	const u32 *dt_range, *cell;
-+	struct resource regs;
-+	int rlen;
-+	u64 law_start, law_size;
-+	int paw, aw, sw;
-+
-+	if (!dev->node) {
-+		dev_err(&dev->dev, "Device OF-Node is NULL");
-+		return -EFAULT;
+@@ -69,7 +75,7 @@
+ 
+ struct rio_atmu_regs {
+ 	u32 rowtar;
+-	u32 pad1;
++	u32 rowtear;
+ 	u32 rowbar;
+ 	u32 pad2;
+ 	u32 rowar;
+@@ -95,7 +101,15 @@ struct rio_msg_regs {
+ 	u32 ifqdpar;
+ 	u32 pad6;
+ 	u32 ifqepar;
+-	u32 pad7[250];
++	u32 pad7[226];
++	u32 odmr;
++	u32 odsr;
++	u32 res0[4];
++	u32 oddpr;
++	u32 oddatr;
++	u32 res1[3];
++	u32 odretcr;
++	u32 res2[12];
+ 	u32 dmr;
+ 	u32 dsr;
+ 	u32 pad8;
+@@ -175,8 +189,22 @@ static int fsl_rio_doorbell_send(struct rio_mport *mport,
+ 	struct rio_priv *priv = mport->priv;
+ 	pr_debug("fsl_doorbell_send: index %d destid %4.4x data %4.4x\n",
+ 		 index, destid, data);
+-	out_be32(&priv->dbell_atmu_regs->rowtar, destid << 22);
+-	out_be16(priv->dbell_win, data);
++	switch (mport->phy_type) {
++	case RIO_PHY_PARALLEL:
++		out_be32(&priv->dbell_atmu_regs->rowtar, destid << 22);
++		out_be16(priv->dbell_win, data);
++		break;
++	case RIO_PHY_SERIAL:
++		/* In the serial version silicons, such as MPC8548, MPC8641,
++		 * below operations is must be.
++		 */
++		out_be32(&priv->msg_regs->odmr, 0x00000000);
++		out_be32(&priv->msg_regs->odretcr, 0x00000004);
++		out_be32(&priv->msg_regs->oddpr, destid << 16);
++		out_be32(&priv->msg_regs->oddatr, data);
++		out_be32(&priv->msg_regs->odmr, 0x00000001);
++		break;
 +	}
+ 
+ 	return 0;
+ }
+@@ -342,11 +370,22 @@ rio_hw_add_outb_message(struct rio_mport *mport, struct rio_dev *rdev, int mbox,
+ 		memset(priv->msg_tx_ring.virt_buffer[priv->msg_tx_ring.tx_slot]
+ 				+ len, 0, RIO_MAX_MSG_SIZE - len);
+ 
+-	/* Set mbox field for message */
+-	desc->dport = mbox & 0x3;
++	switch (mport->phy_type) {
++	case RIO_PHY_PARALLEL:
++		/* Set mbox field for message */
++		desc->dport = mbox & 0x3;
+ 
+-	/* Enable EOMI interrupt, set priority, and set destid */
+-	desc->dattr = 0x28000000 | (rdev->destid << 2);
++		/* Enable EOMI interrupt, set priority, and set destid */
++		desc->dattr = 0x28000000 | (rdev->destid << 2);
++		break;
++	case RIO_PHY_SERIAL:
++		/* Set mbox field for message, and set destid */
++		desc->dport = (rdev->destid << 16) | (mbox & 0x3);
 +
-+	rc = of_address_to_resource(dev->node, 0, &regs);
-+	if (rc) {
-+		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
-+				dev->node->full_name);
-+		return -EFAULT;
++		/* Enable EOMI interrupt and priority */
++		desc->dattr = 0x28000000;
++		break;
 +	}
-+	dev_info(&dev->dev, "Of-device full name %s\n", dev->node->full_name);
-+	dev_info(&dev->dev, "Regs start 0x%08x size 0x%08x\n",	regs.start,
-+						regs.end - regs.start + 1);
-+
-+	dt_range = of_get_property(dev->node, "ranges", &rlen);
-+	if (!dt_range) {
-+		dev_err(&dev->dev, "Can't get %s property 'ranges'\n",
-+				dev->node->full_name);
-+		return -EFAULT;
-+	}
-+
-+	/* Get node address wide */
-+	cell = of_get_property(dev->node, "#address-cells", NULL);
-+	if (cell)
-+		aw = *cell;
-+	else
-+		aw = of_n_addr_cells(dev->node);
-+	/* Get node size wide */
-+	cell = of_get_property(dev->node, "#size-cells", NULL);
-+	if (cell)
-+		sw = *cell;
-+	else
-+		sw = of_n_size_cells(dev->node);
-+	/* Get parent address wide wide */
-+	paw = of_n_addr_cells(dev->node);
-+
-+	law_start = of_read_number(dt_range + aw, paw);
-+	law_size = of_read_number(dt_range + aw + paw, sw);
-+
-+	dev_info(&dev->dev, "LAW start 0x%016llx, size 0x%016llx.\n",
-+			law_start, law_size);
  
- 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
- 	ops->lcread = fsl_local_config_read;
-@@ -942,6 +989,12 @@ void fsl_rio_setup(int law_start, int law_size)
- 	port->iores.end = law_start + law_size;
- 	port->iores.flags = IORESOURCE_MEM;
+ 	/* Set transfer size aligned to next power of 2 (in double words) */
+ 	desc->dwcnt = is_power_of_2(len) ? len : 1 << get_bitmask_order(len);
+@@ -920,6 +959,7 @@ int fsl_rio_setup(struct of_device *dev)
+ 	const u32 *dt_range, *cell;
+ 	struct resource regs;
+ 	int rlen;
++	u32 ccsr;
+ 	u64 law_start, law_size;
+ 	int paw, aw, sw;
  
-+	priv->bellirq = irq_of_parse_and_map(dev->node, 2);
-+	priv->txirq = irq_of_parse_and_map(dev->node, 3);
-+	priv->rxirq = irq_of_parse_and_map(dev->node, 4);
-+	dev_info(&dev->dev, "bellirq: %d, txirq: %d, rxirq %d\n", priv->bellirq,
-+				priv->txirq, priv->rxirq);
+@@ -1008,6 +1048,14 @@ int fsl_rio_setup(struct of_device *dev)
+ 
+ 	priv->regs_win = ioremap(regs.start, regs.end - regs.start + 1);
+ 
++	/* Probe the master port phy type */
++	ccsr = in_be32(priv->regs_win + RIO_CCSR);
++	port->phy_type = (ccsr & 1) ? RIO_PHY_SERIAL : RIO_PHY_PARALLEL;
++	dev_info(&dev->dev, "RapidIO PHY type: %s\n",
++			(port->phy_type == RIO_PHY_PARALLEL) ? "parallel" :
++			((port->phy_type == RIO_PHY_SERIAL) ? "serial" :
++			 "unknown"));
 +
- 	rio_init_dbell_res(&port->riores[RIO_DOORBELL_RESOURCE], 0, 0xffff);
- 	rio_init_mbox_res(&port->riores[RIO_INB_MBOX_RESOURCE], 0, 0);
- 	rio_init_mbox_res(&port->riores[RIO_OUTB_MBOX_RESOURCE], 0, 0);
-@@ -953,7 +1006,7 @@ void fsl_rio_setup(int law_start, int law_size)
- 	port->priv = priv;
- 	rio_register_mport(port);
- 
--	priv->regs_win = ioremap(RIO_REGS_BASE, 0x20000);
-+	priv->regs_win = ioremap(regs.start, regs.end - regs.start + 1);
- 	priv->atmu_regs = (struct rio_atmu_regs *)(priv->regs_win
+ 	port->sys_size = (in_be32((priv->regs_win + RIO_PEF_CAR))
+ 					& RIO_PEF_CTLS) >> 4;
+ 	dev_info(&dev->dev, "RapidIO Common Transport System size: %d\n",
+@@ -1017,8 +1065,13 @@ int fsl_rio_setup(struct of_device *dev)
  					+ RIO_ATMU_REGS_OFFSET);
  	priv->maint_atmu_regs = priv->atmu_regs + 1;
-@@ -972,10 +1025,51 @@ void fsl_rio_setup(int law_start, int law_size)
- 	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);
- 	fsl_rio_doorbell_init(port);
+ 	priv->dbell_atmu_regs = priv->atmu_regs + 2;
+-	priv->msg_regs = (struct rio_msg_regs *)(priv->regs_win
+-							+ RIO_MSG_REGS_OFFSET);
++	priv->msg_regs = (struct rio_msg_regs *)(priv->regs_win +
++				((port->phy_type == RIO_PHY_SERIAL) ?
++				RIO_S_MSG_REGS_OFFSET : RIO_P_MSG_REGS_OFFSET));
++
++	/* Set to receive any dist ID for serial RapidIO controller. */
++	if (port->phy_type == RIO_PHY_SERIAL)
++		out_be32((priv->regs_win + RIO_ISR_AACR), RIO_ISR_AACR_AA);
  
--	return;
-+	return 0;
- err:
- 	if (priv)
- 		iounmap(priv->regs_win);
-+	kfree(ops);
- 	kfree(priv);
- 	kfree(port);
-+	return rc;
- }
-+
-+/* The probe function for RapidIO peer-to-peer network.
-+ */
-+static int __devinit fsl_of_rio_rpn_probe(struct of_device *dev,
-+				     const struct of_device_id *match)
-+{
-+	int rc;
-+	printk(KERN_INFO "Setting up RapidIO peer-to-peer network %s\n",
-+			dev->node->full_name);
-+
-+	rc = fsl_rio_setup(dev);
-+	if (rc)
-+		goto out;
-+
-+	/* Enumerate all registered ports */
-+	rc = rio_init_mports();
-+out:
-+	return rc;
+ 	/* Configure maintenance transaction window */
+ 	out_be32(&priv->maint_atmu_regs->rowbar, 0x000c0000);
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index 4a064bc..cfb66bb 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -145,6 +145,11 @@ struct rio_dbell {
+ 	void *dev_id;
+ };
+ 
++enum rio_phy_type {
++	RIO_PHY_PARALLEL,
++	RIO_PHY_SERIAL,
 +};
 +
-+static const struct of_device_id fsl_of_rio_rpn_ids[] = {
-+	{
-+		.compatible = "fsl,rapidio-delta",
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver fsl_of_rio_rpn_driver = {
-+	.name = "fsl-of-rio",
-+	.match_table = fsl_of_rio_rpn_ids,
-+	.probe = fsl_of_rio_rpn_probe,
-+};
-+
-+static __init int fsl_of_rio_rpn_init(void)
-+{
-+	return of_register_platform_driver(&fsl_of_rio_rpn_driver);
-+}
-+
-+subsys_initcall(fsl_of_rio_rpn_init);
-diff --git a/arch/powerpc/sysdev/fsl_rio.h b/arch/powerpc/sysdev/fsl_rio.h
-deleted file mode 100644
-index 6d3ff30..0000000
---- a/arch/powerpc/sysdev/fsl_rio.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--/*
-- * MPC85xx RapidIO definitions
-- *
-- * Copyright 2005 MontaVista Software, Inc.
-- * Matt Porter <mporter@kernel.crashing.org>
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#ifndef __PPC_SYSLIB_PPC85XX_RIO_H
--#define __PPC_SYSLIB_PPC85XX_RIO_H
--
--#include <linux/init.h>
--
--extern void mpc85xx_rio_setup(int law_start, int law_size);
--
--#endif				/* __PPC_SYSLIB_PPC85XX_RIO_H */
+ /**
+  * struct rio_mport - RIO master port info
+  * @dbells: List of doorbell events
+@@ -178,6 +183,7 @@ struct rio_mport {
+ 				 * 0 - Small size. 256 devices.
+ 				 * 1 - Large size, 65536 devices.
+ 				 */
++	enum rio_phy_type phy_type;	/* RapidIO phy type */
+ 	unsigned char name[40];
+ 	void *priv;		/* Master port private data */
+ };
 -- 
 1.5.4
