@@ -1,23 +1,18 @@
-Return-Path: <dan.j.williams@intel.com>
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
-	engine
-From: Dan Williams <dan.j.williams@intel.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <F4B05C0E-99BB-4F60-BDD8-A79F07A81692@kernel.crashing.org>
-References: <20080306233900.GA3969@lixom.net>
-	<20080311000619.ba39311f.akpm@linux-foundation.org>
-	<20080311142545.GA18843@lixom.net>
-	<20080311105355.64a9c380.akpm@linux-foundation.org>
-	<1205259311.26723.40.camel@dwillia2-linux.ch.intel.com>
-	<F4B05C0E-99BB-4F60-BDD8-A79F07A81692@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 11 Mar 2008 13:37:20 -0700
-Message-Id: <1205267840.27495.9.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-Cc: hskinnemoen@atmel.com, "Nelson, Shannon" <shannon.nelson@intel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	pasemi-linux@ozlabs.org, Olof Johansson <olof@lixom.net>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id CF303DE4D1
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 08:32:18 +1100 (EST)
+From: "Joakim Tjernlund" <Joakim.Tjernlund@transmode.se>
+To: "'Anton Vorontsov'" <avorontsov@ru.mvista.com>,
+	<linux-usb@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+References: <20080311191744.GA10518@localhost.localdomain>
+In-Reply-To: <20080311191744.GA10518@localhost.localdomain>
+Subject: RE: [PATCH] Freescale QUICC Engine USB Host Controller
+Date: Tue, 11 Mar 2008 22:32:07 +0100
+Message-ID: <00aa01c883bf$5bfae2a0$13f0a7e0$@Tjernlund@transmode.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-03-11 at 11:29 -0700, Kumar Gala wrote:
-> > My fault for not pushing out this cleanup to the old url while the
-> > git-md-accel changeover was pending.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org [mailto:linuxppc-dev-
+> bounces+joakim.tjernlund=transmode.se@ozlabs.org] On Behalf Of Anton Vorontsov
+> Sent: den 11 mars 2008 20:18
+> To: linux-usb@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Subject: [PATCH] Freescale QUICC Engine USB Host Controller
 > 
-> Any reason not to push Zhang's fixes for 2.6.25?
+> This is patch adds support for the FHCI USB controller, as found
+> in the Freescale MPC836x and MPC832x processors. It can support
+> Full or Low speed modes.
+> 
+> Quite a lot hardware is doing by itself (SOF generation, CRC generation
+> and checking), though scheduling and retransmission is on the software
+> shoulders.
+> 
+> This controller does not integrate the root hub, so this driver also
+> fakes an one-port hub. External hub is required to support more than
+> one device.
 
-I plan to push these fixes for 2.6.25.  Olof had some valid comments
-about "Fix fsldma.c warning messages..." [1].
+Cool, can one turn this into a gadget driver too?
 
-> I also have a patch I want to push for 2.6.25 to deal with the powerpc 
-> device tree.  I was going to handle this via the powerpc tree's since 
-> that seems to be the model we have used for netdev and other drivers 
-> that play with arch/powerpc.  I hope that's not an issue (I'll CC you 
-> on the patch).
-
-Not an issue at all.  Just give me a heads up on what you want me to
-pick up and what you want me to just ack.
-
-[1] http://marc.info/?l=linux-kernel&m=120524510630957&w=2
+       Jocke
