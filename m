@@ -1,26 +1,17 @@
-Return-Path: <phdm@macqel.be>
-Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
-	by ozlabs.org (Postfix) with ESMTP id 2C048DDFAF
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 22:46:04 +1100 (EST)
-Date: Tue, 11 Mar 2008 12:46:02 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: ARCH=ppc -> ARCH=powerpc : help needed for dts file
-Message-ID: <20080311114601.GA19189@netgate.macqel>
-References: <20080304080828.GA18829@netgate.macqel>
-	<1204618939.21545.52.camel@pasglop>
-	<20080304091059.GD18829@netgate.macqel>
-	<1204693264.21545.165.camel@pasglop>
-	<47CECB21.3060704@freescale.com>
-	<1204760811.21545.231.camel@pasglop>
-	<20080307001025.GA27321@netgate.macqel>
-	<1204849197.21545.272.camel@pasglop>
-	<20080309223109.GA3989@netgate.macqel>
-	<20080311003249.GG11559@localhost.localdomain>
+Return-Path: <coreppcdevel@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.181])
+	by ozlabs.org (Postfix) with ESMTP id 86D9EDE02B
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 23:54:32 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id v27so1393283ele.16
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 05:54:31 -0700 (PDT)
+Message-ID: <543e3890803110554g94d7514sc8aee2031918a705@mail.gmail.com>
+Date: Tue, 11 Mar 2008 18:24:30 +0530
+From: "Suresh Chandra Mannava" <coreppcdevel@gmail.com>
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Interrupt routing ARCH=ppc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080311003249.GG11559@localhost.localdomain>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_1364_32625601.1205240070807"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,54 +21,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+------=_Part_1364_32625601.1205240070807
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Tue, Mar 11, 2008 at 11:32:49AM +1100, David Gibson wrote:
-> On Sun, Mar 09, 2008 at 11:31:09PM +0100, Philippe De Muyter wrote:
-> > Hi Ben,
-> > 
-> > I now have a working linux on my mpc8540 based board, with support for
-> > the compactflash disk and the i2c rtc.
-> > 
-> > The network tough, does not work yet. altough the the integrated ethernet
-> > controller (FEC) seems to be recognized.  Could it be a problem with the phy ?
-> > I notice that I do not have an entry for gfar_interrupt in /proc/interrupts
-> > on my ethernet-missing linux, while I have one ont the working arch/ppc linux ?
-> > Do I need to give the phy type in the dts file, and how ?
-> > 
-> > I would also like to know if it is possible to still get in linux the mac
-> > address known by uboot when using a dts file, and how ?
-> 
-> This chiefly depends on whether you're using an old u-boot that
-> doesn't know about the device tree, or a new u-boot which itself
-> supplies a device tree to the kernel.
-> 
-> If the old u-boot, you'll need to write a bootwrapper for your
-> platform which reads the bd_t and pokes the right mac addresses into
-> the device tree.
-> 
-> If the new u-boot, u-boot itself should put the address into the
-> device tree.  If it's not, why it's not is a u-boot question rather
-> than a device tree question.
+Hi All,
 
-OK :(
+I am working on porting Linux 2.6.16.60 on PowerPC based board with Tsi109
+system controller.
+Our platform support is defined in arch/ppc
+Here is our hardware interrupt routing
+Tsi109 PCI BUS
+    (BUS 0)
+        |
+        |
+       V
+     VME controller (BUS 0 IDSEL 16) IRQ 36
+      PMC Slot        (BUS 0 IDSEL 17) IRQ 37
+     PCI-PCI Bridge (BUS 0 IDSEL 18) No IRQ required
+                |
+     (BUS 1)|
+                 |------->    PMC Slot (BUS 1 IDSEL 19) IRQ 38
+                              USB Contr(BUS 1 IDSEL 20) IRQ 39
 
-Now back to the first an bigger problem :
-currently, I have an "old" U-boot and I have written myself a dts file.
+I faced a problem at map_irq. Due to pci_swizzle, PCI probe is always
+returning p2p bridge IDSEL for all device on BUS 1.
+In our case, we routed independent interrupt lines for the devices on BUS 1.
 
-Problem is : ethernet does not work, but that's not a mac-address problem,
-but something else that I do not understand yet.  The symptom is I get
+I made a quick workaround by assigning IRQ's based on dev->devfn.
 
-	ip route add default via 192.168.85.33 dev eth0
-	RTNETLINK answers: Network is unreachable
+Is there any standard way of assigning independent interrupts for the
+devices connected below P2P bridge?
 
-I surmise this is because my eth0 does not become up, and I surmise
-again this is because there is no driver selected to drive the phy.
+I am facing problem with on-board USB controller. Even though
+/proc/interrupts shows correct assignment. USB is always returning the
+following message
 
-In my arch/ppc setup this was automagically handled by fixed@100:1 IIRC  
+usb 2-1: new low speed USB device using ohci_hcd and address 2
+ohci_hcd 0000:01:04.0: Unlink after no-IRQ?  Controller is probably using
+the wrong IRQ
 
-Is there something I can put in my dts file to activate a driver for my phy ?
+If the interrupts are not assigned properly, how the above message pop-up
+soon after inserting USB device?
 
-Best regards
+Here is the proc entry
+# cat /proc/interrupts
+           CPU0
+ 12:        105  tsi108_pic Level     serial
+ 38:       4270  tsi108_PCI_int Level     eth0
+ 39:          1  tsi108_PCI_int Level     ehci_hcd:usb1, ohci_hcd:usb2,
+ohci_hcd :usb3
 
-Philippe
+Whereas USB PMC on BUS 0 works fine.
+
+I request you to provide some pointers on the same.
+
+Thanks a lot,
+Suresh
+
+------=_Part_1364_32625601.1205240070807
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi All,<br><br>I am working on porting Linux <a href="http://2.6.16.60">2.6.16.60</a> on PowerPC based board with Tsi109 system controller. <br>Our platform support is defined in arch/ppc<br>Here is our hardware interrupt routing<br>
+Tsi109 PCI BUS <br>&nbsp;&nbsp;&nbsp; (BUS 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V<br>&nbsp;&nbsp;&nbsp;&nbsp; VME controller (BUS 0 IDSEL 16) IRQ 36 <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PMC Slot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (BUS 0 IDSEL 17) IRQ 37<br>&nbsp;&nbsp;&nbsp;&nbsp; PCI-PCI Bridge (BUS 0 IDSEL 18) No IRQ required<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br>&nbsp;&nbsp;&nbsp;&nbsp; (BUS 1)|<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; |-------&gt;&nbsp;&nbsp;&nbsp; PMC Slot (BUS 1 IDSEL 19) IRQ 38<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB Contr(BUS 1 IDSEL 20) IRQ 39 <br><br>I faced a problem at map_irq. Due to pci_swizzle, PCI probe is always returning p2p bridge IDSEL for all device on BUS 1.<br>
+In our case, we routed independent interrupt lines for the devices on BUS 1.<br><br>I made a quick workaround by assigning IRQ&#39;s based on dev-&gt;devfn. <br><br>Is there any standard way of assigning independent interrupts for the devices connected below P2P bridge?<br>
+<br>I am facing problem with on-board USB controller. Even though /proc/interrupts shows correct assignment. USB is always returning the following message<br><br>usb 2-1: new low speed USB device using ohci_hcd and address 2<br>
+ohci_hcd 0000:01:04.0: Unlink after no-IRQ?&nbsp; Controller is probably using the wrong IRQ<br><br>If the interrupts are not assigned properly, how the above message pop-up soon after inserting USB device?<br><br>Here is the proc entry<br>
+# cat /proc/interrupts<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CPU0<br>&nbsp;12:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 105&nbsp; tsi108_pic Level&nbsp;&nbsp;&nbsp;&nbsp; serial<br>&nbsp;38:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4270&nbsp; tsi108_PCI_int Level&nbsp;&nbsp;&nbsp;&nbsp; eth0<br>&nbsp;39:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp; tsi108_PCI_int Level&nbsp;&nbsp;&nbsp;&nbsp; ehci_hcd:usb1, ohci_hcd:usb2, ohci_hcd :usb3<br>
+<br>Whereas USB PMC on BUS 0 works fine.<br><br>I request you to provide some pointers on the same.<br><br>Thanks a lot,<br>Suresh<br><br><br>
+
+------=_Part_1364_32625601.1205240070807--
