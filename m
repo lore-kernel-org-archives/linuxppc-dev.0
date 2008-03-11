@@ -1,20 +1,17 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 85967DE713
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 05:44:43 +1100 (EST)
-Date: Tue, 11 Mar 2008 21:44:42 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/8] [POWERPC] qe_lib: export qe_get_brg_clk()
-Message-ID: <20080311184442.GA32400@localhost.localdomain>
-References: <20080311172106.GA4766@localhost.localdomain>
-	<20080311172424.GE7727@localhost.localdomain>
-	<7360820C-8025-4797-9E05-B68BD2FC6CE3@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <7360820C-8025-4797-9E05-B68BD2FC6CE3@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20080310235429.GC11559@localhost.localdomain>
+References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
+	<20080307002730.GB24142@localhost.localdomain>
+	<9f7d0248e911f6fa1a2d4292c96ef72e@kernel.crashing.org>
+	<20080310235429.GC11559@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a87a2706d92c7d1d873667f4ddc366f0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
+Date: Tue, 11 Mar 2008 19:43:27 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2008 at 01:36:16PM -0500, Kumar Gala wrote:
-> 
-> On Mar 11, 2008, at 12:24 PM, Anton Vorontsov wrote:
-> 
-> >qe_get_brg_clk() will be used by the fsl_gtm routines.
-> 
-> What is the GTM code going to be used for?
+>>> This isn't a problem with this device tree, but it's probably time we
+>>> started establishing some conventional generic names for nand flash
+>>> and board-control devices.
+>>>
+>>> So, to start the ball rolling, I've seen several names for nand flash
+>>> nodes, I'd suggest we standardise on "nand-flash".
+>>
+>> What's wrong with the already well-established generic name "flash"?
+>
+> I was concerned that using "flash" for both NOR flash (which it
+> already is) and NAND flash might be unwise.  I am quite open to being
+> convinced otherwise, though.
 
-Freescale QE USB Host Controller. I posted that driver already,
-but will resend the updated one soon.
+You already said you're convinced, but I'll add another argument
+anyway...
 
--- 
-Anton Vorontsov
-email: cboumailru@gmail.com
-irc://irc.freenode.net/bd2
+For NAND flash, there will usually be a parent node named 
+"nand-controller"
+or similar, while NOR flash will typically be direct-mapped.
+
+There is always this tension between making the names as generic as
+possible, and not losing too much information.  In my experience, you
+can always make leaf nodes have very very generic names, it's only the
+bus nodes where this can be harder.  And then there are exceptions like
+"board-control" where there just _is_ no really good name ;-)
+
+
+Segher
