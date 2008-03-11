@@ -1,16 +1,19 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <6584A045-0994-4CDB-B89B-EE5657147C9E@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17E0ADDF00
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 16:03:24 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2B53KPC015108
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 00:03:20 -0500
+Date: Tue, 11 Mar 2008 00:00:03 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080311003705.GH11559@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] bootwrapper: Allow specifying of image physical
-	offset
-Date: Mon, 10 Mar 2008 23:19:24 -0500
-References: <Pine.LNX.4.64.0803071055200.8522@blarg.am.freescale.net>
-	<20080311003705.GH11559@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Remove Kconfig option BOOT_LOAD
+Message-ID: <Pine.LNX.4.64.0803102359240.19195@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,29 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Nothing appears to use BOOT_LOAD so remove it as a configurable option.
 
-On Mar 10, 2008, at 7:37 PM, David Gibson wrote:
-
-> On Fri, Mar 07, 2008 at 10:55:51AM -0600, Kumar Gala wrote:
->> Normally we assume kernel images will be loaded at offset 0. However
->> there are situations, like when the kernel itself is running at a  
->> non-zero
->> physical address, that we don't want to load it at 0.
->>
->> Allow the wrapper to take an offset.  We use this when building u- 
->> boot images.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->
-> Hrm.  It concerns me that with the patch as it stands,
-> CONFIG_MEMORY_START looks like a fairly universal option, but it will
-> only be respected on u-boot platforms (and only new u-boot, not cuboot
-> at that).
-
-Nothing stops anyone from submitting patches that makes it work for  
-other platforms.  CONFIG_MEMORY_START is only of utility on book-e  
-class machines at this point and from a Freescale point of view that's  
-85xx and thus means u-boot.  IBM, AMCC, or a random Joe is free to  
-submit patches to make it work on 44x. :)
+---
+in my powerpc-next branch.
 
 - k
+
+ arch/powerpc/Kconfig |   16 ----------------
+ 1 files changed, 0 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e4e13e0..803415e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -663,22 +663,6 @@ config CONSISTENT_SIZE
+ 	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
+ 	default "0x00200000" if NOT_COHERENT_CACHE
+
+-config BOOT_LOAD_BOOL
+-	bool "Set the boot link/load address"
+-	depends on ADVANCED_OPTIONS && !PPC_MULTIPLATFORM
+-	help
+-	  This option allows you to set the initial load address of the zImage
+-	  or zImage.initrd file.  This can be useful if you are on a board
+-	  which has a small amount of memory.
+-
+-	  Say N here unless you know what you are doing.
+-
+-config BOOT_LOAD
+-	hex "Link/load address for booting" if BOOT_LOAD_BOOL
+-	default "0x00400000" if 40x || 8xx || 8260
+-	default "0x01000000" if 44x
+-	default "0x00800000"
+-
+ config PIN_TLB
+ 	bool "Pinned Kernel TLBs (860 ONLY)"
+ 	depends on ADVANCED_OPTIONS && 8xx
+-- 
+1.5.4.1
