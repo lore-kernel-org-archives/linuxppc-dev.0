@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18390.9137.626123.104628@cargo.ozlabs.ibm.com>
-Date: Tue, 11 Mar 2008 17:16:17 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
-In-Reply-To: <47C75189.4070801@austin.ibm.com>
-References: <47B90F55.2080606@austin.ibm.com>
-	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
-	<47C74A66.1060105@austin.ibm.com> <47C75189.4070801@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com, mahuja@us.ibm.com
+Return-Path: <akpm@linux-foundation.org>
+Date: Tue, 11 Mar 2008 00:06:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
+	engine
+Message-Id: <20080311000619.ba39311f.akpm@linux-foundation.org>
+In-Reply-To: <20080306233900.GA3969@lixom.net>
+References: <20080306233900.GA3969@lixom.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: hskinnemoen@atmel.com, shannon.nelson@intel.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	pasemi-linux@ozlabs.org, dan.j.williams@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Manish Ahuja writes:
+On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
 
-> Check to see if there actually is data from a previously
-> crashed kernel waiting. If so, Allow user-sapce tools to
-> grab the data (by reading /proc/kcore). When user-space 
-> finishes dumping a section, it must release that memory
-> by writing to sysfs. For example,
-> 
->   echo "0x40000000 0x10000000" > /sys/kernel/release_region
-> 
-> will release 256MB starting at the 1GB.  The released memory
-> becomes free for general use.
-> 
-> Signed-off-by: Linas Vepstas <linasvepstas@gmail.com>
-> Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
-> 
-> ------
+> pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
+>     
+> First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
+> platform-specific functions to allocate channels, etc.
 
-This line needs to be exactly 3 dashes, because otherwise the tools
-include the diffstat into the commit message.  Putting 4 or more
-dashes was an annoying habit Linas had, and it means I have to fix it
-manually (usually after I have committed the patches, and then notice
-that the commit message has the extra stuff in it, so I have to go
-back and fix the separators, reset my tree and re-commit the patches.)
+Applied this on Paul's latest and powerpc allmodconfig goes boom.
 
-> +		dump_header = of_get_property(rtas, "ibm,kernel-dump",
-> +								&header_len);
+drivers/dma/pasemi_dma.c: In function `pasemi_dma_alloc_chan_resources':
+drivers/dma/pasemi_dma.c:152: error: `PAS_DMA_TXCHAN_CFG_TY_COPY' undeclared (first use in this function)
+drivers/dma/pasemi_dma.c:152: error: (Each undeclared identifier is reported only once
+drivers/dma/pasemi_dma.c:152: error: for each function it appears in.)
+drivers/dma/pasemi_dma.c:154: error: `PAS_DMA_TXCHAN_CFG_LPDQ' undeclared (first use in this function)
+drivers/dma/pasemi_dma.c:155: error: `PAS_DMA_TXCHAN_CFG_LPSQ' undeclared (first use in this function)
+drivers/dma/pasemi_dma.c: In function `pasemi_dma_probe':
+drivers/dma/pasemi_dma.c:394: error: structure has no member named `device_dependency_added'
 
-This is a somewhat weird-looking way of coping with too-long lines.
-Please indent the second line either one more tab than the first line,
-or else so that it starts just after the '(' in the first line (which
-is what emacs will do by default).  The same comment applies in
-several other places.
 
-Paul.
+Also this driver from git-md-accel is pretty sick:
+
+
+drivers/dma/fsldma.c:439: warning: comparison of distinct pointer types lacks a cast
+drivers/dma/fsldma.c: In function `fsl_chan_xfer_ld_queue':
+drivers/dma/fsldma.c:584: warning: long long unsigned int format, dma_addr_t arg (arg 4)
+drivers/dma/fsldma.c: In function `fsl_dma_chan_do_interrupt':
+drivers/dma/fsldma.c:661: warning: unsigned int format, different type arg (arg 5)
+drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 4)
+drivers/dma/fsldma.c:677: warning: long long unsigned int format, dma_addr_t arg (arg 5)
+drivers/dma/fsldma.c:694: warning: unsigned int format, different type arg (arg 4)
+drivers/dma/fsldma.c: In function `fsl_dma_self_test':
+drivers/dma/fsldma.c:833: warning: int format, different type arg (arg 5)
+drivers/dma/fsldma.c: In function `of_fsl_dma_probe':
+drivers/dma/fsldma.c:1003: warning: unsigned int format, different type arg (arg 5)
+drivers/dma/fsldma.c: At top level:
+drivers/dma/fsldma.c:723: warning: 'fsl_dma_callback_test' defined but not used
