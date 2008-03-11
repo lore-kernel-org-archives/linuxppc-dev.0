@@ -1,16 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D6029DE779
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 04:24:09 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9C72BDE952
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 04:24:15 +1100 (EST)
 Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id BDA518810
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 22:24:21 +0400 (SAMT)
-Date: Tue, 11 Mar 2008 20:24:08 +0300
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id E6EA68810
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 22:24:26 +0400 (SAMT)
+Date: Tue, 11 Mar 2008 20:24:13 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/8] [POWERPC] fsl_lbc: implement few routines to manage FSL
-	UPMs
-Message-ID: <20080311172408.GB7727@localhost.localdomain>
+Subject: [PATCH 3/8] [POWERPC] qe_lib: implement qe_muram_offset
+Message-ID: <20080311172413.GC7727@localhost.localdomain>
 References: <20080311172106.GA4766@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,235 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These will be used by the FSL UPM NAND driver.
+qe_muram_offset is the reverse of the qe_muram_addr, will be
+used for the Freescale QE USB Host Controller driver.
+
+This patch also moves qe_muram_addr into the qe.h header, plus
+adds __iomem hints to use with sparse.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Kconfig          |    5 ++
- arch/powerpc/sysdev/Makefile  |    1 +
- arch/powerpc/sysdev/fsl_lbc.c |   99 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/fsl_lbc.h |   63 ++++++++++++++++++++++++++
- 4 files changed, 168 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/fsl_lbc.c
+ arch/powerpc/sysdev/qe_lib/qe.c |    8 +-------
+ include/asm-powerpc/immap_qe.h  |    2 +-
+ include/asm-powerpc/qe.h        |   11 ++++++++++-
+ 3 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ef12db0..9c68592 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -491,6 +491,11 @@ config FSL_PCI
-  	bool
- 	select PPC_INDIRECT_PCI
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 6efbd5e..b444b1d 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -55,7 +55,7 @@ struct qe_snum {
+ /* We allocate this here because it is used almost exclusively for
+  * the communication processor devices.
+  */
+-struct qe_immap *qe_immr = NULL;
++struct qe_immap __iomem *qe_immr;
+ EXPORT_SYMBOL(qe_immr);
  
-+config FSL_LBC
-+	bool
-+	help
-+	  Freescale Localbus support
-+
- # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
- config MCA
- 	bool
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 15f3e85..62b6ef0 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
-+obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-new file mode 100644
-index 0000000..b59f2f4
---- /dev/null
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -0,0 +1,99 @@
-+/*
-+ * Freescale UPM routines.
-+ *
-+ * Copyright (c) 2007-2008  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <asm/fsl_lbc.h>
-+
-+spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-+
-+struct fsl_lbc_regs __iomem *fsl_lbc_regs;
-+EXPORT_SYMBOL(fsl_lbc_regs);
-+
-+static char __initdata *compat_lbc[] = {
-+	"fsl,pq2-localbus",
-+	"fsl,pq2pro-localbus",
-+	"fsl,pq3-localbus",
-+	"fsl,elbc",
-+};
-+
-+static int __init fsl_lbc_init(void)
-+{
-+	struct device_node *lbus;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(compat_lbc); i++) {
-+		lbus = of_find_compatible_node(NULL, NULL, compat_lbc[i]);
-+		if (lbus)
-+			goto found;
-+	}
-+	return -ENODEV;
-+
-+found:
-+	fsl_lbc_regs = of_iomap(lbus, 0);
-+	of_node_put(lbus);
-+	if (!fsl_lbc_regs)
-+		return -ENOMEM;
-+	return 0;
-+}
-+arch_initcall(fsl_lbc_init);
-+
-+int fsl_upm_find(u32 base, struct fsl_upm *upm)
-+{
-+	int i;
-+	__be32 br;
-+	__be32 or;
-+
-+	if (!fsl_lbc_regs)
-+		return -ENODEV;
-+
-+	for (i = 0; i < ARRAY_SIZE(fsl_lbc_regs->bank); i++) {
-+		br = in_be32(&fsl_lbc_regs->bank[i].br);
-+		or = in_be32(&fsl_lbc_regs->bank[i].or);
-+
-+		if (br & BR_V && (br & or & BR_BA) == base)
-+			goto found;
-+	}
-+
-+	return -ENOENT;
-+found:
-+	switch (br & BR_MSEL) {
-+	case BR_MS_UPMA:
-+		upm->mxmr = &fsl_lbc_regs->mamr;
-+		break;
-+	case BR_MS_UPMB:
-+		upm->mxmr = &fsl_lbc_regs->mbmr;
-+		break;
-+	case BR_MS_UPMC:
-+		upm->mxmr = &fsl_lbc_regs->mcmr;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	switch (br & BR_PS) {
-+	case BR_PS_8:
-+		upm->width = 8;
-+		break;
-+	case BR_PS_16:
-+		upm->width = 16;
-+		break;
-+	case BR_PS_32:
-+		upm->width = 32;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-diff --git a/include/asm-powerpc/fsl_lbc.h b/include/asm-powerpc/fsl_lbc.h
-index 13a3c28..a6b99a3 100644
---- a/include/asm-powerpc/fsl_lbc.h
-+++ b/include/asm-powerpc/fsl_lbc.h
-@@ -24,6 +24,8 @@
- #define __ASM_FSL_LBC_H
+ static struct qe_snum snums[QE_NUM_OF_SNUM];	/* Dynamically allocated SNUMs */
+@@ -415,12 +415,6 @@ void qe_muram_dump(void)
+ }
+ EXPORT_SYMBOL(qe_muram_dump);
  
- #include <linux/types.h>
-+#include <linux/spinlock.h>
-+#include <asm/io.h>
+-void *qe_muram_addr(unsigned long offset)
+-{
+-	return (void *)&qe_immr->muram[offset];
+-}
+-EXPORT_SYMBOL(qe_muram_addr);
+-
+ /* The maximum number of RISCs we support */
+ #define MAX_QE_RISC     2
  
- struct fsl_lbc_bank {
- 	__be32 br;             /**< Base Register  */
-@@ -98,6 +100,11 @@ struct fsl_lbc_regs {
- 	__be32 mar;             /**< UPM Address Register */
- 	u8 res1[0x4];
- 	__be32 mamr;            /**< UPMA Mode Register */
-+#define MxMR_OP_NO	(0 << 28) /**< normal operation */
-+#define MxMR_OP_WA	(1 << 28) /**< write array */
-+#define MxMR_OP_RA	(2 << 28) /**< read array */
-+#define MxMR_OP_RP	(3 << 28) /**< run pattern */
-+#define MxMR_MAD	0x3f      /**< machine address */
- 	__be32 mbmr;            /**< UPMB Mode Register */
- 	__be32 mcmr;            /**< UPMC Mode Register */
- 	u8 res2[0x8];
-@@ -220,4 +227,60 @@ struct fsl_lbc_regs {
- 	u8 res8[0xF00];
- };
+diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
+index 82a4526..924aefb 100644
+--- a/include/asm-powerpc/immap_qe.h
++++ b/include/asm-powerpc/immap_qe.h
+@@ -468,7 +468,7 @@ struct qe_immap {
+ 	u8			res18[0xC0000];	/* 0x140000 - 0x200000 */
+ } __attribute__ ((packed));
  
-+extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
-+extern spinlock_t fsl_lbc_lock;
+-extern struct qe_immap *qe_immr;
++extern struct qe_immap __iomem *qe_immr;
+ extern phys_addr_t get_qe_base(void);
+ 
+ static inline unsigned long immrbar_virt_to_phys(void *address)
+diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
+index 430dc77..398534c 100644
+--- a/include/asm-powerpc/qe.h
++++ b/include/asm-powerpc/qe.h
+@@ -92,7 +92,16 @@ unsigned long qe_muram_alloc(int size, int align);
+ int qe_muram_free(unsigned long offset);
+ unsigned long qe_muram_alloc_fixed(unsigned long offset, int size);
+ void qe_muram_dump(void);
+-void *qe_muram_addr(unsigned long offset);
 +
-+/*
-+ * FSL UPM routines
-+ */
-+struct fsl_upm {
-+	__be32 __iomem *mxmr;
-+	int width;
-+};
-+
-+extern int fsl_upm_find(u32 base, struct fsl_upm *upm);
-+
-+static inline void fsl_upm_start_pattern(struct fsl_upm *upm, u8 pat_offset)
++static inline void __iomem *qe_muram_addr(unsigned long offset)
 +{
-+	clrsetbits_be32(upm->mxmr, MxMR_MAD, MxMR_OP_RP | pat_offset);
++	return (void __iomem *)&qe_immr->muram[offset];
 +}
 +
-+static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
++static inline unsigned long qe_muram_offset(void __iomem *addr)
 +{
-+	clrbits32(upm->mxmr, MxMR_OP_RP);
-+
-+	while (in_be32(upm->mxmr) & MxMR_OP_RP)
-+		cpu_relax();
++	return addr - (void __iomem *)qe_immr->muram;
 +}
-+
-+static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
-+				      void __iomem *io_base, u32 mar)
-+{
-+	int ret = 0;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&fsl_lbc_lock, flags);
-+
-+	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
-+
-+	switch (upm->width) {
-+	case 8:
-+		out_8(io_base, 0x0);
-+		break;
-+	case 16:
-+		out_be16(io_base, 0x0);
-+		break;
-+	case 32:
-+		out_be32(io_base, 0x0);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
-+
-+	return ret;
-+}
-+
- #endif /* __ASM_FSL_LBC_H */
+ 
+ /* Structure that defines QE firmware binary files.
+  *
 -- 
 1.5.2.2
