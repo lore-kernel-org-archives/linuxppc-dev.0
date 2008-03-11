@@ -1,15 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E7A3CDE860
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 05:42:21 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D03F5DE990
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 05:42:28 +1100 (EST)
 Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id DE6848810
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 23:42:33 +0400 (SAMT)
-Date: Tue, 11 Mar 2008 21:42:20 +0300
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id C2D1F8814
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 23:42:40 +0400 (SAMT)
+Date: Tue, 11 Mar 2008 21:42:27 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/4] [POWERPC] Implement support for the GPIO LIB API
-Message-ID: <20080311184220.GB32164@localhost.localdomain>
+Subject: [PATCH 3/4] [POWERPC] QE: split par_io_config_pin()
+Message-ID: <20080311184227.GC32164@localhost.localdomain>
 References: <20080311184012.GA28466@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,163 +23,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch implements support for the GPIO LIB API. Two calls
-unimplemented though: irq_to_gpio and gpio_to_irq.
+This patch splits par_io_config_pin so we can use it with GPIO LIB API.
+
+Also add a comment regarding #ifdef CONFIG_PPC_85xx being legacy.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   52 ++++++++++++++++++++++++
- arch/powerpc/Kconfig                         |    5 ++
- include/asm-powerpc/gpio.h                   |   55 ++++++++++++++++++++++++++
- 3 files changed, 112 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-powerpc/gpio.h
+ arch/powerpc/sysdev/qe_lib/qe_io.c |   60 +++++++++++++++++++++++------------
+ 1 files changed, 39 insertions(+), 21 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b506245..e9e0c2f 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -66,6 +66,10 @@ Table of Contents
-     3) OpenPIC Interrupt Controllers
-     4) ISA Interrupt Controllers
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
+index 93916a4..a3f9c3f 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_io.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
+@@ -38,6 +38,10 @@ struct port_regs {
+ 	__be32	cppar1;		/* Pin assignment register */
+ 	__be32	cppar2;		/* Pin assignment register */
+ #ifdef CONFIG_PPC_85xx
++	/*
++	 * This is needed for legacy support only, should go away,
++	 * because we started using per-bank gpio chips.
++	 */
+ 	u8	pad[8];
+ #endif
+ };
+@@ -64,28 +68,29 @@ int par_io_init(struct device_node *np)
+ 	return 0;
+ }
  
-+  VIII - Specifying GPIO information for devices
-+    1) gpios property
-+    2) gpio-controller nodes
-+
-   Appendix A - Sample SOC node for MPC8540
+-int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
+-		      int assignment, int has_irq)
++static void __par_io_config_pin(struct port_regs __iomem *par_io,
++				u8 pin, int dir, int open_drain,
++				int assignment, int has_irq)
+ {
+-	u32 pin_mask1bit, pin_mask2bits, new_mask2bits, tmp_val;
+-
+-	if (!par_io)
+-		return -1;
++	u32 pin_mask1bit;
++	u32 pin_mask2bits;
++	u32 new_mask2bits;
++	u32 tmp_val;
  
+ 	/* calculate pin location for single and 2 bits information */
+ 	pin_mask1bit = (u32) (1 << (NUM_OF_PINS - (pin + 1)));
  
-@@ -2925,6 +2929,54 @@ encodings listed below:
- 	2 =  high to low edge sensitive type enabled
- 	3 =  low to high edge sensitive type enabled
+ 	/* Set open drain, if required */
+-	tmp_val = in_be32(&par_io[port].cpodr);
++	tmp_val = in_be32(&par_io->cpodr);
+ 	if (open_drain)
+-		out_be32(&par_io[port].cpodr, pin_mask1bit | tmp_val);
++		out_be32(&par_io->cpodr, pin_mask1bit | tmp_val);
+ 	else
+-		out_be32(&par_io[port].cpodr, ~pin_mask1bit & tmp_val);
++		out_be32(&par_io->cpodr, ~pin_mask1bit & tmp_val);
  
-+VIII - Specifying GPIO information for devices
-+==============================================
-+
-+1) gpios property
-+-----------------
-+
-+Nodes that makes use of GPIOs should define them using `gpios' property,
-+format of which is: <&gpio-controller1-phandle gpio1-specifier
-+		     &gpio-controller2-phandle gpio2-specifier
-+		     0 /* holes are permitted, means no GPIO 3 */
-+		     &gpio-controller4-phandle gpio4-specifier
-+		     ...>;
-+
-+Note that gpio-specifier length is controller dependent.
-+
-+gpio-specifier may encode: bank, pin position inside the bank,
-+whether pin is open-drain and whether pin is logically inverted.
-+
-+Example of the node using GPIOs:
-+
-+	node {
-+		gpios = <&qe_pio_e 18 0>;
-+	};
-+
-+In this example gpio-specifier is "18 0" and encodes GPIO pin number,
-+and empty GPIO flags as accepted by the "qe_pio_e" gpio-controller.
-+
-+2) gpio-controller nodes
-+------------------------
-+
-+Every GPIO controller node must have #gpio-cells property defined,
-+this information will be used to translate gpio-specifiers.
-+
-+Example of two SOC GPIO banks defined as gpio-controller nodes:
-+
-+	qe_pio_a: gpio-controller@1400 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,qe-pario-bank-a", "fsl,qe-pario-bank";
-+		reg = <0x1400 0x18>;
-+		gpio-controller;
-+	};
-+
-+	qe_pio_e: gpio-controller@1460 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,qe-pario-bank-e", "fsl,qe-pario-bank";
-+		reg = <0x1460 0x18>;
-+		gpio-controller;
-+	};
+ 	/* define direction */
+ 	tmp_val = (pin > (NUM_OF_PINS / 2) - 1) ?
+-		in_be32(&par_io[port].cpdir2) :
+-		in_be32(&par_io[port].cpdir1);
++		in_be32(&par_io->cpdir2) :
++		in_be32(&par_io->cpdir1);
  
- Appendix A - Sample SOC node for MPC8540
- ========================================
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0b27cbd..f328509 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -81,6 +81,11 @@ config GENERIC_FIND_NEXT_BIT
- 	bool
- 	default y
+ 	/* get all bits mask for 2 bit per port */
+ 	pin_mask2bits = (u32) (0x3 << (NUM_OF_PINS -
+@@ -97,36 +102,49 @@ int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
  
-+config GENERIC_GPIO
-+	bool
-+	help
-+	  Generic GPIO API support
-+
- config ARCH_NO_VIRT_TO_BUS
- 	def_bool PPC64
+ 	/* clear and set 2 bits mask */
+ 	if (pin > (NUM_OF_PINS / 2) - 1) {
+-		out_be32(&par_io[port].cpdir2,
++		out_be32(&par_io->cpdir2,
+ 			 ~pin_mask2bits & tmp_val);
+ 		tmp_val &= ~pin_mask2bits;
+-		out_be32(&par_io[port].cpdir2, new_mask2bits | tmp_val);
++		out_be32(&par_io->cpdir2, new_mask2bits | tmp_val);
+ 	} else {
+-		out_be32(&par_io[port].cpdir1,
++		out_be32(&par_io->cpdir1,
+ 			 ~pin_mask2bits & tmp_val);
+ 		tmp_val &= ~pin_mask2bits;
+-		out_be32(&par_io[port].cpdir1, new_mask2bits | tmp_val);
++		out_be32(&par_io->cpdir1, new_mask2bits | tmp_val);
+ 	}
+ 	/* define pin assignment */
+ 	tmp_val = (pin > (NUM_OF_PINS / 2) - 1) ?
+-		in_be32(&par_io[port].cppar2) :
+-		in_be32(&par_io[port].cppar1);
++		in_be32(&par_io->cppar2) :
++		in_be32(&par_io->cppar1);
  
-diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
-new file mode 100644
-index 0000000..057840d
---- /dev/null
-+++ b/include/asm-powerpc/gpio.h
-@@ -0,0 +1,55 @@
-+/*
-+ * Generic GPIO API implementation for PowerPC.
-+ *
-+ * Copyright (c) 2007-2008  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __ASM_POWERPC_GPIO_H
-+#define __ASM_POWERPC_GPIO_H
-+
-+#include <asm-generic/gpio.h>
-+
-+#ifdef CONFIG_HAVE_GPIO_LIB
-+
-+/*
-+ * We don't (yet) implement inlined/rapid versions for on-chip gpios.
-+ * Just call gpiolib.
-+ */
-+static inline int gpio_get_value(unsigned int gpio)
-+{
-+	return __gpio_get_value(gpio);
-+}
-+
-+static inline void gpio_set_value(unsigned int gpio, int value)
-+{
-+	__gpio_set_value(gpio, value);
-+}
-+
-+static inline int gpio_cansleep(unsigned int gpio)
-+{
-+	return __gpio_cansleep(gpio);
+ 	new_mask2bits = (u32) (assignment << (NUM_OF_PINS -
+ 			(pin % (NUM_OF_PINS / 2) + 1) * 2));
+ 	/* clear and set 2 bits mask */
+ 	if (pin > (NUM_OF_PINS / 2) - 1) {
+-		out_be32(&par_io[port].cppar2,
++		out_be32(&par_io->cppar2,
+ 			 ~pin_mask2bits & tmp_val);
+ 		tmp_val &= ~pin_mask2bits;
+-		out_be32(&par_io[port].cppar2, new_mask2bits | tmp_val);
++		out_be32(&par_io->cppar2, new_mask2bits | tmp_val);
+ 	} else {
+-		out_be32(&par_io[port].cppar1,
++		out_be32(&par_io->cppar1,
+ 			 ~pin_mask2bits & tmp_val);
+ 		tmp_val &= ~pin_mask2bits;
+-		out_be32(&par_io[port].cppar1, new_mask2bits | tmp_val);
++		out_be32(&par_io->cppar1, new_mask2bits | tmp_val);
+ 	}
 +}
 +
 +/*
-+ * Not implemented, yet.
++ * This is "legacy" function that takes port number as an argument
++ * instead of pointer to the appropriate bank.
 + */
-+static inline int gpio_to_irq(unsigned int gpio)
++int par_io_config_pin(u8 port, u8 pin, int dir, int open_drain,
++		      int assignment, int has_irq)
 +{
-+	return -ENOSYS;
-+}
-+
-+static inline int irq_to_gpio(unsigned int irq)
-+{
-+	return -EINVAL;
-+}
-+
-+#endif /* CONFIG_HAVE_GPIO_LIB */
-+
-+#endif /* __ASM_POWERPC_GPIO_H */
++	if (!par_io || port >= num_par_io_ports)
++		return -EINVAL;
+ 
++	__par_io_config_pin(&par_io[port], pin, dir, open_drain, assignment,
++			    has_irq);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(par_io_config_pin);
 -- 
 1.5.2.2
