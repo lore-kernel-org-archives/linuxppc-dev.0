@@ -1,28 +1,20 @@
-Return-Path: <marko.vaupotic@iskrasistemi.si>
-Received: from mercury.iskratr.si (mercury.iskratr.si [193.201.45.54])
-	by ozlabs.org (Postfix) with ESMTP id 06FFCDDF45
+Return-Path: <rza1@so-logic.net>
+Received: from smtp01.so-logic.net (unknown [62.99.208.151])
+	by ozlabs.org (Postfix) with ESMTP id 7A13FDE0DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 19:08:01 +1100 (EST)
-Received: from localhost (mercury.iskratr.si [127.0.0.1])
-	by mercury.iskratr.si (Postfix) with ESMTP id 544CB33C91F
+	Wed, 12 Mar 2008 01:47:00 +1100 (EST)
+Received: from localhost.localdomain
+	(62-99-208-157.c-vbergg.xdsl-line.inode.at [62.99.208.157])
+	by smtp01.so-logic.net (Postfix) with ESMTP id 27ABC8FD18E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 08:50:51 +0100 (CET)
-Received: from mercury.iskratr.si ([127.0.0.1])
-	by localhost (mercury.iskratr.si [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Fdhd7czxHiyD for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 08:50:50 +0100 (CET)
-Received: from vavpoticmarko (unknown [10.12.14.51])
-	by mercury.iskratr.si (Postfix) with ESMTP id 7FF1233C919
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 08:50:50 +0100 (CET)
-From: "Vaupotic Marko" <marko.vaupotic@iskrasistemi.si>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: I2C device node on Sequoia (440EPx)
-Date: Tue, 11 Mar 2008 08:50:52 +0100
+	Tue, 11 Mar 2008 15:37:32 +0100 (CET)
+Message-ID: <47D6992B.6060208@so-logic.net>
+Date: Tue, 11 Mar 2008 15:37:31 +0100
+From: Robert Zach <rza1@so-logic.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0034_01C88355.02B67570"
-Message-Id: <20080311075050.7FF1233C919@mercury.iskratr.si>
+To: linuxppc-embedded@ozlabs.org
+Subject: bootstrap loader + gzip 1.3.5 --> huge image!?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,86 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+hi list!
 
-------=_NextPart_000_0034_01C88355.02B67570
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+I am using the xilinx git tree with the included bootstrap loader.
+Everthing works fine when i use binutils-2.16.1-gcc-3.4.6-uClibc-0.9.29.
 
+But when useing binutils-2.18.50-gcc-4.2.0-uClibc-0.9.29  (generated 
+with buildroot) i get the following problem:
 
-Hi
+At the end of the kernel build process the vmlinux image gets compressed 
+(for the bootstrap loader).
+something like:
+gzip -f -9 < arch/ppc/boot/images/vmlinux.bin > 
+arch/ppc/boot/images/vmlinux.gz.$$
+when i compiled the kernel with binutils-2.16.1-gcc-3.4.6-uClibc-0.9.29 
+the resulting image size is smaller then the original and everything 
+works (the bootstrap loader uncompresses, the kernel boots, ..)
 
-I am using an AMCC 440EPx processor on "Sequoia" board with Linux 2.6.21
-rc4. I am trying to use the i2c in the user-space
-In my Linux config file (Sequoia default) I have:
-CONFIG_I2C=y
-CONFIG_I2C_CHARDEV=y
+But when using the binutils-2.18.50-gcc-4.2.0-uClibc-0.9.29 
+cross-toolchain i get the following:
+du arch/ppc/boot/images/vmlinux.bin
+1264    arch/ppc/boot/images/vmlinux.bin
+gzip -f -9 < arch/ppc/boot/images/vmlinux.bin > 
+arch/ppc/boot/images/vmlinux.gz.$$
+du arch/ppc/boot/images/vmlinux.gz.$$
+3640    arch/ppc/boot/images/vmlinux.gz
 
-I than added the "i2c-0" device in /dev (# mknod i2c-0 c 89 0)
-When I run a simple program to open the device (provided by the
-"dev-interface" file of i2c kernel documentation) it returns errno message:
-"No such device".
+The resulting huge zImage.elf file does not work (the bootstraploader 
+stops somewhere early).
+Its the same for all other toolchains i tryed using binutils > 2.16.
 
-I have tried to use the device number 1, 2, 3, 4 but with no luck.
+what does gzip do?
+I use the following version
+gzip --version
+gzip 1.3.5
+(2002-09-30)
+Copyright 2002 Free Software Foundation
+Copyright 1992-1993 Jean-loup Gailly
 
-Any suggestions what I  might be doing wrong?
+Does anybody know this problem?
+any suggestions for a solution.
 
-Best Regards
-
-Marko
-
-
-
-
-------=_NextPart_000_0034_01C88355.02B67570
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7036.0">
-<TITLE>I2C device node on Sequoia (440EPx)</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-<BR>
-
-<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Hi<BR>
-<BR>
-I am using an AMCC 440EPx processor on &quot;Sequoia&quot; board with =
-Linux 2.6.21 rc4. I am trying to use the i2c in the =
-user-space</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">In my Linux config =
-file (Sequoia default)</FONT></SPAN><SPAN LANG=3D"sl"> <FONT SIZE=3D2 =
-FACE=3D"Arial CE">I</FONT></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial"> have:<BR>
-CONFIG_I2C=3Dy<BR>
-CONFIG_I2C_CHARDEV=3Dy<BR>
-<BR>
-I than added the &quot;i2c-0&quot; device in /dev (# mknod i2c-0 c 89 =
-0)<BR>
-When I run a simple program to open the device (provided by the =
-&quot;dev-interface&quot; file of i2c kernel documentation) it returns =
-errno message: &quot;No such device&quot;.<BR>
-<BR>
-I have tried to use the device number 1, 2, 3, 4 but with no luck.<BR>
-<BR>
-Any suggestions what I&nbsp; might be doing wrong?<BR>
-<BR>
-Best Regards<BR>
-<BR>
-Marko</FONT></SPAN>
-</P>
-<BR>
-<BR>
-
-</BODY>
-</HTML>
-------=_NextPart_000_0034_01C88355.02B67570--
+thanks in advanced!
+greets!
+robert
