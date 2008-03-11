@@ -1,25 +1,15 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A7153DE035
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (unknown [210.77.143.232])
+	by ozlabs.org (Postfix) with SMTP id 43627DDEFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Mar 2008 07:34:32 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JYohY-0004zc-Dc
-	for linuxppc-embedded@ozlabs.org; Mon, 10 Mar 2008 13:34:28 -0700
-Message-ID: <15954121.post@talk.nabble.com>
-Date: Mon, 10 Mar 2008 13:34:28 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
+	Tue, 11 Mar 2008 12:53:15 +1100 (EST)
+Message-ID: <405199098.26547@tsinghua.org.cn>
+From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: Xilinx Temac link detect
-In-Reply-To: <EDAE140DF1B2FC42B5867C22CA0B333FA3CF03@XMBIL132.northgrum.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <15616042.post@talk.nabble.com> <15883376.post@talk.nabble.com>
-	<20080306221446.4509A1118051@mail123-sin.bigfish.com>
-	<EDAE140DF1B2FC42B5867C22CA0B333FA3CF03@XMBIL132.northgrum.com>
+Date: Tue, 11 Mar 2008 09:31:38 +0800
+Subject: The question about the QUICC ENGINE microcode for freescale PowerPC?
+Content-Type: text/plain
+Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,22 +20,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,friends,
 
+I want to realize the high speed TCP package on GETH of MPC8360E,I would like the
+speed on both UCC1 and UCC2 for both send and receive TCP package(big package) up
+to 1000M bits/sec, so the total internet speed is 4000M bits/sec for MPC8360E.
 
-Koss, Mike (Mission Systems) wrote:
-> 
-> Here's a snippet from a program I use to debug an ethernet driver that I
-> have using ioctl's. The ethernet ioctl interface is slightly different
-> from a "normal" ioctl in that it uses sockets and not a file descriptor.
-> The ioctl's I use are added to the ioctl interface in the driver, using
-> the defined device-specific range (that was supposed to disappear in
-> 2.5.x or 2.6.x). With this I read/write my phy register's to test out
-> the interface between my TEMAC and my PHY. 
-> 
-> 
-Thanks for the example, everything working great now.
+I tested the internet performance by IPERF test software with the condition that
+the core cpu deal with the TCP package,without microcode. I config the UCC2 down,
+config UCC1 to send package out to an server PC,no receive,the speed for UCC1 just
+only sending package is about 300M bits/sec, and CPU is 100% used. This speed is
+so slow, is too slow. If I send and recieve at the same time, the speed is much
+slower, if I make the UCC2 up, the speed is much slower and slower.
+I do not know how to incrase the internet speed for MPC8360E, somebody told me, we
+must use the microcode for QUICC ENGINE.  
 
-Kevin
--- 
-View this message in context: http://www.nabble.com/Xilinx-Temac-link-detect-tp15616042p15954121.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+My question is that where can I download the microcode for QUICC ENGINE and how to
+use it?  Whether or not this microcode can help me to realize the 4000M bits/sec
+for TCP package?
