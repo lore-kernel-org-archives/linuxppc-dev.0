@@ -1,30 +1,27 @@
 Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3FC36DDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 19:53:16 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m2B8r9mi006228
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 01:53:10 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTPS id EC5FCDDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 20:10:10 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m2B9A34T029372
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 02:10:04 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2B8r8kP001552
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 03:53:09 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 11/17] Add memory mapping driver to RapidIO.
-Date: Tue, 11 Mar 2008 16:53:09 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AECE5158@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20080305135148.21d6c25a.sfr@canb.auug.org.au>
-References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com><1204648202-5495-2-git-send-email-wei.zhang@freescale.com><1204648202-5495-3-git-send-email-wei.zhang@freescale.com><1204648202-5495-4-git-send-email-wei.zhang@freescale.com><1204648202-5495-5-git-send-email-wei.zhang@freescale.com><1204648202-5495-6-git-send-email-wei.zhang@freescale.com><1204648202-5495-7-git-send-email-wei.zhang@freescale.com><1204648202-5495-8-git-send-email-wei.zhang@freescale.com><1204648202-5495-9-git-send-email-wei.zhang@freescale.com><1204648202-5495-10-git-send-email-wei.zhang@freescale.com><1204648202-5495-11-git-send-email-wei.zhang@freescale.com><20080304213735.c77d6203.sfr@canb.auug.org.au><ABF87B0B6A38C0458E319AC973ED68AECE4522@zch01exm26.fsl.freescale.net>
-	<20080305135148.21d6c25a.sfr@canb.auug.org.au>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m2B99x20028188
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2008 04:10:02 -0500 (CDT)
+From: Zhang Wei <wei.zhang@freescale.com>
+To: mporter@kernel.crashing.org, akpm@linux-foundation.org,
+	galak@kernel.crashing.org
+Subject: [PATCH 02/17] Add RapidIO option to kernel configuration.
+Date: Tue, 11 Mar 2008 17:07:43 +0800
+Message-Id: <1205226478-7641-2-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <1205226478-7641-1-git-send-email-wei.zhang@freescale.com>
+References: <1205226478-7641-1-git-send-email-wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,37 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Stephen,
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ arch/powerpc/Kconfig                |   13 +++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig |    1 +
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-I've updated those patches with fixing up.
-
-Thanks!=20
-Wei.
-
-> -----Original Message-----
-> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]=20
-> Sent: Wednesday, March 05, 2008 10:52 AM
-> To: Zhang Wei
-> Cc: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 11/17] Add memory mapping driver to RapidIO.
->=20
-> Hi Weu,
->=20
-> On Wed, 5 Mar 2008 09:59:38 +0800 "Zhang Wei"=20
-> <Wei.Zhang@freescale.com> wrote:
-> >
-> > Thanks! I'm considering to commit a updated patch or new=20
-> code cleaning
-> > patch.
-> > How about your idea?
->=20
-> Preferably, fix up the patches.  If that is a pain, then a=20
-> followup patch
-> that cleans up is ok as these do not affect the correctness=20
-> of the code.
->=20
-> --=20
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->=20
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 1189d8d..88f8b6c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -560,6 +560,19 @@ source "drivers/pcmcia/Kconfig"
+ 
+ source "drivers/pci/hotplug/Kconfig"
+ 
++config HAS_RAPIDIO
++	bool
++	default n
++
++config RAPIDIO
++	bool "RapidIO support"
++	depends on HAS_RAPIDIO
++	help
++	  If you say Y here, the kernel will include drivers and
++	  infrastructure code to support RapidIO interconnect devices.
++
++source "drivers/rapidio/Kconfig"
++
+ endmenu
+ 
+ menu "Advanced setup"
+diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
+index 21d1135..8c7c5ff 100644
+--- a/arch/powerpc/platforms/86xx/Kconfig
++++ b/arch/powerpc/platforms/86xx/Kconfig
+@@ -8,6 +8,7 @@ config MPC8641_HPCN
+ 	select PPC_I8259
+ 	select DEFAULT_UIMAGE
+ 	select FSL_ULI1575
++	select HAS_RAPIDIO
+ 	help
+ 	  This option enables support for the MPC8641 HPCN board.
+ 
+-- 
+1.5.4
