@@ -1,15 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 11 Mar 2008 11:45:45 +1100
+Date: Tue, 11 Mar 2008 12:32:04 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: OF compatible MTD platform RAM driver ?
-Message-ID: <20080311004545.GI11559@localhost.localdomain>
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B0418505E@ismail.innsys.innovsys.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
+Message-ID: <20080311013204.GJ11559@localhost.localdomain>
+References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
+	<9f7d0248e911f6fa1a2d4292c96ef72e@kernel.crashing.org>
+	<20080310235429.GC11559@localhost.localdomain>
+	<200803110143.50561.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0418505E@ismail.innsys.innovsys.com>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org, ben@simtec.co.uk
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200803110143.50561.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,61 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 10, 2008 at 12:00:22PM -0500, Rune Torgersen wrote:
-> linuxppc-dev-bounces+runet=innovsys.com@ozlabs.org wrote:
-> > Hi everybody,
+On Tue, Mar 11, 2008 at 01:43:49AM +0100, Arnd Bergmann wrote:
+> On Tuesday 11 March 2008, David Gibson wrote:
+> > On Fri, Mar 07, 2008 at 04:39:30AM +0100, Segher Boessenkool wrote:
+> > > > This isn't a problem with this device tree, but it's probably time we
+> > > > started establishing some conventional generic names for nand flash
+> > > > and board-control devices.
+> > > >
+> > > > So, to start the ball rolling, I've seen several names for nand flash
+> > > > nodes, I'd suggest we standardise on "nand-flash".
+> > > 
+> > > What's wrong with the already well-established generic name "flash"?
 > > 
-> > as part of a ARCH=ppc to ARCH=powerpc migration process, I'm
-> > looking for an
-> > OpenFirmware compatible way to handle a RAM-based MTD device.
-> > 
-> > On the platform_device based ppc architecture, the
-> > drivers/mtd/maps/plat-ram.c
-> > driver handled "mtd-ram" platform devices. There is no such
-> > driver for the
-> > OF-based powerpc architecture.
-> > 
-> > As a temporary workaround I hacked the physmap_of driver to
-> > handle "direct-mapped" OF devices oh type "ram" by adding a
-> > corresponding entry in the of_flash_match[] array. This seems to work
-> > fine. 
-> > 
-> > What would be the preferred way to handle OF-compatible RAM-based MTD
-> > devices ? The 3 ways I can think of are
-> > 
-> > 1. porting the plat-ram driver to OF (the driver isn't used
-> > in the kernel tree
-> > but I suspect it is used by out-of-tree boards)
-> > 
-> > 2. creating a new plat-ram-of driver, much like the
-> > physmap_of driver comes
-> > from the physmap driver
-> > 
-> > 3. extending the physmap_of driver to handle RAM devices (in
-> > which case
-> > references to "flash" in the function names should probably
-> > be replaced
-> > by "mtd")
-> > 
-> > I live option 3 better so far.
-> > 
-> > Has anyone already worked on this ? Is there any defined
-> > device tree mapping
-> > for MTD RAM devices ?
+> > I was concerned that using "flash" for both NOR flash (which it
+> > already is) and NAND flash might be unwise.  I am quite open to being
+> > convinced otherwise, though.
 > 
-> We ran ito the same issue. 
-> We did option 3, as it was efinetly the easiest,
+> One argument for just using "flash" is that there are much finer differences
+> than just "NAND" and "NOR", with at least "dataflash", "OneNAND", "SD/MMC"
+> being further types of flash that don't fit the categories exactly, though
+> each one for different reasons.
+> 
+> For SD/MMC, there are good reasons to use something completely different,
+> for the others, calling them all "flash" sounds better than fitting them
+> into "nand" and "nor".
 
-I think this is the best option in principle.
-
-> here is the sram entry in our dts:
-
-Except that your implementation of it is not good.
-
-You're relying on the old obsolete flash binding with the "probe-type"
-field.  The solution should be adapted to the new approach which uses
-values in the "compatible" field to indicate various sorts of flash
-device.
+Ok, I'm convinced.  "flash" it is.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
