@@ -1,17 +1,14 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20080310235429.GC11559@localhost.localdomain>
-References: <1204800155-11613-1-git-send-email-leoli@freescale.com>
-	<20080307002730.GB24142@localhost.localdomain>
-	<9f7d0248e911f6fa1a2d4292c96ef72e@kernel.crashing.org>
-	<20080310235429.GC11559@localhost.localdomain>
+In-Reply-To: <20080310234714.GB11559@localhost.localdomain>
+References: <20080310234714.GB11559@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a87a2706d92c7d1d873667f4ddc366f0@kernel.crashing.org>
+Message-Id: <2ad5f1b8f63afd9e32a25175d1b0b5e0@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Add local bus device nodes to MPC837xMDS device trees.
-Date: Tue, 11 Mar 2008 19:43:27 +0100
+Subject: Re: dtc: Add some documentation for the dts formta
+Date: Tue, 11 Mar 2008 19:50:11 +0100
 To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> This isn't a problem with this device tree, but it's probably time we
->>> started establishing some conventional generic names for nand flash
->>> and board-control devices.
->>>
->>> So, to start the ball rolling, I've seen several names for nand flash
->>> nodes, I'd suggest we standardise on "nand-flash".
->>
->> What's wrong with the already well-established generic name "flash"?
->
-> I was concerned that using "flash" for both NOR flash (which it
-> already is) and NAND flash might be unwise.  I am quite open to being
-> convinced otherwise, though.
+> This patch adds a dts-format.txt in the Documentation directory, with
+> an introduction to the dtc source format.
 
-You already said you're convinced, but I'll add another argument
-anyway...
+Looks good, some minor nits...
 
-For NAND flash, there will usually be a parent node named 
-"nand-controller"
-or similar, while NOR flash will typically be direct-mapped.
+> +* A 64-bit value is represented with two 32-bit cells.
+> +
+> +	e.g. clock-frequency = <0x00000001 0x00000000>;
 
-There is always this tension between making the names as generic as
-possible, and not losing too much information.  In my experience, you
-can always make leaf nodes have very very generic names, it's only the
-bus nodes where this can be harder.  And then there are exceptions like
-"board-control" where there just _is_ no really good name ;-)
+Please add that this is big-endian order always.
+
+> +* Values may have several comma-separated components, which are
+> +  concatenated together.
+> +	e.g. compatible = "ns16550", "ns8250";
+
+You might want to clarify that the terminating 0 of ns16550 becomes
+part of the property, i.e. this is not like strcat() in C.
 
 
 Segher
