@@ -1,24 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A7018DDF43
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:47:26 +1100 (EST)
-Date: Wed, 12 Mar 2008 10:46:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0FF8DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:51:20 +1100 (EST)
+Date: Wed, 12 Mar 2008 11:51:02 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
 	powerpc
-Message-Id: <20080312104645.34e58319.akpm@linux-foundation.org>
-In-Reply-To: <47D7D2C9.4090001@linux.vnet.ibm.com>
+Message-ID: <20080312175102.GC613@parisc-linux.org>
 References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
 	<47D7D2C9.4090001@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org
+	<20080312104645.34e58319.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080312104645.34e58319.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 12 Mar 2008 18:25:37 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Wed, Mar 12, 2008 at 10:46:45AM -0700, Andrew Morton wrote:
+> On Wed, 12 Mar 2008 18:25:37 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Beats me.  Maybe we're still enabling interrupts too early.  But the new
+> semaphore code got fixed (didn't it?)
 
-> Hi Andrew,
-> 
-> The 2.6.25-rc5-mm1 kernel panics while bootup on powerpc
-> 
-> returning from prom_init
-> Unable to handle kernel paging request for data at address 0x00000000
-> Faulting instruction address: 0xc00000000000d5dc
-> cpu 0x0: Vector: 300 (Data Access) at [c0000000007636e0]
->     pc: c00000000000d5dc: .do_IRQ+0x74/0x1f4
->     lr: c00000000000d5a8: .do_IRQ+0x40/0x1f4
->     sp: c000000000763960
->    msr: 8000000000001032
->    dar: 0
->  dsisr: 40000000
->   current = 0xc000000000688e60
->   paca    = 0xc000000000689900
->     pid   = 0, comm = swapper
-> enter ? for help
-> [c000000000763a00] c000000000004c24 hardware_interrupt_entry+0x24/0x28
-> --- Exception: 501 (Hardware Interrupt) at c0000000006021b0 .free_bootmem_core+0x94/0xcc
-> [link register   ] c00000000060373c .free_bootmem_with_active_regions+0x78/0xb8
-> [c000000000763cf0] c000000000602610 .init_bootmem_core+0x5c/0xfc (unreliable)
-> [c000000000763d80] c0000000005eb68c .do_init_bootmem+0x964/0xaf0
-> [c000000000763e50] c0000000005e03b0 .setup_arch+0x1a4/0x218
-> [c000000000763ee0] c0000000005d76bc .start_kernel+0xe8/0x424
-> [c000000000763f90] c000000000008590 .start_here_common+0x60/0xd0
-> 
+On the 7th, according to my records.  Easy to check -- look in
+kernel/semaphore.c and see whether down() is using spin_lock_irqsave
+(good) or spin_lock_irq (bad).
 
-Beats me.  Maybe we're still enabling interrupts too early.  But the new
-semaphore code got fixed (didn't it?)
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
