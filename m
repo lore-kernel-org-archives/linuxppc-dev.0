@@ -1,31 +1,23 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 81D9CDDF30
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 03:37:02 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2CGauhv028432
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 12:36:56 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2CGauZv340640
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 12:36:56 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2CGaulI023426
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 12:36:56 -0400
-Message-ID: <47D806A7.6050504@austin.ibm.com>
-Date: Wed, 12 Mar 2008 11:36:55 -0500
-From: Manish Ahuja <ahuja@austin.ibm.com>
+Return-Path: <linasvepstas@gmail.com>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.242])
+	by ozlabs.org (Postfix) with ESMTP id 584AEDDF1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:38:02 +1100 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so2855842hsz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 10:38:00 -0700 (PDT)
+Message-ID: <3ae3aa420803121038y1bf57920m953bb44e9d51aa1d@mail.gmail.com>
+Date: Wed, 12 Mar 2008 11:38:00 -0600
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: [PATCH 3/8] pseries: phyp dump: use sysfs to release reserved mem
+In-Reply-To: <18390.9137.626123.104628@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 8/8] pseries: phyp dump: config file
-References: <47B90F55.2080606@austin.ibm.com>	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>	<47C74A66.1060105@austin.ibm.com>	<47C7533D.9040002@austin.ibm.com>
-	<18390.9443.218176.274640@cargo.ozlabs.ibm.com>
-In-Reply-To: <18390.9443.218176.274640@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linasvepstas@gmail.com, mahuja@us.ibm.com
+Content-Type: text/plain; charset=UTF-8
+References: <47B90F55.2080606@austin.ibm.com>
+	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
+	<47C74A66.1060105@austin.ibm.com> <47C75189.4070801@austin.ibm.com>
+	<18390.9137.626123.104628@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mahuja@us.ibm.com
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,20 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the review. I will try and make the recommended changes and repost it soon.
+On 11/03/2008, Paul Mackerras <paulus@samba.org> wrote:
+>
+>  > ------
+>
+> This line needs to be exactly 3 dashes, because otherwise the tools
+>  include the diffstat into the commit message.  Putting 4 or more
+>  dashes was an annoying habit Linas had, and it means I have to fix it
+>  manually (usually after I have committed the patches, and then notice
+>  that the commit message has the extra stuff in it, so I have to go
+>  back and fix the separators, reset my tree and re-commit the patches.)
 
-Manish
+Sorry, I had no idea!  If I didn't have enough dashes, then quilt would
+sometimes wipe out the comment at the top, so paranoia made me
+add lots of dashes.
 
-
-Paul Mackerras wrote:
-> Manish Ahuja writes:
-> 
->> +config PHYP_DUMP
->> +	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
->> +	depends on PPC_PSERIES && EXPERIMENTAL
->> +	default y
-> 
-> I think this should default to n for now (i.e. leave out the default
-> line entirely).  We can make it default to y later.
-> 
-> Paul.
+--linas
