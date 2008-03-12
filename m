@@ -1,37 +1,27 @@
-Return-Path: <jens@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2F069DDF2D
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 09:30:43 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id m2CMUc4o333632
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 22:30:38 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m2CMUcx91994988
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 23:30:38 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m2CMUcDr005036
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 23:30:38 +0100
-From: Jens Osterkamp <jens@de.ibm.com>
-To: luisgpm@linux.vnet.ibm.com
-Subject: Re: PPC upstream kernel ignored DABR bug
-Date: Wed, 12 Mar 2008 23:30:36 +0100
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200803101501.34439.jens@de.ibm.com>
-	<1205344272.2272.45.camel@gargoyle>
-In-Reply-To: <1205344272.2272.45.camel@gargoyle>
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 99525DDF30
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 09:33:14 +1100 (EST)
+Date: Wed, 12 Mar 2008 16:33:00 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
+	powerpc
+Message-ID: <20080312223300.GE613@parisc-linux.org>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	<47D7D2C9.4090001@linux.vnet.ibm.com>
+	<20080312104645.34e58319.akpm@linux-foundation.org>
+	<20080312175102.GC613@parisc-linux.org>
+	<1205360769.7436.8.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200803122330.36905.jens@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Roland McGrath <roland@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jan Kratochvil <jan.kratochvil@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1205360769.7436.8.camel@concordia.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,17 +31,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 13, 2008 at 09:26:09AM +1100, Michael Ellerman wrote:
+> down() looks OK, but there's still a spin_lock_irq() in __down_common(),
+> although I don't know if it makes sense for us to be in __down() at that
+> stage.
 
-> Just to make sure, i tested the binary against the 2.6.25-rc4 kernel. It
-> still fails. So this is really an open bug for PPC.
+The spin_lock_irq in __down_common is correct.  We're going to schedule(),
+so we spin_unlock_irq() to save us passing the flags into the helper
+function.  If we had interrupts disabled on entry, there's an Aieee
+for that.
 
-On a Cell- or 970-based machine ?
-
-Gruß,
-	Jens
-
-IBM Deutschland Entwicklung GmbH
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschäftsführung: Herbert Kircher 
-Sitz der Gesellschaft: Böblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
