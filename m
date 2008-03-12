@@ -1,19 +1,23 @@
-Return-Path: <linuxppc-embedded@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0ABDADDE17
+Return-Path: <zejdlp1@fel.cvut.cz>
+Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
+	by ozlabs.org (Postfix) with ESMTP id ABE3EDDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Mar 2008 23:34:45 +1100 (EST)
-Date: Wed, 12 Mar 2008 13:34:37 +0100
-From: Sebastian Siewior <linuxppc-embedded@ml.breakpoint.cc>
-To: Zhang Wei <wei.zhang@freescale.com>
-Subject: Using the loop feature of the DMA controller on MPC8544 DS
-Message-ID: <20080312123437.GA1589@Chamillionaire.breakpoint.cc>
+	Wed, 12 Mar 2008 23:53:45 +1100 (EST)
+Received: from imap.feld.cvut.cz (imap.feld.cvut.cz [147.32.192.34])
+	by max.feld.cvut.cz (Postfix) with ESMTP id 3A79F390EC171
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Mar 2008 13:47:51 +0100 (CET)
+Received: from [192.168.1.100] (pha-1-13.adsl.sky.cz [193.165.1.13])
+	by imap.feld.cvut.cz (Postfix) with ESMTP id 2035C3FF0
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Mar 2008 13:47:50 +0100 (CET)
+Message-ID: <47D7D0F2.9080803@fel.cvut.cz>
+Date: Wed, 12 Mar 2008 13:47:46 +0100
+From: =?UTF-8?B?UGV0ciDFvWVqZGw=?= <zejdlp1@fel.cvut.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: 2.6.23.1 and more than 32MB, segfault
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +28,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi all,
 
-I have here a MPC8544 DS board and I tried to utilise the dma
-controller. For the transfers I need set the [S|D]AHE bit in the Mode
-Register. This seems to be implemented but is currently unused in the
-driver. I haven't found a way how to set this bit except globally for
-the whole channel.
-Is it possible to solve this nicely except dedicating one channel for
-such an operation?
+I'm using MEMEC board ML300 compatible with 64MB SDRAM available and 
+vanilla kernel 2.6.23.1. The problem are random segfaults from init, 
+sometimes before init when using more than 32MB ram. Everything is OK 
+only when memory is limited to 32MB (mem=32M).
 
-thanks,
- Sebastian
+Thank You for any advice.
+Petr
