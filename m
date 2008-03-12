@@ -1,17 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 15985DDE26
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 07:02:17 +1100 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 9B5798810
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 01:02:27 +0400 (SAMT)
-Date: Wed, 12 Mar 2008 23:02:13 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 83xx: Fix wrong USB phy type in mpc837xrdb dts
-Message-ID: <20080312200213.GA14807@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Return-Path: <tytso@mit.edu>
+Received: from thunker.thunk.org (www.church-of-our-saviour.org [69.25.196.31])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 86D72DDF40
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 07:24:41 +1100 (EST)
+Date: Wed, 12 Mar 2008 16:24:31 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH] ppc: Export empty_zero_page
+Message-ID: <20080312202431.GG15804@mit.edu>
+References: <E1JZGwo-0000vf-2v@closure.thunk.org>
+	<20080312034110.GT6887@bakeyournoodle.com>
+	<20080312144239.GY15804@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080312144239.GY15804@mit.edu>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,89 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Due to chip constraint MPC837x USB DR module can only use
-ULPI and serial PHY interfaces.  The patch fixes the wrong
-type in dts.
+Once again, this time with feeling....
 
-This patch fixes USB malfunctioning on the MPC837xE-RDB boards.
+						- Ted
 
-Similar patch has been already applied for the MDS boards:
+>From c91cfaabc17f8a53807a2f31f067a732e34a1550 Mon Sep 17 00:00:00 2001
+From: Theodore Ts'o <tytso@mit.edu>
+Date: Wed, 12 Mar 2008 11:50:39 -0400
+Subject: [PATCH] [PATCH] powerpc: Export empty_zero_page
 
-  commit 28b958859206b7010d03129611c2e444898e3ee4
-  Author: Li Yang <leoli@freescale.com>
-  Date:   Thu Mar 6 18:42:26 2008 +0800
+The empty_zero_page symbol is exported by most other architectures
+(s390, ia64, x86, um), and an upcoming ext4 patch needs it because
+ZERO_PAGE() references empty_zero_page, and we need it to zero out an
+unitialized extents in ext4 files.
 
-      [POWERPC] 83xx: Fix wrong USB phy type in mpc837xmds dts
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- arch/powerpc/boot/dts/mpc8377_rdb.dts |    3 +--
- arch/powerpc/boot/dts/mpc8378_rdb.dts |    3 +--
- arch/powerpc/boot/dts/mpc8379_rdb.dts |    3 +--
- 3 files changed, 3 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/ppc_ksyms.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 440aa4d..5bc09ad 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -143,7 +143,6 @@
- 			mode = "cpu";
- 		};
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index aa9ff35..885a723 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -58,6 +58,7 @@ extern void program_check_exception(struct pt_regs *regs);
+ extern void single_step_exception(struct pt_regs *regs);
+ extern int sys_sigreturn(struct pt_regs *regs);
  
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
-@@ -151,7 +150,7 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
- 			interrupts = <38 0x8>;
--			phy_type = "utmi";
-+			phy_type = "ulpi";
- 		};
- 
- 		mdio@24520 {
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 9271153..711f9a3 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -143,7 +143,6 @@
- 			mode = "cpu";
- 		};
- 
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
-@@ -151,7 +150,7 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
- 			interrupts = <38 0x8>;
--			phy_type = "utmi";
-+			phy_type = "ulpi";
- 		};
- 
- 		mdio@24520 {
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index 0dda2fc..c11ceb7 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -143,7 +143,6 @@
- 			mode = "cpu";
- 		};
- 
--		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
- 		usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
-@@ -151,7 +150,7 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
- 			interrupts = <38 0x8>;
--			phy_type = "utmi";
-+			phy_type = "ulpi";
- 		};
- 
- 		mdio@24520 {
++EXPORT_SYMBOL(empty_zero_page);
+ EXPORT_SYMBOL(clear_pages);
+ EXPORT_SYMBOL(copy_page);
+ EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
 -- 
-1.5.2.2
+1.5.4.1.144.gdfee-dirty
