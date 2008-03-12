@@ -1,21 +1,28 @@
-Return-Path: <Ingo.Donasch@l-3com.com>
-Received: from firewallb.vividusa.com (vividusa.com [207.180.153.5])
-	by ozlabs.org (Postfix) with ESMTP id B6AD9DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 23:18:53 +1100 (EST)
-Received: from merlin.sds.l-3com.com (merlin.sds.l-3com.com [172.20.0.31])
-	by firewallb.vividusa.com (8.13.3/8.13.3) with ESMTP id m2CBxO7g030785
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 07:59:24 -0400
-Received: from boreas.corp.sds.l-3com.com (boreas [172.20.0.123])
-	by merlin.sds.l-3com.com (8.13.7/8.13.7) with ESMTP id m2CBxKeb006611
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 07:59:20 -0400
+Return-Path: <r.buergel@unicontrol.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
+	by ozlabs.org (Postfix) with ESMTP id 37BB6DDF06
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 06:06:04 +1100 (EST)
+Received: from obelix.unicontrol.de
+	(pd907c61f.dip0.t-ipconnect.de [217.7.198.31])
+	by post.webmailer.de (fruni mo45) (RZmta 16.10)
+	with ESMTP id 60509dk2CHIOTw for <linuxppc-dev@ozlabs.org>;
+	Wed, 12 Mar 2008 19:54:10 +0100 (MET)
+	(envelope-from: <r.buergel@unicontrol.de>)
+Received: from localhost (localhost [127.0.0.1])
+	by obelix.unicontrol.de (Postfix on SuSE Linux 8.1 (i386)) with ESMTP
+	id 2446C17DFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 19:54:02 +0100 (CET)
+Received: from [192.168.1.55] (unknown [192.168.1.55])
+	by obelix.unicontrol.de (Postfix on SuSE Linux 8.1 (i386)) with ESMTP
+	id EC85717DF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 19:53:57 +0100 (CET)
+Message-ID: <47D827A5.8040701@unicontrol.de>
+Date: Wed, 12 Mar 2008 19:57:41 +0100
+From: =?ISO-8859-15?Q?Ren=E9_B=FCrgel?= <r.buergel@unicontrol.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: slow Kilauea TCP throughput?
-Date: Wed, 12 Mar 2008 07:59:15 -0400
-Message-ID: <9E33F44949583B4597BDA2D06042567003734A0F@FLS-EXCHANGE.corp.sds.l-3com.com>
-From: "Donasch, Ingo @ SDS" <Ingo.Donasch@l-3com.com>
-To: <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Linux >=2.6.24 support for FEC on MPC5200 (not B!)
+Content-Type: multipart/mixed; boundary="------------030507030907080301050403"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,63 +32,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have a project where I would like to use the AMC405EX under Linux for
-high speed data acquisition. I have the Kilauea board in the lab but
-measured only 150Mbit/s TCP throughput (outbound) with iperf. I need
-twice of that and actually expecting 3x higher bandwidth from that
-architecture.
-what is it that I'm missing?
-can anybody confirm my results or tell me what am I doing wrong?
-any help is appreciated
-sincerely
-ingo
+This is a multi-part message in MIME format.
+--------------030507030907080301050403
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 
-/home # uname -a
-Linux kilauea 2.6.23-g1dfaad37 #1 Wed Nov 21 07:15:18 CET 2007 ppc
-unknown
+Here is a patch for the lite5200 to get the FEC working again for kernel 
+ >=2.6.24. It was created against Linux 2.6.24.
 
-home # ./iperf -c 192.168.1.249 -t60 -i1
-------------------------------------------------------------
-Client connecting to 192.168.1.249, TCP port 5001 TCP window size: 16.0
-KByte (default)
-------------------------------------------------------------
-[  5] local 192.168.1.50 port 59035 connected with 192.168.1.249 port
-5001
-[  5]  0.0- 1.0 sec  16.6 MBytes    139 Mbits/sec
-[  5]  1.0- 2.0 sec  16.6 MBytes    140 Mbits/sec
-...
-[  5] 58.0-59.0 sec  18.0 MBytes    151 Mbits/sec
-[  5] 59.0-60.0 sec  18.0 MBytes    151 Mbits/sec
-[  5]  0.0-60.0 sec  1.04 GBytes    148 Mbits/sec
-/home # ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:06:4B:10:19:5B =20
-          inet addr:192.168.1.50  Bcast:192.168.1.255
-Mask:255.255.255.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:798928 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1634765 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:53947650 (51.4 MiB)  TX bytes:2341215308 (2.1 GiB)
-
-lo        Link encap:Local Loopback =20
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+The FEC driver is also compatible with the MPC5200, not only with the 
+MPC5200B, so an according entry was added to the drivers matching list.
+Furthermore the settings for the PHY were entered in the dts file for 
+the Lite5200. Note, that this is not exactly the same as in the 
+Lite5200B, because the PHY is located at f0003000:01 for the 5200, and 
+at :00 for the 5200B. I could test the patch on a Lite5200 and a 
+Lite5200B, both booted a kernel via tftp and mounted the root via nfs 
+successfully.
+I hope, you can include the patch into the official tree.
 
 
-*********************************************************************
-The information contained in this e-mail is intended only for the person
-or entity to which it is addressed and may contain confidential and / or
-privileged material. If you are not the intended recipient of this
-e-mail, the use of this information or any disclosure, copying or
-distribution is prohibited and may be unlawful.=20
+Kind regards, René Bürgel
 
-If you received this in error, please contact the sender and delete the
-material from any computer.=20
+-- 
+Unicontrol Systemtechnik GmbH
+OT Dittersbach
+Sachsenburger Weg 34
+09669 Frankenberg
+ 
+Tel.: 03 72 06/ 88 73 - 12
+Fax: 03 72 06/ 88 73 - 60
+E-Mail: r.buergel@unicontrol.de
+Internet: www.unicontrol.de
 
-L-3 Communications Security Systems, manufacturer of the eXaminer 3DX
-6000 Explosive Detection System - <http://www.l-3com.com>
-**********************************************************************
+
+--------------030507030907080301050403
+Content-Type: text/plain;
+ name="lite5200_fec_on_linux_2.6.24.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="lite5200_fec_on_linux_2.6.24.patch"
+
+--- ../kernel/current/arch/powerpc/boot/dts/lite5200.dts	2008-03-12 18:26:02.000000000 +0100
++++ linux-2.6.24-uc/arch/powerpc/boot/dts/lite5200.dts	2008-03-12 17:44:06.000000000 +0100
+@@ -273,6 +273,22 @@
+ 			mac-address = [ 02 03 04 05 06 07 ]; // Bad!
+ 			interrupts = <2 5 0>;
+ 			interrupt-parent = <&mpc5200_pic>;
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "mpc5200-fec-phy";
++			reg = <3000 400>;	// fec range, since we need to setup fec interrupts
++			interrupts = <2 5 0>;	// these are for "mii command finished", not link changes & co.
++			interrupt-parent = <&mpc5200_pic>;
++
++			phy0:ethernet-phy@1 {
++				device_type = "ethernet-phy";
++				reg = <1>;
++			};
+ 		};
+ 
+ 		ata@3a00 {
+--- ../kernel/linux-2.6.24-uc/drivers/net/fec_mpc52xx.c	2008-03-12 15:25:27.000000000 +0100
++++ linux-2.6.24-uc/drivers/net/fec_mpc52xx.c	2008-03-12 18:39:30.000000000 +0100
+@@ -1059,6 +1059,10 @@
+ static struct of_device_id mpc52xx_fec_match[] = {
+ 	{
+ 		.type		= "network",
++		.compatible	= "mpc5200b-fec",
++	},
++	{
++		.type		= "network",
+ 		.compatible	= "mpc5200-fec",
+ 	},
+ 	{ }
+--- ../kernel/linux-2.6.24-uc/drivers/net/fec_mpc52xx_phy.c	2008-03-12 15:12:11.000000000 +0100
++++ linux-2.6.24-uc/drivers/net/fec_mpc52xx_phy.c	2008-03-12 19:47:39.000000000 +0100
+@@ -181,6 +181,10 @@
+ 		.type = "mdio",
+ 		.compatible = "mpc5200b-fec-phy",
+ 	},
++	{
++		.type = "mdio",
++		.compatible = "mpc5200-fec-phy",
++	},
+ 	{},
+ };
+ 
+
+--------------030507030907080301050403--
