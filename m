@@ -1,35 +1,23 @@
-Return-Path: <luisgpm@linux.vnet.ibm.com>
-Received: from igw1.br.ibm.com (igw1.br.ibm.com [32.104.18.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8FAF0DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:51:28 +1100 (EST)
-Received: from mailhub3.br.ibm.com (mailhub3 [9.18.232.110])
-	by igw1.br.ibm.com (Postfix) with ESMTP id 1876E32C08C
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:30:41 -0300 (BRST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.18.232.47])
-	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2CHpIs24464652
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:51:18 -0300
-Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
-	by d24av02.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2CHpHfs000906
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:51:18 -0300
-Subject: Re: PPC upstream kernel ignored DABR bug
-From: Luis Machado <luisgpm@linux.vnet.ibm.com>
-To: Jens Osterkamp <jens@de.ibm.com>
-In-Reply-To: <200803101501.34439.jens@de.ibm.com>
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200711290113.29024.arnd@arndb.de> <1205110432.10078.5.camel@gargoyle>
-	<200803101501.34439.jens@de.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 12 Mar 2008 14:51:12 -0300
-Message-Id: <1205344272.2272.45.camel@gargoyle>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Roland McGrath <roland@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jan Kratochvil <jan.kratochvil@redhat.com>
-Reply-To: luisgpm@linux.vnet.ibm.com
+Return-Path: <linasvepstas@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id 24F6ADDFB5
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:52:44 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so662632anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 10:52:39 -0700 (PDT)
+Message-ID: <3ae3aa420803121052g6ded9c94xd23823a4e81f4bbf@mail.gmail.com>
+Date: Wed, 12 Mar 2008 11:52:38 -0600
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
+In-Reply-To: <1205197341.8656.5.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <47B90F55.2080606@austin.ibm.com>
+	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
+	<47C74A66.1060105@austin.ibm.com> <47C750CE.7050202@austin.ibm.com>
+	<1205197341.8656.5.camel@concordia.ozlabs.ibm.com>
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,21 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 10/03/2008, Michael Ellerman <michael@ellerman.id.au> wrote:
+> On Thu, 2008-02-28 at 18:24 -0600, Manish Ahuja wrote:
 
-> On the Blade DABRX had to be set additional to DABR. PS3 and Celleb
-> already did this. Uli Weigand found this back in November. I submitted
-> a patch for this which went into 2.6.25-rc4.
-> Can you please try again with rc4 ?
+>  > +
+>  > +/* Global, used to communicate data between early boot and late boot */
+>  > +static struct phyp_dump phyp_dump_global;
+>  > +struct phyp_dump *phyp_dump_info = &phyp_dump_global;
+>
+> I don't see the point of this. You have a static (ie. non-global) struct
+>  called phyp_dump_global, then you create a pointer to it and pass that
+>  around.
 
-> Gruß,
-> 
-> Jens
+I did this. This is a style used to minimize disruption due to future
+design changes. Basically, the idea is that, at some later time, for
+some unknown reason, we decide that this structure shouldn't
+be global, or maybe shouldn't be statically allocated, or maybe
+should be per-cpu, or who knows.  By creating a pointer, and
+just passing that around, you isolate other code from this change.
 
-Just to make sure, i tested the binary against the 2.6.25-rc4 kernel. It
-still fails. So this is really an open bug for PPC.
+I learned this trick after spending too many months of my life hunting
+down globals and replacing them by dynamically allocated structs.
+Its a long and painful process, on many levels, often requiring major
+code restructuring.  Code that touches globals directly is often
+poorly thought out, designed.  But going in the opposite direction
+is easy: if your code always passes everything it needs as args
+to subroutines,  then you are free & clear ... if one of those args
+just happens to be a pointer to a global, there's no loss (not even
+a performance loss -- the arg passing overhead is about the same
+as a global TOC lookup!)
 
--- 
-Luis Machado
-Software Engineer 
-IBM Linux Technology Center
+So it may look weird if you're not used to seeing it; but the alternative
+is almost always worse.
+
+--linas
