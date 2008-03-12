@@ -1,10 +1,19 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 12 Mar 2008 17:23:56 +1100
-Subject: [PATCH] [POWERPC] Fix viodasd driver with scatterlist debug
-Message-Id: <20080312062407.492AEDDED5@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7ABFDDDF0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 17:45:29 +1100 (EST)
+Date: Wed, 12 Mar 2008 17:44:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Fix viodasd driver with scatterlist debug
+Message-Id: <20080312174418.e7206a9b.sfr@canb.auug.org.au>
+In-Reply-To: <20080312062407.492AEDDED5@ozlabs.org>
+References: <20080312062407.492AEDDED5@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__12_Mar_2008_17_44_18_+1100_zBSQzc9pC_jOPAIW"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,31 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The iSeries viodasd drivers does some very strange things with
-scatterlists, one of these causing a BUG_ON to trigger when
-scatterlist debugging is enabled due to initializing the
-scatterlist with memset instead of sg_init_table().
+--Signature=_Wed__12_Mar_2008_17_44_18_+1100_zBSQzc9pC_jOPAIW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This fixes it by using sg_init_table(). The rest of the stuff
-it does to that poor list is still pretty awful but it will work.
+Hi Ben,
 
-I may look into fixing things in a nicer way some other time.
+On Wed, 12 Mar 2008 17:23:56 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> The iSeries viodasd drivers does some very strange things with
+> scatterlists, one of these causing a BUG_ON to trigger when
+> scatterlist debugging is enabled due to initializing the
+> scatterlist with memset instead of sg_init_table().
+>=20
+> This fixes it by using sg_init_table(). The rest of the stuff
+> it does to that poor list is still pretty awful but it will work.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Presumably this is also needed in 2.6.24.xx
 
- drivers/block/viodasd.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---- linux-work.orig/drivers/block/viodasd.c	2008-03-12 10:25:55.000000000 +1100
-+++ linux-work/drivers/block/viodasd.c	2008-03-12 10:39:38.000000000 +1100
-@@ -528,8 +528,7 @@ static int block_event_to_scatterlist(co
- 		numsg = VIOMAXBLOCKDMA;
- 
- 	*total_len = 0;
--	memset(sg, 0, sizeof(sg[0]) * VIOMAXBLOCKDMA);
--
-+	sg_init_table(sg, VIOMAXBLOCKDMA);
- 	for (i = 0; (i < numsg) && (rw_data->dma_info[i].len > 0); ++i) {
- 		sg_dma_address(&sg[i]) = rw_data->dma_info[i].token;
- 		sg_dma_len(&sg[i]) = rw_data->dma_info[i].len;
+--Signature=_Wed__12_Mar_2008_17_44_18_+1100_zBSQzc9pC_jOPAIW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH13vHTgG2atn1QN8RAqCtAKCS0Wt04+GwTykMEjXrYKQaWN4k5QCffyNN
+xd/TTkEFbfupPJd4Z3AJBkw=
+=yMxT
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__12_Mar_2008_17_44_18_+1100_zBSQzc9pC_jOPAIW--
