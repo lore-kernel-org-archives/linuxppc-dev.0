@@ -1,16 +1,25 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
-	by ozlabs.org (Postfix) with ESMTP id 88E22DE035
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 07:52:11 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1939602rvf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 13:52:07 -0700 (PDT)
-Message-ID: <5c9cd53b0803121352u35fca951wa76d0cae8cbfa895@mail.gmail.com>
-Date: Wed, 12 Mar 2008 15:52:06 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Early Debug message on MPC8568MDS
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3EC90DE286
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 07:52:34 +1100 (EST)
+Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
+	powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080312104645.34e58319.akpm@linux-foundation.org>
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	<47D7D2C9.4090001@linux.vnet.ibm.com>
+	<20080312104645.34e58319.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 13 Mar 2008 07:40:06 +1100
+Message-Id: <1205354406.9431.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,13 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-How can I enable the early debug message on 2.6.23 kernel for
-MPC8568MDS board? What is the first line shall be displayed on the
-serial port? The board uses the first port of UART, where does it
-defined?
+> Beats me.  Maybe we're still enabling interrupts too early.  But the new
+> semaphore code got fixed (didn't it?)
 
-Thanks for your help,
+Won't lockdep/irqtrace warn if that happens ? You don't yet have the
+lockdep patches for ppc64 (I'm still trying to find out why they break
+iSeries) but it should warn of such a spurrious IRQ enable on other
+archs too... At least, from a quick look at the code, it -seems- that it
+does have such a test.
 
-Mike
+Cheers,
+Ben.
