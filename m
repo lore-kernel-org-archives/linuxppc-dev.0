@@ -1,23 +1,19 @@
-Return-Path: <zejdlp1@fel.cvut.cz>
-Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
-	by ozlabs.org (Postfix) with ESMTP id ABE3EDDE26
+Return-Path: <ramkumarj2000@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.186])
+	by ozlabs.org (Postfix) with ESMTP id 38BFFDDDEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Mar 2008 23:53:45 +1100 (EST)
-Received: from imap.feld.cvut.cz (imap.feld.cvut.cz [147.32.192.34])
-	by max.feld.cvut.cz (Postfix) with ESMTP id 3A79F390EC171
+	Thu, 13 Mar 2008 02:15:21 +1100 (EST)
+Received: by rn-out-0910.google.com with SMTP id v46so2049123rnb.15
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Mar 2008 13:47:51 +0100 (CET)
-Received: from [192.168.1.100] (pha-1-13.adsl.sky.cz [193.165.1.13])
-	by imap.feld.cvut.cz (Postfix) with ESMTP id 2035C3FF0
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Mar 2008 13:47:50 +0100 (CET)
-Message-ID: <47D7D0F2.9080803@fel.cvut.cz>
-Date: Wed, 12 Mar 2008 13:47:46 +0100
-From: =?UTF-8?B?UGV0ciDFvWVqZGw=?= <zejdlp1@fel.cvut.cz>
-MIME-Version: 1.0
+	Wed, 12 Mar 2008 08:15:19 -0700 (PDT)
+Message-ID: <4f8c3030803120815o7dcf5e8xb74650c8b993d26d@mail.gmail.com>
+Date: Wed, 12 Mar 2008 23:15:16 +0800
+From: "Ramkumar J" <ramkumarj2000@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: 2.6.23.1 and more than 32MB, segfault
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: XMD to debug Linux kernel 2.6
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_68_22652601.1205334917027"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,12 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+------=_Part_68_22652601.1205334917027
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'm using MEMEC board ML300 compatible with 64MB SDRAM available and 
-vanilla kernel 2.6.23.1. The problem are random segfaults from init, 
-sometimes before init when using more than 32MB ram. Everything is OK 
-only when memory is limited to 32MB (mem=32M).
+Hi All,
+I need to dump the TLB entries, i-cache and d-cache entries on a ML-403
+board ( I use a PowerPc based design) using the Xilinx Parallel-4 Cable.
+When I download the zImage.elf using dow command on XMD, I m not able to
+access the TLB and cache address special memory mappings as displayed by the
+XMD. I suspect that XMD only allows the dump for sections inside the elf
+file. If its true, then how to access the sections of kernel.
+Could XMD be used to debug a linux kernel by dumping the registers, TLBs,
+cache entries,etc. Am I missing anything. Any pointers would be very
+helpful.
 
-Thank You for any advice.
-Petr
+Thanks and Regards,
+Ramkumar
+
+------=_Part_68_22652601.1205334917027
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<p>Hi All,</p>
+<div>I need to dump the TLB entries, i-cache and d-cache entries on a ML-403 board ( I use a PowerPc based design) using the Xilinx Parallel-4 Cable. When I&nbsp;download the zImage.elf using dow command on XMD, I m not able to access the TLB and cache address special memory mappings as displayed by the XMD. I suspect that XMD only allows the dump for sections inside the elf file. If its true, then how to access the sections of kernel.</div>
+
+<div>Could XMD be used to debug a linux kernel by dumping the registers, TLBs, cache entries,etc. Am I missing anything. Any pointers would be very helpful.</div>
+<p>Thanks and Regards,<br>Ramkumar</p>
+
+------=_Part_68_22652601.1205334917027--
