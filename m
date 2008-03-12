@@ -1,34 +1,21 @@
-Return-Path: <pbadari@gmail.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 58A22DDFFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 05:11:17 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2CIBAbA020090
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:11:10 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2CIBA3D195590
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 12:11:10 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2CIB9PB031094
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 12:11:10 -0600
-Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
-	powerpc
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <47D7D2C9.4090001@linux.vnet.ibm.com>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D7D2C9.4090001@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 12 Mar 2008 10:14:36 -0800
-Message-Id: <1205345676.23611.9.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
+Return-Path: <Ingo.Donasch@l-3com.com>
+Received: from firewallb.vividusa.com (vividusa.com [207.180.153.5])
+	by ozlabs.org (Postfix) with ESMTP id B6AD9DDE06
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 23:18:53 +1100 (EST)
+Received: from merlin.sds.l-3com.com (merlin.sds.l-3com.com [172.20.0.31])
+	by firewallb.vividusa.com (8.13.3/8.13.3) with ESMTP id m2CBxO7g030785
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 07:59:24 -0400
+Received: from boreas.corp.sds.l-3com.com (boreas [172.20.0.123])
+	by merlin.sds.l-3com.com (8.13.7/8.13.7) with ESMTP id m2CBxKeb006611
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 07:59:20 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: slow Kilauea TCP throughput?
+Date: Wed, 12 Mar 2008 07:59:15 -0400
+Message-ID: <9E33F44949583B4597BDA2D06042567003734A0F@FLS-EXCHANGE.corp.sds.l-3com.com>
+From: "Donasch, Ingo @ SDS" <Ingo.Donasch@l-3com.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,38 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-03-12 at 18:25 +0530, Kamalesh Babulal wrote:
-> Hi Andrew,
-> 
-> The 2.6.25-rc5-mm1 kernel panics while bootup on powerpc
-> 
-> returning from prom_init
-> Unable to handle kernel paging request for data at address 0x00000000
-> Faulting instruction address: 0xc00000000000d5dc
-> cpu 0x0: Vector: 300 (Data Access) at [c0000000007636e0]
->     pc: c00000000000d5dc: .do_IRQ+0x74/0x1f4
->     lr: c00000000000d5a8: .do_IRQ+0x40/0x1f4
->     sp: c000000000763960
->    msr: 8000000000001032
->    dar: 0
->  dsisr: 40000000
->   current = 0xc000000000688e60
->   paca    = 0xc000000000689900
->     pid   = 0, comm = swapper
-> enter ? for help
-> [c000000000763a00] c000000000004c24 hardware_interrupt_entry+0x24/0x28
-> --- Exception: 501 (Hardware Interrupt) at c0000000006021b0 .free_bootmem_core+0x94/0xcc
-> [link register   ] c00000000060373c .free_bootmem_with_active_regions+0x78/0xb8
-> [c000000000763cf0] c000000000602610 .init_bootmem_core+0x5c/0xfc (unreliable)
-> [c000000000763d80] c0000000005eb68c .do_init_bootmem+0x964/0xaf0
-> [c000000000763e50] c0000000005e03b0 .setup_arch+0x1a4/0x218
-> [c000000000763ee0] c0000000005d76bc .start_kernel+0xe8/0x424
-> [c000000000763f90] c000000000008590 .start_here_common+0x60/0xd0
+I have a project where I would like to use the AMC405EX under Linux for
+high speed data acquisition. I have the Kilauea board in the lab but
+measured only 150Mbit/s TCP throughput (outbound) with iperf. I need
+twice of that and actually expecting 3x higher bandwidth from that
+architecture.
+what is it that I'm missing?
+can anybody confirm my results or tell me what am I doing wrong?
+any help is appreciated
+sincerely
+ingo
 
-Is this only on one machine ? happens all the time ?
+/home # uname -a
+Linux kilauea 2.6.23-g1dfaad37 #1 Wed Nov 21 07:15:18 CET 2007 ppc
+unknown
 
-I ran into similar issues on rc3-mm1. rc5-mm1 seems to be working fine
-for me on ppc64.
+home # ./iperf -c 192.168.1.249 -t60 -i1
+------------------------------------------------------------
+Client connecting to 192.168.1.249, TCP port 5001 TCP window size: 16.0
+KByte (default)
+------------------------------------------------------------
+[  5] local 192.168.1.50 port 59035 connected with 192.168.1.249 port
+5001
+[  5]  0.0- 1.0 sec  16.6 MBytes    139 Mbits/sec
+[  5]  1.0- 2.0 sec  16.6 MBytes    140 Mbits/sec
+...
+[  5] 58.0-59.0 sec  18.0 MBytes    151 Mbits/sec
+[  5] 59.0-60.0 sec  18.0 MBytes    151 Mbits/sec
+[  5]  0.0-60.0 sec  1.04 GBytes    148 Mbits/sec
+/home # ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:06:4B:10:19:5B =20
+          inet addr:192.168.1.50  Bcast:192.168.1.255
+Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:798928 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1634765 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000=20
+          RX bytes:53947650 (51.4 MiB)  TX bytes:2341215308 (2.1 GiB)
 
-Thanks,
-Badari
+lo        Link encap:Local Loopback =20
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0=20
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+
+*********************************************************************
+The information contained in this e-mail is intended only for the person
+or entity to which it is addressed and may contain confidential and / or
+privileged material. If you are not the intended recipient of this
+e-mail, the use of this information or any disclosure, copying or
+distribution is prohibited and may be unlawful.=20
+
+If you received this in error, please contact the sender and delete the
+material from any computer.=20
+
+L-3 Communications Security Systems, manufacturer of the eXaminer 3DX
+6000 Explosive Detection System - <http://www.l-3com.com>
+**********************************************************************
