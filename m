@@ -1,23 +1,37 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
-	powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <20080312175102.GC613@parisc-linux.org>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D7D2C9.4090001@linux.vnet.ibm.com>
-	<20080312104645.34e58319.akpm@linux-foundation.org>
-	<20080312175102.GC613@parisc-linux.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-FKcgb/W1x+QFNN+GQlWd"
-Date: Thu, 13 Mar 2008 09:26:09 +1100
-Message-Id: <1205360769.7436.8.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <jens@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2F069DDF2D
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 09:30:43 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id m2CMUc4o333632
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 22:30:38 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m2CMUcx91994988
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 23:30:38 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m2CMUcDr005036
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 23:30:38 +0100
+From: Jens Osterkamp <jens@de.ibm.com>
+To: luisgpm@linux.vnet.ibm.com
+Subject: Re: PPC upstream kernel ignored DABR bug
+Date: Wed, 12 Mar 2008 23:30:36 +0100
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200803101501.34439.jens@de.ibm.com>
+	<1205344272.2272.45.camel@gargoyle>
+In-Reply-To: <1205344272.2272.45.camel@gargoyle>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200803122330.36905.jens@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Roland McGrath <roland@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jan Kratochvil <jan.kratochvil@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,48 +42,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-FKcgb/W1x+QFNN+GQlWd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Just to make sure, i tested the binary against the 2.6.25-rc4 kernel. It
+> still fails. So this is really an open bug for PPC.
 
-On Wed, 2008-03-12 at 11:51 -0600, Matthew Wilcox wrote:
-> On Wed, Mar 12, 2008 at 10:46:45AM -0700, Andrew Morton wrote:
-> > On Wed, 12 Mar 2008 18:25:37 +0530 Kamalesh Babulal <kamalesh@linux.vne=
-t.ibm.com> wrote:
-> > Beats me.  Maybe we're still enabling interrupts too early.  But the ne=
-w
-> > semaphore code got fixed (didn't it?)
->=20
-> On the 7th, according to my records.  Easy to check -- look in
-> kernel/semaphore.c and see whether down() is using spin_lock_irqsave
-> (good) or spin_lock_irq (bad).
+On a Cell- or 970-based machine ?
 
-down() looks OK, but there's still a spin_lock_irq() in __down_common(),
-although I don't know if it makes sense for us to be in __down() at that
-stage.
+Gruß,
+	Jens
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-FKcgb/W1x+QFNN+GQlWd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH2FiBdSjSd0sB4dIRAl2yAJ99xRvlB9Y9gSWnrlO5I81Y2WInMwCePnvQ
-tIC8LxVMBAH4DYX1jOsCmsk=
-=FYb4
------END PGP SIGNATURE-----
-
---=-FKcgb/W1x+QFNN+GQlWd--
+IBM Deutschland Entwicklung GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Geschäftsführung: Herbert Kircher 
+Sitz der Gesellschaft: Böblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
