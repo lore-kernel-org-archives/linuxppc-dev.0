@@ -1,24 +1,35 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
+Return-Path: <luisgpm@linux.vnet.ibm.com>
+Received: from igw1.br.ibm.com (igw1.br.ibm.com [32.104.18.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0FF8DDE24
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:51:20 +1100 (EST)
-Date: Wed, 12 Mar 2008 11:51:02 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
-	powerpc
-Message-ID: <20080312175102.GC613@parisc-linux.org>
-References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
-	<47D7D2C9.4090001@linux.vnet.ibm.com>
-	<20080312104645.34e58319.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080312104645.34e58319.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8FAF0DDED1
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 04:51:28 +1100 (EST)
+Received: from mailhub3.br.ibm.com (mailhub3 [9.18.232.110])
+	by igw1.br.ibm.com (Postfix) with ESMTP id 1876E32C08C
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:30:41 -0300 (BRST)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.18.232.47])
+	by mailhub3.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2CHpIs24464652
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:51:18 -0300
+Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
+	by d24av02.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2CHpHfs000906
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2008 14:51:18 -0300
+Subject: Re: PPC upstream kernel ignored DABR bug
+From: Luis Machado <luisgpm@linux.vnet.ibm.com>
+To: Jens Osterkamp <jens@de.ibm.com>
+In-Reply-To: <200803101501.34439.jens@de.ibm.com>
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200711290113.29024.arnd@arndb.de> <1205110432.10078.5.camel@gargoyle>
+	<200803101501.34439.jens@de.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 12 Mar 2008 14:51:12 -0300
+Message-Id: <1205344272.2272.45.camel@gargoyle>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Roland McGrath <roland@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jan Kratochvil <jan.kratochvil@redhat.com>
+Reply-To: luisgpm@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +39,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 12, 2008 at 10:46:45AM -0700, Andrew Morton wrote:
-> On Wed, 12 Mar 2008 18:25:37 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> Beats me.  Maybe we're still enabling interrupts too early.  But the new
-> semaphore code got fixed (didn't it?)
+Hi,
 
-On the 7th, according to my records.  Easy to check -- look in
-kernel/semaphore.c and see whether down() is using spin_lock_irqsave
-(good) or spin_lock_irq (bad).
+> On the Blade DABRX had to be set additional to DABR. PS3 and Celleb
+> already did this. Uli Weigand found this back in November. I submitted
+> a patch for this which went into 2.6.25-rc4.
+> Can you please try again with rc4 ?
+
+> Gruß,
+> 
+> Jens
+
+Just to make sure, i tested the binary against the 2.6.25-rc4 kernel. It
+still fails. So this is really an open bug for PPC.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Luis Machado
+Software Engineer 
+IBM Linux Technology Center
