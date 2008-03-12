@@ -1,18 +1,26 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
-	by ozlabs.org (Postfix) with ESMTP id CD24EDDF54
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 782F3DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Mar 2008 07:46:54 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id c57so2147758wra.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Mar 2008 13:46:52 -0700 (PDT)
-Message-ID: <5c9cd53b0803121346s20b7e9dep5c330c6e35bc66d8@mail.gmail.com>
-Date: Wed, 12 Mar 2008 15:46:49 -0500
-From: "mike zheng" <mail4mz@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Early Debug message on MPC8568MDS
+	Thu, 13 Mar 2008 07:50:16 +1100 (EST)
+Message-ID: <47D841EE.2060806@freescale.com>
+Date: Wed, 12 Mar 2008 15:49:50 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
+To: Sebastian Siewior <linuxppc-embedded@ml.breakpoint.cc>
+Subject: Re: Using the loop feature of the DMA controller on MPC8544 DS
+References: <20080312123437.GA1589@Chamillionaire.breakpoint.cc>
+	<47D7FD9D.2040202@freescale.com>
+	<20080312172024.GB7255@Chamillionaire.breakpoint.cc>
+	<47D82542.8020000@freescale.com>
+	<20080312204451.GA11426@Chamillionaire.breakpoint.cc>
+In-Reply-To: <20080312204451.GA11426@Chamillionaire.breakpoint.cc>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,13 +31,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Sebastian Siewior wrote:
 
-How can I enable the early debug message on 2.6.23 kernel for
-MPC8568MDS board? What is the first line shall be displayed on the
-serial port? The board uses the first port of UART, where does it
-defined?
+> Do you recommend another solution? Or did I miss an important part of
+> the API that solves this kind of problem.
 
-Thanks for your help,
+Well, I need to solve this problem myself, but I wasn't planning on doing it for
+a while since I have a higher priority assignment at the moment.  My 8610 sound
+driver does DMA all on its own and completely ignores Zhang's driver, so I need
+to fix that.
 
-Mike
+Unfortunately, I'm not familiar with Zhang's driver at all (it's changed too
+much since I last looked at it), so I don't know what the *best* way is.  For my
+sound driver, I don't even know if I'll be able to leverage Zhang's driver at
+all, since I need to use a specific DMA channel, and I need to control each of
+the link descriptors.  Zhang's driver abstracts DMA too much.  So all I was
+going to do is come up with a way to reserve channels.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
