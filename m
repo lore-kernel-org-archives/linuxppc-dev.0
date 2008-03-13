@@ -1,20 +1,21 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 13 Mar 2008 18:14:42 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip
-	DMAengine
-Message-ID: <20080313231442.GA4639@lixom.net>
-References: <20080306233900.GA3969@lixom.net>
-	<1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
-	<20080313195431.GA1449@lixom.net>
-	<e9c3a7c20803131529j22db434aqdab0ef6f18891d67@mail.gmail.com>
+Return-Path: <roland@redhat.com>
+Received: from QMTA05.westchester.pa.mail.comcast.net
+	(qmta05.westchester.pa.mail.comcast.net [76.96.62.48])
+	by ozlabs.org (Postfix) with ESMTP id E3B86DDF6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 10:36:12 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e9c3a7c20803131529j22db434aqdab0ef6f18891d67@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, "Nelson,
-	Shannon" <shannon.nelson@intel.com>,
-	linux-kernel@vger.kernel.org, hskinnemoen@atmel.com
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
+In-Reply-To: Andrew Morton's message of  Thursday, 13 March 2008 14:35:10 -0700
+	<20080313143510.9cfb7ab4.akpm@linux-foundation.org>
+References: <20080313083107.8BDE926F992@magilla.localdomain>
+	<20080313143510.9cfb7ab4.akpm@linux-foundation.org>
+Message-Id: <20080313233601.E413226F9A4@magilla.localdomain>
+Date: Thu, 13 Mar 2008 16:36:01 -0700 (PDT)
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	anton@samba.org, mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,86 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 13, 2008 at 03:29:29PM -0700, Dan Williams wrote:
-> On Thu, Mar 13, 2008 at 12:54 PM, Olof Johansson <olof@lixom.net> wrote:
-> > On Tue, Mar 11, 2008 at 10:04:11AM -0700, Dan Williams wrote:
-> >
-> >  > I notice that the driver does not handle callbacks in its descriptor
-> >  > cleanup path.  This could be ok if your intent is only to support the
-> >  > net_dma style polled operations, but this will not work for the
-> >  > raid-offload async_tx case.  I think the solution is for async_tx to
-> >  > ignore channels without the DMA_INTERRUPT capability.
-> >
-> >  Good point, and correct - I have mostly been testing this with the
-> >  NET_DMA offload. async_tx doesn't make use of just memcpy, does it?
-> >
-> 
-> Right, it makes use of any capability it can get its hands on,
-> otherwise fall back to software.
+> This is advertised as a -mm patch but afacit it isn't against -mm.  And it
+> doesn't seem to be against mainline either?  At least, the fourth patch
+> fails to apply.
 
-Badly worded question, but it got answered anyway. What I really meant
-to as was "does async_tx use memcpy", I thought it only used xor. Good
-to know.
+Oops, sorry for the bad labeling.  The baseline I used was actually x86/mm.
+(This was originally going to be just some x86_64 cleanups destined for
+post-2.6.25, before I noticed that powerpc had issues.)
 
-> >  Also, how is DMA_INTERRUPT supposed to work? I see there's a separate
-> >  "prep_dma_interrupt" function, but that doesn't make sense to me. Don't
-> >  you want the interrupt associated with a specific transaction instead
-> >  of added as a separate (empty) transaction?
-> >
-> 
-> Yes, and that is what happens in most cases.  The additional
-> prep_dma_interrupt method is for two special cases:
-> 1/ Locations where code is submitting an indeterminate number of
-> operations and wants an interrupt (callback) at the completion of the
-> chain.  Someting like:
-> list_for_each_entry()
->      async_memcpy()
-> async_trigger_callback()
+> When trying to apply the fourth patch to -mm I hit a reject due to the new
+> BTS support in git-x86.  I stopped there because the patch might be invalid
+> because of this.
 
-Ok, one could argue that it'd make more sense to have a way to issue a
-memcpy (or other op) with a callback. Anyway, both methods work.
+The only differences for that stuff should be to pass any new BTS requests
+through to arch_ptrace as is done for e.g. PTRACE_GET_THREAD_AREA.  I'll
+admit I tried not to think about that since it's disabled now and still in
+so much flux.
 
-> 2/ For supporting channel switching on, for instance, a memcpy->xor
-> chain where chan1 supports memcpy and chan2 supports xor.  When
-> async_tx sees this it injects an interrupt for chan1.  The xor
-> operation gets kicked off by the bottom half of the chan1 interrupt
-> handler.  However, if chan1 can do both operations no interrupt is
-> needed.
-> 
-> >  Once I add the descriptor to the ring, I can't change it to set the
-> >  interrupt request bit on it. I suppose I could just add a dummy descriptor
-> >  to the ring, but that doesn't seem quite right either.
-> >
-> 
-> Dummy descriptors that do nothing but cause an interrupt is the intent.
+> Even though this appears to be a signal-related patch it is actually
+> ptrace-related, yes?
 
-Well, it'd be slightly more efficient to do add the interrupt attribute
-to the last issued descriptor when it's known in advance. If the
-underlying driver doesn't support it, adding a separate descriptor would
-be a good fallback.
+It is a prerequisite for ptrace cleanups/fixes, yes.  The change does not
+affect any signals code behavior.  It may also be useful for other generic
+signals compat code later (though I haven't looked into that yet).  I'd
+call it "compat-related" really.
 
-Anyway, this isn't likely to be a performance bottleneck. If it turns
-out to be, I'll refactor it and submit patches.
+> This patch is a prerequisite for "ptrace: compat_ptrace_request siginfo",
+> but this patch is independent from that patch (and from all others) and
+> hence this patch can be merged on its own into powerpc tree if we wish to
+> go that way, yes?  
 
-> >  > > +static void pasemi_dma_clean(struct pasemi_dma_chan *chan)
-> >  > > +{
-> >  > > +       int old, new, i;
-> >  > > +       unsigned long flags;
-> >  > > +       struct pasemi_dma_desc *desc;
-> >  > > +       spin_lock_irqsave(&chan->desc_lock, flags);
-> >  >
-> >  > Is spin_lock_bh() insufficient here?
-> >  >
-> >  > ...that's all that jumps out at the moment.
-> >
-> >  Can't do that if it's called both from the polling as well as the IRQ
-> >  context, it'd need to hold off irqs. I.e. once I add the DMA_INTERRUPT
-> >  support it will be needed.
-> >
-> 
-> ...do it in a tasklet.
+Yes.
 
-Why? That just adds overhead and latency.
+> Anwyay, please help me out with the dependencies here, and take a look at
+> the x86 BTS stuff?
+
+2/4 depends on 1/4 for powerpc64 to keep building.
+3/4 depends on 2/4 for x86_64 kernel's 32-bit ptrace calls to keep working.
+4/4 depends on 3/4 for same.
+
+I've become fairly confused about the various trees and the state of the
+ill-fated BTS code.  It's hard to figure out when it's coming and going
+from where lately.  But resolving the actual code bits in any conflicts
+with that will be trivial.
 
 
--Olof
+Thanks,
+Roland
