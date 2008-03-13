@@ -1,22 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A70A5DDF54
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 08:36:32 +1100 (EST)
-Date: Thu, 13 Mar 2008 14:35:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
-Message-Id: <20080313143510.9cfb7ab4.akpm@linux-foundation.org>
-In-Reply-To: <20080313083107.8BDE926F992@magilla.localdomain>
-References: <20080313083107.8BDE926F992@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	anton@samba.org, mingo@elte.hu, tglx@linutronix.de
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 8AAA8DDE07
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 08:50:48 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so797788anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 14:50:45 -0700 (PDT)
+Message-ID: <fa686aa40803131450p5ce9f0d9j1239e6683b2ff3a8@mail.gmail.com>
+Date: Thu, 13 Mar 2008 15:50:44 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "=?ISO-8859-1?Q?Ren=E9_B=FCrgel?=" <r.buergel@unicontrol.de>
+Subject: Re: [PATCH] Linux >=2.6.24 support for FEC on MPC5200 (not B!)
+In-Reply-To: <47D827A5.8040701@unicontrol.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47D827A5.8040701@unicontrol.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Mar 12, 2008 at 12:57 PM, Ren=E9 B=FCrgel <r.buergel@unicontrol.de>=
+ wrote:
+> Here is a patch for the lite5200 to get the FEC working again for kernel
+>   >=3D2.6.24. It was created against Linux 2.6.24.
+>
+>  The FEC driver is also compatible with the MPC5200, not only with the
+>  MPC5200B, so an according entry was added to the drivers matching list.
+>  Furthermore the settings for the PHY were entered in the dts file for
+>  the Lite5200. Note, that this is not exactly the same as in the
+>  Lite5200B, because the PHY is located at f0003000:01 for the 5200, and
+>  at :00 for the 5200B. I could test the patch on a Lite5200 and a
+>  Lite5200B, both booted a kernel via tftp and mounted the root via nfs
+>  successfully.
+>  I hope, you can include the patch into the official tree.
 
-Problems.
+Looks good.  I'll pick this one up.
 
-> Subject: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
-
-This is advertised as a -mm patch but afacit it isn't against -mm.  And it
-doesn't seem to be against mainline either?  At least, the fourth patch
-fails to apply.
-
-When trying to apply the fourth patch to -mm I hit a reject due to the new
-BTS support in git-x86.  I stopped there because the patch might be invalid
-because of this.
-
-On Thu, 13 Mar 2008 01:31:07 -0700 (PDT)
-Roland McGrath <roland@redhat.com> wrote:
-
-> 
-> Define the copy_siginfo_from_user32 entry point for powerpc, so
-> that generic CONFIG_COMPAT code can call it.  We already had the
-> code rolled into compat_sys_rt_sigqueueinfo, this just moves it
-> out into the canonical function that other arch's define.
-> 
-
-Even though this appears to be a signal-related patch it is actually
-ptrace-related, yes?
-
-This patch is a prerequisite for "ptrace: compat_ptrace_request siginfo",
-but this patch is independent from that patch (and from all others) and
-hence this patch can be merged on its own into powerpc tree if we wish to go that
-way, yes?  (Although probably it would be better not to do it that way, for
-sanity's sake).
+g.
 
 
-Anwyay, please help me out with the dependencies here, and take a look at
-the x86 BTS stuff?
-
-Thanks.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
