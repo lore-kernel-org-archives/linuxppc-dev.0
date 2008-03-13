@@ -1,24 +1,17 @@
-Return-Path: <agx@sigxcpu.org>
-Received: from honk.sigxcpu.org (static-87-79-238-240.netcologne.de
-	[87.79.238.240])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "honk.sigxcpu.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0EA61DDEF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 19:31:05 +1100 (EST)
-Date: Thu, 13 Mar 2008 09:30:23 +0100
-From: Guido =?iso-8859-1?Q?G=FCnther?= <agx@sigxcpu.org>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH 1/4] Ensure that pmu_sys_suspended exists in
-	appropriate configs.
-Message-ID: <20080313083023.GB15949@bogon.ms20.nix>
-References: <66e63844f95778cdc331d245889ff0ebfe17bbb4.1205279151.git.tony@bakeyournoodle.com>
-	<20080312083857.GB19504@bogon.ms20.nix>
-	<20080312212005.GU6887@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080312212005.GU6887@bakeyournoodle.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <roland@redhat.com>
+Received: from QMTA06.emeryville.ca.mail.comcast.net
+	(qmta06.emeryville.ca.mail.comcast.net [76.96.30.56])
+	by ozlabs.org (Postfix) with ESMTP id 476C0DDFA5
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 19:31:13 +1100 (EST)
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
+Subject: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
+Message-Id: <20080313083107.8BDE926F992@magilla.localdomain>
+Date: Thu, 13 Mar 2008 01:31:07 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Tony,
-On Thu, Mar 13, 2008 at 08:20:05AM +1100, Tony Breeds wrote:
-[..snip..] 
-> where pmu_sys_suspended is referenced and I'm having difficulty
-> understanding how CONFIG_HIBERNATION is affecting that.
-I mangled the filenames and didn't notice that you fixed the header file
-instead of via-pmu.c. Yes, this should work. Thanks for fixing this 
-and the apm-emu stuff as well.
-Cheers,
- -- Guido
+
+Define the copy_siginfo_from_user32 entry point for powerpc, so
+that generic CONFIG_COMPAT code can call it.  We already had the
+code rolled into compat_sys_rt_sigqueueinfo, this just moves it
+out into the canonical function that other arch's define.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/signal_32.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index d840bc7..ad69434 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -621,6 +621,18 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, siginfo_t *s)
+ 
+ #define copy_siginfo_to_user	copy_siginfo_to_user32
+ 
++int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from)
++{
++	memset(to, 0, sizeof *to);
++
++	if (copy_from_user(to, from, 3*sizeof(int)) ||
++	    copy_from_user(to->_sifields._pad,
++			   from->_sifields._pad, SI_PAD_SIZE32))
++		return -EFAULT;
++
++	return 0;
++}
++
+ /*
+  * Note: it is necessary to treat pid and sig as unsigned ints, with the
+  * corresponding cast to a signed int to insure that the proper conversion
+@@ -634,9 +646,10 @@ long compat_sys_rt_sigqueueinfo(u32 pid, u32 sig, compat_siginfo_t __user *uinfo
+ 	int ret;
+ 	mm_segment_t old_fs = get_fs();
+ 
+-	if (copy_from_user (&info, uinfo, 3*sizeof(int)) ||
+-	    copy_from_user (info._sifields._pad, uinfo->_sifields._pad, SI_PAD_SIZE32))
+-		return -EFAULT;
++	ret = copy_siginfo_from_user32(&info, uinfo);
++	if (unlikely(ret))
++		return ret;
++
+ 	set_fs (KERNEL_DS);
+ 	/* The __user pointer cast is valid becasuse of the set_fs() */
+ 	ret = sys_rt_sigqueueinfo((int)pid, (int)sig, (siginfo_t __user *) &info);
