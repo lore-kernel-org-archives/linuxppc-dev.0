@@ -1,24 +1,18 @@
-Return-Path: <mohamali@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id BD9E2DE193
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 04:57:11 +1100 (EST)
-Received: from sj-core-2.cisco.com (sj-core-2.cisco.com [171.71.177.254])
-	by sj-dkim-4.cisco.com (8.12.11/8.12.11) with ESMTP id m2DHv8I8002536
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 10:57:08 -0700
-Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
-	[128.107.191.100])
-	by sj-core-2.cisco.com (8.12.10/8.12.6) with ESMTP id m2DHv85U006247
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 17:57:08 GMT
+Return-Path: <olof@lixom.net>
+Date: Thu, 13 Mar 2008 14:54:31 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip
+	DMAengine
+Message-ID: <20080313195431.GA1449@lixom.net>
+References: <20080306233900.GA3969@lixom.net>
+	<1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Linux/PPC leads needed
-Date: Thu, 13 Mar 2008 10:57:50 -0700
-Message-ID: <FD8CE810326904469C6048AC517905AA010E41FF@xmb-sjc-238.amer.cisco.com>
-From: "Sadakathullah Mohamed Ali (mohamali)" <mohamali@cisco.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
+Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, "Nelson,
+	Shannon" <shannon.nelson@intel.com>,
+	linux-kernel@vger.kernel.org, hskinnemoen@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,77 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi LinuxPPC Guru's
+On Tue, Mar 11, 2008 at 10:04:11AM -0700, Dan Williams wrote:
 
-I am sending these leads your way on behalf of Cisco's Embedded system
-software manager.
+> I notice that the driver does not handle callbacks in its descriptor
+> cleanup path.  This could be ok if your intent is only to support the
+> net_dma style polled operations, but this will not work for the
+> raid-offload async_tx case.  I think the solution is for async_tx to
+> ignore channels without the DMA_INTERRUPT capability.
 
-Please send responses to mohamali@cisco.com
+Good point, and correct - I have mostly been testing this with the
+NET_DMA offload. async_tx doesn't make use of just memcpy, does it?
 
-Cisco has 3 positions which are very similar 2 Technical lead positions
-and 1 Sr. Software Engineer position(Linux, Power PC, Bring up and
-Drivers, Diag software (U-boot) )=20
-=20
-Req 1: Technical Lead (New product) - (Driver, board bring up, Linux,
-PowerPC)
-------------------------------------------------------------------------
-------
+Also, how is DMA_INTERRUPT supposed to work? I see there's a separate
+"prep_dma_interrupt" function, but that doesn't make sense to me. Don't
+you want the interrupt associated with a specific transaction instead
+of added as a separate (empty) transaction?
 
-Location: San Jose, CA
+Once I add the descriptor to the ring, I can't change it to set the
+interrupt request bit on it. I suppose I could just add a dummy descriptor
+to the ring, but that doesn't seem quite right either.
 
-Cisco is looking to hire a  tech lead - Software engineer. This is a
-highly skilled, high power team with a goal to make significant
-contribution to the way Cisco designs and develops system software in
-the datacenter.
-Sr. System Software Engineer with the following experience/skills:=20
-*8+ years C programming, embedded OS and device drivers *Solid grounding
-in Linux/Unix internals *Hardware board bringup, ability to read
-schematic drawings *PowerPC assembly, a plus *Familiarity with
-Clearcase, cvs or other SCM systems *Ability to document and communicate
-original designs *At least a BSCS or BSEE *Good communication skills
-*Strong team player
+> > +static void pasemi_dma_clean(struct pasemi_dma_chan *chan)
+> > +{
+> > +       int old, new, i;
+> > +       unsigned long flags;
+> > +       struct pasemi_dma_desc *desc;
+> > +       spin_lock_irqsave(&chan->desc_lock, flags);
+> 
+> Is spin_lock_bh() insufficient here?
+> 
+> ...that's all that jumps out at the moment.
 
-Desirable Skills:
+Can't do that if it's called both from the polling as well as the IRQ
+context, it'd need to hold off irqs. I.e. once I add the DMA_INTERRUPT
+support it will be needed.
 
-*Knowledge and understanding of networks and networking software *TCL ,
-PERL, Python or other scripting language *Knowledge of Cisco's Data
-Center OS is a Plus.
 
-Req 2: Tech lead - Diag software development - Cisco's new digital video
-product
-------------------------------------------------------------------------
---------
-
-The successful applicant must have a proven track record of bringing
-products to market, and should possess the following particular skills
-and experience:=20
-
-* 7-10 years of experience working as a software engineer with a hi-tech
-company * Experience with the bring-up of complex PC boards with
-advanced CPU, DSP, and Ethernet chipsets.=20
-* Experience with embedded processors (Intel, Freescale) * Linux
-experience * UBoot experience * ATCA experience highly desirable *
-Experience in managing and working with external developer resources.=20
-* Demonstrated ability to successfully influence win-win
-cross-functional dynamics.=20
-* Applies high degree of ingenuity using broad parameters for foundation
-of decisions.=20
-* Makes product level decisions independently.=20
-* Technical, Industry, Business and Cross-Functional Knowledge.=20
-* Have outstanding communication, presentation and written skills as
-well as an ability to deal effectively with both technologists and
-business representatives and to sell and promote ideas across the
-organization.=20
-
-Education
-* Requires BSEE, BSCS or equivalent training with 7-10+ yrs related exp.
-Masters degree desired.
-=09
-
-Thanks and Regards
-
-Mohamed Ali
-mohamali@cisco.com
-Mobile :510-402-7625
-225 E Tasman Dr San Jose, CA United States
-www.cisco.com=20
+-Olof
