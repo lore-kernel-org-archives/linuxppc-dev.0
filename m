@@ -1,14 +1,22 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id D2F62DE1C3
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 06:52:32 +1100 (EST)
-Date: Thu, 13 Mar 2008 14:52:10 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] convert pci and eeh code to of_device_is_available
-Message-ID: <20080313195210.GO4712@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A70A5DDF54
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 08:36:32 +1100 (EST)
+Date: Thu, 13 Mar 2008 14:35:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
+Message-Id: <20080313143510.9cfb7ab4.akpm@linux-foundation.org>
+In-Reply-To: <20080313083107.8BDE926F992@magilla.localdomain>
+References: <20080313083107.8BDE926F992@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	anton@samba.org, mingo@elte.hu, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,87 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A couple of places are duplicating the function of
-of_device_is_available; convert them to use it.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
+Problems.
 
-This depends on Josh Boyer's patch "[OF] Add of_device_is_available
-function":
+> Subject: [PATCH -mm 1/4] powerpc copy_siginfo_from_user32
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=17100
+This is advertised as a -mm patch but afacit it isn't against -mm.  And it
+doesn't seem to be against mainline either?  At least, the fourth patch
+fails to apply.
 
- arch/powerpc/kernel/rtas_pci.c       |   19 ++-----------------
- arch/powerpc/platforms/pseries/eeh.c |    5 ++---
- 2 files changed, 4 insertions(+), 20 deletions(-)
+When trying to apply the fourth patch to -mm I hit a reject due to the new
+BTS support in git-x86.  I stopped there because the patch might be invalid
+because of this.
 
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 433a0a0..39a752b 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -56,21 +56,6 @@ static inline int config_access_valid(struct pci_dn *dn, int where)
- 	return 0;
- }
- 
--static int of_device_available(struct device_node * dn)
--{
--        const char *status;
--
--        status = of_get_property(dn, "status", NULL);
--
--        if (!status)
--                return 1;
--
--        if (!strcmp(status, "okay"))
--                return 1;
--
--        return 0;
--}
--
- int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
- {
- 	int returnval = -1;
-@@ -117,7 +102,7 @@ static int rtas_pci_read_config(struct pci_bus *bus,
- 	for (dn = busdn->child; dn; dn = dn->sibling) {
- 		struct pci_dn *pdn = PCI_DN(dn);
- 		if (pdn && pdn->devfn == devfn
--		    && of_device_available(dn))
-+		    && of_device_is_available(dn))
- 			return rtas_read_config(pdn, where, size, val);
- 	}
- 
-@@ -164,7 +149,7 @@ static int rtas_pci_write_config(struct pci_bus *bus,
- 	for (dn = busdn->child; dn; dn = dn->sibling) {
- 		struct pci_dn *pdn = PCI_DN(dn);
- 		if (pdn && pdn->devfn == devfn
--		    && of_device_available(dn))
-+		    && of_device_is_available(dn))
- 			return rtas_write_config(pdn, where, size, val);
- 	}
- 	return PCIBIOS_DEVICE_NOT_FOUND;
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 9eb539e..550b2f7 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -945,7 +945,6 @@ static void *early_enable_eeh(struct device_node *dn, void *data)
- 	unsigned int rets[3];
- 	struct eeh_early_enable_info *info = data;
- 	int ret;
--	const char *status = of_get_property(dn, "status", NULL);
- 	const u32 *class_code = of_get_property(dn, "class-code", NULL);
- 	const u32 *vendor_id = of_get_property(dn, "vendor-id", NULL);
- 	const u32 *device_id = of_get_property(dn, "device-id", NULL);
-@@ -959,8 +958,8 @@ static void *early_enable_eeh(struct device_node *dn, void *data)
- 	pdn->eeh_freeze_count = 0;
- 	pdn->eeh_false_positives = 0;
- 
--	if (status && strncmp(status, "ok", 2) != 0)
--		return NULL;	/* ignore devices with bad status */
-+	if (!of_device_is_available(dn))
-+		return NULL;
- 
- 	/* Ignore bad nodes. */
- 	if (!class_code || !vendor_id || !device_id)
--- 
-1.5.4.rc5
+On Thu, 13 Mar 2008 01:31:07 -0700 (PDT)
+Roland McGrath <roland@redhat.com> wrote:
+
+> 
+> Define the copy_siginfo_from_user32 entry point for powerpc, so
+> that generic CONFIG_COMPAT code can call it.  We already had the
+> code rolled into compat_sys_rt_sigqueueinfo, this just moves it
+> out into the canonical function that other arch's define.
+> 
+
+Even though this appears to be a signal-related patch it is actually
+ptrace-related, yes?
+
+This patch is a prerequisite for "ptrace: compat_ptrace_request siginfo",
+but this patch is independent from that patch (and from all others) and
+hence this patch can be merged on its own into powerpc tree if we wish to go that
+way, yes?  (Although probably it would be better not to do it that way, for
+sanity's sake).
+
+
+Anwyay, please help me out with the dependencies here, and take a look at
+the x86 BTS stuff?
+
+Thanks.
