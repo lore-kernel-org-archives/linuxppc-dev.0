@@ -1,18 +1,15 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C35CEDDEFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 16:51:46 +1100 (EST)
-Date: Thu, 13 Mar 2008 14:51:18 +0900 (JST)
-Message-Id: <20080313.145118.-1300525892.kouish@swc.toshiba.co.jp>
-To: arnd@arndb.de
-Subject: Re: [PATCH 10/11] celleb: add support for PCI Express
-In-Reply-To: <200803051249.28739.arnd@arndb.de>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <roland@redhat.com>
+Received: from QMTA10.emeryville.ca.mail.comcast.net
+	(qmta10.emeryville.ca.mail.comcast.net [76.96.30.17])
+	by ozlabs.org (Postfix) with ESMTP id 1867FDDEEC
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 19:26:09 +1100 (EST)
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc: user_regset PTRACE_SETREGS regression fix
+Message-Id: <20080313082535.99DF226F992@magilla.localdomain>
+Date: Thu, 13 Mar 2008 01:25:35 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 05 March 2008, Ishizaki Kou wrote:
-> > This patch adds support for PCI Express port on Celleb. I/O space
-> > of this PCI Express port is not mapped in memory space. So we use
-> > the io-workaround mechanism to make accesses indirect.
-> > 
-> > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> This one looks good, but I wonder if we should make it possible to
-> also use it on QS20, which the current code doesn't allow.
-> 
-> It's a rather hypothetical question, because QS20 has been replaced
-> by QS21 as a product and it never supported PCIe cards with I/O space
-> mappings, but it would be the "right" thing to do.
-> 
-> Since you don't have the QS20 hardware to test that, and I currently
-> doubt anyone at IBM has the energy to do the work, it will probably
-> never get done. If you send another version of the patch, maybe you
-> can add comments to hint that this is actually possible, just hasn't
-> been implemented.
 
-Sorry, I don't know about QS20 and its chipset. However, if anyone
-changes the code to work also on QS20, I'll welcome the change and
-test it on Celleb.
+The PTRACE_SETREGS request was only recently added on powerpc,
+and gdb does not use it.  So it slipped through without getting
+all the testing it should have had.
 
-Though I don't know it helps you, I explain a little about Celleb.
+The user_regset changes had a simple bug in storing to all of
+the 32-bit general registers block on 64-bit kernels.  This bug
+only comes up with PTRACE_SETREGS, not PPC_PTRACE_SETREGS.
+It causes a BUG_ON to hit, so this fix needs to go in ASAP.
 
-The way to access SCC PCIe I/O port is the same as the way to access
-its config space.
- - Write an address to the address register.
- - Write an 'I/O port write' or 'I/O port read' command with byte
-   enable bits to the command register.
- - Write or Read the data register.
-That's all, and you can find this in my code.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/ptrace.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-
-By the way, I found a minor bug in my patch. I'll send fixed one.
-
-> +	dummy_page_da = dma_map_single(bus->phb->parent, dummy_page_va,
-> +			PAGE_SIZE, DMA_FROM_DEVICE);
-> +	if (dummy_page_da == DMA_FROM_DEVICE) {
-
-Comparing with DMA_FROM_DEVICE is wrong. We should compare with
-DMA_ERROR_CODE. And using dma_mapping_error() is the right way.
-
-
-Best regards,
-Kou Ishizaki
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 7673e98..2a9fe97 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -530,15 +530,21 @@ static int gpr32_set(struct task_struct *target,
+ 		--count;
+ 	}
+ 
+-	if (kbuf)
++	if (kbuf) {
+ 		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count)
+ 			regs[pos++] = *k++;
+-	else
++		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
++			++k;
++	} else {
+ 		for (; count > 0 && pos <= PT_MAX_PUT_REG; --count) {
+ 			if (__get_user(reg, u++))
+ 				return -EFAULT;
+ 			regs[pos++] = reg;
+ 		}
++		for (; count > 0 && pos < PT_TRAP; --count, ++pos)
++			if (__get_user(reg, u++))
++				return -EFAULT;
++	}
+ 
+ 	if (count > 0 && pos == PT_TRAP) {
+ 		if (kbuf)
