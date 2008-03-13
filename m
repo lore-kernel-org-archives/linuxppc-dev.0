@@ -1,36 +1,16 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 968FDDDE1E
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (unknown [210.77.143.232])
+	by ozlabs.org (Postfix) with SMTP id 09C51DDFF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Mar 2008 20:23:24 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m2D9NJOx005603 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Mar 2008 02:23:19 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2D9NIT9022589
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Mar 2008 04:23:18 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-15"
-Subject: RE: fsldma seems to be buggy, noticed in loop mode
-Date: Thu, 13 Mar 2008 17:23:17 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AED32E69@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20080313092008.GA17404@Chamillionaire.breakpoint.cc>
-References: <20080312180421.GC7255@Chamillionaire.breakpoint.cc>
-	<ABF87B0B6A38C0458E319AC973ED68AED32DD2@zch01exm26.fsl.freescale.net>
-	<20080313091308.GA17132@Chamillionaire.breakpoint.cc>
-	<ABF87B0B6A38C0458E319AC973ED68AED32E67@zch01exm26.fsl.freescale.net>
-	<20080313092008.GA17404@Chamillionaire.breakpoint.cc>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: "Sebastian Siewior" <linuxppc-embedded@ml.breakpoint.cc>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 14 Mar 2008 02:52:53 +1100 (EST)
+Message-ID: <405422271.18508@tsinghua.org.cn>
+From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+To: support.asia@freescale.com, linuxppc-embedded@ozlabs.org,
+	u-boot-users@lists.sourceforge.net
+Date: Thu, 13 Mar 2008 23:31:11 +0800
+Subject: Hi,friends, the question about the u-boot and device tree?
+Content-Type: text/plain
+Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -41,15 +21,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Sebastian Siewior [mailto:linuxppc-embedded@ml.breakpoint.cc]=20
->=20
-> * Zhang Wei | 2008-03-13 17:17:31 [+0800]:
->=20
-> >Just after you reported. :)
-> okey. Do you want me to add a tested by on lkml?
->=20
-it's my pleasure!
+Hi,friends,
 
-Thanks!
-Wei
+I make all the frequency(timebase-frequency;bus-frequency;clock-frequency) value
+on device tree file equal to zero, I think those frequency will filled by u-boot
+during bootm, but in fact, the u-boot did not fill any frequency. after bootm,
+crashed. Why?
+
+Why so many document point out that the zero value will be filled by u-boot?
