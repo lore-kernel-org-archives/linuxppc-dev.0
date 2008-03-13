@@ -1,21 +1,36 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 4073EDDF64
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 21:18:04 +1100 (EST)
-Date: Thu, 13 Mar 2008 11:17:51 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: York Sun <yorksun@freescale.com>
-Subject: Re: Driver for Freescale Display Interface Unit (A LCD controller)
-In-Reply-To: <12053582234100-git-send-email-yorksun@freescale.com>
-Message-ID: <Pine.LNX.4.64.0803131117000.9727@vixen.sonytel.be>
-References: <12053582234100-git-send-email-yorksun@freescale.com>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28esmtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 81E50DDF0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 00:02:32 +1100 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp06.in.ibm.com (8.13.1/8.13.1) with ESMTP id m2DD2D4U011494
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 18:32:13 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2DD2DO2717028
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 18:32:13 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id m2DD2CHN019134
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 13:02:13 GMT
+Message-ID: <47D925D2.9050003@linux.vnet.ibm.com>
+Date: Thu, 13 Mar 2008 18:32:10 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-617900929-1205403461=:9727"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [BUG] 2.6.25-rc5-mm1 kernel panic with "Exception: 501 " on
+	powerpc
+References: <20080311011434.ad8c8d7d.akpm@linux-foundation.org>
+	<47D7D2C9.4090001@linux.vnet.ibm.com>
+	<20080312104645.34e58319.akpm@linux-foundation.org>
+	<20080312175102.GC613@parisc-linux.org>
+	<1205360769.7436.8.camel@concordia.ozlabs.ibm.com>
+	<20080312223300.GE613@parisc-linux.org>
+In-Reply-To: <20080312223300.GE613@parisc-linux.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, pbadari@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584349381-617900929-1205403461=:9727
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0803131117491.9727@vixen.sonytel.be>
-
-On Wed, 12 Mar 2008, York Sun wrote:
-> The following patches are for Freescale DIU. The first patch is a DIU driver.
-> The second patch is the platform code to support the driver. It is a frame
-> buffer driver for DIU. Descriptions can be found in the patches.
+Matthew Wilcox wrote:
+> On Thu, Mar 13, 2008 at 09:26:09AM +1100, Michael Ellerman wrote:
+>> down() looks OK, but there's still a spin_lock_irq() in __down_common(),
+>> although I don't know if it makes sense for us to be in __down() at that
+>> stage.
 > 
-> It is a new feature targeting 2.6.26 kernel.
+> The spin_lock_irq in __down_common is correct.  We're going to schedule(),
+> so we spin_unlock_irq() to save us passing the flags into the helper
+> function.  If we had interrupts disabled on entry, there's an Aieee
+> for that.
+> 
 
-Please CC linux-fbdev-devel@lists.sourceforge.net when submitting new frame
-buffer device drivers. Thx!
+Hi All,
 
-With kind regards,
+Sorry for all the noise made :-(, something wrong in the test setup from my end, 
+the kernel was 2.6.25-rc3-mm1 not 2.6.25-rc5-mm1. This bug is not seen in the
+2.6.25-rc5-mm1 kernel.
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-617900929-1205403461=:9727--
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
