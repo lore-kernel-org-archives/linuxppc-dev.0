@@ -1,20 +1,21 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA10.emeryville.ca.mail.comcast.net
-	(qmta10.emeryville.ca.mail.comcast.net [76.96.30.17])
-	by ozlabs.org (Postfix) with ESMTP id 1090FDDF44
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 19:32:46 +1100 (EST)
+Received: from QMTA01.westchester.pa.mail.comcast.net
+	(qmta01.westchester.pa.mail.comcast.net [76.96.62.16])
+	by ozlabs.org (Postfix) with ESMTP id 1A4F4DDF71
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 19:33:54 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
 To: Paul Mackerras <paulus@samba.org>,
 	Anton Blanchard <anton@samba.org>
-Subject: [PATCH -mm 2/4] ptrace: compat_ptrace_request siginfo
+Subject: [PATCH -mm 3/4] x86_64 ia32 ptrace: use compat_ptrace_request for
+	siginfo
 In-Reply-To: Roland McGrath's message of  Thursday,
 	13 March 2008 01:31:07 -0700
 	<20080313083107.8BDE926F992@magilla.localdomain>
 References: <20080313083107.8BDE926F992@magilla.localdomain>
-Message-Id: <20080313083243.E551A26F992@magilla.localdomain>
-Date: Thu, 13 Mar 2008 01:32:43 -0700 (PDT)
+Message-Id: <20080313083350.0A0D426F992@magilla.localdomain>
+Date: Thu, 13 Mar 2008 01:33:50 -0700 (PDT)
 Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
@@ -28,133 +29,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This adds support for PTRACE_GETSIGINFO and PTRACE_SETSIGINFO in
-compat_ptrace_request.  It relies on existing arch definitions for
-copy_siginfo_to_user32 and copy_siginfo_from_user32.
-
-On powerpc, this fixes a longstanding regression of 32-bit ptrace
-calls on 64-bit kernels vs native calls (64-bit calls or 32-bit
-kernels).  This can be seen in a 32-bit call using PTRACE_GETSIGINFO
-to examine e.g. siginfo_t.si_addr from a signal that sets it.
-(This was broken as of 2.6.24 and, I presume, many or all prior versions.)
+This removes the special-case handling for PTRACE_GETSIGINFO
+and PTRACE_SETSIGINFO from x86_64's sys32_ptrace.  The generic
+compat_ptrace_request code handles these.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- kernel/ptrace.c |   48 +++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 35 insertions(+), 13 deletions(-)
+ arch/x86/kernel/ptrace.c |   30 +-----------------------------
+ 1 files changed, 1 insertions(+), 29 deletions(-)
 
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index fdb34e8..67e392e 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -323,9 +323,8 @@ static int ptrace_setoptions(struct task_struct *child, long data)
- 	return (data & ~PTRACE_O_MASK) ? -EINVAL : 0;
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 77d9ddd..42305fa 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1184,32 +1184,6 @@ static int genregs32_set(struct task_struct *target,
+ 	return ret;
  }
  
--static int ptrace_getsiginfo(struct task_struct *child, siginfo_t __user * data)
-+static int ptrace_getsiginfo(struct task_struct *child, siginfo_t *info)
- {
--	siginfo_t lastinfo;
- 	int error = -ESRCH;
- 
- 	read_lock(&tasklist_lock);
-@@ -333,31 +332,25 @@ static int ptrace_getsiginfo(struct task_struct *child, siginfo_t __user * data)
- 		error = -EINVAL;
- 		spin_lock_irq(&child->sighand->siglock);
- 		if (likely(child->last_siginfo != NULL)) {
--			lastinfo = *child->last_siginfo;
-+			*info = *child->last_siginfo;
- 			error = 0;
- 		}
- 		spin_unlock_irq(&child->sighand->siglock);
- 	}
- 	read_unlock(&tasklist_lock);
--	if (!error)
--		return copy_siginfo_to_user(data, &lastinfo);
- 	return error;
- }
- 
--static int ptrace_setsiginfo(struct task_struct *child, siginfo_t __user * data)
-+static int ptrace_setsiginfo(struct task_struct *child, const siginfo_t *info)
- {
--	siginfo_t newinfo;
- 	int error = -ESRCH;
- 
--	if (copy_from_user(&newinfo, data, sizeof (siginfo_t)))
--		return -EFAULT;
+-static long ptrace32_siginfo(unsigned request, u32 pid, u32 addr, u32 data)
+-{
+-	siginfo_t __user *si = compat_alloc_user_space(sizeof(siginfo_t));
+-	compat_siginfo_t __user *si32 = compat_ptr(data);
+-	siginfo_t ssi;
+-	int ret;
 -
- 	read_lock(&tasklist_lock);
- 	if (likely(child->sighand != NULL)) {
- 		error = -EINVAL;
- 		spin_lock_irq(&child->sighand->siglock);
- 		if (likely(child->last_siginfo != NULL)) {
--			*child->last_siginfo = newinfo;
-+			*child->last_siginfo = *info;
- 			error = 0;
- 		}
- 		spin_unlock_irq(&child->sighand->siglock);
-@@ -424,6 +417,7 @@ int ptrace_request(struct task_struct *child, long request,
- 		   long addr, long data)
+-	if (request == PTRACE_SETSIGINFO) {
+-		memset(&ssi, 0, sizeof(siginfo_t));
+-		ret = copy_siginfo_from_user32(&ssi, si32);
+-		if (ret)
+-			return ret;
+-		if (copy_to_user(si, &ssi, sizeof(siginfo_t)))
+-			return -EFAULT;
+-	}
+-	ret = sys_ptrace(request, pid, addr, (unsigned long)si);
+-	if (ret)
+-		return ret;
+-	if (request == PTRACE_GETSIGINFO) {
+-		if (copy_from_user(&ssi, si, sizeof(siginfo_t)))
+-			return -EFAULT;
+-		ret = copy_siginfo_to_user32(si32, &ssi);
+-	}
+-	return ret;
+-}
+-
+ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
  {
- 	int ret = -EIO;
-+	siginfo_t siginfo;
- 
- 	switch (request) {
- 	case PTRACE_PEEKTEXT:
-@@ -442,12 +436,22 @@ int ptrace_request(struct task_struct *child, long request,
+ 	struct task_struct *child;
+@@ -1255,11 +1229,9 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
+ 	case PTRACE_SETFPXREGS:
+ 	case PTRACE_GETFPXREGS:
  	case PTRACE_GETEVENTMSG:
- 		ret = put_user(child->ptrace_message, (unsigned long __user *) data);
- 		break;
-+
- 	case PTRACE_GETSIGINFO:
--		ret = ptrace_getsiginfo(child, (siginfo_t __user *) data);
-+		ret = ptrace_getsiginfo(child, &siginfo);
-+		if (!ret)
-+			ret = copy_siginfo_to_user((siginfo_t __user *) data,
-+						   &siginfo);
- 		break;
-+
+-		break;
+-
  	case PTRACE_SETSIGINFO:
--		ret = ptrace_setsiginfo(child, (siginfo_t __user *) data);
-+		if (copy_from_user(&siginfo, (siginfo_t __user *) data,
-+				   sizeof siginfo))
-+			ret = -EFAULT;
-+		else
-+			ret = ptrace_setsiginfo(child, &siginfo);
- 		break;
-+
- 	case PTRACE_DETACH:	 /* detach a process that was attached. */
- 		ret = ptrace_detach(child, data);
- 		break;
-@@ -616,6 +620,7 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
- {
- 	compat_ulong_t __user *datap = compat_ptr(data);
- 	compat_ulong_t word;
-+	siginfo_t siginfo;
- 	int ret;
- 
- 	switch (request) {
-@@ -638,6 +643,23 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
- 		ret = put_user((compat_ulong_t) child->ptrace_message, datap);
- 		break;
- 
-+	case PTRACE_GETSIGINFO:
-+		ret = ptrace_getsiginfo(child, &siginfo);
-+		if (!ret)
-+			ret = copy_siginfo_to_user32(
-+				(struct compat_siginfo __user *) datap,
-+				&siginfo);
+ 	case PTRACE_GETSIGINFO:
+-		return ptrace32_siginfo(request, pid, addr, data);
 +		break;
-+
-+	case PTRACE_SETSIGINFO:
-+		memset(&siginfo, 0, sizeof siginfo);
-+		if (copy_siginfo_from_user32(
-+			    &siginfo, (struct compat_siginfo __user *) datap))
-+			ret = -EFAULT;
-+		else
-+			ret = ptrace_setsiginfo(child, &siginfo);
-+		break;
-+
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
  	}
+ 
+ 	child = ptrace_get_task_struct(pid);
