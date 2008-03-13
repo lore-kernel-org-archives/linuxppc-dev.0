@@ -1,18 +1,14 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 13 Mar 2008 14:54:31 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip
-	DMAengine
-Message-ID: <20080313195431.GA1449@lixom.net>
-References: <20080306233900.GA3969@lixom.net>
-	<1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id D2F62DE1C3
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 06:52:32 +1100 (EST)
+Date: Thu, 13 Mar 2008 14:52:10 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] convert pci and eeh code to of_device_is_available
+Message-ID: <20080313195210.GO4712@localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, "Nelson,
-	Shannon" <shannon.nelson@intel.com>,
-	linux-kernel@vger.kernel.org, hskinnemoen@atmel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +18,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2008 at 10:04:11AM -0700, Dan Williams wrote:
+A couple of places are duplicating the function of
+of_device_is_available; convert them to use it.
 
-> I notice that the driver does not handle callbacks in its descriptor
-> cleanup path.  This could be ok if your intent is only to support the
-> net_dma style polled operations, but this will not work for the
-> raid-offload async_tx case.  I think the solution is for async_tx to
-> ignore channels without the DMA_INTERRUPT capability.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
 
-Good point, and correct - I have mostly been testing this with the
-NET_DMA offload. async_tx doesn't make use of just memcpy, does it?
+This depends on Josh Boyer's patch "[OF] Add of_device_is_available
+function":
 
-Also, how is DMA_INTERRUPT supposed to work? I see there's a separate
-"prep_dma_interrupt" function, but that doesn't make sense to me. Don't
-you want the interrupt associated with a specific transaction instead
-of added as a separate (empty) transaction?
+http://patchwork.ozlabs.org/linuxppc/patch?id=17100
 
-Once I add the descriptor to the ring, I can't change it to set the
-interrupt request bit on it. I suppose I could just add a dummy descriptor
-to the ring, but that doesn't seem quite right either.
+ arch/powerpc/kernel/rtas_pci.c       |   19 ++-----------------
+ arch/powerpc/platforms/pseries/eeh.c |    5 ++---
+ 2 files changed, 4 insertions(+), 20 deletions(-)
 
-> > +static void pasemi_dma_clean(struct pasemi_dma_chan *chan)
-> > +{
-> > +       int old, new, i;
-> > +       unsigned long flags;
-> > +       struct pasemi_dma_desc *desc;
-> > +       spin_lock_irqsave(&chan->desc_lock, flags);
-> 
-> Is spin_lock_bh() insufficient here?
-> 
-> ...that's all that jumps out at the moment.
-
-Can't do that if it's called both from the polling as well as the IRQ
-context, it'd need to hold off irqs. I.e. once I add the DMA_INTERRUPT
-support it will be needed.
-
-
--Olof
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index 433a0a0..39a752b 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -56,21 +56,6 @@ static inline int config_access_valid(struct pci_dn *dn, int where)
+ 	return 0;
+ }
+ 
+-static int of_device_available(struct device_node * dn)
+-{
+-        const char *status;
+-
+-        status = of_get_property(dn, "status", NULL);
+-
+-        if (!status)
+-                return 1;
+-
+-        if (!strcmp(status, "okay"))
+-                return 1;
+-
+-        return 0;
+-}
+-
+ int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
+ {
+ 	int returnval = -1;
+@@ -117,7 +102,7 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+ 	for (dn = busdn->child; dn; dn = dn->sibling) {
+ 		struct pci_dn *pdn = PCI_DN(dn);
+ 		if (pdn && pdn->devfn == devfn
+-		    && of_device_available(dn))
++		    && of_device_is_available(dn))
+ 			return rtas_read_config(pdn, where, size, val);
+ 	}
+ 
+@@ -164,7 +149,7 @@ static int rtas_pci_write_config(struct pci_bus *bus,
+ 	for (dn = busdn->child; dn; dn = dn->sibling) {
+ 		struct pci_dn *pdn = PCI_DN(dn);
+ 		if (pdn && pdn->devfn == devfn
+-		    && of_device_available(dn))
++		    && of_device_is_available(dn))
+ 			return rtas_write_config(pdn, where, size, val);
+ 	}
+ 	return PCIBIOS_DEVICE_NOT_FOUND;
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 9eb539e..550b2f7 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -945,7 +945,6 @@ static void *early_enable_eeh(struct device_node *dn, void *data)
+ 	unsigned int rets[3];
+ 	struct eeh_early_enable_info *info = data;
+ 	int ret;
+-	const char *status = of_get_property(dn, "status", NULL);
+ 	const u32 *class_code = of_get_property(dn, "class-code", NULL);
+ 	const u32 *vendor_id = of_get_property(dn, "vendor-id", NULL);
+ 	const u32 *device_id = of_get_property(dn, "device-id", NULL);
+@@ -959,8 +958,8 @@ static void *early_enable_eeh(struct device_node *dn, void *data)
+ 	pdn->eeh_freeze_count = 0;
+ 	pdn->eeh_false_positives = 0;
+ 
+-	if (status && strncmp(status, "ok", 2) != 0)
+-		return NULL;	/* ignore devices with bad status */
++	if (!of_device_is_available(dn))
++		return NULL;
+ 
+ 	/* Ignore bad nodes. */
+ 	if (!class_code || !vendor_id || !device_id)
+-- 
+1.5.4.rc5
