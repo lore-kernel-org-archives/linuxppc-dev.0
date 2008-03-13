@@ -1,19 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 02E9CDDF38
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 21:13:20 +1100 (EST)
-Date: Thu, 13 Mar 2008 11:12:48 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH] ppc: Export empty_zero_page
-Message-ID: <20080313101248.GA4297@lst.de>
-References: <E1JZGwo-0000vf-2v@closure.thunk.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1JZGwo-0000vf-2v@closure.thunk.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 4073EDDF64
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 21:18:04 +1100 (EST)
+Date: Thu, 13 Mar 2008 11:17:51 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: York Sun <yorksun@freescale.com>
+Subject: Re: Driver for Freescale Display Interface Unit (A LCD controller)
+In-Reply-To: <12053582234100-git-send-email-yorksun@freescale.com>
+Message-ID: <Pine.LNX.4.64.0803131117000.9727@vixen.sonytel.be>
+References: <12053582234100-git-send-email-yorksun@freescale.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-617900929-1205403461=:9727"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2008 at 10:44:06PM -0400, Theodore Ts'o wrote:
-> Stephen Rothwell discovered this issue in the linux-next tree:
-> 
-> >Today's powerpc allmodconfig build of linux-next failed with:
-> >
-> >ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
-> >
-> >This is because commit dde5f2130096f8469eb1aa1ad250cd2a39fee3f5 ("ext4:
-> >ENOSPC error handling for writing to an uninitialized extent") uses
-> >ZERO_PAGE() which on powerpc uses empty_zero_page which is not
-> >EXPORT_SYMBOLed on powerpc.  I have reverted that commit and a later
-> >one (1ae53f35fea49a9013353078e019469551d2ad74 "ext4: zero out
-> >small extents when writing to prealloc area.") which depended on it.
-> 
-> Any chance you could get this pushed to Linus ASAP?  It would be nice if
-> this could get pushed before the merge window, since it could be argued
-> that rationalizing whether or not empty_zero_page is exported is a bug
-> fix, and anyway this is pretty much a zero-risk patch.  Thanks!!
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The real fix is that ext4 shouldn't be using ZERO_PAGE().  Please use
-the same zeroing helpers all the other filesystems and drivers use.
+---584349381-617900929-1205403461=:9727
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0803131117491.9727@vixen.sonytel.be>
+
+On Wed, 12 Mar 2008, York Sun wrote:
+> The following patches are for Freescale DIU. The first patch is a DIU driver.
+> The second patch is the platform code to support the driver. It is a frame
+> buffer driver for DIU. Descriptions can be found in the patches.
+> 
+> It is a new feature targeting 2.6.26 kernel.
+
+Please CC linux-fbdev-devel@lists.sourceforge.net when submitting new frame
+buffer device drivers. Thx!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-617900929-1205403461=:9727--
