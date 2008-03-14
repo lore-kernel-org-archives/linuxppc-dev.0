@@ -1,26 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DC5EBDDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 13:11:57 +1100 (EST)
-In-Reply-To: <20080313224234.0A4FB26F993@magilla.localdomain>
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200803101501.34439.jens@de.ibm.com>
-	<1205344272.2272.45.camel@gargoyle>
-	<200803122330.36905.jens@de.ibm.com>
-	<20080313014745.DE97826F992@magilla.localdomain>
-	<2f8f82fe943fcd5103ec4cc39cc1bb26@kernel.crashing.org>
-	<20080313224234.0A4FB26F993@magilla.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7d9961563967d5f810a5f597519a7c63@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: PPC upstream kernel ignored DABR bug
-Date: Fri, 14 Mar 2008 03:11:12 +0100
-To: Roland McGrath <roland@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, Jan Kratochvil <jan.kratochvil@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/8] pseries: phyp dump: reserve-release proof-of-concept
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+In-Reply-To: <47D8AD9C.2030106@austin.ibm.com>
+References: <47B90F55.2080606@austin.ibm.com>
+	<1203641584.15378.2.camel@concordia.ozlabs.ibm.com>
+	<47C74A66.1060105@austin.ibm.com> <47C750CE.7050202@austin.ibm.com>
+	<1205197341.8656.5.camel@concordia.ozlabs.ibm.com>
+	<3ae3aa420803121052g6ded9c94xd23823a4e81f4bbf@mail.gmail.com>
+	<47D8AD9C.2030106@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-QJSaSkM/nG16UHy4kWKg"
+Date: Fri, 14 Mar 2008 15:20:46 +1100
+Message-Id: <1205468446.7414.7.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,51 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The pointer to the test case was given here before.
 
-Oh, I missed that.  Anyway, I wanted to see the asm, and who knows,
-with different compiler versions and all that.
+--=-QJSaSkM/nG16UHy4kWKg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 	0x10000984 <child_thread+52>:   bl      0x10001750 <sleep>
-> 	0x10000988 <child_thread+56>:   lis     r9,4097
-> --->	0x1000098c <child_thread+60>:   stw     r29,7792(r9)
+On Wed, 2008-03-12 at 23:29 -0500, Manish Ahuja wrote:
+> If Mike and Paul are okay, then I will leave this bit as is and fix all=20
+> other issues and comments.
 
-> 	0x0000000010000d4c <child_thread+60>:   bl      0x10000a88
-> 	0x0000000010000d50 <child_thread+64>:   ld      r2,40(r1)
-> 	0x0000000010000d54 <child_thread+68>:   ld      r9,-32688(r2)
-> --->	0x0000000010000d58 <child_thread+72>:   std     r29,0(r9)
+Well I still don't like it - it uglifies the code _now_, for a potential
+future benefit that may never come. But I don't care that much, if
+Paul's happy with it let it go in.
 
-In both these cases, the storage access goes to LSU0, so you're
-not hitting the errata.
+cheers
 
-I noticed set_dabr() doesn't do proper synchronisation insns, could
-you try this patch?  I doubt it helps, but it changes the code to do
-"the right thing".
+> Linas Vepstas wrote:
+> > On 10/03/2008, Michael Ellerman <michael@ellerman.id.au> wrote:
+> >> On Thu, 2008-02-28 at 18:24 -0600, Manish Ahuja wrote:
+> >=20
+> >>  > +
+> >>  > +/* Global, used to communicate data between early boot and late bo=
+ot */
+> >>  > +static struct phyp_dump phyp_dump_global;
+> >>  > +struct phyp_dump *phyp_dump_info =3D &phyp_dump_global;
+> >>
+> >> I don't see the point of this. You have a static (ie. non-global) stru=
+ct
+> >>  called phyp_dump_global, then you create a pointer to it and pass tha=
+t
+> >>  around.
+> >=20
+> > I did this. This is a style used to minimize disruption due to future
+> > design changes. Basically, the idea is that, at some later time, for
+> > some unknown reason, we decide that this structure shouldn't
+> > be global, or maybe shouldn't be statically allocated, or maybe
+> > should be per-cpu, or who knows.  By creating a pointer, and
+> > just passing that around, you isolate other code from this change.
+> >=20
+> > I learned this trick after spending too many months of my life hunting
+> > down globals and replacing them by dynamically allocated structs.
+> > Its a long and painful process, on many levels, often requiring major
+> > code restructuring.  Code that touches globals directly is often
+> > poorly thought out, designed.  But going in the opposite direction
+> > is easy: if your code always passes everything it needs as args
+> > to subroutines,  then you are free & clear ... if one of those args
+> > just happens to be a pointer to a global, there's no loss (not even
+> > a performance loss -- the arg passing overhead is about the same
+> > as a global TOC lookup!)
+> >=20
+> > So it may look weird if you're not used to seeing it; but the alternati=
+ve
+> > is almost always worse.
 
 
-diff --git a/arch/powerpc/kernel/process.c 
-b/arch/powerpc/kernel/process.c
-index 4846bf5..ee925f5 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -250,7 +250,9 @@ int set_dabr(unsigned long dabr)
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-         /* XXX should we have a CPU_FTR_HAS_DABR ? */
-  #if defined(CONFIG_PPC64) || defined(CONFIG_6xx)
-+       asm("sync");
-         mtspr(SPRN_DABR, dabr);
-+       asm("isync");
-  #endif
-         return 0;
-  }
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-(badly copy/pasted, please apply by hand.  Will send a real patch later 
-;-) )
+--=-QJSaSkM/nG16UHy4kWKg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-If this doesn't help, and the failures stay intermittent, I don't think 
-there
-is a close-to-the-hardware problem here.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBH2f0edSjSd0sB4dIRAnSVAJ9ZEK9rM6bKB4a/saWKY+g58RwZRwCePu5w
+zf24AaWoRmlJTeSIDO+b1A4=
+=RhIL
+-----END PGP SIGNATURE-----
 
-Segher
+--=-QJSaSkM/nG16UHy4kWKg--
