@@ -1,27 +1,26 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.224])
-	by ozlabs.org (Postfix) with ESMTP id 59364DDEDF
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 11:06:20 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so2980005wri.3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2008 17:06:19 -0700 (PDT)
-Message-ID: <e9c3a7c20803131706m188f9494m1cdcda8354a65f4e@mail.gmail.com>
-Date: Thu, 13 Mar 2008 17:06:19 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Olof Johansson" <olof@lixom.net>
-Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip
-	DMAengine
-In-Reply-To: <20080313231442.GA4639@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080306233900.GA3969@lixom.net>
-	<1205255051.26723.19.camel@dwillia2-linux.ch.intel.com>
-	<20080313195431.GA1449@lixom.net>
-	<e9c3a7c20803131529j22db434aqdab0ef6f18891d67@mail.gmail.com>
-	<20080313231442.GA4639@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, "Nelson,
-	Shannon" <shannon.nelson@intel.com>,
-	linux-kernel@vger.kernel.org, hskinnemoen@atmel.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DC5EBDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 13:11:57 +1100 (EST)
+In-Reply-To: <20080313224234.0A4FB26F993@magilla.localdomain>
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200803101501.34439.jens@de.ibm.com>
+	<1205344272.2272.45.camel@gargoyle>
+	<200803122330.36905.jens@de.ibm.com>
+	<20080313014745.DE97826F992@magilla.localdomain>
+	<2f8f82fe943fcd5103ec4cc39cc1bb26@kernel.crashing.org>
+	<20080313224234.0A4FB26F993@magilla.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7d9961563967d5f810a5f597519a7c63@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: PPC upstream kernel ignored DABR bug
+Date: Fri, 14 Mar 2008 03:11:12 +0100
+To: Roland McGrath <roland@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Jan Kratochvil <jan.kratochvil@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,44 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 13, 2008 at 4:14 PM, Olof Johansson <olof@lixom.net> wrote:
->  > Dummy descriptors that do nothing but cause an interrupt is the intent.
->
->  Well, it'd be slightly more efficient to do add the interrupt attribute
->  to the last issued descriptor when it's known in advance. If the
->  underlying driver doesn't support it, adding a separate descriptor would
->  be a good fallback.
->
+> The pointer to the test case was given here before.
 
-When it is known in advance the interrupt attribute *is* set,
-otherwise the descriptor may already be in flight.
+Oh, I missed that.  Anyway, I wanted to see the asm, and who knows,
+with different compiler versions and all that.
 
->  Anyway, this isn't likely to be a performance bottleneck. If it turns
->  out to be, I'll refactor it and submit patches.
->
+> 	0x10000984 <child_thread+52>:   bl      0x10001750 <sleep>
+> 	0x10000988 <child_thread+56>:   lis     r9,4097
+> --->	0x1000098c <child_thread+60>:   stw     r29,7792(r9)
 
-Would not hurt to have another pair of eyes on this part of the code.
-A rewrite of the channel switch mechanism is currently pending in
-async_tx.git#upstream.
+> 	0x0000000010000d4c <child_thread+60>:   bl      0x10000a88
+> 	0x0000000010000d50 <child_thread+64>:   ld      r2,40(r1)
+> 	0x0000000010000d54 <child_thread+68>:   ld      r9,-32688(r2)
+> --->	0x0000000010000d58 <child_thread+72>:   std     r29,0(r9)
 
-[..]
->  > >  Can't do that if it's called both from the polling as well as the IRQ
->  > >  context, it'd need to hold off irqs. I.e. once I add the DMA_INTERRUPT
->  > >  support it will be needed.
->  > >
->  >
->  > ...do it in a tasklet.
->
->  Why? That just adds overhead and latency.
->
+In both these cases, the storage access goes to LSU0, so you're
+not hitting the errata.
 
-The original ioat_dma code used nothing heavier than spin_lock_bh.
-Async_tx now assumes that local_bh_disable prevents races with any
-channel's cleanup routine.  Clients can place the same kind of code in
-an async_tx callback as they would in a timer callback.  The
-assumption is that code using async_tx can afford its extra overhead,
-which is true for raid.  This is also why you don't see async_memcpy
-calls in net_dma.
+I noticed set_dabr() doesn't do proper synchronisation insns, could
+you try this patch?  I doubt it helps, but it changes the code to do
+"the right thing".
 
---
-Dan
+
+diff --git a/arch/powerpc/kernel/process.c 
+b/arch/powerpc/kernel/process.c
+index 4846bf5..ee925f5 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -250,7 +250,9 @@ int set_dabr(unsigned long dabr)
+
+         /* XXX should we have a CPU_FTR_HAS_DABR ? */
+  #if defined(CONFIG_PPC64) || defined(CONFIG_6xx)
++       asm("sync");
+         mtspr(SPRN_DABR, dabr);
++       asm("isync");
+  #endif
+         return 0;
+  }
+
+
+(badly copy/pasted, please apply by hand.  Will send a real patch later 
+;-) )
+
+If this doesn't help, and the failures stay intermittent, I don't think 
+there
+is a close-to-the-hardware problem here.
+
+
+Segher
