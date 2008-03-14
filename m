@@ -1,13 +1,13 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B8993DE144
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 23:30:04 +1100 (EST)
-Date: Fri, 14 Mar 2008 21:29:59 +0900 (JST)
-Message-Id: <20080314.212959.-1264126400.kouish@swc.toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTPS id B2B84DE1AA
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2008 23:31:07 +1100 (EST)
+Date: Fri, 14 Mar 2008 21:31:03 +0900 (JST)
+Message-Id: <20080314.213103.1683971739.kouish@swc.toshiba.co.jp>
 To: paulus@samba.org
-Subject: [PATCH 9/11] celleb: move miscellaneous files for Beat
+Subject: [PATCH 10/11] celleb: add support for PCI Express
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,683 +21,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch moves miscellaneous files for Beat into platforms/cell/.
-All files in this patch are used by celleb-beat only.
+This patch adds support for PCI Express port on Celleb. I/O space
+of this PCI Express port is not mapped in memory space. So we use
+the io-workaround mechanism to make accesses indirect.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/Makefile              |    1 
- arch/powerpc/platforms/cell/Makefile         |    6 
- arch/powerpc/platforms/cell/beat.c           |  264 +++++++++++++++++++++++++
- arch/powerpc/platforms/cell/beat.h           |   39 +++
- arch/powerpc/platforms/cell/beat_interrupt.c |  283 +++++++++++++++++++++++++++
- arch/powerpc/platforms/cell/beat_interrupt.h |   33 +++
- arch/powerpc/platforms/cell/beat_smp.c       |  124 +++++++++++
- arch/powerpc/platforms/cell/beat_udbg.c      |   98 +++++++++
- arch/powerpc/platforms/cell/celleb_setup.c   |    4 
- arch/powerpc/platforms/celleb/Makefile       |    5 
- arch/powerpc/platforms/celleb/beat.c         |  264 -------------------------
- arch/powerpc/platforms/celleb/beat.h         |   39 ---
- arch/powerpc/platforms/celleb/interrupt.c    |  283 ---------------------------
- arch/powerpc/platforms/celleb/interrupt.h    |   33 ---
- arch/powerpc/platforms/celleb/smp.c          |  124 -----------
- arch/powerpc/platforms/celleb/udbg_beat.c    |   98 ---------
- 16 files changed, 847 insertions(+), 851 deletions(-)
+ arch/powerpc/platforms/cell/Makefile           |    1 
+ arch/powerpc/platforms/cell/celleb_pci.c       |    9 
+ arch/powerpc/platforms/cell/celleb_pci.h       |    4 
+ arch/powerpc/platforms/cell/celleb_scc.h       |   87 ++++
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c |  541 +++++++++++++++++++++++++
+ 5 files changed, 642 insertions(+)
 
-Index: b/arch/powerpc/platforms/cell/beat.c
+Index: b/arch/powerpc/platforms/cell/celleb_pci.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/powerpc/platforms/cell/beat.c	2008-03-13 18:01:09.000000000 +0900
-@@ -0,0 +1,264 @@
-+/*
-+ * Simple routines for Celleb/Beat
-+ *
-+ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/rtc.h>
-+#include <linux/interrupt.h>
-+#include <linux/irqreturn.h>
-+#include <linux/reboot.h>
-+
-+#include <asm/hvconsole.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
-+
-+#include "beat_wrapper.h"
-+#include "beat.h"
-+#include "beat_interrupt.h"
-+
-+static int beat_pm_poweroff_flag;
-+
-+void beat_restart(char *cmd)
-+{
-+	beat_shutdown_logical_partition(!beat_pm_poweroff_flag);
-+}
-+
-+void beat_power_off(void)
-+{
-+	beat_shutdown_logical_partition(0);
-+}
-+
-+u64 beat_halt_code = 0x1000000000000000UL;
-+EXPORT_SYMBOL(beat_halt_code);
-+
-+void beat_halt(void)
-+{
-+	beat_shutdown_logical_partition(beat_halt_code);
-+}
-+
-+int beat_set_rtc_time(struct rtc_time *rtc_time)
-+{
-+	u64 tim;
-+	tim = mktime(rtc_time->tm_year+1900,
-+		     rtc_time->tm_mon+1, rtc_time->tm_mday,
-+		     rtc_time->tm_hour, rtc_time->tm_min, rtc_time->tm_sec);
-+	if (beat_rtc_write(tim))
-+		return -1;
-+	return 0;
-+}
-+
-+void beat_get_rtc_time(struct rtc_time *rtc_time)
-+{
-+	u64 tim;
-+
-+	if (beat_rtc_read(&tim))
-+		tim = 0;
-+	to_tm(tim, rtc_time);
-+	rtc_time->tm_year -= 1900;
-+	rtc_time->tm_mon -= 1;
-+}
-+
-+#define	BEAT_NVRAM_SIZE	4096
-+
-+ssize_t beat_nvram_read(char *buf, size_t count, loff_t *index)
-+{
-+	unsigned int i;
-+	unsigned long len;
-+	char *p = buf;
-+
-+	if (*index >= BEAT_NVRAM_SIZE)
-+		return -ENODEV;
-+	i = *index;
-+	if (i + count > BEAT_NVRAM_SIZE)
-+		count = BEAT_NVRAM_SIZE - i;
-+
-+	for (; count != 0; count -= len) {
-+		len = count;
-+		if (len > BEAT_NVRW_CNT)
-+			len = BEAT_NVRW_CNT;
-+		if (beat_eeprom_read(i, len, p))
-+			return -EIO;
-+
-+		p += len;
-+		i += len;
-+	}
-+	*index = i;
-+	return p - buf;
-+}
-+
-+ssize_t beat_nvram_write(char *buf, size_t count, loff_t *index)
-+{
-+	unsigned int i;
-+	unsigned long len;
-+	char *p = buf;
-+
-+	if (*index >= BEAT_NVRAM_SIZE)
-+		return -ENODEV;
-+	i = *index;
-+	if (i + count > BEAT_NVRAM_SIZE)
-+		count = BEAT_NVRAM_SIZE - i;
-+
-+	for (; count != 0; count -= len) {
-+		len = count;
-+		if (len > BEAT_NVRW_CNT)
-+			len = BEAT_NVRW_CNT;
-+		if (beat_eeprom_write(i, len, p))
-+			return -EIO;
-+
-+		p += len;
-+		i += len;
-+	}
-+	*index = i;
-+	return p - buf;
-+}
-+
-+ssize_t beat_nvram_get_size(void)
-+{
-+	return BEAT_NVRAM_SIZE;
-+}
-+
-+int beat_set_xdabr(unsigned long dabr)
-+{
-+	if (beat_set_dabr(dabr, DABRX_KERNEL | DABRX_USER))
-+		return -1;
-+	return 0;
-+}
-+
-+int64_t beat_get_term_char(u64 vterm, u64 *len, u64 *t1, u64 *t2)
-+{
-+	u64 db[2];
-+	s64 ret;
-+
-+	ret = beat_get_characters_from_console(vterm, len, (u8 *)db);
-+	if (ret == 0) {
-+		*t1 = db[0];
-+		*t2 = db[1];
-+	}
-+	return ret;
-+}
-+EXPORT_SYMBOL(beat_get_term_char);
-+
-+int64_t beat_put_term_char(u64 vterm, u64 len, u64 t1, u64 t2)
-+{
-+	u64 db[2];
-+
-+	db[0] = t1;
-+	db[1] = t2;
-+	return beat_put_characters_to_console(vterm, len, (u8 *)db);
-+}
-+EXPORT_SYMBOL(beat_put_term_char);
-+
-+void beat_power_save(void)
-+{
-+	beat_pause(0);
-+}
-+
-+#ifdef CONFIG_KEXEC
-+void beat_kexec_cpu_down(int crash, int secondary)
-+{
-+	beatic_deinit_IRQ();
-+}
-+#endif
-+
-+static irqreturn_t beat_power_event(int virq, void *arg)
-+{
-+	printk(KERN_DEBUG "Beat: power button pressed\n");
-+	beat_pm_poweroff_flag = 1;
-+	ctrl_alt_del();
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t beat_reset_event(int virq, void *arg)
-+{
-+	printk(KERN_DEBUG "Beat: reset button pressed\n");
-+	beat_pm_poweroff_flag = 0;
-+	ctrl_alt_del();
-+	return IRQ_HANDLED;
-+}
-+
-+static struct beat_event_list {
-+	const char *typecode;
-+	irq_handler_t handler;
-+	unsigned int virq;
-+} beat_event_list[] = {
-+	{ "power", beat_power_event, 0 },
-+	{ "reset", beat_reset_event, 0 },
-+};
-+
-+static int __init beat_register_event(void)
-+{
-+	u64 path[4], data[2];
-+	int rc, i;
-+	unsigned int virq;
-+
-+	for (i = 0; i < ARRAY_SIZE(beat_event_list); i++) {
-+		struct beat_event_list *ev = &beat_event_list[i];
-+
-+		if (beat_construct_event_receive_port(data) != 0) {
-+			printk(KERN_ERR "Beat: "
-+			       "cannot construct event receive port for %s\n",
-+			       ev->typecode);
-+			return -EINVAL;
+--- a/arch/powerpc/platforms/cell/celleb_pci.c	2008-03-13 17:57:55.000000000 +0900
++++ b/arch/powerpc/platforms/cell/celleb_pci.c	2008-03-13 18:01:16.000000000 +0900
+@@ -464,6 +464,9 @@
+ 		.name = "epci",
+ 		.data = celleb_setup_epci,
+ 	}, {
++		.name = "pcie",
++		.data = celleb_setup_pciex,
++	}, {
+ 	},
+ };
+ 
+@@ -504,6 +507,12 @@
+ 			.data = (void *)0,
+ 		},
+ 	}, {
++		.name = "pcie",
++		.data = &(struct celleb_iowa_bus_param){
++			.ops = &scc_pciex_ops,
++			.init = &scc_pciex_iowa_init,
 +		}
++	}, {
+ 	},
+ };
+ 
+Index: b/arch/powerpc/platforms/cell/celleb_pci.h
+===================================================================
+--- a/arch/powerpc/platforms/cell/celleb_pci.h	2008-03-13 17:57:55.000000000 +0900
++++ b/arch/powerpc/platforms/cell/celleb_pci.h	2008-03-13 18:01:16.000000000 +0900
+@@ -33,7 +33,11 @@
+ extern int celleb_pci_probe_mode(struct pci_bus *);
+ 
+ extern int celleb_setup_epci(struct device_node *, struct pci_controller *);
++extern int celleb_setup_pciex(struct device_node *, struct pci_controller *);
 +
-+		virq = irq_create_mapping(NULL, data[0]);
-+		if (virq == NO_IRQ) {
-+			printk(KERN_ERR "Beat: failed to get virtual IRQ"
-+			       " for event receive port for %s\n",
-+			       ev->typecode);
-+			beat_destruct_event_receive_port(data[0]);
-+			return -EIO;
-+		}
-+		ev->virq = virq;
+ extern int __init celleb_io_workaround_init(void);
+ 
++extern struct ppc_pci_io scc_pciex_ops;
++int __init scc_pciex_iowa_init(struct iowa_bus *, void *);
+ 
+ #endif /* _CELLEB_PCI_H */
+Index: b/arch/powerpc/platforms/cell/celleb_scc.h
+===================================================================
+--- a/arch/powerpc/platforms/cell/celleb_scc.h	2008-03-13 17:58:52.000000000 +0900
++++ b/arch/powerpc/platforms/cell/celleb_scc.h	2008-03-13 18:01:16.000000000 +0900
+@@ -125,6 +125,93 @@
+ /* bits for SCC_EPCI_CNTOPT */
+ #define SCC_EPCI_CNTOPT_O2PMB   0x00000002
+ 
++/* SCC PCIEXC SMMIO registers */
++#define PEXCADRS		0x000
++#define PEXCWDATA		0x004
++#define PEXCRDATA		0x008
++#define PEXDADRS		0x010
++#define PEXDCMND		0x014
++#define PEXDWDATA		0x018
++#define PEXDRDATA		0x01c
++#define PEXREQID		0x020
++#define PEXTIDMAP		0x024
++#define PEXINTMASK		0x028
++#define PEXINTSTS		0x02c
++#define PEXAERRMASK		0x030
++#define PEXAERRSTS		0x034
++#define PEXPRERRMASK		0x040
++#define PEXPRERRSTS		0x044
++#define PEXPRERRID01		0x048
++#define PEXPRERRID23		0x04c
++#define PEXVDMASK		0x050
++#define PEXVDSTS		0x054
++#define PEXRCVCPLIDA		0x060
++#define PEXLENERRIDA		0x068
++#define PEXPHYPLLST		0x070
++#define PEXDMRDEN0		0x100
++#define PEXDMRDADR0		0x104
++#define PEXDMRDENX		0x110
++#define PEXDMRDADRX		0x114
++#define PEXECMODE		0xf00
++#define PEXMAEA(n)		(0xf50 + (8 * n))
++#define PEXMAEC(n)		(0xf54 + (8 * n))
++#define PEXCCRCTRL		0xff0
 +
-+		rc = request_irq(virq, ev->handler, IRQF_DISABLED,
-+				      ev->typecode, NULL);
-+		if (rc != 0) {
-+			printk(KERN_ERR "Beat: failed to request virtual IRQ"
-+			       " for event receive port for %s\n",
-+			       ev->typecode);
-+			beat_destruct_event_receive_port(data[0]);
-+			return rc;
-+		}
++/* SCC PCIEXC bits and shifts for PEXCADRS */
++#define PEXCADRS_BYTE_EN_SHIFT		20
++#define PEXCADRS_CMD_SHIFT		16
++#define PEXCADRS_CMD_READ		(0xa << PEXCADRS_CMD_SHIFT)
++#define PEXCADRS_CMD_WRITE		(0xb << PEXCADRS_CMD_SHIFT)
 +
-+		path[0] = 0x1000000065780000ul;	/* 1,ex */
-+		path[1] = 0x627574746f6e0000ul;	/* button */
-+		path[2] = 0;
-+		strncpy((char *)&path[2], ev->typecode, 8);
-+		path[3] = 0;
-+		data[1] = 0;
++/* SCC PCIEXC shifts for PEXDADRS */
++#define PEXDADRS_BUSNO_SHIFT		20
++#define PEXDADRS_DEVNO_SHIFT		15
++#define PEXDADRS_FUNCNO_SHIFT		12
 +
-+		beat_create_repository_node(path, data);
-+	}
-+	return 0;
-+}
++/* SCC PCIEXC bits and shifts for PEXDCMND */
++#define PEXDCMND_BYTE_EN_SHIFT		4
++#define PEXDCMND_IO_READ		0x2
++#define PEXDCMND_IO_WRITE		0x3
++#define PEXDCMND_CONFIG_READ		0xa
++#define PEXDCMND_CONFIG_WRITE		0xb
 +
-+static int __init beat_event_init(void)
-+{
-+	if (!firmware_has_feature(FW_FEATURE_BEAT))
-+		return -EINVAL;
++/* SCC PCIEXC bits for PEXPHYPLLST */
++#define PEXPHYPLLST_PEXPHYAPLLST	0x00000001
 +
-+	beat_pm_poweroff_flag = 0;
-+	return beat_register_event();
-+}
++/* SCC PCIEXC bits for PEXECMODE */
++#define PEXECMODE_ALL_THROUGH		0x00000000
++#define PEXECMODE_ALL_8BIT		0x00550155
++#define PEXECMODE_ALL_16BIT		0x00aa02aa
 +
-+device_initcall(beat_event_init);
-Index: b/arch/powerpc/platforms/cell/beat.h
++/* SCC PCIEXC bits for PEXCCRCTRL */
++#define PEXCCRCTRL_PEXIPCOREEN		0x00040000
++#define PEXCCRCTRL_PEXIPCONTEN		0x00020000
++#define PEXCCRCTRL_PEXPHYPLLEN		0x00010000
++#define PEXCCRCTRL_PCIEXCAOCKEN		0x00000100
++
++/* SCC PCIEXC port configuration registers */
++#define PEXTCERRCHK		0x21c
++#define PEXTAMAPB0		0x220
++#define PEXTAMAPL0		0x224
++#define PEXTAMAPB(n)		(PEXTAMAPB0 + 8 * (n))
++#define PEXTAMAPL(n)		(PEXTAMAPL0 + 8 * (n))
++#define PEXCHVC0P		0x500
++#define PEXCHVC0NP		0x504
++#define PEXCHVC0C		0x508
++#define PEXCDVC0P		0x50c
++#define PEXCDVC0NP		0x510
++#define PEXCDVC0C		0x514
++#define PEXCHVCXP		0x518
++#define PEXCHVCXNP		0x51c
++#define PEXCHVCXC		0x520
++#define PEXCDVCXP		0x524
++#define PEXCDVCXNP		0x528
++#define PEXCDVCXC		0x52c
++#define PEXCTTRG		0x530
++#define PEXTSCTRL		0x700
++#define PEXTSSTS		0x704
++#define PEXSKPCTRL		0x708
++
+ /* UHC registers */
+ #define SCC_UHC_CKRCTRL         0xff0
+ #define SCC_UHC_ECMODE          0xf00
+Index: b/arch/powerpc/platforms/cell/celleb_scc_pciex.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/powerpc/platforms/cell/beat.h	2008-03-13 18:01:09.000000000 +0900
-@@ -0,0 +1,39 @@
++++ b/arch/powerpc/platforms/cell/celleb_scc_pciex.c	2008-03-13 18:01:16.000000000 +0900
+@@ -0,0 +1,541 @@
 +/*
-+ * Guest OS Interfaces.
++ * Support for Celleb PCI-Express.
 + *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#ifndef _CELLEB_BEAT_H
-+#define _CELLEB_BEAT_H
-+
-+int64_t beat_get_term_char(uint64_t, uint64_t *, uint64_t *, uint64_t *);
-+int64_t beat_put_term_char(uint64_t, uint64_t, uint64_t, uint64_t);
-+int64_t beat_repository_encode(int, const char *, uint64_t[4]);
-+void beat_restart(char *);
-+void beat_power_off(void);
-+void beat_halt(void);
-+int beat_set_rtc_time(struct rtc_time *);
-+void beat_get_rtc_time(struct rtc_time *);
-+ssize_t beat_nvram_get_size(void);
-+ssize_t beat_nvram_read(char *, size_t, loff_t *);
-+ssize_t beat_nvram_write(char *, size_t, loff_t *);
-+int beat_set_xdabr(unsigned long);
-+void beat_power_save(void);
-+void beat_kexec_cpu_down(int, int);
-+
-+#endif /* _CELLEB_BEAT_H */
-Index: b/arch/powerpc/platforms/cell/beat_interrupt.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/powerpc/platforms/cell/beat_interrupt.c	2008-03-13 18:01:09.000000000 +0900
-@@ -0,0 +1,283 @@
-+/*
-+ * Celleb/Beat Interrupt controller
-+ *
-+ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/percpu.h>
-+#include <linux/types.h>
-+
-+#include <asm/machdep.h>
-+
-+#include "beat_interrupt.h"
-+#include "beat_wrapper.h"
-+
-+#define	MAX_IRQS	NR_IRQS
-+static DEFINE_SPINLOCK(beatic_irq_mask_lock);
-+static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
-+static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
-+
-+static struct irq_host *beatic_host;
-+
-+/*
-+ * In this implementation, "virq" == "IRQ plug number",
-+ * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
-+ */
-+
-+/* assumption: locked */
-+static inline void beatic_update_irq_mask(unsigned int irq_plug)
-+{
-+	int off;
-+	unsigned long masks[4];
-+
-+	off = (irq_plug / 256) * 4;
-+	masks[0] = beatic_irq_mask_enable[off + 0]
-+		& beatic_irq_mask_ack[off + 0];
-+	masks[1] = beatic_irq_mask_enable[off + 1]
-+		& beatic_irq_mask_ack[off + 1];
-+	masks[2] = beatic_irq_mask_enable[off + 2]
-+		& beatic_irq_mask_ack[off + 2];
-+	masks[3] = beatic_irq_mask_enable[off + 3]
-+		& beatic_irq_mask_ack[off + 3];
-+	if (beat_set_interrupt_mask(irq_plug&~255UL,
-+		masks[0], masks[1], masks[2], masks[3]) != 0)
-+		panic("Failed to set mask IRQ!");
-+}
-+
-+static void beatic_mask_irq(unsigned int irq_plug)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_enable[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static void beatic_unmask_irq(unsigned int irq_plug)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_enable[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static void beatic_ack_irq(unsigned int irq_plug)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_ack[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static void beatic_end_irq(unsigned int irq_plug)
-+{
-+	s64 err;
-+	unsigned long flags;
-+
-+	err = beat_downcount_of_interrupt(irq_plug);
-+	if (err != 0) {
-+		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
-+			panic("Failed to downcount IRQ! Error = %16lx", err);
-+
-+		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
-+	}
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_ack[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static struct irq_chip beatic_pic = {
-+	.typename = " CELL-BEAT ",
-+	.unmask = beatic_unmask_irq,
-+	.mask = beatic_mask_irq,
-+	.eoi = beatic_end_irq,
-+};
-+
-+/*
-+ * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
-+ * update flags.
-+ *
-+ * Note that the number (virq) is already assigned at upper layer.
-+ */
-+static void beatic_pic_host_unmap(struct irq_host *h, unsigned int virq)
-+{
-+	beat_destruct_irq_plug(virq);
-+}
-+
-+/*
-+ * Create or update binding hardware IRQ number (hw) and Virtuql
-+ * IRQ number (virq). This is called only once for a given mapping.
-+ *
-+ * Note that the number (virq) is already assigned at upper layer.
-+ */
-+static int beatic_pic_host_map(struct irq_host *h, unsigned int virq,
-+			       irq_hw_number_t hw)
-+{
-+	struct irq_desc *desc = get_irq_desc(virq);
-+	int64_t	err;
-+
-+	err = beat_construct_and_connect_irq_plug(virq, hw);
-+	if (err < 0)
-+		return -EIO;
-+
-+	desc->status |= IRQ_LEVEL;
-+	set_irq_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
-+	return 0;
-+}
-+
-+/*
-+ * Update binding hardware IRQ number (hw) and Virtuql
-+ * IRQ number (virq). This is called only once for a given mapping.
-+ */
-+static void beatic_pic_host_remap(struct irq_host *h, unsigned int virq,
-+			       irq_hw_number_t hw)
-+{
-+	beat_construct_and_connect_irq_plug(virq, hw);
-+}
-+
-+/*
-+ * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
-+ * to pass away to irq_create_mapping().
-+ *
-+ * Called from irq_create_of_mapping() only.
-+ * Note: We have only 1 entry to translate.
-+ */
-+static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-+				 u32 *intspec, unsigned int intsize,
-+				 irq_hw_number_t *out_hwirq,
-+				 unsigned int *out_flags)
-+{
-+	u64 *intspec2 = (u64 *)intspec;
-+
-+	*out_hwirq = *intspec2;
-+	*out_flags |= IRQ_TYPE_LEVEL_LOW;
-+	return 0;
-+}
-+
-+static int beatic_pic_host_match(struct irq_host *h, struct device_node *np)
-+{
-+	/* Match all */
-+	return 1;
-+}
-+
-+static struct irq_host_ops beatic_pic_host_ops = {
-+	.map = beatic_pic_host_map,
-+	.remap = beatic_pic_host_remap,
-+	.unmap = beatic_pic_host_unmap,
-+	.xlate = beatic_pic_host_xlate,
-+	.match = beatic_pic_host_match,
-+};
-+
-+/*
-+ * Get an IRQ number
-+ * Note: returns VIRQ
-+ */
-+static inline unsigned int beatic_get_irq_plug(void)
-+{
-+	int i;
-+	uint64_t	pending[4], ub;
-+
-+	for (i = 0; i < MAX_IRQS; i += 256) {
-+		beat_detect_pending_interrupts(i, pending);
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[0] & beatic_irq_mask_enable[i/64+0]
-+				       & beatic_irq_mask_ack[i/64+0]));
-+		if (ub != 64)
-+			return i + ub + 0;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[1] & beatic_irq_mask_enable[i/64+1]
-+				       & beatic_irq_mask_ack[i/64+1]));
-+		if (ub != 64)
-+			return i + ub + 64;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[2] & beatic_irq_mask_enable[i/64+2]
-+				       & beatic_irq_mask_ack[i/64+2]));
-+		if (ub != 64)
-+			return i + ub + 128;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[3] & beatic_irq_mask_enable[i/64+3]
-+				       & beatic_irq_mask_ack[i/64+3]));
-+		if (ub != 64)
-+			return i + ub + 192;
-+	}
-+
-+	return NO_IRQ;
-+}
-+unsigned int beatic_get_irq(void)
-+{
-+	unsigned int ret;
-+
-+	ret = beatic_get_irq_plug();
-+	if (ret != NO_IRQ)
-+		beatic_ack_irq(ret);
-+	return ret;
-+}
-+
-+/*
-+ */
-+void __init beatic_init_IRQ(void)
-+{
-+	int	i;
-+
-+	memset(beatic_irq_mask_enable, 0, sizeof(beatic_irq_mask_enable));
-+	memset(beatic_irq_mask_ack, 255, sizeof(beatic_irq_mask_ack));
-+	for (i = 0; i < MAX_IRQS; i += 256)
-+		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
-+
-+	/* Set out get_irq function */
-+	ppc_md.get_irq = beatic_get_irq;
-+
-+	/* Allocate an irq host */
-+	beatic_host = irq_alloc_host(NULL, IRQ_HOST_MAP_NOMAP, 0,
-+				     &beatic_pic_host_ops,
-+					 0);
-+	BUG_ON(beatic_host == NULL);
-+	irq_set_default_host(beatic_host);
-+}
-+
-+#ifdef CONFIG_SMP
-+
-+/* Nullified to compile with SMP mode */
-+void beatic_setup_cpu(int cpu)
-+{
-+}
-+
-+void beatic_cause_IPI(int cpu, int mesg)
-+{
-+}
-+
-+void beatic_request_IPIs(void)
-+{
-+}
-+#endif /* CONFIG_SMP */
-+
-+void beatic_deinit_IRQ(void)
-+{
-+	int	i;
-+
-+	for (i = 1; i < NR_IRQS; i++)
-+		beat_destruct_irq_plug(i);
-+}
-Index: b/arch/powerpc/platforms/cell/beat_interrupt.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/powerpc/platforms/cell/beat_interrupt.h	2008-03-13 18:01:09.000000000 +0900
-@@ -0,0 +1,33 @@
-+/*
-+ * Celleb/Beat Interrupt controller
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#ifndef ASM_BEAT_PIC_H
-+#define ASM_BEAT_PIC_H
-+#ifdef __KERNEL__
-+
-+extern void beatic_init_IRQ(void);
-+extern unsigned int beatic_get_irq(void);
-+extern void beatic_cause_IPI(int cpu, int mesg);
-+extern void beatic_request_IPIs(void);
-+extern void beatic_setup_cpu(int);
-+extern void beatic_deinit_IRQ(void);
-+
-+#endif
-+#endif /* ASM_BEAT_PIC_H */
-Index: b/arch/powerpc/platforms/cell/beat_smp.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/powerpc/platforms/cell/beat_smp.c	2008-03-13 18:01:09.000000000 +0900
-@@ -0,0 +1,124 @@
-+/*
-+ * SMP support for Celleb platform. (Incomplete)
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/cell/smp.c:
-+ * Dave Engebretsen, Peter Bergner, and
-+ * Mike Corrigan {engebret|bergner|mikec}@us.ibm.com
-+ * Plus various changes from other IBM teams...
++ * (C) Copyright 2007-2008 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -717,1127 +204,533 @@ Index: b/arch/powerpc/platforms/cell/beat_smp.c
 +#undef DEBUG
 +
 +#include <linux/kernel.h>
-+#include <linux/smp.h>
-+#include <linux/interrupt.h>
++#include <linux/pci.h>
++#include <linux/string.h>
 +#include <linux/init.h>
-+#include <linux/threads.h>
-+#include <linux/cpu.h>
++#include <linux/bootmem.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
 +
++#include <asm/io.h>
 +#include <asm/irq.h>
-+#include <asm/smp.h>
-+#include <asm/machdep.h>
-+#include <asm/udbg.h>
++#include <asm/iommu.h>
++#include <asm/byteorder.h>
 +
-+#include "beat_interrupt.h"
++#include "io-workarounds.h"
++#include "celleb_scc.h"
++#include "celleb_pci.h"
 +
-+#ifdef DEBUG
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
++#define PEX_IN(base, off)	in_be32((void *)(base) + (off))
++#define PEX_OUT(base, off, data) out_be32((void *)(base) + (off), (data))
++
++static void scc_pciex_io_flush(struct iowa_bus *bus)
++{
++	(void)PEX_IN(bus->phb->cfg_addr, PEXDMRDEN0);
++}
 +
 +/*
-+ * The primary thread of each non-boot processor is recorded here before
-+ * smp init.
++ * Memory space access to device on PCIEX
 + */
-+/* static cpumask_t of_spin_map; */
++#define PCIEX_MMIO_READ(name, ret)					\
++static ret scc_pciex_##name(const PCI_IO_ADDR addr)			\
++{									\
++	ret val = __do_##name(addr);					\
++	scc_pciex_io_flush(iowa_mem_find_bus(addr));			\
++	return val;							\
++}
 +
-+/**
-+ * smp_startup_cpu() - start the given cpu
-+ *
-+ * At boot time, there is nothing to do for primary threads which were
-+ * started from Open Firmware.  For anything else, call RTAS with the
-+ * appropriate start location.
-+ *
-+ * Returns:
-+ *	0	- failure
-+ *	1	- success
-+ */
-+static inline int __devinit smp_startup_cpu(unsigned int lcpu)
++#define PCIEX_MMIO_READ_STR(name)					\
++static void scc_pciex_##name(const PCI_IO_ADDR addr, void *buf,		\
++			     unsigned long count)			\
++{									\
++	__do_##name(addr, buf, count);					\
++	scc_pciex_io_flush(iowa_mem_find_bus(addr));			\
++}
++
++PCIEX_MMIO_READ(readb, u8)
++PCIEX_MMIO_READ(readw, u16)
++PCIEX_MMIO_READ(readl, u32)
++PCIEX_MMIO_READ(readq, u64)
++PCIEX_MMIO_READ(readw_be, u16)
++PCIEX_MMIO_READ(readl_be, u32)
++PCIEX_MMIO_READ(readq_be, u64)
++PCIEX_MMIO_READ_STR(readsb)
++PCIEX_MMIO_READ_STR(readsw)
++PCIEX_MMIO_READ_STR(readsl)
++
++static void scc_pciex_memcpy_fromio(void *dest, const PCI_IO_ADDR src,
++				    unsigned long n)
 +{
++	__do_memcpy_fromio(dest, src, n);
++	scc_pciex_io_flush(iowa_mem_find_bus(src));
++}
++
++/*
++ * I/O port access to devices on PCIEX.
++ */
++
++static inline unsigned long get_bus_address(struct pci_controller *phb,
++					    unsigned long port)
++{
++	return port - ((unsigned long)(phb->io_base_virt) - _IO_BASE);
++}
++
++static u32 scc_pciex_read_port(struct pci_controller *phb,
++			       unsigned long port, int size)
++{
++	unsigned int byte_enable;
++	unsigned int cmd, shift;
++	unsigned long addr;
++	u32 data, ret;
++
++	BUG_ON(((port & 0x3ul) + size) > 4);
++
++	addr = get_bus_address(phb, port);
++	shift = addr & 0x3ul;
++	byte_enable = ((1 << size) - 1) << shift;
++	cmd = PEXDCMND_IO_READ | (byte_enable << PEXDCMND_BYTE_EN_SHIFT);
++	PEX_OUT(phb->cfg_addr, PEXDADRS, (addr & ~0x3ul));
++	PEX_OUT(phb->cfg_addr, PEXDCMND, cmd);
++	data = PEX_IN(phb->cfg_addr, PEXDRDATA);
++	ret = (data >> (shift * 8)) & (0xFFFFFFFF >> ((4 - size) * 8));
++
++	pr_debug("PCIEX:PIO READ:port=0x%lx, addr=0x%lx, size=%d, be=%x,"
++		 " cmd=%x, data=%x, ret=%x\n", port, addr, size, byte_enable,
++		 cmd, data, ret);
++
++	return ret;
++}
++
++static void scc_pciex_write_port(struct pci_controller *phb,
++				 unsigned long port, int size, u32 val)
++{
++	unsigned int byte_enable;
++	unsigned int cmd, shift;
++	unsigned long addr;
++	u32 data;
++
++	BUG_ON(((port & 0x3ul) + size) > 4);
++
++	addr = get_bus_address(phb, port);
++	shift = addr & 0x3ul;
++	byte_enable = ((1 << size) - 1) << shift;
++	cmd = PEXDCMND_IO_WRITE | (byte_enable << PEXDCMND_BYTE_EN_SHIFT);
++	data = (val & (0xFFFFFFFF >> (4 - size) * 8)) << (shift * 8);
++	PEX_OUT(phb->cfg_addr, PEXDADRS, (addr & ~0x3ul));
++	PEX_OUT(phb->cfg_addr, PEXDCMND, cmd);
++	PEX_OUT(phb->cfg_addr, PEXDWDATA, data);
++
++	pr_debug("PCIEX:PIO WRITE:port=0x%lx, addr=%lx, size=%d, val=%x,"
++		 " be=%x, cmd=%x, data=%x\n", port, addr, size, val,
++		 byte_enable, cmd, data);
++}
++
++static u8 __scc_pciex_inb(struct pci_controller *phb, unsigned long port)
++{
++	return (u8)scc_pciex_read_port(phb, port, 1);
++}
++
++static u16 __scc_pciex_inw(struct pci_controller *phb, unsigned long port)
++{
++	u32 data;
++	if ((port & 0x3ul) < 3)
++		data = scc_pciex_read_port(phb, port, 2);
++	else {
++		u32 d1 = scc_pciex_read_port(phb, port, 1);
++		u32 d2 = scc_pciex_read_port(phb, port + 1, 1);
++		data = d1 | (d2 << 8);
++	}
++	return (u16)data;
++}
++
++static u32 __scc_pciex_inl(struct pci_controller *phb, unsigned long port)
++{
++	unsigned int mod = port & 0x3ul;
++	u32 data;
++	if (mod == 0)
++		data = scc_pciex_read_port(phb, port, 4);
++	else {
++		u32 d1 = scc_pciex_read_port(phb, port, 4 - mod);
++		u32 d2 = scc_pciex_read_port(phb, port + 1, mod);
++		data = d1 | (d2 << (mod * 8));
++	}
++	return data;
++}
++
++static void __scc_pciex_outb(struct pci_controller *phb,
++			     u8 val, unsigned long port)
++{
++	scc_pciex_write_port(phb, port, 1, (u32)val);
++}
++
++static void __scc_pciex_outw(struct pci_controller *phb,
++			     u16 val, unsigned long port)
++{
++	if ((port & 0x3ul) < 3)
++		scc_pciex_write_port(phb, port, 2, (u32)val);
++	else {
++		u32 d1 = val & 0x000000FF;
++		u32 d2 = (val & 0x0000FF00) >> 8;
++		scc_pciex_write_port(phb, port, 1, d1);
++		scc_pciex_write_port(phb, port + 1, 1, d2);
++	}
++}
++
++static void __scc_pciex_outl(struct pci_controller *phb,
++			     u32 val, unsigned long port)
++{
++	unsigned int mod = port & 0x3ul;
++	if (mod == 0)
++		scc_pciex_write_port(phb, port, 4, val);
++	else {
++		u32 d1 = val & (0xFFFFFFFFul >> (mod * 8));
++		u32 d2 = val >> ((4 - mod) * 8);
++		scc_pciex_write_port(phb, port, 4 - mod, d1);
++		scc_pciex_write_port(phb, port + 1, mod, d2);
++	}
++}
++
++#define PCIEX_PIO_FUNC(size, name)					\
++static u##size scc_pciex_in##name(unsigned long port)			\
++{									\
++	struct iowa_bus *bus = iowa_pio_find_bus(port);			\
++	u##size data = __scc_pciex_in##name(bus->phb, port);		\
++	scc_pciex_io_flush(bus);					\
++	return data;							\
++}									\
++static void scc_pciex_ins##name(unsigned long p, void *b, unsigned long c) \
++{									\
++	struct iowa_bus *bus = iowa_pio_find_bus(p);			\
++	u##size *dst = b;						\
++	for (; c != 0; c--, dst++)					\
++		*dst = cpu_to_le##size(__scc_pciex_in##name(bus->phb, p)); \
++	scc_pciex_io_flush(bus);					\
++}									\
++static void scc_pciex_out##name(u##size val, unsigned long port)	\
++{									\
++	struct iowa_bus *bus = iowa_pio_find_bus(port);			\
++	__scc_pciex_out##name(bus->phb, val, port);			\
++}									\
++static void scc_pciex_outs##name(unsigned long p, const void *b,	\
++				 unsigned long c)			\
++{									\
++	struct iowa_bus *bus = iowa_pio_find_bus(p);			\
++	const u##size *src = b;						\
++	for (; c != 0; c--, src++)					\
++		__scc_pciex_out##name(bus->phb, le##size##_to_cpu(*src), p); \
++}
++#define cpu_to_le8(x) (x)
++#define le8_to_cpu(x) (x)
++PCIEX_PIO_FUNC(8, b)
++PCIEX_PIO_FUNC(16, w)
++PCIEX_PIO_FUNC(32, l)
++
++struct ppc_pci_io scc_pciex_ops = {
++	.readb = scc_pciex_readb,
++	.readw = scc_pciex_readw,
++	.readl = scc_pciex_readl,
++	.readq = scc_pciex_readq,
++	.readw_be = scc_pciex_readw_be,
++	.readl_be = scc_pciex_readl_be,
++	.readq_be = scc_pciex_readq_be,
++	.readsb = scc_pciex_readsb,
++	.readsw = scc_pciex_readsw,
++	.readsl = scc_pciex_readsl,
++	.memcpy_fromio = scc_pciex_memcpy_fromio,
++	.inb = scc_pciex_inb,
++	.inw = scc_pciex_inw,
++	.inl = scc_pciex_inl,
++	.outb = scc_pciex_outb,
++	.outw = scc_pciex_outw,
++	.outl = scc_pciex_outl,
++	.insb = scc_pciex_insb,
++	.insw = scc_pciex_insw,
++	.insl = scc_pciex_insl,
++	.outsb = scc_pciex_outsb,
++	.outsw = scc_pciex_outsw,
++	.outsl = scc_pciex_outsl,
++};
++
++int __init scc_pciex_iowa_init(struct iowa_bus *bus, void *data)
++{
++	dma_addr_t dummy_page_da;
++	void *dummy_page_va;
++
++	dummy_page_va = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!dummy_page_va) {
++		pr_err("PCIEX:Alloc dummy_page_va failed\n");
++		return -1;
++	}
++
++	dummy_page_da = dma_map_single(bus->phb->parent, dummy_page_va,
++				       PAGE_SIZE, DMA_FROM_DEVICE);
++	if (dma_mapping_error(dummy_page_da)) {
++		pr_err("PCIEX:Map dummy page failed.\n");
++		kfree(dummy_page_va);
++		return -1;
++	}
++
++	PEX_OUT(bus->phb->cfg_addr, PEXDMRDADR0, dummy_page_da);
++
 +	return 0;
 +}
 +
-+static void smp_beatic_message_pass(int target, int msg)
-+{
-+	unsigned int i;
++/*
++ * config space access
++ */
++#define MK_PEXDADRS(bus_no, dev_no, func_no, addr) \
++	((uint32_t)(((addr) & ~0x3UL) | \
++	((bus_no) << PEXDADRS_BUSNO_SHIFT) | \
++	((dev_no)  << PEXDADRS_DEVNO_SHIFT) | \
++	((func_no) << PEXDADRS_FUNCNO_SHIFT)))
 +
-+	if (target < NR_CPUS) {
-+		beatic_cause_IPI(target, msg);
-+	} else {
-+		for_each_online_cpu(i) {
-+			if (target == MSG_ALL_BUT_SELF
-+			    && i == smp_processor_id())
-+				continue;
-+			beatic_cause_IPI(i, msg);
-+		}
++#define MK_PEXDCMND_BYTE_EN(addr, size) \
++	((((0x1 << (size))-1) << ((addr) & 0x3)) << PEXDCMND_BYTE_EN_SHIFT)
++#define MK_PEXDCMND(cmd, addr, size) ((cmd) | MK_PEXDCMND_BYTE_EN(addr, size))
++
++static uint32_t config_read_pciex_dev(unsigned int *base,
++		uint64_t bus_no, uint64_t dev_no, uint64_t func_no,
++		uint64_t off, uint64_t size)
++{
++	uint32_t ret;
++	uint32_t addr, cmd;
++
++	addr = MK_PEXDADRS(bus_no, dev_no, func_no, off);
++	cmd = MK_PEXDCMND(PEXDCMND_CONFIG_READ, off, size);
++	PEX_OUT(base, PEXDADRS, addr);
++	PEX_OUT(base, PEXDCMND, cmd);
++	ret = (PEX_IN(base, PEXDRDATA)
++		>> ((off & (4-size)) * 8)) & ((0x1 << (size * 8)) - 1);
++	return ret;
++}
++
++static void config_write_pciex_dev(unsigned int *base, uint64_t bus_no,
++	uint64_t dev_no, uint64_t func_no, uint64_t off, uint64_t size,
++	uint32_t data)
++{
++	uint32_t addr, cmd;
++
++	addr = MK_PEXDADRS(bus_no, dev_no, func_no, off);
++	cmd = MK_PEXDCMND(PEXDCMND_CONFIG_WRITE, off, size);
++	PEX_OUT(base, PEXDADRS, addr);
++	PEX_OUT(base, PEXDCMND, cmd);
++	PEX_OUT(base, PEXDWDATA,
++		(data & ((0x1 << (size * 8)) - 1)) << ((off & (4-size)) * 8));
++}
++
++#define MK_PEXCADRS_BYTE_EN(off, len) \
++	((((0x1 << (len)) - 1) << ((off) & 0x3)) << PEXCADRS_BYTE_EN_SHIFT)
++#define MK_PEXCADRS(cmd, addr, size) \
++	((cmd) | MK_PEXCADRS_BYTE_EN(addr, size) | ((addr) & ~0x3))
++static uint32_t config_read_pciex_rc(unsigned int *base,
++				     uint32_t where, uint32_t size)
++{
++	PEX_OUT(base, PEXCADRS, MK_PEXCADRS(PEXCADRS_CMD_READ, where, size));
++	return (PEX_IN(base, PEXCRDATA)
++		>> ((where & (4 - size)) * 8)) & ((0x1 << (size * 8)) - 1);
++}
++
++static void config_write_pciex_rc(unsigned int *base, uint32_t where,
++				  uint32_t size, uint32_t val)
++{
++	uint32_t data;
++
++	data = (val & ((0x1 << (size * 8)) - 1)) << ((where & (4 - size)) * 8);
++	PEX_OUT(base, PEXCADRS, MK_PEXCADRS(PEXCADRS_CMD_WRITE, where, size));
++	PEX_OUT(base, PEXCWDATA, data);
++}
++
++/* Interfaces */
++/* Note: Work-around
++ *  On SCC PCIEXC, one device is seen on all 32 dev_no.
++ *  As SCC PCIEXC can have only one device on the bus, we look only one dev_no.
++ * (dev_no = 1)
++ */
++static int scc_pciex_read_config(struct pci_bus *bus, unsigned int devfn,
++				 int where, int size, unsigned int *val)
++{
++	struct device_node *dn;
++	struct pci_controller *phb;
++
++	dn = bus->sysdata;
++	phb = pci_find_hose_for_OF_device(dn);
++
++	if (bus->number == phb->first_busno && PCI_SLOT(devfn) != 1) {
++		*val = ~0;
++		return PCIBIOS_DEVICE_NOT_FOUND;
 +	}
++
++	if (bus->number == 0 && PCI_SLOT(devfn) == 0)
++		*val = config_read_pciex_rc(phb->cfg_addr, where, size);
++	else
++		*val = config_read_pciex_dev(phb->cfg_addr, bus->number,
++				PCI_SLOT(devfn), PCI_FUNC(devfn), where, size);
++
++	return PCIBIOS_SUCCESSFUL;
 +}
 +
-+static int __init smp_beatic_probe(void)
++static int scc_pciex_write_config(struct pci_bus *bus, unsigned int devfn,
++				  int where, int size, unsigned int val)
 +{
-+	return cpus_weight(cpu_possible_map);
++	struct device_node *dn;
++	struct pci_controller *phb;
++
++	dn = bus->sysdata;
++	phb = pci_find_hose_for_OF_device(dn);
++
++	if (bus->number == phb->first_busno && PCI_SLOT(devfn) != 1)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	if (bus->number == 0 && PCI_SLOT(devfn) == 0)
++		config_write_pciex_rc(phb->cfg_addr, where, size, val);
++	else
++		config_write_pciex_dev(phb->cfg_addr, bus->number,
++			PCI_SLOT(devfn), PCI_FUNC(devfn), where, size, val);
++	return PCIBIOS_SUCCESSFUL;
 +}
 +
-+static void __devinit smp_beatic_setup_cpu(int cpu)
-+{
-+	beatic_setup_cpu(cpu);
-+}
-+
-+static void __devinit smp_celleb_kick_cpu(int nr)
-+{
-+	BUG_ON(nr < 0 || nr >= NR_CPUS);
-+
-+	if (!smp_startup_cpu(nr))
-+		return;
-+}
-+
-+static int smp_celleb_cpu_bootable(unsigned int nr)
-+{
-+	return 1;
-+}
-+static struct smp_ops_t bpa_beatic_smp_ops = {
-+	.message_pass	= smp_beatic_message_pass,
-+	.probe		= smp_beatic_probe,
-+	.kick_cpu	= smp_celleb_kick_cpu,
-+	.setup_cpu	= smp_beatic_setup_cpu,
-+	.cpu_bootable	= smp_celleb_cpu_bootable,
++static struct pci_ops scc_pciex_pci_ops = {
++	scc_pciex_read_config,
++	scc_pciex_write_config,
 +};
 +
-+/* This is called very early */
-+void __init smp_init_celleb(void)
++static void pciex_clear_intr_all(unsigned int *base)
 +{
-+	DBG(" -> smp_init_celleb()\n");
-+
-+	smp_ops = &bpa_beatic_smp_ops;
-+
-+	DBG(" <- smp_init_celleb()\n");
-+}
-Index: b/arch/powerpc/platforms/cell/beat_udbg.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ b/arch/powerpc/platforms/cell/beat_udbg.c	2008-03-13 18:01:09.000000000 +0900
-@@ -0,0 +1,98 @@
-+/*
-+ * udbg function for Beat
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/console.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+
-+#include "beat.h"
-+
-+#define	celleb_vtermno	0
-+
-+static void udbg_putc_beat(char c)
-+{
-+	unsigned long rc;
-+
-+	if (c == '\n')
-+		udbg_putc_beat('\r');
-+
-+	rc = beat_put_term_char(celleb_vtermno, 1, (uint64_t)c << 56, 0);
++	PEX_OUT(base, PEXAERRSTS, 0xffffffff);
++	PEX_OUT(base, PEXPRERRSTS, 0xffffffff);
++	PEX_OUT(base, PEXINTSTS, 0xffffffff);
 +}
 +
-+/* Buffered chars getc */
-+static long inbuflen;
-+static long inbuf[2];	/* must be 2 longs */
-+
-+static int udbg_getc_poll_beat(void)
++#if 0
++static void pciex_disable_intr_all(unsigned int *base)
 +{
-+	/* The interface is tricky because it may return up to 16 chars.
-+	 * We save them statically for future calls to udbg_getc().
-+	 */
-+	char ch, *buf = (char *)inbuf;
-+	int i;
-+	long rc;
-+	if (inbuflen == 0) {
-+		/* get some more chars. */
-+		inbuflen = 0;
-+		rc = beat_get_term_char(celleb_vtermno, &inbuflen,
-+					inbuf+0, inbuf+1);
-+		if (rc != 0)
-+			inbuflen = 0;	/* otherwise inbuflen is garbage */
-+	}
-+	if (inbuflen <= 0 || inbuflen > 16) {
-+		/* Catch error case as well as other oddities (corruption) */
-+		inbuflen = 0;
-+		return -1;
-+	}
-+	ch = buf[0];
-+	for (i = 1; i < inbuflen; i++)	/* shuffle them down. */
-+		buf[i-1] = buf[i];
-+	inbuflen--;
-+	return ch;
++	PEX_OUT(base, PEXINTMASK,   0x0);
++	PEX_OUT(base, PEXAERRMASK,  0x0);
++	PEX_OUT(base, PEXPRERRMASK, 0x0);
++	PEX_OUT(base, PEXVDMASK,    0x0);
++}
++#endif
++
++static void pciex_enable_intr_all(unsigned int *base)
++{
++	PEX_OUT(base, PEXINTMASK, 0x0000e7f1);
++	PEX_OUT(base, PEXAERRMASK, 0x03ff01ff);
++	PEX_OUT(base, PEXPRERRMASK, 0x0001010f);
++	PEX_OUT(base, PEXVDMASK, 0x00000001);
 +}
 +
-+static int udbg_getc_beat(void)
++void pciex_check_status(unsigned int *base)
 +{
-+	int ch;
-+	for (;;) {
-+		ch = udbg_getc_poll_beat();
-+		if (ch == -1) {
-+			/* This shouldn't be needed...but... */
-+			volatile unsigned long delay;
-+			for (delay = 0; delay < 2000000; delay++)
-+				;
-+		} else {
-+			return ch;
++	uint32_t err = 0;
++	uint32_t intsts, aerr, prerr, rcvcp, lenerr;
++	uint32_t maea, maec;
++
++	intsts = PEX_IN(base, PEXINTSTS);
++	aerr = PEX_IN(base, PEXAERRSTS);
++	prerr = PEX_IN(base, PEXPRERRSTS);
++	rcvcp = PEX_IN(base, PEXRCVCPLIDA);
++	lenerr = PEX_IN(base, PEXLENERRIDA);
++
++	if (intsts || aerr || prerr || rcvcp || lenerr)
++		err = 1;
++
++	pr_info("PCEXC interrupt!!\n");
++	pr_info("PEXINTSTS    :0x%08x\n", intsts);
++	pr_info("PEXAERRSTS   :0x%08x\n", aerr);
++	pr_info("PEXPRERRSTS  :0x%08x\n", prerr);
++	pr_info("PEXRCVCPLIDA :0x%08x\n", rcvcp);
++	pr_info("PEXLENERRIDA :0x%08x\n", lenerr);
++
++	/* print detail of Protection Error */
++	if (intsts & 0x00004000) {
++		uint32_t i, n;
++		for (i = 0; i < 4; i++) {
++			n = 1 << i;
++			if (prerr & n) {
++				maea = PEX_IN(base, PEXMAEA(i));
++				maec = PEX_IN(base, PEXMAEC(i));
++				pr_info("PEXMAEC%d     :0x%08x\n", i, maec);
++				pr_info("PEXMAEA%d     :0x%08x\n", i, maea);
++			}
 +		}
 +	}
++
++	if (err)
++		pciex_clear_intr_all(base);
 +}
 +
-+/* call this from early_init() for a working debug console on
-+ * vterm capable LPAR machines
-+ */
-+void __init udbg_init_debug_beat(void)
++static irqreturn_t pciex_handle_internal_irq(int irq, void *dev_id)
 +{
-+	udbg_putc = udbg_putc_beat;
-+	udbg_getc = udbg_getc_beat;
-+	udbg_getc_poll = udbg_getc_poll_beat;
++	struct pci_controller *phb = dev_id;
++
++	pr_debug("PCIEX:pciex_handle_internal_irq(irq=%d)\n", irq);
++
++	BUG_ON(phb->cfg_addr == NULL);
++
++	pciex_check_status(phb->cfg_addr);
++
++	return IRQ_HANDLED;
 +}
-Index: b/arch/powerpc/platforms/celleb/beat.c
-===================================================================
---- a/arch/powerpc/platforms/celleb/beat.c	2008-03-13 17:58:59.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,264 +0,0 @@
--/*
-- * Simple routines for Celleb/Beat
-- *
-- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/err.h>
--#include <linux/rtc.h>
--#include <linux/interrupt.h>
--#include <linux/irqreturn.h>
--#include <linux/reboot.h>
--
--#include <asm/hvconsole.h>
--#include <asm/time.h>
--#include <asm/machdep.h>
--#include <asm/firmware.h>
--
--#include "../cell/beat_wrapper.h"
--#include "beat.h"
--#include "interrupt.h"
--
--static int beat_pm_poweroff_flag;
--
--void beat_restart(char *cmd)
--{
--	beat_shutdown_logical_partition(!beat_pm_poweroff_flag);
--}
--
--void beat_power_off(void)
--{
--	beat_shutdown_logical_partition(0);
--}
--
--u64 beat_halt_code = 0x1000000000000000UL;
--EXPORT_SYMBOL(beat_halt_code);
--
--void beat_halt(void)
--{
--	beat_shutdown_logical_partition(beat_halt_code);
--}
--
--int beat_set_rtc_time(struct rtc_time *rtc_time)
--{
--	u64 tim;
--	tim = mktime(rtc_time->tm_year+1900,
--		     rtc_time->tm_mon+1, rtc_time->tm_mday,
--		     rtc_time->tm_hour, rtc_time->tm_min, rtc_time->tm_sec);
--	if (beat_rtc_write(tim))
--		return -1;
--	return 0;
--}
--
--void beat_get_rtc_time(struct rtc_time *rtc_time)
--{
--	u64 tim;
--
--	if (beat_rtc_read(&tim))
--		tim = 0;
--	to_tm(tim, rtc_time);
--	rtc_time->tm_year -= 1900;
--	rtc_time->tm_mon -= 1;
--}
--
--#define	BEAT_NVRAM_SIZE	4096
--
--ssize_t beat_nvram_read(char *buf, size_t count, loff_t *index)
--{
--	unsigned int i;
--	unsigned long len;
--	char *p = buf;
--
--	if (*index >= BEAT_NVRAM_SIZE)
--		return -ENODEV;
--	i = *index;
--	if (i + count > BEAT_NVRAM_SIZE)
--		count = BEAT_NVRAM_SIZE - i;
--
--	for (; count != 0; count -= len) {
--		len = count;
--		if (len > BEAT_NVRW_CNT)
--			len = BEAT_NVRW_CNT;
--		if (beat_eeprom_read(i, len, p))
--			return -EIO;
--
--		p += len;
--		i += len;
--	}
--	*index = i;
--	return p - buf;
--}
--
--ssize_t beat_nvram_write(char *buf, size_t count, loff_t *index)
--{
--	unsigned int i;
--	unsigned long len;
--	char *p = buf;
--
--	if (*index >= BEAT_NVRAM_SIZE)
--		return -ENODEV;
--	i = *index;
--	if (i + count > BEAT_NVRAM_SIZE)
--		count = BEAT_NVRAM_SIZE - i;
--
--	for (; count != 0; count -= len) {
--		len = count;
--		if (len > BEAT_NVRW_CNT)
--			len = BEAT_NVRW_CNT;
--		if (beat_eeprom_write(i, len, p))
--			return -EIO;
--
--		p += len;
--		i += len;
--	}
--	*index = i;
--	return p - buf;
--}
--
--ssize_t beat_nvram_get_size(void)
--{
--	return BEAT_NVRAM_SIZE;
--}
--
--int beat_set_xdabr(unsigned long dabr)
--{
--	if (beat_set_dabr(dabr, DABRX_KERNEL | DABRX_USER))
--		return -1;
--	return 0;
--}
--
--int64_t beat_get_term_char(u64 vterm, u64 *len, u64 *t1, u64 *t2)
--{
--	u64 db[2];
--	s64 ret;
--
--	ret = beat_get_characters_from_console(vterm, len, (u8 *)db);
--	if (ret == 0) {
--		*t1 = db[0];
--		*t2 = db[1];
--	}
--	return ret;
--}
--EXPORT_SYMBOL(beat_get_term_char);
--
--int64_t beat_put_term_char(u64 vterm, u64 len, u64 t1, u64 t2)
--{
--	u64 db[2];
--
--	db[0] = t1;
--	db[1] = t2;
--	return beat_put_characters_to_console(vterm, len, (u8 *)db);
--}
--EXPORT_SYMBOL(beat_put_term_char);
--
--void beat_power_save(void)
--{
--	beat_pause(0);
--}
--
--#ifdef CONFIG_KEXEC
--void beat_kexec_cpu_down(int crash, int secondary)
--{
--	beatic_deinit_IRQ();
--}
--#endif
--
--static irqreturn_t beat_power_event(int virq, void *arg)
--{
--	printk(KERN_DEBUG "Beat: power button pressed\n");
--	beat_pm_poweroff_flag = 1;
--	ctrl_alt_del();
--	return IRQ_HANDLED;
--}
--
--static irqreturn_t beat_reset_event(int virq, void *arg)
--{
--	printk(KERN_DEBUG "Beat: reset button pressed\n");
--	beat_pm_poweroff_flag = 0;
--	ctrl_alt_del();
--	return IRQ_HANDLED;
--}
--
--static struct beat_event_list {
--	const char *typecode;
--	irq_handler_t handler;
--	unsigned int virq;
--} beat_event_list[] = {
--	{ "power", beat_power_event, 0 },
--	{ "reset", beat_reset_event, 0 },
--};
--
--static int __init beat_register_event(void)
--{
--	u64 path[4], data[2];
--	int rc, i;
--	unsigned int virq;
--
--	for (i = 0; i < ARRAY_SIZE(beat_event_list); i++) {
--		struct beat_event_list *ev = &beat_event_list[i];
--
--		if (beat_construct_event_receive_port(data) != 0) {
--			printk(KERN_ERR "Beat: "
--			       "cannot construct event receive port for %s\n",
--			       ev->typecode);
--			return -EINVAL;
--		}
--
--		virq = irq_create_mapping(NULL, data[0]);
--		if (virq == NO_IRQ) {
--			printk(KERN_ERR "Beat: failed to get virtual IRQ"
--			       " for event receive port for %s\n",
--			       ev->typecode);
--			beat_destruct_event_receive_port(data[0]);
--			return -EIO;
--		}
--		ev->virq = virq;
--
--		rc = request_irq(virq, ev->handler, IRQF_DISABLED,
--				      ev->typecode, NULL);
--		if (rc != 0) {
--			printk(KERN_ERR "Beat: failed to request virtual IRQ"
--			       " for event receive port for %s\n",
--			       ev->typecode);
--			beat_destruct_event_receive_port(data[0]);
--			return rc;
--		}
--
--		path[0] = 0x1000000065780000ul;	/* 1,ex */
--		path[1] = 0x627574746f6e0000ul;	/* button */
--		path[2] = 0;
--		strncpy((char *)&path[2], ev->typecode, 8);
--		path[3] = 0;
--		data[1] = 0;
--
--		beat_create_repository_node(path, data);
--	}
--	return 0;
--}
--
--static int __init beat_event_init(void)
--{
--	if (!firmware_has_feature(FW_FEATURE_BEAT))
--		return -EINVAL;
--
--	beat_pm_poweroff_flag = 0;
--	return beat_register_event();
--}
--
--device_initcall(beat_event_init);
-Index: b/arch/powerpc/platforms/celleb/beat.h
-===================================================================
---- a/arch/powerpc/platforms/celleb/beat.h	2008-03-13 17:56:15.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,39 +0,0 @@
--/*
-- * Guest OS Interfaces.
-- *
-- * (C) Copyright 2006 TOSHIBA CORPORATION
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#ifndef _CELLEB_BEAT_H
--#define _CELLEB_BEAT_H
--
--int64_t beat_get_term_char(uint64_t, uint64_t *, uint64_t *, uint64_t *);
--int64_t beat_put_term_char(uint64_t, uint64_t, uint64_t, uint64_t);
--int64_t beat_repository_encode(int, const char *, uint64_t[4]);
--void beat_restart(char *);
--void beat_power_off(void);
--void beat_halt(void);
--int beat_set_rtc_time(struct rtc_time *);
--void beat_get_rtc_time(struct rtc_time *);
--ssize_t beat_nvram_get_size(void);
--ssize_t beat_nvram_read(char *, size_t, loff_t *);
--ssize_t beat_nvram_write(char *, size_t, loff_t *);
--int beat_set_xdabr(unsigned long);
--void beat_power_save(void);
--void beat_kexec_cpu_down(int, int);
--
--#endif /* _CELLEB_BEAT_H */
-Index: b/arch/powerpc/platforms/celleb/interrupt.c
-===================================================================
---- a/arch/powerpc/platforms/celleb/interrupt.c	2008-03-13 17:58:59.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,283 +0,0 @@
--/*
-- * Celleb/Beat Interrupt controller
-- *
-- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#include <linux/init.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <linux/percpu.h>
--#include <linux/types.h>
--
--#include <asm/machdep.h>
--
--#include "interrupt.h"
--#include "../cell/beat_wrapper.h"
--
--#define	MAX_IRQS	NR_IRQS
--static DEFINE_SPINLOCK(beatic_irq_mask_lock);
--static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
--static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
--
--static struct irq_host *beatic_host;
--
--/*
-- * In this implementation, "virq" == "IRQ plug number",
-- * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
-- */
--
--/* assumption: locked */
--static inline void beatic_update_irq_mask(unsigned int irq_plug)
--{
--	int off;
--	unsigned long masks[4];
--
--	off = (irq_plug / 256) * 4;
--	masks[0] = beatic_irq_mask_enable[off + 0]
--		& beatic_irq_mask_ack[off + 0];
--	masks[1] = beatic_irq_mask_enable[off + 1]
--		& beatic_irq_mask_ack[off + 1];
--	masks[2] = beatic_irq_mask_enable[off + 2]
--		& beatic_irq_mask_ack[off + 2];
--	masks[3] = beatic_irq_mask_enable[off + 3]
--		& beatic_irq_mask_ack[off + 3];
--	if (beat_set_interrupt_mask(irq_plug&~255UL,
--		masks[0], masks[1], masks[2], masks[3]) != 0)
--		panic("Failed to set mask IRQ!");
--}
--
--static void beatic_mask_irq(unsigned int irq_plug)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
--	beatic_irq_mask_enable[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
--	beatic_update_irq_mask(irq_plug);
--	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
--}
--
--static void beatic_unmask_irq(unsigned int irq_plug)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
--	beatic_irq_mask_enable[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
--	beatic_update_irq_mask(irq_plug);
--	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
--}
--
--static void beatic_ack_irq(unsigned int irq_plug)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
--	beatic_irq_mask_ack[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
--	beatic_update_irq_mask(irq_plug);
--	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
--}
--
--static void beatic_end_irq(unsigned int irq_plug)
--{
--	s64 err;
--	unsigned long flags;
--
--	err = beat_downcount_of_interrupt(irq_plug);
--	if (err != 0) {
--		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
--			panic("Failed to downcount IRQ! Error = %16lx", err);
--
--		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
--	}
--	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
--	beatic_irq_mask_ack[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
--	beatic_update_irq_mask(irq_plug);
--	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
--}
--
--static struct irq_chip beatic_pic = {
--	.typename = " CELL-BEAT ",
--	.unmask = beatic_unmask_irq,
--	.mask = beatic_mask_irq,
--	.eoi = beatic_end_irq,
--};
--
--/*
-- * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
-- * update flags.
-- *
-- * Note that the number (virq) is already assigned at upper layer.
-- */
--static void beatic_pic_host_unmap(struct irq_host *h, unsigned int virq)
--{
--	beat_destruct_irq_plug(virq);
--}
--
--/*
-- * Create or update binding hardware IRQ number (hw) and Virtuql
-- * IRQ number (virq). This is called only once for a given mapping.
-- *
-- * Note that the number (virq) is already assigned at upper layer.
-- */
--static int beatic_pic_host_map(struct irq_host *h, unsigned int virq,
--			       irq_hw_number_t hw)
--{
--	struct irq_desc *desc = get_irq_desc(virq);
--	int64_t	err;
--
--	err = beat_construct_and_connect_irq_plug(virq, hw);
--	if (err < 0)
--		return -EIO;
--
--	desc->status |= IRQ_LEVEL;
--	set_irq_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
--	return 0;
--}
--
--/*
-- * Update binding hardware IRQ number (hw) and Virtuql
-- * IRQ number (virq). This is called only once for a given mapping.
-- */
--static void beatic_pic_host_remap(struct irq_host *h, unsigned int virq,
--			       irq_hw_number_t hw)
--{
--	beat_construct_and_connect_irq_plug(virq, hw);
--}
--
--/*
-- * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
-- * to pass away to irq_create_mapping().
-- *
-- * Called from irq_create_of_mapping() only.
-- * Note: We have only 1 entry to translate.
-- */
--static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
--				 u32 *intspec, unsigned int intsize,
--				 irq_hw_number_t *out_hwirq,
--				 unsigned int *out_flags)
--{
--	u64 *intspec2 = (u64 *)intspec;
--
--	*out_hwirq = *intspec2;
--	*out_flags |= IRQ_TYPE_LEVEL_LOW;
--	return 0;
--}
--
--static int beatic_pic_host_match(struct irq_host *h, struct device_node *np)
--{
--	/* Match all */
--	return 1;
--}
--
--static struct irq_host_ops beatic_pic_host_ops = {
--	.map = beatic_pic_host_map,
--	.remap = beatic_pic_host_remap,
--	.unmap = beatic_pic_host_unmap,
--	.xlate = beatic_pic_host_xlate,
--	.match = beatic_pic_host_match,
--};
--
--/*
-- * Get an IRQ number
-- * Note: returns VIRQ
-- */
--static inline unsigned int beatic_get_irq_plug(void)
--{
--	int i;
--	uint64_t	pending[4], ub;
--
--	for (i = 0; i < MAX_IRQS; i += 256) {
--		beat_detect_pending_interrupts(i, pending);
--		__asm__ ("cntlzd %0,%1":"=r"(ub):
--			"r"(pending[0] & beatic_irq_mask_enable[i/64+0]
--				       & beatic_irq_mask_ack[i/64+0]));
--		if (ub != 64)
--			return i + ub + 0;
--		__asm__ ("cntlzd %0,%1":"=r"(ub):
--			"r"(pending[1] & beatic_irq_mask_enable[i/64+1]
--				       & beatic_irq_mask_ack[i/64+1]));
--		if (ub != 64)
--			return i + ub + 64;
--		__asm__ ("cntlzd %0,%1":"=r"(ub):
--			"r"(pending[2] & beatic_irq_mask_enable[i/64+2]
--				       & beatic_irq_mask_ack[i/64+2]));
--		if (ub != 64)
--			return i + ub + 128;
--		__asm__ ("cntlzd %0,%1":"=r"(ub):
--			"r"(pending[3] & beatic_irq_mask_enable[i/64+3]
--				       & beatic_irq_mask_ack[i/64+3]));
--		if (ub != 64)
--			return i + ub + 192;
--	}
--
--	return NO_IRQ;
--}
--unsigned int beatic_get_irq(void)
--{
--	unsigned int ret;
--
--	ret = beatic_get_irq_plug();
--	if (ret != NO_IRQ)
--		beatic_ack_irq(ret);
--	return ret;
--}
--
--/*
-- */
--void __init beatic_init_IRQ(void)
--{
--	int	i;
--
--	memset(beatic_irq_mask_enable, 0, sizeof(beatic_irq_mask_enable));
--	memset(beatic_irq_mask_ack, 255, sizeof(beatic_irq_mask_ack));
--	for (i = 0; i < MAX_IRQS; i += 256)
--		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
--
--	/* Set out get_irq function */
--	ppc_md.get_irq = beatic_get_irq;
--
--	/* Allocate an irq host */
--	beatic_host = irq_alloc_host(NULL, IRQ_HOST_MAP_NOMAP, 0,
--				     &beatic_pic_host_ops,
--					 0);
--	BUG_ON(beatic_host == NULL);
--	irq_set_default_host(beatic_host);
--}
--
--#ifdef CONFIG_SMP
--
--/* Nullified to compile with SMP mode */
--void beatic_setup_cpu(int cpu)
--{
--}
--
--void beatic_cause_IPI(int cpu, int mesg)
--{
--}
--
--void beatic_request_IPIs(void)
--{
--}
--#endif /* CONFIG_SMP */
--
--void beatic_deinit_IRQ(void)
--{
--	int	i;
--
--	for (i = 1; i < NR_IRQS; i++)
--		beat_destruct_irq_plug(i);
--}
-Index: b/arch/powerpc/platforms/celleb/interrupt.h
-===================================================================
---- a/arch/powerpc/platforms/celleb/interrupt.h	2008-03-13 17:54:30.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,33 +0,0 @@
--/*
-- * Celleb/Beat Interrupt controller
-- *
-- * (C) Copyright 2006 TOSHIBA CORPORATION
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#ifndef ASM_BEAT_PIC_H
--#define ASM_BEAT_PIC_H
--#ifdef __KERNEL__
--
--extern void beatic_init_IRQ(void);
--extern unsigned int beatic_get_irq(void);
--extern void beatic_cause_IPI(int cpu, int mesg);
--extern void beatic_request_IPIs(void);
--extern void beatic_setup_cpu(int);
--extern void beatic_deinit_IRQ(void);
--
--#endif
--#endif /* ASM_BEAT_PIC_H */
-Index: b/arch/powerpc/platforms/celleb/smp.c
-===================================================================
---- a/arch/powerpc/platforms/celleb/smp.c	2008-03-13 17:54:30.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,124 +0,0 @@
--/*
-- * SMP support for Celleb platform. (Incomplete)
-- *
-- * (C) Copyright 2006 TOSHIBA CORPORATION
-- *
-- * This code is based on arch/powerpc/platforms/cell/smp.c:
-- * Dave Engebretsen, Peter Bergner, and
-- * Mike Corrigan {engebret|bergner|mikec}@us.ibm.com
-- * Plus various changes from other IBM teams...
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#undef DEBUG
--
--#include <linux/kernel.h>
--#include <linux/smp.h>
--#include <linux/interrupt.h>
--#include <linux/init.h>
--#include <linux/threads.h>
--#include <linux/cpu.h>
--
--#include <asm/irq.h>
--#include <asm/smp.h>
--#include <asm/machdep.h>
--#include <asm/udbg.h>
--
--#include "interrupt.h"
--
--#ifdef DEBUG
--#define DBG(fmt...) udbg_printf(fmt)
--#else
--#define DBG(fmt...)
--#endif
--
--/*
-- * The primary thread of each non-boot processor is recorded here before
-- * smp init.
-- */
--/* static cpumask_t of_spin_map; */
--
--/**
-- * smp_startup_cpu() - start the given cpu
-- *
-- * At boot time, there is nothing to do for primary threads which were
-- * started from Open Firmware.  For anything else, call RTAS with the
-- * appropriate start location.
-- *
-- * Returns:
-- *	0	- failure
-- *	1	- success
-- */
--static inline int __devinit smp_startup_cpu(unsigned int lcpu)
--{
--	return 0;
--}
--
--static void smp_beatic_message_pass(int target, int msg)
--{
--	unsigned int i;
--
--	if (target < NR_CPUS) {
--		beatic_cause_IPI(target, msg);
--	} else {
--		for_each_online_cpu(i) {
--			if (target == MSG_ALL_BUT_SELF
--			    && i == smp_processor_id())
--				continue;
--			beatic_cause_IPI(i, msg);
--		}
--	}
--}
--
--static int __init smp_beatic_probe(void)
--{
--	return cpus_weight(cpu_possible_map);
--}
--
--static void __devinit smp_beatic_setup_cpu(int cpu)
--{
--	beatic_setup_cpu(cpu);
--}
--
--static void __devinit smp_celleb_kick_cpu(int nr)
--{
--	BUG_ON(nr < 0 || nr >= NR_CPUS);
--
--	if (!smp_startup_cpu(nr))
--		return;
--}
--
--static int smp_celleb_cpu_bootable(unsigned int nr)
--{
--	return 1;
--}
--static struct smp_ops_t bpa_beatic_smp_ops = {
--	.message_pass	= smp_beatic_message_pass,
--	.probe		= smp_beatic_probe,
--	.kick_cpu	= smp_celleb_kick_cpu,
--	.setup_cpu	= smp_beatic_setup_cpu,
--	.cpu_bootable	= smp_celleb_cpu_bootable,
--};
--
--/* This is called very early */
--void __init smp_init_celleb(void)
--{
--	DBG(" -> smp_init_celleb()\n");
--
--	smp_ops = &bpa_beatic_smp_ops;
--
--	DBG(" <- smp_init_celleb()\n");
--}
-Index: b/arch/powerpc/platforms/celleb/udbg_beat.c
-===================================================================
---- a/arch/powerpc/platforms/celleb/udbg_beat.c	2008-03-13 17:56:15.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,98 +0,0 @@
--/*
-- * udbg function for Beat
-- *
-- * (C) Copyright 2006 TOSHIBA CORPORATION
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#include <linux/kernel.h>
--#include <linux/console.h>
--
--#include <asm/machdep.h>
--#include <asm/prom.h>
--#include <asm/udbg.h>
--
--#include "beat.h"
--
--#define	celleb_vtermno	0
--
--static void udbg_putc_beat(char c)
--{
--	unsigned long rc;
--
--	if (c == '\n')
--		udbg_putc_beat('\r');
--
--	rc = beat_put_term_char(celleb_vtermno, 1, (uint64_t)c << 56, 0);
--}
--
--/* Buffered chars getc */
--static long inbuflen;
--static long inbuf[2];	/* must be 2 longs */
--
--static int udbg_getc_poll_beat(void)
--{
--	/* The interface is tricky because it may return up to 16 chars.
--	 * We save them statically for future calls to udbg_getc().
--	 */
--	char ch, *buf = (char *)inbuf;
--	int i;
--	long rc;
--	if (inbuflen == 0) {
--		/* get some more chars. */
--		inbuflen = 0;
--		rc = beat_get_term_char(celleb_vtermno, &inbuflen,
--					inbuf+0, inbuf+1);
--		if (rc != 0)
--			inbuflen = 0;	/* otherwise inbuflen is garbage */
--	}
--	if (inbuflen <= 0 || inbuflen > 16) {
--		/* Catch error case as well as other oddities (corruption) */
--		inbuflen = 0;
--		return -1;
--	}
--	ch = buf[0];
--	for (i = 1; i < inbuflen; i++)	/* shuffle them down. */
--		buf[i-1] = buf[i];
--	inbuflen--;
--	return ch;
--}
--
--static int udbg_getc_beat(void)
--{
--	int ch;
--	for (;;) {
--		ch = udbg_getc_poll_beat();
--		if (ch == -1) {
--			/* This shouldn't be needed...but... */
--			volatile unsigned long delay;
--			for (delay = 0; delay < 2000000; delay++)
--				;
--		} else {
--			return ch;
--		}
--	}
--}
--
--/* call this from early_init() for a working debug console on
-- * vterm capable LPAR machines
-- */
--void __init udbg_init_debug_beat(void)
--{
--	udbg_putc = udbg_putc_beat;
--	udbg_getc = udbg_getc_beat;
--	udbg_getc_poll = udbg_getc_poll_beat;
--}
-Index: b/arch/powerpc/platforms/Makefile
-===================================================================
---- a/arch/powerpc/platforms/Makefile	2008-03-13 17:54:30.000000000 +0900
-+++ b/arch/powerpc/platforms/Makefile	2008-03-13 18:01:09.000000000 +0900
-@@ -24,5 +24,4 @@
- obj-$(CONFIG_PPC_PASEMI)	+= pasemi/
- obj-$(CONFIG_PPC_CELL)		+= cell/
- obj-$(CONFIG_PPC_PS3)		+= ps3/
--obj-$(CONFIG_PPC_CELLEB)	+= celleb/
- obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
++
++int celleb_setup_pciex(struct device_node *node, struct pci_controller *phb)
++{
++	struct resource	r;
++	struct of_irq oirq;
++	int virq;
++
++	/* SMMIO registers; used inside this file */
++	if (of_address_to_resource(node, 0, &r)) {
++		pr_err("PCIEXC:Failed to get config resource.\n");
++		return 1;
++	}
++	phb->cfg_addr = ioremap(r.start, r.end - r.start + 1);
++	if (!phb->cfg_addr) {
++		pr_err("PCIEXC:Failed to remap SMMIO region.\n");
++		return 1;
++	}
++
++	/* Not use cfg_data,  cmd and data regs are near address reg */
++	phb->cfg_data = NULL;
++
++	/* set pci_ops */
++	phb->ops = &scc_pciex_pci_ops;
++
++	/* internal interrupt handler */
++	if (of_irq_map_one(node, 1, &oirq)) {
++		pr_err("PCIEXC:Failed to map irq\n");
++		goto error;
++	}
++	virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
++				     oirq.size);
++	if (request_irq(virq, pciex_handle_internal_irq,
++			IRQF_DISABLED, "pciex", (void *)phb)) {
++		pr_err("PCIEXC:Failed to request irq\n");
++		goto error;
++	}
++
++	/* enable all interrupts */
++	pciex_clear_intr_all(phb->cfg_addr);
++	pciex_enable_intr_all(phb->cfg_addr);
++	/* MSI: TBD */
++
++	return 0;
++
++error:
++	phb->cfg_data = NULL;
++	if (phb->cfg_addr)
++		iounmap(phb->cfg_addr);
++	phb->cfg_addr = NULL;
++	return 1;
++}
 Index: b/arch/powerpc/platforms/cell/Makefile
 ===================================================================
---- a/arch/powerpc/platforms/cell/Makefile	2008-03-13 17:59:15.000000000 +0900
-+++ b/arch/powerpc/platforms/cell/Makefile	2008-03-13 18:01:09.000000000 +0900
-@@ -35,9 +35,11 @@
+--- a/arch/powerpc/platforms/cell/Makefile	2008-03-13 18:01:09.000000000 +0900
++++ b/arch/powerpc/platforms/cell/Makefile	2008-03-13 18:01:16.000000000 +0900
+@@ -33,6 +33,7 @@
+ ifeq ($(CONFIG_PPC_CELLEB),y)
+ obj-y					+= celleb_setup.o \
  					   celleb_pci.o celleb_scc_epci.o \
++					   celleb_scc_pciex.o \
  					   celleb_scc_uhc.o \
  					   io-workarounds.o spider-pci.o \
--					   beat_htab.o beat_hvCall.o \
--					   beat_iommu.o
-+					   beat.o beat_htab.o beat_hvCall.o \
-+					   beat_interrupt.o beat_iommu.o
- 
-+obj-$(CONFIG_SMP)			+= beat_smp.o
-+obj-$(CONFIG_PPC_UDBG_BEAT)		+= beat_udbg.o
- obj-$(CONFIG_SERIAL_TXX9)		+= celleb_scc_sio.o
- obj-$(CONFIG_SPU_BASE)			+= beat_spu_priv1.o
- endif
-Index: b/arch/powerpc/platforms/celleb/Makefile
-===================================================================
---- a/arch/powerpc/platforms/celleb/Makefile	2008-03-13 17:59:15.000000000 +0900
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,5 +0,0 @@
--obj-y				+= interrupt.o \
--				   beat.o
--
--obj-$(CONFIG_SMP)		+= smp.o
--obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
-Index: b/arch/powerpc/platforms/cell/celleb_setup.c
-===================================================================
---- a/arch/powerpc/platforms/cell/celleb_setup.c	2008-03-13 17:58:59.000000000 +0900
-+++ b/arch/powerpc/platforms/cell/celleb_setup.c	2008-03-13 18:01:09.000000000 +0900
-@@ -56,9 +56,9 @@
- #include <asm/rtas.h>
- #include <asm/cell-regs.h>
- 
--#include "../celleb/interrupt.h"
-+#include "beat_interrupt.h"
- #include "beat_wrapper.h"
--#include "../celleb/beat.h"
-+#include "beat.h"
- #include "celleb_pci.h"
- #include "interrupt.h"
- #include "pervasive.h"
+ 					   beat.o beat_htab.o beat_hvCall.o \
