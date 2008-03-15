@@ -1,21 +1,16 @@
-Return-Path: <bigeasy@www.tglx.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E75DDDED5
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s40.bay0.hotmail.com (bay0-omc2-s40.bay0.hotmail.com
+	[65.54.246.176]) by ozlabs.org (Postfix) with ESMTP id DFC54DDE05
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Mar 2008 10:01:41 +1100 (EST)
-Date: Sat, 15 Mar 2008 00:01:30 +0100
-From: Sebastian Siewior <bigeasy@tglx.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2] [POWER] mpc85xx_ds add DMA engine to the DT and parse it.
-Message-ID: <20080314230130.GA6812@www.tglx.de>
-References: <20080311103906.GD9656@www.tglx.de>
-	<60A35F8F-FA66-4ADD-B192-6AC6A301DBA0@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <60A35F8F-FA66-4ADD-B192-6AC6A301DBA0@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 15 Mar 2008 19:30:32 +1100 (EST)
+Message-ID: <BAY115-W186EA84A950C17657AD8D9B20B0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_279286ab-02cb-48de-a113-87df9c4ac880_"
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Compile time error, compiling Xilinx Linux 2.6 for XPS LLTEMAC
+Date: Sat, 15 Mar 2008 08:30:31 +0000
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,96 +21,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a modified entry I found in the documentation for the 8544.
+--_279286ab-02cb-48de-a113-87df9c4ac880_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/boot/dts/mpc8544ds.dts      |   41 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |   13 +++++++++
- 2 files changed, 54 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
-index 688af9d..131ffaa 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-@@ -116,6 +116,47 @@
- 			};
- 		};
- 
-+		dma@21300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8544-dma", "fsl,eloplus-dma";
-+			reg = <21300 4>;
-+			ranges = <0 21100 200>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8544-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <0 80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <14 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8544-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <80 80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <15 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8544-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <100 80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <16 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8544-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <180 80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <17 2>;
-+			};
-+		};
-+
- 		enet0: ethernet@24000 {
- 			cell-index = <0>;
- 			device_type = "network";
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index bdb3d0b..b9a3094 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -19,6 +19,7 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/system.h>
- #include <asm/time.h>
-@@ -183,6 +184,18 @@ static int __init mpc8544_ds_probe(void)
- 	}
- }
- 
-+static struct of_device_id mpc85xxds_ids[] = {
-+	{ .type = "soc", },
-+	{ .compatible = "soc", },
-+	{},
-+};
-+
-+static int __init mpc85xxds_publish_devices(void)
-+{
-+	return of_platform_bus_probe(NULL, mpc85xxds_ids, NULL);
-+}
-+machine_device_initcall(mpc8544_ds, mpc85xxds_publish_devices);
-+
- /*
-  * Called very early, device-tree isn't unflattened
-  */
--- 
-1.5.4.3
+All,
+
+that should be a small problem, and i think that its solution should be sim=
+ple,
+
+I generate a base system using EDK 9.2.02 , the base system contains XPS_LL=
+_TEMAC , MPMC and other components,
+I generate the software libraries and copy xparameters file into proper ker=
+nel folder. I configure that kernel and add kernel support for XPS_LL_TEMAC=
+.
+
+while doing make I encounter this error:
+
+arch/ppc/syslib/virtex_devices.c:455: error: 'XPAR_LLTEMAC_0_LLINK_CONNECTE=
+D_FIFO_INTR' undeclared here (not in a function)
+
+I think that this definition should be available in xparameters_ml403.h fil=
+e but i see that there is no such definition.=20
+I added a dummy definition for myself there to complete kernel compilation,=
+ don't know the correct value for it of course.
+
+thanks
+
+
+_________________________________________________________________
+Create a handy button so your friends can add U to their buddy list. Try it=
+ now!
+http://g.msn.ca/ca55/211=
+
+--_279286ab-02cb-48de-a113-87df9c4ac880_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+All,<br><br>that should be a small problem, and i think that its solution s=
+hould be simple,<br><br>I generate a base system using EDK 9.2.02 , the bas=
+e system contains XPS_LL_TEMAC , MPMC and other components,<br>I generate t=
+he software libraries and copy xparameters file into proper kernel folder. =
+I configure that kernel and add kernel support for XPS_LL_TEMAC.<br><br>whi=
+le doing make I encounter this error:<br><br>arch/ppc/syslib/virtex_devices=
+.c:455: error: 'XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR' undeclared here (=
+not in a function)<br><br>I think that this definition should be available =
+in xparameters_ml403.h file but i see that there is no such definition. <br=
+>I added a dummy definition for myself there to complete kernel compilation=
+, don't know the correct value for it of course.<br><br>thanks<br><br><br /=
+><hr />Access your files from anywhere with Windows Live SkyDrive!  <a href=
+=3D'http://g.msn.ca/ca55/209' target=3D'_new'>Sign up now and get 5GB of sp=
+ace FREE!</a></body>
+</html>=
+
+--_279286ab-02cb-48de-a113-87df9c4ac880_--
