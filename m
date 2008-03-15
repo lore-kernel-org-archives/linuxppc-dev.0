@@ -1,15 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 15 Mar 2008 11:10:36 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexandr Smirnov <asmirnov@ru.mvista.com>
-Subject: Re: [PATCH 1/4] Emerson ATCA-C125 bootwrapper
-Message-ID: <20080315001036.GA3487@localhost.localdomain>
-References: <20080314142220.GA8228@ru.mvista.com>
-	<20080314142703.GB8228@ru.mvista.com>
+Return-Path: <rpjday@crashcourse.ca>
+Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
+	[64.235.106.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C0655DDE18
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Mar 2008 04:27:20 +1100 (EST)
+Received: from cpe001d60ad7267-cm001225dbafb6.cpe.net.cable.rogers.com
+	([99.236.100.208] helo=crashcourse.ca)
+	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.68) (envelope-from <rpjday@crashcourse.ca>)
+	id 1JaaAJ-0008Cy-Jc
+	for linuxppc-dev@ozlabs.org; Sat, 15 Mar 2008 13:27:27 -0400
+Date: Sat, 15 Mar 2008 13:27:07 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] PPC: Use newer, non-deprecated __SPIN_LOCK_UNLOCKED macro.
+Message-ID: <alpine.LFD.1.00.0803151324400.24502@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080314142703.GB8228@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,50 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 14, 2008 at 05:27:03PM +0300, Alexandr Smirnov wrote:
-> 
-> Bootwraper for Emerson ATCA-C125 board. This board has
-> four ethernet ports, so it has to use this code instead
-> of generic.
 
-[snip]
-> +	/* Unfortunately, the specific model number is encoded in the
-> +	 * soc node name in existing dts files -- once that is fixed,
-> +	 * this can do a simple path lookup.
-> +	 */
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-Since this is a new board, couldn't you name the soc node /soc and
-dispense with this more complicated way of doing things?  Or would
-that break other versions of u-boot that are in use?
+---
 
-> +	soc = find_node_by_devtype(NULL, "soc");
-> +	if (soc) {
-> +		void *serial = NULL;
-> +
-> +		setprop(soc, "bus-frequency", &bd.bi_busfreq,
-> +			sizeof(bd.bi_busfreq));
-> +
-> +		while ((serial = find_node_by_devtype(serial, "serial"))) {
-> +			if (get_parent(serial) != soc)
-> +				continue;
-> +
-> +			setprop(serial, "clock-frequency", &bd.bi_busfreq,
-> +				sizeof(bd.bi_busfreq));
-> +		}
-> +	}
-> +}
-> +
-> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-> +		   unsigned long r6, unsigned long r7)
-> +{
-> +	CUBOOT_INIT();
-> +	fdt_init(_dtb_start);
-> +	serial_console_init();
-> +	platform_ops.fixups = platform_fixups;
-> +}
+diff --git a/arch/ppc/syslib/mpc52xx_setup.c b/arch/ppc/syslib/mpc52xx_setup.c
+index 9f504fc..ab0cf4c 100644
+--- a/arch/ppc/syslib/mpc52xx_setup.c
++++ b/arch/ppc/syslib/mpc52xx_setup.c
+@@ -279,7 +279,7 @@ int mpc52xx_match_psc_function(int psc_idx, const char *func)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ int mpc52xx_set_psc_clkdiv(int psc_id, int clkdiv)
+ {
+-	static spinlock_t lock = SPIN_LOCK_UNLOCKED;
++	static DEFINE_SPINLOCK(lock);
+ 	struct mpc52xx_cdm __iomem *cdm;
+ 	unsigned long flags;
+ 	u16 mclken_div;
+
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
