@@ -1,19 +1,23 @@
-Return-Path: <mike.koss@ngc.com>
-Received: from xmrm0101.northgrum.com (xmrm0101.northgrum.com
-	[155.104.240.104]) by ozlabs.org (Postfix) with ESMTP id 3CD69DDDEA
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1B5BADDD0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Mar 2008 15:12:32 +1100 (EST)
+	Mon, 17 Mar 2008 08:48:35 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C8871B.F2E5644D"
+	boundary="----_=_NextPart_001_01C887AF.79506FAD"
 Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for XPS LLTEMAC
-Date: Sat, 15 Mar 2008 23:12:27 -0500
-Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FA99D2F@XMBIL132.northgrum.com>
-In-Reply-To: <BAY115-W186EA84A950C17657AD8D9B20B0@phx.gbl>
+Date: Sun, 16 Mar 2008 14:43:33 -0700
 References: <BAY115-W186EA84A950C17657AD8D9B20B0@phx.gbl>
-From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>,
+	<EDAE140DF1B2FC42B5867C22CA0B333FA99D2F@XMBIL132.northgrum.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>,
+	"Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>,
 	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20080316214832.3F77A538046@mail141-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,11 +30,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C8871B.F2E5644D
+------_=_NextPart_001_01C887AF.79506FAD
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
+
+Ah, thanks mike...  you knocked the answer loose out of my brain...
+
+In EDK 9.2., the ll_temac generates either SDMA or FIFO defines, as =
+necessary.
+The platform data structure contains entries for both, with the correct =
+ones being ignored.  In order to get the code to compile, there are some =
+defines in xparameters.h which have:
+
+#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR
+#define XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR 0xdeadbeef
+#endif
+#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR
+#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR 0xdeadbeef
+#endif
+#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR
+#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR 0xdeadbeef
+#endif
+
+after including xparameter_ml403.h=20
+
+I'm guessing maybe you overwrote the xparameters.h file and got rid of =
+these redefines?  You can define it to be whatever you want, since the =
+value will be ignored if you are using SDMA.
+
+In EDK 10.1, the BSP generator will always generate all the defines =
+(even ones which are not sensible in the current configuration), which =
+avoids the above annoyances.
+
+Steve
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
+on behalf of Koss, Mike (Mission Systems)
+Sent: Sat 3/15/2008 9:12 PM
+To: Mohammad Sadegh Sadri; linuxppc-embedded@ozlabs.org
+Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for XPS =
+LLTEMAC
+=20
 That interrupt is defined if you build a xps_ll_temac with the
 xps_ll_fifo interface. Since you already stated that you're using the
 mpmc, I'm going to assume that you have it connected to a SDMA
@@ -82,80 +125,132 @@ ________________________________
 Access your files from anywhere with Windows Live SkyDrive! Sign up now
 and get 5GB of space FREE! <http://g.msn.ca/ca55/209> =20
 
-------_=_NextPart_001_01C8871B.F2E5644D
+
+------_=_NextPart_001_01C887AF.79506FAD
 Content-Type: text/html;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<STYLE>.hmmessage P {
-	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: =
-0px; PADDING-TOP: 0px
-}
-BODY.hmmessage {
-	FONT-SIZE: 10pt; FONT-FAMILY: Tahoma
-}
-</STYLE>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: Compile time error, compiling Xilinx Linux 2.6 for XPS =
+LLTEMAC</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
 
-<META content=3D"MSHTML 6.00.2900.3268" name=3DGENERATOR></HEAD>
-<BODY class=3Dhmmessage>
-<DIV dir=3Dltr align=3Dleft><SPAN class=3D488120904-16032008><FONT =
-face=3DArial=20
-color=3D#0000ff>That interrupt is defined if you build a xps_ll_temac =
-with the=20
-xps_ll_fifo interface. Since you already stated that you're using the =
-mpmc, I'm=20
-going to assume that you have it connected to a SDMA controller on the =
-mpmc. As=20
-such the driver should be looking for that definition, and not the FIFO=20
-interrupt. I don't have your version of the virtex_devices.c to have a =
-reference=20
-as to how the platform device is being defined, so hopefully either =
-Stephen N=20
-can chime in w/ more information, or point me to the version of the=20
-virtex_devices.c that you're using and I can try to provide some more=20
-assistance.</FONT></SPAN></DIV>
-<DIV dir=3Dltr align=3Dleft><SPAN class=3D488120904-16032008><FONT =
-face=3DArial=20
-color=3D#0000ff></FONT></SPAN>&nbsp;</DIV>
-<DIV dir=3Dltr align=3Dleft><SPAN class=3D488120904-16032008><FONT =
-face=3DArial=20
-color=3D#0000ff>-- Mike</FONT></SPAN></DIV><BR>
-<DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
-<HR tabIndex=3D-1>
-<FONT face=3DTahoma><B>From:</B> Mohammad Sadegh Sadri=20
-[mailto:mamsadegh@hotmail.com] <BR><B>Sent:</B> Saturday, March 15, 2008 =
-4:31=20
-AM<BR><B>To:</B> linuxppc-embedded@ozlabs.org<BR><B>Subject:</B> Compile =
-time=20
-error, compiling Xilinx Linux 2.6 for XPS LLTEMAC<BR></FONT><BR></DIV>
-<DIV></DIV>All,<BR><BR>that should be a small problem, and i think that =
-its=20
-solution should be simple,<BR><BR>I generate a base system using EDK =
-9.2.02 ,=20
-the base system contains XPS_LL_TEMAC , MPMC and other components,<BR>I =
-generate=20
-the software libraries and copy xparameters file into proper kernel =
-folder. I=20
-configure that kernel and add kernel support for =
-XPS_LL_TEMAC.<BR><BR>while=20
-doing make I encounter this =
-error:<BR><BR>arch/ppc/syslib/virtex_devices.c:455:=20
-error: 'XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR' undeclared here (not =
-in a=20
-function)<BR><BR>I think that this definition should be available in=20
-xparameters_ml403.h file but i see that there is no such definition. =
-<BR>I added=20
-a dummy definition for myself there to complete kernel compilation, =
-don't know=20
-the correct value for it of course.<BR><BR>thanks<BR><BR><BR>
-<HR>
-Access your files from anywhere with Windows Live SkyDrive! <A=20
-href=3D"http://g.msn.ca/ca55/209" target=3D_new>Sign up now and get 5GB =
-of space=20
-FREE!</A> </BODY></HTML>
+<P><FONT SIZE=3D2>Ah, thanks mike...&nbsp; you knocked the answer loose =
+out of my brain...<BR>
+<BR>
+In EDK 9.2., the ll_temac generates either SDMA or FIFO defines, as =
+necessary.<BR>
+The platform data structure contains entries for both, with the correct =
+ones being ignored.&nbsp; In order to get the code to compile, there are =
+some defines in xparameters.h which have:<BR>
+<BR>
+#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR<BR>
+#define XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR 0xdeadbeef<BR>
+#endif<BR>
+#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR<BR>
+#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR 0xdeadbeef<BR>
+#endif<BR>
+#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR<BR>
+#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR 0xdeadbeef<BR>
+#endif<BR>
+<BR>
+after including xparameter_ml403.h<BR>
+<BR>
+I'm guessing maybe you overwrote the xparameters.h file and got rid of =
+these redefines?&nbsp; You can define it to be whatever you want, since =
+the value will be ignored if you are using SDMA.<BR>
+<BR>
+In EDK 10.1, the BSP generator will always generate all the defines =
+(even ones which are not sensible in the current configuration), which =
+avoids the above annoyances.<BR>
+<BR>
+Steve<BR>
+<BR>
+-----Original Message-----<BR>
+From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
+on behalf of Koss, Mike (Mission Systems)<BR>
+Sent: Sat 3/15/2008 9:12 PM<BR>
+To: Mohammad Sadegh Sadri; linuxppc-embedded@ozlabs.org<BR>
+Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for XPS =
+LLTEMAC<BR>
+<BR>
+That interrupt is defined if you build a xps_ll_temac with the<BR>
+xps_ll_fifo interface. Since you already stated that you're using =
+the<BR>
+mpmc, I'm going to assume that you have it connected to a SDMA<BR>
+controller on the mpmc. As such the driver should be looking for =
+that<BR>
+definition, and not the FIFO interrupt. I don't have your version of =
+the<BR>
+virtex_devices.c to have a reference as to how the platform device =
+is<BR>
+being defined, so hopefully either Stephen N can chime in w/ more<BR>
+information, or point me to the version of the virtex_devices.c that<BR>
+you're using and I can try to provide some more assistance.<BR>
+<BR>
+-- Mike<BR>
+<BR>
+________________________________<BR>
+<BR>
+From: Mohammad Sadegh Sadri [<A =
+HREF=3D"mailto:mamsadegh@hotmail.com">mailto:mamsadegh@hotmail.com</A>]<B=
+R>
+Sent: Saturday, March 15, 2008 4:31 AM<BR>
+To: linuxppc-embedded@ozlabs.org<BR>
+Subject: Compile time error, compiling Xilinx Linux 2.6 for XPS =
+LLTEMAC<BR>
+<BR>
+<BR>
+All,<BR>
+<BR>
+that should be a small problem, and i think that its solution should =
+be<BR>
+simple,<BR>
+<BR>
+I generate a base system using EDK 9.2.02 , the base system contains<BR>
+XPS_LL_TEMAC , MPMC and other components,<BR>
+I generate the software libraries and copy xparameters file into =
+proper<BR>
+kernel folder. I configure that kernel and add kernel support for<BR>
+XPS_LL_TEMAC.<BR>
+<BR>
+while doing make I encounter this error:<BR>
+<BR>
+arch/ppc/syslib/virtex_devices.c:455: error:<BR>
+'XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR' undeclared here (not in a<BR>
+function)<BR>
+<BR>
+I think that this definition should be available in =
+xparameters_ml403.h<BR>
+file but i see that there is no such definition.<BR>
+I added a dummy definition for myself there to complete kernel<BR>
+compilation, don't know the correct value for it of course.<BR>
+<BR>
+thanks<BR>
+<BR>
+<BR>
+<BR>
+________________________________<BR>
+<BR>
+Access your files from anywhere with Windows Live SkyDrive! Sign up =
+now<BR>
+and get 5GB of space FREE! &lt;<A =
+HREF=3D"http://g.msn.ca/ca55/209">http://g.msn.ca/ca55/209</A>&gt;&nbsp;<=
+BR>
+<BR>
+</FONT>
+</P>
 
-------_=_NextPart_001_01C8871B.F2E5644D--
+</BODY>
+</HTML>
+------_=_NextPart_001_01C887AF.79506FAD--
