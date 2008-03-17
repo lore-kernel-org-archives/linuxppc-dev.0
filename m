@@ -1,22 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3089DDF8D
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:46:46 +1100 (EST)
-Date: Mon, 17 Mar 2008 17:46:27 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: [PATCH v2] 8xx: Add support for the MPC852 based board from
-	keymile.
-Message-ID: <20080317224627.GB3622@loki.buserror.net>
-References: <47DA444E.9050507@denx.de>
+	by ozlabs.org (Postfix) with ESMTPS id 97A85DDDFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 10:08:29 +1100 (EST)
+Message-ID: <47DEF9E7.5030808@freescale.com>
+Date: Mon, 17 Mar 2008 18:08:23 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47DA444E.9050507@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+To: joakim.tjernlund@transmode.se
+Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
+	isn't on the MDIO bus
+References: <20080317175208.GA17844@localhost.localdomain>	
+	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>	
+	<47DEE6CF.7040801@freescale.com>
+	<1205792537.7589.64.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1205792537.7589.64.camel@gentoo-jocke.transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 14, 2008 at 10:24:30AM +0100, Heiko Schocher wrote:
-> +	setbits16(&mpc8xx_immr->im_ioport.iop_pcso, 0x300);
-> +	cpm1_clk_setup(CPM_CLK_SCC3, CPM_CLK5, CPM_CLK_RX);
-> +	cpm1_clk_setup(CPM_CLK_SCC3, CPM_CLK6, CPM_CLK_TX);
-> +	setbits32(&mpc8xx_immr->im_cpm.cp_pbpar, 0x300);
-> +	setbits32(&mpc8xx_immr->im_cpm.cp_pbdir, 0x300);
+Joakim Tjernlund wrote:
 
-Any particular reason not to use cpm1_set_pin() rather than those setbits?
+> eth0 is also up, was it commit 4942bd80e83d13bf394df4a8109bee39d861820f
+> that fixed that bug?
 
-> +static void __init mgsuvd_setup_arch(void)
-> +{
-> +	struct device_node *cpu;
-> +
-> +	cpu = of_find_node_by_type(NULL, "cpu");
-> +	if (cpu != 0) {
-> +		const unsigned int *fp;
-> +
-> +		fp = of_get_property(cpu, "clock-frequency", NULL);
-> +		if (fp != 0)
-> +			loops_per_jiffy = *fp / HZ;
-> +		else
-> +			loops_per_jiffy = 50000000 / HZ;
-> +		of_node_put(cpu);
-> +	}
-> +
+Yep.  Unfortunately, I don't really know enough about the ucc_geth driver to
+know what could be wrong.  I just noticed your message and remembered that old bug.
 
-This is obsolete and unnecessary.
-
-> +	ROOT_DEV = Root_NFS;
-
-Likewise.
-
-> +static int __init mgsuvd_probe(void)
-> +{
-> +	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
-> +					  "model", NULL);
-> +	if (model == NULL)
-> +		return 0;
-> +	if (strcmp(model, "MGSUVD"))
-> +		return 0;
-> +
-> +	return 1;
-> +}
-
-Check compatible (using of_flat_dt_is_compatible), not model.
-
--Scott
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
