@@ -1,23 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id B4C37DDF61
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 10:53:45 +1100 (EST)
-Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
-	isn't on the MDIO bus
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <47DEF9E7.5030808@freescale.com>
-References: <20080317175208.GA17844@localhost.localdomain>
-	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>
-	<47DEE6CF.7040801@freescale.com>
-	<1205792537.7589.64.camel@gentoo-jocke.transmode.se>
-	<47DEF9E7.5030808@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C62D6DDF6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 11:07:37 +1100 (EST)
+Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <47DEF159.3020504@garzik.org>
+References: <1205488348-22536-1-git-send-email-sr@denx.de>
+	<47DE5F43.80604@garzik.org> <1205789101.26869.181.camel@pasglop>
+	<1205789205.26869.184.camel@pasglop>
+	<20080317164341.12075616@zod.rchland.ibm.com>
+	<1205790747.26869.187.camel@pasglop>  <47DEF159.3020504@garzik.org>
 Content-Type: text/plain
-Date: Tue, 18 Mar 2008 00:53:42 +0100
-Message-Id: <1205798023.7589.76.camel@gentoo-jocke.transmode.se>
+Date: Tue, 18 Mar 2008 10:55:32 +1100
+Message-Id: <1205798132.26869.191.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +29,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2008-03-17 at 18:08 -0500, Timur Tabi wrote:
-> Joakim Tjernlund wrote:
+On Mon, 2008-03-17 at 18:31 -0400, Jeff Garzik wrote:
+> > Jeff, do you mind if we get those patches through the powerpc tree ?
+> > EMAC is very powerpc specific and these are mostly internal driver
+> > cuisine.
 > 
-> > eth0 is also up, was it commit 4942bd80e83d13bf394df4a8109bee39d861820f
-> > that fixed that bug?
-> 
-> Yep.  Unfortunately, I don't really know enough about the ucc_geth driver to
-> know what could be wrong.  I just noticed your message and remembered that old bug.
-> 
+> Fine with me in concept, though I haven't seen the patches in
+> question.
 
-I noticed that ugeth_graceful_stop_rx() is lacking in_8()/out_8() so I
-am adding that, but I cant test until tmw.
+Yup, I've asked people to copy you on them so you get a chance to ack
+them :-)
 
-Also notice that there is a lot of in_beX()/out_beX() in the driver and
-those functions use the sync instruction. Won't that much suny usage
-hurt performance and is sync really needed?
-
- Jocke
+Cheers,
+Ben.
