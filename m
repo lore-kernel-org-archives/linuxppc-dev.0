@@ -1,12 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 17 Mar 2008 17:03:47 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Cleanup \nnn and \xNN string escape handling
-Message-ID: <20080317060347.GG10988@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B4808DDDFB
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 19:52:14 +1100 (EST)
+Subject: Re: [PATCH] Fix PMU + soft interrupt disable bug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20080317042709.GA10594@kryten>
+References: <20080317042709.GA10594@kryten>
+Content-Type: text/plain
+Date: Mon, 17 Mar 2008 19:51:45 +1100
+Message-Id: <1205743905.26869.161.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,67 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Several small cleanups to the handling of octal and hex string
-escapes:
-	- Use strncmp() instead dof what were essentially open-coded
-          versions of the same, with short fixed lengths.
-	- The call path to get_oct_char() means an empty escape is not
-          possible.  So replace the error message in this case with an
-          assert.
-	- Use die() instead of a non-fatal error message if
-          get_hex_char() is given an empty escape.  Change error
-          message to close match gcc's in the same circumstance.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Sun, 2008-03-16 at 23:27 -0500, Anton Blanchard wrote:
+> Since the PMU is an NMI now, it can come at any time we are only soft
+> disabled. We must hard disable around the two places we allow the kernel
+> stack SLB and r1 to go out of sync. Otherwise the PMU exception can
+> force a kernel stack SLB into another slot.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- data.c |   19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
 
-Index: dtc/data.c
-===================================================================
---- dtc.orig/data.c	2008-03-17 16:37:04.000000000 +1100
-+++ dtc/data.c	2008-03-17 16:37:04.000000000 +1100
-@@ -75,16 +75,11 @@ static char get_oct_char(const char *s, 
- 	long val;
- 
- 	x[3] = '\0';
--	x[0] = s[(*i)];
--	if (x[0]) {
--		x[1] = s[(*i)+1];
--		if (x[1])
--			x[2] = s[(*i)+2];
--	}
-+	strncpy(x, s + *i, 3);
- 
- 	val = strtol(x, &endx, 8);
--	if ((endx - x) == 0)
--		fprintf(stderr, "Empty \\nnn escape\n");
-+
-+	assert(endx > x);
- 
- 	(*i) += endx - x;
- 	return val;
-@@ -97,13 +92,11 @@ static char get_hex_char(const char *s, 
- 	long val;
- 
- 	x[2] = '\0';
--	x[0] = s[(*i)];
--	if (x[0])
--		x[1] = s[(*i)+1];
-+	strncpy(x, s + *i, 2);
- 
- 	val = strtol(x, &endx, 16);
--	if ((endx - x) == 0)
--		fprintf(stderr, "Empty \\x escape\n");
-+	if (!(endx  > x))
-+		die("\\x used with no following hex digits\n");
- 
- 	(*i) += endx - x;
- 	return val;
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> ---
+> 
+> Index: kernel/arch/powerpc/mm/slb.c
+> ===================================================================
+> --- kernel.orig/arch/powerpc/mm/slb.c	2007-11-05 11:22:03.000000000 -0600
+> +++ kernel/arch/powerpc/mm/slb.c	2007-11-05 18:09:45.000000000 -0600
+> @@ -113,6 +113,12 @@ void slb_flush_and_rebolt(void)
+>  		slb_shadow_update(get_paca()->kstack, lflags, 2);
+>  	}
+>  
+> +	/*
+> +	 * We can't take a PMU exception in the following code, so hard
+> +	 * disable interrupts.
+> +	 */
+> +	hard_irq_disable();
+> +
+>  	/* We need to do this all in asm, so we're sure we don't touch
+>  	 * the stack between the slbia and rebolting it. */
+>  	asm volatile("isync\n"
+> Index: kernel/arch/powerpc/kernel/process.c
+> ===================================================================
+> --- kernel.orig/arch/powerpc/kernel/process.c	2007-11-05 18:10:44.000000000 -0600
+> +++ kernel/arch/powerpc/kernel/process.c	2007-11-05 18:10:46.000000000 -0600
+> @@ -331,6 +331,12 @@ struct task_struct *__switch_to(struct t
+>  	account_process_vtime(current);
+>  	calculate_steal_time();
+>  
+> +	/*
+> +	 * We can't take a PMU exception inside _switch() since there is a
+> +	 * window where the kernel stack SLB and the kernel stack are out
+> +	 * of sync. Hard disable here.
+> +	 */
+> +	hard_irq_disable();
+>  	last = _switch(old_thread, new_thread);
+>  
+>  	local_irq_restore(flags);
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
