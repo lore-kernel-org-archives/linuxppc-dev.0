@@ -1,12 +1,16 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 16 Mar 2008 23:27:09 -0500
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix PMU + soft interrupt disable bug
-Message-ID: <20080317042709.GA10594@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+Return-Path: <roland@redhat.com>
+Received: from QMTA02.emeryville.ca.mail.comcast.net
+	(qmta02.emeryville.ca.mail.comcast.net [76.96.30.24])
+	by ozlabs.org (Postfix) with ESMTP id 84F65DDE0A
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 16:01:25 +1100 (EST)
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc exec PT_DTRACE
+Message-Id: <20080317050120.8C9DC26F995@magilla.localdomain>
+Date: Sun, 16 Mar 2008 22:01:20 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,45 +21,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Since the PMU is an NMI now, it can come at any time we are only soft
-disabled. We must hard disable around the two places we allow the kernel
-stack SLB and r1 to go out of sync. Otherwise the PMU exception can
-force a kernel stack SLB into another slot.
+The PT_DTRACE flag is meaningless and obsolete.
+Don't touch it.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
+ arch/powerpc/kernel/process.c   |    5 -----
+ arch/powerpc/kernel/sys_ppc32.c |    5 -----
+ 2 files changed, 0 insertions(+), 10 deletions(-)
 
-Index: kernel/arch/powerpc/mm/slb.c
-===================================================================
---- kernel.orig/arch/powerpc/mm/slb.c	2007-11-05 11:22:03.000000000 -0600
-+++ kernel/arch/powerpc/mm/slb.c	2007-11-05 18:09:45.000000000 -0600
-@@ -113,6 +113,12 @@ void slb_flush_and_rebolt(void)
- 		slb_shadow_update(get_paca()->kstack, lflags, 2);
- 	}
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 4846bf5..7c8e3da 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -862,11 +862,6 @@ int sys_execve(unsigned long a0, unsigned long a1, unsigned long a2,
+ 	flush_spe_to_thread(current);
+ 	error = do_execve(filename, (char __user * __user *) a1,
+ 			  (char __user * __user *) a2, regs);
+-	if (error == 0) {
+-		task_lock(current);
+-		current->ptrace &= ~PT_DTRACE;
+-		task_unlock(current);
+-	}
+ 	putname(filename);
+ out:
+ 	return error;
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index 4a4f5c6..9c3371e 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -368,11 +368,6 @@ long compat_sys_execve(unsigned long a0, unsigned long a1, unsigned long a2,
  
-+	/*
-+	 * We can't take a PMU exception in the following code, so hard
-+	 * disable interrupts.
-+	 */
-+	hard_irq_disable();
-+
- 	/* We need to do this all in asm, so we're sure we don't touch
- 	 * the stack between the slbia and rebolting it. */
- 	asm volatile("isync\n"
-Index: kernel/arch/powerpc/kernel/process.c
-===================================================================
---- kernel.orig/arch/powerpc/kernel/process.c	2007-11-05 18:10:44.000000000 -0600
-+++ kernel/arch/powerpc/kernel/process.c	2007-11-05 18:10:46.000000000 -0600
-@@ -331,6 +331,12 @@ struct task_struct *__switch_to(struct t
- 	account_process_vtime(current);
- 	calculate_steal_time();
+ 	error = compat_do_execve(filename, compat_ptr(a1), compat_ptr(a2), regs);
  
-+	/*
-+	 * We can't take a PMU exception inside _switch() since there is a
-+	 * window where the kernel stack SLB and the kernel stack are out
-+	 * of sync. Hard disable here.
-+	 */
-+	hard_irq_disable();
- 	last = _switch(old_thread, new_thread);
+-	if (error == 0) {
+-		task_lock(current);
+-		current->ptrace &= ~PT_DTRACE;
+-		task_unlock(current);
+-	}
+ 	putname(filename);
  
- 	local_irq_restore(flags);
+ out:
