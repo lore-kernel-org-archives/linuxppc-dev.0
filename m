@@ -1,17 +1,19 @@
-Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
-Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
 	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 68871DDF1F
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 03:42:06 +1100 (EST)
-From: John Linn <john.linn@xilinx.com>
-To: linuxppc-dev@ozlabs.org,
-	jwboyer@linux.vnet.ibm.com
-Subject: [PATCH] [POWERPC] Xilinx: Boot: Fix 16550 UART initialization
-Date: Mon, 17 Mar 2008 09:41:54 -0700
-Message-Id: <20080317164202.7E8A41A3806F@mail213-sin.bigfish.com>
-Cc: John Linn <john.linn@xilinx.com>
+	by ozlabs.org (Postfix) with ESMTPS id 9D3DCDDF36
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 04:36:48 +1100 (EST)
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: grant.likely@secretlab.ca, git-dev@xilinx.com,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] Xilinx: hwicap: Verify sync before reading idcode.
+Date: Mon, 17 Mar 2008 10:36:31 -0700
+In-Reply-To: <1205775392-32222-2-git-send-email-stephen.neuendorffer@xilinx.com>
+References: <1205775392-32222-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1205775392-32222-2-git-send-email-stephen.neuendorffer@xilinx.com>
+Message-Id: <20080317173645.7A21D9A8069@mail131-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,120 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The UART 16550 initialization was not setting up the registers
-correctly. Code was added to pull the frequency and speed from
-the device tree and initialize the registers using those values.
+It appears that in some cases, the sync word might not be recognized
+by the hardware correctly.  If this happens, then attempting to read
+from the port results in an unrecoverable error because of the design
+of the FPGA core.  This patch updates the code to check the status of
+the device before reading the IDCODE, in order to avoid entering this
+unrecoverable state.  This patch also adds additional NOOP commands
+into the sychronization sequence, which appears to be necessary to
+avoid the condition on some hardware.
 
-The boot code was not and is still not using the cmd line
-to setup up the uart. The frequency of the clock driving the
-UART must be specified in the device tree so that the baud
-rate generator can be setup.
-
+Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 ---
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-Please pull this patch for 2.6.26.
----
- arch/powerpc/boot/ns16550.c |   69 +++++++++++++++++++++++++++++++++---------
- 1 files changed, 54 insertions(+), 15 deletions(-)
-
-diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
-index f8f1b2f..d8edd48 100644
---- a/arch/powerpc/boot/ns16550.c
-+++ b/arch/powerpc/boot/ns16550.c
-@@ -15,23 +15,47 @@
- #include "io.h"
- #include "ops.h"
- 
--#define UART_DLL	0	/* Out: Divisor Latch Low */
--#define UART_DLM	1	/* Out: Divisor Latch High */
--#define UART_FCR	2	/* Out: FIFO Control Register */
--#define UART_LCR	3	/* Out: Line Control Register */
--#define UART_MCR	4	/* Out: Modem Control Register */
--#define UART_LSR	5	/* In:  Line Status Register */
--#define UART_LSR_THRE	0x20	/* Transmit-hold-register empty */
--#define UART_LSR_DR	0x01	/* Receiver data ready */
--#define UART_MSR	6	/* In:  Modem Status Register */
--#define UART_SCR	7	/* I/O: Scratch Register */
--
--static unsigned char *reg_base;
--static u32 reg_shift;
-+#define UART_DLL		0	/* Out: Divisor Latch Low */
-+#define UART_DLM		1	/* Out: Divisor Latch High */
-+#define UART_FCR		2	/* Out: FIFO Control Register */
-+#define UART_FCR_CLEAR_RCVR 	0x02 	/* Clear the RCVR FIFO */
-+#define UART_FCR_CLEAR_XMIT	0x04 	/* Clear the XMIT FIFO */
-+#define UART_LCR		3	/* Out: Line Control Register */
-+#define UART_MCR		4	/* Out: Modem Control Register */
-+#define UART_MCR_RTS		0x02 	/* RTS complement */
-+#define UART_MCR_DTR		0x01 	/* DTR complement */
-+#define UART_LSR		5	/* In:  Line Status Register */
-+#define UART_LSR_THRE		0x20	/* Transmit-hold-register empty */
-+#define UART_LSR_DR		0x01	/* Receiver data ready */
-+#define UART_LCR_DLAB		0x80 	/* Divisor latch access bit */
-+#define UART_LCR_WLEN8		0x03 	/* Wordlength: 8 bits */
-+#define UART_MSR		6	/* In:  Modem Status Register */
-+#define UART_SCR		7	/* I/O: Scratch Register */
+diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+index 304727d..5b8d646 100644
+--- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
++++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+@@ -250,8 +250,26 @@ static int hwicap_get_configuration_register(struct hwicap_drvdata *drvdata,
+ 	 * Create the data to be written to the ICAP.
+ 	 */
+ 	buffer[index++] = XHI_DUMMY_PACKET;
++	buffer[index++] = XHI_NOOP_PACKET;
+ 	buffer[index++] = XHI_SYNC_PACKET;
+ 	buffer[index++] = XHI_NOOP_PACKET;
++	buffer[index++] = XHI_NOOP_PACKET;
 +
-+volatile static unsigned char *reg_base;
-+volatile static u32 reg_shift;
-+volatile static u16 divisor;
- 
- static int ns16550_open(void)
- {
--	out_8(reg_base + (UART_FCR << reg_shift), 0x06);
++	/*
++	 * Write the data to the FIFO and initiate the transfer of data present
++	 * in the FIFO to the ICAP device.
++	 */
++	status = drvdata->config->set_configuration(drvdata,
++						    &buffer[0], index);
++	if (status)
++		return status;
 +
-+	/* Access baud rate */
-+	out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_DLAB);
++	/* If the syncword was not found, then we need to start over. */
++	status = drvdata->config->get_status(drvdata);
++	if ((status & XHI_SR_DALIGN_MASK) != XHI_SR_DALIGN_MASK)
++		return -EIO;
 +
-+	/* Baud rate based on input clock */
-+	out_8(reg_base + (UART_DLL << reg_shift), divisor & 0xFF);
-+	out_8(reg_base + (UART_DLM << reg_shift), divisor >> 8);
-+
-+	/* 8 data, 1 stop, no parity */
-+	out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_WLEN8);
-+
-+	/* RTS/DTR */
-+	out_8(reg_base + (UART_MCR << reg_shift), UART_MCR_RTS | UART_MCR_DTR);
-+
-+	/* Clear transmitter and receiver */
-+	out_8(reg_base + (UART_FCR << reg_shift), 
-+				UART_FCR_CLEAR_XMIT | UART_FCR_CLEAR_RCVR);
-+
- 	return 0;
- }
- 
-@@ -56,6 +80,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
- {
- 	int n;
- 	unsigned long reg_phys;
-+	u32 clk, spd;
- 
- 	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
- 	if (n != sizeof(reg_base)) {
-@@ -65,9 +90,23 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
- 		reg_base = (void *)reg_phys;
- 	}
- 
--	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
-+	n = getprop(devp, "reg-shift", (void *)&reg_shift, sizeof(reg_shift));
- 	if (n != sizeof(reg_shift))
- 		reg_shift = 0;
-+	
-+	/* the base address has to change for devices with odd reg spacing */
-+	reg_base = reg_base + ((1 << reg_shift) - 1); 
-+
-+	n = getprop(devp, "current-speed", (void *)&spd, sizeof(spd));
-+	if (n != sizeof(spd))
-+		spd = 9600;
-+
-+	/* should there be a default clock rate?*/
-+	n = getprop(devp, "clock-frequency", (void *)&clk, sizeof(clk));
-+	if (n != sizeof(clk))
-+		return -1;
-+
-+	divisor = clk / (16 * spd);
- 
- 	scdp->open = ns16550_open;
- 	scdp->putc = ns16550_putc;
++	index = 0;
+ 	buffer[index++] = hwicap_type_1_read(reg) | 1;
+ 	buffer[index++] = XHI_NOOP_PACKET;
+ 	buffer[index++] = XHI_NOOP_PACKET;
 -- 
-1.5.2.1
+1.5.3.4-dirty
