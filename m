@@ -1,21 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.229])
-	by ozlabs.org (Postfix) with ESMTP id A31D2DDF4D
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 07:23:08 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so4972471wxd.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 13:23:06 -0700 (PDT)
-Message-ID: <fa686aa40803171323r2e73e53xd01d0590efccbf90@mail.gmail.com>
-Date: Mon, 17 Mar 2008 14:23:02 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 24256DE13D
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 07:24:46 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id b2so1217702ana.81
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 13:24:45 -0700 (PDT)
+Message-ID: <fa686aa40803171324hfd813b5q896da8ff9b5875f0@mail.gmail.com>
+Date: Mon, 17 Mar 2008 14:24:43 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 1/3] Xilinx: hwicap: Refactor status handling code.
-In-Reply-To: <20080317173644.C24651C00069@mail59-sin.bigfish.com>
+Subject: Re: [PATCH] [POWERPC] Xilinx: Boot: Fix 16550 UART initialization
+In-Reply-To: <20080317201731.CED20181005E@mail146-sin.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <1205775392-32222-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080317173644.C24651C00069@mail59-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, git-dev@xilinx.com, linux-kernel@vger.kernel.org
+References: <20080317164202.7E8A41A3806F@mail213-sin.bigfish.com>
+	<fa686aa40803171247j709bc554pe709628c46205600@mail.gmail.com>
+	<20080317195756.4F7411BE807D@mail119-dub.bigfish.com>
+	<fa686aa40803171308h5ef7f8a9m5119ef12d8c87980@mail.gmail.com>
+	<20080317201731.CED20181005E@mail146-sin.bigfish.com>
+Cc: John Linn <linnj@xilinx.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 17, 2008 at 11:36 AM, Stephen Neuendorffer
+On Mon, Mar 17, 2008 at 2:17 PM, Stephen Neuendorffer
 <stephen.neuendorffer@xilinx.com> wrote:
-> Both the buffer-based and fifo-based icap cores have a status
->  register.  Previously, this was only used internally to check whether
->  transactions have completed.  However, the status can be useful to the
->  main driver as well.  This patch exposes these status functions to the
->  main driver along with some masks for the differnet bits.
+> Grant,
 >
->  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>  If you have working platform code using libfdt, can you publish it?
+
+Yes,
+
+I've actually already published it once.  I'll post v2 this afternoon.
+
+g.
+
 
 -- 
 Grant Likely, B.Sc., P.Eng.
