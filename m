@@ -1,19 +1,18 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id 399B8DDF6C
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:23:42 +1100 (EST)
-Date: Tue, 18 Mar 2008 00:23:04 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: powerpc: cuImage.* creation error
-Message-ID: <20080317222304.GA1931@cs181133002.pp.htv.fi>
-References: <20080317193652.GA9550@cs181133002.pp.htv.fi>
-	<20080317200754.GA7383@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080317200754.GA7383@windriver.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 399E9DE012
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:28:38 +1100 (EST)
+To: "Grant Likely" <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Please pull linux-2.6-mpc52xx.git
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 17 Mar 2008 15:43:43 CST."
+	<fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>
+Date: Mon, 17 Mar 2008 23:28:36 +0100
+Sender: wd@denx.de
+Message-Id: <20080317222836.AFA66241A2@gemini.denx.de>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,78 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 17, 2008 at 04:07:55PM -0400, Paul Gortmaker wrote:
-> In message: powerpc: cuImage.* creation error
-> on 17/03/2008 Adrian Bunk wrote:
-> 
-> > When building all powerpc defconfigs in 2.6.25-rc6 exactly three of 
-> > them fail to build, and all with similar problems:
-> > 
-> > <--  snip  -->
-> > 
-> > 
-> > sbc8548_defconfig:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> > Entry Point:  0x00000000
-> > make[2]: *** No rule to make target `arch/powerpc/boot/cuImage.tqm8548', needed by `arch/powerpc/boot/zImage'.  Stop.
-> > 
-> 
-> Untested, but I'll guess that this is at least part of the problem for
-> the sbc one...
+In message <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com> you wrote:
+>
+> b) defconfigs is more about testing and a known working configuration
+> than it is about a distribution configuration.  It's not intended to
+> be the deployed config.  For a distribution/deployable image it is
+> expected that the engineer responsible will tailor the config.
 
-It doesn't fix the build, and adds sbc8560_defconfig to the list of 
-non-compiling defconfigs:
+This may be true in general, but for the boards in question it is
+definitely incorrect:
 
-<--  snip  -->
+* The TQM5200 configuration as provided is intended for  shipping  as
+  default  configuration  for  this board. The "engineer responsible"
+  already *did* the tailoring and put that  state  in  the  defconfig
+  file.
 
-...
-  WRAP    arch/powerpc/boot/cuImage.sbc8560
-DTC: dts->dtb  on file "/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/sbc8560.dts"
-powerpc64-linux-ld: arch/powerpc/boot/cuboot-sbc8560.o: No such file: No such file or directory
-make[2]: *** [arch/powerpc/boot/cuImage.sbc8560] Error 1
+* The CM5200 and Motion-Pro boards are custom designs, where the
+  defconfig file matches exactly the requirements of the respective
+  customers.
 
-<--  snip  -->
+I feel it is very important to be able to include this  configuration
+information  somewhere  with  the  kernel source tree - and to me the
+defconfig file for a board is the most  natural  place  to  put  such
+information.
 
-> Thanks,
-> Paul.
-> 
-> ---
-> 
-> Author: Paul Gortmaker <paul.gortmaker@windriver.com>
-> Date:   Mon Mar 17 15:47:03 2008 -0400
-> 
->     cuimage: fix board names in Makefile
->     
->     Fix the copy and paste error from 25431333813686654907ab987fb5de10c10a16db
->     for the sbc8548 and sbc8560
->     
->     Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> 
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 4974d9e..1aded8f 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -253,8 +253,8 @@ image-$(CONFIG_TQM8540)			+= cuImage.tqm8540
->  image-$(CONFIG_TQM8541)			+= cuImage.tqm8541
->  image-$(CONFIG_TQM8555)			+= cuImage.tqm8555
->  image-$(CONFIG_TQM8560)			+= cuImage.tqm8560
-> -image-$(CONFIG_SBC8548)			+= cuImage.tqm8548
-> -image-$(CONFIG_SBC8560)			+= cuImage.tqm8560
-> +image-$(CONFIG_SBC8548)			+= cuImage.sbc8548
-> +image-$(CONFIG_SBC8560)			+= cuImage.sbc8560
->  
->  # Board ports in arch/powerpc/platform/embedded6xx/Kconfig
->  image-$(CONFIG_STORCENTER)		+= cuImage.storcenter
+Please understand that we do  NOT  expect  the  end  user  having  to
+"tailor  the  config"  -  instead,  we  want  to  provide  a  default
+configuration that can be used as is,  at  least  for  default  usage
+cases.
 
-cu
-Adrian
+
+If you don't want to use a board specific default configuration, then
+please tell me what the recommended way is to provide a knwon  to  be
+working,  tested  *and*  *useful*  default  configuration  for custom
+boards in the Linux kernel tree?
+
+
+> All these boards are supported with
+> arch/powerpc/platforms/mpc5200_simple.c.  A kernel built for that
+> platform will boot on any of those boards as long as it is passed the
+> correct device tree.
+
+I don't doubt that the kernel will boot. But that does not mean  that
+it   is  ready  for  use  for  the  intended  purpose.  For  example,
+arch/powerpc/platforms/52xx/motionpro.c contains code to  setup  some
+custom   LEDs   on   this   board.   I   can't   find  that  code  in
+arch/powerpc/platforms/mpc5200_simple.c.
+
+It may be argued that this code should be moved somewhere else, but I
+don't remeber to have seen any such review comments.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+You don't have to stay up nights to succeed; you have to  stay  awake
+days.
