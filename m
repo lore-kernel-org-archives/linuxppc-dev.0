@@ -1,20 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D69E4DDEDC
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 23:08:46 +1100 (EST)
-Message-ID: <47DE5F4A.9080303@garzik.org>
-Date: Mon, 17 Mar 2008 08:08:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <asmirnov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A1200DDE21
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 23:10:49 +1100 (EST)
+Message-ID: <47DE61E1.6060300@ru.mvista.com>
+Date: Mon, 17 Mar 2008 15:19:45 +0300
+From: Alexandr Smirnov <asmirnov@ru.mvista.com>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] net: NEWEMAC: Add compatible "ibm,tah" to tah matching
-	table
-References: <1205423983-21142-1-git-send-email-sr@denx.de>
-In-Reply-To: <1205423983-21142-1-git-send-email-sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 1/4] Emerson ATCA-C125 bootwrapper
+References: <20080314142220.GA8228@ru.mvista.com>
+	<20080314142703.GB8228@ru.mvista.com>
+	<20080315001036.GA3487@localhost.localdomain>
+In-Reply-To: <20080315001036.GA3487@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> Add "ibm,tah" to the compatible matching table of the ibm_newemac
-> tah driver. The type "tah" is still preserved for compatibility reasons.
-> New dts files should use the compatible property though.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> ---
->  drivers/net/ibm_newemac/tah.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
+David,
+>> +	/* Unfortunately, the specific model number is encoded in the
+>> +	 * soc node name in existing dts files -- once that is fixed,
+>> +	 * this can do a simple path lookup.
+>> +	 */
+>>     
+>
+> Since this is a new board, couldn't you name the soc node /soc and
+> dispense with this more complicated way of doing things?  Or would
+> that break other versions of u-boot that are in use?
+>   
+As I understand you would like to rename /soc8548 node to /soc and make 
+a simple path lookup like following:
+- soc = find_node_by_devtype(NULL, "soc");
++ soc = finddevice("/soc");
+Is this correct?
 
-applied
+But fsl_soc code still uses of_find_node_by_type so we can't remove 
+device_type property from node /soc and therefor simplify device tree.
+
+
+Thanks,
+Alexandr
