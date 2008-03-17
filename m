@@ -1,19 +1,17 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 6533EDDF4B
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 03:13:56 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Interrupt handling documentation
-Date: Mon, 17 Mar 2008 17:13:48 +0100
-References: <200803111158.48540.laurentp@cse-semaphore.com>
-	<1205283088.7544.8.camel@concordia.ozlabs.ibm.com>
-	<200803131456.26722.laurentp@cse-semaphore.com>
-In-Reply-To: <200803131456.26722.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4454140.YOZzAO1IO5";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803171713.51671.laurentp@cse-semaphore.com>
+Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
+Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 68871DDF1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 03:42:06 +1100 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: linuxppc-dev@ozlabs.org,
+	jwboyer@linux.vnet.ibm.com
+Subject: [PATCH] [POWERPC] Xilinx: Boot: Fix 16550 UART initialization
+Date: Mon, 17 Mar 2008 09:41:54 -0700
+Message-Id: <20080317164202.7E8A41A3806F@mail213-sin.bigfish.com>
+Cc: John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,96 +21,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart4454140.YOZzAO1IO5
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The UART 16550 initialization was not setting up the registers
+correctly. Code was added to pull the frequency and speed from
+the device tree and initialize the registers using those values.
 
-On Thursday 13 March 2008 14:56, Laurent Pinchart wrote:
-> Hi Michael,
->
-> On Wednesday 12 March 2008 01:51, Michael Ellerman wrote:
-> > On Tue, 2008-03-11 at 11:58 +0100, Laurent Pinchart wrote:
-> > > Hi everybody,
-> > >
-> > > is there any documentation describing interrupt handling for the
-> > > powerpc architecture ? I'm writing a driver for a cascaded interrupt
-> > > controller and the only source of information I found was the code.
-> >
-> > I don't think there's much documentation.
->
-> I feared so :-)
->
-> > You might want to look at arch/powerpc/platforms/cell/axon_msi.c, it's a
-> > reasonably simple example of how to setup an irq_host and so on - well I
-> > think so :D
->
-> Thanks for the pointer.
->
-> > > I'm particularly interested in information about irq hosts (allocation
-> > > and initialisation, especially the map and unmap callbacks) and irq
-> > > chaining. Different drivers seem to implement cascaded irqs different=
-ly
-> > > (for instance arch/powerpc/sysdev/uic.c uses setup_irq to register the
-> > > cascaded irq handler, while
-> > > arch/powerpc/platforms/82xx/pq2ads-pci-pic.c uses
-> > > set_irq_chained_handler) so I'm a bit lost here.
-> >
-> > uic.c uses set_irq_chained_handler() now, so that probably answers that
-> > question. I don't think it makes all that much difference if you set it
-> > up by hand, but set_irq_chained_handler() is the neat way to do it.
->
-> That pretty much answers my question. It's always a bit disturbing when
-> different drivers use different APIs to accomplish the same task,
-> especially when the lack of documentation doesn't clearly state which API
-> should be used and which API is internal/deprecated.
+The boot code was not and is still not using the cmd line
+to setup up the uart. The frequency of the clock driving the
+UART must be specified in the device tree so that the baud
+rate generator can be setup.
 
-I've been struggling with spurious interrupts related to my irq host for a=
-=20
-day. Now that I've been able to solve the problem I thought I'd share the=20
-results here.
+---
 
-The PIC I am working with is linked to a falling-edge external irq on the=20
-CPM2. When the first PIC interrupt was generated the kernel called the PIC=
-=20
-chained irq handler endlessly.
+Please pull this patch for 2.6.26.
+---
+ arch/powerpc/boot/ns16550.c |   69 +++++++++++++++++++++++++++++++++---------
+ 1 files changed, 54 insertions(+), 15 deletions(-)
 
-After some investigation it turned out the external interrupt bit in the CP=
-M2=20
-interrupt pending register never got cleared. set_irq_chained_handler()=20
-registers the chained irq handler at the lowest level in the irq stack,=20
-bypassing all the interrupt acknowledgement/masking logic.
-
-The fix was easy, all I had to do was to call desc->chip->ack(irq) at the=20
-beginning on the chained irq handler and desc->chip->eoi(irq) at the end.=20
-However, I'm wondering if this really belongs in the PIC code, or if PICs=20
-shouldn't be registered at a higher level (setup_irq or even request_irq) s=
-o=20
-that they would reuse the handle_*_irq handlers. Any opinion on this ?
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=C3=A9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart4454140.YOZzAO1IO5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH3pi/8y9gWxC9vpcRAmI2AJ9r3pSo8cdiKbjNhKl9U51HYCkLewCfdWjf
-Jal8+8msRntzAcd/q7yjgfE=
-=i26s
------END PGP SIGNATURE-----
-
---nextPart4454140.YOZzAO1IO5--
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+index f8f1b2f..d8edd48 100644
+--- a/arch/powerpc/boot/ns16550.c
++++ b/arch/powerpc/boot/ns16550.c
+@@ -15,23 +15,47 @@
+ #include "io.h"
+ #include "ops.h"
+ 
+-#define UART_DLL	0	/* Out: Divisor Latch Low */
+-#define UART_DLM	1	/* Out: Divisor Latch High */
+-#define UART_FCR	2	/* Out: FIFO Control Register */
+-#define UART_LCR	3	/* Out: Line Control Register */
+-#define UART_MCR	4	/* Out: Modem Control Register */
+-#define UART_LSR	5	/* In:  Line Status Register */
+-#define UART_LSR_THRE	0x20	/* Transmit-hold-register empty */
+-#define UART_LSR_DR	0x01	/* Receiver data ready */
+-#define UART_MSR	6	/* In:  Modem Status Register */
+-#define UART_SCR	7	/* I/O: Scratch Register */
+-
+-static unsigned char *reg_base;
+-static u32 reg_shift;
++#define UART_DLL		0	/* Out: Divisor Latch Low */
++#define UART_DLM		1	/* Out: Divisor Latch High */
++#define UART_FCR		2	/* Out: FIFO Control Register */
++#define UART_FCR_CLEAR_RCVR 	0x02 	/* Clear the RCVR FIFO */
++#define UART_FCR_CLEAR_XMIT	0x04 	/* Clear the XMIT FIFO */
++#define UART_LCR		3	/* Out: Line Control Register */
++#define UART_MCR		4	/* Out: Modem Control Register */
++#define UART_MCR_RTS		0x02 	/* RTS complement */
++#define UART_MCR_DTR		0x01 	/* DTR complement */
++#define UART_LSR		5	/* In:  Line Status Register */
++#define UART_LSR_THRE		0x20	/* Transmit-hold-register empty */
++#define UART_LSR_DR		0x01	/* Receiver data ready */
++#define UART_LCR_DLAB		0x80 	/* Divisor latch access bit */
++#define UART_LCR_WLEN8		0x03 	/* Wordlength: 8 bits */
++#define UART_MSR		6	/* In:  Modem Status Register */
++#define UART_SCR		7	/* I/O: Scratch Register */
++
++volatile static unsigned char *reg_base;
++volatile static u32 reg_shift;
++volatile static u16 divisor;
+ 
+ static int ns16550_open(void)
+ {
+-	out_8(reg_base + (UART_FCR << reg_shift), 0x06);
++
++	/* Access baud rate */
++	out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_DLAB);
++
++	/* Baud rate based on input clock */
++	out_8(reg_base + (UART_DLL << reg_shift), divisor & 0xFF);
++	out_8(reg_base + (UART_DLM << reg_shift), divisor >> 8);
++
++	/* 8 data, 1 stop, no parity */
++	out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_WLEN8);
++
++	/* RTS/DTR */
++	out_8(reg_base + (UART_MCR << reg_shift), UART_MCR_RTS | UART_MCR_DTR);
++
++	/* Clear transmitter and receiver */
++	out_8(reg_base + (UART_FCR << reg_shift), 
++				UART_FCR_CLEAR_XMIT | UART_FCR_CLEAR_RCVR);
++
+ 	return 0;
+ }
+ 
+@@ -56,6 +80,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+ {
+ 	int n;
+ 	unsigned long reg_phys;
++	u32 clk, spd;
+ 
+ 	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
+ 	if (n != sizeof(reg_base)) {
+@@ -65,9 +90,23 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+ 		reg_base = (void *)reg_phys;
+ 	}
+ 
+-	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
++	n = getprop(devp, "reg-shift", (void *)&reg_shift, sizeof(reg_shift));
+ 	if (n != sizeof(reg_shift))
+ 		reg_shift = 0;
++	
++	/* the base address has to change for devices with odd reg spacing */
++	reg_base = reg_base + ((1 << reg_shift) - 1); 
++
++	n = getprop(devp, "current-speed", (void *)&spd, sizeof(spd));
++	if (n != sizeof(spd))
++		spd = 9600;
++
++	/* should there be a default clock rate?*/
++	n = getprop(devp, "clock-frequency", (void *)&clk, sizeof(clk));
++	if (n != sizeof(clk))
++		return -1;
++
++	divisor = clk / (16 * spd);
+ 
+ 	scdp->open = ns16550_open;
+ 	scdp->putc = ns16550_putc;
+-- 
+1.5.2.1
