@@ -1,21 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 1E9DBDDF90
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:22:19 +1100 (EST)
-Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
-	isn't on the MDIO bus
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <47DEE6CF.7040801@freescale.com>
-References: <20080317175208.GA17844@localhost.localdomain>
-	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>
-	<47DEE6CF.7040801@freescale.com>
-Content-Type: text/plain
-Date: Mon, 17 Mar 2008 23:22:16 +0100
-Message-Id: <1205792537.7589.64.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id 399B8DDF6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:23:42 +1100 (EST)
+Date: Tue, 18 Mar 2008 00:23:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: powerpc: cuImage.* creation error
+Message-ID: <20080317222304.GA1931@cs181133002.pp.htv.fi>
+References: <20080317193652.GA9550@cs181133002.pp.htv.fi>
+	<20080317200754.GA7383@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080317200754.GA7383@windriver.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Mon, 2008-03-17 at 16:46 -0500, Timur Tabi wrote:
-> Joakim Tjernlund wrote:
+On Mon, Mar 17, 2008 at 04:07:55PM -0400, Paul Gortmaker wrote:
+> In message: powerpc: cuImage.* creation error
+> on 17/03/2008 Adrian Bunk wrote:
 > 
-> > Trying to add fixed-link support for ucc_geth as this is broken too. I
-> > noticed that ifconfig eth1 up follwed by ifconfig eth1 down hangs
-> > my board once I got the ucc_geth driver to recognize fixed-link.
-> > Does it work for you?
+> > When building all powerpc defconfigs in 2.6.25-rc6 exactly three of 
+> > them fail to build, and all with similar problems:
+> > 
+> > <--  snip  -->
+> > 
+> > 
+> > sbc8548_defconfig:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> > Entry Point:  0x00000000
+> > make[2]: *** No rule to make target `arch/powerpc/boot/cuImage.tqm8548', needed by `arch/powerpc/boot/zImage'.  Stop.
+> > 
 > 
-> A long time ago there was a bug where "ifconfig eth1 down" would cause a kernel
-> panic if eth0 was also up.  The root cause was a bug in rheap.c.  However, this
-> code was fixed a year ago.  Could it be a similar bug?
+> Untested, but I'll guess that this is at least part of the problem for
+> the sbc one...
 
-eth0 is also up, was it commit 4942bd80e83d13bf394df4a8109bee39d861820f
-that fixed that bug? 2.6.23 works fine for me.
+It doesn't fix the build, and adds sbc8560_defconfig to the list of 
+non-compiling defconfigs:
 
-      Jocke
+<--  snip  -->
+
+...
+  WRAP    arch/powerpc/boot/cuImage.sbc8560
+DTC: dts->dtb  on file "/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/sbc8560.dts"
+powerpc64-linux-ld: arch/powerpc/boot/cuboot-sbc8560.o: No such file: No such file or directory
+make[2]: *** [arch/powerpc/boot/cuImage.sbc8560] Error 1
+
+<--  snip  -->
+
+> Thanks,
+> Paul.
+> 
+> ---
+> 
+> Author: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Date:   Mon Mar 17 15:47:03 2008 -0400
+> 
+>     cuimage: fix board names in Makefile
+>     
+>     Fix the copy and paste error from 25431333813686654907ab987fb5de10c10a16db
+>     for the sbc8548 and sbc8560
+>     
+>     Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> 
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 4974d9e..1aded8f 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -253,8 +253,8 @@ image-$(CONFIG_TQM8540)			+= cuImage.tqm8540
+>  image-$(CONFIG_TQM8541)			+= cuImage.tqm8541
+>  image-$(CONFIG_TQM8555)			+= cuImage.tqm8555
+>  image-$(CONFIG_TQM8560)			+= cuImage.tqm8560
+> -image-$(CONFIG_SBC8548)			+= cuImage.tqm8548
+> -image-$(CONFIG_SBC8560)			+= cuImage.tqm8560
+> +image-$(CONFIG_SBC8548)			+= cuImage.sbc8548
+> +image-$(CONFIG_SBC8560)			+= cuImage.sbc8560
+>  
+>  # Board ports in arch/powerpc/platform/embedded6xx/Kconfig
+>  image-$(CONFIG_STORCENTER)		+= cuImage.storcenter
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
