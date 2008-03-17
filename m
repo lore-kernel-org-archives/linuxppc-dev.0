@@ -1,20 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 3AC1FDDF60
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 06:47:38 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id b2so1213557ana.81
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 12:47:36 -0700 (PDT)
-Message-ID: <fa686aa40803171247j709bc554pe709628c46205600@mail.gmail.com>
-Date: Mon, 17 Mar 2008 13:47:35 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Linn" <john.linn@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: Boot: Fix 16550 UART initialization
-In-Reply-To: <20080317164202.7E8A41A3806F@mail213-sin.bigfish.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5AD8ADDEF4
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 06:53:05 +1100 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id E99862279A8
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 20:53:08 +0100 (CET)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id 5CAC590019
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 20:53:03 +0100 (CET)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id uPNt1ONeacZj for <linuxppc-dev@ozlabs.org>;
+	Mon, 17 Mar 2008 20:53:02 +0100 (CET)
+Received: from ibook.aepfle.de (DSL01.83.171.151.169.ip-pool.NEFkom.net
+	[83.171.151.169]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 20:53:02 +0100 (CET)
+Date: Mon, 17 Mar 2008 20:53:05 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: crash in init_ipic_sysfs on efika
+Message-ID: <20080317195305.GA13298@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080317164202.7E8A41A3806F@mail213-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,148 +31,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 17, 2008 at 10:41 AM, John Linn <john.linn@xilinx.com> wrote:
-> The UART 16550 initialization was not setting up the registers
->  correctly. Code was added to pull the frequency and speed from
->  the device tree and initialize the registers using those values.
->
->  The boot code was not and is still not using the cmd line
->  to setup up the uart. The frequency of the clock driving the
->  UART must be specified in the device tree so that the baud
->  rate generator can be setup.
 
-The bootwrapper makes the assumption that the firmware has already
-initialized the serial device and it should not be fiddled with so
-that there is less chance of messing up a working output
-configuration.
+I cant reproduce this bug on my board, but:
 
-For platforms such as the virtex which don't have firmware the serial
-port should be setup earlier in the boot process (in the appropriate
-platform_init() function).
+The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL if
+ipic_init() fails. init_ipic_sysfs() will crash in that case.
 
-Cheers,
-g.
+Something like this may fix it:
 
->
->  ---
->
->  Please pull this patch for 2.6.26.
->  ---
->   arch/powerpc/boot/ns16550.c |   69 +++++++++++++++++++++++++++++++++---------
->   1 files changed, 54 insertions(+), 15 deletions(-)
->
->  diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
->  index f8f1b2f..d8edd48 100644
->  --- a/arch/powerpc/boot/ns16550.c
->  +++ b/arch/powerpc/boot/ns16550.c
->  @@ -15,23 +15,47 @@
->   #include "io.h"
->   #include "ops.h"
->
->  -#define UART_DLL       0       /* Out: Divisor Latch Low */
->  -#define UART_DLM       1       /* Out: Divisor Latch High */
->  -#define UART_FCR       2       /* Out: FIFO Control Register */
->  -#define UART_LCR       3       /* Out: Line Control Register */
->  -#define UART_MCR       4       /* Out: Modem Control Register */
->  -#define UART_LSR       5       /* In:  Line Status Register */
->  -#define UART_LSR_THRE  0x20    /* Transmit-hold-register empty */
->  -#define UART_LSR_DR    0x01    /* Receiver data ready */
->  -#define UART_MSR       6       /* In:  Modem Status Register */
->  -#define UART_SCR       7       /* I/O: Scratch Register */
->  -
->  -static unsigned char *reg_base;
->  -static u32 reg_shift;
->  +#define UART_DLL               0       /* Out: Divisor Latch Low */
->  +#define UART_DLM               1       /* Out: Divisor Latch High */
->  +#define UART_FCR               2       /* Out: FIFO Control Register */
->  +#define UART_FCR_CLEAR_RCVR    0x02    /* Clear the RCVR FIFO */
->  +#define UART_FCR_CLEAR_XMIT    0x04    /* Clear the XMIT FIFO */
->  +#define UART_LCR               3       /* Out: Line Control Register */
->  +#define UART_MCR               4       /* Out: Modem Control Register */
->  +#define UART_MCR_RTS           0x02    /* RTS complement */
->  +#define UART_MCR_DTR           0x01    /* DTR complement */
->  +#define UART_LSR               5       /* In:  Line Status Register */
->  +#define UART_LSR_THRE          0x20    /* Transmit-hold-register empty */
->  +#define UART_LSR_DR            0x01    /* Receiver data ready */
->  +#define UART_LCR_DLAB          0x80    /* Divisor latch access bit */
->  +#define UART_LCR_WLEN8         0x03    /* Wordlength: 8 bits */
->  +#define UART_MSR               6       /* In:  Modem Status Register */
->  +#define UART_SCR               7       /* I/O: Scratch Register */
->  +
->  +volatile static unsigned char *reg_base;
->  +volatile static u32 reg_shift;
->  +volatile static u16 divisor;
->
->   static int ns16550_open(void)
->   {
->  -       out_8(reg_base + (UART_FCR << reg_shift), 0x06);
->  +
->  +       /* Access baud rate */
->  +       out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_DLAB);
->  +
->  +       /* Baud rate based on input clock */
->  +       out_8(reg_base + (UART_DLL << reg_shift), divisor & 0xFF);
->  +       out_8(reg_base + (UART_DLM << reg_shift), divisor >> 8);
->  +
->  +       /* 8 data, 1 stop, no parity */
->  +       out_8(reg_base + (UART_LCR << reg_shift), UART_LCR_WLEN8);
->  +
->  +       /* RTS/DTR */
->  +       out_8(reg_base + (UART_MCR << reg_shift), UART_MCR_RTS | UART_MCR_DTR);
->  +
->  +       /* Clear transmitter and receiver */
->  +       out_8(reg_base + (UART_FCR << reg_shift),
->  +                               UART_FCR_CLEAR_XMIT | UART_FCR_CLEAR_RCVR);
->  +
->         return 0;
->   }
->
->  @@ -56,6 +80,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
->   {
->         int n;
->         unsigned long reg_phys;
->  +       u32 clk, spd;
->
->         n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
->         if (n != sizeof(reg_base)) {
->  @@ -65,9 +90,23 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
->                 reg_base = (void *)reg_phys;
->         }
->
->  -       n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
->  +       n = getprop(devp, "reg-shift", (void *)&reg_shift, sizeof(reg_shift));
->         if (n != sizeof(reg_shift))
->                 reg_shift = 0;
->  +
->  +       /* the base address has to change for devices with odd reg spacing */
->  +       reg_base = reg_base + ((1 << reg_shift) - 1);
->  +
->  +       n = getprop(devp, "current-speed", (void *)&spd, sizeof(spd));
->  +       if (n != sizeof(spd))
->  +               spd = 9600;
->  +
->  +       /* should there be a default clock rate?*/
->  +       n = getprop(devp, "clock-frequency", (void *)&clk, sizeof(clk));
->  +       if (n != sizeof(clk))
->  +               return -1;
->  +
->  +       divisor = clk / (16 * spd);
->
->         scdp->open = ns16550_open;
->         scdp->putc = ns16550_putc;
->  --
->  1.5.2.1
->
->
->
->  _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+Index: linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
+===================================================================
+--- linux-2.6.25-rc6.orig/arch/powerpc/sysdev/ipic.c
++++ linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
+@@ -906,7 +906,7 @@ static int __init init_ipic_sysfs(void)
+ {
+        int rc;
+ 
+-       if (!primary_ipic->regs)
++       if (!primary_ipic || !primary_ipic->regs)
+                return -ENODEV;
+        printk(KERN_DEBUG "Registering ipic with sysfs...\n");
+ 
 
 
+ok boot eth:192.168.2.52,inst32 inst32 console=ttyPSC0,115200
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+SuSE Linux zImage starting: loaded at 00040000-00d24cbc (0/0/01003ed8;
+sp: 017ffe80)
+uncompressing ELF header done. (00000100 bytes)
+Allocated 008584d4 bytes for kernel @ 02000000
+Allocated 00a963a2 bytes for initrd @ 02859000
+uncompressing kernel done. (004faeb8 bytes)
+entering kernel at 02010000(2859000/a963a2/01003ed8)
+OF stdout device is: /failsafe
+command line: console=ttyPSC0,115200
+memory layout at init:
+  alloc_bottom : 032f0000
+  alloc_top    : 30000000
+  alloc_top_hi : f000c000
+  rmo_top      : 30000000
+  ram_top      : f000c000
+Looking for displays
+instantiating rtas at 0x07ffb000 ... done
+Applying EFIKA device tree fixups
+Fixing bestcomm interrupts property
+Adding Ethernet MDIO node
+Adding Ethernet PHY node
+copying OF device tree ...
+Building dt strings...
+Building dt structure...
+Device tree strings 0x032f1000 -> 0x032f17e0
+Device tree struct  0x032f2000 -> 0x03315000
+Calling quiesce ...
+returning from prom_init
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 113264k/131072k available (4808k kernel code, 17648k reserved,
+164k data, 461k bss, 228k init)
+Security Framework initialized
+AppArmor: AppArmor initialized
+AppArmor: Unable to log event (1505) to audit subsys
+AppArmor: Registered secondary security module name="capability"
+AppArmor: Unable to log event (1505) to audit subsys
+Capability LSM initialized as secondary
+Failure registering Root Plug module with the kernel
+AppArmor: Unable to register %s as a secondary security module
+name="root_plug"
+AppArmor: Unable to log event (1505) to audit subsys
+Failure registering Root Plug  module with primary security module.
+Mount-cache hash table entries: 512
+net_namespace: 544 bytes
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+DMA: MPC52xx BestComm driver
+DMA: MPC52xx BestComm engine @f0001200 ok !
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc0486aac
+Oops: Kernel access of bad area, sig: 11 [#1]
+Efika
+Modules linked in:
+NIP: c0486aac LR: c0479200 CTR: c0486a90
+REGS: c782bea0 TRAP: 0300   Not tainted  (2.6.25-rc5-git2-5-default)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 44002082  XER: 20000000
+DAR: 00000000, DSISR: 20000000
+TASK = c78237c0[1] 'swapper' THREAD: c782a000
+GPR00: c0479200 c782bf50 c78237c0 ffffffed 00000003 00000000 00000000
+00000000
+GPR08: fffffffc 00000000 c7800780 000f06a0 22002022 dffffff7 c0405540
+c0405558
+GPR16: c0405568 c040558c c0405594 c04055a4 c04055d0 c0400000 024184a4
+ffffffff
+GPR24: 00000000 c04a6468 c0405550 c782a000 c04e0000 00000000 00000000
+c04af198
+NIP [c0486aac] init_ipic_sysfs+0x1c/0x90
+LR [c0479200] kernel_init+0xf8/0x2a0
+Call Trace:
+[c782bf50] [c04869fc] mpc52xx_bcom_init+0x24/0x34 (unreliable)
+[c782bf60] [c0479200] kernel_init+0xf8/0x2a0
+[c782bff0] [c001330c] kernel_thread+0x44/0x60
+Instruction dump:
+80010024 bb61000c 38210020 7c0803a6 4e800020 9421fff0 7c0802a6 3d20c04f
+3860ffed 90010014 93e1000c 81299730 <80090000> 2f800000 41be0058 3c60c041
+---[ end trace 8640abe69a316dee ]---
+Kernel panic - not syncing: Attempted to kill init!
+Rebooting in 180 seconds..
