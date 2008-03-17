@@ -1,26 +1,22 @@
 Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C73ACDDF5B
+	by ozlabs.org (Postfix) with ESMTPS id 4A718DE042
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Mar 2008 02:51:59 +1100 (EST)
+	Tue, 18 Mar 2008 02:58:08 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for XPS LLTEMAC
-Date: Mon, 17 Mar 2008 08:49:54 -0700
-In-Reply-To: <BAY115-W53AE071415B85C1E71AAD1B2050@phx.gbl>
-References: <BAY115-W186EA84A950C17657AD8D9B20B0@phx.gbl>
-	<EDAE140DF1B2FC42B5867C22CA0B333FA99D2F@XMBIL132.northgrum.com>
-	<20080316214832.3F77A538046@mail141-sin.bigfish.com>
-	<BAY115-W53AE071415B85C1E71AAD1B2050@phx.gbl>
+Subject: RE: XUPV2P board opb_emac cannot work with linux-2.6-xlnx
+Date: Mon, 17 Mar 2008 08:58:02 -0700
+In-Reply-To: <16089631.post@talk.nabble.com>
+References: <16089631.post@talk.nabble.com>
 From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>,
-	"Koss, Mike (Mission Systems)" <mike.koss@ngc.com>,
+To: "Qin Lin" <linkinge@gmail.com>,
 	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080317154957.9DA1DC98084@mail21-dub.bigfish.com>
+Message-Id: <20080317155805.1FFB6538064@mail141-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,183 +28,98 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Sorry, but I'm not in a position to discuss product roadmaps.  The kinds
-of technical questions are best handled by regular sales channels.
+It should...  (I use it regularly on the xup board)
+Did you remember to connect the interrupt line in your design?
 
 Steve
 
 > -----Original Message-----
-> From: Mohammad Sadegh Sadri [mailto:mamsadegh@hotmail.com]
-> Sent: Monday, March 17, 2008 2:04 AM
-> To: Stephen Neuendorffer; Koss, Mike (Mission Systems);
-linuxppc-embedded@ozlabs.org
-> Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for XPS
-LLTEMAC
->=20
-> Ok, thanks for guidance,
->=20
-> by the way it is interesting for me to hear about EDK 10.1 from u
-steve,
-> EDK 9.2 has been around just for a little time and you are going to
-10.1?
->=20
-> What about future plan of xilinx about Virtex-5 FX? does this tool
-consider that?
-> the future plan is really important for our development team. let me
-give a simple example, our dev
-> team worked on the design of our system based on PLB and OPB buses for
-some thing near 6 month, just
-> then EDK 9.2.02 released and suddenly we forced to change all of the
-designs and to define new
-> activities specially focusing on MPMC. we did never consider MPMC
-before, but the release of EDK 9.2
-> changed every thing.
->=20
-> Now, that would be nice, if we can know your future plan a little,
-that would help us to generate
-> correct and real gant charts. and to assign human resources correctly.
-this is also true for the
-> project budget. We know that Virtex-5 devices are really capable of
-doing better things than Virtex-
-> 4, specially the PCI express option is great and very usable for us,
-but we have not moved to virtex-
-> 5 yet, because there is no FX series or at least we do not know your
-plan about it. Our managers we
-> seriously asking us if we have to move to Virtex-5 soon, we did not
-have any reasonable answer for
-> them because we do not have any info from u at all.
->=20
-> thanks
+> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Qin Lin
+> Sent: Monday, March 17, 2008 12:36 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: XUPV2P board opb_emac cannot work with linux-2.6-xlnx
 >=20
 >=20
+> HI all,
 >=20
-> ________________________________
+> Is anyone have the opb_emac (no DMA) work with the kernel
+linux-2.6-xlnx
+> from git.xilinx.com.
+> the message seams that it does work ,but the command ping return
+nothing!
 >=20
-> 	Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for
-XPS LLTEMAC
-> 	Date: Sun, 16 Mar 2008 14:43:33 -0700
-> 	From: stephen.neuendorffer@xilinx.com
-> 	To: mike.koss@ngc.com; mamsadegh@hotmail.com;
-linuxppc-embedded@ozlabs.org
+> Could you kindly suggest me what to do?
 >=20
+> ps:
+> the kernel booting message
+> [    0.258674] net_namespace: 64 bytes
+> [    0.269780] NET: Registered protocol family 16
+> [    0.290415] Registering device xilinx_emac:0
+> [    0.381687] NET: Registered protocol family 2
+> [    0.392324] IP route cache hash table entries: 2048 (order: 1, 8192
+> bytes)
+> [    0.399556] TCP established hash table entries: 8192 (order: 4,
+65536
+> bytes)
+> [    0.403403] TCP bind hash table entries: 8192 (order: 3, 32768
+bytes)
+> [    0.405409] TCP: Hash tables configured (established 8192 bind
+8192)
+> [    0.405489] TCP reno registered
+> [    0.412758] sysctl table check failed: /kernel/l2cr .1.31 Missing
+> strategy
+> [    0.413189] Call Trace:
+> [    0.413244] [cf41feb0] [c0008178] show_stack+0x48/0x184
+(unreliable)
+> [    0.413467] [cf41fed0] [c00303c8] set_fail+0x50/0x68
+> [    0.413640] [cf41fef0] [c0030b54] sysctl_check_table+0x64c/0x698
+> [    0.413724] [cf41ff20] [c0030b68] sysctl_check_table+0x660/0x698
+> [    0.413802] [cf41ff50] [c001e810] register_sysctl_table+0x64/0xb4
+> [    0.414141] [cf41ff70] [c01e4b1c]
+register_ppc_htab_sysctl+0x18/0x2c
+> [    0.414311] [cf41ff80] [c01de1e4] kernel_init+0xc8/0x284
+> [    0.414384] [cf41fff0] [c0004ab8] kernel_thread+0x44/0x60
 >=20
->=20
-> 	Ah, thanks mike...  you knocked the answer loose out of my
-brain...
->=20
-> 	In EDK 9.2., the ll_temac generates either SDMA or FIFO defines,
-as necessary.
-> 	The platform data structure contains entries for both, with the
-correct ones being ignored.  In
-> order to get the code to compile, there are some defines in
-xparameters.h which have:
->=20
-> 	#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR
-> 	#define XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR 0xdeadbeef
-> 	#endif
-> 	#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR
-> 	#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMATX_INTR 0xdeadbeef
-> 	#endif
-> 	#ifndef XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR
-> 	#define XPAR_LLTEMAC_0_LLINK_CONNECTED_DMARX_INTR 0xdeadbeef
-> 	#endif
->=20
-> 	after including xparameter_ml403.h
->=20
-> 	I'm guessing maybe you overwrote the xparameters.h file and got
-rid of these redefines?  You
-> can define it to be whatever you want, since the value will be ignored
-if you are using SDMA.
->=20
-> 	In EDK 10.1, the BSP generator will always generate all the
-defines (even ones which are not
-> sensible in the current configuration), which avoids the above
-annoyances.
->=20
-> 	Steve
->=20
-> 	-----Original Message-----
-> 	From:
-linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org on =
-behalf
-of Koss, Mike
-> (Mission Systems)
-> 	Sent: Sat 3/15/2008 9:12 PM
-> 	To: Mohammad Sadegh Sadri; linuxppc-embedded@ozlabs.org
-> 	Subject: RE: Compile time error, compiling Xilinx Linux 2.6 for
-XPS LLTEMAC
->=20
-> 	That interrupt is defined if you build a xps_ll_temac with the
-> 	xps_ll_fifo interface. Since you already stated that you're
-using the
-> 	mpmc, I'm going to assume that you have it connected to a SDMA
-> 	controller on the mpmc. As such the driver should be looking for
-that
-> 	definition, and not the FIFO interrupt. I don't have your
-version of the
-> 	virtex_devices.c to have a reference as to how the platform
-device is
-> 	being defined, so hopefully either Stephen N can chime in w/
-more
-> 	information, or point me to the version of the virtex_devices.c
-that
-> 	you're using and I can try to provide some more assistance.
->=20
-> 	-- Mike
->=20
-> 	________________________________
->=20
-> 	From: Mohammad Sadegh Sadri [mailto:mamsadegh@hotmail.com]
-> 	Sent: Saturday, March 15, 2008 4:31 AM
-> 	To: linuxppc-embedded@ozlabs.org
-> 	Subject: Compile time error, compiling Xilinx Linux 2.6 for XPS
-LLTEMAC
+> [    1.116395] xilinx_emac xilinx_emac.0: MAC address is now  2: 0: 0:
+0: 0:
+> 0
+> [    1.123790] XEmac: using fifo mode.
+> [    1.128188] XEmac: Detected PHY at address 0, ManufID 0x0013, Rev.
+> 0x78e2.
+> [    1.135715] eth0: Dropping NETIF_F_SG since no checksum feature.
+> [    1.151038] eth0: Xilinx 10/100 EMAC at 0x40C00000 mapped to
+0xD0020000,
+> irq=3D2
+> [    1.158713] eth0: XEmac id 1.4a, block id 128, type 1
+> [    1.194661] TCP cubic registered
+> [    1.198647] NET: Registered protocol family 1
+> [    1.203728] NET: Registered protocol family 17
 >=20
 >=20
-> 	All,
+> #ping 192.168.26.1 &
+> # ifconfig eth0
+> eth0      Link encap:Ethernet  HWaddr 02:00:00:00:00:00
+>           inet addr:192.168.26.127  Bcast:192.168.26.255
+Mask:255.255.255.0
+>           UP BROADCAST RUNNING  MTU:1500  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:16 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:1000
+>           RX bytes:0 (0.0 B)  TX bytes:672 (672.0 B)
+>           Interrupt:2 Memory:40c00000-40c0ffff
 >=20
-> 	that should be a small problem, and i think that its solution
-should be
-> 	simple,
+> Regards
 >=20
-> 	I generate a base system using EDK 9.2.02 , the base system
-contains
-> 	XPS_LL_TEMAC , MPMC and other components,
-> 	I generate the software libraries and copy xparameters file into
-proper
-> 	kernel folder. I configure that kernel and add kernel support
-for
-> 	XPS_LL_TEMAC.
+> Qin Lin
+> --
+> View this message in context:
+http://www.nabble.com/XUPV2P-board-opb_emac-cannot-work-with-linux-2.6-
+> xlnx-tp16089631p16089631.html
+> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
 >=20
-> 	while doing make I encounter this error:
->=20
-> 	arch/ppc/syslib/virtex_devices.c:455: error:
-> 	'XPAR_LLTEMAC_0_LLINK_CONNECTED_FIFO_INTR' undeclared here (not
-in a
-> 	function)
->=20
-> 	I think that this definition should be available in
-xparameters_ml403.h
-> 	file but i see that there is no such definition.
-> 	I added a dummy definition for myself there to complete kernel
-> 	compilation, don't know the correct value for it of course.
->=20
-> 	thanks
->=20
->=20
->=20
-> 	________________________________
->=20
-> 	Access your files from anywhere with Windows Live SkyDrive! Sign
-up now
-> 	and get 5GB of space FREE! <http://g.msn.ca/ca55/209>
->=20
->=20
->=20
->=20
->=20
-> ________________________________
->=20
-> Is your lingo strong enough to ace these new word puzzles from Live
-Search Games? Click here to test
-> your vocab! <http://g.msn.ca/ca55/214>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
