@@ -1,22 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4A718DE042
+Return-Path: <edjubenville@adelphia.net>
+Received: from mta1.adelphia.net (mta1.adelphia.net [68.168.78.175])
+	by ozlabs.org (Postfix) with ESMTP id B3B88DDFBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Mar 2008 02:58:08 +1100 (EST)
+	Tue, 18 Mar 2008 05:01:54 +1100 (EST)
+Received: from EJ1 ([76.86.189.85]) by mta11.adelphia.net
+	(InterMail vM.6.01.05.02 201-2131-123-102-20050715) with SMTP
+	id <20080317174249.LVBS1365.mta11.adelphia.net@EJ1>
+	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Mar 2008 13:42:49 -0400
+From: "Edward Jubenville" <edjubenville@adelphia.net>
+To: "Linuxppc-Embedded" <linuxppc-embedded@ozlabs.org>
+Subject: Help getting USB keyboard active on MPC5200B
+Date: Mon, 17 Mar 2008 10:42:36 -0700
+Message-ID: <GPECLCIGPLHEOMGPMCPAGENCFKAA.edjubenville@adelphia.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: XUPV2P board opb_emac cannot work with linux-2.6-xlnx
-Date: Mon, 17 Mar 2008 08:58:02 -0700
-In-Reply-To: <16089631.post@talk.nabble.com>
-References: <16089631.post@talk.nabble.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Qin Lin" <linkinge@gmail.com>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080317155805.1FFB6538064@mail141-sin.bigfish.com>
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,99 +25,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I would appreciate a little help getting a USB keyboard working on a
+MPC5200B-based Lite5200 clone board.
 
-It should...  (I use it regularly on the xup board)
-Did you remember to connect the interrupt line in your design?
+I'm working with the 2.4.25 kernel from ELDK 3.1.  I've tweaked my kernel
+configuration parameters enough to have gotten a some USB functionality
+working (memory stick, and mouse), but I cannot get any keyboard-related
+device name to show up in the /dev tree.
 
-Steve
+I have USB debug enabled for verbose messages.  When I plug in a keyboard I
+see:
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Qin Lin
-> Sent: Monday, March 17, 2008 12:36 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: XUPV2P board opb_emac cannot work with linux-2.6-xlnx
->=20
->=20
-> HI all,
->=20
-> Is anyone have the opb_emac (no DMA) work with the kernel
-linux-2.6-xlnx
-> from git.xilinx.com.
-> the message seams that it does work ,but the command ping return
-nothing!
->=20
-> Could you kindly suggest me what to do?
->=20
-> ps:
-> the kernel booting message
-> [    0.258674] net_namespace: 64 bytes
-> [    0.269780] NET: Registered protocol family 16
-> [    0.290415] Registering device xilinx_emac:0
-> [    0.381687] NET: Registered protocol family 2
-> [    0.392324] IP route cache hash table entries: 2048 (order: 1, 8192
-> bytes)
-> [    0.399556] TCP established hash table entries: 8192 (order: 4,
-65536
-> bytes)
-> [    0.403403] TCP bind hash table entries: 8192 (order: 3, 32768
-bytes)
-> [    0.405409] TCP: Hash tables configured (established 8192 bind
-8192)
-> [    0.405489] TCP reno registered
-> [    0.412758] sysctl table check failed: /kernel/l2cr .1.31 Missing
-> strategy
-> [    0.413189] Call Trace:
-> [    0.413244] [cf41feb0] [c0008178] show_stack+0x48/0x184
-(unreliable)
-> [    0.413467] [cf41fed0] [c00303c8] set_fail+0x50/0x68
-> [    0.413640] [cf41fef0] [c0030b54] sysctl_check_table+0x64c/0x698
-> [    0.413724] [cf41ff20] [c0030b68] sysctl_check_table+0x660/0x698
-> [    0.413802] [cf41ff50] [c001e810] register_sysctl_table+0x64/0xb4
-> [    0.414141] [cf41ff70] [c01e4b1c]
-register_ppc_htab_sysctl+0x18/0x2c
-> [    0.414311] [cf41ff80] [c01de1e4] kernel_init+0xc8/0x284
-> [    0.414384] [cf41fff0] [c0004ab8] kernel_thread+0x44/0x60
->=20
-> [    1.116395] xilinx_emac xilinx_emac.0: MAC address is now  2: 0: 0:
-0: 0:
-> 0
-> [    1.123790] XEmac: using fifo mode.
-> [    1.128188] XEmac: Detected PHY at address 0, ManufID 0x0013, Rev.
-> 0x78e2.
-> [    1.135715] eth0: Dropping NETIF_F_SG since no checksum feature.
-> [    1.151038] eth0: Xilinx 10/100 EMAC at 0x40C00000 mapped to
-0xD0020000,
-> irq=3D2
-> [    1.158713] eth0: XEmac id 1.4a, block id 128, type 1
-> [    1.194661] TCP cubic registered
-> [    1.198647] NET: Registered protocol family 1
-> [    1.203728] NET: Registered protocol family 17
->=20
->=20
-> #ping 192.168.26.1 &
-> # ifconfig eth0
-> eth0      Link encap:Ethernet  HWaddr 02:00:00:00:00:00
->           inet addr:192.168.26.127  Bcast:192.168.26.255
-Mask:255.255.255.0
->           UP BROADCAST RUNNING  MTU:1500  Metric:1
->           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
->           TX packets:16 errors:0 dropped:0 overruns:0 carrier:0
->           collisions:0 txqueuelen:1000
->           RX bytes:0 (0.0 B)  TX bytes:672 (672.0 B)
->           Interrupt:2 Memory:40c00000-40c0ffff
->=20
-> Regards
->=20
-> Qin Lin
-> --
-> View this message in context:
-http://www.nabble.com/XUPV2P-board-opb_emac-cannot-work-with-linux-2.6-
-> xlnx-tp16089631p16089631.html
-> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+  hub.c: new USB device 0-1.4, assigned address 5
+  Manufacturer: Dell
+  Product: Dell USB Keyboard
+  usb.c: USB device 5 (vend/prod 0x413c/0x2003) is not claimed by any active
+driver.
+    Length              = 18
+    DescriptorType      = 01
+    USB version         = 1.10
+    Vendor:Product      = 413c:2003
+    MaxPacketSize0      = 8
+    NumConfigurations   = 1
+    Device version      = 3.01
+    (remainder omitted)
+
+I assume the message "... is not claimed by any driver" is the problem I
+need to address.
+
+I've compared my configuration parameters to those used in the Lite5200
+CoralP configuration that supports USB, and I don't see any differences
+related to the keyboard that might explain what's wrong.
+
+When I diff my configuration to non-USB
+arch/ppc/configs/icecube_5200_defconfig, these parameters stand out:
+
+	CONFIG_INPUT=y
+	CONFIG_INPUT_KEYBDEV=y
+	CONFIG_INPUT_MOUSEDEV=y
+	CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+	CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+	CONFIG_INPUT_EVDEV=y
+	CONFIG_VT=y
+	CONFIG_VT_CONSOLE=y
+	CONFIG_MOUSE=y
+	CONFIG_USB=y
+	CONFIG_USB_DEBUG=y
+	CONFIG_USB_DEVICEFS=y
+	CONFIG_USB_OHCI_5xxx=y
+	CONFIG_USB_OHCI_BIG_ENDIAN=y
+	CONFIG_USB_OHCI=y
+	CONFIG_USB_STORAGE=y
+	CONFIG_USB_STORAGE_DEBUG=y
+	CONFIG_USB_HID=y
+	CONFIG_USB_HIDINPUT=y
+	CONFIG_USB_HIDDEV=y
+
+Can anyone point me in the right direction to get access to the USB
+keyboard?  I'm using a serial system console and wish to keep it that way,
+so the keyboard needs to be available an application input device.
+
+Thanks,
+
+Ed Jubenville
