@@ -1,15 +1,17 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 7EF94DDD01
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 14:47:59 +1100 (EST)
-Date: Mon, 17 Mar 2008 14:47:58 +1100
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 00FABDDE10
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 14:54:19 +1100 (EST)
+Date: Mon, 17 Mar 2008 14:54:19 +1100
 To: Paul Mackerras <paulus@samba.org>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Force 4K pages for IO addresses.
-Message-ID: <20080317034758.GG6887@bakeyournoodle.com>
+Subject: [PATCH v2] Force 4K pages for IO addresses.
+Message-ID: <20080317035419.GH6887@bakeyournoodle.com>
+References: <20080317034758.GG6887@bakeyournoodle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080317034758.GG6887@bakeyournoodle.com>
 From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, antonb@bakeyournoodle.com,
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	Jan-Bernd Themann <themann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,10 +27,11 @@ IO to 4K.
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
-Paul, please consider this for 2.6.25
+* Updated the comment aswell, sorry.
+* Paul please consider this for 2.6.25
 
- arch/powerpc/mm/hash_utils_64.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c |   13 +++++--------
+ 1 files changed, 5 insertions(+), 8 deletions(-)
 
 Fixes the following ooops:
 Unable to handle kernel paging request for data at address 0xd00008008006c040
@@ -69,10 +72,25 @@ Call Trace:
 [c0000000fcef3e30] [c000000000008748] syscall_exit+0x0/0x40
 
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 32f4161..f399b1d 100644
+index 32f4161..8b2c978 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -351,9 +351,7 @@ static void __init htab_init_page_sizes(void)
+@@ -340,20 +340,17 @@ static void __init htab_init_page_sizes(void)
+ 	/*
+ 	 * Pick a size for the ordinary pages. Default is 4K, we support
+ 	 * 64K for user mappings and vmalloc if supported by the processor.
+-	 * We only use 64k for ioremap if the processor
+-	 * (and firmware) support cache-inhibited large pages.
+-	 * If not, we use 4k and set mmu_ci_restrictions so that
+-	 * hash_page knows to switch processes that use cache-inhibited
+-	 * mappings to 4k pages.
++	 * We always use 4k for ioremap, however if the processor
++	 * (and firmware) support cache-inhibited large pages we set
++	 * mmu_ci_restrictions so that hash_page knows to switch processes that
++	 * use cache-inhibited mappings to 4k pages.
+ 	 */
+ 	if (mmu_psize_defs[MMU_PAGE_64K].shift) {
+ 		mmu_virtual_psize = MMU_PAGE_64K;
  		mmu_vmalloc_psize = MMU_PAGE_64K;
  		if (mmu_linear_psize == MMU_PAGE_4K)
  			mmu_linear_psize = MMU_PAGE_64K;
@@ -85,8 +103,3 @@ index 32f4161..f399b1d 100644
  #endif /* CONFIG_PPC_64K_PAGES */
 -- 
 1.5.4.3
-
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
