@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.248])
-	by ozlabs.org (Postfix) with ESMTP id 3F77ADDF3F
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 10:22:36 +1100 (EST)
-Received: by ag-out-0708.google.com with SMTP id 31so9050225agc.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 16:22:34 -0700 (PDT)
-Message-ID: <fa686aa40803171622j2183369ei7b384ada72d329d6@mail.gmail.com>
-Date: Mon, 17 Mar 2008 17:22:30 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Paul Gortmaker" <paul.gortmaker@windriver.com>
-Subject: Re: powerpc: cuImage.* creation error
-In-Reply-To: <20080317224607.GA10732@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080317193652.GA9550@cs181133002.pp.htv.fi>
-	<20080317200754.GA7383@windriver.com>
-	<fa686aa40803171541t6357d304i2e7e5292f084d09d@mail.gmail.com>
-	<20080317224607.GA10732@windriver.com>
-Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@kernel.org>,
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 888F1DDF2C
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 10:34:19 +1100 (EST)
+Date: Tue, 18 Mar 2008 10:31:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: =?UTF-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Subject: Re: [PATCH] arch/powerpc/platforms/iseries/pci.c: Use time_* macros
+Message-Id: <20080318103105.9482a8d4.sfr@canb.auug.org.au>
+In-Reply-To: <1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
+References: <1205746593-24820-1-git-send-email-caglar@pardus.org.tr>
+	<1205746593-24820-2-git-send-email-caglar@pardus.org.tr>
+	<1205746593-24820-3-git-send-email-caglar@pardus.org.tr>
+	<1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
 	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,56 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 17, 2008 at 4:46 PM, Paul Gortmaker
-<paul.gortmaker@windriver.com> wrote:
-> In message: Re: powerpc: cuImage.* creation error
->
->
-> on 17/03/2008 Grant Likely wrote:
->
->  > On Mon, Mar 17, 2008 at 2:07 PM, Paul Gortmaker
->  > <paul.gortmaker@windriver.com> wrote:
->  > > In message: powerpc: cuImage.* creation error
->  > >
->  > >  @@ -253,8 +253,8 @@ image-$(CONFIG_TQM8540)                     += cuImage.tqm8540
->  > >   image-$(CONFIG_TQM8541)                        += cuImage.tqm8541
->  > >   image-$(CONFIG_TQM8555)                        += cuImage.tqm8555
->  > >   image-$(CONFIG_TQM8560)                        += cuImage.tqm8560
->  > >  -image-$(CONFIG_SBC8548)                        += cuImage.tqm8548
->  > >  -image-$(CONFIG_SBC8560)                        += cuImage.tqm8560
->  > >  +image-$(CONFIG_SBC8548)                        += cuImage.sbc8548
->  > >  +image-$(CONFIG_SBC8560)                        += cuImage.sbc8560
->  >
->  > No, the suffix in the cuImage targets has a 1:1 relationship with dts
->  > files in arch/powerpc/boot/dts/.  If a file doesn't exist there, then
->  > the target cannot be built.
->
->  You should have both the sbc8548.dts and the sbc8560.dts in your tree.
->  They have been in there for several weeks now.
+--Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Heh; oops.  I looked but somehow missed them.  I guess I didn't look
-hard enough.
+On Mon, 17 Mar 2008 11:36:26 +0200 S.=C3=87a=C4=9Flar Onur <caglar@pardus.o=
+rg.tr> wrote:
+>
+> The functions time_before, time_before_eq, time_after, and time_after_eq =
+are more robust for comparing jiffies against other values.
+>=20
+> So following patch implements usage of the time_after() macro, defined at=
+ linux/jiffies.h, which deals with wrapping correctly
+>=20
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
 
-Yes, this looks like the right solution.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
->  Author: Paul Gortmaker <paul.gortmaker@windriver.com>
->  Date:   Mon Mar 17 18:33:52 2008 -0400
->
->     wrapper: Add entries for tqm8540 and sbc85xx
->
->     The wrapper script didn't have entries for the TQM8540 board and the
->     SBC8548 or SBC8560 boards.  I've assumed that the TQM8540 console is
->     8250 based and not CPM based by looking at its defconfig.  There was
->     also a trailing * on the TQM8555 entry that I removed too.
->
->
->     Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
+--=20
 Cheers,
-g.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr
+Content-Type: application/pgp-signature
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH3v89TgG2atn1QN8RAsVjAKCJa01WiUaCCNbzwXoytMojbA+gUACfcUY5
+SciRyIAq5SDecolsmmJkECE=
+=/qD6
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr--
