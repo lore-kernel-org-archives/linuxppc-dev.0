@@ -1,23 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DC8F9DDFE6
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 08:47:02 +1100 (EST)
-Message-ID: <47DEE6CF.7040801@freescale.com>
-Date: Mon, 17 Mar 2008 16:46:55 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@transmode.se
-Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
-	isn't on the MDIO bus
-References: <20080317175208.GA17844@localhost.localdomain>
-	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1205782935.7589.55.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C82ADE4E8
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:00:26 +1100 (EST)
+Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080317164341.12075616@zod.rchland.ibm.com>
+References: <1205488348-22536-1-git-send-email-sr@denx.de>
+	<47DE5F43.80604@garzik.org> <1205789101.26869.181.camel@pasglop>
+	<1205789205.26869.184.camel@pasglop>
+	<20080317164341.12075616@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 08:52:27 +1100
+Message-Id: <1205790747.26869.187.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
 
-> Trying to add fixed-link support for ucc_geth as this is broken too. I
-> noticed that ifconfig eth1 up follwed by ifconfig eth1 down hangs
-> my board once I got the ucc_geth driver to recognize fixed-link.
-> Does it work for you?
+> There's also the section mismatch patch I sent you.  I don't care who's
+> tree they go through, but I'd need to know either way so keep me in the
+> loop please.
 
-A long time ago there was a bug where "ifconfig eth1 down" would cause a kernel
-panic if eth0 was also up.  The root cause was a bug in rheap.c.  However, this
-code was fixed a year ago.  Could it be a similar bug?
+Jeff, do you mind if we get those patches through the powerpc tree ?
+EMAC is very powerpc specific and these are mostly internal driver
+cuisine.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Ben.
