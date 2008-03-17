@@ -1,23 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 888F1DDF2C
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 10:34:19 +1100 (EST)
-Date: Tue, 18 Mar 2008 10:31:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: =?UTF-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Subject: Re: [PATCH] arch/powerpc/platforms/iseries/pci.c: Use time_* macros
-Message-Id: <20080318103105.9482a8d4.sfr@canb.auug.org.au>
-In-Reply-To: <1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
-References: <1205746593-24820-1-git-send-email-caglar@pardus.org.tr>
-	<1205746593-24820-2-git-send-email-caglar@pardus.org.tr>
-	<1205746593-24820-3-git-send-email-caglar@pardus.org.tr>
-	<1205746593-24820-4-git-send-email-caglar@pardus.org.tr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr"
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.246])
+	by ozlabs.org (Postfix) with ESMTP id C82DADDF37
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 10:43:43 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 31so9068104agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 16:43:42 -0700 (PDT)
+Message-ID: <fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>
+Date: Mon, 17 Mar 2008 17:43:37 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Wolfgang Denk" <wd@denx.de>
+Subject: Re: Please pull linux-2.6-mpc52xx.git
+In-Reply-To: <20080317222836.AFA66241A2@gemini.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>
+	<20080317222836.AFA66241A2@gemini.denx.de>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 17 Mar 2008 11:36:26 +0200 S.=C3=87a=C4=9Flar Onur <caglar@pardus.o=
-rg.tr> wrote:
+On Mon, Mar 17, 2008 at 4:28 PM, Wolfgang Denk <wd@denx.de> wrote:
+> In message <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com> you wrote:
 >
-> The functions time_before, time_before_eq, time_after, and time_after_eq =
-are more robust for comparing jiffies against other values.
->=20
-> So following patch implements usage of the time_after() macro, defined at=
- linux/jiffies.h, which deals with wrapping correctly
->=20
-> Cc: linuxppc-dev@ozlabs.org
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+>  * The TQM5200 configuration as provided is intended for  shipping  as
+>   default  configuration  for  this board. The "engineer responsible"
+>   already *did* the tailoring and put that  state  in  the  defconfig
+>   file.
+>
+>  * The CM5200 and Motion-Pro boards are custom designs, where the
+>   defconfig file matches exactly the requirements of the respective
+>   customers.
+>
+>  I feel it is very important to be able to include this  configuration
+>  information  somewhere  with  the  kernel source tree - and to me the
+>  defconfig file for a board is the most  natural  place  to  put  such
+>  information.
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+(copied from my comments in an off-list conversation)
 
---=20
+However, I have declined (for now) to pick up the defconfigs for those
+boards and instead merged in the config features they require into the
+mpc5200 defconfig.  My primary reason for doing so is to increase the
+likelyhood that full featured kernels are built and tested so that
+situations where board ports conflict with each other are caught and
+fixed.
+
+ojn has also been complaining about the number of defconfigs he needs
+to build to test all the powerpc configurations without any
+indications about which ones are important and which ones are not.
+There has been some discussion about having a subdirectory for
+optimized board configs, but nobody has done anything about it yet.
+
+The one part that I have a really strong opinion on is that there
+should be a full featured mpc5200 defconfig for build testing.  Beyond
+that (and if ojn can also be appeased) I can probably be convinced.  :-)
+
+>  > All these boards are supported with
+>  > arch/powerpc/platforms/mpc5200_simple.c.  A kernel built for that
+>  > platform will boot on any of those boards as long as it is passed the
+>  > correct device tree.
+>
+>  I don't doubt that the kernel will boot. But that does not mean  that
+>  it   is  ready  for  use  for  the  intended  purpose.  For  example,
+>  arch/powerpc/platforms/52xx/motionpro.c contains code to  setup  some
+>  custom   LEDs   on   this   board.   I   can't   find  that  code  in
+>
+> arch/powerpc/platforms/mpc5200_simple.c.
+>
+>  It may be argued that this code should be moved somewhere else, but I
+>  don't remeber to have seen any such review comments.
+
+The LED code just hasn't been picked up.  IIRC, it was reworked to
+make it a proper driver in drivers/leds.  I need to look at it again,
+but it is a lot of code for a very simple thing and I wasn't sure if I
+should be the one to pick it up because it is in drivers/leds which
+has a different maintainer.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH3v89TgG2atn1QN8RAsVjAKCJa01WiUaCCNbzwXoytMojbA+gUACfcUY5
-SciRyIAq5SDecolsmmJkECE=
-=/qD6
------END PGP SIGNATURE-----
-
---Signature=_Tue__18_Mar_2008_10_31_05_+1100_EU0ekh9klEP8wsPr--
+g.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
