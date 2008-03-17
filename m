@@ -1,18 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 399E9DE012
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:28:38 +1100 (EST)
-To: "Grant Likely" <grant.likely@secretlab.ca>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Please pull linux-2.6-mpc52xx.git
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Mar 2008 15:43:43 CST."
-	<fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>
-Date: Mon, 17 Mar 2008 23:28:36 +0100
-Sender: wd@denx.de
-Message-Id: <20080317222836.AFA66241A2@gemini.denx.de>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 919B5DE581
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:29:34 +1100 (EST)
+Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
+	isn't on the MDIO bus
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <47DEE6CF.7040801@freescale.com>
+References: <20080317175208.GA17844@localhost.localdomain>
+	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>
+	<47DEE6CF.7040801@freescale.com>
+Content-Type: text/plain
+Date: Mon, 17 Mar 2008 23:29:32 +0100
+Message-Id: <1205792972.7589.70.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com> you wrote:
->
-> b) defconfigs is more about testing and a known working configuration
-> than it is about a distribution configuration.  It's not intended to
-> be the deployed config.  For a distribution/deployable image it is
-> expected that the engineer responsible will tailor the config.
 
-This may be true in general, but for the boards in question it is
-definitely incorrect:
+On Mon, 2008-03-17 at 16:46 -0500, Timur Tabi wrote:
+> Joakim Tjernlund wrote:
+> 
+> > Trying to add fixed-link support for ucc_geth as this is broken too. I
+> > noticed that ifconfig eth1 up follwed by ifconfig eth1 down hangs
+> > my board once I got the ucc_geth driver to recognize fixed-link.
+> > Does it work for you?
+> 
+> A long time ago there was a bug where "ifconfig eth1 down" would cause a kernel
+> panic if eth0 was also up.  The root cause was a bug in rheap.c.  However, this
+> code was fixed a year ago.  Could it be a similar bug?
 
-* The TQM5200 configuration as provided is intended for  shipping  as
-  default  configuration  for  this board. The "engineer responsible"
-  already *did* the tailoring and put that  state  in  the  defconfig
-  file.
+BTW, I get this on the console:
+BUG: soft lockup - CPU#0 stuck for 61s! [ifconfig:263]
+NIP: c013649c LR: c0136490 CTR: c0015a34
+REGS: c78a9cf0 TRAP: 0901   Not tainted  (2.6.25-rc5)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 24022448  XER: 00000000
+TASK = c7822430[263] 'ifconfig' THREAD: c78a8000
+GPR00: 00000000 c78a9da0 c7822430 00000000 00000000 00000006 00000000 02400000 
+GPR08: 00009032 c9062210 c02a0000 00000000 0000000c 
+NIP [c013649c] ugeth_disable+0x13c/0x18c
+LR [c0136490] ugeth_disable+0x130/0x18c
+Call Trace:
+[c78a9dc0] [c0136c8c] ucc_geth_stop+0x24/0xa0
+[c78a9de0] [c01393e8] ucc_geth_close+0x9c/0xd8
+[c78a9e00] [c0166f54] dev_close+0xac/0xb0
+[c78a9e10] [c0169a7c] dev_change_flags+0x98/0x1c4
+[c78a9e30] [c01b4a78] devinet_ioctl+0x668/0x79c
+[c78a9eb0] [c01b6a94] inet_ioctl+0xb4/0xc4
+[c78a9ec0] [c015a7a4] sock_ioctl+0x174/0x240
+[c78a9ee0] [c0072efc] vfs_ioctl+0x88/0x9c
+[c78a9ef0] [c0072fc8] do_vfs_ioctl+0xb8/0x400
+[c78a9f10] [c0073350] sys_ioctl+0x40/0x74
+[c78a9f40] [c000f2b0] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff65760
+    LR = 0xffeae5c
+Instruction dump:
+91490000 81630000 806b0000 4bedf571 38a0000c 38c00000 7c641b78 38600005 
+4bedd70d 813e0008 7c0004ac 80090000 <0c000000> 4c00012c 740b2000 4182ffe
 
-* The CM5200 and Motion-Pro boards are custom designs, where the
-  defconfig file matches exactly the requirements of the respective
-  customers.
+Which appear to be the last IN_BE call in ugeth_disable:
 
-I feel it is very important to be able to include this  configuration
-information  somewhere  with  the  kernel source tree - and to me the
-defconfig file for a board is the most  natural  place  to  put  such
-information.
+     7d4:	48 00 00 01 	bl      7d4 <ugeth_disable+0x12c>
+     7d8:	81 3e 00 08 	lwz     r9,8(r30)
+	DEF_MMIO_OUT(name, u##size, __stringify(insn)" %1,0,%2")
 
-Please understand that we do  NOT  expect  the  end  user  having  to
-"tailor  the  config"  -  instead,  we  want  to  provide  a  default
-configuration that can be used as is,  at  least  for  default  usage
-cases.
-
-
-If you don't want to use a board specific default configuration, then
-please tell me what the recommended way is to provide a knwon  to  be
-working,  tested  *and*  *useful*  default  configuration  for custom
-boards in the Linux kernel tree?
-
-
-> All these boards are supported with
-> arch/powerpc/platforms/mpc5200_simple.c.  A kernel built for that
-> platform will boot on any of those boards as long as it is passed the
-> correct device tree.
-
-I don't doubt that the kernel will boot. But that does not mean  that
-it   is  ready  for  use  for  the  intended  purpose.  For  example,
-arch/powerpc/platforms/52xx/motionpro.c contains code to  setup  some
-custom   LEDs   on   this   board.   I   can't   find  that  code  in
-arch/powerpc/platforms/mpc5200_simple.c.
-
-It may be argued that this code should be moved somewhere else, but I
-don't remeber to have seen any such review comments.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You don't have to stay up nights to succeed; you have to  stay  awake
-days.
+DEF_MMIO_IN_BE(in_8,     8, lbz);
+DEF_MMIO_IN_BE(in_be16, 16, lhz);
+DEF_MMIO_IN_BE(in_be32, 32, lwz);
+     7dc:	7c 00 04 ac 	sync    
+     7e0:	80 09 00 00 	lwz     r0,0(r9)
+---> 7e4:	0c 00 00 00 	twi     0,r0,0
+     7e8:	4c 00 01 2c 	isync
+     7ec:	74 0b 20 00 	andis.  r11,r0,8192
+     7f0:	41 82 ff ec 	beq+    7dc <ugeth_disable+0x134>
