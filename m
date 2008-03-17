@@ -1,19 +1,18 @@
-Return-Path: <shannon.nelson@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH v2] pasemi_dma: Driver for PA Semi PWRficient on-chip
-	DMAengine
-Date: Mon, 17 Mar 2008 13:34:05 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C043E6716@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20080316213002.GA2589@lixom.net>
-References: <20080306233900.GA3969@lixom.net> <20080316213002.GA2589@lixom.net>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Olof Johansson" <olof@lixom.net>,
-	"Williams, Dan J" <dan.j.williams@intel.com>,
-	"Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org,
-	linux-kernel@vger.kernel.org, hskinnemoen@atmel.com
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 10AFCDE15C
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 07:59:58 +1100 (EST)
+To: "Grant Likely" <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Please pull linux-2.6-mpc52xx.git
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 17 Mar 2008 13:19:44 CST."
+	<fa686aa40803171219s7135a0f8n91bcd20329a94637@mail.gmail.com>
+Date: Mon, 17 Mar 2008 21:59:56 +0100
+Sender: wd@denx.de
+Message-Id: <20080317205956.BAC85241A2@gemini.denx.de>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,53 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From: Olof Johansson [mailto:olof@lixom.net]=20
->Sent: Sunday, March 16, 2008 2:30 PM
+In message <fa686aa40803171219s7135a0f8n91bcd20329a94637@mail.gmail.com> you wrote:
 >
->pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
->
->DMA copy offload driver for PA Semi PWRficient. It uses the
->platform-specific functions to allocate channels, etc.
->
->Signed-off-by: Olof Johansson <olof@lixom.net>
->
->---
->
->Changes since last post:
->
->* Add DMA_INTERRUPT support and handling of the interrupt flag
->* Fix interrupt handler for above and add tasklet
->* Switch to spin_lock_bh() where possible
->* Remove empty dependency_added() function since it's no longer
->  used in the framework.
->* Fix bug in "ring full" estimation.
->
->Note that this still needs to go on top of the powerpc.git=20
->tree due to the
->pasemi_dma.h updates that this driver depends on. I suggest=20
->merging this
->through pasemi.git->powerpc.git->linus with an Acked-by from=20
->the DMA guys.
+> >  What is the status of the various MPC5200-related patches (support for
+> >  TQM5200, CM5200 and Motion-PRO boards, few drivers, etc) posted some
+> >  time ago by Marian Balakowicz? There's been some comments to the patches
+> >  on the list, which were addressed and no further discussion occurred, so
+> >  we were hoping that the changes would go upstream (in 2.6.25). I can see
+> >  that the .dts files for those boards are in the mainline already, but I
+> >  see no trace of for example _defconfig files -- could you shed some
+> >  light on this?
+> 
+> Yes, the separate dts files have been dropped in preference for a
+> single mpc5200_defconfig for all 5200 boards.
 
-Hi Olof,
+I know that my opinion doesn't matter but that's a  stupid  thing  to
+do. Do you think that this single mpc5200_defconfig will (a) work and
+(b)  be  useful  on all 5200 boards? Who hast tested it, and on which
+platforms?
 
-In the future please copy Maciej as one of "the DMA guys" as he has
-taken over ioatdma for me.  Beyond that, one little picky comment
-below...
+And what about the other patches? I see no code for these boards in
+arch/powerpc/platforms/52xx/ ?
 
+Best regards,
 
->
->
->-Olof
->
-> [...]
->=20
->+
->+static unsigned int channels =3D 4;
->+module_param(channels, uint, S_IRUGO);
->+MODULE_PARM_DESC(channels, "Number of channels for copy=20
->(default: 2)");
+Wolfgang Denk
 
-Is the number of channels defaulting to 2 or 4?
-
-sln
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Minds are like parachutes - they only function when open.
