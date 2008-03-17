@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 63A22DDF16
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 06:19:46 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id b2so1210484ana.81
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 12:19:45 -0700 (PDT)
-Message-ID: <fa686aa40803171219s7135a0f8n91bcd20329a94637@mail.gmail.com>
-Date: Mon, 17 Mar 2008 13:19:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Bartlomiej Sieka" <tur@semihalf.com>
-Subject: Re: Please pull linux-2.6-mpc52xx.git
-In-Reply-To: <47DE94F4.90804@semihalf.com>
+Return-Path: <bunk@kernel.org>
+Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
+	by ozlabs.org (Postfix) with ESMTP id 3BA56DDF53
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 06:37:13 +1100 (EST)
+Date: Mon, 17 Mar 2008 21:36:52 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Grant Likely <grant.likely@secretlab.ca>,
+	Paul Mackerras <paulus@samba.org>,
+	Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: powerpc: cuImage.* creation error
+Message-ID: <20080317193652.GA9550@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40802232335k24729c0fm6f643d06cccaf087@mail.gmail.com>
-	<47DE94F4.90804@semihalf.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Marian Balakowicz <m8@semihalf.com>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 17, 2008 at 9:57 AM, Bartlomiej Sieka <tur@semihalf.com> wrote:
-> Grant Likely wrote:
->  > Paul, here is a bug fix that needs to go in for 2.6.25.
->
->  Hi Grant,
->
->  What is the status of the various MPC5200-related patches (support for
->  TQM5200, CM5200 and Motion-PRO boards, few drivers, etc) posted some
->  time ago by Marian Balakowicz? There's been some comments to the patches
->  on the list, which were addressed and no further discussion occurred, so
->  we were hoping that the changes would go upstream (in 2.6.25). I can see
->  that the .dts files for those boards are in the mainline already, but I
->  see no trace of for example _defconfig files -- could you shed some
->  light on this?
+When building all powerpc defconfigs in 2.6.25-rc6 exactly three of 
+them fail to build, and all with similar problems:
 
-Yes, the separate dts files have been dropped in preference for a
-single mpc5200_defconfig for all 5200 boards.
 
-Cheers,
-g.
+mpc85xx_defconfig:
 
+<--  snip  -->
+
+...
+  WRAP    arch/powerpc/boot/cuImage.tqm8540
+DTC: dts->dtb  on file "/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/tqm8540.dts"
+powerpc64-linux-ld: arch/powerpc/boot/cuboot-tqm8540.o: No such file: No such file or directory
+make[2]: *** [arch/powerpc/boot/cuImage.tqm8540] Error 1
+
+<--  snip  -->
+
+
+sbc8548_defconfig:
+
+<--  snip  -->
+
+...
+Entry Point:  0x00000000
+make[2]: *** No rule to make target `arch/powerpc/boot/cuImage.tqm8548', needed by `arch/powerpc/boot/zImage'.  Stop.
+
+<--  snip  -->
+
+
+tqm8540_defconfig:
+
+<--  snip  -->
+
+...
+  WRAP    arch/powerpc/boot/cuImage.tqm8540
+DTC: dts->dtb  on file "/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/tqm8540.dts"
+powerpc64-linux-ld: arch/powerpc/boot/cuboot-tqm8540.o: No such file: No such file or directory
+make[2]: *** [arch/powerpc/boot/cuImage.tqm8540] Error 1
+
+<--  snip  -->
+
+
+Is this a problem on my side or is there a bug that should be fixed?
+
+
+TIA
+Adrian
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
