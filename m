@@ -1,17 +1,19 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79183DDED1
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 21:05:24 +1100 (EST)
-Date: Mon, 17 Mar 2008 19:05:18 +0900 (JST)
-Message-Id: <20080317.190518.-1300513271.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: [PATCH 11/11] hvcbeat: fix buffer manipulation
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id B1E17DDDEE
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 23:08:43 +1100 (EST)
+Message-ID: <47DE5F43.80604@garzik.org>
+Date: Mon, 17 Mar 2008 08:08:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
+References: <1205488348-22536-1-git-send-email-sr@denx.de>
+In-Reply-To: <1205488348-22536-1-git-send-email-sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes a potential bug at drivers/char/hvc_beat.c.
- - hvc_put_term_char routine will decrement "rest" variable twice,
-   and forget to advance "buf" pointer by "nlen" bytes.
-This bug was not hit because the output handler in
-drivers/char/hvc_console.c splits given output into 16 bytes
-at maximum.
+Stefan Roese wrote:
+> From: Pravin M. Bathija <pbathija@amcc.com>
+> 
+> Problem Description and Fix
+> ---------------------------
+> When a pause packet(with destination as reserved Multicast address) is
+> received by the EMAC hardware to control the flow of frames being
+> transmitted by it, it is dropped by the hardware unless the reserved
+> Multicast address is hashed in to the GAHT[1-4] registers. This code fix
+> adds the default reserved multicast address to the GAHT[1-4] registers
+> in the EMAC(s) present on the chip. The flow control with Pause packets
+> will only work if the following register bits are programmed in EMAC:
+> EMACx_MR1[APP] = 1
+> EMACx_RMR[BAE] = 1
+> EMACx_RMR[MAE] = 1
+> 
+> Behavior that may be observed in a running system
+> -------------------------------------------------
+> A host transferring data from a PPC based system may send a Pause packet
+> to the PPC EMAC requesting it to slow down the flow of packets. If the
+> default reserved multicast MAC address is not programmed into the
+> GAHT[1-4] registers this Pause packet will be dropped by PPC EMAC and no
+> Flow Control will be done.
+> 
+> Signed-off-by: Pravin M. Bathija <pbathija@amcc.com>
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> ---
+>  drivers/net/ibm_newemac/core.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 
-This patch is one of a series that I posted on Mar.14, "celleb:
-patchset for 2.6.26 (take2)". I send this again because it
-would be lost.
-
-Reported-by: Timur Tabi <timur@freescale.com>
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/char/hvc_beat.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: b/drivers/char/hvc_beat.c
-===================================================================
---- a/drivers/char/hvc_beat.c	2008-03-10 14:11:57.000000000 +0900
-+++ b/drivers/char/hvc_beat.c	2008-03-10 14:13:40.000000000 +0900
-@@ -78,8 +78,8 @@
- 	for (rest = cnt; rest > 0; rest -= nlen) {
- 		nlen = (rest > 16) ? 16 : rest;
- 		memcpy(kb, buf, nlen);
--		beat_put_term_char(vtermno, rest, kb[0], kb[1]);
--		rest -= nlen;
-+		beat_put_term_char(vtermno, nlen, kb[0], kb[1]);
-+		buf += nlen;
- 	}
- 	return cnt;
- }
+applied
