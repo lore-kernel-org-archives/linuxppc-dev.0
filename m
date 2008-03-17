@@ -1,18 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 10AFCDE15C
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 07:59:58 +1100 (EST)
-To: "Grant Likely" <grant.likely@secretlab.ca>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Please pull linux-2.6-mpc52xx.git
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Mar 2008 13:19:44 CST."
-	<fa686aa40803171219s7135a0f8n91bcd20329a94637@mail.gmail.com>
-Date: Mon, 17 Mar 2008 21:59:56 +0100
-Sender: wd@denx.de
-Message-Id: <20080317205956.BAC85241A2@gemini.denx.de>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6777BDDF8F
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 08:28:24 +1100 (EST)
+Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <1205789101.26869.181.camel@pasglop>
+References: <1205488348-22536-1-git-send-email-sr@denx.de>
+	<47DE5F43.80604@garzik.org>  <1205789101.26869.181.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 08:26:45 +1100
+Message-Id: <1205789205.26869.184.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <fa686aa40803171219s7135a0f8n91bcd20329a94637@mail.gmail.com> you wrote:
->
-> >  What is the status of the various MPC5200-related patches (support for
-> >  TQM5200, CM5200 and Motion-PRO boards, few drivers, etc) posted some
-> >  time ago by Marian Balakowicz? There's been some comments to the patches
-> >  on the list, which were addressed and no further discussion occurred, so
-> >  we were hoping that the changes would go upstream (in 2.6.25). I can see
-> >  that the .dts files for those boards are in the mainline already, but I
-> >  see no trace of for example _defconfig files -- could you shed some
-> >  light on this?
+
+On Tue, 2008-03-18 at 08:25 +1100, Benjamin Herrenschmidt wrote:
+> > > 
+> > > Signed-off-by: Pravin M. Bathija <pbathija@amcc.com>
+> > > Signed-off-by: Stefan Roese <sr@denx.de>
+> > > ---
+> > >  drivers/net/ibm_newemac/core.c |    7 +++++++
+> > >  1 files changed, 7 insertions(+), 0 deletions(-)
+> > 
+> > applied
 > 
-> Yes, the separate dts files have been dropped in preference for a
-> single mpc5200_defconfig for all 5200 boards.
+> Thanks. There's also a couple of patches from Valentine that should go
+> in. I'll ask him to resend to you.
 
-I know that my opinion doesn't matter but that's a  stupid  thing  to
-do. Do you think that this single mpc5200_defconfig will (a) work and
-(b)  be  useful  on all 5200 boards? Who hast tested it, and on which
-platforms?
+Actually, they need some arch bits so they are better off going through
+Josh tree on top of the said changes.
 
-And what about the other patches? I see no code for these boards in
-arch/powerpc/platforms/52xx/ ?
+Valentine, can you make sure Jeff at least has a chance to see them and
+ack them though ?
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Minds are like parachutes - they only function when open.
+Cheers,
+Ben.
