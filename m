@@ -1,24 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0D276DDDDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 13:44:39 +1100 (EST)
-Subject: Re: [PATCH v2] Force 4K pages for IO addresses.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20080318003434.GA671@lixom.net>
-References: <20080317034758.GG6887@bakeyournoodle.com>
-	<20080317035419.GH6887@bakeyournoodle.com>
-	<20080318003434.GA671@lixom.net>
-Content-Type: text/plain
-Date: Tue, 18 Mar 2008 13:43:41 +1100
-Message-Id: <1205808221.26869.207.camel@pasglop>
-Mime-Version: 1.0
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 18 Mar 2008 14:04:19 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Change exit code for usage message
+Message-ID: <20080318030419.GE18217@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +16,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+If dtc's command line arguments are invalid, it prints a usage message
+and returns exit code 2.  That's the same exit code as for a failed
+check, which is potentially confusing if running dtc from an automated
+harness.  Therefore this patch changes the usage exit code to 3.
 
-On Mon, 2008-03-17 at 19:34 -0500, Olof Johansson wrote:
-> On Mon, Mar 17, 2008 at 02:54:19PM +1100, Tony Breeds wrote:
-> > Currently HEA requires 4K pages for IO resources.  Just set the pages size to
-> > IO to 4K.
-> 
-> Well, that's too bad. Why penalize all platforms for it?
-> 
-> I.e.: Nack, we use 64K iopages on pa6t and it works well. No need to
-> waste tlb and erat space.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-We would have to make that pSeries specific for now I suppose...
+Index: dtc/dtc.c
+===================================================================
+--- dtc.orig/dtc.c	2008-03-18 14:02:42.000000000 +1100
++++ dtc/dtc.c	2008-03-18 14:02:46.000000000 +1100
+@@ -106,7 +106,7 @@ static void  __attribute__ ((noreturn)) 
+ 	fprintf(stderr, "\t\tForce - try to produce output even if the input tree has errors\n");
+ 	fprintf(stderr, "\t-v\n");
+ 	fprintf(stderr, "\t\tPrint DTC version and exit\n");
+-	exit(2);
++	exit(3);
+ }
+ 
+ int main(int argc, char *argv[])
 
-We don't have a way to know that there "can" be an EHEA right ? It may
-not be in the device-tree at boot and dynamically added to the
-partition... And we can't dynamically "demote" the ioremap area like we
-do for userspace as we have no tracking of bolted entries hashed in
-early during boot (I plan to fix that but that will take a while).
-
-Cheers,
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
