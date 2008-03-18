@@ -1,24 +1,20 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6FECDDE010
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:19:41 +1100 (EST)
-Date: Tue, 18 Mar 2008 19:19:18 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: hs@denx.de
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2A1AEDE388
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:19:59 +1100 (EST)
+To: Scott Wood <scottwood@freescale.com>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: [PATCH v2] 8xx: Add support for the MPC852 based board from
 	keymile.
-Message-ID: <20080318191918.6505ba41@kernel.crashing.org>
-In-Reply-To: <47DF777E.2030103@denx.de>
-References: <47DA444E.9050507@denx.de>
-	<20080315102508.bc698a90.sfr@canb.auug.org.au>
-	<47DF6B82.4030404@denx.de>
-	<20080318183320.49c98183.sfr@canb.auug.org.au>
-	<47DF777E.2030103@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 18 Mar 2008 10:11:32 EST."
+	<20080318151132.GA17402@ld0162-tx32.am.freescale.net>
+Date: Tue, 18 Mar 2008 17:19:57 +0100
+Sender: wd@denx.de
+Message-Id: <20080318161957.766A124349@gemini.denx.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Heiko Schocher <hs@denx.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,53 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Mar 2008 09:04:14 +0100
-Heiko Schocher wrote:
+Dear Scott,
 
-> Hello Stephen,
-> 
-> Stephen Rothwell wrote:
-> > On Tue, 18 Mar 2008 08:13:06 +0100 Heiko Schocher <hs@denx.de>
-> > wrote:
-> >> Stephen Rothwell wrote:
-> >>> On Fri, 14 Mar 2008 10:24:30 +0100 Heiko Schocher <hs@denx.de>
-> >>> wrote:
-> >> [...]
-> >>>> +struct cpm_pin {
-> >>>> +		int port, pin, flags;
-> >>>> +};
-> >>> I wish someone would consolidate all these definitions of cpm_pin.
-> >> Hmm... do you mean something like, moving this struct
-> >> in cpm1.h and ...
-> > 
-> > Yes or somewhere else appropriate.
-> > 
-> >>>> +	for (i = 0; i < ARRAY_SIZE(mgsuvd_pins); i++) {
-> >>>> +		struct cpm_pin *pin = &mgsuvd_pins[i];
-> >>>> +		cpm1_set_pin(pin->port, pin->pin, pin->flags);
-> >>>> +	}
-> >>> And the code that uses them ...
-> >> making in arch/powerpc/sysdev/cpm1.c a function
-> >> cpm1_setup_pins (struct cpm_pin *pins) ?
-> > 
-> > Yes.
-> > 
-> > This is not necessary for your patch, but would be a nice cleanup
-> > later. N.B. this struct is alos used by users of cpm2_set_pin().
-> 
-> OK. Another thought about this. Shouldnt this table go in the dts?
-> A device node like
-> 
-> cpm_pin {
-> 	pins = <port pin flags>;
-> };
-> 
-> would be nice, or?
-> 
-This has been a disputable question some time ago, and decided (or it looks like decided) that devtree describes hardware, and not the way it is configured at the moment. Therefor, best way for pin stuff is considered, as Scott mentioned, to set up stuff inside the firmware.
+in message <20080318151132.GA17402@ld0162-tx32.am.freescale.net> you wrote:
+>
+> Well, the device tree is a mechanism for communicating from the firmware
+> to the kernel, and if we could control the firmware better we'd just make
+> it set the pins properly to begin with. :-)
 
--Vitaly
+Is this just a comment, or do you oppose Heiko's suggestion?
 
-> bye,
-> Heiko
-> 
+Other uses of the device tree seem possible and reasonable, too.  For
+example, we can use the device tree to configure the firmware (U-Boot
+in this case).
+
+Using the device tree  to  describe  the  pin  configuration  of  the
+hardware  sounds  easier to me than hard-coding it in some source (or
+header) file - no matter if this is  in  the  kernel  and/or  in  the
+firmware.
+
+What do you think?
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A quarrel is quickly settled when deserted by one party; there is  no
+battle unless there be two.                                  - Seneca
