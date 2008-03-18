@@ -1,25 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.250])
-	by ozlabs.org (Postfix) with ESMTP id 8EA28DE025
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:21:52 +1100 (EST)
-Received: by ag-out-0708.google.com with SMTP id 31so9589263agc.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:21:51 -0700 (PDT)
-Message-ID: <fa686aa40803180921l654d6336udd285cf13e4138b5@mail.gmail.com>
-Date: Tue, 18 Mar 2008 10:21:50 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>
-Subject: Re: simple MPC5200B system
-In-Reply-To: <47DFDC5B.90304@matrix-vision.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47DD71D0.2010203@matrix-vision.de>
-	<fa686aa40803161301r1685f2cale75d67b8a203cca3@mail.gmail.com>
-	<47DF821B.6090600@matrix-vision.de>
-	<47DF9ABB.2020607@matrix-vision.de>
-	<fa686aa40803180731g3892e737h29db0cb917946588@mail.gmail.com>
-	<47DFDC5B.90304@matrix-vision.de>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Return-Path: <vitb@kernel.crashing.org>
+Date: Tue, 18 Mar 2008 19:32:42 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH] Add Fixed PHY support for ucc_geth
+Message-ID: <20080318193242.27926a9e@kernel.crashing.org>
+In-Reply-To: <1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
+References: <1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Tjernlund <Joakim.Tjernlund@transmode.se>, Joakim,
+	Netdev <netdev@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,91 +21,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 18, 2008 at 9:14 AM, Andre Schwarz
-<andre.schwarz@matrix-vision.de> wrote:
->  I've read some discussions about the "interrupt-map" attribute of the pci
-> node. I tried to follow Ben and David in their explanations - obviously I
-> didn't really get it.
->  Looks like there are a lot of people outside who need some enlightenment
-> ... including me, of course.
->
->  Maybe you can clarify this ?
->
->  Taken from motionpro.dts ...
->
+On Tue, 18 Mar 2008 10:46:55 +0100
+Joakim Tjernlund wrote:
 
-First, you also need to look at interrupt-map-mask to interpret these
-values; from motionpro.dts:
+> The new Fixed PHY method, fixed-link property, isn't
+> impl. for ucc_geth which makes fixed PHYs non functional.
+> Add support for the new method to restore the Fixed PHY
+> functionality.
+> 
+Makes sense to me, but let's cc linuxppc-devel
 
-interrupt-map-mask = <f800 0 0 7>;
+> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-which is applied to the unit interrupt specifier to figure out how to
-map onto the interrupt controller.  The /size/ of this field is
-obtained by adding #address-cells with #interrupt-cells. (3+1=4).
-
-'f8' refers to the upper 5 bits of the interrupt identifier which is a
-number from 0-31 which relates to the IDSEL line as you guessed.  The
-'7' covers the lower 3 bits of the interrupt specifier which can be 1,
-2, 3 or 4.
-
-The 120 bits in the middle are irrelevant, so interrupt-map-mask
-leaves them as zeros.
-
->      interrupt-map = <c000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
->                                   c000 0 0 2 &mpc5200_pic 1 1 3
->                                   c000 0 0 3 &mpc5200_pic 1 2 3
->                                   c000 0 0 4 &mpc5200_pic 1 3 3
->
->                                   c800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
->                                   c800 0 0 2 &mpc5200_pic 1 2 3
->                                   c800 0 0 3 &mpc5200_pic 1 3 3
->                                   c800 0 0 4 &mpc5200_pic 0 0 3>;
->
->
->  First parameter seems to be the slot number, i.e. IDSEL line of the PCI
-> device.
->  How is this value coded ? Are these the bits 15..11 of the configuration
-> address ?
-
-I don't remember how this is encoded.  On the lite5200, idsel is wired
-to d0 and d1 for slots 1 and 2 respectively, yet these values suggest
-slots 24 and 25.  I'll need to look at this again later.
-
->
->  2nd + 3rd paramter : no clue ! can you explain ?
-
-first 3 cells are the unit address and is #address-cells large.  Only
-the first cell contains real data.
-
->
->  4th : seem to be INT_A ... _D of a PCI device. Usually a device uses only
-> INT_A. Do we need 4 entries in any case ?
-
-you only need entries for irq lines that are wired up.  If your board
-does not wire up _B, _C and _D, then don't have an entry for them.
-However, if they are wired up then you should describe them.
-
->
->  5th : ok - parent pic
-
-Correct.
-
->
->  6th ... 8th  : IRQ representation of the parent pic, which gives :
->
->      6th : 0=CRIT for irq0 pin, 1=MAIN for irq1..3 pins
->      7th : irq number. 1 for the irq0 pin inside CRIT level. irq1..3 have
-> number 1..3 inside MAIN level.
->      8th : should be 3 = "level low" which is default for PCI.
-
-Correct.
-
-There is also some good information here:
-http://playground.sun.com/1275/practice/imap/imap0_9d.pdf
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> ---
+> 
+> This is a regression as fixed PHYs works in 2.6.23 and I am
+> using it.
+> 
+>  drivers/net/ucc_geth.c |   53
+> +++++++++++++++++++++++++++-------------------- 1 files changed, 30
+> insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index ecc5712..18c8b39 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -3836,6 +3836,7 @@ static int ucc_geth_probe(struct of_device*
+> ofdev, const struct of_device_id *ma struct device_node *phy;
+>  	int err, ucc_num, max_speed = 0;
+>  	const phandle *ph;
+> +	const u32 *fixed_link;
+>  	const unsigned int *prop;
+>  	const char *sprop;
+>  	const void *mac_addr;
+> @@ -3926,18 +3927,38 @@ static int ucc_geth_probe(struct of_device*
+> ofdev, const struct of_device_id *ma 
+>  	ug_info->uf_info.regs = res.start;
+>  	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
+> +	fixed_link = of_get_property(np, "fixed-link", NULL);
+> +	if (fixed_link) {
+> +		ug_info->mdio_bus = 0;
+> +		ug_info->phy_address = fixed_link[0];
+> +		phy = NULL;
+> +	} else {
+> +		ph = of_get_property(np, "phy-handle", NULL);
+> +		phy = of_find_node_by_phandle(*ph);
+>  
+> -	ph = of_get_property(np, "phy-handle", NULL);
+> -	phy = of_find_node_by_phandle(*ph);
+> +		if (phy == NULL)
+> +			return -ENODEV;
+>  
+> -	if (phy == NULL)
+> -		return -ENODEV;
+> +		/* set the PHY address */
+> +		prop = of_get_property(phy, "reg", NULL);
+> +		if (prop == NULL)
+> +			return -1;
+> +		ug_info->phy_address = *prop;
+> +
+> +		/* Set the bus id */
+> +		mdio = of_get_parent(phy);
+> +
+> +		if (mdio == NULL)
+> +			return -1;
+>  
+> -	/* set the PHY address */
+> -	prop = of_get_property(phy, "reg", NULL);
+> -	if (prop == NULL)
+> -		return -1;
+> -	ug_info->phy_address = *prop;
+> +		err = of_address_to_resource(mdio, 0, &res);
+> +		of_node_put(mdio);
+> +
+> +		if (err)
+> +			return -1;
+> +
+> +		ug_info->mdio_bus = res.start;
+> +	}
+>  
+>  	/* get the phy interface type, or default to MII */
+>  	prop = of_get_property(np, "phy-connection-type", NULL);
+> @@ -3982,20 +4003,6 @@ static int ucc_geth_probe(struct of_device*
+> ofdev, const struct of_device_id *ma ug_info->numThreadsRx =
+> UCC_GETH_NUM_OF_THREADS_4; }
+>  
+> -	/* Set the bus id */
+> -	mdio = of_get_parent(phy);
+> -
+> -	if (mdio == NULL)
+> -		return -1;
+> -
+> -	err = of_address_to_resource(mdio, 0, &res);
+> -	of_node_put(mdio);
+> -
+> -	if (err)
+> -		return -1;
+> -
+> -	ug_info->mdio_bus = res.start;
+> -
+>  	if (netif_msg_probe(&debug))
+>  		printk(KERN_INFO "ucc_geth: UCC%1d at 0x%8x (irq =
+> %d) \n", ug_info->uf_info.ucc_num + 1, ug_info->uf_info.regs,
