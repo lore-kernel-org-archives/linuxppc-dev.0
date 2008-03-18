@@ -1,23 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.243])
-	by ozlabs.org (Postfix) with ESMTP id 9A61CDE01C
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 01:31:22 +1100 (EST)
-Received: by ag-out-0708.google.com with SMTP id 31so9540490agc.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 07:31:21 -0700 (PDT)
-Message-ID: <fa686aa40803180731g3892e737h29db0cb917946588@mail.gmail.com>
-Date: Tue, 18 Mar 2008 08:31:20 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>
-Subject: Re: simple MPC5200B system
-In-Reply-To: <47DF9ABB.2020607@matrix-vision.de>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B5AA1DDE23
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 01:33:06 +1100 (EST)
+Message-ID: <47DFD29B.5050502@freescale.com>
+Date: Tue, 18 Mar 2008 09:32:59 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
+To: joakim.tjernlund@transmode.se
+Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
+	isn't on the MDIO bus
+References: <20080317175208.GA17844@localhost.localdomain>	
+	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>	
+	<47DEE6CF.7040801@freescale.com>	
+	<1205792537.7589.64.camel@gentoo-jocke.transmode.se>	
+	<47DEF9E7.5030808@freescale.com>
+	<1205831779.7589.80.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1205831779.7589.80.camel@gentoo-jocke.transmode.se>
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47DD71D0.2010203@matrix-vision.de>
-	<fa686aa40803161301r1685f2cale75d67b8a203cca3@mail.gmail.com>
-	<47DF821B.6090600@matrix-vision.de>
-	<47DF9ABB.2020607@matrix-vision.de>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 18, 2008 at 4:34 AM, Andre Schwarz
-<andre.schwarz@matrix-vision.de> wrote:
->
->  Grant,
->
->  sorry for having troubled you. Looks like the build system has been in an
-> invalid state...
->
->  After doing a git-pull and "make distclean" + "make mpc5200_defconfig" the
-> system is finally up and running.
+Joakim Tjernlund wrote:
 
-Heh; I hate it when that happens.  :-)
+> Found it, the eth1 i/f on this board isn't working and does not generate
+> any clocks which makes ugeth_graceful_stop_tx() hang forever.
 
-Congratulations.
+Well, that doesn't make it very graceful, does it? :-)
 
-g.
-
+Can you fix this yourself, or do you want me to file an internal bug report?  If
+so, can you email me a detailed description of the problem?
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Timur Tabi
+Linux kernel developer at Freescale
