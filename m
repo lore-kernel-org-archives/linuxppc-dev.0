@@ -1,35 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2CEB0DDF3E
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 12:09:48 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2I18bbP025355
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 21:08:37 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2I19iFY175620
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 19:09:45 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2I19ho9018769
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2008 19:09:44 -0600
-Date: Mon, 17 Mar 2008 20:08:55 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
-Message-ID: <20080317200855.2954971a@zod.rchland.ibm.com>
-In-Reply-To: <47DEF159.3020504@garzik.org>
-References: <1205488348-22536-1-git-send-email-sr@denx.de>
-	<47DE5F43.80604@garzik.org> <1205789101.26869.181.camel@pasglop>
-	<1205789205.26869.184.camel@pasglop>
-	<20080317164341.12075616@zod.rchland.ibm.com>
-	<1205790747.26869.187.camel@pasglop> <47DEF159.3020504@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, netdev@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 18 Mar 2008 12:28:18 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexandr Smirnov <asmirnov@ru.mvista.com>
+Subject: Re: [PATCH 1/4] Emerson ATCA-C125 bootwrapper
+Message-ID: <20080318012818.GB18217@localhost.localdomain>
+References: <20080314142220.GA8228@ru.mvista.com>
+	<20080314142703.GB8228@ru.mvista.com>
+	<20080315001036.GA3487@localhost.localdomain>
+	<47DE61E1.6060300@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47DE61E1.6060300@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,26 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Mar 2008 18:31:53 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Mon, Mar 17, 2008 at 03:19:45PM +0300, Alexandr Smirnov wrote:
+> David,
+>>> +	/* Unfortunately, the specific model number is encoded in the
+>>> +	 * soc node name in existing dts files -- once that is fixed,
+>>> +	 * this can do a simple path lookup.
+>>> +	 */
+>>>     
+>>
+>> Since this is a new board, couldn't you name the soc node /soc and
+>> dispense with this more complicated way of doing things?  Or would
+>> that break other versions of u-boot that are in use?
+>>   
+> As I understand you would like to rename /soc8548 node to /soc and make a 
+> simple path lookup like following:
+> - soc = find_node_by_devtype(NULL, "soc");
+> + soc = finddevice("/soc");
+> Is this correct?
 
-> Benjamin Herrenschmidt wrote:
-> >> There's also the section mismatch patch I sent you.  I don't care who's
-> >> tree they go through, but I'd need to know either way so keep me in the
-> >> loop please.
-> > 
-> > Jeff, do you mind if we get those patches through the powerpc tree ?
-> > EMAC is very powerpc specific and these are mostly internal driver
-> > cuisine.
-> 
-> Fine with me in concept, though I haven't seen the patches in question.
+That's right.
 
-http://marc.info/?l=linux-netdev&m=120449748701492&w=2
+> But fsl_soc code still uses of_find_node_by_type so we can't remove 
+> device_type property from node /soc and therefor simplify device
+> tree.
 
-I sent it to Ben with netdev on CC because you asked the various people
-sending NEWEMAC patches to you to find a single person.
+It does?  Grrr...  I thought that had been fixed and the only reason
+the device_type was still needed was because some u-boot versions
+needed it.  But you're right, that's not the case.
 
-So from now on, what are we going to do?  It seems we're playing net
-maintainer russian roulette for NEWEMAC and it's getting old.
-
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
