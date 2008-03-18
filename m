@@ -1,24 +1,23 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C683ADDE1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 01:24:02 +1100 (EST)
-Message-ID: <47DFD004.4000202@ru.mvista.com>
-Date: Tue, 18 Mar 2008 17:21:56 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.243])
+	by ozlabs.org (Postfix) with ESMTP id 9A61CDE01C
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 01:31:22 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 31so9540490agc.0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 07:31:21 -0700 (PDT)
+Message-ID: <fa686aa40803180731g3892e737h29db0cb917946588@mail.gmail.com>
+Date: Tue, 18 Mar 2008 08:31:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>
+Subject: Re: simple MPC5200B system
+In-Reply-To: <47DF9ABB.2020607@matrix-vision.de>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
-References: <1205488348-22536-1-git-send-email-sr@denx.de>	
-	<47DE5F43.80604@garzik.org> <1205789101.26869.181.camel@pasglop>	
-	<1205789205.26869.184.camel@pasglop>	
-	<20080317164341.12075616@zod.rchland.ibm.com>	
-	<1205790747.26869.187.camel@pasglop> <47DEF159.3020504@garzik.org>	
-	<20080317200855.2954971a@zod.rchland.ibm.com>
-	<1205808100.26869.204.camel@pasglop>
-In-Reply-To: <1205808100.26869.204.camel@pasglop>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47DD71D0.2010203@matrix-vision.de>
+	<fa686aa40803161301r1685f2cale75d67b8a203cca3@mail.gmail.com>
+	<47DF821B.6090600@matrix-vision.de>
+	<47DF9ABB.2020607@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> http://marc.info/?l=linux-netdev&m=120449748701492&w=2
->>
->> I sent it to Ben with netdev on CC because you asked the various people
->> sending NEWEMAC patches to you to find a single person.
->>
->> So from now on, what are we going to do?  It seems we're playing net
->> maintainer russian roulette for NEWEMAC and it's getting old.
-> 
-> I'm happy to collect the patches. I said I would do it, I was just taken
-> aback a bit by Jeff suddenly merging two of Stefan patches directly :-)
-> 
-> I was actually planning this week to post a serie of all the pending
-> EMAC patches for final review.
-> 
-> Cheers,
-> Ben.
-> 
-> 
+On Tue, Mar 18, 2008 at 4:34 AM, Andre Schwarz
+<andre.schwarz@matrix-vision.de> wrote:
+>
+>  Grant,
+>
+>  sorry for having troubled you. Looks like the build system has been in an
+> invalid state...
+>
+>  After doing a git-pull and "make distclean" + "make mpc5200_defconfig" the
+> system is finally up and running.
 
-FYI, These are the NEWEMAC patches I've sent:
-http://ozlabs.org/pipermail/linuxppc-dev/2008-February/052114.html
-(This is a TAH csum fix, that I don't see on the patchwork for some reason)
-and a couple of PHY clock workarounds
-http://patchwork.ozlabs.org/linuxppc/patch?id=17211
-http://patchwork.ozlabs.org/linuxppc/patch?id=17212
-The latter two patches depend on the "dcri_clrset" one:
-http://patchwork.ozlabs.org/linuxppc/patch?id=17199
-Ben, could you please also take a look at the PCIe dcri_clrset stuff here
-http://patchwork.ozlabs.org/linuxppc/patch?id=17214
-(not EMAC related)
-Thanks,
-Valentine.
+Heh; I hate it when that happens.  :-)
+
+Congratulations.
+
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
