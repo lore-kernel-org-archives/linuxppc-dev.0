@@ -1,20 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3C959DDE11
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:34:04 +1100 (EST)
-Date: Tue, 18 Mar 2008 19:34:03 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v3] fsl_elbc_nand: fix mtd name
-Message-ID: <20080318163403.GA13244@localhost.localdomain>
-References: <20080318154344.GA31173@localhost.localdomain>
-	<20080318155814.GA5223@localhost.localdomain>
-	<20080318161139.GD17944@ld0162-tx32.am.freescale.net>
+Return-Path: <rpurdie@rpsys.net>
+Received: from tim.rpsys.net (tim.rpsys.net [194.106.48.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 736C4DE286
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:42:02 +1100 (EST)
+Subject: Re: Please pull linux-2.6-mpc52xx.git
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40803180747u532f6a0bq1e64e01662bdb6bd@mail.gmail.com>
+References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>
+	<20080317222836.AFA66241A2@gemini.denx.de>
+	<fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>
+	<47DF7D6F.8010808@semihalf.com>
+	<fa686aa40803180747u532f6a0bq1e64e01662bdb6bd@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 18 Mar 2008 16:41:50 +0000
+Message-Id: <1205858510.7500.35.camel@dax.rpnet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080318161139.GD17944@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
-Reply-To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,79 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently fsl_elbc_nand doesn't initialize mtd->name, and this causes
-nand_get_flash_type() to assign name that is equal to chip type, like
-this:
 
-   root@b1:~# cat /proc/mtd
-   dev:    size   erasesize  name
-   mtd0: 00800000 00010000 "fe000000.flash"
-   mtd1: 02000000 00004000 "NAND 32MiB 3,3V 8-bit"
-
-mtd0 is physmap_of flash (normal name), and mtd1 is fsl_elbc_nand.
-
-Despite inconsistency, with mtd name like this specifying paritions
-from the kernel command line becomes a torture (though, I didn't tried
-and not sure if mtdparts= can handle spaces at all). Plus, this causes
-real bugs when multiple fsl_elbc_nand chips registered.
-
-With this patch applied fsl_elbc_nand chip will have proper name:
-
-   root@b1:~# cat /proc/mtd
-   dev:    size   erasesize  name
-   mtd0: 00800000 00010000 "fe000000.flash"
-   mtd1: 02000000 00004000 "e0600000.flash"
-
-p.s. We can't use priv->dev->bus_id as in physmap_of, because
-fsl_elbc_nand pretends to be a localbus controller, so its bus_id is
-"address.localbus", which is incorrect and thus will also not work
-for multiple chips.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Tue, Mar 18, 2008 at 11:11:39AM -0500, Scott Wood wrote:
-> On Tue, Mar 18, 2008 at 06:58:14PM +0300, Anton Vorontsov wrote:
-> > Oops, forgot the NULL checking.
-> [snip] 
-> > +	if (priv->mtd.name)
-> > +		kfree(priv->mtd.name);
-> > +
+On Tue, 2008-03-18 at 08:47 -0600, Grant Likely wrote:
+> On Tue, Mar 18, 2008 at 2:29 AM, Bartlomiej Sieka <tur@semihalf.com> wrote:
+> >  Grant,
+> >
+> >  Yes, the Motion-PRO LED driver has been reworked and posted:
+> >  http://patchwork.ozlabs.org/linuxppc/patch?q=Motion-pro&id=16617
+>
+> Okay, I've taken another look at the driver and I've figured out what
+> has been bothering me about it.  It seems to me that the motion pro
+> led driver is just the first of many that we will see (seeing as some
+> many people find the blinking lights rather soothing) and it's a non
+> trivial amount of code.
 > 
-> Not needed; kfree(NULL) is a no-op.
+> (Note: I'm not actually opposed to this driver if Richard is okay with
+> it; but I do think that in the long term we should move towards a more
+> generic approach)
+> 
+> In essence, this driver sets up two GPIO pins to drive LEDs.  A pretty
+> common approach for putting LEDs on a board.  In this case each GPIO
+> bank only contains 1 pin; but I imagine that on other boards there
+> will be multiple pins in a GPIO bank, only some of which actually used
+> for blinking LEDs.
+> 
+> I've started thinking that it would be better to split things up in
+> the device tree to have one node for each GPIO block and a single LED
+> node that maps LEDs to gpio pins.  That would allow a common driver to
+> be written for all GPIO driven LEDs with a single block of device tree
+> parsing code.  Plus, it allows other devices to use GPIO pins within
+> the same block (not an issue for the motion pro board; but when other
+> boards start coming on-line it would allow us to reduce the amount of
+> board specific code).  Finally, it means that the timer pin GPIO
+> driver can be used for more than just flashing an attached LED.
 
-D'oh, right. Also, we should fill the name prior to nand_scan_ident,
-otherwise if error happened between nand_scan_ident and kasprintf
-then we'll kfree chip's type name.
+I don't mind having a specific driver but I don't know anything about
+the hardware its creating the interface for so I need the community's
+help with that part. There is drivers/leds/leds-gpio.c if that would
+work better.
 
- drivers/mtd/nand/fsl_elbc_nand.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+Regards,
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index b025dfe..9c86d9b 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -974,6 +974,8 @@ static int fsl_elbc_chip_remove(struct fsl_elbc_mtd *priv)
- 
- 	nand_release(&priv->mtd);
- 
-+	kfree(priv->mtd.name);
-+
- 	if (priv->vbase)
- 		iounmap(priv->vbase);
- 
-@@ -1034,6 +1036,12 @@ static int fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
- 		goto err;
- 	}
- 
-+	priv->mtd.name = kasprintf(GFP_KERNEL, "%x.flash", res.start);
-+	if (!priv->mtd.name) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
- 	ret = fsl_elbc_chip_init(priv);
- 	if (ret)
- 		goto err;
--- 
-1.5.2.2
+Richard
