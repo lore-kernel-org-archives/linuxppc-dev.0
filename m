@@ -1,26 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D472EDDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 16:36:12 +1100 (EST)
-Subject: Re: [PATCH] net: NEWEMAC: Support for Pause packets in EMAC driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <47DF3FC7.6070500@garzik.org>
-References: <1205488348-22536-1-git-send-email-sr@denx.de>
-	<47DE5F43.80604@garzik.org> <1205789101.26869.181.camel@pasglop>
-	<1205789205.26869.184.camel@pasglop>
-	<20080317164341.12075616@zod.rchland.ibm.com>
-	<1205790747.26869.187.camel@pasglop> <47DEF159.3020504@garzik.org>
-	<20080317200855.2954971a@zod.rchland.ibm.com>
-	<1205808100.26869.204.camel@pasglop>  <47DF3FC7.6070500@garzik.org>
-Content-Type: text/plain
-Date: Tue, 18 Mar 2008 16:35:33 +1100
-Message-Id: <1205818533.26869.214.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 53F64DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 18:05:27 +1100 (EST)
+Message-ID: <47DF6B82.4030404@denx.de>
+Date: Tue, 18 Mar 2008 08:13:06 +0100
+From: Heiko Schocher <hs@denx.de>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v2] 8xx: Add support for the MPC852 based board from
+	keymile.
+References: <47DA444E.9050507@denx.de>
+	<20080315102508.bc698a90.sfr@canb.auug.org.au>
+In-Reply-To: <20080315102508.bc698a90.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello Stephen,
 
-On Tue, 2008-03-18 at 00:06 -0400, Jeff Garzik wrote:
-> Benjamin Herrenschmidt wrote:
-> >> http://marc.info/?l=linux-netdev&m=120449748701492&w=2
-> >>
-> >> I sent it to Ben with netdev on CC because you asked the various people
-> >> sending NEWEMAC patches to you to find a single person.
-> >>
-> >> So from now on, what are we going to do?  It seems we're playing net
-> >> maintainer russian roulette for NEWEMAC and it's getting old.
-> > 
-> > I'm happy to collect the patches. I said I would do it, I was just taken
-> > aback a bit by Jeff suddenly merging two of Stefan patches directly :-)
+Stephen Rothwell wrote:
+> On Fri, 14 Mar 2008 10:24:30 +0100 Heiko Schocher <hs@denx.de> wrote:
+[...]
+>> +struct cpm_pin {
+>> +		int port, pin, flags;
+>> +};
 > 
-> Sorry...  they were CC'd to me and netdev, Stefan had previously 
-> contributed acceptable patches, and the patches looked OK, so...  :)
+> I wish someone would consolidate all these definitions of cpm_pin.
 
-Sure they were fine, it's just a matter of getting the right
-procedure :-)
+Hmm... do you mean something like, moving this struct
+in cpm1.h and ...
 
-Now, I'll collect the remaining ones and will send them for
-review again.
+>> +static void __init init_ioports(void)
+>> +{
+>> +	int i;
+>> +
+>> +	for (i = 0; i < ARRAY_SIZE(mgsuvd_pins); i++) {
+>> +		struct cpm_pin *pin = &mgsuvd_pins[i];
+>> +		cpm1_set_pin(pin->port, pin->pin, pin->flags);
+>> +	}
+> 
+> And the code that uses them ...
 
-Cheers,
-Ben.
+making in arch/powerpc/sysdev/cpm1.c a function
+cpm1_setup_pins (struct cpm_pin *pins) ?
+
+>> +static void __init mgsuvd_setup_arch(void)
+>> +{
+>> +	struct device_node *cpu;
+>> +
+>> +	cpu = of_find_node_by_type(NULL, "cpu");
+>> +	if (cpu != 0) {
+> 
+> "cpu" is a pointer, so "cpu != NULL" or just "cpu"
+> 
+>> +		const unsigned int *fp;
+>> +
+>> +		fp = of_get_property(cpu, "clock-frequency", NULL);
+>> +		if (fp != 0)
+> 
+> Ditto for "fp" test
+
+Its no longer necessary, thanks to Scott
+
+bye,
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
