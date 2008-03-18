@@ -1,17 +1,20 @@
-Return-Path: <vitb@kernel.crashing.org>
-Date: Tue, 18 Mar 2008 19:32:42 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Subject: Re: [PATCH] Add Fixed PHY support for ucc_geth
-Message-ID: <20080318193242.27926a9e@kernel.crashing.org>
-In-Reply-To: <1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3C959DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:34:04 +1100 (EST)
+Date: Tue, 18 Mar 2008 19:34:03 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH v3] fsl_elbc_nand: fix mtd name
+Message-ID: <20080318163403.GA13244@localhost.localdomain>
+References: <20080318154344.GA31173@localhost.localdomain>
+	<20080318155814.GA5223@localhost.localdomain>
+	<20080318161139.GD17944@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tjernlund <Joakim.Tjernlund@transmode.se>, Joakim,
-	Netdev <netdev@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080318161139.GD17944@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,106 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Mar 2008 10:46:55 +0100
-Joakim Tjernlund wrote:
+Currently fsl_elbc_nand doesn't initialize mtd->name, and this causes
+nand_get_flash_type() to assign name that is equal to chip type, like
+this:
 
-> The new Fixed PHY method, fixed-link property, isn't
-> impl. for ucc_geth which makes fixed PHYs non functional.
-> Add support for the new method to restore the Fixed PHY
-> functionality.
-> 
-Makes sense to me, but let's cc linuxppc-devel
+   root@b1:~# cat /proc/mtd
+   dev:    size   erasesize  name
+   mtd0: 00800000 00010000 "fe000000.flash"
+   mtd1: 02000000 00004000 "NAND 32MiB 3,3V 8-bit"
 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+mtd0 is physmap_of flash (normal name), and mtd1 is fsl_elbc_nand.
 
-> ---
+Despite inconsistency, with mtd name like this specifying paritions
+from the kernel command line becomes a torture (though, I didn't tried
+and not sure if mtdparts= can handle spaces at all). Plus, this causes
+real bugs when multiple fsl_elbc_nand chips registered.
+
+With this patch applied fsl_elbc_nand chip will have proper name:
+
+   root@b1:~# cat /proc/mtd
+   dev:    size   erasesize  name
+   mtd0: 00800000 00010000 "fe000000.flash"
+   mtd1: 02000000 00004000 "e0600000.flash"
+
+p.s. We can't use priv->dev->bus_id as in physmap_of, because
+fsl_elbc_nand pretends to be a localbus controller, so its bus_id is
+"address.localbus", which is incorrect and thus will also not work
+for multiple chips.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+On Tue, Mar 18, 2008 at 11:11:39AM -0500, Scott Wood wrote:
+> On Tue, Mar 18, 2008 at 06:58:14PM +0300, Anton Vorontsov wrote:
+> > Oops, forgot the NULL checking.
+> [snip] 
+> > +	if (priv->mtd.name)
+> > +		kfree(priv->mtd.name);
+> > +
 > 
-> This is a regression as fixed PHYs works in 2.6.23 and I am
-> using it.
-> 
->  drivers/net/ucc_geth.c |   53
-> +++++++++++++++++++++++++++-------------------- 1 files changed, 30
-> insertions(+), 23 deletions(-)
-> 
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index ecc5712..18c8b39 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -3836,6 +3836,7 @@ static int ucc_geth_probe(struct of_device*
-> ofdev, const struct of_device_id *ma struct device_node *phy;
->  	int err, ucc_num, max_speed = 0;
->  	const phandle *ph;
-> +	const u32 *fixed_link;
->  	const unsigned int *prop;
->  	const char *sprop;
->  	const void *mac_addr;
-> @@ -3926,18 +3927,38 @@ static int ucc_geth_probe(struct of_device*
-> ofdev, const struct of_device_id *ma 
->  	ug_info->uf_info.regs = res.start;
->  	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
-> +	fixed_link = of_get_property(np, "fixed-link", NULL);
-> +	if (fixed_link) {
-> +		ug_info->mdio_bus = 0;
-> +		ug_info->phy_address = fixed_link[0];
-> +		phy = NULL;
-> +	} else {
-> +		ph = of_get_property(np, "phy-handle", NULL);
-> +		phy = of_find_node_by_phandle(*ph);
->  
-> -	ph = of_get_property(np, "phy-handle", NULL);
-> -	phy = of_find_node_by_phandle(*ph);
-> +		if (phy == NULL)
-> +			return -ENODEV;
->  
-> -	if (phy == NULL)
-> -		return -ENODEV;
-> +		/* set the PHY address */
-> +		prop = of_get_property(phy, "reg", NULL);
-> +		if (prop == NULL)
-> +			return -1;
-> +		ug_info->phy_address = *prop;
-> +
-> +		/* Set the bus id */
-> +		mdio = of_get_parent(phy);
-> +
-> +		if (mdio == NULL)
-> +			return -1;
->  
-> -	/* set the PHY address */
-> -	prop = of_get_property(phy, "reg", NULL);
-> -	if (prop == NULL)
-> -		return -1;
-> -	ug_info->phy_address = *prop;
-> +		err = of_address_to_resource(mdio, 0, &res);
-> +		of_node_put(mdio);
-> +
-> +		if (err)
-> +			return -1;
-> +
-> +		ug_info->mdio_bus = res.start;
-> +	}
->  
->  	/* get the phy interface type, or default to MII */
->  	prop = of_get_property(np, "phy-connection-type", NULL);
-> @@ -3982,20 +4003,6 @@ static int ucc_geth_probe(struct of_device*
-> ofdev, const struct of_device_id *ma ug_info->numThreadsRx =
-> UCC_GETH_NUM_OF_THREADS_4; }
->  
-> -	/* Set the bus id */
-> -	mdio = of_get_parent(phy);
-> -
-> -	if (mdio == NULL)
-> -		return -1;
-> -
-> -	err = of_address_to_resource(mdio, 0, &res);
-> -	of_node_put(mdio);
-> -
-> -	if (err)
-> -		return -1;
-> -
-> -	ug_info->mdio_bus = res.start;
-> -
->  	if (netif_msg_probe(&debug))
->  		printk(KERN_INFO "ucc_geth: UCC%1d at 0x%8x (irq =
-> %d) \n", ug_info->uf_info.ucc_num + 1, ug_info->uf_info.regs,
+> Not needed; kfree(NULL) is a no-op.
+
+D'oh, right. Also, we should fill the name prior to nand_scan_ident,
+otherwise if error happened between nand_scan_ident and kasprintf
+then we'll kfree chip's type name.
+
+ drivers/mtd/nand/fsl_elbc_nand.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
+index b025dfe..9c86d9b 100644
+--- a/drivers/mtd/nand/fsl_elbc_nand.c
++++ b/drivers/mtd/nand/fsl_elbc_nand.c
+@@ -974,6 +974,8 @@ static int fsl_elbc_chip_remove(struct fsl_elbc_mtd *priv)
+ 
+ 	nand_release(&priv->mtd);
+ 
++	kfree(priv->mtd.name);
++
+ 	if (priv->vbase)
+ 		iounmap(priv->vbase);
+ 
+@@ -1034,6 +1036,12 @@ static int fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
+ 		goto err;
+ 	}
+ 
++	priv->mtd.name = kasprintf(GFP_KERNEL, "%x.flash", res.start);
++	if (!priv->mtd.name) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
+ 	ret = fsl_elbc_chip_init(priv);
+ 	if (ret)
+ 		goto err;
+-- 
+1.5.2.2
