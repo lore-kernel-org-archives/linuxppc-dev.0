@@ -1,20 +1,24 @@
-Return-Path: <edjubenville@adelphia.net>
-Received: from mta1.adelphia.net (mta1.adelphia.net [68.168.78.175])
-	by ozlabs.org (Postfix) with ESMTP id B3B88DDFBD
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ACDC5DDED9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Mar 2008 05:01:54 +1100 (EST)
-Received: from EJ1 ([76.86.189.85]) by mta11.adelphia.net
-	(InterMail vM.6.01.05.02 201-2131-123-102-20050715) with SMTP
-	id <20080317174249.LVBS1365.mta11.adelphia.net@EJ1>
-	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Mar 2008 13:42:49 -0400
-From: "Edward Jubenville" <edjubenville@adelphia.net>
-To: "Linuxppc-Embedded" <linuxppc-embedded@ozlabs.org>
-Subject: Help getting USB keyboard active on MPC5200B
-Date: Mon, 17 Mar 2008 10:42:36 -0700
-Message-ID: <GPECLCIGPLHEOMGPMCPAGENCFKAA.edjubenville@adelphia.net>
+	Tue, 18 Mar 2008 13:03:41 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JbRAw-0001ZG-6V
+	for linuxppc-embedded@ozlabs.org; Mon, 17 Mar 2008 19:03:38 -0700
+Message-ID: <16112213.post@talk.nabble.com>
+Date: Mon, 17 Mar 2008 19:03:38 -0700 (PDT)
+From: Qin Lin <linkinge@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: XUPV2P board opb_emac cannot work with linux-2.6-xlnx
+In-Reply-To: <20080317155805.1FFB6538064@mail141-sin.bigfish.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+References: <16089631.post@talk.nabble.com>
+	<20080317155805.1FFB6538064@mail141-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,66 +29,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I would appreciate a little help getting a USB keyboard working on a
-MPC5200B-based Lite5200 clone board.
 
-I'm working with the 2.4.25 kernel from ELDK 3.1.  I've tweaked my kernel
-configuration parameters enough to have gotten a some USB functionality
-working (memory stick, and mouse), but I cannot get any keyboard-related
-device name to show up in the /dev tree.
+Hi Steve,
 
-I have USB debug enabled for verbose messages.  When I plug in a keyboard I
-see:
+I think the booting message tell me that the interrupt line is connect
+OK,isn't it ?
+> [    1.151038] eth0: Xilinx 10/100 EMAC at 0x40C00000 mapped to
+0xD0020000, irq=2
 
-  hub.c: new USB device 0-1.4, assigned address 5
-  Manufacturer: Dell
-  Product: Dell USB Keyboard
-  usb.c: USB device 5 (vend/prod 0x413c/0x2003) is not claimed by any active
-driver.
-    Length              = 18
-    DescriptorType      = 01
-    USB version         = 1.10
-    Vendor:Product      = 413c:2003
-    MaxPacketSize0      = 8
-    NumConfigurations   = 1
-    Device version      = 3.01
-    (remainder omitted)
 
-I assume the message "... is not claimed by any driver" is the problem I
-need to address.
+and if you can tell me what should be care about in  hard design and in
+kernel config with net?  
 
-I've compared my configuration parameters to those used in the Lite5200
-CoralP configuration that supports USB, and I don't see any differences
-related to the keyboard that might explain what's wrong.
 
-When I diff my configuration to non-USB
-arch/ppc/configs/icecube_5200_defconfig, these parameters stand out:
+Stephen Neuendorffer wrote:
+> 
+> 
+> It should...  (I use it regularly on the xup board)
+> Did you remember to connect the interrupt line in your design?
+> 
+> Steve
+> 
+> .....
+>> [    1.151038] eth0: Xilinx 10/100 EMAC at 0x40C00000 mapped to
+> 0xD0020000, irq=2
+> ......
+> 
 
-	CONFIG_INPUT=y
-	CONFIG_INPUT_KEYBDEV=y
-	CONFIG_INPUT_MOUSEDEV=y
-	CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-	CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-	CONFIG_INPUT_EVDEV=y
-	CONFIG_VT=y
-	CONFIG_VT_CONSOLE=y
-	CONFIG_MOUSE=y
-	CONFIG_USB=y
-	CONFIG_USB_DEBUG=y
-	CONFIG_USB_DEVICEFS=y
-	CONFIG_USB_OHCI_5xxx=y
-	CONFIG_USB_OHCI_BIG_ENDIAN=y
-	CONFIG_USB_OHCI=y
-	CONFIG_USB_STORAGE=y
-	CONFIG_USB_STORAGE_DEBUG=y
-	CONFIG_USB_HID=y
-	CONFIG_USB_HIDINPUT=y
-	CONFIG_USB_HIDDEV=y
-
-Can anyone point me in the right direction to get access to the USB
-keyboard?  I'm using a serial system console and wish to keep it that way,
-so the keyboard needs to be available an application input device.
-
-Thanks,
-
-Ed Jubenville
+-- 
+View this message in context: http://www.nabble.com/XUPV2P-board-opb_emac-cannot-work-with-linux-2.6-xlnx-tp16089631p16112213.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
