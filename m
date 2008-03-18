@@ -1,27 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B5AA1DDE23
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 01:33:06 +1100 (EST)
-Message-ID: <47DFD29B.5050502@freescale.com>
-Date: Tue, 18 Mar 2008 09:32:59 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 484A9DDF25
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 01:45:33 +1100 (EST)
+Date: Tue, 18 Mar 2008 09:45:12 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] Force 4K pages for IO addresses.
+Message-ID: <20080318144511.GQ4712@localdomain>
+References: <20080317034758.GG6887@bakeyournoodle.com>
+	<20080317035419.GH6887@bakeyournoodle.com>
+	<20080318003434.GA671@lixom.net>
+	<1205808221.26869.207.camel@pasglop>
 MIME-Version: 1.0
-To: joakim.tjernlund@transmode.se
-Subject: Re: [PATCH] [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch
-	isn't on the MDIO bus
-References: <20080317175208.GA17844@localhost.localdomain>	
-	<1205782935.7589.55.camel@gentoo-jocke.transmode.se>	
-	<47DEE6CF.7040801@freescale.com>	
-	<1205792537.7589.64.camel@gentoo-jocke.transmode.se>	
-	<47DEF9E7.5030808@freescale.com>
-	<1205831779.7589.80.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1205831779.7589.80.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1205808221.26869.207.camel@pasglop>
+Cc: Olof Johansson <olof@lixom.net>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,16 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
+Benjamin Herrenschmidt wrote:
+> 
+> On Mon, 2008-03-17 at 19:34 -0500, Olof Johansson wrote:
+> > On Mon, Mar 17, 2008 at 02:54:19PM +1100, Tony Breeds wrote:
+> > > Currently HEA requires 4K pages for IO resources.  Just set the pages size to
+> > > IO to 4K.
+> > 
+> > Well, that's too bad. Why penalize all platforms for it?
+> > 
+> > I.e.: Nack, we use 64K iopages on pa6t and it works well. No need to
+> > waste tlb and erat space.
+> 
+> We would have to make that pSeries specific for now I suppose...
+> 
+> We don't have a way to know that there "can" be an EHEA right ? It may
+> not be in the device-tree at boot and dynamically added to the
+> partition...
 
-> Found it, the eth1 i/f on this board isn't working and does not generate
-> any clocks which makes ugeth_graceful_stop_tx() hang forever.
-
-Well, that doesn't make it very graceful, does it? :-)
-
-Can you fix this yourself, or do you want me to file an internal bug report?  If
-so, can you email me a detailed description of the problem?
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+The ibm,drc-names property of the root node should have "HEA" strings
+in it on systems where EHEA can potentially be present.
