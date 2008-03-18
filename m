@@ -1,20 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2A1AEDE388
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:19:59 +1100 (EST)
-To: Scott Wood <scottwood@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v2] 8xx: Add support for the MPC852 based board from
-	keymile.
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 18 Mar 2008 10:11:32 EST."
-	<20080318151132.GA17402@ld0162-tx32.am.freescale.net>
-Date: Tue, 18 Mar 2008 17:19:57 +0100
-Sender: wd@denx.de
-Message-Id: <20080318161957.766A124349@gemini.denx.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Heiko Schocher <hs@denx.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.250])
+	by ozlabs.org (Postfix) with ESMTP id 8EA28DE025
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 03:21:52 +1100 (EST)
+Received: by ag-out-0708.google.com with SMTP id 31so9589263agc.0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 09:21:51 -0700 (PDT)
+Message-ID: <fa686aa40803180921l654d6336udd285cf13e4138b5@mail.gmail.com>
+Date: Tue, 18 Mar 2008 10:21:50 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>
+Subject: Re: simple MPC5200B system
+In-Reply-To: <47DFDC5B.90304@matrix-vision.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47DD71D0.2010203@matrix-vision.de>
+	<fa686aa40803161301r1685f2cale75d67b8a203cca3@mail.gmail.com>
+	<47DF821B.6090600@matrix-vision.de>
+	<47DF9ABB.2020607@matrix-vision.de>
+	<fa686aa40803180731g3892e737h29db0cb917946588@mail.gmail.com>
+	<47DFDC5B.90304@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Scott,
-
-in message <20080318151132.GA17402@ld0162-tx32.am.freescale.net> you wrote:
+On Tue, Mar 18, 2008 at 9:14 AM, Andre Schwarz
+<andre.schwarz@matrix-vision.de> wrote:
+>  I've read some discussions about the "interrupt-map" attribute of the pci
+> node. I tried to follow Ben and David in their explanations - obviously I
+> didn't really get it.
+>  Looks like there are a lot of people outside who need some enlightenment
+> ... including me, of course.
 >
-> Well, the device tree is a mechanism for communicating from the firmware
-> to the kernel, and if we could control the firmware better we'd just make
-> it set the pins properly to begin with. :-)
+>  Maybe you can clarify this ?
+>
+>  Taken from motionpro.dts ...
+>
 
-Is this just a comment, or do you oppose Heiko's suggestion?
+First, you also need to look at interrupt-map-mask to interpret these
+values; from motionpro.dts:
 
-Other uses of the device tree seem possible and reasonable, too.  For
-example, we can use the device tree to configure the firmware (U-Boot
-in this case).
+interrupt-map-mask = <f800 0 0 7>;
 
-Using the device tree  to  describe  the  pin  configuration  of  the
-hardware  sounds  easier to me than hard-coding it in some source (or
-header) file - no matter if this is  in  the  kernel  and/or  in  the
-firmware.
+which is applied to the unit interrupt specifier to figure out how to
+map onto the interrupt controller.  The /size/ of this field is
+obtained by adding #address-cells with #interrupt-cells. (3+1=4).
 
-What do you think?
+'f8' refers to the upper 5 bits of the interrupt identifier which is a
+number from 0-31 which relates to the IDSEL line as you guessed.  The
+'7' covers the lower 3 bits of the interrupt specifier which can be 1,
+2, 3 or 4.
 
-Best regards,
+The 120 bits in the middle are irrelevant, so interrupt-map-mask
+leaves them as zeros.
 
-Wolfgang Denk
+>      interrupt-map = <c000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
+>                                   c000 0 0 2 &mpc5200_pic 1 1 3
+>                                   c000 0 0 3 &mpc5200_pic 1 2 3
+>                                   c000 0 0 4 &mpc5200_pic 1 3 3
+>
+>                                   c800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
+>                                   c800 0 0 2 &mpc5200_pic 1 2 3
+>                                   c800 0 0 3 &mpc5200_pic 1 3 3
+>                                   c800 0 0 4 &mpc5200_pic 0 0 3>;
+>
+>
+>  First parameter seems to be the slot number, i.e. IDSEL line of the PCI
+> device.
+>  How is this value coded ? Are these the bits 15..11 of the configuration
+> address ?
+
+I don't remember how this is encoded.  On the lite5200, idsel is wired
+to d0 and d1 for slots 1 and 2 respectively, yet these values suggest
+slots 24 and 25.  I'll need to look at this again later.
+
+>
+>  2nd + 3rd paramter : no clue ! can you explain ?
+
+first 3 cells are the unit address and is #address-cells large.  Only
+the first cell contains real data.
+
+>
+>  4th : seem to be INT_A ... _D of a PCI device. Usually a device uses only
+> INT_A. Do we need 4 entries in any case ?
+
+you only need entries for irq lines that are wired up.  If your board
+does not wire up _B, _C and _D, then don't have an entry for them.
+However, if they are wired up then you should describe them.
+
+>
+>  5th : ok - parent pic
+
+Correct.
+
+>
+>  6th ... 8th  : IRQ representation of the parent pic, which gives :
+>
+>      6th : 0=CRIT for irq0 pin, 1=MAIN for irq1..3 pins
+>      7th : irq number. 1 for the irq0 pin inside CRIT level. irq1..3 have
+> number 1..3 inside MAIN level.
+>      8th : should be 3 = "level low" which is default for PCI.
+
+Correct.
+
+There is also some good information here:
+http://playground.sun.com/1275/practice/imap/imap0_9d.pdf
+
+Cheers,
+g.
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A quarrel is quickly settled when deserted by one party; there is  no
-battle unless there be two.                                  - Seneca
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
