@@ -1,29 +1,16 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id CC15DDDF0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 02:27:15 +1100 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id A06B921D6ED
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:27:21 +0100 (CET)
-Received: from localhost (unknown [192.168.1.157])
-	by mail.m-online.net (Postfix) with ESMTP id A8DCB900A9
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:27:13 +0100 (CET)
-Received: from localhost ([192.168.3.149])
-	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
-	port 10024) with ESMTP id VMwtFRz9pd4w for <linuxppc-dev@ozlabs.org>;
-	Wed, 19 Mar 2008 16:27:12 +0100 (CET)
-Received: from ibook.aepfle.de (DSL01.83.171.150.73.ip-pool.NEFkom.net
-	[83.171.150.73]) by mail.mnet-online.de (Postfix) with ESMTP
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:27:12 +0100 (CET)
-Date: Wed, 19 Mar 2008 16:27:22 +0100
-From: Olaf Hering <olaf@aepfle.de>
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.184])
+	by ozlabs.org (Postfix) with ESMTP id 07D14DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 02:48:59 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so235213rvf.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 08:48:58 -0700 (PDT)
+Message-ID: <5c9cd53b0803190848t652b8652r1669af11e9af9716@mail.gmail.com>
+Date: Wed, 19 Mar 2008 11:48:58 -0400
+From: "mike zheng" <mail4mz@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: crash in init_ipic_sysfs on efika
-Message-ID: <20080319152722.GA9208@aepfle.de>
-References: <20080317195305.GA13298@aepfle.de>
+Subject: mpc8568mds bootup problem
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080317195305.GA13298@aepfle.de>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,46 +20,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 17, Olaf Hering wrote:
+Hi All,
 
-> The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL if
-> ipic_init() fails. init_ipic_sysfs() will crash in that case.
-> 
-> Something like this may fix it:
-> 
-> Index: linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
-> ===================================================================
-> --- linux-2.6.25-rc6.orig/arch/powerpc/sysdev/ipic.c
-> +++ linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
-> @@ -906,7 +906,7 @@ static int __init init_ipic_sysfs(void)
->  {
->         int rc;
->  
-> -       if (!primary_ipic->regs)
-> +       if (!primary_ipic || !primary_ipic->regs)
->                 return -ENODEV;
->         printk(KERN_DEBUG "Registering ipic with sysfs...\n");
+My mpc8568mds board does not bootup. I am using Freescale's BSP on
+kernel2.6.23. The following is the log from serial port. Any idea?
+What is the next module to be initialized after the cfq? Where can I
+comment it out for debugging purpose?
 
-ipic_init() is not called for every board.
-This change for the used config fixes the crash as well.
+Thanks for your help,
 
-@@ -168,14 +168,14 @@ CONFIG_PPC_MULTIPLATFORM=y
- # CONFIG_PPC_86xx is not set
- CONFIG_CLASSIC32=y
- CONFIG_PPC_CHRP=y
--CONFIG_PPC_MPC512x=y
--CONFIG_PPC_MPC5121=y
--CONFIG_MPC5121_ADS=y
-+# CONFIG_PPC_MPC512x is not set
-+# CONFIG_PPC_MPC5121 is not set
-+# CONFIG_MPC5121_ADS is not set
- CONFIG_PPC_MPC52xx=y
--CONFIG_PPC_MPC5200_SIMPLE=y
-+# CONFIG_PPC_MPC5200_SIMPLE is not set
- CONFIG_PPC_EFIKA=y
- # CONFIG_PPC_LITE5200 is not set
--CONFIG_PPC_MPC5200_BUGFIX=y
-+# CONFIG_PPC_MPC5200_BUGFIX is not set
- CONFIG_PPC_PMAC=y
- # CONFIG_PPC_CELL is not set
- # CONFIG_PPC_CELL_NATIVE is not set
+Mike
+
+
+=> bootm 1000000 2000000 400000
+bootm 1000000 2000000 400000
+## Booting image at 01000000 ...
+   Image Name:   Linux-2.6.23
+   Created:      2008-03-18  20:48:11 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1283304 Bytes =  1.2 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 02000000 ...
+   Image Name:   uboot ext2 ramdisk rootfs
+   Created:      2007-06-26   4:25:24 UTC
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    3719970 Bytes =  3.5 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Booting using flat device tree at 0x400000
+   Loading Ramdisk to 1f1c2000, end 1f54e322 ... OK
+Using MPC85xx MDS machine description
+Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=0Mb residual: 0Mb
+Linux version 2.6.23 () (gcc version 4.0.2 20060628 (Wasabi)) #9 Tue
+Mar 18 16:48:04 EDT 2008
+Found initrd at 0xdf1c2000:0xdf54e322
+-> find_legacy_serial_port()
+stdout is /soc8568@e0000000/serial@4600
+legacy_serial_console = 1
+default console speed = 115340
+<- find_legacy_serial_port()
+console [udbg0] enabled
+setup_arch: bootmem
+mpc85xx_mds_setup_arch()
+Found FSL PCI host bridge at 0x00000000e0008000.Firmware bus number: 0->0
+pio-handle not available
+pio-handle not available
+arch: exit
+Zone PFN ranges:
+  DMA             0 ->   131072
+  Normal     131072 ->   131072
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->   131072
+Built 1 zonelists in Zone order.  Total pages: 130048
+Kernel command line: ramdisk_size=42000 root=/dev/ram rw console=ttyS1,115200
+mpic: Setting up MPIC " OpenPIC  " version 1.2 at e0040000, max 1 CPUs
+mpic: ISU size: 80, shift: 7, mask: 7f
+mpic: Initializing for 80 sources
+QEIC (64 IRQ sources) at fd6ed080
+PID hash table entries: 2048 (order: 11, 8192 bytes)
+-> check_legacy_serial_console()
+console was specified !
+Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Memory: 512896k/524288k available (2556k kernel code, 10952k reserved,
+108k data, 102k bss, 144k init)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+
+rstcr compatible register does not exist!
+PCI: Probing PCI hardware
+PCI: Cannot allocate resource region 0 of device 0000:00:02.0
+PCI: Cannot allocate resource region 0 of device 0000:00:02.1
+PCI: Cannot allocate resource region 0 of device 0000:00:02.2
+PCI: Cannot allocate resource region 0 of device 0000:00:03.0
+PCI: Cannot allocate resource region 0 of device 0000:00:03.1
+PCI: Cannot allocate resource region 0 of device 0000:00:03.2
+PCI: Cannot allocate resource region 0 of device 0000:00:04.0
+...
+
+PCI: Cannot allocate resource region 0 of device 0000:00:1f.0
+PCI: Cannot allocate resource region 0 of device 0000:00:1f.1
+PCI: Cannot allocate resource region 0 of device 0000:00:1f.2
+Generic PHY: Registered new driver
+SCSI subsystem initialized
+NET: Registered protocol family 2
+IP route cache hash table entries: 16384 (order: 4, 65536 bytes)
+TCP established hash table entries: 65536 (order: 7, 524288 bytes)
+TCP bind hash table entries: 65536 (order: 6, 262144 bytes)
+TCP: Hash tables configured (established 65536 bind 65536)
+TCP reno registered
+checking if image is initramfs...it isn't (no cpio magic); looks like an initrd
+Freeing initrd memory: 3632k freed
+Fixing serial ports interrupts and IO ports ...
+fixup_port_irq(0)
+fixup_port_mmio(0)
+fixup_port_irq(1)
+fixup_port_mmio(1)
+Registering platform serial ports
+io scheduler noop registered
+io scheduler anticipatory registered (default)
+io scheduler deadline registered
+io scheduler cfq registered
