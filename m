@@ -1,12 +1,15 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 85CBEDDE98
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 03:15:24 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Add AMCC Glacier 460GT eval board dts
-Date: Wed, 19 Mar 2008 17:15:10 +0100
-Message-Id: <1205943310-26323-1-git-send-email-sr@denx.de>
+Return-Path: <mhench@engagenet.com>
+Received: from owa.engagenet.com (unknown [66.195.150.24])
+	by ozlabs.org (Postfix) with ESMTP id 39A20DDF28
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 02:44:38 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C889D5.DBA0B662"
+Subject: [PATCH] MPC813 NAND fixes
+Date: Wed, 19 Mar 2008 10:28:19 -0500
+Message-ID: <6629C06B144F5C4098DFF95C4FF9DAF702BA1D02@mailsrv.engagenet.com>
+From: "Mike Hench" <mhench@engagenet.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,488 +19,622 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch adds the Glacier dts. The Glacier is nearly identical to the
-Canyonlands (460EX). Here the differences:
+This is a multi-part message in MIME format.
 
-- 4 ethernet ports instead of 2
-- no SATA port
-- no USB port
+------_=_NextPart_001_01C889D5.DBA0B662
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+=20
+
+=20
+
+________________________________
+
+From: Mike Hench=20
+Sent: Wednesday, March 19, 2008 10:22 AM
+To: 'mhench@wi.rr.com'
+Subject: [PATCH] MPC813 NAND fixes
+
+=20
+
+Fix a race condition in fsl_elbc_run_command
+
+Declare a variable written by an interrupt volatile.
+
+Added parentheses to make timeout non-zero
+
+Fix incorrect usage of clearbits32 that bashed option register
+
+Remove work around for bashed register
+
+=20
+
+Signed-off-by: Mike Hench <mhench@elutions.com>
+
+=20
+
 ---
- arch/powerpc/boot/dts/glacier.dts |  464 +++++++++++++++++++++++++++++++++++++
- 1 files changed, 464 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/glacier.dts
 
-diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
-new file mode 100644
-index 0000000..7381cdd
---- /dev/null
-+++ b/arch/powerpc/boot/dts/glacier.dts
-@@ -0,0 +1,464 @@
-+/*
-+ * Device Tree Source for AMCC Glacier (460GT)
-+ *
-+ * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ */
-+
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "amcc,glacier";
-+	compatible = "amcc,canyonlands";
-+	dcr-parent = <&/cpus/cpu@0>;
-+
-+	aliases {
-+		ethernet0 = &EMAC0;
-+		ethernet1 = &EMAC1;
-+		ethernet2 = &EMAC2;
-+		ethernet3 = &EMAC3;
-+		serial0 = &UART0;
-+		serial1 = &UART1;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,460GT";
-+			reg = <0>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+			timebase-frequency = <0>; /* Filled in by U-Boot */
-+			i-cache-line-size = <20>;
-+			d-cache-line-size = <20>;
-+			i-cache-size = <8000>;
-+			d-cache-size = <8000>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0>; /* Filled in by U-Boot */
-+	};
-+
-+	UIC0: interrupt-controller0 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0c0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
-+
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0d0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1e 4 1f 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0e0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <a 4 b 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC3: interrupt-controller3 {
-+		compatible = "ibm,uic-460gt","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <3>;
-+		dcr-reg = <0f0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <10 4 11 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	SDR0: sdr {
-+		compatible = "ibm,sdr-460gt";
-+		dcr-reg = <00e 002>;
-+	};
-+
-+	CPR0: cpr {
-+		compatible = "ibm,cpr-460gt";
-+		dcr-reg = <00c 002>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-460gt", "ibm,plb4";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+		SDRAM0: sdram {
-+			compatible = "ibm,sdram-460gt", "ibm,sdram-405gp";
-+			dcr-reg = <010 2>;
-+		};
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-460gt", "ibm,mcmal2";
-+			dcr-reg = <180 62>;
-+			num-tx-chans = <4>;
-+			num-rx-chans = <20>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-parent = <&UIC2>;
-+			interrupts = <	/*TXEOB*/ 6 4
-+					/*RXEOB*/ 7 4
-+					/*SERR*/  3 4
-+					/*TXDE*/  4 4
-+					/*RXDE*/  5 4>;
-+			desc-base-addr-high = <8>;
-+		};
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-460gt", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <b0000000 4 b0000000 50000000>;
-+			clock-frequency = <0>; /* Filled in by U-Boot */
-+
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-460gt", "ibm,ebc";
-+				dcr-reg = <012 2>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				interrupts = <6 4>;
-+				interrupt-parent = <&UIC1>;
-+			};
-+
-+			UART0: serial@ef600300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600300 8>;
-+				virtual-reg = <ef600300>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <1 4>;
-+			};
-+
-+			UART1: serial@ef600400 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600400 8>;
-+				virtual-reg = <ef600400>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <1 4>;
-+			};
-+
-+			UART2: serial@ef600500 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600500 8>;
-+				virtual-reg = <ef600500>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <1d 4>;
-+			};
-+
-+			UART3: serial@ef600600 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <ef600600 8>;
-+				virtual-reg = <ef600600>;
-+				clock-frequency = <0>; /* Filled in by U-Boot */
-+				current-speed = <0>; /* Filled in by U-Boot */
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <1e 4>;
-+			};
-+
-+			IIC0: i2c@ef600700 {
-+				compatible = "ibm,iic-460gt", "ibm,iic";
-+				reg = <ef600700 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <2 4>;
-+			};
-+
-+			IIC1: i2c@ef600800 {
-+				compatible = "ibm,iic-460gt", "ibm,iic";
-+				reg = <ef600800 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <3 4>;
-+			};
-+
-+			ZMII0: emac-zmii@ef600d00 {
-+				compatible = "ibm,zmii-460gt", "ibm,zmii";
-+				reg = <ef600d00 c>;
-+			};
-+
-+			RGMII0: emac-rgmii@ef601500 {
-+				compatible = "ibm,rgmii-460gt", "ibm,rgmii";
-+				reg = <ef601500 8>;
-+				has-mdio;
-+			};
-+
-+			RGMII1: emac-rgmii@ef601600 {
-+				compatible = "ibm,rgmii-460gt", "ibm,rgmii";
-+				reg = <ef601600 8>;
-+				has-mdio;
-+			};
-+
-+			TAH0: emac-tah@ef601350 {
-+				compatible = "ibm,tah-460gt", "ibm,tah";
-+				reg = <ef601350 30>;
-+			};
-+
-+			TAH1: emac-tah@ef601450 {
-+				compatible = "ibm,tah-460gt", "ibm,tah";
-+				reg = <ef601450 30>;
-+			};
-+
-+			EMAC0: ethernet@ef600e00 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4";
-+				interrupt-parent = <&EMAC0>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC2 10 4
-+						 /*Wake*/   1 &UIC2 14 4>;
-+				reg = <ef600e00 70>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <2328>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rgmii";
-+				phy-map = <00000000>;
-+				rgmii-device = <&RGMII0>;
-+				rgmii-channel = <0>;
-+				tah-device = <&TAH0>;
-+				tah-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+
-+			EMAC1: ethernet@ef600f00 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4";
-+				interrupt-parent = <&EMAC1>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC2 11 4
-+						 /*Wake*/   1 &UIC2 15 4>;
-+				reg = <ef600f00 70>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <1>;
-+				mal-rx-channel = <8>;
-+				cell-index = <1>;
-+				max-frame-size = <2328>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rgmii";
-+				phy-map = <00000000>;
-+				rgmii-device = <&RGMII0>;
-+				rgmii-channel = <1>;
-+				tah-device = <&TAH1>;
-+				tah-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+
-+			EMAC2: ethernet@ef601100 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4";
-+				interrupt-parent = <&EMAC2>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC2 12 4
-+						 /*Wake*/   1 &UIC2 16 4>;
-+				reg = <ef601100 70>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <2>;
-+				mal-rx-channel = <10>;
-+				cell-index = <2>;
-+				max-frame-size = <2328>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rgmii";
-+				phy-map = <00000000>;
-+				rgmii-device = <&RGMII1>;
-+				rgmii-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+
-+			EMAC3: ethernet@ef601200 {
-+				device_type = "network";
-+				compatible = "ibm,emac-460gt", "ibm,emac4";
-+				interrupt-parent = <&EMAC3>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC2 13 4
-+						 /*Wake*/   1 &UIC2 17 4>;
-+				reg = <ef601200 70>;
-+				local-mac-address = [000000000000]; /* Filled in by U-Boot */
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <3>;
-+				mal-rx-channel = <18>;
-+				cell-index = <3>;
-+				max-frame-size = <2328>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rgmii";
-+				phy-map = <00000000>;
-+				rgmii-device = <&RGMII1>;
-+				rgmii-channel = <1>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+		};
-+
-+		PCIX0: pci@c0ec00000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pcix-460gt", "ibm,plb-pcix";
-+			primary;
-+			large-inbound-windows;
-+			enable-msi-hole;
-+			reg = <c 0ec00000   8	/* Config space access */
-+			       0 0 0		/* no IACK cycles */
-+			       c 0ed00000   4   /* Special cycles */
-+			       c 0ec80000 100	/* Internal registers */
-+			       c 0ec80100  fc>;	/* Internal messaging registers */
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000d 80000000 0 80000000
-+				  01000000 0 00000000 0000000c 08000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 0 to 0x3f */
-+			bus-range = <0 3f>;
-+
-+			/* All PCI interrupts are routed to ext IRQ 2 -> UIC1-0 */
-+			interrupt-map-mask = <0000 0 0 0>;
-+			interrupt-map = < 0000 0 0 0 &UIC1 0 8 >;
-+		};
-+
-+		PCIE0: pciex@d00000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
-+			primary;
-+			port = <0>; /* port number */
-+			reg = <d 00000000 20000000	/* Config space access */
-+			       c 08010000 00001000>;	/* Registers */
-+			dcr-reg = <100 020>;
-+			sdr-base = <300>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000e 00000000 0 80000000
-+				  01000000 0 00000000 0000000f 80000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 40 to 0x7f */
-+			bus-range = <40 7f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC3 c 4 /* swizzled int A */
-+				0000 0 0 2 &UIC3 d 4 /* swizzled int B */
-+				0000 0 0 3 &UIC3 e 4 /* swizzled int C */
-+				0000 0 0 4 &UIC3 f 4 /* swizzled int D */>;
-+		};
-+
-+		PCIE1: pciex@d20000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
-+			primary;
-+			port = <1>; /* port number */
-+			reg = <d 20000000 20000000	/* Config space access */
-+			       c 08011000 00001000>;	/* Registers */
-+			dcr-reg = <120 020>;
-+			sdr-base = <340>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000e 80000000 0 80000000
-+				  01000000 0 00000000 0000000f 80010000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 80 to 0xbf */
-+			bus-range = <80 bf>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC3 10 4 /* swizzled int A */
-+				0000 0 0 2 &UIC3 11 4 /* swizzled int B */
-+				0000 0 0 3 &UIC3 12 4 /* swizzled int C */
-+				0000 0 0 4 &UIC3 13 4 /* swizzled int D */>;
-+		};
-+	};
-+};
--- 
-1.5.4.4
+=20
+
+--- linux-2.6.25-rc5.orig/drivers/mtd/nand/fsl_elbc_nand.c   2008-03-10
+00:22:27.000000000 -0500
+
++++ linux-2.6.25-rc5/drivers/mtd/nand/fsl_elbc_nand.c       2008-03-19
+10:08:22.000000000 -0500
+
+@@ -264,7 +264,7 @@ struct fsl_elbc_ctrl {
+
+            struct elbc_regs __iomem *regs;
+
+            int irq;
+
+            wait_queue_head_t irq_wait;
+
+-           unsigned int irq_status; /* status read from LTESR by irq
+handler */
+
++          volatile unsigned int irq_status; /* status read from LTESR
+by irq handler */
+
+            u8 __iomem *addr;        /* Address of assigned FCM buffer
+*/
+
+            unsigned int page;       /* Last page written to / read from
+*/
+
+            unsigned int read_bytes; /* Number of bytes read during
+command   */
+
+@@ -379,13 +379,13 @@ static int fsl_elbc_run_command(struct m
+
+                     in_be32(&lbc->fbar), in_be32(&lbc->fpar),
+
+                     in_be32(&lbc->fbcr), priv->bank);
+
+=20
+
++          ctrl->irq_status =3D 0;
+
+            /* execute special operation */
+
+            out_be32(&lbc->lsor, priv->bank);
+
+=20
+
+            /* wait for FCM complete flag or timeout */
+
+-           ctrl->irq_status =3D 0;
+
+            wait_event_timeout(ctrl->irq_wait, ctrl->irq_status,
+
+-                              FCM_TIMEOUT_MSECS * HZ/1000);
+
++                             (FCM_TIMEOUT_MSECS * HZ)/1000);
+
+            ctrl->status =3D ctrl->irq_status;
+
+=20
+
+            /* store mdr value in case it was needed */
+
+@@ -861,7 +861,7 @@ static int fsl_elbc_chip_init_tail(struc
+
+            /* adjust Option Register and ECC to match Flash page size
+*/
+
+            if (mtd->writesize =3D=3D 512) {
+
+                        priv->page_size =3D 0;
+
+-                       clrbits32(&lbc->bank[priv->bank].or,
+~OR_FCM_PGS);
+
++                      clrbits32(&lbc->bank[priv->bank].or, OR_FCM_PGS);
+
+            } else if (mtd->writesize =3D=3D 2048) {
+
+                        priv->page_size =3D 1;
+
+                        setbits32(&lbc->bank[priv->bank].or,
+OR_FCM_PGS);
+
+@@ -882,11 +882,6 @@ static int fsl_elbc_chip_init_tail(struc
+
+                        return -1;
+
+            }
+
+=20
+
+-           /* The default u-boot configuration on MPC8313ERDB causes
+errors;
+
+-           * more delay is needed.  This should be safe for other
+boards
+
+-           * as well.
+
+-           */
+
+-           setbits32(&lbc->bank[priv->bank].or, 0x70);
+
+            return 0;
+
+ }
+
+=20
+
+
+------_=_NextPart_001_01C889D5.DBA0B662
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]--><o:SmartTagType
+ namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags" =
+name=3D"PersonName"/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:windowtext;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> Mike =
+Hench <br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Wednesday, March =
+19, 2008
+10:22 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> '<st1:PersonName =
+w:st=3D"on">mhench@wi.rr.com</st1:PersonName>'<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> [PATCH] MPC813 =
+NAND fixes</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Fix a race condition in =
+fsl_elbc_run_command<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Declare a variable written by an interrupt =
+volatile.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Added parentheses to make timeout =
+non-zero<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Fix incorrect usage of clearbits32 that bashed option
+register<font color=3Dnavy><span =
+style=3D'color:navy'><o:p></o:p></span></font></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Remove work around <font color=3Dnavy><span =
+style=3D'color:navy'>for
+</span></font>bashed register<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt;font-family:"Courier New"'>Signed-off-by: Mike =
+Hench
+&lt;mhench@elutions.com&gt;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>---<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>---
+linux-2.6.25-rc5.orig/drivers/mtd/nand/fsl_elbc_nand.c&nbsp;&nbsp; =
+2008-03-10
+00:22:27.000000000 -0500<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>+++
+linux-2.6.25-rc5/drivers/mtd/nand/fsl_elbc_nand.c&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+2008-03-19 10:08:22.000000000 -0500<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>@@ -264,7 +264,7 @@ struct fsl_elbc_ctrl =
+{<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+struct elbc_regs __iomem *regs;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+int irq;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+wait_queue_head_t irq_wait;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+unsigned int irq_status; /* status read from LTESR by irq handler =
+*/<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;
+volatile unsigned int irq_status; /* status read from LTESR by irq =
+handler */<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+u8 __iomem *addr;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Address =
+of
+assigned FCM buffer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+*/<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+unsigned int page;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Last page =
+written to
+/ read from&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+*/<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+unsigned int read_bytes; /* Number of bytes read during =
+command&nbsp;&nbsp; */<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>@@ -379,13 +379,13 @@ static int =
+fsl_elbc_run_command(struct
+m<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+in_be32(&amp;lbc-&gt;fbar),
+in_be32(&amp;lbc-&gt;fpar),<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+in_be32(&amp;lbc-&gt;fbcr),
+priv-&gt;bank);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;
+ctrl-&gt;irq_status =3D 0;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+/* execute special operation */<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+out_be32(&amp;lbc-&gt;lsor, priv-&gt;bank);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+/* wait for FCM complete flag or timeout */<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+ctrl-&gt;irq_status =3D 0;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+wait_event_timeout(ctrl-&gt;irq_wait, =
+ctrl-&gt;irq_status,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+FCM_TIMEOUT_MSECS * HZ/1000);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(FCM_TIMEOUT_MSECS * HZ)/1000);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+ctrl-&gt;status =3D ctrl-&gt;irq_status;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+/* store mdr value in case it was needed */<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>@@ -861,7 +861,7 @@ static int =
+fsl_elbc_chip_init_tail(struc<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+/* adjust Option Register and ECC to match Flash page size =
+*/<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+if (mtd-&gt;writesize =3D=3D 512) {<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;
+priv-&gt;page_size =3D 0;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;
+clrbits32(&amp;lbc-&gt;bank[priv-&gt;bank].or, =
+~OR_FCM_PGS);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+
+clrbits32(&amp;lbc-&gt;bank[priv-&gt;bank].or, =
+OR_FCM_PGS);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+} else if (mtd-&gt;writesize =3D=3D 2048) {<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;
+priv-&gt;page_size =3D 1;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;
+setbits32(&amp;lbc-&gt;bank[priv-&gt;bank].or, =
+OR_FCM_PGS);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>@@ -882,11 +882,6 @@ static int =
+fsl_elbc_chip_init_tail(struc<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;
+return -1;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+}<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+/* The default u-boot configuration on MPC8313ERDB causes =
+errors;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+* more delay is needed.&nbsp; This should be safe for other =
+boards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+* as well.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+*/<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;
+setbits32(&amp;lbc-&gt;bank[priv-&gt;bank].or, =
+0x70);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;
+return 0;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;}<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C889D5.DBA0B662--
