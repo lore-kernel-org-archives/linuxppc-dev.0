@@ -1,20 +1,20 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA06.emeryville.ca.mail.comcast.net
-	(qmta06.emeryville.ca.mail.comcast.net [76.96.30.56])
-	by ozlabs.org (Postfix) with ESMTP id B8AB5DE083
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 08:19:48 +1100 (EST)
+Received: from QMTA02.emeryville.ca.mail.comcast.net
+	(qmta02.emeryville.ca.mail.comcast.net [76.96.30.24])
+	by ozlabs.org (Postfix) with ESMTP id CB2EADE4D9
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 08:20:04 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Roland McGrath <roland@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/8] ia64 ptrace: forced_successful_syscall_return()
+Subject: [PATCH 5/8] sparc64 ptrace: forced_successful_syscall_return()
 In-Reply-To: Roland McGrath's message of  Wednesday,
 	19 March 2008 14:17:14 -0700
 	<20080319211714.8B14226F995@magilla.localdomain>
 References: <20080319211714.8B14226F995@magilla.localdomain>
-Message-Id: <20080319211914.AFE0E26F995@magilla.localdomain>
-Date: Wed, 19 Mar 2008 14:19:14 -0700 (PDT)
+Message-Id: <20080319212001.2DB8526F995@magilla.localdomain>
+Date: Wed, 19 Mar 2008 14:20:01 -0700 (PDT)
 Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
 	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
@@ -34,18 +34,19 @@ pair with our force_successful_syscall_return() definition.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- include/asm-ia64/ptrace.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ include/asm-sparc64/ptrace.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-ia64/ptrace.h b/include/asm-ia64/ptrace.h
-index 4b2a8d4..5e82915 100644
---- a/include/asm-ia64/ptrace.h
-+++ b/include/asm-ia64/ptrace.h
-@@ -276,6 +276,7 @@ struct switch_stack {
-    * On ia64, we can clear the user's pt_regs->r8 to force a successful syscall.
-    */
- # define force_successful_syscall_return()	(task_pt_regs(current)->r8 = 0)
-+# define forced_successful_syscall_return()	(task_pt_regs(current)->r8 == 0)
- 
-   struct task_struct;			/* forward decl */
-   struct unw_frame_info;		/* forward decl */
+diff --git a/include/asm-sparc64/ptrace.h b/include/asm-sparc64/ptrace.h
+index 6da1978..3f8826e 100644
+--- a/include/asm-sparc64/ptrace.h
++++ b/include/asm-sparc64/ptrace.h
+@@ -100,6 +100,8 @@ struct sparc_trapf {
+ #define force_successful_syscall_return()	    \
+ do {	current_thread_info()->syscall_noerror = 1; \
+ } while (0)
++#define forced_successful_syscall_return()	\
++	(current_thread_info()->syscall_noerror != 0)
+ #define user_mode(regs) (!((regs)->tstate & TSTATE_PRIV))
+ #define instruction_pointer(regs) ((regs)->tpc)
+ #define regs_return_value(regs) ((regs)->u_regs[UREG_I0])
