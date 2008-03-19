@@ -1,20 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6C811DDF15
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 09:43:44 +1100 (EST)
-Date: Wed, 19 Mar 2008 17:43:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Mike Hench <mhench@engagenet.com>
-Subject: Re: question about of_platform vs 'platform'
-Message-ID: <20080319224345.GA5166@loki.buserror.net>
-References: <6629C06B144F5C4098DFF95C4FF9DAF702BA1D37@mailsrv.engagenet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6629C06B144F5C4098DFF95C4FF9DAF702BA1D37@mailsrv.engagenet.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8F13BDDF0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 10:27:16 +1100 (EST)
+Date: Thu, 20 Mar 2008 10:27:10 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 1/2] [POWERPC] Add PPC4xx L2-cache support (440GX &
+	460EX/GT)
+Message-Id: <20080320102710.4b6d8060.sfr@canb.auug.org.au>
+In-Reply-To: <1205847389-17771-1-git-send-email-sr@denx.de>
+References: <1205847389-17771-1-git-send-email-sr@denx.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,39 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 19, 2008 at 04:49:18PM -0500, Mike Hench wrote:
-> bus: 'of_platform': driver_probe_device: matching device e0007000.spi
-> with drive
-> r fsl-elbc
-> bus: 'platform': driver_probe_device: matching device fsl-usb2-udc.0
-> with driver
->  mpc83xx_spi
-> bus: 'platform': driver_probe_device: matching device mpc83xx_wdt.0 with
-> driver
-> mpc83xx_spi
-> bus: 'platform': driver_probe_device: matching device fsl-i2c.0 with
-> driver mpc8
-> 3xx_spi
-> bus: 'platform': driver_probe_device: matching device fsl-i2c.1 with
-> driver mpc8
-> 3xx_spi
-> bus: 'platform': driver_probe_device: matching device Fixed MDIO bus.0
-> with driv
-> er mpc83xx_spi
-> 
-> it seems there is some sort of mismatch
-> how did the kernel decide that SPI was an 'of_platform' device.
+--Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It will try to match all device nodes under probed buses to an of_platform
-device.
+Hi Stefan,
 
-> The DTS file spi entry look similar to the i2c entries.
-> Those are treated as 'platform' devices.
+Just a few trivial things ...
 
-There is glue code in arch/powerpc/sysdev/fsl_soc.c:of_fsl_spi_probe() to
-create platform devices from the device nodes.
+On Tue, 18 Mar 2008 14:36:29 +0100 Stefan Roese <sr@denx.de> wrote:
+>
+> +++ b/arch/powerpc/sysdev/ppc4xx_soc.c
+>
+> +static int __init ppc4xx_l2c_probe(void)
+> +{
+> +	struct device_node *np =3D NULL;
 
-It doesn't seem to be registered as an initcall, though -- you need to call
-it from platform code.  See mpc832x_rdb.c for an example.
+This initialisation is unneeded.
 
--Scott
+> +	/* Map DCRs */
+> +	dcrreg =3D of_get_property(np, "dcr-reg", &len);
+> +	if (!dcrreg || (len !=3D 4*sizeof(u32))) {
+
+I prefer spaces around binary operators.
+
+> +		printk(KERN_ERR "%s: Can't get DCR register base !",
+> +		       np->full_name);
+> +		return -ENODEV;
+
+Since of_find_compatible_node() gets a reference to np, you need an
+of_node_put(np) before you return.
+
+> +	if (irq =3D=3D NO_IRQ) {
+> +		printk(KERN_ERR "irq_of_parse_and_map failed\n");
+> +		return -ENODEV;
+
+And again.
+
+> +	if (request_irq(irq, l2c_error_handler, IRQF_DISABLED, "L2C", 0) < 0) {
+> +		printk(KERN_ERR "Cannot install L2C error handler"
+> +		       ", cache is not enabled\n");
+> +		return -ENODEV;
+
+And again.
+
+> +	return 0;
+
+And again.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH4aFTTgG2atn1QN8RAitVAJ9GqzTbnooh1VOMF9FvhvY2R8r9TwCeLQJR
+AvASKDXlNEWGE7F7RU8m8JE=
+=5aSn
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm--
