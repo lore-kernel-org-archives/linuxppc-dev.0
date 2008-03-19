@@ -1,23 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 7EFC4DDE09
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:05:58 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so65626anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2008 22:05:57 -0700 (PDT)
-Message-ID: <fa686aa40803182205n741c652ci1e1871707c5c3e13@mail.gmail.com>
-Date: Tue, 18 Mar 2008 23:05:56 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [RFC] Xilinx: Add generic configuration option to enable
-	all xilinx drivers.
-In-Reply-To: <20080319043205.12E1F11E0071@mail67-dub.bigfish.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080212213120.D51157F806B@mail176-sin.bigfish.com>
-	<fa686aa40803182115k241050f0meafccc29b4ef16@mail.gmail.com>
-	<20080319043205.12E1F11E0071@mail67-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18400.36670.5918.566965@cargo.ozlabs.ibm.com>
+Date: Wed, 19 Mar 2008 14:57:50 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: skumar@linux.vnet.ibm.com
+Subject: Re: [BUG]2.6.25-rc6:Unable to handle kernel paging request
+In-Reply-To: <20080318052921.GA32259@in.ibm.com>
+References: <20080318052921.GA32259@in.ibm.com>
+Cc: Poornima Nayak <Poornima.Nayak@in.ibm.com>, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 18, 2008 at 10:32 PM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
->
->
->
->
-> Hmm... interesting points.  I guess my feeling was that XILINX_DRIVERS could
-> be a more broadly configurable option, with some of these ideas in mind.
-> Currently, it's hidden by default, but we could easily change this to be
-> visible by default, or selected by a broader number of architectures.  I
-> tend to think about them as a group: What if x86 *did* support the
-> primitives needed by these drivers, then if the individual drivers depend on
-> XILINX_DRIVERS, then the modification could be made in one spot.  By your
-> suggestion, we would have to modify each one independantly.
+Sudhir Kumar writes:
 
-Heh; it's not *that* many drivers and it's just Kconfig stuff which is
-real easy to change.  My preference would be to eliminate
-XILINX_DRIVERS entirely, but I'm not going to fight about it.  :-)
+> Unable to handle kernel paging request for data at address
+> 0xd00008000000002e
 
-Cheers,
-g.
+Looks like some driver tried to access I/O port 0x2e without checking
+whether there was possibly anything there first.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> Faulting instruction address: 0xc00000000074ded8
+> cpu 0x0: Vector: 300 (Data Access) at [c00000003e073aa0]
+>     pc: c00000000074ded8: .f71805f_find+0x44/0x32c
+>     lr: c00000000074e1f8: .f71805f_init+0x38/0x194
+>     sp: c00000003e073d20
+>    msr: 8000000000009032
+>    dar: d00008000000002e
+>  dsisr: 42000000
+>   current = 0xc0000000220851c0
+>   paca    = 0xc0000000007c2700
+>     pid   = 1, comm = swapper
+> enter ? for help
+> [c00000003e073dc0] c00000000074e1f8 .f71805f_init+0x38/0x194
+
+Looks like it might be the f71805f driver, whatever that is...
+Hmmm, drivers/hwmon/f71805f.c looks like it, and indeed it does go
+poking around in PCI I/O space with no checks whatever.
+
+I suggest you turn off CONFIG_SENSORS_F71805F.
+
+It doesn't help, of course, that CONFIG_HWMON defaults to y. :(
+
+Paul.
