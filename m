@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8F13BDDF0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 10:27:16 +1100 (EST)
-Date: Thu, 20 Mar 2008 10:27:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 1/2] [POWERPC] Add PPC4xx L2-cache support (440GX &
-	460EX/GT)
-Message-Id: <20080320102710.4b6d8060.sfr@canb.auug.org.au>
-In-Reply-To: <1205847389-17771-1-git-send-email-sr@denx.de>
-References: <1205847389-17771-1-git-send-email-sr@denx.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D4B61DDEE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 10:48:34 +1100 (EST)
+Message-Id: <E3C4695C-A2A9-4657-B771-97DFDD3F6ACE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080318170542.GA4099@loki.buserror.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v2] Make 83xx perfmon support selectable
+Date: Wed, 19 Mar 2008 18:48:12 -0500
+References: <1204934343-5235-1-git-send-email-afleming@freescale.com>
+	<20080318170542.GA4099@loki.buserror.net>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Phillips Kim <Kim.Phillips@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,69 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Stefan,
+On Mar 18, 2008, at 12:05 PM, Scott Wood wrote:
 
-Just a few trivial things ...
-
-On Tue, 18 Mar 2008 14:36:29 +0100 Stefan Roese <sr@denx.de> wrote:
+> On Fri, Mar 07, 2008 at 05:59:03PM -0600, Andy Fleming wrote:
+>> Not all e300 cores support the performance monitors, and the ones
+>> that don't will be confused by the mf/mtpmr instructions.  This
+>> allows the support to be optional, so the 8349 can turn it off
+>> while the 8379 can turn it on.  Sadly, those aren't config options,
+>> so it will be left to the defconfigs and the users to make that
+>> determination.
 >
-> +++ b/arch/powerpc/sysdev/ppc4xx_soc.c
->
-> +static int __init ppc4xx_l2c_probe(void)
-> +{
-> +	struct device_node *np =3D NULL;
+> So does this mean we can't do multiplatform of something with  
+> perfmon and
+> something without perfmon?  Seems like this should come from the  
+> device
+> tree, or PVR, or some other runtime check.
 
-This initialisation is unneeded.
+It possible if your binutils supports generating the instructions.  I  
+believe Kim was going to look at doing a patch to use a #define  
+MFPMR(x)/#define MTPMR() so we don't have to worry about toolchain  
+versions.
 
-> +	/* Map DCRs */
-> +	dcrreg =3D of_get_property(np, "dcr-reg", &len);
-> +	if (!dcrreg || (len !=3D 4*sizeof(u32))) {
-
-I prefer spaces around binary operators.
-
-> +		printk(KERN_ERR "%s: Can't get DCR register base !",
-> +		       np->full_name);
-> +		return -ENODEV;
-
-Since of_find_compatible_node() gets a reference to np, you need an
-of_node_put(np) before you return.
-
-> +	if (irq =3D=3D NO_IRQ) {
-> +		printk(KERN_ERR "irq_of_parse_and_map failed\n");
-> +		return -ENODEV;
-
-And again.
-
-> +	if (request_irq(irq, l2c_error_handler, IRQF_DISABLED, "L2C", 0) < 0) {
-> +		printk(KERN_ERR "Cannot install L2C error handler"
-> +		       ", cache is not enabled\n");
-> +		return -ENODEV;
-
-And again.
-
-> +	return 0;
-
-And again.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH4aFTTgG2atn1QN8RAitVAJ9GqzTbnooh1VOMF9FvhvY2R8r9TwCeLQJR
-AvASKDXlNEWGE7F7RU8m8JE=
-=5aSn
------END PGP SIGNATURE-----
-
---Signature=_Thu__20_Mar_2008_10_27_10_+1100_RiM/DoE=WGaY19pm--
+- k
