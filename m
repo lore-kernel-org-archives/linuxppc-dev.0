@@ -1,16 +1,22 @@
-Return-Path: <Phil.Hochstetler@serveron.com>
-Received: from mail.serveron.com (mail.serveron.com [198.107.14.70])
-	by ozlabs.org (Postfix) with ESMTP id 4A36EDE07A
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D4E78DE15D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Mar 2008 04:27:14 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C889E6.7854B9B5"
-Subject: Uart(lite)/ELDK 4.1 section mismatch -> ML403
-Date: Wed, 19 Mar 2008 10:27:02 -0700
-Message-ID: <ADA5878BA63680469C75C14CEEE2FE28012F54A0@mail.serveron.com>
-From: "Phil Hochstetler" <Phil.Hochstetler@serveron.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Thu, 20 Mar 2008 04:40:40 +1100 (EST)
+Date: Wed, 19 Mar 2008 12:40:01 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: James Black <jblack547@gmail.com>
+Subject: Re: muram in device tree for mpc8250 in arch/powerpc
+Message-ID: <20080319174001.GF7962@ld0162-tx32.am.freescale.net>
+References: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,168 +27,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Wed, Mar 19, 2008 at 11:06:02AM -0600, James Black wrote:
+> I turned on early kernel debugging in 2.6.24 and it looks like all the
+> device tree parsing is working. The boot hangs and or crashes while
+> trying to setup the paging. I drilled down the code from init/main.c
+> and found that it seems the muram device node is killing the
+> allocator.
 
-------_=_NextPart_001_01C889E6.7854B9B5
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+That's strange... how in particular was it killing it?  Which allocator?
 
-I just booted the "git.xilinx.com/Linux-2.6-xlnx" source code to a login
-prompt last week.  I'm using Xilinx EDK 9.2 and ELDK 4.1 crosstools
-(uclib version) and Ubuntu 7.10 workstation as my host OS (under
-VMware).  The easiest path is to use the Uartlite driver (and disable
-the 82550 stuff because the stand directory will not compile currently,
-there is a patch somewhere on the last from last Jan about what defines
-are missing but you can just use uartlite instead).  Be sure to use the
-correct reference design (I started with the Virtex4_PPC_Example_9_2.zip
-in EDK/EDKexamples directory).   Add the sysace driver into the design
-and (w/ interrupts on) and make sure you have uartlite selected (with
-interrupts on).  Build the design and use the xparameters_403.h file to
-build your kernel.  In this case, be sure to turn on uartlite console
-support and turn off 82550 console support or your kernel will not work.
-Also be sure to add Ext3 filesystem to your kernel config.  Once you add
-the sysace driver support, you can then create a ace file and replace
-their kernel on the compact flash and boot it to their root filesystem
-(works, I just did it).  This gets you a full booted kernel on a working
-root filesystem with min work.
+Do you know which particular line of code is crashing?
 
-=20
+> I tried to fully describe the segments in muram node and it seems to
+> mess things up even worse.
 
-For references see: =20
+What do you mean?  What changes did you make, and what was the result?
 
-  http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
+> / {
+> 
+> model = "cta5000s";
+> compatible = "fsl,cta5000s";
+> #address-cells = <1>;
+> #size-cells = <1>;
+> cpus {
 
-=20
-http://simfami.marlab.ac.uk/piprg/wiki/index.php?title=3DInstalling_Linux=
-_
-Kernel_2.6.23_on_the_PPC405_core_of_a_Xilinx_ML403_board
+It'd be a lot more readable if indentation were kept intact...
 
-=20
+> localbus@f0010100 {
+> compatible = "fsl,mpc8250-localbus",
+> "fsl,pq2-localbus";
+> #address-cells = <2>;
+> #size-cells = <1>;
+> reg = <f0010100 60>;
+> ranges = <0 0 fe000000 00200000>;
+> flash@fe000000,0 {
+> compatible = "amd", "cfi-flash";
 
---phil
+"amd" isn't a valid compatible name.
 
- =20
+> cpm@119c0 {
+> #address-cells = <1>;
+> #size-cells = <1>;
+> #interrupt-cells = <2>;
+> compatible = "fsl,mpc8250-cpm", "fsl,cpm2";
+> reg = <119c0 30>;
+> ranges;
+> 
+> muram@0 {
+> #address-cells = <1>;
+> #size-cells = <1>;
+> ranges = <0 0 10000>;
+> 
+> data@0 {
+> compatible = "fsl,cpm-muram-data";
+> reg = <0 4000 8000 4000>;
+> };
+> 
+> };
 
+reg for 8250 should be <0 4000>.  Otherwise, the muram node looks fine
+(well, the unit address shouldn't be there, but that won't affect
+anything).
 
-------_=_NextPart_001_01C889E6.7854B9B5
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> serial@11a40 {
+> device_type = "serial";
+> compatible = "fsl,mpc8250-scc-uart",
+> "fsl,cpm2-scc-uart";
+> reg = <11a40 20 8200 100>;
+> interrupts = <2a 8>;
+> interrupt-parent = <&PIC>;
+> fsl,cpm-brg = <5>;
+> fsl,cpm-command = <11800000>;
 
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+cpm-command should be <08c00000>.
 
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
+> };
+> 
+> 
+> ethernet@11300 {
+> device_type = "network";
+> compatible = "fsl,mpc8250-fcc-enet",
+> "fsl,cpm2-fcc-enet";
+> reg = <11300 20 8400 100>;
+> interrupts = <20 8>;
+> interrupt-parent = <&PIC>;
+> linux,network-index = <0>;
+> fsl,cpm-command = <14000300>;
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+cpm-command should be <12000300>.
 
-<div class=3DSection1>
-
-<p class=3DMsoNormal>I just booted the =
-&#8220;git.xilinx.com/Linux-2.6-xlnx&#8221;
-source code to a login prompt last week.&nbsp; I&#8217;m using Xilinx =
-EDK 9.2
-and ELDK 4.1 crosstools (uclib version) and Ubuntu 7.10 workstation as =
-my host OS
-(under VMware).&nbsp; The easiest path is to use the Uartlite driver =
-(and
-disable the 82550 stuff because the stand directory will not compile =
-currently,
-there is a patch somewhere on the last from last Jan about what defines =
-are
-missing but you can just use uartlite instead).&nbsp; Be sure to use the
-correct reference design (I started with the Virtex4_PPC_Example_9_2.zip =
-in EDK/EDKexamples
-directory).&nbsp;&nbsp; Add the sysace driver into the design and (w/ =
-interrupts
-on) and make sure you have uartlite selected (with interrupts on).&nbsp; =
-Build
-the design and use the xparameters_403.h file to build your =
-kernel.&nbsp; In
-this case, be sure to turn on uartlite console support and turn off =
-82550
-console support or your kernel will not work.&nbsp; Also be sure to add =
-Ext3
-filesystem to your kernel config.&nbsp; Once you add the sysace driver =
-support,
-you can then create a ace file and replace their kernel on the compact =
-flash
-and boot it to their root filesystem (works, I just did it). &nbsp;This =
-gets
-you a full booted kernel on a working root filesystem with min =
-work.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>For references see:&nbsp; <o:p></o:p></p>
-
-<p class=3DMsoNormal>&nbsp; <a
-href=3D"http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex">http:/=
-/wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex</a><o:p></o:p></p>
-
-<p class=3DMsoNormal>&nbsp; <a
-href=3D"http://simfami.marlab.ac.uk/piprg/wiki/index.php?title=3DInstalli=
-ng_Linux_Kernel_2.6.23_on_the_PPC405_core_of_a_Xilinx_ML403_board">http:/=
-/simfami.marlab.ac.uk/piprg/wiki/index.php?title=3DInstalling_Linux_Kerne=
-l_2.6.23_on_the_PPC405_core_of_a_Xilinx_ML403_board</a><o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>--phil<o:p></o:p></p>
-
-<p class=3DMsoNormal>&nbsp; <o:p></o:p></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C889E6.7854B9B5--
+-Scott
