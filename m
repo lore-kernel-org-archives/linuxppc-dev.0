@@ -1,22 +1,29 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6B6E2DDE26
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 00:57:04 +1100 (EST)
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id CC15DDDF0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 02:27:15 +1100 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id A06B921D6ED
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:27:21 +0100 (CET)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id A8DCB900A9
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:27:13 +0100 (CET)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id VMwtFRz9pd4w for <linuxppc-dev@ozlabs.org>;
+	Wed, 19 Mar 2008 16:27:12 +0100 (CET)
+Received: from ibook.aepfle.de (DSL01.83.171.150.73.ip-pool.NEFkom.net
+	[83.171.150.73]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 16:27:12 +0100 (CET)
+Date: Wed, 19 Mar 2008 16:27:22 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: crash in init_ipic_sysfs on efika
+Message-ID: <20080319152722.GA9208@aepfle.de>
+References: <20080317195305.GA13298@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] [POWERPC] Xilinx: Serial: Adding 8250 console support to
-	OFserial (resolve)
-Date: Wed, 19 Mar 2008 07:54:00 -0600
-In-Reply-To: <20080317190924.3B2C0A4807A@mail109-dub.bigfish.com>
-References: <20080317190924.3B2C0A4807A@mail109-dub.bigfish.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: <linuxppc-dev@ozlabs.org>,
-	<jwboyer@linux.vnet.ibm.com>
-Message-Id: <20080319135659.AB652800069@mail179-sin.bigfish.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080317195305.GA13298@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,291 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thru more console debugging, I have found the real problem that kept the
-OF console from working with the 8250.
+On Mon, Mar 17, Olaf Hering wrote:
 
-It was a combination of the broken bootstrap loader with the 16550
-together with reg-shift not being pulled from the OF device tree in the
-of_serial.c and the base address of the device needing to be +3 due to
-the reg-shift.
+> The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL if
+> ipic_init() fails. init_ipic_sysfs() will crash in that case.
+> 
+> Something like this may fix it:
+> 
+> Index: linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
+> ===================================================================
+> --- linux-2.6.25-rc6.orig/arch/powerpc/sysdev/ipic.c
+> +++ linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
+> @@ -906,7 +906,7 @@ static int __init init_ipic_sysfs(void)
+>  {
+>         int rc;
+>  
+> -       if (!primary_ipic->regs)
+> +       if (!primary_ipic || !primary_ipic->regs)
+>                 return -ENODEV;
+>         printk(KERN_DEBUG "Registering ipic with sysfs...\n");
 
-I believe there's been a patch for the reg-shift not being pulled from
-the OF device tree in of_serial.c and I'll check on that.
+ipic_init() is not called for every board.
+This change for the used config fixes the crash as well.
 
-Bottom line: this patch is not needed I believe.  Thanks for the
-patience as I learn how the console works as it's definitely tough to
-get the hang of.
-
--- John
-
-
------Original Message-----
-From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org] On =
-Behalf
-Of John Linn
-Sent: Monday, March 17, 2008 1:09 PM
-To: linuxppc-dev@ozlabs.org; jwboyer@linux.vnet.ibm.com
-Cc: John Linn
-Subject: [PATCH] [POWERPC] Xilinx: Serial: Adding 8250 console support
-to OFserial
-
-This change adds code to serial_of.c to support the 8250 console.
-Initialization was added to get the UART data from the device tree
-and setup the UART and console for the 8250.
-
-The cmd line was not being used for the baud rate and is still not
-being used as the speed for the uart is being pulled from the UART
-properties in the device tree. The input clock frequency for the
-UART must be specified in the device tree so the baud rate generator
-can be setup.
-
-<Signed-off-by: John Linn <john.linn@xilinx.com>
-
----
-
-Please pull this patch for 2.6.26.
----
- drivers/serial/8250.c      |   20 ++++++--
- drivers/serial/of_serial.c |  128
-++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 144 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index f94109c..7b32af1 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2366,7 +2366,7 @@ serial8250_type(struct uart_port *port)
- 	return uart_config[type].name;
- }
-=20
--static struct uart_ops serial8250_pops =3D {
-+struct uart_ops serial8250_pops =3D {
- 	.tx_empty	=3D serial8250_tx_empty,
- 	.set_mctrl	=3D serial8250_set_mctrl,
- 	.get_mctrl	=3D serial8250_get_mctrl,
-@@ -2519,10 +2519,13 @@ serial8250_console_write(struct console *co,
-const char *s, unsigned int count)
- static int __init serial8250_console_setup(struct console *co, char
-*options)
- {
- 	struct uart_port *port;
-+
-+#ifndef CONFIG_SERIAL_OF_PLATFORM
- 	int baud =3D 9600;
- 	int bits =3D 8;
- 	int parity =3D 'n';
- 	int flow =3D 'n';
-+#endif
-=20
- 	/*
- 	 * Check whether an invalid uart number has been specified, and
-@@ -2535,10 +2538,13 @@ static int __init
-serial8250_console_setup(struct console *co, char *options)
- 	if (!port->iobase && !port->membase)
- 		return -ENODEV;
-=20
-+#ifndef CONFIG_SERIAL_OF_PLATFORM
- 	if (options)
- 		uart_parse_options(options, &baud, &parity, &bits,
-&flow);
--
- 	return uart_set_options(port, co, baud, parity, bits, flow);
-+#else
-+	return 0;
-+#endif
- }
-=20
- static int serial8250_console_early_setup(void)
-@@ -2547,7 +2553,7 @@ static int serial8250_console_early_setup(void)
- }
-=20
- static struct uart_driver serial8250_reg;
--static struct console serial8250_console =3D {
-+struct console serial8250_console =3D {
- 	.name		=3D "ttyS",
- 	.write		=3D serial8250_console_write,
- 	.device		=3D uart_console_device,
-@@ -2558,13 +2564,19 @@ static struct console serial8250_console =3D {
- 	.data		=3D &serial8250_reg,
- };
-=20
--static int __init serial8250_console_init(void)
-+int __init serial8250_console_init(void)
- {
- 	serial8250_isa_init_ports();
- 	register_console(&serial8250_console);
- 	return 0;
- }
-+
-+/* when OF is being used with the 8250 console, the OF hooks in the=20
-+   8250 console
-+*/
-+#if defined(CONFIG_SERIAL_8250_CONSOLE) &&
-!defined(CONFIG_SERIAL_OF_PLATFORM)
- console_initcall(serial8250_console_init);
-+#endif
-=20
- int serial8250_find_port(struct uart_port *p)
- {
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index a64d858..eed245a 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -13,9 +13,11 @@
- #include <linux/module.h>
- #include <linux/serial_core.h>
- #include <linux/serial_8250.h>
-+#include <linux/console.h>
-=20
- #include <asm/of_platform.h>
- #include <asm/prom.h>
-+#include <asm/io.h>
-=20
- struct of_serial_info {
- 	int type;
-@@ -158,6 +160,132 @@ static void __exit of_platform_serial_exit(void)
- };
- module_exit(of_platform_serial_exit);
-=20
-+#if defined(CONFIG_SERIAL_8250_CONSOLE)
-+
-+/* when an 8250 console is being used and OF, the OF needs to
-+   setup the uart before the 8250 console initializes
-+*/
-+extern struct console serial8250_console;
-+extern int serial8250_console_init(void);
-+extern int early_serial_console_setup(struct uart_port *);
-+extern struct uart_ops serial8250_pops;
-+
-+static struct uart_port of_uart_port;
-+
-+static struct of_device_id __devinit uart_of_match[] =3D {
-+	{ .type =3D "serial", .compatible =3D "ns16550", },
-+	{},
-+};
-+
-+static unsigned int *spd;
-+
-+/*
-+ * Setup the uart based on OF properties
-+ */
-+static int __init uart_of_setup(struct device_node *np,
-+					struct uart_port *port)
-+{
-+	struct resource resource;
-+	const unsigned int *clk, *regshift;
-+	int ret;
-+
-+	memset(port, 0, sizeof *port);
-+	spd =3D of_get_property(np, "current-speed", NULL);
-+	regshift =3D of_get_property(np, "reg-shift", NULL);
-+	clk =3D of_get_property(np, "clock-frequency", NULL);
-+	if (!clk) {
-+		return -ENODEV;
-+	}
-+
-+	ret =3D of_address_to_resource(np, 0, &resource);
-+	if (ret) {
-+		return ret;
-+	}
-+
-+	spin_lock_init(&port->lock);
-+	port->irq =3D irq_of_parse_and_map(np, 0);
-+	port->iotype =3D UPIO_MEM;
-+	port->type =3D PORT_16550;
-+	port->uartclk =3D *clk;
-+	port->flags =3D UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
-+		| UPF_FIXED_PORT;
-+	if (!spd)
-+		*spd =3D 9600;
-+	=09
-+	port->custom_divisor =3D *clk / (16 * (*spd));
-+
-+	if (regshift) {
-+		port->regshift =3D *regshift;
-+		port->mapbase =3D resource.start + ((1 << *regshift) - 1);
-+	} else {
-+		port->mapbase =3D resource.start;
-+	}
-+	return 0;
-+}
-+
-+static struct device_node __init *console_of_find_device(int id)
-+{
-+	struct device_node *np;
-+        const struct of_device_id *matches =3D uart_of_match;
-+
-+	while (matches->compatible[0]) {
-+		for_each_compatible_node(np, NULL, matches->compatible)
-{
-+			if (!of_match_node(matches, np))
-+				continue;
-+
-+                        of_node_put(np);
-+                        return np;
-+		}
-+		matches++;
-+	}
-+	return 0;
-+}
-+
-+static int __init console_setup(struct console *co)
-+{
-+	struct device_node *np;
-+	int bits =3D 8;
-+	int parity =3D 'n';
-+	int flow =3D 'n';
-+
-+	/* Find a matching uart port in the device tree */
-+	np =3D console_of_find_device(co->index);
-+	if (!np)
-+		return -ENODEV;
-+	=09
-+	if (uart_of_setup(np, &of_uart_port))
-+		return -ENODEV;
-+
-+	/* registers mapped yet? */
-+	if (!of_uart_port.membase) {
-+		of_uart_port.membase =3D ioremap(of_uart_port.mapbase,
-64);
-+		if (!of_uart_port.membase)
-+			return -ENODEV;
-+	}
-+
-+	of_uart_port.ops =3D &serial8250_pops;
-+	uart_set_options(&of_uart_port, co, *spd, parity, bits, flow);
-+
-+	return 0;
-+}
-+
-+/* This function sets up the 8250 console by getting the OF data at=20
-+   console init time and then setting up the 8250 uart and console.=20
-+   This solves the problem of the OF uart not being setup in time=20
-+   for the 8250 console to use it.
-+*/
-+static int __init of_console_init(void)
-+{
-+	if (!console_setup(&serial8250_console)) {
-+		early_serial_setup(&of_uart_port);=09
-+		serial8250_console_init();=09
-+	}
-+	return 0;
-+}
-+
-+console_initcall(of_console_init);
-+#endif
-+
- MODULE_AUTHOR("Arnd Bergmann <arnd@arndb.de>");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("Serial Port driver for Open Firmware platform
-devices");
---=20
-1.5.2.1
-
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+@@ -168,14 +168,14 @@ CONFIG_PPC_MULTIPLATFORM=y
+ # CONFIG_PPC_86xx is not set
+ CONFIG_CLASSIC32=y
+ CONFIG_PPC_CHRP=y
+-CONFIG_PPC_MPC512x=y
+-CONFIG_PPC_MPC5121=y
+-CONFIG_MPC5121_ADS=y
++# CONFIG_PPC_MPC512x is not set
++# CONFIG_PPC_MPC5121 is not set
++# CONFIG_MPC5121_ADS is not set
+ CONFIG_PPC_MPC52xx=y
+-CONFIG_PPC_MPC5200_SIMPLE=y
++# CONFIG_PPC_MPC5200_SIMPLE is not set
+ CONFIG_PPC_EFIKA=y
+ # CONFIG_PPC_LITE5200 is not set
+-CONFIG_PPC_MPC5200_BUGFIX=y
++# CONFIG_PPC_MPC5200_BUGFIX is not set
+ CONFIG_PPC_PMAC=y
+ # CONFIG_PPC_CELL is not set
+ # CONFIG_PPC_CELL_NATIVE is not set
