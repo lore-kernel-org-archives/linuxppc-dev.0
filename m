@@ -1,19 +1,16 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 86051DDF0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 04:28:33 +1100 (EST)
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-	jacmet@sunsite.dk, git-dev@xilinx.com
-Subject: [PATCH] [RFC][v2] Xilinx: Add generic configuration option to enable
-	all xilinx drivers.
-Date: Wed, 19 Mar 2008 10:24:42 -0700
-In-Reply-To: fa686aa40803182205n741c652ci1e1871707c5c3e13@mail.gmail.com
-References: fa686aa40803182205n741c652ci1e1871707c5c3e13@mail.gmail.com
-Message-Id: <20080319172447.EBA579A8074@mail205-sin.bigfish.com>
+Return-Path: <mhench@engagenet.com>
+Received: from owa.engagenet.com (unknown [66.195.150.24])
+	by ozlabs.org (Postfix) with ESMTP id 48443DDF9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 04:39:28 +1100 (EST)
+MIME-Version: 1.0
+Subject: [[PATCH] corrected MPC8313 NAND fixes
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 19 Mar 2008 12:40:15 -0500
+Message-ID: <6629C06B144F5C4098DFF95C4FF9DAF702BA1D11@mailsrv.engagenet.com>
+From: "Mike Hench" <mhench@engagenet.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,123 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In the future, this will be used to provide similar configuration for
-PowerPC and Microblaze.  It may also be convenient for those using
-Xilinx cores as peripherals for external processors, rather than
-explicitly having a dependance on the processor architecture.
+Fix a race condition in fsl_elbc_run_command
+Fix incorrect usage of clearbits32 that bashed option register
+Remove work around for bashed register
 
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-
-[V2] Updated to depend on PPC32, rather than just XILINX_VIRTEX, to let
-these drivers be compiled in more configurations.
+Signed-off-by: Mike Hench <mhench@elutions.com>
 
 ---
 
-Grant,
-
-There is still the issue of the ppc part, which is
-required for backward compatibility.  If this has to wait until ppc
-dies, then that's fine with me, I guess.
-
-Steve
----
- drivers/block/Kconfig  |    2 +-
- drivers/char/Kconfig   |    2 +-
- drivers/misc/Kconfig   |   17 +++++++++++++++++
- drivers/serial/Kconfig |    2 +-
- drivers/spi/Kconfig    |    2 +-
- drivers/video/Kconfig  |    2 +-
- 6 files changed, 22 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-index 4d0119e..7f55ba4 100644
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -412,7 +412,7 @@ source "drivers/s390/block/Kconfig"
- 
- config XILINX_SYSACE
- 	tristate "Xilinx SystemACE support"
--	depends on 4xx
-+	depends on XILINX_DRIVERS
- 	help
- 	  Include support for the Xilinx SystemACE CompactFlash interface
- 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 157ae2a..8230ad1 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -833,7 +833,7 @@ config DTLK
- 
- config XILINX_HWICAP
- 	tristate "Xilinx HWICAP Support"
--	depends on XILINX_VIRTEX
-+	depends on XILINX_DRIVERS
- 	help
- 	  This option enables support for Xilinx Internal Configuration
- 	  Access Port (ICAP) driver.
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index b5e67c0..89f9309 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -233,3 +233,20 @@ config ATMEL_SSC
- 	  If unsure, say N.
- 
- endif # MISC_DEVICES
-+endmenu
-+
-+
-+#
-+# Xilinx devices and common device driver infrastructure
-+#
-+
-+config XILINX_DRIVERS
-+	bool
-+	depends on PPC32
-+	default y
-+	---help---
-+	  This option is used to enable all of the Xilinx drivers on
-+	  supported architectures.  This is often useful if you have a
-+	  Xilinx FPGA in a system, either using embedded processors
-+	  internal to the FPGA or external processors.
-+
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index d7e1996..d4e8879 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -757,7 +757,7 @@ config SERIAL_IMX_CONSOLE
- 
- config SERIAL_UARTLITE
- 	tristate "Xilinx uartlite serial port support"
--	depends on PPC32
-+	depends on XILINX_DRIVERS
- 	select SERIAL_CORE
- 	help
- 	  Say Y here if you want to use the Xilinx uartlite serial controller.
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index abf0504..c66838f 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -183,7 +183,7 @@ config SPI_TXX9
- 
- config SPI_XILINX
- 	tristate "Xilinx SPI controller"
--	depends on SPI_MASTER && XILINX_VIRTEX && EXPERIMENTAL
-+	depends on SPI_MASTER && XILINX_DRIVERS && EXPERIMENTAL
- 	select SPI_BITBANG
- 	help
- 	  This exposes the SPI controller IP from the Xilinx EDK.
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 5b3dbcf..a66ff4b 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1871,7 +1871,7 @@ config FB_PS3_DEFAULT_SIZE_M
- 
- config FB_XILINX
- 	tristate "Xilinx frame buffer support"
--	depends on FB && XILINX_VIRTEX
-+	depends on FB && XILINX_DRIVERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--- 
-1.5.3.4-dirty
+--- linux-2.6.25-rc5.orig/drivers/mtd/nand/fsl_elbc_nand.c
+2008-03-10 00:22:27.000000000 -0500
++++ linux-2.6.25-rc5/drivers/mtd/nand/fsl_elbc_nand.c	2008-03-19
+12:34:36.000000000 -0500
+@@ -379,11 +379,11 @@ static int fsl_elbc_run_command(struct m
+ 	         in_be32(&lbc->fbar), in_be32(&lbc->fpar),
+ 	         in_be32(&lbc->fbcr), priv->bank);
+=20
++	ctrl->irq_status =3D 0;
+ 	/* execute special operation */
+ 	out_be32(&lbc->lsor, priv->bank);
+=20
+ 	/* wait for FCM complete flag or timeout */
+-	ctrl->irq_status =3D 0;
+ 	wait_event_timeout(ctrl->irq_wait, ctrl->irq_status,
+ 	                   FCM_TIMEOUT_MSECS * HZ/1000);
+ 	ctrl->status =3D ctrl->irq_status;
+@@ -861,7 +861,7 @@ static int fsl_elbc_chip_init_tail(struc
+ 	/* adjust Option Register and ECC to match Flash page size */
+ 	if (mtd->writesize =3D=3D 512) {
+ 		priv->page_size =3D 0;
+-		clrbits32(&lbc->bank[priv->bank].or, ~OR_FCM_PGS);
++		clrbits32(&lbc->bank[priv->bank].or, OR_FCM_PGS);
+ 	} else if (mtd->writesize =3D=3D 2048) {
+ 		priv->page_size =3D 1;
+ 		setbits32(&lbc->bank[priv->bank].or, OR_FCM_PGS);
+@@ -882,11 +882,6 @@ static int fsl_elbc_chip_init_tail(struc
+ 		return -1;
+ 	}
+=20
+-	/* The default u-boot configuration on MPC8313ERDB causes
+errors;
+-	 * more delay is needed.  This should be safe for other boards
+-	 * as well.
+-	 */
+-	setbits32(&lbc->bank[priv->bank].or, 0x70);
+ 	return 0;
+ }
