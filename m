@@ -1,24 +1,22 @@
-Return-Path: <rob.schalken@core-vision.nl>
-Received: from mail140.messagelabs.com (mail140.messagelabs.com
-	[85.158.137.83])
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail140.messagelabs.com",
-	Issuer "MessageLabs" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8E8E5DDE1E
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3F75ADDED2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Mar 2008 01:03:10 +1100 (EST)
-Received: from arcobel.nl (adcsvr [172.16.100.34])
-	by mailsvr.arcobel.nl (8.13.1/8.13.1/20060317.1) with ESMTP id
-	m2JE2uvm009131
-	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Mar 2008 15:03:01 +0100
-Subject: Uart(lite)/ELDK 4.1 section mismatch -> ML403
+	Thu, 20 Mar 2008 02:11:15 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C889C9.EE3668E4"
-Date: Wed, 19 Mar 2008 15:01:54 +0100
-Message-ID: <2516330804619D4EA81F9AC9ACE9D874341E39@ADCSVR.adc.arcobel.nl>
-From: "Rob Schalken" <rob.schalken@core-vision.nl>
-To: <linuxppc-embedded@ozlabs.org>
+	boundary="----_=_NextPart_001_01C889CE.8F0A5900"
+Subject: RE: Uart(lite)/ELDK 4.1 section mismatch -> ML403
+Date: Wed, 19 Mar 2008 08:36:02 -0600
+In-Reply-To: <2516330804619D4EA81F9AC9ACE9D874341E39@ADCSVR.adc.arcobel.nl>
+References: <2516330804619D4EA81F9AC9ACE9D874341E39@ADCSVR.adc.arcobel.nl>
+From: "John Linn" <John.Linn@xilinx.com>
+To: "Rob Schalken" <rob.schalken@core-vision.nl>,
+	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20080319143615.2AFDC1AE81B9@mail73-dub.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,102 +29,134 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C889C9.EE3668E4
+------_=_NextPart_001_01C889CE.8F0A5900
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="US-ASCII"
 Content-Transfer-Encoding: quoted-printable
 
-I=20want=20to=20Port=20the=20Linux=202.6.24.3=20to=20the=20ML403=20board.=20=
-=20I=20tried=20some
-different=20configurations:
+Hi Rob,
+
+=20
+
+It sounds like your xparameters*.h with the #defines for the device
+addresses is right for the uart as the bootstrap loader is working.
+
+=20
+
+I don't believe early boot works was my experience with it.
+
+=20
+
+What messages did you see in the __log_bug as this is the best tool, is
+it booting all the way without a console or crashing during boot when it
+tries to start the console?
+
+=20
+
+Make sure the #define XPAR_DDR_0_SIZE 0x4000000 is in the
+xparameters_ml403.h. It it's wrong the kernel will crash quickly based
+on my experience.
+
+=20
+
+Xilinx has a git server that I have been working on updating, not sure
+how many changes there are in our git server as opposed to what you
+have.  I have been testing arch/ppc with the ML405 which is the same as
+the ML403 except a larger FPGA, but my testing has been with the 550
+UART as the default.  I realize it's a tangent, but you can pull from
+our server if you want as I know the state of it
+(git://git.xilinx.com/linux-2.6-xlnx.git). =20
+
+=20
+
+Thanks
+
+John Linn
+
+=20
+
+________________________________
+
+From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
+Behalf Of Rob Schalken
+Sent: Wednesday, March 19, 2008 8:02 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: Uart(lite)/ELDK 4.1 section mismatch -> ML403
+
+=20
+
+I want to Port the Linux 2.6.24.3 to the ML403 board.  I tried some
+different configurations:
 
 =20
 
 **UartLite
 
-After=20changing=20some=20defines=20and=20creating=20some=20symbolic=20lin=
-k,=20the=20simple
-boot=20loader=20seems=20to
+After changing some defines and creating some symbolic link, the simple
+boot loader seems to
 
-Work.=20My=20kernel=20also=20starts=20because=20when=20I=20read=20the=20me=
-mory=20(using=20XMD),
-I=20could=20read=20the=20_log_buf=20and
+Work. My kernel also starts because when I read the memory (using XMD),
+I could read the _log_buf and
 
-Some=20information=20was=20put=20in.=20I=20used=20the=20kernel=20command=20=
-line:
-console=3DttyUL0=20ip=3Doff=20root=3D/dev/ram=20rw.=20=20
+Some information was put in. I used the kernel command line:
+console=3DttyUL0 ip=3Doff root=3D/dev/ram rw. =20
 
-But=20I=20did=20not=20get=20any=20kernel=20message=20on=20my=20serial=20co=
-nsole!=20When=20I
-enabled=20the=20early=20boot=20text=20over
+But I did not get any kernel message on my serial console! When I
+enabled the early boot text over
 
-Serial=20port,=20the=20compiler=20gives=20some=20errors=20(gen550_init,=20=
-RS_TABLE_SIZE,
+Serial port, the compiler gives some errors (gen550_init, RS_TABLE_SIZE,
 etc.)!
 
 =20
 
-**16550=20Uart
+**16550 Uart
 
-After=20my=20disaster=20with=20the=20Uartlite,=20I=20started=20to=20use=20=
-the=2016550=20uart.
-But=20I=20immediately=20get=20the=20following
+After my disaster with the Uartlite, I started to use the 16550 uart.
+But I immediately get the following
 
 Error:
 
-arch/ppc/boot/common/ns16550.c:22:=20error:=20'RS_TABLE_SIZE'=20undeclared=
+arch/ppc/boot/common/ns16550.c:22: error: 'RS_TABLE_SIZE' undeclared
+here (not in a function)
 
-here=20(not=20in=20a=20function)
+arch/ppc/boot/common/ns16550.c:24: error: 'SERIAL_PORT_DFNS' undeclared
+here (not in a function)
 
-arch/ppc/boot/common/ns16550.c:24:=20error:=20'SERIAL_PORT_DFNS'=20undecla=
-red
-here=20(not=20in=20a=20function)
+make[2]: *** [arch/ppc/boot/common/ns16550.o] Error 1
 
-make[2]:=20***=20[arch/ppc/boot/common/ns16550.o]=20Error=201
+make[1]: *** [arch/ppc/boot/common] Error 2
 
-make[1]:=20***=20[arch/ppc/boot/common]=20Error=202
-
-make:=20***=20[zImage]=20Error=202
+make: *** [zImage] Error 2
 
 =20
 
-I=20use=20ELDK=204.1=20toolchain,=20which=20result=20in=20the=20following=20=
-section=20mismatch
+I use ELDK 4.1 toolchain, which result in the following section mismatch
 (warning)
 
-WARNING:=20vmlinux.o(.text+0x223c):=20Section=20mismatch:=20reference=20to=
+WARNING: vmlinux.o(.text+0x223c): Section mismatch: reference to
+.init.text:earl y_init (between 'start_here' and 'initial_mmu')
 
-.init.text:earl=20y_init=20(between=20'start_here'=20and=20'initial_mmu')
+WARNING: vmlinux.o(.text+0x2254): Section mismatch: reference to
+.init.text:mach ine_init (between 'start_here' and 'initial_mmu')
 
-WARNING:=20vmlinux.o(.text+0x2254):=20Section=20mismatch:=20reference=20to=
+WARNING: vmlinux.o(.text+0x2258): Section mismatch: reference to
+.init.text:MMU_ init (between 'start_here' and 'initial_mmu')
 
-.init.text:mach=20ine_init=20(between=20'start_here'=20and=20'initial_mmu'=
-)
+WARNING: vmlinux.o(.text+0x22b2): Section mismatch: reference to
+.init.text:star t_kernel (between 'start_here' and 'initial_mmu')
 
-WARNING:=20vmlinux.o(.text+0x2258):=20Section=20mismatch:=20reference=20to=
-
-.init.text:MMU_=20init=20(between=20'start_here'=20and=20'initial_mmu')
-
-WARNING:=20vmlinux.o(.text+0x22b2):=20Section=20mismatch:=20reference=20to=
-
-.init.text:star=20t_kernel=20(between=20'start_here'=20and=20'initial_mmu'=
-)
-
-WARNING:=20vmlinux.o(.text+0x22b6):=20Section=20mismatch:=20reference=20to=
-
-.init.text:star=20t_kernel=20(between=20'start_here'=20and=20'initial_mmu'=
-)
+WARNING: vmlinux.o(.text+0x22b6): Section mismatch: reference to
+.init.text:star t_kernel (between 'start_here' and 'initial_mmu')
 
 =20
 
-By=20the=20way,=20the=20hardware=20is=20working,=20this=20has=20been=20tes=
-ted!!
+By the way, the hardware is working, this has been tested!!
 
 =20
 
-Could=20someone=20help=20to=20get=20a=20uart=20work!=20I=20only=20want=20t=
-o=20receive=20a=20message
-from=20the=20kernel!!!!=20
+Could someone help to get a uart work! I only want to receive a message
+from the kernel!!!!=20
 
 =20
 
@@ -134,260 +164,619 @@ from=20the=20kernel!!!!=20
 
 
 ______________________________________________________________________
-This=20email=20has=20been=20scanned=20by=20the=20MessageLabs=20Email=20Sec=
-urity=20System.
-For=20more=20information=20please=20visit=20http://www.messagelabs.com/ema=
-il=20
+This email has been scanned by the MessageLabs Email Security System.
+For more information please visit http://www.messagelabs.com/email=20
 ______________________________________________________________________
-------_=_NextPart_001_01C889C9.EE3668E4
+
+
+------_=_NextPart_001_01C889CE.8F0A5900
 Content-Type: text/html;
-	charset="us-ascii"
+	charset="US-ASCII"
 Content-Transfer-Encoding: quoted-printable
 
-<html=20xmlns:v=3D"urn:schemas-microsoft-com:vml"=20xmlns:o=3D"urn:schemas=
--microsoft-com:office:office"=20xmlns:w=3D"urn:schemas-microsoft-com:offic=
-e:word"=20xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml"=20x=
-mlns=3D"http://www.w3.org/TR/REC-html40">
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40"
+xmlns:ns0=3D"http://schemas.microsoft.com/office/2004/12/omml">
 
 <head>
-<meta=20http-equiv=3DContent-Type=20content=3D"text/html;=20charset=3Dus-a=
-scii">
-<meta=20name=3DGenerator=20content=3D"Microsoft=20Word=2012=20(filtered=20=
-medium)">
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
 <style>
-<!--
-=20/*=20Font=20Definitions=20*/
-=20@font-face
-=09{font-family:Wingdings;
-=09panose-1:5=200=200=200=200=200=200=200=200=200;}
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--a:link
+	{mso-style-priority:99;}
+span.MSOHYPERLINK
+	{mso-style-priority:99;}
+a:visited
+	{mso-style-priority:99;}
+span.MSOHYPERLINKFOLLOWED
+	{mso-style-priority:99;}
+p.MSOACETATE
+	{mso-style-priority:99;}
+li.MSOACETATE
+	{mso-style-priority:99;}
+div.MSOACETATE
+	{mso-style-priority:99;}
+p.MSOLISTPARAGRAPH
+	{mso-style-priority:34;}
+li.MSOLISTPARAGRAPH
+	{mso-style-priority:34;}
+div.MSOLISTPARAGRAPH
+	{mso-style-priority:34;}
+span.BALLOONTEXTCHAR
+	{mso-style-priority:99;}
+
+ /* Font Definitions */
+ @font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
 @font-face
-=09{font-family:Wingdings;
-=09panose-1:5=200=200=200=200=200=200=200=200=200;}
-@font-face
-=09{font-family:Calibri;
-=09panose-1:2=2015=205=202=202=202=204=203=202=204;}
-@font-face
-=09{font-family:Tahoma;
-=09panose-1:2=2011=206=204=203=205=204=204=202=204;}
-=20/*=20Style=20Definitions=20*/
-=20p.MsoNormal,=20li.MsoNormal,=20div.MsoNormal
-=09{margin:0in;
-=09margin-bottom:.0001pt;
-=09font-size:11.0pt;
-=09font-family:"Calibri","sans-serif";}
-a:link,=20span.MsoHyperlink
-=09{mso-style-priority:99;
-=09color:blue;
-=09text-decoration:underline;}
-a:visited,=20span.MsoHyperlinkFollowed
-=09{mso-style-priority:99;
-=09color:purple;
-=09text-decoration:underline;}
-p.MsoAcetate,=20li.MsoAcetate,=20div.MsoAcetate
-=09{mso-style-priority:99;
-=09mso-style-link:"Balloon=20Text=20Char";
-=09margin:0in;
-=09margin-bottom:.0001pt;
-=09font-size:8.0pt;
-=09font-family:"Tahoma","sans-serif";}
-p.MsoListParagraph,=20li.MsoListParagraph,=20div.MsoListParagraph
-=09{mso-style-priority:34;
-=09margin-top:0in;
-=09margin-right:0in;
-=09margin-bottom:0in;
-=09margin-left:.5in;
-=09margin-bottom:.0001pt;
-=09font-size:11.0pt;
-=09font-family:"Calibri","sans-serif";}
-span.EmailStyle17
-=09{mso-style-type:personal-compose;
-=09font-family:"Calibri","sans-serif";
-=09color:windowtext;}
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:Calibri;}
+h1
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.3in;
+	text-indent:-.3in;
+	page-break-after:avoid;
+	mso-list:l0 level1 lfo3;
+	font-size:16.0pt;
+	font-family:Calibri;}
+h2
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:.4in;
+	text-indent:-.4in;
+	page-break-after:avoid;
+	mso-list:l0 level2 lfo3;
+	font-size:14.0pt;
+	font-family:Calibri;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.5in;
+	text-indent:-.5in;
+	page-break-after:avoid;
+	mso-list:l1 level3 lfo6;
+	font-size:13.0pt;
+	font-family:Calibri;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoAcetate, li.MsoAcetate, div.MsoAcetate
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:Tahoma;}
 span.BalloonTextChar
-=09{mso-style-name:"Balloon=20Text=20Char";
-=09mso-style-priority:99;
-=09mso-style-link:"Balloon=20Text";
-=09font-family:"Tahoma","sans-serif";}
-.MsoChpDefault
-=09{mso-style-type:export-only;}
-@page=20Section1
-=09{size:8.5in=2011.0in;
-=09margin:1.0in=201.0in=201.0in=201.0in;}
+	{font-family:Tahoma;}
+p.msolistparagraph, li.msolistparagraph, div.msolistparagraph
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:Calibri;}
+span.EmailStyle20
+	{mso-style-type:personal;
+	font-family:Calibri;
+	color:windowtext;}
+span.EmailStyle21
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
 div.Section1
-=09{page:Section1;}
-=20/*=20List=20Definitions=20*/
-=20@list=20l0
-=09{mso-list-id:935599073;
-=09mso-list-type:hybrid;
-=09mso-list-template-ids:5172888=20438195346=2068354051=2068354053=2068354=
-049=2068354051=2068354053=2068354049=2068354051=2068354053;}
-@list=20l0:level1
-=09{mso-level-start-at:0;
-=09mso-level-number-format:bullet;
-=09mso-level-text:\F0B7;
-=09mso-level-tab-stop:none;
-=09mso-level-number-position:left;
-=09text-indent:-.25in;
-=09font-family:Symbol;
-=09mso-fareast-font-family:Calibri;
-=09mso-bidi-font-family:"Times=20New=20Roman";}
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:1143350910;
+	mso-list-template-ids:1338282562;}
+@list l0:level1
+	{mso-level-style-link:"Heading 1";
+	mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l0:level2
+	{mso-level-style-link:"Heading 2";
+	mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l0:level3
+	{mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l0:level4
+	{mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l0:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l0:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l0:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l0:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l0:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
+@list l1
+	{mso-list-id:1860200171;
+	mso-list-template-ids:1400561736;}
+@list l1:level1
+	{mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l1:level2
+	{mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l1:level3
+	{mso-level-reset-level:level2;
+	mso-level-style-link:"Heading 3";
+	mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l1:level4
+	{mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l1:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l1:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l1:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l1:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l1:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
+@list l2
+	{mso-list-id:2077240681;
+	mso-list-template-ids:-762429638;}
+@list l2:level1
+	{mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l2:level2
+	{mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l2:level3
+	{mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l2:level4
+	{mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l2:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l2:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l2:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l2:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l2:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
 ol
-=09{margin-bottom:0in;}
+	{margin-bottom:0in;}
 ul
-=09{margin-bottom:0in;}
+	{margin-bottom:0in;}
 -->
 </style>
-<!--[if=20gte=20mso=209]><xml>
-=20<o:shapedefaults=20v:ext=3D"edit"=20spidmax=3D"1026"=20/>
-</xml><![endif]--><!--[if=20gte=20mso=209]><xml>
-=20<o:shapelayout=20v:ext=3D"edit">
-=20=20<o:idmap=20v:ext=3D"edit"=20data=3D"1"=20/>
-=20</o:shapelayout></xml><![endif]-->
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
 </head>
 
-<body=20lang=3DNL=20link=3Dblue=20vlink=3Dpurple>
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
-<div=20class=3DSection1>
+<div class=3DSection1>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>I=20want=20to=20Port=20the=20L=
-inux=202.6.24.3=20to=20the
-ML403=20board.=20&nbsp;I=20tried=20some=20different=20configurations:<o:p>=
-</o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Hi =
+Rob,<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>**UartLite<o:p></o:p></span></=
-p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>It sounds like your xparameters*.h =
+with the
+#defines for the device addresses is right for the uart as the bootstrap =
+loader
+is working.<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>After=20changing=20some=20defi=
-nes=20and=20creating
-some=20symbolic=20link,=20the=20simple=20boot=20loader=20seems=20to<o:p></=
-o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>Work.=20My=20kernel=20also=20s=
-tarts=20because=20when=20I=20read
-the=20memory=20(using=20XMD),=20I=20could=20read=20the=20_<i>log</i>_buf=20=
-and<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>I don&#8217;t believe early boot =
+works was
+my experience with it.<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>Some=20information=20was=20put=
-=20in.=20I=20used=20the
-kernel=20command=20line:=20console=3DttyUL0=20ip=3Doff=20root=3D/dev/ram=20=
-rw.&nbsp;=20<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>But=20I=20did=20not=20get=20an=
-y=20kernel=20message=20on=20my
-serial=20console!=20When=20I=20enabled=20the=20early=20boot=20text=20over<=
-o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>What messages did you see in the =
+__log_bug
+as this is the best tool, is it booting all the way without a console or
+crashing during boot when it tries to start the =
+console?<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>Serial=20port,=20the=20compile=
-r=20gives=20some=20errors
-(gen550_init,=20RS_TABLE_SIZE,=20etc.)!<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Make sure the #define =
+XPAR_DDR_0_SIZE
+0x4000000 is in the xparameters_ml403.h. It it&#8217;s wrong the kernel =
+will
+crash quickly based on my experience.<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>**16550=20Uart<o:p></o:p></spa=
-n></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>After=20my=20disaster=20with=20=
-the=20Uartlite,=20I
-started=20to=20use=20the=2016550=20uart.=20But=20I=20immediately=20get=20t=
-he=20following<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Xilinx has a git server that I have =
+been
+working on updating, not sure how many changes there are in our git =
+server as
+opposed to what you have.&nbsp; I have been testing arch/ppc with the =
+ML405 which is
+the same as the ML403 except a larger FPGA, but my testing has been with =
+the
+550 UART as the default.&nbsp; I realize it&#8217;s a tangent, but you =
+can pull from
+our server if you want as I know the state of it =
+(git://git.xilinx.com/linux-2.6-xlnx.git).
+&nbsp;<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>Error:<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->arch/ppc/boot/common/ns16550.c:22:
-error:=20'RS_TABLE_SIZE'=20undeclared=20here=20(not=20in=20a=20function)<o=
-:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Thanks<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->arch/ppc/boot/common/ns16550.c:24:
-error:=20'SERIAL_PORT_DFNS'=20undeclared=20here=20(not=20in=20a=20function=
-)<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>John =
+Linn<o:p></o:p></span></font></p>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->make[2]:=20***
-[arch/ppc/boot/common/ns16550.o]=20Error=201<o:p></o:p></span></p>
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->make[1]:=20***
-[arch/ppc/boot/common]=20Error=202<o:p></o:p></span></p>
+<div>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->make:=20***
-[zImage]=20Error=202<o:p></o:p></span></p>
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;font-family:"Times New Roman"'>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
-><o:p>&nbsp;</o:p></span></p>
+<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
 
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>I=20use=20ELDK=204.1=20toolcha=
-in,=20which=20result=20in
-the=20following=20section=20mismatch=20(warning)<o:p></o:p></span></p>
+</span></font></div>
 
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->WARNING:
-vmlinux.o(.text+0x223c):=20Section=20mismatch:=20reference=20to=20.init.te=
-xt:earl=20y_init
-(between=20'start_here'=20and=20'initial_mmu')<o:p></o:p></span></p>
-
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->WARNING:
-vmlinux.o(.text+0x2254):=20Section=20mismatch:=20reference=20to=20.init.te=
-xt:mach
-ine_init=20(between=20'start_here'=20and=20'initial_mmu')<o:p></o:p></span=
-></p>
-
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->WARNING:
-vmlinux.o(.text+0x2258):=20Section=20mismatch:=20reference=20to=20.init.te=
-xt:MMU_=20init
-(between=20'start_here'=20and=20'initial_mmu')<o:p></o:p></span></p>
-
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->WARNING:
-vmlinux.o(.text+0x22b2):=20Section=20mismatch:=20reference=20to=20.init.te=
-xt:star
-t_kernel=20(between=20'start_here'=20and=20'initial_mmu')<o:p></o:p></span=
-></p>
-
-<p=20class=3DMsoNormal=20style=3D'text-indent:35.4pt'><span=20lang=3DEN-US=
->WARNING:
-vmlinux.o(.text+0x22b6):=20Section=20mismatch:=20reference=20to=20.init.te=
-xt:star
-t_kernel=20(between=20'start_here'=20and=20'initial_mmu')<o:p></o:p></span=
-></p>
-
-<p=20class=3DMsoNormal><span=20lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>By=20the=20way,=20the=20hardwa=
-re=20is=20working,=20this
-has=20been=20tested!!<o:p></o:p></span></p>
-
-<p=20class=3DMsoNormal><span=20lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p=20class=3DMsoNormal><span=20lang=3DEN-US>Could=20someone=20help=20to=20=
-get=20a=20uart=20work!=20I
-only=20want=20to=20receive=20a=20message=20from=20the=20kernel!!!!=20<o:p>=
-</o:p></span></p>
-
-<p=20class=3DMsoNormal><span=20lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p=20class=3DMsoNormal><span=20lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
+linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] =
+<b><span
+style=3D'font-weight:bold'>On Behalf Of </span></b>Rob Schalken<br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Wednesday, March =
+19, 2008
+8:02 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> =
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> Uart(lite)/ELDK =
+4.1
+section mismatch -&gt; ML403</span></font><font size=3D3 face=3D"Times =
+New Roman"><span
+style=3D'font-size:12.0pt;font-family:"Times New =
+Roman"'><o:p></o:p></span></font></p>
 
 </div>
 
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
 
-<BR>
-______________________________________________________________________<BR>=
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>I
+want to Port the Linux 2.6.24.3 to the ML403 board. &nbsp;I tried some
+different configurations:<o:p></o:p></span></font></p>
 
-This=20email=20has=20been=20scanned=20by=20the=20MessageLabs=20Email=20Sec=
-urity=20System.<BR>
-For=20more=20information=20please=20visit=20http://www.messagelabs.com/ema=
-il=20<BR>
-______________________________________________________________________<BR>=
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>**UartLite<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>After
+changing some defines and creating some symbolic link, the simple boot =
+loader
+seems to<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>Work.
+My kernel also starts because when I read the memory (using XMD), I =
+could read
+the _<i><span style=3D'font-style:italic'>log</span></i>_buf =
+and<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>Some
+information was put in. I used the kernel command line: console=3DttyUL0 =
+ip=3Doff
+root=3D/dev/ram rw.&nbsp; <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>But
+I did not get any kernel message on my serial console! When I enabled =
+the early
+boot text over<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>Serial
+port, the compiler gives some errors (gen550_init, RS_TABLE_SIZE, =
+etc.)!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>**16550
+Uart<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>After
+my disaster with the Uartlite, I started to use the 16550 uart. But I
+immediately get the following<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>Error:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>arch/ppc/boot/common/ns16550.c:22: error: =
+'RS_TABLE_SIZE'
+undeclared here (not in a function)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>arch/ppc/boot/common/ns16550.c:24: error:
+'SERIAL_PORT_DFNS' undeclared here (not in a =
+function)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>make[2]: *** [arch/ppc/boot/common/ns16550.o] =
+Error 1<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>make[1]: *** [arch/ppc/boot/common] Error =
+2<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>make: *** [zImage] Error =
+2<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>I
+use ELDK 4.1 toolchain, which result in the following section mismatch
+(warning)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>WARNING: vmlinux.o(.text+0x223c): Section =
+mismatch:
+reference to .init.text:earl y_init (between 'start_here' and =
+'initial_mmu')<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>WARNING: vmlinux.o(.text+0x2254): Section =
+mismatch:
+reference to .init.text:mach ine_init (between 'start_here' and =
+'initial_mmu')<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>WARNING: vmlinux.o(.text+0x2258): Section =
+mismatch:
+reference to .init.text:MMU_ init (between 'start_here' and =
+'initial_mmu')<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>WARNING: vmlinux.o(.text+0x22b2): Section =
+mismatch:
+reference to .init.text:star t_kernel (between 'start_here' and =
+'initial_mmu')<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-indent:35.4pt'><font size=3D2 =
+face=3DCalibri><span
+style=3D'font-size:11.0pt'>WARNING: vmlinux.o(.text+0x22b6): Section =
+mismatch:
+reference to .init.text:star t_kernel (between 'start_here' and =
+'initial_mmu')<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>By
+the way, the hardware is working, this has been =
+tested!!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'>Could
+someone help to get a uart work! I only want to receive a message from =
+the
+kernel!!!! <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DCalibri><span =
+style=3D'font-size:11.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+lang=3DNL
+style=3D'font-size:12.0pt;font-family:"Times New Roman"'><br>
+______________________________________________________________________<br=
+>
+This email has been scanned by the MessageLabs Email Security =
+System.<br>
+For more information please visit http://www.messagelabs.com/email <br>
+______________________________________________________________________<o:=
+p></o:p></span></font></p>
+
+</div>
 
 </body>
 
 </html>
 
-------_=_NextPart_001_01C889C9.EE3668E4--
+------_=_NextPart_001_01C889CE.8F0A5900--
