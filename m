@@ -1,15 +1,19 @@
 Return-Path: <roland@redhat.com>
-Received: from QMTA05.emeryville.ca.mail.comcast.net
-	(qmta05.emeryville.ca.mail.comcast.net [76.96.30.48])
-	by ozlabs.org (Postfix) with ESMTP id EABBFDDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 08:08:27 +1100 (EST)
+Received: from QMTA01.emeryville.ca.mail.comcast.net
+	(qmta01.emeryville.ca.mail.comcast.net [76.96.30.16])
+	by ozlabs.org (Postfix) with ESMTP id 86CAADE0E2
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 08:17:54 +1100 (EST)
 From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc32: asm-offsets ptrace cruft
-Message-Id: <20080319210751.C95B126F995@magilla.localdomain>
-Date: Wed, 19 Mar 2008 14:07:51 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/8] ptrace: forced_successful_syscall_return() macro
+Message-Id: <20080319211714.8B14226F995@magilla.localdomain>
+Date: Wed, 19 Mar 2008 14:17:14 -0700 (PDT)
+Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	sparclinux@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These items in asm-offsets.c are not used anywhere.  Remove them.
+This adds the forced_successful_syscall_return() macro, a mate to
+force_successful_syscall_return() to test rather than set the condition.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 ---
- arch/powerpc/kernel/asm-offsets.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ include/linux/ptrace.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4b749c4..e932b43 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -26,8 +26,6 @@
- #ifdef CONFIG_PPC64
- #include <linux/time.h>
- #include <linux/hardirq.h>
--#else
--#include <linux/ptrace.h>
+diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+index ebe0c17..9272e63 100644
+--- a/include/linux/ptrace.h
++++ b/include/linux/ptrace.h
+@@ -124,8 +124,13 @@ int generic_ptrace_pokedata(struct task_struct *tsk, long addr, long data);
+  * is a no-op and the spurious error condition needs to be filtered out by some
+  * other means (e.g., in user-level, by passing an extra argument to the
+  * syscall handler, or something along those lines).
++ *
++ * On architectures that define force_successful_syscall_return(),
++ * forced_successful_syscall_return() should also be defined.
++ * It returns nonzero if force_successful_syscall_return() was just used.
+  */
+ #define force_successful_syscall_return() do { } while (0)
++#define forced_successful_syscall_return() 0
  #endif
  
- #include <asm/io.h>
-@@ -60,7 +58,6 @@ int main(void)
- 	DEFINE(AUDITCONTEXT, offsetof(struct task_struct, audit_context));
- #else
- 	DEFINE(THREAD_INFO, offsetof(struct task_struct, stack));
--	DEFINE(PTRACE, offsetof(struct task_struct, ptrace));
- #endif /* CONFIG_PPC64 */
- 
- 	DEFINE(KSP, offsetof(struct thread_struct, ksp));
-@@ -80,7 +77,6 @@ int main(void)
- 	DEFINE(PGDIR, offsetof(struct thread_struct, pgdir));
- #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
- 	DEFINE(THREAD_DBCR0, offsetof(struct thread_struct, dbcr0));
--	DEFINE(PT_PTRACED, PT_PTRACED);
- #endif
- #ifdef CONFIG_SPE
- 	DEFINE(THREAD_EVR0, offsetof(struct thread_struct, evr[0]));
+ /*
