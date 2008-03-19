@@ -1,17 +1,21 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 97781DE15C
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 09:31:47 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 19 Mar 2008 23:31:45 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <556445368AFA1C438794ABDA8901891C084C2113@USA0300MS03.na.xerox.net>
-Message-ID: <20080319223145.249840@gmx.net>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6C811DDF15
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 09:43:44 +1100 (EST)
+Date: Wed, 19 Mar 2008 17:43:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Mike Hench <mhench@engagenet.com>
+Subject: Re: question about of_platform vs 'platform'
+Message-ID: <20080319224345.GA5166@loki.buserror.net>
+References: <6629C06B144F5C4098DFF95C4FF9DAF702BA1D37@mailsrv.engagenet.com>
 MIME-Version: 1.0
-References: <556445368AFA1C438794ABDA8901891C084C2113@USA0300MS03.na.xerox.net>
-Subject: Re: 7448/2.6.20 problems (double boots or hangs)
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>, linuxppc-dev@ozlabs.org
-Cc: Nathan.Lund@xerox.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6629C06B144F5C4098DFF95C4FF9DAF702BA1D37@mailsrv.engagenet.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Wed, 19 Mar 2008 17:52:16 -0400
-> Von: "Leisner, Martin" <Martin.Leisner@xerox.com>
-> An: linuxppc-dev@ozlabs.org
-> CC: "Lund, Nathan \\(Nathan.Lund@usa.xerox.com\\)" <Nathan.Lund@xerox.com>
-> Betreff: 7448/2.6.20 problems (double boots or hangs)
-
-> My taiga board is now dead -- on our development board (with a taiga
-> kernel
-> and a custom modified dts) we see either
+On Wed, Mar 19, 2008 at 04:49:18PM -0500, Mike Hench wrote:
+> bus: 'of_platform': driver_probe_device: matching device e0007000.spi
+> with drive
+> r fsl-elbc
+> bus: 'platform': driver_probe_device: matching device fsl-usb2-udc.0
+> with driver
+>  mpc83xx_spi
+> bus: 'platform': driver_probe_device: matching device mpc83xx_wdt.0 with
+> driver
+> mpc83xx_spi
+> bus: 'platform': driver_probe_device: matching device fsl-i2c.0 with
+> driver mpc8
+> 3xx_spi
+> bus: 'platform': driver_probe_device: matching device fsl-i2c.1 with
+> driver mpc8
+> 3xx_spi
+> bus: 'platform': driver_probe_device: matching device Fixed MDIO bus.0
+> with driv
+> er mpc83xx_spi
 > 
-> 
-> 1) it hangs at the same point ("PID has table entries")
->    or
-> 2) it boots but it seems to restart the boot process after the "PID hash
-> table entries line"
-I observed the same behavior on my AmigaOne, if the PAGE_COHERENT flag was
-set for page mappings by CPU_FTR_NEED_COHERENT. The 7448 CPU doesn't need
-CPU_FTR_NEED_COHERENT to be set (no CPU bug that needs to be worked
-around), but there is no define for the 7448 in arch/powerpc/cputable.h in
-kernel v2.6.20 (but it's in v2.6.22!). Thus I guess it is detected as a
-744[0|5|7], which have this flag set.
-On the other side my hardware is _very_ buggy, so it's unlikely that this
-could be the problem on your hardware.
+> it seems there is some sort of mismatch
+> how did the kernel decide that SPI was an 'of_platform' device.
 
-Gerhard
--- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört?
-Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+It will try to match all device nodes under probed buses to an of_platform
+device.
+
+> The DTS file spi entry look similar to the i2c entries.
+> Those are treated as 'platform' devices.
+
+There is glue code in arch/powerpc/sysdev/fsl_soc.c:of_fsl_spi_probe() to
+create platform devices from the device nodes.
+
+It doesn't seem to be registered as an initcall, though -- you need to call
+it from platform code.  See mpc832x_rdb.c for an example.
+
+-Scott
