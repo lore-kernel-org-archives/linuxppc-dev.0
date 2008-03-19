@@ -1,21 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8897DDF86
+Return-Path: <jblack547@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id BB8BDDE07F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Mar 2008 03:17:47 +1100 (EST)
-Date: Wed, 19 Mar 2008 11:17:25 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: ???? <guojin02@tsinghua.org.cn>
-Subject: Re: Hi,friends, the question about the u-boot and device tree?
-Message-ID: <20080319161725.GK6177@ld0162-tx32.am.freescale.net>
-References: <405889728.25141@tsinghua.org.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <405889728.25141@tsinghua.org.cn>
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+	Thu, 20 Mar 2008 04:06:04 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so123193anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 19 Mar 2008 10:06:02 -0700 (PDT)
+Message-ID: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>
+Date: Wed, 19 Mar 2008 11:06:02 -0600
+From: "James Black" <jblack547@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: muram in device tree for mpc8250 in arch/powerpc
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,35 +23,167 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 19, 2008 at 09:22:08AM +0800, ???? wrote:
-> My board is MPC8360EMDS, my bootm command is "bootm uImage ramdisk_ppc
-> mpc836x_mds.dtb", I used the MPC8360E_PB_K26_20071012-LTIB.iso to generate above
-> uImage, ramdisk_ppc,mpc836x_mds.dtb. 
+I am porting a proprietary mpc8250 board to 2.6.24. I have the 2.6.19
+kernel from denx working. I have ported to u-boot 1.3.2 and have the
+platform setup within the 2.6.24 kernel and used pq2fads.dts as an
+example of the device tree.
 
-Could you try the latest upstream u-boot, dts, and kernel to see if
-things are better?
+Everything in u-boot is working. u-boot doesn't complain about the
+device tree and fills in the clocks and memory using the "fdt
+boardsetup" command. In fact, u-boot 1.3.2 can boot the 2.6.29 kernel,
+no problem.
 
-> If I fill the frequency to zero on mpc836x_mds.dts, 
+I turned on early kernel debugging in 2.6.24 and it looks like all the
+device tree parsing is working. The boot hangs and or crashes while
+trying to setup the paging. I drilled down the code from init/main.c
+and found that it seems the muram device node is killing the
+allocator.
 
-Which frequency property?  Did you get any device-tree-related error
-messages from u-boot?
+I tried to fully describe the segments in muram node and it seems to
+mess things up even worse. Can anyone give some pointers to help me
+work out this issue?
 
-> I also has another question, I modified the HRCW to config the cpu as 660/330/400
-> MHZ during power on, I used the "clocks" command on u-boot to see that the clock
-> is real 660/330/400 MHZ, then I changed the frequency value on dts to 660/330/400,
-> after the bootm command, the linux was not carshed after serial configuration, but
-> the output is random.
-> 
-> "
-> Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-> serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 16) is a 16550A
-> [output from serial is random]
-> "
-> 
-> I have config the frequency both on HRCW and devie tree is the same, why the
-> frequency for serial on linux is not right?  Why the 528/260/400 is Ok, the
-> 660/330/400 has problem on serial.
+I wanted to start with as simple a description as possible. The
+following tree describes the flash, SDRAM, SCC1, SCC3 and FCC1.
 
-What are you putting in the serial nodes' clock-frequency in each case?
 
--Scott
+/*
+* Device Tree for the CTA5000S board with an MPC8250 chip.
+* Device Tree for the PQ2FADS-ZU board with an MPC8280 chip.
+*
+* Copyright 2007 Freescale Semiconductor Inc.
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*/
+
+/ {
+
+model = "cta5000s";
+compatible = "fsl,cta5000s";
+#address-cells = <1>;
+#size-cells = <1>;
+cpus {
+#address-cells = <1>;
+#size-cells = <0>;
+PowerPC,8250@0 {
+device_type = "cpu";
+reg = <0>;
+d-cache-line-size = <20>;
+i-cache-line-size = <20>;
+d-cache-size = <4000>;
+i-cache-size = <4000>;
+timebase-frequency = <0>;
+clock-frequency = <0>;
+};
+
+};
+
+memory {
+device_type = "memory";
+reg = <0 0>;
+};
+
+localbus@f0010100 {
+compatible = "fsl,mpc8250-localbus",
+"fsl,pq2-localbus";
+#address-cells = <2>;
+#size-cells = <1>;
+reg = <f0010100 60>;
+ranges = <0 0 fe000000 00200000>;
+flash@fe000000,0 {
+compatible = "amd", "cfi-flash";
+reg = <0 fe000000 00200000>;
+bank-width = <2>;
+device-width = <1>;
+};
+
+};
+
+soc@f0000000 {
+#address-cells = <1>;
+#size-cells = <1>;
+device_type = "soc";
+compatible = "fsl,mpc8250", "fsl,pq2-soc";
+ranges = <00000000 f0000000 00014000>;
+// Temporary -- will go away once kernel uses ranges for get_immrbase().
+reg = <f0000000 00014000>;
+cpm@119c0 {
+#address-cells = <1>;
+#size-cells = <1>;
+#interrupt-cells = <2>;
+compatible = "fsl,mpc8250-cpm", "fsl,cpm2";
+reg = <119c0 30>;
+ranges;
+
+muram@0 {
+#address-cells = <1>;
+#size-cells = <1>;
+ranges = <0 0 10000>;
+
+data@0 {
+compatible = "fsl,cpm-muram-data";
+reg = <0 4000 8000 4000>;
+};
+
+};
+
+brg@119f0 {
+compatible = "fsl,mpc8250-brg",
+"fsl,cpm2-brg",
+"fsl,cpm-brg";
+reg = <119f0 10 115f0 10>;
+};
+
+serial@11a00 {
+device_type = "serial";
+compatible = "fsl,mpc8250-scc-uart",
+"fsl,cpm2-scc-uart";
+reg = <11a00 20 8000 100>;
+interrupts = <28 8>;
+interrupt-parent = <&PIC>;
+fsl,cpm-brg = <1>;
+fsl,cpm-command = <00800000>;
+};
+
+serial@11a40 {
+device_type = "serial";
+compatible = "fsl,mpc8250-scc-uart",
+"fsl,cpm2-scc-uart";
+reg = <11a40 20 8200 100>;
+interrupts = <2a 8>;
+interrupt-parent = <&PIC>;
+fsl,cpm-brg = <5>;
+fsl,cpm-command = <11800000>;
+};
+
+
+ethernet@11300 {
+device_type = "network";
+compatible = "fsl,mpc8250-fcc-enet",
+"fsl,cpm2-fcc-enet";
+reg = <11300 20 8400 100>;
+interrupts = <20 8>;
+interrupt-parent = <&PIC>;
+linux,network-index = <0>;
+fsl,cpm-command = <14000300>;
+};
+
+};
+
+PIC: interrupt-controller@10c00 {
+#interrupt-cells = <2>;
+interrupt-controller;
+reg = <10c00 80>;
+compatible = "fsl,mpc8250-pic", "fsl,cpm2-pic";
+};
+
+};
+
+chosen {
+linux,stdout-path = "/soc/cpm/serial@11a00";
+};
+
+};
