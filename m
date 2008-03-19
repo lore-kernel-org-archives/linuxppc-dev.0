@@ -1,16 +1,12 @@
-Return-Path: <mail4mz@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.184])
-	by ozlabs.org (Postfix) with ESMTP id 07D14DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 02:48:59 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so235213rvf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 08:48:58 -0700 (PDT)
-Message-ID: <5c9cd53b0803190848t652b8652r1669af11e9af9716@mail.gmail.com>
-Date: Wed, 19 Mar 2008 11:48:58 -0400
-From: "mike zheng" <mail4mz@gmail.com>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 85CBEDDE98
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 03:15:24 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: mpc8568mds bootup problem
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH] [POWERPC] Add AMCC Glacier 460GT eval board dts
+Date: Wed, 19 Mar 2008 17:15:10 +0100
+Message-Id: <1205943310-26323-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,109 +16,488 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+The patch adds the Glacier dts. The Glacier is nearly identical to the
+Canyonlands (460EX). Here the differences:
 
-My mpc8568mds board does not bootup. I am using Freescale's BSP on
-kernel2.6.23. The following is the log from serial port. Any idea?
-What is the next module to be initialized after the cfq? Where can I
-comment it out for debugging purpose?
+- 4 ethernet ports instead of 2
+- no SATA port
+- no USB port
 
-Thanks for your help,
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/boot/dts/glacier.dts |  464 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 464 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/glacier.dts
 
-Mike
-
-
-=> bootm 1000000 2000000 400000
-bootm 1000000 2000000 400000
-## Booting image at 01000000 ...
-   Image Name:   Linux-2.6.23
-   Created:      2008-03-18  20:48:11 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1283304 Bytes =  1.2 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at 02000000 ...
-   Image Name:   uboot ext2 ramdisk rootfs
-   Created:      2007-06-26   4:25:24 UTC
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    3719970 Bytes =  3.5 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Booting using flat device tree at 0x400000
-   Loading Ramdisk to 1f1c2000, end 1f54e322 ... OK
-Using MPC85xx MDS machine description
-Memory CAM mapping: CAM0=256Mb, CAM1=256Mb, CAM2=0Mb residual: 0Mb
-Linux version 2.6.23 () (gcc version 4.0.2 20060628 (Wasabi)) #9 Tue
-Mar 18 16:48:04 EDT 2008
-Found initrd at 0xdf1c2000:0xdf54e322
--> find_legacy_serial_port()
-stdout is /soc8568@e0000000/serial@4600
-legacy_serial_console = 1
-default console speed = 115340
-<- find_legacy_serial_port()
-console [udbg0] enabled
-setup_arch: bootmem
-mpc85xx_mds_setup_arch()
-Found FSL PCI host bridge at 0x00000000e0008000.Firmware bus number: 0->0
-pio-handle not available
-pio-handle not available
-arch: exit
-Zone PFN ranges:
-  DMA             0 ->   131072
-  Normal     131072 ->   131072
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   131072
-Built 1 zonelists in Zone order.  Total pages: 130048
-Kernel command line: ramdisk_size=42000 root=/dev/ram rw console=ttyS1,115200
-mpic: Setting up MPIC " OpenPIC  " version 1.2 at e0040000, max 1 CPUs
-mpic: ISU size: 80, shift: 7, mask: 7f
-mpic: Initializing for 80 sources
-QEIC (64 IRQ sources) at fd6ed080
-PID hash table entries: 2048 (order: 11, 8192 bytes)
--> check_legacy_serial_console()
-console was specified !
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Memory: 512896k/524288k available (2556k kernel code, 10952k reserved,
-108k data, 102k bss, 144k init)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
-
-rstcr compatible register does not exist!
-PCI: Probing PCI hardware
-PCI: Cannot allocate resource region 0 of device 0000:00:02.0
-PCI: Cannot allocate resource region 0 of device 0000:00:02.1
-PCI: Cannot allocate resource region 0 of device 0000:00:02.2
-PCI: Cannot allocate resource region 0 of device 0000:00:03.0
-PCI: Cannot allocate resource region 0 of device 0000:00:03.1
-PCI: Cannot allocate resource region 0 of device 0000:00:03.2
-PCI: Cannot allocate resource region 0 of device 0000:00:04.0
-...
-
-PCI: Cannot allocate resource region 0 of device 0000:00:1f.0
-PCI: Cannot allocate resource region 0 of device 0000:00:1f.1
-PCI: Cannot allocate resource region 0 of device 0000:00:1f.2
-Generic PHY: Registered new driver
-SCSI subsystem initialized
-NET: Registered protocol family 2
-IP route cache hash table entries: 16384 (order: 4, 65536 bytes)
-TCP established hash table entries: 65536 (order: 7, 524288 bytes)
-TCP bind hash table entries: 65536 (order: 6, 262144 bytes)
-TCP: Hash tables configured (established 65536 bind 65536)
-TCP reno registered
-checking if image is initramfs...it isn't (no cpio magic); looks like an initrd
-Freeing initrd memory: 3632k freed
-Fixing serial ports interrupts and IO ports ...
-fixup_port_irq(0)
-fixup_port_mmio(0)
-fixup_port_irq(1)
-fixup_port_mmio(1)
-Registering platform serial ports
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
+diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
+new file mode 100644
+index 0000000..7381cdd
+--- /dev/null
++++ b/arch/powerpc/boot/dts/glacier.dts
+@@ -0,0 +1,464 @@
++/*
++ * Device Tree Source for AMCC Glacier (460GT)
++ *
++ * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ */
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "amcc,glacier";
++	compatible = "amcc,canyonlands";
++	dcr-parent = <&/cpus/cpu@0>;
++
++	aliases {
++		ethernet0 = &EMAC0;
++		ethernet1 = &EMAC1;
++		ethernet2 = &EMAC2;
++		ethernet3 = &EMAC3;
++		serial0 = &UART0;
++		serial1 = &UART1;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			device_type = "cpu";
++			model = "PowerPC,460GT";
++			reg = <0>;
++			clock-frequency = <0>; /* Filled in by U-Boot */
++			timebase-frequency = <0>; /* Filled in by U-Boot */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; /* Filled in by U-Boot */
++	};
++
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	UIC1: interrupt-controller1 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	UIC2: interrupt-controller2 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <2>;
++		dcr-reg = <0e0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <a 4 b 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	UIC3: interrupt-controller3 {
++		compatible = "ibm,uic-460gt","ibm,uic";
++		interrupt-controller;
++		cell-index = <3>;
++		dcr-reg = <0f0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <10 4 11 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	SDR0: sdr {
++		compatible = "ibm,sdr-460gt";
++		dcr-reg = <00e 002>;
++	};
++
++	CPR0: cpr {
++		compatible = "ibm,cpr-460gt";
++		dcr-reg = <00c 002>;
++	};
++
++	plb {
++		compatible = "ibm,plb-460gt", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by U-Boot */
++
++		SDRAM0: sdram {
++			compatible = "ibm,sdram-460gt", "ibm,sdram-405gp";
++			dcr-reg = <010 2>;
++		};
++
++		MAL0: mcmal {
++			compatible = "ibm,mcmal-460gt", "ibm,mcmal2";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <20>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-parent = <&UIC2>;
++			interrupts = <	/*TXEOB*/ 6 4
++					/*RXEOB*/ 7 4
++					/*SERR*/  3 4
++					/*TXDE*/  4 4
++					/*RXDE*/  5 4>;
++			desc-base-addr-high = <8>;
++		};
++
++		POB0: opb {
++			compatible = "ibm,opb-460gt", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <b0000000 4 b0000000 50000000>;
++			clock-frequency = <0>; /* Filled in by U-Boot */
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-460gt", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				interrupts = <6 4>;
++				interrupt-parent = <&UIC1>;
++			};
++
++			UART0: serial@ef600300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600300 8>;
++				virtual-reg = <ef600300>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1 4>;
++			};
++
++			UART1: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600400 8>;
++				virtual-reg = <ef600400>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			UART2: serial@ef600500 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600500 8>;
++				virtual-reg = <ef600500>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1d 4>;
++			};
++
++			UART3: serial@ef600600 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600600 8>;
++				virtual-reg = <ef600600>;
++				clock-frequency = <0>; /* Filled in by U-Boot */
++				current-speed = <0>; /* Filled in by U-Boot */
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4>;
++			};
++
++			IIC0: i2c@ef600700 {
++				compatible = "ibm,iic-460gt", "ibm,iic";
++				reg = <ef600700 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			IIC1: i2c@ef600800 {
++				compatible = "ibm,iic-460gt", "ibm,iic";
++				reg = <ef600800 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			ZMII0: emac-zmii@ef600d00 {
++				compatible = "ibm,zmii-460gt", "ibm,zmii";
++				reg = <ef600d00 c>;
++			};
++
++			RGMII0: emac-rgmii@ef601500 {
++				compatible = "ibm,rgmii-460gt", "ibm,rgmii";
++				reg = <ef601500 8>;
++				has-mdio;
++			};
++
++			RGMII1: emac-rgmii@ef601600 {
++				compatible = "ibm,rgmii-460gt", "ibm,rgmii";
++				reg = <ef601600 8>;
++				has-mdio;
++			};
++
++			TAH0: emac-tah@ef601350 {
++				compatible = "ibm,tah-460gt", "ibm,tah";
++				reg = <ef601350 30>;
++			};
++
++			TAH1: emac-tah@ef601450 {
++				compatible = "ibm,tah-460gt", "ibm,tah";
++				reg = <ef601450 30>;
++			};
++
++			EMAC0: ethernet@ef600e00 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC0>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 10 4
++						 /*Wake*/   1 &UIC2 14 4>;
++				reg = <ef600e00 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <0>;
++				tah-device = <&TAH0>;
++				tah-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++
++			EMAC1: ethernet@ef600f00 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC1>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 11 4
++						 /*Wake*/   1 &UIC2 15 4>;
++				reg = <ef600f00 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <1>;
++				mal-rx-channel = <8>;
++				cell-index = <1>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <1>;
++				tah-device = <&TAH1>;
++				tah-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++
++			EMAC2: ethernet@ef601100 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC2>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 12 4
++						 /*Wake*/   1 &UIC2 16 4>;
++				reg = <ef601100 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2>;
++				mal-rx-channel = <10>;
++				cell-index = <2>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII1>;
++				rgmii-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++
++			EMAC3: ethernet@ef601200 {
++				device_type = "network";
++				compatible = "ibm,emac-460gt", "ibm,emac4";
++				interrupt-parent = <&EMAC3>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC2 13 4
++						 /*Wake*/   1 &UIC2 17 4>;
++				reg = <ef601200 70>;
++				local-mac-address = [000000000000]; /* Filled in by U-Boot */
++				mal-device = <&MAL0>;
++				mal-tx-channel = <3>;
++				mal-rx-channel = <18>;
++				cell-index = <3>;
++				max-frame-size = <2328>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				rgmii-device = <&RGMII1>;
++				rgmii-channel = <1>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
++			};
++		};
++
++		PCIX0: pci@c0ec00000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pcix-460gt", "ibm,plb-pcix";
++			primary;
++			large-inbound-windows;
++			enable-msi-hole;
++			reg = <c 0ec00000   8	/* Config space access */
++			       0 0 0		/* no IACK cycles */
++			       c 0ed00000   4   /* Special cycles */
++			       c 0ec80000 100	/* Internal registers */
++			       c 0ec80100  fc>;	/* Internal messaging registers */
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000d 80000000 0 80000000
++				  01000000 0 00000000 0000000c 08000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 0 to 0x3f */
++			bus-range = <0 3f>;
++
++			/* All PCI interrupts are routed to ext IRQ 2 -> UIC1-0 */
++			interrupt-map-mask = <0000 0 0 0>;
++			interrupt-map = < 0000 0 0 0 &UIC1 0 8 >;
++		};
++
++		PCIE0: pciex@d00000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
++			primary;
++			port = <0>; /* port number */
++			reg = <d 00000000 20000000	/* Config space access */
++			       c 08010000 00001000>;	/* Registers */
++			dcr-reg = <100 020>;
++			sdr-base = <300>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000e 00000000 0 80000000
++				  01000000 0 00000000 0000000f 80000000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 40 to 0x7f */
++			bus-range = <40 7f>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0000 0 0 7>;
++			interrupt-map = <
++				0000 0 0 1 &UIC3 c 4 /* swizzled int A */
++				0000 0 0 2 &UIC3 d 4 /* swizzled int B */
++				0000 0 0 3 &UIC3 e 4 /* swizzled int C */
++				0000 0 0 4 &UIC3 f 4 /* swizzled int D */>;
++		};
++
++		PCIE1: pciex@d20000000 {
++			device_type = "pci";
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			compatible = "ibm,plb-pciex-460ex", "ibm,plb-pciex";
++			primary;
++			port = <1>; /* port number */
++			reg = <d 20000000 20000000	/* Config space access */
++			       c 08011000 00001000>;	/* Registers */
++			dcr-reg = <120 020>;
++			sdr-base = <340>;
++
++			/* Outbound ranges, one memory and one IO,
++			 * later cannot be changed
++			 */
++			ranges = <02000000 0 80000000 0000000e 80000000 0 80000000
++				  01000000 0 00000000 0000000f 80010000 0 00010000>;
++
++			/* Inbound 2GB range starting at 0 */
++			dma-ranges = <42000000 0 0 0 0 0 80000000>;
++
++			/* This drives busses 80 to 0xbf */
++			bus-range = <80 bf>;
++
++			/* Legacy interrupts (note the weird polarity, the bridge seems
++			 * to invert PCIe legacy interrupts).
++			 * We are de-swizzling here because the numbers are actually for
++			 * port of the root complex virtual P2P bridge. But I want
++			 * to avoid putting a node for it in the tree, so the numbers
++			 * below are basically de-swizzled numbers.
++			 * The real slot is on idsel 0, so the swizzling is 1:1
++			 */
++			interrupt-map-mask = <0000 0 0 7>;
++			interrupt-map = <
++				0000 0 0 1 &UIC3 10 4 /* swizzled int A */
++				0000 0 0 2 &UIC3 11 4 /* swizzled int B */
++				0000 0 0 3 &UIC3 12 4 /* swizzled int C */
++				0000 0 0 4 &UIC3 13 4 /* swizzled int D */>;
++		};
++	};
++};
+-- 
+1.5.4.4
