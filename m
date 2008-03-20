@@ -1,19 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id E2981DDE25
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 17:36:11 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/2] [POWERPC] Add PPC4xx L2-cache support (440GX &
-	460EX/GT)
-Date: Thu, 20 Mar 2008 07:35:54 +0100
-References: <1205847389-17771-1-git-send-email-sr@denx.de>
-	<20080320102710.4b6d8060.sfr@canb.auug.org.au>
-In-Reply-To: <20080320102710.4b6d8060.sfr@canb.auug.org.au>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 46563DDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 17:45:33 +1100 (EST)
+Date: Thu, 20 Mar 2008 07:45:42 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: crash in init_ipic_sysfs on efika
+Message-ID: <20080320064542.GA11434@aepfle.de>
+References: <20080317195305.GA13298@aepfle.de>
+	<18400.41990.995316.729968@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200803200735.54999.sr@denx.de>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <18400.41990.995316.729968@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,12 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Stephan,
+On Wed, Mar 19, Paul Mackerras wrote:
 
-On Thursday 20 March 2008, Stephen Rothwell wrote:
-> Just a few trivial things ...
+> Olaf Hering writes:
+> 
+> > I cant reproduce this bug on my board, but:
+> > 
+> > The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL if
+> > ipic_init() fails. init_ipic_sysfs() will crash in that case.
+> > 
+> > Something like this may fix it:
+> 
+> Is this needed for 2.6.25?  Is the system at all usable if ipic_init
+> fails?
 
-Thanks. Will fix and resubmit.
+CONFIG_PPC_MPC51* needs to be disabled for pmac/chrp/bplan .configs.
 
-Best regards,
-Stefan
+A full featured ppc32_defconfig will probably catch such errors.
