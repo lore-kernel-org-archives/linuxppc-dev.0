@@ -1,23 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B0D79DE48C
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 03:24:44 +1100 (EST)
-Date: Thu, 20 Mar 2008 11:24:40 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: Trouble with SCC UART ports when moving from ppc to powerpc
-Message-ID: <20080320162440.GA3237@loki.buserror.net>
-References: <200803071521.00383.laurentp@cse-semaphore.com>
-	<200803201439.59806.laurentp@cse-semaphore.com>
-	<20080320150823.GB31587@ld0162-tx32.am.freescale.net>
-	<200803201618.37051.laurentp@cse-semaphore.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 203FFDDF3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 03:29:17 +1100 (EST)
+Message-ID: <47E290DB.4090105@grandegger.com>
+Date: Thu, 20 Mar 2008 17:29:15 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200803201618.37051.laurentp@cse-semaphore.com>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: Oops with TQM5200 on TQM5200
+References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
+In-Reply-To: <47E281B6.20702@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,35 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 20, 2008 at 04:18:26PM +0100, Laurent Pinchart wrote:
-> I don't want to kill it either. What I meant is that my first patch will not 
-> care about udbg so that I can get feedback about the CPM serial driver part. 
-> I'll then see how to make udbg fit into that.
+Hi Anatolij,
 
-OK.
-
-> > Perhaps we should stick more initialization into the cpm udbg code, so it
-> > isn't so dependent on the bootloader setup... though we'd have push the
-> > CPM reset and SMC allocation earlier in such a case.
+Anatolij Gustschin wrote:
+> Hello Wolfgang,
 > 
-> When SMC1 is used as a serial console, SMC1 is the first CPM dpram
-> allocation user.
+> Wolfgang Grandegger wrote:
+> 
+>> I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
+>> oops. Are there any known patches fixing the problems?
+> 
+> try the patch below for tqm5200.dts, rebuild dtb and boot
+> again. Not sure if it works for Linux 2.6.25-rc6, but for
+> 2.6.25-rc3 it does.
+> 
+> Anatolij
+> -- 
+> diff --git a/arch/powerpc/boot/dts/tqm5200.dts
+> b/arch/powerpc/boot/dts/tqm5200.dts
+> index c86464f..7c23bb3 100644
+> --- a/arch/powerpc/boot/dts/tqm5200.dts
+> +++ b/arch/powerpc/boot/dts/tqm5200.dts
+> @@ -83,6 +83,7 @@
+>         };
+> 
+>         dma-controller@1200 {
+> +            device_type = "dma-controller";
 
-Typically yes, but I wouldn't want to depend on that...
+This one actually fixes the Oops. I already had the following fixes.
 
-> This means the CPM dpram allocator will allocate a buffer at the beginning
-> of the dpram. As he SMC controller will already be using the 64 first
-> bytes of the dpram, it will not see any difference when being
-> reinitialized.
+>             compatible = "fsl,mpc5200-bestcomm";
+>             reg = <1200 80>;
+>             interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+> @@ -127,10 +128,25 @@
+>         ethernet@3000 {
+>             device_type = "network";
+>             compatible = "fsl,mpc5200-fec";
+> -            reg = <3000 800>;
+> +            reg = <3000 400>;
 
-Not always.  Planetcore, for example, puts SMC parameter RAM at 0x1100
-rather than zero.
+This has already been fixed a long time ago, IIRC.
 
-> This of course depends on the boot loader allocating parameter ram at the 
-> beginning of the dpram for SMC1, but we already depend on that if I'm not 
-> mistaken.
+>             local-mac-address = [ 00 00 00 00 00 00 ];
+>             interrupts = <2 5 0>;
+>             interrupt-parent = <&mpc5200_pic>;
+> +            phy-handle = <&phy0>;
+> +        };
+> +
+> +        mdio@3000 {
+> +            #address-cells = <1>;
+> +            #size-cells = <0>;
+> +            compatible = "fsl,mpc5200b-mdio";
+> +            reg = <3000 400>;       // fec range, since we need to
+> setup fec interrupts
+> +            interrupts = <2 5 0>;   // these are for "mii command
+> finished", not link changes & co.
+> +            interrupt-parent = <&mpc5200_pic>;
+> +
+> +            phy0:ethernet-phy@0 {
+> +                device_type = "ethernet-phy";
+> +                reg = <0>;
+> +            };
 
-We don't depend on it -- it's specified in the smc node's reg property, and
-in the absence of said regions in the muram node.
+Another question. Is it possible to configure Linux without explicit
+PHY-handling.
 
--Scott
+Thanks,
+
+Wolfgang.
