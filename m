@@ -1,20 +1,27 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 9089FDDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 18:19:33 +1100 (EST)
-Date: Thu, 20 Mar 2008 02:18:58 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH 2/2] Force 4K IOPages when eHEA is present in the machine.
-Message-ID: <20080320071858.GS4712@localdomain>
-References: <63cdefde19cb2a4adc17ed771f21261673428ce7.1205987625.git.tony@bakeyournoodle.com>
-	<262bc32afdde978922b9500c2a83f7c7ed6e4043.1205987625.git.tony@bakeyournoodle.com>
+Return-Path: <SRS0+275bbb1d53a6f5600fb4+1670+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 81657DDE16
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 18:40:27 +1100 (EST)
+Date: Thu, 20 Mar 2008 03:40:05 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
+Message-ID: <20080320074005.GB19969@infradead.org>
+References: <20080319211714.8B14226F995@magilla.localdomain>
+	<20080319212024.EA03126F995@magilla.localdomain>
+	<alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <262bc32afdde978922b9500c2a83f7c7ed6e4043.1205987625.git.tony@bakeyournoodle.com>
-Cc: Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Olof,
-	Jan-Bernd Themann <themann@de.ibm.com>
+In-Reply-To: <alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	sparclinux@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+	Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tony Breeds wrote:
+On Wed, Mar 19, 2008 at 07:40:25PM -0700, Linus Torvalds wrote:
 > 
-> +#if defined(CONFIG_PPC_PSERIES) && defined(CONFIG_PPC_64K_PAGES)
-> +static int __init scan_dt_for_ehea(unsigned long node, const char *uname,
-> +                                  int depth, void *data)
-> +{
-> +	if (depth != 0)
-> +		return 0;
-> +
-> +	if (of_flat_dt_search(node, "HEA ", "ibm,drc-names"))
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +#endif
+> And I have to say, I really hate that
+> 
+> 		ret = arch_ptrace(child, request, addr, data);
+> 		if (ret == -ENOSYS && !forced_successful_syscall_return())
+> 			ret = ptrace_request(child, request, addr, data);
+> 
+> thing. Instead of doing it that ugly way (return value and a special 
+> per-arch forced_successful_syscall_return() thing), this really smells 
+> like you just want to change the calling conventions for "arch_ptrace()" 
+> instead.
+> 
+> Wouldn't it be nicer to just let "arch_ptrace()" return a flag saying 
+> whether it handled things or not?
 
-Searching ibm,drc-names is necessary, but is it sufficient?  That is,
-can there be a system that has an HEA adapter without that property
-being present?  Thinking in particular about single-partition systems
-that run without an HMC attached.
+I think the easiest and cleanest would be to just drop this whole
+series.  There's no inherent advantage of
 
+	ret = -ENOSYS;
 
->  static void __init htab_init_page_sizes(void)
->  {
->  	int rc;
-> +#ifdef CONFIG_PPC_64K_PAGES
-> +	int has_ehea = 0;
-> +#endif
->  
->  	/* Default to 4K pages only */
->  	memcpy(mmu_psize_defs, mmu_psize_defaults_old,
->  	       sizeof(mmu_psize_defaults_old));
->  
-> +#if defined(CONFIG_PPC_PSERIES) && defined(CONFIG_PPC_64K_PAGES)
-> +	/* Scan to see if this system can have an EHEA, if so we'll
-> +	 * demote io_psize to 4K */
-> +	has_ehea = of_scan_flat_dt(scan_dt_for_ehea, NULL);
-> +#endif
+in the arch_ptrace default case over
 
-I'm wondering if some of the ifdef stuff could be avoided if you used
-a firmware feature bit to signify the limitation (or the lack of it).
-The bit could be set during pSeries_probe.  Just an idea; I don't feel
-that strongly about it.
+	ret = ptrace_request(...);
