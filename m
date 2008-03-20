@@ -1,18 +1,21 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 46563DDE05
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 17:45:33 +1100 (EST)
-Date: Thu, 20 Mar 2008 07:45:42 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: crash in init_ipic_sysfs on efika
-Message-ID: <20080320064542.GA11434@aepfle.de>
-References: <20080317195305.GA13298@aepfle.de>
-	<18400.41990.995316.729968@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <18400.41990.995316.729968@cargo.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84166DDE20
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 17:55:25 +1100 (EST)
+Subject: Re: [PATCH 1/2] [POWERPC] Add PPC4xx L2-cache support (440GX &
+	460EX/GT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <1205847389-17771-1-git-send-email-sr@denx.de>
+References: <1205847389-17771-1-git-send-email-sr@denx.de>
+Content-Type: text/plain
+Date: Thu, 20 Mar 2008 17:54:52 +1100
+Message-Id: <1205996092.26869.420.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 19, Paul Mackerras wrote:
 
-> Olaf Hering writes:
+On Tue, 2008-03-18 at 14:36 +0100, Stefan Roese wrote:
+> This patch adds support for the 256k L2 cache found on some IBM/AMCC
+> 4xx PPC's. It introduces a common 4xx SoC file (sysdev/ppc4xx_soc.c)
+> which currently "only" adds the L2 cache init code. Other common 4xx
+> stuff can be added later here.
 > 
-> > I cant reproduce this bug on my board, but:
-> > 
-> > The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL if
-> > ipic_init() fails. init_ipic_sysfs() will crash in that case.
-> > 
-> > Something like this may fix it:
+> The L2 cache handling code is just a copy of Eugene's code in arch/ppc
+> with small modifications.
 > 
-> Is this needed for 2.6.25?  Is the system at all usable if ipic_init
-> fails?
+> Tested on AMCC Taishan 440GX and Canyonlands 460EX.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
 
-CONFIG_PPC_MPC51* needs to be disabled for pmac/chrp/bplan .configs.
+It's my understanding that on some 44x platforms, the l2 needs to be
+explicitely invalidated on DMAs. Do we know more about that ? I think it
+depends on something like the number of masters on the PLB4 or so. I
+don't remember the details.
 
-A full featured ppc32_defconfig will probably catch such errors.
+Ben.
