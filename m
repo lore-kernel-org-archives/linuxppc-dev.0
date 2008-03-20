@@ -1,13 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF03EDDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 13:41:01 +1100 (EST)
+Date: Wed, 19 Mar 2008 19:40:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
+In-Reply-To: <20080319212024.EA03126F995@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
+References: <20080319211714.8B14226F995@magilla.localdomain>
+	<20080319212024.EA03126F995@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18401.45889.408319.694612@cargo.ozlabs.ibm.com>
-Date: Thu, 20 Mar 2008 11:43:45 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	sparclinux@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,127 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do:
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+On Wed, 19 Mar 2008, Roland McGrath wrote:
+>
+> The arch_ptrace and compat_arch_ptrace functions can now return
+> -ENOSYS for requests they do not actually implement in arch
+> code.
 
-to get some more bug-fixes and a defconfig update for various powerpc
-platforms.  The defconfig update only updates 9 of the defconfigs but
-still dominates the diffstat, since the bug-fixes are all fairly
-small.
+Hmm.. I see the whole series, and I see this patch, but I think it adds 
+new code and new complexity, and I don't really see *why*.
 
-Thanks,
-Paul.
+So I'm obviously not going to apply it outside the merge window anyway, 
+but even for later I'd really like to know what you're building up 
+towards, because without understanding the upsides it just feels like it 
+adds ugly code and unnecessary infrastructure without any real point to 
+it.
 
- arch/powerpc/boot/Makefile             |    4 -
- arch/powerpc/boot/wrapper              |    4 -
- arch/powerpc/configs/cell_defconfig    |  141 ++++++++++++++---------
- arch/powerpc/configs/celleb_defconfig  |  117 ++++++++++++-------
- arch/powerpc/configs/chrp32_defconfig  |  165 +++++++++++----------------
- arch/powerpc/configs/g5_defconfig      |  137 ++++++++++++++--------
- arch/powerpc/configs/iseries_defconfig |   99 +++++++++++-----
- arch/powerpc/configs/pmac32_defconfig  |  195 ++++++++++++++++++++------------
- arch/powerpc/configs/ppc64_defconfig   |  169 +++++++++++++++++-----------
- arch/powerpc/configs/ps3_defconfig     |  103 ++++++++++-------
- arch/powerpc/configs/pseries_defconfig |  136 +++++++++++++---------
- arch/powerpc/kernel/process.c          |    6 +
- arch/powerpc/kernel/ptrace.c           |   10 +-
- arch/powerpc/mm/slb.c                  |    6 +
- arch/powerpc/platforms/cell/iommu.c    |   41 ++++---
- arch/powerpc/platforms/cell/setup.c    |   36 ++++++
- 16 files changed, 835 insertions(+), 534 deletions(-)
+And I have to say, I really hate that
 
-commit 93ce4e2d2d7404e80d5612fb1cc13d4aad5e42fc
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Thu Mar 20 11:21:32 2008 +1100
+		ret = arch_ptrace(child, request, addr, data);
+		if (ret == -ENOSYS && !forced_successful_syscall_return())
+			ret = ptrace_request(child, request, addr, data);
 
-    [POWERPC] Update some defconfigs
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+thing. Instead of doing it that ugly way (return value and a special 
+per-arch forced_successful_syscall_return() thing), this really smells 
+like you just want to change the calling conventions for "arch_ptrace()" 
+instead.
 
-commit ebf3a6509299e46c531f88ee727372bd95cf542a
-Author: Michael Ellerman <michael@ellerman.id.au>
-Date:   Wed Mar 19 17:10:55 2008 +1100
+Wouldn't it be nicer to just let "arch_ptrace()" return a flag saying 
+whether it handled things or not?
 
-    [POWERPC] Hide resources on Axon PCIE root complex nodes
-    
-    The PCI bridge representing the PCIE root complex on Axon, contains
-    device BARs for a memory range and ROM that define inbound accesses.
-    This confuses the kernel resource management code -- the resources
-    need to be hidden when Axon is a host bridge.
-    
-    Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 3a4295d101d9654ca909b64c786f9da6ca1bf37a
-Author: Michael Ellerman <michael@ellerman.id.au>
-Date:   Fri Mar 14 16:47:39 2008 +1100
-
-    [POWERPC] Fix cell IOMMU code to cope with empty dma-ranges and non-PCI devices
-    
-    The cell IOMMU code to parse the dma-ranges properties, used for the fixed
-    mapping, was broken in two ways for some devices.
-    
-    Firstly it didn't cope with empty dma-ranges properties. An empty property
-    implies no translation so can be safely skipped.
-    
-    The code also wrongly assumed it would be looking at PCI devices, and hard
-    coded the number of address and size cells.
-    
-    Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit a72a6f53ddb95723960bb64c011457e9739941d7
-Author: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date:   Tue Mar 18 16:13:10 2008 +1100
-
-    [POWERPC] Fix build failure for tqm8540 and sbc85xx defconfigs
-    
-    The wrapper script didn't have entries for the TQM8540 board and the
-    SBC8548 or SBC8560 boards.  I've assumed that the TQM8540 console is
-    8250 based and not CPM based by looking at its defconfig.  There was
-    also a trailing * on the TQM8555 entry that I removed too.
-    
-    Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-    Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 44387e9ff25267c78a99229aca55ed750e9174c7
-Author: Anton Blanchard <anton@samba.org>
-Date:   Mon Mar 17 15:27:09 2008 +1100
-
-    [POWERPC] Fix PMU + soft interrupt disable bug
-    
-    Since the PMU is an NMI now, it can come at any time we are only soft
-    disabled.  We must hard disable around the two places we allow the kernel
-    stack SLB and r1 to go out of sync.  Otherwise the PMU exception can
-    force a kernel stack SLB into another slot, which can lead to it
-    getting evicted, which can lead to a nasty unrecoverable SLB miss
-    in the exception entry code.
-    
-    Signed-off-by: Anton Blanchard <anton@samba.org>
-    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Acked-by: Olof Johansson <olof@lixom.net>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit c2372eb9bcafdd149b26987a8c25bbed92fd2775
-Author: Roland McGrath <roland@redhat.com>
-Date:   Thu Mar 13 19:25:35 2008 +1100
-
-    [POWERPC] user_regset PTRACE_SETREGS regression fix
-    
-    The PTRACE_SETREGS request was only recently added on powerpc,
-    and gdb does not use it.  So it slipped through without getting
-    all the testing it should have had.
-    
-    The user_regset changes had a simple bug in storing to all of
-    the 32-bit general registers block on 64-bit kernels.  This bug
-    only comes up with PTRACE_SETREGS, not PPC_PTRACE_SETREGS.
-    It causes a BUG_ON to hit, so this fix needs to go in ASAP.
-    
-    Signed-off-by: Roland McGrath <roland@redhat.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+			Linus
