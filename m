@@ -1,20 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 63A06DDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 16:06:21 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so180863anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 22:06:17 -0700 (PDT)
-Message-ID: <fa686aa40803192206p1bb7f0d8g20aae3704369bf22@mail.gmail.com>
-Date: Wed, 19 Mar 2008 23:06:17 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "=?ISO-8859-1?Q?Ren=E9_B=FCrgel?=" <r.buergel@unicontrol.de>
-Subject: Re: [PATCH] Linux >=2.6.24 support for FEC on MPC5200 (not B!)
-In-Reply-To: <47D827A5.8040701@unicontrol.de>
+Return-Path: <greg@kroah.com>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5685FDDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 16:25:07 +1100 (EST)
+Date: Wed, 19 Mar 2008 21:57:19 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: Tree for March 20
+Message-ID: <20080320045719.GA26938@kroah.com>
+References: <20080320143953.8d6b5a60.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47D827A5.8040701@unicontrol.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080320143953.8d6b5a60.sfr@canb.auug.org.au>
+Cc: Theodore Tso <tytso@MIT.EDU>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Dan Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 12, 2008 at 12:57 PM, Ren=E9 B=FCrgel <r.buergel@unicontrol.de>=
- wrote:
-> Here is a patch for the lite5200 to get the FEC working again for kernel
->   >=3D2.6.24. It was created against Linux 2.6.24.
->
->  The FEC driver is also compatible with the MPC5200, not only with the
->  MPC5200B, so an according entry was added to the drivers matching list.
->  Furthermore the settings for the PHY were entered in the dts file for
->  the Lite5200. Note, that this is not exactly the same as in the
->  Lite5200B, because the PHY is located at f0003000:01 for the 5200, and
->  at :00 for the 5200B. I could test the patch on a Lite5200 and a
->  Lite5200B, both booted a kernel via tftp and mounted the root via nfs
->  successfully.
->  I hope, you can include the patch into the official tree.
+On Thu, Mar 20, 2008 at 02:39:53PM +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> (tar balls at
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+> 
+> You can see which trees have been included by looking in the Next/Trees
+> file in the source.  There are also quilt-import.log and merge.log files
+> in the Next directory.  Between each merge, the tree was built with
+> a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
+> 
+> I have started this tree by reverting the following:
+> driver-core/driver-core-remove-no-longer-used-struct-class_device.patch
+> 	should be merged late
+> driver-core/ib-convert-struct-class_device-to-struct-device.patch
+> 	conflicts with the infiniband tree
+> driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+> 	breaks non CONFIG_PM builds of drivers/serial/serial_core.c
 
-Oops, I spoke too soon on picking this up.  The patch looks mostly
-good, but it does not apply to the head of the tree.  Can you please
-rebase it on top of Linus' current tree and repost?  While you're at
-it, I've got a couple of minor comments below that should be
-addressed:
+These should be fixed tomorrow, I have new ones in my inbox to solve
+these issues (I hope...)
 
+thanks,
 
->  +               mdio@3000 {
->  +                       #address-cells =3D <1>;
->  +                       #size-cells =3D <0>;
->  +                       device_type =3D "mdio";
-Drop the device_type property
-
->  +                       compatible =3D "mpc5200-fec-phy";
-should be "mpc5200-mdio"  (see current lite5200 for the example)
-
-Cheers,
-g.
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+greg k-h
