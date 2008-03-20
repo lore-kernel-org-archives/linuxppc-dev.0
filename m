@@ -1,14 +1,20 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 35B0FDDE04
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 15:33:48 +1100 (EST)
-To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <63cdefde19cb2a4adc17ed771f21261673428ce7.1205987625.git.tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/2] Implement of_flat_dt_search() and use it for
-	of_flat_dt_is_compatible.
-Date: Thu, 20 Mar 2008 15:33:45 +1100 (EST)
-Cc: Olof Johansson <olof@lixom.net>, Jan-Bernd Themann <themann@de.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 63A06DDDF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 16:06:21 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so180863anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2008 22:06:17 -0700 (PDT)
+Message-ID: <fa686aa40803192206p1bb7f0d8g20aae3704369bf22@mail.gmail.com>
+Date: Wed, 19 Mar 2008 23:06:17 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "=?ISO-8859-1?Q?Ren=E9_B=FCrgel?=" <r.buergel@unicontrol.de>
+Subject: Re: [PATCH] Linux >=2.6.24 support for FEC on MPC5200 (not B!)
+In-Reply-To: <47D827A5.8040701@unicontrol.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47D827A5.8040701@unicontrol.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,68 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/kernel/prom.c |   21 ++++++++++++++-------
- include/asm-powerpc/prom.h |    2 ++
- 2 files changed, 16 insertions(+), 7 deletions(-)
+On Wed, Mar 12, 2008 at 12:57 PM, Ren=E9 B=FCrgel <r.buergel@unicontrol.de>=
+ wrote:
+> Here is a patch for the lite5200 to get the FEC working again for kernel
+>   >=3D2.6.24. It was created against Linux 2.6.24.
+>
+>  The FEC driver is also compatible with the MPC5200, not only with the
+>  MPC5200B, so an according entry was added to the drivers matching list.
+>  Furthermore the settings for the PHY were entered in the dts file for
+>  the Lite5200. Note, that this is not exactly the same as in the
+>  Lite5200B, because the PHY is located at f0003000:01 for the 5200, and
+>  at :00 for the 5200B. I could test the patch on a Lite5200 and a
+>  Lite5200B, both booted a kernel via tftp and mounted the root via nfs
+>  successfully.
+>  I hope, you can include the patch into the official tree.
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index eac97f4..f73e18b 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -205,25 +205,32 @@ void* __init of_get_flat_dt_prop(unsigned long node, const char *name,
- 	} while(1);
- }
- 
--int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
-+int __init of_flat_dt_search(unsigned long node, const char *str,
-+                             const char *prop_name)
- {
--	const char* cp;
--	unsigned long cplen, l;
-+	const char *cp;
-+	unsigned long plen, l;
- 
--	cp = of_get_flat_dt_prop(node, "compatible", &cplen);
-+	cp = of_get_flat_dt_prop(node, prop_name, &plen);
- 	if (cp == NULL)
- 		return 0;
--	while (cplen > 0) {
--		if (strncasecmp(cp, compat, strlen(compat)) == 0)
-+	while (plen > 0) {
-+		if (strncasecmp(cp, str, strlen(str)) == 0)
- 			return 1;
- 		l = strlen(cp) + 1;
- 		cp += l;
--		cplen -= l;
-+		plen -= l;
- 	}
- 
- 	return 0;
- }
- 
-+int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
-+{
-+
-+	return of_flat_dt_search(node, compat, "compatible");
-+}
-+
- static void *__init unflatten_dt_alloc(unsigned long *mem, unsigned long size,
- 				       unsigned long align)
- {
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 78b7b0d..7b587f1 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -134,6 +134,8 @@ extern int __init of_scan_flat_dt(int (*it)(unsigned long node,
- 				  void *data);
- extern void* __init of_get_flat_dt_prop(unsigned long node, const char *name,
- 					unsigned long *size);
-+extern int __init of_flat_dt_search(unsigned long node, const char *str,
-+                                  const char *prop_name);
- extern int __init of_flat_dt_is_compatible(unsigned long node, const char *name);
- extern unsigned long __init of_get_flat_dt_root(void);
- 
--- 
-1.5.4.3
+Oops, I spoke too soon on picking this up.  The patch looks mostly
+good, but it does not apply to the head of the tree.  Can you please
+rebase it on top of Linus' current tree and repost?  While you're at
+it, I've got a couple of minor comments below that should be
+addressed:
+
+
+>  +               mdio@3000 {
+>  +                       #address-cells =3D <1>;
+>  +                       #size-cells =3D <0>;
+>  +                       device_type =3D "mdio";
+Drop the device_type property
+
+>  +                       compatible =3D "mpc5200-fec-phy";
+should be "mpc5200-mdio"  (see current lite5200 for the example)
+
+Cheers,
+g.
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
