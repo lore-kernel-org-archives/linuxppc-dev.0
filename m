@@ -1,21 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5733FDE335
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 08:48:36 +1100 (EST)
-Message-ID: <47E2DBB5.9050604@freescale.com>
-Date: Thu, 20 Mar 2008 16:48:37 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: DTS question
-References: <20080320173302.7075a1d9@lappy.seanm.ca>
-In-Reply-To: <20080320173302.7075a1d9@lappy.seanm.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 629F3DDF32
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 08:55:29 +1100 (EST)
+Date: Thu, 20 Mar 2008 14:54:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH] ehea: Fix IPv6 support
+Message-Id: <20080320145456.f0b6d101.akpm@linux-foundation.org>
+In-Reply-To: <200803191355.44266.osstklei@de.ibm.com>
+References: <200803191355.44266.osstklei@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: jeff@garzik.org, themann@de.ibm.com, netdev@vger.kernel.org,
+	hering2@de.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
+	stefan.roscher@de.ibm.com, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sean MacLennan wrote:
-> The warp has an AD7414 chip hanging off the I2C bus. This chip can
-> raise an interrupt when it crosses a critical threshold.
-> 
-> This interrupt is tied to IRQ2 from the processor. What is the best
-> way to describe this interrupt in the DTS?
-> 
-> The warp.dts is available on request, but the one in the for-2.6.25
-> tree is relatively up to date.
+On Wed, 19 Mar 2008 13:55:43 +0100
+Thomas Klein <osstklei@de.ibm.com> wrote:
 
-Add a node for the ad7414 under the i2c bus, and put the interrupt 
-specifier there.  For best results, convert the ad7414 driver into a 
-new-style i2c driver.
+> Indicate that HEA calculates IPv4 checksums only
+> 
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> 
+> ---
+> diff -Nurp -X dontdiff linux-2.6.25-rc6/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+> --- linux-2.6.25-rc6/drivers/net/ehea/ehea.h	2008-03-17 00:32:14.000000000 +0100
+> +++ patched_kernel/drivers/net/ehea/ehea.h	2008-03-19 08:58:07.000000000 +0100
+> @@ -40,7 +40,7 @@
+>  #include <asm/io.h>
+>  
+>  #define DRV_NAME	"ehea"
+> -#define DRV_VERSION	"EHEA_0087"
+> +#define DRV_VERSION	"EHEA_0089"
+>  
+>  /* eHEA capability flags */
+>  #define DLPAR_PORT_ADD_REM 1
+> diff -Nurp -X dontdiff linux-2.6.25-rc6/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+> --- linux-2.6.25-rc6/drivers/net/ehea/ehea_main.c	2008-03-17 00:32:14.000000000 +0100
+> +++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-03-19 08:58:07.000000000 +0100
+> @@ -3108,7 +3108,7 @@ struct ehea_port *ehea_setup_single_port
+>  	dev->vlan_rx_add_vid = ehea_vlan_rx_add_vid;
+>  	dev->vlan_rx_kill_vid = ehea_vlan_rx_kill_vid;
+>  	dev->features = NETIF_F_SG | NETIF_F_FRAGLIST | NETIF_F_TSO
+> -		      | NETIF_F_HIGHDMA | NETIF_F_HW_CSUM | NETIF_F_HW_VLAN_TX
+> +		      | NETIF_F_HIGHDMA | NETIF_F_IP_CSUM | NETIF_F_HW_VLAN_TX
+>  		      | NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_FILTER
+>  		      | NETIF_F_LLTX;
+>  	dev->tx_timeout = &ehea_tx_watchdog;
 
--Scott
+That looks like a pretty significant fix to me?  Should it be backported to
+2.6.24.x?
