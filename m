@@ -1,27 +1,17 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA05.westchester.pa.mail.comcast.net
-	(qmta05.westchester.pa.mail.comcast.net [76.96.62.48])
-	by ozlabs.org (Postfix) with ESMTP id 96657DDE9E
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 19:17:05 +1100 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 20 Mar 2008 19:20:35 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?Andr=E9?= Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: simple MPC5200B system
+Message-ID: <20080320082035.GA23860@localhost.localdomain>
+References: <47DF821B.6090600@matrix-vision.de>
+	<20080320001445.C03DD24A8B@gemini.denx.de>
+	<20080320002149.GD19616@localhost.localdomain>
+	<47E216DA.8080602@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
-In-Reply-To: Linus Torvalds's message of  Wednesday,
-	19 March 2008 19:40:25 -0700
-	<alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
-References: <20080319211714.8B14226F995@magilla.localdomain>
-	<20080319212024.EA03126F995@magilla.localdomain>
-	<alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
-Message-Id: <20080320081658.0B23826F995@magilla.localdomain>
-Date: Thu, 20 Mar 2008 01:16:58 -0700 (PDT)
-Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	sparclinux@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Richard Henderson <rth@twiddle.net>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <47E216DA.8080602@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,53 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Hmm.. I see the whole series, and I see this patch, but I think it adds 
-> new code and new complexity, and I don't really see *why*.
+On Thu, Mar 20, 2008 at 08:48:42AM +0100, André Schwarz wrote:
+> David Gibson schrieb:
+>> On Thu, Mar 20, 2008 at 01:14:45AM +0100, Wolfgang Denk wrote:
+>>> In message <47DF821B.6090600@matrix-vision.de> you wrote:
+>>>> I've pulled the latest git and built a mpc5200_simple system with a 
+>>>> minimal dts.
+>>>> There's not a single char put on the console ....
+>>> You did build your device tree with "-b 0", didn't you?
+>> Ugh.. I really need to fix dtc to pick the default boot cpu value more
+>> sensibly, don't I.
+>
+> I didn't specify "-b 0". This shouldn't be neccessary on a single processor 
+> system ! After all it's an option ... "0" should be default.
 
-The motivation is to get the arch function out of the code path for the
-machine-independent request handling.  I want to be able to change the
-implementation later without touching the arch code again.  
+Should, yes.  But dtc's pretty new, and a sensible default for -b is
+one thing that isn't there.
 
-The arguments passed down to arch_ptrace are sufficient for what the arch
-code itself needs and for the current implementation in ptrace_request.
-In future, I'd like the option of changing the code for the standard
-requests to use a local data structure set up at the start of ptrace, and
-such like (so more pointers and the like would need to be passed down to
-ptrace_request).  These patches let me remove ptrace_request or change
-its calling convention without touching the arch code again.
-
-> Wouldn't it be nicer to just let "arch_ptrace()" return a flag saying 
-> whether it handled things or not?
-
-It would certainly be nicer.  I would prefer:
-
-extern int arch_ptrace(struct task_struct *child, long request,
-       	    	       long addr, long data, long *retval);
-
-where it returns an error code or it returns 0 and *retval is the value
-or it returns 1 and it didn't do anything.
-
-The reason I took the approach I did instead is incrementalism.
-I can't change that signature without breaking about 22 arch builds.
-I'm only really prepared to thoroughly verify a change on 2 of those
-myself.  It should be a simple enough change to make blind and get 
-right.  But I've gotten a lot of things wrong before.  On principle,
-I wouldn't really expect anyone to sign off on stuff I won't even
-claim to have tried.  I did the forced_successful_syscall_return()
-macro for arch's I don't try to build, and was just awful sure golly
-that I hadn't got them wrong, because the generic change would break
-those few arch's (not 20) without it.
-
-So this ugliness seemed like a better bet than waiting for 20 more
-arch sign-offs before any of it could go in.  You are certainly in a
-position to just change the generic signature and make every arch do
-the update (or fix your typos if you just tweak them all blind), and
-let them grumble.  I did not presume to do so.
-
-If you'd like a patch that changes this signature, updates all arch
-implementations, and is actually verified to compile and work only
-on x86 and powerpc, I'll be happy to provide that.
-
-
-Thanks,
-Roland
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
