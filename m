@@ -1,19 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id A40E5DDF00
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 10:50:32 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so268286anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 16:50:31 -0700 (PDT)
-Message-ID: <fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>
-Date: Thu, 20 Mar 2008 17:50:30 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id E290FDDE23
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 10:58:09 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so269049anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 16:58:08 -0700 (PDT)
+Message-ID: <fa686aa40803201658g6fbdcab0he06dd1e3c83ca900@mail.gmail.com>
+Date: Thu, 20 Mar 2008 17:58:07 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Anatolij Gustschin" <agust@denx.de>, "Paul Mackerras" <paulus@samba.org>
-Subject: Re: Oops with TQM5200 on TQM5200
-In-Reply-To: <47E281B6.20702@denx.de>
+To: "John Linn" <john.linn@xilinx.com>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>, "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH 1/3] [POWERPC] of_serial: Fix possible null dereference.
+In-Reply-To: <20080320144402.6A0E3518070@mail63-sin.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
+References: <20080320144402.6A0E3518070@mail63-sin.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,68 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul, my git server is down at the moment.  Can you please pick this
-one up for .25?  It is needed to boot the tqm5200 board.
+On Thu, Mar 20, 2008 at 8:43 AM, John Linn <john.linn@xilinx.com> wrote:
+> From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+>
+>  The of_serial driver queries the current-speed property and attempts
+>  to use it to register the custom_divisor property of the uart_port.
+>  However, if current-speed is not set, then this code will dereference
+>  a bad pointer.  The fix is to only set custom_divisor when a
+>  current-speed property appears in the device tree.
+>
+>  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+>  Signed-off-by: John Linn <john.linn@xilinx.com>
+
+This looks correct and appropriate to me.
 
 Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+Josh/Arnd, could either of you pick this up?
 
 Cheers,
 g.
 
-On Thu, Mar 20, 2008 at 9:24 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> Hello Wolfgang,
+>  ---
+>   drivers/serial/of_serial.c |    4 +++-
+>   1 files changed, 3 insertions(+), 1 deletions(-)
 >
+>  diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+>  index a64d858..2efb892 100644
+>  --- a/drivers/serial/of_serial.c
+>  +++ b/drivers/serial/of_serial.c
+>  @@ -56,7 +56,9 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+>         port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+>                 | UPF_FIXED_PORT;
+>         port->dev = &ofdev->dev;
+>  -       port->custom_divisor = *clk / (16 * (*spd));
+>  +       /* If current-speed was set, then try not to change it. */
+>  +       if (spd)
+>  +               port->custom_divisor = *clk / (16 * (*spd));
 >
->  Wolfgang Grandegger wrote:
->
->  > I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
->  > oops. Are there any known patches fixing the problems?
->
->  try the patch below for tqm5200.dts, rebuild dtb and boot
->  again. Not sure if it works for Linux 2.6.25-rc6, but for
->  2.6.25-rc3 it does.
->
->  Anatolij
+>         return 0;
+>   }
 >  --
->   diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
->  index c86464f..7c23bb3 100644
->  --- a/arch/powerpc/boot/dts/tqm5200.dts
->  +++ b/arch/powerpc/boot/dts/tqm5200.dts
->  @@ -83,6 +83,7 @@
->                 };
+>  1.5.2.1
 >
->                 dma-controller@1200 {
->  +                       device_type = "dma-controller";
->                         compatible = "fsl,mpc5200-bestcomm";
->                         reg = <1200 80>;
->                         interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
->  @@ -127,10 +128,25 @@
->                 ethernet@3000 {
->                         device_type = "network";
->                         compatible = "fsl,mpc5200-fec";
->  -                       reg = <3000 800>;
->  +                       reg = <3000 400>;
->                         local-mac-address = [ 00 00 00 00 00 00 ];
->                         interrupts = <2 5 0>;
->                         interrupt-parent = <&mpc5200_pic>;
->  +                       phy-handle = <&phy0>;
->  +               };
->  +
->  +               mdio@3000 {
->  +                       #address-cells = <1>;
->  +                       #size-cells = <0>;
->  +                       compatible = "fsl,mpc5200b-mdio";
->  +                       reg = <3000 400>;       // fec range, since we need to setup fec interrupts
->  +                       interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
->  +                       interrupt-parent = <&mpc5200_pic>;
->  +
->  +                       phy0:ethernet-phy@0 {
->  +                               device_type = "ethernet-phy";
->  +                               reg = <0>;
->  +                       };
->                 };
 >
->                 ata@3a00 {
+>
 >  _______________________________________________
 >  Linuxppc-dev mailing list
 >  Linuxppc-dev@ozlabs.org
