@@ -1,19 +1,20 @@
-Return-Path: <thomas.haeberle@vipco.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
-	by ozlabs.org (Postfix) with ESMTP id D01ECDDFD9
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 00:21:25 +1100 (EST)
-Received: from [192.168.0.71] (p5B316EDC.dip.t-dialin.net [91.49.110.220])
-	by post.webmailer.de (fruni mo23) (RZmta 16.15)
-	with ESMTP id I07501k2KBeuPq for <linuxppc-dev@ozlabs.org>;
-	Thu, 20 Mar 2008 14:09:31 +0100 (MET)
-	(envelope-from: <thomas.haeberle@vipco.de>)
-Message-ID: <47E2620C.4020406@vipco.de>
-Date: Thu, 20 Mar 2008 14:09:33 +0100
-From: =?ISO-8859-15?Q?Thomas_H=E4berle?= <thomas.haeberle@vipco.de>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 1196ADDEE4
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 00:40:03 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Trouble with SCC UART ports when moving from ppc to powerpc
+Date: Thu, 20 Mar 2008 14:39:56 +0100
+References: <200803071521.00383.laurentp@cse-semaphore.com>
+	<200803101317.04455.laurentp@cse-semaphore.com>
+	<20080317153326.GA2644@loki.buserror.net>
+In-Reply-To: <20080317153326.GA2644@loki.buserror.net>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Xenomai on TQ MPC5200
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: multipart/signed; boundary="nextPart1812929.7Oss4XKXOI";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200803201439.59806.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello!
+--nextPart1812929.7Oss4XKXOI
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-My target hardware is a MPC5200 on a TQ STK52xx.
-I am developing in a Linked Setup with ELDK 3.1.1 under a Debian Linux 
-(Release 2.6.18-4-686 ; gcc 4.1.2).
-The whole ELDK was already used in a former project with identical 
-hardware and some early tests I ran showed that it works fine (as far as 
-I can see).
+Hi Scott,
 
-My goal is to get a real time Linux OS running on the target (preferably 
-Xenomai) and establish a RT ethernet connection with a identical 
-hardware setup (planning to use RTnet). But I am somehow stuck in the 
-first place for I can't get the kernel built:
-I tried quite a number of Kernel-Xenomai-Adeos-Version-combinations in 
-the past four days without any actual success.
+On Monday 17 March 2008 16:33, Scott Wood wrote:
+> On Mon, Mar 10, 2008 at 01:17:01PM +0100, Laurent Pinchart wrote:
+> > On Friday 07 March 2008 17:21, Scott Wood wrote:
+> > > cpm2_reset() doesn't currently actually reset the CPM, for some reason
+> > > (unlike cpm1).  This should probably be fixed, though then we'd have =
+to
+> > > deal with assigning SMC parameter RAM addresses ourselves.
+> >
+> > I had overlooked that. Resetting the CPM in cpm2_reset() helps. Is there
+> > any reason not to rset the CPM in cpm2_reset() ?
+>
+> The only issue I'm aware of other than the SMC parameter RAM relocation is
+> that the reset can't happen if the early udbg printk is being used.
+>
+> > How should SMC parameter RAM assignment be handled ? I'm not very
+> > familiar with the CPM1,
+>
+> CPM1 has hardcoded SMC parameter RAM addresses, so it's not relevant here.
+>
+> > but for CPM2 the cpm_uart driver could easily cpm_dpalloc() parameter
+> > RAM.
+>
+> It can, yes.  Patches welcome. :-)
 
-Yesterday I downloaded the Linuxppc_2_4_develop-sources from the GIT 
-repository of the DENX site and set them to the exact point where the 
-Adeos-Patch coming along with Xenomai 2.4.2 is build for (commit # ). 
-The patch worked fine (ran trough), I configured the kernel and built 
-the dependencies, but I am still unable to crosscompile the kernel and 
-am also slowly running out of ideas.
+I'm working on a patch. I'm not sure how to handle the early udbg printk=20
+problem, so the first version will just ignore it.
 
-I am relatively new to this part of the software world, so forgive me 
-for my maybe basic questions:
-I found no explicit information on the web, whether Xenomai can be run 
-on my specific target at all:
-Has anyone tried or knows something about that?
-Or where could I check whether it is (besides asking TQ of course)?
-Maybe the better way would be trying  with RTAI?
-Are there any known oddities of the STK52xx and/or MPC5200?
-Do I have to adapt my ELDK in any further way to get things going and 
-using the DENX-sources (okay I guess this is hard to say without 
-detailed information about my ELDK setup...)?
-Any other helpful experience, hints or tricks?
+Best regards,
 
-Thanks & Greetings,
-Thomas
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1812929.7Oss4XKXOI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD4DBQBH4mkv8y9gWxC9vpcRAlvWAJic+L3yXgHbHSQdZ5v0hmw0BExRAKC92DZZ
+1Jk+p359vgm15DsQsWkzbA==
+=8dg8
+-----END PGP SIGNATURE-----
+
+--nextPart1812929.7Oss4XKXOI--
