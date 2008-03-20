@@ -1,27 +1,19 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CF03EDDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 13:41:01 +1100 (EST)
-Date: Wed, 19 Mar 2008 19:40:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
-In-Reply-To: <20080319212024.EA03126F995@magilla.localdomain>
-Message-ID: <alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
-References: <20080319211714.8B14226F995@magilla.localdomain>
-	<20080319212024.EA03126F995@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	sparclinux@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Richard Henderson <rth@twiddle.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E3D2ADDDEF
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 14:40:00 +1100 (EST)
+Date: Thu, 20 Mar 2008 14:39:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Subject: linux-next: Tree for March 20
+Message-Id: <20080320143953.8d6b5a60.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e"
+Cc: Theodore Tso <tytso@MIT.EDU>, Greg KH <greg@kroah.com>, Dan,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,35 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-On Wed, 19 Mar 2008, Roland McGrath wrote:
->
-> The arch_ptrace and compat_arch_ptrace functions can now return
-> -ENOSYS for requests they do not actually implement in arch
-> code.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-Hmm.. I see the whole series, and I see this patch, but I think it adds 
-new code and new complexity, and I don't really see *why*.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64.
 
-So I'm obviously not going to apply it outside the merge window anyway, 
-but even for later I'd really like to know what you're building up 
-towards, because without understanding the upsides it just feels like it 
-adds ugly code and unnecessary infrastructure without any real point to 
-it.
+I have started this tree by reverting the following:
+driver-core/driver-core-remove-no-longer-used-struct-class_device.patch
+	should be merged late
+driver-core/ib-convert-struct-class_device-to-struct-device.patch
+	conflicts with the infiniband tree
+driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
+	breaks non CONFIG_PM builds of drivers/serial/serial_core.c
 
-And I have to say, I really hate that
+There were a few merge conflicts (fairly trivial).
 
-		ret = arch_ptrace(child, request, addr, data);
-		if (ret == -ENOSYS && !forced_successful_syscall_return())
-			ret = ptrace_request(child, request, addr, data);
+I have added POWERPC-really-export-empty_zero_page.patch and reverted
+async-tx commit 9974693221954ef1019f87d32ae26a0757d2ee85 ("dmaengine: ack
+to flags: make use of the unused bits in the 'ack' field") as these are
+still needed to make powerpc allmodconfig build (in particular ext4 and
+drivers/dma/fsldma.c).  These have been reported previously.
 
-thing. Instead of doing it that ugly way (return value and a special 
-per-arch forced_successful_syscall_return() thing), this really smells 
-like you just want to change the calling conventions for "arch_ptrace()" 
-instead.
+We are up to 48 trees, more are welcome (even if they are currently
+empty).  The influx of new trees has slowed completely.  Thanks to those
+who have contributed, and to those who haven't, please do.
 
-Wouldn't it be nicer to just let "arch_ptrace()" return a flag saying 
-whether it handled things or not?
+In particular, I have very few of the architecture trees ....
 
-			Linus
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/linux-next.  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH4dyOTgG2atn1QN8RAiSwAKCYgkV/2MKAASbFmiG0ZJaRNhY70gCcCVHP
+oG/07++gRxyKK1A1WvYcMNE=
+=qBcF
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__20_Mar_2008_14_39_53_+1100_ecMRR1VnOfDA4o_e--
