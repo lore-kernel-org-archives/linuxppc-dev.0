@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 51098DDF99
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 01:41:47 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so221948anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 07:41:46 -0700 (PDT)
-Message-ID: <fa686aa40803200741r304bb1cei5d9562c21d5dff57@mail.gmail.com>
-Date: Thu, 20 Mar 2008 08:41:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: Oops with TQM5200 on TQM5200
-In-Reply-To: <47E2723D.1090101@grandegger.com>
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 6E594DDFDA
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 01:42:31 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47E2723D.1090101@grandegger.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: [PATCH 0/3] [POWERPC] [RFC] of_serial and boot patches introduction
+Date: Thu, 20 Mar 2008 08:42:24 -0600
+In-Reply-To: <12060236493879-git-send-email-john.linn@xilinx.com>
+References: <12060236493879-git-send-email-john.linn@xilinx.com>
+From: "John Linn" <John.Linn@xilinx.com>
+To: <linuxppc-dev@ozlabs.org>, <grant.likely@secretlab.ca>,
+	<jwboyer@linux.vnet.ibm.com>
+Message-Id: <20080320144227.96A311A88055@mail53-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 20, 2008 at 8:18 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Hello,
->
->  I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
->  oops. Are there any known patches fixing the problems?
->
->  TIA.
+I am sending a series of patches that fix the OF serial driver and add
+support to it and the boot for the Xilinx UART 16550.
 
-Hmm, I haven't seen this issue on any of my 5200 boards.  To state the
-obvious, it's an issue in the bestcomm code.  What source line is
-"bcom_task_alloc+0x30/0x198" on?
+I think we have tried to satisfy previous concerns about UARTs which are
+non-standard as the Xilinx 16550 is (register spacing and offset).
 
-Cheers,
-g.
+We would like to have these pulled into 2.6.26.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+John
