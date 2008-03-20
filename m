@@ -1,19 +1,16 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 5D0ECDDF98
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 02:18:40 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Trouble with SCC UART ports when moving from ppc to powerpc
-Date: Thu, 20 Mar 2008 16:18:26 +0100
-References: <200803071521.00383.laurentp@cse-semaphore.com>
-	<200803201439.59806.laurentp@cse-semaphore.com>
-	<20080320150823.GB31587@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080320150823.GB31587@ld0162-tx32.am.freescale.net>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E585CDE3C7
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 02:42:25 +1100 (EST)
+Message-ID: <47E281B6.20702@denx.de>
+Date: Thu, 20 Mar 2008 16:24:38 +0100
+From: Anatolij Gustschin <agust@denx.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart15080131.JmifM5uyAh";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803201618.37051.laurentp@cse-semaphore.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: Oops with TQM5200 on TQM5200
+References: <47E2723D.1090101@grandegger.com>
+In-Reply-To: <47E2723D.1090101@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,60 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart15080131.JmifM5uyAh
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hello Wolfgang,
 
-On Thursday 20 March 2008 16:08, Scott Wood wrote:
-> On Thu, Mar 20, 2008 at 02:39:56PM +0100, Laurent Pinchart wrote:
-> > I'm working on a patch. I'm not sure how to handle the early udbg printk
-> > problem, so the first version will just ignore it.
->
-> udbg printk is extremely useful... I'd not be fond of it breaking.
+Wolfgang Grandegger wrote:
 
-I don't want to kill it either. What I meant is that my first patch will no=
-t=20
-care about udbg so that I can get feedback about the CPM serial driver part=
-=2E=20
-I'll then see how to make udbg fit into that.
+> I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
+> oops. Are there any known patches fixing the problems?
 
-> Perhaps we should stick more initialization into the cpm udbg code, so it
-> isn't so dependent on the bootloader setup... though we'd have push the
-> CPM reset and SMC allocation earlier in such a case.
+try the patch below for tqm5200.dts, rebuild dtb and boot
+again. Not sure if it works for Linux 2.6.25-rc6, but for
+2.6.25-rc3 it does.
 
-When SMC1 is used as a serial console, SMC1 is the first CPM dpram allocati=
-on=20
-user. This means the CPM dpram allocator will allocate a buffer at the=20
-beginning of the dpram. As he SMC controller will already be using the 64=20
-first bytes of the dpram, it will not see any difference when being=20
-reinitialized.
-
-This of course depends on the boot loader allocating parameter ram at the=20
-beginning of the dpram for SMC1, but we already depend on that if I'm not=20
-mistaken.
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart15080131.JmifM5uyAh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH4oBN8y9gWxC9vpcRAtoXAJ9X3CBwp/n8sRHa9DeC19yO5Zb8KACfVSEj
-nqyXqBy0Bn10LeLjSOOeQ+I=
-=ILWT
------END PGP SIGNATURE-----
-
---nextPart15080131.JmifM5uyAh--
+Anatolij
+--
+ diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
+index c86464f..7c23bb3 100644
+--- a/arch/powerpc/boot/dts/tqm5200.dts
++++ b/arch/powerpc/boot/dts/tqm5200.dts
+@@ -83,6 +83,7 @@
+ 		};
+ 
+ 		dma-controller@1200 {
++			device_type = "dma-controller";
+ 			compatible = "fsl,mpc5200-bestcomm";
+ 			reg = <1200 80>;
+ 			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+@@ -127,10 +128,25 @@
+ 		ethernet@3000 {
+ 			device_type = "network";
+ 			compatible = "fsl,mpc5200-fec";
+-			reg = <3000 800>;
++			reg = <3000 400>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <2 5 0>;
+ 			interrupt-parent = <&mpc5200_pic>;
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-mdio";
++			reg = <3000 400>;       // fec range, since we need to setup fec interrupts
++			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
++			interrupt-parent = <&mpc5200_pic>;
++
++			phy0:ethernet-phy@0 {
++				device_type = "ethernet-phy";
++				reg = <0>;
++			};
+ 		};
+ 
+ 		ata@3a00 {
