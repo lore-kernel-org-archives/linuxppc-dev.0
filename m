@@ -1,16 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 20 Mar 2008 11:21:49 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: simple MPC5200B system
-Message-ID: <20080320002149.GD19616@localhost.localdomain>
-References: <47DF821B.6090600@matrix-vision.de>
-	<20080320001445.C03DD24A8B@gemini.denx.de>
+Return-Path: <roland@redhat.com>
+Received: from QMTA08.emeryville.ca.mail.comcast.net
+	(qmta08.emeryville.ca.mail.comcast.net [76.96.30.80])
+	by ozlabs.org (Postfix) with ESMTP id 6D5DDDDEED
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 11:24:18 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080320001445.C03DD24A8B@gemini.denx.de>
-Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>,
-	linux-ppc list <linuxppc-dev@ozlabs.org>
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: unprivileged use of MSR_SE
+Message-Id: <20080320002407.D911C26F995@magilla.localdomain>
+Date: Wed, 19 Mar 2008 17:24:07 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,20 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 20, 2008 at 01:14:45AM +0100, Wolfgang Denk wrote:
-> In message <47DF821B.6090600@matrix-vision.de> you wrote:
-> >
-> > I've pulled the latest git and built a mpc5200_simple system with a 
-> > minimal dts.
-> > There's not a single char put on the console ....
-> 
-> You did build your device tree with "-b 0", didn't you?
+Are there any powerpc instructions that can read or change the MSR
+explicitly from user mode?  Any that can see or affect the MSR_SE bit?
 
-Ugh.. I really need to fix dtc to pick the default boot cpu value more
-sensibly, don't I.
+e.g. x86 has pushf/popf unprivileged instructions, with which a user
+program can both see the single-step flag set, and enable single-step for
+its own next instruction (presumably when it has a handler for SIGTRAP).
+This actually gets used in arcane places.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I recall being told before there's no unprivileged way to see or touch
+MSR_SE.  But it looks to me like a user program can set the bit in a
+sigcontext and sigreturn to set it.  Is that intentionally supported?
+Or could sigreturn ignore the MSR_SE bit without breaking any strange user?
+
+On x86 do we some machinations so that PTRACE_GETREGS et al show the
+single-step bit set if user-mode itself had set it, but not if
+PTRACE_SINGLESTEP set it.  If you use PTRACE_SETREGS et al to set the
+single-step bit, then it stays set even if you use PTRACE_CONT.
+
+I'd like to clean this up for powerpc too.  If there is no way at all for
+user-mode to set MSR_SE, then it doesn't much matter whether it shows up
+when ptrace reads it--ptrace just needs to ignore attempts to set it.  So
+if there's no reason not to, what I would do is remove MSR_SE from the
+MSR_DEBUGCHANGE mask and make sigreturn always clear MSR_SE.
+
+Does that make sense?
+
+
+Thanks,
+Roland
