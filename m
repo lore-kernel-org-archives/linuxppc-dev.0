@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B3AF0DDED8
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 21:44:10 +1100 (EST)
-Subject: Re: [PATCH 1/2] Implement of_flat_dt_search() and use it for
-	of_flat_dt_is_compatible.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <63cdefde19cb2a4adc17ed771f21261673428ce7.1205987625.git.tony@bakeyournoodle.com>
-References: <63cdefde19cb2a4adc17ed771f21261673428ce7.1205987625.git.tony@bakeyournoodle.com>
-Content-Type: text/plain
-Date: Thu, 20 Mar 2008 20:41:00 +1100
-Message-Id: <1206006060.8420.5.camel@pasglop>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Jan-Bernd Themann <themann@de.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <neko@genesi-usa.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id DEAEADDF1F
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 22:28:49 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so904286pyg.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 04:28:48 -0700 (PDT)
+Message-ID: <47E24B69.2080607@genesi-usa.com>
+Date: Thu, 20 Mar 2008 11:32:57 +0000
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: crash in init_ipic_sysfs on efika
+References: <20080317195305.GA13298@aepfle.de>
+	<20080319152722.GA9208@aepfle.de>
+In-Reply-To: <20080319152722.GA9208@aepfle.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,71 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This was a good catch. IPIC is the controller on the MPC83xx type boards (and
+MPC5121E) so building a kernel with this controller code in there, but without
+the controller present, should gladly fail.
 
-On Thu, 2008-03-20 at 15:33 +1100, Tony Breeds wrote:
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> ---
+However removing the boards from the config does not fix this obvious error. I
+like your patch better than changing the config options to disable entire
+swathes of board support :D
 
-What about a comment ? :-)
+What I'm concerned about is that the IPIC code is registering with sysfs even
+though there is no controller present. How on EARTH does it even get that far?
+If ipic_init fails, no further code should be run from this file, in my view.
 
->  arch/powerpc/kernel/prom.c |   21 ++++++++++++++-------
->  include/asm-powerpc/prom.h |    2 ++
->  2 files changed, 16 insertions(+), 7 deletions(-)
+subsys_initcall(init_ipic_sysfs); <-- this, in my eyes, is the culprit. If
+init_ipic() runs, init_ipic_sysfs should be called from that, not left for
+some further subsystem to blindly try and register sysfs nodes for devices
+which may not even be present..
+
+I'd love someone to explain to me how this works and why, and why it isn't
+braindead? :D
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Olaf Hering wrote:
+> On Mon, Mar 17, Olaf Hering wrote:
 > 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index eac97f4..f73e18b 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -205,25 +205,32 @@ void* __init of_get_flat_dt_prop(unsigned long node, const char *name,
->  	} while(1);
->  }
->  
-> -int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
-> +int __init of_flat_dt_search(unsigned long node, const char *str,
-> +                             const char *prop_name)
->  {
-> -	const char* cp;
-> -	unsigned long cplen, l;
-> +	const char *cp;
-> +	unsigned long plen, l;
->  
-> -	cp = of_get_flat_dt_prop(node, "compatible", &cplen);
-> +	cp = of_get_flat_dt_prop(node, prop_name, &plen);
->  	if (cp == NULL)
->  		return 0;
-> -	while (cplen > 0) {
-> -		if (strncasecmp(cp, compat, strlen(compat)) == 0)
-> +	while (plen > 0) {
-> +		if (strncasecmp(cp, str, strlen(str)) == 0)
->  			return 1;
->  		l = strlen(cp) + 1;
->  		cp += l;
-> -		cplen -= l;
-> +		plen -= l;
->  	}
->  
->  	return 0;
->  }
->  
-> +int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
-> +{
-> +
-> +	return of_flat_dt_search(node, compat, "compatible");
-> +}
-> +
->  static void *__init unflatten_dt_alloc(unsigned long *mem, unsigned long size,
->  				       unsigned long align)
->  {
-> diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-> index 78b7b0d..7b587f1 100644
-> --- a/include/asm-powerpc/prom.h
-> +++ b/include/asm-powerpc/prom.h
-> @@ -134,6 +134,8 @@ extern int __init of_scan_flat_dt(int (*it)(unsigned long node,
->  				  void *data);
->  extern void* __init of_get_flat_dt_prop(unsigned long node, const char *name,
->  					unsigned long *size);
-> +extern int __init of_flat_dt_search(unsigned long node, const char *str,
-> +                                  const char *prop_name);
->  extern int __init of_flat_dt_is_compatible(unsigned long node, const char *name);
->  extern unsigned long __init of_get_flat_dt_root(void);
->  
+>> The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL if
+>> ipic_init() fails. init_ipic_sysfs() will crash in that case.
+>>
+>> Something like this may fix it:
+>>
+>> Index: linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
+>> ===================================================================
+>> --- linux-2.6.25-rc6.orig/arch/powerpc/sysdev/ipic.c
+>> +++ linux-2.6.25-rc6/arch/powerpc/sysdev/ipic.c
+>> @@ -906,7 +906,7 @@ static int __init init_ipic_sysfs(void)
+>>  {
+>>         int rc;
+>>  
+>> -       if (!primary_ipic->regs)
+>> +       if (!primary_ipic || !primary_ipic->regs)
+>>                 return -ENODEV;
+>>         printk(KERN_DEBUG "Registering ipic with sysfs...\n");
+> 
+> ipic_init() is not called for every board.
+> This change for the used config fixes the crash as well.
+> 
+> @@ -168,14 +168,14 @@ CONFIG_PPC_MULTIPLATFORM=y
+>  # CONFIG_PPC_86xx is not set
+>  CONFIG_CLASSIC32=y
+>  CONFIG_PPC_CHRP=y
+> -CONFIG_PPC_MPC512x=y
+> -CONFIG_PPC_MPC5121=y
+> -CONFIG_MPC5121_ADS=y
+> +# CONFIG_PPC_MPC512x is not set
+> +# CONFIG_PPC_MPC5121 is not set
+> +# CONFIG_MPC5121_ADS is not set
+>  CONFIG_PPC_MPC52xx=y
+> -CONFIG_PPC_MPC5200_SIMPLE=y
+> +# CONFIG_PPC_MPC5200_SIMPLE is not set
+>  CONFIG_PPC_EFIKA=y
+>  # CONFIG_PPC_LITE5200 is not set
+> -CONFIG_PPC_MPC5200_BUGFIX=y
+> +# CONFIG_PPC_MPC5200_BUGFIX is not set
+>  CONFIG_PPC_PMAC=y
+>  # CONFIG_PPC_CELL is not set
+>  # CONFIG_PPC_CELL_NATIVE is not set
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
