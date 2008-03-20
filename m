@@ -1,16 +1,18 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E585CDE3C7
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 02:42:25 +1100 (EST)
-Message-ID: <47E281B6.20702@denx.de>
-Date: Thu, 20 Mar 2008 16:24:38 +0100
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <tur@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 34C04DDFB2
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 03:18:40 +1100 (EST)
+Message-ID: <47E28E15.2070809@semihalf.com>
+Date: Thu, 20 Mar 2008 17:17:25 +0100
+From: Bartlomiej Sieka <tur@semihalf.com>
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
+To: Anatolij Gustschin <agust@denx.de>
 Subject: Re: Oops with TQM5200 on TQM5200
-References: <47E2723D.1090101@grandegger.com>
-In-Reply-To: <47E2723D.1090101@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
+In-Reply-To: <47E281B6.20702@denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,55 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Wolfgang,
+Anatolij Gustschin wrote:
+> Hello Wolfgang,
+> 
+> Wolfgang Grandegger wrote:
+> 
+>> I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
+>> oops. Are there any known patches fixing the problems?
+> 
+> try the patch below for tqm5200.dts, rebuild dtb and boot
+> again. Not sure if it works for Linux 2.6.25-rc6, but for
+> 2.6.25-rc3 it does.
 
-Wolfgang Grandegger wrote:
+It helps 2.6.25-rc6 too - thanks Anatolij.
 
-> I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
-> oops. Are there any known patches fixing the problems?
+> 
+> Anatolij
+> -- 
+> diff --git a/arch/powerpc/boot/dts/tqm5200.dts 
+> b/arch/powerpc/boot/dts/tqm5200.dts
+> index c86464f..7c23bb3 100644
+> --- a/arch/powerpc/boot/dts/tqm5200.dts
+> +++ b/arch/powerpc/boot/dts/tqm5200.dts
+> @@ -83,6 +83,7 @@
+>         };
+> 
+>         dma-controller@1200 {
+> +            device_type = "dma-controller";
 
-try the patch below for tqm5200.dts, rebuild dtb and boot
-again. Not sure if it works for Linux 2.6.25-rc6, but for
-2.6.25-rc3 it does.
+This actually fixes the Oops.
 
-Anatolij
---
- diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
-index c86464f..7c23bb3 100644
---- a/arch/powerpc/boot/dts/tqm5200.dts
-+++ b/arch/powerpc/boot/dts/tqm5200.dts
-@@ -83,6 +83,7 @@
- 		};
- 
- 		dma-controller@1200 {
-+			device_type = "dma-controller";
- 			compatible = "fsl,mpc5200-bestcomm";
- 			reg = <1200 80>;
- 			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-@@ -127,10 +128,25 @@
- 		ethernet@3000 {
- 			device_type = "network";
- 			compatible = "fsl,mpc5200-fec";
--			reg = <3000 800>;
-+			reg = <3000 400>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <2 5 0>;
- 			interrupt-parent = <&mpc5200_pic>;
-+			phy-handle = <&phy0>;
-+		};
-+
-+		mdio@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5200b-mdio";
-+			reg = <3000 400>;       // fec range, since we need to setup fec interrupts
-+			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
-+			interrupt-parent = <&mpc5200_pic>;
-+
-+			phy0:ethernet-phy@0 {
-+				device_type = "ethernet-phy";
-+				reg = <0>;
-+			};
- 		};
- 
- 		ata@3a00 {
+>             compatible = "fsl,mpc5200-bestcomm";
+>             reg = <1200 80>;
+>             interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+> @@ -127,10 +128,25 @@
+>         ethernet@3000 {
+>             device_type = "network";
+>             compatible = "fsl,mpc5200-fec";
+> -            reg = <3000 800>;
+> +            reg = <3000 400>;
+>             local-mac-address = [ 00 00 00 00 00 00 ];
+>             interrupts = <2 5 0>;
+>             interrupt-parent = <&mpc5200_pic>;
+> +            phy-handle = <&phy0>;
+> +        };
+> +
+> +        mdio@3000 {
+> +            #address-cells = <1>;
+> +            #size-cells = <0>;
+> +            compatible = "fsl,mpc5200b-mdio";
+> +            reg = <3000 400>;       // fec range, since we need to 
+> setup fec interrupts
+> +            interrupts = <2 5 0>;   // these are for "mii command 
+> finished", not link changes & co.
+> +            interrupt-parent = <&mpc5200_pic>;
+> +
+> +            phy0:ethernet-phy@0 {
+> +                device_type = "ethernet-phy";
+> +                reg = <0>;
+> +            };
+
+And this fixes networking issues (NFS-mounted rootfs timeouts, etc).
+BTW: it's been posted a while back
+(http://patchwork.ozlabs.org/linuxppc/patch?q=Balakowicz&id=16197) but
+didn't get merged.
+
+Grant -- any chances these fixes could be rushed upstream?
+
+Regards,
+Bartlomiej
