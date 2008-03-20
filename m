@@ -1,24 +1,20 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5812DDE043
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 10:02:40 +1100 (EST)
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080320152708.23c6c734.akpm@linux-foundation.org>
-References: <12059526271941-git-send-email-yorksun@freescale.com>
-	<12059526274026-git-send-email-yorksun@freescale.com>
-	<20080320152708.23c6c734.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 21 Mar 2008 00:02:16 +0100
-Message-Id: <1206054136.6437.67.camel@lappy>
-Mime-Version: 1.0
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	York Sun <yorksun@freescale.com>, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@elte.hu>, timur@freescale.com
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id A40E5DDF00
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 10:50:32 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so268286anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 16:50:31 -0700 (PDT)
+Message-ID: <fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>
+Date: Thu, 20 Mar 2008 17:50:30 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Anatolij Gustschin" <agust@denx.de>, "Paul Mackerras" <paulus@samba.org>
+Subject: Re: Oops with TQM5200 on TQM5200
+In-Reply-To: <47E281B6.20702@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,105 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-03-20 at 15:27 -0700, Andrew Morton wrote:
+Paul, my git server is down at the moment.  Can you please pick this
+one up for .25?  It is needed to boot the tqm5200 board.
 
-> >
-> > +static struct diu_hw dr = {
-> > +	.mode = MFB_MODE1,
-> > +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> > +};
-> 
-> I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
-> do know that its documentation is crap.
-> 
-> I guess you should have used SPIN_LOCK_UNLOCKED there rather than
-> open-coding its equivalent.  And SPIN_LOCK_UNLOCKED _is_ documented.  It
-> says "don't use this".
-> 
-> Now, s/documentation/guesswork-and-grep/ says that you're supposed to pick
-> a tree-wide-unique string here as your lockdep key.
-> 
-> So I did this:
-> 
-> --- a/drivers/video/fsl-diu-fb.c~fbdev-driver-for-freescale-8610-and-5121-diu-fix
-> +++ a/drivers/video/fsl-diu-fb.c
-> @@ -274,7 +274,7 @@ static struct mfb_info mfb_template[] = 
->  
->  static struct diu_hw dr = {
->  	.mode = MFB_MODE1,
-> -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
->  };
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-#define __SPIN_LOCK_UNLOCKED(lockname)
+Cheers,
+g.
 
-seems pretty suggestive to me, also DEFINE_SPINLOCK(x) shows the proper
-usage; the right thing would have been:
+On Thu, Mar 20, 2008 at 9:24 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> Hello Wolfgang,
+>
+>
+>  Wolfgang Grandegger wrote:
+>
+>  > I just tried Linux 2.6.25-rc6 on my TQM5200 module and got the attached
+>  > oops. Are there any known patches fixing the problems?
+>
+>  try the patch below for tqm5200.dts, rebuild dtb and boot
+>  again. Not sure if it works for Linux 2.6.25-rc6, but for
+>  2.6.25-rc3 it does.
+>
+>  Anatolij
+>  --
+>   diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
+>  index c86464f..7c23bb3 100644
+>  --- a/arch/powerpc/boot/dts/tqm5200.dts
+>  +++ b/arch/powerpc/boot/dts/tqm5200.dts
+>  @@ -83,6 +83,7 @@
+>                 };
+>
+>                 dma-controller@1200 {
+>  +                       device_type = "dma-controller";
+>                         compatible = "fsl,mpc5200-bestcomm";
+>                         reg = <1200 80>;
+>                         interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+>  @@ -127,10 +128,25 @@
+>                 ethernet@3000 {
+>                         device_type = "network";
+>                         compatible = "fsl,mpc5200-fec";
+>  -                       reg = <3000 800>;
+>  +                       reg = <3000 400>;
+>                         local-mac-address = [ 00 00 00 00 00 00 ];
+>                         interrupts = <2 5 0>;
+>                         interrupt-parent = <&mpc5200_pic>;
+>  +                       phy-handle = <&phy0>;
+>  +               };
+>  +
+>  +               mdio@3000 {
+>  +                       #address-cells = <1>;
+>  +                       #size-cells = <0>;
+>  +                       compatible = "fsl,mpc5200b-mdio";
+>  +                       reg = <3000 400>;       // fec range, since we need to setup fec interrupts
+>  +                       interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
+>  +                       interrupt-parent = <&mpc5200_pic>;
+>  +
+>  +                       phy0:ethernet-phy@0 {
+>  +                               device_type = "ethernet-phy";
+>  +                               reg = <0>;
+>  +                       };
+>                 };
+>
+>                 ata@3a00 {
+>  _______________________________________________
+>  Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-static struct diu_hw dr = {
- 	.mode = MFB_MODE1,
--	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-+	.reg_lock = __SPIN_LOCK_UNLOCKED(dr.reg_lock),
-};
 
-Where 'dr.reg_lock' is the expression to locate the actual object.
 
-Does something like this make sense to you:
-
----
-Subject: lockdep: document __SPIN_LOCK_UNLOCKED() usage
-
-Small comment clarifying the intended usage of __SPIN_LOCK_UNLOCKED()
-
-[ for the observant readers; yes this prescribes a usage that is more
-  than strictly needed, it does however enable interesting future uses ]
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/include/linux/spinlock_types.h b/include/linux/spinlock_types.h
-index 68d88f7..4278558 100644
---- a/include/linux/spinlock_types.h
-+++ b/include/linux/spinlock_types.h
-@@ -63,6 +63,10 @@ typedef struct {
- # define RW_DEP_MAP_INIT(lockname)
- #endif
- 
-+/*
-+ * __*_LOCK_UNLOCKED(lockname), where 'lockname' is a valid C expression
-+ * that evaluates to the actual object being initialized.
-+ */
- #ifdef CONFIG_DEBUG_SPINLOCK
- # define __SPIN_LOCK_UNLOCKED(lockname)					\
- 	(spinlock_t)	{	.raw_lock = __RAW_SPIN_LOCK_UNLOCKED,	\
----
-
-Perhaps I should make the macros do something like:
-
-  typecheck(spinlock_t, lockname)
-
-And sweep the tree to make it compile again.
-
->  static struct diu_pool pool;
-> 
-> > +static struct diu_pool pool;
-> > +
-> > +/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
-> > + *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
-> > + *	very large memory (more than 4MB). We don't want to allocate all memory
-> > + *	in rheap since small memory allocation/deallocation will fragment the
-> > + *	rheap and make the furture large allocation fail.
-> > + */
-> > +
-> > +void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-> > +{
-> > +	void *virt;
-> > +
-> > +	pr_debug("size=%lu\n", size);
-> > +
-> > +	virt = (void *)__get_free_pages(GFP_DMA | GFP_ATOMIC, get_order(size));
-> 
-> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
-
-FWIW, I prefer the form: GFP_type | __GFP_modifiers
-
-For instance: 'GFP_KERNEL | __GFP_DMA | __GFP_ZERO'
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
