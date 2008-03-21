@@ -1,24 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 73EC2DDFC8
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 05:51:57 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so355681anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 11:51:46 -0700 (PDT)
-Message-ID: <fa686aa40803211151w688a8d61sba9d0d0e6cdc7833@mail.gmail.com>
-Date: Fri, 21 Mar 2008 12:51:46 -0600
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.245])
+	by ozlabs.org (Postfix) with ESMTP id 502EBDE41E
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 06:02:08 +1100 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so1502127hsz.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 12:02:07 -0700 (PDT)
+Message-ID: <fa686aa40803211202g5f87f40et61e340c217482bc6@mail.gmail.com>
+Date: Fri, 21 Mar 2008 13:02:06 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: crash in init_ipic_sysfs on efika
-In-Reply-To: <47E3B4AF.3030505@genesi-usa.com>
+To: "Wolfgang Grandegger" <wg@grandegger.com>
+Subject: Re: Oops with TQM5200 on TQM5200
+In-Reply-To: <47E3561B.6040505@grandegger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080317195305.GA13298@aepfle.de>
-	<fa686aa40803202214k7d8596a5y922a34f33d33dca2@mail.gmail.com>
-	<18403.31214.826941.838442@cargo.ozlabs.ibm.com>
-	<47E3B4AF.3030505@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	Paul Mackerras <paulus@samba.org>
+References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
+	<fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>
+	<47E2FC3E.1020705@semihalf.com> <47E3561B.6040505@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 21, 2008 at 7:14 AM, Matt Sealey <matt@genesi-usa.com> wrote:
-> Is the MPC5200B PSC-AC97 driver in there?
+On Fri, Mar 21, 2008 at 12:30 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Bartlomiej Sieka wrote:
+>  > Grant Likely wrote:
+>  >> Paul, my git server is down at the moment.  Can you please pick this
+>  >> one up for .25?  It is needed to boot the tqm5200 board.
+>  >
+>  > Could we also have similar fixes for cm5200.dts and motionpro.dts picked
+>  > up? I could provide the patches within a day -- will this be OK?
+>
+>  At that occasion, could you please also add two CAN nodes to tqm5200.dts
+>  as shown:
 
-Audio drivers need to go in via one of the ALSA developers and I
-haven't been paying close enough attention to know if it has not in
-yet.
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-g.
-
-
+>
+>  s$ diff -u tqm5200.dts tqm5200.dts.CAN
+>  --- tqm5200.dts 2008-03-20 18:44:40.000000000 +0100
+>  +++ tqm5200.dts.CAN     2008-03-21 07:27:49.000000000 +0100
+>  @@ -68,6 +68,22 @@
+>                         fsl,has-wdt;
+>                 };
+>
+>  +               can@900 {
+>  +                       compatible = "fsl,mpc5200-mscan";
+>  +                       cell-index = <0>;
+>  +                       interrupts = <2 11 0>;
+>  +                       interrupt-parent = <&mpc5200_pic>;
+>  +                       reg = <900 80>;
+>  +               };
+>  +
+>  +               can@980 {
+>  +                       compatible = "fsl,mpc5200-mscan";
+>  +                       cell-index = <1>;
+>  +                       interrupts = <2 12 0>;
+>  +                       interrupt-parent = <&mpc5200_pic>;
+>  +                       reg = <980 80>;
+>  +               };
+>  +
+>                 gpio@b00 {
+>                         compatible = "fsl,mpc5200-gpio";
+>                         reg = <b00 40>;
+>
 -- 
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
