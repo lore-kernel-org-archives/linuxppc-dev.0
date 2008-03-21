@@ -2,22 +2,19 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB72EDE083
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 22:39:53 +1100 (EST)
-In-Reply-To: <18403.32257.725539.470771@cargo.ozlabs.ibm.com>
-References: <12060242324116-git-send-email-john.linn@xilinx.com>
-	<20080320144402.3063517C005D@mail148-sin.bigfish.com>
-	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>
-	<18403.32257.725539.470771@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id 78084DDF6C
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 22:47:10 +1100 (EST)
+In-Reply-To: <1206090031.8420.67.camel@pasglop>
+References: <1205943310-26323-1-git-send-email-sr@denx.de>
+	<1206090031.8420.67.camel@pasglop>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <82ce3dbb9ebdb1fa4fc7407ed3396411@kernel.crashing.org>
+Message-Id: <011f73a2a2f33e075c20f0d0bb42d4a7@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
-	16550.
-Date: Fri, 21 Mar 2008 12:39:45 +0100
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] Add AMCC Glacier 460GT eval board dts
+Date: Fri, 21 Mar 2008 12:46:01 +0100
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Personally, I'm not fond of this approach.  There is already some
->> traction to using the reg-shift property to specify spacing, and I
->> think it would be appropriate to also define a reg-offset property to
->> handle the +3 offset and then let the xilinx 16550 nodes use those.
->
-> Why do we need a reg-offset property when we can just add the offset
-> to the appropriate word(s) in the reg property?
+> As for the DTS, maybe a "compatible" property in the CPU might make 
+> some
+> sense with a content along the lines of "ppc440x6" or whatever rev of
+> the 440 core it is.
 
-Because if you do that, the "reg" property cannot describe the full
-register block (it misses the first few bytes).  Not a huge problem
-in practice, sure.
+Good idea, but please _also_ put the exact name in there, first; so
+something like
+
+	compatible = "AMCC,PowerPC,460GT", "AMCC,ppc440x6";
+
+That way, you can still probe for specific versions where necessary.
+This is completely in line with the "generic naming" recommended
+practice; the PowerPC binding predates that RP, it really needs to
+be updated.
+
+Any reason we keep the device_type here, btw?
 
 
 Segher
