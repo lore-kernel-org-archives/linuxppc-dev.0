@@ -1,19 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 21 Mar 2008 18:05:12 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: DTS question
-Message-ID: <20080321070512.GA29010@localhost.localdomain>
-References: <20080320173302.7075a1d9@lappy.seanm.ca>
-	<20080320181926.2ff7e297@lappy.seanm.ca>
-	<47E2E4A2.9000801@freescale.com>
-	<20080321001236.4e37bba4@lappy.seanm.ca>
-	<fa686aa40803202134p7db6a106n8487aa0040b5990c@mail.gmail.com>
-	<20080321010941.5e4bf9d4@lappy.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080321010941.5e4bf9d4@lappy.seanm.ca>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 515B4DDEEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 20:01:08 +1100 (EST)
+Subject: Re: [PATCH] [POWERPC] Add AMCC Glacier 460GT eval board dts
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <1205943310-26323-1-git-send-email-sr@denx.de>
+References: <1205943310-26323-1-git-send-email-sr@denx.de>
+Content-Type: text/plain
+Date: Fri, 21 Mar 2008 20:00:31 +1100
+Message-Id: <1206090031.8420.67.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 21, 2008 at 01:09:41AM -0400, Sean MacLennan wrote:
-> On Thu, 20 Mar 2008 22:34:21 -0600
-> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+
+On Wed, 2008-03-19 at 17:15 +0100, Stefan Roese wrote:
+> +               cpu@0 {
+> +                       device_type = "cpu";
+> +                       model = "PowerPC,460GT";
+> +                       reg = <0>;
 > 
-> > Convention is to use the stock ticker symbol.  If the company is
-> > private and has no stock ticker symbol, then the company name should
-> > be used.
-> 
-> I didn't know that. ADI it is then.
 
-Well.. stock ticker is the new convention.  IEEE1275 used IEEE
-assigned OUI strings (Organization Unique Identifiers).  Often those
-are the same as the stock ticker, but not always.
+I wonder if we should do something here to differenciate the SoC chip
+from the core. After all, all those 4xx mostly have the same core (there
+are 2 or 3 revisions of the core maybe ...) but they tend to have all
+different PVR which is a pain and won't scale...
 
-Stock ticker is a good choice for new things, but for anything from a
-vendor which has existing 1275 bindings for its products, I think we
-should keep the original assigned OUI, even if it differs from the
-stock ticker.
+Maybe AMCC could do something in HW (splitting the PVR from whatever
+indicates what "chip" it is, and keeping the PVR purely for the core
+rev) but I'm wondering if we should also do something in the DTS..
+Stefan can you talk to your AMCC contacts about this ?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+As for the DTS, maybe a "compatible" property in the CPU might make some
+sense with a content along the lines of "ppc440x6" or whatever rev of
+the 440 core it is.
+
+What do you think ?
+
+Cheers,
+Ben.
