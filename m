@@ -1,22 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 82E6BDDE28
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 15:34:25 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so295442anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2008 21:34:21 -0700 (PDT)
-Message-ID: <fa686aa40803202134p7db6a106n8487aa0040b5990c@mail.gmail.com>
-Date: Thu, 20 Mar 2008 22:34:21 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sean MacLennan" <smaclennan@pikatech.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 6C5EDDDDFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 16:09:43 +1100 (EST)
+Date: Fri, 21 Mar 2008 01:09:41 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: DTS question
-In-Reply-To: <20080321001236.4e37bba4@lappy.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20080321010941.5e4bf9d4@lappy.seanm.ca>
+In-Reply-To: <fa686aa40803202134p7db6a106n8487aa0040b5990c@mail.gmail.com>
 References: <20080320173302.7075a1d9@lappy.seanm.ca>
 	<20080320181926.2ff7e297@lappy.seanm.ca>
 	<47E2E4A2.9000801@freescale.com>
 	<20080321001236.4e37bba4@lappy.seanm.ca>
+	<fa686aa40803202134p7db6a106n8487aa0040b5990c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,29 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 20, 2008 at 10:12 PM, Sean MacLennan
-<smaclennan@pikatech.com> wrote:
-> On Thu, 20 Mar 2008 17:26:42 -0500
->  "Scott Wood" <scottwood@freescale.com> wrote:
->
->  > >     ad7414 {
->  > >             compatible = "ad7414";
->  >
->  > This should proabably have a manufacturer prefix.
->
->  I wondered about this. Since the AD from Analog Devices is built into
->  the part number, I didn't know if it was needed. And analog-devices is
->  pretty long ;)
->
->  But I am willing to put it in if it is necessary.
+On Thu, 20 Mar 2008 22:34:21 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-Convention is to use the stock ticker symbol.  If the company is
-private and has no stock ticker symbol, then the company name should
-be used.
+> Convention is to use the stock ticker symbol.  If the company is
+> private and has no stock ticker symbol, then the company name should
+> be used.
+
+I didn't know that. ADI it is then.
+
+IIC0: i2c@ef600700 {
+	compatible = "ibm,iic-440ep", "ibm,iic-440gp", "ibm,iic";
+	reg = <ef600700 14>;
+	interrupt-parent = <&UIC0>;
+	interrupts = <2 4>;
+	index = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	ad7414@4a {
+		compatible = "adi,ad7414";
+		reg = <4a>;
+		interrupts = <19 8>;
+		interrupt-parent = <&UIC0>;
+	};
+};
+
 
 Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+  Sean
