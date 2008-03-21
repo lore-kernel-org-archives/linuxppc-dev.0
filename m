@@ -1,34 +1,33 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E86DDDDEE7
+	by ozlabs.org (Postfix) with ESMTPS id 77234DE43C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 19:51:19 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m2L8pChb001314 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 01:51:12 -0700 (MST)
+	Fri, 21 Mar 2008 23:20:42 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m2LCKbFq014619 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 21 Mar 2008 05:20:37 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m2L8pAa4024627
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2LCKYvl016386
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 03:51:11 -0500 (CDT)
+	Fri, 21 Mar 2008 07:20:35 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: [PATCH] Add Fixed PHY support for ucc_geth
-Date: Fri, 21 Mar 2008 16:51:04 +0800
-Message-ID: <989B956029373F45A0B8AF029708189001D1954D@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Subject: RE: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
+Date: Fri, 21 Mar 2008 20:20:34 +0800
+Message-ID: <989B956029373F45A0B8AF029708189001D19565@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
 References: <>
-	<1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
 From: "Li Yang" <LeoLi@freescale.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Cc: Netdev <netdev@vger.kernel.org>,
-	Joakim Tjernlund <Joakim.Tjernlund@transmode.se>,
+To: "Joakim Tjernlund" <Joakim.Tjernlund@transmode.se>,
+	"Netdev" <netdev@vger.kernel.org>,
 	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -41,122 +40,55 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 > -----Original Message-----
-> From: Joakim Tjernlund [mailto:Joakim.Tjernlund@transmode.se]=20
-> Sent: Tuesday, March 18, 2008 5:47 PM
-> To: Netdev; Li Yang; Linuxppc-Embedded@Ozlabs.Org
+> From: netdev-owner@vger.kernel.org=20
+> [mailto:netdev-owner@vger.kernel.org] On Behalf Of Joakim Tjernlund
+> Sent: Tuesday, March 18, 2008 11:11 PM
+> To: Netdev; Li Yang
 > Cc: Joakim Tjernlund
-> Subject: [PATCH] Add Fixed PHY support for ucc_geth
+> Subject: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
 >=20
-> The new Fixed PHY method, fixed-link property, isn't
-> impl. for ucc_geth which makes fixed PHYs non functional.
-> Add support for the new method to restore the Fixed PHY
-> functionality.
+> Creating a VLAN interface on top of ucc_geth adds 4 bytes to=20
+> the frame and the HW controller is not prepared to TX a frame=20
+> bigger than 1518 bytes which is 4 bytes too small for a full=20
+> VLAN frame. Also add 4 extra bytes for future expansion.
+
+IMO, VLAN and Jumbo packet support is not general case of Ethernet.
+Could you make this change optional?  Thanks.
+
+- Leo
+
 >=20
 > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-
-Signed-off-by: Li Yang <leoli@freescale.com>
-
----
-Ps: This patch depends on the patch "ucc_geth: use correct thread number
-for 10/100Mbps link" to apply, which hasn't made to Linus' tree for now
-but has already been in Jeff and David's trees.
-
 > ---
+>  drivers/net/ucc_geth.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 >=20
-> This is a regression as fixed PHYs works in 2.6.23 and I am
-> using it.
->=20
->  drivers/net/ucc_geth.c |   53=20
-> +++++++++++++++++++++++++++--------------------
->  1 files changed, 30 insertions(+), 23 deletions(-)
->=20
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index ecc5712..18c8b39 100644
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c=20
+> index 348892b..038ec75 100644
 > --- a/drivers/net/ucc_geth.c
 > +++ b/drivers/net/ucc_geth.c
-> @@ -3836,6 +3836,7 @@ static int ucc_geth_probe(struct=20
-> of_device* ofdev, const struct of_device_id *ma
->  	struct device_node *phy;
->  	int err, ucc_num, max_speed =3D 0;
->  	const phandle *ph;
-> +	const u32 *fixed_link;
->  	const unsigned int *prop;
->  	const char *sprop;
->  	const void *mac_addr;
-> @@ -3926,18 +3927,38 @@ static int ucc_geth_probe(struct=20
-> of_device* ofdev, const struct of_device_id *ma
-> =20
->  	ug_info->uf_info.regs =3D res.start;
->  	ug_info->uf_info.irq =3D irq_of_parse_and_map(np, 0);
-> +	fixed_link =3D of_get_property(np, "fixed-link", NULL);
-> +	if (fixed_link) {
-> +		ug_info->mdio_bus =3D 0;
-> +		ug_info->phy_address =3D fixed_link[0];
-> +		phy =3D NULL;
-> +	} else {
-> +		ph =3D of_get_property(np, "phy-handle", NULL);
-> +		phy =3D of_find_node_by_phandle(*ph);
-> =20
-> -	ph =3D of_get_property(np, "phy-handle", NULL);
-> -	phy =3D of_find_node_by_phandle(*ph);
-> +		if (phy =3D=3D NULL)
-> +			return -ENODEV;
-> =20
-> -	if (phy =3D=3D NULL)
-> -		return -ENODEV;
-> +		/* set the PHY address */
-> +		prop =3D of_get_property(phy, "reg", NULL);
-> +		if (prop =3D=3D NULL)
-> +			return -1;
-> +		ug_info->phy_address =3D *prop;
-> +
-> +		/* Set the bus id */
-> +		mdio =3D of_get_parent(phy);
-> +
-> +		if (mdio =3D=3D NULL)
-> +			return -1;
-> =20
-> -	/* set the PHY address */
-> -	prop =3D of_get_property(phy, "reg", NULL);
-> -	if (prop =3D=3D NULL)
-> -		return -1;
-> -	ug_info->phy_address =3D *prop;
-> +		err =3D of_address_to_resource(mdio, 0, &res);
-> +		of_node_put(mdio);
-> +
-> +		if (err)
-> +			return -1;
-> +
-> +		ug_info->mdio_bus =3D res.start;
-> +	}
-> =20
->  	/* get the phy interface type, or default to MII */
->  	prop =3D of_get_property(np, "phy-connection-type", NULL);
-> @@ -3982,20 +4003,6 @@ static int ucc_geth_probe(struct=20
-> of_device* ofdev, const struct of_device_id *ma
->  		ug_info->numThreadsRx =3D UCC_GETH_NUM_OF_THREADS_4;
->  	}
-> =20
-> -	/* Set the bus id */
-> -	mdio =3D of_get_parent(phy);
-> -
-> -	if (mdio =3D=3D NULL)
-> -		return -1;
-> -
-> -	err =3D of_address_to_resource(mdio, 0, &res);
-> -	of_node_put(mdio);
-> -
-> -	if (err)
-> -		return -1;
-> -
-> -	ug_info->mdio_bus =3D res.start;
-> -
->  	if (netif_msg_probe(&debug))
->  		printk(KERN_INFO "ucc_geth: UCC%1d at 0x%8x=20
-> (irq =3D %d) \n",
->  			ug_info->uf_info.ucc_num + 1,=20
-> ug_info->uf_info.regs,
-> --=20
+> @@ -114,10 +114,10 @@ static struct ucc_geth_info=20
+> ugeth_primary_info =3D {
+>  	.maxGroupAddrInHash =3D 4,
+>  	.maxIndAddrInHash =3D 4,
+>  	.prel =3D 7,
+> -	.maxFrameLength =3D 1518,
+> +	.maxFrameLength =3D 1518+8, /* Add 4 bytes for VLAN tags=20
+> and 4 extra=20
+> +bytes */
+>  	.minFrameLength =3D 64,
+> -	.maxD1Length =3D 1520,
+> -	.maxD2Length =3D 1520,
+> +	.maxD1Length =3D 1520+8,
+> +	.maxD2Length =3D 1520+8,
+>  	.vlantype =3D 0x8100,
+>  	.ecamptr =3D ((uint32_t) NULL),
+>  	.eventRegMask =3D UCCE_OTHER,
+> --
 > 1.5.4.3
 >=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe=20
+> netdev" in the body of a message to majordomo@vger.kernel.org=20
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >=20
