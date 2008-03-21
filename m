@@ -1,19 +1,22 @@
-Return-Path: <y-goto@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id 1D473DDF23
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 02:26:27 +1100 (EST)
-Date: Sat, 22 Mar 2008 00:25:48 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-In-Reply-To: <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-Message-Id: <20080321235322.2B17.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AB0C4DE6F2
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 02:37:55 +1100 (EST)
+In-Reply-To: <47E3B189.6060002@ru.mvista.com>
+References: <12060242324116-git-send-email-john.linn@xilinx.com>	<20080320144402.3063517C005D@mail148-sin.bigfish.com>
+	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>
+	<47E3B189.6060002@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <75a17dc1bd4e99a473ed679ccf9b210f@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
+	16550.
+Date: Fri, 21 Mar 2008 16:37:44 +0100
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,87 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>> Personally, I'm not fond of this approach.  There is already some
+>> traction to using the reg-shift property to specify spacing, and I
+>> think it would be appropriate to also define a reg-offset property to
+>> handle the +3 offset and then let the xilinx 16550 nodes use those.
+>
+>    That's making things only worse than the mere "reg-shift" idea. I 
+> think that both are totally wrong. Everything about the programming 
+> interface should be said in the "compatible" and possibly "model" 
+> properties.
 
-Badari-san.
+No.  In effect, you are saying here that no device binding should define
+any binding-specific properties.  This will just lead to combinatorial
+explosion of "compatible" values.
 
-> Index: linux-2.6.25-rc2/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-2.6.25-rc2.orig/mm/memory_hotplug.c	2008-02-27 12:58:17.000000000 -0800
-> +++ linux-2.6.25-rc2/mm/memory_hotplug.c	2008-02-27 16:06:50.000000000 -0800
-> @@ -102,6 +102,21 @@ static int __add_section(struct zone *zo
->  	return register_new_memory(__pfn_to_section(phys_start_pfn));
->  }
->  
-> +static int __remove_section(struct zone *zone, struct mem_section *ms)
-> +{
-> +	int ret = -EINVAL;
-> +
-> +	if (!valid_section(ms))
-> +		return ret;
-> +
-> +	ret = unregister_memory_section(ms);
-> +	if (ret)
-> +		return ret;
-> +
-> +	sparse_remove_one_section(zone, ms);
-> +	return 0;
-> +}
-> +
->  /*
->   * Reasonably generic function for adding memory.  It is
->   * expected that archs that support memory hotplug will
-> @@ -135,6 +150,35 @@ int __add_pages(struct zone *zone, unsig
->  }
->  EXPORT_SYMBOL_GPL(__add_pages);
->  
-> +int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
-> +		 unsigned long nr_pages)
-> +{
-> +	unsigned long i, ret = 0;
-> +	int sections_to_remove;
-> +	unsigned long flags;
-> +	struct pglist_data *pgdat = zone->zone_pgdat;
-> +
-> +	/*
-> +	 * We can only remove entire sections
-> +	 */
-> +	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
-> +	BUG_ON(nr_pages % PAGES_PER_SECTION);
-> +
-> +	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
-> +
-> +	sections_to_remove = nr_pages / PAGES_PER_SECTION;
-> +	for (i = 0; i < sections_to_remove; i++) {
-> +		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
-> +		pgdat_resize_lock(pgdat, &flags);
-> +		ret = __remove_section(zone, __pfn_to_section(pfn));
-> +		pgdat_resize_unlock(pgdat, &flags);
-> +		if (ret)
-> +			break;
-> +	}
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(__remove_pages);
+That said, "reg-spacing"/"reg-shift"/"reg-offset" should *not* be
+considered something generic; they are part of specific device
+bindings.  Of course it is nice if various bindings use the same
+names for the same concepts, but that's an orthogonal issue.
 
-Here may be a bug.
-__remove_section() is called with pgdat_resize_lock() which is
-spin_lock_irqsave().
+>  of_serial driver should recognize them and pass the necessary details 
+> to 8250.c. As for me, I'm strongly against plaguing the device tree 
+> with the *Linux driver implementation specifics*
 
-  __remove_section()
-      |
-      +--> unregister_memory_section()
-              |
-              +--> remove_memory_block()
-                      |
-                      +--> unregister_memory()
-                             |
-                             +--> sysdev_unregister()
+"reg-*" has nothing to do with Linux device driver implementation
+issues: it describes how a device is physically wired up!
 
-sysdev_unregister() calls mutex_lock().
-It might sleep with irq disable, right?
-I found BUG()'s messages by this.
+> (despite I was trying this with MTD -- there it seemed somewhat more 
+> grounded :-).
 
-Bye.
+Quite the opposite, but let's not rehash that discussion.
 
--- 
-Yasunori Goto 
+>> In support of my argument; the fact that you need a table of data says
+>> to me that this data should really be encoded in the device tree.  :-)
+>
+>    Not at all.
+
+Not _necessarily_.  I agree with Grant here: for many of these devices
+with byte-size registers, it is very common to find them with their
+register banks wired up differently, and that is often the *only*
+difference to the "normal" device.  In this situation, it makes a lot
+of sense to describe that difference with "reg-*" properties.
+
+In some other situations, it is better to create a new binding for
+the device.
+
+
+Segher
