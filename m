@@ -1,24 +1,32 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 33C36DDF04
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 03:08:05 +1100 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 426D3DDF26
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 03:10:27 +1100 (EST)
+Received: from mx3.mail.elte.hu ([157.181.1.138])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1JcirA-00035q-T7
+	from <mingo@elte.hu>
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 16:08:32 +0100
+Date: Fri, 21 Mar 2008 16:07:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
+Message-ID: <20080321150734.GD1545@elte.hu>
+References: <20080319211714.8B14226F995@magilla.localdomain>
+	<20080319212024.EA03126F995@magilla.localdomain>
+	<alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
+	<20080320081658.0B23826F995@magilla.localdomain>
+	<alpine.LFD.1.00.0803210744470.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx
-	uart16550.
-Date: Fri, 21 Mar 2008 09:08:37 -0700
-In-Reply-To: <82ce3dbb9ebdb1fa4fc7407ed3396411@kernel.crashing.org>
-References: <12060242324116-git-send-email-john.linn@xilinx.com><20080320144402.3063517C005D@mail148-sin.bigfish.com><fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com><18403.32257.725539.470771@cargo.ozlabs.ibm.com>
-	<82ce3dbb9ebdb1fa4fc7407ed3396411@kernel.crashing.org>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	"Paul Mackerras" <paulus@samba.org>
-Message-Id: <20080321160802.7CED7196805C@mail103-sin.bigfish.com>
-Cc: John Linn <linnj@xilinx.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.1.00.0803210744470.3020@woody.linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>, Roland McGrath <roland@redhat.com>,
+	Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,51 +37,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-I thought about this, and reconsidered it again after I finally figured
-out how to get the Power.org website to relenquish the ePAPR spec, which
-(FWIW) has reg-shift as an optional property of the ns16550 binding.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-However, I'm not enamoured of it, since I doubt it's really good to be
-doing ioremaps and memory management on unaligned blocks.  It seems more
-logical to me to have the reg property define a range of aligned
-addresses, and in this case, it happens that the driver never touches
-some of those bytes.
+> > The reason I took the approach I did instead is incrementalism. I 
+> > can't change that signature without breaking about 22 arch builds.
+> 
+> Don't worry about the arch builds. If that's your main worry and 
+> reason for this, it's not worth it. Yes, ptrace changes, and yes, we 
+> may have arch issues, but no, it's not that big of a deal. Just break 
+> them.
+> 
+> Make sure x86[-64] works, and make sure that other architectures *can* 
+> work (and explain it on linux-arch) when you have to fix something up, 
+> but ptrace is a blip on the radar for people, it's not going to be a 
+> huge issue.
 
-In any event, the real point of the patch was to spark some discussion,
-which we failed to get otherwise.. :)  I think any of these proposals
-are workable...
+for a long time all the nice but intrusive utrace improvements from 
+Roland had this big adoption barrier. So Roland went around that and 
+with a lot of effort he made it optional, incremental and per arch, so 
+that we could try it on x86 and merge it upstream.
 
-Steve
+Now that we see how cleaner it is and that it actually was an almost 
+regression-free endevour on x86 (we had 2 regressions so far, both fixed 
+- which is an amazing feat for such wide changes IMO), i very much agree 
+that we should just do the "rest" of this in one big step.
 
-> -----Original Message-----
-> From: =
-linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of
-Segher Boessenkool
-> Sent: Friday, March 21, 2008 4:40 AM
-> To: Paul Mackerras
-> Cc: linuxppc-dev@ozlabs.org; John Linn
-> Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for
-Xilinx uart16550.
->=20
-> >> Personally, I'm not fond of this approach.  There is already some
-> >> traction to using the reg-shift property to specify spacing, and I
-> >> think it would be appropriate to also define a reg-offset property
-to
-> >> handle the +3 offset and then let the xilinx 16550 nodes use those.
-> >
-> > Why do we need a reg-offset property when we can just add the offset
-> > to the appropriate word(s) in the reg property?
->=20
-> Because if you do that, the "reg" property cannot describe the full
-> register block (it misses the first few bytes).  Not a huge problem
-> in practice, sure.
->=20
->=20
-> Segher
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+it's a bit of a chicken & egg problem for such changes. If it breaks 
+architectures it gets dropped out of -mm - even though 90% of our 
+developers, 95% of our testers and 99% of our active users are using x86 
+only.
+
+but in general, prototyping something on a single architecture in the 
+first step is OK - and maybe even the first merge is OK. But once it has 
+been proven on the most tested Linux platform that we have (and there's 
+no blatant x86-ism in it), there's no reason not to mandate it.
+
+	Ingo
