@@ -1,23 +1,30 @@
-Return-Path: <tur@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AFC93DDF2D
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 10:45:15 +1100 (EST)
-Date: Sat, 22 Mar 2008 00:56:35 +0100
-From: Bartlomiej Sieka <tur@semihalf.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [POWERPC] mpc52xx: Amalgamated dts fixes and updates
-Message-ID: <20080321235633.GB345@frozen.semihalf.com>
-References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
-	<fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>
-	<47E2FC3E.1020705@semihalf.com>
-	<fa686aa40803201720l3e42c983se121ebc257c89912@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40803201720l3e42c983se121ebc257c89912@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 726D6DE335
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 10:45:26 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2LNjOha005421
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 19:45:24 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2LNjOdl155568
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 19:45:24 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2LNjN9K003839
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 19:45:24 -0400
+Message-ID: <47E44892.3040901@austin.ibm.com>
+Date: Fri, 21 Mar 2008 18:45:22 -0500
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, michael@ellerman.id.au
+Subject: [PATCH 6/8] pseries: phyp dump: Invalidate and print dump areas.
+References: <47E439C3.6050904@austin.ibm.com>
+In-Reply-To: <47E439C3.6050904@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,297 +34,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bulk of this patch is taken from
-http://patchwork.ozlabs.org/linuxppc/patch?q=Balakowicz&id=16197, with few
-other updates, in particluar one posted by Anatolij Gustschin, which fixes
-an Oops during boot.
-    
-Signed-off-by: Marian Balakowicz <m8@semihalf.com>
----
-Anatolij, would you like to add your S-O-B?
 
-diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
-index 30737ea..8b2e8e4 100644
---- a/arch/powerpc/boot/dts/cm5200.dts
-+++ b/arch/powerpc/boot/dts/cm5200.dts
-@@ -159,6 +159,7 @@
- 		};
+
+
+Routines to 
+a. invalidate dump 
+b. Calculate region that is reserved and needs to be freed. This is 
+   exported through sysfs interface.
+
+Unregister has been removed for now as it wasn't being used.
+
+Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+
+---
+ arch/powerpc/platforms/pseries/phyp_dump.c |   83 ++++++++++++++++++++++++++---
+ include/asm-powerpc/phyp_dump.h            |    3 +
+ 2 files changed, 80 insertions(+), 6 deletions(-)
+
+Index: 2.6.25-rc1/arch/powerpc/platforms/pseries/phyp_dump.c
+===================================================================
+--- 2.6.25-rc1.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-03-20 21:52:59.000000000 -0500
++++ 2.6.25-rc1/arch/powerpc/platforms/pseries/phyp_dump.c	2008-03-20 21:55:52.000000000 -0500
+@@ -70,6 +70,10 @@ static struct phyp_dump_header phdr;
+ #define DUMP_SOURCE_CPU		0x0001
+ #define DUMP_SOURCE_HPTE	0x0002
+ #define DUMP_SOURCE_RMO		0x0011
++#define DUMP_ERROR_FLAG		0x2000
++#define DUMP_TRIGGERED		0x4000
++#define DUMP_PERFORMED		0x8000
++
  
- 		dma-controller@1200 {
-+			device_type = "dma-controller";
- 			compatible = "fsl,mpc5200b-bestcomm","fsl,mpc5200-bestcomm";
- 			reg = <1200 80>;
- 			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-@@ -212,13 +213,31 @@
- 		ethernet@3000 {
- 			device_type = "network";
- 			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
--			reg = <3000 800>;
-+			reg = <3000 400>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <2 5 0>;
- 			interrupt-parent = <&mpc5200_pic>;
-+			phy-handle = <&phy0>;
-+		};
+ /**
+  * init_dump_header() - initialize the header declaring a dump
+@@ -181,9 +185,15 @@ static void print_dump_header(const stru
+ static void register_dump_area(struct phyp_dump_header *ph, unsigned long addr)
+ {
+ 	int rc;
+-	ph->cpu_data.destination_address += addr;
+-	ph->hpte_data.destination_address += addr;
+-	ph->kernel_data.destination_address += addr;
 +
-+		mdio@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "fsl,mpc5200b-mdio";
-+			reg = <3000 400>;       // fec range, since we need to setup fec interrupts
-+			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
-+			interrupt-parent = <&mpc5200_pic>;
++	/* Add addr value if not initialized before */
++	if (ph->cpu_data.destination_address == 0) {
++		ph->cpu_data.destination_address += addr;
++		ph->hpte_data.destination_address += addr;
++		ph->kernel_data.destination_address += addr;
++	}
 +
-+			phy0:ethernet-phy@0 {
-+				device_type = "ethernet-phy";
-+				reg = <0>;
-+			};
- 		};
++	/* ToDo Invalidate kdump and free memory range. */
  
- 		i2c@3d40 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
- 			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
- 			reg = <3d40 40>;
- 			interrupts = <2 10 0>;
-@@ -231,4 +250,22 @@
- 			reg = <8000 4000>;
- 		};
- 	};
+ 	do {
+ 		rc = rtas_call(ibm_configure_kernel_dump, 3, 1, NULL,
+@@ -197,6 +207,30 @@ static void register_dump_area(struct ph
+ 	}
+ }
+ 
++static
++void invalidate_last_dump(struct phyp_dump_header *ph, unsigned long addr)
++{
++	int rc;
 +
-+	lpb {
-+		model = "fsl,lpb";
-+		compatible = "fsl,lpb";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges = <0 0 fc000000 2000000>;
++	/* Add addr value if not initialized before */
++	if (ph->cpu_data.destination_address == 0) {
++		ph->cpu_data.destination_address += addr;
++		ph->hpte_data.destination_address += addr;
++		ph->kernel_data.destination_address += addr;
++	}
 +
-+		// 16-bit flash device at LocalPlus Bus CS0
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0 0 2000000>;
-+			bank-width = <2>;
-+			device-width = <2>;
-+			#size-cells = <1>;
-+			#address-cells = <1>;
-+		};
-+	};
++	do {
++		rc = rtas_call(ibm_configure_kernel_dump, 3, 1, NULL,
++				2, ph, sizeof(struct phyp_dump_header));
++	} while (rtas_busy_delay(rc));
++
++	if (rc) {
++		printk(KERN_ERR "phyp-dump: unexpected error (%d) "
++						"on invalidate\n", rc);
++		print_dump_header(ph);
++	}
++}
++
+ /* ------------------------------------------------- */
+ /**
+  * release_memory_range -- release memory previously lmb_reserved
+@@ -207,8 +241,8 @@ static void register_dump_area(struct ph
+  * lmb_reserved in early boot. The released memory becomes
+  * available for genreal use.
+  */
+-static void
+-release_memory_range(unsigned long start_pfn, unsigned long nr_pages)
++static void release_memory_range(unsigned long start_pfn,
++			unsigned long nr_pages)
+ {
+ 	struct page *rpage;
+ 	unsigned long end_pfn;
+@@ -269,8 +303,29 @@ static ssize_t store_release_region(stru
+ 	return count;
+ }
+ 
++static ssize_t show_release_region(struct kobject *kobj,
++			struct kobj_attribute *attr, char *buf)
++{
++	u64 second_addr_range;
++
++	/* total reserved size - start of scratch area */
++	second_addr_range = phyp_dump_info->init_reserve_size -
++				phyp_dump_info->reserved_scratch_size;
++	return sprintf(buf, "CPU:0x%lx-0x%lx: HPTE:0x%lx-0x%lx:"
++			    " DUMP:0x%lx-0x%lx, 0x%lx-0x%lx:\n",
++		phdr.cpu_data.destination_address,
++		phdr.cpu_data.length_copied,
++		phdr.hpte_data.destination_address,
++		phdr.hpte_data.length_copied,
++		phdr.kernel_data.destination_address,
++		phdr.kernel_data.length_copied,
++		phyp_dump_info->init_reserve_start,
++		second_addr_range);
++}
++
+ static struct kobj_attribute rr = __ATTR(release_region, 0600,
+-					 NULL, store_release_region);
++					show_release_region,
++					store_release_region);
+ 
+ static int __init phyp_dump_setup(void)
+ {
+@@ -313,6 +368,22 @@ static int __init phyp_dump_setup(void)
+ 		return 0;
+ 	}
+ 
++	/* re-register the dump area, if old dump was invalid */
++	if ((dump_header) && (dump_header->status & DUMP_ERROR_FLAG)) {
++		invalidate_last_dump(&phdr, dump_area_start);
++		register_dump_area(&phdr, dump_area_start);
++		return 0;
++	}
++
++	if (dump_header) {
++		phyp_dump_info->reserved_scratch_addr =
++				dump_header->cpu_data.destination_address;
++		phyp_dump_info->reserved_scratch_size =
++				dump_header->cpu_data.source_length +
++				dump_header->hpte_data.source_length +
++				dump_header->kernel_data.source_length;
++	}
++
+ 	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
+ 	rc = sysfs_create_file(kernel_kobj, &rr.attr);
+ 	if (rc)
+Index: 2.6.25-rc1/include/asm-powerpc/phyp_dump.h
+===================================================================
+--- 2.6.25-rc1.orig/include/asm-powerpc/phyp_dump.h	2008-03-20 21:23:45.000000000 -0500
++++ 2.6.25-rc1/include/asm-powerpc/phyp_dump.h	2008-03-20 21:53:38.000000000 -0500
+@@ -30,6 +30,9 @@ struct phyp_dump {
+ 	/* store cpu & hpte size */
+ 	unsigned long cpu_state_size;
+ 	unsigned long hpte_region_size;
++	/* previous scratch area values */
++	unsigned long reserved_scratch_addr;
++	unsigned long reserved_scratch_size;
  };
-diff --git a/arch/powerpc/boot/dts/motionpro.dts b/arch/powerpc/boot/dts/motionpro.dts
-index 76951ab..9ca81ff 100644
---- a/arch/powerpc/boot/dts/motionpro.dts
-+++ b/arch/powerpc/boot/dts/motionpro.dts
-@@ -127,6 +127,13 @@
- 			interrupt-parent = <&mpc5200_pic>;
- 		};
  
-+		mscan@900 {
-+			compatible = "mpc5200b-mscan\0mpc5200-mscan";
-+			interrupts = <2 11 0>;
-+			interrupt-parent = <&mpc5200_pic>;
-+			reg = <900 80>;
-+		};
-+
- 		mscan@980 {
- 			compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
- 			interrupts = <2 12 0>;
-@@ -148,7 +155,6 @@
- 			interrupt-parent = <&mpc5200_pic>;
- 		};
- 
--
- 		spi@f00 {
- 			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
- 			reg = <f00 20>;
-@@ -164,6 +170,7 @@
- 		};
- 
- 		dma-controller@1200 {
-+			device_type = "dma-controller";
- 			compatible = "fsl,mpc5200b-bestcomm","fsl,mpc5200-bestcomm";
- 			reg = <1200 80>;
- 			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-@@ -209,10 +216,26 @@
- 		ethernet@3000 {
- 			device_type = "network";
- 			compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
--			reg = <3000 800>;
-+			reg = <3000 400>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <2 5 0>;
- 			interrupt-parent = <&mpc5200_pic>;
-+			phy-handle = <&phy0>;
-+		};
-+
-+		mdio@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "fsl,mpc5200b-mdio";
-+			reg = <3000 400>;       // fec range, since we need to setup fec interrupts
-+			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
-+			interrupt-parent = <&mpc5200_pic>;
-+
-+			phy0:ethernet-phy@0 {
-+				device_type = "ethernet-phy";
-+				reg = <2>;
-+			};
- 		};
- 
- 		ata@3a00 {
-@@ -223,11 +246,19 @@
- 		};
- 
- 		i2c@3d40 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
- 			reg = <3d40 40>;
- 			interrupts = <2 10 0>;
- 			interrupt-parent = <&mpc5200_pic>;
- 			fsl5200-clocking;
-+
-+			rtc@68 {
-+				device_type = "rtc";
-+				compatible = "dallas,ds1339";
-+				reg = <68>;
-+			};
- 		};
- 
- 		sram@8000 {
-@@ -240,7 +271,8 @@
- 		compatible = "fsl,lpb";
- 		#address-cells = <2>;
- 		#size-cells = <1>;
--		ranges = <1 0 50000000 00010000
-+		ranges = <0 0 ff000000 01000000
-+			  1 0 50000000 00010000
- 			  2 0 50010000 00010000
- 			  3 0 50020000 00010000>;
- 
-@@ -271,31 +303,15 @@
- 			compatible = "promess,pro_module_dio";
- 			reg = <3 800 2>;
- 		};
--	};
- 
--	pci@f0000d00 {
--		#interrupt-cells = <1>;
--		#size-cells = <2>;
--		#address-cells = <3>;
--		device_type = "pci";
--		compatible = "fsl,mpc5200b-pci","fsl,mpc5200-pci";
--		reg = <f0000d00 100>;
--		interrupt-map-mask = <f800 0 0 7>;
--		interrupt-map = <c000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
--				 c000 0 0 2 &mpc5200_pic 1 1 3
--				 c000 0 0 3 &mpc5200_pic 1 2 3
--				 c000 0 0 4 &mpc5200_pic 1 3 3
--
--				 c800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
--				 c800 0 0 2 &mpc5200_pic 1 2 3
--				 c800 0 0 3 &mpc5200_pic 1 3 3
--				 c800 0 0 4 &mpc5200_pic 0 0 3>;
--		clock-frequency = <0>; // From boot loader
--		interrupts = <2 8 0 2 9 0 2 a 0>;
--		interrupt-parent = <&mpc5200_pic>;
--		bus-range = <0 0>;
--		ranges = <42000000 0 80000000 80000000 0 20000000
--			  02000000 0 a0000000 a0000000 0 10000000
--			  01000000 0 00000000 b0000000 0 01000000>;
-+		// 16-bit flash device at LocalPlus Bus CS0
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0 0 01000000>;
-+			bank-width = <2>;
-+			device-width = <2>;
-+			#size-cells = <1>;
-+			#address-cells = <1>;
-+		};
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
-index c86464f..bbac984 100644
---- a/arch/powerpc/boot/dts/tqm5200.dts
-+++ b/arch/powerpc/boot/dts/tqm5200.dts
-@@ -83,6 +83,7 @@
- 		};
- 
- 		dma-controller@1200 {
-+			device_type = "dma-controller";
- 			compatible = "fsl,mpc5200-bestcomm";
- 			reg = <1200 80>;
- 			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-@@ -127,10 +128,26 @@
- 		ethernet@3000 {
- 			device_type = "network";
- 			compatible = "fsl,mpc5200-fec";
--			reg = <3000 800>;
-+			reg = <3000 400>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <2 5 0>;
- 			interrupt-parent = <&mpc5200_pic>;
-+			phy-handle = <&phy0>;
-+		};
-+
-+		mdio@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "fsl,mpc5200b-mdio";
-+			reg = <3000 400>;       // fec range, since we need to setup fec interrupts
-+			interrupts = <2 5 0>;   // these are for "mii command finished", not link changes & co.
-+			interrupt-parent = <&mpc5200_pic>;
-+
-+			phy0:ethernet-phy@0 {
-+				device_type = "ethernet-phy";
-+				reg = <0>;
-+			};
- 		};
- 
- 		ata@3a00 {
-@@ -141,11 +158,19 @@
- 		};
- 
- 		i2c@3d40 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			compatible = "fsl,mpc5200-i2c","fsl-i2c";
- 			reg = <3d40 40>;
- 			interrupts = <2 10 0>;
- 			interrupt-parent = <&mpc5200_pic>;
- 			fsl5200-clocking;
-+
-+			 rtc@68 {
-+				device_type = "rtc";
-+				compatible = "dallas,ds1307";
-+				reg = <68>;
-+			};
- 		};
- 
- 		sram@8000 {
-@@ -154,6 +179,23 @@
- 		};
- 	};
- 
-+	lpb {
-+		model = "fsl,lpb";
-+		compatible = "fsl,lpb";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges = <0 0 fc000000 02000000>;
-+
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0 0 02000000>;
-+			bank-width = <4>;
-+			device-width = <2>;
-+			#size-cells = <1>;
-+			#address-cells = <1>;
-+		};
-+	};
-+
- 	pci@f0000d00 {
- 		#interrupt-cells = <1>;
- 		#size-cells = <2>;
+ extern struct phyp_dump *phyp_dump_info;
