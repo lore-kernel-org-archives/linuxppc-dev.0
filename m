@@ -1,34 +1,27 @@
-Return-Path: <LeoLi@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 77234DE43C
+	by ozlabs.org (Postfix) with ESMTPS id AA3CDDE01C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 23:20:42 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m2LCKbFq014619 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 05:20:37 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2LCKYvl016386
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 07:20:35 -0500 (CDT)
+	Sat, 22 Mar 2008 03:18:42 +1100 (EST)
+Date: Fri, 21 Mar 2008 11:18:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: James Black <jblack547@gmail.com>
+Subject: Re: muram in device tree for mpc8250 in arch/powerpc
+Message-ID: <20080321161833.GA4170@loki.buserror.net>
+References: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>
+	<20080319174001.GF7962@ld0162-tx32.am.freescale.net>
+	<b77025b40803191107x2f9a7884n9b7f062fcf45370@mail.gmail.com>
+	<b77025b40803201102w200dde6fuc4235d9a3cb8b0dd@mail.gmail.com>
+	<47E2AADD.6090101@freescale.com>
+	<b77025b40803201602q68fce3e1j703502a270351179@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-Date: Fri, 21 Mar 2008 20:20:34 +0800
-Message-ID: <989B956029373F45A0B8AF029708189001D19565@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <>
-	<1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
-From: "Li Yang" <LeoLi@freescale.com>
-To: "Joakim Tjernlund" <Joakim.Tjernlund@transmode.se>,
-	"Netdev" <netdev@vger.kernel.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b77025b40803201602q68fce3e1j703502a270351179@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,56 +32,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: netdev-owner@vger.kernel.org=20
-> [mailto:netdev-owner@vger.kernel.org] On Behalf Of Joakim Tjernlund
-> Sent: Tuesday, March 18, 2008 11:11 PM
-> To: Netdev; Li Yang
-> Cc: Joakim Tjernlund
-> Subject: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
->=20
-> Creating a VLAN interface on top of ucc_geth adds 4 bytes to=20
-> the frame and the HW controller is not prepared to TX a frame=20
-> bigger than 1518 bytes which is 4 bytes too small for a full=20
-> VLAN frame. Also add 4 extra bytes for future expansion.
+On Thu, Mar 20, 2008 at 05:02:35PM -0600, James Black wrote:
+> On Thu, Mar 20, 2008 at 12:20 PM, Scott Wood <scottwood@freescale.com> wrote:
+> > James Black wrote:
+> >  > Zone PFN ranges:
+> >  >   DMA             0 ->    16384
+> >  >   Normal      16384 ->    16384
+> >  > Movable zone start PFN for each node
+> >  > early_node_map[1] active PFN ranges
+> >  >     0:        0 ->    16384
+> >  > Unable to handle kernel paging request for data at address 0xe001a000
+> >  > Faulting instruction address: 0xc00e1a6c
+> >
+> >  What function is 0xc00e1a6c in?
+> Drilled down into the source and find that mm/bootmem.c:line 232
+> 
+>            : find_next_zero_bit()
+> may be the culprit. When I put printks in, the line moves around a bit.
 
-IMO, VLAN and Jumbo packet support is not general case of Ethernet.
-Could you make this change optional?  Thanks.
+Is it node_bootmem_map, eidx, or i that is bad?  What is end_pfn?  What is
+calling alloc_bootmem?
 
-- Leo
+> >  You can't use all of 0x8000-0x8fff; there is device parameter RAM in
+> >  there.  If you can figure out the portions that aren't in use, you can
+> >  use those, but I wouldn't bother unless you really need the extra muram.
+> 
+> So, are you are saying that the muram node is giving the ram to the
+> kernel and is no longer available for devices to use as buffer
+> descriptors?
 
->=20
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
->  drivers/net/ucc_geth.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c=20
-> index 348892b..038ec75 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -114,10 +114,10 @@ static struct ucc_geth_info=20
-> ugeth_primary_info =3D {
->  	.maxGroupAddrInHash =3D 4,
->  	.maxIndAddrInHash =3D 4,
->  	.prel =3D 7,
-> -	.maxFrameLength =3D 1518,
-> +	.maxFrameLength =3D 1518+8, /* Add 4 bytes for VLAN tags=20
-> and 4 extra=20
-> +bytes */
->  	.minFrameLength =3D 64,
-> -	.maxD1Length =3D 1520,
-> -	.maxD2Length =3D 1520,
-> +	.maxD1Length =3D 1520+8,
-> +	.maxD2Length =3D 1520+8,
->  	.vlantype =3D 0x8100,
->  	.ecamptr =3D ((uint32_t) NULL),
->  	.eventRegMask =3D UCCE_OTHER,
-> --
-> 1.5.4.3
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe=20
-> netdev" in the body of a message to majordomo@vger.kernel.org=20
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+No.
+
+> I imagined the opposite. I thought I was telling the
+> kernel where the parameter ram and buffer descriptors live.
+
+It's telling the kernel where available muram is, to be allocated by CPM
+drivers for buffer descriptors.
+
+> I am going to turn on the MCC2 device eventually and will need all of the
+> dpram for buffer descriptors.
+> 
+> The memory map in my mind right now is
+> 0x0000 - 0x3FFF --> buffer descriptors for SCCx and MCC2.
+> 0x8000 - 0x8FFF --> paramter ram for SCCx and MCC2, et al. (reserved)
+> 0xB000 - 0xB8FF --> FCCx specific (reserved)
+> 
+> In my case, I shouldn't define any of the dual port ram for the kernel?
+
+You shouldn't define any of the reserved areas as general purpose muram.
+
+-Scott
