@@ -1,29 +1,19 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2A045DDF59
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 01:56:48 +1100 (EST)
-Date: Fri, 21 Mar 2008 07:55:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 6/8] ptrace: arch_ptrace -ENOSYS return
-In-Reply-To: <20080320081658.0B23826F995@magilla.localdomain>
-Message-ID: <alpine.LFD.1.00.0803210744470.3020@woody.linux-foundation.org>
-References: <20080319211714.8B14226F995@magilla.localdomain>
-	<20080319212024.EA03126F995@magilla.localdomain>
-	<alpine.LFD.1.00.0803191935080.3020@woody.linux-foundation.org>
-	<20080320081658.0B23826F995@magilla.localdomain>
+Return-Path: <y-goto@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id 1D473DDF23
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 02:26:27 +1100 (EST)
+Date: Sat, 22 Mar 2008 00:25:48 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH 1/5] generic __remove_pages() support
+In-Reply-To: <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
+References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
+	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
+Message-Id: <20080321235322.2B17.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	sparclinux@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Richard Henderson <rth@twiddle.net>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,66 +24,86 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+Badari-san.
 
-On Thu, 20 Mar 2008, Roland McGrath wrote:
-> 
-> The motivation is to get the arch function out of the code path for the
-> machine-independent request handling.  I want to be able to change the
-> implementation later without touching the arch code again.  
+> Index: linux-2.6.25-rc2/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-2.6.25-rc2.orig/mm/memory_hotplug.c	2008-02-27 12:58:17.000000000 -0800
+> +++ linux-2.6.25-rc2/mm/memory_hotplug.c	2008-02-27 16:06:50.000000000 -0800
+> @@ -102,6 +102,21 @@ static int __add_section(struct zone *zo
+>  	return register_new_memory(__pfn_to_section(phys_start_pfn));
+>  }
+>  
+> +static int __remove_section(struct zone *zone, struct mem_section *ms)
+> +{
+> +	int ret = -EINVAL;
+> +
+> +	if (!valid_section(ms))
+> +		return ret;
+> +
+> +	ret = unregister_memory_section(ms);
+> +	if (ret)
+> +		return ret;
+> +
+> +	sparse_remove_one_section(zone, ms);
+> +	return 0;
+> +}
+> +
+>  /*
+>   * Reasonably generic function for adding memory.  It is
+>   * expected that archs that support memory hotplug will
+> @@ -135,6 +150,35 @@ int __add_pages(struct zone *zone, unsig
+>  }
+>  EXPORT_SYMBOL_GPL(__add_pages);
+>  
+> +int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
+> +		 unsigned long nr_pages)
+> +{
+> +	unsigned long i, ret = 0;
+> +	int sections_to_remove;
+> +	unsigned long flags;
+> +	struct pglist_data *pgdat = zone->zone_pgdat;
+> +
+> +	/*
+> +	 * We can only remove entire sections
+> +	 */
+> +	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
+> +	BUG_ON(nr_pages % PAGES_PER_SECTION);
+> +
+> +	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
+> +
+> +	sections_to_remove = nr_pages / PAGES_PER_SECTION;
+> +	for (i = 0; i < sections_to_remove; i++) {
+> +		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
+> +		pgdat_resize_lock(pgdat, &flags);
+> +		ret = __remove_section(zone, __pfn_to_section(pfn));
+> +		pgdat_resize_unlock(pgdat, &flags);
+> +		if (ret)
+> +			break;
+> +	}
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(__remove_pages);
 
-If there is no stronger motivation than that, then I don't want to have 
-this ugly and unnecessary complication.
+Here may be a bug.
+__remove_section() is called with pgdat_resize_lock() which is
+spin_lock_irqsave().
 
-I really don't see the advantage of doing
+  __remove_section()
+      |
+      +--> unregister_memory_section()
+              |
+              +--> remove_memory_block()
+                      |
+                      +--> unregister_memory()
+                             |
+                             +--> sysdev_unregister()
 
-	/* We can't handle it, let the generic code sort it out */
-	return -ENOSYS;
+sysdev_unregister() calls mutex_lock().
+It might sleep with irq disable, right?
+I found BUG()'s messages by this.
 
-over a
+Bye.
 
-	/* We can't handle it, let the generic code sort it out */
-	return ptrace_request(child, request, addr, data);
-
-in the arch-specific code, and I think the latter version is *much* 
-preferable if it avoids this whole unnecessary new abstraction crud and 
-odd testing in the generic part.
-
-> The reason I took the approach I did instead is incrementalism.
-> I can't change that signature without breaking about 22 arch builds.
-
-Don't worry about the arch builds. If that's your main worry and reason 
-for this, it's not worth it. Yes, ptrace changes, and yes, we may have 
-arch issues, but no, it's not that big of a deal. Just break them.
-
-Make sure x86[-64] works, and make sure that other architectures *can* 
-work (and explain it on linux-arch) when you have to fix something up, but 
-ptrace is a blip on the radar for people, it's not going to be a huge 
-issue.
-
-> I'm only really prepared to thoroughly verify a change on 2 of those
-> myself.
-
-.. and you really aren't expected to. It's why we have architecture 
-people: if there is a good reason for the change (ie it's not just some 
-churn for churns sake), it's largely up to them to make sure the code 
-works.
-
-Sure, you need to be able to explain the interface changes and answer 
-questions, but as mentioned, the ptrace code is not a big deal: it has 
-lots of tiny _details_, but it's not conceptually complex code.
-
-> So this ugliness seemed like a better bet than waiting for 20 more
-> arch sign-offs before any of it could go in.
-
-Really, that has never been a major concern. I will _happily_ break the 
-odd architectures if I see that it's a matter of changing over some 
-detail (ie it's not some fundamentally hard issue for an arch maintaner to 
-fix up).
-
-I think it's *wrong* to add a new an odd calling convention that is less 
-readable than what we have now, just to try to avoid something like this 
-that really isn't a big problem. It's not like we haven't broken 
-architectures over ptrace in the past, and it's also not like it's an area 
-that I think anybody has ever lost sleep over..
-
-			Linus
+-- 
+Yasunori Goto 
