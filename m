@@ -1,20 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0DEACDDFAA
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 08:24:53 +1100 (EST)
-Subject: Re: dcr stuff.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-In-Reply-To: <20080321190524.4F3491CE0087@mail160-dub.bigfish.com>
-References: <20080321190524.4F3491CE0087@mail160-dub.bigfish.com>
-Content-Type: text/plain
-Date: Sat, 22 Mar 2008 08:24:16 +1100
-Message-Id: <1206134656.24542.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, git-dev <git-dev@xilinx.com>
-Reply-To: benh@kernel.crashing.org
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1E47FDDF23
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 09:42:19 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2LMgCGn005978
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 18:42:12 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2LMgC98310218
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 18:42:12 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2LMgCWf026866
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2008 18:42:12 -0400
+Message-ID: <47E439C3.6050904@austin.ibm.com>
+Date: Fri, 21 Mar 2008 17:42:11 -0500
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: ppc <linuxppc-dev@ozlabs.org>, paulus <paulus@samba.org>,
+	michael@ellerman.id.au, Linas Vepstas <linasvepstas@gmail.com>
+Subject: [PATCH 0/8] pseries: phyp dump: hypervisor-assisted dump
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The following series of patches implement a basic framework
+for hypervisor-assisted dump. The very first patch provides 
+documentation explaining what this is. 
 
-On Fri, 2008-03-21 at 12:05 -0700, Stephen Neuendorffer wrote:
-> Is anybody working on the dcr infrastructure?
-> 
-> In particular, there seems to be inconsistency between what the kernel
-> does and what ePAPR thinks it should.  The code in the kernel selects
-> mmio or native access based on a Kconfig parameter and uses some device
-> tree parameters to correctly configure the mmio access, whereas ePAPR
-> doesn't seem to document all the device tree attributes (in particular,
-> dcr-mmio-stride and dcr-mmio-range) and provides a dynamic binding for
-> dcr-access-method...
-> 
-> Is there a plan here?  (In particular, in FPGA designs, its possible to
-> have crazy things like multiple independent dcr busses, some using
-> native access, some using mmio.  Or even if there is one bus, many of
-> the existing non-linux drivers we have assume native or mmio access.
-> I'd like to clean this up, obviously.. :)
+A list of open issues / todo list is included in the documentation.
+It also appears that the not-yet-released firmware versions this was tested 
+on are still,incomplete; this work is also pending.
 
-So far, the crazy things never happened, at least as far as I can tell,
-which is why the kernel does what it does. That allows to inline the DCR
-instructions on 4xx processors, and thus avoids code bloat. It also
-avoids trying to use DCR instructions on processors that don't support
-them like Cell with the Axon bridge.
+The following is a list of changes from previous version:
+- Deleted ifdef CONFIG_PHYP_DUMP from early_init_dt_scan_phyp_dump function.
+- Changed reserve_crashed_mem() to phyp_dump_reserve_mem() as suggested.
+- Added #ifdef CONFIG_PHYP_DUMP around of_scan_flat_dt call, removed empty function
+  from header file.
+- Changed phyp_dump_global to phyp_dump_vars.
+- Changed style issues at several places.
 
-If it becomes necessary, we can make it dynamic tho.
-
-Ben.
+Manish & Linas.
