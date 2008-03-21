@@ -1,25 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 83C52DDE0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 03:13:28 +1100 (EST)
-Message-ID: <47E3DE6E.2050801@freescale.com>
-Date: Fri, 21 Mar 2008 11:12:30 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 02ECCDDE19
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 03:14:24 +1100 (EST)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-References: <12059526271941-git-send-email-yorksun@freescale.com>	<12059526274026-git-send-email-yorksun@freescale.com>
-	<20080320152708.23c6c734.akpm@linux-foundation.org>
-In-Reply-To: <20080320152708.23c6c734.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	York Sun <yorksun@freescale.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx
+	uart16550.
+Date: Fri, 21 Mar 2008 09:14:57 -0700
+In-Reply-To: <fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>
+References: <12060242324116-git-send-email-john.linn@xilinx.com><20080320144402.3063517C005D@mail148-sin.bigfish.com>
+	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, "John Linn" <linnj@xilinx.com>
+Message-Id: <20080321161421.AAFD2518061@mail63-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,68 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
 
->> +static struct diu_hw dr = {
->> +	.mode = MFB_MODE1,
->> +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
->> +};
-> 
-> I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
-> do know that its documentation is crap.
 
-Yes, "__SPIN_LOCK_UNLOCKED(old_style_spin_init)" is wrong.  We'll fix it.
+> -----Original Message-----
+> From: =
+linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of =
+Grant
+Likely
+> Sent: Thursday, March 20, 2008 5:19 PM
+> To: John Linn
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for
+Xilinx uart16550.
+>=20
+> On Thu, Mar 20, 2008 at 8:43 AM, John Linn <john.linn@xilinx.com>
+wrote:
+> > The Xilinx 16550 uart core is not a standard 16550, because it uses
+> >  word-based addressing rather than byte-based addressing.  As a
+result,
+> >  it is not compatible with the open firmware 'ns16550' compatible
+> >  binding.  This code introduces new bindings, which pass the correct
+> >  register base and regshift properties to the uart driver to enable
+> >  this core to be used.  Doing this cleanly required some refactoring
+of
+> >  the existing code.
+>=20
+> Personally, I'm not fond of this approach.  There is already some
+> traction to using the reg-shift property to specify spacing, and I
+> think it would be appropriate to also define a reg-offset property to
+> handle the +3 offset and then let the xilinx 16550 nodes use those.
 
->  static struct diu_hw dr = {
->  	.mode = MFB_MODE1,
-> -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
->  };
+Since the ePAPR ns16550 defines reg-shift, I don't think it makes sense
+to have a separate binding for sparse16550, or for the xilinx16550
+types.  Personally, I like having reg-offset better than
+adding three to the reg space, but I leave that up to someone who is
+much more involved in ePAPR.
 
-Yes, this is better.  Did you already make this change when you applied it to
-your -mm repo?
+> >  +static struct of_serial_info __devinitdata ns8250_info =3D { .type =
+=3D
+PORT_8250 };
+> >  +static struct of_serial_info __devinitdata ns16450_info =3D { =
+.type
+=3D PORT_16450 };
+> >  +static struct of_serial_info __devinitdata ns16550_info =3D { =
+.type
+=3D PORT_16550 };
+> >  +static struct of_serial_info __devinitdata ns16750_info =3D { =
+.type
+=3D PORT_16750 };
+> >  +static struct of_serial_info __devinitdata xilinx_16550_info =3D {
+> >  +       .type =3D PORT_16550,
+> >  +       .regshift =3D 2,
+> >  +       .regoffset =3D 3,
+> >  +};
+> >  +static struct of_serial_info __devinitdata unknown_info =3D { =
+.type
+=3D PORT_UNKNOWN };
+>=20
+> In support of my argument; the fact that you need a table of data says
+> to me that this data should really be encoded in the device tree.  :-)
 
-> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+The table of data was always there to bind the UART types, I just added
+some more info to it.
 
-So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?  If so, this
-combination is used a lot in the kernel today.
-
->> +	if (virt) {
->> +		*phys = virt_to_phys(virt);
->> +		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
->> +		memset(virt, 0, size);
-> 
-> Could have used __GFP_ZERO, I guess.
-
-I had completely forgotten about __GFP_ZERO.  Thanks.
-
->> +	virt = (void *) rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
-> 
-> hm, I'd have expected checkpatch to whine about the space after the cast
-> there.  Whatever.
-
-I thought a space after a cast is the right thing to do?
-
-> please take a look, and please use checkpatch on all future patches.
-
-Sorry, we forgot to run it again after our second version of the patch.
-
->> +static void free_irq_local(int irq)
->> +{
->> +	struct diu *hw = dr.diu_reg;
->> +
->> +	/* Disable all LCDC interrupt */
->> +	out_be32(&(hw->int_mask), 0x1f);
->> +
->> +	free_irq(irq, 0);
->> +}
-> 
-> and the free_irq() will go splat?
-
-Sorry, but I don't understand what's wrong with this code.
-
-We'll make the other changes you've suggested and repost.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Steve
