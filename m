@@ -1,26 +1,28 @@
-Return-Path: <jblack547@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 11B4BDE26A
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EBC7BDDF5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Mar 2008 07:14:10 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so361773anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Mar 2008 13:14:09 -0700 (PDT)
-Message-ID: <b77025b40803211314g74a41aa9of01f7cf3560a2505@mail.gmail.com>
-Date: Fri, 21 Mar 2008 14:14:09 -0600
-From: "James Black" <jblack547@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: muram in device tree for mpc8250 in arch/powerpc
-In-Reply-To: <20080321161833.GA4170@loki.buserror.net>
+	Sat, 22 Mar 2008 07:34:58 +1100 (EST)
+Message-ID: <47E41BE7.9020109@freescale.com>
+Date: Fri, 21 Mar 2008 15:34:47 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>
-	<20080319174001.GF7962@ld0162-tx32.am.freescale.net>
-	<b77025b40803191107x2f9a7884n9b7f062fcf45370@mail.gmail.com>
-	<b77025b40803201102w200dde6fuc4235d9a3cb8b0dd@mail.gmail.com>
-	<47E2AADD.6090101@freescale.com>
-	<b77025b40803201602q68fce3e1j703502a270351179@mail.gmail.com>
+To: James Black <jblack547@gmail.com>
+Subject: Re: muram in device tree for mpc8250 in arch/powerpc
+References: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>	
+	<20080319174001.GF7962@ld0162-tx32.am.freescale.net>	
+	<b77025b40803191107x2f9a7884n9b7f062fcf45370@mail.gmail.com>	
+	<b77025b40803201102w200dde6fuc4235d9a3cb8b0dd@mail.gmail.com>	
+	<47E2AADD.6090101@freescale.com>	
+	<b77025b40803201602q68fce3e1j703502a270351179@mail.gmail.com>	
 	<20080321161833.GA4170@loki.buserror.net>
+	<b77025b40803211314g74a41aa9of01f7cf3560a2505@mail.gmail.com>
+In-Reply-To: <b77025b40803211314g74a41aa9of01f7cf3560a2505@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -32,86 +34,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-PiAgSXMgaXQgbm9kZV9ib290bWVtX21hcCwgZWlkeCwgb3IgaSB0aGF0IGlzIGJhZD8gIFdoYXQg
-aXMgZW5kX3Bmbj8gIFdoYXQgaXMKPiAgY2FsbGluZyBhbGxvY19ib290bWVtPwoKVGhlIGNhbGwg
-c3RhcnRzIGluIGluaXQvbWFpbi5jIHdpdGggcGFnaW5nX2luaXQoKSBhbmQgZW5kcyB1cCBpbgpt
-bS9ib290bWVtLmM6YWxsb2NfYm9vdG1lbV9ub2RlKCkuCkkgaGF2ZSBiZWVuIG1vdmluZyB0aGUg
-cHJpbnRrIGFyb3VuZCB0cnlpbmcgdG8gZmluZCBleGFjdGx5IHdoZXJlIHRoaXMKdGhpbmcgZmFp
-bHMuIEl0IG5vdyBzZWVtcyB0aGF0IHRoZSBwcm9ibGVtIGlzIGFsc28gbW92aW5nLiBUaGUgbGF0
-ZXN0Cm91dHB1dCBsb29rcyBsaWtlIGl0IGdvdCB0aHJvdWdoIHRoZSBwYWdlIGFsbG9jYXRpb24u
-IEkgZ3JlcGVkIHRoZSBlbGYKZmlsZSBhbmQgdGhlIGZhdWx0aW5nIGFkZHJlc3MgaW5zdHJ1Y3Rp
-b24gIDB4YzAwMTEyMTggaXMgaW4gc3RyY21wLgpbamJsYWNrQGpibGFjayBsaW51eC0yLjYuMjRd
-JCBubSB2bWxpbnV4IHxncmVwIGMwMDExMjEKYzAwMTEyMTAgVCBzdHJjbXAKCkkndmUgYm9vdGVk
-IHNldmVyYWwgdGltZXMgbm93IGFuZCB0aGUgcHJvYmxlbSBtb3ZlcyB3aXRoIHRoZSBwcmludGsu
-CkJ1dCwgd2hlbiBJIGRpc2FibGUgZWFybHkgZGVidWdnaW5nIHRoZSBwcm9ibGVtIGNvbWVzIGJh
-Y2sgYW5kIHRoZQpib290IGhhbmdzIG9yIGNyYXNoZXMgYXMgdXN1YWwuIEhlcmUgYXJlIGEgY291
-cGxlIG9mIG91dHB1dHMgdGhhdCBzaG93Cml0IGlzIGdldHRpbmcgdGhyb3VnaCB0aGUgcGZuIGFs
-bG9jYXRpb25zLiBTb21ldGhpbmcgaXNuJ3QgZGVjbGFyZWQKcmlnaHQgb3IgY29uZmlndXJlZCBy
-aWdodC4gQnV0IHdoZXJlIHRvIGxvb2s/CgpJJ3ZlIGNvbXBpbGVkIHRoZSBrZXJuZWwgd2l0aCBn
-Y2MgNC4wLjAgYW5kICA0LjIuMiBib3RoIHZlcnNpb25zIGhhdmUKdGhlIHNhbWUgcHJvYmxlbS4g
-U2hvdWxkIEkgdHJ5IHRoZSAyLjYuMjUga2VybmVsIHNpbmNlIHRoZSAyLjYuMTkKd29ya3MganVz
-dCBmaW5lLiBJJ3ZlIHN0cmlwcGVkIHRoZSBrZXJuZWwgb3B0aW9ucyBkb3duIGFsbW9zdCBhcyBm
-YXIKYXMgSSBjYW4gZ28uCgpzZXR1cF9hcmNoOiBleGl0ClpvbmUgUEZOIHJhbmdlczoKICBETUEg
-ICAgICAxMzQyMTc3MjggLT4gICAgMTYzODQKICBOb3JtYWwgICAgICAxNjM4NCAtPiAgICAxNjM4
-NApNb3ZhYmxlIHpvbmUgc3RhcnQgUEZOIGZvciBlYWNoIG5vZGUKZWFybHlfbm9kZV9tYXBbMV0g
-YWN0aXZlIFBGTiByYW5nZXMKICAyMDk3MTUyOiAxMzQyMTc3MjggLT4gICAgMTYzODQKQ291bGQg
-bm90IGZpbmQgc3RhcnRfcGZuIGZvciBub2RlIDAKZnJlZV9hcmVhX2luaXRfbm9kZXMoKTogcGdk
-YXQ6IGMwMWNhZGMwCm5vZGVfYm9vdG1lbV9tYXAoYWRkcik6IGMzZmZlMDAwCmVpZHgoc2l6ZSk6
-IDE2Mzg0Cmkob2Zmc2V0KTogMAplbmRfcGZuOiAxNjM4NApnb2FsOiAxMDczNzQxODIzCnByZWZl
-cnJlZDogMApub2RlX2Jvb3RtZW1fbWFwKGFkZHIpOiBjM2ZmZTAwMAplaWR4KHNpemUpOiAxNjM4
-NAppKG9mZnNldCk6IDAKZW5kX3BmbjogMTYzODQKZ29hbDogMTA3Mzc0MTgyMwpwcmVmZXJyZWQ6
-IDAKQnVpbHQgMSB6b25lbGlzdHMgaW4gWm9uZSBvcmRlciwgbW9iaWxpdHkgZ3JvdXBpbmcgb2Zm
-LiAgVG90YWwgcGFnZXM6CjAKS2VybmVsIGNvbW1hbmQgbGluZTogL2Rldi9yb290PS9kZXYvcmFt
-IHI3IHJhbWRpc2tfc2l6ZT00MDk2ClVuYWJsZSB0byBoYW5kbGUga2VybmVsIHBhZ2luZyByZXF1
-ZXN0IGZvciBkYXRhIGF0IGFkZHJlc3MgMHgwMDAwMDAwMApGYXVsdGluZyBpbnN0cnVjdGlvbiBh
-ZGRyZXNzOiAweGMwMDExMjE4Ck9vcHM6IEtlcm5lbCBhY2Nlc3Mgb2YgYmFkIGFyZWEsIHNpZzog
-MTEgWyMxXQpBenRlayBOZXR3b3JrcyBjdGE1MDAwcwpOSVA6IGMwMDExMjE4IExSOiBjMDBmMGRh
-MCBDVFI6IGMwMWFkZWM0ClJFR1M6IGMwMWQzZTcwIFRSQVA6IDAzMDAgICBOb3QgdGFpbnRlZCAg
-KDIuNi4yNC4yKQpNU1I6IDAwMDAxMDMyIDxNRSxJUixEUj4gIENSOiA0NDA0MjA0OCAgWEVSOiAy
-MDAwMDAwMApEQVI6IDAwMDAwMDAwLCBEU0lTUjogMjAwMDAwMDAKVEFTSyA9IGMwMWMyNTcwWzBd
-ICdzd2FwcGVyJyBUSFJFQUQ6IGMwMWQyMDAwCkdQUjAwOiAwMDAwMDA2MyBjMDFkM2YyMCBjMDFj
-MjU3MCAwMDAwMDAwMCBjMDE5MzYwNyBmZmZmZmZmZiBjMDFlMjM5OAowMDAwMDAwMApHUFIwODog
-MDAwMDAwMDAgMDAwMDAwNzAgYzAxY2NiYjAgYzA3ZmQwN2EgMjQwNDIwNDggMjA4MDIwMTAgMDNm
-ZmYwMDAKMDA3ZmZmMDAKR1BSMTY6IDAzYmJjZDNlIDAwMWE2ZDNlIDAyMjAwMDQwIDAzYTE2MDAw
-IDAwN2ZmZWIwIDAzZmY5OGU0IDAwMDAwMDAwCjAwMDAwMDA0CkdQUjI0OiAwMDAwMDAwMCAwMjQw
-MDAwMCA0MDAwMDAwMCBjMDFkOWQxNCAwMDAwMDAwMCBjMDFkM2Y1OCBjMDE5MzYwOApjM2ZmZTJm
-MApDYWxsIFRyYWNlOgpbYzAxZDNmNDBdIFtjMDBmMGRlMF0KW2MwMWQzZjUwXSBbYzAwZjBlMjhd
-CgpzZXR1cF9hcmNoOiBleGl0ClpvbmUgUEZOIHJhbmdlczoKICBETUEgICAgICAgICAgICAgMCAt
-PiAgICAxNjM4NAogIE5vcm1hbCAgICAgIDE2Mzg0IC0+ICAgIDE2Mzg0Ck1vdmFibGUgem9uZSBz
-dGFydCBQRk4gZm9yIGVhY2ggbm9kZQplYXJseV9ub2RlX21hcFsxXSBhY3RpdmUgUEZOIHJhbmdl
-cwogICAgMDogICAgICAgIDAgLT4gICAgMTYzODQKbm9kZV9ib290bWVtX21hcChhZGRyKTogYzNm
-ZmUwMDAKZWlkeChzaXplKTogMTYzODQKaShvZmZzZXQpOiAwCmVuZF9wZm46IDE2Mzg0CmdvYWw6
-IDEwNzM3NDE4MjMKcHJlZmVycmVkOiAwCl9fYWxsb2NfYm9vdG1lbV9ub2RlKCk6IHB0cjogYzAx
-ZTkwMDAKbm9kZV9ib290bWVtX21hcChhZGRyKTogYzNmZmUwMDAKZWlkeChzaXplKTogMTYzODQK
-aShvZmZzZXQpOiAwCmVuZF9wZm46IDE2Mzg0CmdvYWw6IDEwNzM3NDE4MjMKcHJlZmVycmVkOiAw
-Cl9fYWxsb2NfYm9vdG1lbV9ub2RlKCk6IHB0cjogYzAxMzEwMDAKbm9kZV9ib290bWVtX21hcChh
-ZGRyKTogYzNmZmUwMDAKZWlkeChzaXplKTogMTYzODQKaShvZmZzZXQpOiAwCmVuZF9wZm46IDE2
-Mzg0CmdvYWw6IDEwNzM3NDE4MjMKcHJlZmVycmVkOiAwCl9fYWxsb2NfYm9vdG1lbV9ub2RlKCk6
-IHB0cjogYzAxNzEwMDAKbm9kZV9ib290bWVtX21hcChhZGRyKTogYzNmZmUwMDAKZWlkeChzaXpl
-KTogMTYzODQKaShvZmZzZXQpOiAwCmVuZF9wZm46IDE2Mzg0CmdvYWw6IDEwNzM3NDE4MjMKcHJl
-ZmVycmVkOiAwCm5vZGVfYm9vdG1lbV9tYXAoYWRkcik6IGMzZmZlMDAwCmVpZHgoc2l6ZSk6IDE2
-Mzg0Cmkob2Zmc2V0KTogMAplbmRfcGZuOiAxNjM4NApnb2FsOiAxMDczNzQxODIzCnByZWZlcnJl
-ZDogMApCdWlsdCAxIHpvbmVsaXN0cyBpbiBab25lIG9yZGVyLCBtb2JpbGl0eSBncm91cGluZyBv
-bi4gIFRvdGFsIHBhZ2VzOgoxNjI1NgpLZXJuZWwgY29tbWFuZCBsaW5lOiAvZGVyb290PS9kZXYv
-cu+/vW0gcncgcmFtZGlza19zaXplPTQwOTYKVW5hYmxlIHRvIGhhbmRsZSBrZXJuZWwgcGFnaW5n
-IHJlcXVlc3QgZm9yIGRhdGEgYXQgYWRkcmVzcyAweDAwMDAwMDAwCkZhdWx0aW5nIGluc3RydWN0
-aW9uIGFkZHJlc3M6IDB4YzAwMTEyMTgKT29wczogS2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwg
-c2lnOiAxMSBbIzgxOTNdCkF6dGVrIE5ldHdvcmtzIGN0YTUwMDBzCk5JUDogYzAwMTEyMTggTFI6
-IGMwMGYwZGEwIENUUjogYzAxYWRlYzQKUkVHUzogYzAxZDNlNzAgVFJBUDogMDMwMCAgIE5vdCB0
-YWludGVkICAoMi42LjI0LjIpCk1TUjogMDAwMDEwMzIgPE1FLElSLERSPiAgQ1I6IDQ0MDQyMDI4
-ICBYRVI6IDIwMDAwMDAwCkRBUjogMDAwMDAwMDAsIERTSVNSOiAyMDAwMDAwMApUQVNLID0gYzAx
-YzI1NzBbMF0gJ3N3YXBwZXInIFRIUkVBRDogYzAxZDIwMDAKR1BSMDA6IDAwMDAwMDYzIGMwMWQz
-ZjIwIGMwMWMyNTcwIDAwMDAwMDAwIGMwMTkzNjA3IGZmZmZmZmZmIGMwMWUyMzk4CjAwMDAwMDAw
-CkdQUjA4OiBjMDFhMTJlMCBjMDFlMDAwMCBjMDE5MTcwMCBjMDFlMjM4NCAyNDA0MjAyOCAyNDg4
-NjAxMiAwM2ZmZjAwMAowMDdmZmYwMApHUFIxNjogMDNiYmNkM2UgMDAxYTZkM2UgMDIyMDAwNDAg
-MDNhMTYwMDAgMDA3ZmZlYjAgMDNmZjk4ZTQgMDAwMDAwMDAKMDAwMDAwMDQKR1BSMjQ6IDAwMDAw
-MDAwIDAyNDAwMDAwIDQwMDAwMDAwIGMwMWQ5ZDE0IDAwMDAwMDAwIGMwMWQzZjU4IGMwMTkzNjA4
-CmMzYmZmMTc0CkNhbGwgVHJhY2U6CltjMDFkM2Y0MF0gW2MwMGYwZGUwXQpbYzAxZDNmNTBdIFtj
-MDBmMGUyOF0KW2MwMWQzZjgwXSBbYzAwZjBmMWNdCltjMDFkM2ZhMF0gW2MwMWFkZWU4XQpbYzAx
-ZDNmYjBdIFtjMDFhOTg1NF0KW2MwMWQzZmMwXSBbYzAxYTM5MGNdCltjMDFkM2ZmMF0gWzAwMDAz
-NDM4XQpJbnN0cnVjdGlvbiBkdW1wOgozODg0ZmZmZiA4YzA1MDAwMSAyYzAwMDAwMCA0MDgyZmZm
-OCAzOGE1ZmZmZiA4YzA0MDAwMSAyYzAwMDAwMAo5YzA1MDAwMQo0MDgyZmZmNCA0ZTgwMDAyMCAz
-OGEzZmZmZiAzODg0ZmZmZiA8OGM2NTAwMDE+IDJjODMwMDAwIDhjMDQwMDAxCjdjNjAxODUxCi0t
-LVsgZW5kIHRyYWNlIDg2NDBhYmU2OWEzMTZkZWUgXS0tLQpLZXJuZWwgcGFuaWMgLSBub3Qgc3lu
-Y2luZzogQXR0ZW1wdGVkIHRvIGtpbGwgdGhlIGlkbGUgdGFzayEKUmVib290aW5nIGluIDE4MCBz
-ZWNvbmRzLi4K
+James Black wrote:
+> I've compiled the kernel with gcc 4.0.0 and  4.2.2 both versions have
+> the same problem. Should I try the 2.6.25 kernel since the 2.6.19
+> works just fine.
+
+It's worth a try.  Also, since it seems to be a random corruption issue, 
+make sure that no DMA is left running by the firmware (try resetting the 
+CPM (though you'll have to turn off the early udbg output)), that you're 
+not trying to use more memory than you have, etc.  Try dumping various 
+registers to see if anything significant is different compared to 2.6.19.
+
+If none of that helps, then I'm out of ideas as far as debug-by-email 
+goes...
+
+> I've stripped the kernel options down almost as far
+> as I can go.
+
+You turned off too much. :-)
+Turn kallsyms back on, so you get symbols in crash dumps.
+
+-Scott
