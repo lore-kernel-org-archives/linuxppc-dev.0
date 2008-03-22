@@ -1,22 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id C3500DDF5D
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 03:38:41 +1100 (EST)
-Message-ID: <47E53661.9010508@ru.mvista.com>
-Date: Sat, 22 Mar 2008 19:40:01 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <rpjday@crashcourse.ca>
+Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
+	[64.235.106.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 64940DDF3D
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 06:05:50 +1100 (EST)
+Received: from cpe001d60ad7267-cm001225dbafb6.cpe.net.cable.rogers.com
+	([99.236.100.208] helo=crashcourse.ca)
+	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.68) (envelope-from <rpjday@crashcourse.ca>)
+	id 1Jd92H-0000kC-U0
+	for linuxppc-dev@ozlabs.org; Sat, 22 Mar 2008 15:05:46 -0400
+Date: Sat, 22 Mar 2008 15:05:43 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] POWERPC: Move a.out.h to header-y since it doesn't check
+	__KERNEL__.
+Message-ID: <alpine.LFD.1.00.0803221504100.25407@localhost.localdomain>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
-	16550.
-References: <12060242324116-git-send-email-john.linn@xilinx.com>	
-	<20080320144402.3063517C005D@mail148-sin.bigfish.com>	
-	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>	
-	<47E3B189.6060002@ru.mvista.com>
-	<fa686aa40803220806w3288ab8ew754404a5aee152cf@mail.gmail.com>
-In-Reply-To: <fa686aa40803220806w3288ab8ew754404a5aee152cf@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
 
->> > Personally, I'm not fond of this approach.  There is already some
->> > traction to using the reg-shift property to specify spacing, and I
->> > think it would be appropriate to also define a reg-offset property to
->> > handle the +3 offset and then let the xilinx 16550 nodes use those.
+Since a.out.h doesn't check the value of __KERNEL__, there's no point
+in unifdef'ing it.
 
->>    That's making things only worse than the mere "reg-shift" idea. I think
->> that both are totally wrong. Everything about the programming interface should
->> be said in the "compatible" and possibly "model" properties. of_serial driver
->> should recognize them and pass the necessary details to 8250.c. As for me, I'm
->> strongly against plaguing the device tree with the *Linux driver
->> implementation specifics* (despite I was trying this with MTD -- there it
->> seemed somewhat more grounded :-).
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-> Not true.  Compatible defines what the node is describing.  It is
-> perfectly valid for a compatible value definition to also defines some
-> additional properties that can be queried for interface details.
-> Xilinx is completely free to define a "xlnx,..." compatible value for
-> their ns16550 compatible device.  However, 'sparse' ns16550 devices
-> are a common and well known variation so I think it is valid and
-> reasonable to define a compatible binding for this case.
+---
 
-    We have been mostly talking about the 16550-compatible devices which 
-external circuitry makes "sparse" so far. This is surely not a property of a 
-16550 device to be "sparse" or not, although some say that this doesn't 
-matter. :-)
+diff --git a/include/asm-powerpc/Kbuild b/include/asm-powerpc/Kbuild
+index 5f640e5..7381916 100644
+--- a/include/asm-powerpc/Kbuild
++++ b/include/asm-powerpc/Kbuild
+@@ -1,5 +1,6 @@
+ include include/asm-generic/Kbuild.asm
 
-> As for using a new binding like "sparse16550" instead of extending
++header-y += a.out.h
+ header-y += auxvec.h
+ header-y += ioctls.h
+ header-y += mman.h
+@@ -23,7 +24,6 @@ header-y += sigcontext.h
+ header-y += statfs.h
+ header-y += ps3fb.h
 
-    That "sparse16550" again... what if it's a superset of 16550 (not an 
-uncommon case too), will you also define "sparce16650", "sparse16570", and so 
-on? :-)
+-unifdef-y += a.out.h
+ unifdef-y += asm-compat.h
+ unifdef-y += bootx.h
+ unifdef-y += byteorder.h
 
-> "ns16550"; it is because reg-shift and reg-offset would be required
-> nodes and therefore is not compatible with drivers using the original
-> ns16550 binding.  Using a new namespace gives freedom to define the
-> required properties.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-    You'll have to define several namespaces I'm afraid...
-
-> Cheers,
-> g.
-
-WBR, Sergei
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
