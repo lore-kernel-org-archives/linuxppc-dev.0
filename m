@@ -1,30 +1,19 @@
-Return-Path: <grant@secretlab.ca>
-Received: from pd3mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 36AC3DDEFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 14:41:24 +1100 (EST)
-Received: from pd4mr5so.prod.shaw.ca (pd4mr5so-qfe3.prod.shaw.ca [10.0.141.50])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JY400GX54WNNU60@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 21 Mar 2008 21:41:11 -0600 (MDT)
-Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
-	by pd4mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JY4002W24WMHE20@pd4mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Fri, 21 Mar 2008 21:41:11 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JY400EPY4WHVW20@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 21 Mar 2008 21:41:10 -0600 (MDT)
-Date: Fri, 21 Mar 2008 21:41:05 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [POWERPC] mpc5200: fix null dereference if bestcomm fails to
-	initialize
-In-reply-to: <>
-To: linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org
-Message-id: <1206157265-6973-1-git-send-email-grant.likely@secretlab.ca>
-References: <>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 22 Mar 2008 11:12:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Bartlomiej Sieka <tur@semihalf.com>
+Subject: Re: [POWERPC] mpc52xx: Amalgamated dts fixes and updates
+Message-ID: <20080322001242.GA29812@localhost.localdomain>
+References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
+	<fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>
+	<47E2FC3E.1020705@semihalf.com>
+	<fa686aa40803201720l3e42c983se121ebc257c89912@mail.gmail.com>
+	<20080321235633.GB345@frozen.semihalf.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080321235633.GB345@frozen.semihalf.com>
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,31 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If the bestcomm initialization fails, calls to the task allocate
-function should fail gracefully instead of oopsing with a NULL deref.
+On Sat, Mar 22, 2008 at 12:56:35AM +0100, Bartlomiej Sieka wrote:
+> The bulk of this patch is taken from
+> http://patchwork.ozlabs.org/linuxppc/patch?q=Balakowicz&id=16197, with few
+> other updates, in particluar one posted by Anatolij Gustschin, which fixes
+> an Oops during boot.
+>     
+> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+> ---
+> Anatolij, would you like to add your S-O-B?
+> 
+> diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
+> index 30737ea..8b2e8e4 100644
+> --- a/arch/powerpc/boot/dts/cm5200.dts
+> +++ b/arch/powerpc/boot/dts/cm5200.dts
+> @@ -159,6 +159,7 @@
+>  		};
+>  
+>  		dma-controller@1200 {
+> +			device_type = "dma-controller";
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+This is not right.  If adding device_type here fixes something, then
+the driver is wrong and should be fixed instead.
 
-Paul, here's another bug fix that I'd like picked up for .25
+[snip]
+> +		mdio@3000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			device_type = "mdio";
 
- arch/powerpc/sysdev/bestcomm/bestcomm.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Likewise device_type should not appear here.
 
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-index f589999..f9cd04e 100644
---- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-@@ -52,6 +52,10 @@ bcom_task_alloc(int bd_count, int bd_size, int priv_size)
- 	int i, tasknum = -1;
- 	struct bcom_task *tsk;
- 
-+	/* Don't try to do anything is bestcomm init failed */
-+	if (!bcom_eng)
-+		return NULL;
-+
- 	/* Get and reserve a task num */
- 	spin_lock(&bcom_eng->lock);
- 
+[snip]
+>  		i2c@3d40 {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+
+Looks like incorrect indentation here.
+
+[snip]
+> +		mscan@900 {
+> +			compatible = "mpc5200b-mscan\0mpc5200-mscan";
+
+Use "mpc5200b-mscan", "mpc5200-mscan" instead of the embedded \0.
+
+[snip]
+>  		dma-controller@1200 {
+> +			device_type = "dma-controller";
+
+As above.
+
 -- 
-1.5.4.3
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
