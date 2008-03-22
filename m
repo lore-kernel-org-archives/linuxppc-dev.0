@@ -1,23 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id ACDE3DDED0
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 01:39:36 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so431640anc.78
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 07:39:27 -0700 (PDT)
-Message-ID: <fa686aa40803220739u6db84a84j167f4c31cf2f579d@mail.gmail.com>
-Date: Sat, 22 Mar 2008 08:39:26 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 84D53DDE9E
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 01:50:49 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so432261anc.78
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2008 07:50:48 -0700 (PDT)
+Message-ID: <fa686aa40803220750h1d86589am9a26aeeb359178b7@mail.gmail.com>
+Date: Sat, 22 Mar 2008 08:50:48 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Anatolij Gustschin" <agust@denx.de>, "Paul Mackerras" <paulus@samba.org>
-Subject: Re: Oops with TQM5200 on TQM5200
-In-Reply-To: <47E4E421.8060806@denx.de>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
+	16550.
+In-Reply-To: <18403.32257.725539.470771@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47E2723D.1090101@grandegger.com> <47E281B6.20702@denx.de>
-	<47E28E15.2070809@semihalf.com>
-	<fa686aa40803201427r2a756fd9v54f88b6e95a20aab@mail.gmail.com>
-	<47E4E421.8060806@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+References: <12060242324116-git-send-email-john.linn@xilinx.com>
+	<20080320144402.3063517C005D@mail148-sin.bigfish.com>
+	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>
+	<18403.32257.725539.470771@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 22, 2008 at 4:49 AM, Anatolij Gustschin <agust@denx.de> wrote:
->  Checking bcom_eng pointer for NULL before referencing data pointed
->  by it prevents oopsing, but fec driver still doesn't work (because
->  of the lost bestcomm match and resulted task allocation failure).
->  Actually the compatible property exists and should match and so
->  the fec driver shoud work.
+On Fri, Mar 21, 2008 at 3:21 AM, Paul Mackerras <paulus@samba.org> wrote:
+> Grant Likely writes:
 >
->  I suggest removing .type = "dma-controller" from the bestcomm driver's
->  mpc52xx_bcom_of_match table to solve the problem.
+>  > Personally, I'm not fond of this approach.  There is already some
+>  > traction to using the reg-shift property to specify spacing, and I
+>  > think it would be appropriate to also define a reg-offset property to
+>  > handle the +3 offset and then let the xilinx 16550 nodes use those.
 >
->  What do you think?
+>  Why do we need a reg-offset property when we can just add the offset
+>  to the appropriate word(s) in the reg property?
 
-Yes, I agree.  .compatible is completely sufficient to match the
-device so .type is superfluous in this case.  Removing it is
-appropriate.
-
-I've already sent a patch to fix the null pointer deref.
-
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
-Paul, here's one more bug fix to pick up for .25.  (I think we're done now)
+Primarily because the device creates 32 byte registers starting at 0;
+but they are also big-endian byte accessible so a byte read at offset
+8 also works.  reg-offset seems to be a better description of the
+hardware to me.
 
 Cheers,
 g.
-
->
->  Signed-off-by: Anatolij Gustschin <agust@denx.de>
->  ---
->  diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
->  index f589999..137d830 100644
->  --- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
->  +++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
->  @@ -484,8 +484,8 @@ mpc52xx_bcom_remove(struct of_device *op)
->   }
->
->   static struct of_device_id mpc52xx_bcom_of_match[] = {
->  -       { .type = "dma-controller", .compatible = "fsl,mpc5200-bestcomm", },
->  -       { .type = "dma-controller", .compatible = "mpc5200-bestcomm", },
->  +       { .compatible = "fsl,mpc5200-bestcomm", },
->  +       { .compatible = "mpc5200-bestcomm", },
->         {},
->   };
->
->
-
-
 
 -- 
 Grant Likely, B.Sc., P.Eng.
