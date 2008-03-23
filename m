@@ -1,25 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A8AC1DDE1A
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 16:39:45 +1100 (EST)
-Date: Sun, 23 Mar 2008 16:38:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] windfarm: add PowerMac 12,1 support
-Message-Id: <20080323163829.dff24423.sfr@canb.auug.org.au>
-In-Reply-To: <1206228673.9540.115.camel@pmac.infradead.org>
-References: <1201348525.6859.1.camel@thilivren>
-	<1206214508.9540.89.camel@pmac.infradead.org>
-	<1206223998.7197.13.camel@pasglop>
-	<1206226966.9540.104.camel@pmac.infradead.org>
-	<20080323102502.e0754062.sfr@canb.auug.org.au>
-	<1206228673.9540.115.camel@pmac.infradead.org>
+Return-Path: <SRS0+65f9f841fcd8f70ddce6+1673+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3AC2ADDE21
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 20:00:50 +1100 (EST)
+Subject: Re: crash in init_ipic_sysfs on efika
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sven Luther <sven@genesi-usa.com>
+In-Reply-To: <20080322152528.GA6272@powerlinux.fr>
+References: <20080317195305.GA13298@aepfle.de>
+	<fa686aa40803202214k7d8596a5y922a34f33d33dca2@mail.gmail.com>
+	<18403.31214.826941.838442@cargo.ozlabs.ibm.com>
+	<47E3B4AF.3030505@genesi-usa.com>
+	<fa686aa40803211151w688a8d61sba9d0d0e6cdc7833@mail.gmail.com>
+	<20080322152528.GA6272@powerlinux.fr>
+Content-Type: text/plain
+Date: Sun, 23 Mar 2008 09:00:41 +0000
+Message-Id: <1206262841.9540.119.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__23_Mar_2008_16_38_29_+1100_/UwGeFC4yKBU845K"
-Cc: =?UTF-8?B?w4l0aWVubmU=?= Bersac <bersace03@gmail.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,42 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__23_Mar_2008_16_38_29_+1100_/UwGeFC4yKBU845K
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2008-03-22 at 16:25 +0100, Sven Luther wrote:
+> BTW, it was reported to me that the ethernet drivers don't get
+> autoloaded by udev. Is this a failure of udev missing the of_plateform
+> support, or a deficiency of the ethernet drivers ? 
 
-Hi Dave,
+As far as I know, they _are_ being loaded properly. Otherwise, the
+Fedora installer wouldn't work.
 
-On Sat, 22 Mar 2008 23:31:13 +0000 David Woodhouse <dwmw2@infradead.org> wr=
-ote:
->
-> On Sun, 2008-03-23 at 10:25 +1100, Stephen Rothwell wrote:
-> > Why would you expect otherwise (from the C standard):
-> >=20
-> > "Unlike the bitwise binary & operator, the && operator guarantees
-> > left-to-right evaluation; there is a sequence point after the evaluation
-> > of the first operand. If the first operand compares equal to 0, the
-> > second operand is not evaluated."
->=20
-> Because it's Saturday night
-
-That seems like all the explanation necessary :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__23_Mar_2008_16_38_29_+1100_/UwGeFC4yKBU845K
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH5ezaTgG2atn1QN8RArDFAJoDOx3rae0OrbSPjfMdh+xhDgVMKQCfS+92
-wOrHv6CbWRUPwDiw7CmYz2U=
-=pZXS
------END PGP SIGNATURE-----
-
---Signature=_Sun__23_Mar_2008_16_38_29_+1100_/UwGeFC4yKBU845K--
+-- 
+dwmw2
