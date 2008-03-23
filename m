@@ -1,26 +1,17 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id CD235DDED3
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Mar 2008 21:24:57 +1100 (EST)
-Date: Sun, 23 Mar 2008 11:24:55 +0100
-From: Sven Luther <sven@genesi-usa.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: crash in init_ipic_sysfs on efika
-Message-ID: <20080323102455.GA26583@powerlinux.fr>
-References: <20080317195305.GA13298@aepfle.de>
-	<fa686aa40803202214k7d8596a5y922a34f33d33dca2@mail.gmail.com>
-	<18403.31214.826941.838442@cargo.ozlabs.ibm.com>
-	<47E3B4AF.3030505@genesi-usa.com>
-	<fa686aa40803211151w688a8d61sba9d0d0e6cdc7833@mail.gmail.com>
-	<20080322152528.GA6272@powerlinux.fr>
-	<1206262841.9540.119.camel@pmac.infradead.org>
-	<20080323101215.GA26361@powerlinux.fr>
-	<1206267193.9540.137.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1206267193.9540.137.camel@pmac.infradead.org>
-Cc: Sven Luther <sven@genesi-usa.com>, Olaf Hering <olaf@aepfle.de>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 975DDDDD0C
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 00:08:12 +1100 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1JdPvk-0005mf-2k
+	for linuxppc-dev@ozlabs.org; Sun, 23 Mar 2008 08:08:08 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: DTC Patch Catch Up
+Date: Sun, 23 Mar 2008 08:08:08 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JdPvk-0005mf-2k@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,24 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 23, 2008 at 10:13:12AM +0000, David Woodhouse wrote:
-> On Sun, 2008-03-23 at 11:12 +0100, Sven Luther wrote:
-> > On Sun, Mar 23, 2008 at 09:00:41AM +0000, David Woodhouse wrote:
-> > > On Sat, 2008-03-22 at 16:25 +0100, Sven Luther wrote:
-> > > > BTW, it was reported to me that the ethernet drivers don't get
-> > > > autoloaded by udev. Is this a failure of udev missing the of_plateform
-> > > > support, or a deficiency of the ethernet drivers ? 
-> > > 
-> > > As far as I know, they _are_ being loaded properly. Otherwise, the
-> > > Fedora installer wouldn't work.
-> > 
-> > Yes, but you probably have the of_plateform udev patch, no ? 
-> 
-> Not any more. That was merged a while ago, wasn't it?
+Folks,
 
-So, the only explanation would be if debian had a very outdated udev
-which does not include this patch.
+I've applied the following patches from Gibson,
+in this order, to the DTC and pushed it out
+to git.jdl.com:
 
-Friendly,
+    dtc: Fix error reporting in push_input_file()
+    dtc: Implement checks for the format of node and property names
+    dtc: Fix indentation of fixup_phandle_references
+    dtc: Strip redundant "name" properties
+    dtc: Test and fix conversion to/from old dtb versions
+    dtc: Use for_each_marker_of_type in asm_emit_data()
+    dtc: Make -I dtb mode use fill_fullpaths()
+    dtc: Make eval_literal() static
+    dtc: Assorted improvements to test harness
+    dtc: Testcases for input handling
+    dtc: Make dtc_open_file() die() if unable to open requested file
+    dtc: Remove ugly include stack abuse
+    dtc: Abolish asize field of struct data
+    dtc: Add some documentation for the dts formta
+    dtc: Cleanup \nnn and \xNN string escape handling
+    dtc: Change exit code for usage message
 
-Sven Luther
+Thanks,
+jdl
