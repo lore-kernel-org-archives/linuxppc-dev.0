@@ -1,13 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18407.24752.933757.928245@cargo.ozlabs.ibm.com>
-Date: Mon, 24 Mar 2008 19:05:04 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id F2BC2DDF04
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 20:50:50 +1100 (EST)
+Date: Mon, 24 Mar 2008 02:50:48 -0700 (PDT)
+Message-Id: <20080324.025048.162043544.davem@davemloft.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [LMB]: Add lmb_alloc_nid()
+From: David Miller <davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,109 +19,153 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do:
+This function will be used by the NUMA setup code on sparc64, and also
+it can be used by powerpc, replacing it's hand crafted
+"careful_allocation()" function in arch/powerpc/mm/numa.c
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+If x86 ever converts it's NUMA support over to using the LMB helpers,
+it can use this too as it has something entirely similar.
 
-to get a few more bug-fixes for powerpc that should go in 2.6.25.
+[LMB]: Add lmb_alloc_nid()
 
-Thanks,
-Paul.
+A variant of lmb_alloc() that tries to allocate memory on a specified
+NUMA node 'nid' but falls back to normal lmb_alloc() if that fails.
 
- arch/powerpc/mm/hash_utils_64.c         |   11 ++++++++---
- arch/powerpc/sysdev/bestcomm/bestcomm.c |    8 ++++++--
- arch/powerpc/sysdev/ipic.c              |    2 +-
- drivers/net/fec_mpc52xx_phy.c           |    3 ++-
- 4 files changed, 17 insertions(+), 7 deletions(-)
+The caller provides a 'nid_range' function pointer which assists the
+allocator.  It is given args 'start', 'end', and pointer to integer
+'this_nid'.
 
-commit 7ea6fd7e2df041297298b5feb5b7b78a2b1a5310
-Author: Anatolij Gustschin <agust@denx.de>
-Date:   Sat Mar 22 21:49:05 2008 +1100
+It places at 'this_nid' the NUMA node id that corresponds to 'start',
+and returns the end address within 'start' to 'end' at which memory
+assosciated with 'nid' ends.
 
-    [POWERPC] Fix Oops with TQM5200 on TQM5200
-    
-    The "bestcomm-core" driver defines its of_match table as follows
-    
-    static struct of_device_id mpc52xx_bcom_of_match[] = {
-    	{ .type = "dma-controller", .compatible = "fsl,mpc5200-bestcomm", },
-    	{ .type = "dma-controller", .compatible = "mpc5200-bestcomm", },
-    	{},
-    };
-    
-    so while registering the driver, the driver's probe function won't be
-    called, because the device tree node doesn't have a device_type
-    property.  Thus the driver's bcom_engine structure won't be allocated.
-    Referencing this structure later causes observed Oops.
-    
-    Checking bcom_eng pointer for NULL before referencing data pointed
-    by it prevents oopsing, but fec driver still doesn't work (because
-    of the lost bestcomm match and resulted task allocation failure).
-    Actually the compatible property exists and should match and so
-    the fec driver should work.
-    
-    This removes .type = "dma-controller" from the bestcomm driver's
-    mpc52xx_bcom_of_match table to solve the problem.
-    
-    Signed-off-by: Anatolij Gustschin <agust@denx.de>
-    Acked-by: Grant Likely <grant.likely@secretlab.ca>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+This callback allows a platform to use lmb_alloc_nid() in just
+about any context, even ones in which early_pfn_to_nid() might
+not be working yet.
 
-commit 9560aea4e9d17cb75113c6051e800222fd5c71a4
-Author: Grant Likely <grant.likely@secretlab.ca>
-Date:   Sat Mar 22 14:41:05 2008 +1100
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ include/linux/lmb.h |    2 +
+ lib/lmb.c           |   86 +++++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 78 insertions(+), 10 deletions(-)
 
-    [POWERPC] mpc5200: Fix null dereference if bestcomm fails to initialize
-    
-    If the bestcomm initialization fails, calls to the task allocate
-    function should fail gracefully instead of oopsing with a NULL deref.
-    
-    Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit b8c19eb16a7e6df57d0f6d67e42ce026e5d5930b
-Author: Grant Likely <grant.likely@secretlab.ca>
-Date:   Sat Mar 22 14:20:29 2008 +1100
-
-    [POWERPC] mpc5200-fec: Fix possible NULL dereference in mdio driver
-    
-    If the reg property is missing from the phy node (unlikely, but possible),
-    then the kernel will oops with a NULL pointer dereference.  This fixes
-    it by checking the pointer first.
-    
-    Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 1428a9fa586cb80acf98289f797f58b8bd662598
-Author: Olaf Hering <olaf@aepfle.de>
-Date:   Tue Mar 18 06:53:05 2008 +1100
-
-    [POWERPC] Fix crash in init_ipic_sysfs on efika
-    
-    The global primary_ipic in arch/powerpc/sysdev/ipic.c can remain NULL
-    if ipic_init() fails, which will happen on machines that don't have an
-    ipic interrupt controller.  init_ipic_sysfs() will crash in that case.
-    
-    Acked-by: Grant Likely <grant.likely@secretlab.ca>
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit cfe666b145cecffe784d98e60ffe201a5dc57ac3
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Mon Mar 24 17:41:22 2008 +1100
-
-    [POWERPC] Don't use 64k pages for ioremap on pSeries
-    
-    On pSeries, the hypervisor doesn't let us map in the eHEA ethernet
-    adapter using 64k pages, and thus the ehea driver will fail if 64k
-    pages are configured.  This works around the problem by always
-    using 4k pages for ioremap on pSeries (but not on other platforms).
-    A better fix would be to check whether the partition could ever
-    have an eHEA adapter, and only force 4k pages if it could, but this
-    will do for 2.6.25.
-    
-    This is based on an earlier patch by Tony Breeds.
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+diff --git a/include/linux/lmb.h b/include/linux/lmb.h
+index 632717c..271153d 100644
+--- a/include/linux/lmb.h
++++ b/include/linux/lmb.h
+@@ -42,6 +42,8 @@ extern void __init lmb_init(void);
+ extern void __init lmb_analyze(void);
+ extern long __init lmb_add(u64 base, u64 size);
+ extern long __init lmb_reserve(u64 base, u64 size);
++extern u64 __init lmb_alloc_nid(u64 size, u64 align, int nid,
++				u64 (*nid_range)(u64, u64, int *));
+ extern u64 __init lmb_alloc(u64 size, u64 align);
+ extern u64 __init lmb_alloc_base(u64 size,
+ 		u64, u64 max_addr);
+diff --git a/lib/lmb.c b/lib/lmb.c
+index e3c8dcb..5e76b36 100644
+--- a/lib/lmb.c
++++ b/lib/lmb.c
+@@ -227,6 +227,82 @@ long __init lmb_overlaps_region(struct lmb_region *rgn, u64 base,
+ 	return (i < rgn->cnt) ? i : -1;
+ }
+ 
++static u64 lmb_align_down(u64 addr, u64 size)
++{
++	return addr & ~(size - 1);
++}
++
++static u64 lmb_align_up(u64 addr, u64 size)
++{
++	return (addr + (size - 1)) & ~(size - 1);
++}
++
++static u64 __init lmb_alloc_nid_unreserved(u64 start, u64 end,
++					   u64 size, u64 align)
++{
++	u64 base;
++	long j;
++
++	base = lmb_align_down((end - size), align);
++	while (start <= base &&
++	       ((j = lmb_overlaps_region(&lmb.reserved, base, size)) >= 0))
++		base = lmb_align_down(lmb.reserved.region[j].base - size,
++				      align);
++
++	if (base != 0 && start <= base) {
++		if (lmb_add_region(&lmb.reserved, base,
++				   lmb_align_up(size, align)) < 0)
++			base = ~(u64)0;
++		return base;
++	}
++
++	return ~(u64)0;
++}
++
++static u64 __init lmb_alloc_nid_region(struct lmb_property *mp,
++				       u64 (*nid_range)(u64, u64, int *),
++				       u64 size, u64 align, int nid)
++{
++	u64 start, end;
++
++	start = mp->base;
++	end = start + mp->size;
++
++	start = lmb_align_up(start, align);
++	while (start < end) {
++		u64 this_end;
++		int this_nid;
++
++		this_end = nid_range(start, end, &this_nid);
++		if (this_nid == nid) {
++			u64 ret = lmb_alloc_nid_unreserved(start, this_end,
++							   size, align);
++			if (ret != ~(u64)0)
++				return ret;
++		}
++		start = this_end;
++	}
++
++	return ~(u64)0;
++}
++
++u64 __init lmb_alloc_nid(u64 size, u64 align, int nid,
++			 u64 (*nid_range)(u64 start, u64 end, int *nid))
++{
++	struct lmb_region *mem = &lmb.memory;
++	int i;
++
++	for (i = 0; i < mem->cnt; i++) {
++		u64 ret = lmb_alloc_nid_region(&mem->region[i],
++					       nid_range,
++					       size, align, nid);
++		if (ret != ~(u64)0)
++			return ret;
++	}
++
++	return lmb_alloc(size, align);
++}
++
+ u64 __init lmb_alloc(u64 size, u64 align)
+ {
+ 	return lmb_alloc_base(size, align, LMB_ALLOC_ANYWHERE);
+@@ -245,16 +321,6 @@ u64 __init lmb_alloc_base(u64 size, u64 align, u64 max_addr)
+ 	return alloc;
+ }
+ 
+-static u64 lmb_align_down(u64 addr, u64 size)
+-{
+-	return addr & ~(size - 1);
+-}
+-
+-static u64 lmb_align_up(u64 addr, u64 size)
+-{
+-	return (addr + (size - 1)) & ~(size - 1);
+-}
+-
+ u64 __init __lmb_alloc_base(u64 size, u64 align, u64 max_addr)
+ {
+ 	long i, j;
+-- 
+1.5.4.rc3.14.g44397
