@@ -1,16 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from mail17-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 82DBBDE041
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 10:28:43 +1100 (EST)
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
-	jwboyer@linux.vnet.ibm.com, git-dev@xilinx.com
-Subject: [PATCH] [RFC][POWERPC] refactor dcr code
-Date: Mon, 24 Mar 2008 16:28:33 -0700
-Message-Id: <20080324232835.A0AFA1B58093@mail17-dub.bigfish.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 29E44DE1C5
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 10:37:02 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2ONavqA002404
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 18:36:58 -0500
+Date: Mon, 24 Mar 2008 18:33:15 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Introduce lowmem_end_addr to distiguish from
+	total_lowmem
+Message-ID: <Pine.LNX.4.64.0803241832570.29472@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,336 +24,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, dcr support was configured at compile time to either using
-MMIO or native dcr instructions.  Although this works for most
-platforms, it fails on FPGA platforms:
+total_lowmem represents the amount of low memory not the physical address
+that low memory ends at.  If the start of memory is at 0 it happends that
+total_lowmem can be used as both the size and the address that lowmem
+ends at. (technical its one byte beyond the end)
 
-1) Systems may include more than one dcr bus.
-2) Systems may be native dcr capable and still use memory mapped dcr interface.
+To make the code a bit more clear and deal with the case when the start of
+memory isn't at physical 0, we introduce lowmem_end_addr that represents
+one byte beyond the last physical address in the lowmem region.
 
-This patch provides runtime support based on the device trees for the
-case where CONFIG_PPC_DCR_MMIO and CONFIG_PPC_DCR_NATIVE are both
-selected.  Previously, this was a poorly defined configuration, which
-happened to provide NATIVE support.  The runtime selection is made
-based on the dcr slave device having a 'dcr-access-method' attribute
-in the device tree.  If only one of the above options is selected,
-then the code uses #defines to select only the used code in order to
-avoid interoducing overhead in existing usage.
-
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/mm/44x_mmu.c |    2 +-
+ arch/powerpc/mm/init_32.c |    4 +++-
+ arch/powerpc/mm/init_64.c |    2 ++
+ arch/powerpc/mm/mem.c     |   16 +++++++++-------
+ 4 files changed, 15 insertions(+), 9 deletions(-)
 
-I did some brief compile testing of this and it appears to not break
-anything, but it's not been heavily tested.  Mainly RFC at this point,
-but if anyone feels like testing this, I'd appreciate it.
+diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+index 04dc087..953fb91 100644
+--- a/arch/powerpc/mm/44x_mmu.c
++++ b/arch/powerpc/mm/44x_mmu.c
+@@ -67,7 +67,7 @@ unsigned long __init mmu_mapin_ram(void)
 
-Steve
----
- arch/powerpc/sysdev/dcr.c         |   79 ++++++++++++++++++++++++++++++++----
- include/asm-powerpc/dcr-generic.h |   49 +++++++++++++++++++++++
- include/asm-powerpc/dcr-mmio.h    |   12 +++---
- include/asm-powerpc/dcr-native.h  |   12 +++---
- include/asm-powerpc/dcr.h         |   36 ++++++++++++++++-
- 5 files changed, 166 insertions(+), 22 deletions(-)
- create mode 100644 include/asm-powerpc/dcr-generic.h
+ 	/* Pin in enough TLBs to cover any lowmem not covered by the
+ 	 * initial 256M mapping established in head_44x.S */
+-	for (addr = PPC_PIN_SIZE; addr < total_lowmem;
++	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
+ 	     addr += PPC_PIN_SIZE)
+ 		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
 
-diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
-index 427027c..0b9442e 100644
---- a/arch/powerpc/sysdev/dcr.c
-+++ b/arch/powerpc/sysdev/dcr.c
-@@ -23,6 +23,67 @@
- #include <asm/prom.h>
- #include <asm/dcr.h>
- 
-+#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 01a81a0..345a275 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -147,6 +147,7 @@ void __init MMU_init(void)
+ 	}
+
+ 	total_lowmem = total_memory = lmb_end_of_DRAM() - memstart_addr;
++	lowmem_end_addr = memstart_addr + total_lowmem;
+
+ #ifdef CONFIG_FSL_BOOKE
+ 	/* Freescale Book-E parts expect lowmem to be mapped by fixed TLB
+@@ -157,9 +158,10 @@ void __init MMU_init(void)
+
+ 	if (total_lowmem > __max_low_memory) {
+ 		total_lowmem = __max_low_memory;
++		lowmem_end_addr = memstart_addr + total_lowmem;
+ #ifndef CONFIG_HIGHMEM
+ 		total_memory = total_lowmem;
+-		lmb_enforce_memory_limit(total_lowmem);
++		lmb_enforce_memory_limit(lowmem_end_addr);
+ 		lmb_analyze();
+ #endif /* CONFIG_HIGHMEM */
+ 	}
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index abeb0eb..f18b203 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -75,6 +75,8 @@
+ /* max amount of RAM to use */
+ unsigned long __max_memory;
+
++phys_addr_t memstart_addr;
 +
-+bool dcr_map_ok_generic(dcr_host_t host) {
-+	if(host.type == INVALID) {
-+		return 0;
-+	} else if(host.type == NATIVE) {
-+		return dcr_map_ok_native(host.host.native);
-+	} else {
-+		return dcr_map_ok_mmio(host.host.mmio);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
-+
-+dcr_host_t dcr_map_generic(struct device_node *dev, unsigned int dcr_n,
-+				 unsigned int dcr_c) {
-+	dcr_host_t host;
-+	const char *prop = of_get_property(dev, "dcr-access-method", NULL);
-+       	if(!strcmp(prop, "native")) {
-+		host.type = NATIVE;
-+		host.host.native = dcr_map_native(dev, dcr_n, dcr_c);
-+	} else if(!strcmp(prop, "mmio")) {
-+		host.type = MMIO;
-+		host.host.mmio = dcr_map_mmio(dev, dcr_n, dcr_c);
-+	} else {
-+		host.type = INVALID;
-+	}
-+	return host;
-+}
-+EXPORT_SYMBOL_GPL(dcr_map_generic);
-+
-+void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c) {
-+	if(host.type == NATIVE) {
-+		dcr_unmap_native(host.host.native, dcr_c);
-+	} else {
-+		dcr_unmap_mmio(host.host.mmio, dcr_c);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(dcr_unmap_generic);
-+
-+u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n)
-+{
-+	if(host.type == NATIVE) {
-+		return dcr_read_native(host.host.native, dcr_n);
-+	} else {
-+		return dcr_read_mmio(host.host.mmio, dcr_n);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(dcr_read_generic);
-+
-+void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value)
-+{
-+	if(host.type == NATIVE) {
-+		dcr_write_native(host.host.native, dcr_n, value);
-+	} else {
-+		dcr_write_mmio(host.host.mmio, dcr_n, value);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(dcr_write_generic);
-+
-+#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
-+
- unsigned int dcr_resource_start(struct device_node *np, unsigned int index)
+ void free_initmem(void)
  {
- 	unsigned int ds;
-@@ -47,7 +108,7 @@ unsigned int dcr_resource_len(struct device_node *np, unsigned int index)
- }
- EXPORT_SYMBOL_GPL(dcr_resource_len);
- 
--#ifndef CONFIG_PPC_DCR_NATIVE
-+#ifdef CONFIG_PPC_DCR_MMIO
- 
- static struct device_node * find_dcr_parent(struct device_node * node)
- {
-@@ -101,17 +162,17 @@ u64 of_translate_dcr_address(struct device_node *dev,
- 	return ret;
- }
- 
--dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
-+dcr_host_mmio_t dcr_map_mmio(struct device_node *dev, unsigned int dcr_n,
- 		   unsigned int dcr_c)
- {
--	dcr_host_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
-+	dcr_host_mmio_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
- 	u64 addr;
- 
- 	pr_debug("dcr_map(%s, 0x%x, 0x%x)\n",
- 		 dev->full_name, dcr_n, dcr_c);
- 
- 	addr = of_translate_dcr_address(dev, dcr_n, &ret.stride);
--	pr_debug("translates to addr: 0x%lx, stride: 0x%x\n",
-+	pr_debug("translates to addr: 0x%p, stride: 0x%x\n",
- 		 addr, ret.stride);
- 	if (addr == OF_BAD_ADDR)
- 		return ret;
-@@ -124,11 +185,11 @@ dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
- 	ret.token -= dcr_n * ret.stride;
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(dcr_map);
-+EXPORT_SYMBOL_GPL(dcr_map_mmio);
- 
--void dcr_unmap(dcr_host_t host, unsigned int dcr_c)
-+void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c)
- {
--	dcr_host_t h = host;
-+	dcr_host_mmio_t h = host;
- 
- 	if (h.token == NULL)
- 		return;
-@@ -136,6 +197,6 @@ void dcr_unmap(dcr_host_t host, unsigned int dcr_c)
- 	iounmap(h.token);
- 	h.token = NULL;
- }
--EXPORT_SYMBOL_GPL(dcr_unmap);
-+EXPORT_SYMBOL_GPL(dcr_unmap_mmio);
- 
--#endif /* !defined(CONFIG_PPC_DCR_NATIVE) */
-+#endif /* defined(CONFIG_PPC_DCR_MMIO) */
-diff --git a/include/asm-powerpc/dcr-generic.h b/include/asm-powerpc/dcr-generic.h
-new file mode 100644
-index 0000000..0ee74fb
---- /dev/null
-+++ b/include/asm-powerpc/dcr-generic.h
-@@ -0,0 +1,49 @@
-+/*
-+ * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
-+ *                    <benh@kernel.crashing.org>
-+ *
-+ *   This program is free software;  you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-+ *   the GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program;  if not, write to the Free Software
-+ *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+
-+#ifndef _ASM_POWERPC_DCR_GENERIC_H
-+#define _ASM_POWERPC_DCR_GENERIC_H
-+#ifdef __KERNEL__
-+#ifndef __ASSEMBLY__
-+
-+enum host_type_t {MMIO, NATIVE, INVALID};
-+
-+typedef struct {
-+	enum host_type_t type;
-+	union {
-+		dcr_host_mmio_t mmio;
-+		dcr_host_native_t native;
-+	} host;
-+} dcr_host_t;
-+
-+extern bool dcr_map_ok_generic(dcr_host_t host);
-+
-+extern dcr_host_t dcr_map_generic(struct device_node *dev, unsigned int dcr_n,
-+			  unsigned int dcr_c);
-+extern void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c);
-+
-+extern u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n);
-+
-+extern void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value);
-+
-+#endif /* __ASSEMBLY__ */
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_POWERPC_DCR_GENERIC_H */
-+
-+
-diff --git a/include/asm-powerpc/dcr-mmio.h b/include/asm-powerpc/dcr-mmio.h
-index 08532ff..fc3adce 100644
---- a/include/asm-powerpc/dcr-mmio.h
-+++ b/include/asm-powerpc/dcr-mmio.h
-@@ -27,20 +27,20 @@ typedef struct {
- 	void __iomem *token;
- 	unsigned int stride;
- 	unsigned int base;
--} dcr_host_t;
-+} dcr_host_mmio_t;
- 
--#define DCR_MAP_OK(host)	((host).token != NULL)
-+#define dcr_map_ok_mmio(host)	((host).token != NULL)
- 
--extern dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
-+extern dcr_host_mmio_t dcr_map_mmio(struct device_node *dev, unsigned int dcr_n,
- 			  unsigned int dcr_c);
--extern void dcr_unmap(dcr_host_t host, unsigned int dcr_c);
-+extern void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c);
- 
--static inline u32 dcr_read(dcr_host_t host, unsigned int dcr_n)
-+static inline u32 dcr_read_mmio(dcr_host_mmio_t host, unsigned int dcr_n)
- {
- 	return in_be32(host.token + ((host.base + dcr_n) * host.stride));
- }
- 
--static inline void dcr_write(dcr_host_t host, unsigned int dcr_n, u32 value)
-+static inline void dcr_write_mmio(dcr_host_mmio_t host, unsigned int dcr_n, u32 value)
- {
- 	out_be32(host.token + ((host.base + dcr_n) * host.stride), value);
- }
-diff --git a/include/asm-powerpc/dcr-native.h b/include/asm-powerpc/dcr-native.h
-index 8dbb1ab..f9fc865 100644
---- a/include/asm-powerpc/dcr-native.h
-+++ b/include/asm-powerpc/dcr-native.h
-@@ -24,14 +24,14 @@
- 
- typedef struct {
- 	unsigned int base;
--} dcr_host_t;
-+} dcr_host_native_t;
- 
--#define DCR_MAP_OK(host)	(1)
-+#define dcr_map_ok_native(host)	(1)
- 
--#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){ .base = (dcr_n) })
--#define dcr_unmap(host, dcr_c)		do {} while (0)
--#define dcr_read(host, dcr_n)		mfdcr(dcr_n + host.base)
--#define dcr_write(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
-+#define dcr_map_native(dev, dcr_n, dcr_c)	((dcr_host_native_t){ .base = (dcr_n) })
-+#define dcr_unmap_native(host, dcr_c)		do {} while (0)
-+#define dcr_read_native(host, dcr_n)		mfdcr(dcr_n + host.base)
-+#define dcr_write_native(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
- 
- /* Device Control Registers */
- void __mtdcr(int reg, unsigned int val);
-diff --git a/include/asm-powerpc/dcr.h b/include/asm-powerpc/dcr.h
-index 9338d50..6b86322 100644
---- a/include/asm-powerpc/dcr.h
-+++ b/include/asm-powerpc/dcr.h
-@@ -20,14 +20,47 @@
- #ifndef _ASM_POWERPC_DCR_H
- #define _ASM_POWERPC_DCR_H
- #ifdef __KERNEL__
-+#ifndef __ASSEMBLY__
- #ifdef CONFIG_PPC_DCR
- 
- #ifdef CONFIG_PPC_DCR_NATIVE
- #include <asm/dcr-native.h>
--#else
-+#endif
-+
-+#ifdef CONFIG_PPC_DCR_MMIO
- #include <asm/dcr-mmio.h>
+ 	unsigned long addr;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 60c019c..9c10b14 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -217,9 +217,11 @@ void __init do_init_bootmem(void)
+ 	unsigned long total_pages;
+ 	int boot_mapsize;
+
+-	max_pfn = total_pages = lmb_end_of_DRAM() >> PAGE_SHIFT;
++	max_pfn = lmb_end_of_DRAM() >> PAGE_SHIFT;
++	total_pages = (lmb_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
+ #ifdef CONFIG_HIGHMEM
+ 	total_pages = total_lowmem >> PAGE_SHIFT;
++	max_low_pfn = lowmem_end_addr >> PAGE_SHIFT;
  #endif
- 
-+#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
-+
-+#include <asm/dcr-generic.h>
-+
-+#define DCR_MAP_OK(host)	dcr_map_ok_generic(host)
-+#define dcr_map(dev, dcr_n, dcr_c) dcr_map_generic(dev, dcr_n, dcr_c)
-+#define dcr_unmap(host, dcr_c) dcr_unmap_generic(host, dcr_c)
-+#define dcr_read(host, dcr_n) dcr_read_generic(host, dcr_n)
-+#define dcr_write(host, dcr_n, value) dcr_write_generic(host, dcr_n, value)
-+
-+#else
-+
-+#ifdef CONFIG_PPC_DCR_NATIVE
-+typedef dcr_host_native_t dcr_host_t;
-+#define DCR_MAP_OK(host)	dcr_map_ok_native(host)
-+#define dcr_map(dev, dcr_n, dcr_c) dcr_map_native(dev, dcr_n, dcr_c)
-+#define dcr_unmap(host, dcr_c) dcr_unmap_native(host, dcr_c)
-+#define dcr_read(host, dcr_n) dcr_read_native(host, dcr_n)
-+#define dcr_write(host, dcr_n, value) dcr_write_native(host, dcr_n, value)
-+#else
-+typedef dcr_host_mmio_t dcr_host_t;
-+#define DCR_MAP_OK(host)	dcr_map_ok_mmio(host)
-+#define dcr_map(dev, dcr_n, dcr_c) dcr_map_mmio(dev, dcr_n, dcr_c)
-+#define dcr_unmap(host, dcr_c) dcr_unmap_mmio(host, dcr_c)
-+#define dcr_read(host, dcr_n) dcr_read_mmio(host, dcr_n)
-+#define dcr_write(host, dcr_n, value) dcr_write_mmio(host, dcr_n, value)
-+#endif
-+
-+#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
-+
- /*
-  * On CONFIG_PPC_MERGE, we have additional helpers to read the DCR
-  * base from the device-tree
-@@ -41,5 +74,6 @@ extern unsigned int dcr_resource_len(struct device_node *np,
- #endif /* CONFIG_PPC_MERGE */
- 
- #endif /* CONFIG_PPC_DCR */
-+#endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_DCR_H */
+
+ 	/*
+@@ -245,18 +247,18 @@ void __init do_init_bootmem(void)
+ 	 * present.
+ 	 */
+ #ifdef CONFIG_HIGHMEM
+-	free_bootmem_with_active_regions(0, total_lowmem >> PAGE_SHIFT);
++	free_bootmem_with_active_regions(0, lowmem_end_addr >> PAGE_SHIFT);
+
+ 	/* reserve the sections we're already using */
+ 	for (i = 0; i < lmb.reserved.cnt; i++) {
+ 		unsigned long addr = lmb.reserved.region[i].base +
+ 				     lmb_size_bytes(&lmb.reserved, i) - 1;
+-		if (addr < total_lowmem)
++		if (addr < lowmem_end_addr)
+ 			reserve_bootmem(lmb.reserved.region[i].base,
+ 					lmb_size_bytes(&lmb.reserved, i),
+ 					BOOTMEM_DEFAULT);
+-		else if (lmb.reserved.region[i].base < total_lowmem) {
+-			unsigned long adjusted_size = total_lowmem -
++		else if (lmb.reserved.region[i].base < lowmem_end_addr) {
++			unsigned long adjusted_size = lowmem_end_addr -
+ 				      lmb.reserved.region[i].base;
+ 			reserve_bootmem(lmb.reserved.region[i].base,
+ 					adjusted_size, BOOTMEM_DEFAULT);
+@@ -326,7 +328,7 @@ void __init paging_init(void)
+ 	       (top_of_ram - total_ram) >> 20);
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+ #ifdef CONFIG_HIGHMEM
+-	max_zone_pfns[ZONE_DMA] = total_lowmem >> PAGE_SHIFT;
++	max_zone_pfns[ZONE_DMA] = lowmem_end_addr >> PAGE_SHIFT;
+ 	max_zone_pfns[ZONE_HIGHMEM] = top_of_ram >> PAGE_SHIFT;
+ #else
+ 	max_zone_pfns[ZONE_DMA] = top_of_ram >> PAGE_SHIFT;
+@@ -381,7 +383,7 @@ void __init mem_init(void)
+ 	{
+ 		unsigned long pfn, highmem_mapnr;
+
+-		highmem_mapnr = total_lowmem >> PAGE_SHIFT;
++		highmem_mapnr = lowmem_end_addr >> PAGE_SHIFT;
+ 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
+ 			struct page *page = pfn_to_page(pfn);
+ 			if (lmb_is_reserved(pfn << PAGE_SHIFT))
 -- 
-1.5.3.4-dirty
+1.5.4.1
