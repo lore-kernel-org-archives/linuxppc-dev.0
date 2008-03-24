@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5716DDDF05
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 01:01:47 +1100 (EST)
-Date: Mon, 24 Mar 2008 08:58:00 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for-2.6.25' branch
-Message-ID: <Pine.LNX.4.64.0803240857420.13752@blarg.am.freescale.net>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 50140DDF09
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 01:08:07 +1100 (EST)
+Message-ID: <47E7B61B.70708@ru.mvista.com>
+Date: Mon, 24 Mar 2008 17:09:31 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
+	16550.
+References: <12060242324116-git-send-email-john.linn@xilinx.com>	<20080320144402.3063517C005D@mail148-sin.bigfish.com>	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>	<18403.32257.725539.470771@cargo.ozlabs.ibm.com>
+	<fa686aa40803220750h1d86589am9a26aeeb359178b7@mail.gmail.com>
+In-Reply-To: <fa686aa40803220750h1d86589am9a26aeeb359178b7@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for-2.6.25' branch of
+Grant Likely wrote:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.25
+>> > Personally, I'm not fond of this approach.  There is already some
+>> > traction to using the reg-shift property to specify spacing, and I
+>> > think it would be appropriate to also define a reg-offset property to
+>> > handle the +3 offset and then let the xilinx 16550 nodes use those.
 
-to receive the following updates:
+>> Why do we need a reg-offset property when we can just add the offset
+>> to the appropriate word(s) in the reg property?
 
- arch/powerpc/configs/ep8248e_defconfig       |   74 +++++++---
- arch/powerpc/configs/ep88xc_defconfig        |   56 +++++--
- arch/powerpc/configs/linkstation_defconfig   |  131 +++++++++++------
- arch/powerpc/configs/mpc7448_hpc2_defconfig  |  119 ++++++++++++----
- arch/powerpc/configs/mpc8272_ads_defconfig   |   75 ++++++++--
- arch/powerpc/configs/mpc8313_rdb_defconfig   |  114 ++++++++++-----
- arch/powerpc/configs/mpc8315_rdb_defconfig   |  110 +++++++++------
- arch/powerpc/configs/mpc832x_mds_defconfig   |  101 +++++++++----
- arch/powerpc/configs/mpc832x_rdb_defconfig   |  106 +++++++++-----
- arch/powerpc/configs/mpc834x_itx_defconfig   |  111 +++++++++------
- arch/powerpc/configs/mpc834x_itxgp_defconfig |  109 +++++++++-----
- arch/powerpc/configs/mpc834x_mds_defconfig   |  104 +++++++++-----
- arch/powerpc/configs/mpc836x_mds_defconfig   |  102 +++++++++----
- arch/powerpc/configs/mpc837x_mds_defconfig   |  197 ++++++++++++++-------------
- arch/powerpc/configs/mpc837x_rdb_defconfig   |   83 +++++++----
- arch/powerpc/configs/mpc83xx_defconfig       |   88 +++++++-----
- arch/powerpc/configs/mpc8540_ads_defconfig   |  121 ++++++++++++----
- arch/powerpc/configs/mpc8544_ds_defconfig    |  127 ++++++++++++-----
- arch/powerpc/configs/mpc8560_ads_defconfig   |  126 +++++++++++++----
- arch/powerpc/configs/mpc8568mds_defconfig    |  106 ++++++++++----
- arch/powerpc/configs/mpc8572_ds_defconfig    |  127 ++++++++++++-----
- arch/powerpc/configs/mpc85xx_cds_defconfig   |  131 +++++++++++++----
- arch/powerpc/configs/mpc85xx_defconfig       |  111 ++++++++++-----
- arch/powerpc/configs/mpc8610_hpcd_defconfig  |  131 ++++++++++++++---
- arch/powerpc/configs/mpc8641_hpcn_defconfig  |  115 ++++++++++-----
- arch/powerpc/configs/mpc866_ads_defconfig    |  112 +++++++++++----
- arch/powerpc/configs/mpc885_ads_defconfig    |   56 +++++--
- arch/powerpc/configs/pq2fads_defconfig       |   89 ++++++++----
- arch/powerpc/configs/prpmc2800_defconfig     |  160 ++++++++++++++++-----
- arch/powerpc/configs/sbc834x_defconfig       |   78 +++++++---
- arch/powerpc/configs/sbc8548_defconfig       |  115 ++++++++++++---
- arch/powerpc/configs/sbc8560_defconfig       |  124 +++++++++++++---
- arch/powerpc/configs/storcenter_defconfig    |  102 +++++++------
- arch/powerpc/configs/stx_gp3_defconfig       |  154 +++++++++++++++------
- arch/powerpc/configs/tqm8540_defconfig       |  133 +++++++++++++-----
- arch/powerpc/configs/tqm8541_defconfig       |  133 +++++++++++++-----
- arch/powerpc/configs/tqm8555_defconfig       |  133 +++++++++++++-----
- arch/powerpc/configs/tqm8560_defconfig       |  133 +++++++++++++-----
- 38 files changed, 3031 insertions(+), 1266 deletions(-)
+> Primarily because the device creates 32 byte registers starting at 0;
+> but they are also big-endian byte accessible so a byte read at offset
+> 8 also works.
 
-Kumar Gala (1):
-      [POWERPC] Update some defconfigs
+    Probably I misunderstood you: does it give the same result as offset 11?
+
+> reg-offset seems to be a better description of the hardware to me.
+
+    Have you considered using the existing "big-endian" property?
+
+> Cheers,
+> g.
+
+WBR, Sergei
