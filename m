@@ -1,24 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 31449DDF5C
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:18:38 +1100 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 19638DDFCE
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:43:17 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2OMhC9i031717
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 17:43:13 -0500
+Date: Mon, 24 Mar 2008 17:39:30 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Remove and replace uses of PPC_MEMSTART with
+	memstart_addr
+Message-ID: <Pine.LNX.4.64.0803241739001.25251@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: dcr stuff.
-Date: Mon, 24 Mar 2008 15:18:11 -0700
-In-Reply-To: <1206395973.7197.50.camel@pasglop>
-References: <20080321190524.4F3491CE0087@mail160-dub.bigfish.com>
-	<20080321201704.032999c3@zod.rchland.ibm.com>
-	<20080324043416.3634316E007A@mail15-dub.bigfish.com>
-	<1206395973.7197.50.camel@pasglop>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: <benh@kernel.crashing.org>
-Message-Id: <20080324221812.6833E168004A@mail108-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, git-dev <git-dev@xilinx.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,57 +24,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+A number of users of PPC_MEMSTART (40x, ppc_mmu_32) can just always use
+0 as we don't support booting these kernels at non-zero physical addresses
+since their exception vectors must be at 0 (or 0xfffx_xxxx).
 
+For the sub-arches that support relocatable interrupt vectors (book-e) its
+reasonable to have memory start at a non-zero physical address.  For those
+cases use the variable memstart_addr instead of the #define PPC_MEMSTART since
+the only uses of PPC_MEMSTART are for initialization and in the future we can
+set memstart_addr at runtime to have a relocatable kernel.
 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> Sent: Monday, March 24, 2008 3:00 PM
-> To: Stephen Neuendorffer
-> Cc: Josh Boyer; linuxppc-dev@ozlabs.org; git-dev
-> Subject: RE: dcr stuff.
->=20
->=20
-> On Sun, 2008-03-23 at 21:34 -0700, Stephen Neuendorffer wrote:
-> >
-> > Certainly, if it ain't broke don't fix it.  What I'm really trying
-to
-> > do is figure out how to clean up alot of non-mainline drivers.
-> > At the moment, several cores use DCR, but the drivers for those
-cores
-> > have internal code for DCR, their own ifdefs, etc.  This *is*
-broken.
-> > I'm looking at the available documentation to figure out the best
-way
-> > of approaching the problem.
-> >
-> > It might be nice if there was an extra layer of indirection which
-was
-> > only enabled if DCR_NATIVE and DCR_MMIO, and which was no cost
-> > otherwise,
-> > but the bigger problem I see in the short term is that we'll likely
-> > have to support ARCH ppc for at least some time into the future, and
-> > it would be
-> > nice if we used the same driver code to do it: it doesn't seem
-obvious
-> > how to achieve this.
->=20
-> It's not too hard to have the DCR code be common, it's harder to deal
-> with the lack of device-tree in arch/ppc tho.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/mm/40x_mmu.c       |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c |   11 +++++------
+ arch/powerpc/mm/init_32.c       |    8 ++++----
+ arch/powerpc/mm/mmu_decl.h      |    1 +
+ arch/powerpc/mm/pgtable_32.c    |    5 +++--
+ arch/powerpc/mm/ppc_mmu_32.c    |   10 ++--------
+ include/asm-powerpc/page_32.h   |    2 --
+ 7 files changed, 16 insertions(+), 23 deletions(-)
 
-My thoughts at the moment are to punt on map and unmap and at least
-provide support for dcr_host_t and dcr_read and dcr_write.  Any driver
-code that wants to use this without a device tree will just have to do
-the work itself.  This will at least support the use cases we have
-today: If people want something better, then they should switch to ARCH
-powerpc.. :)
-=20
-> As for enabling support for both native and MMIO, that's certainly
-> possible, patches welcome :-) You could make the dcr host structure
-> contain the type or even function pointers, as you see fit. But make
-is
-> so that when only native is enabled, it turns back into the inlines we
-> have now.
+diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+index 3899ea9..cecbbc7 100644
+--- a/arch/powerpc/mm/40x_mmu.c
++++ b/arch/powerpc/mm/40x_mmu.c
+@@ -97,7 +97,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 	phys_addr_t p;
 
-Working on it.. :)
+ 	v = KERNELBASE;
+-	p = PPC_MEMSTART;
++	p = 0;
+ 	s = total_lowmem;
 
-Steve
+ 	if (__map_without_ltlbs)
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index c93a966..3dd0c81 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -53,13 +53,12 @@
+ #include <asm/machdep.h>
+ #include <asm/setup.h>
+
++#include "mmu_decl.h"
++
+ extern void loadcam_entry(unsigned int index);
+ unsigned int tlbcam_index;
+ unsigned int num_tlbcam_entries;
+ static unsigned long __cam0, __cam1, __cam2;
+-extern unsigned long total_lowmem;
+-extern unsigned long __max_low_memory;
+-extern unsigned long __initial_memory_limit;
+ #define MAX_LOW_MEM	CONFIG_LOWMEM_SIZE
+
+ #define NUM_TLBCAMS	(16)
+@@ -165,15 +164,15 @@ void invalidate_tlbcam_entry(int index)
+ void __init cam_mapin_ram(unsigned long cam0, unsigned long cam1,
+ 		unsigned long cam2)
+ {
+-	settlbcam(0, PAGE_OFFSET, PPC_MEMSTART, cam0, _PAGE_KERNEL, 0);
++	settlbcam(0, PAGE_OFFSET, memstart_addr, cam0, _PAGE_KERNEL, 0);
+ 	tlbcam_index++;
+ 	if (cam1) {
+ 		tlbcam_index++;
+-		settlbcam(1, PAGE_OFFSET+cam0, PPC_MEMSTART+cam0, cam1, _PAGE_KERNEL, 0);
++		settlbcam(1, PAGE_OFFSET+cam0, memstart_addr+cam0, cam1, _PAGE_KERNEL, 0);
+ 	}
+ 	if (cam2) {
+ 		tlbcam_index++;
+-		settlbcam(2, PAGE_OFFSET+cam0+cam1, PPC_MEMSTART+cam0+cam1, cam2, _PAGE_KERNEL, 0);
++		settlbcam(2, PAGE_OFFSET+cam0+cam1, memstart_addr+cam0+cam1, cam2, _PAGE_KERNEL, 0);
+ 	}
+ }
+
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 59a725b..01a81a0 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -59,8 +59,9 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ unsigned long total_memory;
+ unsigned long total_lowmem;
+
+-unsigned long ppc_memstart;
+-unsigned long ppc_memoffset = PAGE_OFFSET;
++phys_addr_t memstart_addr;
++EXPORT_SYMBOL(memstart_addr);
++phys_addr_t lowmem_end_addr;
+
+ int boot_mapsize;
+ #ifdef CONFIG_PPC_PMAC
+@@ -145,8 +146,7 @@ void __init MMU_init(void)
+ 		printk(KERN_WARNING "Only using first contiguous memory region");
+ 	}
+
+-	total_memory = lmb_end_of_DRAM();
+-	total_lowmem = total_memory;
++	total_lowmem = total_memory = lmb_end_of_DRAM() - memstart_addr;
+
+ #ifdef CONFIG_FSL_BOOKE
+ 	/* Freescale Book-E parts expect lowmem to be mapped by fixed TLB
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index ebfd13d..5bc11f5 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -51,6 +51,7 @@ extern unsigned long __max_low_memory;
+ extern unsigned long __initial_memory_limit;
+ extern unsigned long total_memory;
+ extern unsigned long total_lowmem;
++extern phys_addr_t memstart_addr;
+
+ /* ...and now those things that may be slightly different between processor
+  * architectures.  -- Dan
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index ac3390f..64c44bc 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -281,12 +281,13 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
+  */
+ void __init mapin_ram(void)
+ {
+-	unsigned long v, p, s, f;
++	unsigned long v, s, f;
++	phys_addr_t p;
+ 	int ktext;
+
+ 	s = mmu_mapin_ram();
+ 	v = KERNELBASE + s;
+-	p = PPC_MEMSTART + s;
++	p = memstart_addr + s;
+ 	for (; s < total_lowmem; s += PAGE_SIZE) {
+ 		ktext = ((char *) v >= _stext && (char *) v < etext);
+ 		f = ktext ?_PAGE_RAM_TEXT : _PAGE_RAM;
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 72de3c7..7dea68b 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -93,19 +93,13 @@ unsigned long __init mmu_mapin_ram(void)
+
+ 	/* Make sure we don't map a block larger than the
+ 	   smallest alignment of the physical address. */
+-	/* alignment of PPC_MEMSTART */
+-	align = ~(PPC_MEMSTART-1) & PPC_MEMSTART;
+-	/* set BAT block size to MIN(max_size, align) */
+-	if (align && align < max_size)
+-		max_size = align;
+-
+ 	tot = total_lowmem;
+ 	for (bl = 128<<10; bl < max_size; bl <<= 1) {
+ 		if (bl * 2 > tot)
+ 			break;
+ 	}
+
+-	setbat(2, KERNELBASE, PPC_MEMSTART, bl, _PAGE_RAM);
++	setbat(2, KERNELBASE, 0, bl, _PAGE_RAM);
+ 	done = (unsigned long)bat_addrs[2].limit - KERNELBASE + 1;
+ 	if ((done < tot) && !bat_addrs[3].limit) {
+ 		/* use BAT3 to cover a bit more */
+@@ -113,7 +107,7 @@ unsigned long __init mmu_mapin_ram(void)
+ 		for (bl = 128<<10; bl < max_size; bl <<= 1)
+ 			if (bl * 2 > tot)
+ 				break;
+-		setbat(3, KERNELBASE+done, PPC_MEMSTART+done, bl, _PAGE_RAM);
++		setbat(3, KERNELBASE+done, done, bl, _PAGE_RAM);
+ 		done = (unsigned long)bat_addrs[3].limit - KERNELBASE + 1;
+ 	}
+
+diff --git a/include/asm-powerpc/page_32.h b/include/asm-powerpc/page_32.h
+index 65ea19e..51f8134 100644
+--- a/include/asm-powerpc/page_32.h
++++ b/include/asm-powerpc/page_32.h
+@@ -3,8 +3,6 @@
+
+ #define VM_DATA_DEFAULT_FLAGS	VM_DATA_DEFAULT_FLAGS32
+
+-#define PPC_MEMSTART	0
+-
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+ #define ARCH_KMALLOC_MINALIGN	L1_CACHE_BYTES
+ #endif
+-- 
+1.5.4.1
