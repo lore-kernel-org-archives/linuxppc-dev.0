@@ -1,15 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18407.22329.130304.645554@cargo.ozlabs.ibm.com>
-Date: Mon, 24 Mar 2008 18:24:41 +1100
+Message-ID: <18407.24189.707297.767237@cargo.ozlabs.ibm.com>
+Date: Mon, 24 Mar 2008 18:55:41 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] [POWERPC] mpc5200: fix incorrect compatible string for the
-	mdio node
-In-Reply-To: <1206156315-4734-1-git-send-email-grant.likely@secretlab.ca>
-References: <1206156315-4734-1-git-send-email-grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 4/8] powerpc ptrace: forced_successful_syscall_return()
+In-Reply-To: <20080319211936.28E8B26F9A7@magilla.localdomain>
+References: <20080319211714.8B14226F995@magilla.localdomain>
+	<20080319211936.28E8B26F9A7@magilla.localdomain>
+Cc: linux-arch@vger.kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,16 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely writes:
+Roland McGrath writes:
 
-> The MDIO node in the lite5200b.dts file needs to also claim compatibility
-> with the older mpc5200 chip.
+> Define the forced_successful_syscall_return() macro to
+> pair with our force_successful_syscall_return() definition.
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> Paul, this one should also go in for .26
+> Signed-off-by: Roland McGrath <roland@redhat.com>
 
-OK, I'll put it in the powerpc-next branch.  Or did you mean it should
-go in .25?
+Looks OK to me, but what's it useful for?
 
 Paul.
