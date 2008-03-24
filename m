@@ -1,28 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1D56EDDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 05:48:58 +1100 (EST)
-Date: Mon, 24 Mar 2008 11:47:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-Message-Id: <20080324114740.337509d3.akpm@linux-foundation.org>
-In-Reply-To: <47E7C05C.2000001@freescale.com>
-References: <12059526271941-git-send-email-yorksun@freescale.com>
-	<12059526274026-git-send-email-yorksun@freescale.com>
-	<20080320152708.23c6c734.akpm@linux-foundation.org>
-	<47E3DE6E.2050801@freescale.com>
-	<20080321111228.95a7d9ab.akpm@linux-foundation.org>
-	<47E7C05C.2000001@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 99379DDF79
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 08:11:41 +1100 (EST)
+Subject: Re: [PATCH 1/2 v2] [POWERPC] Add PPC4xx L2-cache support (440GX)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080324083957.2945077c@zod.rchland.ibm.com>
+References: <1206181736-21796-1-git-send-email-sr@denx.de>
+	<20080324083957.2945077c@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 07:59:15 +1100
+Message-Id: <1206392355.7197.38.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	yorksun@freescale.com
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,38 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 24 Mar 2008 09:53:16 -0500
-Timur Tabi <timur@freescale.com> wrote:
 
-> Andrew Morton wrote:
+On Mon, 2008-03-24 at 08:39 -0500, Josh Boyer wrote:
+> > +
+> > +     local_irq_save(flags);
+> > +     asm volatile ("sync" ::: "memory");
 > 
-> >>> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
-> >> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
-> > 
-> > No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
-> > and misleading.  GFP_DMA is already atomic; the only effect of adding
-> > GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
-> > 
-> > Don't wory about it ;)
-> 
-> Well, maybe we don't want GFP_ATOMIC then, because I don't think we want
-> __GFP_HIGH.  Looking at the code, it appears the __GFP_HIGH has nothing to do
-> with HIGHMEM (which on PowerPC is the not 1-to-1 mapping memory from 0xF000000
-> to 0xFFFFFFFF).  Further examination of the cools shows the __GFP_HIGH says to
-> try access the "emergency pool", and I see this code snippet:
-> 
-> 	if (alloc_flags & ALLOC_HIGH)
-> 		min -= min / 2;
-> 
-> I guess this means that we reduce the amount of memory that can be available in
-> order for the allocate to succeed.
-> 
-> Considering that the amount of memory that we allocate is in the order of
-> megabytes, and it really isn't that important, I would think that we don't want
-> to touch the emergency pool.  Does that sound right?
+> Perhaps just call iosync() for these instead of the open coded asm
+> volatile stuff?
 
-yup.  The absence of __GFP_WAIT already causes the page allocator to try a
-bit harder.  Adding __GFP_HIGH would make it try harder still.
+Not sure about that. iosync() will do a sync but it's not meant at being
+used for things unrelated to IOs (and who knows... we might make it do
+something else one day ?).
 
-You do need to be sure that the driver will robustly and correctly recover
-from an allocation failure here.
+In low level arch code like that, an open coded sync might be proper
+especially if it matches some documented sequence.
+
+Cheers,
+Ben.
