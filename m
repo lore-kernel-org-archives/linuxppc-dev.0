@@ -1,20 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 19638DDFCE
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:43:17 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2OMhC9i031717
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 17:43:13 -0500
-Date: Mon, 24 Mar 2008 17:39:30 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Remove and replace uses of PPC_MEMSTART with
-	memstart_addr
-Message-ID: <Pine.LNX.4.64.0803241739001.25251@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id A02EEDDF82
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:52:51 +1100 (EST)
+Received: from pd2mr4so.prod.shaw.ca
+	(pd2mr4so-qfe3.prod.shaw.ca [10.0.141.107]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JY900M75BK1TT00@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 24 Mar 2008 16:52:49 -0600 (MDT)
+Received: from pn2ml6so.prod.shaw.ca ([10.0.121.150])
+	by pd2mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JY900B0XBK0JA10@pd2mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 24 Mar 2008 16:52:49 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.145.230.108])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JY900IDABJZVE20@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 24 Mar 2008 16:52:47 -0600 (MDT)
+Date: Mon, 24 Mar 2008 16:52:46 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [RFC] [POWERPC] add target for building .dtb files
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, jwboyer@linux.vnet.ibm.com
+Message-id: <20080324225024.3450.98918.stgit@trillian.secretlab.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,183 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A number of users of PPC_MEMSTART (40x, ppc_mmu_32) can just always use
-0 as we don't support booting these kernels at non-zero physical addresses
-since their exception vectors must be at 0 (or 0xfffx_xxxx).
+From: Grant Likely <grant.likely@secretlab.ca>
 
-For the sub-arches that support relocatable interrupt vectors (book-e) its
-reasonable to have memory start at a non-zero physical address.  For those
-cases use the variable memstart_addr instead of the #define PPC_MEMSTART since
-the only uses of PPC_MEMSTART are for initialization and in the future we can
-set memstart_addr at runtime to have a relocatable kernel.
+Call dtc from the Makefile instead of the wrapper script so that the dt
+blobs can be generated with a simple make invocation.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Using this patch allows board ports to trigger automatic building of .dtb
+files by adding them to the image-y target list.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/mm/40x_mmu.c       |    2 +-
- arch/powerpc/mm/fsl_booke_mmu.c |   11 +++++------
- arch/powerpc/mm/init_32.c       |    8 ++++----
- arch/powerpc/mm/mmu_decl.h      |    1 +
- arch/powerpc/mm/pgtable_32.c    |    5 +++--
- arch/powerpc/mm/ppc_mmu_32.c    |   10 ++--------
- include/asm-powerpc/page_32.h   |    2 --
- 7 files changed, 16 insertions(+), 23 deletions(-)
+Josh, how does this look to you?  It will give you the ability to build .dtb
+files from the command line.  If it looks good, I'd like to get it in when
+then merge window opens.
 
-diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
-index 3899ea9..cecbbc7 100644
---- a/arch/powerpc/mm/40x_mmu.c
-+++ b/arch/powerpc/mm/40x_mmu.c
-@@ -97,7 +97,7 @@ unsigned long __init mmu_mapin_ram(void)
- 	phys_addr_t p;
+Cheers,
+g.
 
- 	v = KERNELBASE;
--	p = PPC_MEMSTART;
-+	p = 0;
- 	s = total_lowmem;
 
- 	if (__map_without_ltlbs)
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index c93a966..3dd0c81 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -53,13 +53,12 @@
- #include <asm/machdep.h>
- #include <asm/setup.h>
+ arch/powerpc/Makefile      |    2 +-
+ arch/powerpc/boot/Makefile |   26 +++++++++++++++-----------
+ 2 files changed, 16 insertions(+), 12 deletions(-)
 
-+#include "mmu_decl.h"
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index ab5cfe8..dd80825 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -164,7 +164,7 @@ boot := arch/$(ARCH)/boot
+ $(BOOT_TARGETS): vmlinux
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
+-bootwrapper_install:
++bootwrapper_install %.dtb:
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
+ define archhelp
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 4974d9e..2f8a9f4 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -285,11 +285,11 @@ $(obj)/zImage.%: vmlinux $(wrapperbits)
+ 	$(call if_changed,wrap,$*)
+ 
+ # dtbImage% - a dtbImage is a zImage with an embedded device tree blob
+-$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(dtstree)/%.dts
+-	$(call if_changed,wrap,$*,$(dtstree)/$*.dts,,$(obj)/ramdisk.image.gz)
++$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(obj)/%.dtb
++	$(call if_changed,wrap,$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(dtstree)/%.dts
+-	$(call if_changed,wrap,$*,$(dtstree)/$*.dts)
++$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(obj)/%.dtb
++	$(call if_changed,wrap,$*,,$(obj)/$*.dtb)
+ 
+ # This cannot be in the root of $(src) as the zImage rule always adds a $(obj)
+ # prefix
+@@ -302,14 +302,18 @@ $(obj)/zImage.iseries: vmlinux
+ $(obj)/uImage: vmlinux $(wrapperbits)
+ 	$(call if_changed,wrap,uboot)
+ 
+-$(obj)/cuImage.%: vmlinux $(dtstree)/%.dts $(wrapperbits)
+-	$(call if_changed,wrap,cuboot-$*,$(dtstree)/$*.dts)
++$(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
++	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
+ 
+-$(obj)/treeImage.initrd.%: vmlinux $(dtstree)/%.dts $(wrapperbits)
+-	$(call if_changed,wrap,treeboot-$*,$(dtstree)/$*.dts,,$(obj)/ramdisk.image.gz)
++$(obj)/treeImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
++	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/treeImage.%: vmlinux $(dtstree)/%.dts $(wrapperbits)
+-	$(call if_changed,wrap,treeboot-$*,$(dtstree)/$*.dts)
++$(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
++	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
 +
- extern void loadcam_entry(unsigned int index);
- unsigned int tlbcam_index;
- unsigned int num_tlbcam_entries;
- static unsigned long __cam0, __cam1, __cam2;
--extern unsigned long total_lowmem;
--extern unsigned long __max_low_memory;
--extern unsigned long __initial_memory_limit;
- #define MAX_LOW_MEM	CONFIG_LOWMEM_SIZE
-
- #define NUM_TLBCAMS	(16)
-@@ -165,15 +164,15 @@ void invalidate_tlbcam_entry(int index)
- void __init cam_mapin_ram(unsigned long cam0, unsigned long cam1,
- 		unsigned long cam2)
- {
--	settlbcam(0, PAGE_OFFSET, PPC_MEMSTART, cam0, _PAGE_KERNEL, 0);
-+	settlbcam(0, PAGE_OFFSET, memstart_addr, cam0, _PAGE_KERNEL, 0);
- 	tlbcam_index++;
- 	if (cam1) {
- 		tlbcam_index++;
--		settlbcam(1, PAGE_OFFSET+cam0, PPC_MEMSTART+cam0, cam1, _PAGE_KERNEL, 0);
-+		settlbcam(1, PAGE_OFFSET+cam0, memstart_addr+cam0, cam1, _PAGE_KERNEL, 0);
- 	}
- 	if (cam2) {
- 		tlbcam_index++;
--		settlbcam(2, PAGE_OFFSET+cam0+cam1, PPC_MEMSTART+cam0+cam1, cam2, _PAGE_KERNEL, 0);
-+		settlbcam(2, PAGE_OFFSET+cam0+cam1, memstart_addr+cam0+cam1, cam2, _PAGE_KERNEL, 0);
- 	}
- }
-
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 59a725b..01a81a0 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -59,8 +59,9 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- unsigned long total_memory;
- unsigned long total_lowmem;
-
--unsigned long ppc_memstart;
--unsigned long ppc_memoffset = PAGE_OFFSET;
-+phys_addr_t memstart_addr;
-+EXPORT_SYMBOL(memstart_addr);
-+phys_addr_t lowmem_end_addr;
-
- int boot_mapsize;
- #ifdef CONFIG_PPC_PMAC
-@@ -145,8 +146,7 @@ void __init MMU_init(void)
- 		printk(KERN_WARNING "Only using first contiguous memory region");
- 	}
-
--	total_memory = lmb_end_of_DRAM();
--	total_lowmem = total_memory;
-+	total_lowmem = total_memory = lmb_end_of_DRAM() - memstart_addr;
-
- #ifdef CONFIG_FSL_BOOKE
- 	/* Freescale Book-E parts expect lowmem to be mapped by fixed TLB
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index ebfd13d..5bc11f5 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -51,6 +51,7 @@ extern unsigned long __max_low_memory;
- extern unsigned long __initial_memory_limit;
- extern unsigned long total_memory;
- extern unsigned long total_lowmem;
-+extern phys_addr_t memstart_addr;
-
- /* ...and now those things that may be slightly different between processor
-  * architectures.  -- Dan
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index ac3390f..64c44bc 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -281,12 +281,13 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
-  */
- void __init mapin_ram(void)
- {
--	unsigned long v, p, s, f;
-+	unsigned long v, s, f;
-+	phys_addr_t p;
- 	int ktext;
-
- 	s = mmu_mapin_ram();
- 	v = KERNELBASE + s;
--	p = PPC_MEMSTART + s;
-+	p = memstart_addr + s;
- 	for (; s < total_lowmem; s += PAGE_SIZE) {
- 		ktext = ((char *) v >= _stext && (char *) v < etext);
- 		f = ktext ?_PAGE_RAM_TEXT : _PAGE_RAM;
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 72de3c7..7dea68b 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -93,19 +93,13 @@ unsigned long __init mmu_mapin_ram(void)
-
- 	/* Make sure we don't map a block larger than the
- 	   smallest alignment of the physical address. */
--	/* alignment of PPC_MEMSTART */
--	align = ~(PPC_MEMSTART-1) & PPC_MEMSTART;
--	/* set BAT block size to MIN(max_size, align) */
--	if (align && align < max_size)
--		max_size = align;
--
- 	tot = total_lowmem;
- 	for (bl = 128<<10; bl < max_size; bl <<= 1) {
- 		if (bl * 2 > tot)
- 			break;
- 	}
-
--	setbat(2, KERNELBASE, PPC_MEMSTART, bl, _PAGE_RAM);
-+	setbat(2, KERNELBASE, 0, bl, _PAGE_RAM);
- 	done = (unsigned long)bat_addrs[2].limit - KERNELBASE + 1;
- 	if ((done < tot) && !bat_addrs[3].limit) {
- 		/* use BAT3 to cover a bit more */
-@@ -113,7 +107,7 @@ unsigned long __init mmu_mapin_ram(void)
- 		for (bl = 128<<10; bl < max_size; bl <<= 1)
- 			if (bl * 2 > tot)
- 				break;
--		setbat(3, KERNELBASE+done, PPC_MEMSTART+done, bl, _PAGE_RAM);
-+		setbat(3, KERNELBASE+done, done, bl, _PAGE_RAM);
- 		done = (unsigned long)bat_addrs[3].limit - KERNELBASE + 1;
- 	}
-
-diff --git a/include/asm-powerpc/page_32.h b/include/asm-powerpc/page_32.h
-index 65ea19e..51f8134 100644
---- a/include/asm-powerpc/page_32.h
-+++ b/include/asm-powerpc/page_32.h
-@@ -3,8 +3,6 @@
-
- #define VM_DATA_DEFAULT_FLAGS	VM_DATA_DEFAULT_FLAGS32
-
--#define PPC_MEMSTART	0
--
- #ifdef CONFIG_NOT_COHERENT_CACHE
- #define ARCH_KMALLOC_MINALIGN	L1_CACHE_BYTES
- #endif
--- 
-1.5.4.1
++# Rule to build device tree blobs
++$(obj)/%.dtb: $(dtstree)/%.dts $(obj)/dtc
++	$(obj)/dtc -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(dtstree)/$*.dts
+ 
+ # If there isn't a platform selected then just strip the vmlinux.
+ ifeq (,$(image-y))
+@@ -326,7 +330,7 @@ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+ 
+ # anything not in $(targets)
+ clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* treeImage.* \
+-	otheros.bld
++	otheros.bld *.dtb
+ 
+ # clean up files cached by wrapper
+ clean-kernel := vmlinux.strip vmlinux.bin
