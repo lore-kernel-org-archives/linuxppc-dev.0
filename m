@@ -1,12 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 24 Mar 2008 14:44:24 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Simplify error handling for unparseable input
-Message-ID: <20080324034424.GC29985@localhost.localdomain>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from mail15-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D39ADDDF5
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 15:34:23 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C88D68.4EF1A3B3"
+Subject: RE: dcr stuff.
+Date: Sun, 23 Mar 2008 21:34:12 -0700
+References: <20080321190524.4F3491CE0087@mail160-dub.bigfish.com>
+	<20080321201704.032999c3@zod.rchland.ibm.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Message-Id: <20080324043416.3634316E007A@mail15-dub.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, git-dev <git-dev@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,88 +25,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, main() tests if it got a valid input tree from whichever
-dt_from_*() function it invoked and if not, die()s.  For one thing,
-this test has, for no good reason, three different ways for those
-functions to communicate a failure to provide input (bi NULL, bi->dt
-NULL, or bi->error non-zero).  For another, in every case save one, if
-the dt_from_*() functions are unable to provide input they will
-immediately die() (with a more specific error message) rather than
-proceeding to the test in main().
+This is a multi-part message in MIME format.
 
-Therefore, this patch removes this test, making the one case that
-could have triggered it (in dt_from_source()) call die() directly
-instead.  With this change, the error field in struct boot_info is now
-unused, so remove it.
+------_=_NextPart_001_01C88D68.4EF1A3B3
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
----
- dtc.c        |    3 ---
- dtc.h        |    1 -
- livetree.c   |    1 -
- treesource.c |    6 ++++--
- 4 files changed, 4 insertions(+), 7 deletions(-)
 
-Index: dtc/dtc.h
-===================================================================
---- dtc.orig/dtc.h	2008-03-24 14:33:33.000000000 +1100
-+++ dtc/dtc.h	2008-03-24 14:33:34.000000000 +1100
-@@ -232,7 +232,6 @@
- struct boot_info {
- 	struct reserve_info *reservelist;
- 	struct node *dt;		/* the device tree */
--	int error;
- };
- 
- struct boot_info *build_boot_info(struct reserve_info *reservelist,
-Index: dtc/livetree.c
-===================================================================
---- dtc.orig/livetree.c	2008-03-24 14:18:44.000000000 +1100
-+++ dtc/livetree.c	2008-03-24 14:33:34.000000000 +1100
-@@ -172,7 +172,6 @@
- 	bi = xmalloc(sizeof(*bi));
- 	bi->reservelist = reservelist;
- 	bi->dt = tree;
--	bi->error = 0;
- 
- 	return bi;
- }
-Index: dtc/dtc.c
-===================================================================
---- dtc.orig/dtc.c	2008-03-24 14:35:05.000000000 +1100
-+++ dtc/dtc.c	2008-03-24 14:35:10.000000000 +1100
-@@ -201,9 +201,6 @@
- 	if (inf && inf->file != stdin)
- 		fclose(inf->file);
- 
--	if (! bi || ! bi->dt || bi->error)
--		die("Couldn't read input tree\n");
--
- 	fill_fullpaths(bi->dt, "");
- 	process_checks(force, bi);
- 
-Index: dtc/treesource.c
-===================================================================
---- dtc.orig/treesource.c	2008-03-24 14:33:44.000000000 +1100
-+++ dtc/treesource.c	2008-03-24 14:35:52.000000000 +1100
-@@ -36,9 +36,11 @@
- 	yyin = srcpos_file->file;
- 
- 	if (yyparse() != 0)
--		return NULL;
-+		die("Unable to parse input tree\n");
-+
-+	if (treesource_error)
-+		die("Syntax error parsing input tree\n");
- 
--	the_boot_info->error = treesource_error;
- 	return the_boot_info;
- }
- 
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+-----Original Message-----
+From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]
+Sent: Fri 3/21/2008 6:17 PM
+To: Stephen Neuendorffer
+Cc: linuxppc-dev@ozlabs.org; git-dev
+Subject: Re: dcr stuff.
+=20
+On Fri, 21 Mar 2008 12:05:40 -0700
+"Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com> wrote:
+
+> > Is there a plan here?  (In particular, in FPGA designs, its possible =
+to
+> > have crazy things like multiple independent dcr busses, some using
+> > native access, some using mmio.  Or even if there is one bus, many =
+of
+> > the existing non-linux drivers we have assume native or mmio access.
+> > I'd like to clean this up, obviously.. :)
+
+> Clean it up how?  I'd hate to add bloat to boards with native DCR
+> access just because a few require oddities.
+>
+> If it ain't broke, don't fix it.
+>
+> josh
+
+Certainly, if it ain't broke don't fix it.  What I'm really trying to do =
+is figure out how to clean up alot of non-mainline drivers.
+At the moment, several cores use DCR, but the drivers for those cores =
+have internal code for DCR, their own ifdefs, etc.  This *is* broken.
+I'm looking at the available documentation to figure out the best way of =
+approaching the problem.
+
+It might be nice if there was an extra layer of indirection which was =
+only enabled if DCR_NATIVE and DCR_MMIO, and which was no cost =
+otherwise,
+but the bigger problem I see in the short term is that we'll likely have =
+to support ARCH ppc for at least some time into the future, and it would =
+be
+nice if we used the same driver code to do it: it doesn't seem obvious =
+how to achieve this.
+
+Steve
+
+
+------_=_NextPart_001_01C88D68.4EF1A3B3
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: dcr stuff.</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>-----Original Message-----<BR>
+From: Josh Boyer [<A =
+HREF=3D"mailto:jwboyer@linux.vnet.ibm.com">mailto:jwboyer@linux.vnet.ibm.=
+com</A>]<BR>
+Sent: Fri 3/21/2008 6:17 PM<BR>
+To: Stephen Neuendorffer<BR>
+Cc: linuxppc-dev@ozlabs.org; git-dev<BR>
+Subject: Re: dcr stuff.<BR>
+<BR>
+On Fri, 21 Mar 2008 12:05:40 -0700<BR>
+&quot;Stephen Neuendorffer&quot; &lt;stephen.neuendorffer@xilinx.com&gt; =
+wrote:<BR>
+<BR>
+&gt; &gt; Is there a plan here?&nbsp; (In particular, in FPGA designs, =
+its possible to<BR>
+&gt; &gt; have crazy things like multiple independent dcr busses, some =
+using<BR>
+&gt; &gt; native access, some using mmio.&nbsp; Or even if there is one =
+bus, many of<BR>
+&gt; &gt; the existing non-linux drivers we have assume native or mmio =
+access.<BR>
+&gt; &gt; I'd like to clean this up, obviously.. :)<BR>
+<BR>
+&gt; Clean it up how?&nbsp; I'd hate to add bloat to boards with native =
+DCR<BR>
+&gt; access just because a few require oddities.<BR>
+&gt;<BR>
+&gt; If it ain't broke, don't fix it.<BR>
+&gt;<BR>
+&gt; josh<BR>
+<BR>
+Certainly, if it ain't broke don't fix it.&nbsp; What I'm really trying =
+to do is figure out how to clean up alot of non-mainline drivers.<BR>
+At the moment, several cores use DCR, but the drivers for those cores =
+have internal code for DCR, their own ifdefs, etc.&nbsp; This *is* =
+broken.<BR>
+I'm looking at the available documentation to figure out the best way of =
+approaching the problem.<BR>
+<BR>
+It might be nice if there was an extra layer of indirection which was =
+only enabled if DCR_NATIVE and DCR_MMIO, and which was no cost =
+otherwise,<BR>
+but the bigger problem I see in the short term is that we'll likely have =
+to support ARCH ppc for at least some time into the future, and it would =
+be<BR>
+nice if we used the same driver code to do it: it doesn't seem obvious =
+how to achieve this.<BR>
+<BR>
+Steve<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C88D68.4EF1A3B3--
