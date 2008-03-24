@@ -1,33 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B69ADDFCB
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 08:17:17 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2OLHEqs018077
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 17:17:14 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2OLHDKJ157744
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 15:17:13 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2OLHDVR013499
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 15:17:13 -0600
-Date: Mon, 24 Mar 2008 16:15:03 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2 v2] [POWERPC] Add PPC4xx L2-cache support (440GX)
-Message-ID: <20080324161503.4b8ecb28@zod.rchland.ibm.com>
-In-Reply-To: <1206392355.7197.38.camel@pasglop>
-References: <1206181736-21796-1-git-send-email-sr@denx.de>
-	<20080324083957.2945077c@zod.rchland.ibm.com>
-	<1206392355.7197.38.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2CEFDDDF08
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:08:28 +1100 (EST)
+Subject: RE: dcr stuff.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+In-Reply-To: <20080324043416.3634316E007A@mail15-dub.bigfish.com>
+References: <20080321190524.4F3491CE0087@mail160-dub.bigfish.com>
+	<20080321201704.032999c3@zod.rchland.ibm.com>
+	<20080324043416.3634316E007A@mail15-dub.bigfish.com>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 08:59:33 +1100
+Message-Id: <1206395973.7197.50.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, git-dev <git-dev@xilinx.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 25 Mar 2008 07:59:15 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+On Sun, 2008-03-23 at 21:34 -0700, Stephen Neuendorffer wrote:
 > 
-> On Mon, 2008-03-24 at 08:39 -0500, Josh Boyer wrote:
-> > > +
-> > > +     local_irq_save(flags);
-> > > +     asm volatile ("sync" ::: "memory");
-> > 
-> > Perhaps just call iosync() for these instead of the open coded asm
-> > volatile stuff?
+> Certainly, if it ain't broke don't fix it.  What I'm really trying to
+> do is figure out how to clean up alot of non-mainline drivers.
+> At the moment, several cores use DCR, but the drivers for those cores
+> have internal code for DCR, their own ifdefs, etc.  This *is* broken.
+> I'm looking at the available documentation to figure out the best way
+> of approaching the problem.
 > 
-> Not sure about that. iosync() will do a sync but it's not meant at being
-> used for things unrelated to IOs (and who knows... we might make it do
-> something else one day ?).
-> 
-> In low level arch code like that, an open coded sync might be proper
-> especially if it matches some documented sequence.
+> It might be nice if there was an extra layer of indirection which was
+> only enabled if DCR_NATIVE and DCR_MMIO, and which was no cost
+> otherwise,
+> but the bigger problem I see in the short term is that we'll likely
+> have to support ARCH ppc for at least some time into the future, and
+> it would be
+> nice if we used the same driver code to do it: it doesn't seem obvious
+> how to achieve this.
 
-Either way, it doesn't matter to me.
+It's not too hard to have the DCR code be common, it's harder to deal
+with the lack of device-tree in arch/ppc tho.
 
-josh
+As for enabling support for both native and MMIO, that's certainly
+possible, patches welcome :-) You could make the dcr host structure
+contain the type or even function pointers, as you see fit. But make is
+so that when only native is enabled, it turns back into the inlines we
+have now.
+
+Cheers,
+Ben.
