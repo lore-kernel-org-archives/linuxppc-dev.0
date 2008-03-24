@@ -1,20 +1,31 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 2AFC3DDEE1
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D3258DDFA7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Mar 2008 22:51:43 +1100 (EST)
+	Tue, 25 Mar 2008 03:52:20 +1100 (EST)
+Message-ID: <47E7DC46.2010806@freescale.com>
+Date: Mon, 24 Mar 2008 11:52:22 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Subject: Re: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-Date: Sat, 22 Mar 2008 12:51:41 +0100
-Message-ID: <46CAC1281D7CB94A9AEFFB131F9569CA227627@tmnt04.transmode.se>
-References: <>
-	<1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<989B956029373F45A0B8AF029708189001D19565@zch01exm26.fsl.freescale.net>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "Li Yang" <LeoLi@freescale.com>, "Netdev" <netdev@vger.kernel.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
+To: James Black <jblack547@gmail.com>
+Subject: Re: muram in device tree for mpc8250 in arch/powerpc
+References: <b77025b40803191006m60dc3145la368ac227df43b17@mail.gmail.com>	
+	<20080319174001.GF7962@ld0162-tx32.am.freescale.net>	
+	<b77025b40803191107x2f9a7884n9b7f062fcf45370@mail.gmail.com>	
+	<b77025b40803201102w200dde6fuc4235d9a3cb8b0dd@mail.gmail.com>	
+	<47E2AADD.6090101@freescale.com>	
+	<b77025b40803201602q68fce3e1j703502a270351179@mail.gmail.com>	
+	<20080321161833.GA4170@loki.buserror.net>	
+	<b77025b40803211314g74a41aa9of01f7cf3560a2505@mail.gmail.com>	
+	<47E41BE7.9020109@freescale.com>
+	<b77025b40803211435g25e8cee7w75bfe4ed9c13796@mail.gmail.com>
+In-Reply-To: <b77025b40803211435g25e8cee7w75bfe4ed9c13796@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +36,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4+IEZyb206IG5ldGRldi1vd25lckB2Z2Vy
-Lmtlcm5lbC5vcmcNCj4+IFttYWlsdG86bmV0ZGV2LW93bmVyQHZnZXIua2VybmVsLm9yZ10gT24g
-QmVoYWxmIE9mIEpvYWtpbSBUamVybmx1bmQNCj4gU2VudDogVHVlc2RheSwgTWFyY2ggMTgsIDIw
-MDggMTE6MTEgUE0NCj4+IFRvOiBOZXRkZXY7IExpIFlhbmcNCj4+IENjOiBKb2FraW0gVGplcm5s
-dW5kDQo+PlN1YmplY3Q6IFtQQVRDSF0gdWNjX2dldGg6IEFkZCA4IGJ5dGVzIHRvIG1heCBUWCBm
-cmFtZSBmb3IgVkxBTnMNCj4+DQo+PiBDcmVhdGluZyBhIFZMQU4gaW50ZXJmYWNlIG9uIHRvcCBv
-ZiB1Y2NfZ2V0aCBhZGRzIDQgYnl0ZXMgdG8NCj4+IHRoZSBmcmFtZSBhbmQgdGhlIEhXIGNvbnRy
-b2xsZXIgaXMgbm90IHByZXBhcmVkIHRvIFRYIGEgZnJhbWUNCj4+IGJpZ2dlciB0aGFuIDE1MTgg
-Ynl0ZXMgd2hpY2ggaXMgNCBieXRlcyB0b28gc21hbGwgZm9yIGEgZnVsbA0KPj4gVkxBTiBmcmFt
-ZS4gQWxzbyBhZGQgNCBleHRyYSBieXRlcyBmb3IgZnV0dXJlIGV4cGFuc2lvbi4NCj4gDQo+IElN
-TywgVkxBTiBhbmQgSnVtYm8gcGFja2V0IHN1cHBvcnQgaXMgbm90IGdlbmVyYWwgY2FzZSBvZiBF
-dGhlcm5ldC4NCj4gQ291bGQgeW91IG1ha2UgdGhpcyBjaGFuZ2Ugb3B0aW9uYWw/ICBUaGFua3Mu
-DQo+IA0KPiAtIExlbyANCg0KaG1tLCBJIGRvIG5vdCBhZ3JlZS4gVkxBTiBpcyBjb21tb24gdG9k
-YXkuDQoNCklmIHlvdSB3ZXJlIHRvIGVuYWJsZSBIVyBzdXBwb3J0IGZvciBWTEFOIHRoZW4gdGhl
-IGV0aGVybmV0IGNvbnRyb2xsZXIgd291bGQgaW5qZWN0IGFuIGV4dHJhIDQgYnl0ZXMgaW50byB0
-aGUgZnJhbWUuIA0KVGhpcyBjaGFuZ2UgZG9lcyBub3QgY2hhbmdlIHRoZSB2aXNpYmxlIE1UVSBm
-b3IgdGhlIHVzZXIuIEFzIGlzIG5vdywgc29mdCBWTEFOIGlzIHNpbGVudGx5IGJyb2tlbi4gRG8g
-eW91DQpyZWFsbHkgd2FudCB0aGUgdXNlciB0byBmaW5kIGFuZCB0dXJuIG9uIGEgY29udHJvbGxl
-ciBzcGVjaWZpYyBmZWF0dXJlIHRvIHVzZSBWTEFOPw0KDQpXaGF0IGRvZXMgbmV0ZGV2IHBlb3Bs
-ZSB0aGluaz8gDQoNCiBKb2NrZSANCg0KDQo=
+James Black wrote:
+> Thanks much for the help Scott. Do you feel that the dts is correct
+> now and probably not the culprit? Do you have 2.6.24.2 running on
+> other boards?
+
+I just booted 2.6.24.2 on pq2fads (using cuImage, since I don't have a 
+devtree-aware u-boot on this board).
+
+> 	localbus@f0010100 {
+> 		compatible = "fsl,mpc8250-localbus",
+>                    "fsl,pq2-localbus";
+> 
+> 		#address-cells = <2>;
+> 		#size-cells = <1>;
+> 		reg = <f0010100 60>;
+> 		ranges = <0 0 fe000000 00200000>;
+> 
+> 		flash@fe000000,0 {
+> 			compatible = "cfi-flash";
+> 			reg = <0 fe000000  00200000>;
+> 			bank-width = <2>;
+> 			device-width = <1>;
+> 		};
+
+This is wrong; the flash will not translate since you didn't provide a 
+window at the address reg is at.
+
+The first cell of the reg should be the chipselect, and the second cell 
+the offset.
+
+> 			brg@119f0 {
+> 				compatible = "fsl,mpc8250-brg",
+> 				             "fsl,cpm2-brg",
+> 				             "fsl,cpm-brg";
+> 				reg = <119f0 10>;
+> 			};
+
+BRG should be <119f0 10 115f0 10>.
+
+-Scott
