@@ -1,25 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B5C7DDE1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 01:54:32 +1100 (EST)
-Message-ID: <47E7C05C.2000001@freescale.com>
-Date: Mon, 24 Mar 2008 09:53:16 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AED01DDED7
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 03:14:30 +1100 (EST)
+Message-ID: <47E7D3BB.1050403@ru.mvista.com>
+Date: Mon, 24 Mar 2008 19:15:55 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-References: <12059526271941-git-send-email-yorksun@freescale.com>	<12059526274026-git-send-email-yorksun@freescale.com>	<20080320152708.23c6c734.akpm@linux-foundation.org>	<47E3DE6E.2050801@freescale.com>
-	<20080321111228.95a7d9ab.akpm@linux-foundation.org>
-In-Reply-To: <20080321111228.95a7d9ab.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	York Sun <yorksun@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
+	16550.
+References: <12060242324116-git-send-email-john.linn@xilinx.com>	
+	<20080320144402.3063517C005D@mail148-sin.bigfish.com>	
+	<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>	
+	<18403.32257.725539.470771@cargo.ozlabs.ibm.com>	
+	<fa686aa40803220750h1d86589am9a26aeeb359178b7@mail.gmail.com>	
+	<47E7B61B.70708@ru.mvista.com>
+	<fa686aa40803240727p14c7e8c0r8575f7d5feb776dd@mail.gmail.com>
+In-Reply-To: <fa686aa40803240727p14c7e8c0r8575f7d5feb776dd@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,33 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
+Grant Likely wrote:
 
->>> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
->> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
-> 
-> No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
-> and misleading.  GFP_DMA is already atomic; the only effect of adding
-> GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
-> 
-> Don't wory about it ;)
+>> >> > Personally, I'm not fond of this approach.  There is already some
+>> >> > traction to using the reg-shift property to specify spacing, and I
+>> >> > think it would be appropriate to also define a reg-offset property to
+>> >> > handle the +3 offset and then let the xilinx 16550 nodes use those.
 
-Well, maybe we don't want GFP_ATOMIC then, because I don't think we want
-__GFP_HIGH.  Looking at the code, it appears the __GFP_HIGH has nothing to do
-with HIGHMEM (which on PowerPC is the not 1-to-1 mapping memory from 0xF000000
-to 0xFFFFFFFF).  Further examination of the cools shows the __GFP_HIGH says to
-try access the "emergency pool", and I see this code snippet:
+>> >> Why do we need a reg-offset property when we can just add the offset
+>> >> to the appropriate word(s) in the reg property?
+>
+>> > Primarily because the device creates 32 byte registers starting at 0;
+>> > but they are also big-endian byte accessible so a byte read at offset
+>> > 8 also works.
 
-	if (alloc_flags & ALLOC_HIGH)
-		min -= min / 2;
+>>    Probably I misunderstood you: does it give the same result as offset 11?
 
-I guess this means that we reduce the amount of memory that can be available in
-order for the allocate to succeed.
+> er; typo; oops.  A 32 bit read add offset 0 is the same as a byte read
+> at offset *3*.
 
-Considering that the amount of memory that we allocate is in the order of
-megabytes, and it really isn't that important, I would think that we don't want
-to touch the emergency pool.  Does that sound right?
+    Oh, well... unfortunately, we can't use UPIO_MEM32 "register model" in 
+8250.c anyway since that makes use of readl()/writel() -- which treat the bus 
+as bigendian on PPC... anyway, we would need at least a "reg-size" property, 
+if not new "compatible"...
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+>> > reg-offset seems to be a better description of the hardware to me.
+
+>>    Have you considered using the existing "big-endian" property?
+
+> No I haven't, but that would work too.  I'm happy with that if it
+> works for you.  If the property was defined, then the byte offset to
+> the first reg would be adjusted by 1^(reg-shift) - 1
+
+    You don't mean "xor" by ^, do you? :-O
+    In fact, it should be <<...
+
+> Cheers,
+> g.
+
+WBR, Sergei
