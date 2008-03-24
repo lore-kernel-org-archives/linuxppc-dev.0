@@ -1,15 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id F2BC2DDF04
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 20:50:50 +1100 (EST)
-Date: Mon, 24 Mar 2008 02:50:48 -0700 (PDT)
-Message-Id: <20080324.025048.162043544.davem@davemloft.net>
-To: linuxppc-dev@ozlabs.org
-Subject: [LMB]: Add lmb_alloc_nid()
-From: David Miller <davem@davemloft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F6CBDDF29
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 21:42:20 +1100 (EST)
+Subject: Re: [PATCH 2/11] cell: generalize io-workarounds code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <20080314.212034.-1625856941.kouish@swc.toshiba.co.jp>
+References: <20080314.212034.-1625856941.kouish@swc.toshiba.co.jp>
+Content-Type: text/plain
+Date: Mon, 24 Mar 2008 21:41:49 +1100
+Message-Id: <1206355309.7197.32.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,152 +25,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This function will be used by the NUMA setup code on sparc64, and also
-it can be used by powerpc, replacing it's hand crafted
-"careful_allocation()" function in arch/powerpc/mm/numa.c
+On Fri, 2008-03-14 at 21:20 +0900, Ishizaki Kou wrote:
+> This patch splits cell io-workaround code into spider-pci dependent
+> code and a generic part, and also adds interfaces to the generic
+> io-workaround mechanism.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> ---
 
-If x86 ever converts it's NUMA support over to using the LMB helpers,
-it can use this too as it has something entirely similar.
+Hi !
 
-[LMB]: Add lmb_alloc_nid()
+I noticed that you add a second level of indirection. We already have
+one going to the workarounds in the first place, so that looks a bit too
+much to my taste.
 
-A variant of lmb_alloc() that tries to allocate memory on a specified
-NUMA node 'nid' but falls back to normal lmb_alloc() if that fails.
+I may have missed something in your patch but if the workarounds are
+specific to a given bridge, they may as well set the top level
+indirections once straight to the right workarounds.
 
-The caller provides a 'nid_range' function pointer which assists the
-allocator.  It is given args 'start', 'end', and pointer to integer
-'this_nid'.
+Also, my understanding is that we are pretty much using the same bridge
+on the cell blades, so is there any way that can be consolidated rather
+than having function pointers ?
 
-It places at 'this_nid' the NUMA node id that corresponds to 'start',
-and returns the end address within 'start' to 'end' at which memory
-assosciated with 'nid' ends.
+I'll try to have a closer look next week, but I'm a bit worried by
+having all IO go through 2 level of function pointers, the PPE isn't
+very good at it and this will slow things down more than they already
+are.
 
-This callback allows a platform to use lmb_alloc_nid() in just
-about any context, even ones in which early_pfn_to_nid() might
-not be working yet.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/lmb.h |    2 +
- lib/lmb.c           |   86 +++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 78 insertions(+), 10 deletions(-)
-
-diff --git a/include/linux/lmb.h b/include/linux/lmb.h
-index 632717c..271153d 100644
---- a/include/linux/lmb.h
-+++ b/include/linux/lmb.h
-@@ -42,6 +42,8 @@ extern void __init lmb_init(void);
- extern void __init lmb_analyze(void);
- extern long __init lmb_add(u64 base, u64 size);
- extern long __init lmb_reserve(u64 base, u64 size);
-+extern u64 __init lmb_alloc_nid(u64 size, u64 align, int nid,
-+				u64 (*nid_range)(u64, u64, int *));
- extern u64 __init lmb_alloc(u64 size, u64 align);
- extern u64 __init lmb_alloc_base(u64 size,
- 		u64, u64 max_addr);
-diff --git a/lib/lmb.c b/lib/lmb.c
-index e3c8dcb..5e76b36 100644
---- a/lib/lmb.c
-+++ b/lib/lmb.c
-@@ -227,6 +227,82 @@ long __init lmb_overlaps_region(struct lmb_region *rgn, u64 base,
- 	return (i < rgn->cnt) ? i : -1;
- }
- 
-+static u64 lmb_align_down(u64 addr, u64 size)
-+{
-+	return addr & ~(size - 1);
-+}
-+
-+static u64 lmb_align_up(u64 addr, u64 size)
-+{
-+	return (addr + (size - 1)) & ~(size - 1);
-+}
-+
-+static u64 __init lmb_alloc_nid_unreserved(u64 start, u64 end,
-+					   u64 size, u64 align)
-+{
-+	u64 base;
-+	long j;
-+
-+	base = lmb_align_down((end - size), align);
-+	while (start <= base &&
-+	       ((j = lmb_overlaps_region(&lmb.reserved, base, size)) >= 0))
-+		base = lmb_align_down(lmb.reserved.region[j].base - size,
-+				      align);
-+
-+	if (base != 0 && start <= base) {
-+		if (lmb_add_region(&lmb.reserved, base,
-+				   lmb_align_up(size, align)) < 0)
-+			base = ~(u64)0;
-+		return base;
-+	}
-+
-+	return ~(u64)0;
-+}
-+
-+static u64 __init lmb_alloc_nid_region(struct lmb_property *mp,
-+				       u64 (*nid_range)(u64, u64, int *),
-+				       u64 size, u64 align, int nid)
-+{
-+	u64 start, end;
-+
-+	start = mp->base;
-+	end = start + mp->size;
-+
-+	start = lmb_align_up(start, align);
-+	while (start < end) {
-+		u64 this_end;
-+		int this_nid;
-+
-+		this_end = nid_range(start, end, &this_nid);
-+		if (this_nid == nid) {
-+			u64 ret = lmb_alloc_nid_unreserved(start, this_end,
-+							   size, align);
-+			if (ret != ~(u64)0)
-+				return ret;
-+		}
-+		start = this_end;
-+	}
-+
-+	return ~(u64)0;
-+}
-+
-+u64 __init lmb_alloc_nid(u64 size, u64 align, int nid,
-+			 u64 (*nid_range)(u64 start, u64 end, int *nid))
-+{
-+	struct lmb_region *mem = &lmb.memory;
-+	int i;
-+
-+	for (i = 0; i < mem->cnt; i++) {
-+		u64 ret = lmb_alloc_nid_region(&mem->region[i],
-+					       nid_range,
-+					       size, align, nid);
-+		if (ret != ~(u64)0)
-+			return ret;
-+	}
-+
-+	return lmb_alloc(size, align);
-+}
-+
- u64 __init lmb_alloc(u64 size, u64 align)
- {
- 	return lmb_alloc_base(size, align, LMB_ALLOC_ANYWHERE);
-@@ -245,16 +321,6 @@ u64 __init lmb_alloc_base(u64 size, u64 align, u64 max_addr)
- 	return alloc;
- }
- 
--static u64 lmb_align_down(u64 addr, u64 size)
--{
--	return addr & ~(size - 1);
--}
--
--static u64 lmb_align_up(u64 addr, u64 size)
--{
--	return (addr + (size - 1)) & ~(size - 1);
--}
--
- u64 __init __lmb_alloc_base(u64 size, u64 align, u64 max_addr)
- {
- 	long i, j;
--- 
-1.5.4.rc3.14.g44397
+Cheers,
+Ben.
