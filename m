@@ -1,24 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B3826DDE23
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 04:36:35 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m2OHaU9D029162
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Mar 2008 10:36:31 -0700 (MST)
-Date: Mon, 24 Mar 2008 12:36:41 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: dtc: Simplify error handling for unparseable input
-Message-ID: <20080324173641.GA22159@loki.buserror.net>
-References: <20080324034424.GC29985@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080324034424.GC29985@localhost.localdomain>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1D56EDDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 05:48:58 +1100 (EST)
+Date: Mon, 24 Mar 2008 11:47:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
+Message-Id: <20080324114740.337509d3.akpm@linux-foundation.org>
+In-Reply-To: <47E7C05C.2000001@freescale.com>
+References: <12059526271941-git-send-email-yorksun@freescale.com>
+	<12059526274026-git-send-email-yorksun@freescale.com>
+	<20080320152708.23c6c734.akpm@linux-foundation.org>
+	<47E3DE6E.2050801@freescale.com>
+	<20080321111228.95a7d9ab.akpm@linux-foundation.org>
+	<47E7C05C.2000001@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 24, 2008 at 02:44:24PM +1100, David Gibson wrote:
-> Index: dtc/dtc.h
-> ===================================================================
-> --- dtc.orig/dtc.h	2008-03-24 14:33:33.000000000 +1100
-> +++ dtc/dtc.h	2008-03-24 14:33:34.000000000 +1100
-> @@ -232,7 +232,6 @@
->  struct boot_info {
->  	struct reserve_info *reservelist;
->  	struct node *dt;		/* the device tree */
-> -	int error;
->  };
+On Mon, 24 Mar 2008 09:53:16 -0500
+Timur Tabi <timur@freescale.com> wrote:
 
-If you remove this, there'll be no way to indicate semantic errors other
-than die() (the NULL approaches are no good, since they inhibit recovery),
-which is suboptimal if the error is not immediately fatal.
+> Andrew Morton wrote:
+> 
+> >>> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+> >> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
+> > 
+> > No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
+> > and misleading.  GFP_DMA is already atomic; the only effect of adding
+> > GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
+> > 
+> > Don't wory about it ;)
+> 
+> Well, maybe we don't want GFP_ATOMIC then, because I don't think we want
+> __GFP_HIGH.  Looking at the code, it appears the __GFP_HIGH has nothing to do
+> with HIGHMEM (which on PowerPC is the not 1-to-1 mapping memory from 0xF000000
+> to 0xFFFFFFFF).  Further examination of the cools shows the __GFP_HIGH says to
+> try access the "emergency pool", and I see this code snippet:
+> 
+> 	if (alloc_flags & ALLOC_HIGH)
+> 		min -= min / 2;
+> 
+> I guess this means that we reduce the amount of memory that can be available in
+> order for the allocate to succeed.
+> 
+> Considering that the amount of memory that we allocate is in the order of
+> megabytes, and it really isn't that important, I would think that we don't want
+> to touch the emergency pool.  Does that sound right?
 
--Scott
+yup.  The absence of __GFP_WAIT already causes the page allocator to try a
+bit harder.  Adding __GFP_HIGH would make it try harder still.
+
+You do need to be sure that the driver will robustly and correctly recover
+from an allocation failure here.
