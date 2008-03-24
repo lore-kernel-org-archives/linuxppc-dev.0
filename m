@@ -1,23 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A7B10DDFBD
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:59:48 +1100 (EST)
-Message-Id: <A52A8351-E1A5-4EC2-A7B9-E3C90424F38F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18407.24604.209928.398497@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: crash in init_ipic_sysfs on efika
-Date: Mon, 24 Mar 2008 17:59:39 -0500
-References: <20080317195305.GA13298@aepfle.de>
-	<fa686aa40803202214k7d8596a5y922a34f33d33dca2@mail.gmail.com>
-	<18403.31214.826941.838442@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0803210418170.8073@blarg.am.freescale.net>
-	<18407.24604.209928.398497@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>
+	by ozlabs.org (Postfix) with ESMTPS id 5C178DDF8D
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 10:22:29 +1100 (EST)
+Subject: Re: [PATCH 1/2] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20080306134105.GA31715@ru.mvista.com>
+References: <20080306134105.GA31715@ru.mvista.com>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 10:21:53 +1100
+Message-Id: <1206400913.7197.57.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +25,98 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 24, 2008, at 3:02 AM, Paul Mackerras wrote:
-> Kumar Gala writes:
->
->> since you are going to send something to linus let me update the fsl
->> defconfigs and send you a pull request.
->
-> OK -- I'm about to send Linus a pull request now in case he feels like
-> releasing 2.6.25 this weekend.  I'll send him another pull request
-> with your defconfig update and whatever else has turned up when I get
-> your pull request.
+On Thu, 2008-03-06 at 16:41 +0300, Valentine Barshak wrote:
+> The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
+> if there's no link. Because of that it fails to find PHY chip. The older ibm_emac
+> driver had a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros,
+> which toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
+> does the same for "ibm,emac-440gx" compatible chips. The workaround forces
+> clock on -all- EMACs, so we select clock under global emac_phy_map_lock.
+> 
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-ok and sent you a pull request.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-- k
+Just get them acked by Jeff now and they can go in via Josh tree.
+
+Cheers,
+Ben.
+
+> ---
+>  drivers/net/ibm_newemac/core.c |   16 +++++++++++++++-
+>  drivers/net/ibm_newemac/core.h |    8 ++++++--
+>  2 files changed, 21 insertions(+), 3 deletions(-)
+> 
+> diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
+> --- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2008-02-22 19:56:26.000000000 +0300
+> +++ linux-2.6/drivers/net/ibm_newemac/core.c	2008-02-22 20:38:47.000000000 +0300
+> @@ -43,6 +43,8 @@
+>  #include <asm/io.h>
+>  #include <asm/dma.h>
+>  #include <asm/uaccess.h>
+> +#include <asm/dcr.h>
+> +#include <asm/dcr-regs.h>
+>  
+>  #include "core.h"
+>  
+> @@ -2323,6 +2325,10 @@ static int __devinit emac_init_phy(struc
+>  	dev->phy.mdio_read = emac_mdio_read;
+>  	dev->phy.mdio_write = emac_mdio_write;
+>  
+> +	/* Enable internal clock source */
+> +	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
+> +		dcri_clrset(SDR0, SDR0_MFR, 0, SDR0_MFR_ECS);
+> +
+>  	/* Configure EMAC with defaults so we can at least use MDIO
+>  	 * This is needed mostly for 440GX
+>  	 */
+> @@ -2355,6 +2361,11 @@ static int __devinit emac_init_phy(struc
+>  			if (!emac_mii_phy_probe(&dev->phy, i))
+>  				break;
+>  		}
+> +
+> +	/* Enable external clock source */
+> +	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
+> +		dcri_clrset(SDR0, SDR0_MFR, SDR0_MFR_ECS, 0);
+> +
+>  	mutex_unlock(&emac_phy_map_lock);
+>  	if (i == 0x20) {
+>  		printk(KERN_WARNING "%s: can't find PHY!\n", np->full_name);
+> @@ -2480,8 +2491,11 @@ static int __devinit emac_init_config(st
+>  	}
+>  
+>  	/* Check EMAC version */
+> -	if (of_device_is_compatible(np, "ibm,emac4"))
+> +	if (of_device_is_compatible(np, "ibm,emac4")) {
+>  		dev->features |= EMAC_FTR_EMAC4;
+> +		if (of_device_is_compatible(np, "ibm,emac-440gx"))
+> +			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
+> +	}
+>  
+>  	/* Fixup some feature bits based on the device tree */
+>  	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
+> diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.h linux-2.6/drivers/net/ibm_newemac/core.h
+> --- linux-2.6.orig/drivers/net/ibm_newemac/core.h	2008-02-21 16:45:36.000000000 +0300
+> +++ linux-2.6/drivers/net/ibm_newemac/core.h	2008-02-22 19:57:44.000000000 +0300
+> @@ -301,6 +301,10 @@ struct emac_instance {
+>   * Set if we have new type STACR with STAOPC
+>   */
+>  #define EMAC_FTR_HAS_NEW_STACR		0x00000040
+> +/*
+> + * Set if we need phy clock workaround for 440gx
+> + */
+> +#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
+>  
+> 
+>  /* Right now, we don't quite handle the always/possible masks on the
+> @@ -312,8 +316,8 @@ enum {
+>  
+>  	EMAC_FTRS_POSSIBLE	=
+>  #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
+> -	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
+> -	    EMAC_FTR_STACR_OC_INVERT	|
+> +	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
+> +	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
+>  #endif
+>  #ifdef CONFIG_IBM_NEW_EMAC_TAH
+>  	    EMAC_FTR_HAS_TAH	|
