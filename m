@@ -1,22 +1,20 @@
-Return-Path: <tytso@MIT.EDU>
-Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
-	[18.7.7.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4C37EDDDDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 01:01:03 +1100 (EST)
-Date: Tue, 25 Mar 2008 09:54:54 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH] ppc: Export empty_zero_page
-Message-ID: <20080325135454.GK30110@mit.edu>
-References: <E1JZGwo-0000vf-2v@closure.thunk.org>
-	<20080312034110.GT6887@bakeyournoodle.com>
-	<20080312144239.GY15804@mit.edu> <20080312202431.GG15804@mit.edu>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 16745DDED5
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 01:36:21 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: OF compatible MTD platform RAM driver ?
+Date: Tue, 25 Mar 2008 15:36:12 +0100
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+	<200803111139.12667.laurentp@cse-semaphore.com>
+	<20080311224048.GA7642@localhost.localdomain>
+In-Reply-To: <20080311224048.GA7642@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080312202431.GG15804@mit.edu>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; boundary="nextPart3247855.gUWhUHSo2b";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200803251536.17795.laurentp@cse-semaphore.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So I screwed this one up.  Mea culpa, mea culpa, mea maxima culpa....
+--nextPart3247855.gUWhUHSo2b
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I assume Stephen's already sent this to patch to you guys (I picked it
-up from the linux-next git tree), but just in case he didn't....
+On Tuesday 11 March 2008 23:40, David Gibson wrote:
+> On Tue, Mar 11, 2008 at 11:39:08AM +0100, Laurent Pinchart wrote:
+> > On Tuesday 11 March 2008 01:45, David Gibson wrote:
+> > > On Mon, Mar 10, 2008 at 12:00:22PM -0500, Rune Torgersen wrote:
+> > > > linuxppc-dev-bounces+runet=3Dinnovsys.com@ozlabs.org wrote:
+> [snip]
+> > > > We ran ito the same issue.
+> > > > We did option 3, as it was efinetly the easiest,
+> > >
+> > > I think this is the best option in principle.
+> >=20
+> > I'll implement that and post a patch after completing the ppc-to-powerp=
+c=20
+> > migration.
+> >=20
+> > > > here is the sram entry in our dts:
+> > >
+> > > Except that your implementation of it is not good.
+> > >
+> > > You're relying on the old obsolete flash binding with the "probe-type"
+> > > field.  The solution should be adapted to the new approach which uses
+> > > values in the "compatible" field to indicate various sorts of flash
+> > > device.
+> >=20
+> > What "compatible" values should I use for ROM and RAM mappings ?
+>=20
+> That I'm not so sure of.  We'll need to find some consensus.
+>=20
+> There may be existing IEEE1275 bindings for roms, which we should
+> investigate.
 
-						- Ted
+Do you (or someone else here) have access to the IEEE1275 specification ? I=
+s=20
+there any ROM binding in there ?
 
+> Arguably RAM should be represented by a memory node, but=20
+> that's going to get messy for this sort of application.
 
->From 7919d4874fe991abd0b686ac1f68131c818cdb36 Mon Sep 17 00:00:00 2001
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 13 Mar 2008 16:16:10 +1100
-Subject: [PATCH] really export empty_zero_page
+We're talking about a very specific type of RAM, used for permanent storage=
+=20
+with a battery backup. The RAM is really meant to be used as an MTD device=
+=20
+and as such I think it makes sense to describe it as an mtd-compatible devi=
+ce=20
+on the local bus.
 
-It was being protected by CONFIG_PPC32.
+What about the following definition for the RAM node ?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/ppc_ksyms.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+        nvram@2,0000 {
+                compatible =3D "mtd,ram";
+                reg =3D <2 0x0000 0x00100000>;
+                bank-width =3D <2>;
+        };
 
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 65d14e6..1e89eb5 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -57,7 +57,6 @@ extern void program_check_exception(struct pt_regs *regs);
- extern void single_step_exception(struct pt_regs *regs);
- extern int sys_sigreturn(struct pt_regs *regs);
- 
--EXPORT_SYMBOL(empty_zero_page);
- EXPORT_SYMBOL(clear_pages);
- EXPORT_SYMBOL(copy_page);
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
-@@ -191,3 +190,4 @@ EXPORT_SYMBOL(intercept_table);
- EXPORT_SYMBOL(__mtdcr);
- EXPORT_SYMBOL(__mfdcr);
- #endif
-+EXPORT_SYMBOL(empty_zero_page);
--- 
-1.5.4.1.144.gdfee-dirty
+Or should the node have a device-type property of either 'ram' or 'rom' wit=
+h=20
+the compatible property just referencing MTD ?
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=C3=A9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart3247855.gUWhUHSo2b
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH6Q3h8y9gWxC9vpcRAndqAJ9tkmT0QYoubo1HsWSHHY2pq/whrwCdG2Tz
+lOMWmBQFI3g+XD/k7Uo0Ee4=
+=19Bl
+-----END PGP SIGNATURE-----
+
+--nextPart3247855.gUWhUHSo2b--
