@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 26 Mar 2008 10:52:02 +1100
+Date: Wed, 26 Mar 2008 10:59:36 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
 Subject: Re: dtc: Simplify error handling for unparseable input
-Message-ID: <20080325235202.GG8281@localhost.localdomain>
+Message-ID: <20080325235936.GH8281@localhost.localdomain>
 References: <20080324034424.GC29985@localhost.localdomain>
 	<20080324173641.GA22159@loki.buserror.net>
 	<20080325012805.GA1227@localhost.localdomain>
@@ -41,15 +41,10 @@ On Tue, Mar 25, 2008 at 05:10:07PM -0500, Scott Wood wrote:
 > It's generally nice to the user if you can report as many bugs as you can 
 > rather than fail on the first one.
 
-Hrm, I guess.  There's only so far it's worth going to achieve that
-though.
-
-> It's also nice to someone down the road trying to turn this code into a 
-> library if it passes return status up the call chain gracefully.
-
-Can you think of any reason we'd want to do that?  And that would
-require fixing so many other places that the two cases which do return
-an error (that's including binary includes) hardly signify.
+Oh.. and this patch doesn't actually preclude that.  We still have the
+treesource_error variable and can report errors that way during the
+parse.  The die() just comes at the end of dt_from_source(), instead
+of in main().
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
