@@ -1,22 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 26 Mar 2008 09:12:09 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: DTS question
-Message-ID: <20080325221209.GB8281@localhost.localdomain>
-References: <20080320173302.7075a1d9@lappy.seanm.ca>
-	<20080320181926.2ff7e297@lappy.seanm.ca>
-	<47E2E4A2.9000801@freescale.com>
-	<20080321001236.4e37bba4@lappy.seanm.ca>
-	<fa686aa40803202134p7db6a106n8487aa0040b5990c@mail.gmail.com>
-	<20080321010941.5e4bf9d4@lappy.seanm.ca>
-	<20080321070512.GA29010@localhost.localdomain>
-	<22b5aa51cfbcba3072020c4897206473@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <22b5aa51cfbcba3072020c4897206473@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain; charset=iso-2022-jp
+Message-ID: <18409.32313.610943.187982@cargo.ozlabs.ibm.com>
+Date: Wed, 26 Mar 2008 09:35:37 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches added to powerpc.git powerpc-next and master branches
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +15,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 21, 2008 at 12:35:39PM +0100, Segher Boessenkool wrote:
->>>> Convention is to use the stock ticker symbol.  If the company is
->>>> private and has no stock ticker symbol, then the company name should
->>>> be used.
->>>
->>> I didn't know that. ADI it is then.
->>
->> Well.. stock ticker is the new convention.  IEEE1275 used IEEE
->> assigned OUI strings (Organization Unique Identifiers).  Often those
->> are the same as the stock ticker, but not always.
->
-> Erm, an OUI is a 24-bit number.  I think you're confusing something
-> here.
+I have added the patches listed below to the master and powerpc-next
+branches of the powerpc.git repository, and pulled in Linus' current
+tree.
 
-Yes, I think I am.  I somehow had the impression that in addition to
-the 24-bit OUIs used in MAC addresses, there were also string-form
-OUIs assigned.
+Paul.
 
->> Stock ticker is a good choice for new things, but for anything from a
->> vendor which has existing 1275 bindings for its products, I think we
->> should keep the original assigned OUI, even if it differs from the
->> stock ticker.
->
-> Yes, when there is an existing binding, obviously you should use what
-> it says (unless that binding is *completely* broken).  Compatibility
-> is good.
->
-> Note that a stock symbol needs to be written in uppercase; in lowercase,
-> it is just a random name that has no collision protection.
+Manish Ahuja (10):
+      [POWERPC] pseries: phyp dump: Documentation
+      [POWERPC] pseries: phyp dump: Reserve and release memory
+      [POWERPC] pseries: phyp dump: Use sysfs to release reserved mem
+      [POWERPC] pseries: phyp dump: Register dump area
+      [POWERPC] pseries: phyp dump: Debugging print routines
+      [POWERPC] pseries: phyp dump: Invalidate and print dump areas
+      [POWERPC] pseries: phyp dump: Tracking memory range freed
+      [POWERPC] pseries: phyp dump: Add Kconfig file option
+      [POWERPC] pseries: phyp dump: Disable phyp-dump through boot-var
+      [POWERPC] pseries: phyp dump: Inform kdump when phyp-dump is load=
+ed
 
-Um.. bit too late for that.  AFAIK, uppercase has been used by
-*no-one* for stock ticker derived vendor IDs.
+Marian Balakowicz (1):
+      [POWERPC] Add 'model: ...' line to common show=5Fcpuinfo()
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Nathan Lynch (4):
+      [POWERPC] maple: Use platform name in define=5Fmachine()
+      [POWERPC] maple: Kill fixup=5Fmaple=5Fide
+      [POWERPC] maple: Enable ipr driver in defconfig
+      [POWERPC] scanlog=5Finit cleanup and minor fixes
+
+Robert P. J. Day (1):
+      [POWERPC] Move a.out.h to header-y since it doesn't check =5F=5FK=
+ERNEL=5F=5F
+
+Roland McGrath (2):
+      [POWERPC] Don't touch PT=5FDTRACE in exec
+      [POWERPC] powerpc32: Remove asm-offsets ptrace cruft
+
+S.=C3=87a=C4=9Flar Onur (1):
+      [POWERPC] arch/powerpc/platforms/iseries/pci.c: Use time=5F* macr=
+os
+
+Stephen Rothwell (1):
+      [POWERPC] Really export empty=5Fzero=5Fpage
+
+Tony Breeds (1):
+      [POWERPC] Update wait=5Fstate=5Fcycles in the VPA
