@@ -1,23 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id A4100DDEDE
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E24D2DDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Mar 2008 20:17:54 +1100 (EST)
-Subject: Re: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Li Yang <LeoLi@freescale.com>
-In-Reply-To: <46CAC1281D7CB94A9AEFFB131F9569CA227627@tmnt04.transmode.se>
-References: <>
-	<1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<989B956029373F45A0B8AF029708189001D19565@zch01exm26.fsl.freescale.net>
-	<46CAC1281D7CB94A9AEFFB131F9569CA227627@tmnt04.transmode.se>
-Content-Type: text/plain
-Date: Tue, 25 Mar 2008 10:17:50 +0100
-Message-Id: <1206436671.7589.208.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: Netdev <netdev@vger.kernel.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
+	Tue, 25 Mar 2008 23:56:00 +1100 (EST)
+Message-Id: <7F2C28B9-9B87-4F46-9C57-3666BB8F7EFD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Marco Stornelli <marco.stornelli@coritel.it>
+In-Reply-To: <47E8B19B.10705@coritel.it>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: MPC8641D PCI-Express problem
+Date: Tue, 25 Mar 2008 07:55:52 -0500
+References: <47E8B19B.10705@coritel.it>
+Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,81 +26,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Sat, 2008-03-22 at 12:51 +0100, Joakim Tjernlund wrote:
-> >> -----Original Message-----
-> >> From: netdev-owner@vger.kernel.org
-> >> [mailto:netdev-owner@vger.kernel.org] On Behalf Of Joakim Tjernlund
-> > Sent: Tuesday, March 18, 2008 11:11 PM
-> >> To: Netdev; Li Yang
-> >> Cc: Joakim Tjernlund
-> >>Subject: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-> >>
-> >> Creating a VLAN interface on top of ucc_geth adds 4 bytes to
-> >> the frame and the HW controller is not prepared to TX a frame
-> >> bigger than 1518 bytes which is 4 bytes too small for a full
-> >> VLAN frame. Also add 4 extra bytes for future expansion.
-> > 
-> > IMO, VLAN and Jumbo packet support is not general case of Ethernet.
-> > Could you make this change optional?  Thanks.
-> > 
-> > - Leo
-> 
-> hmm, I do not agree. VLAN is common today.
-> 
-> If you were to enable HW support for VLAN then the ethernet controller
-> would inject an extra 4 bytes into the frame. 
-> This change does not change the visible MTU for the user. As is now,
-> soft VLAN is silently broken. Do you
-> really want the user to find and turn on a controller specific feature
-> to use VLAN?
-> 
-> What does netdev people think? 
-> 
->  Jocke 
+On Mar 25, 2008, at 3:02 AM, Marco Stornelli wrote:
+> Hi,
+>
+> do you remember my problem with the pci-express? I have an  
+> mpc8641d_hpcn (rev. 2.0) board connected via pci-express with the  
+> Xilinx ML555 evaluation board. I'm using the 2.6.24 kernel. I'm  
+> observing this strange behavior:
+>
+> 1) I turn on the board and I stop the U-boot
+> 2) I load the FPGA microcode
+> 3) I start the system
+> 4) I load the driver module and I read a version register in the FPGA
+> 5) The system crashes with a "machine check exception: transfer  
+> error ack signal"
+> 6) reboot
+> 7) same procedure (without load the FPGA again)
+> 8) now I can read the registers!
+>
+> If I repeat the procedure again it doesn't work anymore. I think  
+> it's a problem with pci-express controller. Have you got any  
+> suggestions?
+>
+> Thanks.
 
-hmm, I misread the HW specs. The change has nothing to do with TX, it is
-the MAX RX frame size that was too small for VLAN and that is what the
-patch addresses. I see that tg3.c adds 4 bytes to MAX RX pkgs:
- 	/* MTU + ethernet header + FCS + optional VLAN tag */
-	tw32(MAC_RX_MTU_SIZE, tp->dev->mtu + ETH_HLEN + 8);
-So I don't think this change should be hidden behind a new CONFIG
-option. Updated patch below with changed description.
+Where are you loading the FPGA microcode (linux, u-boot)?  Also, is  
+the FPGA the only device connected over PCIe?
 
- Jocke
-
->From ec8ca3c9666bdc72652e403ea5f252b38e5a076b Mon Sep 17 00:00:00 2001
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Tue, 18 Mar 2008 15:40:59 +0100
-Subject: [PATCH] ucc_geth: Add 8 bytes to max RX frame for VLANs
-
-Creating a VLAN interface on top of ucc_geth adds 4 bytes
-to the frame and the HW controller is not prepared to
-receive a frame bigger than 1518 bytes which is 4 bytes too
-small for a full VLAN frame. Also add 4 extra bytes for future
-expansion.
-
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
- drivers/net/ucc_geth.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 348892b..038ec75 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -114,10 +114,10 @@ static struct ucc_geth_info ugeth_primary_info = {
- 	.maxGroupAddrInHash = 4,
- 	.maxIndAddrInHash = 4,
- 	.prel = 7,
--	.maxFrameLength = 1518,
-+	.maxFrameLength = 1518+8, /* Add 4 bytes for VLAN tags and 4 extra bytes */
- 	.minFrameLength = 64,
--	.maxD1Length = 1520,
--	.maxD2Length = 1520,
-+	.maxD1Length = 1520+8,
-+	.maxD2Length = 1520+8,
- 	.vlantype = 0x8100,
- 	.ecamptr = ((uint32_t) NULL),
- 	.eventRegMask = UCCE_OTHER,
--- 
-1.5.4.3
+- k
