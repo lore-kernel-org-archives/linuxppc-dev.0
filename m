@@ -1,21 +1,17 @@
-Return-Path: <tur@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
+Return-Path: <bob@qbjnet.com>
+Received: from kunk.qbjnet.com (vci-113.dsl.onvoy.net [137.192.135.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 232BDDE55B
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 04:40:35 +1100 (EST)
-Message-ID: <47E938A8.9000103@semihalf.com>
-Date: Tue, 25 Mar 2008 18:38:48 +0100
-From: Bartlomiej Sieka <tur@semihalf.com>
+	(Client CN "qbjnet.com", Issuer "qbjnet.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CC212DE652
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 04:52:33 +1100 (EST)
+Message-ID: <20080325174549.24653.qmail@kunk.qbjnet.com>
+Subject: [PATCH] powerpc: add kernel parameter to set l3cr for G4 cpu
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 25 Mar 2008 12:45:49 -0500 (CDT)
+Sender: bob@qbjnet.com
+From: Robert Brose <linuxppcdev@lists.qbjnet.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Please pull linux-2.6-mpc52xx.git
-References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>	
-	<20080317222836.AFA66241A2@gemini.denx.de>
-	<fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>
-In-Reply-To: <fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/mixed; boundary="ELM1206467149-24313-0_"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-[...]
-> (copied from my comments in an off-list conversation)
-> 
-> However, I have declined (for now) to pick up the defconfigs for those
-> boards and instead merged in the config features they require into the
-> mpc5200 defconfig.  My primary reason for doing so is to increase the
-> likelyhood that full featured kernels are built and tested so that
-> situations where board ports conflict with each other are caught and
-> fixed.
-> 
-> ojn has also been complaining about the number of defconfigs he needs
-> to build to test all the powerpc configurations without any
-> indications about which ones are important and which ones are not.
-> There has been some discussion about having a subdirectory for
-> optimized board configs, but nobody has done anything about it yet.
-> 
-> The one part that I have a really strong opinion on is that there
-> should be a full featured mpc5200 defconfig for build testing.  Beyond
-> that (and if ojn can also be appeased) I can probably be convinced.  :-)
 
-Hi Grant,
+--ELM1206467149-24313-0_
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="US-ASCII"
 
-How to deal with a situation where I need a particular PHY driver from
-libphy compiled in the kernel for one of the MPC5200 boards? Adding it
-to mpc5200_defconfig doesn't seem like a right thing to do. How to
-convince you (and appease ojn) to accept a patch that adds a
-board-specific defconfig that only slightly differs from
-mpc5200_defconfig? :)
+Old-world powermacs don't set L2CR or L3CR on processor upgrade cards.
+This simple patch allows the setting of L3CR via a kernel parameter
+(like the existing kernel parameter to set L2CR).
 
-Regards,
-Bartlomiej
+This is the first time I've posted a patch, please excuse me if I've
+broken protocol in any way.
+
+Signed-off-by: Robert Brose <bob@qbjnet.com>
+
+
+--ELM1206467149-24313-0_
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+Content-Disposition: attachment; filename="l3cr_patch.txt"
+Content-Description: 
+
+--- linux-2.6.24/arch/powerpc/kernel/setup_32.c.orig	2008-03-10 11:24:16.566354597 -0500
++++ linux-2.6.24/arch/powerpc/kernel/setup_32.c	2008-03-10 11:22:22.711626305 -0500
+@@ -172,6 +172,18 @@ int __init ppc_setup_l2cr(char *str)
+ }
+ __setup("l2cr=", ppc_setup_l2cr);
+ 
++/* Checks "l3cr=xxxx" command-line option REB */
++int __init ppc_setup_l3cr(char *str)
++{
++	if (cpu_has_feature(CPU_FTR_L3CR)) {
++		unsigned long val = simple_strtoul(str, NULL, 0);
++		printk(KERN_INFO "l3cr set to %lx\n", val);
++		_set_L3CR(val);		/* and enable it */
++	}
++	return 1;
++}
++__setup("l3cr=", ppc_setup_l3cr);
++
+ #ifdef CONFIG_GENERIC_NVRAM
+ 
+ /* Generic nvram hooks used by drivers/char/gen_nvram.c */
+
+--- linux-2.6.24/Documentation/kernel-parameters.txt.orig	2008-03-25 12:30:09.688082305 -0500
++++ linux-2.6.24/Documentation/kernel-parameters.txt	2008-03-25 12:30:29.816083202 -0500
+@@ -877,6 +877,8 @@ and is between 256 and 4096 characters. 
+ 
+ 	l2cr=		[PPC]
+ 
++	l3cr=		[PPC]
++
+ 	lapic		[X86-32,APIC] Enable the local APIC even if BIOS
+ 			disabled it.
+ 
+
+--ELM1206467149-24313-0_--
