@@ -1,24 +1,18 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7FE0ADDE41
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 18:27:47 +1100 (EST)
-Date: Tue, 25 Mar 2008 00:31:11 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for March 20
-Message-ID: <20080325073111.GA17879@kroah.com>
-References: <20080320143953.8d6b5a60.sfr@canb.auug.org.au>
-	<20080320045719.GA26938@kroah.com>
-	<20080325174817.6018edd8.sfr@canb.auug.org.au>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A05ADDDEEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 20:54:52 +1100 (EST)
+Message-ID: <47E8CBE7.20008@grandegger.com>
+Date: Tue, 25 Mar 2008 10:54:47 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080325174817.6018edd8.sfr@canb.auug.org.au>
-Cc: Theodore Tso <tytso@MIT.EDU>, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Dan Williams <dan.j.williams@intel.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Oops with TQM5200 on TQM5200
+References: <47E2723D.1090101@grandegger.com>	<47E281B6.20702@denx.de>	<fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>	<47E2FC3E.1020705@semihalf.com>	<47E3561B.6040505@grandegger.com>
+	<18407.20074.364347.911781@cargo.ozlabs.ibm.com>
+In-Reply-To: <18407.20074.364347.911781@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 25, 2008 at 05:48:17PM +1100, Stephen Rothwell wrote:
-> Hi Greg,
+Paul Mackerras wrote:
+> Wolfgang Grandegger writes:
+>> Bartlomiej Sieka wrote:
+>>> Grant Likely wrote:
+>>>> Paul, my git server is down at the moment.  Can you please pick this
+>>>> one up for .25?  It is needed to boot the tqm5200 board.
+>>> Could we also have similar fixes for cm5200.dts and motionpro.dts picked
+>>> up? I could provide the patches within a day -- will this be OK?
+>> At that occasion, could you please also add two CAN nodes to tqm5200.dts
+>> as shown:
 > 
-> On Wed, 19 Mar 2008 21:57:19 -0700 Greg KH <greg@kroah.com> wrote:
-> >
-> > On Thu, Mar 20, 2008 at 02:39:53PM +1100, Stephen Rothwell wrote:
-> > > 
-> > > driver-core/driver-core-remove-no-longer-used-struct-class_device.patch
-> > > 	should be merged late
-> 
-> I still need to revert this so that the scsi tree can build (st.c).
+> Does this really need to go in for 2.6.25 -- i.e., does it fix a
+> regression or a serious bug (not just a missing feature)?  If so,
+> please send it with a proper subject and patch description, with your
+> Signed-off-by.
 
-I'll be sending this to Linus after -rc1 comes out, so it's fine that it
-needs to be reverted for now.
+It's not a serious bug fix, of course, but the mentioned DTS file needs
+fixing anyhow and I asked Bartlomiej to add the two CAN nodes at that
+occasion to avoid another round of updates.
 
-> > > driver-core/ib-convert-struct-class_device-to-struct-device.patch
-> > > 	conflicts with the infiniband tree
-> 
-> This still has the same conflicts, but they are papered over by my use of
-> git-rerere (which remembers my previous merge fixup and applies it for
-> me).
+Thanks,
 
-Yeah, __FUNCTION__ fun :(
-
-> > > driver-core/pm-make-wakeup-flags-available-whenever-config_pm-is-set.patch
-> > > 	breaks non CONFIG_PM builds of drivers/serial/serial_core.c
-> 
-> This one seems to be fixed.
-
-Glad to hear it.
-
-greg k-h
+Wolfgang.
