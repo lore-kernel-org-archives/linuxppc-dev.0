@@ -1,19 +1,21 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id E780ADE0DC
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:20:27 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpm_uart: Allocate DPRAM memory for SMC ports on
-	CPM2-based platforms.
-Date: Tue, 25 Mar 2008 17:20:21 +0100
-References: <20080325160331.GB15093@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080325160331.GB15093@ld0162-tx32.am.freescale.net>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 8AB8ADE221
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:22:00 +1100 (EST)
+Message-ID: <47E926FB.3030900@ru.mvista.com>
+Date: Tue, 25 Mar 2008 19:23:23 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5977279.5zazmx9Ss5";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803251720.24667.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: OF compatible MTD platform RAM driver ?
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+	<200803251536.17795.laurentp@cse-semaphore.com>
+	<47E91A5B.1060406@ru.mvista.com>
+	<200803251651.42608.laurentp@cse-semaphore.com>
+In-Reply-To: <200803251651.42608.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,102 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart5977279.5zazmx9Ss5
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Laurent Pinchart wrote:
 
-On Tuesday 25 March 2008 17:03, Scott Wood wrote:
-> On Tue, Mar 25, 2008 at 04:34:46PM +0100, Laurent Pinchart wrote:
-> > On Tuesday 25 March 2008 15:58, Scott Wood wrote:
-> > > Please maintain backward compatibility with older device trees (by
-> > > checking the length of the second reg resource).  At the very least,
-> > > update the device trees that are affected.
-> >=20
-> > I haven't seen any CPM2-based board using SMC ports in the device trees=
-=20
-> > available in arch/powerpc/boot/dts.
->=20
-> ep8248e
+>>>We're talking about a very specific type of RAM, used for permanent storage 
+>>>with a battery backup. The RAM is really meant to be used as an MTD device 
+>>>and as such I think it makes sense to describe it as an mtd-compatible device 
+>>>on the local bus.
 
-I should have checked git head. My bad. I'll include the ep8248e device tre=
-e=20
-in the next patch.
+>>>What about the following definition for the RAM node ?
 
-> > Should I still maintain compatibility with older device trees ? Is ther=
-e=20
-any=20
-> > out-of-tree PQ2 boards using udbg and SMC ?
->=20
-> Yes, I've answered questions on the lists from at least one person using
-> a custom board with cpm2 smc.
+>>>        nvram@2,0000 {
 
-Are you sure it wasn't me ? ;-)
+>>    Note that there's a OF "device_type" of "nvram", so your (generic) device 
+>>name seems to add some mess. (IIRC, that OF device type didn't actually 
+>>represent a "real" device, and only served to provide access to NVRAM for OF).
 
-> > What about printing a warning if the second reg resource has the wrong
-> > size ?
->=20
-> The only way you'll see the warning is if udbg is enabled. :-P
->=20
-> Will a CPM reset blow away the portion of muram that holds the SMC pram
-> pointer?  If not (and I don't think it will), just return the device tree
-> reg resource as is currently done if the resource is the wrong size.
+> Ok.
 
-Ok I'll do that. Should I add a warning message to tell people to update th=
-e=20
-device tree ?
+    Well, I might have gone too far here -- it should be a real device 
+(spec'ed in Device Support Extensions recommended practice). It's just that 
+the spec didn't mention "reg" property, only "#bytes" (the device capacity). 
+So, it may be worth considering...
 
-> > > After this point, even if you don't reset the CPM, udbg printk is bro=
-ken
-> > > because you moved pram.  The udbg disabling will have to be moved bef=
-ore
-> > > this.
-> >=20
-> > Moving the SMC pram doesn't break udbg printk in itself. What will brea=
-k=20
-it is=20
-> > moving the TX BDs, but the end result is the same, moving pram will res=
-ult=20
-in=20
-> > udbg being broken.
-> >=20
-> > The cpm_uart driver disable udbg before allocating the new BDs. What ab=
-out=20
-> > moving that right before moving the parameter RAM ?=20
-cpm_uart_request_port(),=20
-> > which is called in between, already disables RX and TX on the port, so =
-we=20
-> > won't loose any debug message.
->=20
-> cpm_uart_request_port() returns without doing that if it's a console
-> port.  I think the current placement of the udbg disable will be fine.
+>>>                compatible = "mtd,ram";
 
-Ok. I'll prepare a new patch that maintains compatibility with old device=20
-trees.
+>>    The part before comma should be a company name or a stock ticker. What did 
+>>you mean here?
 
-Best regards,
+> I didn't know that. Let's say I meant "mtd-ram" :-)
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+>>>                reg = <2 0x0000 0x00100000>;
+>>>                bank-width = <2>;
+>>>        };
 
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+>>>Or should the node have a device-type property of either 'ram' or 'rom' with 
+>>>the compatible property just referencing MTD ?
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+>>    The "device_type" properties are not required and their further creation 
+>>has been discouraged on liunxppc-dev.
 
---nextPart5977279.5zazmx9Ss5
-Content-Type: application/pgp-signature
+> What about
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+> 	mtdram@2,0000 {
+> 		compatible = "mtd-ram";
+> 		reg = <2 0x0000 0x00100000>;
+> 		bank-width = <2>;
+> 	};
 
-iD8DBQBH6SZI8y9gWxC9vpcRAsRkAKCdb3vKJlIJhRSyuNwHwurk3ccy6wCg0pNV
-DpmDrLznaCwnz7k6B+7JCAA=
-=1Lz2
------END PGP SIGNATURE-----
+> ROMs could use "mtd-rom" for their compatible property.
 
---nextPart5977279.5zazmx9Ss5--
+    Heh, there was a whole company against mentioning "mtd" when we started 
+working on this (of course, the first idea was to call the flash device type 
+"mtd"). I don't think "mtd" looks good here -- I'd suggest "flash-ram" (if 
+this is just a linearly mapped NVRAM).
+
+> Best regards,
+
+WBR, Sergei
