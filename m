@@ -1,23 +1,29 @@
-Return-Path: <tehn.yit.chin@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 8C7DDDDDFF
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id A603BDDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Mar 2008 10:03:53 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3697161wag.13
+	Tue, 25 Mar 2008 19:00:08 +1100 (EST)
+Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 352BC434005
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 24 Mar 2008 16:03:51 -0700 (PDT)
-Message-ID: <bf04f99c0803241603v3151865eic80b58a04bce43e2@mail.gmail.com>
-Date: Tue, 25 Mar 2008 10:03:51 +1100
-From: "Tehn Yit Chin" <tehn.yit.chin@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: interrupt handlers PowerPC via GCC
-In-Reply-To: <47E29C60.10300@freescale.com>
+	Tue, 25 Mar 2008 08:59:04 +0100 (CET)
+Received: from nausicaa2.coritel.it ([127.0.0.1])
+	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id O1Xlpjty2TCY for <linuxppc-embedded@ozlabs.org>;
+	Tue, 25 Mar 2008 08:59:03 +0100 (CET)
+Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 2F065434001
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 25 Mar 2008 08:59:03 +0100 (CET)
+Message-ID: <47E8B19B.10705@coritel.it>
+Date: Tue, 25 Mar 2008 09:02:35 +0100
+From: Marco Stornelli <marco.stornelli@coritel.it>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_13317_14760976.1206399831442"
-References: <bf04f99c0803191706q7e3a43a3i50a1d479650a3f9d@mail.gmail.com>
-	<47E29C60.10300@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Subject: MPC8641D PCI-Express problem
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,73 +34,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_13317_14760976.1206399831442
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
 
-Hey Scott,
+do you remember my problem with the pci-express? I have an mpc8641d_hpcn 
+(rev. 2.0) board connected via pci-express with the Xilinx ML555 
+evaluation board. I'm using the 2.6.24 kernel. I'm observing this 
+strange behavior:
 
-Thanks for the reply, I shall investigate further.
+1) I turn on the board and I stop the U-boot
+2) I load the FPGA microcode
+3) I start the system
+4) I load the driver module and I read a version register in the FPGA
+5) The system crashes with a "machine check exception: transfer error 
+ack signal"
+6) reboot
+7) same procedure (without load the FPGA again)
+8) now I can read the registers!
 
-I wasn't talking about interrupt handlers in Linux as such, but using
-powerpc-eabi-gcc to write an ISR for the MPC5516. (I guess that could be
-off-topic on this mailing list, but I thought the folks on this mailing list
-would probably know the answer pretty easily). I was hoping that gcc would
-generate the prologue and epilogue code for me via the interrupt attributes.
+If I repeat the procedure again it doesn't work anymore. I think it's a 
+problem with pci-express controller. Have you got any suggestions?
 
-Many thanks.
-Tehn Yit Chin
+Thanks.
 
-
-
-On Fri, Mar 21, 2008 at 4:18 AM, Scott Wood <scottwood@freescale.com> wrote:
-
-> Tehn Yit Chin wrote:
-> > Hi all,
-> >
-> > Apologies for such a basic question. I am trying to write an ISR on a
-> > MPC551x. When I tried to use the interrupt attribute with
-> > powerpc-eabi-gcc such as
-> >
-> > _attribute_((interrupt_handler)) foobarISR(void)
-> > {
-> > }
->
-> Assuming you're talking about an interrupt handler in Linux, you don't
-> need to do anything like that.  The actual interrupt entry is assembly
-> code.  Search existing drivers for "irqreturn_t" to find examples of
-> what an interrupt handler looks like, and "request_irq" for how to hook
-> the handler into the interrupt.
->
-> -Scott
->
-
-------=_Part_13317_14760976.1206399831442
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hey Scott, <br><br>Thanks for the reply, I shall investigate further. <br><br>I wasn&#39;t talking about interrupt handlers in Linux as such, but using powerpc-eabi-gcc to write an ISR for the MPC5516. (I guess that could be off-topic on this mailing list, but I thought the folks on this mailing list would probably know the answer pretty easily). I was hoping that gcc would generate the prologue and epilogue code for me via the interrupt attributes.<br>
-<br>Many thanks.<br>Tehn Yit Chin<br><br><br><br><div class="gmail_quote">On Fri, Mar 21, 2008 at 4:18 AM, Scott Wood &lt;<a href="mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class="Ih2E3d">Tehn Yit Chin wrote:<br>
-&gt; Hi all,<br>
-&gt;<br>
-&gt; Apologies for such a basic question. I am trying to write an ISR on a<br>
-&gt; MPC551x. When I tried to use the interrupt attribute with<br>
-&gt; powerpc-eabi-gcc such as<br>
-&gt;<br>
-&gt; _attribute_((interrupt_handler)) foobarISR(void)<br>
-&gt; {<br>
-&gt; }<br>
-<br>
-</div>Assuming you&#39;re talking about an interrupt handler in Linux, you don&#39;t<br>
-need to do anything like that. &nbsp;The actual interrupt entry is assembly<br>
-code. &nbsp;Search existing drivers for &quot;irqreturn_t&quot; to find examples of<br>
-what an interrupt handler looks like, and &quot;request_irq&quot; for how to hook<br>
-the handler into the interrupt.<br>
-<font color="#888888"><br>
--Scott<br>
-</font></blockquote></div><br>
-
-------=_Part_13317_14760976.1206399831442--
+Marco
