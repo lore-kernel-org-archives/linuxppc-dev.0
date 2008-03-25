@@ -1,17 +1,21 @@
-Return-Path: <bob@qbjnet.com>
-Received: from kunk.qbjnet.com (vci-113.dsl.onvoy.net [137.192.135.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "qbjnet.com", Issuer "qbjnet.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id CC212DE652
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 04:52:33 +1100 (EST)
-Message-ID: <20080325174549.24653.qmail@kunk.qbjnet.com>
-Subject: [PATCH] powerpc: add kernel parameter to set l3cr for G4 cpu
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 25 Mar 2008 12:45:49 -0500 (CDT)
-Sender: bob@qbjnet.com
-From: Robert Brose <linuxppcdev@lists.qbjnet.com>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 2448EDE70A
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 04:56:22 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="ELM1206467149-24313-0_"
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: OF compatible MTD platform RAM driver ?
+Date: Tue, 25 Mar 2008 12:56:13 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0427706A@ismail.innsys.innovsys.com>
+In-Reply-To: <200803251823.32039.laurentp@cse-semaphore.com>
+References: <200803101606.39184.laurentp@cse-semaphore.com><200803251744.46001.laurentp@cse-semaphore.com><47E93010.5090904@ru.mvista.com>
+	<200803251823.32039.laurentp@cse-semaphore.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>,
+	"Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Laurent Pinchart wrote:
+> On Tuesday 25 March 2008 18:02, Sergei Shtylyov wrote:
+>> Laurent Pinchart wrote:
+>>=20
+> Regarding non-volatility nothing prevents a user from using a=20
+> volatile RAM as an MTD device, but there's little point in doing so.
+> Would it be acceptable for the "linear-nvram" specification
+> not to include > volatile RAM ? ROM chips would be excluded too. Is
+that an issue ?
 
---ELM1206467149-24313-0_
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="US-ASCII"
-
-Old-world powermacs don't set L2CR or L3CR on processor upgrade cards.
-This simple patch allows the setting of L3CR via a kernel parameter
-(like the existing kernel parameter to set L2CR).
-
-This is the first time I've posted a patch, please excuse me if I've
-broken protocol in any way.
-
-Signed-off-by: Robert Brose <bob@qbjnet.com>
-
-
---ELM1206467149-24313-0_
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
-Content-Disposition: attachment; filename="l3cr_patch.txt"
-Content-Description: 
-
---- linux-2.6.24/arch/powerpc/kernel/setup_32.c.orig	2008-03-10 11:24:16.566354597 -0500
-+++ linux-2.6.24/arch/powerpc/kernel/setup_32.c	2008-03-10 11:22:22.711626305 -0500
-@@ -172,6 +172,18 @@ int __init ppc_setup_l2cr(char *str)
- }
- __setup("l2cr=", ppc_setup_l2cr);
- 
-+/* Checks "l3cr=xxxx" command-line option REB */
-+int __init ppc_setup_l3cr(char *str)
-+{
-+	if (cpu_has_feature(CPU_FTR_L3CR)) {
-+		unsigned long val = simple_strtoul(str, NULL, 0);
-+		printk(KERN_INFO "l3cr set to %lx\n", val);
-+		_set_L3CR(val);		/* and enable it */
-+	}
-+	return 1;
-+}
-+__setup("l3cr=", ppc_setup_l3cr);
-+
- #ifdef CONFIG_GENERIC_NVRAM
- 
- /* Generic nvram hooks used by drivers/char/gen_nvram.c */
-
---- linux-2.6.24/Documentation/kernel-parameters.txt.orig	2008-03-25 12:30:09.688082305 -0500
-+++ linux-2.6.24/Documentation/kernel-parameters.txt	2008-03-25 12:30:29.816083202 -0500
-@@ -877,6 +877,8 @@ and is between 256 and 4096 characters. 
- 
- 	l2cr=		[PPC]
- 
-+	l3cr=		[PPC]
-+
- 	lapic		[X86-32,APIC] Enable the local APIC even if BIOS
- 			disabled it.
- 
-
---ELM1206467149-24313-0_--
+We actually use a volatile ram (SRAM) as an MTD device. We use it to
+store info from bootloader and system specific values between resets.
