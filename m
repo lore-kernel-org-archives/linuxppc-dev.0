@@ -1,22 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0CB48DEADA
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 08:35:38 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m2PLZXar004109
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 14:35:34 -0700 (MST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Enable CONFIG_FORCE_MAX_ZONEORDER for all PowerPC,
-	and make selectable
-Date: Tue, 25 Mar 2008 16:35:32 -0500
-Message-Id: <1206480932-30190-1-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 26 Mar 2008 08:21:27 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: dtc: Simplify error handling for unparseable input
+Message-ID: <20080325212127.GA8281@localhost.localdomain>
+References: <20080324034424.GC29985@localhost.localdomain>
+	<20080324173641.GA22159@loki.buserror.net>
+	<20080325012805.GA1227@localhost.localdomain>
+	<20080325143619.GB13187@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080325143619.GB13187@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch enables the FORCE_MAX_ZONEORDER Kconfig option for all PowerPC
-systems.  Previously, it was enabled only for 64-bit systems.  We also make
-the option selectable from the menu, so that the user can specify different
-values.  This is useful for 32-bit systems that need to allocate more than
-4MB of physically contiguous memory.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+On Tue, Mar 25, 2008 at 09:36:19AM -0500, Scott Wood wrote:
+> On Tue, Mar 25, 2008 at 12:28:05PM +1100, David Gibson wrote:
+> > On Mon, Mar 24, 2008 at 12:36:41PM -0500, Scott Wood wrote:
+> > > If you remove this, there'll be no way to indicate semantic errors other
+> > > than die() (the NULL approaches are no good, since they inhibit recovery),
+> > > which is suboptimal if the error is not immediately fatal.
+> > 
+> > But everything is immediately fatal.  When we have a *real* example of
+> > something that's not, we can restore an error code.
+> 
+> Failed binary includes are not immediately fatal.
 
-I tested this on a Freescale 8610 32-bit PowerPC system, and when I increased
-CONFIG_FORCE_MAX_ZONEORDER to 13, I was able to allocate 5MB of memory via
-__get_free_pages(), so this change should be safe.
+And is there any advantage to having them not immediately fatal?
 
- arch/powerpc/Kconfig |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ef12db0..4e7eec8 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -211,14 +211,25 @@ source kernel/Kconfig.hz
- source kernel/Kconfig.preempt
- source "fs/Kconfig.binfmt"
- 
--# We optimistically allocate largepages from the VM, so make the limit
--# large enough (16MB). This badly named config option is actually
--# max order + 1
- config FORCE_MAX_ZONEORDER
--	int
--	depends on PPC64
-+	int "Maximum zone order"
- 	default "9" if PPC_64K_PAGES
--	default "13"
-+	default "13" if PPC64
-+	default "11"
-+	help
-+	  The kernel memory allocator divides physically contiguous memory
-+	  blocks into "zones", where each zone is a power of two number of
-+	  pages.  This option selects the largest power of two that the kernel
-+	  keeps in the memory allocator.  If you need to allocate very large
-+	  blocks of physically contiguous memory, then you may need to
-+	  increase this value.
-+
-+	  This config option is actually maximum order plus one. For example,
-+	  a value of 11 means that the largest free memory block is 2^10 pages.
-+
-+	  The page size is not necessarily 4KB.  For example, on 64-bit
-+	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.  Keep
-+	  this in mind when choosing a value for this option.
- 
- config HUGETLB_PAGE_SIZE_VARIABLE
- 	bool
 -- 
-1.5.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
