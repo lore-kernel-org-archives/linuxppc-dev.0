@@ -1,27 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id DFB96DE02D
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 05:49:07 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so750400anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 11:49:06 -0700 (PDT)
-Message-ID: <fa686aa40803251149i605b3fe0u95c630e9bdc54318@mail.gmail.com>
-Date: Tue, 25 Mar 2008 12:49:04 -0600
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.227])
+	by ozlabs.org (Postfix) with ESMTP id E7643DE8E4
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 05:51:44 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so3167029wxd.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 11:51:42 -0700 (PDT)
+Message-ID: <fa686aa40803251151p457a2295w449222654be4d0d1@mail.gmail.com>
+Date: Tue, 25 Mar 2008 12:51:41 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Bartlomiej Sieka" <tur@semihalf.com>
 Subject: Re: Please pull linux-2.6-mpc52xx.git
-In-Reply-To: <47E92D60.6090008@semihalf.com>
+In-Reply-To: <47E938A8.9000103@semihalf.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>
 	<20080317222836.AFA66241A2@gemini.denx.de>
 	<fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>
-	<47DF7D6F.8010808@semihalf.com>
-	<fa686aa40803180747u532f6a0bq1e64e01662bdb6bd@mail.gmail.com>
-	<1205858510.7500.35.camel@dax.rpnet.com>
-	<fa686aa40803180953v7b704cf4g484324ef6fc8f523@mail.gmail.com>
-	<47E92D60.6090008@semihalf.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Richard Purdie <rpurdie@rpsys.net>
+	<47E938A8.9000103@semihalf.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,49 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 25, 2008 at 10:50 AM, Bartlomiej Sieka <tur@semihalf.com> wrote:
+On Tue, Mar 25, 2008 at 11:38 AM, Bartlomiej Sieka <tur@semihalf.com> wrote:
 > Grant Likely wrote:
->  > On Tue, Mar 18, 2008 at 10:41 AM, Richard Purdie <rpurdie@rpsys.net> wrote:
->  >>  On Tue, 2008-03-18 at 08:47 -0600, Grant Likely wrote:
->  >>  I don't mind having a specific driver but I don't know anything about
->  >>  the hardware its creating the interface for so I need the community's
->  >>  help with that part. There is drivers/leds/leds-gpio.c if that would
->  >>  work better.
->  >
->  > Yes, I think that would be the right approach.  We would need to add
->  > the binding code to translate from the OF device tree to the leds-gpio
->  > driver.
+>  > The one part that I have a really strong opinion on is that there
+>  > should be a full featured mpc5200 defconfig for build testing.  Beyond
+>  > that (and if ojn can also be appeased) I can probably be convinced.  :-)
 >
->  I think that leds-gpio.c is a good solution for long-term. Note however,
->  that having the LED-to-GPIO pin mapping defined in the OF device
->  tree is problematic for targets that don't use a device tree, and for a
->  generic driver like leds-gpio.c some other mechanisms should probably be
->  used.
-
-Something to consider:  The device tree is all about describing
-hardware and binding it to the driver.  Nothing more.  So; there will
-always be glue code to extract the config from the tree and tell the
-leds-gpio driver about it (the binding); but once that is done the
-driver isn't any different.  I've got several drivers with both
-platform bus and of_platform bus bindings where most of the driver is
-shared.  Only the bit of code that extracts the configuration from
-either pdata or the device tree is bus specific.
-
+>  Hi Grant,
 >
->  Going back to LEDs on Motion-PRO, using leds-gpio.c for this target
->  won't be achieved quickly. leds-gpio.c uses generic GPIO access
->  routines, which are not implemented for powerpc in general, and MPC5200
->  in particular. One would have to add support for MPC5200 to GPIO LIB
->  API, and implement the above mentioned LED-to-GPIO pin mapping in
->  leds-gpio.c, and then convert Motion-PRO.
->
->  Since both you and Richard don't have objections against a specific
->  driver, and switching Motion-PRO to a generic approach requires quite a
->  bit of work -- then how about we provide a patch that addresses
->  Richard's comments, and have the Motion-PRO LED support merged upstream
->  as a specific driver?
+>  How to deal with a situation where I need a particular PHY driver from
+>  libphy compiled in the kernel for one of the MPC5200 boards? Adding it
+>  to mpc5200_defconfig doesn't seem like a right thing to do.
 
-Yes, I'm totally cool with that.
+Why not?  mpc5200_defconfig is all about compile and runtime testing
+on many platforms to make sure drivers play well together.  I have no
+problem adding more drivers to the mpc5200 defconfig.  (In fact, I
+encourage it).
+
+>  How to
+>  convince you (and appease ojn) to accept a patch that adds a
+>  board-specific defconfig that only slightly differs from
+>  mpc5200_defconfig? :)
+
+I'm thinking 'optimized' defconfigs should go into a subdirectory.
 
 Cheers,
 g.
