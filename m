@@ -1,21 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7A9ADDED9
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 14:31:29 +1100 (EST)
-Message-Id: <F174C43D-B59A-47E0-AF99-DA8182F8A6D0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Zhang Wei <wei.zhang@freescale.com>
-In-Reply-To: <78567AC4946EDC42B7DE978C350CD869EC52AE@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] Introduce lowmem_end_addr to distiguish
-	fromtotal_lowmem
-Date: Mon, 24 Mar 2008 22:31:16 -0500
-References: <Pine.LNX.4.64.0803241832570.29472@blarg.am.freescale.net>
-	<78567AC4946EDC42B7DE978C350CD869EC52AE@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Wang Haiying <Haiying.Wang@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18408.29239.941431.655259@cargo.ozlabs.ibm.com>
+Date: Tue, 25 Mar 2008 14:32:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +17,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-On Mar 24, 2008, at 10:18 PM, Zhang Wei wrote:
-> Hi, Kumar,
->
->> -----Original Message-----
->> From: linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.org
->>
->> total_lowmem represents the amount of low memory not the
->> physical address
->> that low memory ends at.  If the start of memory is at 0 it
->> happends that
->> total_lowmem can be used as both the size and the address that lowmem
->> ends at. (technical its one byte beyond the end)
->>
->> To make the code a bit more clear and deal with the case when
->> the start of
->> memory isn't at physical 0, we introduce lowmem_end_addr that
->> represents
->> one byte beyond the last physical address in the lowmem region.
->
-> About the kernel memory offset, if the memory area from phyical 0
-> to lowmem start address is reserved for other usage in this kernel,
-> no more comments. If it will be used by other kernel (in asmp mode),
-> how about to use tlb mapping physical address to virtual address 0
-> not move the kernel lowmem address? I consider the tlb mapping
-> will be more safe.
+Please do:
 
-I'm not sure I follow your question.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-- k
+once more.  Kumar sent me a defconfig update for the Freescale
+platforms, and there is another 1-line fix from Grant Likely that only
+affects MPC5200B machines.
+
+Thanks,
+Paul.
+
+ arch/powerpc/boot/dts/lite5200b.dts          |    2 
+ arch/powerpc/configs/ep8248e_defconfig       |   74 +++++++---
+ arch/powerpc/configs/ep88xc_defconfig        |   56 +++++--
+ arch/powerpc/configs/linkstation_defconfig   |  131 +++++++++++------
+ arch/powerpc/configs/mpc7448_hpc2_defconfig  |  119 ++++++++++++----
+ arch/powerpc/configs/mpc8272_ads_defconfig   |   75 ++++++++--
+ arch/powerpc/configs/mpc8313_rdb_defconfig   |  114 ++++++++++-----
+ arch/powerpc/configs/mpc8315_rdb_defconfig   |  110 ++++++++++-----
+ arch/powerpc/configs/mpc832x_mds_defconfig   |  101 +++++++++----
+ arch/powerpc/configs/mpc832x_rdb_defconfig   |  106 +++++++++-----
+ arch/powerpc/configs/mpc834x_itx_defconfig   |  111 +++++++++------
+ arch/powerpc/configs/mpc834x_itxgp_defconfig |  109 +++++++++-----
+ arch/powerpc/configs/mpc834x_mds_defconfig   |  104 +++++++++-----
+ arch/powerpc/configs/mpc836x_mds_defconfig   |  102 +++++++++----
+ arch/powerpc/configs/mpc837x_mds_defconfig   |  197 ++++++++++++++------------
+ arch/powerpc/configs/mpc837x_rdb_defconfig   |   83 +++++++----
+ arch/powerpc/configs/mpc83xx_defconfig       |   88 ++++++++----
+ arch/powerpc/configs/mpc8540_ads_defconfig   |  121 ++++++++++++----
+ arch/powerpc/configs/mpc8544_ds_defconfig    |  127 ++++++++++++-----
+ arch/powerpc/configs/mpc8560_ads_defconfig   |  126 +++++++++++++----
+ arch/powerpc/configs/mpc8568mds_defconfig    |  106 ++++++++++----
+ arch/powerpc/configs/mpc8572_ds_defconfig    |  127 ++++++++++++-----
+ arch/powerpc/configs/mpc85xx_cds_defconfig   |  131 +++++++++++++----
+ arch/powerpc/configs/mpc85xx_defconfig       |  111 ++++++++++-----
+ arch/powerpc/configs/mpc8610_hpcd_defconfig  |  131 ++++++++++++++---
+ arch/powerpc/configs/mpc8641_hpcn_defconfig  |  115 ++++++++++-----
+ arch/powerpc/configs/mpc866_ads_defconfig    |  112 +++++++++++----
+ arch/powerpc/configs/mpc885_ads_defconfig    |   56 +++++--
+ arch/powerpc/configs/pq2fads_defconfig       |   89 +++++++++---
+ arch/powerpc/configs/prpmc2800_defconfig     |  160 +++++++++++++++------
+ arch/powerpc/configs/sbc834x_defconfig       |   78 +++++++---
+ arch/powerpc/configs/sbc8548_defconfig       |  115 ++++++++++++---
+ arch/powerpc/configs/sbc8560_defconfig       |  124 +++++++++++++---
+ arch/powerpc/configs/storcenter_defconfig    |  102 ++++++++-----
+ arch/powerpc/configs/stx_gp3_defconfig       |  154 +++++++++++++++-----
+ arch/powerpc/configs/tqm8540_defconfig       |  133 +++++++++++++-----
+ arch/powerpc/configs/tqm8541_defconfig       |  133 +++++++++++++-----
+ arch/powerpc/configs/tqm8555_defconfig       |  133 +++++++++++++-----
+ arch/powerpc/configs/tqm8560_defconfig       |  133 +++++++++++++-----
+ 39 files changed, 3032 insertions(+), 1267 deletions(-)
+
+commit 5492a7e4cba8e38419d489f0865de0a67c737e8a
+Author: Grant Likely <grant.likely@secretlab.ca>
+Date:   Sat Mar 22 14:25:15 2008 +1100
+
+    [POWERPC] mpc5200: Fix incorrect compatible string for the mdio node
+    
+    The MDIO node in the lite5200b.dts file needs to also claim compatibility
+    with the older mpc5200 chip.  Otherwise the driver won't find the device.
+    
+    Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit eff2f1ec37c114fda63ac1dd15c9ca9ac7e68db4
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Mon Mar 24 08:56:06 2008 -0500
+
+    [POWERPC] Update some defconfigs
+    
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
