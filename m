@@ -1,22 +1,19 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <tytso@MIT.EDU>
+Received: from biscayne-one-station.mit.edu (BISCAYNE-ONE-STATION.MIT.EDU
+	[18.7.7.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 33BFDDDF0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 09:49:00 +1100 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 532CCDDF12
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 09:50:04 +1100 (EST)
+Date: Tue, 25 Mar 2008 18:49:23 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] ppc: Export empty_zero_page
+Message-ID: <20080325224923.GC24980@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx uart
-	16550.
-Date: Tue, 25 Mar 2008 16:48:54 -0600
-In-Reply-To: <47E7DEF1.9050501@ru.mvista.com>
-References: <12060242324116-git-send-email-john.linn@xilinx.com>		<20080320144402.3063517C005D@mail148-sin.bigfish.com>		<fa686aa40803201719i7bf02ba2qd259f1a36a24d943@mail.gmail.com>		<18403.32257.725539.470771@cargo.ozlabs.ibm.com>		<fa686aa40803220750h1d86589am9a26aeeb359178b7@mail.gmail.com>		<47E7B61B.70708@ru.mvista.com>	<fa686aa40803240727p14c7e8c0r8575f7d5feb776dd@mail.gmail.com>
-	<47E7D3BB.1050403@ru.mvista.com> <47E7DEF1.9050501@ru.mvista.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <20080325224856.E59F310C805E@mail39-sin.bigfish.com>
+Content-Type: multipart/mixed; boundary="fXStkuK2IQBfcDe+"
+In-Reply-To: <20080326092657.8b65e5ea.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for all the input. I'd like to propose a solution hoping to
-arrive at consensus.
 
-We can define a "sparse16550" binding that uses reg-shift and reg-offset
-properties in the device tree.=20
+--fXStkuK2IQBfcDe+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It seems like this is a common variable on the 16550 so that others
-could also use it.  I like it because it specifies the differences
-clearly from a normal 16550 yet is flexible enough to handle some other
-variations also.
+On Wed, Mar 26, 2008 at 09:26:57AM +1100, Stephen Rothwell wrote:
+> However, have you made any progress on Christoph's suggestion:
+>
+> "The real fix is that ext4 shouldn't be using ZERO_PAGE().  Please use
+> the same zeroing helpers all the other filesystems and drivers use."
 
-Thanks,
-John
+When Aneesh asked for clarification about Christoph's suggestion, he
+got the following response (see attached).
 
------Original Message-----
-From: Sergei Shtylyov [mailto:sshtylyov@ru.mvista.com]=20
-Sent: Monday, March 24, 2008 11:04 AM
-To: Sergei Shtylyov
-Cc: Grant Likely; linuxppc-dev@ozlabs.org; Paul Mackerras; John Linn
-Subject: Re: [PATCH 2/3] [POWERPC] Xilinx: of_serial support for Xilinx
-uart 16550.
+						- Ted
 
-Hi, I wrote:
 
->    Oh, well... unfortunately, we can't use UPIO_MEM32 "register model"
+--fXStkuK2IQBfcDe+
+Content-Type: message/rfc822
+Content-Disposition: inline
 
-> in 8250.c anyway since that makes use of readl()/writel() -- which
-treat=20
-> the bus as bigendian on PPC... anyway, we would need at least a=20
+Date: Thu, 20 Mar 2008 04:35:12 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Subject: Re: ZERO_PAGE(0) usage in ext4
+Message-ID: <20080320083512.GB27854@infradead.org>
+References: <20080317175230.GA9325@skywalker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080317175230.GA9325@skywalker>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
-    I was going to write "as little-endian"... :-<
+On Mon, Mar 17, 2008 at 11:22:30PM +0530, Aneesh Kumar K.V wrote:
+> Hi Christoph,
+> 
+> I have changes pending for ext4 which uses ZERO_PAGE(0) to zero out
+> file system blocks.
+> 
+> http://repo.or.cz/w/ext4-patch-queue.git?a=blob;f=ext4-fallocate-full-fs-ENOSPC-handling.patch;h=e14ec2a53f008c3f4b80544a897165de4bb5d360;hb=HEAD
+> 
+> The changes are needed to make sure we allow writing to prealloc space
+> even when there are no space left in the file system to insert new
+> extent details. To use ZERO_PAGE in ext4 i would need patches to export
+> some of the variables. I found that you answered Ted's patch at
+> 
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052956.html
+> 
+> I have a patch that does the same thing for multiple arch. Can you help
+> me understand what you meant by zeroing helpers ?
 
-> "reg-size" property, if not new "compatible"...
+Ok, you're actually sending down the page and not copying from it.
+This is probab;y okay.
 
-WBR, Sergei
+--fXStkuK2IQBfcDe+--
