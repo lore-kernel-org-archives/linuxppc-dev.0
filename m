@@ -1,17 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7C020DE725
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:56:18 +1100 (EST)
-Message-ID: <47E92EC8.7010700@scram.de>
-Date: Tue, 25 Mar 2008 17:56:40 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id B29EEDE11D
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 04:00:45 +1100 (EST)
+Message-ID: <47E93010.5090904@ru.mvista.com>
+Date: Tue, 25 Mar 2008 20:02:08 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] [POWERPC] CPM1: implement GPIO LIB API
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: OF compatible MTD platform RAM driver ?
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+	<200803251651.42608.laurentp@cse-semaphore.com>
+	<47E926FB.3030900@ru.mvista.com>
+	<200803251744.46001.laurentp@cse-semaphore.com>
+In-Reply-To: <200803251744.46001.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,296 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement GPIO LIB API on CPM1 Freescale SoC.
+Laurent Pinchart wrote:
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
+>>>>>We're talking about a very specific type of RAM, used for permanent storage 
+>>>>>with a battery backup. The RAM is really meant to be used as an MTD device 
+>>>>>and as such I think it makes sense to describe it as an mtd-compatible device 
+>>>>>on the local bus.
 
-This is based on the series starting at http://patchwork.ozlabs.org/linuxppc/patch?id=17299
+>>>>>What about the following definition for the RAM node ?
 
- arch/powerpc/platforms/8xx/Kconfig |    2 +
- arch/powerpc/sysdev/cpm1.c         |  240 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 241 insertions(+), 1 deletions(-)
+>>>>>       nvram@2,0000 {
 
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 7fd224c..e12cbf0 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -4,6 +4,8 @@ config FADS
- config CPM1
- 	bool
- 	select CPM
-+	select GENERIC_GPIO
-+	select GPIO_LIB
- 
- choice
- 	prompt "8xx Machine Type"
-diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
-index df8bd2b..c3d5df8 100644
---- a/arch/powerpc/sysdev/cpm1.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -30,11 +30,14 @@
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/module.h>
-+#include <linux/spinlock.h>
-+#include <linux/of_gpio.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/8xx_immap.h>
- #include <asm/cpm1.h>
- #include <asm/io.h>
-+#include <asm/gpio.h>
- #include <asm/tlbflush.h>
- #include <asm/rheap.h>
- #include <asm/prom.h>
-@@ -403,7 +406,7 @@ struct cpm_ioport16 {
- };
- 
- struct cpm_ioport32 {
--	__be32 dir, par, sor;
-+	__be32 dir, par, sor, dat;
- };
- 
- static void cpm1_set_pin32(int port, int pin, int flags)
-@@ -610,3 +613,238 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
- 
- 	return 0;
- }
-+
-+/*
-+ * GPIO LIB API implementation
-+ */
-+
-+struct cpm1_gpio16_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
-+
-+	/* shadowed data register to clear/set bits safely */
-+	u16 cpdata;
-+};
-+
-+static inline struct cpm1_gpio16_chip *
-+to_cpm1_gpio16_chip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct cpm1_gpio16_chip, mm_gc);
-+}
-+
-+static void cpm1_gpio16_save_regs(struct of_mm_gpio_chip *mm_gc)
-+{
-+	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+
-+	cpm1_gc->cpdata = in_be16(&iop->dat);
-+}
-+
-+static int cpm1_gpio16_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	return !!(in_be16(&iop->dat) & pin_mask);
-+}
-+
-+static void cpm1_gpio16_set(struct gpio_chip *gc, unsigned int gpio, int value)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	unsigned long flags;
-+	u16 pin_mask = 1 << (15 - gpio);
-+
-+	spin_lock_irqsave(&cpm1_gc->lock, flags);
-+
-+	if (value)
-+		cpm1_gc->cpdata |= pin_mask;
-+	else
-+		cpm1_gc->cpdata &= ~pin_mask;
-+
-+	out_be16(&iop->dat, cpm1_gc->cpdata);
-+
-+	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
-+}
-+
-+static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	setbits16(&iop->dir, pin_mask);
-+
-+	cpm1_gpio16_set(gc, gpio, val);
-+
-+	return 0;
-+}
-+
-+static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
-+	u16 pin_mask;
-+
-+	pin_mask = 1 << (15 - gpio);
-+
-+	clrbits16(&iop->dir, pin_mask);
-+
-+	return 0;
-+}
-+
-+int cpm1_gpiochip_add16(struct device_node *np)
-+{
-+	struct cpm1_gpio16_chip *cpm1_gc;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct of_gpio_chip *of_gc;
-+	struct gpio_chip *gc;
-+
-+	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
-+	if (!cpm1_gc)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&cpm1_gc->lock);
-+
-+	mm_gc = &cpm1_gc->mm_gc;
-+	of_gc = &mm_gc->of_gc;
-+	gc = &of_gc->gc;
-+
-+	mm_gc->save_regs = cpm1_gpio16_save_regs;
-+	of_gc->gpio_cells = 1;
-+	gc->ngpio = 16;
-+	gc->direction_input = cpm1_gpio16_dir_in;
-+	gc->direction_output = cpm1_gpio16_dir_out;
-+	gc->get = cpm1_gpio16_get;
-+	gc->set = cpm1_gpio16_set;
-+
-+	return of_mm_gpiochip_add(np, mm_gc);
-+}
-+
-+struct cpm1_gpio32_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
-+
-+	/* shadowed data register to clear/set bits safely */
-+	u32 cpdata;
-+};
-+
-+static inline struct cpm1_gpio32_chip *
-+to_cpm1_gpio32_chip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct cpm1_gpio32_chip, mm_gc);
-+}
-+
-+static void cpm1_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
-+{
-+	struct cpm1_gpio32_chip *cpm1_gc = to_cpm1_gpio32_chip(mm_gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+
-+	cpm1_gc->cpdata = in_be32(&iop->dat);
-+}
-+
-+static int cpm1_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	return !!(in_be32(&iop->dat) & pin_mask);
-+}
-+
-+static void cpm1_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm1_gpio32_chip *cpm1_gc = to_cpm1_gpio32_chip(mm_gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	unsigned long flags;
-+	u32 pin_mask = 1 << (31 - gpio);
-+
-+	spin_lock_irqsave(&cpm1_gc->lock, flags);
-+
-+	if (value)
-+		cpm1_gc->cpdata |= pin_mask;
-+	else
-+		cpm1_gc->cpdata &= ~pin_mask;
-+
-+	out_be32(&iop->dat, cpm1_gc->cpdata);
-+
-+	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
-+}
-+
-+static int cpm1_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	setbits32(&iop->dir, pin_mask);
-+
-+	cpm1_gpio32_set(gc, gpio, val);
-+
-+	return 0;
-+}
-+
-+static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
-+	u32 pin_mask;
-+
-+	pin_mask = 1 << (31 - gpio);
-+
-+	clrbits32(&iop->dir, pin_mask);
-+
-+	return 0;
-+}
-+
-+int cpm1_gpiochip_add32(struct device_node *np)
-+{
-+	struct cpm1_gpio32_chip *cpm1_gc;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct of_gpio_chip *of_gc;
-+	struct gpio_chip *gc;
-+
-+	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
-+	if (!cpm1_gc)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&cpm1_gc->lock);
-+
-+	mm_gc = &cpm1_gc->mm_gc;
-+	of_gc = &mm_gc->of_gc;
-+	gc = &of_gc->gc;
-+
-+	mm_gc->save_regs = cpm1_gpio32_save_regs;
-+	of_gc->gpio_cells = 1;
-+	gc->ngpio = 32;
-+	gc->direction_input = cpm1_gpio32_dir_in;
-+	gc->direction_output = cpm1_gpio32_dir_out;
-+	gc->get = cpm1_gpio32_get;
-+	gc->set = cpm1_gpio32_set;
-+
-+	return of_mm_gpiochip_add(np, mm_gc);
-+}
-+
-+static int cpm_init_par_io(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
-+		cpm1_gpiochip_add16(np);
-+
-+	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32")
-+		cpm1_gpiochip_add32(np);
-+	return 0;
-+}
-+arch_initcall(cpm_init_par_io);
--- 
-1.5.4.4
+>>>>   Note that there's a OF "device_type" of "nvram", so your (generic) device 
+>>>>name seems to add some mess. (IIRC, that OF device type didn't actually 
+>>>>represent a "real" device, and only served to provide access to NVRAM for OF).
+
+>>>Ok.
+
+>>    Well, I might have gone too far here -- it should be a real device 
+>>(spec'ed in Device Support Extensions recommended practice). It's just that 
+>>the spec didn't mention "reg" property, only "#bytes" (the device capacity). 
+>>So, it may be worth considering...
+
+> The nvram device descrived in the Device Support Extensions is probably meant 
+> to describe the kind of nvram found in RTC chips.
+
+    Well, that is only an assumption -- actually, the sentense in the 
+description of the "#bytes" prop about the typical size being from 4 to 32K 
+speaks against it. The details of NVRAM implementation are hidden behind 
+read/write/seek methods.
+
+> That memory isn't directly accessible.
+
+    That's what we have a "compatible" prop for. ;-)
+
+> As the spec doesn't mention this explicitely we could still reuse 
+> the nvram device type for direct-mapped battery-backed ram. I have no strong 
+> opinion for or against that.
+
+>>>>>               reg = <2 0x0000 0x00100000>;
+>>>>>               bank-width = <2>;
+>>>>>       };
+
+>>>>>Or should the node have a device-type property of either 'ram' or 'rom' with 
+>>>>>the compatible property just referencing MTD ?
+
+>>>>   The "device_type" properties are not required and their further creation 
+
+>>>>has been discouraged on liunxppc-dev.
+
+>>>What about
+
+>>>	mtdram@2,0000 {
+>>>		compatible = "mtd-ram";
+>>>		reg = <2 0x0000 0x00100000>;
+>>>		bank-width = <2>;
+>>>	};
+
+>>>ROMs could use "mtd-rom" for their compatible property.
+
+>>    Heh, there was a whole company against mentioning "mtd" when we started 
+>>working on this (of course, the first idea was to call the flash device type 
+>>"mtd"). I don't think "mtd" looks good here -- I'd suggest "flash-ram" (if 
+>>this is just a linearly mapped NVRAM).
+
+> I'm fine with "flash-ram" (even thought it looks a bit weird). I'll prepare a 
+> patch.
+
+    Yeah. I forgeot that "flash" means EEPROM. Actually, the main facts about 
+the NVRAM that I'd want to be stated in the "compatible" property is that it's 
+non-volatile and directly/lineraly mapped... Just "nvram" doesn't seem 
+enopugh, maybe "linear-nvram" is. And we can specify "device_type" of "nvram" 
+indeed (and #size).
+
+> Best regards,
+
+WBR, Sergei
