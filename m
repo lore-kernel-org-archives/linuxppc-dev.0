@@ -1,21 +1,36 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 1E557DDFCC
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 02:51:46 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: OF compatible MTD platform RAM driver ?
-Date: Tue, 25 Mar 2008 16:51:31 +0100
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<200803251536.17795.laurentp@cse-semaphore.com>
-	<47E91A5B.1060406@ru.mvista.com>
-In-Reply-To: <47E91A5B.1060406@ru.mvista.com>
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CC1C7DE294
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 02:56:23 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id m2PFuIl1390310
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 15:56:18 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m2PFuHcj2142448
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 16:56:17 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m2PFuG6U001057
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 16:56:17 +0100
+From: Thomas Klein <osstklei@de.ibm.com>
+To: stable@kernel.org
+Subject: [PATCH 2.6.24-stable] ehea: Fix IPv6 support
+Date: Tue, 25 Mar 2008 16:56:15 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1509009.ud9OxWemcf";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803251651.42608.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200803251656.16065.osstklei@de.ibm.com>
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	Hannes Hering <hering2@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,126 +40,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1509009.ud9OxWemcf
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Indicate that HEA calculates IPv4 checksums only
 
-Hi Sergei,
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-On Tuesday 25 March 2008 16:29, Sergei Shtylyov wrote:
-> Hello.
->=20
-> Laurent Pinchart wrote:
->=20
-> >>>>>here is the sram entry in our dts:
->=20
-> >>>>Except that your implementation of it is not good.
->=20
-> >>>>You're relying on the old obsolete flash binding with the "probe-type"
-> >>>>field.  The solution should be adapted to the new approach which uses
-> >>>>values in the "compatible" field to indicate various sorts of flash
-> >>>>device.
->=20
-> >>>What "compatible" values should I use for ROM and RAM mappings ?
->=20
-> >>That I'm not so sure of.  We'll need to find some consensus.
->=20
-> >>There may be existing IEEE1275 bindings for roms, which we should
-> >>investigate.
->=20
-> > Do you (or someone else here) have access to the IEEE1275 specification=
- ? Is=20
->=20
->     Yeah, and I can point you to it -- see the documantation section on=20
-> http://www.openbios.org/...
-
-Thanks a lot for the pointer.
-
-> > there any ROM binding in there ?
->=20
->     No. We initially called the flash devices that physmap_of driver=20
-> controlled "rom" (I mean the "device_type" property) -- now this is obsol=
-eted.
->=20
-> >>Arguably RAM should be represented by a memory node, but=20
-> >>that's going to get messy for this sort of application.
->=20
->     Note that the OF "memory" type nodes do *not* represent RAM devices.
->=20
-> > We're talking about a very specific type of RAM, used for permanent sto=
-rage=20
-> > with a battery backup. The RAM is really meant to be used as an MTD dev=
-ice=20
-> > and as such I think it makes sense to describe it as an mtd-compatible =
-device=20
-> > on the local bus.
->=20
-> > What about the following definition for the RAM node ?
->=20
-> >         nvram@2,0000 {
->=20
->     Note that there's a OF "device_type" of "nvram", so your (generic) de=
-vice=20
-> name seems to add some mess. (IIRC, that OF device type didn't actually=20
-> represent a "real" device, and only served to provide access to NVRAM for=
- OF).
-
-Ok.
-
-> >                 compatible =3D "mtd,ram";
->=20
->     The part before comma should be a company name or a stock ticker. Wha=
-t did=20
-> you mean here?
-
-I didn't know that. Let's say I meant "mtd-ram" :-)
-
-> >                 reg =3D <2 0x0000 0x00100000>;
-> >                 bank-width =3D <2>;
-> >         };
->=20
-> > Or should the node have a device-type property of either 'ram' or 'rom'=
- with=20
-> > the compatible property just referencing MTD ?
->=20
->     The "device_type" properties are not required and their further creat=
-ion=20
-> has been discouraged on liunxppc-dev.
-
-What about
-
-	mtdram@2,0000 {
-		compatible =3D "mtd-ram";
-		reg =3D <2 0x0000 0x00100000>;
-		bank-width =3D <2>;
-	};
-
-ROMs could use "mtd-rom" for their compatible property.
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1509009.ud9OxWemcf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH6R+O8y9gWxC9vpcRAjmRAJ9PZj/+KY8fFg6/bfI8me5ivje06QCguR7E
-1UoOb0cvvpX5p70BhGuAXaw=
-=iahI
------END PGP SIGNATURE-----
-
---nextPart1509009.ud9OxWemcf--
+---
+diff -Nurp linux-2.6.24.4.org/drivers/net/ehea/ehea.h linux-2.6.24.4/drivers/net/ehea/ehea.h
+--- linux-2.6.24.4.org/drivers/net/ehea/ehea.h	2008-03-25 12:42:18.000000000 +0100
++++ linux-2.6.24.4/drivers/net/ehea/ehea.h	2008-03-25 13:13:29.000000000 +0100
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0083"
++#define DRV_VERSION	"EHEA_0083a"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff -Nurp linux-2.6.24.4.org/drivers/net/ehea/ehea_main.c linux-2.6.24.4/drivers/net/ehea/ehea_main.c
+--- linux-2.6.24.4.org/drivers/net/ehea/ehea_main.c	2008-03-25 12:42:18.000000000 +0100
++++ linux-2.6.24.4/drivers/net/ehea/ehea_main.c	2008-03-25 13:13:12.000000000 +0100
+@@ -2945,7 +2945,7 @@ struct ehea_port *ehea_setup_single_port
+ 	dev->vlan_rx_add_vid = ehea_vlan_rx_add_vid;
+ 	dev->vlan_rx_kill_vid = ehea_vlan_rx_kill_vid;
+ 	dev->features = NETIF_F_SG | NETIF_F_FRAGLIST | NETIF_F_TSO
+-		      | NETIF_F_HIGHDMA | NETIF_F_HW_CSUM | NETIF_F_HW_VLAN_TX
++		      | NETIF_F_HIGHDMA | NETIF_F_IP_CSUM | NETIF_F_HW_VLAN_TX
+ 		      | NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_FILTER
+ 		      | NETIF_F_LLTX;
+ 	dev->tx_timeout = &ehea_tx_watchdog;
