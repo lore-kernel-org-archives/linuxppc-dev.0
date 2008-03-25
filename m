@@ -1,26 +1,28 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 967A6DE451
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 06:18:27 +1100 (EST)
-Date: Tue, 25 Mar 2008 12:18:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 2/2 v2] Add DIU platform code for MPC8610HPCD
-Message-Id: <20080325121804.a273944e.akpm@linux-foundation.org>
-In-Reply-To: <20080325124322.GH12798@shadowen.org>
-References: <12059526271941-git-send-email-yorksun@freescale.com>
-	<12059526274026-git-send-email-yorksun@freescale.com>
-	<12059526271964-git-send-email-yorksun@freescale.com>
-	<20080320153304.cdc1817d.akpm@linux-foundation.org>
-	<20080325124322.GH12798@shadowen.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	yorksun@freescale.com, linux-kernel@vger.kernel.org
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id DDAB5DDFA6
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 07:20:05 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.macqel.be (Postfix) with ESMTP id 7213C150E38
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 21:20:04 +0100 (CET)
+Received: from mail.macqel.be ([127.0.0.1])
+	by localhost (mail.macqel.be [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 3YunoKvmqZQs for <linuxppc-dev@ozlabs.org>;
+	Tue, 25 Mar 2008 21:20:02 +0100 (CET)
+Received: from frolo.macqel.be (frolo.macqel [10.1.40.73])
+	by mail.macqel.be (Postfix) with ESMTP id 2B9CB150E37
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 21:20:02 +0100 (CET)
+Date: Tue, 25 Mar 2008 21:20:01 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Haiying Wang <Haiying.Wang@freescale.com>
+Subject: Re: how to use head_fsl_booke.S:abort to restart
+Message-ID: <20080325202001.GA31145@frolo.macqel>
+References: <20080325161513.GB15991@frolo.macqel>
+	<1206462895.2960.10.camel@r54964-12.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1206462895.2960.10.camel@r54964-12.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,15 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 25 Mar 2008 12:43:22 +0000
-Andy Whitcroft <apw@shadowen.org> wrote:
+Hi Haiying,
 
-> > > ...
-> > >
-> > > +unsigned int mpc8610hpcd_get_pixel_format
-> > > +	(unsigned int bits_per_pixel, int monitor_port)
+On Tue, Mar 25, 2008 at 12:34:55PM -0400, Haiying Wang wrote:
+> 8540 doesn't have RSTCR register. You should not use fsl_rstcr_restart
+> for reboot your 8540 board.
 > 
-> This seems like it might be detectable, does this seem like something we
-> should try an report?
+That's what I was thinking also (see my Post-Scriptum below), but current
+linux/powerpc sources use fsl_rstcr_restart for the mpc8540_ads board :( 
 
-I guess so.  It's quite unusual.
+Philippe
+
+> On Tue, 2008-03-25 at 17:15 +0100, Philippe De Muyter wrote:
+> > Hi all,
+> > 
+> > I have a mpc8540 board that could reboot when driven by a ARCH=ppc linux,
+> > but that hangs now in arch/powerpc/sysdev/fsl_soc.c:fsl_rstcr_restart when
+> > asked to reboot with a ARCH=powerpc linux.
+> > 
+> > I have found that if I call arch/powerpc/kernel/head_fsl_booke.S:abort from
+> > there, my board reboots correctly, but I feel that's not the right place
+> > to put that call.  Where/how should I do that ?
+> > 
+> > Philippe
+> > 
+> > PS : Does arch/powerpc/sysdev/fsl_soc.c:fsl_rstcr_restart actually work
+> > for mpc8540_ads boards ?
