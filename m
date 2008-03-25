@@ -1,25 +1,17 @@
-Return-Path: <tur@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A700CDE394
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:52:10 +1100 (EST)
-Message-ID: <47E92D60.6090008@semihalf.com>
-Date: Tue, 25 Mar 2008 17:50:40 +0100
-From: Bartlomiej Sieka <tur@semihalf.com>
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7C020DE725
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:56:18 +1100 (EST)
+Message-ID: <47E92EC8.7010700@scram.de>
+Date: Tue, 25 Mar 2008 17:56:40 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Please pull linux-2.6-mpc52xx.git
-References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>	
-	<20080317222836.AFA66241A2@gemini.denx.de>	
-	<fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>	
-	<47DF7D6F.8010808@semihalf.com>	
-	<fa686aa40803180747u532f6a0bq1e64e01662bdb6bd@mail.gmail.com>	
-	<1205858510.7500.35.camel@dax.rpnet.com>
-	<fa686aa40803180953v7b704cf4g484324ef6fc8f523@mail.gmail.com>
-In-Reply-To: <fa686aa40803180953v7b704cf4g484324ef6fc8f523@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Richard Purdie <rpurdie@rpsys.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] [POWERPC] CPM1: implement GPIO LIB API
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,36 +21,296 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Tue, Mar 18, 2008 at 10:41 AM, Richard Purdie <rpurdie@rpsys.net> wrote:
->>  On Tue, 2008-03-18 at 08:47 -0600, Grant Likely wrote:
->>  I don't mind having a specific driver but I don't know anything about
->>  the hardware its creating the interface for so I need the community's
->>  help with that part. There is drivers/leds/leds-gpio.c if that would
->>  work better.
-> 
-> Yes, I think that would be the right approach.  We would need to add
-> the binding code to translate from the OF device tree to the leds-gpio
-> driver.
+Implement GPIO LIB API on CPM1 Freescale SoC.
 
-I think that leds-gpio.c is a good solution for long-term. Note however,
-that having the LED-to-GPIO pin mapping defined in the OF device
-tree is problematic for targets that don't use a device tree, and for a
-generic driver like leds-gpio.c some other mechanisms should probably be
-used.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
 
-Going back to LEDs on Motion-PRO, using leds-gpio.c for this target
-won't be achieved quickly. leds-gpio.c uses generic GPIO access
-routines, which are not implemented for powerpc in general, and MPC5200
-in particular. One would have to add support for MPC5200 to GPIO LIB
-API, and implement the above mentioned LED-to-GPIO pin mapping in
-leds-gpio.c, and then convert Motion-PRO.
+This is based on the series starting at http://patchwork.ozlabs.org/linuxppc/patch?id=17299
 
-Since both you and Richard don't have objections against a specific
-driver, and switching Motion-PRO to a generic approach requires quite a
-bit of work -- then how about we provide a patch that addresses
-Richard's comments, and have the Motion-PRO LED support merged upstream
-as a specific driver?
+ arch/powerpc/platforms/8xx/Kconfig |    2 +
+ arch/powerpc/sysdev/cpm1.c         |  240 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 241 insertions(+), 1 deletions(-)
 
-Regards,
-Bartlomiej
+diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+index 7fd224c..e12cbf0 100644
+--- a/arch/powerpc/platforms/8xx/Kconfig
++++ b/arch/powerpc/platforms/8xx/Kconfig
+@@ -4,6 +4,8 @@ config FADS
+ config CPM1
+ 	bool
+ 	select CPM
++	select GENERIC_GPIO
++	select GPIO_LIB
+ 
+ choice
+ 	prompt "8xx Machine Type"
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+index df8bd2b..c3d5df8 100644
+--- a/arch/powerpc/sysdev/cpm1.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -30,11 +30,14 @@
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/of_gpio.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/8xx_immap.h>
+ #include <asm/cpm1.h>
+ #include <asm/io.h>
++#include <asm/gpio.h>
+ #include <asm/tlbflush.h>
+ #include <asm/rheap.h>
+ #include <asm/prom.h>
+@@ -403,7 +406,7 @@ struct cpm_ioport16 {
+ };
+ 
+ struct cpm_ioport32 {
+-	__be32 dir, par, sor;
++	__be32 dir, par, sor, dat;
+ };
+ 
+ static void cpm1_set_pin32(int port, int pin, int flags)
+@@ -610,3 +613,238 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
+ 
+ 	return 0;
+ }
++
++/*
++ * GPIO LIB API implementation
++ */
++
++struct cpm1_gpio16_chip {
++	struct of_mm_gpio_chip mm_gc;
++	spinlock_t lock;
++
++	/* shadowed data register to clear/set bits safely */
++	u16 cpdata;
++};
++
++static inline struct cpm1_gpio16_chip *
++to_cpm1_gpio16_chip(struct of_mm_gpio_chip *mm_gc)
++{
++	return container_of(mm_gc, struct cpm1_gpio16_chip, mm_gc);
++}
++
++static void cpm1_gpio16_save_regs(struct of_mm_gpio_chip *mm_gc)
++{
++	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
++	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
++
++	cpm1_gc->cpdata = in_be16(&iop->dat);
++}
++
++static int cpm1_gpio16_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
++	u16 pin_mask;
++
++	pin_mask = 1 << (15 - gpio);
++
++	return !!(in_be16(&iop->dat) & pin_mask);
++}
++
++static void cpm1_gpio16_set(struct gpio_chip *gc, unsigned int gpio, int value)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
++	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
++	unsigned long flags;
++	u16 pin_mask = 1 << (15 - gpio);
++
++	spin_lock_irqsave(&cpm1_gc->lock, flags);
++
++	if (value)
++		cpm1_gc->cpdata |= pin_mask;
++	else
++		cpm1_gc->cpdata &= ~pin_mask;
++
++	out_be16(&iop->dat, cpm1_gc->cpdata);
++
++	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
++}
++
++static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
++	u16 pin_mask;
++
++	pin_mask = 1 << (15 - gpio);
++
++	setbits16(&iop->dir, pin_mask);
++
++	cpm1_gpio16_set(gc, gpio, val);
++
++	return 0;
++}
++
++static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
++	u16 pin_mask;
++
++	pin_mask = 1 << (15 - gpio);
++
++	clrbits16(&iop->dir, pin_mask);
++
++	return 0;
++}
++
++int cpm1_gpiochip_add16(struct device_node *np)
++{
++	struct cpm1_gpio16_chip *cpm1_gc;
++	struct of_mm_gpio_chip *mm_gc;
++	struct of_gpio_chip *of_gc;
++	struct gpio_chip *gc;
++
++	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
++	if (!cpm1_gc)
++		return -ENOMEM;
++
++	spin_lock_init(&cpm1_gc->lock);
++
++	mm_gc = &cpm1_gc->mm_gc;
++	of_gc = &mm_gc->of_gc;
++	gc = &of_gc->gc;
++
++	mm_gc->save_regs = cpm1_gpio16_save_regs;
++	of_gc->gpio_cells = 1;
++	gc->ngpio = 16;
++	gc->direction_input = cpm1_gpio16_dir_in;
++	gc->direction_output = cpm1_gpio16_dir_out;
++	gc->get = cpm1_gpio16_get;
++	gc->set = cpm1_gpio16_set;
++
++	return of_mm_gpiochip_add(np, mm_gc);
++}
++
++struct cpm1_gpio32_chip {
++	struct of_mm_gpio_chip mm_gc;
++	spinlock_t lock;
++
++	/* shadowed data register to clear/set bits safely */
++	u32 cpdata;
++};
++
++static inline struct cpm1_gpio32_chip *
++to_cpm1_gpio32_chip(struct of_mm_gpio_chip *mm_gc)
++{
++	return container_of(mm_gc, struct cpm1_gpio32_chip, mm_gc);
++}
++
++static void cpm1_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
++{
++	struct cpm1_gpio32_chip *cpm1_gc = to_cpm1_gpio32_chip(mm_gc);
++	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
++
++	cpm1_gc->cpdata = in_be32(&iop->dat);
++}
++
++static int cpm1_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
++	u32 pin_mask;
++
++	pin_mask = 1 << (31 - gpio);
++
++	return !!(in_be32(&iop->dat) & pin_mask);
++}
++
++static void cpm1_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm1_gpio32_chip *cpm1_gc = to_cpm1_gpio32_chip(mm_gc);
++	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
++	unsigned long flags;
++	u32 pin_mask = 1 << (31 - gpio);
++
++	spin_lock_irqsave(&cpm1_gc->lock, flags);
++
++	if (value)
++		cpm1_gc->cpdata |= pin_mask;
++	else
++		cpm1_gc->cpdata &= ~pin_mask;
++
++	out_be32(&iop->dat, cpm1_gc->cpdata);
++
++	spin_unlock_irqrestore(&cpm1_gc->lock, flags);
++}
++
++static int cpm1_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
++	u32 pin_mask;
++
++	pin_mask = 1 << (31 - gpio);
++
++	setbits32(&iop->dir, pin_mask);
++
++	cpm1_gpio32_set(gc, gpio, val);
++
++	return 0;
++}
++
++static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct cpm_ioport32 __iomem *iop = mm_gc->regs;
++	u32 pin_mask;
++
++	pin_mask = 1 << (31 - gpio);
++
++	clrbits32(&iop->dir, pin_mask);
++
++	return 0;
++}
++
++int cpm1_gpiochip_add32(struct device_node *np)
++{
++	struct cpm1_gpio32_chip *cpm1_gc;
++	struct of_mm_gpio_chip *mm_gc;
++	struct of_gpio_chip *of_gc;
++	struct gpio_chip *gc;
++
++	cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
++	if (!cpm1_gc)
++		return -ENOMEM;
++
++	spin_lock_init(&cpm1_gc->lock);
++
++	mm_gc = &cpm1_gc->mm_gc;
++	of_gc = &mm_gc->of_gc;
++	gc = &of_gc->gc;
++
++	mm_gc->save_regs = cpm1_gpio32_save_regs;
++	of_gc->gpio_cells = 1;
++	gc->ngpio = 32;
++	gc->direction_input = cpm1_gpio32_dir_in;
++	gc->direction_output = cpm1_gpio32_dir_out;
++	gc->get = cpm1_gpio32_get;
++	gc->set = cpm1_gpio32_set;
++
++	return of_mm_gpiochip_add(np, mm_gc);
++}
++
++static int cpm_init_par_io(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
++		cpm1_gpiochip_add16(np);
++
++	for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32")
++		cpm1_gpiochip_add32(np);
++	return 0;
++}
++arch_initcall(cpm_init_par_io);
+-- 
+1.5.4.4
