@@ -1,21 +1,29 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BC81ADE2F4
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:32:34 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: "Rune Torgersen" <runet@innovsys.com>
-Subject: Re: [PATCH] cpm_uart: Allocate DPRAM memory for SMC ports
-	onCPM2-based platforms.
-Date: Tue, 25 Mar 2008 17:32:29 +0100
-References: <20080325160331.GB15093@ld0162-tx32.am.freescale.net>
-	<200803251720.24667.laurentp@cse-semaphore.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B04276FB4@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04276FB4@ismail.innsys.innovsys.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2063505.TpGdRHG6Sy";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803251732.32569.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5EBADDE1CA
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 03:35:30 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m2PGYvLU005598
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 09:35:27 -0700 (MST)
+Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
+	[10.64.32.8])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m2PGYv1M026721
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 11:34:57 -0500 (CDT)
+Subject: Re: how to use head_fsl_booke.S:abort to restart
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: Philippe De Muyter <phdm@macqel.be>
+In-Reply-To: <20080325161513.GB15991@frolo.macqel>
+References: <20080325161513.GB15991@frolo.macqel>
+Content-Type: text/plain
+Date: Tue, 25 Mar 2008 12:34:55 -0400
+Message-Id: <1206462895.2960.10.camel@r54964-12.am.freescale.net>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2063505.TpGdRHG6Sy
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+8540 doesn't have RSTCR register. You should not use fsl_rstcr_restart
+for reboot your 8540 board.
 
-On Tuesday 25 March 2008 17:27, Rune Torgersen wrote:
-> >Laurent Pinchart wrote:
-> > On Tuesday 25 March 2008 17:03, Scott Wood wrote:
-> >> Yes, I've answered questions on the lists from at least one person
-> >> using a custom board with cpm2 smc.
-> >=20
-> > Are you sure it wasn't me ? ;-)
-> >=20
->=20
-> Probably me, actually. We have a 8280 with SMC's in use (SMC1 and 2)
+Haiying
 
-Ok.
-
-Do you have any opinion about the proposed patch ?
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart2063505.TpGdRHG6Sy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH6Skg8y9gWxC9vpcRAg2oAJ0QUkBIDeKB973Frjxm0V6ONPBCfgCePHst
-Zm/r+RtDYnwA9oNR8Lfbi4k=
-=uBL2
------END PGP SIGNATURE-----
-
---nextPart2063505.TpGdRHG6Sy--
+On Tue, 2008-03-25 at 17:15 +0100, Philippe De Muyter wrote:
+> Hi all,
+> 
+> I have a mpc8540 board that could reboot when driven by a ARCH=ppc linux,
+> but that hangs now in arch/powerpc/sysdev/fsl_soc.c:fsl_rstcr_restart when
+> asked to reboot with a ARCH=powerpc linux.
+> 
+> I have found that if I call arch/powerpc/kernel/head_fsl_booke.S:abort from
+> there, my board reboots correctly, but I feel that's not the right place
+> to put that call.  Where/how should I do that ?
+> 
+> Philippe
+> 
+> PS : Does arch/powerpc/sysdev/fsl_soc.c:fsl_rstcr_restart actually work
+> for mpc8540_ads boards ?
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
