@@ -1,15 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 27 Mar 2008 09:30:38 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: dtc: Trivial formatting fixes
-Message-ID: <20080326223038.GA5777@localhost.localdomain>
-References: <20080326052103.GB2090@localhost.localdomain>
-	<E1JeVTb-0005tQ-Ae@jdl.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 98A2EDE173
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 09:48:09 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2QMm4uQ019534
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 17:48:05 -0500
+Date: Wed, 26 Mar 2008 17:44:18 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Use lowmem_end_addr to limit lmb allocations on
+	ppc32
+Message-ID: <Pine.LNX.4.64.0803261743540.29631@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1JeVTb-0005tQ-Ae@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 26, 2008 at 08:15:35AM -0500, Jon Loeliger wrote:
-> > This patch fixes some trivial indentation and brace/bracket style
-> > problems.
-> 
-> 
-> > @@ -179,9 +179,8 @@
-> >  		arg = argv[optind];
-> >  
-> >  	/* minsize and padsize are mutually exclusive */
-> > -	if ((minsize) && (padsize)) {
-> > +	if (minsize && padsize)
-> >  		die("Can't set both -p and -S\n");
-> > -	}
-> 
-> 
-> I do not consider extra braces a "problem", and will
-> not be applying those changes.  The other indentation
-> fixes will be applied, of course.
+Now that we have a proper variable that is the address of the top
+of low memory we can use it to limit the lmb allocations.
 
-Meh, whatever.  Usual kernel style - which is what I originally
-adopted for dtc - says no braces for one line blocks.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ include/asm-powerpc/lmb.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/include/asm-powerpc/lmb.h b/include/asm-powerpc/lmb.h
+index 028184b..6f5fdf0 100644
+--- a/include/asm-powerpc/lmb.h
++++ b/include/asm-powerpc/lmb.h
+@@ -6,8 +6,8 @@
+ #define LMB_DBG(fmt...) udbg_printf(fmt)
+
+ #ifdef CONFIG_PPC32
+-extern unsigned long __max_low_memory;
+-#define LMB_REAL_LIMIT	__max_low_memory
++extern phys_addr_t lowmem_end_addr;
++#define LMB_REAL_LIMIT	lowmem_end_addr
+ #else
+ #define LMB_REAL_LIMIT	0
+ #endif
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.4.1
