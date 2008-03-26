@@ -1,18 +1,21 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A7C90DE67C
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 23:44:05 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linux-mtd@lists.infradead.org
-Subject: [PATCH 1/2] [MTD] Add support for RAM & ROM mappings in the
-	physmap_of MTD driver.
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D01D6DE98C
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 23:44:26 +1100 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m2QBlu9E005152
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 12:47:56 +0100
+Message-ID: <052801c88f37$3b51f7e0$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Re: Patch: FW:Xilinx: BSP: Updated ML405 to match hardware used for
+	testing
+Date: Wed, 26 Mar 2008 12:47:46 +0100
 MIME-Version: 1.0
-Date: Wed, 26 Mar 2008 13:44:03 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200803261344.03438.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello all,
 
-Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-=2D--
- drivers/mtd/maps/physmap_of.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+I'm trying to get things up and running on a Xilinx Virtex-4 ml405 board, 
+and as such I've been trying to figure out the following recent message to 
+the list:
+http://patchwork.ozlabs.org/linuxppc/patch?person=1226&id=17037
 
-diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-index 49acd41..65c30b5 100644
-=2D-- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -273,6 +273,14 @@ static struct of_device_id of_flash_match[] =3D {
- 		.data		=3D (void *)"jedec_probe",
- 	},
- 	{
-+		.compatible	=3D "physmap-ram",
-+		.data		=3D (void *)"map_ram",
-+	},
-+	{
-+		.compatible	=3D "physmap-rom",
-+		.data		=3D (void *)"map_rom",
-+	},
-+	{
- 		.type		=3D "rom",
- 		.compatible	=3D "direct-mapped"
- 	},
-=2D-=20
-1.5.0
+I don't understand what this patch applies to: it references files such as 
+ml405_defconfig which are not part of the normal kernel tree and which I 
+cannot find anywhere. Is there some other kind of patch that needs to apply 
+first in order to get for instance CONFIG_XILINX_DRIVERS, 
+CONFIG_XILINX_EMAC, etc...
 
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+Thanks
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
