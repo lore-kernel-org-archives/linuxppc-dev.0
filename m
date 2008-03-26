@@ -1,16 +1,18 @@
 Return-Path: <andi@firstfloor.org>
 Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
-	by ozlabs.org (Postfix) with ESMTP id DCB8CDE1A4
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 09:14:36 +1100 (EST)
-Date: Wed, 26 Mar 2008 22:47:24 +0100
+	by ozlabs.org (Postfix) with ESMTP id 522DDDE61B
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 09:31:17 +1100 (EST)
+Date: Wed, 26 Mar 2008 22:49:39 +0100
 From: Andi Kleen <andi@firstfloor.org>
 To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/4] 16G huge page support for powerpc
-Message-ID: <20080326214724.GA29105@one.firstfloor.org>
+Subject: Re: [PATCH 1/4] allow arch specific function for allocating gigantic
+	pages
+Message-ID: <20080326214939.GB29105@one.firstfloor.org>
 References: <47EABE2D.7080400@linux.vnet.ibm.com>
+	<47EABF09.6090302@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47EABE2D.7080400@linux.vnet.ibm.com>
+In-Reply-To: <47EABF09.6090302@linux.vnet.ibm.com>
 Cc: npiggin@suse.de, Adam Litke <agl@linux.vnet.ibm.com>,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
 	Linux Memory Management List <linux-mm@kvack.org>,
@@ -25,7 +27,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-FWIW i turned over the hugepages patchkit to Nick Piggin. So send
-all future patches to him please.
+Haven't reviewed it in detail, just noticed something.
+
+> @@ -614,6 +610,7 @@ static int __init hugetlb_init(void)
+>  {
+>  	if (HPAGE_SHIFT == 0)
+>  		return 0;
+> +	INIT_LIST_HEAD(&huge_boot_pages);
+>  	return hugetlb_init_hstate(&global_hstate);
+
+I don't think adding the INIT_LIST_HEAD here is correct. There can
+be huge pages added by the __setup handlers before hugetlb_init
 
 -Andi
