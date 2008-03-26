@@ -1,12 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 26 Mar 2008 16:21:03 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Trivial formatting fixes
-Message-ID: <20080326052103.GB2090@localhost.localdomain>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id E6768DDF4F
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 17:00:10 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so812262anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2008 23:00:07 -0700 (PDT)
+Message-ID: <fa686aa40803252300s3d0073b1xf40d1a3be99d735a@mail.gmail.com>
+Date: Wed, 26 Mar 2008 00:00:06 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@gmail.com>
+Subject: Re: Patches added to powerpc.git powerpc-next and master branches
+In-Reply-To: <1206492849.4160.11.camel@vader.jdub.homelinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18409.32313.610943.187982@cargo.ozlabs.ibm.com>
+	<1206492849.4160.11.camel@vader.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,42 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes some trivial indentation and brace/bracket style
-problems.
+On Tue, Mar 25, 2008 at 6:54 PM, Josh Boyer <jwboyer@gmail.com> wrote:
+> On Wed, 2008-03-26 at 09:35 +1100, Paul Mackerras wrote:
+>  > I have added the patches listed below to the master and powerpc-next
+>  > branches of the powerpc.git repository, and pulled in Linus' current
+>  > tree.
+>
+>  I have some patches floating around that I'll be gathering together in
+>  my tree tomorrow.  I'll send a pull request then.
 
----
- dtc.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Josh, do you mind pickup up the following patches?  I don't have a
+public git tree at the moment so this is easier.  :-)
 
-Index: dtc/dtc.c
-===================================================================
---- dtc.orig/dtc.c	2008-03-26 16:18:51.000000000 +1100
-+++ dtc/dtc.c	2008-03-26 16:19:12.000000000 +1100
-@@ -163,8 +163,8 @@
- 			boot_cpuid_phys = strtol(optarg, NULL, 0);
- 			break;
- 		case 'v':
--		    printf("Version: %s\n", DTC_VERSION);
--		    exit(0);
-+			printf("Version: %s\n", DTC_VERSION);
-+			exit(0);
- 		case 'h':
- 		default:
- 			usage();
-@@ -179,9 +179,8 @@
- 		arg = argv[optind];
- 
- 	/* minsize and padsize are mutually exclusive */
--	if ((minsize) && (padsize)) {
-+	if (minsize && padsize)
- 		die("Can't set both -p and -S\n");
--	}
- 
- 	fprintf(stderr, "DTC: %s->%s  on file \"%s\"\n",
- 		inform, outform, arg);
+http://patchwork.ozlabs.org/linuxppc/patch?person=1000&id=17388
+http://patchwork.ozlabs.org/linuxppc/patch?person=1000&id=17386
+http://patchwork.ozlabs.org/linuxppc/patch?person=1000&id=17387
+http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=17479
+http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=17410
+
+Use your discretion on the last two.
+
+Cheers,
+g.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
