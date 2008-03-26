@@ -1,22 +1,18 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
-	by ozlabs.org (Postfix) with ESMTP id 31D3DDE2AB
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 10:07:08 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so1997791nfd.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 16:07:07 -0700 (PDT)
-Date: Thu, 27 Mar 2008 02:07:00 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [PATCH 3/5] leds: implement OpenFirmare GPIO LEDs driver
-Message-ID: <20080326230700.GB2799@zarina>
-References: <20080326202453.GC1772@localhost.localdomain>
-	<fa686aa40803261357m4a8e8703u7f3b8e39199e1de7@mail.gmail.com>
-	<47EABA4B.1000105@genesi-usa.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 2EE09DDFCE
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 10:10:34 +1100 (EST)
+Date: Wed, 26 Mar 2008 18:09:59 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] scanlog_init cleanup, minor fixes
+Message-ID: <20080326230959.GI7137@localdomain>
+References: <20080323225144.GA7137@localdomain>
+	<1206571210.7482.0.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <47EABA4B.1000105@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
-Reply-To: cbouatmailru@gmail.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1206571210.7482.0.camel@concordia.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 26, 2008 at 09:04:11PM +0000, Matt Sealey wrote:
-> Can someone throw me a link to the GPIO spec being implemented here (yes,
-> I would like docs too!) or a pointer to the relevant DTS which implements
-> it?
->
-> Supporting GPIO in the device tree is something that has been undefined
-> for ages, and I seem to not be able to find the supporting DTS patches for
-> this implementation in patchwork..??
+Michael Ellerman wrote:
+> > +	/* Ideally we could allocate a buffer < 4G */
+> > +	data = kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
+> > +	if (!data)
+> > +		goto err;
+> 
+> Not your bug, but what happens if data is > 4G? Kaboom?
 
-Here the last respin starts:
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052881.html
-
-> Grant Likely wrote:
->> On Wed, Mar 26, 2008 at 2:24 PM, Anton Vorontsov
->> <avorontsov@ru.mvista.com> wrote:
->>> Despite leds-gpio and leds-of-gpio similar names and purposes, there
->>>  is actually very few code can be shared between the two (both drivers
->>>  are mostly the driver bindings anyway).
->>>
->>>  Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>
->> Other than the fact that it needs some documentation of the binding in
->> booting-without-of.txt, it looks pretty good to me.
-
-Thanks, will document it.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+An old RPA doc (scan-log-dump isn't specified in PAPR) says the buffer
+should be "contiguous real storage", so... yeah, probably.  That's why
+I preserved the comment.  Will fix if I get access to a machine to
+test this code more thoroughly (plenty of other issues in this file,
+too).
