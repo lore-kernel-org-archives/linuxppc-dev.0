@@ -1,33 +1,23 @@
-Return-Path: <kniht@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <tur@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3DC0ADDF0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 08:29:33 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2QLVXj7004977
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 17:31:33 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2QLTU9A309566
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 17:29:30 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2QLTTY0001489
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 17:29:30 -0400
-Message-ID: <47EAC048.30006@linux.vnet.ibm.com>
-Date: Wed, 26 Mar 2008 16:29:44 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AAE99DE264
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 08:34:15 +1100 (EST)
+Message-ID: <47EAC0E8.8070301@semihalf.com>
+Date: Wed, 26 Mar 2008 22:32:24 +0100
+From: Bartlomiej Sieka <tur@semihalf.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/4] powerpc: define page support for 16G pages
-References: <47EABE2D.7080400@linux.vnet.ibm.com>
-In-Reply-To: <47EABE2D.7080400@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-	Adam Litke <agl@linux.vnet.ibm.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [RESEND][POWERPC] mpc5200: Amalgamated dts fixes and updates
+References: <47E2723D.1090101@grandegger.com>
+	<47E281B6.20702@denx.de>	<fa686aa40803201650t289cd800gfda389b192c1834c@mail.gmail.com>	<47E2FC3E.1020705@semihalf.com>	<fa686aa40803201720l3e42c983se121ebc257c89912@mail.gmail.com>	<20080321235633.GB345@frozen.semihalf.com>	<fa686aa40803212014ne560615sfcdef542d59eb6cb@mail.gmail.com>	<20080326194526.GA17424@frozen.semihalf.com>
+	<fa686aa40803261335q2b8af09cw6f05dc0cf905d0b5@mail.gmail.com>
+	<47EAB687.5040702@grandegger.com>
+In-Reply-To: <47EAB687.5040702@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,59 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The huge page size is setup for 16G pages if that size is specified at boot-time.  The support for
-multiple huge page sizes is not being utilized yet.  That will be in a future patch.
+Wolfgang Grandegger wrote:
+> Grant Likely wrote:
+>> On Wed, Mar 26, 2008 at 1:45 PM, Bartlomiej Sieka <tur@semihalf.com> wrote:
+>>>     The bulk of this patch is taken from
+>>>     http://patchwork.ozlabs.org/linuxppc/patch?q=Balakowicz&id=16197, with few
+>>>     other updates.
+>>>
+>>>     Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+>>>  ---
+>>>  Addressed comments from the list; would appreciate picking up as the patch
+>>>  fixes booting issue on TQM5200 and Motion-PRO (cm5200 changes are analogous,
+>>>  but not tested due to hardware unavailability).
+>> I see one obvious error; but other than that it looks good.  Once that
+>> is fixed I can recommend for Paul to pick it up for .25.  It's just
+>> dts changes, so I don't expect it to be a problem.
+>>
+>> Cheers,
+[...]
+> And whats about the two CAN nodes for tqm5200.dts? Do we have them already?
 
+Hello Wolfgang,
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
+patchwork shows your updates as "Awaiting Upstream"
+(http://patchwork.ozlabs.org/linuxppc/patch?q=Grandegger&id=17444), so I
+haven't included them in my patch. I suppose you should follow-up with
+Grant/Paulus on the status?
 
- hugetlbpage.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 44d3d55..b6a02b7 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -26,6 +26,7 @@
- 
- #define HPAGE_SHIFT_64K	16
- #define HPAGE_SHIFT_16M	24
-+#define HPAGE_SHIFT_16G	34
- 
- #define NUM_LOW_AREAS	(0x100000000UL >> SID_SHIFT)
- #define NUM_HIGH_AREAS	(PGTABLE_RANGE >> HTLB_AREA_SHIFT)
-@@ -589,9 +590,11 @@ void set_huge_psize(int psize)
- {
- 	/* Check that it is a page size supported by the hardware and
- 	 * that it fits within pagetable limits. */
--	if (mmu_psize_defs[psize].shift && mmu_psize_defs[psize].shift < SID_SHIFT &&
-+	if (mmu_psize_defs[psize].shift &&
-+		mmu_psize_defs[psize].shift < SID_SHIFT_1T &&
- 		(mmu_psize_defs[psize].shift > MIN_HUGEPTE_SHIFT ||
--			mmu_psize_defs[psize].shift == HPAGE_SHIFT_64K)) {
-+		 mmu_psize_defs[psize].shift == HPAGE_SHIFT_64K ||
-+		 mmu_psize_defs[psize].shift == HPAGE_SHIFT_16G)) {
- 		HPAGE_SHIFT = mmu_psize_defs[psize].shift;
- 		mmu_huge_psize = psize;
- #ifdef CONFIG_PPC_64K_PAGES
-@@ -599,6 +602,8 @@ void set_huge_psize(int psize)
- #else
- 		if (HPAGE_SHIFT == HPAGE_SHIFT_64K)
- 			hugepte_shift = (PMD_SHIFT-HPAGE_SHIFT);
-+		else if (HPAGE_SHIFT == HPAGE_SHIFT_16G)
-+			hugepte_shift = (PGDIR_SHIFT-HPAGE_SHIFT);
- 		else
- 			hugepte_shift = (PUD_SHIFT-HPAGE_SHIFT);
- #endif
-@@ -625,6 +630,9 @@ static int __init hugepage_setup_sz(char *str)
- 	case HPAGE_SHIFT_16M:
- 		mmu_psize = MMU_PAGE_16M;
- 		break;
-+	case HPAGE_SHIFT_16G:
-+		mmu_psize = MMU_PAGE_16G;
-+		break;
- 	}
- 
- 	if (mmu_psize >=0 && mmu_psize_defs[mmu_psize].shift)
+Regards,
+Bartlomiej
