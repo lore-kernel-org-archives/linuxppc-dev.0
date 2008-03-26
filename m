@@ -1,19 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 26 Mar 2008 10:59:36 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: dtc: Simplify error handling for unparseable input
-Message-ID: <20080325235936.GH8281@localhost.localdomain>
-References: <20080324034424.GC29985@localhost.localdomain>
-	<20080324173641.GA22159@loki.buserror.net>
-	<20080325012805.GA1227@localhost.localdomain>
-	<20080325143619.GB13187@ld0162-tx32.am.freescale.net>
-	<20080325212127.GA8281@localhost.localdomain>
-	<47E9783F.4@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47E9783F.4@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 67193DE041
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 11:41:49 +1100 (EST)
+Date: Wed, 26 Mar 2008 11:41:34 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
+	CPM1/CPM2 controllers
+Message-Id: <20080326114134.495f5fe5.sfr@canb.auug.org.au>
+In-Reply-To: <47E94891.6020000@scram.de>
+References: <47A1C4E9.4000003@scram.de>
+	<20080221130520.12b01553@hyperion.delvare>
+	<47BEAF00.50106@scram.de>
+	<20080223134335.0f5c7d79@hyperion.delvare>
+	<47E94891.6020000@scram.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__26_Mar_2008_11_41_34_+1100_UJKxs76A9rxk8EiT"
+Cc: Jean Delvare <khali@linux-fr.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+	Scott Wood <scottwood@freescale.com>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +30,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 25, 2008 at 05:10:07PM -0500, Scott Wood wrote:
-> David Gibson wrote:
->> On Tue, Mar 25, 2008 at 09:36:19AM -0500, Scott Wood wrote:
->>> On Tue, Mar 25, 2008 at 12:28:05PM +1100, David Gibson wrote:
->>>> On Mon, Mar 24, 2008 at 12:36:41PM -0500, Scott Wood wrote:
->>>>> If you remove this, there'll be no way to indicate semantic errors 
->>>>> other
->>>>> than die() (the NULL approaches are no good, since they inhibit 
->>>>> recovery),
->>>>> which is suboptimal if the error is not immediately fatal.
->>>> But everything is immediately fatal.  When we have a *real* example of
->>>> something that's not, we can restore an error code.
->>> Failed binary includes are not immediately fatal.
->> And is there any advantage to having them not immediately fatal?
+--Signature=_Wed__26_Mar_2008_11_41_34_+1100_UJKxs76A9rxk8EiT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Jochen,
+
+Firstly, you should probably cc Dave Miller <davem@davemloft.net> on
+anything in drivers/of as Sparc is the other user of this stuff (just in
+case they are interested).
+
+On Tue, 25 Mar 2008 19:46:41 +0100 Jochen Friedrich <jochen@scram.de> wrote:
 >
-> It's generally nice to the user if you can report as many bugs as you can 
-> rather than fail on the first one.
+> +++ b/drivers/of/i2c.c
+> @@ -0,0 +1,113 @@
+> +/*
+> + * OF helpers for the I2C API
+> + *
+> + * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
+> + *
+> + * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/i2c.h>
+> +#include <asm/prom.h>
 
-Oh.. and this patch doesn't actually preclude that.  We still have the
-treesource_error variable and can report errors that way during the
-parse.  The die() just comes at the end of dt_from_source(), instead
-of in main().
+You should really include <linux/of.h> instead.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> +struct i2c_driver_device {
+> +	char    *of_device;
+> +	char    *i2c_type;
+> +};
+> +
+> +static struct i2c_driver_device i2c_devices[] =3D {
+> +	{"dallas,ds1374", "rtc-ds1374",},
+                                      ^
+You don't need the comma before the brace (unless you are anticipating
+that struct i2c_driver_device will change.  Even then, its not a big
+thing.
+
+> +void of_register_i2c_devices(struct i2c_adapter *adap,
+> +			     struct device_node *adap_node)
+> +{
+> +	void *result;
+> +	struct device_node *node =3D NULL;
+> +
+> +	while ((node =3D of_get_next_child(adap_node, node))) {
+
+	for_each_child_of_node(adap_node, node) {
+And then you don't need to initialise "node" above.
+
+> +		info.irq =3D irq_of_parse_and_map(node, 0);
+> +		if (info.irq =3D=3D NO_IRQ)
+> +			info.irq =3D -1;
+> +
+> +		if (of_find_i2c_driver(node, &info) < 0)
+> +			continue;
+
+Do you need to clean up after the irq_of_parse_and_map() above?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__26_Mar_2008_11_41_34_+1100_UJKxs76A9rxk8EiT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH6ZvITgG2atn1QN8RAoXFAJsEqqH7iZhpHvA1uXpHA/wkhKZH9ACaA7+9
+W3o27184QInyS5UMNNMbrdg=
+=PjN3
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__26_Mar_2008_11_41_34_+1100_UJKxs76A9rxk8EiT--
