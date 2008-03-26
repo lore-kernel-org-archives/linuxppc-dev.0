@@ -1,19 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id B108FDE53B
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 02:39:33 +1100 (EST)
-Message-ID: <47EA6E88.5050109@ru.mvista.com>
-Date: Wed, 26 Mar 2008 18:40:56 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09C1CDE081
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 02:57:38 +1100 (EST)
+Date: Wed, 26 Mar 2008 10:57:41 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in the
+	device tree.
+Message-ID: <20080326155741.GA3460@loki.buserror.net>
+References: <200803261217.46671.laurentp@cse-semaphore.com>
+	<200803261220.43039.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: OF compatible MTD platform RAM driver ?
-References: <200803101606.39184.laurentp@cse-semaphore.com>	<200803251823.32039.laurentp@cse-semaphore.com>	<DCEAAC0833DD314AB0B58112AD99B93B0427706A@ismail.innsys.innovsys.com>	<200803251914.24021.laurentp@cse-semaphore.com>
-	<b06db7bb4932d14f8af9547abdfc9d0d@kernel.crashing.org>
-In-Reply-To: <b06db7bb4932d14f8af9547abdfc9d0d@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ben@simtec.co.uk, David Gibson <david@gibson.dropbear.id.au>,
-	linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200803261220.43039.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+On Wed, Mar 26, 2008 at 12:20:42PM +0100, Laurent Pinchart wrote:
+> diff --git a/arch/powerpc/boot/dts/ep8248e.dts b/arch/powerpc/boot/dts/ep8248e.dts
+> index 5d2fb76..756758f 100644
+> --- a/arch/powerpc/boot/dts/ep8248e.dts
+> +++ b/arch/powerpc/boot/dts/ep8248e.dts
+> @@ -121,8 +121,7 @@
+>  
+>  				data@0 {
+>  					compatible = "fsl,cpm-muram-data";
+> -					reg = <0 0x1100 0x1140
+> -					       0xec0 0x9800 0x800>;
+> +					reg = <0 0x2000 0x9800 0x800>;
+>  				};
 
->> - Using another device node with a compatible value set to 
->> "linear-ram" (or
->> something similar). This would support both volatile and non-volatile
->> devices, and a property could be added to specify if the device is 
->> volatile
->> or not.
+Can we leave this as reserved, so that udbg still works?
 
-> "memory-mapped-memory" perhaps :-)
-
-> Or, just "memory".  Although that one might play havoc with some
-
-    I'd suggest "ram" and "rom" then. Luckily the device trees don't contain 
-binding for the real RAM chips yet. :-)
-
-> not-quite-correct main memory probing code.
-
-    You mean the there's parsers that search the "compatible" prop for 
-"memory" as well as "device_type" prop?
-
-> Segher
-
-WBR, Sergei
+-Scott
