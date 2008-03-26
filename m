@@ -1,18 +1,17 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BA845DDF98
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 22:20:45 +1100 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 30D63DDFD8
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 22:21:14 +1100 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in the device
-	tree.
-Date: Wed, 26 Mar 2008 12:20:42 +0100
+Subject: [PATCHv2 0/3] cpm2: Reset the CPM when early debugging is not enabled.
+Date: Wed, 26 Mar 2008 12:21:12 +0100
 References: <200803261217.46671.laurentp@cse-semaphore.com>
 In-Reply-To: <200803261217.46671.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1297868.tcOYWsm80S";
+Content-Type: multipart/signed; boundary="nextPart1501631.usu8nvKoro";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803261220.43039.laurentp@cse-semaphore.com>
+Message-Id: <200803261221.12274.laurentp@cse-semaphore.com>
 Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,50 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1297868.tcOYWsm80S
+--nextPart1501631.usu8nvKoro
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-This patch modifies the Embedded Planet EP8248E device tree to reference the
-SMC paramater RAM base register instead of the parameter RAM allocated by t=
-he
-boot loader.
-
-The cpm_uart driver will allocate parameter RAM itself, making the serial p=
-ort
-initialisation independent of the boot loader.
+Similarly to what is done for PQ1-based platforms, this patch resets the
+PQ2 Communication Processor Module in cpm2_reset() when early debugging
+is not enabled. This helps avoiding conflicts when the boot loader configur=
+ed
+the CPM in an unexpected way.
 
 Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
 =2D--
- arch/powerpc/boot/dts/ep8248e.dts |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/cpm2.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/ep8248e.dts b/arch/powerpc/boot/dts/ep82=
-48e.dts
-index 5d2fb76..756758f 100644
-=2D-- a/arch/powerpc/boot/dts/ep8248e.dts
-+++ b/arch/powerpc/boot/dts/ep8248e.dts
-@@ -121,8 +121,7 @@
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index 7be7112..57ed1a4 100644
+=2D-- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -80,6 +80,12 @@ void __init cpm2_reset(void)
+ 	/* Tell everyone where the comm processor resides.
+ 	 */
+ 	cpmp =3D &cpm2_immr->im_cpm;
++
++#ifndef CONFIG_PPC_EARLY_DEBUG_CPM
++	/* Reset the CPM.
++	 */
++	cpm_command(CPM_CR_RST, 0);
++#endif
+ }
 =20
- 				data@0 {
- 					compatible =3D "fsl,cpm-muram-data";
-=2D					reg =3D <0 0x1100 0x1140
-=2D					       0xec0 0x9800 0x800>;
-+					reg =3D <0 0x2000 0x9800 0x800>;
- 				};
- 			};
-=20
-@@ -138,7 +137,7 @@
- 				device_type =3D "serial";
- 				compatible =3D "fsl,mpc8248-smc-uart",
- 				             "fsl,cpm2-smc-uart";
-=2D				reg =3D <0x11a80 0x20 0x1100 0x40>;
-+				reg =3D <0x11a80 0x20 0x87fc 2>;
- 				interrupts =3D <4 8>;
- 				interrupt-parent =3D <&PIC>;
- 				fsl,cpm-brg =3D <7>;
+ static DEFINE_SPINLOCK(cmd_lock);
 =2D-=20
 1.5.0
 
@@ -82,15 +71,15 @@ Belgium
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
 
---nextPart1297868.tcOYWsm80S
+--nextPart1501631.usu8nvKoro
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBH6jGL8y9gWxC9vpcRAn/qAJ0eXKRPHnd9rl8p31oxamlGcgdkmACgmllo
-rmfksl9Yaqjwh8FY9/bPv1A=
-=x++R
+iD8DBQBH6jGo8y9gWxC9vpcRArN9AKCQ8YMcy6voYz1LyQ+v1bCkCzoQywCffQNz
+NhJfIsPt83JxtadhOeY1Jak=
+=VqRZ
 -----END PGP SIGNATURE-----
 
---nextPart1297868.tcOYWsm80S--
+--nextPart1501631.usu8nvKoro--
