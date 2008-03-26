@@ -1,20 +1,19 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-19.bluehost.com (outbound-mail-19.bluehost.com
-	[69.89.20.234]) by ozlabs.org (Postfix) with SMTP id A349EDDFEF
+Return-Path: <alohanono@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
+	by ozlabs.org (Postfix) with ESMTP id 9476EDDF0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Mar 2008 13:50:10 +1100 (EST)
-Message-ID: <47E9B9E4.8040607@dlasys.net>
-Date: Tue, 25 Mar 2008 22:50:12 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Wed, 26 Mar 2008 21:10:07 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 67so3028659wri.3
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 26 Mar 2008 03:10:06 -0700 (PDT)
+Message-ID: <47EA20F9.8040703@gmail.com>
+Date: Wed, 26 Mar 2008 11:10:01 +0100
+From: "A. Nolson" <alohanono@gmail.com>
 MIME-Version: 1.0
-To: Tehn Yit Chin <tehn.yit.chin@gmail.com>
-Subject: Re: interrupt handlers PowerPC via GCC
-References: <bf04f99c0803191706q7e3a43a3i50a1d479650a3f9d@mail.gmail.com>	<47E29C60.10300@freescale.com>
-	<bf04f99c0803241603v3151865eic80b58a04bce43e2@mail.gmail.com>
-In-Reply-To: <bf04f99c0803241603v3151865eic80b58a04bce43e2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: dhlii@dlasys.net
+To: linuxppc-embedded@ozlabs.org
+Subject: Getting CYPRESS CYC67300 (through opb_epc) and SystemAce to work
+	in the ML403
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +24,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tehn Yit Chin wrote:
-> Hey Scott,
->
-> Thanks for the reply, I shall investigate further.
->
-> I wasn't talking about interrupt handlers in Linux as such, but using
-> powerpc-eabi-gcc to write an ISR for the MPC5516. (I guess that could be
-> off-topic on this mailing list, but I thought the folks on this mailing list
-> would probably know the answer pretty easily). I was hoping that gcc would
-> generate the prologue and epilogue code for me via the interrupt attributes.
-    I know nothing about GCC's interrupt attributes,
-    however, there is no problem writing ISR's  from scratch (no OS)
-    for the ppc. There are several boot loaders, monitors etc. out there
-with examples.
-     There is even one inside the Linux Kernel source - though it i
-probably far more complex than you need.
+Hi,
 
-    Somewhere I have something for the ppc405 I can send you - but most
-ppc's are similar.
+ I need to configure a system in a ML403 to make work the USB host 
+(CYPRESS CYC67300) toguether with the  SystemAce core in my Linux 2.6.23 
+( secretlab ) . By now I have everything succesfully running without the 
+USB so I tried to follow the Xilinx Xapp925. Unfortunately, when looking 
+into the BSS there is no use of SystemAce. In fact, when if I try to use 
+the wizard to build a system from scratch, it argues that the Cypress 
+controller and the SystemAce cannot be used at the same time since they 
+share some resources.  When looking more deeply into the files in 
+Xapp925, I have seen they include a simple IP core (glue logic) for some 
+pin multiplexing, but they don't make use of it.
+ 
+ The code itself is ( inside pcores/misc_logic_0_1.00.a/:
 
+(...)
+  always @(posedge clk)
+    usb_ce_d1 <= usb_ce;
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+  // USB and SysAce Mux Logic
+  assign usb_data_i = {sace_usb_d_I, 16'b0};
+  assign sysace_mpd_i = sace_usb_d_I;
+  assign sace_usb_a   = (usb_ce | usb_ce_d1)? 
+{4'b0,usb_addr[28:29],1'b0} : sysace_mpa;
+  assign sace_usb_d_O = (usb_ce | usb_ce_d1)? usb_data_o[0:15] : 
+sysace_mpd_o;
+  assign sace_usb_d_T = (usb_ce | usb_ce_d1)? usb_data_t[0:15] : 
+sysace_mpd_t;
+  assign sace_usb_oen = (usb_ce_d1)? usb_rdn : sysace_mpoe;
+  assign sace_usb_wen = (usb_ce & usb_ce_d1)? usb_wrn : sysace_mpwe;
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+(...)
+
+My questions are:
+
+ 1. Will I be able to have both of them working in the same system?
+ 2. Will the Linux drivers be able to cope with this "muxing"?
+ 3. Will I have a penalty in performance if I use it?
+
+I think this a very interesting question which I could not find any info 
+neither in this list or internet, but I suppose there must be many 
+people in the siltation of needing both USB and SystemACE to work together.
+
+ Thank you very much in advance,
+
+/A
