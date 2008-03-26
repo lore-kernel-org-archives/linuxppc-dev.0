@@ -1,12 +1,28 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Trivial formatting fixes 
-In-reply-to: <20080326052103.GB2090@localhost.localdomain> 
-References: <20080326052103.GB2090@localhost.localdomain>
-Date: Wed, 26 Mar 2008 08:15:35 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1JeVTb-0005tQ-Ae@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 437A5DE013
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 00:35:50 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2QDZlDX028982
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 09:35:47 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2QDZlXP219372
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 07:35:47 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2QDZlW0015139
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 07:35:47 -0600
+Date: Wed, 26 Mar 2008 08:33:14 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH v3][OF] Add of_device_is_available function
+Message-ID: <20080326083314.43e515f5@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,22 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch fixes some trivial indentation and brace/bracket style
-> problems.
+IEEE 1275 defined a standard "status" property to indicate the operational
+status of a device.  The property has four possible values: okay, disabled,
+fail, fail-xxx.  The absence of this property means the operational status
+of the device is unknown or okay.
 
+This adds a function called of_device_is_available that checks the state
+of the status property of a device.  If the property is absent or set to
+either "okay" or "ok", it returns 1.  Otherwise it returns 0.
 
-> @@ -179,9 +179,8 @@
->  		arg = argv[optind];
->  
->  	/* minsize and padsize are mutually exclusive */
-> -	if ((minsize) && (padsize)) {
-> +	if (minsize && padsize)
->  		die("Can't set both -p and -S\n");
-> -	}
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
+---
+ drivers/of/base.c  |   26 ++++++++++++++++++++++++++
+ include/linux/of.h |    1 +
+ 2 files changed, 27 insertions(+)
 
-I do not consider extra braces a "problem", and will
-not be applying those changes.  The other indentation
-fixes will be applied, of course.
-
-jdl
+--- linux-2.6.orig/drivers/of/base.c
++++ linux-2.6/drivers/of/base.c
+@@ -117,6 +117,32 @@ int of_device_is_compatible(const struct
+ EXPORT_SYMBOL(of_device_is_compatible);
+ 
+ /**
++ *  of_device_is_available - check if a device is available for use
++ *
++ *  @device: Node to check for availability
++ *
++ *  Returns 1 if the status property is absent or set to "okay" or "ok",
++ *  0 otherwise
++ */
++int of_device_is_available(const struct device_node *device)
++{
++	const char *status;
++	int statlen;
++
++	status = of_get_property(device, "status", &statlen);
++	if (status == NULL)
++		return 1;
++
++	if (statlen > 0) {
++		if (!strcmp(status, "okay") || !strcmp(status, "ok"))
++			return 1;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(of_device_is_available);
++
++/**
+  *	of_get_parent - Get a node's parent if any
+  *	@node:	Node to get parent
+  *
+--- linux-2.6.orig/include/linux/of.h
++++ linux-2.6/include/linux/of.h
+@@ -62,6 +62,7 @@ extern struct property *of_find_property
+ 					 int *lenp);
+ extern int of_device_is_compatible(const struct device_node *device,
+ 				   const char *);
++extern int of_device_is_available(const struct device_node *device);
+ extern const void *of_get_property(const struct device_node *node,
+ 				const char *name,
+ 				int *lenp);
