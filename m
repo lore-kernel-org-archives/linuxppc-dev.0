@@ -1,14 +1,17 @@
-Return-Path: <kelvin_q_lin@yahoo.com>
-Received: from n73b.bullet.mail.sp1.yahoo.com (n73b.bullet.mail.sp1.yahoo.com
-	[98.136.45.46]) by ozlabs.org (Postfix) with SMTP id A7087DDFF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 20:47:25 +1100 (EST)
-Date: Wed, 26 Mar 2008 17:41:47 +0800 (CST)
-From: Kelvin Lin <kelvin_q_lin@yahoo.com>
-Subject: Could PowerPC(IBM power blade, js 21, 8844) boot via usb key?
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id B79BCDDF73
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 22:17:50 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
+Subject: [PATCHv2 0/3] cpm2: Reset the CPM at startup and fix the cpm_uart
+	driver accordingly.
+Date: Wed, 26 Mar 2008 12:17:42 +0100
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-801111233-1206524507=:97825"
-Message-ID: <680109.97825.qm@web45304.mail.sp1.yahoo.com>
+Content-Type: multipart/signed; boundary="nextPart54846979.kW0sm6Qr3Z";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200803261217.46671.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,59 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-801111233-1206524507=:97825
-Content-Type: text/plain; charset=gb2312
-Content-Transfer-Encoding: 8bit
+--nextPart54846979.kW0sm6Qr3Z
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi guys,
-   
-  I created a PReP partition in usb key and then did "dd" and something like that to configure yaboot on it.
-   
-  But the key point is that, when I boot power blade, there is not usb key in the bootable list. I mean, there are just:
-   1.        -      Ethernet
-                  ( loc=U788D.001.99DXC6K-P1-T7 )
- 2.        -      Ethernet
-                  ( loc=U788D.001.99DXC6K-P1-T8 )
- 3.        -      USB CD-ROM
-                  ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )
- 4.        1      SCSI 36401 MB Harddisk, part=1 ()
-                  ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )
-   
-  My usb key is Kingston's DataTraveler 2GB.
-   
-  Then I change another Sandisk cruzer 2GB usb key, it shows as follows in the boot menu:
-   
-   1.        -      Ethernet
-                  ( loc=U788D.001.99DXC6K-P1-T7 )
- 2.        -      Ethernet
-                  ( loc=U788D.001.99DXC6K-P1-T8 )
- 3.        -      USB CD-ROM
-                  ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )
- 4.        1      SCSI 36401 MB Harddisk, part=1 ()
-                  ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )
- 5.        -      USB CD-ROM
-                  ( loc=U788D.001.99DXC6K-P1-T1-L1-L2-L1-L0 )
+Hi everybody,
 
-  But this item 5 USB CD-ROM is simulated by Sandisk, not the actual usb key. I can't boot my server via item 5.
-   
-  Could IBM power blade, js 21, 8844 boot via usb key? If not, could you please provide official doc to prove it. Because I have to persuade my boss to give up it. -:)
-   
-  Any comment is appreciated. Thanks a lot in advanced.
-   
-  Kelvin.
+these 3 patches reset the CPM in cpm2_reset() and fix the cpm_uart driver t=
+o=20
+initialise SMC ports correctly without relying on any initialisation=20
+performed by the boot loader/wrapper. They update the EP8248E device tree t=
+o=20
+match the new SMC registers description.
 
-       
----------------------------------
- —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°
---0-801111233-1206524507=:97825
-Content-Type: text/html; charset=gb2312
-Content-Transfer-Encoding: 8bit
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-<div>Hi guys,</div>  <div>&nbsp;</div>  <div>I created a PReP partition in usb key and then did "dd" and something like that to configure yaboot on it.</div>  <div>&nbsp;</div>  <div>But the key point is that, when I boot power blade, there is not usb key in the bootable list. I mean, there are just:</div>  <div>&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T7 )<BR>&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T8 )<BR>&nbsp;3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB CD-ROM<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (
- loc=U788D.001.99DXC6K-P1-T1-L1-L3 )<BR>&nbsp;4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SCSI 36401 MB Harddisk, part=1 ()<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )</div>  <div>&nbsp;</div>  <div>My usb key is Kingston's DataTraveler 2GB.</div>  <div>&nbsp;</div>  <div>Then I change another Sandisk cruzer 2GB usb key, it shows as follows in the boot menu:</div>  <div>&nbsp;</div>  <div>&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T7 )<BR>&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T8
- )<BR>&nbsp;3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB CD-ROM<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )<BR>&nbsp;4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SCSI 36401 MB Harddisk, part=1 ()<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )<BR>&nbsp;5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB CD-ROM<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T1-L1-L2-L1-L0 )<BR></div>  <div>But this&nbsp;item 5&nbsp;USB CD-ROM is simulated by Sandisk, not the actual usb key. I can't boot my server via item 5.</div>  <div>&nbsp;</div>  <div>Could IBM power blade, js 21, 8844 boot via usb key? If not,
- could you please provide official doc to prove it. Because I have to persuade my boss to give up it. -:)</div>  <div>&nbsp;</div>  <div>Any comment is appreciated. Thanks a lot in advanced.</div>  <div>&nbsp;</div>  <div>Kelvin.</div><p>&#32;
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
-      <hr size=1><a href="http://cn.mail.yahoo.com/"> —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°</a>
---0-801111233-1206524507=:97825--
+--nextPart54846979.kW0sm6Qr3Z
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH6jDa8y9gWxC9vpcRAtAdAJ45g9RCtFj6/Sz3OWQrnrbdYxhvSACgmAKH
+SHOw6xCmL4o0JNiUGyOKFHk=
+=6Xjb
+-----END PGP SIGNATURE-----
+
+--nextPart54846979.kW0sm6Qr3Z--
