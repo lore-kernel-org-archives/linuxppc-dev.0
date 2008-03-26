@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 69740DE2E3
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 07:24:40 +1100 (EST)
-Date: Wed, 26 Mar 2008 23:24:39 +0300
+	by ozlabs.org (Postfix) with ESMTP id DC371DEF84
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 07:24:54 +1100 (EST)
+Date: Wed, 26 Mar 2008 23:24:53 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH 2/5] leds: mark led_classdev.default_trigger as const
-Message-ID: <20080326202439.GB1772@localhost.localdomain>
+Subject: [PATCH 3/5] leds: implement OpenFirmare GPIO LEDs driver
+Message-ID: <20080326202453.GC1772@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Cc: linuxppc-dev@ozlabs.org
@@ -19,27 +19,256 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-LED classdev core doesn't modify memory pointed by the default_trigger,
-so mark it as const and we'll able to pass const char *s without getting
-compiler warnings.
+Despite leds-gpio and leds-of-gpio similar names and purposes, there
+is actually very few code can be shared between the two (both drivers
+are mostly the driver bindings anyway).
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- include/linux/leds.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index 0201f6f..2122a77 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -45,7 +45,7 @@ struct led_classdev {
+This patch depends on the not yet applied OF/PowerPC GPIO patches, so
+please consider this for RFC only.
+
+Thanks.
+
+ drivers/leds/Kconfig        |    8 ++
+ drivers/leds/Makefile       |    1 +
+ drivers/leds/leds-of-gpio.c |  196 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 205 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/leds/leds-of-gpio.c
+
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 09aac5d..8bed058 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -113,6 +113,14 @@ config LEDS_GPIO
+ 	  outputs. To be useful the particular board must have LEDs
+ 	  and they must be connected to the GPIO lines.
  
- 	struct device		*dev;
- 	struct list_head	 node;			/* LED Device list */
--	char			*default_trigger;	/* Trigger to use */
-+	const char		*default_trigger;	/* Trigger to use */
- 
- #ifdef CONFIG_LEDS_TRIGGERS
- 	/* Protects the trigger data below */
++config LEDS_OF_GPIO
++	tristate "LED Support for GPIO connected LEDs"
++	depends on LEDS_CLASS && OF_GPIO
++	help
++	  This option enables support for the LEDs connected to GPIO
++	  outputs. To be useful the particular board must have LEDs
++	  and they must be connected to the GPIO lines.
++
+ config LEDS_CM_X270
+ 	tristate "LED Support for the CM-X270 LEDs"
+ 	depends on LEDS_CLASS && MACH_ARMCORE
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index 84ced3b..78926ca 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -18,6 +18,7 @@ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
+ obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
+ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
+ obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
++obj-$(CONFIG_LEDS_OF_GPIO)		+= leds-of-gpio.o
+ obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
+ obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
+ obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
+diff --git a/drivers/leds/leds-of-gpio.c b/drivers/leds/leds-of-gpio.c
+new file mode 100644
+index 0000000..aeb2f39
+--- /dev/null
++++ b/drivers/leds/leds-of-gpio.c
+@@ -0,0 +1,196 @@
++/*
++ * LEDs driver for GPIOs (OpenFirmware bindings)
++ *
++ * Copyright (C) 2007 8D Technologies inc.
++ * Raphael Assenat <raph@8d.com>
++ * Copyright (C) 2008 MontaVista Software, Inc.
++ * Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/of_platform.h>
++#include <linux/of_gpio.h>
++#include <linux/leds.h>
++#include <linux/workqueue.h>
++
++struct of_gpio_led {
++	struct device_node *np;
++	struct led_classdev cdev;
++	unsigned int gpio;
++	struct work_struct work;
++	bool new_level;
++	bool can_sleep;
++	bool active_low;
++};
++
++static void gpio_led_work(struct work_struct *work)
++{
++	struct of_gpio_led *led = container_of(work, struct of_gpio_led, work);
++
++	gpio_set_value_cansleep(led->gpio, led->new_level);
++}
++
++static void gpio_led_set(struct led_classdev *led_cdev,
++			 enum led_brightness value)
++{
++	struct of_gpio_led *led = container_of(led_cdev, struct of_gpio_led,
++					       cdev);
++	bool level;
++
++	if (value == LED_OFF)
++		level = false;
++	else
++		level = true;
++
++	if (led->active_low)
++		level = !level;
++
++	/* setting GPIOs with I2C/etc requires a preemptible task context */
++	if (led->can_sleep) {
++		if (preempt_count()) {
++			led->new_level = level;
++			schedule_work(&led->work);
++		} else {
++			gpio_set_value_cansleep(led->gpio, level);
++		}
++	} else {
++		gpio_set_value(led->gpio, level);
++	}
++}
++
++static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
++					const struct of_device_id *match)
++{
++	int ret;
++	struct of_gpio_led *led;
++	struct device_node *np = ofdev->node;
++
++	led = kzalloc(sizeof(*led), GFP_KERNEL);
++	if (!led)
++		return -ENOMEM;
++
++	led->np = np;
++
++	ret = of_get_gpio(np, 0);
++	if (!gpio_is_valid(ret)) {
++		dev_err(&ofdev->dev, "gpio is invalid\n");
++		goto err_get_gpio;
++	}
++	led->gpio = ret;
++	led->can_sleep = gpio_cansleep(led->gpio);
++
++	led->cdev.name = of_get_property(np, "linux,name", NULL);
++	if (!led->cdev.name)
++		led->cdev.name = ofdev->dev.bus_id;
++	led->cdev.default_trigger = of_get_property(np,
++					"linux,default-trigger", NULL);
++	led->active_low = of_get_property(np, "linux,active-low", NULL) ?
++					  1 : 0;
++	led->cdev.brightness_set = gpio_led_set;
++	led->cdev.brightness = LED_OFF;
++
++	ret = gpio_request(led->gpio, ofdev->dev.bus_id);
++	if (ret < 0) {
++		dev_err(&ofdev->dev, "could not request gpio, status is %d\n",
++			ret);
++		goto err_gpio;
++	}
++
++	ret = gpio_direction_output(led->gpio, led->active_low);
++	if (ret) {
++		dev_err(&ofdev->dev, "gpio could not be an output, "
++			"status is %d\n", ret);
++		goto err_gpio;
++	}
++
++	INIT_WORK(&led->work, gpio_led_work);
++
++	ret = led_classdev_register(&ofdev->dev, &led->cdev);
++	if (ret < 0) {
++		dev_err(&ofdev->dev, "could register led cdev, status is %d\n",
++			ret);
++		gpio_free(led->gpio);
++		goto err_reg_cdev;
++	}
++
++	dev_set_drvdata(&ofdev->dev, led);
++
++	return 0;
++
++err_reg_cdev:
++	cancel_work_sync(&led->work);
++err_gpio:
++	gpio_free(led->gpio);
++err_get_gpio:
++	kfree(led);
++	return ret;
++}
++
++static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
++{
++	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
++
++	led_classdev_unregister(&led->cdev);
++	cancel_work_sync(&led->work);
++	gpio_free(led->gpio);
++	of_node_put(led->np);
++	kfree(led);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int of_gpio_led_suspend(struct of_device *ofdev, pm_message_t state)
++{
++	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
++
++	led_classdev_suspend(&led->cdev);
++	return 0;
++}
++
++static int of_gpio_led_resume(struct of_device *ofdev)
++{
++	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
++
++	led_classdev_resume(&led->cdev);
++	return 0;
++}
++#else
++#define of_gpio_led_suspend NULL
++#define of_gpio_led_resume NULL
++#endif /* CONFIG_PM */
++
++static const struct of_device_id of_gpio_leds_match[] = {
++	{ .compatible = "gpio-led", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, of_gpio_leds_match);
++
++static struct of_platform_driver of_gpio_leds_drv = {
++	.name = "of_gpio_leds",
++	.match_table = of_gpio_leds_match,
++	.probe = of_gpio_leds_probe,
++	.remove = __devexit_p(of_gpio_leds_remove),
++	.suspend = of_gpio_led_suspend,
++	.resume = of_gpio_led_resume,
++};
++
++static int __init of_gpio_leds_init(void)
++{
++	return of_register_platform_driver(&of_gpio_leds_drv);
++}
++module_init(of_gpio_leds_init);
++
++static void __exit of_gpio_leds_exit(void)
++{
++	of_unregister_platform_driver(&of_gpio_leds_drv);
++}
++module_exit(of_gpio_leds_exit);
++
++MODULE_DESCRIPTION("OF-platform GPIO LEDs driver");
++MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
++MODULE_LICENSE("GPL");
 -- 
 1.5.2.2
