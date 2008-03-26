@@ -1,20 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E007CDDF1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 14:48:07 +1100 (EST)
-Date: Thu, 27 Mar 2008 14:48:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] [POWERPC] Remove CONFIG_PCI_LEGACY from pasemi_defconfig
-Message-Id: <20080327144802.7ef491f4.sfr@canb.auug.org.au>
-In-Reply-To: <20080327034103.GA31504@lixom.net>
-References: <20080327142743.82c4f0fb.sfr@canb.auug.org.au>
-	<20080327034103.GA31504@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__27_Mar_2008_14_48_02_+1100_bTZL.DH4FX86kmUZ"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <bobbyski@mac.com>
+Received: from smtpoutm.mac.com (smtpoutm.mac.com [17.148.16.64])
+	by ozlabs.org (Postfix) with ESMTP id 533F9DEA3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 05:48:33 +1100 (EST)
+Message-Id: <F2B8ACD2-BAF2-448F-BC78-79C5B18B8277@mac.com>
+From: Bobby Skinner <bobbyski@mac.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: How to use MMC-over-SPI on MPC8313E
+Date: Wed, 26 Mar 2008 14:36:23 -0400
+Cc: vvaghasia@gen10technology.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__27_Mar_2008_14_48_02_+1100_bTZL.DH4FX86kmUZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Wed, 26 Mar 2008 22:41:03 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> I've already requested Paul to pull a defconfig update that includes
-> all changes besides the PCI_LEGACY disabling. Since it's not critical,
-> I'll do the same change in the for-2.6.26 branch but let the pull request
-> for 2.6.25 be as-is, if that's OK with you. This is of course with the
-> hopes that Paul will pull and push it before the .25 release.
+I am also trying to get MMC over SPI working on the 8313E dev board.  
+Could I trouble you to send me whatever you have in the way of  
+drivers, instructions or documentation. I am sorry to bother you, but  
+I saw your message here: http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042119.html 
+  and it looks like you guys may have already solved the problem that  
+I am having.
 
-Yeah, that's fine - I missed your pull request.  I'll redo the patch
-based on your tree.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__27_Mar_2008_14_48_02_+1100_bTZL.DH4FX86kmUZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH6xj3TgG2atn1QN8RAnT9AKCD4i+c7OlV4FJSjmwNftu8+KNrlACfVPGU
-yVzZ59/cUq6/9TWbpvMtpII=
-=53qM
------END PGP SIGNATURE-----
-
---Signature=_Thu__27_Mar_2008_14_48_02_+1100_bTZL.DH4FX86kmUZ--
+Thanks in advance,
+Bobby
