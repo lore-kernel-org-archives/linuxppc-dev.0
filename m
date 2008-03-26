@@ -1,18 +1,18 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id D3E7BDDF7E
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 22:19:58 +1100 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BA845DDF98
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 22:20:45 +1100 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCHv2 1/3] cpm_uart: Allocate DPRAM memory for SMC ports on
-	CPM2-based platforms.
-Date: Wed, 26 Mar 2008 12:19:55 +0100
+Subject: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in the device
+	tree.
+Date: Wed, 26 Mar 2008 12:20:42 +0100
 References: <200803261217.46671.laurentp@cse-semaphore.com>
 In-Reply-To: <200803261217.46671.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1326195.lHl8ZOH9vX";
+Content-Type: multipart/signed; boundary="nextPart1297868.tcOYWsm80S";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803261219.55785.laurentp@cse-semaphore.com>
+Message-Id: <200803261220.43039.laurentp@cse-semaphore.com>
 Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,191 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1326195.lHl8ZOH9vX
+--nextPart1297868.tcOYWsm80S
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-This patch allocates parameter RAM for SMC serial ports without relying on
-previous initialisation by a boot loader or a wrapper layer.
+This patch modifies the Embedded Planet EP8248E device tree to reference the
+SMC paramater RAM base register instead of the parameter RAM allocated by t=
+he
+boot loader.
 
-SMC parameter RAM on CPM2-based platforms can be allocated anywhere in the
-general-purpose areas of the dual-port RAM. The current code relies on the
-boot loader to allocate a section of general-purpose CPM RAM and gets the
-section address from the device tree.
-
-This patch modifies the device tree address usage to reference the SMC
-parameter RAM base pointer instead of a pre-allocated RAM section and
-allocates memory from the CPM dual-port RAM when initialising the SMC port.
-CPM1-based platforms are not affected.
+The cpm_uart driver will allocate parameter RAM itself, making the serial p=
+ort
+initialisation independent of the boot loader.
 
 Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
 =2D--
- drivers/serial/cpm_uart/cpm_uart.h      |    3 ++
- drivers/serial/cpm_uart/cpm_uart_core.c |   19 +++++------
- drivers/serial/cpm_uart/cpm_uart_cpm1.c |   12 +++++++
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |   52 +++++++++++++++++++++++++++=
-++++
- 4 files changed, 76 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/dts/ep8248e.dts |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/c=
-pm_uart.h
-index 80a7d60..5334653 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart.h
-+++ b/drivers/serial/cpm_uart/cpm_uart.h
-@@ -93,6 +93,9 @@ extern struct uart_cpm_port cpm_uart_ports[UART_NR];
+diff --git a/arch/powerpc/boot/dts/ep8248e.dts b/arch/powerpc/boot/dts/ep82=
+48e.dts
+index 5d2fb76..756758f 100644
+=2D-- a/arch/powerpc/boot/dts/ep8248e.dts
++++ b/arch/powerpc/boot/dts/ep8248e.dts
+@@ -121,8 +121,7 @@
 =20
- /* these are located in their respective files */
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd);
-+void __iomem *cpm_uart_map_pram(struct uart_cpm_port *port,
-+				struct device_node *np);
-+void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram);
- int cpm_uart_init_portdesc(void);
- int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con);
- void cpm_uart_freebuf(struct uart_cpm_port *pinfo);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_u=
-art/cpm_uart_core.c
-index 1ea123c..3a44a3f 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -997,24 +997,23 @@ static int cpm_uart_init_port(struct device_node *np,
- 	if (!mem)
- 		return -ENOMEM;
+ 				data@0 {
+ 					compatible =3D "fsl,cpm-muram-data";
+=2D					reg =3D <0 0x1100 0x1140
+=2D					       0xec0 0x9800 0x800>;
++					reg =3D <0 0x2000 0x9800 0x800>;
+ 				};
+ 			};
 =20
-=2D	pram =3D of_iomap(np, 1);
-=2D	if (!pram) {
-=2D		ret =3D -ENOMEM;
-=2D		goto out_mem;
-=2D	}
-=2D
- 	if (of_device_is_compatible(np, "fsl,cpm1-scc-uart") ||
- 	    of_device_is_compatible(np, "fsl,cpm2-scc-uart")) {
- 		pinfo->sccp =3D mem;
-=2D		pinfo->sccup =3D pram;
-+		pinfo->sccup =3D pram =3D cpm_uart_map_pram(pinfo, np);
- 	} else if (of_device_is_compatible(np, "fsl,cpm1-smc-uart") ||
- 	           of_device_is_compatible(np, "fsl,cpm2-smc-uart")) {
- 		pinfo->flags |=3D FLAG_SMC;
- 		pinfo->smcp =3D mem;
-=2D		pinfo->smcup =3D pram;
-+		pinfo->smcup =3D pram =3D cpm_uart_map_pram(pinfo, np);
- 	} else {
- 		ret =3D -ENODEV;
-=2D		goto out_pram;
-+		goto out_mem;
-+	}
-+
-+	if (!pram) {
-+		ret =3D -ENOMEM;
-+		goto out_mem;
- 	}
-=20
- 	pinfo->tx_nrfifos =3D TX_NUM_FIFO;
-@@ -1038,7 +1037,7 @@ static int cpm_uart_init_port(struct device_node *np,
- 	return cpm_uart_request_port(&pinfo->port);
-=20
- out_pram:
-=2D	iounmap(pram);
-+	cpm_uart_unmap_pram(pinfo, pram);
- out_mem:
- 	iounmap(mem);
- 	return ret;
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_u=
-art/cpm_uart_cpm1.c
-index 6ea0366..e692593 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -54,6 +54,18 @@ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
- 	cpm_command(port->command, cmd);
- }
-+
-+void __iomem *cpm_uart_map_pram(struct uart_cpm_port *port,
-+				struct device_node *np)
-+{
-+	return of_iomap(np, 1);
-+}
-+
-+void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram)
-+{
-+	iounmap(pram);
-+}
-+
- #else
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_u=
-art/cpm_uart_cpm2.c
-index 6291094..a4cfb0b 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -41,6 +41,9 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/fs_pd.h>
-+#ifdef CONFIG_PPC_CPM_NEW_BINDING
-+#include <asm/prom.h>
-+#endif
-=20
- #include <linux/serial_core.h>
- #include <linux/kernel.h>
-@@ -54,6 +57,55 @@ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
- 	cpm_command(port->command, cmd);
- }
-+
-+void __iomem *cpm_uart_map_pram(struct uart_cpm_port *port,
-+				struct device_node *np)
-+{
-+	void __iomem *pram;
-+	unsigned long offset;
-+	struct resource res;
-+	unsigned long len;
-+
-+	/* Don't remap parameter RAM if it has already been initialized
-+	 * during console setup.
-+	 */
-+	if (IS_SMC(port) && port->smcup)
-+		return port->smcup;
-+	else if (!IS_SMC(port) && port->sccup)
-+		return port->sccup;
-+
-+	if (of_address_to_resource(np, 1, &res))
-+		return NULL;
-+
-+	len =3D 1 + res.end - res.start;
-+	pram =3D ioremap(res.start, len);
-+	if (!pram)
-+		return NULL;
-+
-+	if (!IS_SMC(port))
-+		return pram;
-+
-+	if (len !=3D 2) {
-+		printk(KERN_WARNING "cpm_uart[%d]: device tree references "
-+			"SMC pram, using boot loader/wrapper pram mapping. "
-+			"Please fix your device tree to reference the pram "
-+			"base register instead.\n",
-+			port->port.line);
-+		return pram;
-+	}
-+
-+	offset =3D cpm_dpalloc(PROFF_SMC_SIZE, 64);
-+	out_be16(pram, offset);
-+	iounmap(pram);
-+	return cpm_muram_addr(offset);
-+}
-+
-+void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram)
-+{
-+	if (!IS_SMC(port))
-+		iounmap(pram);
-+}
-+
- #else
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
+@@ -138,7 +137,7 @@
+ 				device_type =3D "serial";
+ 				compatible =3D "fsl,mpc8248-smc-uart",
+ 				             "fsl,cpm2-smc-uart";
+=2D				reg =3D <0x11a80 0x20 0x1100 0x40>;
++				reg =3D <0x11a80 0x20 0x87fc 2>;
+ 				interrupts =3D <4 8>;
+ 				interrupt-parent =3D <&PIC>;
+ 				fsl,cpm-brg =3D <7>;
 =2D-=20
 1.5.0
 
@@ -223,15 +82,15 @@ Belgium
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
 
---nextPart1326195.lHl8ZOH9vX
+--nextPart1297868.tcOYWsm80S
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBH6jFb8y9gWxC9vpcRAsjMAJ9XMpdue87aZLJzcvIdcAx17a8byQCfaBN/
-jqD/zxnPZ6nJj0ZzMAWCAiM=
-=cqt1
+iD8DBQBH6jGL8y9gWxC9vpcRAn/qAJ0eXKRPHnd9rl8p31oxamlGcgdkmACgmllo
+rmfksl9Yaqjwh8FY9/bPv1A=
+=x++R
 -----END PGP SIGNATURE-----
 
---nextPart1326195.lHl8ZOH9vX--
+--nextPart1297868.tcOYWsm80S--
