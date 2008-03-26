@@ -1,23 +1,23 @@
 Return-Path: <jose.annamuro@estudiante.uam.es>
 Received: from karabella.ti.uam.es (karabella.ti.uam.es [150.244.9.66])
-	by ozlabs.org (Postfix) with ESMTP id 959F0DDF6B
+	by ozlabs.org (Postfix) with ESMTP id 23254DF25C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Mar 2008 06:54:23 +1100 (EST)
+	Thu, 27 Mar 2008 07:25:33 +1100 (EST)
 Received: from karabella.ti.uam.es (localhost.localdomain [127.0.0.1])
-	by karabella.ti.uam.es (8.13.7/8.13.1) with ESMTP id m2QJsLqj029199
-	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Mar 2008 20:54:21 +0100
+	by karabella.ti.uam.es (8.13.7/8.13.1) with ESMTP id m2QKPWCh018955
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Mar 2008 21:25:32 +0100
 Received: from JoseLuisAM (belenus.ii.uam.es [150.244.56.119])
-	by karabella.ti.uam.es (8.13.7/8.13.1) with SMTP id m2QJsLZY029196
-	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Mar 2008 20:54:21 +0100
-Message-ID: <004301c88f7b$2dedd5d0$7738f496@JoseLuisAM>
+	by karabella.ti.uam.es (8.13.7/8.13.1) with SMTP id m2QKPV6p018952
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Mar 2008 21:25:31 +0100
+Message-ID: <005001c88f7f$889eb4a0$7738f496@JoseLuisAM>
 From: =?iso-8859-1?Q?Jos=E9_Luis_A=F1amuro_Machicao?=
 	<jose.annamuro@estudiante.uam.es>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: Cannot open root device "xsysace/disco0/part3" or 00:00
-Date: Wed, 26 Mar 2008 20:54:19 +0100
+Subject: Fw: Cannot open root device "xsysace/disco0/part3" or 00:00
+Date: Wed, 26 Mar 2008 21:25:29 +0100
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0040_01C88F83.8FA656F0"
+	boundary="----=_NextPart_000_004D_01C88F87.EA5E3AA0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,7 +30,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0040_01C88F83.8FA656F0
+------=_NextPart_000_004D_01C88F87.EA5E3AA0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -102,7 +102,7 @@ __    _        __  __      Jos=E9 Luis A=F1amuro - PhD Student
 | |     |/ __ \| | \  /    |    http://www.ii.uam.es/
 `-_-/_/    \_\|_|\/|__|=20
 
-------=_NextPart_000_0040_01C88F83.8FA656F0
+------=_NextPart_000_004D_01C88F87.EA5E3AA0
 Content-Type: text/html;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -204,4 +204,4 @@ href=3D"http://www.ii.uam.es/">http://www.ii.uam.es/</A><BR>`-_-/_/&nbsp;=
 &nbsp;&nbsp;=20
 \_\|_|\/|__| <BR></FONT></DIV></BODY></HTML>
 
-------=_NextPart_000_0040_01C88F83.8FA656F0--
+------=_NextPart_000_004D_01C88F87.EA5E3AA0--
