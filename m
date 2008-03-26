@@ -1,19 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] scanlog_init cleanup, minor fixes
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20080326230959.GI7137@localdomain>
-References: <20080323225144.GA7137@localdomain>
-	<1206571210.7482.0.camel@concordia.ozlabs.ibm.com>
-	<20080326230959.GI7137@localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-kAm38tDdMPS1Vpz0y0F2"
-Date: Thu, 27 Mar 2008 10:21:28 +1100
-Message-Id: <1206573688.7482.2.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <wolfgang@leila.ping.de>
+Received: from lilly.ping.de (lilly.ping.de [83.97.42.2])
+	by ozlabs.org (Postfix) with SMTP id 36AE8DE071
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 10:22:11 +1100 (EST)
+Date: Thu, 27 Mar 2008 00:18:42 +0100
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Which Kernel for Ocotea (440GX)?
+Message-ID: <20080326231842.GI15725@leila.ping.de>
+References: <20080325220742.GD15725@leila.ping.de>
+	<20080325224533.97BF3243A7@gemini.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080325224533.97BF3243A7@gemini.denx.de>
+From: wolfgang@leila.ping.de (Wolfgang Wegner)
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Wolfgang,
 
---=-kAm38tDdMPS1Vpz0y0F2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Tue, Mar 25, 2008 at 11:45:33PM +0100, Wolfgang Denk wrote:
+> 
+> You can find Ocotea support (still arch/ppc only) in our kenrel
+> repository - see git://www.denx.de/git/linux-2.6-denx.git
+> 
+> I think if you just followed the links on AMCC's web site they should
+> have taken you there, too. Please let me know if this didn't work for
+> some reason.
 
-On Wed, 2008-03-26 at 18:09 -0500, Nathan Lynch wrote:
-> Michael Ellerman wrote:
-> > > +	/* Ideally we could allocate a buffer < 4G */
-> > > +	data =3D kzalloc(RTAS_DATA_BUF_SIZE, GFP_KERNEL);
-> > > +	if (!data)
-> > > +		goto err;
-> >=20
-> > Not your bug, but what happens if data is > 4G? Kaboom?
->=20
-> An old RPA doc (scan-log-dump isn't specified in PAPR) says the buffer
-> should be "contiguous real storage", so... yeah, probably.  That's why
-> I preserved the comment.  Will fix if I get access to a machine to
-> test this code more thoroughly (plenty of other issues in this file,
-> too).
+thank you very much, I fetched the kernel and at least it built
+correctly.
 
-Cool, no point changing it if we can't test it.
+It seems I am still doing something wrong with configuration, but as
+I am getting this far, it should be possible to solve. I just wanted
+to give feedback in time that the build is OK.
 
-cheers
+Thank you and best regards,
+Wolfgang
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+At the moment this is what I get:
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-kAm38tDdMPS1Vpz0y0F2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH6tp4dSjSd0sB4dIRAvdWAJ42Jtr6pZMFEPVN6iReceQT3hciIgCfTFo/
-zfn4Nt4t+skQmxL2DXgD+DY=
-=f8Gs
------END PGP SIGNATURE-----
-
---=-kAm38tDdMPS1Vpz0y0F2--
+=> bootm 0x400000                                                               
+## Booting image at 00400000 ...                                                
+   Image Name:   Linux                                                          
+   Created:      2008-03-26  23:12:26 UTC                                       
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)                   
+   Data Size:    1428044 Bytes =  1.4 MB                                        
+   Load Address: 00000000                                                       
+   Entry Point:  00000000                                                       
+   Verifying Checksum ... OK                                                    
+   Uncompressing Kernel Image ... OK                                            
+id mach(): done                                                                 
+MMU:enter                                                                       
+MMU:hw init                                                                     
+MMU:mapin                                                                       
+MMU:setio                                                                       
+MMU:exit                                                                        
+setup_arch: enter                                                               
+setup_arch: bootmem                                                             
+ocp: exit                                                                       
+arch: exit                                                                      
