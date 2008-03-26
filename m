@@ -1,16 +1,23 @@
-Return-Path: <olof@lixom.net>
-Date: Wed, 26 Mar 2008 10:08:28 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 2/2] pasemi_mac: Netpoll support
-Message-ID: <20080326150828.GA6728@lixom.net>
-References: <20080326015625.GA23103@lixom.net>
-	<20080326015801.GC23103@lixom.net> <47EA445D.9090509@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47EA445D.9090509@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, jgarzik@pobox.com,
-	netdev@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6B91DE27D
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 02:09:25 +1100 (EST)
+In-Reply-To: <200803251914.24021.laurentp@cse-semaphore.com>
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+	<200803251823.32039.laurentp@cse-semaphore.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B0427706A@ismail.innsys.innovsys.com>
+	<200803251914.24021.laurentp@cse-semaphore.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b06db7bb4932d14f8af9547abdfc9d0d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: OF compatible MTD platform RAM driver ?
+Date: Wed, 26 Mar 2008 16:06:45 +0100
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 26, 2008 at 03:41:01PM +0300, Valentine Barshak wrote:
->> +	pasemi_mac_tx_intr(mac->tx->chan.irq, mac->tx);
->> +	enable_irq(mac->tx->chan.irq);
->> +
->> +	disable_irq(mac->rx->chan.irq);
->> +	pasemi_mac_rx_intr(mac->rx->chan.irq, dev);
+> So we're left with two main options.
 >
-> Shouldn't this actually be pasemi_mac_rx_intr(mac->rx->chan.irq, mac->rx)?
+> - Reusing the nvram device type from the Device Support Extensions.
 
-Yeah, it should. It used to take the netdev pointer instead. And the
-void * argument means I never got a compiler warning from it.
+This wouldn't bring you anything.  A device_type is only used internally
+by OF, to decide what device nodes support which OF programming model.
+If you only have a flat device tree, "device_type" should be used only
+as a workaround for older kernels that require it.
 
-Thanks!
+> - Using another device node with a compatible value set to 
+> "linear-ram" (or
+> something similar). This would support both volatile and non-volatile
+> devices, and a property could be added to specify if the device is 
+> volatile
+> or not.
 
--Olof
+"memory-mapped-memory" perhaps :-)
+
+Or, just "memory".  Although that one might play havoc with some
+not-quite-correct main memory probing code.
+
+
+Segher
