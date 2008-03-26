@@ -1,21 +1,32 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 3E9FDDDF87
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 23:34:53 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Sergej Stepanov <Sergej.Stepanov@ids.de>
-Subject: Re: [PATCH] cpm_uart: Allocate DPRAM memory for SMC ports
-	onCPM2-based platforms.
-Date: Wed, 26 Mar 2008 13:34:46 +0100
-References: <20080325160331.GB15093@ld0162-tx32.am.freescale.net>
-	<200803251732.32569.laurentp@cse-semaphore.com>
-	<1206520313.26613.14.camel@p60365-ste>
-In-Reply-To: <1206520313.26613.14.camel@p60365-ste>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6938803.kn1gHDE5Qo";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803261334.49515.laurentp@cse-semaphore.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A8FE3DE212
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 23:38:34 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2QCcQ5x011070
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 08:38:26 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2QCcQXZ220118
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 08:38:26 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2QCcPwu008677
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 08:38:26 -0400
+Date: Wed, 26 Mar 2008 07:35:54 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 2/2] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock
+	workaround
+Message-ID: <20080326073554.1d8229d6@zod.rchland.ibm.com>
+In-Reply-To: <1206400935.7197.59.camel@pasglop>
+References: <20080306134359.GA31762@ru.mvista.com>
+	<1206400935.7197.59.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart6938803.kn1gHDE5Qo
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 25 Mar 2008 10:22:15 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Wednesday 26 March 2008 09:31, Sergej Stepanov wrote:
->=20
-> Am Dienstag, den 25.03.2008, 17:32 +0100 schrieb Laurent Pinchart:
->=20
-> > Do you have any opinion about the proposed patch ?
-> >=20
->=20
-> I have to say, it could be some off-topic.
-> But if you would use the cpm_uart-driver for cpm2(or cpm1) as kernel
-> module, at linking you can get warnings about:
-> 	- cpm_setbrg (cpm_set_brg): something with section mismatch
-> 	-  __alloc_bootmem (cpm_uart_allocbuf): the same
->=20
-> The symbols are not exported.
-> Is it ok, about kernel modules?
+> 
+> On Thu, 2008-03-06 at 16:43 +0300, Valentine Barshak wrote:
+> > This patch adds ibm_newemac PHY clock workaround for 440EP/440GR EMAC
+> > attached to a PHY which doesn't generate RX clock if there is no link.
+> > The code is based on the previous ibm_emac driver stuff. The 440EP/440GR
+> > allows controlling each EMAC clock separately as opposed to global clock
+> > selection for 440GX.
+> > 
+> > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I get the same section-mismatch warning for __alloc_bootmem in=20
-cpm_uart_allocbuf. cpm_setbrg doesn't cause any warning here.
+This never went to netdev or Jeff from what I can see.
 
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=C3=A9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart6938803.kn1gHDE5Qo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH6kLp8y9gWxC9vpcRAjgtAJ94SRzLnJR1TmoSIzv81gF8drV5ggCeKPF/
-Guym1huaq9TDvBC3ZNLgBW8=
-=o3fr
------END PGP SIGNATURE-----
-
---nextPart6938803.kn1gHDE5Qo--
+josh
