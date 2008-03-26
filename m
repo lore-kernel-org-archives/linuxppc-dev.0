@@ -1,13 +1,23 @@
-Return-Path: <jose.annamuro@ESTUDIANTE.UAM.ES>
-Message-ID: <002301c88f79$7f197a10$7738f496@JoseLuisAM>
+Return-Path: <jose.annamuro@estudiante.uam.es>
+Received: from karabella.ti.uam.es (karabella.ti.uam.es [150.244.9.66])
+	by ozlabs.org (Postfix) with ESMTP id 959F0DDF6B
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Mar 2008 06:54:23 +1100 (EST)
+Received: from karabella.ti.uam.es (localhost.localdomain [127.0.0.1])
+	by karabella.ti.uam.es (8.13.7/8.13.1) with ESMTP id m2QJsLqj029199
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Mar 2008 20:54:21 +0100
+Received: from JoseLuisAM (belenus.ii.uam.es [150.244.56.119])
+	by karabella.ti.uam.es (8.13.7/8.13.1) with SMTP id m2QJsLZY029196
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Mar 2008 20:54:21 +0100
+Message-ID: <004301c88f7b$2dedd5d0$7738f496@JoseLuisAM>
 From: =?iso-8859-1?Q?Jos=E9_Luis_A=F1amuro_Machicao?=
-	<jose.annamuro@ESTUDIANTE.UAM.ES>
-To: <Linuxppc-embedded@ozlabs.org>
-Subject: Fw: Cannot open root device "xsysace/disco0/part3" or 00:00
-Date: Wed, 26 Mar 2008 20:42:11 +0100
+	<jose.annamuro@estudiante.uam.es>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Cannot open root device "xsysace/disco0/part3" or 00:00
+Date: Wed, 26 Mar 2008 20:54:19 +0100
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0020_01C88F81.DDDE0F90"
+	boundary="----=_NextPart_000_0040_01C88F83.8FA656F0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +30,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0020_01C88F81.DDDE0F90
+------=_NextPart_000_0040_01C88F83.8FA656F0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-
-
------ Original Message -----=20
-From: Jos=E9 Luis A=F1amuro Machicao=20
-To: Linuxppc-embedded@ozlabs.org=20
-Cc: josel_am2@yahoo.es ; jose_luis@fun-humanismo-ciencia.es=20
-Sent: Wednesday, March 26, 2008 8:39 PM
-Subject: Cannot open root device "xsysace/disco0/part3" or 00:00
 
 
 Hi
@@ -100,7 +102,7 @@ __    _        __  __      Jos=E9 Luis A=F1amuro - PhD Student
 | |     |/ __ \| | \  /    |    http://www.ii.uam.es/
 `-_-/_/    \_\|_|\/|__|=20
 
-------=_NextPart_000_0020_01C88F81.DDDE0F90
+------=_NextPart_000_0040_01C88F83.8FA656F0
 Content-Type: text/html;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -113,27 +115,7 @@ charset=3Diso-8859-1">
 <STYLE></STYLE>
 </HEAD>
 <BODY bgColor=3D#ffffff>
-<DIV style=3D"FONT: 10pt arial">&nbsp;</DIV>
-<DIV style=3D"FONT: 10pt arial">----- Original Message -----=20
-<DIV style=3D"BACKGROUND: #e4e4e4; font-color: black"><B>From:</B> <A=20
-title=3Djose.annamuro@estudiante.uam.es=20
-href=3D"mailto:jose.annamuro@estudiante.uam.es">Jos=E9 Luis A=F1amuro =
-Machicao</A>=20
-</DIV>
-<DIV><B>To:</B> <A title=3DLinuxppc-embedded@ozlabs.org=20
-href=3D"mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org=
-</A>=20
-</DIV>
-<DIV><B>Cc:</B> <A title=3Djosel_am2@yahoo.es=20
-href=3D"mailto:josel_am2@yahoo.es">josel_am2@yahoo.es</A> ; <A=20
-title=3Djose_luis@fun-humanismo-ciencia.es=20
-href=3D"mailto:jose_luis@fun-humanismo-ciencia.es">jose_luis@fun-humanism=
-o-ciencia.es</A>=20
-</DIV>
-<DIV><B>Sent:</B> Wednesday, March 26, 2008 8:39 PM</DIV>
-<DIV><B>Subject:</B> Cannot open root device "xsysace/disco0/part3" or=20
-00:00</DIV></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT><BR></DIV>
+<DIV><B></B>&nbsp;</DIV>
 <DIV><FONT face=3DArial size=3D2>Hi</FONT></DIV>
 <DIV><FONT face=3DArial size=3D2>I am installing the linux kernel 2.4.26 =
 in the FPGA=20
@@ -222,4 +204,4 @@ href=3D"http://www.ii.uam.es/">http://www.ii.uam.es/</A><BR>`-_-/_/&nbsp;=
 &nbsp;&nbsp;=20
 \_\|_|\/|__| <BR></FONT></DIV></BODY></HTML>
 
-------=_NextPart_000_0020_01C88F81.DDDE0F90--
+------=_NextPart_000_0040_01C88F83.8FA656F0--
