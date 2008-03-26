@@ -1,23 +1,14 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9280EDDF7E
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2008 14:20:27 +1100 (EST)
-Message-ID: <47E9C0F2.20403@garzik.org>
-Date: Tue, 25 Mar 2008 23:20:18 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <jgarzik@pobox.com>
+Message-ID: <47E9CD2E.7040203@pobox.com>
+Date: Wed, 26 Mar 2008 00:12:30 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-Subject: Re: [PATCH] ehea: Fix IPv6 support
-References: <200803191355.44266.osstklei@de.ibm.com>
-In-Reply-To: <200803191355.44266.osstklei@de.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 0/2] Two more pasemi_mac patches for 2.6.26
+References: <20080326015625.GA23103@lixom.net>
+In-Reply-To: <20080326015625.GA23103@lixom.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	Hannes Hering <hering2@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thomas Klein wrote:
-> Indicate that HEA calculates IPv4 checksums only
+Olof Johansson wrote:
+> Hi Jeff,
 > 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> The below two patches go on top of the previous patches that were acked
+> by you but applied to pasemi.git for feed up through powerpc.git.
 > 
-> ---
-> diff -Nurp -X dontdiff linux-2.6.25-rc6/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
-> --- linux-2.6.25-rc6/drivers/net/ehea/ehea.h	2008-03-17 00:32:14.000000000 +0100
-> +++ patched_kernel/drivers/net/ehea/ehea.h	2008-03-19 08:58:07.000000000 +0100
-> @@ -40,7 +40,7 @@
->  #include <asm/io.h>
->  
->  #define DRV_NAME	"ehea"
-> -#define DRV_VERSION	"EHEA_0087"
-> +#define DRV_VERSION	"EHEA_0089"
->  
->  /* eHEA capability flags */
->  #define DLPAR_PORT_ADD_REM 1
-> diff -Nurp -X dontdiff linux-2.6.25-rc6/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
-> --- linux-2.6.25-rc6/drivers/net/ehea/ehea_main.c	2008-03-17 00:32:14.000000000 +0100
-> +++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-03-19 08:58:07.000000000 +0100
-> @@ -3108,7 +3108,7 @@ struct ehea_port *ehea_setup_single_port
->  	dev->vlan_rx_add_vid = ehea_vlan_rx_add_vid;
->  	dev->vlan_rx_kill_vid = ehea_vlan_rx_kill_vid;
->  	dev->features = NETIF_F_SG | NETIF_F_FRAGLIST | NETIF_F_TSO
-> -		      | NETIF_F_HIGHDMA | NETIF_F_HW_CSUM | NETIF_F_HW_VLAN_TX
-> +		      | NETIF_F_HIGHDMA | NETIF_F_IP_CSUM | NETIF_F_HW_VLAN_TX
->  		      | NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_FILTER
+> One is a couple of fixes for various corner cases in the jumbo support
+> configuration. The second is addition of netpoll support, from Nate
+> Case.
+> 
+> Review/ack would be appreciated, I'll feed them up the same path as the
+> other changes.
 
-applied
+ACK 1-2, though I would consider closely patch #2, whether you need 
+disable_irq() or spin_lock_irqsave() -- which is best for your specific 
+driver + platform?
