@@ -1,16 +1,13 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 27 Mar 2008 17:40:07 -0500
-From: Olof Johansson <olof@lixom.net>
-To: jgarzik@pobox.com
-Subject: [PATCH 2/2 v2] pasemi_mac: Netpoll support
-Message-ID: <20080327224007.GB17980@lixom.net>
-References: <20080326015625.GA23103@lixom.net>
-	<20080326015801.GC23103@lixom.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080326015801.GC23103@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, ncase@xes-inc.com,
-	netdev@vger.kernel.org
+Message-ID: <18412.10455.702432.911134@cargo.ozlabs.ibm.com>
+Date: Fri, 28 Mar 2008 10:08:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,56 +17,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add netpoll support to allow use of netconsole.
+Linus,
+
+Olof Johansson has a defconfig update for the pasemi platform that he
+would like to have in 2.6.25, so please do:
+
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+Thanks,
+Paul.
+
+ arch/powerpc/configs/pasemi_defconfig |  142 ++++++++++++++++++++-------------
+ 1 files changed, 88 insertions(+), 54 deletions(-)
+
+commit 5c29934de29ddd7ecd913d83cad28e872f2e8c78
+Author: Olof Johansson <olof@lixom.net>
+Date:   Tue Mar 25 10:28:26 2008 -0500
+
+    [POWERPC] update pasemi_defconfig
     
-Signed-off-by: Nate Case <ncase@xes-inc.com>
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
----
-Changed the interrupt handler arguments as found by Valentine. Will push
-through powerpc.git with Jeff's ACKs (that were already given).
-
-
--Olof
-
-diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
-index abb1dc4..965f2e4 100644
---- a/drivers/net/pasemi_mac.c
-+++ b/drivers/net/pasemi_mac.c
-@@ -1648,6 +1648,26 @@ static int pasemi_mac_poll(struct napi_struct *napi, int budget)
- 	return pkts;
- }
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+/*
-+ * Polling 'interrupt' - used by things like netconsole to send skbs
-+ * without having to re-enable interrupts. It's not called while
-+ * the interrupt routine is executing.
-+ */
-+static void pasemi_mac_netpoll(struct net_device *dev)
-+{
-+	const struct pasemi_mac *mac = netdev_priv(dev);
-+
-+	disable_irq(mac->tx->chan.irq);
-+	pasemi_mac_tx_intr(mac->tx->chan.irq, mac->tx);
-+	enable_irq(mac->tx->chan.irq);
-+
-+	disable_irq(mac->rx->chan.irq);
-+	pasemi_mac_rx_intr(mac->rx->chan.irq, mac->rx);
-+	enable_irq(mac->rx->chan.irq);
-+}
-+#endif
-+
- static int pasemi_mac_change_mtu(struct net_device *dev, int new_mtu)
- {
- 	struct pasemi_mac *mac = netdev_priv(dev);
-@@ -1807,6 +1827,9 @@ pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	dev->mtu = PE_DEF_MTU;
- 	/* 1500 MTU + ETH_HLEN + VLAN_HLEN + 2 64B cachelines */
- 	mac->bufsz = dev->mtu + ETH_HLEN + ETH_FCS_LEN + LOCAL_SKB_ALIGN + 128;
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	dev->poll_controller = pasemi_mac_netpoll;
-+#endif
- 
- 	dev->change_mtu = pasemi_mac_change_mtu;
- 	dev->ethtool_ops = &pasemi_mac_ethtool_ops;
+    Disable GEN_RTC since it conflicts with the i2c rtc drivers registering,
+    besides that keep most of the new defaults.
+    
+    Signed-off-by: Olof Johansson <olof@lixom.net>
