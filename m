@@ -1,23 +1,15 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.189])
-	by ozlabs.org (Postfix) with ESMTP id 60A9EDDE20
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 06:37:55 +1100 (EST)
-Received: by gv-out-0910.google.com with SMTP id p33so945066gvf.14
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 12:37:53 -0700 (PDT)
-Message-ID: <e9c3a7c20803271237x1b2c3a2ci6837c5e2d5288c95@mail.gmail.com>
-Date: Thu, 27 Mar 2008 12:37:52 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Zhang Wei" <wei.zhang@freescale.com>,
-	"Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fsldma: The MPC8377MDS board device tree node for fsldma
-	driver
-In-Reply-To: <1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
+Return-Path: <jgarzik@pobox.com>
+Message-ID: <47EBF85F.6070200@pobox.com>
+Date: Thu, 27 Mar 2008 15:41:19 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
-	<1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Linux Kernel <linux-kernel@vger.kernel.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 0/2] Two more pasemi_mac patches for 2.6.26
+References: <20080326015625.GA23103@lixom.net> <47E9CD2E.7040203@pobox.com>
+	<20080327192204.GA17881@lixom.net>
+In-Reply-To: <20080327192204.GA17881@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 26, 2008 at 12:42 AM, Zhang Wei <wei.zhang@freescale.com> wrote:
-> The fsldma driver is tested on MPC8377MDS board.
->  The patch adds fsldma driver support into MPC8377MDS device tree.
->
->  Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
->  ---
->   arch/powerpc/boot/dts/mpc8377_mds.dts |   27 +++++++++++++++++++++++++++
->   1 files changed, 27 insertions(+), 0 deletions(-)
+Olof Johansson wrote:
+> On Wed, Mar 26, 2008 at 12:12:30AM -0400, Jeff Garzik wrote:
+>> Olof Johansson wrote:
+>>> Hi Jeff,
+>>>
+>>> The below two patches go on top of the previous patches that were acked
+>>> by you but applied to pasemi.git for feed up through powerpc.git.
+>>>
+>>> One is a couple of fixes for various corner cases in the jumbo support
+>>> configuration. The second is addition of netpoll support, from Nate
+>>> Case.
+>>>
+>>> Review/ack would be appreciated, I'll feed them up the same path as the
+>>> other changes.
+>> ACK 1-2, though I would consider closely patch #2, whether you need 
+>> disable_irq() or spin_lock_irqsave() -- which is best for your specific 
+>> driver + platform?
+> 
+> I'm tempted to leave the disable/enable_irq() in there. It's certainly
+> heavier than doing cpu-side irq masking, but adding a spinlock to the
+> common interrupt path seems worse to me. I didn't think we considered
+> the polling to be a hot path anyway...
 
-I think this patch should probably go through the powerpc tree, or
--mm.  I'll pick up the ones that touch either drivers/dma or
-crypto/async_tx.
-
---
-Dan
+Definitely not a hot path :)
