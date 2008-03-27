@@ -1,24 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sheflin@newagemicro.com>
+Received: from server196.onecontrol.com (ip-66-129-110-196.name-host.com
+	[66.129.110.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A568DE0E6
+	by ozlabs.org (Postfix) with ESMTPS id EB5E3DE0A4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Mar 2008 06:32:01 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JexpN-0004xI-0L
-	for linuxppc-embedded@ozlabs.org; Thu, 27 Mar 2008 12:31:57 -0700
-Message-ID: <16332251.post@talk.nabble.com>
-Date: Thu, 27 Mar 2008 12:31:57 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
+	Fri, 28 Mar 2008 07:37:17 +1100 (EST)
+Date: Thu, 27 Mar 2008 16:36:45 -0400
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: Xilinx Temac Timer ?
-In-Reply-To: <20080326194837.096A66A80EE@mail125-dub.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <16306218.post@talk.nabble.com>
-	<20080326194837.096A66A80EE@mail125-dub.bigfish.com>
+From: Steve Heflin <sheflin@newagemicro.com>
+Subject: Re: ppc platform for AMCC-440EPx - ELDK to the rescue
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <20080327203717.EB5E3DE0A4@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,38 +24,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+>In reply to my message <20080326130837.762DBDE2FB@ozlabs.org>
+> > I finally resolved my nightmare of getting linux-2.6.24/5... to work
+> > on my AMCC-440Epx - Sequoia spinoff board. Following a clue I derived
+> > from a reply from Wolfgang Denx, I went to the DENX Engineering site
+> > where I discoved and downloaded the ELDK for the ppc_4xxFP. the ELDK
+> > uses the ppc platform instead of the powerpc platform.  FINALLY the
+Wolfgang replied At 06:22 PM 3/26/2008:
+>This is not exactly correct. Actually it supports both.
 
+Ah thank you for that info.  I only said what I said because the 
+4xxFP installation set things up to use the arch/ppc and to my 
+delight, it worked!  I look forward to and will do all I can to help 
+get the arch/powerpc platform working on my Sequoia spin-off board.
 
-John Linn wrote:
-> 
-> Hi Kevin,
-> 
-> I didn't write the code but I know the driver somewhat.
-> 
-> I think the intention of stopping the timer is to prevent the reentrancy
-> as the comment says because there is a function, gmii_poll, that is
-> setup on the timer to go read the phy registers to see if anything
-> changed in the phy. 
-> 
-> Stopping the timer prevents a phy read from happening in gmii_poll in
-> the middle of the ioctl phy read which could hose things up.
-> 
-> I don't see why you couldn't change that timer stop to some other form
-> of synchronization/mutual exclusion so that the phy reads don't collide.
-> 
-> As I look at it, it appears to me the spinlock should provide the
-> synchronization needed without stopping the timer, but maybe I'm missing
-> something. I CCed John Bonesio as he's the guy that developed this code
-> I believe and maybe he'll have more insight here.
-> 
-> Thanks,
-> John
-> 
-I removed the timer code, and it seems to be working correctly, hopefully
-the spin lock is all I need to lock out the polling function.  Thanks for
-you help
+I sent you email regarding my inability to do a ELDK build from 
+scratch, did you get that? I'm trying to build it under a fully 
+updated Fedora 7 system, and it hits the error:
+   LD unable to locate -lssabi_krb5 .  Any clue?
 
-Kevin
--- 
-View this message in context: http://www.nabble.com/Xilinx-Temac-Timer---tp16306218p16332251.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+thanks so much for your help,
+Steve
