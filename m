@@ -1,21 +1,28 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id B5A40DDF58
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 23:22:26 +1100 (EST)
-Message-ID: <47EB91D2.60100@ru.mvista.com>
-Date: Thu, 27 Mar 2008 15:23:46 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: OF compatible MTD platform RAM driver ?
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<200803251914.24021.laurentp@cse-semaphore.com>
-	<47EA4741.2050402@ru.mvista.com>
-	<200803271013.32612.laurentp@cse-semaphore.com>
-	<20080327100304.GC10397@localhost.localdomain>
-In-Reply-To: <20080327100304.GC10397@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ben@simtec.co.uk, linux-mtd@lists.infradead.org, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1754DE088
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 23:26:57 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2RCQsFM008600
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 08:26:54 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2RCQr3W145006
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 06:26:53 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2RCQrK3012549
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 06:26:53 -0600
+Date: Thu, 27 Mar 2008 07:24:08 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: Please pull 'for-2.6.26' branch of 4xx tree
+Message-ID: <20080327072408.6869eb69@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,60 +32,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hi Paul,
 
-David Gibson wrote:
+Please pull from:
 
->>>Laurent Pinchart wrote:
+ master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.26
 
-> [snip]
+to pick up the first round of 4xx patches for 2.6.26.  There are a few
+new board ports, some Xilinx driver updates, and some DCR helper
+macros.
 
->>>    Heh, we've gone thru "physmap" before -- it was labelled Linux-specific 
->>>name (well, I'd agree with that).
+Grant has two bootwrapper patches that I would like to see go in as
+well, but I need to test them a bit more first.
 
->>physmap stands for physically mapped. That doesn't sound
->>Linux-specific to me, the fact that the MTD driver has the same name
->>is a pure coincidence.  linmap-rom and linmap-rom sound even more
->>Linux-specific :-)
+josh
 
-> It may not be Linux specific per se, but it's a bad name, because the
-> fact that the device is physically direct mapped isn't a useful
-> distinguishing feature of the device.
+David Gibson (1):
+      [POWERPC] Start removing linux,network-index in favour of aliases
 
-    Yeah, it's not a propery of a device itself (yet, the device would be 
-useless if this information is not supplied in the tree somehow). Yet remember 
-the now ungoing discussion about "reg-shift" property for UARTs -- some people 
-said that the fact that this property may not be a feature of device is 
-irrelevant WRT the binding. :-)
+Josh Boyer (3):
+      [POWERPC] 4xx: Add AMCC 440EP Yosemite DTS
+      [POWERPC] 4xx: Add platform support for the AMCC Yosemite board
+      [POWERPC] 4xx: Add bootwrapper for AMCC Yosemite board
 
-> Main memory is also direct physically mapped, after all,  but that's not what you want to cover
-> with this description.
+Stefan Roese (10):
+      [POWERPC] 4xx: Add AMCC 460EX/460GT support to cputable.c & cpu_setup_44x.S
+      [POWERPC] 4xx: Add AMCC Canyonlands 460EX eval board support to platforms/44x
+      [POWERPC] 4xx: Add Canyonlands DTS
+      [POWERPC] 4xx: Add 460EX PCIe support to 4xx pci driver
+      [POWERPC] 4xx: Add Canyonlands defconfig file
+      [POWERPC] 4xx: Add TAH support to taishan dts
+      [POWERPC] 4xx: Add AMCC Glacier 460GT eval board dts
+      [POWERPC] 4xx: Add "amcc, haleakala" to the toplevel compatible property
+      [POWERPC] 4xx: Add PPC4xx L2-cache support (440GX)
+      [POWERPC] 4xx: Add L2 cache node to AMCC Taishan dts file
 
-   Haven't ever seen the description of memory as a device (unless you mean 
-the "memory" node which can hardly be considered proper device -- mainly 
-because of their usual placement at the top of the tree, and not where a RAM 
-device logically should be in the bus hierarchy).
+Stephen Neuendorffer (3):
+      [POWERPC] Xilinx: hwicap: Refactor status handling code.
+      [POWERPC] Xilinx: hwicap: Verify sync before reading idcode.
+      [POWERPC] Xilinx: hwicap: Use fixed device major.
 
-> In general how a device is wired is described by where it sits in the tree, not by its properties.
+Valentine Barshak (2):
+      [POWERPC] 4xx: Add dcri_clrset() for locked read/modify/write functionality
+      [POWERPC] 4xx: Use dcri_clrset() for PCIe indirect dcr read/modify/write access
 
-    Oh, another argument against "reg-shift" in the Xilinx UART quarry... :-)
-
-> It only seems like a usefully distinguishing name because it's the
-> Linux "physmap_of" driver that uses it.  So in this sense it is a
-> Linux specific name after all.  In fact, physmap_of is itself very
-> badly named - right now it only handles direct mapped mtds, but that's
-
-    Yeah, because that's what is what it has been written for.
-
-> not inherent; it could be trivially extended to also instantiate a
-> non-direct-mapped device (as long as the underlying mtd layer
-> supported it, of course).   It bears no relation at all to the
- > "physmap" driver, except historical accident.
-
-    This driver resides on the "top", device mapping layer of the MTD 
-hierarchy, and I don't see a point of cramming support for all the possible 
-mappings into one driver vs doing it as the *separate* specific drivers in 
-drivers/mtd/mapps/ -- as it has been done in the MTD tree before "the great OF 
-revolution". This is really strange idea...
-
-WBR, Sergei
+ Documentation/powerpc/booting-without-of.txt |   16 -
+ arch/powerpc/Kconfig                         |    3 +
+ arch/powerpc/boot/Makefile                   |    3 +-
+ arch/powerpc/boot/bamboo.c                   |    3 +-
+ arch/powerpc/boot/cuboot-rainier.c           |    3 +-
+ arch/powerpc/boot/cuboot-sequoia.c           |    3 +-
+ arch/powerpc/boot/cuboot-taishan.c           |    3 +-
+ arch/powerpc/boot/cuboot-warp.c              |    2 +-
+ arch/powerpc/boot/cuboot-yosemite.c          |   44 ++
+ arch/powerpc/boot/dts/bamboo.dts             |    2 -
+ arch/powerpc/boot/dts/canyonlands.dts        |  391 ++++++++++++++
+ arch/powerpc/boot/dts/ebony.dts              |    2 -
+ arch/powerpc/boot/dts/glacier.dts            |  464 +++++++++++++++++
+ arch/powerpc/boot/dts/haleakala.dts          |    2 +-
+ arch/powerpc/boot/dts/rainier.dts            |    2 -
+ arch/powerpc/boot/dts/sequoia.dts            |    2 -
+ arch/powerpc/boot/dts/taishan.dts            |   27 +-
+ arch/powerpc/boot/dts/walnut.dts             |    1 -
+ arch/powerpc/boot/dts/warp.dts               |    1 -
+ arch/powerpc/boot/dts/yosemite.dts           |  304 +++++++++++
+ arch/powerpc/boot/ebony.c                    |    3 +-
+ arch/powerpc/boot/treeboot-walnut.c          |    2 +-
+ arch/powerpc/configs/canyonlands_defconfig   |  721 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/cpu_setup_44x.S          |    5 +-
+ arch/powerpc/kernel/cputable.c               |   28 +-
+ arch/powerpc/platforms/44x/Kconfig           |   28 +
+ arch/powerpc/platforms/44x/Makefile          |    2 +
+ arch/powerpc/platforms/44x/canyonlands.c     |   64 +++
+ arch/powerpc/sysdev/Makefile                 |    1 +
+ arch/powerpc/sysdev/ppc4xx_pci.c             |  127 +++++-
+ arch/powerpc/sysdev/ppc4xx_pci.h             |   59 +++
+ arch/powerpc/sysdev/ppc4xx_soc.c             |  189 +++++++
+ drivers/char/xilinx_hwicap/buffer_icap.c     |   22 +-
+ drivers/char/xilinx_hwicap/buffer_icap.h     |    5 +-
+ drivers/char/xilinx_hwicap/fifo_icap.c       |   31 +-
+ drivers/char/xilinx_hwicap/fifo_icap.h       |    1 +
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c   |   63 ++-
+ drivers/char/xilinx_hwicap/xilinx_hwicap.h   |   24 +
+ include/asm-powerpc/dcr-native.h             |   17 +
+ include/asm-powerpc/dcr-regs.h               |   78 +++
+ 40 files changed, 2643 insertions(+), 105 deletions(-)
