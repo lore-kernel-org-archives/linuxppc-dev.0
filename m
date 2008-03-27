@@ -1,18 +1,13 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0F77EDE241
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 02:08:14 +1100 (EST)
-Date: Thu, 27 Mar 2008 17:40:44 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CC1E4DE0A4
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 02:34:58 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
-Message-ID: <20080327144044.GA8831@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080327085353.6ac04886@zod.rchland.ibm.com>
-Cc: jeff@garzik.org, netdev@vger.kernel.org
+Subject: [PATCH] [POWERPC] 4xx: Only reset PCIe PHY on 405EX systems when no
+	link is detected
+Date: Thu, 27 Mar 2008 16:34:50 +0100
+Message-Id: <1206632090-1012-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,89 +17,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
-if there's no link. Because of that it fails to find PHY chip. The older ibm_emac
-driver had a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros,
-which toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
-does the same for "ibm,emac-440gx" compatible chips. The workaround forces
-clock on -all- EMACs, so we select clock under global emac_phy_map_lock.
+Since the arch/powerpc PCI subsystem now does a complete re-assignment of
+the resources, we can move from the unconditional PCIe PHY reset to the
+conditional version. Now the PHY is only reset, if no link is established yet.
+An additional PHY reset (one is already done in U-Boot) leads to problems
+with some Atheros PCIe boards and some HP FPGA PCIe designs.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+Signed-off-by: Stefan Roese <sr@denx.de>
 ---
- drivers/net/ibm_newemac/core.c |   16 +++++++++++++++-
- drivers/net/ibm_newemac/core.h |    8 ++++++--
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/ppc4xx_pci.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
---- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2008-02-22 19:56:26.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/core.c	2008-02-22 20:38:47.000000000 +0300
-@@ -43,6 +43,8 @@
- #include <asm/io.h>
- #include <asm/dma.h>
- #include <asm/uaccess.h>
-+#include <asm/dcr.h>
-+#include <asm/dcr-regs.h>
- 
- #include "core.h"
- 
-@@ -2323,6 +2325,10 @@ static int __devinit emac_init_phy(struc
- 	dev->phy.mdio_read = emac_mdio_read;
- 	dev->phy.mdio_write = emac_mdio_write;
- 
-+	/* Enable internal clock source */
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		dcri_clrset(SDR0, SDR0_MFR, 0, SDR0_MFR_ECS);
-+
- 	/* Configure EMAC with defaults so we can at least use MDIO
- 	 * This is needed mostly for 440GX
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 5abfcd1..9e633f8 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -830,17 +830,9 @@ static int ppc405ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
+ 	 * PCIe boards don't show this problem.
+ 	 * This has to be re-tested and fixed in a later release!
  	 */
-@@ -2355,6 +2361,11 @@ static int __devinit emac_init_phy(struc
- 			if (!emac_mii_phy_probe(&dev->phy, i))
- 				break;
- 		}
-+
-+	/* Enable external clock source */
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		dcri_clrset(SDR0, SDR0_MFR, SDR0_MFR_ECS, 0);
-+
- 	mutex_unlock(&emac_phy_map_lock);
- 	if (i == 0x20) {
- 		printk(KERN_WARNING "%s: can't find PHY!\n", np->full_name);
-@@ -2480,8 +2491,11 @@ static int __devinit emac_init_config(st
- 	}
+-#if 0 /* XXX FIXME: Not resetting the PHY will leave all resources
+-       * configured as done previously by U-Boot. Then Linux will currently
+-       * not reassign them. So the PHY reset is now done always. This will
+-       * lead to problems with the Atheros PCIe board again.
+-       */
+ 	val = mfdcri(SDR0, port->sdr_base + PESDRn_LOOP);
+ 	if (!(val & 0x00001000))
+ 		ppc405ex_pcie_phy_reset(port);
+-#else
+-	ppc405ex_pcie_phy_reset(port);
+-#endif
  
- 	/* Check EMAC version */
--	if (of_device_is_compatible(np, "ibm,emac4"))
-+	if (of_device_is_compatible(np, "ibm,emac4")) {
- 		dev->features |= EMAC_FTR_EMAC4;
-+		if (of_device_is_compatible(np, "ibm,emac-440gx"))
-+			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
-+	}
+ 	dcr_write(port->dcrs, DCRO_PEGPL_CFG, 0x10000000);  /* guarded on */
  
- 	/* Fixup some feature bits based on the device tree */
- 	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.h linux-2.6/drivers/net/ibm_newemac/core.h
---- linux-2.6.orig/drivers/net/ibm_newemac/core.h	2008-02-21 16:45:36.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/core.h	2008-02-22 19:57:44.000000000 +0300
-@@ -301,6 +301,10 @@ struct emac_instance {
-  * Set if we have new type STACR with STAOPC
-  */
- #define EMAC_FTR_HAS_NEW_STACR		0x00000040
-+/*
-+ * Set if we need phy clock workaround for 440gx
-+ */
-+#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
- 
- 
- /* Right now, we don't quite handle the always/possible masks on the
-@@ -312,8 +316,8 @@ enum {
- 
- 	EMAC_FTRS_POSSIBLE	=
- #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
--	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
--	    EMAC_FTR_STACR_OC_INVERT	|
-+	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
-+	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
- #endif
- #ifdef CONFIG_IBM_NEW_EMAC_TAH
- 	    EMAC_FTR_HAS_TAH	|
+-- 
+1.5.4.4
