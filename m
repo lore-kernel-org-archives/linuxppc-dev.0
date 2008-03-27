@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0411DE41A
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 08:08:55 +1100 (EST)
-Subject: Re: [PATCH 2/11] cell: generalize io-workarounds code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <20080327.200215.-1300539001.kouish@swc.toshiba.co.jp>
-References: <20080327.200215.-1300539001.kouish@swc.toshiba.co.jp>
-Content-Type: text/plain
-Date: Fri, 28 Mar 2008 08:08:21 +1100
-Message-Id: <1206652101.10388.28.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Date: Thu, 27 Mar 2008 17:40:07 -0500
+From: Olof Johansson <olof@lixom.net>
+To: jgarzik@pobox.com
+Subject: [PATCH 2/2 v2] pasemi_mac: Netpoll support
+Message-ID: <20080327224007.GB17980@lixom.net>
+References: <20080326015625.GA23103@lixom.net>
+	<20080326015801.GC23103@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080326015801.GC23103@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org, ncase@xes-inc.com,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add netpoll support to allow use of netconsole.
+    
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-On Thu, 2008-03-27 at 20:02 +0900, Ishizaki Kou wrote:
-> 
-> > I'll try to have a closer look next week, but I'm a bit worried by
-> > having all IO go through 2 level of function pointers, the PPE isn't
-> > very good at it and this will slow things down more than they
-> already
-> > are.
-> 
-> Only on celleb, all IO go through 2 level of function pointers.
->  
-> On cell blades, you can set global variable "ppc_pci_io" up at
-> function 
-> spider_pci_workaround_init() directly instead of calling function
-> io_workaround_init(), so all IO on cell blades use only one level of 
-> function pointer which is stored in ppc_pci_io.
+---
+Changed the interrupt handler arguments as found by Valentine. Will push
+through powerpc.git with Jeff's ACKs (that were already given).
 
-But I would probably want to also use the PCI Express stuff for cell
-blades...
 
-> As you said, if read/write/in/out functions take device parameter,
-> taking I/O function pointers into the dev_archdata structure should be
-> the best solution. But they don't take device parameter, and they must
-> search I/O function pointers with address parameter. I think it's
-> better they search pointers from bus bridges, because access mothod
-> for a device on its parent bus bridge, not device itself.
+-Olof
 
-What I meant is that if the pointers are in dev_archdata, we can
-populate with a different set of pointers for PCI vs. PCI-E.
-
-Ben.
+diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
+index abb1dc4..965f2e4 100644
+--- a/drivers/net/pasemi_mac.c
++++ b/drivers/net/pasemi_mac.c
+@@ -1648,6 +1648,26 @@ static int pasemi_mac_poll(struct napi_struct *napi, int budget)
+ 	return pkts;
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++/*
++ * Polling 'interrupt' - used by things like netconsole to send skbs
++ * without having to re-enable interrupts. It's not called while
++ * the interrupt routine is executing.
++ */
++static void pasemi_mac_netpoll(struct net_device *dev)
++{
++	const struct pasemi_mac *mac = netdev_priv(dev);
++
++	disable_irq(mac->tx->chan.irq);
++	pasemi_mac_tx_intr(mac->tx->chan.irq, mac->tx);
++	enable_irq(mac->tx->chan.irq);
++
++	disable_irq(mac->rx->chan.irq);
++	pasemi_mac_rx_intr(mac->rx->chan.irq, mac->rx);
++	enable_irq(mac->rx->chan.irq);
++}
++#endif
++
+ static int pasemi_mac_change_mtu(struct net_device *dev, int new_mtu)
+ {
+ 	struct pasemi_mac *mac = netdev_priv(dev);
+@@ -1807,6 +1827,9 @@ pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	dev->mtu = PE_DEF_MTU;
+ 	/* 1500 MTU + ETH_HLEN + VLAN_HLEN + 2 64B cachelines */
+ 	mac->bufsz = dev->mtu + ETH_HLEN + ETH_FCS_LEN + LOCAL_SKB_ALIGN + 128;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = pasemi_mac_netpoll;
++#endif
+ 
+ 	dev->change_mtu = pasemi_mac_change_mtu;
+ 	dev->ethtool_ops = &pasemi_mac_ethtool_ops;
