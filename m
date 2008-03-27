@@ -1,18 +1,20 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C56B4DE008
+	by ozlabs.org (Postfix) with ESMTP id C539EDDFBF
 	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 04:10:46 +1100 (EST)
-Date: Thu, 27 Mar 2008 20:10:44 +0300
+Date: Thu, 27 Mar 2008 20:10:43 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: i2c@lm-sensors.org
+To: Anton Vorontsov <cbouatmailru@gmail.com>
 Subject: Re: [PATCH 4/5] i2c: MPC837xRDB Power Management and GPIO expander
 	driver
-Message-ID: <20080327171044.GA1582@localhost.localdomain>
+Message-ID: <20080327171043.GA31049@localhost.localdomain>
 References: <20080326202511.GD1772@localhost.localdomain>
+	<47EAB885.7000006@freescale.com> <20080326225611.GA2799@zarina>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080326202511.GD1772@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20080326225611.GA2799@zarina>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
+	i2c@lm-sensors.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,270 +25,287 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 26, 2008 at 11:25:11PM +0300, Anton Vorontsov wrote:
-> On the MPC837xRDB boards there is MC9S08QG8 (MCU) chip with the custom
-> firmware pre-programmed. This firmware offers to control some of the MCU
-> GPIO pins via I2C (two pins, connected to the LEDs, but also available
-> from the J28 and J43 headers, plus another (third) pin is a GPIO as well
-> but on this board it is reserved for Power-Off function). MCU have some
-> other functions, but these are not implemented yet.
+On Thu, Mar 27, 2008 at 01:56:11AM +0300, Anton Vorontsov wrote:
+> On Wed, Mar 26, 2008 at 03:56:37PM -0500, Timur Tabi wrote:
+> > Anton Vorontsov wrote:
+> > 
+> > > +config MCU_MPC837XRDB
+> > > +	tristate "MPC837XRDB MCU driver"
+> > > +	depends on I2C && MPC837x_RDB && OF_GPIO
+> > 
+> > The MPC8349E-mITX also has this chip.  Can you include support for that board as
+> > well?
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> This patch depends on the not yet applied OF/PowerPC GPIO patches, so
-> please consider this for RFC only.
-> 
-> Thanks.
+> Well, only if it has the same (or compatible) firmware.. then yes.
 
-Since the same chip with the identical firmware also found on the
-MPC8349E-mITXE board (thanks to Timur Tabi for noticing) here is an updated
-patch. MPC8349E-mITX board predates MPC837X-RDB boards, so I renamed this
-driver to mcu_mpc8349emitx.
+Ok, they're the same and everything works fine. Except one mitx-specific
+thing though... on the power-off call I can see that MCU is driving its
+PTA1 pin low as expected, but the board doesn't turn off. PTA1 pin is
+wired to the J19 jumper pin1, pin2 is PORESET# and pin3 is RESET#.
+It doesn't work in both [1-2] and [2-3] positions...
+
+This is surely not a software issue though. And just in case, on the
+board I have the PWR button isn't functional, so this is hw issues (or
+just need to find another jumper somewhere ;-).
+
+Updated patch follows.
 
 - - - -
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: i2c: MPC8349E-mITX/MPC837x-RDB Power Management and GPIO expander driver
+Subject: [POWERPC] mpc8349emitx/mpc837xrdb: add support for MCU
 
-On the MPC8349E-mITX and MPC837x-RDB boards there is MC9S08QG8 (MCU) chip
-with the custom firmware pre-programmed. This firmware offers to control
-some of the MCU GPIO pins (used for LEDs and soft power-off) via I2C. MCU
-have some other functions, but these are not implemented yet.
+MCU is an external Freescale MC9S08QG8 microcontroller, mainly used to
+provide soft power-off function, but also exports two GPIOs (wired to
+the LEDs, but also available from the external headers).
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/i2c/chips/Kconfig            |   11 ++
- drivers/i2c/chips/Makefile           |    1 +
- drivers/i2c/chips/mcu_mpc8349emitx.c |  189 ++++++++++++++++++++++++++++++++++
- 3 files changed, 201 insertions(+), 0 deletions(-)
- create mode 100644 drivers/i2c/chips/mcu_mpc8349emitx.c
+ arch/powerpc/boot/dts/mpc8349emitx.dts    |   39 ++++++++++++++++++++++++++++-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts     |   29 ++++++++++++++++++++-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts     |   29 ++++++++++++++++++++-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts     |   29 ++++++++++++++++++++-
+ arch/powerpc/platforms/83xx/mpc834x_itx.c |    1 +
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c |    1 +
+ arch/powerpc/sysdev/fsl_soc.c             |    1 +
+ 7 files changed, 125 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
-index 09d4937..d3e3bfb 100644
---- a/drivers/i2c/chips/Kconfig
-+++ b/drivers/i2c/chips/Kconfig
-@@ -150,4 +150,15 @@ config OZ99X
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called oz99x.
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 9426676..0ad85af 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -51,6 +51,8 @@
+ 	soc8349@e0000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
++		compatible = "fsl,immr-mpc8349e", "fsl,immr", "fsl,soc",
++			     "simple-bus";
+ 		device_type = "soc";
+ 		ranges = <0x0 0xe0000000 0x00100000>;
+ 		reg = <0xe0000000 0x00000200>;
+@@ -66,11 +68,46 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			cell-index = <0>;
+-			compatible = "fsl-i2c";
++			compatible = "fsl-i2c", "simple-bus";
+ 			reg = <0x3000 0x100>;
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			dfsrr;
++
++			rtc@68 {
++				device_type = "rtc";
++				compatible = "dallas,ds1339";
++				reg = <0x68>;
++			};
++
++			mcu_pio: mcu@0a {
++				#address-cells = <0>;
++				#size-cells = <0>;
++				#gpio-cells = <1>;
++				compatible = "fsl,mc9s08qg8-mpc8349emitx",
++					     "fsl,mcu-mpc8349emitx",
++					     "simple-bus";
++				reg = <0x0a>;
++				gpio-controller;
++
++				led@0 {
++					compatible = "fsl,mcu-mpc8349emitx-led2",
++						     "gpio-led";
++					linux,name = "pwr";
++					linux,brightness = <1>;
++					linux,active-low;
++					gpios = <&mcu_pio 0>;
++				};
++
++				led@1 {
++					compatible = "fsl,mcu-mpc8349emitx-led1",
++						     "gpio-led";
++					linux,name = "hdd";
++					linux,default-trigger = "ide-disk";
++					linux,active-low;
++					gpios = <&mcu_pio 1>;
++				};
++			};
+ 		};
  
-+config MCU_MPC8349EMITX
-+	tristate "MPC8349E-mITX/MPC837X-RDB MCU driver"
-+	depends on I2C && (MPC834x_ITX || MPC837x_RDB)
-+	select GENERIC_GPIO
-+	select HAVE_GPIO_LIB
-+	help
-+	  Say Y here to enable soft power-off functionality on the Freescale
-+	  MPC8349E-mITX and MPC837X-RDB boards, plus this driver will register
-+	  MCU GPIOs as a generic GPIO API chip, so you'll able to use some MCU
-+	  pins as a GPIOs and LEDs.
+ 		i2c@3100 {
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 440aa4d..20d7e29 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -111,7 +111,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			cell-index = <0>;
+-			compatible = "fsl-i2c";
++			compatible = "fsl-i2c", "simple-bus";
+ 			reg = <0x3000 0x100>;
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+@@ -121,6 +121,33 @@
+ 				compatible = "dallas,ds1339";
+ 				reg = <0x68>;
+ 			};
++			mcu_pio: mcu@0a {
++				#address-cells = <0>;
++				#size-cells = <0>;
++				#gpio-cells = <1>;
++				compatible = "fsl,mc9s08qg8-mpc837xrdb",
++					     "fsl,mcu-mpc837xrdb",
++					     "fsl,mcu-mpc8349emitx",
++					     "simple-bus";
++				reg = <0x0a>;
++				gpio-controller;
 +
- endmenu
-diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
-index c69f891..89c92df 100644
---- a/drivers/i2c/chips/Makefile
-+++ b/drivers/i2c/chips/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_TPS65010)		+= tps65010.o
- obj-$(CONFIG_MENELAUS)		+= menelaus.o
- obj-$(CONFIG_SENSORS_TSL2550)	+= tsl2550.o
- obj-$(CONFIG_OZ99X)		+= oz99x.o
-+obj-$(CONFIG_MCU_MPC8349EMITX)	+= mcu_mpc8349emitx.o
++				led@0 {
++					compatible = "fsl,mcu-mpc837xrdb-led2",
++						     "gpio-led";
++					linux,name = "mcu2";
++					linux,active-low;
++					gpios = <&mcu_pio 0>;
++				};
++
++				led@1 {
++					compatible = "fsl,mcu-mpc837xrdb-led1",
++						     "gpio-led";
++					linux,name = "mcu1";
++					linux,active-low;
++					gpios = <&mcu_pio 1>;
++				};
++			};
+ 		};
  
- ifeq ($(CONFIG_I2C_DEBUG_CHIP),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/drivers/i2c/chips/mcu_mpc8349emitx.c b/drivers/i2c/chips/mcu_mpc8349emitx.c
-new file mode 100644
-index 0000000..b90dbe9
---- /dev/null
-+++ b/drivers/i2c/chips/mcu_mpc8349emitx.c
-@@ -0,0 +1,189 @@
-+/*
-+ * MPC8349E-mITX/MPC837x-RDB Power Management and GPIO expander driver
-+ *
-+ * On the MPC8349E-mITX and MPC837x-RDB boards there is MC9S08QG8 (MCU) chip
-+ * with the custom firmware pre-programmed. This firmware offers to control
-+ * some of the MCU GPIO pins (used for LEDs and soft power-off) via I2C. MCU
-+ * have some other functions, but these are not implemented yet.
-+ *
-+ * Copyright (c) 2008  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
+ 		i2c@3100 {
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 9271153..fdd2e9b 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -111,7 +111,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			cell-index = <0>;
+-			compatible = "fsl-i2c";
++			compatible = "fsl-i2c", "simple-bus";
+ 			reg = <0x3000 0x100>;
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+@@ -121,6 +121,33 @@
+ 				compatible = "dallas,ds1339";
+ 				reg = <0x68>;
+ 			};
++			mcu_pio: mcu@0a {
++				#address-cells = <0>;
++				#size-cells = <0>;
++				#gpio-cells = <1>;
++				compatible = "fsl,mc9s08qg8-mpc837xrdb",
++					     "fsl,mcu-mpc837xrdb",
++					     "fsl,mcu-mpc8349emitx",
++					     "simple-bus";
++				reg = <0x0a>;
++				gpio-controller;
 +
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+#include <linux/i2c.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <asm/machdep.h>
++				led@0 {
++					compatible = "fsl,mcu-mpc837xrdb-led2",
++						     "gpio-led";
++					linux,name = "mcu2";
++					linux,active-low;
++					gpios = <&mcu_pio 0>;
++				};
 +
-+/*
-+ * I don't have specifications for the MCU firmware that is used on the
-+ * MPC8349E-mITX/MPC837XRDB boards, I found this register and bits positions
-+ * by the trial&error method.
-+ */
-+#define MCU_REG_CTRL	0x20
-+#define MCU_CTRL_POFF	0x40
-+#define MCU_NUM_GPIO	2
++				led@1 {
++					compatible = "fsl,mcu-mpc837xrdb-led1",
++						     "gpio-led";
++					linux,name = "mcu1";
++					linux,active-low;
++					gpios = <&mcu_pio 1>;
++				};
++			};
+ 		};
+ 
+ 		i2c@3100 {
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 0dda2fc..c7a0152 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -111,7 +111,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			cell-index = <0>;
+-			compatible = "fsl-i2c";
++			compatible = "fsl-i2c", "simple-bus";
+ 			reg = <0x3000 0x100>;
+ 			interrupts = <14 0x8>;
+ 			interrupt-parent = <&ipic>;
+@@ -121,6 +121,33 @@
+ 				compatible = "dallas,ds1339";
+ 				reg = <0x68>;
+ 			};
++			mcu_pio: mcu@0a {
++				#address-cells = <0>;
++				#size-cells = <0>;
++				#gpio-cells = <1>;
++				compatible = "fsl,mc9s08qg8-mpc837xrdb",
++					     "fsl,mcu-mpc837xrdb",
++					     "fsl,mcu-mpc8349emitx",
++					     "simple-bus";
++				reg = <0x0a>;
++				gpio-controller;
 +
-+struct mcu {
-+	spinlock_t lock;
-+	struct device_node *np;
-+	struct i2c_client *client;
-+	struct of_gpio_chip of_gc;
-+	u8 reg_ctrl;
-+};
++				led@0 {
++					compatible = "fsl,mcu-mpc837xrdb-led2",
++						     "gpio-led";
++					linux,name = "mcu2";
++					linux,active-low;
++					gpios = <&mcu_pio 0>;
++				};
 +
-+static struct mcu *glob_mcu;
-+
-+static void mcu_power_off(void)
-+{
-+	struct mcu *mcu = glob_mcu;
-+
-+	pr_info("Sending power-off request to the MCU...\n");
-+	spin_lock(&mcu->lock);
-+	i2c_smbus_write_byte_data(glob_mcu->client, MCU_REG_CTRL,
-+				  mcu->reg_ctrl | MCU_CTRL_POFF);
-+	spin_unlock(&mcu->lock);
-+}
-+
-+static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_gpio_chip *of_gc = to_of_gpio_chip(gc);
-+	struct mcu *mcu = container_of(of_gc, struct mcu, of_gc);
-+	u8 bit = 1 << (4 + gpio);
-+
-+	spin_lock(&mcu->lock);
-+	if (val)
-+		mcu->reg_ctrl |= bit;
-+	else
-+		mcu->reg_ctrl &= ~bit;
-+
-+	i2c_smbus_write_byte_data(mcu->client, MCU_REG_CTRL, mcu->reg_ctrl);
-+	spin_unlock(&mcu->lock);
-+}
-+
-+static int mcu_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	mcu_gpio_set(gc, gpio, val);
-+	return 0;
-+}
-+
-+static int mcu_gpiochip_add(struct mcu *mcu)
-+{
-+	struct device_node *np;
-+	struct of_gpio_chip *of_gc = &mcu->of_gc;
-+	struct gpio_chip *gc = &of_gc->gc;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mcu-mpc8349emitx");
-+	if (!np)
-+		return -ENODEV;
-+
-+	gc->label = np->full_name;
-+	gc->can_sleep = 1;
-+	gc->ngpio = MCU_NUM_GPIO;
-+	gc->base = -1;
-+	gc->set = mcu_gpio_set;
-+	gc->direction_output = mcu_gpio_dir_out;
-+	of_gc->gpio_cells = 1;
-+	of_gc->xlate = of_gpio_simple_xlate;
-+
-+	np->data = of_gc;
-+	mcu->np = np;
-+
-+	/*
-+	 * We don't want to lose the node, its ->data and ->full_name...
-+	 * So, there is no of_node_put(np); here.
-+	 */
-+	return gpiochip_add(gc);
-+}
-+
-+static void mcu_gpiochip_remove(struct mcu *mcu)
-+{
-+	gpiochip_remove(&mcu->of_gc.gc);
-+	of_node_put(mcu->np);
-+}
-+
-+static int mcu_probe(struct i2c_client *client)
-+{
-+	struct mcu *mcu;
-+	int ret;
-+
-+	mcu = kzalloc(sizeof(*mcu), GFP_KERNEL);
-+	if (!mcu)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&mcu->lock);
-+	mcu->client = client;
-+	i2c_set_clientdata(client, mcu);
-+
-+	ret = i2c_smbus_read_byte_data(mcu->client, MCU_REG_CTRL);
-+	if (ret < 0)
-+		goto err_iic_read;
-+	mcu->reg_ctrl = ret;
-+
-+	ret = mcu_gpiochip_add(mcu);
-+	if (ret)
-+		goto err_gpio;
-+
-+	/* XXX: this is potentionally racy, but there is no ppc_md lock */
-+	if (!ppc_md.power_off) {
-+		glob_mcu = mcu;
-+		ppc_md.power_off = mcu_power_off;
-+		dev_info(&client->dev, "will provide power-off service\n");
-+	}
-+
-+	return 0;
-+err_gpio:
-+	mcu_gpiochip_remove(mcu);
-+err_iic_read:
-+	kfree(mcu);
-+	return ret;
-+}
-+
-+static int mcu_remove(struct i2c_client *client)
-+{
-+	struct mcu *mcu = i2c_get_clientdata(client);
-+
-+	if (glob_mcu == mcu) {
-+		ppc_md.power_off = NULL;
-+		glob_mcu = NULL;
-+	}
-+
-+	i2c_set_clientdata(client, NULL);
-+	mcu_gpiochip_remove(mcu);
-+	kfree(mcu);
-+	return 0;
-+}
-+
-+static struct i2c_driver mcu_driver = {
-+	.driver = {
-+		.name = "mcu-mpc8349emitx",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = mcu_probe,
-+	.remove	= mcu_remove,
-+};
-+
-+static int __init mcu_init(void)
-+{
-+	return i2c_add_driver(&mcu_driver);
-+}
-+module_init(mcu_init);
-+
-+static void __exit mcu_exit(void)
-+{
-+	i2c_del_driver(&mcu_driver);
-+}
-+module_exit(mcu_exit);
-+
-+MODULE_DESCRIPTION("MPC8349E-mITX/MPC837x-RDB Power Management and GPIO "
-+		   "expander driver");
-+MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
-+MODULE_LICENSE("GPL");
++				led@1 {
++					compatible = "fsl,mcu-mpc837xrdb-led1",
++						     "gpio-led";
++					linux,name = "mcu1";
++					linux,active-low;
++					gpios = <&mcu_pio 1>;
++				};
++			};
+ 		};
+ 
+ 		i2c@3100 {
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index 50e8f63..1b3451c 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -40,6 +40,7 @@
+ 
+ static struct of_device_id __initdata mpc834x_itx_ids[] = {
+ 	{ .compatible = "fsl,pq2pro-localbus", },
++	{ .compatible = "simple-bus", },
+ 	{},
+ };
+ 
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+index 2293ae5..c00356b 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+@@ -46,6 +46,7 @@ static void __init mpc837x_rdb_setup_arch(void)
+ static struct of_device_id mpc837x_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
++	{ .compatible = "simple-bus", },
+ 	{},
+ };
+ 
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 7ad9bce..e8fe369 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -410,6 +410,7 @@ static struct i2c_driver_device i2c_devices[] __initdata = {
+ 	{"dallas,ds1340",  "rtc-ds1307",  "ds1340",},
+ 	{"stm,m41t00",     "rtc-ds1307",  "m41t00"},
+ 	{"dallas,ds1374",  "rtc-ds1374",  "rtc-ds1374",},
++	{"fsl,mcu-mpc8349emitx", "mcu-mpc8349emitx", "mcu-mpc8349emitx"},
+ };
+ 
+ static int __init of_find_i2c_driver(struct device_node *node,
 -- 
 1.5.2.2
