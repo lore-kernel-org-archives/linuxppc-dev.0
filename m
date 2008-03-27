@@ -1,20 +1,21 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Received: from outbound2-va3-R.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 84D6ADE082
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 11:40:04 +1100 (EST)
-Message-ID: <47EAEC76.7000006@am.sony.com>
-Date: Wed, 26 Mar 2008 17:38:14 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 82D7ADE13B
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 11:40:05 +1100 (EST)
+Message-ID: <47EAEC87.9030103@am.sony.com>
+Date: Wed, 26 Mar 2008 17:38:31 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 3/6] PS3: Bootwrapper improvements
+Subject: [patch 4/6] PS3: Save power in busy loops on halt
 References: <20080327001821.827672589@am.sony.com>
 In-Reply-To: <20080327001821.827672589@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,182 +25,172 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Improve the debuging support of the PS3 bootwraper code:
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
- o Increase the size of the PS3 bootwrapper overlay from 256 to 512 bytes to
-   allow for more debugging code in the overlay.
- o Use the dot symbol to set the size of __system_reset_overlay.  The
-   asembler will then emit an error if the overlay code is too big.
- o Remove some unused instructions.
- o Update the text describing the PS3 bootwrapper overlay.
- o Add a check for null pointer writes.
- o Change hcall return value from s64.
+PS3 save power on halt:
+  - Replace infinite busy loops by smarter loops calling
+    lv1_pause() to save power.
+  - Add ps3_halt() and ps3_sys_manager_halt().
+  - Add __noreturn annotations.
 
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/boot/ps3-head.S |   25 ++++++++++++++++---------
- arch/powerpc/boot/ps3.c      |   21 +++++++++++++--------
- arch/powerpc/boot/wrapper    |   21 +++++++++++----------
- 3 files changed, 40 insertions(+), 27 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |   12 +++++++++++-
+ drivers/ps3/ps3-sys-manager.c      |   30 ++++++++++++++++++++----------
+ drivers/ps3/sys-manager-core.c     |   16 ++++++++++------
+ include/asm-powerpc/ps3.h          |    5 +++--
+ 4 files changed, 44 insertions(+), 19 deletions(-)
 
---- a/arch/powerpc/boot/ps3-head.S
-+++ b/arch/powerpc/boot/ps3-head.S
-@@ -27,8 +27,9 @@
- /*
-  * __system_reset_overlay - The PS3 first stage entry.
-  *
-- * The bootwraper build script copies the 0x100 bytes at symbol
-- * __system_reset_overlay to offset 0x100 of the rom image.
-+ * The bootwraper build script copies the 512 bytes at symbol
-+ * __system_reset_overlay to offset 0x100 of the rom image.  This symbol
-+ * must occupy 512 or less bytes.
-  *
-  * The PS3 has a single processor with two threads.
-  */
-@@ -47,8 +48,6 @@ __system_reset_overlay:
- 
- 	mfspr	r3, 0x88
- 	cntlzw.	r3, r3
--	li	r4, 0
--	li	r5, 0
- 	beq	1f
- 
- 	/* Secondary goes to __secondary_hold in kernel. */
-@@ -57,8 +56,14 @@ __system_reset_overlay:
- 	mtctr	r4
- 	bctr
- 
--	/* Primary delays then goes to _zimage_start in wrapper. */
- 1:
-+	/* Save the value at addr zero for a null pointer write check later. */
-+
-+	li	r4, 0
-+	lwz	r3, 0(r4)
-+
-+	/* Primary delays then goes to _zimage_start in wrapper. */
-+
- 	or	31, 31, 31 /* db16cyc */
- 	or	31, 31, 31 /* db16cyc */
- 
-@@ -67,16 +72,18 @@ __system_reset_overlay:
- 	mtctr	r4
- 	bctr
- 
-+	. = __system_reset_overlay + 512
-+
- /*
-  * __system_reset_kernel - Place holder for the kernel reset vector.
-  *
-- * The bootwrapper build script copies 0x100 bytes from offset 0x100
-+ * The bootwrapper build script copies 512 bytes from offset 0x100
-  * of the rom image to the symbol __system_reset_kernel.  At runtime
-- * the bootwrapper program copies the 0x100 bytes at __system_reset_kernel
-- * to ram address 0x100.  This symbol must occupy 0x100 bytes.
-+ * the bootwrapper program copies the 512 bytes at __system_reset_kernel
-+ * to ram address 0x100.  This symbol must occupy 512 bytes.
-  */
- 
- 	.globl __system_reset_kernel
- __system_reset_kernel:
- 
--	. = __system_reset_kernel + 0x100
-+	. = __system_reset_kernel + 512
---- a/arch/powerpc/boot/ps3.c
-+++ b/arch/powerpc/boot/ps3.c
-@@ -27,10 +27,10 @@
- #include "page.h"
- #include "ops.h"
- 
--extern s64 lv1_panic(u64 in_1);
--extern s64 lv1_get_logical_partition_id(u64 *out_1);
--extern s64 lv1_get_logical_ppe_id(u64 *out_1);
--extern s64 lv1_get_repository_node_value(u64 in_1, u64 in_2, u64 in_3,
-+extern int lv1_panic(u64 in_1);
-+extern int lv1_get_logical_partition_id(u64 *out_1);
-+extern int lv1_get_logical_ppe_id(u64 *out_1);
-+extern int lv1_get_repository_node_value(u64 in_1, u64 in_2, u64 in_3,
- 	u64 in_4, u64 in_5, u64 *out_1, u64 *out_2);
- 
- #ifdef DEBUG
-@@ -46,6 +46,7 @@ BSS_STACK(4096);
-  * edit the command line passed to vmlinux (by setting /chosen/bootargs).
-  * The buffer is put in it's own section so that tools may locate it easier.
-  */
-+
- static char cmdline[COMMAND_LINE_SIZE]
- 	__attribute__((__section__("__builtin_cmdline")));
- 
-@@ -75,7 +76,7 @@ static void ps3_exit(void)
- 
- static int ps3_repository_read_rm_size(u64 *rm_size)
- {
--	s64 result;
-+	int result;
- 	u64 lpar_id;
- 	u64 ppe_id;
- 	u64 v2;
-@@ -114,11 +115,11 @@ void ps3_copy_vectors(void)
- {
- 	extern char __system_reset_kernel[];
- 
--	memcpy((void *)0x100, __system_reset_kernel, 0x100);
--	flush_cache((void *)0x100, 0x100);
-+	memcpy((void *)0x100, __system_reset_kernel, 512);
-+	flush_cache((void *)0x100, 512);
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -95,6 +95,14 @@ static void ps3_power_off(void)
+ 	ps3_sys_manager_power_off(); /* never returns */
  }
  
--void platform_init(void)
-+void platform_init(unsigned long null_check)
- {
- 	const u32 heapsize = 0x1000000 - (u32)_end; /* 16MiB */
- 	void *chosen;
-@@ -151,6 +152,10 @@ void platform_init(void)
- 
- 	printf(" flat tree at 0x%lx\n\r", ft_addr);
- 
-+	if (*(unsigned long *)0 != null_check)
-+		printf("null check failed: %lx != %lx\n\r", *(unsigned long *)0,
-+			(unsigned long)null_check);
++static void ps3_halt(void)
++{
++	DBG("%s:%d\n", __func__, __LINE__);
 +
- 	((kernel_entry_t)0)(ft_addr, 0, NULL);
++	smp_send_stop();
++	ps3_sys_manager_halt(); /* never returns */
++}
++
+ static void ps3_panic(char *str)
+ {
+ 	DBG("%s:%d %s\n", __func__, __LINE__, str);
+@@ -105,7 +113,8 @@ static void ps3_panic(char *str)
+ 	printk("   Please press POWER button.\n");
+ 	printk("\n");
  
- 	ps3_exit();
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -298,15 +298,16 @@ treeboot*)
-     exit 0
-     ;;
- ps3)
--    # The ps3's loader supports loading gzipped binary images from flash
--    # rom to addr zero. The loader enters the image at addr 0x100.  A
--    # bootwrapper overlay is use to arrange for the kernel to be loaded
--    # to addr zero and to have a suitable bootwrapper entry at 0x100.
--    # To construct the rom image, 0x100 bytes from offset 0x100 in the
--    # kernel is copied to the bootwrapper symbol __system_reset_kernel.
--    # The 0x100 bytes at the bootwrapper symbol __system_reset_overlay is
--    # then copied to offset 0x100.  At runtime the bootwrapper program
--    # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
-+    # The ps3's loader supports loading a gzipped binary image from flash
-+    # rom to ram addr zero. The loader then enters the system reset
-+    # vector at addr 0x100.  A bootwrapper overlay is used to arrange for
-+    # a binary image of the kernel to be at addr zero, and yet have a
-+    # suitable bootwrapper entry at 0x100.  To construct the final rom
-+    # image 512 bytes from offset 0x100 is copied to the bootwrapper
-+    # place holder at symbol __system_reset_kernel.  The 512 bytes of the
-+    # bootwrapper entry code at symbol __system_reset_overlay is then
-+    # copied to offset 0x100.  At runtime the bootwrapper program copies
-+    # the data at __system_reset_kernel back to addr 0x100.
+-	while(1);
++	while(1)
++		lv1_pause(1);
+ }
  
-     system_reset_overlay=0x`${CROSS}nm "$ofile" \
-         | grep ' __system_reset_overlay$'       \
-@@ -317,7 +318,7 @@ ps3)
-         | cut -d' ' -f1`
-     system_reset_kernel=`printf "%d" $system_reset_kernel`
-     overlay_dest="256"
--    overlay_size="256"
-+    overlay_size="512"
+ #if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE) || \
+@@ -266,6 +275,7 @@ define_machine(ps3) {
+ 	.progress			= ps3_progress,
+ 	.restart			= ps3_restart,
+ 	.power_off			= ps3_power_off,
++	.halt				= ps3_halt,
+ #if defined(CONFIG_KEXEC)
+ 	.kexec_cpu_down			= ps3_kexec_cpu_down,
+ 	.machine_kexec			= default_machine_kexec,
+--- a/drivers/ps3/ps3-sys-manager.c
++++ b/drivers/ps3/ps3-sys-manager.c
+@@ -24,6 +24,7 @@
+ #include <linux/reboot.h>
  
-     ${CROSS}objcopy -O binary "$ofile" "$ofile.bin"
+ #include <asm/firmware.h>
++#include <asm/lv1call.h>
+ #include <asm/ps3.h>
  
+ #include "vuart.h"
+@@ -581,6 +582,23 @@ fail_id:
+ 	return -EIO;
+ }
+ 
++static void ps3_sys_manager_fin(struct ps3_system_bus_device *dev)
++{
++	ps3_sys_manager_send_request_shutdown(dev);
++
++	pr_emerg("System Halted, OK to turn off power\n");
++
++	while (ps3_sys_manager_handle_msg(dev)) {
++		/* pause until next DEC interrupt */
++		lv1_pause(0);
++	}
++
++	while (1) {
++		/* pause, ignoring DEC interrupt */
++		lv1_pause(1);
++	}
++}
++
+ /**
+  * ps3_sys_manager_final_power_off - The final platform machine_power_off routine.
+  *
+@@ -602,12 +620,8 @@ static void ps3_sys_manager_final_power_
+ 
+ 	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_SHUTDOWN,
+ 		PS3_SM_WAKE_DEFAULT);
+-	ps3_sys_manager_send_request_shutdown(dev);
+-
+-	pr_emerg("System Halted, OK to turn off power\n");
+ 
+-	while (1)
+-		ps3_sys_manager_handle_msg(dev);
++	ps3_sys_manager_fin(dev);
+ }
+ 
+ /**
+@@ -639,12 +653,8 @@ static void ps3_sys_manager_final_restar
+ 	ps3_sys_manager_send_attr(dev, 0);
+ 	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_REBOOT,
+ 		PS3_SM_WAKE_DEFAULT);
+-	ps3_sys_manager_send_request_shutdown(dev);
+-
+-	pr_emerg("System Halted, OK to turn off power\n");
+ 
+-	while (1)
+-		ps3_sys_manager_handle_msg(dev);
++	ps3_sys_manager_fin(dev);
+ }
+ 
+ /**
+--- a/drivers/ps3/sys-manager-core.c
++++ b/drivers/ps3/sys-manager-core.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <asm/lv1call.h>
+ #include <asm/ps3.h>
+ 
+ /**
+@@ -50,10 +51,7 @@ void ps3_sys_manager_power_off(void)
+ 	if (ps3_sys_manager_ops.power_off)
+ 		ps3_sys_manager_ops.power_off(ps3_sys_manager_ops.dev);
+ 
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1)
+-		(void)0;
++	ps3_sys_manager_halt();
+ }
+ 
+ void ps3_sys_manager_restart(void)
+@@ -61,8 +59,14 @@ void ps3_sys_manager_restart(void)
+ 	if (ps3_sys_manager_ops.restart)
+ 		ps3_sys_manager_ops.restart(ps3_sys_manager_ops.dev);
+ 
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
++	ps3_sys_manager_halt();
++}
++
++void ps3_sys_manager_halt(void)
++{
++	pr_emerg("System Halted, OK to turn off power\n");
+ 	local_irq_disable();
+ 	while (1)
+-		(void)0;
++		lv1_pause(1);
+ }
++
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -434,8 +434,9 @@ struct ps3_sys_manager_ops {
+ };
+ 
+ void ps3_sys_manager_register_ops(const struct ps3_sys_manager_ops *ops);
+-void ps3_sys_manager_power_off(void);
+-void ps3_sys_manager_restart(void);
++void __noreturn ps3_sys_manager_power_off(void);
++void __noreturn ps3_sys_manager_restart(void);
++void __noreturn ps3_sys_manager_halt(void);
+ 
+ struct ps3_prealloc {
+     const char *name;
 
 -- 
