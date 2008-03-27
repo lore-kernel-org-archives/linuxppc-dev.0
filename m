@@ -1,20 +1,21 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id B5A34DDF1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 19:13:44 +1100 (EST)
-Date: Thu, 27 Mar 2008 09:13:39 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch 3/6] PS3: Bootwrapper improvements
-In-Reply-To: <47EAEC76.7000006@am.sony.com>
-Message-ID: <Pine.LNX.4.64.0803270910290.17938@vixen.sonytel.be>
-References: <20080327001821.827672589@am.sony.com>
-	<47EAEC76.7000006@am.sony.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 3E81DDDF00
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:07:47 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in the
+	device tree.
+Date: Thu, 27 Mar 2008 10:07:41 +0100
+References: <200803261217.46671.laurentp@cse-semaphore.com>
+	<200803261220.43039.laurentp@cse-semaphore.com>
+	<20080326155741.GA3460@loki.buserror.net>
+In-Reply-To: <20080326155741.GA3460@loki.buserror.net>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-233771849-1206605619=:17938"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: multipart/signed; boundary="nextPart1805603.z2E6as76lC";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200803271007.44886.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,60 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--nextPart1805603.z2E6as76lC
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
----584349381-233771849-1206605619=:17938
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Wednesday 26 March 2008 16:57, Scott Wood wrote:
+> On Wed, Mar 26, 2008 at 12:20:42PM +0100, Laurent Pinchart wrote:
+> > diff --git a/arch/powerpc/boot/dts/ep8248e.dts=20
+b/arch/powerpc/boot/dts/ep8248e.dts
+> > index 5d2fb76..756758f 100644
+> > --- a/arch/powerpc/boot/dts/ep8248e.dts
+> > +++ b/arch/powerpc/boot/dts/ep8248e.dts
+> > @@ -121,8 +121,7 @@
+> > =20
+> >  				data@0 {
+> >  					compatible =3D "fsl,cpm-muram-data";
+> > -					reg =3D <0 0x1100 0x1140
+> > -					       0xec0 0x9800 0x800>;
+> > +					reg =3D <0 0x2000 0x9800 0x800>;
+> >  				};
+>=20
+> Can we leave this as reserved, so that udbg still works?
 
-On Wed, 26 Mar 2008, Geoff Levand wrote:
-> --- a/arch/powerpc/boot/ps3.c
-> +++ b/arch/powerpc/boot/ps3.c
->  }
->  
-> -void platform_init(void)
-> +void platform_init(unsigned long null_check)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^
->  {
->  	const u32 heapsize = 0x1000000 - (u32)_end; /* 16MiB */
->  	void *chosen;
-> @@ -151,6 +152,10 @@ void platform_init(void)
->  
->  	printf(" flat tree at 0x%lx\n\r", ft_addr);
->  
-> +	if (*(unsigned long *)0 != null_check)
-> +		printf("null check failed: %lx != %lx\n\r", *(unsigned long *)0,
-> +			(unsigned long)null_check);
-                        ^^^^^^^^^^^^^^^
-This cast is not needed, as null_check has the correct type.
+Ok. Should I add a comment to the DTS to explain additional muram can be=20
+reclaimed if udbg isn't used ?
 
-BTW, what about writing it like
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-	unsigned long val;
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
-	val = *(unsigned long *)0;
-	if (val != null_check)
-		printf("null check failed: %lx != %lx\n\r", val, null_check);
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
-to kill a duplicate cast and avoid splitting the printf() line?
+--nextPart1805603.z2E6as76lC
+Content-Type: application/pgp-signature
 
-With kind regards,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-Geert Uytterhoeven
-Software Architect
+iD8DBQBH62Pg8y9gWxC9vpcRAk/3AJ416xz/Ccnn5xhUbLg3ixOd3DBC3QCfaPm+
+YXl9bPGd2B93TOoOPqmu2CU=
+=a1Rt
+-----END PGP SIGNATURE-----
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-233771849-1206605619=:17938--
+--nextPart1805603.z2E6as76lC--
