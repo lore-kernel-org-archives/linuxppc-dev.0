@@ -3,14 +3,14 @@ Received: from outbound1-va3-R.bigfish.com (outbound-va3.frontbridge.com
 	[216.32.180.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D6163DE161
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 11:40:05 +1100 (EST)
-Message-ID: <47EAECA8.5030707@am.sony.com>
-Date: Wed, 26 Mar 2008 17:39:04 -0700
+	by ozlabs.org (Postfix) with ESMTPS id C27D3DE3AE
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 11:40:06 +1100 (EST)
+Message-ID: <47EAECC3.1030200@am.sony.com>
+Date: Wed, 26 Mar 2008 17:39:31 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 5/6] PS3: Sys-manager Wake-on-LAN support
+Subject: [patch 6/6] PS3: Gelic network driver Wake-on-LAN support
 References: <20080327001821.827672589@am.sony.com>
 In-Reply-To: <20080327001821.827672589@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
@@ -24,110 +24,150 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add Wake-on-LAN support to the PS3 system-manager.  Other OS WOL
-support was introduced in PS3 system firmware 2.20.
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 
+Add Wake-on-LAN support to the PS3 Gelic network driver.
+Other OS WOL support was introduced in PS3 system firmware
+2.20.
+
+Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/ps3/ps3-sys-manager.c |   46 ++++++++++++++++++++++++++++++++++++++++--
- include/asm-powerpc/ps3.h     |    2 +
- 2 files changed, 46 insertions(+), 2 deletions(-)
+ drivers/net/ps3_gelic_net.c |   81 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/ps3_gelic_net.h |   20 ++++++++++
+ 2 files changed, 101 insertions(+)
 
---- a/drivers/ps3/ps3-sys-manager.c
-+++ b/drivers/ps3/ps3-sys-manager.c
-@@ -188,6 +188,7 @@ enum ps3_sys_manager_next_op {
-  * controller, and bluetooth controller.
-  * @PS3_SM_WAKE_RTC:
-  * @PS3_SM_WAKE_RTC_ERROR:
-+ * @PS3_SM_WAKE_W_O_L: Ether or wireless LAN.
-  * @PS3_SM_WAKE_P_O_R: Power on reset.
-  *
-  * Additional wakeup sources when specifying PS3_SM_NEXT_OP_SYS_SHUTDOWN.
-@@ -201,10 +202,19 @@ enum ps3_sys_manager_wake_source {
- 	PS3_SM_WAKE_DEFAULT   = 0,
- 	PS3_SM_WAKE_RTC       = 0x00000040,
- 	PS3_SM_WAKE_RTC_ERROR = 0x00000080,
-+	PS3_SM_WAKE_W_O_L     = 0x00000400,
- 	PS3_SM_WAKE_P_O_R     = 0x80000000,
+--- a/drivers/net/ps3_gelic_net.c
++++ b/drivers/net/ps3_gelic_net.c
+@@ -1266,6 +1266,85 @@ int gelic_net_set_rx_csum(struct net_dev
+ 	return 0;
+ }
+ 
++static void gelic_net_get_wol(struct net_device *netdev,
++			      struct ethtool_wolinfo *wol)
++{
++	if (0 <= ps3_compare_firmware_version(2, 2, 0))
++		wol->supported = WAKE_MAGIC;
++	else
++		wol->supported = 0;
++
++	wol->wolopts = ps3_sys_manager_get_wol() ? wol->supported : 0;
++	memset(&wol->sopass, 0, sizeof(wol->sopass));
++}
++static int gelic_net_set_wol(struct net_device *netdev,
++			     struct ethtool_wolinfo *wol)
++{
++	int status;
++	struct gelic_card *card;
++	u64 v1, v2;
++
++	if (ps3_compare_firmware_version(2, 2, 0) < 0 ||
++	    !capable(CAP_NET_ADMIN))
++		return -EPERM;
++
++	if (wol->wolopts & ~WAKE_MAGIC)
++		return -EINVAL;
++
++	card = netdev_card(netdev);
++	if (wol->wolopts & WAKE_MAGIC) {
++		status = lv1_net_control(bus_id(card), dev_id(card),
++					 GELIC_LV1_SET_WOL,
++					 GELIC_LV1_WOL_MAGIC_PACKET,
++					 0, GELIC_LV1_WOL_MP_ENABLE,
++					 &v1, &v2);
++		if (status) {
++			pr_info("%s: enabling WOL failed %d\n", __func__,
++				status);
++			status = -EIO;
++			goto done;
++		}
++		status = lv1_net_control(bus_id(card), dev_id(card),
++					 GELIC_LV1_SET_WOL,
++					 GELIC_LV1_WOL_ADD_MATCH_ADDR,
++					 0, GELIC_LV1_WOL_MATCH_ALL,
++					 &v1, &v2);
++		if (!status)
++			ps3_sys_manager_set_wol(1);
++		else {
++			pr_info("%s: enabling WOL filter failed %d\n",
++				__func__, status);
++			status = -EIO;
++		}
++	} else {
++		status = lv1_net_control(bus_id(card), dev_id(card),
++					 GELIC_LV1_SET_WOL,
++					 GELIC_LV1_WOL_MAGIC_PACKET,
++					 0, GELIC_LV1_WOL_MP_DISABLE,
++					 &v1, &v2);
++		if (status) {
++			pr_info("%s: disabling WOL failed %d\n", __func__,
++				status);
++			status = -EIO;
++			goto done;
++		}
++		status = lv1_net_control(bus_id(card), dev_id(card),
++					 GELIC_LV1_SET_WOL,
++					 GELIC_LV1_WOL_DELETE_MATCH_ADDR,
++					 0, GELIC_LV1_WOL_MATCH_ALL,
++					 &v1, &v2);
++		if (!status)
++			ps3_sys_manager_set_wol(0);
++		else {
++			pr_info("%s: removing WOL filter failed %d\n",
++				__func__, status);
++			status = -EIO;
++		}
++	}
++done:
++	return status;
++}
++
+ static struct ethtool_ops gelic_ether_ethtool_ops = {
+ 	.get_drvinfo	= gelic_net_get_drvinfo,
+ 	.get_settings	= gelic_ether_get_settings,
+@@ -1274,6 +1353,8 @@ static struct ethtool_ops gelic_ether_et
+ 	.set_tx_csum	= ethtool_op_set_tx_csum,
+ 	.get_rx_csum	= gelic_net_get_rx_csum,
+ 	.set_rx_csum	= gelic_net_set_rx_csum,
++	.get_wol	= gelic_net_get_wol,
++	.set_wol	= gelic_net_set_wol,
  };
  
  /**
-+ * user_wake_sources - User specified wakeup sources.
-+ *
-+ * Logical OR of enum ps3_sys_manager_wake_source types.
-+ */
-+
-+static u32 user_wake_sources = PS3_SM_WAKE_DEFAULT;
-+
-+/**
-  * enum ps3_sys_manager_cmd - Command from system manager to guest.
-  *
-  * The guest completes the actions needed, then acks or naks the command via
-@@ -619,7 +629,7 @@ static void ps3_sys_manager_final_power_
- 	ps3_vuart_cancel_async(dev);
+--- a/drivers/net/ps3_gelic_net.h
++++ b/drivers/net/ps3_gelic_net.h
+@@ -182,12 +182,32 @@ enum gelic_lv1_net_control_code {
+ 	GELIC_LV1_GET_ETH_PORT_STATUS	= 2,
+ 	GELIC_LV1_SET_NEGOTIATION_MODE	= 3,
+ 	GELIC_LV1_GET_VLAN_ID		= 4,
++	GELIC_LV1_SET_WOL		= 5,
+ 	GELIC_LV1_GET_CHANNEL           = 6,
+ 	GELIC_LV1_POST_WLAN_CMD		= 9,
+ 	GELIC_LV1_GET_WLAN_CMD_RESULT	= 10,
+ 	GELIC_LV1_GET_WLAN_EVENT	= 11
+ };
  
- 	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_SHUTDOWN,
--		PS3_SM_WAKE_DEFAULT);
-+		user_wake_sources);
- 
- 	ps3_sys_manager_fin(dev);
- }
-@@ -652,12 +662,44 @@ static void ps3_sys_manager_final_restar
- 
- 	ps3_sys_manager_send_attr(dev, 0);
- 	ps3_sys_manager_send_next_op(dev, PS3_SM_NEXT_OP_SYS_REBOOT,
--		PS3_SM_WAKE_DEFAULT);
-+		user_wake_sources);
- 
- 	ps3_sys_manager_fin(dev);
- }
- 
- /**
-+ * ps3_sys_manager_get_wol - Get wake-on-lan setting.
-+ */
++/* for GELIC_LV1_SET_WOL */
++enum gelic_lv1_wol_command {
++	GELIC_LV1_WOL_MAGIC_PACKET	= 1,
++	GELIC_LV1_WOL_ADD_MATCH_ADDR	= 6,
++	GELIC_LV1_WOL_DELETE_MATCH_ADDR	= 7,
++};
 +
-+int ps3_sys_manager_get_wol(void)
-+{
-+	pr_debug("%s:%d\n", __func__, __LINE__);
++/* for GELIC_LV1_WOL_MAGIC_PACKET */
++enum gelic_lv1_wol_mp_arg {
++	GELIC_LV1_WOL_MP_DISABLE	= 0,
++	GELIC_LV1_WOL_MP_ENABLE		= 1,
++};
 +
-+	return (user_wake_sources & PS3_SM_WAKE_W_O_L) != 0;
-+}
-+EXPORT_SYMBOL_GPL(ps3_sys_manager_get_wol);
++/* for GELIC_LV1_WOL_{ADD,DELETE}_MATCH_ADDR */
++enum gelic_lv1_wol_match_arg {
++	GELIC_LV1_WOL_MATCH_INDIVIDUAL	= 0,
++	GELIC_LV1_WOL_MATCH_ALL		= 1,
++};
 +
-+/**
-+ * ps3_sys_manager_set_wol - Set wake-on-lan setting.
-+ */
-+
-+void ps3_sys_manager_set_wol(int state)
-+{
-+	static DEFINE_MUTEX(mutex);
-+
-+	mutex_lock(&mutex);
-+
-+	pr_debug("%s:%d: %d\n", __func__, __LINE__, state);
-+
-+	if (state)
-+		user_wake_sources |= PS3_SM_WAKE_W_O_L;
-+	else
-+		user_wake_sources &= ~PS3_SM_WAKE_W_O_L;
-+	mutex_unlock(&mutex);
-+}
-+EXPORT_SYMBOL_GPL(ps3_sys_manager_set_wol);
-+
-+/**
-  * ps3_sys_manager_work - Asynchronous read handler.
-  *
-  * Signaled when PS3_SM_RX_MSG_LEN_MIN bytes arrive at the vuart port.
---- a/include/asm-powerpc/ps3.h
-+++ b/include/asm-powerpc/ps3.h
-@@ -437,6 +437,8 @@ void ps3_sys_manager_register_ops(const 
- void __noreturn ps3_sys_manager_power_off(void);
- void __noreturn ps3_sys_manager_restart(void);
- void __noreturn ps3_sys_manager_halt(void);
-+int ps3_sys_manager_get_wol(void);
-+void ps3_sys_manager_set_wol(int state);
- 
- struct ps3_prealloc {
-     const char *name;
+ /* status returened from GET_ETH_PORT_STATUS */
+ enum gelic_lv1_ether_port_status {
+ 	GELIC_LV1_ETHER_LINK_UP		= 0x0000000000000001L,
 
 -- 
