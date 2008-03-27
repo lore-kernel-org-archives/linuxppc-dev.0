@@ -1,23 +1,20 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D6FFBDE582
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 02:40:01 +1100 (EST)
-Date: Thu, 27 Mar 2008 10:39:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in the
-	device tree.
-Message-ID: <20080327153952.GC18728@ld0162-tx32.am.freescale.net>
-References: <200803261217.46671.laurentp@cse-semaphore.com>
-	<200803261220.43039.laurentp@cse-semaphore.com>
-	<47EA80ED.1030202@freescale.com>
-	<200803271010.33825.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200803271010.33825.laurentp@cse-semaphore.com>
+	by ozlabs.org (Postfix) with ESMTPS id CC1B1DDF6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 03:56:19 +1100 (EST)
+Message-ID: <47EBD1AB.1070908@freescale.com>
+Date: Thu, 27 Mar 2008 11:56:11 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Enable CONFIG_FORCE_MAX_ZONEORDER for all PowerPC, and
+	make selectable
+References: <1206480932-30190-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1206480932-30190-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,24 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 27, 2008 at 10:10:33AM +0100, Laurent Pinchart wrote:
-> On Wednesday 26 March 2008 17:59, Scott Wood wrote:
-> > This breaks the bootwrapper console.
+Timur Tabi wrote:
+> This patch enables the FORCE_MAX_ZONEORDER Kconfig option for all PowerPC
+> systems.  Previously, it was enabled only for 64-bit systems.  We also make
+> the option selectable from the menu, so that the user can specify different
+> values.  This is useful for 32-bit systems that need to allocate more than
+> 4MB of physically contiguous memory.
 > 
-> And of course I forgot about that :-)
-> 
-> The boot wrapper code doesn't have any dpram allocator. Any objection against 
-> using a chunk of dpram at a fixed location ? What about at the beginning of 
-> the dpram ? The DTS muram node would then exclude a chunk of dpram at offset 
-> 0x0000 instead of 0x1100.
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-I'm not entirely comfortable with using a chunk outside of what's in the
-muram node, and assuming that it's for the SMC pram -- what if there's
-microcode or something there?
+If there are no objections, I'd like this patch picked up for 2.6.26.
 
-Since udbg is only for debugging, and is marked as potentially dangerous,
-how about just using the end of muram (as described in the device tree)? 
-If the muram is fully allocated, it won't happen until after the real
-serial console is initialized.
-
--Scott
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
