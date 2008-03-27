@@ -1,13 +1,24 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CC1E4DE0A4
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 02:34:58 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 4xx: Only reset PCIe PHY on 405EX systems when no
-	link is detected
-Date: Thu, 27 Mar 2008 16:34:50 +0100
-Message-Id: <1206632090-1012-1-git-send-email-sr@denx.de>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D6FFBDE582
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 02:40:01 +1100 (EST)
+Date: Thu, 27 Mar 2008 10:39:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in the
+	device tree.
+Message-ID: <20080327153952.GC18728@ld0162-tx32.am.freescale.net>
+References: <200803261217.46671.laurentp@cse-semaphore.com>
+	<200803261220.43039.laurentp@cse-semaphore.com>
+	<47EA80ED.1030202@freescale.com>
+	<200803271010.33825.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200803271010.33825.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,38 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since the arch/powerpc PCI subsystem now does a complete re-assignment of
-the resources, we can move from the unconditional PCIe PHY reset to the
-conditional version. Now the PHY is only reset, if no link is established yet.
-An additional PHY reset (one is already done in U-Boot) leads to problems
-with some Atheros PCIe boards and some HP FPGA PCIe designs.
+On Thu, Mar 27, 2008 at 10:10:33AM +0100, Laurent Pinchart wrote:
+> On Wednesday 26 March 2008 17:59, Scott Wood wrote:
+> > This breaks the bootwrapper console.
+> 
+> And of course I forgot about that :-)
+> 
+> The boot wrapper code doesn't have any dpram allocator. Any objection against 
+> using a chunk of dpram at a fixed location ? What about at the beginning of 
+> the dpram ? The DTS muram node would then exclude a chunk of dpram at offset 
+> 0x0000 instead of 0x1100.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/sysdev/ppc4xx_pci.c |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+I'm not entirely comfortable with using a chunk outside of what's in the
+muram node, and assuming that it's for the SMC pram -- what if there's
+microcode or something there?
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index 5abfcd1..9e633f8 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -830,17 +830,9 @@ static int ppc405ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
- 	 * PCIe boards don't show this problem.
- 	 * This has to be re-tested and fixed in a later release!
- 	 */
--#if 0 /* XXX FIXME: Not resetting the PHY will leave all resources
--       * configured as done previously by U-Boot. Then Linux will currently
--       * not reassign them. So the PHY reset is now done always. This will
--       * lead to problems with the Atheros PCIe board again.
--       */
- 	val = mfdcri(SDR0, port->sdr_base + PESDRn_LOOP);
- 	if (!(val & 0x00001000))
- 		ppc405ex_pcie_phy_reset(port);
--#else
--	ppc405ex_pcie_phy_reset(port);
--#endif
- 
- 	dcr_write(port->dcrs, DCRO_PEGPL_CFG, 0x10000000);  /* guarded on */
- 
--- 
-1.5.4.4
+Since udbg is only for debugging, and is marked as potentially dangerous,
+how about just using the end of muram (as described in the device tree)? 
+If the muram is fully allocated, it won't happen until after the real
+serial console is initialized.
+
+-Scott
