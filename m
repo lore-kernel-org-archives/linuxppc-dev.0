@@ -1,20 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 30D4EDDFC5
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 11:40:02 +1100 (EST)
-Message-ID: <47EAEC3E.1050006@am.sony.com>
-Date: Wed, 26 Mar 2008 17:37:18 -0700
+	by ozlabs.org (Postfix) with ESMTPS id BCD85DDFA3
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 11:40:03 +1100 (EST)
+Message-ID: <47EAEC52.6040105@am.sony.com>
+Date: Wed, 26 Mar 2008 17:37:38 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: paulus@samba.org
-Subject: [patch 1/6] PS3: Fix unlikely typo in ps3_get_irq
+Subject: [patch 2/6] PS3: Add ps3_get_speid routine
 References: <20080327001821.827672589@am.sony.com>
 In-Reply-To: <20080327001821.827672589@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Roel Kluin <12o3l@tiscali.nl>
+Cc: linuxppc-dev@ozlabs.org, Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Roel Kluin <12o3l@tiscali.nl>
+From: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 
-Fix a typo bug 'unlikely(x) == y' and add an unlikely() call to
-an unlikely code path in the PS3 interrupt routine ps3_get_irq().
+Add a new routine ps3_get_speid() which returns the logical
+SPE ID.  This ID is needed for profiling support.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Signed-off-by: Takashi Yamamoto <TakashiA.Yamamoto@jp.sony.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/interrupt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/spu.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -709,7 +709,7 @@ static unsigned int ps3_get_irq(void)
- 	asm volatile("cntlzd %0,%1" : "=r" (plug) : "r" (x));
- 	plug &= 0x3f;
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -27,6 +27,7 @@
+ #include <asm/spu.h>
+ #include <asm/spu_priv1.h>
+ #include <asm/lv1call.h>
++#include <asm/ps3.h>
  
--	if (unlikely(plug) == NO_IRQ) {
-+	if (unlikely(plug == NO_IRQ)) {
- 		pr_debug("%s:%d: no plug found: thread_id %lu\n", __func__,
- 			__LINE__, pd->thread_id);
- 		dump_bmp(&per_cpu(ps3_private, 0));
+ #include "../cell/spufs/spufs.h"
+ #include "platform.h"
+@@ -140,6 +141,12 @@ static void _dump_areas(unsigned int spe
+ 	pr_debug("%s:%d: shadow:  %lxh\n", func, line, shadow);
+ }
+ 
++inline u64 ps3_get_spe_id(void *arg)
++{
++	return spu_pdata(arg)->spe_id;
++}
++EXPORT_SYMBOL_GPL(ps3_get_spe_id);
++
+ static unsigned long get_vas_id(void)
+ {
+ 	unsigned long id;
 
 -- 
