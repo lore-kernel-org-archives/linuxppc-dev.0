@@ -1,19 +1,19 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 5CC47DE001
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:13:34 +1100 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A6070DDF27
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:24:53 +1100 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Subject: Re: OF compatible MTD platform RAM driver ?
-Date: Thu, 27 Mar 2008 10:13:32 +0100
+Date: Thu, 27 Mar 2008 10:24:45 +0100
 References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<200803251914.24021.laurentp@cse-semaphore.com>
-	<47EA4741.2050402@ru.mvista.com>
-In-Reply-To: <47EA4741.2050402@ru.mvista.com>
+	<b06db7bb4932d14f8af9547abdfc9d0d@kernel.crashing.org>
+	<47EA6E88.5050109@ru.mvista.com>
+In-Reply-To: <47EA6E88.5050109@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200803271013.32612.laurentp@cse-semaphore.com>
+Content-Type: multipart/signed; boundary="nextPart1916913.M1ef4UuZnQ";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200803271024.51591.laurentp@cse-semaphore.com>
 Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
 	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,65 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 26 March 2008 13:53, Sergei Shtylyov wrote:
-> Laurent Pinchart wrote:
->=20
-> >>>Regarding non-volatility nothing prevents a user from using a=20
-> >>>volatile RAM as an MTD device, but there's little point in doing so.
-> >>>Would it be acceptable for the "linear-nvram" specification
-> >>>not to include > volatile RAM ? ROM chips would be excluded too. Is
->=20
-> >>that an issue ?
->=20
-> >>We actually use a volatile ram (SRAM) as an MTD device. We use it to
-> >>store info from bootloader and system specific values between resets.
->=20
-> > So we're left with two main options.
->=20
-> > - Reusing the nvram device type from the Device Support Extensions.=20
-Volatile=20
-> > devices wouldn't be supported, and we'd need a separate device=20
-specification=20
-> > for linear-mapped volatile RAMs. I'm not very happy with that.
->=20
-> > - Using another device node with a compatible value set to "linear-ram"=
-=20
-(or=20
-> > something similar). This would support both volatile and non-volatile=20
-> > devices, and a property could be added to specify if the device is=20
-volatile=20
-> > or not.
->=20
-> > I'd go for the second option, and I'd specify a "linear-rom" compatible=
-=20
-value=20
-> > as well while we're at it.
->=20
-> > Both volatile and non-volatile RAMs can be handled by the physmap_of MT=
-D=20
-> > driver. They both use the same map probe type ("map_ram"). Volatility=20
-isn't=20
-> > handled there.
->=20
-> > ROMs should be handled by the same driver and should use the "mtd_rom" =
-map=20
-> > probe type.
->=20
->     OK, let's go with it.
->=20
-> > As all those devices use the physmap_of MTD driver, what about=20
-> > using "physmap-ram" and "physmap-rom" as compatibility names ?
->=20
->     Heh, we've gone thru "physmap" before -- it was labelled Linux-specif=
-ic=20
-> name (well, I'd agree with that).
+--nextPart1916913.M1ef4UuZnQ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-physmap stands for physically mapped. That doesn't sound Linux-specific to =
-me,=20
-the fact that the MTD driver has the same name is a pure coincidence.=20
-linmap-rom and linmap-rom sound even more Linux-specific :-)
+On Wednesday 26 March 2008 16:40, Sergei Shtylyov wrote:
+> Segher Boessenkool wrote:
+>=20
+> >> - Using another device node with a compatible value set to=20
+> >> "linear-ram" (or
+> >> something similar). This would support both volatile and non-volatile
+> >> devices, and a property could be added to specify if the device is=20
+> >> volatile
+> >> or not.
+>=20
+> > "memory-mapped-memory" perhaps :-)
+>=20
+> > Or, just "memory".  Although that one might play havoc with some
+>=20
+>     I'd suggest "ram" and "rom" then. Luckily the device trees don't cont=
+ain=20
+> binding for the real RAM chips yet. :-)
 
-Could we agree on a name ? I'd like to submit a new patch.
+And when it will we'll be in trouble.
+
+Here are a few names. I like physmap-r[ao]m better. Does anyone have anothe=
+r=20
+suggestion ? I'd like to send a revised patch.
+
+linear-r[ao]m
+linear-mapped-r[ao]m
+mapped-r[ao]m
+memory-mapped-r[ao]m
+physmap-r[ao]m
+
+> > not-quite-correct main memory probing code.
+>=20
+>     You mean the there's parsers that search the "compatible" prop for=20
+> "memory" as well as "device_type" prop?
 
 =2D-=20
 Laurent Pinchart
@@ -95,3 +76,16 @@ Belgium
 
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
+
+--nextPart1916913.M1ef4UuZnQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH62fj8y9gWxC9vpcRAkhHAJoD9TNb44LA0qQhb6GhAFFziLuD5ACfYcbs
+GQ3LMMw+KAbzUCZmxEdZgKw=
+=idjv
+-----END PGP SIGNATURE-----
+
+--nextPart1916913.M1ef4UuZnQ--
