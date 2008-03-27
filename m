@@ -1,25 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 07D58DDF3B
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0A120DDEEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Mar 2008 23:43:57 +1100 (EST)
-Subject: RE: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Li Yang <LeoLi@freescale.com>
-In-Reply-To: <989B956029373F45A0B8AF029708189001D198BC@zch01exm26.fsl.freescale.net>
-References: <>
-	<1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<989B956029373F45A0B8AF029708189001D19565@zch01exm26.fsl.freescale.net>
-	<46CAC1281D7CB94A9AEFFB131F9569CA227627@tmnt04.transmode.se>
-	<1206436671.7589.208.camel@gentoo-jocke.transmode.se>
-	<989B956029373F45A0B8AF029708189001D198BC@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain
-Date: Thu, 27 Mar 2008 13:43:53 +0100
-Message-Id: <1206621833.7589.286.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: Netdev <netdev@vger.kernel.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
+	Thu, 27 Mar 2008 23:52:59 +1100 (EST)
+Message-Id: <D06A33A2-7DE7-4E00-9AA0-1C11EE7D4375@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Marco Stornelli <marco.stornelli@coritel.it>
+In-Reply-To: <47E8F836.9060603@coritel.it>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: MPC8641D PCI-Express problem
+Date: Thu, 27 Mar 2008 07:52:51 -0500
+References: <47E8B19B.10705@coritel.it>
+	<7F2C28B9-9B87-4F46-9C57-3666BB8F7EFD@kernel.crashing.org>
+	<47E8F836.9060603@coritel.it>
+Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,86 +28,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-03-26 at 20:43 +0800, Li Yang wrote:
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se] 
-> > Sent: Tuesday, March 25, 2008 5:18 PM
-> > To: Li Yang
-> > Cc: Netdev; Linuxppc-Embedded@Ozlabs.Org
-> > Subject: Re: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-> > 
-> > 
-> > On Sat, 2008-03-22 at 12:51 +0100, Joakim Tjernlund wrote:
-> > > >> -----Original Message-----
-> > > >> From: netdev-owner@vger.kernel.org
-> > > >> [mailto:netdev-owner@vger.kernel.org] On Behalf Of 
-> > Joakim Tjernlund
-> > > > Sent: Tuesday, March 18, 2008 11:11 PM
-> > > >> To: Netdev; Li Yang
-> > > >> Cc: Joakim Tjernlund
-> > > >>Subject: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-> > > >>
-> > > >> Creating a VLAN interface on top of ucc_geth adds 4 bytes to the 
-> > > >> frame and the HW controller is not prepared to TX a frame bigger 
-> > > >> than 1518 bytes which is 4 bytes too small for a full 
-> > VLAN frame. 
-> > > >> Also add 4 extra bytes for future expansion.
-> > > > 
-> > > > IMO, VLAN and Jumbo packet support is not general case of 
-> > Ethernet.
-> > > > Could you make this change optional?  Thanks.
-> > > > 
-> > > > - Leo
-> > > 
-> > > hmm, I do not agree. VLAN is common today.
-> > > 
-> > > If you were to enable HW support for VLAN then the ethernet 
-> > controller 
-> > > would inject an extra 4 bytes into the frame.
-> > > This change does not change the visible MTU for the user. 
-> > As is now, 
-> > > soft VLAN is silently broken. Do you really want the user 
-> > to find and 
-> > > turn on a controller specific feature to use VLAN?
-> > > 
-> > > What does netdev people think? 
-> > > 
-> > >  Jocke
-> > 
-> > hmm, I misread the HW specs. The change has nothing to do 
-> > with TX, it is the MAX RX frame size that was too small for 
-> > VLAN and that is what the patch addresses. I see that tg3.c 
-> > adds 4 bytes to MAX RX pkgs:
-> >  	/* MTU + ethernet header + FCS + optional VLAN tag */
-> > 	tw32(MAC_RX_MTU_SIZE, tp->dev->mtu + ETH_HLEN + 8); So 
-> > I don't think this change should be hidden behind a new 
-> > CONFIG option. Updated patch below with changed description.
-> 
-> Hi Jocke,
-> 
-> QUICC engine supports dynamic maximum frame length.  If you are not
-> expecting to receive only tagged frames, I recommend to use this feature
-> by setting dynamicMaxFrameLength and dynamicMinFrameLength in ug_info
-> instead of increasing the MaxLength for both tagged and untagged frames.
-> See the following part from the reference manual.
-> 
-> The MFLR entry in the Global Parameter RAM defines the length of the
-> largest frame, excluding Q TAG
-> but including FCS, that is still valid. When REMODER[DXE]=1, a tagged
-> frame that has length equals
-> MaxLength+4 considered valid, and a non tagged frame that has length
-> equals MaxLength is the longest
-> that is still considered valid. When REMODER[DXE]=0, any frame longer
-> than MaxLength consider
-> erroneous frame.
-> For systems with only tagged frames, set REMODER[DXE]=0 and set
-> MaxLength = Max LLC size+4.
-> 
-> - Leo
+On Mar 25, 2008, at 8:03 AM, Marco Stornelli wrote:
+> Kumar Gala ha scritto:
+>> On Mar 25, 2008, at 3:02 AM, Marco Stornelli wrote:
+>>> Hi,
+>>>
+>>> do you remember my problem with the pci-express? I have an  
+>>> mpc8641d_hpcn (rev. 2.0) board connected via pci-express with the  
+>>> Xilinx ML555 evaluation board. I'm using the 2.6.24 kernel. I'm  
+>>> observing this strange behavior:
+>>>
+>>> 1) I turn on the board and I stop the U-boot
+>>> 2) I load the FPGA microcode
+>>> 3) I start the system
+>>> 4) I load the driver module and I read a version register in the  
+>>> FPGA
+>>> 5) The system crashes with a "machine check exception: transfer  
+>>> error ack signal"
+>>> 6) reboot
+>>> 7) same procedure (without load the FPGA again)
+>>> 8) now I can read the registers!
+>>>
+>>> If I repeat the procedure again it doesn't work anymore. I think  
+>>> it's a problem with pci-express controller. Have you got any  
+>>> suggestions?
+>>>
+>>> Thanks.
+>> Where are you loading the FPGA microcode (linux, u-boot)?  Also, is  
+>> the FPGA the only device connected over PCIe?
+>> - k
+> I load the FPGA with JTAG and with a Xilinx program without a  
+> specific linux driver or u-boot. Yes, it is the only device  
+> connected over PCIe.
 
-Interesting, that should also work although QinQ will not. I will have
-a closer look but I still don't see how my orginal patch would
-harm anything. One could add my patch on top but with only 4 bytes
-extra.
+The issue may be related to the PCIe link training.  Are you able to  
+access the FPGA in u-boot?  Can you try reseting the PCIe controller  
+after you've loaded up the FPGA (see u-boot code in drivers/pci/ 
+fsl_pci_init.c and look for CONFIG_FSL_PCIE_RESET)
 
- Jocke
+- k
