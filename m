@@ -1,22 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <wojciech.kromer@dgt.com.pl>
+Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0A120DDEEC
+	by ozlabs.org (Postfix) with ESMTPS id 8D9D1DE1ED
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Mar 2008 23:52:59 +1100 (EST)
-Message-Id: <D06A33A2-7DE7-4E00-9AA0-1C11EE7D4375@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Marco Stornelli <marco.stornelli@coritel.it>
-In-Reply-To: <47E8F836.9060603@coritel.it>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: MPC8641D PCI-Express problem
-Date: Thu, 27 Mar 2008 07:52:51 -0500
-References: <47E8B19B.10705@coritel.it>
-	<7F2C28B9-9B87-4F46-9C57-3666BB8F7EFD@kernel.crashing.org>
-	<47E8F836.9060603@coritel.it>
-Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+	Fri, 28 Mar 2008 02:32:48 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by dgt.com.pl (Postfix) with ESMTP id 26FD325ADA6
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Mar 2008 15:51:21 +0100 (CET)
+Received: from dgt.com.pl ([127.0.0.1])
+	by localhost (mail.dgt.com.pl [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id qdDuNquFJtVi for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Mar 2008 15:51:21 +0100 (CET)
+Received: from krom.bkir.dgt (unknown [192.168.7.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by dgt.com.pl (Postfix) with ESMTP id 035F425AD8F
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Mar 2008 15:51:21 +0100 (CET)
+Message-ID: <47EBB44E.2000407@dgt.com.pl>
+Date: Thu, 27 Mar 2008 15:50:54 +0100
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: ksoftirqd_CPU0  uses 100% CPU
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +36,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-On Mar 25, 2008, at 8:03 AM, Marco Stornelli wrote:
-> Kumar Gala ha scritto:
->> On Mar 25, 2008, at 3:02 AM, Marco Stornelli wrote:
->>> Hi,
->>>
->>> do you remember my problem with the pci-express? I have an  
->>> mpc8641d_hpcn (rev. 2.0) board connected via pci-express with the  
->>> Xilinx ML555 evaluation board. I'm using the 2.6.24 kernel. I'm  
->>> observing this strange behavior:
->>>
->>> 1) I turn on the board and I stop the U-boot
->>> 2) I load the FPGA microcode
->>> 3) I start the system
->>> 4) I load the driver module and I read a version register in the  
->>> FPGA
->>> 5) The system crashes with a "machine check exception: transfer  
->>> error ack signal"
->>> 6) reboot
->>> 7) same procedure (without load the FPGA again)
->>> 8) now I can read the registers!
->>>
->>> If I repeat the procedure again it doesn't work anymore. I think  
->>> it's a problem with pci-express controller. Have you got any  
->>> suggestions?
->>>
->>> Thanks.
->> Where are you loading the FPGA microcode (linux, u-boot)?  Also, is  
->> the FPGA the only device connected over PCIe?
->> - k
-> I load the FPGA with JTAG and with a Xilinx program without a  
-> specific linux driver or u-boot. Yes, it is the only device  
-> connected over PCIe.
+When I plug off ethernet cable ksoftirqd_CPU0 starts using 100% od CPU.
+After pluging it back or downing eth0 interface it comes back to normal load.
 
-The issue may be related to the PCIe link training.  Are you able to  
-access the FPGA in u-boot?  Can you try reseting the PCIe controller  
-after you've loaded up the FPGA (see u-boot code in drivers/pci/ 
-fsl_pci_init.c and look for CONFIG_FSL_PCIE_RESET)
+Any sollution?
+I'm using 2.4.25 on ppc 8250.
 
-- k
+Regards.
