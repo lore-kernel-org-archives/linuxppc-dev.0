@@ -1,26 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 72453DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 12:49:52 +1100 (EST)
-Date: Wed, 26 Mar 2008 20:47:09 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: PPC upstream kernel ignored DABR bug
-Message-ID: <20080326204709.614138ba@zod.rchland.ibm.com>
-In-Reply-To: <20080326155732.6b01240f@zod.rchland.ibm.com>
-References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
-	<200803101501.34439.jens@de.ibm.com>
-	<1205344272.2272.45.camel@gargoyle>
-	<200803122330.36905.jens@de.ibm.com>
-	<20080313014745.DE97826F992@magilla.localdomain>
-	<20080326155732.6b01240f@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Jan@ozlabs.org,
-	Kratochvil <jan.kratochvil@redhat.com>, Roland McGrath <roland@redhat.com>
+Return-Path: <kelvin_q_lin@yahoo.com>
+Received: from n79.bullet.mail.sp1.yahoo.com (n79.bullet.mail.sp1.yahoo.com
+	[98.136.44.39]) by ozlabs.org (Postfix) with SMTP id 658FFDDF75
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 12:54:17 +1100 (EST)
+Date: Thu, 27 Mar 2008 09:54:16 +0800 (CST)
+From: Kelvin Lin <kelvin_q_lin@yahoo.com>
+Subject: =?gb2312?q?=BB=D8=B8=B4=A3=BA=20Could=20PowerPC(IBM=20power=20blade,
+	=20js?= =?gb2312?q?=2021,=208844)=20boot=20via=20usb=20key=3F?=
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <680109.97825.qm@web45304.mail.sp1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-867930949-1206582856=:9150"
+Message-ID: <671479.9150.qm@web45314.mail.sp1.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +20,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 26 Mar 2008 15:57:32 -0500
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+--0-867930949-1206582856=:9150
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-> On Wed, 12 Mar 2008 18:47:45 -0700 (PDT)
-> Roland McGrath <roland@redhat.com> wrote:
-> 
-> > The only machine I have at home for testing powerpc is an Apple G5,
-> > supplied to me by IBM.  It says:
-> > 	cpu             : PPC970FX, altivec supported
-> > 	revision        : 3.0 (pvr 003c 0300)
-> > so I am guessing this document applies to the chips I have.  Since I can't
-> > test on other chips myself, it is plausible from what I've seen that there
-> > is no mysterious kernel problem and only this hardware problem.  The
-> > description of the hardware problem would not make me think that it would
-> > behave this way, but it is not very detailed or precise, or at least does
-> > not seem so to a reader not expert on powerpc.
-> 
-> I ran the testcase on my older G5 today with:
-> 
-> cpu             : PPC970, altivec supported
-> revision        : 2.2 (pvr 0039 0202)
-> 
-> and it also failed after a few iterations.  This was with
-> 2.6.25-0.121.rc5.git4.fc9 as the kernel, which is fairly close to mainline.  At the least, this doesn't seem to be 970FX related.  I'll try building a vanilla 2.6.25-rc7 later this evening to see if that makes a difference.
+Does anyone know about it?
+   
+  Thanks a lot.
 
-Still failed with a -vanilla build of 2.6.25-rc7.
+Kelvin Lin <kelvin_q_lin@yahoo.com> –¥µ¿£∫
+    Hi guys,
+   
+  I created a PReP partition in usb key and then did "dd" and something like that to configure yaboot on it.
+   
+  But the key point is that, when I boot power blade, there is not usb key in the bootable list. I mean, there are just:
+   1.        -      Ethernet
+                  ( loc=U788D.001.99DXC6K-P1-T7 )
+ 2.        -      Ethernet
+                  ( loc=U788D.001.99DXC6K-P1-T8 )
+ 3.        -      USB CD-ROM
+                  ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )
+ 4.        1      SCSI 36401 MB Harddisk, part=1 ()
+                  ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )
+   
+  My usb key is Kingston's DataTraveler 2GB.
+   
+  Then I change another Sandisk cruzer 2GB usb key, it shows as follows in the boot menu:
+   
+   1.        -      Ethernet
+                  ( loc=U788D.001.99DXC6K-P1-T7 )
+ 2.        -      Ethernet
+                  ( loc=U788D.001.99DXC6K-P1-T8 )
+ 3.        -      USB CD-ROM
+                  ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )
+ 4.        1      SCSI 36401 MB Harddisk, part=1 ()
+                  ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )
+ 5.        -      USB CD-ROM
+                  ( loc=U788D.001.99DXC6K-P1-T1-L1-L2-L1-L0 )
 
-josh
+  But this item 5 USB CD-ROM is simulated by Sandisk, not the actual usb key. I can't boot my server via item 5.
+   
+  Could IBM power blade, js 21, 8844 boot via usb key? If not, could you please provide official doc to prove it. Because I have to persuade my boss to give up it. -:)
+   
+  Any comment is appreciated. Thanks a lot in advanced.
+   
+  Kelvin.
+    
+---------------------------------
+  —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+       
+---------------------------------
+ —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°
+--0-867930949-1206582856=:9150
+Content-Type: text/html; charset=gb2312
+Content-Transfer-Encoding: 8bit
+
+<div>Does&nbsp;anyone know about it?</div>  <div>&nbsp;</div>  <div>Thanks a lot.<BR><BR><B><I>Kelvin Lin &lt;kelvin_q_lin@yahoo.com&gt;</I></B> –¥µ¿£∫</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">  <DIV>Hi guys,</DIV>  <DIV>&nbsp;</DIV>  <DIV>I created a PReP partition in usb key and then did "dd" and something like that to configure yaboot on it.</DIV>  <DIV>&nbsp;</DIV>  <DIV>But the key point is that, when I boot power blade, there is not usb key in the bootable list. I mean, there are just:</DIV>  <DIV>&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T7 )<BR>&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T8 )<BR>&nbsp;3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB CD-ROM<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )<BR>&nbsp;4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SCSI 36401 MB Harddisk, part=1 ()<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )</DIV>  <DIV>&nbsp;</DIV>  <DIV>My usb key is Kingston's DataTraveler 2GB.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Then I change another Sandisk cruzer 2GB usb key, it shows as follows in the boot menu:</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nbsp;1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T7 )<BR>&nbsp;2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ethernet<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T8 )<BR>&nbsp;3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB CD-ROM<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T1-L1-L3 )<BR>&nbsp;4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SCSI 36401 MB Harddisk, part=1 ()<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T10-L1-L0 )<BR>&nbsp;5.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; USB
+ CD-ROM<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( loc=U788D.001.99DXC6K-P1-T1-L1-L2-L1-L0 )<BR></DIV>  <DIV>But this&nbsp;item 5&nbsp;USB CD-ROM is simulated by Sandisk, not the actual usb key. I can't boot my server via item 5.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Could IBM power blade, js 21, 8844 boot via usb key? If not, could you please provide official doc to prove it. Because I have to persuade my boss to give up it. -:)</DIV>  <DIV>&nbsp;</DIV>  <DIV>Any comment is appreciated. Thanks a lot in advanced.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Kelvin.</DIV>  <div>  <HR SIZE=1>  <A href="http://cn.mail.yahoo.com/">—≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°</A>_______________________________________________<BR>Linuxppc-dev mailing list<BR>Linuxppc-dev@ozlabs.org<BR>https://ozlabs.org/mailman/listinfo/linuxppc-dev</BLOCKQUOTE><BR><p>&#32;
+
+
+      <hr size=1><a href="http://cn.mail.yahoo.com/"> —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°</a>
+--0-867930949-1206582856=:9150--
