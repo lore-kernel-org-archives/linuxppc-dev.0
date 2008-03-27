@@ -1,17 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 27 Mar 2008 20:44:01 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 2/2] [POWERPC] Describe memory-mapped RAM&ROM chips of
-	bindings
-Message-ID: <20080327094401.GB10397@localhost.localdomain>
-References: <200803261344.26555.laurentp@cse-semaphore.com>
-	<d195a61e876d685ea04b29474da187cc@kernel.crashing.org>
-	<200803271037.17654.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200803271037.17654.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 26144DDF0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 22:02:26 +1100 (EST)
+Date: Thu, 27 Mar 2008 20:02:15 +0900 (JST)
+Message-Id: <20080327.200215.-1300539001.kouish@swc.toshiba.co.jp>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 2/11] cell: generalize io-workarounds code
+In-Reply-To: <1206355474.7197.35.camel@pasglop>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 27, 2008 at 10:37:17AM +0100, Laurent Pinchart wrote:
-> On Wednesday 26 March 2008 15:52, Segher Boessenkool wrote:
-> > > +    Dedicated RAM and ROM chips are often used as storage for 
-> > > temporary or
-> > > +    permanent data in embedded devices. Possible usage include 
-> > > non-volatile
-> > > +    storage in battery-backed SRAM, semi-permanent storage in 
-> > > dedicated SRAM
-> > > +    to preserve data accross reboots and firmware storage in 
-> > > dedicated ROM.
-> > > +
-> > > +     - compatible : should contain the specific model of RAM/ROM 
-> > > chip(s)
-> > > +       used, if known, followed by either "physmap-ram" or 
-> > > "physmap-rom"
-> > > +     - reg : Address range of the RAM/ROM chip
-> > > +     - bank-width : Width (in bytes) of the RAM/ROM bank. Equal to the
-> > > +       device width times the number of interleaved chips.
-> > > +     - device-width : (optional) Width of a single RAM/ROM chip. If
-> > > +       omitted, assumed to be equal to 'bank-width'.
-> > 
-> > Maybe I'm rehashing some old discussion here, if so, sorry; but why
-> > do you have bank-width and device-width here?  What useful information
-> > does it provide?  If this is about saying what the preferred (or only
-> > possible) access width is, better names are in order.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> I may have missed something in your patch but if the workarounds are
+> specific to a given bridge, they may as well set the top level
+> indirections once straight to the right workarounds.
 > 
-> device-width isn't used so we can get rid of it. bank-width is used by the 
-> map_ram driver for erase operations (mapram_erase in 
-> drivers/mtd/chips/map_ram.c). To be honest I'm not sure why it uses such an 
-> inefficient approach instead of memsetting the whole area.
+> Also, my understanding is that we are pretty much using the same 
+> bridge on the cell blades, so is there any way that can be
+> consolidated rather than having function pointers ?
 
-Sounds like bank-width is meaningless then, and doesn't belong in the
-device tree.  The shim which instantiates the mtd device from the
-device tree can make something up.
+Celleb has two different bus bridges such as PCI and PCI-Express, and 
+they have different bus access methods. Cell blades support only one 
+PCI, so you may have only one indirect access method. That is why I 
+introduced second level indirect function.
+Considering to embed 'second level' indirect function into first level 
+macros, it may break iSeries.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> I'll try to have a closer look next week, but I'm a bit worried by
+> having all IO go through 2 level of function pointers, the PPE isn't
+> very good at it and this will slow things down more than they already
+> are.
+
+Only on celleb, all IO go through 2 level of function pointers.
+ 
+On cell blades, you can set global variable "ppc_pci_io" up at function 
+spider_pci_workaround_init() directly instead of calling function
+io_workaround_init(), so all IO on cell blades use only one level of 
+function pointer which is stored in ppc_pci_io.
+
+
+> > I may have missed something in your patch but if the workarounds are
+> > specific to a given bridge, they may as well set the top level
+> > indirections once straight to the right workarounds.
+> 
+> Looking more closely, I wonder if a good solution would be to move the
+> function pointers away from globals, to the dev_archdata structure,
+> and thus make them per-device (like the DMA ops)
+
+As you said, if read/write/in/out functions take device parameter,
+taking I/O function pointers into the dev_archdata structure should be
+the best solution. But they don't take device parameter, and they must
+search I/O function pointers with address parameter. I think it's
+better they search pointers from bus bridges, because access mothod
+for a device on its parent bus bridge, not device itself.
+
+Best regards,
+Kou Ishizaki
