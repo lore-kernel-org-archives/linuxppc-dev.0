@@ -1,23 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8DAD6DE476
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 06:46:24 +1100 (EST)
-Date: Fri, 28 Mar 2008 14:46:12 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] mpc83xx: fix usb phy_type in mpc837x rdb device trees
-Message-Id: <20080328144612.36ae5b14.kim.phillips@freescale.com>
-In-Reply-To: <163986FE-1FE0-4FAB-AACA-6E2605CF4094@kernel.crashing.org>
-References: <20080328105125.6a072ff7.kim.phillips@freescale.com>
-	<20080328164441.GA7146@localhost.localdomain>
-	<163986FE-1FE0-4FAB-AACA-6E2605CF4094@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <liml@rtr.ca>
+Received: from mail.rtr.ca (rtr.ca [76.10.145.34])
+	by ozlabs.org (Postfix) with ESMTP id 271A6DE816
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 06:50:57 +1100 (EST)
+Message-ID: <47ED439C.9030400@rtr.ca>
+Date: Fri, 28 Mar 2008 15:14:36 -0400
+From: Mark Lord <liml@rtr.ca>
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 15/18] ide: remove broken/dangerous HDIO_[UNREGISTER,
+	SCAN]_HWIF ioctls
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<20080208004606.17746.90799.sendpatchset@localhost.localdomain>
+	<47EBDBAA.2020308@ru.mvista.com>
+In-Reply-To: <47EBDBAA.2020308@ru.mvista.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 28 Mar 2008 14:37:51 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
+Sergei Shtylyov wrote:
+> Bartlomiej Zolnierkiewicz wrote:
 > 
-> On Mar 28, 2008, at 11:44 AM, Anton Vorontsov wrote:
-> > On Fri, Mar 28, 2008 at 10:51:25AM -0500, Kim Phillips wrote:
-> >> the mpc837x rdb board uses low pin count interfaces (ULPI) to connect
-> >> to the USB PHY.
-> >
-> > I've sent this fix two weeks ago...
-> >
-> > http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052926.html
-> >
-> >> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> 
-> I'll apply Anton's version and add a signed-off-by Kim.
+>> hdparm explicitely marks HDIO_[UNREGISTER,SCAN]_HWIF ioctls as DANGEROUS
+>> and given the number of bugs we can assume that there are no real users:
+..
 
-agreed, thanks!
+There is the odd user of these, actually.
 
-Kim
+But the most recent to email me (a few weeks ago),
+reported that the SCAN function was no longer working on his kernel.
+
+I'll remove the -R and -U flags completely from hdparm-8.7.
+
+Cheers
