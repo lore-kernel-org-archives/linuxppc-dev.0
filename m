@@ -2,15 +2,15 @@ Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB9B3DE403
+	by ozlabs.org (Postfix) with ESMTPS id A52D0DE757
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Mar 2008 03:12:43 +1100 (EST)
+	Sat, 29 Mar 2008 04:01:32 +1100 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JfHC4-0001Vz-3G
-	for linuxppc-embedded@ozlabs.org; Fri, 28 Mar 2008 09:12:40 -0700
-Message-ID: <16352982.post@talk.nabble.com>
-Date: Fri, 28 Mar 2008 09:12:40 -0700 (PDT)
+	(envelope-from <bounces@nabble.com>) id 1JfHxI-0003HV-TV
+	for linuxppc-embedded@ozlabs.org; Fri, 28 Mar 2008 10:01:28 -0700
+Message-ID: <16354810.post@talk.nabble.com>
+Date: Fri, 28 Mar 2008 10:01:28 -0700 (PDT)
 From: BAK <khaled.benamor@gmail.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: video driver problems on set top box board
@@ -27,11 +27,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-I am working ST set top box board and I need help to resolve some problems.
-if you 're working on set top box or you have experience with them these are
-more detailed informations:
-
-I am using a set top box board : STB442 based on STi7109 chip. I use STAPI
+I am using a set top box board : MB442 based on STi7109 chip. I use STAPI
 (drivers provided by ST) with STlinux kernell. I have some problems with a
 module (named mme_host) which must be inserted with arguments (insmod
 mme_host.ko transport0=<arguments_to_be_used>). This operation causes the
@@ -45,5 +41,5 @@ after inserting that mme module without arguments, the system crash down.
 Has any one experienced this type of problems?
 Have you any solutions ?
 -- 
-View this message in context: http://www.nabble.com/video-driver-problems-on-set-top-box-board-tp16352982p16352982.html
+View this message in context: http://www.nabble.com/video-driver-problems-on-set-top-box-board-tp16354810p16354810.html
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
