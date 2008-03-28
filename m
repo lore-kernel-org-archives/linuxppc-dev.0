@@ -4,14 +4,13 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6543ADECA6
+	by ozlabs.org (Postfix) with ESMTPS id 668DADECA8
 	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:27:17 +1100 (EST)
-Message-Id: <200803282121.m2SLLK7x010729@imap1.linux-foundation.org>
-Subject: [patch 20/24] rapidio: add the RapidIO master port maintance and
-	doorbell window to space resources
+Message-Id: <200803282121.m2SLLB2T010686@imap1.linux-foundation.org>
+Subject: [patch 07/24] rapidio: change RIO function mpc85xx_ to fsl_
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Fri, 28 Mar 2008 14:21:19 -0700
+Date: Fri, 28 Mar 2008 14:21:11 -0700
 Cc: akpm@linux-foundation.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,73 +23,306 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Zhang Wei <wei.zhang@freescale.com>
 
-Add the RapidIO master port maintance and doorbell IO windows to RIO space
-resources.
+The driver is also fit for Freescale MPC8641 processor.
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/sysdev/fsl_rio.c |   26 +++++++++++++++++++++-----
- include/linux/rio.h           |    1 +
- 2 files changed, 22 insertions(+), 5 deletions(-)
+ arch/powerpc/sysdev/fsl_rio.c |   80 ++++++++++++++++----------------
+ 1 file changed, 40 insertions(+), 40 deletions(-)
 
-diff -puN arch/powerpc/sysdev/fsl_rio.c~rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources arch/powerpc/sysdev/fsl_rio.c
---- a/arch/powerpc/sysdev/fsl_rio.c~rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources
+diff -puN arch/powerpc/sysdev/fsl_rio.c~rapidio-change-rio-function-mpc85xx_-to-fsl_ arch/powerpc/sysdev/fsl_rio.c
+--- a/arch/powerpc/sysdev/fsl_rio.c~rapidio-change-rio-function-mpc85xx_-to-fsl_
 +++ a/arch/powerpc/sysdev/fsl_rio.c
-@@ -192,6 +192,8 @@ struct rio_priv {
- 	int bellirq;
- 	int txirq;
- 	int rxirq;
-+	struct resource maint_res;
-+	struct resource dbell_res;
- };
+@@ -1,5 +1,5 @@
+ /*
+- * MPC85xx RapidIO support
++ * Freescale MPC85xx/MPC86xx RapidIO support
+  *
+  * Copyright 2005 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+@@ -145,7 +145,7 @@ static struct rio_msg_rx_ring {
+ } msg_rx_ring;
  
  /**
-@@ -1362,15 +1364,29 @@ int fsl_rio_setup(struct of_device *dev)
- 		out_be32((priv->regs_win + RIO_ISR_AACR), RIO_ISR_AACR_AA);
+- * mpc85xx_rio_doorbell_send - Send a MPC85xx doorbell message
++ * fsl_rio_doorbell_send - Send a MPC85xx doorbell message
+  * @index: ID of RapidIO interface
+  * @destid: Destination ID of target device
+  * @data: 16-bit info field of RapidIO doorbell message
+@@ -153,9 +153,9 @@ static struct rio_msg_rx_ring {
+  * Sends a MPC85xx doorbell message. Returns %0 on success or
+  * %-EINVAL on failure.
+  */
+-static int mpc85xx_rio_doorbell_send(int index, u16 destid, u16 data)
++static int fsl_rio_doorbell_send(int index, u16 destid, u16 data)
+ {
+-	pr_debug("mpc85xx_doorbell_send: index %d destid %4.4x data %4.4x\n",
++	pr_debug("fsl_doorbell_send: index %d destid %4.4x data %4.4x\n",
+ 		 index, destid, data);
+ 	out_be32((void *)&dbell_atmu_regs->rowtar, destid << 22);
+ 	out_be16((void *)(dbell_win), data);
+@@ -164,7 +164,7 @@ static int mpc85xx_rio_doorbell_send(int
+ }
  
- 	/* Configure maintenance transaction window */
--	out_be32(&priv->maint_atmu_regs->rowbar, 0x000c0000);
--	out_be32(&priv->maint_atmu_regs->rowar, 0x80077015);
-+	rio_init_io_res(&priv->maint_res, law_start, RIO_MAINT_WIN_SIZE,
-+			"maint_win", RIO_RESOURCE_MAINT);
-+	rc = rio_request_io_region(port, &priv->maint_res);
-+	if (rc) {
-+		dev_err(&dev->dev, "request maint window error!\n");
-+		goto err;
-+	}
-+	out_be32(&priv->maint_atmu_regs->rowbar, (law_start >> 12) & 0xffffff);
-+	out_be32(&priv->maint_atmu_regs->rowar, 0x80077000
-+					| (__ilog2(RIO_MAINT_WIN_SIZE) - 1));
+ /**
+- * mpc85xx_local_config_read - Generate a MPC85xx local config space read
++ * fsl_local_config_read - Generate a MPC85xx local config space read
+  * @index: ID of RapdiIO interface
+  * @offset: Offset into configuration space
+  * @len: Length (in bytes) of the maintenance transaction
+@@ -173,9 +173,9 @@ static int mpc85xx_rio_doorbell_send(int
+  * Generates a MPC85xx local configuration space read. Returns %0 on
+  * success or %-EINVAL on failure.
+  */
+-static int mpc85xx_local_config_read(int index, u32 offset, int len, u32 * data)
++static int fsl_local_config_read(int index, u32 offset, int len, u32 *data)
+ {
+-	pr_debug("mpc85xx_local_config_read: index %d offset %8.8x\n", index,
++	pr_debug("fsl_local_config_read: index %d offset %8.8x\n", index,
+ 		 offset);
+ 	*data = in_be32((void *)(regs_win + offset));
  
- 	priv->maint_win = ioremap(law_start, RIO_MAINT_WIN_SIZE);
+@@ -183,7 +183,7 @@ static int mpc85xx_local_config_read(int
+ }
  
+ /**
+- * mpc85xx_local_config_write - Generate a MPC85xx local config space write
++ * fsl_local_config_write - Generate a MPC85xx local config space write
+  * @index: ID of RapdiIO interface
+  * @offset: Offset into configuration space
+  * @len: Length (in bytes) of the maintenance transaction
+@@ -192,10 +192,10 @@ static int mpc85xx_local_config_read(int
+  * Generates a MPC85xx local configuration space write. Returns %0 on
+  * success or %-EINVAL on failure.
+  */
+-static int mpc85xx_local_config_write(int index, u32 offset, int len, u32 data)
++static int fsl_local_config_write(int index, u32 offset, int len, u32 data)
+ {
+ 	pr_debug
+-	    ("mpc85xx_local_config_write: index %d offset %8.8x data %8.8x\n",
++	    ("fsl_local_config_write: index %d offset %8.8x data %8.8x\n",
+ 	     index, offset, data);
+ 	out_be32((void *)(regs_win + offset), data);
+ 
+@@ -203,7 +203,7 @@ static int mpc85xx_local_config_write(in
+ }
+ 
+ /**
+- * mpc85xx_rio_config_read - Generate a MPC85xx read maintenance transaction
++ * fsl_rio_config_read - Generate a MPC85xx read maintenance transaction
+  * @index: ID of RapdiIO interface
+  * @destid: Destination ID of transaction
+  * @hopcount: Number of hops to target device
+@@ -215,13 +215,13 @@ static int mpc85xx_local_config_write(in
+  * success or %-EINVAL on failure.
+  */
+ static int
+-mpc85xx_rio_config_read(int index, u16 destid, u8 hopcount, u32 offset, int len,
++fsl_rio_config_read(int index, u16 destid, u8 hopcount, u32 offset, int len,
+ 			u32 * val)
+ {
+ 	u8 *data;
+ 
+ 	pr_debug
+-	    ("mpc85xx_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
++	    ("fsl_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
+ 	     index, destid, hopcount, offset, len);
+ 	out_be32((void *)&maint_atmu_regs->rowtar,
+ 		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
+@@ -243,7 +243,7 @@ mpc85xx_rio_config_read(int index, u16 d
+ }
+ 
+ /**
+- * mpc85xx_rio_config_write - Generate a MPC85xx write maintenance transaction
++ * fsl_rio_config_write - Generate a MPC85xx write maintenance transaction
+  * @index: ID of RapdiIO interface
+  * @destid: Destination ID of transaction
+  * @hopcount: Number of hops to target device
+@@ -255,12 +255,12 @@ mpc85xx_rio_config_read(int index, u16 d
+  * success or %-EINVAL on failure.
+  */
+ static int
+-mpc85xx_rio_config_write(int index, u16 destid, u8 hopcount, u32 offset,
++fsl_rio_config_write(int index, u16 destid, u8 hopcount, u32 offset,
+ 			 int len, u32 val)
+ {
+ 	u8 *data;
+ 	pr_debug
+-	    ("mpc85xx_rio_config_write: index %d destid %d hopcount %d offset %8.8x len %d val %8.8x\n",
++	    ("fsl_rio_config_write: index %d destid %d hopcount %d offset %8.8x len %d val %8.8x\n",
+ 	     index, destid, hopcount, offset, len, val);
+ 	out_be32((void *)&maint_atmu_regs->rowtar,
+ 		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
+@@ -344,7 +344,7 @@ rio_hw_add_outb_message(struct rio_mport
+ EXPORT_SYMBOL_GPL(rio_hw_add_outb_message);
+ 
+ /**
+- * mpc85xx_rio_tx_handler - MPC85xx outbound message interrupt handler
++ * fsl_rio_tx_handler - MPC85xx outbound message interrupt handler
+  * @irq: Linux interrupt number
+  * @dev_instance: Pointer to interrupt-specific data
+  *
+@@ -352,7 +352,7 @@ EXPORT_SYMBOL_GPL(rio_hw_add_outb_messag
+  * mailbox event handler and acks the interrupt occurrence.
+  */
+ static irqreturn_t
+-mpc85xx_rio_tx_handler(int irq, void *dev_instance)
++fsl_rio_tx_handler(int irq, void *dev_instance)
+ {
+ 	int osr;
+ 	struct rio_mport *port = (struct rio_mport *)dev_instance;
+@@ -452,7 +452,7 @@ int rio_open_outb_mbox(struct rio_mport 
+ 
+ 	/* Hook up outbound message handler */
+ 	if ((rc =
+-	     request_irq(MPC85xx_IRQ_RIO_TX, mpc85xx_rio_tx_handler, 0,
++	     request_irq(MPC85xx_IRQ_RIO_TX, fsl_rio_tx_handler, 0,
+ 			 "msg_tx", (void *)mport)) < 0)
+ 		goto out_irq;
+ 
+@@ -511,7 +511,7 @@ void rio_close_outb_mbox(struct rio_mpor
+ }
+ 
+ /**
+- * mpc85xx_rio_rx_handler - MPC85xx inbound message interrupt handler
++ * fsl_rio_rx_handler - MPC85xx inbound message interrupt handler
+  * @irq: Linux interrupt number
+  * @dev_instance: Pointer to interrupt-specific data
+  *
+@@ -519,7 +519,7 @@ void rio_close_outb_mbox(struct rio_mpor
+  * mailbox event handler and acks the interrupt occurrence.
+  */
+ static irqreturn_t
+-mpc85xx_rio_rx_handler(int irq, void *dev_instance)
++fsl_rio_rx_handler(int irq, void *dev_instance)
+ {
+ 	int isr;
+ 	struct rio_mport *port = (struct rio_mport *)dev_instance;
+@@ -597,7 +597,7 @@ int rio_open_inb_mbox(struct rio_mport *
+ 
+ 	/* Hook up inbound message handler */
+ 	if ((rc =
+-	     request_irq(MPC85xx_IRQ_RIO_RX, mpc85xx_rio_rx_handler, 0,
++	     request_irq(MPC85xx_IRQ_RIO_RX, fsl_rio_rx_handler, 0,
+ 			 "msg_rx", (void *)mport)) < 0) {
+ 		dma_free_coherent(NULL, RIO_MSG_BUFFER_SIZE,
+ 				  msg_tx_ring.virt_buffer[i],
+@@ -729,7 +729,7 @@ void *rio_hw_get_inb_message(struct rio_
+ EXPORT_SYMBOL_GPL(rio_hw_get_inb_message);
+ 
+ /**
+- * mpc85xx_rio_dbell_handler - MPC85xx doorbell interrupt handler
++ * fsl_rio_dbell_handler - MPC85xx doorbell interrupt handler
+  * @irq: Linux interrupt number
+  * @dev_instance: Pointer to interrupt-specific data
+  *
+@@ -737,7 +737,7 @@ EXPORT_SYMBOL_GPL(rio_hw_get_inb_message
+  * doorbell event handlers and executes a matching event handler.
+  */
+ static irqreturn_t
+-mpc85xx_rio_dbell_handler(int irq, void *dev_instance)
++fsl_rio_dbell_handler(int irq, void *dev_instance)
+ {
+ 	int dsr;
+ 	struct rio_mport *port = (struct rio_mport *)dev_instance;
+@@ -794,14 +794,14 @@ mpc85xx_rio_dbell_handler(int irq, void 
+ }
+ 
+ /**
+- * mpc85xx_rio_doorbell_init - MPC85xx doorbell interface init
++ * fsl_rio_doorbell_init - MPC85xx doorbell interface init
+  * @mport: Master port implementing the inbound doorbell unit
+  *
+  * Initializes doorbell unit hardware and inbound DMA buffer
+- * ring. Called from mpc85xx_rio_setup(). Returns %0 on success
++ * ring. Called from fsl_rio_setup(). Returns %0 on success
+  * or %-ENOMEM on failure.
+  */
+-static int mpc85xx_rio_doorbell_init(struct rio_mport *mport)
++static int fsl_rio_doorbell_init(struct rio_mport *mport)
+ {
+ 	int rc = 0;
+ 
+@@ -835,7 +835,7 @@ static int mpc85xx_rio_doorbell_init(str
+ 
+ 	/* Hook up doorbell handler */
+ 	if ((rc =
+-	     request_irq(MPC85xx_IRQ_RIO_BELL, mpc85xx_rio_dbell_handler, 0,
++	     request_irq(MPC85xx_IRQ_RIO_BELL, fsl_rio_dbell_handler, 0,
+ 			 "dbell_rx", (void *)mport) < 0)) {
+ 		iounmap((void *)dbell_win);
+ 		dma_free_coherent(NULL, 512 * DOORBELL_MESSAGE_SIZE,
+@@ -854,7 +854,7 @@ static int mpc85xx_rio_doorbell_init(str
+ 
+ static char *cmdline = NULL;
+ 
+-static int mpc85xx_rio_get_hdid(int index)
++static int fsl_rio_get_hdid(int index)
+ {
+ 	/* XXX Need to parse multiple entries in some format */
+ 	if (!cmdline)
+@@ -863,7 +863,7 @@ static int mpc85xx_rio_get_hdid(int inde
+ 	return simple_strtol(cmdline, NULL, 0);
+ }
+ 
+-static int mpc85xx_rio_get_cmdline(char *s)
++static int fsl_rio_get_cmdline(char *s)
+ {
+ 	if (!s)
+ 		return 0;
+@@ -872,10 +872,10 @@ static int mpc85xx_rio_get_cmdline(char 
+ 	return 1;
+ }
+ 
+-__setup("riohdid=", mpc85xx_rio_get_cmdline);
++__setup("riohdid=", fsl_rio_get_cmdline);
+ 
+ /**
+- * mpc85xx_rio_setup - Setup MPC85xx RapidIO interface
++ * fsl_rio_setup - Setup MPC85xx RapidIO interface
+  * @law_start: Starting physical address of RapidIO LAW
+  * @law_size: Size of RapidIO LAW
+  *
+@@ -883,17 +883,17 @@ __setup("riohdid=", mpc85xx_rio_get_cmdl
+  * master port with system-specific info, and registers the
+  * master port with the RapidIO subsystem.
+  */
+-void mpc85xx_rio_setup(int law_start, int law_size)
++void fsl_rio_setup(int law_start, int law_size)
+ {
+ 	struct rio_ops *ops;
+ 	struct rio_mport *port;
+ 
+ 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
+-	ops->lcread = mpc85xx_local_config_read;
+-	ops->lcwrite = mpc85xx_local_config_write;
+-	ops->cread = mpc85xx_rio_config_read;
+-	ops->cwrite = mpc85xx_rio_config_write;
+-	ops->dsend = mpc85xx_rio_doorbell_send;
++	ops->lcread = fsl_local_config_read;
++	ops->lcwrite = fsl_local_config_write;
++	ops->cread = fsl_rio_config_read;
++	ops->cwrite = fsl_rio_config_write;
++	ops->dsend = fsl_rio_doorbell_send;
+ 
+ 	port = kmalloc(sizeof(struct rio_mport), GFP_KERNEL);
+ 	port->id = 0;
+@@ -909,7 +909,7 @@ void mpc85xx_rio_setup(int law_start, in
+ 	strcpy(port->name, "RIO0 mport");
+ 
+ 	port->ops = ops;
+-	port->host_deviceid = mpc85xx_rio_get_hdid(port->id);
++	port->host_deviceid = fsl_rio_get_hdid(port->id);
+ 
+ 	rio_register_mport(port);
+ 
+@@ -928,5 +928,5 @@ void mpc85xx_rio_setup(int law_start, in
  	/* Configure outbound doorbell window */
--	out_be32(&priv->dbell_atmu_regs->rowbar, 0x000c0400);
--	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);
--	fsl_rio_doorbell_init(port);
-+	rio_init_io_res(&priv->dbell_res, law_start + RIO_MAINT_WIN_SIZE,
-+			RIO_DBELL_WIN_SIZE, "dbell_win", RIO_RESOURCE_DOORBELL);
-+	out_be32(&priv->dbell_atmu_regs->rowbar, (priv->dbell_res.start >> 12)
-+							& 0xffffff);
-+	out_be32(&priv->dbell_atmu_regs->rowar, 0x80042000
-+					| (__ilog2(RIO_DBELL_WIN_SIZE) - 1));
-+	rc = fsl_rio_doorbell_init(port);
-+	if (rc)
-+		goto err;
- 
- 	return 0;
- err:
-diff -puN include/linux/rio.h~rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources include/linux/rio.h
---- a/include/linux/rio.h~rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources
-+++ a/include/linux/rio.h
-@@ -257,6 +257,7 @@ struct rio_ops {
- #define RIO_RESOURCE_MEM	0x00000100
- #define RIO_RESOURCE_DOORBELL	0x00000200
- #define RIO_RESOURCE_MAILBOX	0x00000400
-+#define RIO_RESOURCE_MAINT	0x00000800
- 
- #define RIO_RESOURCE_CACHEABLE	0x00010000
- #define RIO_RESOURCE_PCI	0x00020000
+ 	out_be32((void *)&dbell_atmu_regs->rowbar, 0x000c0400);
+ 	out_be32((void *)&dbell_atmu_regs->rowar, 0x8004200b);
+-	mpc85xx_rio_doorbell_init(port);
++	fsl_rio_doorbell_init(port);
+ }
 _
