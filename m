@@ -1,16 +1,16 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 57E81DE138
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:07:55 +1100 (EST)
-Date: Fri, 28 Mar 2008 17:07:45 +0100 (CET)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E09E3DE3ED
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:10:52 +1100 (EST)
+Date: Fri, 28 Mar 2008 17:10:50 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: move_device_tree() should be __init
-Message-ID: <Pine.LNX.4.64.0803281706590.12282@vixen.sonytel.be>
+Subject: [PATCH] powerpc: arch_add_memory() cannot be __devinit
+Message-ID: <Pine.LNX.4.64.0803281707480.12287@vixen.sonytel.be>
 MIME-Version: 1.0
 Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-943477913-1206720465=:12282"
+	BOUNDARY="-584349381-330172931-1206720650=:12287"
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,35 +24,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-943477913-1206720465=:12282
+---584349381-330172931-1206720650=:12287
 Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 
-WARNING: vmlinux.o(.text+0x1e4c0): Section mismatch in reference from the
-function .move_device_tree() to the function .init.text:.lmb_alloc_base()
-The function .move_device_tree() references
-the function __init .lmb_alloc_base().
-This is often because .move_device_tree lacks a __init 
-annotation or the annotation of .lmb_alloc_base is wrong.
+WARNING: vmlinux.o(.text+0xb41b0): Section mismatch in reference from the
+function .add_memory() to the function .devinit.text:.arch_add_memory()
+The function .add_memory() references
+the function __devinit .arch_add_memory().
+This is often because .add_memory lacks a __devinit 
+annotation or the annotation of .arch_add_memory is wrong.
 
-move_device_tree() is called from early_init_devtree() only, which is __init
+arch_add_memory() is also not __devinit on other architectures
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- arch/powerpc/kernel/prom.c |    2 +-
+ arch/powerpc/mm/mem.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -436,7 +436,7 @@ early_param("mem", early_parse_mem);
-  * The device tree may be allocated beyond our memory limit, or inside the
-  * crash kernel region for kdump. If so, move it out of the way.
-  */
--static void move_device_tree(void)
-+static void __init move_device_tree(void)
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -111,7 +111,7 @@ int memory_add_physaddr_to_nid(u64 start
+ }
+ #endif
+ 
+-int __devinit arch_add_memory(int nid, u64 start, u64 size)
++int arch_add_memory(int nid, u64 start, u64 size)
  {
- 	unsigned long start, size;
- 	void *p;
+ 	struct pglist_data *pgdata;
+ 	struct zone *zone;
 
 With kind regards,
 
@@ -72,4 +72,4 @@ A division of Sony Service Centre (Europe) N.V.
 Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
 VAT BE 0413.825.160 · RPR Brussels
 Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-943477913-1206720465=:12282--
+---584349381-330172931-1206720650=:12287--
