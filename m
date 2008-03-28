@@ -1,14 +1,30 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18412.10838.984230.869068@cargo.ozlabs.ibm.com>
-Date: Fri, 28 Mar 2008 10:14:30 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Clean up some linker and symbol usage
-In-Reply-To: <Pine.LNX.4.64.0803271452540.12382@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0803271452540.12382@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pbadari@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CB1C5DE126
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 10:33:18 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2RNVe67024870
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 19:31:40 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2RNX9PM201680
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 17:33:09 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2RNX81t005476
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 17:33:09 -0600
+Subject: [PATCH 0/5] 2.6.25-rc5-mm1 hotplug memory remove updates
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 27 Mar 2008 16:33:26 -0800
+Message-Id: <1206664406.19368.2.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	paulus@samba.org, Yasunori Goto <y-goto@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +34,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Hi Andrew & Paul,
 
-> @@ -1124,7 +1124,7 @@ void __init early_init_devtree(void *params)
->  	parse_early_param();
-> 
->  	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
-> -	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
-> +	lmb_reserve(__pa(_stext), _end - _stext);
+Here are the updates for hotplug memory remove. Most changes are
+PPC specific, but I would like these to be included in next -mm
+for easy testing and review, before including in Paul's tree.
 
-In the kdump case where the kernel starts at the 32MB point
-(physical), wouldn't we want to reserve the first 32MB of RAM so that
-it can't get allocated and used for random things?  Doesn't that first
-32MB contain the old kernel that we want to write out?
+eHEA driver folks are verifying if the exported interface
+walk_memory_resource() is good enough for their needs. And also,
+we are verifying the code on x86_64. Once that is done, we may
+be able to cleanup some of the code (make remove_memory() arch
+generic).
 
-Or do we only have the 32MB starting at the 32MB point in the lmb
-system in that case?
+[PATCH 1/5] generic __remove_pages() support
+[PATCH 2/5] [PPC] htab_remove_mapping() error handling
+[PATCH 3/5] [PPC] hotplug memory notifications for ppc
+[PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
+[PATCH 5/5] [PPC] provide walk_memory_resource() for ppc
 
-Paul.
+Testing: All the patches are tested on p-series LPAR configuration,
+writing to /sysfs & /proc, through DLPAR tools and through HMC.
+Testing on x86_64 needs more work.
+
+Thanks,
+Badari
