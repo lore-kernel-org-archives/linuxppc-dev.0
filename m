@@ -1,22 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 86E58DE3A0
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 10:47:27 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so114249anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:47:25 -0700 (PDT)
-Message-ID: <fa686aa40803281647y4ccc4605n1507f9c1868d4c0f@mail.gmail.com>
-Date: Fri, 28 Mar 2008 17:47:25 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Dale Farnsworth" <dale@farnsworth.org>
-Subject: Re: [PATCH 1/9] [POWERPC] mv64x60: change FDT compatible prefix to
-	mrvl
-In-Reply-To: <20080328234241.GA30214@farnsworth.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 28FEFDE0A3
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 10:48:09 +1100 (EST)
+Date: Fri, 28 Mar 2008 16:48:00 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: paulus@samba.org
+Message-ID: <20080328234800.GE30214@farnsworth.org>
 References: <20080328233954.GA29499@farnsworth.org>
-	<20080328234241.GA30214@farnsworth.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+MIME-Version: 1.0
+In-Reply-To: <20080328233954.GA29499@farnsworth.org>
+Subject: [PATCH 5/9] [POWERPC] mv64x60: remove device tree absolute path
+	references
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +24,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 28, 2008 at 5:42 PM, Dale Farnsworth <dale@farnsworth.org> wrote:
-> From: Dale Farnsworth <dale@farnsworth.org>
->
->  Follow the convention that compatible names are prefixed by the
->  vendor's stock ticker symbol.  For Marvell Technology Group Ltd.,
->  that's MRVL.
->
->  Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
->  Acked-by: Mark A. Greer <mgreer@mvista.com>
+From: Dale Farnsworth <dale@farnsworth.org>
 
-Are there any boards "in the wild" using the old string?  If so are
-does changing this string risk complicating upgrades to a new kernel
-version?
+Replace several device node absolute path lookups in the mv64x60
+bootwrapper code with lookups by compatible or device_type
+properties.
 
-g.
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+Acked-by: Mark A. Greer <mgreer@mvista.com>
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--- a/arch/powerpc/boot/mv64x60.c
++++ b/arch/powerpc/boot/mv64x60.c
+@@ -535,7 +535,7 @@ u8 *mv64x60_get_bridge_pbase(void)
+ 	u32 v[2];
+ 	void *devp;
+ 
+-	devp = finddevice("/mv64x60");
++	devp = find_node_by_compatible(NULL, "mrvl,mv64360");
+ 	if (devp == NULL)
+ 		goto err_out;
+ 	if (getprop(devp, "reg", v, sizeof(v)) != sizeof(v))
+@@ -553,7 +553,7 @@ u8 *mv64x60_get_bridge_base(void)
+ 	u32 v;
+ 	void *devp;
+ 
+-	devp = finddevice("/mv64x60");
++	devp = find_node_by_compatible(NULL, "mrvl,mv64360");
+ 	if (devp == NULL)
+ 		goto err_out;
+ 	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
+diff --git a/arch/powerpc/boot/mv64x60_i2c.c b/arch/powerpc/boot/mv64x60_i2c.c
+index d085377..a69cd7a 100644
+--- a/arch/powerpc/boot/mv64x60_i2c.c
++++ b/arch/powerpc/boot/mv64x60_i2c.c
+@@ -185,7 +185,7 @@ int mv64x60_i2c_open(void)
+ 	u32 v;
+ 	void *devp;
+ 
+-	devp = finddevice("/mv64x60/i2c");
++	devp = find_node_by_compatible(NULL, "mrvl,mv64360-i2c");
+ 	if (devp == NULL)
+ 		goto err_out;
+ 	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
+diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
+index 05c3245..f74b2cf 100644
+--- a/arch/powerpc/boot/prpmc2800.c
++++ b/arch/powerpc/boot/prpmc2800.c
+@@ -344,20 +344,20 @@ static void prpmc2800_bridge_setup(u32 mem_size)
+ 			acc_bits);
+ 
+ 	/* Get the cpu -> pci i/o & mem mappings from the device tree */
+-	devp = finddevice("/mv64x60/pci@80000000");
++	devp = find_node_by_compatible(NULL, "mrvl,mv64360-pci");
+ 	if (devp == NULL)
+-		fatal("Error: Missing /mv64x60/pci@80000000"
++		fatal("Error: Missing mrvl,mv64360-pci"
+ 				" device tree node\n\r");
+ 
+ 	rc = getprop(devp, "ranges", v, sizeof(v));
+ 	if (rc != sizeof(v))
+-		fatal("Error: Can't find /mv64x60/pci@80000000/ranges"
++		fatal("Error: Can't find mrvl,mv64360-pci ranges"
+ 				" property\n\r");
+ 
+ 	/* Get the cpu -> pci i/o & mem mappings from the device tree */
+-	devp = finddevice("/mv64x60");
++	devp = find_node_by_compatible(NULL, "mrvl,mv64360");
+ 	if (devp == NULL)
+-		fatal("Error: Missing /mv64x60 device tree node\n\r");
++		fatal("Error: Missing mrvl,mv64360 device tree node\n\r");
+ 
+ 	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE));
+ 	enables |= 0x0007fe00; /* Disable all cpu->pci windows */
+@@ -429,9 +429,9 @@ static void prpmc2800_fixups(void)
+ 	setprop(devp, "model", model, l);
+ 
+ 	/* Set /cpus/PowerPC,7447/clock-frequency */
+-	devp = finddevice("/cpus/PowerPC,7447");
++	devp = find_node_by_prop_value_str(NULL, "device_type", "cpu");
+ 	if (devp == NULL)
+-		fatal("Error: Missing proper /cpus device tree node\n\r");
++		fatal("Error: Missing proper cpu device tree node\n\r");
+ 	v[0] = bip->core_speed;
+ 	setprop(devp, "clock-frequency", &v[0], sizeof(v[0]));
+ 
+@@ -443,16 +443,17 @@ static void prpmc2800_fixups(void)
+ 	v[1] = bip->mem_size;
+ 	setprop(devp, "reg", v, sizeof(v));
+ 
+-	/* Update /mv64x60/model, if this is a mv64362 */
++	/* Update model, if this is a mv64362 */
+ 	if (bip->bridge_type == BRIDGE_TYPE_MV64362) {
+-		devp = finddevice("/mv64x60");
++		devp = find_node_by_compatible(NULL, "mrvl,mv64360");
+ 		if (devp == NULL)
+-			fatal("Error: Missing /mv64x60 device tree node\n\r");
++			fatal("Error: Missing mrvl,mv64360"
++					" device tree node\n\r");
+ 		setprop(devp, "model", "mv64362", strlen("mv64362") + 1);
+ 	}
+ 
+ 	/* Set User FLASH size */
+-	devp = finddevice("/mv64x60/flash@a0000000");
++	devp = find_node_by_compatible(NULL, "direct-mapped");
+ 	if (devp == NULL)
+ 		fatal("Error: Missing User FLASH device tree node\n\r");
+ 	rc = getprop(devp, "reg", v, sizeof(v));
