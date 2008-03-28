@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C171DE154
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 13:41:29 +1100 (EST)
-Message-Id: <EA08C942-E156-410D-8ADA-7A4812B20221@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <1206664759.19368.11.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
-Date: Thu, 27 Mar 2008 21:40:52 -0500
-References: <1206664406.19368.2.camel@dyn9047017100.beaverton.ibm.com>
-	<1206664759.19368.11.camel@dyn9047017100.beaverton.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	paulus@samba.org, lkml <linux-kernel@vger.kernel.org>,
-	Yasunori Goto <y-goto@jp.fujitsu.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 6686BDDE20
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 15:22:57 +1100 (EST)
+Date: Thu, 27 Mar 2008 23:31:41 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] fsldma: The MPC8377MDS board device tree node for
+	fsldma driver
+Message-ID: <20080328043141.GA24022@lixom.net>
+References: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
+	<1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
+	<e9c3a7c20803271237x1b2c3a2ci6837c5e2d5288c95@mail.gmail.com>
+	<9D668111-9774-4D45-944E-3C3C0EE47A09@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9D668111-9774-4D45-944E-3C3C0EE47A09@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Dan Williams <dan.j.williams@intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 27, 2008 at 09:23:54PM -0500, Kumar Gala wrote:
 
-On Mar 27, 2008, at 7:39 PM, Badari Pulavarty wrote:
-> ppc kernel maintains information about logical memory blocks in
-> lmb.memory structure at the boot time. Its not updated for
-> hotplug memory add/remove. hotplug memory notifier for memory
-> add/remove now updates lmb.memory.
->
-> This information is useful for eHEA driver to find out the memory
-> layout and holes.
->
-> NOTE: No special locking is needed for lmb_add() and lmb_remove().
-> Calls to these are serialized by caller. (pSeries_reconfig_chain).
->
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> ---
-> arch/powerpc/platforms/pseries/hotplug-memory.c |   43 +++++++++++++++
-> include/linux/lmb.h                             |    3 -
-> lib/lmb.c                                       |   66 ++++++++++++++ 
-> ++++++----
-> 3 files changed, 102 insertions(+), 10 deletions(-)
+>> I think this patch should probably go through the powerpc tree, or
+>> -mm.  I'll pick up the ones that touch either drivers/dma or
+>> crypto/async_tx.
 
-How is lmb_remove different than lmb_alloc?
+It's a good idea to cc all fsldma patches to linuxppc-dev when they're
+posted too, none of them have been so they have been missing review from
+the powerpc crowd that didn't catch them on lkml.
 
-- k
+
+-Olof
