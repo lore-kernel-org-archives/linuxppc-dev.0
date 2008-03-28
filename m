@@ -1,32 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5DC0DDDEEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 11:42:21 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2S0gGEt023212
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:42:16 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2S0gGOH1089884
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:42:16 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2S0gGBn001474
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:42:16 -0400
-Date: Thu, 27 Mar 2008 19:39:25 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] [POWERPC] 4xx: Create common ppc4xx_reset_system() in
-	ppc4xx_soc.c
-Message-ID: <20080327193925.2781a6e2@zod.rchland.ibm.com>
-In-Reply-To: <20080327235618.GA16141@localhost.localdomain>
-References: <1206629011-28821-1-git-send-email-sr@denx.de>
-	<20080327235618.GA16141@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] [POWERPC] Clean up some linker and symbol usage
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18412.10838.984230.869068@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0803271452540.12382@blarg.am.freescale.net>
+	<18412.10838.984230.869068@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-cZpfKRuyyZLmgFj+YMVM"
+Date: Fri, 28 Mar 2008 11:45:38 +1100
+Message-Id: <1206665138.8173.3.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,24 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 28 Mar 2008 10:56:18 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
 
-> On Thu, Mar 27, 2008 at 03:43:31PM +0100, Stefan Roese wrote:
-> > This patch creates a common system reset routine for all 40x and 44x
-> > systems. Previously only a 44x routine existed. But since this system
-> > reset via the debug control register is common for 40x and 44x let's
-> > share this code for all those platforms in ppc4xx_soc.c.
-> 
-> Well... they're sort of common.  The source looks the same, but the
-> SPR number of DBCR0 is different on 40x and 44x, which is a
-> potentially serious gotcha.
+--=-cZpfKRuyyZLmgFj+YMVM
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Except that since 40x and 44x should never be built into the same
-kernel.  So the #defines for DBCR0 should be picked correctly from
-reg_booke.h.
 
-I thought about that too, but I can't see where it will be an issue in
-practice.
+On Fri, 2008-03-28 at 10:14 +1100, Paul Mackerras wrote:
+> Kumar Gala writes:
+>=20
+> > @@ -1124,7 +1124,7 @@ void __init early_init_devtree(void *params)
+> >  	parse_early_param();
+> >=20
+> >  	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
+> > -	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
+> > +	lmb_reserve(__pa(_stext), _end - _stext);
+>=20
+> In the kdump case where the kernel starts at the 32MB point
+> (physical), wouldn't we want to reserve the first 32MB of RAM so that
+> it can't get allocated and used for random things?  Doesn't that first
+> 32MB contain the old kernel that we want to write out?
 
-josh
+For kdump there is nMB of memory reserved at 32MB for the 2nd kernel,
+and that's all it gets, all of the other memory is the old kernel text
+or the old kernel's data.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-cZpfKRuyyZLmgFj+YMVM
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBH7D+ydSjSd0sB4dIRAonZAKCxsT/9N3sgH+DN9bJ3Zo2d/njJBQCgwSBd
+HE3Ild6RBUFRDk/9tj1l0/s=
+=Buwa
+-----END PGP SIGNATURE-----
+
+--=-cZpfKRuyyZLmgFj+YMVM--
