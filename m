@@ -1,39 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4C12EDE104
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 656BCDDFA3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Mar 2008 13:54:24 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m2S2sJMr016994 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Mar 2008 19:54:19 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m2S2sGDp003402
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Mar 2008 21:54:17 -0500 (CDT)
+	Sat, 29 Mar 2008 02:16:44 +1100 (EST)
+Message-ID: <56434.79.33.233.21.1206717346.squirrel@nausicaa2.coritel.it>
+In-Reply-To: <D06A33A2-7DE7-4E00-9AA0-1C11EE7D4375@kernel.crashing.org>
+References: <47E8B19B.10705@coritel.it>
+	<7F2C28B9-9B87-4F46-9C57-3666BB8F7EFD@kernel.crashing.org>
+	<47E8F836.9060603@coritel.it>
+	<D06A33A2-7DE7-4E00-9AA0-1C11EE7D4375@kernel.crashing.org>
+Date: Fri, 28 Mar 2008 16:15:46 +0100 (CET)
+Subject: Re: MPC8641D PCI-Express problem
+From: marco.stornelli@coritel.it
+To: "Kumar Gala" <galak@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] ucc_geth: Add 8 bytes to max TX frame for VLANs
-Date: Fri, 28 Mar 2008 10:54:16 +0800
-Message-ID: <989B956029373F45A0B8AF029708189001D19A3F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1206621833.7589.286.camel@gentoo-jocke.transmode.se>
-References: <>
-	<1205853088-30171-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<989B956029373F45A0B8AF029708189001D19565@zch01exm26.fsl.freescale.net>
-	<46CAC1281D7CB94A9AEFFB131F9569CA227627@tmnt04.transmode.se>
-	<1206436671.7589.208.camel@gentoo-jocke.transmode.se>
-	<989B956029373F45A0B8AF029708189001D198BC@zch01exm26.fsl.freescale.net>
-	<1206621833.7589.286.camel@gentoo-jocke.transmode.se>
-From: "Li Yang" <LeoLi@freescale.com>
-To: <joakim.tjernlund@transmode.se>
-Cc: Netdev <netdev@vger.kernel.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;charset=iso-8859-1
+Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -44,40 +27,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > Hi Jocke,
-> >=20
-> > QUICC engine supports dynamic maximum frame length.  If you are not=20
-> > expecting to receive only tagged frames, I recommend to use this=20
-> > feature by setting dynamicMaxFrameLength and=20
-> dynamicMinFrameLength in=20
-> > ug_info instead of increasing the MaxLength for both tagged=20
-> and untagged frames.
-> > See the following part from the reference manual.
-> >=20
-> > The MFLR entry in the Global Parameter RAM defines the=20
-> length of the=20
-> > largest frame, excluding Q TAG but including FCS, that is=20
-> still valid.=20
-> > When REMODER[DXE]=3D1, a tagged frame that has length equals
-> > MaxLength+4 considered valid, and a non tagged frame that has length
-> > equals MaxLength is the longest
-> > that is still considered valid. When REMODER[DXE]=3D0, any=20
-> frame longer=20
-> > than MaxLength consider erroneous frame.
-> > For systems with only tagged frames, set REMODER[DXE]=3D0 and set=20
-> > MaxLength =3D Max LLC size+4.
-> >=20
-> > - Leo
->=20
-> Interesting, that should also work although QinQ will not. I=20
-> will have a closer look but I still don't see how my orginal=20
-> patch would harm anything. One could add my patch on top but=20
-> with only 4 bytes extra.
+>
+> On Mar 25, 2008, at 8:03 AM, Marco Stornelli wrote:
+>> Kumar Gala ha scritto:
+>>> On Mar 25, 2008, at 3:02 AM, Marco Stornelli wrote:
+>>>> Hi,
+>>>>
+>>>> do you remember my problem with the pci-express? I have an
+>>>> mpc8641d_hpcn (rev. 2.0) board connected via pci-express with the
+>>>> Xilinx ML555 evaluation board. I'm using the 2.6.24 kernel. I'm
+>>>> observing this strange behavior:
+>>>>
+>>>> 1) I turn on the board and I stop the U-boot
+>>>> 2) I load the FPGA microcode
+>>>> 3) I start the system
+>>>> 4) I load the driver module and I read a version register in the
+>>>> FPGA
+>>>> 5) The system crashes with a "machine check exception: transfer
+>>>> error ack signal"
+>>>> 6) reboot
+>>>> 7) same procedure (without load the FPGA again)
+>>>> 8) now I can read the registers!
+>>>>
+>>>> If I repeat the procedure again it doesn't work anymore. I think
+>>>> it's a problem with pci-express controller. Have you got any
+>>>> suggestions?
+>>>>
+>>>> Thanks.
+>>> Where are you loading the FPGA microcode (linux, u-boot)?  Also, is
+>>> the FPGA the only device connected over PCIe?
+>>> - k
+>> I load the FPGA with JTAG and with a Xilinx program without a
+>> specific linux driver or u-boot. Yes, it is the only device
+>> connected over PCIe.
+>
+> The issue may be related to the PCIe link training.  Are you able to
+> access the FPGA in u-boot?  Can you try reseting the PCIe controller
+> after you've loaded up the FPGA (see u-boot code in drivers/pci/
+> fsl_pci_init.c and look for CONFIG_FSL_PCIE_RESET)
+>
+> - k
+>
 
-Hi,
-
-The increase of max packet length may cause a waste of QE internal
-buffer for every packet.  Furthermore it affects the hardware statistics
-of jumbo packets.
-
-- Leo
+Ok I can try but I'm using the U-Boot 1.3.0 provided by Freescale with the
+board, so I have to change the firmware, updating the U-Boot to the
+version 1.3.2 to use CONFIG_FSL_PCIE_RESET. However, I've had the same
+idea, but I check (with a warning) this case in the kernel function
+fsl_check_pcie_link() (where the kernel check the value of LTSSM) but I've
+never seen the warning during the start-up.
