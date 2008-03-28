@@ -1,17 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 28 Mar 2008 11:09:17 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: OF compatible MTD platform RAM driver ?
-Message-ID: <20080328000917.GD16141@localhost.localdomain>
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<200803271013.32612.laurentp@cse-semaphore.com>
-	<20080327100304.GC10397@localhost.localdomain>
-	<200803271531.35401.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200803271531.35401.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5DC0DDDEEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 11:42:21 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2S0gGEt023212
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:42:16 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2S0gGOH1089884
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:42:16 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2S0gGBn001474
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 20:42:16 -0400
+Date: Thu, 27 Mar 2008 19:39:25 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] [POWERPC] 4xx: Create common ppc4xx_reset_system() in
+	ppc4xx_soc.c
+Message-ID: <20080327193925.2781a6e2@zod.rchland.ibm.com>
+In-Reply-To: <20080327235618.GA16141@localhost.localdomain>
+References: <1206629011-28821-1-git-send-email-sr@denx.de>
+	<20080327235618.GA16141@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 27, 2008 at 03:31:34PM +0100, Laurent Pinchart wrote:
-> On Thursday 27 March 2008 11:03, David Gibson wrote:
-> > On Thu, Mar 27, 2008 at 10:13:32AM +0100, Laurent Pinchart wrote:
-> > > On Wednesday 26 March 2008 13:53, Sergei Shtylyov wrote:
-> > > > Laurent Pinchart wrote:
-> > [snip]
-> > > >     Heh, we've gone thru "physmap" before -- it was labelled
-> > > >     Linux-specific name (well, I'd agree with that).
-> > > 
-> > > physmap stands for physically mapped. That doesn't sound
-> > > Linux-specific to me, the fact that the MTD driver has the same name
-> > > is a pure coincidence.  linmap-rom and linmap-rom sound even more
-> > > Linux-specific :-)
-> > 
-> > It may not be Linux specific per se, but it's a bad name, because the
-> > fact that the device is physically direct mapped isn't a useful
-> > distinguishing feature of the device.  Main memory is also direct
-> > physically mapped, after all, but that's not what you want to cover
-> > with this description.  In general how a device is wired is described
-> > by where it sits in the tree, not by its properties.
-> > 
-> > It only seems like a usefully distinguishing name because it's the
-> > Linux "physmap_of" driver that uses it.  So in this sense it is a
-> > Linux specific name after all.  In fact, physmap_of is itself very
-> > badly named - right now it only handles direct mapped mtds, but that's
-> > not inherent; it could be trivially extended to also instantiate a
-> > non-direct-mapped device (as long as the underlying mtd layer
-> > supported it, of course).  It bears no relation at all to the
-> > "physmap" driver, except historical accident.
-> > 
-> > > Could we agree on a name ? I'd like to submit a new patch.
-> > 
-> > For ROMs I think just plain "rom" should be sufficient.  For RAMs we
-> > need something to indicate that it's memory but intended for secondary
-> > storage, not as main memory.  Unfortunately, I'm finding myself unable
-> > to think of something.
+On Fri, 28 Mar 2008 10:56:18 +1100
+David Gibson <david@gibson.dropbear.id.au> wrote:
+
+> On Thu, Mar 27, 2008 at 03:43:31PM +0100, Stefan Roese wrote:
+> > This patch creates a common system reset routine for all 40x and 44x
+> > systems. Previously only a 44x routine existed. But since this system
+> > reset via the debug control register is common for 40x and 44x let's
+> > share this code for all those platforms in ppc4xx_soc.c.
 > 
-> What about "storage-ram", "auxiliary-ram", "secondary-ram",
-> "application-ram", "user-ram" or "ramdisk" ?
+> Well... they're sort of common.  The source looks the same, but the
+> SPR number of DBCR0 is different on 40x and 44x, which is a
+> potentially serious gotcha.
 
-Well, I like all those better than anything previously suggested.
-"storage-ram" is probably my favourite.  It still doesn't seem great,
-but given I've been unable to thing of something better.
+Except that since 40x and 44x should never be built into the same
+kernel.  So the #defines for DBCR0 should be picked correctly from
+reg_booke.h.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I thought about that too, but I can't see where it will be an issue in
+practice.
+
+josh
