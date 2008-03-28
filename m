@@ -1,22 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 53940DEA9B
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 05:08:16 +1100 (EST)
-Message-ID: <47ED33C6.3090202@freescale.com>
-Date: Fri, 28 Mar 2008 13:07:02 -0500
-From: Timur Tabi <timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id B9F0DDE00B
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 05:09:38 +1100 (EST)
+Message-ID: <47ED3441.3090601@freescale.com>
+Date: Fri, 28 Mar 2008 13:09:05 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH 1/2 v4] Driver for Freescale 8610 and 5121 DIU
 References: <12066720572512-git-send-email-yorksun@freescale.com>
 	<12066720572314-git-send-email-yorksun@freescale.com>
-	<47ED2B35.4030601@freescale.com>
-In-Reply-To: <47ED2B35.4030601@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<47ED2B35.4030601@freescale.com> <47ED33C6.3090202@freescale.com>
+In-Reply-To: <47ED33C6.3090202@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	akpm@linux-foundation.org, York Sun <yorksun@freescale.com>
@@ -29,13 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
+Timur Tabi wrote:
+> Scott Wood wrote:
+> 
+>> ...but not anywhere else.  All user pointers should have a __user 
+>> annotation.
+> 
+> Even in a typecast?
 
-> ...but not anywhere else.  All user pointers should have a __user 
-> annotation.
+Yes.  Otherwise, as far as sparse sees, you're passing a kernel pointer 
+to something expecting a user pointer.
 
-Even in a typecast?
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Scott
