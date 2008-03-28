@@ -1,21 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C16B2DDF59
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 12:52:54 +1100 (EST)
-Message-Id: <FEB25EA2-7E41-4CB1-AC88-6C6CBE2A60BD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1206665138.8173.3.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] Clean up some linker and symbol usage
-Date: Thu, 27 Mar 2008 20:52:43 -0500
-References: <Pine.LNX.4.64.0803271452540.12382@blarg.am.freescale.net>
-	<18412.10838.984230.869068@cargo.ozlabs.ibm.com>
-	<1206665138.8173.3.camel@concordia.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTPS id 8EA69DDF40
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 13:10:35 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m2S2ASkj003336
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 19:10:29 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m2S2AQT4004259
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2008 21:10:27 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [PATCH] fsldma: The MPC8377MDS board device tree node for fsldma
+	driver
+Date: Fri, 28 Mar 2008 10:10:23 +0800
+Message-ID: <78567AC4946EDC42B7DE978C350CD869EC5A06@zch01exm26.fsl.freescale.net>
+In-Reply-To: <e9c3a7c20803271237x1b2c3a2ci6837c5e2d5288c95@mail.gmail.com>
+References: <1206517356-11209-1-git-send-email-wei.zhang@freescale.com>
+	<1206517356-11209-2-git-send-email-wei.zhang@freescale.com>
+	<e9c3a7c20803271237x1b2c3a2ci6837c5e2d5288c95@mail.gmail.com>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Dan Williams" <dan.j.williams@intel.com>,
+	"Andrew Morton" <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi, Dan,
 
-On Mar 27, 2008, at 7:45 PM, Michael Ellerman wrote:
->
-> On Fri, 2008-03-28 at 10:14 +1100, Paul Mackerras wrote:
->> Kumar Gala writes:
->>
->>> @@ -1124,7 +1124,7 @@ void __init early_init_devtree(void *params)
->>> 	parse_early_param();
->>>
->>> 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
->>> -	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
->>> +	lmb_reserve(__pa(_stext), _end - _stext);
->>
->> In the kdump case where the kernel starts at the 32MB point
->> (physical), wouldn't we want to reserve the first 32MB of RAM so that
->> it can't get allocated and used for random things?  Doesn't that  
->> first
->> 32MB contain the old kernel that we want to write out?
->
-> For kdump there is nMB of memory reserved at 32MB for the 2nd kernel,
-> and that's all it gets, all of the other memory is the old kernel text
-> or the old kernel's data.
+Sure. The patch can be just a reference to how to config and enable the =
+fsldma driver in dts file on MPC83xx boards.
 
-My understanding is those reservations are handled by the device tree  
-that is passed to the 2nd kernel.
+Thanks!
+Wei.
 
-- k
+> -----Original Message-----
+> From: dan.j.williams@gmail.com=20
+> [mailto:dan.j.williams@gmail.com] On Behalf Of Dan Williams
+> Sent: Friday, March 28, 2008 3:38 AM
+> To: Zhang Wei; Andrew Morton
+> Cc: Linux Kernel; Kumar Gala; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] fsldma: The MPC8377MDS board device tree=20
+> node for fsldma driver
+>=20
+> On Wed, Mar 26, 2008 at 12:42 AM, Zhang Wei=20
+> <wei.zhang@freescale.com> wrote:
+> > The fsldma driver is tested on MPC8377MDS board.
+> >  The patch adds fsldma driver support into MPC8377MDS device tree.
+> >
+> >  Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> >  ---
+> >   arch/powerpc/boot/dts/mpc8377_mds.dts |   27=20
+> +++++++++++++++++++++++++++
+> >   1 files changed, 27 insertions(+), 0 deletions(-)
+>=20
+> I think this patch should probably go through the powerpc tree, or
+> -mm.  I'll pick up the ones that touch either drivers/dma or
+> crypto/async_tx.
+>=20
+> --
+> Dan
+>=20
