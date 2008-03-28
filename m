@@ -4,14 +4,13 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BED8FDEC39
+	by ozlabs.org (Postfix) with ESMTPS id A0E54DEC7E
 	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:27:17 +1100 (EST)
-Message-Id: <200803282121.m2SLLDfi010692@imap1.linux-foundation.org>
-Subject: [patch 09/24] rapidio: move include/asm-ppc/rio.h to
-	include/asm-powerpc/rio.h
+Message-Id: <200803282121.m2SLLJDs010726@imap1.linux-foundation.org>
+Subject: [patch 19/24] rapidio: add FSL RapidIO controller memory ops functions
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Fri, 28 Mar 2008 14:21:13 -0700
+Date: Fri, 28 Mar 2008 14:21:19 -0700
 Cc: akpm@linux-foundation.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,56 +23,263 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Zhang Wei <wei.zhang@freescale.com>
 
+Add FSL RapidIO controller (MPC85xx, MPC86xx) memory operation functions,
+which include map inbound/outbound window and unmap incound/outbound window.
+
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/asm-powerpc/rio.h |   18 ++++++++++++++++++
- include/asm-ppc/rio.h     |   18 ------------------
- 2 files changed, 18 insertions(+), 18 deletions(-)
+ arch/powerpc/sysdev/fsl_rio.c |  204 ++++++++++++++++++++++++++++++++
+ 1 file changed, 204 insertions(+)
 
-diff -puN /dev/null include/asm-powerpc/rio.h
---- /dev/null
-+++ a/include/asm-powerpc/rio.h
-@@ -0,0 +1,18 @@
-+/*
-+ * RapidIO architecture support
+diff -puN arch/powerpc/sysdev/fsl_rio.c~rapidio-add-fsl-rapidio-controller-memory-ops-functions arch/powerpc/sysdev/fsl_rio.c
+--- a/arch/powerpc/sysdev/fsl_rio.c~rapidio-add-fsl-rapidio-controller-memory-ops-functions
++++ a/arch/powerpc/sysdev/fsl_rio.c
+@@ -30,6 +30,8 @@
+ #define IRQ_RIO_TX(m)		(((struct rio_priv *)(m->priv))->txirq)
+ #define IRQ_RIO_RX(m)		(((struct rio_priv *)(m->priv))->rxirq)
+ 
++#define IS_64BIT_RES ((sizeof(resource_size_t) == 8) ? 1 : 0)
++
+ #define RIO_ATMU_REGS_OFFSET	0x10c00
+ #define RIO_P_MSG_REGS_OFFSET	0x11000
+ #define RIO_S_MSG_REGS_OFFSET	0x13000
+@@ -39,6 +41,15 @@
+ #define RIO_ISR_AACR_AA		0x1	/* Accept All ID */
+ #define RIO_MAINT_WIN_SIZE	0x400000
+ #define RIO_DBELL_WIN_SIZE	0x1000
++#define RIO_MAX_INB_ATMU	4
++#define RIO_MAX_OUTB_ATMU	8
++#define RIO_INB_ATMU_REGS_OFFSET	0x10de0
++#define RIO_ATMU_EN_MASK	0x80000000
++
++#define RIO_NREAD		0x4
++#define RIO_NWRITE		0x4
++#define RIO_NWRITE_R		0x5
++#define RIO_NREAD_R		0x5
+ 
+ #define RIO_MSG_OMR_MUI		0x00000002
+ #define RIO_MSG_OSR_TE		0x00000080
+@@ -82,6 +93,15 @@ struct rio_atmu_regs {
+ 	u32 pad3[3];
+ };
+ 
++struct rio_inb_atmu_regs {
++	u32 riwtar;
++	u32 pad1;
++	u32 riwbar;
++	u32 pad2;
++	u32 riwar;
++	u32 pad3[3];
++};
++
+ struct rio_msg_regs {
+ 	u32 omr;
+ 	u32 osr;
+@@ -334,6 +354,182 @@ fsl_rio_config_write(struct rio_mport *m
+ }
+ 
+ /**
++ * fsl_rio_map_inb_mem -- Mapping inbound memory region.
++ * @lstart: Local memory space start address.
++ * @rstart: RapidIO space start address.
++ * @size: The mapping region size.
++ * @flags: Flags for mapping. 0 for using default flags.
 + *
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
++ * Return: 0 -- Success.
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * This function will create the inbound mapping
++ * from rstart to lstart.
 + */
++static int fsl_rio_map_inb_mem(struct rio_mport *mport, resource_size_t lstart,
++		resource_size_t rstart,	resource_size_t size, u32 flags)
++{
++	int i;
++	struct rio_priv *priv = mport->priv;
++	struct rio_inb_atmu_regs __iomem *inbatmu = (struct rio_inb_atmu_regs *)
++				(priv->regs_win + RIO_INB_ATMU_REGS_OFFSET) - 1;
++	int size_ffs;
++	resource_size_t align;
 +
-+#ifndef ASM_PPC_RIO_H
-+#define ASM_PPC_RIO_H
++	if (flags == 0)
++		flags = (RIO_NREAD_R << 4) | RIO_NWRITE_R;
 +
-+extern void platform_rio_init(void);
++	align = (size < 0x1000) ? 0x1000 : 1 << (__ilog2(size - 1) + 1);
 +
-+#endif				/* ASM_PPC_RIO_H */
-diff -puN include/asm-ppc/rio.h~rapidio-move-include-asm-ppc-rioh-to-include-asm-powerpc-rioh /dev/null
---- a/include/asm-ppc/rio.h
-+++ /dev/null
-@@ -1,18 +0,0 @@
--/*
-- * RapidIO architecture support
-- *
-- * Copyright 2005 MontaVista Software, Inc.
-- * Matt Porter <mporter@kernel.crashing.org>
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#ifndef ASM_PPC_RIO_H
--#define ASM_PPC_RIO_H
--
--extern void platform_rio_init(void);
--
--#endif				/* ASM_PPC_RIO_H */
++	/* Align the size */
++	if ((lstart + size) > (_ALIGN_DOWN(lstart, align) + align)) {
++		size_ffs = __ffs(_ALIGN_DOWN(lstart + size - 1, align));
++		size = 1 << (size_ffs +	(((_ALIGN_DOWN(lstart, 1 << size_ffs) +
++				(1 << size_ffs)) < (lstart + size)) ? 1 : 0));
++	} else
++		size = align;
++
++	if ((lstart & (size - 1)) != (rstart & (size - 1))) {
++		dev_err(mport->dev, "The local address 0x%x can not be aligned "
++			"to the same size 0x%x with the RapidIO space "
++			"address 0x%x!\n", lstart, size, rstart);
++		return -EINVAL;
++	}
++
++	/* Search for free inbound ATMU */
++	for (i = 1;
++		(i <= RIO_MAX_INB_ATMU) && (inbatmu->riwar & RIO_ATMU_EN_MASK);
++		i++, inbatmu--)
++		;
++
++	if (i > RIO_MAX_INB_ATMU) {
++		dev_err(mport->dev, "No free inbound ATMU!\n");
++		return -EBUSY;
++	}
++	out_be32(&inbatmu->riwtar, ((IS_64BIT_RES ? (lstart >> 32)
++				& 0xf : 0) << 20) | ((lstart >> 12) & 0xfffff));
++	out_be32(&inbatmu->riwbar, ((IS_64BIT_RES ? (rstart >> 32)
++				& 0x3 : 0) << 20) | ((rstart >> 12) & 0xfffff));
++	out_be32(&inbatmu->riwar, 0x80000000 | (0xf << 20)
++				| ((flags & 0xff) << 12)
++				| (__ilog2(size) - 1));
++	return 0;
++}
++
++/**
++ * fsl_rio_map_outb_mem -- Mapping outbound memory region.
++ * @lstart: Local memory space start address.
++ * @rstart: RapidIO space start address.
++ * @size: The mapping region size.
++ * @tid: The target RapidIO device id.
++ * @flags: Flags for mapping. 0 for using default flags.
++ *
++ * Return: 0 -- Success.
++ *
++ * This function will create the outbound mapping
++ * from lstart to rstart.
++ */
++static int fsl_rio_map_outb_mem(struct rio_mport *mport, resource_size_t lstart,
++		resource_size_t rstart,	resource_size_t size,
++		u16 tid, u32 flags)
++{
++	int i;
++	struct rio_priv *priv = mport->priv;
++	struct rio_atmu_regs __iomem *outbatmu = (struct rio_atmu_regs *)
++			(priv->regs_win + RIO_ATMU_REGS_OFFSET) + 1;
++	int size_ffs;
++	resource_size_t align;
++
++	if (flags == 0)
++		flags = (RIO_NREAD << 4) | RIO_NWRITE_R;
++
++	align = (size < 0x1000) ? 0x1000 : 1 << (__ilog2(size - 1) + 1);
++
++	/* Align the size */
++	if ((lstart + size) > (_ALIGN_DOWN(lstart, align) + align)) {
++		size_ffs = __ffs(_ALIGN_DOWN(lstart + size - 1, align));
++		size = 1 << (size_ffs +	(((_ALIGN_DOWN(lstart, 1 << size_ffs) +
++				(1 << size_ffs)) < (lstart + size)) ? 1 : 0));
++	} else
++		size = align;
++
++	if ((lstart & (size - 1)) != (rstart & (size - 1))) {
++		dev_err(mport->dev, "The local address 0x%x can not be aligned "
++			"to the same size 0x%x with the RapidIO space address "
++			"0x%x!\n", lstart, size, rstart);
++		return -EINVAL;
++	}
++
++	/* Search for free outbound ATMU */
++	for (i = 1;
++	      (i <= RIO_MAX_OUTB_ATMU) && (outbatmu->rowar & RIO_ATMU_EN_MASK);
++	      i++, outbatmu++)
++		;
++
++	if (i > RIO_MAX_OUTB_ATMU) {
++		dev_err(mport->dev, "No free outbound ATMU!\n");
++		return -EBUSY;
++	}
++	out_be32(&outbatmu->rowtar, ((tid & 0x3ff) << 22)
++			| ((IS_64BIT_RES ? (rstart >> 32) & 0x3 : 0) << 20)
++			| ((rstart >> 12) & 0xfffff));
++	if (mport->phy_type == RIO_PHY_SERIAL)
++		out_be32(&outbatmu->rowtear, tid >> 10);
++	out_be32(&outbatmu->rowbar, ((IS_64BIT_RES ?
++					(lstart >> 32) & 0xf : 0) << 20)
++					| ((lstart >> 12) & 0xfffff));
++	out_be32(&outbatmu->rowar, 0x80000000
++				| ((flags & 0xff) << 12)
++				| (__ilog2(size) - 1));
++	return 0;
++}
++
++/**
++ * fsl_rio_unmap_inb_mem -- Unmapping inbound memory region.
++ * @lstart: Local memory space start address.
++ */
++static void fsl_rio_unmap_inb_mem(struct rio_mport *mport,
++				resource_size_t lstart)
++{
++	int i;
++	struct rio_priv *priv = mport->priv;
++	struct rio_inb_atmu_regs __iomem *inbatmu = (struct rio_inb_atmu_regs *)
++			(priv->regs_win + RIO_INB_ATMU_REGS_OFFSET) - 1;
++
++	/* Search for inbound ATMU */
++	for (i = 1; i <= RIO_MAX_INB_ATMU ; i++, inbatmu--) {
++		u32 tar = ((IS_64BIT_RES ? (lstart >> 32) & 0xf : 0) << 20)
++			| ((lstart >> 12) & 0xfffff);
++		if (inbatmu->riwtar == tar) {
++			out_be32(&inbatmu->riwar, ~(RIO_ATMU_EN_MASK));
++			return;
++		}
++	}
++}
++
++/**
++ * fsl_rio_unmap_inb_mem -- Unmapping outbound memory region.
++ * @lstart: Local memory space start address.
++ */
++static void fsl_rio_unmap_outb_mem(struct rio_mport *mport,
++				resource_size_t lstart)
++{
++	int i;
++	struct rio_priv *priv = mport->priv;
++	struct rio_atmu_regs __iomem *outbatmu = (struct rio_atmu_regs *)
++			(priv->regs_win + RIO_ATMU_REGS_OFFSET) + 1;
++
++	/* Search for outbound ATMU */
++	for (i = 1; i <= RIO_MAX_OUTB_ATMU ; i++, outbatmu++) {
++		u32 bar = ((IS_64BIT_RES ? (lstart >> 32) & 0xf : 0) << 20)
++			| ((lstart >> 12) & 0xfffff);
++		if (outbatmu->rowbar == bar) {
++			out_be32(&outbatmu->rowar, ~(RIO_ATMU_EN_MASK));
++			return;
++		}
++	}
++}
++
++/**
+  * rio_hw_add_outb_message - Add message to the MPC85xx outbound message queue
+  * @mport: Master port with outbound message queue
+  * @rdev: Target of outbound message
+@@ -953,6 +1149,13 @@ static int fsl_rio_get_cmdline(char *s)
+ 
+ __setup("riohdid=", fsl_rio_get_cmdline);
+ 
++static struct rio_mem_ops fsl_mem_ops = {
++	.map_inb = fsl_rio_map_inb_mem,
++	.map_outb = fsl_rio_map_outb_mem,
++	.unmap_inb = fsl_rio_unmap_inb_mem,
++	.unmap_outb = fsl_rio_unmap_outb_mem,
++};
++
+ static inline void fsl_rio_info(struct device *dev, u32 ccsr)
+ {
+ 	const char *str;
+@@ -1096,6 +1299,7 @@ int fsl_rio_setup(struct of_device *dev)
+ 	strcpy(port->name, "RIO0 mport");
+ 
+ 	port->ops = ops;
++	port->mops = &fsl_mem_ops;
+ 	port->host_deviceid = fsl_rio_get_hdid(port->id);
+ 
+ 	port->priv = priv;
 _
