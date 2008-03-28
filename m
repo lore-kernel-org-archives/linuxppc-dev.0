@@ -4,13 +4,14 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1BD49DEB69
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:27:13 +1100 (EST)
-Message-Id: <200803282121.m2SLLCY2010689@imap1.linux-foundation.org>
-Subject: [patch 08/24] rapidio: add RapidIO option to kernel configuration
+	by ozlabs.org (Postfix) with ESMTPS id BED8FDEC39
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:27:17 +1100 (EST)
+Message-Id: <200803282121.m2SLLDfi010692@imap1.linux-foundation.org>
+Subject: [patch 09/24] rapidio: move include/asm-ppc/rio.h to
+	include/asm-powerpc/rio.h
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Fri, 28 Mar 2008 14:21:12 -0700
+Date: Fri, 28 Mar 2008 14:21:13 -0700
 Cc: akpm@linux-foundation.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,42 +28,52 @@ Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/Kconfig                |   13 +++++++++++++
- arch/powerpc/platforms/86xx/Kconfig |    1 +
- 2 files changed, 14 insertions(+)
+ include/asm-powerpc/rio.h |   18 ++++++++++++++++++
+ include/asm-ppc/rio.h     |   18 ------------------
+ 2 files changed, 18 insertions(+), 18 deletions(-)
 
-diff -puN arch/powerpc/Kconfig~rapidio-add-rapidio-option-to-kernel-configuration arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig~rapidio-add-rapidio-option-to-kernel-configuration
-+++ a/arch/powerpc/Kconfig
-@@ -571,6 +571,19 @@ source "drivers/pcmcia/Kconfig"
- 
- source "drivers/pci/hotplug/Kconfig"
- 
-+config HAS_RAPIDIO
-+	bool
-+	default n
+diff -puN /dev/null include/asm-powerpc/rio.h
+--- /dev/null
++++ a/include/asm-powerpc/rio.h
+@@ -0,0 +1,18 @@
++/*
++ * RapidIO architecture support
++ *
++ * Copyright 2005 MontaVista Software, Inc.
++ * Matt Porter <mporter@kernel.crashing.org>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+config RAPIDIO
-+	bool "RapidIO support"
-+	depends on HAS_RAPIDIO
-+	help
-+	  If you say Y here, the kernel will include drivers and
-+	  infrastructure code to support RapidIO interconnect devices.
++#ifndef ASM_PPC_RIO_H
++#define ASM_PPC_RIO_H
 +
-+source "drivers/rapidio/Kconfig"
++extern void platform_rio_init(void);
 +
- endmenu
- 
- menu "Advanced setup"
-diff -puN arch/powerpc/platforms/86xx/Kconfig~rapidio-add-rapidio-option-to-kernel-configuration arch/powerpc/platforms/86xx/Kconfig
---- a/arch/powerpc/platforms/86xx/Kconfig~rapidio-add-rapidio-option-to-kernel-configuration
-+++ a/arch/powerpc/platforms/86xx/Kconfig
-@@ -8,6 +8,7 @@ config MPC8641_HPCN
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
- 	select FSL_ULI1575
-+	select HAS_RAPIDIO
- 	help
- 	  This option enables support for the MPC8641 HPCN board.
- 
++#endif				/* ASM_PPC_RIO_H */
+diff -puN include/asm-ppc/rio.h~rapidio-move-include-asm-ppc-rioh-to-include-asm-powerpc-rioh /dev/null
+--- a/include/asm-ppc/rio.h
++++ /dev/null
+@@ -1,18 +0,0 @@
+-/*
+- * RapidIO architecture support
+- *
+- * Copyright 2005 MontaVista Software, Inc.
+- * Matt Porter <mporter@kernel.crashing.org>
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#ifndef ASM_PPC_RIO_H
+-#define ASM_PPC_RIO_H
+-
+-extern void platform_rio_init(void);
+-
+-#endif				/* ASM_PPC_RIO_H */
 _
