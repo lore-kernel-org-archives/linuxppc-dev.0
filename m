@@ -4,13 +4,14 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98809DE4BD
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:21:53 +1100 (EST)
-Message-Id: <200803282121.m2SLLF2g010706@imap1.linux-foundation.org>
-Subject: [patch 13/24] rapidio: add RapidIO node into MPC8641HPCN dts file
+	by ozlabs.org (Postfix) with ESMTPS id 01274DE545
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:21:54 +1100 (EST)
+Message-Id: <200803282121.m2SLLHGt010715@imap1.linux-foundation.org>
+Subject: [patch 16/24] rapidio: add RapidIO connection info print out and
+	re-training for break connection
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Fri, 28 Mar 2008 14:21:15 -0700
+Date: Fri, 28 Mar 2008 14:21:17 -0700
 Cc: akpm@linux-foundation.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,34 +28,95 @@ Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/boot/dts/mpc8641_hpcn.dts |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/powerpc/sysdev/fsl_rio.c |   71 ++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
 
-diff -puN arch/powerpc/boot/dts/mpc8641_hpcn.dts~rapidio-add-rapidio-node-into-mpc8641hpcn-dts-file arch/powerpc/boot/dts/mpc8641_hpcn.dts
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts~rapidio-add-rapidio-node-into-mpc8641hpcn-dts-file
-+++ a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -26,6 +26,7 @@
- 		serial1 = &serial1;
- 		pci0 = &pci0;
- 		pci1 = &pci1;
-+		rapidio0 = &rapidio0;
- 	};
+diff -puN arch/powerpc/sysdev/fsl_rio.c~rapidio-add-rapidio-connection-info-print-out-and-re-training-for-break-connection arch/powerpc/sysdev/fsl_rio.c
+--- a/arch/powerpc/sysdev/fsl_rio.c~rapidio-add-rapidio-connection-info-print-out-and-re-training-for-break-connection
++++ a/arch/powerpc/sysdev/fsl_rio.c
+@@ -942,6 +942,48 @@ static int fsl_rio_get_cmdline(char *s)
  
- 	cpus {
-@@ -500,4 +501,15 @@
- 				  0x0 0x00100000>;
- 		};
- 	};
-+	rapidio0: rapidio@f80c0000 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		compatible = "fsl,rapidio-delta";
-+		reg = <0xf80c0000 0x20000>;
-+		ranges = <0 0 0xc0000000 0 0x20000000>;
-+		interrupt-parent = <&mpic>;
-+		/* err_irq bell_outb_irq bell_inb_irq
-+			msg1_tx_irq msg1_rx_irq	msg2_tx_irq msg2_rx_irq */
-+		interrupts = <48 2 49 2 50 2 53 2 54 2 55 2 56 2>;
-+	};
- };
+ __setup("riohdid=", fsl_rio_get_cmdline);
+ 
++static inline void fsl_rio_info(struct device *dev, u32 ccsr)
++{
++	const char *str;
++	if (ccsr & 1) {
++		/* Serial phy */
++		switch (ccsr >> 30) {
++		case 0:
++			str = "1";
++			break;
++		case 1:
++			str = "4";
++			break;
++		default:
++			str = "Unknown";
++			break;;
++		}
++		dev_info(dev, "Hardware port width: %s\n", str);
++
++		switch ((ccsr >> 27) & 7) {
++		case 0:
++			str = "Single-lane 0";
++			break;
++		case 1:
++			str = "Single-lane 2";
++			break;
++		case 2:
++			str = "Four-lane";
++			break;
++		default:
++			str = "Unknown";
++			break;
++		}
++		dev_info(dev, "Training connection status: %s\n", str);
++	} else {
++		/* Parallel phy */
++		if (!(ccsr & 0x80000000))
++			dev_info(dev, "Output port operating in 8-bit mode\n");
++		if (!(ccsr & 0x08000000))
++			dev_info(dev, "Input port operating in 8-bit mode\n");
++	}
++}
++
+ /**
+  * fsl_rio_setup - Setup MPC85xx RapidIO interface
+  * @fsl_rio_setup - Setup Freescale PowerPC RapidIO interface
+@@ -1055,6 +1097,35 @@ int fsl_rio_setup(struct of_device *dev)
+ 			(port->phy_type == RIO_PHY_PARALLEL) ? "parallel" :
+ 			((port->phy_type == RIO_PHY_SERIAL) ? "serial" :
+ 			 "unknown"));
++	/* Checking the port training status */
++	if (in_be32((priv->regs_win + RIO_ESCSR)) & 1) {
++		dev_err(&dev->dev, "Port is not ready. "
++				   "Try to restart connection...\n");
++		switch (port->phy_type) {
++		case RIO_PHY_SERIAL:
++			/* Disable ports */
++			out_be32(priv->regs_win + RIO_CCSR, 0);
++			/* Set 1x lane */
++			setbits32(priv->regs_win + RIO_CCSR, 0x02000000);
++			/* Enable ports */
++			setbits32(priv->regs_win + RIO_CCSR, 0x00600000);
++			break;
++		case RIO_PHY_PARALLEL:
++			/* Disable ports */
++			out_be32(priv->regs_win + RIO_CCSR, 0x22000000);
++			/* Enable ports */
++			out_be32(priv->regs_win + RIO_CCSR, 0x44000000);
++			break;
++		}
++		msleep(100);
++		if (in_be32((priv->regs_win + RIO_ESCSR)) & 1) {
++			dev_err(&dev->dev, "Port restart failed.\n");
++			rc = -ENOLINK;
++			goto err;
++		}
++		dev_info(&dev->dev, "Port restart success!\n");
++	}
++	fsl_rio_info(&dev->dev, ccsr);
+ 
+ 	port->sys_size = (in_be32((priv->regs_win + RIO_PEF_CAR))
+ 					& RIO_PEF_CTLS) >> 4;
 _
