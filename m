@@ -1,23 +1,17 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound3-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 24C0EDDFAE
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:06:27 +1100 (EST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 57E81DE138
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:07:55 +1100 (EST)
+Date: Fri, 28 Mar 2008 17:07:45 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: move_device_tree() should be __init
+Message-ID: <Pine.LNX.4.64.0803281706590.12282@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Patch: FW:Xilinx: BSP: Updated ML405 to match
-	hardwareusedfortesting
-Date: Fri, 28 Mar 2008 09:06:12 -0700
-In-Reply-To: <068401c890d0$294e3e10$ad289e86@LPSC0173W>
-References: <052801c88f37$3b51f7e0$ad289e86@LPSC0173W><fa686aa40803260601j6e7f507fpe4d31c7c462fce5e@mail.gmail.com><066b01c890c0$17d9a800$ad289e86@LPSC0173W>
-	<068401c890d0$294e3e10$ad289e86@LPSC0173W>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>,
-	<linuxppc-dev@ozlabs.org>
-Message-Id: <20080328160614.6018DF68050@mail116-sin.bigfish.com>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-943477913-1206720465=:12282"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,82 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+---584349381-943477913-1206720465=:12282
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> -----Original Message-----
-> From: =
-linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of
-Guillaume Dargaud
-> Sent: Friday, March 28, 2008 5:35 AM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Re: Patch: FW:Xilinx: BSP: Updated ML405 to match
-hardwareusedfortesting
->=20
-> I should add that I've tried several things:
-> - compile the Xilinx kernel as indicated in my previous message.
-> - compile it with just the xparameters_ml*.h files added
+WARNING: vmlinux.o(.text+0x1e4c0): Section mismatch in reference from the
+function .move_device_tree() to the function .init.text:.lmb_alloc_base()
+The function .move_device_tree() references
+the function __init .lmb_alloc_base().
+This is often because .move_device_tree lacks a __init 
+annotation or the annotation of .lmb_alloc_base is wrong.
 
-This should work.
+move_device_tree() is called from early_init_devtree() only, which is __init
 
-> - copy all the files from the BSP into the (Xilinx) kernel tree
-> - directly generate the BSP into the (Xilinx) kernel tree
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ arch/powerpc/kernel/prom.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Neither of these will work.
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -436,7 +436,7 @@ early_param("mem", early_parse_mem);
+  * The device tree may be allocated beyond our memory limit, or inside the
+  * crash kernel region for kdump. If so, move it out of the way.
+  */
+-static void move_device_tree(void)
++static void __init move_device_tree(void)
+ {
+ 	unsigned long start, size;
+ 	void *p;
 
-> For instance, the last one still gives me:
-> .config:117:warning: trying to assign nonexistent symbol
-WANT_EARLY_SERIAL
-> .config:122:warning: trying to assign nonexistent symbol BUBINGA
-> .config:123:warning: trying to assign nonexistent symbol CPCI405
-> .config:124:warning: trying to assign nonexistent symbol EP405
-> .config:127:warning: trying to assign nonexistent symbol SYCAMORE
-> .config:129:warning: trying to assign nonexistent symbol XILINX_ML300
-> .config:130:warning: trying to assign nonexistent symbol XILINX_XUPV2P
-> .config:131:warning: trying to assign nonexistent symbol XILINX_ML403
-> .config:132:warning: trying to assign nonexistent symbol XILINX_ML405
-> .config:133:warning: trying to assign nonexistent symbol XILINX_ML41x
-> .config:138:warning: trying to assign nonexistent symbol
-XILINX_EMBED_CONFIG
-> .config:139:warning: trying to assign nonexistent symbol EMBEDDEDBOOT
-> .config:140:warning: trying to assign nonexistent symbol PPC4xx_DMA
-> .config:142:warning: trying to assign nonexistent symbol UART0_TTYS0
-> .config:143:warning: trying to assign nonexistent symbol UART0_TTYS1
-> .config:149:warning: trying to assign nonexistent symbol PC_KEYBOARD
-> .config:759:warning: trying to assign nonexistent symbol
-SERIAL_TEXT_DEBUG
-> .config:772:warning: trying to assign nonexistent symbol XILINX_OCP
-> .config:773:warning: trying to assign nonexistent symbol XILINX_ML40x
+With kind regards,
 
-Did you check out the head of the tree?
+Geert Uytterhoeven
+Software Architect
 
-> Two more things:
->=20
-> $ make ARCH=3Dppc ml405_defconfig
-> cp  .config
-> cp: missing destination file operand after `.config'
-> Try `cp --help' for more information.
-> make: *** [ml405_defconfig] Error 1
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-I'd suggest starting over with a fresh tree.
-1) Copy the xparameters file, overwriting the appropriate xparameters
-file in the git tree.
-2) make ARCH=3Dppc ml405_defconfig
-3) make ARCH=3Dppc all
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-> And on the page
-http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
-> which I've been studying closely, I also tried the Secret Lab
-repository:
-> $ git clone git://git.secretlab.ca/git/linux-2.6-virtex.git
-> Initialized empty Git repository in
-> /home/guinevere/buildroot/linux-2.6-virtex/.git/
-> fatal: The remote end hung up unexpectedly
-> fetch-pack from 'git://git.secretlab.ca/git/linux-2.6-virtex.git'
-failed.
-
-I know Grant has been having problems with the secretlab git server
-recently.
-
-Steve
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-943477913-1206720465=:12282--
