@@ -1,10 +1,18 @@
-Return-Path: <michael@ozlabs.org>
-To: Jeff Garzik <jeff@garzik.org>
-Message-Id: <c9b4b088d00e37e33907b15ac59450c04ef36112.1206666963.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Make pasemi_mac.c depend on PPC_PASEMI to prevent link errors
-Date: Fri, 28 Mar 2008 12:17:33 +1100 (EST)
-Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D4E64DDF3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 12:45:31 +1100 (EST)
+Date: Thu, 27 Mar 2008 20:54:14 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Make pasemi_mac.c depend on PPC_PASEMI to prevent link
+	errors
+Message-ID: <20080328015414.GA23856@lixom.net>
+References: <c9b4b088d00e37e33907b15ac59450c04ef36112.1206666963.git.michael@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c9b4b088d00e37e33907b15ac59450c04ef36112.1206666963.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,36 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-drivers/net/pasemi_mac.c is enabled by CONFIG_PASEMI_MAC, which depends on
-PPC64 && PCI. However pasemi_mac.c uses several routines that are only
-built when PPC_PASEMI is selected. This can lead to an unbuildable config:
+On Fri, Mar 28, 2008 at 12:17:33PM +1100, Michael Ellerman wrote:
+> drivers/net/pasemi_mac.c is enabled by CONFIG_PASEMI_MAC, which depends on
+> PPC64 && PCI. However pasemi_mac.c uses several routines that are only
+> built when PPC_PASEMI is selected. This can lead to an unbuildable config:
+> 
+>  ERROR: ".pasemi_dma_start_chan" [drivers/net/pasemi_mac.ko] undefined!
+> 
+> So make CONFIG_PASEMI_MAC depend on PPC_PASEMI instead of PPC64.
+> 
 
- ERROR: ".pasemi_dma_start_chan" [drivers/net/pasemi_mac.ko] undefined!
+Ah, good catch. It was OK until I introduced dma_lib under
+platforms/pasemi.
 
-So make CONFIG_PASEMI_MAC depend on PPC_PASEMI instead of PPC64.
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- drivers/net/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Acked-by: Olof Johansson <olof@lixom.net>
 
 
-
-Jeff, pending Olof's ack, this would be nice for 25, but is obviously
-not super important.
-
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index fe7b5ec..3a0b20a 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2635,7 +2635,7 @@ config NIU
- 
- config PASEMI_MAC
- 	tristate "PA Semi 1/10Gbit MAC"
--	depends on PPC64 && PCI
-+	depends on PPC_PASEMI && PCI
- 	select PHYLIB
- 	select INET_LRO
- 	help
--- 
-1.5.2.rc1.1884.g59b20
+-Olof
