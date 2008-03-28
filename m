@@ -1,34 +1,18 @@
-Return-Path: <stephenn@xilinx.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3EA9ADDFC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:29:30 +1100 (EST)
-Received: from outbound3-dub.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound3-dub-R.bigfish.com (Postfix) with ESMTP id BAFA81C68283
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:20 +0000 (UTC)
-Received: from mail113-dub-R.bigfish.com (unknown [10.5.252.3])
-	by outbound3-dub.bigfish.com (Postfix) with ESMTP id AECCB74805C
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:20 +0000 (UTC)
-Received: from mail113-dub (localhost.localdomain [127.0.0.1])
-	by mail113-dub-R.bigfish.com (Postfix) with ESMTP id 1A076107075E
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:19 +0000 (UTC)
-Received: from xsj-gw1 (unknown [149.199.60.83])
-	by mail113-dub.bigfish.com (Postfix) with ESMTP id B75351890079
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:17 +0000 (UTC)
-Received: from unknown-38-66.xilinx.com ([149.199.38.66]
-	helo=xsj-smtp1.xilinx.com) by xsj-gw1 with esmtp (Exim 4.63)
-	(envelope-from <stephenn@xilinx.com>) id 1JfHPD-00008z-PT
-	for linuxppc-dev@ozlabs.org; Fri, 28 Mar 2008 09:26:15 -0700
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/5] [POWERPC] Xilinx: Virtex: Enable dcr for MMIO and NATIVE
-Date: Fri, 28 Mar 2008 09:23:46 -0700
-In-Reply-To: <1206721429-18276-1-git-send-email-stephen.neuendorffer@xilinx.com>
-References: <1206401313-1625-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1206721429-18276-1-git-send-email-stephen.neuendorffer@xilinx.com>
-Message-Id: <20080328162617.B75351890079@mail113-dub.bigfish.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 16733DE096
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:44:44 +1100 (EST)
+Date: Fri, 28 Mar 2008 19:44:41 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 1/3] mpc83xx: fix usb phy_type in mpc837x rdb device trees
+Message-ID: <20080328164441.GA7146@localhost.localdomain>
+References: <20080328105125.6a072ff7.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080328105125.6a072ff7.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,26 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-FPGA designs may have need of both MMIO-based and NATIVE-based dcr
-interfaces.
+On Fri, Mar 28, 2008 at 10:51:25AM -0500, Kim Phillips wrote:
+> the mpc837x rdb board uses low pin count interfaces (ULPI) to connect
+> to the USB PHY.
 
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
----
- arch/powerpc/platforms/40x/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+I've sent this fix two weeks ago...
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index a9260e2..b8e06df 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -123,6 +123,8 @@ config 405GPR
- 
- config XILINX_VIRTEX
- 	bool
-+	select PPC_DCR_MMIO
-+	select PPC_DCR_NATIVE
- 
- config XILINX_VIRTEX_II_PRO
- 	bool
+http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052926.html
+
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8377_rdb.dts |    2 +-
+>  arch/powerpc/boot/dts/mpc8378_rdb.dts |    2 +-
+>  arch/powerpc/boot/dts/mpc8379_rdb.dts |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> index 440aa4d..1a7d516 100644
+> --- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+> @@ -151,7 +151,7 @@
+>  			#size-cells = <0>;
+>  			interrupt-parent = <&ipic>;
+>  			interrupts = <38 0x8>;
+> -			phy_type = "utmi";
+> +			phy_type = "ulpi";
+>  		};
+>  
+>  		mdio@24520 {
+> diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> index 9271153..9d259a1 100644
+> --- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+> @@ -151,7 +151,7 @@
+>  			#size-cells = <0>;
+>  			interrupt-parent = <&ipic>;
+>  			interrupts = <38 0x8>;
+> -			phy_type = "utmi";
+> +			phy_type = "ulpi";
+>  		};
+>  
+>  		mdio@24520 {
+> diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> index 0dda2fc..8dec2ee 100644
+> --- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+> @@ -151,7 +151,7 @@
+>  			#size-cells = <0>;
+>  			interrupt-parent = <&ipic>;
+>  			interrupts = <38 0x8>;
+> -			phy_type = "utmi";
+> +			phy_type = "ulpi";
+>  		};
+>  
+>  		mdio@24520 {
+> -- 
+> 1.5.4.4.481.g5075
+
 -- 
-1.5.3.4-dirty
+Anton Vorontsov
+email: cboumailru@gmail.com
+irc://irc.freenode.net/bd2
