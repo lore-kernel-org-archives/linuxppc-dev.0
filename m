@@ -1,22 +1,21 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 656BCDDFA3
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BB9B3DE403
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Mar 2008 02:16:44 +1100 (EST)
-Message-ID: <56434.79.33.233.21.1206717346.squirrel@nausicaa2.coritel.it>
-In-Reply-To: <D06A33A2-7DE7-4E00-9AA0-1C11EE7D4375@kernel.crashing.org>
-References: <47E8B19B.10705@coritel.it>
-	<7F2C28B9-9B87-4F46-9C57-3666BB8F7EFD@kernel.crashing.org>
-	<47E8F836.9060603@coritel.it>
-	<D06A33A2-7DE7-4E00-9AA0-1C11EE7D4375@kernel.crashing.org>
-Date: Fri, 28 Mar 2008 16:15:46 +0100 (CET)
-Subject: Re: MPC8641D PCI-Express problem
-From: marco.stornelli@coritel.it
-To: "Kumar Gala" <galak@kernel.crashing.org>
+	Sat, 29 Mar 2008 03:12:43 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JfHC4-0001Vz-3G
+	for linuxppc-embedded@ozlabs.org; Fri, 28 Mar 2008 09:12:40 -0700
+Message-ID: <16352982.post@talk.nabble.com>
+Date: Fri, 28 Mar 2008 09:12:40 -0700 (PDT)
+From: BAK <khaled.benamor@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: video driver problems on set top box board
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,51 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->
-> On Mar 25, 2008, at 8:03 AM, Marco Stornelli wrote:
->> Kumar Gala ha scritto:
->>> On Mar 25, 2008, at 3:02 AM, Marco Stornelli wrote:
->>>> Hi,
->>>>
->>>> do you remember my problem with the pci-express? I have an
->>>> mpc8641d_hpcn (rev. 2.0) board connected via pci-express with the
->>>> Xilinx ML555 evaluation board. I'm using the 2.6.24 kernel. I'm
->>>> observing this strange behavior:
->>>>
->>>> 1) I turn on the board and I stop the U-boot
->>>> 2) I load the FPGA microcode
->>>> 3) I start the system
->>>> 4) I load the driver module and I read a version register in the
->>>> FPGA
->>>> 5) The system crashes with a "machine check exception: transfer
->>>> error ack signal"
->>>> 6) reboot
->>>> 7) same procedure (without load the FPGA again)
->>>> 8) now I can read the registers!
->>>>
->>>> If I repeat the procedure again it doesn't work anymore. I think
->>>> it's a problem with pci-express controller. Have you got any
->>>> suggestions?
->>>>
->>>> Thanks.
->>> Where are you loading the FPGA microcode (linux, u-boot)?  Also, is
->>> the FPGA the only device connected over PCIe?
->>> - k
->> I load the FPGA with JTAG and with a Xilinx program without a
->> specific linux driver or u-boot. Yes, it is the only device
->> connected over PCIe.
->
-> The issue may be related to the PCIe link training.  Are you able to
-> access the FPGA in u-boot?  Can you try reseting the PCIe controller
-> after you've loaded up the FPGA (see u-boot code in drivers/pci/
-> fsl_pci_init.c and look for CONFIG_FSL_PCIE_RESET)
->
-> - k
->
 
-Ok I can try but I'm using the U-Boot 1.3.0 provided by Freescale with the
-board, so I have to change the firmware, updating the U-Boot to the
-version 1.3.2 to use CONFIG_FSL_PCIE_RESET. However, I've had the same
-idea, but I check (with a warning) this case in the kernel function
-fsl_check_pcie_link() (where the kernel check the value of LTSSM) but I've
-never seen the warning during the start-up.
+I am working ST set top box board and I need help to resolve some problems.
+if you 're working on set top box or you have experience with them these are
+more detailed informations:
+
+I am using a set top box board : STB442 based on STi7109 chip. I use STAPI
+(drivers provided by ST) with STlinux kernell. I have some problems with a
+module (named mme_host) which must be inserted with arguments (insmod
+mme_host.ko transport0=<arguments_to_be_used>). This operation causes the
+following error :
+insmod: error inserting '/home/bakhaled/modules/mme/mme_host.ko': -1
+Operation not permitted
+I tried to insert the module without arguments (insmod mme_host.ko) and
+this was successful. But when I try to run a test program for video ,
+after inserting that mme module without arguments, the system crash down.
+(don't execute console commands).
+Has any one experienced this type of problems?
+Have you any solutions ?
+-- 
+View this message in context: http://www.nabble.com/video-driver-problems-on-set-top-box-board-tp16352982p16352982.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
