@@ -1,17 +1,38 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E09E3DE3ED
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:10:52 +1100 (EST)
-Date: Fri, 28 Mar 2008 17:10:50 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: arch_add_memory() cannot be __devinit
-Message-ID: <Pine.LNX.4.64.0803281707480.12287@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-330172931-1206720650=:12287"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <stephenn@xilinx.com>
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2EE31DDFA5
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 03:26:19 +1100 (EST)
+Received: from outbound1-sin.bigfish.com (localhost.localdomain [127.0.0.1])
+	by outbound1-sin-R.bigfish.com (Postfix) with ESMTP id 7814E1CA9D1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:17 +0000 (UTC)
+Received: from mail149-sin-R.bigfish.com (unknown [10.3.252.3])
+	by outbound1-sin.bigfish.com (Postfix) with ESMTP id 4B408145805A
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:17 +0000 (UTC)
+Received: from mail149-sin (localhost.localdomain [127.0.0.1])
+	by mail149-sin-R.bigfish.com (Postfix) with ESMTP id 3C7893C05DC
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:17 +0000 (UTC)
+Received: from xsj-gw1 (unknown [149.199.60.83])
+	by mail149-sin.bigfish.com (Postfix) with ESMTP id C0EB8D9806F
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2008 16:26:16 +0000 (UTC)
+Received: from unknown-38-66.xilinx.com ([149.199.38.66]
+	helo=xsj-smtp1.xilinx.com) by xsj-gw1 with esmtp (Exim 4.63)
+	(envelope-from <stephenn@xilinx.com>) id 1JfHPE-000099-1l
+	for linuxppc-dev@ozlabs.org; Fri, 28 Mar 2008 09:26:16 -0700
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 5/5] [RFC][PPC] Use DCR for arch ppc,
+	and enable MMIO and NATIVE for virtex.
+Date: Fri, 28 Mar 2008 09:23:49 -0700
+In-Reply-To: <1206721429-18276-4-git-send-email-stephen.neuendorffer@xilinx.com>
+References: <1206401313-1625-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1206721429-18276-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1206721429-18276-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1206721429-18276-3-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1206721429-18276-4-git-send-email-stephen.neuendorffer@xilinx.com>
+Message-Id: <20080328162616.C0EB8D9806F@mail149-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,55 +42,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Generally speaking, I'm not sure about the validity of this patch.  In
+particular:
 
----584349381-330172931-1206720650=:12287
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+1) I'm not sure what architecture code relies on including
+dcr support through ibm4xx.h.
 
-WARNING: vmlinux.o(.text+0xb41b0): Section mismatch in reference from the
-function .add_memory() to the function .devinit.text:.arch_add_memory()
-The function .add_memory() references
-the function __devinit .arch_add_memory().
-This is often because .add_memory lacks a __devinit 
-annotation or the annotation of .arch_add_memory is wrong.
+2) I'm not sure how temporary the ifdef in
+arch/powerpc/sysdev/Makefile really is.  Is it still needed or not?
 
-arch_add_memory() is also not __devinit on other architectures
+However, this appears to work at least for the Virtex systems I've
+tried.  In any event, I don't expect this to actually be sent to
+mainline, since it's ARCH=ppc related, at least not in this form.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Unfortunately, the framebuffer driver won't work under ARCH=ppc
+without this patch.
 ---
- arch/powerpc/mm/mem.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/sysdev/Makefile   |    2 --
+ arch/ppc/Kconfig               |    6 +++++-
+ arch/ppc/platforms/4xx/Kconfig |    2 ++
+ include/asm-ppc/ibm4xx.h       |    1 -
+ 4 files changed, 7 insertions(+), 4 deletions(-)
 
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -111,7 +111,7 @@ int memory_add_physaddr_to_nid(u64 start
- }
- #endif
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 15f3e85..c85525b 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -35,10 +35,8 @@ endif
+ endif
  
--int __devinit arch_add_memory(int nid, u64 start, u64 size)
-+int arch_add_memory(int nid, u64 start, u64 size)
- {
- 	struct pglist_data *pgdata;
- 	struct zone *zone;
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-330172931-1206720650=:12287--
+ # Temporary hack until we have migrated to asm-powerpc
+-ifeq ($(ARCH),powerpc)
+ obj-$(CONFIG_CPM)		+= cpm_common.o
+ obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o
+ obj-$(CONFIG_PPC_DCR)		+= dcr.o
+ obj-$(CONFIG_8xx)		+= mpc8xx_pic.o cpm1.o
+ obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
+-endif
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index abc877f..81d6748 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -116,9 +116,13 @@ config PPC_DCR_NATIVE
+ 	bool
+ 	default n
+ 
++config PPC_DCR_MMIO
++	bool
++	default n
++
+ config PPC_DCR
+ 	bool
+-	depends on PPC_DCR_NATIVE
++	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
+ 	default y
+ 
+ config PTE_64BIT
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+index 76551b6..0430fc2 100644
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -228,6 +228,8 @@ config XILINX_VIRTEX_4_FX
+ 
+ config XILINX_VIRTEX
+ 	bool
++	select PPC_DCR_NATIVE
++	select PPC_DCR_MMIO
+ 
+ config STB03xxx
+ 	bool
+diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
+index ed6891a..053a86b 100644
+--- a/include/asm-ppc/ibm4xx.h
++++ b/include/asm-ppc/ibm4xx.h
+@@ -15,7 +15,6 @@
+ #define __ASM_IBM4XX_H__
+ 
+ #include <asm/types.h>
+-#include <asm/dcr.h>
+ 
+ #ifdef CONFIG_40x
+ 
+-- 
+1.5.3.4-dirty
