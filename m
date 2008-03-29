@@ -1,23 +1,19 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 571CEDDE26
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2008 02:55:49 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so134973uge.0
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2008 08:55:48 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Mark Lord <liml@rtr.ca>
-Subject: Re: [PATCH 15/18] ide: remove broken/dangerous HDIO_[UNREGISTER,
-	SCAN]_HWIF ioctls
-Date: Sat, 29 Mar 2008 17:10:54 +0100
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
-	<47EBDBAA.2020308@ru.mvista.com> <47ED439C.9030400@rtr.ca>
-In-Reply-To: <47ED439C.9030400@rtr.ca>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 70504DDF00
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2008 07:48:54 +1000 (EST)
+Date: Sat, 29 Mar 2008 16:57:53 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH 4/9] [POWERPC] mv64x60: Fix FDT compatible names:
+	mv64x60 => mv64360
+Message-ID: <20080329215753.GA27226@lixom.net>
+References: <20080328233954.GA29499@farnsworth.org>
+	<20080328234704.GD30214@farnsworth.org>
 MIME-Version: 1.0
-Message-Id: <200803291710.54843.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080328234704.GD30214@farnsworth.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 28 March 2008, Mark Lord wrote:
-> Sergei Shtylyov wrote:
-> > Bartlomiej Zolnierkiewicz wrote:
-> > 
-> >> hdparm explicitely marks HDIO_[UNREGISTER,SCAN]_HWIF ioctls as DANGEROUS
-> >> and given the number of bugs we can assume that there are no real users:
-> ..
+On Fri, Mar 28, 2008 at 04:47:04PM -0700, Dale Farnsworth wrote:
+> From: Mark A. Greer <mgreer@mvista.com>
 > 
-> There is the odd user of these, actually.
-> 
-> But the most recent to email me (a few weeks ago),
-> reported that the SCAN function was no longer working on his kernel.
-> 
-> I'll remove the -R and -U flags completely from hdparm-8.7.
+> Compatible names should refer to a specific version of the hardware,
+> without wildcards.  Change each instance of mv64x60 to mv64360, which
+> is the oldest version we currently support.
 
-This will be quite helpful, thanks!
+Actually, it's normal to have more than one compatible field, from
+specific to generic. So it should make sense to have both (with the
+64360 entry first).
 
-Bart
+
+-Olof
