@@ -2,19 +2,21 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 98A12DDE19
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 04:09:10 +1000 (EST)
-In-Reply-To: <20080327171045.GA3266@localhost.localdomain>
-References: <20080326202453.GC1772@localhost.localdomain>
-	<20080327171045.GA3266@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTPS id 4669BDDEDB
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 04:12:31 +1000 (EST)
+In-Reply-To: <47EA6E88.5050109@ru.mvista.com>
+References: <200803101606.39184.laurentp@cse-semaphore.com>	<200803251823.32039.laurentp@cse-semaphore.com>	<DCEAAC0833DD314AB0B58112AD99B93B0427706A@ismail.innsys.innovsys.com>	<200803251914.24021.laurentp@cse-semaphore.com>
+	<b06db7bb4932d14f8af9547abdfc9d0d@kernel.crashing.org>
+	<47EA6E88.5050109@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <61b92a2a0440c1f93d2471365aae6e72@kernel.crashing.org>
+Message-Id: <f7651faf227608c9f9ca8f2737416f9a@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] leds: implement OpenFirmare GPIO LEDs driver
-Date: Sun, 30 Mar 2008 20:08:43 +0200
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: OF compatible MTD platform RAM driver ?
+Date: Sun, 30 Mar 2008 20:12:00 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Here is updated patch with new linux,brightness OF property (needed for
-> MPC8349E-mITX board -- pwr led should be "on" by default).
+>> "memory-mapped-memory" perhaps :-)
 >
-> p.s. I tend to do documentation as a separate patch: I don't want this
-> patch to depend on the booting-without-of.txt -- it may produce
-> conflicts easily.
+>> Or, just "memory".  Although that one might play havoc with some
+>
+>    I'd suggest "ram" and "rom" then. Luckily the device trees don't 
+> contain binding for the real RAM chips yet. :-)
+>
+>> not-quite-correct main memory probing code.
+>
+>    You mean the there's parsers that search the "compatible" prop for 
+> "memory" as well as "device_type" prop?
 
-We need to see that documentation first though: it is not documenting
-this code, it is defining the device binding!  Without it, we can
-only guess whether this code is correct or not.  Also, it is important
-to decide on a binding before accepting this code.
+There are parsers that make all kinds of mistakes, sure.
 
-If patches to booting-without-of.txt conflict often, we should split
-it into a directory of files.
+The code that figures out what region of ram to use should look at the
+node pointed to by /chosen/memory, it's shouldn't look for anything
+with a certain "compatible", and it shouldn't look at "device_type"
+_at all_.
 
 
 Segher
