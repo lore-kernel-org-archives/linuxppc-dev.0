@@ -1,20 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <gaash-ppclnx@gaashh.com>
+Received: from web39603.mail.mud.yahoo.com (web39603.mail.mud.yahoo.com
+	[209.191.106.34]) by ozlabs.org (Postfix) with SMTP id 40777DDF0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 07:28:26 +1000 (EST)
+Date: Sun, 30 Mar 2008 14:28:25 -0700 (PDT)
+From: Gaash Hazan <gaash-ppclnx@gaashh.com>
+Subject: mmu_hash_lock deadlock causes kernel stuck at 2.6.21 SMP powerpc 32bit
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18416.813.635397.559197@cargo.ozlabs.ibm.com>
-Date: Mon, 31 Mar 2008 08:16:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: OF compatible MTD platform RAM driver ?
-In-Reply-To: <7c44646510c3b98075de9aa57cad0bce@kernel.crashing.org>
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<200803251914.24021.laurentp@cse-semaphore.com>
-	<47EA4741.2050402@ru.mvista.com>
-	<200803271013.32612.laurentp@cse-semaphore.com>
-	<20080327100304.GC10397@localhost.localdomain>
-	<7c44646510c3b98075de9aa57cad0bce@kernel.crashing.org>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <90380.16819.qm@web39603.mail.mud.yahoo.com>
+Cc: gaash-ppclnx@gaashh.com, Gilad Ben-Yossef <gilad@codefidence.com>
+Reply-To: gaash-ppclnx@gaashh.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
+(reposting)
 
-> > For RAMs we
-> > need something to indicate that it's memory but intended for secondary
-> > storage, not as main memory.
-> 
-> How it is intended to be used is not a property of the hardware, so
-> that information doesn't belong in the device tree at all.  The Linux
-> platform code should handle this, I imagine.
+Hello PPC SMP MM experts,
 
-There must be some reason why it is not intended to be used as main
-memory.  Presumably it has something different about it compared to
-"normal" RAM, and that difference could perfectly well be expressed in
-the device tree.
+mmu_hash_lock (arch/powerpc/mm/hash_low_32.S) is a
+(non-standard) spin lock that protects the CPU MMU
+hashing table. It exists and used only with SMP
+configurations.
 
-Paul.
+In some scenarios, the spin lock is taken when
+interrupts are *enabled* causing kernel deadlock at
+the next take attempt in the same CPU.
+
+The deadlock happened on 2.6.21 kernel, Powerpc 32 bit
+with SMP enabled. At this moment system had one active
+CPU. The sequence I saw was:
+
+do_exit (program termination)
+exit_mm
+mmput
+exit_mmap
+free_pgtables
+free_pgd_range
+unmap_vmas
+pte_free
+hash_page_sync (takes mmu_hash_lock. Note: interrupts
+are enabled)
+
+timer_interrupt (timer interrupts occurs during
+hash_page_sync, lock is taken) irq_exit do_softirq
+__do_softirq net_rx_action (packet received from
+network) ( ... omitted ... ) xdr_skb_read_bits
+skb_copy_bits memcpy - memcpy causes DSI
+exception(0x300). This is OK. 
+DSI exception handler calls hash_page
+hash_page waits for mmu_mash_lock. It waits forever
+since the lock is already taken. 
+Deadlock! with interrupts disabled. kernel is dead.
+
+I think the rout cause of the problem is
+hash_page_sync() taking the mmu_hash_lock spin lock
+without disabling interrupts. This leads to the
+deadlock.
+
+To verify the theory, hash_page_sync() was wrapped
+with interrupts disabled code and problem never
+occurred again. Of course this is temporary workaround
+as there are several places needed to be fixed.
+
+What do you think?
+
+Thanks,
+
+Gaash
