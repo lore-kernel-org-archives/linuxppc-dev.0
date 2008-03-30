@@ -1,15 +1,15 @@
 Return-Path: <dwilson@fulcrummicro.com>
 Received: from smtp.fulcrummicro.com (smtp.fulcrummicro.com [66.59.247.212])
-	by ozlabs.org (Postfix) with ESMTP id 0EB7BDDE02
+	by ozlabs.org (Postfix) with ESMTP id 15987DDE02
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Mar 2008 12:30:57 +1000 (EST)
+	Sun, 30 Mar 2008 12:23:29 +1000 (EST)
 Received: from [192.168.4.42] (rrcs-64-183-149-178.west.biz.rr.com
 	[64.183.149.178])
-	by smtp.fulcrummicro.com (Postfix) with ESMTP id E4007548358
+	by smtp.fulcrummicro.com (Postfix) with ESMTP id B4A88548358
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Mar 2008 19:30:56 -0700 (PDT)
-Message-ID: <47EEFB5B.3050700@fulcrummicro.com>
-Date: Sat, 29 Mar 2008 19:30:51 -0700
+	Sat, 29 Mar 2008 19:13:52 -0700 (PDT)
+Message-ID: <47EEF75B.2080506@fulcrummicro.com>
+Date: Sat, 29 Mar 2008 19:13:47 -0700
 From: Dan Wilson <dwilson@fulcrummicro.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
@@ -52,7 +52,7 @@ Here is the sequence of events:
 + existing ping session is still going
 + L2 traffic is still OK
 + telnet session disconnected and can not reconnect;
-  telnet session is being served by linux ip stack
+   telnet session is being served by linux ip stack
 
 + Had to power cycle to get everything back
 
