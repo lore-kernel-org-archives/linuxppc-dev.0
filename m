@@ -1,20 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 39B46DDE03
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2008 09:51:22 +1000 (EST)
-Date: Sun, 30 Mar 2008 10:51:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] [POWERPC] 85xx: Add support for relocatble kernel
-	(and booting at non-zero)
-Message-Id: <20080330105112.5761189a.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0803290834300.4672@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0803290834300.4672@blarg.am.freescale.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AFA8ADDE0C
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2008 11:37:36 +1000 (EST)
+Subject: Re: [PATCH][NEWEMAC] Fix section mismatch warnings
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <20080302163732.7c3af536@vader.jdub.homelinux.org>
+References: <20080302163732.7c3af536@vader.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Sun, 30 Mar 2008 12:36:48 +1100
+Message-Id: <1206841008.10388.110.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__30_Mar_2008_10_51_12_+1100_0r1Wwiwfv8921wQY"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +24,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__30_Mar_2008_10_51_12_+1100_0r1Wwiwfv8921wQY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Kumar,
+On Sun, 2008-03-02 at 16:37 -0600, Josh Boyer wrote:
+> This patch fixes several section mismatch warnings in the
+> ibm_newemac driver similar to:
+> 
+> WARNING: vmlinux.o(.devinit.text+0x3a04): Section mismatch in reference from the function emac_probe() to the function .devexit.text:tah_detach()
+> The function __devinit emac_probe() references
+> a function __devexit tah_detach().
+> 
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-On Sat, 29 Mar 2008 08:34:49 -0500 (CDT) Kumar Gala <galak@kernel.crashing.=
-org> wrote:
->
-> The alignment compile check broke building on ppc32 (pmac, etc) since
-> CONFIG_PHYSICAL_ALIGN isn't defined there.
+Ack.
 
-OK, so that explains why linux-next failed to build for 32 bit powerpc
-yesterday.  In the future, please do not put things that are this
-experimental into your powerpc-next branch as it impacts the testing of
-everything else that is destined for the next merge window ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__30_Mar_2008_10_51_12_+1100_0r1Wwiwfv8921wQY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH7tX3TgG2atn1QN8RAsWuAJ9BaBK4bJ7cgTmlQJssU27qss8umACghTB8
-FLvI13pcQ79B6nW4ndPH0Kw=
-=wjX6
------END PGP SIGNATURE-----
-
---Signature=_Sun__30_Mar_2008_10_51_12_+1100_0r1Wwiwfv8921wQY--
+> ---
+>  drivers/net/ibm_newemac/core.c  |    2 +-
+>  drivers/net/ibm_newemac/mal.c   |    4 ++--
+>  drivers/net/ibm_newemac/rgmii.c |    2 +-
+>  drivers/net/ibm_newemac/tah.c   |    2 +-
+>  drivers/net/ibm_newemac/zmii.c  |    2 +-
+>  5 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> --- linux-2.6.orig/drivers/net/ibm_newemac/core.c
+> +++ linux-2.6/drivers/net/ibm_newemac/core.c
+> @@ -2230,7 +2230,7 @@ static int __devinit emac_of_bus_notify(
+>  	return 0;
+>  }
+>  
+> -static struct notifier_block emac_of_bus_notifier = {
+> +static struct notifier_block emac_of_bus_notifier __devinitdata = {
+>  	.notifier_call = emac_of_bus_notify
+>  };
+>  
+> --- linux-2.6.orig/drivers/net/ibm_newemac/mal.c
+> +++ linux-2.6/drivers/net/ibm_newemac/mal.c
+> @@ -61,8 +61,8 @@ int __devinit mal_register_commac(struct
+>  	return 0;
+>  }
+>  
+> -void __devexit mal_unregister_commac(struct mal_instance	*mal,
+> -				     struct mal_commac		*commac)
+> +void mal_unregister_commac(struct mal_instance	*mal,
+> +		struct mal_commac *commac)
+>  {
+>  	unsigned long flags;
+>  
+> --- linux-2.6.orig/drivers/net/ibm_newemac/rgmii.c
+> +++ linux-2.6/drivers/net/ibm_newemac/rgmii.c
+> @@ -179,7 +179,7 @@ void rgmii_put_mdio(struct of_device *of
+>  	mutex_unlock(&dev->lock);
+>  }
+>  
+> -void __devexit rgmii_detach(struct of_device *ofdev, int input)
+> +void rgmii_detach(struct of_device *ofdev, int input)
+>  {
+>  	struct rgmii_instance *dev = dev_get_drvdata(&ofdev->dev);
+>  	struct rgmii_regs __iomem *p = dev->base;
+> --- linux-2.6.orig/drivers/net/ibm_newemac/tah.c
+> +++ linux-2.6/drivers/net/ibm_newemac/tah.c
+> @@ -35,7 +35,7 @@ int __devinit tah_attach(struct of_devic
+>  	return 0;
+>  }
+>  
+> -void __devexit tah_detach(struct of_device *ofdev, int channel)
+> +void tah_detach(struct of_device *ofdev, int channel)
+>  {
+>  	struct tah_instance *dev = dev_get_drvdata(&ofdev->dev);
+>  
+> --- linux-2.6.orig/drivers/net/ibm_newemac/zmii.c
+> +++ linux-2.6/drivers/net/ibm_newemac/zmii.c
+> @@ -189,7 +189,7 @@ void zmii_set_speed(struct of_device *of
+>  	mutex_unlock(&dev->lock);
+>  }
+>  
+> -void __devexit zmii_detach(struct of_device *ofdev, int input)
+> +void zmii_detach(struct of_device *ofdev, int input)
+>  {
+>  	struct zmii_instance *dev = dev_get_drvdata(&ofdev->dev);
+>  
