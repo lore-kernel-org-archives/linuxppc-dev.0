@@ -1,16 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sun, 30 Mar 2008 21:11:28 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 6/9] [POWERPC] prpmc2800: clean up dts properties
-Message-ID: <20080330101128.GA20077@localhost.localdomain>
-References: <20080328233954.GA29499@farnsworth.org>
-	<20080328234900.GF30214@farnsworth.org>
-	<20080329215942.GB27226@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080329215942.GB27226@lixom.net>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 98A12DDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 04:09:10 +1000 (EST)
+In-Reply-To: <20080327171045.GA3266@localhost.localdomain>
+References: <20080326202453.GC1772@localhost.localdomain>
+	<20080327171045.GA3266@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <61b92a2a0440c1f93d2471365aae6e72@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 3/5] leds: implement OpenFirmare GPIO LEDs driver
+Date: Sun, 30 Mar 2008 20:08:43 +0200
+To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 29, 2008 at 04:59:42PM -0500, Olof Johansson wrote:
-> On Fri, Mar 28, 2008 at 04:49:00PM -0700, Dale Farnsworth wrote:
-> > From: Mark A. Greer <mgreer@mvista.com>
-> > 
-> > Remove several unused (or software config only) properties.
-> > Rename marvel node to "soc".  Technically, it's not an SOC,
-> > but its organization is the same as an SOC.  Also, rename the
-> > "block-index" property to "cell-index" to conform to current
-> > practice.
-> 
-> I see this rename as purely misleading. It isn't an soc, so it shouldn't
-> be named as such. Call it system-controller or something. Pretty much
-> any other name is better. :-)
+> Here is updated patch with new linux,brightness OF property (needed for
+> MPC8349E-mITX board -- pwr led should be "on" by default).
+>
+> p.s. I tend to do documentation as a separate patch: I don't want this
+> patch to depend on the booting-without-of.txt -- it may produce
+> conflicts easily.
 
-I agree.  system-controller, host-bridge, north-bridge, maybe, but not
-soc.  With current conventions, the node name is primarily for the
-benefit of human readers, so if it misleads it has failed entirely in
-its purpose.
+We need to see that documentation first though: it is not documenting
+this code, it is defining the device binding!  Without it, we can
+only guess whether this code is correct or not.  Also, it is important
+to decide on a binding before accepting this code.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+If patches to booting-without-of.txt conflict often, we should split
+it into a directory of files.
+
+
+Segher
