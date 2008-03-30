@@ -1,21 +1,19 @@
 Return-Path: <liuxs226@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 7B10ADDE01
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id C4463DDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Mar 2008 23:14:36 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so281442anc.78
+	Sun, 30 Mar 2008 23:16:47 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so281594anc.78
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Mar 2008 06:14:26 -0700 (PDT)
-Message-ID: <e81b2fb40803300614y5dbadaafue8d80ddeaf0fc763@mail.gmail.com>
-Date: Sun, 30 Mar 2008 21:14:26 +0800
+	Sun, 30 Mar 2008 06:16:39 -0700 (PDT)
+Message-ID: <e81b2fb40803300616p5bd711bdjb571501a5224866@mail.gmail.com>
+Date: Sun, 30 Mar 2008 21:16:39 +0800
 From: "=?GB2312?B?wfXQocur?=" <liuxs226@gmail.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: black screen problem
-In-Reply-To: <e81b2fb40803292139u3f59c64fv9c04612c56d45500@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_7825_31958225.1206882866741"
-References: <e81b2fb40803292139u3f59c64fv9c04612c56d45500@mail.gmail.com>
+	boundary="----=_Part_7830_10748085.1206882999689"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,12 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_7825_31958225.1206882866741
+------=_Part_7830_10748085.1206882999689
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
- hi,all
+hi,all
 
 I  compiled linux-2.6.12 for mpc8540 with DENX eldk4.0, my plabtform is
 custom mpc8540 board, mb86296 video card, eldk4.0 ppc_85xx file sysytem.
@@ -390,15 +388,15 @@ fbdevHW: AdjustFrame 0
 (II) MB86290(0): Acceleration disabled
 fbdevHW: ModeInit 0
 
- Thanks,
+Thanks,
+
 liuxs
 
-------=_Part_7825_31958225.1206882866741
+------=_Part_7830_10748085.1206882999689
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-<span class="gmail_quote"></span>
 <div>hi,all</div>
 <div>&nbsp;</div>
 <div>I&nbsp; compiled linux-2.6.12 for mpc8540 with DENX eldk4.0, my plabtform is custom mpc8540 board,&nbsp;mb86296 video card,&nbsp;eldk4.0 ppc_85xx file sysytem. Accelerated&nbsp; driver is x11_mb86290 <span>offered by DENX .</span>&nbsp; I compiled XFree86 4.3.0, then I ran&nbsp;startx, the screen was black for a few seconds and it turned to text mode.</div>
@@ -478,9 +476,8 @@ Module Loader present<br>Markers: (--) probed, (**) from config file, (==) defau
 &nbsp;[8] -1&nbsp;0&nbsp;0x0000ffff - 0x0000ffff (0x1) IX[B]<br>&nbsp;[9] -1&nbsp;0&nbsp;0x00000000 - 0x00000000 (0x1) IX[B]<br>&nbsp;[10] -1&nbsp;0&nbsp;0x00ffffd0 - 0x00ffffdf (0x10) IX[B]<br>&nbsp;[11] -1&nbsp;0&nbsp;0x00ffffe4 - 0x00ffffe7 (0x4) IX[B]<br>&nbsp;[12] -1&nbsp;0&nbsp;0x00ffffe8 - 0x00ffffef (0x8) IX[B]<br>
 &nbsp;[13] -1&nbsp;0&nbsp;0x00fffff4 - 0x00fffff7 (0x4) IX[B]<br>&nbsp;[14] -1&nbsp;0&nbsp;0x00fffff8 - 0x00ffffff (0x8) IX[B]<br>&nbsp;[15] 0&nbsp;0&nbsp;0x000003b0 - 0x000003bb (0xc) IS[B]<br>&nbsp;[16] 0&nbsp;0&nbsp;0x000003c0 - 0x000003df (0x20) IS[B]<br>fbdevHW: MapVidmem 0<br>
 fbdevHW: LinearOffset 0<br>fbdevHW: Save 0<br>fbdevHW: ModeInit 0<br>xfree init mode:&nbsp;50000&nbsp;&nbsp; 1024 1024 1024 1024&nbsp;&nbsp; 768 768 768 768<br>fbdev init mode:&nbsp;20000&nbsp;&nbsp; 1024 0 0 0&nbsp;&nbsp; 768 0 0 0&nbsp;&nbsp; 16 5:5:5<br>fbdevHW: AdjustFrame 0<br>
-(==) MB86290(0): Backing store disabled<br>(II) MB86290(0): Acceleration disabled<br>fbdevHW: ModeInit 0<br></p></div>
-<div>&nbsp;</div>
-<div>&nbsp;Thanks,</div>
-<div>liuxs</div>
+(==) MB86290(0): Backing store disabled<br>(II) MB86290(0): Acceleration disabled<br>fbdevHW: ModeInit 0<br></p>
+<p>Thanks,</p>
+<p>liuxs</p></div>
 
-------=_Part_7825_31958225.1206882866741--
+------=_Part_7830_10748085.1206882999689--
