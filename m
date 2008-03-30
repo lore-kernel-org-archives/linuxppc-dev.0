@@ -1,16 +1,17 @@
-Return-Path: <gaash-ppclnx@gaashh.com>
-Received: from web39606.mail.mud.yahoo.com (web39606.mail.mud.yahoo.com
-	[209.191.106.37]) by ozlabs.org (Postfix) with SMTP id ED491DDDF9
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2008 21:54:20 +1000 (EST)
-Date: Sun, 30 Mar 2008 04:47:38 -0700 (PDT)
-From: Gaash Hazan <gaash-ppclnx@gaashh.com>
-Subject: mmu_hash_lock deadlock causes kernel stuck at 2.6.21 SMP powerpc 32bit
-To: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 31 Mar 2008 10:44:20 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/9] [POWERPC] mv64x60: change FDT compatible prefix to
+	mrvl
+Message-ID: <20080330234420.GA24402@localhost.localdomain>
+References: <20080328233954.GA29499@farnsworth.org>
+	<20080328234241.GA30214@farnsworth.org>
+	<fa686aa40803281647y4ccc4605n1507f9c1868d4c0f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <633561.38010.qm@web39606.mail.mud.yahoo.com>
-Cc: gaash-ppclnx@gaashh.com, gilad@codefidence.com
-Reply-To: gaash-ppclnx@gaashh.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40803281647y4ccc4605n1507f9c1868d4c0f@mail.gmail.com>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,60 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello PPC SMP MM experts,
+On Fri, Mar 28, 2008 at 05:47:25PM -0600, Grant Likely wrote:
+> On Fri, Mar 28, 2008 at 5:42 PM, Dale Farnsworth <dale@farnsworth.org> wrote:
+> > From: Dale Farnsworth <dale@farnsworth.org>
+> >
+> >  Follow the convention that compatible names are prefixed by the
+> >  vendor's stock ticker symbol.  For Marvell Technology Group Ltd.,
+> >  that's MRVL.
+> >
+> >  Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> >  Acked-by: Mark A. Greer <mgreer@mvista.com>
+> 
+> Are there any boards "in the wild" using the old string?  If so are
+> does changing this string risk complicating upgrades to a new kernel
+> version?
 
-mmu_hash_lock (arch/powerpc/mm/hash_low_32.S) is a
-(non-standard) spin lock that protects the CPU MMU
-hashing table. It exists and used only with SMP
-configurations.
+In particular are there any pre-flattened-tree real-OF systems in the
+wild using "marvell" as the vendor prefix (there might be Apple or IBM
+systems out there with Marvell PHYs for example).
 
-In some scenarios, the spin lock is taken when
-interrupts are *enabled* causing kernel deadlock at
-the next take attempt in the same CPU.
+Existing practice trumps "use stock ticker" for the standard vendor
+prefix.
 
-The deadlock happened on 2.6.21 kernel, Powerpc 32 bit
-with SMP enabled. At this moment system had one active
-CPU. The sequence I saw was:
-
-do_exit (program termination) 
-exit_mm
-mmput 
-exit_mmap 
-free_pgtables
-free_pgd_range
-unmap_vmas 
-pte_free
-hash_page_sync (takes mmu_hash_lock. Note: interrupts
-are enabled)
-
-timer_interrupt (timer interrupts occurs during
-hash_page_sync, lock is taken)
-irq_exit
-do_softirq
-__do_softirq
-net_rx_action (packet received from network)
-( ... omitted ... )
-xdr_skb_read_bits
-skb_copy_bits
-memcpy - memcpy causes DSI exception(0x300). This is
-OK. 
-DSI exception handler calls hash_page
-hash_page waits for mmu_mash_lock. It waits forever
-since the lock is already taken. 
-Deadlock! with interrupts disabled. kernel is dead.
-
-I think the rout cause of the problem is
-hash_page_sync() taking the mmu_hash_lock spin lock
-without disabling interrupts. This leads to the
-deadlock.
-
-To verify the theory, hash_page_sync() was wrapped
-with interrupts disabled code and problem never
-occurred again. Of course this is temporary workaround
-as there are several places needed to be fixed.
-
-What do you think?
-
-Thanks,
-
-Gaash
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
