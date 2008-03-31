@@ -1,24 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 324B8DDFBA
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 22:22:04 +1000 (EST)
-In-Reply-To: <200803311021.28919.laurentp@cse-semaphore.com>
-References: <200803101606.39184.laurentp@cse-semaphore.com>
-	<18416.813.635397.559197@cargo.ozlabs.ibm.com>
-	<56851566f85e117c42b078dd2d6a2028@kernel.crashing.org>
-	<200803311021.28919.laurentp@cse-semaphore.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <598a037de29f1c080ef96207b7d73949@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: OF compatible MTD platform RAM driver ?
-Date: Mon, 31 Mar 2008 14:21:14 +0200
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linux-mtd@lists.infradead.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <mhench@engagenet.com>
+Received: from owa.engagenet.com (unknown [66.195.150.24])
+	by ozlabs.org (Postfix) with ESMTP id 688CCDDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 23:03:46 +1000 (EST)
+Subject: [PATCH] mpc83xx SPI glitch
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 31 Mar 2008 08:04:23 -0500
+Message-ID: <6629C06B144F5C4098DFF95C4FF9DAF702BA1FA0@mailsrv.engagenet.com>
+From: "Mike Hench" <mhench@engagenet.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> So, all in all, I think we should just give these "auxiliary memory"
->> devices a name of "ram" c.q. "rom", and some "reg", and that should
->> be all that is needed: the main memory probe stuff won't consider
->> these nodes, and the (platform) device probe code can do whatever it
->> wants (create mtd devices, I guess).
->
-> Ok, I get your point. I'll prepare a new documentation patch; changes 
-> to
-> physmap_of.c will go away.
+dont write SPMODE reg unless mode changed.
+it causes SPI to go hi-z momentarily
+which can cause a spike on the CLK line
+this is a problem in MMC where /CS is held asserted
+across multiple transactions.
 
-Thanks.
+Signed-off-by: Mike Hench <mhench@elutions.com>
 
-> If I understand you correctly, there should be no "compatible" 
-> property on the
-> ram and rom devices.
+---
 
-They aren't normally needed here, I think.
-
-> Should the "non-volatile", "slow" and "static ram"
-> properties still be expressed in the device tree ?
-
-If those are useful.  I'll need to see a proposed binding to form
-an opinion on this, it's too vague now, sorry.
-
-
-Segher
+--- linux-2.6.25-rc5.orig/drivers/spi/spi_mpc83xx.c	2008-03-10
+00:22:27.000000000 -0500
++++ linux-2.6.25-rc5/drivers/spi/spi_mpc83xx.c	2008-03-31
+07:37:37.000000000 -0500
+@@ -147,6 +147,7 @@
+=20
+ 	if (value =3D=3D BITBANG_CS_ACTIVE) {
+ 		u32 regval =3D
+mpc83xx_spi_read_reg(&mpc83xx_spi->base->mode);
++		u32 regval0 =3D regval;
+ 		u32 len =3D spi->bits_per_word;
+ 		u8 pm;
+=20
+@@ -188,9 +189,16 @@
+ 			regval |=3D SPMODE_PM(pm);
+ 		}
+=20
+-		/* Turn off SPI unit prior changing mode */
+-		mpc83xx_spi_write_reg(&mpc83xx_spi->base->mode, 0);
+-		mpc83xx_spi_write_reg(&mpc83xx_spi->base->mode, regval);
++		// dont write reg unless mode changed.
++		// it causes SPI to go hi-z momentarily
++		// which can cause a spike on the CLK line
++		// this is a problem in MMC where /CS is held asserted
++		// across multiple transactions.
++		if(regval !=3D regval0) {
++			/* Turn off SPI unit prior changing mode */
++			mpc83xx_spi_write_reg(&mpc83xx_spi->base->mode,
+0);
++			mpc83xx_spi_write_reg(&mpc83xx_spi->base->mode,
+regval);
++		}
+ 		if (mpc83xx_spi->activate_cs)
+ 			mpc83xx_spi->activate_cs(spi->chip_select, pol);
+ 	}
