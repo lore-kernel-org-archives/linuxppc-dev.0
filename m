@@ -1,22 +1,23 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 72493DDFF5
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with ESMTP id 966EDDDF03
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 00:22:44 +1000 (EST)
+	Tue,  1 Apr 2008 00:43:57 +1000 (EST)
+Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
+	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
+	090A310006ACfor <linuxppc-embedded@ozlabs.org>;
+	Mon, 31 Mar 2008 16:33:44 +0200 (CEST)
+Message-ID: <47F0F646.30002@fz-juelich.de>
+Date: Mon, 31 Mar 2008 16:33:42 +0200
+From: Georg Schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: JFFS2 root-fs
+References: <16306218.post@talk.nabble.com>
+In-Reply-To: <16306218.post@talk.nabble.com>
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: U-boot + Linux 2.6 + Avnet FX12 MM (based on ML403 config)
-Date: Mon, 31 Mar 2008 08:22:16 -0600
-In-Reply-To: <16384525.post@talk.nabble.com>
-References: <10201070.post@talk.nabble.com> <16384525.post@talk.nabble.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "Mirek23" <miroslaw.dach@psi.ch>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080331142239.B4F3410057@mail50-sin.bigfish.com>
+	charset=ISO-8859-1;
+	format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,95 +28,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mirek,
-
-Our Git server from Xilinx, git.xilinx.com, has a kernel that is 2.6.24
-based if this helps.=20
-
-All of my testing for Virtex 4 is on the ML405 board which is an FX20
-device rather than an FX12, but the kernel configuration is pretty much
-compatible.
-
-Thanks,
-John
-
------Original Message-----
-From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
-Behalf Of Mirek23
-Sent: Sunday, March 30, 2008 11:21 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: U-boot + Linux 2.6 + Avnet FX12 MM (based on ML403 config)
+Hi all,
 
 
-Hi Guillaume,
+i ask this questions a few months ago but i still have no solution for 
+my problem :(
 
-I was facing the same problem with my Avent (virtex 4 FX12) evaluation
-board. Originally I have built successfully u-boot 1.2.0  and linux
-2.6.21
-but I was not able to boot kernel 2.6.21 from u-boot 1.2.0. Kernel
-2.6.22
-(uImage) onwards can be booted with u-boot 1.2 and higher. Currently I
-use
-u-boot 1.2.0 and kernel 2.6.23 without any problems. My recommendation
-is to
-use at least the kernel version 2.6.22 otherwise you will have kernel
-panic
-problem.
-
-Best Regards
-
-Mirek
+i try to boot linux with a root-fs from flash. i create a jffs2-image, 
+download it to flash and
+the u-boot "ls" shows me all my files, so i think all is right with the 
+image.
 
 
-Guillaume Berthelom wrote:
->=20
-> Hi,
->=20
-> I'm trying to port Linux 2.6 on Avnet FX12 MM board with U-Boot and
-the
-> help of xilinx ML403 config.
->=20
-> I have generate my costum xparameters.h file with EDK 8.2i.
-> I use ELDK 4.1 and Linux 2.6.20.x.
-> I have modified ml403.h u-boot's config file to adapt it for my board
-and
-> I have no problem to boot u-boot.
-> I use the right board_info structure from <asm/ppcboot.h> and not the
-one
-> in xilinx_ml403.h.
->=20
-> When I load the zImage directly with xilinx xmd debugger, the kernel
-start
-> without problem (if I don't have KGDB or SERIAL_TEXT_DEBUG option in
-my
-> kernel config). But when I try to load the uImage with u-boot, the
-kernel
-> start but crach befor I can see something on output.
->=20
-> The kernel start because I debug it and the platform_init is ok,
-> setup_arch too and it crach after ppc4xx_setup_arch at
-printk(KERN_INFO
-> "Xilinx ML403 Reference System (Virtex-4 FX)\n") line  when the kernel
-> access in printk.c.
->=20
-> I suppose the serial init have problem but I have no idea what is the
-> cause of the problem. I use the opb_uart16550 IP in my Xilinx design
-and
-> the associat drivers in u-boot and linux.
->=20
-> Thanks,
-> Guillaume Berthelom
->=20
->=20
+BUT, the kernel hangs after mounting the rootfs:
 
---=20
-View this message in context:
-http://www.nabble.com/U-boot-%2B-Linux-2.6-%2B-Avnet-FX12-MM-%28based-on
--ML403-config%29-tp10201070p16384525.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+[    0.572527] physmap platform flash device: 00400000 at 04000000
+[    0.579205] physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
+[    0.586062]  Amd/Fujitsu Extended Query Table at 0x0041
+[    0.591456] number of CFI chips: 1
+[    0.594973] cfi_cmdset_0002: Disabling erase-suspend-program due to 
+code brokenness.
+[    0.602916] 4 cmdlinepart partitions found on MTD device physmap-flash.0
+[    0.609759] Creating 4 MTD partitions on "physmap-flash.0":
+[    0.615454] 0x00000000-0x00010000 : "env"
+[    0.619599] mtd: Giving out device 0 to env
+[    0.628166] 0x00010000-0x00030000 : "uboot"
+[    0.632563] mtd: Giving out device 1 to uboot
+[    0.641172] 0x00030000-0x00160000 : "kernel"
+[    0.645744] mtd: Giving out device 2 to kernel
+[    0.654372] 0x00160000-0x00400000 : "fs"
+[    0.658604] mtd: Giving out device 3 to fs
+[    0.666992] block2mtd: version $Revision: 1.30 $
+[    0.673341] mice: PS/2 mouse device common for all mice
+[    0.679193] TCP cubic registered
+[    0.683016] NET: Registered protocol family 1
+[    0.687619] NET: Registered protocol family 17
+[    0.696556] MTDSB: dev_name "/dev/root"
+[    0.700723] MTDSB: path_lookup() returned 0, inode c02ec290
+[    0.706515] MTDSB: New superblock for device 3 ("fs")
+[    2.386543] VFS: Mounted root (jffs2 filesystem).
+[    2.392022] Freeing unused kernel memory: 76k init
+[    2.397182] Warning: unable to open an initial console.
+[    2.416877] Kernel panic - not syncing: No init found.  Try passing 
+init= option to kernel.
+[    2.427312] Rebooting in 180 seconds..
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+It seems to me, that the kernel does not find ANY file. because the 
+/dev/console file is in the image, but the initial console is not found too
+
+any ideas and hints are appreciated
+regars
+georg
+
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDir'in Bärbel Brumme-Bothe
+Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
+Dr. Ulrich Krafft (stellv. Vorsitzender), Prof. Dr. Harald Bolt,
+Dr. Sebastian M. Schmidt
+-------------------------------------------------------------------
+-------------------------------------------------------------------
