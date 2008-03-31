@@ -1,19 +1,19 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 773DDDE798
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 02:58:47 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5885DE3B7
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 02:59:32 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m2VGxSeJ029344
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 11:59:29 -0500
+Date: Mon, 31 Mar 2008 11:55:33 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCHv3 2/4] cpm-serial: Relocate CPM buffer descriptors and SMC
-	parameter ram.
-Date: Mon, 31 Mar 2008 18:36:07 +0200
-References: <200803311834.42327.laurentp@cse-semaphore.com>
-In-Reply-To: <200803311834.42327.laurentp@cse-semaphore.com>
+Subject: [PATCH] [POWERPC] Fix defconfigs so we dont set both GENRTC and RTCLIB
+Message-ID: <Pine.LNX.4.64.0803311155140.4531@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4041506.o1nJoalkWE";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200803311836.08142.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,277 +23,372 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart4041506.o1nJoalkWE
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The new rtc subsystem conflicts with genrtc so don't enable GENRTC
+if RTCLIB is enabled.
 
-This patch relocates the buffer descriptors and the SMC parameter RAM at the
-end of the first CPM muram chunk, as described in the device tree. This all=
-ows
-device trees to stop excluding SMC parameter ram allocated by the boot load=
-er
-from the CPM muram node.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/configs/mpc832x_mds_defconfig  |   11 +++--------
+ arch/powerpc/configs/mpc834x_mds_defconfig  |   11 +++--------
+ arch/powerpc/configs/mpc836x_mds_defconfig  |   11 +++--------
+ arch/powerpc/configs/mpc8544_ds_defconfig   |   11 +++--------
+ arch/powerpc/configs/mpc8568mds_defconfig   |   11 +++--------
+ arch/powerpc/configs/mpc8572_ds_defconfig   |   11 +++--------
+ arch/powerpc/configs/mpc85xx_defconfig      |   11 +++--------
+ arch/powerpc/configs/mpc8641_hpcn_defconfig |   11 +++--------
+ arch/powerpc/configs/prpmc2800_defconfig    |   11 +++--------
+ arch/powerpc/configs/storcenter_defconfig   |   11 +++--------
+ 10 files changed, 30 insertions(+), 80 deletions(-)
 
-Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-=2D--
- arch/powerpc/Kconfig.debug     |    2 +-
- arch/powerpc/boot/cpm-serial.c |  132 ++++++++++++++++++++++++++----------=
-=2D---
- 2 files changed, 87 insertions(+), 47 deletions(-)
+diff --git a/arch/powerpc/configs/mpc832x_mds_defconfig b/arch/powerpc/configs/mpc832x_mds_defconfig
+index 79d228f..50cceda 100644
+--- a/arch/powerpc/configs/mpc832x_mds_defconfig
++++ b/arch/powerpc/configs/mpc832x_mds_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:16 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:36:51 2008
+ #
+ # CONFIG_PPC64 is not set
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index db7cc34..a86d8d8 100644
-=2D-- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -269,7 +269,7 @@ config PPC_EARLY_DEBUG_CPM_ADDR
- 	hex "CPM UART early debug transmit descriptor address"
- 	depends on PPC_EARLY_DEBUG_CPM
- 	default "0xfa202008" if PPC_EP88XC
-=2D	default "0xf0000008" if CPM2
-+	default "0xf0001ff8" if CPM2
- 	default "0xff002008" if CPM1
- 	help
- 	  This specifies the address of the transmit descriptor
-diff --git a/arch/powerpc/boot/cpm-serial.c b/arch/powerpc/boot/cpm-serial.c
-index 28296fa..8d02b2d 100644
-=2D-- a/arch/powerpc/boot/cpm-serial.c
-+++ b/arch/powerpc/boot/cpm-serial.c
-@@ -11,6 +11,7 @@
- #include "types.h"
- #include "io.h"
- #include "ops.h"
-+#include "page.h"
-=20
- struct cpm_scc {
- 	u32 gsmrl;
-@@ -42,6 +43,22 @@ struct cpm_param {
- 	u16 tbase;
- 	u8 rfcr;
- 	u8 tfcr;
-+	u16 mrblr;
-+	u32 rstate;
-+	u8 res1[4];
-+	u16 rbptr;
-+	u8 res2[6];
-+	u32 tstate;
-+	u8 res3[4];
-+	u16 tbptr;
-+	u8 res4[6];
-+	u16 maxidl;
-+	u16 idlc;
-+	u16 brkln;
-+	u16 brkec;
-+	u16 brkcr;
-+	u16 rmask;
-+	u8 res5[4];
- };
-=20
- struct cpm_bd {
-@@ -54,10 +71,10 @@ static void *cpcr;
- static struct cpm_param *param;
- static struct cpm_smc *smc;
- static struct cpm_scc *scc;
-=2Dstruct cpm_bd *tbdf, *rbdf;
-+static struct cpm_bd *tbdf, *rbdf;
- static u32 cpm_cmd;
-=2Dstatic u8 *muram_start;
-=2Dstatic u32 muram_offset;
-+static void *cbd_addr;
-+static u32 cbd_offset;
-=20
- static void (*do_cmd)(int op);
- static void (*enable_port)(void);
-@@ -119,20 +136,25 @@ static int cpm_serial_open(void)
-=20
- 	out_8(&param->rfcr, 0x10);
- 	out_8(&param->tfcr, 0x10);
-=2D
-=2D	rbdf =3D (struct cpm_bd *)muram_start;
-=2D	rbdf->addr =3D (u8 *)(rbdf + 2);
-+	out_be16(&param->mrblr, 1);
-+	out_be16(&param->maxidl, 0);
-+	out_be16(&param->brkec, 0);
-+	out_be16(&param->brkln, 0);
-+	out_be16(&param->brkcr, 0);
-+
-+	rbdf =3D cbd_addr;
-+	rbdf->addr =3D (u8 *)rbdf - 1;
- 	rbdf->sc =3D 0xa000;
- 	rbdf->len =3D 1;
-=20
- 	tbdf =3D rbdf + 1;
-=2D	tbdf->addr =3D (u8 *)(rbdf + 2) + 1;
-+	tbdf->addr =3D (u8 *)rbdf - 2;
- 	tbdf->sc =3D 0x2000;
- 	tbdf->len =3D 1;
-=20
- 	sync();
-=2D	out_be16(&param->rbase, muram_offset);
-=2D	out_be16(&param->tbase, muram_offset + sizeof(struct cpm_bd));
-+	out_be16(&param->rbase, cbd_offset);
-+	out_be16(&param->tbase, cbd_offset + sizeof(struct cpm_bd));
-=20
- 	do_cmd(CPM_CMD_INIT_RX_TX);
-=20
-@@ -173,12 +195,31 @@ static unsigned char cpm_serial_getc(void)
- 	return c;
- }
-=20
-+static int cpm_get_virtual_address(void *devp, void **addr, int ncells)
-+{
-+	unsigned long xaddr;
-+	int n;
-+
-+	n =3D getprop(devp, "virtual-reg", addr, ncells * sizeof *addr);
-+	if (n < ncells * sizeof *addr) {
-+		for (n =3D 0; n < ncells; n++) {
-+			if (!dt_xlate_reg(devp, n, &xaddr, NULL))
-+				return -1;
-+
-+			addr[n] =3D (void*)xaddr;
-+		}
-+	}
-+
-+	return ncells;
-+}
-+
- int cpm_console_init(void *devp, struct serial_console_data *scdp)
- {
-=2D	void *reg_virt[2];
-=2D	int is_smc =3D 0, is_cpm2 =3D 0, n;
-=2D	unsigned long reg_phys;
-+	void *reg[2];
- 	void *parent, *muram;
-+	void *muram_addr;
-+	int is_smc =3D 0, is_cpm2 =3D 0;
-+	unsigned long muram_offset, muram_size;
-=20
- 	if (dt_is_compatible(devp, "fsl,cpm1-smc-uart")) {
- 		is_smc =3D 1;
-@@ -202,63 +243,62 @@ int cpm_console_init(void *devp, struct serial_consol=
-e_data *scdp)
- 	else
- 		do_cmd =3D cpm1_cmd;
-=20
-=2D	n =3D getprop(devp, "fsl,cpm-command", &cpm_cmd, 4);
-=2D	if (n < 4)
-+	if (getprop(devp, "fsl,cpm-command", &cpm_cmd, 4) < sizeof cpm_cmd)
- 		return -1;
-=20
-=2D	n =3D getprop(devp, "virtual-reg", reg_virt, sizeof(reg_virt));
-=2D	if (n < (int)sizeof(reg_virt)) {
-=2D		for (n =3D 0; n < 2; n++) {
-=2D			if (!dt_xlate_reg(devp, n, &reg_phys, NULL))
-=2D				return -1;
-=2D
-=2D			reg_virt[n] =3D (void *)reg_phys;
-=2D		}
-=2D	}
-+	if (cpm_get_virtual_address(devp, reg, 2) < 0)
-+		return -1;
-=20
- 	if (is_smc)
-=2D		smc =3D reg_virt[0];
-+		smc =3D reg[0];
- 	else
-=2D		scc =3D reg_virt[0];
-+		scc =3D reg[0];
-=20
-=2D	param =3D reg_virt[1];
-+	param =3D reg[1];
-=20
- 	parent =3D get_parent(devp);
- 	if (!parent)
- 		return -1;
-=20
-=2D	n =3D getprop(parent, "virtual-reg", reg_virt, sizeof(reg_virt));
-=2D	if (n < (int)sizeof(reg_virt)) {
-=2D		if (!dt_xlate_reg(parent, 0, &reg_phys, NULL))
-=2D			return -1;
-=2D
-=2D		reg_virt[0] =3D (void *)reg_phys;
-=2D	}
-=2D
-=2D	cpcr =3D reg_virt[0];
-+	if (cpm_get_virtual_address(devp, &cpcr, 1) < 0)
-+		return -1;
-=20
- 	muram =3D finddevice("/soc/cpm/muram/data");
- 	if (!muram)
- 		return -1;
-=20
- 	/* For bootwrapper-compatible device trees, we assume that the first
-=2D	 * entry has at least 18 bytes, and that #address-cells/#data-cells
-+	 * entry has at least 128 bytes, and that #address-cells/#data-cells
- 	 * is one for both parent and child.
- 	 */
-=20
-=2D	n =3D getprop(muram, "virtual-reg", reg_virt, sizeof(reg_virt));
-=2D	if (n < (int)sizeof(reg_virt)) {
-=2D		if (!dt_xlate_reg(muram, 0, &reg_phys, NULL))
-=2D			return -1;
-+	if (cpm_get_virtual_address(devp, &muram_addr, 1) < 0)
-+		return -1;
-+=09
-+	if (getprop(muram, "reg", reg, sizeof reg) < sizeof reg)
-+		return -1;
-+
-+	muram_offset =3D (unsigned long)reg[0];
-+	muram_size =3D (unsigned long)reg[1];
-+
-+	/* Store the buffer descriptors at the end of the first muram chunk.
-+	 * For SMC ports on CPM2-based platforms, relocate the parameter RAM
-+	 * just before the buffer descriptors.
-+	 */
-+
-+	cbd_offset =3D muram_offset + muram_size - 2 * sizeof(struct cpm_bd);
-=20
-=2D		reg_virt[0] =3D (void *)reg_phys;
-=2D	}
-+	if (is_cpm2 && is_smc) {
-+		u16 *smc_base =3D (u16*)param;
-+		u16 pram_offset;
-=20
-=2D	muram_start =3D reg_virt[0];
-+		pram_offset =3D cbd_offset - 64;
-+		pram_offset =3D _ALIGN_DOWN(pram_offset, 64);
-+		*smc_base =3D pram_offset;
-+		param =3D muram_addr - muram_offset + pram_offset;
-+	}
-=20
-=2D	n =3D getprop(muram, "reg", &muram_offset, 4);
-=2D	if (n < 4)
-=2D		return -1;
-+	cbd_addr =3D muram_addr - muram_offset + cbd_offset;
-=20
- 	scdp->open =3D cpm_serial_open;
- 	scdp->putc =3D cpm_serial_putc;
-=2D-=20
-1.5.0
+@@ -628,8 +628,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_HW_RANDOM=y
+ # CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -824,10 +823,6 @@ CONFIG_USB_ARCH_HAS_EHCI=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc834x_mds_defconfig b/arch/powerpc/configs/mpc834x_mds_defconfig
+index 9360144..b4e82c0 100644
+--- a/arch/powerpc/configs/mpc834x_mds_defconfig
++++ b/arch/powerpc/configs/mpc834x_mds_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:20 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:36:56 2008
+ #
+ # CONFIG_PPC64 is not set
 
+@@ -571,8 +571,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ # CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -767,10 +766,6 @@ CONFIG_USB_ARCH_HAS_EHCI=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc836x_mds_defconfig b/arch/powerpc/configs/mpc836x_mds_defconfig
+index 7c8b060..d50a96e 100644
+--- a/arch/powerpc/configs/mpc836x_mds_defconfig
++++ b/arch/powerpc/configs/mpc836x_mds_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:21 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:36:57 2008
+ #
+ # CONFIG_PPC64 is not set
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+@@ -626,8 +626,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_HW_RANDOM=y
+ # CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -822,10 +821,6 @@ CONFIG_USB_ARCH_HAS_EHCI=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc8544_ds_defconfig b/arch/powerpc/configs/mpc8544_ds_defconfig
+index c75b6ae..418bcdb 100644
+--- a/arch/powerpc/configs/mpc8544_ds_defconfig
++++ b/arch/powerpc/configs/mpc8544_ds_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:26 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:03 2008
+ #
+ # CONFIG_PPC64 is not set
 
-Chauss=C3=A9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+@@ -742,8 +742,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ CONFIG_NVRAM=y
+-CONFIG_GEN_RTC=y
+-CONFIG_GEN_RTC_X=y
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1209,10 +1208,6 @@ CONFIG_USB_MON=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc8568mds_defconfig b/arch/powerpc/configs/mpc8568mds_defconfig
+index e7da4b9..2b866b3 100644
+--- a/arch/powerpc/configs/mpc8568mds_defconfig
++++ b/arch/powerpc/configs/mpc8568mds_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:28 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:05 2008
+ #
+ # CONFIG_PPC64 is not set
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+@@ -629,8 +629,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_HW_RANDOM=y
+ # CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -825,10 +824,6 @@ CONFIG_USB_ARCH_HAS_EHCI=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc8572_ds_defconfig b/arch/powerpc/configs/mpc8572_ds_defconfig
+index 460afe9..53aa6f3 100644
+--- a/arch/powerpc/configs/mpc8572_ds_defconfig
++++ b/arch/powerpc/configs/mpc8572_ds_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:29 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:06 2008
+ #
+ # CONFIG_PPC64 is not set
 
---nextPart4041506.o1nJoalkWE
-Content-Type: application/pgp-signature
+@@ -742,8 +742,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ CONFIG_NVRAM=y
+-CONFIG_GEN_RTC=y
+-CONFIG_GEN_RTC_X=y
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1209,10 +1208,6 @@ CONFIG_USB_MON=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index 615e4c1..2075722 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:31 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:08 2008
+ #
+ # CONFIG_PPC64 is not set
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+@@ -750,8 +750,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ CONFIG_NVRAM=y
+-CONFIG_GEN_RTC=y
+-CONFIG_GEN_RTC_X=y
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1217,10 +1216,6 @@ CONFIG_USB_MON=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/mpc8641_hpcn_defconfig b/arch/powerpc/configs/mpc8641_hpcn_defconfig
+index 994e768..d01dcdb 100644
+--- a/arch/powerpc/configs/mpc8641_hpcn_defconfig
++++ b/arch/powerpc/configs/mpc8641_hpcn_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:34 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:11 2008
+ #
+ # CONFIG_PPC64 is not set
 
-iD8DBQBH8RL48y9gWxC9vpcRAr5ZAJ44o5G5TUS435CwGMslYAXGn7ZbHgCfSBbD
-UJ06jgaHaJ4Uk78LUOqb898=
-=SDq0
------END PGP SIGNATURE-----
+@@ -736,8 +736,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ CONFIG_NVRAM=y
+-CONFIG_GEN_RTC=y
+-CONFIG_GEN_RTC_X=y
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1203,10 +1202,6 @@ CONFIG_USB_MON=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/prpmc2800_defconfig b/arch/powerpc/configs/prpmc2800_defconfig
+index f53d55b..f912168 100644
+--- a/arch/powerpc/configs/prpmc2800_defconfig
++++ b/arch/powerpc/configs/prpmc2800_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:37 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:15 2008
+ #
+ # CONFIG_PPC64 is not set
 
---nextPart4041506.o1nJoalkWE--
+@@ -855,8 +855,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ # CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1129,10 +1128,6 @@ CONFIG_USB_MON=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+diff --git a/arch/powerpc/configs/storcenter_defconfig b/arch/powerpc/configs/storcenter_defconfig
+index 8fc8574..fdbfd39 100644
+--- a/arch/powerpc/configs/storcenter_defconfig
++++ b/arch/powerpc/configs/storcenter_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:41 2008
++# Linux kernel version: 2.6.25-rc7
++# Mon Mar 31 11:37:19 2008
+ #
+ # CONFIG_PPC64 is not set
+
+@@ -717,8 +717,7 @@ CONFIG_LEGACY_PTY_COUNT=256
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_HW_RANDOM=m
+ CONFIG_NVRAM=y
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
++# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -931,10 +930,6 @@ CONFIG_USB_STORAGE=y
+ # CONFIG_EDAC is not set
+ CONFIG_RTC_LIB=y
+ CONFIG_RTC_CLASS=y
+-
+-#
+-# Conflicting RTC option has been selected, check GEN_RTC and RTC
+-#
+ CONFIG_RTC_HCTOSYS=y
+ CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+ # CONFIG_RTC_DEBUG is not set
+-- 
+1.5.4.1
